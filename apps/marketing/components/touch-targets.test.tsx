@@ -2,10 +2,10 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import { LANDING_SECTIONS, sectionHighlights } from '@/lib/landing-content';
 import { StoryBeat } from './StoryBeat';
-import { TemplateGallery } from './TemplateGallery';
+import { HeroSearch } from './HeroSearch';
 
 // The landing page on a touch screen (docs/specs/004-interface-design/touch-targets.md): a story beat's
-// highlights stack as abutting 44px rows, and the template search reads at 16px so iOS does not zoom the
+// highlights stack as abutting 44px rows, and the hero's template search reads at 16px so iOS does not zoom the
 // page into it.
 
 describe('landing page on a touch screen', () => {
@@ -21,9 +21,10 @@ describe('landing page on a touch screen', () => {
     for (const c of rows) expect(c).toMatch(/\bpointer-coarse:py-3\b/);
   });
 
-  it('draws the template search at 16px on a coarse pointer', () => {
-    const html = renderToStaticMarkup(<TemplateGallery />);
-    const input = html.match(/<input[^>]*id="template-gallery-search"[^>]*>/)?.[0] ?? '';
-    expect(input).toMatch(/\bpointer-coarse:text-base\b/);
+  it('draws the template search at 16px or more at every width', () => {
+    const html = renderToStaticMarkup(<HeroSearch />);
+    const input = html.match(/<input[^>]*id="hero-search"[^>]*>/)?.[0] ?? '';
+    expect(input).toMatch(/\btext-base\b/);
+    expect(input).not.toMatch(/\btext-(xs|sm)\b/);
   });
 });

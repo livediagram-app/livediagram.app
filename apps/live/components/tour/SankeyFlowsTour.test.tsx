@@ -13,7 +13,6 @@ vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 vi.mock('./tour-dom', async (actual) => ({
   ...(await actual<typeof import('./tour-dom')>()),
   waitForSelector: async (selector: string) => document.querySelector<HTMLElement>(selector),
-  revealTour: async () => null,
 }));
 afterEach(() => {
   cleanup();

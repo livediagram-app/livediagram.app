@@ -17,26 +17,30 @@ draws them.
   **Help** link and (where the start can be closed) **Close** (×). On a phone the search takes its own row under the
   title, the help and × staying beside the title.
 - **Rail:** led by the mode switch over a hairline ([Changing mode](#changing-mode)), then **Recommended** and the
-  mode's groups, each with its glyph and count; long names wrap beside the glyph on a wide rail. Below a further
-  hairline, **Something Else** opens the Quick Start on every mode.
+  mode's groups, each with its glyph and count; long names wrap beside the glyph on a wide rail.
 - **Cards:** each template's preview on a soft plate, its name and its description in full. Choosing a card lands
-  the template on the tab at once (`chooseTemplate`), as the Quick Start does, painted in the **tab's theme**: the
+  the template on the tab at once (`chooseTemplate`), painted in the **tab's theme**: the
   panel picks no theme, so the scaffold takes the colours the tab already wears (its own theme, or the one a new
   tab inherited from the tab it was added beside) rather than the template's built-in ones. The tab's backdrop is
-  left as it is; only the Quick Start's theme pick switches it.
-- **Search:** the catalogue's own search (`templateMatchesQuery`, as the Quick Start and the marketing gallery),
-  across the mode's templates; matches are grouped under their group, each once, in rail order. Escape clears a
-  search first. No match offers **Browse More Templates** (the Quick Start).
+  left as it is.
+- **Search:** the catalogue's own search (`templateMatchesQuery`, as the marketing gallery's),
+  across the mode's templates; matches are grouped under their group, each once, in rail order, then the matches of
+  every other mode ([Found in other modes](#found-in-other-modes)). Escape clears a search first.
+- **There is no way out to a bigger picker.** Each start holds every listed template of its mode, the mode switch
+  reaches the others, and a search finds a template in any mode; the start is the whole catalogue. (Its
+  **Something Else** row and **Browse More Templates** button opened the Quick Start, a modal of every template, which
+  was removed: [New document route](new-document-route.md).)
 - **Picking a category** opens it at the top of its cards, never part way down the last one's.
-- **Keyboard:** the search is focused on a fine pointer; Up and Down move along the rail, choosing as they go.
+- **Keyboard:** the search is focused on a fine pointer; Up and Down move along the rail, choosing as they go. Down
+  in the search box moves to the first card it found.
 
 ### Recommended and groups
 
-Recommended is the mode's Popular shelf (`popularKindsFor`, the picks the Quick Start leads with), **its blank
+Recommended is the mode's Popular shelf (`popularKindsFor`, the picks the marketing gallery leads with), **its blank
 first**, less **Timeline**, which is left to its group. Start Illustrating swaps two of the shelf's picks for blanks
 of a page kind, a page already of its kind being the quicker start: **Blank Infographic** in place of Blank
 Illustration and **Blank Article** in place of the Article template, so it leads Blank Infographic, Blank Article,
-Blank Slide Deck. The shelf itself (the Quick Start's and the gallery's) is unchanged. The groups (`components/start/start-template-items.ts`,
+Blank Slide Deck. The shelf itself (the gallery's) is unchanged. The groups (`components/start/start-template-items.ts`,
 `TEMPLATE_STARTS`):
 
 - **Diagram:** the catalogue's categories that hold a Diagram template ([Canvas and
@@ -57,8 +61,8 @@ same empty tab). Choosing the blank closes the panel, as the × does, since it l
 
 `templateStartMode` (`components/start/template-start-mode.ts`) decides, from the editor's state:
 
-- To someone who can edit (an **Editor**), after hydration, outside zen and an embed, with the Quick Start closed
-  and no draw tool armed. Draw keeps a pen in hand on an empty tab, so there an armed pen does not hide it.
+- To someone who can edit (an **Editor**), after hydration, outside zen and an embed, with
+  no draw tool armed. Draw keeps a pen in hand on an empty tab, so there an armed pen does not hide it.
 - While the tab is empty: no elements, and on an Illustrate tab its one page still has no kind.
 - In Diagram, Draw, Facilitate or Illustrate. Plan has Start Planning.
 
@@ -66,8 +70,7 @@ A **Participant** or **Viewer** never sees a start: they keep the empty-canvas c
 route](new-document-route.md) "The empty-canvas hint"), which tells a Viewer the owner can build it out and points a
 Participant at what they may add.
 
-A new tab opens on its mode's start with no Quick Start over it (`newTabOpening` in
-`apps/live/lib/new-tab-seed.ts`).
+A new tab opens on its mode's start (`newTabOpening` in `apps/live/lib/new-tab-seed.ts`).
 
 ## Bringing it back
 
@@ -103,6 +106,38 @@ mode change reads as the same panel turning rather than a second one flying up o
 cards not cascading in until the category or search changes. Without View Transitions, or with reduced motion, the
 content swaps at once.
 
+## Found in other modes
+
+A search looks beyond the tab's mode. Someone on a Plan tab who types "sailboat" wants the Sailboat retrospective,
+not an empty result: the start finds it in Facilitate, shows it, and choosing it takes the tab there.
+
+- **What is searched.** Every listed template of every other mode (`otherModeMatches` in
+  `components/start/other-mode-matches.ts`): a template's mode is `templateEditorMode`, the mode its tab opens in, so a
+  template is in exactly one mode and never shows twice. From Start Planning that is every other mode's templates;
+  from the others it includes Plan's templates. The same search as the mode's own (`templateMatchesQuery`), so the
+  same words find the same templates wherever they are typed. A mode's blank is a template like the rest ("whiteboard"
+  finds Blank Whiteboard).
+- **Where it shows.** Under the mode's own results, after a hairline, a section headed **In Other Modes**, with the
+  line "Choosing one switches this tab to its mode." Then one block per mode that matched, in the modes' order
+  (Diagram, Draw, Facilitate, Illustrate, Plan): a header with the mode's icon on a soft tile of the accent, the mode's
+  name and its count, then its cards in the same grid as every other result.
+- **Each card says where it leads.** Under its line, a quiet chip with the mode's icon and "Opens in Facilitate", so a
+  card seen alone still says it is not of this mode; assistive technology hears the template's name, "in Facilitate",
+  then its description.
+- **At most six a mode** (`OTHER_MODE_CARDS_MAX`), so a word that matches dozens of one mode's templates does not bury
+  the rest; **Show All N** (N the mode's count) opens that mode's every match in place. The list clears with the search.
+- **Nothing in this mode, something elsewhere.** The mode's own empty state is not shown; a single line opens the
+  results instead, "No diagram templates match “sailboat”." with "Found in other modes." under it, then the other modes'
+  blocks. **Nothing anywhere** shows the empty state, "Try another word."
+- **Choosing one** lands the template on the tab at once, as any card does (`chooseTemplate`), and the template brings
+  its mode: its tab opens in that mode (`templateCanvasOverrides`' `opensIn`), so the tab switches, through Plan's
+  line too (an empty tab crosses it freely, [Changing mode](#changing-mode)). The start goes with the empty tab. A
+  blank of the other mode (Blank Whiteboard from Start Diagramming) closes that mode's start, as choosing a start's own
+  blank does, so the tab opens on the empty canvas asked for. The pick is a start-screen pick for
+  [Default folders](#default-folders): a document `/new` just made moves to the template's default folder.
+- **Only where the mode may change.** When the tab's mode is locked (the mode switch shows its lock,
+  `canSwitch` false) the start searches its own mode alone, as before.
+
 ## Start Illustrating
 
 The tab's first page is drawn only once the start is done: while Start Illustrating is open there is no page behind
@@ -117,8 +152,8 @@ page edits keep their own rule (`pageRemoved` refuses the last page, `last_page`
 
 ## Default folders
 
-A template picked here on a document `/new` just made goes to that template's default folder, unless the person
-chose the folder themselves on the Location step ([Default folders](../013-workspace/default-folders.md) "A template
+A template picked here on a document `/new` just made goes to that template's default folder, unless the document
+was made into a folder on purpose (a `/new?folder=` or `?team=` link, [Default folders](../013-workspace/default-folders.md) "A template
 picked after creation"). The move loads only at the pick (`useTemplatePickMove`, a dynamic import of
 `move-on-template-pick.ts`).
 
@@ -150,11 +185,17 @@ They are kept for the browser tab only and read once (`start-query.ts`).
 
 ## Telemetry
 
-None added. A template chosen fires `Template · Used · <kind>` through `chooseTemplate`, as from the Quick Start.
+A template chosen fires `Template · Used · <kind>` through `chooseTemplate`. A template chosen from another mode's
+results also fires `UI · Used · StartOtherMode`, so how often a search crosses modes is measurable.
 
 ## Tests
 
-- `components/start/start-template-items.test.ts`: every mode's Recommended, groups and search.
+- `components/start/start-template-items.test.ts`: every mode's Recommended, groups and search, and every listed
+  template reachable from its mode's start.
+- `components/start/other-mode-matches.test.ts`: which modes and templates another mode's search finds, in order,
+  never the tab's own mode, and the worst-case query within its budget.
+- `components/start/StartPanel.test.tsx`: the In Other Modes section, its cap and Show All, the one-line no-match,
+  Down from the search, choosing a card from another mode.
 - `components/start/template-start-mode.test.ts`: when a start shows.
 - `components/start/StartFromTemplates.test.tsx`: titles per mode, choosing, the blank closing, the per-mode close,
   scroll to top.

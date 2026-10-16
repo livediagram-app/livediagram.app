@@ -42,11 +42,10 @@ The link is the only place a tab meets a document. `tabs` holds the body (`id, n
 
 ### Shared-tab notice
 
-A **shared tab** is a tab linked into more than one document. Removing a document is safe for its shared tabs, but the user cannot see that from the document alone, so every confirmation that removes a document from the server says it first. `GET /api/documents/:id/shared-tabs` answers `{ sharedTabs: { tabs, documents } }`: how many of the document's tabs are also linked elsewhere, and how many distinct other documents hold them. It answers exactly the callers who may delete the document (owner, or a joined member of its team; `mayDeleteDocument`), in the DELETE's order: 400 with no caller, 404 when missing, 403 otherwise.
+A **shared tab** is a tab linked into more than one document. Removing a document is safe for its shared tabs, but the user cannot see that from the document alone, so the Take Offline confirmation says it first. (A delete asks nothing: it goes to the Trash with an Undo, and a restore brings back the document's links to its tabs.) `GET /api/documents/:id/shared-tabs` answers `{ sharedTabs: { tabs, documents } }`: how many of the document's tabs are also linked elsewhere, and how many distinct other documents hold them. It answers exactly the callers who may delete the document (owner, or a joined member of its team; `mayDeleteDocument`), in the DELETE's order: 400 with no caller, 404 when missing, 403 otherwise.
 
 The confirmation reads the counts before it opens (`fetchSharedTabsNotice`, `apps/live/lib/shared-tabs-notice.ts`) and, when `tabs` is above zero, adds one sentence:
 
-- **Delete** (the Explorer page and editor modal, the Explorer panel's inline confirm, the team-library modal): _"3 of its tabs are also used in 2 other documents; they stay there."_
 - **Take Offline** ([Offline Mode](offline-mode.md)): _"2 of its tabs are also used in 1 other document; they stay there, and the copies in this browser no longer share edits with them."_
 
 Singular forms read _"1 of its tabs is ... it stays there"_ and _"1 other document"_. An offline document has no shared tabs and makes no request. The read waits at most `SHARED_TABS_NOTICE_TIMEOUT_MS` (1500 ms); when it fails or runs out of time the confirmation opens without the sentence (the api client reports the failure), since the server keeps shared tabs either way and the notice is information, not the safeguard. The counts are read before the dialog renders so its content never changes under the pointer.

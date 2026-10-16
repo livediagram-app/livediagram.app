@@ -208,7 +208,7 @@ export function HomeSection({
         ) : (
           <PaneEmpty
             icon={<ClockIcon />}
-            title="Nothing to jump back into yet"
+            title={HOME_COPY.jumpBackInEmptyTitle}
             description={HOME_COPY.jumpBackInEmpty}
           />
         )}

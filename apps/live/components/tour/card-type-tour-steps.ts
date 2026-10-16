@@ -3,7 +3,7 @@
 // control, which stays usable, so the person builds their type as the tour goes.
 import type { TypeEditorTab } from '@/components/plan/ItemTypeEditorTabs';
 import type { TourStepOf } from './tour-step';
-import { revealTour, waitForSelector } from './tour-dom';
+import { waitForSelector } from './tour-dom';
 
 export type CardTypeTourApi = {
   // Opens a tab of the editor (the draft is kept: switching loses nothing).
@@ -21,13 +21,6 @@ const typeInto = (tab: TypeEditorTab, target: string) => async (api: CardTypeTou
   input?.focus();
 };
 
-// Opens the tab, then scrolls the step's section to the top of the tab's scrolling panel, so a section further down
-// (Configuration's Fields, under General) is in view when the ring lands on it.
-const scrollTo = (tab: TypeEditorTab, target: string) => async (api: CardTypeTourApi) => {
-  api.showTab(tab);
-  await revealTour(target, 'start');
-};
-
 export const CARD_TYPE_TOUR_STEPS: CardTypeTourStep[] = [
   {
     id: 'general',
@@ -41,7 +34,10 @@ export const CARD_TYPE_TOUR_STEPS: CardTypeTourStep[] = [
     title: 'Lay Out Its Fields',
     body: 'What its cards hold, laid out as the card panel shows them. Add Field gives it more (a Link to Card ties it to another card); drag a field to move it between tabs and Details.',
     target: 'card-type-fields',
-    prepare: scrollTo('configuration', 'card-type-fields'),
+    // The engine scrolls the section to the top of the tab's scrolling panel, so a section further down
+    // (Configuration's Fields, under General) is in view, read from its heading, when the ring lands on it.
+    revealAt: 'start',
+    prepare: on('configuration'),
   },
   {
     id: 'states',

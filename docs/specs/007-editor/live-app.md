@@ -181,10 +181,10 @@ opens the dialog, so only the owner sees Show Me. Telemetry: `UI` · `Started` �
 
 ## Destructive actions
 
-Every irreversible flow (delete a document, a folder, a tab, or an image gallery row) is gated by a branded confirmation. Two forms:
+Every irreversible flow (delete a folder or an image gallery row) is gated by a branded confirmation. Deleting a document is not one: it goes to the Trash with an Undo ([Trash](../013-workspace/trash.md)). Nor is deleting a tab: one commit, so undo brings it back, and the tab menu asks first only when deleting does what an undo cannot take back (a Form tab's link, the forms sending their responses to a board or sheet; `deleteTabWarning`). Two forms:
 
 - **Centre modal** — `apps/live/components/dialogs/ConfirmDialog.tsx`, wired in through the `useConfirm` hook (`apps/live/hooks/ui/useConfirm.tsx`). The provider mounts once at the live root layout so any descendant can `await confirm({ title, message, confirmLabel })` and receive a boolean. Used where the action has no tight on-screen anchor.
-- **Anchored popover** — `apps/live/components/primitives/ConfirmPopover.tsx`: a small popover beside the trigger with an arrow pointing back at it, so you confirm right where you clicked rather than being yanked to the screen centre. Portal-rendered (its `position: fixed` must escape transformed ancestors like the tab menu) and tagged `data-confirm-popover` so a host menu's outside-click handler can ignore it. **First use:** the tab menu's Delete row (the menu's own confirm now lives here; `deleteTab` performs the delete directly). Esc cancels, Enter confirms.
+- **Anchored popover** — `apps/live/components/primitives/ConfirmPopover.tsx`: a small popover beside the trigger with an arrow pointing back at it, so you confirm right where you clicked rather than being yanked to the screen centre. Portal-rendered (its `position: fixed` must escape transformed ancestors like the tab menu) and tagged `data-confirm-popover` so a host menu's outside-click handler can ignore it. Used by the tab menu's Delete row when it warns (`deleteTab` performs the delete directly). Esc cancels, Enter confirms.
 
 We never fall back to `window.confirm()`: the OS-default chrome reads as a non-livediagram dialog and underplays the consequences.
 

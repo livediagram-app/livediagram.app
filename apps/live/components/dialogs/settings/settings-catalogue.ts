@@ -51,6 +51,11 @@ import {
   withWhiteboardDockPosition,
   type WhiteboardDockPosition,
 } from '@/lib/whiteboard-dock-prefs';
+import {
+  readContentsPlacement,
+  withContentsPlacement,
+  type ContentsPlacement,
+} from '@/lib/contents-placement';
 import type { SettingsIllustrationId } from './settings-illustrations';
 import {
   LOGO_GUIDE_PARTS,
@@ -320,11 +325,6 @@ export type SettingsPlacementDefaultRowSpec = RowBase & {
   placementKey: PlacementDefaultKey;
 };
 
-// Skip the Location step (docs/specs/013-workspace/default-folders.md "Skipping the Location
-// step"): where new documents go without asking, and Turn Off. Turned on from the wizard, where the
-// place is chosen, so the row reads and clears the preference rather than toggling it.
-export type SettingsSkipLocationRowSpec = RowBase & { kind: 'skipLocationStep' };
-
 export type SettingsRowSpec =
   | SettingsToggleRowSpec
   | SettingsToggleGroupRowSpec
@@ -341,8 +341,7 @@ export type SettingsRowSpec =
   | SettingsTrashRowSpec
   | SettingsPresetSummaryRowSpec
   | SettingsCloudSyncRowSpec
-  | SettingsPlacementDefaultRowSpec
-  | SettingsSkipLocationRowSpec;
+  | SettingsPlacementDefaultRowSpec;
 
 export type SettingsCategorySpec = {
   id: SettingsCategoryId;
@@ -678,6 +677,25 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
     label: 'Illustrate',
     parent: 'editor',
     rows: [
+      {
+        // docs/specs/007-editor/illustrate-pages.md "Contents": the sidebar's minimise and the
+        // popover's dock button write the same choice.
+        kind: 'choice',
+        key: 'contentsPlacement',
+        keywords:
+          'contents pages page list sidebar side bar left panel filmstrip slides navigator thumbnails minimise minimize maximise maximize dock button',
+        section: 'Pages',
+        label: 'Contents',
+        description:
+          'Where the list of pages sits on a computer: docked down the left, or tucked into its button. A phone always has the button.',
+        options: [
+          { id: 'sidebar', label: 'Sidebar' },
+          { id: 'button', label: 'Button' },
+        ],
+        read: readContentsPlacement,
+        write: (p, v) => withContentsPlacement(p, v as ContentsPlacement),
+        event: { category: 'UI', changed: 'ContentsPlacement' },
+      },
       {
         kind: 'toggle',
         key: 'logoGuides',
@@ -1408,17 +1426,6 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
       },
     },
     rows: [
-      {
-        kind: 'skipLocationStep',
-        key: 'skipLocationStep',
-        section: 'New Documents',
-        label: 'Always Save in One Place',
-        keywords:
-          'skip location step new document wizard always save every new document same place folder ask where',
-        description:
-          'Skips the Location step of the New Document wizard and saves every new document in one place.',
-        helpArticle: 'defaultFolders',
-      },
       // One row per default folder entry, in list order: guests have defaults too.
       ...DEFAULT_KEY_ENTRIES.map((entry): SettingsPlacementDefaultRowSpec => ({
         kind: 'placementDefault',

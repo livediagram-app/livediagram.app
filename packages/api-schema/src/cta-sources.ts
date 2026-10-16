@@ -23,7 +23,17 @@ export const CTA_SOURCES = {
     'HeroBrainstorm',
     'HeroCanvas',
     'HeroBuild',
+    // The intent-led hero (docs/specs/019-marketing/marketing-site.md "Hero"): its search, the five
+    // blanks of the Start Blank menu in its bar, and its card fan.
+    'HeroSearch',
+    'HeroBlankDraw',
+    'HeroBlankWhiteboard',
+    'HeroBlankSession',
+    'HeroBlankIllustration',
+    'HeroBlankPlan',
+    'HeroFan',
     'Gallery',
+    // Retired when the gallery's search moved to the hero (October 2026): its no-match blank link.
     'GalleryDraw',
     'Closing',
   ],

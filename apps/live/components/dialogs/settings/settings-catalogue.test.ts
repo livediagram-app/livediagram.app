@@ -37,7 +37,9 @@ describe('settings catalogue', () => {
       "a logo page's Guides button",
     );
     expect(
-      illustrate.rows.filter((r) => r.key !== 'logoGuides').map((r) => [r.key, r.parent]),
+      illustrate.rows
+        .filter((r) => r.key !== 'logoGuides' && r.key !== 'contentsPlacement')
+        .map((r) => [r.key, r.parent]),
     ).toEqual([
       ['logoGuideStrength', 'logoGuides'],
       ['logoGuideParts', 'logoGuides'],
@@ -73,6 +75,21 @@ describe('settings catalogue', () => {
     expect(row.read({})).toBe('top');
     expect(row.write({}, 'bottom')).toEqual({ whiteboardDockPosition: 'bottom' });
     expect(row.event).toEqual({ category: 'UI', changed: 'WhiteboardDockPosition' });
+  });
+
+  it("offers where Illustrate's Contents sits, the sidebar until chosen otherwise", () => {
+    // docs/specs/007-editor/illustrate-pages.md "Contents": the sidebar by default, the button by choice.
+    const illustrate = SETTINGS_CATEGORIES.find((c) => c.id === 'illustrate')!;
+    const row = illustrate.rows.find((r) => r.key === 'contentsPlacement');
+    if (row?.kind !== 'choice') throw new Error('no Contents choice row');
+    expect(row.label).toBe('Contents');
+    expect(row.options.map((o) => [o.id, o.label])).toEqual([
+      ['sidebar', 'Sidebar'],
+      ['button', 'Button'],
+    ]);
+    expect(row.read({})).toBe('sidebar');
+    expect(row.write({}, 'button')).toEqual({ contentsPlacement: 'button' });
+    expect(row.event).toEqual({ category: 'UI', changed: 'ContentsPlacement' });
   });
 
   it('round-trips every toggle through read/write in both directions', () => {

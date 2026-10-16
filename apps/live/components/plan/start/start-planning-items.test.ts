@@ -6,8 +6,9 @@ import {
   templateEditorMode,
   type PlanTemplateKind,
   isFormTemplateKind,
+  formTemplateStarter,
 } from '@livediagram/templates';
-import { SHEET_TEMPLATES } from '@livediagram/sheets';
+import { SHEET_TEMPLATES, TEMPLATE_START_SHEETS } from '@livediagram/sheets';
 import {
   INSPIRATION_TEMPLATES,
   itemsIn,
@@ -153,5 +154,34 @@ describe('Inspiration and the template pickers show the same Plan templates', ()
       const t = TEMPLATES.find((d) => `template:${d.kind}` === card.id)!;
       expect([card.name, card.line]).toEqual([t.title, t.description]);
     }
+  });
+});
+
+// docs/specs/007-editor/start-diagramming.md "There is no way out to a bigger picker": every Plan template is on Start
+// Planning, as itself (Inspiration), as the sheet it makes (Spreadsheets) or as the form it starts (Forms), but its blank,
+// which is the empty Plan tab itself, and Blank Spreadsheet, which Start Planning's Empty Sheet stands for
+// (templates-by-mode.md).
+describe('every Plan template on Start Planning', () => {
+  it('reaches every listed Plan template', () => {
+    const items = startItems({ hasCards: false, suggestions: [] });
+    const has = (pick: (i: (typeof items)[number]) => unknown) =>
+      new Set(items.map(pick).filter(Boolean));
+    const templates = has((i) => i.kind === 'template' && i.template);
+    const sheets = has((i) => i.kind === 'sheet' && i.start);
+    const forms = has((i) => i.kind === 'form' && i.starter);
+    const reached = (kind: PlanTemplateKind) =>
+      templates.has(kind) ||
+      (isFormTemplateKind(kind) && forms.has(formTemplateStarter(kind))) ||
+      // A sheet template is offered as the sheet it makes (Budget Planner's Budget sheet).
+      (isSpreadsheetPlanTemplate(kind) &&
+        sheets.has(TEMPLATE_START_SHEETS[kind as keyof typeof TEMPLATE_START_SHEETS]));
+    const missing = TEMPLATES.filter(
+      (t) =>
+        !t.hidden &&
+        templateEditorMode(t.kind) === 'plan' &&
+        !['blank-plan', 'blank-spreadsheet'].includes(t.kind) &&
+        !reached(t.kind as PlanTemplateKind),
+    ).map((t) => t.kind);
+    expect(missing).toEqual([]);
   });
 });

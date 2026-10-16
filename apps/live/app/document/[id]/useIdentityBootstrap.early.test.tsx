@@ -100,7 +100,7 @@ describe('useIdentityBootstrap early open', () => {
     expect(api.apiLoadSelf).not.toHaveBeenCalled();
     expect(lists.documents).not.toHaveBeenCalled();
     // The naming nudge waits for the real participant.
-    expect(set.setTemplatePickerMode).not.toHaveBeenCalled();
+    expect(set.setIdentityPromptOpen).not.toHaveBeenCalled();
   });
 
   it('resolves the reader once auth answers, without loading the document again', async () => {
@@ -114,7 +114,7 @@ describe('useIdentityBootstrap early open', () => {
     );
     expect(lists.documents).toHaveBeenCalledWith('guest-1');
     expect(lists.shared).toHaveBeenCalledWith('guest-1');
-    expect(set.setTemplatePickerMode).toHaveBeenCalledWith('identity');
+    expect(set.setIdentityPromptOpen).toHaveBeenCalledWith(true);
   });
 
   it('waits for auth on a cloud document', async () => {

@@ -82,6 +82,25 @@ export function computeFitBelow(
   };
 }
 
+// A frame computed for the canvas less `insetLeft` screen px at its left (a docked sidebar laid over
+// it: docs/specs/007-editor/illustrate-pages.md "Contents"), moved so it lands in that band rather than
+// in the whole canvas. Compute the frame on `{ width: w - insetLeft, height }`; with the centred
+// transform a canvas x lands at `w/2 + z(x + offset.x - w/2)`, so the band's middle (`insetLeft/2`
+// right of the canvas's) adds `insetLeft/2` for the narrower width's centre and `insetLeft / 2z`.
+export function besideLeftInset(
+  frame: { zoom: number; offset: Offset },
+  insetLeft: number,
+): { zoom: number; offset: Offset } {
+  if (insetLeft <= 0) return frame;
+  return {
+    zoom: frame.zoom,
+    offset: {
+      x: frame.offset.x + insetLeft / 2 + insetLeft / (2 * frame.zoom),
+      y: frame.offset.y,
+    },
+  };
+}
+
 // How much of the canvas's top a floating toolbar covers (the Palette strip laid over it), in screen px, plus a
 // small gap: what a fit leaves clear so nothing lands under the strip. 0 when there is no strip or it sits outside
 // the canvas.

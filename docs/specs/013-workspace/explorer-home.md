@@ -78,8 +78,9 @@ the **4 most used** and the **4 most recent**, no document twice.
 - Only the documents that exist are drawn: no empty boxes. A short group leaves the rest of its row blank; with no
   most used document at all, the recent ones take the top row.
 - The grid keeps its two rows' height whatever lands in it, so nothing below moves when Home loads.
-- With no document at all, the section holds one quiet line: "The documents you use most and last will gather
-  here." On a phone the strip still ends in its See more tile.
+- With no document at all, the section holds the shared [empty state](../004-interface-design/empty-states.md):
+  "No documents yet", over "The documents you use most and last will gather here." On a phone the strip holds the
+  small empty state's heading alone and still ends in its See more tile.
 
 ### Making a document
 
@@ -210,8 +211,8 @@ has the size of what replaces it, so nothing shifts (CLS 0).
 | --------------------- | ---------------------------------------------------------------------------------------------------- |
 | Loading               | Each section's skeleton: the grid's two rows (the phone's strip), three entry rows                   |
 | Jump back in, partial | What exists, no empty boxes (see [Fewer than 8 documents](#fewer-than-8-documents))                  |
-| Jump back in, empty   | "The documents you use most and last will gather here."                                              |
-| What happened, empty  | "Nothing from others in the last 14 days." (See timeline stays.)                                     |
+| Jump back in, empty   | Empty state "No documents yet": "The documents you use most and last will gather here."              |
+| What happened, empty  | Empty state "No updates yet": "What others do in your documents over the last 14 days shows here."   |
 | Read failed           | "Home could not load. Check your connection and try again." with **Try again**, in place of the body |
 
 Under reduced motion nothing animates: no skeleton pulse, no chevron turn, no smooth scrolling.

@@ -25,7 +25,7 @@ function show(over: Partial<Parameters<typeof PlanBoardPicker>[0]> = {}) {
     onPick: vi.fn(),
     onPickSheet: vi.fn(),
     onDashboard: vi.fn(),
-    onQuickStart: vi.fn(),
+    onOtherModeTemplate: vi.fn(),
     onForm: vi.fn(),
   };
   render(<PlanBoardPicker {...props} {...over} />);
@@ -85,13 +85,11 @@ describe('Start Planning', () => {
     expect(p.onDashboard).toHaveBeenCalledWith('report');
   });
 
-  it('opens the Quick Start from Something Else, and leaves out what it cannot offer', () => {
-    const p = show();
-    fireEvent.click(rail(/^Something Else/));
-    expect(p.onQuickStart).toHaveBeenCalledTimes(1);
-    cleanup();
-    show({ onQuickStart: undefined, onDashboard: undefined, onPickSheet: undefined });
+  it('has no way out to a Quick Start, and leaves out what it cannot offer', () => {
+    show();
     expect(screen.queryByRole('button', { name: /^Something Else/ })).toBeNull();
+    cleanup();
+    show({ onDashboard: undefined, onPickSheet: undefined });
     const nav = screen.getByRole('navigation', { name: 'Categories' });
     expect(within(nav).queryByRole('button', { name: /^Dashboards/ })).toBeNull();
     expect(within(nav).queryByRole('button', { name: /^Spreadsheets/ })).toBeNull();
@@ -105,7 +103,8 @@ describe('Start Planning', () => {
     expect(card(/^Retro:/)).toBeTruthy();
     fireEvent.change(field, { target: { value: 'zzz' } });
     expect(screen.getByText('No boards, sheets, forms or layouts match “zzz”')).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'Browse More Templates' })).toBeTruthy();
+    expect(screen.getByText('Try another word.')).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Browse More Templates' })).toBeNull();
     fireEvent.keyDown(field, { key: 'Escape' });
     expect(screen.getByRole('region', { name: 'Recommended' })).toBeTruthy();
   });

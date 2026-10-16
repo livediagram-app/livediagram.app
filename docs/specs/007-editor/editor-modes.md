@@ -109,7 +109,7 @@ mode across that line is still listed; picking it asks **Open a New <Mode> Tab?*
 or on a Plan tab "A Plan tab stays in Plan.", then "Its mode can’t change, but you can carry on in a new <Mode>
 tab.") and **New <Mode> Tab** opens one after the others, with its mode's own start: Start Diagramming, Start
 Facilitating, Start Illustrating or Start Drawing (a pen in hand) ([Template starts](start-diagramming.md)), and
-Start Planning for Plan, with no Quick Start over any of them. A session that cannot add
+Start Planning for Plan. A session that cannot add
 tabs (a tab-scoped link, docs/specs/013-workspace/tab-scoped-share-links.md) is offered no new tab: those rows show,
 inert (`aria-disabled`), and ask nothing. **Shift+D** steps only through the modes beside the tab's
 own (Diagram, Draw, Facilitate, Illustrate; on a Plan tab it does nothing). The tab menu's Mode lists all five, as
@@ -157,10 +157,10 @@ first element closes the line again. A Board, Sheet or Dashboard tab keeps its k
   **+** makes the tab straight away, with no picker: it is a general tab (never the source's kind) carrying the
   source's look ([Canvas and palette](../008-canvas/canvas-and-palette.md) "Selecting & adding"), and only its mode
   follows. A tab asked for in a mode (**New <Mode> Tab**, "Plan stands apart") opens in that mode instead. A new tab
-  never opens the Quick Start: it opens empty on its mode's own start (Start Diagramming, Start Drawing, Start
+  opens empty on its mode's own start (Start Diagramming, Start Drawing, Start
   Facilitating, Start Illustrating, Start Planning: [Template starts](start-diagramming.md), [Plan
   mode](../026-plan/plan-mode.md#starting-a-board); `newTabOpening` in `apps/live/lib/new-tab-seed.ts`), whose
-  **Something Else** brings the Quick Start for another kind of tab. Only the template chosen for it changes that:
+  search also finds every other mode's templates. Only the template chosen for it changes that:
   every template opens in its own mode ([Templates by mode](templates-by-mode.md)), the **Whiteboard** in Draw,
   Blank in Diagram, and an **Event Storming** board is always Diagram. **Duplicate** is not a new tab: the copy
   keeps the original's mode. Adding a tab is an Editor's alone: a Participant, a Viewer and any tab-scoped link add
@@ -497,7 +497,7 @@ dashboard ([Telemetry](../017-telemetry/telemetry.md) "Retired features").
   Draw mode. Its elements, background and layers are unchanged.
 - Imports that landed on a whiteboard (Excalidraw, Microsoft Whiteboard) land
   on a general tab in Draw mode.
-- The **Blank Whiteboard** template (kind id `whiteboard`) and Quick Start entry create a
+- The **Blank Whiteboard** template (kind id `whiteboard`) creates a
   general tab that opens in Draw mode, as the other Draw templates do
   ([Templates by mode](templates-by-mode.md)).
 
@@ -531,7 +531,7 @@ dashboard ([Telemetry](../017-telemetry/telemetry.md) "Retired features").
   **Editor › Draw** sub-category (Dock Position) as the switch names it, and
   **Draw mode** in prose: the help article (**Draw mode**, at a new address,
   the old one redirecting) and the command palette.
-- The template and Quick Start card is **Blank Whiteboard**, one of five blanks (Blank Diagram,
+- The template card is **Blank Whiteboard**, one of five blanks (Blank Diagram,
   Blank Whiteboard, Blank Session, Blank Illustration, Blank Plan), one per mode, that lead Popular
   ([Templates by mode](templates-by-mode.md)); the document it makes is named "Untitled
   Whiteboard", for the activity a person comes for.

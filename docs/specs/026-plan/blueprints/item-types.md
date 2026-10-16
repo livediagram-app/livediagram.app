@@ -127,9 +127,9 @@ linkType: 'project' }`) in item-types.ts; Task and the brought Bug and Story car
   `ItemTypeLayoutEditor`). The tab's one panel scrolls (`overflow-y-auto`). Red-dot flags: a clashing name, a tab
   problem or a custom field problem flag `configuration`; a left-out status problem flags `statuses`.
 - Show Me steps (`card-type-tour-steps.ts`): `general` shows `configuration` and focuses the Name input (focus
-  scrolls it into view); `fields` shows `configuration` and scrolls `card-type-fields` to the panel's top
-  (`revealTour(target, 'start')` from `tour-dom.ts`: `scrollIntoView({ block: 'start' })`, instant under reduced
-  motion); `states` and `display` show their tabs. The button and the running tour are the shared `ShowMeButton` /
+  scrolls it into view); `fields` shows `configuration` and asks for `card-type-fields` at the panel's top
+  (`revealAt: 'start'`: the tour engine's `revealInScrollers` from `tour-reveal.ts` scrolls it there, instant under
+  reduced motion); `states` and `display` show their tabs. The button and the running tour are the shared `ShowMeButton` /
   `ShowMeStage` (`ShowMe.tsx`, [Show Me](../../007-editor/show-me.md)); `CardTypeTour.tsx` keeps the literal telemetry.
 
 ## Tabs
@@ -270,7 +270,7 @@ hasCards)` answers `defaultCatalogue()` for a null catalogue with cards (offline
   guarded by `apps/api/src/card-types-migration.test.ts`).
 - `READY_MADE_DEFAULT_STATE_NAMES` / `readyMadeDefaultStatus` name a Default State for every ready-made type.
 - The editor: `usePresetCardTypes({ catalogue, itemsReady, saveCatalogue, ... })` applies it to boards
-  that appear on the open tab once the items are read, and `bring(elements)` (Quick Start) at once, or held until
+  that appear on the open tab once the items are read, and `bring(elements)` (a template picked on a start) at once, or held until
   they are. Nothing in the interface sets a type apart: `CardTypesPanel` is one list (`aria-label` "Card Types").
 
 `CardTypesPanel` rows are cards (stripe, tinted glyph tile, "N fields", count pill, pencil; the row opens the

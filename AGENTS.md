@@ -206,8 +206,8 @@ packages/
   ui/             # shared UI primitives (Brand, SiteHeader, Button, TextInput, Select, Tooltip, hooks) + chrome icons (src/icons)
   document/       # document data model (Tab, Element types + element helpers)
   icons/          # icon catalogues (line-art + Technology + stickers) + SVG markup builders + xmlEscape
-  templates/      # template catalogue + pure element builders (editor Quick Start + MCP)
-  template-previews/ # per-template preview SVGs (editor picker + marketing template gallery)
+  templates/      # template catalogue + pure element builders (editor template starts + MCP)
+  template-previews/ # per-template preview SVGs (editor template starts + marketing template gallery)
   help-registry/  # help-centre article/category registry + keywords (help app + editor search)
   explorer-lens/  # the Explorer filter lens: parse, match and autocomplete filter tokens (pure)
   page-background/ # a page background's colours, patterns and motions + their parser (slides and form covers, pure)

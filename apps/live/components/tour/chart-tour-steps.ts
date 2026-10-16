@@ -2,9 +2,7 @@ import { CHART_TYPE_LABELS, type ChartType } from '@livediagram/document';
 import { conceptOutro, inElement, onGraphic } from './concept-element-tour-steps';
 import type { ElementTourApi } from './element-tour-api';
 import { menuStep, type MenuTourEnv } from './menu-tour-step';
-import { revealTour, waitForSelector } from './tour-dom';
 import type { TourStepOf } from './tour-step';
-import { TARGET_WAIT_MS } from './useTourEngine';
 
 // The Chart tour (docs/specs/007-editor/element-tours.md "The Chart tour"), on a selected data chart of any of the
 // seven types: how it reads, a mark's readout, Grow previewed on it, its menu, and for a line, area or scatter chart its
@@ -33,7 +31,8 @@ const MARKS: Record<ChartType, [one: string, many: string]> = {
 const editsInDialog = (ctx: ChartTourContext) =>
   !ctx.fromSheet && (ctx.type === 'line' || ctx.type === 'area' || ctx.type === 'scatter');
 
-// A step inside the Chart data dialog: opens it (again, if it was closed), waits for its control and scrolls it in.
+// A step inside the Chart data dialog: opens it (again, if it was closed); the engine waits for its control and
+// scrolls it in.
 function inDialog(id: string, title: string, body: string, target: string): Step {
   return {
     id,
@@ -41,11 +40,9 @@ function inDialog(id: string, title: string, body: string, target: string): Step
     body,
     target,
     layer: 'modal',
-    prepare: async (api) => {
+    prepare: (api) => {
       api.clearPreview();
       api.openChartData();
-      await waitForSelector(`[data-tour-id="${target}"]`, TARGET_WAIT_MS);
-      await revealTour(target);
     },
   };
 }

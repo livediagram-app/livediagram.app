@@ -1,8 +1,7 @@
 // The steps of Show Me in the Share dialog (docs/specs/007-editor/live-app.md "Show Me"): a tour of issuing and
-// managing passes, run on the dialog itself. Each step brings the Passes tab forward and scrolls its control into
-// view; the control stays usable, so the owner can pick a role or create a pass while the step is up.
+// managing passes, run on the dialog itself. Each step brings the Passes tab forward (the engine scrolls its control
+// into view); the control stays usable, so the owner can pick a role or create a pass while the step is up.
 import type { TourStepOf } from './tour-step';
-import { revealTour } from './tour-dom';
 
 export type ShareTourApi = {
   // Brings the Passes tab forward (the Community tab may be showing).
@@ -11,17 +10,12 @@ export type ShareTourApi = {
 
 type ShareTourStep = TourStepOf<ShareTourApi>;
 
-const reveal = (target: string) => async (api: ShareTourApi) => {
-  api.showPasses();
-  await revealTour(target);
-};
-
 const step = (id: string, title: string, body: string, target: string): ShareTourStep => ({
   id,
   title,
   body,
   target,
-  prepare: reveal(target),
+  prepare: (api) => api.showPasses(),
 });
 
 const ROLE = step(

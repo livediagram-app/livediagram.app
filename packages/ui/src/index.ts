@@ -12,6 +12,8 @@ export { ProductNav, ProductNavLinks, type ProductNavKey } from './ProductNav';
 export { SiteHeader } from './SiteHeader';
 export { RAIL_CLEAR_PADDING } from './share-rail-clearance';
 export { StartBlankMenu } from './StartBlankMenu';
+export { START_BLANKS } from './start-blanks';
+export { EXPLORER_HOME_HREF } from './HeaderPrimaryCta';
 export { BuildWithAiLink } from './BuildWithAiLink';
 export { ModeFilterMenu, type ModeFilterOption } from './ModeFilterMenu';
 export { CountBadge } from './CountBadge';
@@ -140,3 +142,7 @@ export {
 export { SheetHandle, SHEET_HANDLE_PX } from './SheetHandle';
 export { safeInset, atLeastInset, safeInlinePadding } from './safe-area';
 export * from './browser-repair';
+// The palette's category glyphs (palette-icons/): drawn to the palette's own sizes, so outside the chrome
+// icons' contract (icons/), shared by the editor's palette and the marketing site's mock of it.
+export * from './palette-icons/palette-tab-icons';
+export * from './palette-icons/palette-group-icons';

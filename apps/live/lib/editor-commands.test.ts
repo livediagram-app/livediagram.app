@@ -36,7 +36,6 @@ function handlers(): CommandHandlers {
     openImport: vi.fn(),
     openSettings: vi.fn(),
     openShortcuts: vi.fn(),
-    openTemplates: vi.fn(),
     setTool: vi.fn(),
     openPhotoImport: vi.fn(),
   };
@@ -241,7 +240,6 @@ describe('buildEditorCommands — app-level commands (docs/specs/007-editor/comm
         'auto-layout',
         'auto-align',
         'import',
-        'browse-templates',
         'settings',
         'shortcuts',
       ]),

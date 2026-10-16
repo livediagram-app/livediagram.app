@@ -16,6 +16,8 @@ vi.mock('./tour-dom', () => ({
     return el;
   },
 }));
+const reveal = vi.hoisted(() => vi.fn());
+vi.mock('./tour-reveal', () => ({ revealInScrollers: reveal }));
 
 type Api = { log: string[] };
 
@@ -41,6 +43,7 @@ const flush = () => act(async () => {});
 
 afterEach(() => {
   found.selectors.clear();
+  reveal.mockClear();
   document.body.innerHTML = '';
 });
 
@@ -87,6 +90,26 @@ describe('useTourEngine', () => {
     expect(t.hook.result.current.step?.id).toBe('one');
     expect(t.hook.result.current.stepDir).toBe('backward');
     expect(t.views).toEqual(['one', 'two', 'one']);
+  });
+
+  // A target below a panel's fold (the Forms tour's Add bar under a long form) is scrolled into view as it lands.
+  it("reveals each step's target where the step asks, and never for a card", async () => {
+    found.selectors.add('#one');
+    found.selectors.add('[data-tour-id="two"]');
+    const steps = STEPS.map((s) => (s.id === 'two' ? { ...s, revealAt: 'start' as const } : s));
+    const t = run(steps);
+    act(() => t.hook.result.current.start());
+    await flush();
+    expect(reveal).not.toHaveBeenCalled();
+    act(() => t.hook.result.current.next());
+    await flush();
+    expect(reveal).toHaveBeenLastCalledWith(expect.any(HTMLElement), undefined);
+    act(() => t.hook.result.current.next());
+    await flush();
+    expect(reveal).toHaveBeenLastCalledWith(expect.any(HTMLElement), 'start');
+    act(() => t.hook.result.current.next());
+    await flush();
+    expect(reveal).toHaveBeenCalledTimes(2);
   });
 
   it('runs an anchorless card prepare, and completes from the last step', async () => {
@@ -162,6 +185,8 @@ describe('useTourEngine', () => {
       await vi.advanceTimersByTimeAsync(160);
     });
     expect(t.api.log).toEqual(['prepare one', 'prepare one']);
+    // The target brought back is revealed again; a move alone (a scroll by the person) never is.
+    expect(reveal).toHaveBeenCalledTimes(2);
     vi.useRealTimers();
   });
 

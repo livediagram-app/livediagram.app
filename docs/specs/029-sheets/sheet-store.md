@@ -89,7 +89,7 @@ element naming its **start** (`start`, a template start's id: `budget-planner`, 
 - Whatever makes the tabs makes each such sheet from its template at once: titled with the template's name, set up
   in the Banded look, its header frozen, tints for the tab's canvas, light or dark, dates reckoned from that moment;
   the template's chart is added to the tab as a chart element anchored in the Sheet, carrying its first read. The element's `start` is then dropped, so a template's tabs are never
-  stored with it: the document is created with the sheets beside the tabs, or Quick Start and `add_tab` make the
+  stored with it: the document is created with the sheets beside the tabs, or a start screen and `add_tab` make the
   sheets right after the tabs.
 - An element still carrying `start` with no sheet behind it (a path that missed it) is made from the start by the
   first editor to draw it, as a copy not yet made is, and the mark dropped quietly at once; until then it shows its

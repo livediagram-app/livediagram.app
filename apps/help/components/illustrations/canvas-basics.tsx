@@ -33,41 +33,6 @@ function Caption({ x, y, children }: { x: number; y: number; children: string })
   );
 }
 
-/** A small chevron pointing down, for dropdown chips. */
-function Chevron({ x, y }: { x: number; y: number }) {
-  return (
-    <path
-      d={`M${x - 3} ${y - 1.5} L${x} ${y + 1.5} L${x + 3} ${y - 1.5}`}
-      fill="none"
-      className="stroke-slate-400"
-      strokeWidth={1.5}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  );
-}
-
-/** A dropdown chip: a label and a chevron in a bordered pill. */
-function DropdownChip({ x, y, w, label }: { x: number; y: number; w: number; label: string }) {
-  return (
-    <g>
-      <rect
-        x={x}
-        y={y}
-        width={w}
-        height={22}
-        rx={6}
-        className="fill-white stroke-slate-200"
-        strokeWidth={1.3}
-      />
-      <Label x={x + 8} y={y + 12} size={10} weight={600} tone="body">
-        {label}
-      </Label>
-      <Chevron x={x + w - 10} y={y + 11} />
-    </g>
-  );
-}
-
 /** A selectable option box; `on` fills it as the chosen option. */
 function OptionBox({
   x,
@@ -452,115 +417,130 @@ export function MultiSelectionBar() {
 
 // --- Templates ---------------------------------------------------------------------------------
 
-const MODE_NAME = { diagram: 'Diagram', draw: 'Draw', illustrate: 'Illustrate' } as const;
-
-/** Quick Start, the whole template catalogue (a start's Something Else): the mode filter beside
- *  the search box, the Popular shelf with the mode's mark before each title, Cancel and Apply. */
-export function NewDocumentTemplates() {
-  // The shelf's first three: the blanks lead Popular (Blank Plan follows, off the edge here).
-  const cards: { title: string; mode: 'diagram' | 'draw' | 'illustrate'; on?: boolean }[] = [
-    { title: 'Blank Diagram', mode: 'diagram', on: true },
-    { title: 'Blank Whiteboard', mode: 'draw' },
-    { title: 'Blank Illustration', mode: 'illustrate' },
-  ];
+/** A start's search finding a template in another mode (docs/specs/007-editor/start-diagramming.md "Found in other
+ *  modes"): Start Planning searched for "sailboat", its own one-line no-match, then In Other Modes with the
+ *  Facilitate block and its Sailboat retrospective card, which says it opens in Facilitate. */
+export function StartSearchOtherModes() {
+  const card = { x: 36, y: 192, w: 168, h: 90 };
   return (
-    <Scene w={420} h={250} bg="plain">
+    <Scene w={420} h={308} bg="plain">
       <Dialog
         x={20}
         y={10}
         w={380}
-        h={232}
-        title="Quick Start"
+        h={290}
+        title="Start Planning"
         sceneW={420}
-        sceneH={250}
+        sceneH={308}
         scrim={false}
       >
-        <DropdownChip x={36} y={56} w={100} label="Everything" />
+        {/* The search box, holding the word typed. */}
         <rect
-          x={144}
-          y={56}
-          width={240}
+          x={36}
+          y={48}
+          width={200}
           height={22}
-          rx={6}
-          className="fill-slate-50 stroke-slate-200"
-          strokeWidth={1.3}
+          rx={7}
+          className="fill-white stroke-brand-400"
+          strokeWidth={1.5}
         />
-        <Label x={156} y={68} size={10} tone="muted">
-          Search templates...
+        <circle
+          cx={49}
+          cy={58.5}
+          r={4}
+          fill="none"
+          className="stroke-slate-400"
+          strokeWidth={1.4}
+        />
+        <path
+          d="M52 61.5 l3 3"
+          className="stroke-slate-400"
+          strokeWidth={1.4}
+          strokeLinecap="round"
+        />
+        <Label x={61} y={60} size={10} tone="strong">
+          sailboat
         </Label>
-        <Label x={36} y={100} size={12} weight={700} tone="strong">
-          Popular
+        {/* Nothing of Plan's: one line, not an empty state. */}
+        <rect x={36} y={80} width={348} height={34} rx={7} className="fill-slate-50" />
+        <Label x={46} y={95} size={9} weight={700} tone="strong">
+          No boards, sheets, forms or layouts match “sailboat”.
         </Label>
-        {cards.map((c, i) => {
-          const x = 36 + i * 118;
-          const y = 112;
-          return (
-            <g key={c.title}>
-              <rect
-                x={x}
-                y={y}
-                width={110}
-                height={82}
-                rx={8}
-                className={c.on ? 'fill-brand-50 stroke-brand-400' : 'fill-white stroke-slate-200'}
-                strokeWidth={c.on ? 2 : 1.5}
-              />
-              <rect x={x + 8} y={y + 8} width={94} height={46} rx={5} className="fill-slate-50" />
-              {c.mode === 'diagram' ? (
-                <g>
-                  <rect
-                    x={x + 26}
-                    y={y + 22}
-                    width={24}
-                    height={16}
-                    rx={3}
-                    className="fill-brand-200"
-                  />
-                  <rect
-                    x={x + 62}
-                    y={y + 22}
-                    width={24}
-                    height={16}
-                    rx={3}
-                    className="fill-brand-400"
-                  />
-                  <path
-                    d={`M${x + 50} ${y + 30} H${x + 62}`}
-                    className="stroke-slate-300"
-                    strokeWidth={2}
-                  />
-                </g>
-              ) : c.mode === 'draw' ? (
-                <path
-                  d={`M${x + 22} ${y + 36} c8 -14 16 10 24 -2 s14 -12 22 2 s10 8 18 -4`}
-                  fill="none"
-                  className="stroke-slate-500"
-                  strokeWidth={2}
-                  strokeLinecap="round"
-                />
-              ) : (
-                <rect
-                  x={x + 41}
-                  y={y + 13}
-                  width={28}
-                  height={36}
-                  rx={2}
-                  className="fill-white stroke-slate-300"
-                  strokeWidth={1.2}
-                />
-              )}
-              {/* The mode's mark before the title. */}
-              <g transform={`translate(${x + 14} ${y + 67})`}>
-                <ModeMark mode={MODE_NAME[c.mode]} className="stroke-slate-400" scale={0.45} />
-              </g>
-              <Label x={x + 23} y={y + 68} size={9} weight={600} tone="strong">
-                {c.title}
-              </Label>
-            </g>
-          );
-        })}
-        <Button x={240} y={206} w={68} label="Cancel" />
-        <Button x={316} y={206} w={68} label="Apply" variant="primary" />
+        <Label x={46} y={107} size={9} tone="muted">
+          Found in other modes.
+        </Label>
+        <Label x={36} y={136} size={12} weight={700} tone="strong">
+          In Other Modes
+        </Label>
+        <Label x={36} y={150} size={9} tone="muted">
+          Choosing one switches this tab to its mode.
+        </Label>
+        {/* The Facilitate block: its mark on a soft tile, its name and how many it found. */}
+        <rect x={36} y={162} width={18} height={18} rx={4.5} className="fill-brand-50" />
+        <g transform="translate(45 171)">
+          <ModeMark mode="Facilitate" className="stroke-brand-600" scale={0.5} />
+        </g>
+        <Label x={61} y={174} size={10.5} weight={700} tone="strong">
+          Facilitate
+        </Label>
+        <rect x={112} y={165} width={14} height={12} rx={6} className="fill-slate-100" />
+        <Label x={119} y={174} anchor="middle" size={8} weight={600} tone="muted">
+          1
+        </Label>
+        {/* The card: its picture, its title, and where it leads. */}
+        <rect
+          x={card.x}
+          y={card.y}
+          width={card.w}
+          height={card.h}
+          rx={9}
+          className="fill-white stroke-slate-200"
+          strokeWidth={1.5}
+        />
+        <rect
+          x={card.x + 6}
+          y={card.y + 6}
+          width={card.w - 12}
+          height={40}
+          rx={6}
+          className="fill-slate-50"
+        />
+        <path
+          d={`M${card.x + 70} ${card.y + 33} h32 l-5 6 h-22 Z`}
+          className="fill-brand-200 stroke-brand-400"
+          strokeWidth={1.2}
+          strokeLinejoin="round"
+        />
+        <path
+          d={`M${card.x + 86} ${card.y + 12} v21 M${card.x + 86} ${card.y + 13} l13 18 h-13`}
+          className="fill-white stroke-brand-400"
+          strokeWidth={1.2}
+          strokeLinejoin="round"
+        />
+        <path
+          d={`M${card.x + 52} ${card.y + 41} q8 -4 16 0 t16 0 t16 0 t16 0`}
+          fill="none"
+          className="stroke-sky-300"
+          strokeWidth={1.4}
+          strokeLinecap="round"
+        />
+        <Label x={card.x + 9} y={card.y + 62} size={10} weight={700} tone="strong">
+          Sailboat retrospective
+        </Label>
+        <rect
+          x={card.x + 9}
+          y={card.y + 70}
+          width={92}
+          height={13}
+          rx={6.5}
+          className="fill-brand-50"
+        />
+        <g transform={`translate(${card.x + 18} ${card.y + 76.5})`}>
+          <ModeMark mode="Facilitate" className="stroke-brand-600" scale={0.36} />
+        </g>
+        <Label x={card.x + 25} y={card.y + 79.5} size={8} weight={600} tone="accent">
+          Opens in Facilitate
+        </Label>
       </Dialog>
     </Scene>
   );

@@ -329,19 +329,10 @@ type UserPreferences = {
   // or Grid, as last chosen from the dock's Settings; never stored on a tab. Unset, or
   // anything else, is Grid (lib/whiteboard-dock-prefs).
   drawPattern?: 'blank' | 'grid' | 'graph';
-  // Skip the New Document wizard's Location step
-  // (../013-workspace/default-folders.md#skipping-the-location-step): where every
-  // new document is saved, as the Location step's whole selection, plus the
-  // place's name for the "Saving in" line and the Settings row. `null` (written
-  // on Turn Off, so it wins the merge over another device's cache) or missing
-  // is off. Junk reads as off (lib/skip-location-step).
-  skipLocationStep?: {
-    saveLocation: 'livediagram' | 'browser';
-    // 'unsorted' | 'folder:<id>' | 'team:<id>' | 'team:<id>:folder:<id>';
-    // always 'unsorted' for 'browser'.
-    placement: string;
-    placeName: string;
-  } | null;
+  // Where Illustrate's Contents sits on a desktop (./illustrate-pages.md "Contents"):
+  // docked as a sidebar down the canvas's left, or minimised to its cluster button.
+  // Unset, or anything but 'button', is the sidebar (lib/contents-placement).
+  contentsPlacement?: 'sidebar' | 'button';
 
   // Power user mode (docs/specs/007-editor/power-user-mode.md). True while the mode is on.
   // Switching it on applies the preset once; see powerUserBaseline.
@@ -393,17 +384,19 @@ Missing key === undefined === default behaviour. Concretely:
   ignored: there is one panel layout ([Toolbar layout](toolbar-layout.md#one-layout)).
 - `whiteboardDockPosition` undefined → a whiteboard's dock at the top (the
   default). Only `'bottom'` moves it to the bottom.
+- `contentsPlacement` undefined → Illustrate's Contents docked as a sidebar down
+  the canvas's left on a desktop (the default). `'button'` minimises it to its
+  cluster button; a phone always has the button
+  ([Illustrate pages](illustrate-pages.md#contents)). Written by the sidebar's
+  Minimise, the popover's Dock as Sidebar and Settings › Editor › Illustrate ›
+  Contents; emits `UI`/`Changed`/`ContentsPlacementSidebar` or
+  `ContentsPlacementButton`.
 - `elementIndicatorStyle` undefined → Top: an element's link, note, action
   and comment glyphs sit inside it along its top, top-right on a box and centred
   on a round or pointed shape (the default). `'footer'` moves them to a labelled
   row along its bottom edge; `'off'` hides them
   ([Element indicators](../008-canvas/element-indicators.md)). Emits `UI`/`Changed`/
   `ElementIndicatorsTop`, `ElementIndicatorsFooter` or `ElementIndicatorsOff`.
-- `skipLocationStep` undefined / `null` → the New Document wizard has its
-  Location step (the default). Set from that step's "Always save new documents
-  in <place> and skip this step" checkbox (`UI`/`Toggled`/`SkipLocationStepOn`),
-  cleared by Settings › Documents › Always Save in One Place's Turn Off
-  (`UI`/`Toggled`/`SkipLocationStepOff`).
 - `dockButtonNames` undefined / true → the editor's bottom buttons named
   beside their icons on a desktop (the default). `false` leaves them icons
   alone, each still named in its hover card. A phone shows icons alone
@@ -449,6 +442,10 @@ Missing key === undefined === default behaviour. Concretely:
   `planModeEnabled` went with the Settings › Experimental category (removed
   2026-10-06, [Editor modes](editor-modes.md#every-mode-always-offered)):
   every mode is always offered, and a stored `false` is dropped the same way.
+  `skipLocationStep` ("Always save new documents in <place> and skip this step") went with the New
+  Document wizard's Location step ([New document route](new-document-route.md#one-step-wizard)): the wizard
+  never asks where a document goes, so a stored place is dropped the same way and new documents follow the
+  [default folders](../013-workspace/default-folders.md).
 - `quickAddOnHover` undefined / false → click to open an element's quick-add
   `+` menu (the default; hover-open can feel twitchy, so it's opt-in). `true`
   opens it on hover instead, closing a beat after the pointer leaves both the
@@ -607,8 +604,8 @@ and the dialog stays as the one complete, browsable index of them.
   element indicators; a **Mouse** section: quick-add on hover, middle-mouse
   pan; then **Power User**: power user mode, with Minimal chrome and the preset
   readout nested under it while the mode is on; with the sub-categories
-  **Draw** (dock position, Top or Bottom) and **Illustrate** (a **Logo Pages**
-  section: Logo Guides, with Logo Guide Strength and the Guides Shown chips
+  **Draw** (dock position, Top or Bottom) and **Illustrate** (a **Pages**
+  section: Contents, Sidebar or Button; then a **Logo Pages** section: Logo Guides, with Logo Guide Strength and the Guides Shown chips
   nested under it) and **Presenting** (the presenter settings: Slides, Playback and While Presenting,
   [Presentation mode](../012-collaboration/presentation-mode.md) "Presenter settings")), **Appearance** (theme, then an **Interface** section:
   Button Labels, and UI scale with a slider per part nested under it), **Keyboard**
@@ -620,9 +617,7 @@ and the dialog stays as the one complete, browsable index of them.
   Appearance), **Tours** (one switch per guided tour, see **Tours** below),
   **AI Tools** (assistant, with suggested prompts nested under it, and a
   **Manage API Tokens** link row that opens the API
-  Tokens sub-category), **Documents** (a **New Documents** section holding
-  **Always Save in One Place**, the `skipLocationStep` preference with an On / Off
-  pill and a Turn Off button, then a **Default Folders** section with one row per
+  Tokens sub-category), **Documents** (a **Default Folders** section with one row per
   [default folder](../013-workspace/default-folders.md#settings) entry, with Change and Clear; those are not a
   preference, they read and write `/api/placement-defaults`), **Account** (identity, Trash, **Cloud Sync** (the cloud providers the
   deployment offers, [Google Drive mirror](../022-drive-mirror/drive-mirror.md)), delete account, see
@@ -650,7 +645,8 @@ and the dialog stays as the one complete, browsable index of them.
   A category can hold **sub-categories** (`parent` on the sub-category's
   spec). **Editor** holds one per editor mode whose settings apply only to
   that mode ([Editor modes](editor-modes.md)): **Draw** holds Dock Position,
-  since only Draw mode has a dock. A setting that applies in both modes
+  since only Draw mode has a dock; **Illustrate** holds Contents and the logo
+  guides. A setting that applies in both modes
   stays on Editor itself; quick-add on hover, alignment guides, auto-attach
   arrows, middle-mouse pan and power user mode all act in both. There is no
   **Diagram** sub-category while no setting applies only to Diagram mode: a

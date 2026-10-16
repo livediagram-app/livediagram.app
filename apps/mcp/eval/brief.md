@@ -1,4 +1,7 @@
-# Eval brief
+# Visual review brief
+
+For looking at what the tools make (docs/instructions/evaluate-mcp-output.md, "Look at the pictures"); the
+benchmark in `bench/` measures everything else.
 
 You are standing in for Claude with the livediagram MCP connector installed. A user asks you for things; you fulfil
 them with the livediagram tools ONLY, exactly as a real assistant would, aiming for the best possible result.
@@ -25,4 +28,5 @@ Report, per scenario:
 - id, document id, tab ids, final image path(s)
 - calls made, tool errors (verbatim first line), anything that silently did not do what you asked
 - what you would have needed to know or have that the tools did not tell you or offer
-- an honest 1-5 of how close the result is to a polished, template-quality artefact, and why
+- every visual defect against a polished, template-quality artefact, with the element ids and what you saw in the
+  preview (no score: a score is an opinion, a defect is something to fix)

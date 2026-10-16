@@ -16,7 +16,7 @@ const mount = (mode: 'diagram' | 'facilitate', onTemplate = vi.fn()) =>
       mode={mode}
       tabId="t1"
       onTemplate={onTemplate}
-      onQuickStart={vi.fn()}
+      onOtherModeTemplate={vi.fn()}
     />,
   );
 

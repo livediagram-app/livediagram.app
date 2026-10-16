@@ -1,15 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { TEMPLATES, isBlankTemplate, templateEditorMode } from '@livediagram/templates';
 import {
-  byMode,
   filterGallery,
   galleryShelves,
   galleryTemplates,
   groupGallery,
-  modeCounts,
-  popularFor,
   popularTemplates,
-  searchShelves,
 } from './template-gallery';
 
 describe('galleryTemplates (docs/specs/019-marketing/marketing-site.md)', () => {
@@ -66,22 +62,18 @@ describe('groupGallery', () => {
     expect(groups[0]?.templates.map((t) => t.kind)).toEqual(['kanban']);
   });
 
-  it('runs the categories alphabetically by name, under every mode, Blank Slate first', () => {
-    for (const mode of ['all', 'diagram', 'draw', 'illustrate', 'plan', 'facilitate'] as const) {
-      const shelves = galleryShelves(mode);
-      expect(shelves[0]!.label, mode).toBe('Blank Slate');
-      const names = shelves.slice(1).map((g) => g.label);
-      expect(names, mode).toEqual([...names].sort((a, b) => a.localeCompare(b, 'en')));
-    }
+  it('runs the categories alphabetically by name, Blank Slate first', () => {
+    const shelves = galleryShelves();
+    expect(shelves[0]!.label).toBe('Blank Slate');
+    const names = shelves.slice(1).map((g) => g.label);
+    expect(names).toEqual([...names].sort((a, b) => a.localeCompare(b, 'en')));
   });
 
-  it('shows a cross-listed template on each of its categories, a search on its primary only', () => {
+  it('shows a cross-listed template on each of its categories', () => {
     const browse = groupGallery(galleryTemplates());
-    const holding = (kind: string, gs: typeof browse) =>
-      gs.filter((g) => g.templates.some((t) => t.kind === kind)).map((g) => g.id);
-    expect(holding('invoice', browse)).toEqual(['finance', 'spreadsheets']);
-    const found = groupGallery(filterGallery(galleryTemplates(), 'invoice'), { primaryOnly: true });
-    expect(holding('invoice', found)).toEqual(['finance']);
+    const holding = (kind: string) =>
+      browse.filter((g) => g.templates.some((t) => t.kind === kind)).map((g) => g.id);
+    expect(holding('invoice')).toEqual(['finance', 'spreadsheets']);
   });
 
   it('finds a template by its search words, as the editor does', () => {
@@ -93,10 +85,10 @@ describe('groupGallery', () => {
 });
 
 // docs/specs/019-marketing/marketing-site.md "Template gallery": the editor's template step's
-// structure, Popular first, and its mode filter.
+// structure, Popular first.
 describe('the shelves, as the template step lays them out', () => {
   it('opens on Blank Slate, only the blanks in mode order, then every category in catalogue order', () => {
-    const shelves = galleryShelves('all');
+    const shelves = galleryShelves();
     expect(shelves[0]?.id).toBe('popular');
     expect(shelves[0]?.templates.map((t) => t.kind)).toEqual([
       'blank',
@@ -114,36 +106,6 @@ describe('the shelves, as the template step lays them out', () => {
     expect(shelves.slice(1).map((s) => s.id)).toEqual(
       groupGallery(galleryTemplates()).map((g) => g.id),
     );
-  });
-
-  it('narrows every shelf to one mode and drops the shelves it empties', () => {
-    for (const mode of ['diagram', 'draw', 'illustrate'] as const) {
-      const shelves = galleryShelves(mode);
-      expect(shelves.length, mode).toBeGreaterThan(0);
-      for (const shelf of shelves) {
-        expect(shelf.templates.length).toBeGreaterThan(0);
-        for (const t of shelf.templates) expect(t.mode, `${mode} ${t.kind}`).toBe(mode);
-      }
-    }
-  });
-
-  it('counts each template once per choice', () => {
-    const counts = modeCounts();
-    expect(counts.diagram + counts.draw + counts.illustrate + counts.plan + counts.facilitate).toBe(
-      counts.all,
-    );
-    // Every listed template, less the blank shown by another name (Blank Infographic).
-    expect(counts.all).toBe(
-      TEMPLATES.filter((t) => !t.hidden && t.kind !== 'blank-infographic').length,
-    );
-    expect(counts.draw).toBe(byMode(galleryTemplates(), 'draw').length + 1);
-  });
-
-  it('finds a blank under Popular and the rest under their categories', () => {
-    const shelves = searchShelves('whiteboard', 'all');
-    expect(shelves[0]).toMatchObject({ id: 'popular' });
-    expect(shelves[0]?.templates.map((t) => t.kind)).toEqual(['whiteboard']);
-    expect(searchShelves('kanban', 'draw')).toEqual([]);
   });
 });
 
@@ -169,28 +131,5 @@ describe('the shelf order', () => {
       return g.templates.map((t) => t.kind).join() !== catalogue.join();
     });
     expect(shuffled.length).toBeGreaterThan(first.length / 2);
-  });
-});
-
-describe('Blank Slate under a mode', () => {
-  it("holds only that mode's blanks", () => {
-    expect(popularFor('diagram').map((t) => t.kind)).toEqual(['blank']);
-    expect(popularFor('draw').map((t) => t.kind)).toEqual(['whiteboard']);
-    expect(popularFor('illustrate').map((t) => t.kind)).toEqual([
-      'blank-illustration',
-      'blank-slide-deck',
-      'blank-article',
-      'blank-logo',
-    ]);
-    expect(popularFor('facilitate').map((t) => t.kind)).toEqual(['blank-session']);
-    expect(popularFor('plan').map((t) => t.kind)).toEqual([
-      'blank-plan',
-      'blank-spreadsheet',
-      'blank-form',
-    ]);
-  });
-
-  it('holds every blank under Everything', () => {
-    expect(popularFor('all')).toEqual(popularTemplates());
   });
 });

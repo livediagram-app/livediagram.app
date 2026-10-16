@@ -43,7 +43,7 @@ describe('the Contents list', () => {
   it('marks the page at the middle of the screen, else the nearest', () => {
     const b = pages[1]!.rect;
     const screen = { width: 1000, height: 800 };
-    // Centre the view on page b at zoom 1: a screen point is (canvas + offset) × zoom.
+    // Centre the view on page b at zoom 1 (the centred transform, lib/viewport.ts).
     const view = {
       zoom: 1,
       offset: { x: 500 - (b.x + b.width / 2), y: 400 - (b.y + b.height / 2) },
@@ -52,6 +52,45 @@ describe('the Contents list', () => {
     const far = { zoom: 1, offset: { x: 500 - 100_000, y: 0 } };
     expect(pageInView(pages, far, screen)).toBe('d');
     expect(pageInView([], view, screen)).toBeUndefined();
+  });
+
+  it('marks the page a fit framed, at any zoom', () => {
+    // The page a fit centres is the page in view, zoomed far out too (it once read the middle as if
+    // the canvas scaled from its corner, and marked a page to the right of the one on screen).
+    const screen = { width: 1000, height: 800 };
+    for (const p of pages) {
+      for (const zoom of [0.2, 0.5, 1, 2]) {
+        const view = {
+          zoom,
+          offset: {
+            x: screen.width / 2 - (p.rect.x + p.rect.width / 2),
+            y: screen.height / 2 - (p.rect.y + p.rect.height / 2),
+          },
+        };
+        expect(pageInView(pages, view, screen), `${p.id} at ${zoom}`).toBe(p.id);
+      }
+    }
+  });
+
+  it('reads the middle of what shows beside a docked sidebar', () => {
+    const screen = { width: 1000, height: 800 };
+    const b = pages[1]!.rect;
+    const c = pages[2]!.rect;
+    // Page c centred in the whole canvas at zoom 1; a 1000 px sidebar inset would move the middle
+    // 500 px right, past c's edge towards d.
+    const view = {
+      zoom: 1,
+      offset: { x: 500 - (c.x + c.width / 2), y: 400 - (c.y + c.height / 2) },
+    };
+    expect(pageInView(pages, view, screen)).toBe('c');
+    // b centred in the band right of a 240 px sidebar, zoomed far out (the framing's offset,
+    // lib/viewport.ts): read from the whole canvas the middle falls on a, left of it.
+    const beside = {
+      zoom: 0.1,
+      offset: { x: 500 - (b.x + b.width / 2) + 240 / (2 * 0.1), y: 400 - (b.y + b.height / 2) },
+    };
+    expect(pageInView(pages, beside, screen, 240)).toBe('b');
+    expect(pageInView(pages, beside, screen)).toBe('a');
   });
 });
 

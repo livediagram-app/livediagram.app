@@ -80,8 +80,8 @@ Completed, Skipped) on the telemetry dashboard beside the card type tour's, and 
 
 `apps/live/components/tour/ShowMe.tsx` holds the button (`ShowMeButton`) and the running tour (`ShowMeStage`);
 each surface keeps its steps in `<surface>-tour-steps.ts` and its literal telemetry in `<Surface>Tour.tsx`, so
-the dashboard's emitter scan reads every event. `revealTour` (`tour-dom.ts`) scrolls a step's control into view in
-its scrolling panel. A surface whose steps depend on what is there (a second tab, an empty slot, a box found) fixes
+the dashboard's emitter scan reads every event. The engine scrolls each step's control into view in its scrolling
+panel (`revealInScrollers`, `tour-reveal.ts`, [Mechanics](editor-tour.md#mechanics)); a step never scrolls itself. A surface whose steps depend on what is there (a second tab, an empty slot, a box found) fixes
 them when the button is pressed, so they never change mid-tour. A surface in the editor's first load (the photo
 review, the page panel) imports its steps at the press (`onStart` returns the promise the tour waits for), so
 their copy stays out of that load; `show-me-lazy-load.test.ts` keeps it so.

@@ -1,11 +1,11 @@
 # Templates by mode
 
 Every template opens in one [editor mode](editor-modes.md): **Diagram**, **Draw**,
-**Facilitate**, **Illustrate** or **Plan**. Quick Start ([Templates](../008-canvas/canvas-and-palette.md#templates))
-says which on every card, and lets a person narrow the whole catalogue to one mode, so someone who came to sketch or to
-make a poster sees only what starts there. The New Document wizard asks for the mode itself
+**Facilitate**, **Illustrate** or **Plan**. The New Document wizard asks for the mode itself
 ([New document route](new-document-route.md) "Choosing a mode"), and each mode's templates wait on an empty tab in
-its own start ([Template starts](start-diagramming.md)).
+its own start ([Template starts](start-diagramming.md)), so someone who came to sketch or to make a poster sees only
+what starts there. A search on a start also finds the other modes' templates, each saying which mode it opens in
+([Found in other modes](start-diagramming.md#found-in-other-modes)).
 
 ## A template's mode
 
@@ -25,47 +25,13 @@ its own start ([Template starts](start-diagramming.md)).
   below.
 - Every other template is a Diagram template.
 
-## The mode filter
-
-- A **dropdown** sits **to the left of the search box**, as tall as it, named "Show templates for":
-  a chip showing the choice in force (its glyph, its name, a chevron) over a menu of
-  **Everything**, **Diagram**, **Draw**, **Facilitate**, **Illustrate** and **Plan**, each with its glyph (a grid for
-  Everything, `EDITOR_MODE_ICON` for the modes, the glyphs of the mode switch) and how many
-  templates it holds, in a count badge. A dropdown, not a row of buttons, so a mode added later is one more row.
-  **Everything** is the default and is chosen each time Quick Start opens; the choice is not
-  remembered.
-- **Hovering the chip** with a mouse opens the menu without moving focus, so the choice is in plain
-  sight; it closes a moment (`HOVER_CLOSE_MS`, 200ms) after the pointer leaves the chip and menu. A
-  press or the keyboard opens it as a menu button does (focus on the checked row); opened that way
-  it stays until a choice, Escape or an outside press. A press on a menu the hover opened keeps it.
-- On a phone (below `sm`) the control takes its own full-width row above the search box, so the
-  search keeps its width.
-- Choosing a mode narrows **everything the step shows** to templates of that mode:
-  - **Popular** shows that mode's own curated list, the mode's blank first (`POPULAR_BY_MODE` in
-    `packages/templates`, [Template categories](../008-canvas/canvas-and-palette.md#template-categories)), as the
-    marketing gallery's does.
-  - The **open shelf** shows only its templates of that mode, cross-listed ones included.
-  - **Explore More Categories** shows only categories holding at least one template of that mode,
-    each tile's count, fan and the "N more categories, M more templates" line counting only
-    those templates.
-  - **Search** results are the matches of that mode only; the empty state names the mode
-    ("No Draw templates match …"), and when the search does match in other modes it offers them:
-    a **Show N matches in Everything** button switches to Everything, the search kept.
-- If the open shelf has none of the mode's templates, **Popular** opens instead.
-- If the selected template is not of the mode, the selection moves to the mode's blank (Blank
-  Diagram, Blank Whiteboard, Blank Session, Blank Illustration or Blank Plan; Everything keeps the selection), so one card is always
-  selected and Next never starts something the person filtered away.
-- The control is a menu button (docs/specs/004-interface-design/menus.md): the chip says it opens a
-  menu and whether it is open, the rows are `menuitemradio` with the choice checked.
-- Each choice sends `UI` / `Toggled` / `TemplateModeAll`, `TemplateModeDiagram`, `TemplateModeDraw`,
-  `TemplateModeIllustrate`, `TemplateModePlan` or `TemplateModeFacilitate` ([Telemetry](../017-telemetry/telemetry.md)).
-
 ## The mode on a card
 
-- Every template card shows its mode's glyph **to the left of its title**, in the muted text
-  colour, 14px. The glyph is a picture only: a screen reader hears "Opens in <Mode>" **after** the
-  title (", Opens in Draw"), so a card's accessible name still starts with its title.
-- Category tiles carry no glyph: a category can hold templates of several modes.
+- On its own mode's start a card needs no mode: every card there opens in it.
+- Found from another mode's start, a card says where it leads: a quiet chip under its line, the mode's glyph
+  (`EDITOR_MODE_ICONS`, the glyphs of the mode switch) and "Opens in <Mode>", and a screen reader hears "in <Mode>"
+  **after** the title, so a card's accessible name still starts with its title
+  ([Found in other modes](start-diagramming.md#found-in-other-modes)).
 
 ## Five blanks
 
@@ -84,8 +50,8 @@ start ([Template starts](start-diagramming.md)), and is what the New Document wi
 holding an empty Sheet that fills it, made from the `blank-spreadsheet` start, an empty grid with no template, no
 charts and no setup to await ([Sheet store](../029-sheets/sheet-store.md#template-starts)). It is a blank like the five
 (`isBlankTemplate`): in no category and on no category shelf. It is not a mode's blank, so it leads no start and is
-not what the New Document wizard creates; the editor's Popular lists are unchanged (the Quick Start finds it by
-search), and Start Planning, which has its own Empty Sheet, does not offer it. The landing page's **Blank Slate**
+not what the New Document wizard creates; the editor's Popular lists are unchanged (a start's search finds it, under
+Plan in [other modes](start-diagramming.md#found-in-other-modes)), and Start Planning, which has its own Empty Sheet, does not offer it. The landing page's **Blank Slate**
 shelf lists it after Blank Plan ([Marketing site](../019-marketing/marketing-site.md)).
 
 ### Blanks of a page kind
@@ -240,17 +206,26 @@ unchanged; only the mode they open in moved from Diagram.
 - Every template carrying a session tool (timer, vote, poll) opens in Facilitate (`templates.test.ts`).
 - Every Popular list starts with its mode's blank and holds only that mode's templates (`popular.test.ts`).
 - Every category holds a template in at least one mode (`template-categories.test.ts`).
-- The filter: each option narrows Popular, shelves, tiles, counts and search to its
-  mode; an emptied open shelf falls back to Popular; a filtered-away selection falls back to the
-  mode's blank.
-- Every card shows its mode glyph with "Opens in <Mode>".
+- A card found from another mode's start shows "Opens in <Mode>" (`StartPanel.test.tsx`).
 
 ## The tab's name
 
-- A template picked in the Quick Start or on /new names the tab it fills after itself, in every mode (a flowchart's
+- A template picked on a start or on /new names the tab it fills after itself, in every mode (a flowchart's
   tab is "Flowchart", an infographic's its template's title): the template's own name for the tab where it gives one
   (a Plan template's tabs), else for a Board or Sheet template the board's title, else the template's title. It does
   so whatever the tab was called before. A blank template leaves the name as it was (`templateTabName`).
+
+## The document's name
+
+- A template picked on a start names the **document** after itself too, as /new names a document after the template
+  it is made from: "Untitled Flowchart", "Untitled Kanban Board", a blank naming what it makes ("Untitled
+  Whiteboard"), Blank Diagram "Untitled document" (`untitledNameForTemplate`).
+- Only while the document still has a default name: one of those untitled names (`isDefaultDocumentName`, any
+  template's, or the legacy "Untitled diagram"). A name someone gave it, or the first element's label the editor
+  named it after ([Name length](../006-document/name-length.md)), is kept.
+- Only for the document's **first** tab: a template filling a later tab names that tab, not the document.
+- It is the document's name like any other: saved with it, shown in the header and the Explorer at once, and changed
+  by renaming. No telemetry: it is not a person's rename.
 
 ## Slide deck templates
 

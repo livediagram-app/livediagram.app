@@ -1,6 +1,6 @@
 import { inElement, conceptOutro, inTheMenu, onGraphic } from './concept-element-tour-steps';
 import type { ElementTourApi } from './element-tour-api';
-import { revealTour, waitForSelector } from './tour-dom';
+import { waitForSelector } from './tour-dom';
 import type { TourStepOf } from './tour-step';
 import { TARGET_WAIT_MS } from './useTourEngine';
 
@@ -19,8 +19,8 @@ export type SequenceTourContext = {
   hasMessages: boolean;
 };
 
-// A step inside the Sequence dialog: opens it (again, if it was closed) on the tab the step is about, waits for its
-// control and scrolls it into view.
+// A step inside the Sequence dialog: opens it (again, if it was closed) on the tab the step is about; the engine
+// waits for its control and scrolls it into view.
 function inDialog(
   id: string,
   title: string,
@@ -37,10 +37,8 @@ function inDialog(
     prepare: async (api) => {
       api.openSequence();
       await waitForSelector('[data-tour-id="sequence-preview"]', TARGET_WAIT_MS);
+      // A control below the dialog's fold (a phone's sheet) is scrolled into view by the engine.
       api.showSequenceTab(tab);
-      await waitForSelector(`[data-tour-id="${target}"]`, TARGET_WAIT_MS);
-      // A control below the dialog's fold (a phone's sheet) is scrolled into view first.
-      await revealTour(target);
     },
   };
 }

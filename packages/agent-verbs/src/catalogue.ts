@@ -31,6 +31,7 @@ import {
   watch,
 } from './verbs/local';
 import { iconSearch, schemaView, templateLs, templateView } from './verbs/catalogues';
+import { imageLs } from './verbs/image';
 import { changesetApply, elementVerbs, tabDiff } from './verbs/edit';
 import { graphLintVerb } from './verbs/graph';
 import {
@@ -92,6 +93,7 @@ export const VERBS: readonly Verb[] = [
   templateLs,
   templateView,
   iconSearch,
+  imageLs,
   schemaView,
   guide,
   skillPrint,
@@ -141,6 +143,7 @@ export const RESOURCES: readonly { name: string; alias?: string; summary: string
   },
   { name: 'template', summary: 'Templates: the library, and one as an outline' },
   { name: 'icon', summary: 'Icons: find one for iconId=' },
+  { name: 'image', summary: 'Images: the gallery imageId= takes' },
   { name: 'skill', summary: 'The agent skill file' },
   { name: 'auth', summary: 'Credentials' },
   { name: 'telemetry', summary: 'The usage count: on or off' },

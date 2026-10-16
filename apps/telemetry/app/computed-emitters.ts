@@ -478,10 +478,6 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     values: TEMPLATES,
     open: TEMPLATE_WHY,
   },
-  'apps/live/app/document/[id]/useTemplateFlow.ts Theme·Changed': {
-    values: THEMES,
-    open: THEME_WHY,
-  },
   'apps/live/app/explorer/useTimelineFeed.ts Timeline·Selected': {
     values: [
       'comments',
@@ -498,11 +494,13 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     ],
   },
   // Which Trash (docs/specs/013-workspace/trash.md): lib/trash-groups.ts's
-  // telemetryType, the one closed set both sites send.
+  // telemetryType, the one closed set every site sends.
   'apps/live/hooks/persistence/useTrash.ts Trash·Restored': { values: TRASH_TYPES },
   'apps/live/hooks/persistence/useTrash.ts Trash·Deleted': { values: TRASH_TYPES },
   'apps/live/hooks/persistence/useTrash.ts Trash·Cleared': { values: TRASH_TYPES },
   'apps/live/app/document/[id]/useDocumentTrashed.ts Trash·Restored': { values: TRASH_TYPES },
+  // A delete toast's Undo (lib/document-delete-undo.ts DeletedTrash, the same three).
+  'apps/live/lib/document-delete-undo.ts Trash·Restored': { values: TRASH_TYPES },
   'apps/live/app/explorer/sidebar/sidebar-telemetry.ts UI·Selected': { values: SIDEBAR_ROWS },
   // Plan mode (docs/specs/026-plan/plan-mode.md "Telemetry"): an item type, or a set-up part.
   'apps/live/hooks/plan/usePlanSlice.ts Plan·Added': {

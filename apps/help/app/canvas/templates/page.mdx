@@ -1,12 +1,12 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
-import { NewDocumentTemplates } from '@/components/illustrations/canvas-basics';
+import { StartSearchOtherModes } from '@/components/illustrations/canvas-basics';
 
 export const metadata = helpMetadata({
   title: 'Templates',
   description:
-    'Start a document from a ready-made template instead of a blank canvas, filter the catalogue by mode, and restyle it with any theme.',
+    'Start a document from a ready-made template instead of a blank canvas, find one in any mode, and restyle it with any theme.',
   path: '/help/canvas/templates/',
 });
 
@@ -22,19 +22,19 @@ A blank canvas is freeing, but sometimes you would rather start with structure a
 
 ## Starting from a Template
 
-When you [create a new document](/new), the **New Document** wizard asks what you are making: pick a mode (Diagram, Draw, Facilitate, Illustrate or Plan), name the document, choose where it lives, and press **Create**. The empty tab then opens on that mode's start, **Start Diagramming**, **Start Facilitating**, **Start Illustrating** or **Start Planning**: its **Recommended** templates first, then every template of that mode in groups beside them, with a search. Click a template and the tab fills with it; from there it is an ordinary document, to move, edit, add to and delete from as on any canvas.
+When you [create a new document](/new), the **New Document** wizard asks what you are making: pick a mode (Diagram, Draw, Facilitate, Illustrate or Plan) and the document is made there and then, saved where new documents go (see [Default Folders](/help/explorer/folders/default-folders/)). The empty tab then opens on that mode's start, **Start Diagramming**, **Start Facilitating**, **Start Illustrating** or **Start Planning**: its **Recommended** templates first, then every template of that mode in groups beside them, with a search. Click a template and the tab fills with it; from there it is an ordinary document, to move, edit, add to and delete from as on any canvas.
 
 Every new tab, and every tab you empty, offers the same start. Close it with its **×** to begin from a blank canvas; while the tab is still empty, **Show Templates** in the strip under the palette brings it back. Picked the wrong mode? The mode switch at the top of the start's list changes it, Plan included, while the tab is empty. In Draw the start is **Start Drawing**, with the pen already in hand, and since Draw has a dock rather than the palette, **Show Templates** sits in a pill at the top of the canvas.
 
-**Something Else**, at the foot of a start's list, opens **Quick Start**: the whole catalogue, every mode at once. It opens on the **Popular** shelf. Below it, **Explore More Categories** opens any other category as a shelf of its own, and **Search templates...** finds a template across the whole catalogue. Click a template to fill the tab with it, or **Cancel** to keep it blank.
+The search at the top of a start looks in every mode, not just the tab's own. Type "sailboat" on Start Planning and the Sailboat retrospective turns up under **In Other Modes**, in a Facilitate block, its card saying **Opens in Facilitate**: click it and the tab switches to Facilitate with the template on it. Each mode shows up to six matches, with **Show All** for the rest, and pressing the down arrow in the search box takes you to the first card it found.
 
-<Figure caption="Quick Start: the mode filter beside the search box, then the Popular shelf.">
-  <NewDocumentTemplates />
+<Figure caption="A start's search: nothing of Plan's matched, so it says so in one line and shows what the other modes found.">
+  <StartSearchOtherModes />
 </Figure>
 
 ## What's in the Catalogue
 
-The templates are grouped by the job you are doing, in fourteen categories listed in alphabetical order, and the picker skips a category that has nothing in it. A template lives in one category, and a few also appear in another where you would naturally look for them (an Invoice is under both **Finance** and **Spreadsheets**), so they are listed under each:
+The templates are grouped by the job you are doing, in fourteen categories listed in alphabetical order, and a start skips a category that has nothing in it. A template lives in one category, and a few also appear in another where you would naturally look for them (an Invoice is under both **Finance** and **Spreadsheets**), so they are listed under each:
 
 | Category            | Templates                                                                                                                                                                                                                                                              | Also shown here                                                                |
 | ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
@@ -59,7 +59,7 @@ Five blanks lead the **Popular** shelf, one for each way of working, and sit apa
 
 ## Finding Templates for a Mode
 
-Every template opens in one mode: **Diagram**, **Draw**, **Facilitate**, **Illustrate** or **Plan**. The small icon before a template's name says which. To see only one mode's templates, choose it in the dropdown to the left of the search box (hover it, or click it, to see the choices, each with how many templates it holds). Popular, the categories, their counts and your search results all narrow to that mode, and if the template you had selected is not of that mode, the selection moves to the mode's blank. **Everything** shows every template again. The filter starts on Everything each time the wizard opens, unless you came from a link that starts it on a mode.
+Every template opens in one mode: **Diagram**, **Draw**, **Facilitate**, **Illustrate** or **Plan**, and each mode's start lists its own. To browse another mode's, switch the tab's mode with the switch at the top of the start's list while the tab is empty, or just search: a template from another mode shows which mode it opens in.
 
 - **Draw** templates are drawn by hand, ready to draw over: **Sketchnote**, **Rich Picture**, **Comic Strip**, **Doodle Warm-Up**, **Paper Prototype**, **Journey Doodle**, **Pre-Mortem** and **Idea Garden**.
 - **Facilitate** templates are sessions to run with your team: **Blank Session**, **Retrospective**, **Start, Stop, Continue**, **Mad, Sad, Glad**, **4Ls retrospective**, **Sailboat retrospective**, **Town Hall Q&A**, **Lean Coffee**, **Crazy 8s**, the quizzes and games (**Pub Quiz**, **Icebreaker Questions**, **Two Truths and a Lie**, **Would You Rather** and **Find Someone Who Bingo**), the spaces to walk round together in Avatar mode (**Virtual Office**, **Coworking Space**, **Team Pod** and **All-Hands Hall**; see [Virtual Office](/help/palette/virtual-office/)), **Meeting agenda**, **Workshop Board**, **Brainstorm Board**, and the boards that come with a dot vote, **Affinity map**, **Prioritization matrix**, **Risk matrix** and **Value Proposition Canvas**. See [Facilitate Mode](/help/canvas/facilitate-mode/).
@@ -73,7 +73,7 @@ Each one arrives as real elements rather than a picture: a Gantt chart's bars ar
 
 ## Changing the Theme
 
-A new document starts on the Default theme, so the wizard only asks for a template and where to save it (Quick Start keeps the tab's current theme). Once you are on the canvas, click the **Theme & canvas** button in the bottom-right corner to open the **Tab Style** dialog and try a different [theme](/help/canvas/themes/), including any of your [custom themes](/help/canvas/themes/custom-themes/): it recolours the whole template at once.
+A new document starts on the Default theme, and a template picked on a start takes the tab's current theme. Once you are on the canvas, click the **Theme & canvas** button in the bottom-right corner to open the **Tab Style** dialog and try a different [theme](/help/canvas/themes/), including any of your [custom themes](/help/canvas/themes/custom-themes/): it recolours the whole template at once.
 
 ## Making It Your Own
 

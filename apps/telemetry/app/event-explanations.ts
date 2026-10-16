@@ -1136,6 +1136,10 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Changed|SpotlightSize': "Someone changed the Spotlight's size, in the Spotlight panel.",
   'UI|Changed|ToolbarCategory':
     "Someone opened a category in the palette strip across the top of the canvas: a category on the category bar (Diagram, Facilitate, Illustrate), or a switch in Plan's category picker.",
+  'UI|Changed|ContentsPlacementButton':
+    "Someone minimised Illustrate's Contents sidebar to its button, from the sidebar or in Settings > Editor.",
+  'UI|Changed|ContentsPlacementSidebar':
+    "Someone docked Illustrate's Contents as a sidebar down the canvas's left, from its popover or in Settings > Editor.",
   'UI|Changed|WhiteboardDockPositionBottom':
     'Someone put their whiteboard dock at the bottom of the canvas, in Settings > Editor.',
   'UI|Changed|WhiteboardDockPositionTop':
@@ -1839,6 +1843,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone turned on zen mode, hiding the editor's chrome for a distraction-free canvas.",
   'UI|Used|JustDraw':
     'Someone landed on the New Document page through a link that skips the wizard and goes straight into a blank document.',
+  'UI|Used|StartOtherMode':
+    "Someone searching an empty tab's start chose a template the search found in another mode, which switched the tab to that mode.",
   'UI|Used|TemplateLink':
     'Someone landed on the New Document page through a link that skips the wizard and goes straight into a specific template.',
   'UI|View|IllustrateTourStepPageName':

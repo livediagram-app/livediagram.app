@@ -145,3 +145,21 @@ describe('Start Illustrating', () => {
     ).toHaveLength(1);
   });
 });
+
+// docs/specs/007-editor/start-diagramming.md "There is no way out to a bigger picker": with the Quick Start gone, a
+// start is the whole catalogue of its mode, so every listed template must sit in one of its groups.
+describe('every listed template on its own start', () => {
+  it.each(MODES)('the %s start reaches every template of its mode', (mode) => {
+    const start = TEMPLATE_STARTS[mode];
+    const shown = new Set(start.groups.flatMap((g) => g.kinds));
+    const missing = TEMPLATES.filter(
+      (t) =>
+        !t.hidden &&
+        templateEditorMode(t.kind) === mode &&
+        !shown.has(t.kind) &&
+        // Illustrate's own blank leaves the same empty tab the × does, so it is offered nowhere.
+        !(mode === 'illustrate' && t.kind === 'blank-illustration'),
+    ).map((t) => t.kind);
+    expect(missing).toEqual([]);
+  });
+});

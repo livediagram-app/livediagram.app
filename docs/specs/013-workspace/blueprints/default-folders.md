@@ -32,7 +32,7 @@ Scope, by file:
 | `apps/api/src/openapi/manifest.ts`                        | The three routes; the create body's `folderId` semantics and `intent`                                          |
 | `apps/live/lib/api/placement-defaults.ts`                 | `apiListPlacementDefaults`, `apiSetPlacementDefault`, `apiClearPlacementDefault`                               |
 | `apps/live/lib/api/documents.ts`                          | `apiCreateDocument` sends `folderId` when not `undefined` (null included) and `intent`                         |
-| `apps/live/components/palette/TemplatePicker.tsx`         | The wizard's placement: a pick, the context or the default, else none (`useWizardPlacement`)                   |
+| `apps/live/app/new/page.tsx` (`createByDefault`)          | The wizard's placement: the `/new?folder=` / `?team=` context, else none                                       |
 | `apps/live/app/new/page.tsx`                              | The wizard and its bypasses send the first tab's intent and the template's family                              |
 | `apps/live/lib/duplicate-document.ts`                     | Duplicate: beside the source, the source's recorded intent, root on refusal                                    |
 | `apps/live/lib/board-scene-import.ts`                     | Every imported document sends its first tab's intent                                                           |
@@ -130,12 +130,10 @@ placement is the argument, else the source's own `{ teamId, folderId }`, always 
 documents (`{ folderId: null }`), logging `[duplicate] placement refused reason=<code>, filed at the
 root`.
 
-**Wizard** (`TemplatePicker`, `useWizardPlacement`): the placement is the reader's pick, else the
-`/new?folder=` / `?team=` context, else the default resolved for the template, each sent as
-`parsePlacement(...)`; the root shown because nothing resolved sends no `teamId` / `folderId`, and
-Skip sends only a pick or a context ([Surfaces (live)](#surfaces-live), "Wizard"). The page passes
-them through, `undefined` staying absent, and passes no `initialPlacement` without a context. The
-bypass reads `?folder=` / `?team=` as `undefined` when missing.
+**Wizard** (`createByDefault` in `apps/live/app/new/page.tsx`): every create from `/new` (a mode chosen, Create, Skip
+and the bypass links) reads `?folder=` / `?team=` once (`placementParams`), `undefined` when missing, and sends them as
+given; without a context it sends no `teamId` / `folderId`, so the server's precedence decides (`D115`). There is no
+Location step and no client-side resolution ([New document route](../../007-editor/new-document-route.md#one-step-wizard)).
 
 ## Recorded intent
 
@@ -257,24 +255,24 @@ owner_id = ?` then `DELETE … WHERE owner_id = <guest>`: the account's row for 
 
 ## Testing
 
-| Rule                                                                            | Test                                                                                             |
-| ------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| Editor modes are one list                                                       | `packages/document/src/editor-mode.test.ts`                                                      |
-| Keys, intent derivation and parsing, key order, telemetry values                | `packages/api-schema/src/placement-defaults.test.ts`                                             |
-| Template to template family map                                                 | `apps/live/lib/template-families.test.ts`                                                        |
-| Chosen or not; explicit root; default step; kind before template before mode    | `apps/api/src/placement/resolve-placement.test.ts`                                               |
-| Routes: every answer and rejection, encoded keys, logs (real SQLite)            | `apps/api/src/routes/placement-defaults.test.ts`                                                 |
-| Create lands in the default; explicit root wins; dangling; intent_invalid       | `apps/api/src/routes/document-create-default-folder.test.ts`                                     |
-| Placement on create, chosen roots logged as explicit                            | `apps/api/src/routes/document-create-placement.test.ts`                                          |
-| Recorded intent written once, read back, unknown for legacy rows, copied        | `apps/api/src/routes/document-create-intent.test.ts`, `apps/api/src/document-intent-row.test.ts` |
-| Store order, replace, clear; sign-up keeps the account's row                    | `apps/api/src/db/placement-defaults.test.ts`                                                     |
-| Deletion and migration of every owner-keyed column                              | `apps/api/src/db/account-owner-columns.test.ts`                                                  |
-| Dispatch, route labels, OpenAPI parity                                          | `apps/api/src/route-resources.test.ts`, `apps/api/src/openapi/*.test.ts`                         |
-| Client functions; the create body's absent versus null `folderId`               | `apps/live/lib/api/placement-defaults.test.ts`, `apps/live/lib/api-client.test.ts`               |
-| Wizard placement: a pick, a context or the default; the shown root is no choice | `apps/live/components/palette/TemplatePicker.test.tsx`                                           |
-| Duplicate beside its source, record-only, root on refusal                       | `apps/live/lib/duplicate-document.test.ts`                                                       |
-| Import and Drive copy send the intent                                           | `apps/live/lib/board-scene-import.test.ts`, `apps/live/lib/drive/livediagram-port.test.ts`       |
-| MCP create sends the intent and names the folder                                | `apps/mcp/src/create-document-placement.test.ts`                                                 |
+| Rule                                                                         | Test                                                                                             |
+| ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| Editor modes are one list                                                    | `packages/document/src/editor-mode.test.ts`                                                      |
+| Keys, intent derivation and parsing, key order, telemetry values             | `packages/api-schema/src/placement-defaults.test.ts`                                             |
+| Template to template family map                                              | `apps/live/lib/template-families.test.ts`                                                        |
+| Chosen or not; explicit root; default step; kind before template before mode | `apps/api/src/placement/resolve-placement.test.ts`                                               |
+| Routes: every answer and rejection, encoded keys, logs (real SQLite)         | `apps/api/src/routes/placement-defaults.test.ts`                                                 |
+| Create lands in the default; explicit root wins; dangling; intent_invalid    | `apps/api/src/routes/document-create-default-folder.test.ts`                                     |
+| Placement on create, chosen roots logged as explicit                         | `apps/api/src/routes/document-create-placement.test.ts`                                          |
+| Recorded intent written once, read back, unknown for legacy rows, copied     | `apps/api/src/routes/document-create-intent.test.ts`, `apps/api/src/document-intent-row.test.ts` |
+| Store order, replace, clear; sign-up keeps the account's row                 | `apps/api/src/db/placement-defaults.test.ts`                                                     |
+| Deletion and migration of every owner-keyed column                           | `apps/api/src/db/account-owner-columns.test.ts`                                                  |
+| Dispatch, route labels, OpenAPI parity                                       | `apps/api/src/route-resources.test.ts`, `apps/api/src/openapi/*.test.ts`                         |
+| Client functions; the create body's absent versus null `folderId`            | `apps/live/lib/api/placement-defaults.test.ts`, `apps/live/lib/api-client.test.ts`               |
+| Wizard placement: the context, else none (server decides)                    | `apps/live/app/new/useNewDocumentLocation.test.tsx`, e2e `apps/live/e2e/default-folders.spec.ts` |
+| Duplicate beside its source, record-only, root on refusal                    | `apps/live/lib/duplicate-document.test.ts`                                                       |
+| Import and Drive copy send the intent                                        | `apps/live/lib/board-scene-import.test.ts`, `apps/live/lib/drive/livediagram-port.test.ts`       |
+| MCP create sends the intent and names the folder                             | `apps/mcp/src/create-document-placement.test.ts`                                                 |
 
 ## Constants and configuration
 
@@ -333,11 +331,7 @@ section is silent are `D105` to `D120` and `D123` to `D125`.
 | `apps/live/app/explorer/sidebar/SidebarFolderSubtree.tsx`, `TeamFolderSubtree.tsx`                                                      | `FolderLabel` (name, then marker); the marker's words as the row's description                                                                            |
 | `apps/live/components/panels/explorer-tree/*`                                                                                           | `PanelTree.defaultFolders`; panel folder rows and My documents                                                                                            |
 | `apps/live/components/panels/TeamSharedDocuments.tsx`                                                                                   | Team library folder menus carry `defaults`                                                                                                                |
-| `apps/live/components/palette/useWizardPlacement.ts`                                                                                    | The wizard's placement: picked, context, default, what is sent                                                                                            |
 | `apps/live/components/placement/placement-view.ts`, `usePlacementView.ts`                                                               | The browser opens where its selection is: `placementViewFor`, followed until the reader moves (`D125`)                                                    |
-| `apps/live/components/palette/WizardDefaultFolder.tsx`                                                                                  | The slot under the browser: the reason line with Change default, or Always save                                                                           |
-| `apps/live/components/palette/template-picker-settings.tsx`, `TemplatePicker.tsx`, `TemplatePickerHeader.tsx`                           | `placementFooter` under the browser; the picker's placement from `useWizardPlacement`; its header in its own file                                         |
-| `apps/live/app/new/page.tsx`, `useWizardDefaults.ts`                                                                                    | No context = no `initialPlacement`; `useWizardDefaults` resolves per template; `applyAlwaysSave` before the create                                        |
 | `apps/live/components/dialogs/settings/SettingsPlacementDefaultRow.tsx`                                                                 | One Settings row                                                                                                                                          |
 | `apps/live/components/dialogs/settings/settings-catalogue.ts`, `settings-icons.tsx`                                                     | The `documents` category (its folder glyph on a lime tile), one `placementDefault` row per key                                                            |
 | `apps/live/components/dialogs/SettingsDialog.tsx`, `apps/live/components/dialogs/settings/SettingsCategoryPane.tsx`                     | `ownerId` loads the defaults; the pane fetches the folder lists only for a pane with Documents rows                                                       |
@@ -347,16 +341,15 @@ section is silent are `D105` to `D120` and `D123` to `D125`.
 
 ### Domain and naming (surfaces)
 
-| Term                    | Identifier                                                                                                                           |
-| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| Entry                   | `DefaultKeyEntry { key, label, noun }`, `DEFAULT_KEY_ENTRIES` in `PLACEMENT_DEFAULT_KEYS` order                                      |
-| The page's defaults     | `PlacementDefaultsState { ownerId, status: 'idle'/'loading'/'ready'/'failed', defaults }`                                            |
-| Folder index            | `DefaultFolderIndex { personal: Map<id, folder>, team: Map<id, folder & { teamId }>, teams }`                                        |
-| Working default         | `workingDefault(key, defaults, index)`: the stored folder when the index holds it, else null                                         |
-| Destination             | `DefaultDestination`: `{ kind: 'root' }`, `{ kind: 'folder', folder, teamName }`, `{ kind: 'dangling', folderId, reason, fallback }` |
-| Default folder menu     | `DefaultFolderMenu { isChecked(key), isDisabled(key), toggle(key) }`                                                                 |
-| Surface                 | `DefaultSurface = 'menu' / 'wizard' / 'settings'`, for the log only                                                                  |
-| Wizard placement source | `'picked' / 'context' / 'default' / 'none'`                                                                                          |
+| Term                | Identifier                                                                                                                           |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| Entry               | `DefaultKeyEntry { key, label, noun }`, `DEFAULT_KEY_ENTRIES` in `PLACEMENT_DEFAULT_KEYS` order                                      |
+| The page's defaults | `PlacementDefaultsState { ownerId, status: 'idle'/'loading'/'ready'/'failed', defaults }`                                            |
+| Folder index        | `DefaultFolderIndex { personal: Map<id, folder>, team: Map<id, folder & { teamId }>, teams }`                                        |
+| Working default     | `workingDefault(key, defaults, index)`: the stored folder when the index holds it, else null                                         |
+| Destination         | `DefaultDestination`: `{ kind: 'root' }`, `{ kind: 'folder', folder, teamName }`, `{ kind: 'dangling', folderId, reason, fallback }` |
+| Default folder menu | `DefaultFolderMenu { isChecked(key), isDisabled(key), toggle(key) }`                                                                 |
+| Surface             | `DefaultSurface = 'menu' / 'settings'`, for the log only                                                                             |
 
 Banned: "home folder", "favourite folder", "preferred folder", "routing" in copy.
 
@@ -400,27 +393,6 @@ templateFamily: f }` (`D112`).
 - Both are `undefined` until the store is `ready`, so a menu opened before the load shows no
   submenu rather than wrong checks.
 
-**Wizard** (`useWizardPlacement`):
-
-- Inputs: `context` (the `/new` URL's placement string, else `undefined`), `resolved` (the default
-  for the picked template's intent), the reader's `picked` placement.
-- `selected = picked ?? context ?? resolved?.value ?? 'unsorted'`; `source` follows the same order.
-- `sent()`: `picked`, `context`, `default` → `parsePlacement(selected)`; `none` → `{}` (`D115`).
-  `skipToDefaults` sends only `picked` or `context`.
-- `resolved` is re-read on every render, so a template change, a load, or a Change default
-  re-resolves; `picked` survives. A Change default clears `picked`.
-- **Shown where it is:** the picker hands `selected` to the shared browser, which opens at
-  `placementViewFor(parsePlacement(selected))` (below), so the pre-selected default folder's card is the checked
-  radio; a `/new?folder=` context takes the same path.
-- Logs `pre-selected key=<key>` once per resolved key and `default-skipped key=<key>
-reason=folder_unknown` per skipped key.
-- **Always save:** `alwaysSaveKey = defaultKeysFor(intent)[0]`. Offered when the location is
-  livediagram, the selection is the My documents root or a folder (not a team root), and
-  `workingDefault(alwaysSaveKey)` differs from the selection's folder (null for the root). Reset to
-  unticked whenever the offer's selection or key changes. On Create, when ticked, the page awaits
-  `setPlacementDefault` (or `clearPlacementDefault` at the root) with surface `wizard` before
-  `apiCreateDocument`; its result never stops the create.
-
 **Browser view** (`usePlacementView`, `placementViewFor`; spec [Save locations](../../006-document/save-locations.md), "It opens where its selection is"):
 
 - `PlacementView = { space: string | null; stack: PickerFolder[] }`: `space` null is the overview,
@@ -454,10 +426,6 @@ scope, defaultKeys })`; the optimistic update moves the folder's subfolders and 
 - `MenuCheckRow { label, icon, checked, disabled?, onToggle }`: `role="menuitemcheckbox"`,
   `aria-checked`, `aria-disabled` when disabled; a check glyph in a fixed 16px slot whether checked
   or not, then the entry's icon, then the label.
-- `NewDocumentSettings` gains `alwaysSave?: { key: PlacementDefaultKey; folderId: string | null }`.
-- `TemplatePicker` gains `defaults?: WizardDefaults` (`resolve(kind)`, `alwaysSaveKey(kind)`,
-  `currentValue(key)`, `change(key, folderId)`), built by `useWizardDefaults`; the picker's folder
-  lists are reused by the Change default dialog. `NewDocumentSettingsStep` gains `placementFooter`.
 - `SettingsDialog` gains `ownerId?: string | null`, handed to the Documents rows; the store's own
   owner is used when absent.
 - `SettingsPlacementDefaultRowSpec = RowBase & { kind: 'placementDefault'; placementKey }`.
@@ -471,9 +439,6 @@ onCreateFolder?, onPick(folderId: string | null), onClose }`.
 - Marker: `inline-flex shrink-0 items-center gap-0.5` icons at 12px in `text-slate-500
 dark:text-slate-400`, then `+N` at 10px semibold; after the count badge; in a tree row inside the
   label's flex box (the label truncates, the marker does not).
-- Wizard slot (`min-h-6`, under the browser): either a `role="note"` line in `text-xs` slate with
-  the label and folder in semibold and a text button **Change default** (brand, underlined on
-  hover), or the Always save checkbox, `text-sm`, native. They never show together (`D123`).
 - Settings row card: the label (title case, `D124`) over the destination text (wrapping), with
   **Change** and, with a default, **Clear** as small bordered buttons on the right, as the Trash
   row's link. Dangling destination in amber-700 /
@@ -492,31 +457,25 @@ dark:text-slate-400`, then `+N` at 10px semibold; after the count badge; in a tr
   the row's `aria-describedby` description; in a list row or card they follow the name.
 - The marker's icons on the row background meet 3:1 (slate-500 on white 4.8:1; slate-400 on
   slate-800 5.4:1). Not colour alone: each key's icon differs in shape, and the words exist.
-- The wizard's checkbox is a native `input type="checkbox"` with its `label`; the note is
-  `role="note"`; Change default is a `button`.
 - Settings buttons name their entry: "Change default folder for whiteboards", "Clear default folder
   for whiteboards".
 
 ### Web experience (surfaces)
 
-- CLS: the marker renders inside space the row already has (after the truncating name), and the
-  wizard's note and checkbox share one slot under the browser, reserved (`min-h-6`) whenever the
-  folder step shows, so neither pushes content as it appears.
+- CLS: the marker renders inside space the row already has (after the truncating name).
 - One `GET /api/placement-defaults` per page; no request on hover or render.
 - INP: a toggle updates the store synchronously (optimistic), the write runs after paint.
 
 ### Errors and edge cases (surfaces)
 
-| Case                                                    | Handling                                                                             |
-| ------------------------------------------------------- | ------------------------------------------------------------------------------------ |
-| Store not ready when a menu opens                       | No submenu                                                                           |
-| Set or clear refused (`folder_not_found`, network, 429) | Rolled back, `write failed` warning, the check flips back                            |
-| The wizard's default folder not in its lists yet        | Skipped (`default-skipped reason=folder_unknown`), the root shown, no placement sent |
-| A selected folder not in the browser's lists yet        | The overview; the folder's level once the list arrives, unless the reader has moved  |
-| Always save write fails                                 | Logged; the create goes ahead with the explicit placement                            |
-| Reader owner changes (sign-in)                          | The store reloads for the new owner                                                  |
-| Dangling default, name unknown                          | "A deleted folder (deleted), using …"                                                |
-| Team root selected in the picker                        | "Choose a folder inside the team", button unavailable                                |
+| Case                                                    | Handling                                                                            |
+| ------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| Store not ready when a menu opens                       | No submenu                                                                          |
+| Set or clear refused (`folder_not_found`, network, 429) | Rolled back, `write failed` warning, the check flips back                           |
+| A selected folder not in the browser's lists yet        | The overview; the folder's level once the list arrives, unless the reader has moved |
+| Reader owner changes (sign-in)                          | The store reloads for the new owner                                                 |
+| Dangling default, name unknown                          | "A deleted folder (deleted), using …"                                               |
+| Team root selected in the picker                        | "Choose a folder inside the team", button unavailable                               |
 
 ### Observability (surfaces)
 
@@ -541,7 +500,6 @@ dark:text-slate-400`, then `+N` at 10px semibold; after the count badge; in a tr
 | Menu checks for a folder and for My documents                | `apps/live/hooks/persistence/useDefaultFolderMenus.test.tsx`                                     |
 | Submenu renders, toggles, ARIA                               | `apps/live/components/placement/UseAsDefaultMenu.test.tsx`                                       |
 | Marker icons, +N, words                                      | `apps/live/components/placement/DefaultFolderMarker.test.tsx`                                    |
-| Wizard selection, what is sent, Always save offer            | `apps/live/components/palette/useWizardPlacement.test.tsx`, `TemplatePicker.test.tsx`            |
 | The browser opens at the selected folder's level, then pins  | `apps/live/components/placement/placement-view.test.ts`, `PlacementBrowser.test.tsx`             |
 | Lists ready or failed                                        | `apps/live/hooks/persistence/usePlacementOptions.test.tsx`                                       |
 | A folder deleted here never restored by its stale create     | `apps/live/lib/drive/plan-inbound.test.ts`, `engine.outbound.test.ts`                            |
@@ -565,54 +523,12 @@ dark:text-slate-400`, then `+N` at 10px semibold; after the count badge; in a tr
 | Kanban boards         | Lucide `square-kanban`        | ISC     | same, vendored by `pnpm --filter @livediagram/icons vendor:lucide` |
 | Use as default for    | Lucide `folder-check`         | ISC     | same                                                               |
 
-## Skipping the Location step (live)
+## The wizard's Location step (retired)
 
-Derived from [Default folders → Skipping the Location step](../default-folders.md#skipping-the-location-step)
-and its Settings row. A user preference, not a default folder: nothing here touches
-`/api/placement-defaults`, and the api stores it inside the opaque preferences blob (no schema change;
-the 4 KB cap holds, the value is under 250 bytes).
-
-| File                                                                          | Role                                                                                                                                |
-| ----------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| `apps/live/lib/skip-location-step.ts`                                         | `SkipLocationStep`, `readSkipLocationStep`, `placeNameOf`, `resolveSkipLocation`, `saveSkipLocationStep`, `turnOffSkipLocationStep` |
-| `apps/live/lib/user-preferences.ts`                                           | `skipLocationStep?: SkipLocationStep \| null`                                                                                       |
-| `apps/live/app/new/useSkipLocationStep.ts`                                    | The cached preference (plus one server merge), resolved against the context and the loaded lists; logs the fallback                 |
-| `apps/live/app/new/page.tsx`                                                  | Passes `skipLocation`; `commitNewDocument` saves a ticked preference before the create, never on a Retry                            |
-| `apps/live/components/palette/useWizardSkipLocation.ts`                       | One step while `place` is set and the Location step has not shown; the checkbox state; what a one-step create sends                 |
-| `apps/live/components/palette/WizardSkipLocation.tsx`                         | `WizardSkipLocationCheckbox` (the step's last row), `WizardSavingIn` (the footer's first row)                                       |
-| `apps/live/components/palette/TemplatePicker.tsx`, `template-picker-props.ts` | Wiring; the props and `NewDocumentSettings` (gains `skipLocationStep?`) in their own file                                           |
-| `apps/live/components/palette/TemplatePickerFooter.tsx`                       | `oneStep` (Create on the template step), `note` above the buttons inside the footer rule                                            |
-| `apps/live/components/palette/template-picker-settings.tsx`                   | `stepFooter`, rendered last whatever the save location                                                                              |
-| `apps/live/components/dialogs/settings/SettingsSkipLocationRow.tsx`           | The Settings row (`kind: 'skipLocationStep'`), first in Documents, alone in its New Documents section                               |
-
-**Behaviour and state**
-
-- `readSkipLocationStep(prefs)`: off (null) unless `saveLocation` is a catalogue id, `placement` matches
-  `unsorted | folder:<id> | team:<id>(:folder:<id>)?` and `placeName` is non-blank; `browser` reads at
-  `unsorted`; `placeName` capped at `SKIP_PLACE_NAME_MAX` (160).
-- `resolveSkipLocation({ pref, context, lists, ready })`: no pref → null; a context → that placement in
-  livediagram, named from the lists else "this folder"; `ready` and the lists lacking the place (a
-  personal folder, the team, or the team's folder) → null with `unavailable: 'personal' | 'team'`;
-  else the pref. Local Browser and the root are never checked.
-- `useWizardSkipLocation`: `locationShown` latches on any move to the Location step (Change, the rail,
-  Escape back is after it), so a preference that lands mid-visit never removes a step under the reader;
-  `ticked` resets on each showing.
-- One-step create: `{ saveLocation, documentName: untitledNameForTemplate(kind), ...parsePlacement(placement) }`
-  (nothing for Local Browser); Skip and a template card use it too.
-- Change: `where.pick(place.placement)`, the save location set, then the Location step.
-
-**Telemetry and observability**: `UI·Toggled·SkipLocationStepOn` (before the write, from
-`saveSkipLocationStep`), `SkipLocationStepOff` (Turn Off, before `onChange`); charted in the telemetry
-app's Documents Settings stack. Logs `[skip-location] saved location=<id> scope=<root|personal|team>`,
-`[skip-location] cleared`, `[skip-location] place-unavailable scope=<personal|team>, showing the Location step`.
-
-**Errors and edge cases**: a saved place refused by the server before the lists load takes the
-existing `choose` create-failure path; a guest whose saved team is gone (signed out) falls back.
-
-**Testing**
-
-| Rule                                                              | Test                                                                     |
-| ----------------------------------------------------------------- | ------------------------------------------------------------------------ |
-| Parse, names, context wins, fallback, writes with telemetry first | `apps/live/lib/skip-location-step.test.ts`                               |
-| Checkbox, one step, Create / card / Skip, Change                  | `apps/live/components/palette/template-picker-skip-location.test.tsx`    |
-| Settings row on / off, Turn Off                                   | `apps/live/components/dialogs/settings/SettingsSkipLocationRow.test.tsx` |
+The New Document wizard's Location step, its pre-selected default with **Change default**, **Always save <these> here**
+and "Always save new documents in <place> and skip this step" (with its Settings row) were removed on 2026-10-16
+([New document route](../../007-editor/new-document-route.md#one-step-wizard)). Nothing here resolves a default in
+the browser any more: `/new` sends a context or nothing, and the server's precedence decides. The stored
+`skipLocationStep` preference is dropped on read (`upgradeLegacyPreferences`, `RETIRED` in
+`packages/api-schema/src/legacy-preferences.ts`), and its telemetry is retired ([Telemetry → Retired
+features](../../017-telemetry/telemetry.md#retired-features)).

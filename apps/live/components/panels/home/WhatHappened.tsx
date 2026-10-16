@@ -6,7 +6,7 @@
 // sits there so it never moves when the entries land.
 
 import { useMemo } from 'react';
-import { isNewEvent } from '@livediagram/ui';
+import { CompactEmptyState, isNewEvent } from '@livediagram/ui';
 import type { HomeGroup } from '@livediagram/api-schema';
 import { HOME_COPY } from '@/app/explorer/home/home-copy';
 import { useNow } from '@/hooks/ui/useNow';
@@ -15,6 +15,7 @@ import { WhatHappenedSkeleton } from './HomeSkeletons';
 import { ActionEntry, SummaryEntry } from './WhatHappenedEntry';
 import { HomeSection } from './HomeSection';
 import { MUTED } from './home-styles';
+import { WhatHappenedEmptyIcon } from './home-icons';
 
 export function WhatHappened({
   groups,
@@ -44,7 +45,12 @@ export function WhatHappened({
       {loading ? (
         <WhatHappenedSkeleton />
       ) : days.length === 0 ? (
-        <p className={`py-2 text-sm ${MUTED}`}>{HOME_COPY.whatHappenedEmpty}</p>
+        <CompactEmptyState
+          className="py-8"
+          icon={<WhatHappenedEmptyIcon />}
+          title={HOME_COPY.whatHappenedEmptyTitle}
+          description={HOME_COPY.whatHappenedEmpty}
+        />
       ) : (
         <div className="flex flex-col gap-3">
           {days.map((day) => (

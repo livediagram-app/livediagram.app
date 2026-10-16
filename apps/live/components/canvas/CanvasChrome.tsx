@@ -9,19 +9,12 @@ import { CanvasGuideOverlay } from '@/components/canvas/CanvasGuideOverlay';
 import { TimelineLanesOverlay } from '@/components/canvas/TimelineLanesOverlay';
 import { CanvasDrawPreview } from '@/components/canvas/CanvasDrawPreview';
 import { TopCenterChrome } from '@/components/chrome/TopCenterChrome';
-// Lazy-load TemplatePicker (1163 lines + its theme / share helpers)
-// the same way ExportTabDialog + ShareDialog already are. The picker
-// is gated on `showTemplatePicker`, which is false for the common
-// path (a returning user opening an existing document with tabs that
-// already have content). For first-time guests on a fresh document
-// the gate is true on first paint, but the empty canvas underneath
-// has already rendered by then, so the user sees the welcome modal
-// fade in a frame later rather than blocking the route on the
-// picker's JS. The /live/new entry keeps the static import because
-// the picker is the whole UI there.
+// Lazy-load the visitor name prompt the same way ExportTabDialog + ShareDialog already are. It is gated on
+// `showIdentityPrompt`, false on the common path (the owner opening their own document); for a visitor the empty
+// canvas underneath has already rendered, so the prompt fades in a frame later rather than blocking the route on its JS.
 import dynamic from 'next/dynamic';
-const TemplatePicker = dynamic(
-  () => import('@/components/palette/TemplatePicker').then((m) => m.TemplatePicker),
+const IdentityPrompt = dynamic(
+  () => import('@/components/palette/IdentityPrompt').then((m) => m.IdentityPrompt),
   { ssr: false },
 );
 
@@ -46,6 +39,8 @@ import { useCanvasCovered, usePlanTabKind } from '@/hooks/plan/plan-cover-store'
 // little more in, and past the element's bottom scrollbar up.
 const COVERED_CLUSTER_INSET = { x: 16, y: 20 };
 const NO_CLUSTER_INSET = { x: 0, y: 0 };
+import { toolbarTopClearancePx } from '@/lib/canvas-chrome';
+import { contentsSidebarClearancePx } from '@/lib/contents-placement';
 import { ContentsClusterSegment } from './ContentsClusterSegment';
 import { PagesClusterStrip } from './PagesClusterStrip';
 import { LayersThemeStrip } from '@/components/canvas/LayersThemeStrip';
@@ -203,11 +198,8 @@ export type CanvasChromeProps = CanvasProps & ChromeExtras;
 // "On a phone"; on a desktop window too narrow for a centred strip to clear a
 // docked panel, stripCrowdsTopCorners) the TOP corner stacks start below it
 // rather than at the 16px inset, or a panel docked there (the Collaborate
-// banner) renders underneath the strip where it can't be reached. The strip
-// sits 12px down (top-3) and is 46px tall; 68px leaves a 10px gap. The strip
-// is drawn at the UI scale (docs/specs/007-editor/ui-scale.md), so only its
-// height scales.
-const toolbarTopClearancePx = (scale: number) => 12 + 46 * scale + 10;
+// banner) renders underneath the strip where it can't be reached
+// (toolbarTopClearancePx, lib/canvas-chrome.ts).
 
 const DOCK_CORNER_CLASS: Record<PanelCorner, string> = {
   'top-left': 'left-4 top-4 flex-col items-start',
@@ -243,13 +235,13 @@ export function CanvasChrome(props: CanvasChromeProps) {
     commentRows,
     actionRows,
     onOpenCanvasTheme,
-    onChooseTemplate,
+    onConfirmIdentity,
     offscreenContent,
     onFitToScreen,
     onRedo,
     onIsoOrbit,
     onIsoReset,
-    onSkipTemplatePicker,
+    onCancelIdentity,
     onUndo,
     pendingDraw,
     penPoints,
@@ -259,10 +251,9 @@ export function CanvasChrome(props: CanvasChromeProps) {
     selfParticipant,
     settings,
     snapGuideStore,
-    showTemplatePicker,
+    showIdentityPrompt,
     tabThemeId,
-    templatePickerLockedName,
-    templatePickerMode,
+    identityLockedName,
     welcomeOpen,
     wrapperRef,
     zenMode,
@@ -405,6 +396,8 @@ export function CanvasChrome(props: CanvasChromeProps) {
     sessionPopoverEl,
     tidyUpPopoverEl,
     contentsPopoverEl,
+    contentsSidebarEl,
+    contentsDocked,
     avatarPopoverEl,
     paletteTint,
   } = useCanvasChromePanels({
@@ -473,14 +466,18 @@ export function CanvasChrome(props: CanvasChromeProps) {
             ref={(el) => {
               cornerRefs.current[corner] = el;
             }}
-            style={
-              corner === 'bottom-right'
+            style={{
+              ...(corner === 'bottom-right'
                 ? { bottom: cornerBottomInset(corner, cornerScale) }
                 : // The Draw dock is the strip's twin (its height, its scale), so the same clearance.
                   (stripSpansTop || dockSpansTop) && corner.startsWith('top')
                   ? { top: toolbarTopClearancePx(toolbarScale) }
-                  : undefined
-            }
+                  : undefined),
+              // Beside Illustrate's Contents sidebar, never under it.
+              ...(contentsDocked && corner.endsWith('left')
+                ? { left: contentsSidebarClearancePx(panelScale) }
+                : undefined),
+            }}
             className={`pointer-events-none absolute flex gap-4 ${DOCK_CORNER_CLASS[corner]}`}
           >
             {children.map((id) => (
@@ -502,15 +499,13 @@ export function CanvasChrome(props: CanvasChromeProps) {
           (EmptyCanvasBanner), rendered by EditorView alongside the sign-in /
           theme banners rather than a centre-of-canvas card. */}
 
-      {showTemplatePicker ? (
-        <TemplatePicker
-          mode={templatePickerMode}
+      {showIdentityPrompt ? (
+        <IdentityPrompt
           participant={selfParticipant}
-          currentThemeId={tabThemeId}
           documentName={documentName}
-          lockedName={templatePickerLockedName}
-          onPick={onChooseTemplate}
-          onSkip={onSkipTemplatePicker}
+          lockedName={identityLockedName}
+          onJoin={onConfirmIdentity}
+          onCancel={onCancelIdentity}
         />
       ) : null}
 
@@ -578,6 +573,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
       {zenMode ? null : newCardPopoverEl}
       {zenMode ? null : cardFinderPopoverEl}
       {tidyUpPopoverEl}
+      {contentsSidebarEl}
       {contentsPopoverEl}
       {avatarPopoverEl}
       {/* The Session strip's popover, in Zen too, as its strip is (docs/specs/012-collaboration/session-tools.md). */}
@@ -734,10 +730,13 @@ export function CanvasChrome(props: CanvasChromeProps) {
             {!zenMode && props.illustratePages ? (
               <PagesClusterStrip
                 contents={
-                  <ContentsClusterSegment
-                    popoverOpen={activeDockPanel === 'contents'}
-                    onTogglePopover={(button) => handleDockButtonClick('contents', button, true)}
-                  />
+                  // Docked as the sidebar, Contents has no button (useContentsChrome).
+                  contentsDocked ? null : (
+                    <ContentsClusterSegment
+                      popoverOpen={activeDockPanel === 'contents'}
+                      onTogglePopover={(button) => handleDockButtonClick('contents', button, true)}
+                    />
+                  )
                 }
                 slides={
                   !isMobile &&

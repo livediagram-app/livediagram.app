@@ -1,6 +1,6 @@
 // The shared-tab notice (docs/specs/006-document/tab-document-many-to-many.md,
-// "Shared-tab notice"): the sentence the delete and Take Offline confirmations
-// add when some of the document's tabs are also in other documents, so the user
+// "Shared-tab notice"): the sentence the Take Offline confirmation
+// adds when some of the document's tabs are also in other documents, so the user
 // knows those tabs stay before they act.
 
 import type { SharedTabsSummary } from '@livediagram/api-schema';
