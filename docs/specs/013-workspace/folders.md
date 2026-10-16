@@ -438,6 +438,24 @@ it stays in view as the dashboard scrolls; Settings opens the same synced
   For a folder move, the target folder's own subtree is filtered
   out client-side so cycle-creating choices don't appear (the server
   still rejects them via the cycle check on `PUT /api/folders/:id`).
+- **A move that fails says so.** Every move the picker or a drop starts
+  either lands or ends in an error toast; none fails silently. A move that
+  took the row away first puts it back.
+  - A document into a folder of My documents: the row goes back to its
+    folder; "Could not move the document. Please try again."
+  - A document into a team: the row comes back to My documents; "Could not
+    move the document to the team. Please try again."
+  - A team document to another folder of its team: "Could not move the
+    document. Please try again."
+  - A team document out of its team, to My documents or another team: "Could
+    not move the document out of the team. Please try again."
+  - A folder under another folder: "Could not move the folder. Please try
+    again."
+  - A folder made from the picker's New Folder tile: "Could not create the
+    folder. Please try again.", the tile keeping the name typed.
+  - Each failure logs
+    `[explorer-move] <document|document-to-team|team-document|team-document-out|folder|new-folder> failed`
+    with the subject's id and the error.
 - **Selection state**: the selected sidebar row is the current route;
   which branches are expanded is session-local state that doesn't
   survive reload ([Explorer structure](explorer-structure.md#expansion)).

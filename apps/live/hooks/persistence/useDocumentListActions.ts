@@ -22,6 +22,7 @@ import {
 import { duplicateDocument as duplicate } from '@/lib/duplicate-document';
 import { markDocumentDeleted, unmarkDocumentDeleted } from '@/lib/document-tombstones';
 import { handOffDeleteUndo, offerDeleteUndo, type DeletedTrash } from '@/lib/document-delete-undo';
+import { logMoveFailure } from '@/lib/move-failure';
 import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
 import { folderDeleteConfirmation } from '@/lib/folder-delete-confirmation';
 import { folderDefaultKeys } from '@/lib/placement-defaults/default-destination';
@@ -258,7 +259,8 @@ export function useDocumentListActions(deps: DocumentListActionsDeps) {
         toast.success(folderId ? 'Moved to folder' : 'Moved to My documents');
         track('Document', 'Moved');
       })
-      .catch(() => {
+      .catch((err: unknown) => {
+        logMoveFailure('document', ` document=${id}`, err);
         // Roll the row back to its old folder and tell the user, instead
         // of swallowing the error after already claiming success.
         setDocumentList((prev) =>

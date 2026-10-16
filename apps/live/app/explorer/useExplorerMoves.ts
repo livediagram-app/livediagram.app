@@ -9,6 +9,7 @@ import {
   type Folder,
   type TeamListItem,
 } from '@/lib/api-client';
+import { logMoveFailure } from '@/lib/move-failure';
 import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
 import { track } from '@/lib/telemetry';
 import type { TeamDocumentRow, TeamFolderRow } from '@/hooks/persistence/useTeamLibrariesSweep';
@@ -79,7 +80,10 @@ export function useExplorerMoves({
         track('Folder', 'Moved');
         return refreshFolders();
       })
-      .catch(() => {});
+      .catch((err: unknown) => {
+        logMoveFailure('folder', ` folder=${id}`, err);
+        toast.error('Could not move the folder. Please try again.');
+      });
   };
 
   // Send one of the caller's own documents into a team's shared
@@ -100,7 +104,8 @@ export function useExplorerMoves({
         refreshTeamLibraries();
         track('Team', 'Added', 'Document');
       })
-      .catch(() => {
+      .catch((err: unknown) => {
+        logMoveFailure('document-to-team', ` document=${id}`, err);
         if (row) setDocuments((prev) => (prev.some((d) => d.id === id) ? prev : [row, ...prev]));
         toast.error('Could not move the document to the team. Please try again.');
       });
@@ -120,7 +125,10 @@ export function useExplorerMoves({
         refreshTeamLibraries();
         track('Team', 'Moved', 'Document');
       })
-      .catch(() => {});
+      .catch((err: unknown) => {
+        logMoveFailure('team-document', ` document=${id}`, err);
+        toast.error('Could not move the document. Please try again.');
+      });
   };
 
   // Move a team-library document OUT of its team — either to the
@@ -136,7 +144,10 @@ export function useExplorerMoves({
         void refreshPersonal(ownerId);
         track('Team', toTeamId === null ? 'Removed' : 'Moved', 'Document');
       })
-      .catch(() => {});
+      .catch((err: unknown) => {
+        logMoveFailure('team-document-out', ` document=${id}`, err);
+        toast.error('Could not move the document out of the team. Please try again.');
+      });
   };
 
   // One entry point for the unified move picker (docs/specs/013-workspace/team-shared-documents.md): route a
@@ -208,20 +219,19 @@ export function useExplorerMoves({
     teamId: string | null,
   ): Promise<{ id: string; name: string; parentId: string | null } | null> => {
     if (!ownerId) return null;
+    let folder: Folder;
     try {
-      const folder = await apiCreateFolder(ownerId, {
-        id: crypto.randomUUID(),
-        name,
-        parentId,
-        teamId,
-      });
-      if (teamId) refreshTeamLibraries();
-      else await refreshFolders();
-      track('Folder', 'Created', teamId ? 'Team' : undefined);
-      return { id: folder.id, name: folder.name, parentId: folder.parentId };
-    } catch {
+      folder = await apiCreateFolder(ownerId, { id: crypto.randomUUID(), name, parentId, teamId });
+    } catch (err) {
+      // The tile keeps the name typed, for another try.
+      logMoveFailure('new-folder', '', err);
+      toast.error('Could not create the folder. Please try again.');
       return null;
     }
+    if (teamId) refreshTeamLibraries();
+    else await refreshFolders();
+    track('Folder', 'Created', teamId ? 'Team' : undefined);
+    return { id: folder.id, name: folder.name, parentId: folder.parentId };
   };
 
   return {
