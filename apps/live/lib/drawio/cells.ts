@@ -3,6 +3,7 @@
 // children in document order, the layers, and geometry resolved from
 // parent-relative to canvas coordinates.
 
+import { withinImportReach } from '@/lib/import-coords';
 import { readColour } from './colour';
 import { parseStyle, type DrawioStyle } from './style';
 
@@ -62,9 +63,11 @@ export const DRAWIO_PROVENANCE_ATTRIBUTES: ReadonlySet<string> = new Set([
   'gliffyId',
 ]);
 
+// A number the file can't give sensibly (unreadable, infinite, or past IMPORT_COORD_MAX, where
+// a parent's offset could overflow it to Infinity) reads as draw.io's own default, 0.
 const num = (el: Element, name: string): number => {
   const n = Number(el.getAttribute(name) ?? 0);
-  return Number.isFinite(n) ? n : 0;
+  return withinImportReach(n) ? n : 0;
 };
 
 const point = (el: Element): Pt => ({ x: num(el, 'x'), y: num(el, 'y') });

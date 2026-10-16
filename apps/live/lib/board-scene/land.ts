@@ -20,6 +20,7 @@ import { mergeNotes, type BoardSceneReport } from './report';
 import { compactLanded } from './compact';
 import type { BoardScene, SceneAsset, SceneItem, SceneItemKind } from './scene';
 import { debugLog } from '@/lib/debug-log';
+import { withinImportReach } from '@/lib/import-coords';
 
 export type { BoardScenePlacement } from './placement';
 export type { BoardSceneReport } from './report';
@@ -69,6 +70,12 @@ function usable(item: SceneItem): boolean {
     return item.points.length >= min && item.points.every((p) => finite(p.x, p.y));
   }
   return finite(item.x, item.y, item.width, item.height) && item.width > 0 && item.height > 0;
+}
+
+// Whether a usable item sits within IMPORT_COORD_MAX of the origin, size included.
+function withinBoard(item: SceneItem): boolean {
+  if ('points' in item) return item.points.every((p) => withinImportReach(p.x, p.y));
+  return withinImportReach(item.x, item.y, item.width, item.height);
 }
 
 // The kinds whose ends may pin to other items, landed once every box has.
@@ -153,8 +160,9 @@ export function landBoardScene(scene: BoardScene, options: LandOptions): LandRes
   for (const asset of scene.assets) if (!assets.has(asset.key)) assets.set(asset.key, asset);
 
   const items = scene.items.filter((item) => {
-    if (usable(item)) return true;
-    ctx.skip(LANDING_RULES.unsized);
+    if (!usable(item)) ctx.skip(LANDING_RULES.unsized);
+    else if (!withinBoard(item)) ctx.skip(LANDING_RULES.offBoard);
+    else return true;
     return false;
   });
   const { dx, dy } = placementOffset(items, options.placement);
