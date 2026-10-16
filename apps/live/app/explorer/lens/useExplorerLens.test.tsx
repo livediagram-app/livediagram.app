@@ -29,7 +29,9 @@ describe('useExplorerLens address bar', () => {
       act(() => result.current.setField(text, text.length));
     }
     expect(replace).not.toHaveBeenCalled();
-    act(() => vi.advanceTimersByTime(LENS_URL_WRITE_MS));
+    act(() => {
+      vi.advanceTimersByTime(LENS_URL_WRITE_MS);
+    });
     expect(replace).toHaveBeenCalledOnce();
     expect(window.location.search).toContain('q=diagr');
   });
@@ -41,7 +43,9 @@ describe('useExplorerLens address bar', () => {
     act(() => result.current.blur());
     expect(replace).toHaveBeenCalledOnce();
     expect(window.location.search).toContain('q=team');
-    act(() => vi.advanceTimersByTime(LENS_URL_WRITE_MS));
+    act(() => {
+      vi.advanceTimersByTime(LENS_URL_WRITE_MS);
+    });
     expect(replace).toHaveBeenCalledOnce();
   });
 
@@ -50,7 +54,9 @@ describe('useExplorerLens address bar', () => {
     const { result, unmount } = hook();
     act(() => result.current.setField('late', 4));
     unmount();
-    act(() => vi.advanceTimersByTime(LENS_URL_WRITE_MS));
+    act(() => {
+      vi.advanceTimersByTime(LENS_URL_WRITE_MS);
+    });
     expect(replace).not.toHaveBeenCalled();
   });
 });

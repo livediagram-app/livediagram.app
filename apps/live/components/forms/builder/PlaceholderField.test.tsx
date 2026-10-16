@@ -37,7 +37,9 @@ describe('PlaceholderField', () => {
     const now = setup({ id: 'q', type: 'short', prompt: 'Name' });
     const box = screen.getByRole('textbox', { name: 'Placeholder' });
     fireEvent.change(box, { target: { value: 'Jane Doe' } });
-    act(() => vi.advanceTimersByTime(600));
+    act(() => {
+      vi.advanceTimersByTime(600);
+    });
     expect(now().placeholder).toBe('Jane Doe');
   });
 

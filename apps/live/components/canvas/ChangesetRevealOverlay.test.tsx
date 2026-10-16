@@ -49,7 +49,9 @@ describe('ChangesetRevealOverlay', () => {
     expect(
       view.container.querySelector('[data-changeset-reveal]')!.getAttribute('aria-hidden'),
     ).toBe('true');
-    act(() => vi.advanceTimersByTime(CHANGESET_REVEAL_MS));
+    act(() => {
+      vi.advanceTimersByTime(CHANGESET_REVEAL_MS);
+    });
     expect(view.container.querySelector('[data-reveal-id]')).toBeNull();
   });
 

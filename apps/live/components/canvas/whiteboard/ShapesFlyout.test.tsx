@@ -199,10 +199,14 @@ describe('the Shapes flyout', () => {
       fireEvent.pointerLeave(shapes, { pointerType: 'mouse' });
       // Crossing the gap into the flyout keeps it open.
       fireEvent.pointerEnter(flyout()!, { pointerType: 'mouse' });
-      act(() => vi.advanceTimersByTime(1000));
+      act(() => {
+        vi.advanceTimersByTime(1000);
+      });
       expect(flyout()).toBeTruthy();
       fireEvent.pointerLeave(flyout()!, { pointerType: 'mouse' });
-      act(() => vi.advanceTimersByTime(1000));
+      act(() => {
+        vi.advanceTimersByTime(1000);
+      });
       expect(flyout()).toBeNull();
       expect(document.activeElement).toBe(document.body);
     } finally {
@@ -219,7 +223,9 @@ describe('the Shapes flyout', () => {
       fireEvent.keyDown(field(), { key: 'h' });
       fireEvent.change(field(), { target: { value: 'h' } });
       fireEvent.pointerLeave(shapes, { pointerType: 'mouse' });
-      act(() => vi.advanceTimersByTime(1000));
+      act(() => {
+        vi.advanceTimersByTime(1000);
+      });
       expect(flyout()).toBeTruthy();
       expect(document.activeElement).toBe(field());
     } finally {

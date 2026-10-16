@@ -19,7 +19,9 @@ describe('LensAnnouncer', () => {
 
   it('says nothing for the lens a view arrives with', () => {
     render(<LensAnnouncer input="plan" shown={2} total={9} />);
-    act(() => vi.advanceTimersByTime(LENS_SETTLE_MS));
+    act(() => {
+      vi.advanceTimersByTime(LENS_SETTLE_MS);
+    });
     expect(screen.getByRole('status').textContent).toBe('');
   });
 
@@ -27,16 +29,22 @@ describe('LensAnnouncer', () => {
     const { rerender } = render(<LensAnnouncer input="" shown={9} total={9} />);
     rerender(<LensAnnouncer input="p" shown={4} total={9} />);
     rerender(<LensAnnouncer input="pl" shown={2} total={9} />);
-    act(() => vi.advanceTimersByTime(LENS_SETTLE_MS - 1));
+    act(() => {
+      vi.advanceTimersByTime(LENS_SETTLE_MS - 1);
+    });
     expect(screen.getByRole('status').textContent).toBe('');
-    act(() => vi.advanceTimersByTime(1));
+    act(() => {
+      vi.advanceTimersByTime(1);
+    });
     expect(screen.getByRole('status').textContent).toBe('2 of 9 documents');
   });
 
   it('says when nothing matches', () => {
     const { rerender } = render(<LensAnnouncer input="" shown={9} total={9} />);
     rerender(<LensAnnouncer input="zzz" shown={0} total={9} />);
-    act(() => vi.advanceTimersByTime(LENS_SETTLE_MS));
+    act(() => {
+      vi.advanceTimersByTime(LENS_SETTLE_MS);
+    });
     expect(screen.getByRole('status').textContent).toBe('No documents match');
   });
 });

@@ -124,9 +124,13 @@ describe('PlanTourHost offer', () => {
   it('offers itself after the settle delay when the person is in Plan with a board', () => {
     editor();
     render(<PlanTourHost />);
-    act(() => vi.advanceTimersByTime(799));
+    act(() => {
+      vi.advanceTimersByTime(799);
+    });
     expect(offered()).toBe(false);
-    act(() => vi.advanceTimersByTime(1));
+    act(() => {
+      vi.advanceTimersByTime(1);
+    });
     expect(offered()).toBe(true);
     expect(stage.engine?.active).toBe(true);
   });
@@ -134,11 +138,15 @@ describe('PlanTourHost offer', () => {
   it('waits for the person to enter Plan', () => {
     editor({ editorMode: { mode: 'diagram' } });
     const { rerender } = render(<PlanTourHost />);
-    act(() => vi.advanceTimersByTime(2000));
+    act(() => {
+      vi.advanceTimersByTime(2000);
+    });
     expect(offered()).toBe(false);
     editor();
     rerender(<PlanTourHost />);
-    act(() => vi.advanceTimersByTime(800));
+    act(() => {
+      vi.advanceTimersByTime(800);
+    });
     expect(offered()).toBe(true);
   });
 
@@ -148,11 +156,15 @@ describe('PlanTourHost offer', () => {
   ])('waits on %s for a board or Sheet, then offers itself', (_why, over) => {
     editor(over);
     const { rerender } = render(<PlanTourHost />);
-    act(() => vi.advanceTimersByTime(2000));
+    act(() => {
+      vi.advanceTimersByTime(2000);
+    });
     expect(offered()).toBe(false);
     editor(onTab(SHEET));
     rerender(<PlanTourHost />);
-    act(() => vi.advanceTimersByTime(800));
+    act(() => {
+      vi.advanceTimersByTime(800);
+    });
     expect(offered()).toBe(true);
   });
 
@@ -164,12 +176,16 @@ describe('PlanTourHost offer', () => {
     act(() => {
       window.dispatchEvent(new Event(PLAN_TOUR_RELAUNCH_EVENT));
     });
-    act(() => vi.advanceTimersByTime(2000));
+    act(() => {
+      vi.advanceTimersByTime(2000);
+    });
     expect(offered()).toBe(false);
     expect(tickTabs).not.toHaveBeenCalled();
     editor(onTab(BOARD));
     rerender(<PlanTourHost />);
-    act(() => vi.advanceTimersByTime(800));
+    act(() => {
+      vi.advanceTimersByTime(800);
+    });
     expect(offered()).toBe(true);
   });
 
@@ -182,7 +198,9 @@ describe('PlanTourHost offer', () => {
   ])('makes no offer when %s', (_why, over) => {
     editor(over);
     render(<PlanTourHost />);
-    act(() => vi.advanceTimersByTime(2000));
+    act(() => {
+      vi.advanceTimersByTime(2000);
+    });
     expect(offered()).toBe(false);
   });
 
@@ -190,10 +208,14 @@ describe('PlanTourHost offer', () => {
     setActiveTour('welcome', true);
     editor();
     render(<PlanTourHost />);
-    act(() => vi.advanceTimersByTime(2000));
+    act(() => {
+      vi.advanceTimersByTime(2000);
+    });
     expect(offered()).toBe(false);
     act(() => setActiveTour('welcome', false));
-    act(() => vi.advanceTimersByTime(800));
+    act(() => {
+      vi.advanceTimersByTime(800);
+    });
     expect(offered()).toBe(true);
   });
 
@@ -202,19 +224,25 @@ describe('PlanTourHost offer', () => {
     markTourPending();
     editor();
     render(<PlanTourHost />);
-    act(() => vi.advanceTimersByTime(800));
+    act(() => {
+      vi.advanceTimersByTime(800);
+    });
     expect(offered()).toBe(true);
   });
 
   it('reruns from Settings in Plan, and not outside it', () => {
     editor({ userPreferences: { planTourTracks: ['boards', 'sheets'] } });
     const { rerender } = render(<PlanTourHost />);
-    act(() => vi.advanceTimersByTime(2000));
+    act(() => {
+      vi.advanceTimersByTime(2000);
+    });
     expect(offered()).toBe(false);
     editor();
     rerender(<PlanTourHost />);
     act(() => requestPlanTourRelaunch());
-    act(() => vi.advanceTimersByTime(800));
+    act(() => {
+      vi.advanceTimersByTime(800);
+    });
     expect(offered()).toBe(true);
   });
 
@@ -222,7 +250,9 @@ describe('PlanTourHost offer', () => {
     editor({ editorMode: { mode: 'diagram' } });
     render(<PlanTourHost />);
     act(() => requestPlanTourRelaunch());
-    act(() => vi.advanceTimersByTime(2000));
+    act(() => {
+      vi.advanceTimersByTime(2000);
+    });
     expect(offered()).toBe(false);
   });
 });
@@ -231,7 +261,9 @@ describe('PlanTourHost tracks', () => {
   const start = (...elements: unknown[]) => {
     editor(onTab(...elements));
     const r = render(<PlanTourHost />);
-    act(() => vi.advanceTimersByTime(800));
+    act(() => {
+      vi.advanceTimersByTime(800);
+    });
     return r;
   };
 
@@ -333,7 +365,9 @@ describe('PlanTourHost end', () => {
   const start = () => {
     editor();
     const r = render(<PlanTourHost />);
-    act(() => vi.advanceTimersByTime(800));
+    act(() => {
+      vi.advanceTimersByTime(800);
+    });
     return r;
   };
 
@@ -374,7 +408,9 @@ describe('PlanTourHost end', () => {
   it('closes a card panel it left open as it ends', () => {
     editor({ plan: { openItemId: 'card1', showItem, closeItem } });
     render(<PlanTourHost />);
-    act(() => vi.advanceTimersByTime(800));
+    act(() => {
+      vi.advanceTimersByTime(800);
+    });
     act(() => stage.engine!.skip());
     expect(closeItem).toHaveBeenCalled();
   });
@@ -386,17 +422,23 @@ describe('PlanTourHost per track', () => {
   it('names the track on its welcome card, and both on a choice card', () => {
     editor(onTab(BOARD));
     const { rerender } = render(<PlanTourHost />);
-    act(() => vi.advanceTimersByTime(800));
+    act(() => {
+      vi.advanceTimersByTime(800);
+    });
     expect(stage.eyebrow).toBe('Boards tour');
     cleanup();
     editor(onTab(SHEET));
     render(<PlanTourHost />);
-    act(() => vi.advanceTimersByTime(800));
+    act(() => {
+      vi.advanceTimersByTime(800);
+    });
     expect(stage.eyebrow).toBe('Sheets tour');
     cleanup();
     editor(onTab(BOARD, SHEET));
     render(<PlanTourHost />);
-    act(() => vi.advanceTimersByTime(800));
+    act(() => {
+      vi.advanceTimersByTime(800);
+    });
     expect(stage.eyebrow).toBe('Boards and Sheets tour');
     void rerender;
   });
@@ -404,7 +446,9 @@ describe('PlanTourHost per track', () => {
   it('offers only Sheets beside a board once Boards is answered', () => {
     editor({ ...onTab(BOARD, SHEET), userPreferences: { planTourTracks: ['boards'] } });
     render(<PlanTourHost />);
-    act(() => vi.advanceTimersByTime(800));
+    act(() => {
+      vi.advanceTimersByTime(800);
+    });
     expect(offered()).toBe(true);
     expect(stage.choices).toBeUndefined();
     expect(stage.engine!.step?.body).toMatch(/your sheet/);
@@ -413,11 +457,15 @@ describe('PlanTourHost per track', () => {
   it('offers nothing on a board once Boards is answered, then Sheets when a Sheet arrives', () => {
     editor({ ...onTab(BOARD), userPreferences: { planTourTracks: ['boards'] } });
     const { rerender } = render(<PlanTourHost />);
-    act(() => vi.advanceTimersByTime(2000));
+    act(() => {
+      vi.advanceTimersByTime(2000);
+    });
     expect(offered()).toBe(false);
     editor({ ...onTab(BOARD, SHEET), userPreferences: { planTourTracks: ['boards'] } });
     rerender(<PlanTourHost />);
-    act(() => vi.advanceTimersByTime(800));
+    act(() => {
+      vi.advanceTimersByTime(800);
+    });
     expect(offered()).toBe(true);
     expect(stage.engine!.step?.body).toMatch(/your sheet/);
   });
@@ -425,14 +473,18 @@ describe('PlanTourHost per track', () => {
   it('offers both again to someone who answered the single Plan tour', () => {
     editor({ ...onTab(BOARD), userPreferences: { planTourSeen: true } });
     render(<PlanTourHost />);
-    act(() => vi.advanceTimersByTime(800));
+    act(() => {
+      vi.advanceTimersByTime(800);
+    });
     expect(offered()).toBe(true);
   });
 
   it('declining a choice card answers both tracks', () => {
     editor(onTab(BOARD, SHEET));
     render(<PlanTourHost />);
-    act(() => vi.advanceTimersByTime(800));
+    act(() => {
+      vi.advanceTimersByTime(800);
+    });
     act(() => stage.engine!.skip());
     expect(writeUserPreferences).toHaveBeenCalledWith(
       { planTourTracks: ['boards', 'sheets'] },
@@ -443,7 +495,9 @@ describe('PlanTourHost per track', () => {
   it('a track picked on a choice card and skipped answers that track alone', async () => {
     editor(onTab(BOARD, SHEET));
     render(<PlanTourHost />);
-    act(() => vi.advanceTimersByTime(800));
+    act(() => {
+      vi.advanceTimersByTime(800);
+    });
     act(() => stage.choices!.find((c) => c.id === 'sheets')!.onPick());
     await act(async () => {
       await vi.advanceTimersByTimeAsync(10);

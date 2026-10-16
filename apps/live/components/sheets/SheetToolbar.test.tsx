@@ -693,7 +693,9 @@ describe('the toolbar’s function Search', () => {
       expect(track).toHaveBeenCalledWith('Sheet', 'Searched', 'Function');
       const found = screen.getByRole('menuitem', { name: 'Insert SUMIF' });
       expect(found.hasAttribute('data-highlighted')).toBe(true);
-      act(() => vi.advanceTimersByTime(FUNCTION_HIGHLIGHT_MS));
+      act(() => {
+        vi.advanceTimersByTime(FUNCTION_HIGHLIGHT_MS);
+      });
       expect(found.hasAttribute('data-highlighted')).toBe(false);
     } finally {
       vi.useRealTimers();

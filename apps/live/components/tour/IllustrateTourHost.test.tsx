@@ -112,7 +112,9 @@ describe('IllustrateTourHost offer', () => {
   it('offers itself after the settle delay when the person is in Illustrate', async () => {
     editor();
     render(<IllustrateTourHost />);
-    act(() => vi.advanceTimersByTime(799));
+    act(() => {
+      vi.advanceTimersByTime(799);
+    });
     expect(offered()).toBe(false);
     await wait(1);
     expect(offered()).toBe(true);

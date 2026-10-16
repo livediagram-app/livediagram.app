@@ -183,7 +183,9 @@ describe('the workbench page’s surroundings', () => {
             <Above />
           </ClerkProvider>,
         );
-        act(() => vi.advanceTimersByTime(10_000));
+        act(() => {
+          vi.advanceTimersByTime(10_000);
+        });
 
         expect(seen.every((s) => !s.loaded && !s.signedIn && !s.deferred)).toBe(true);
         expect(bridges.mounted).toBe(0);

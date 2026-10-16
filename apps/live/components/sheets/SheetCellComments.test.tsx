@@ -108,7 +108,9 @@ describe('cell comment markers', () => {
       };
       withComments(h, threads, wiring, null, { r: 1, c: 1 });
       expect(screen.queryByRole('tooltip')).toBeNull();
-      act(() => vi.advanceTimersByTime(500));
+      act(() => {
+        vi.advanceTimersByTime(500);
+      });
       const card = screen.getByRole('tooltip');
       expect(card.textContent).toContain('Priya');
       expect(card.textContent).toContain('Check this');

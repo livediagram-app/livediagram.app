@@ -176,7 +176,9 @@ describe('the mode filter', () => {
       expect(screen.getByRole('menu', { name: 'Show templates for' })).toBeTruthy();
       expect(document.activeElement).not.toBe(screen.getAllByRole('menuitemradio')[0]);
       fireEvent.pointerLeave(root, { pointerType: 'mouse' });
-      act(() => vi.advanceTimersByTime(250));
+      act(() => {
+        vi.advanceTimersByTime(250);
+      });
       expect(screen.queryByRole('menu', { name: 'Show templates for' })).toBeNull();
     } finally {
       vi.useRealTimers();

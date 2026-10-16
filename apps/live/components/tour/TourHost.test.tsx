@@ -77,7 +77,9 @@ describe('TourHost offer', () => {
     markTourPending();
     editor();
     render(<TourHost />);
-    act(() => vi.advanceTimersByTime(800));
+    act(() => {
+      vi.advanceTimersByTime(800);
+    });
     expect(offered()).toBe(true);
   });
 
@@ -85,18 +87,24 @@ describe('TourHost offer', () => {
     markTourPending();
     editor({ hydrated: false });
     const { rerender } = render(<TourHost />);
-    act(() => vi.advanceTimersByTime(2000));
+    act(() => {
+      vi.advanceTimersByTime(2000);
+    });
     expect(offered()).toBe(false);
     editor();
     rerender(<TourHost />);
-    act(() => vi.advanceTimersByTime(800));
+    act(() => {
+      vi.advanceTimersByTime(800);
+    });
     expect(offered()).toBe(true);
   });
 
   it('makes no offer without a handoff', () => {
     editor();
     render(<TourHost />);
-    act(() => vi.advanceTimersByTime(2000));
+    act(() => {
+      vi.advanceTimersByTime(2000);
+    });
     expect(offered()).toBe(false);
   });
 
@@ -107,12 +115,16 @@ describe('TourHost offer', () => {
       markTourPending();
       editor({ editorMode: { mode } });
       const { rerender } = render(<TourHost />);
-      act(() => vi.advanceTimersByTime(2000));
+      act(() => {
+        vi.advanceTimersByTime(2000);
+      });
       expect(offered()).toBe(false);
       expect(hasTourPending()).toBe(true);
       editor();
       rerender(<TourHost />);
-      act(() => vi.advanceTimersByTime(800));
+      act(() => {
+        vi.advanceTimersByTime(800);
+      });
       expect(offered()).toBe(true);
     },
   );
@@ -120,7 +132,9 @@ describe('TourHost offer', () => {
   it('is never owed in Facilitate without a handoff', () => {
     editor({ editorMode: { mode: 'facilitate' } });
     render(<TourHost />);
-    act(() => vi.advanceTimersByTime(2000));
+    act(() => {
+      vi.advanceTimersByTime(2000);
+    });
     expect(offered()).toBe(false);
   });
 
@@ -128,12 +142,16 @@ describe('TourHost offer', () => {
     markTourPending();
     editor({ userPreferences: { tourSeen: true } });
     const { rerender } = render(<TourHost />);
-    act(() => vi.advanceTimersByTime(2000));
+    act(() => {
+      vi.advanceTimersByTime(2000);
+    });
     expect(offered()).toBe(false);
     expect(hasTourPending()).toBe(false);
     editor({ userPreferences: { tourSeen: false } });
     rerender(<TourHost />);
-    act(() => vi.advanceTimersByTime(2000));
+    act(() => {
+      vi.advanceTimersByTime(2000);
+    });
     expect(offered()).toBe(false);
   });
 });
@@ -145,10 +163,14 @@ describe('TourHost alongside the Plan tour', () => {
     markTourPending();
     editor();
     render(<TourHost />);
-    act(() => vi.advanceTimersByTime(2000));
+    act(() => {
+      vi.advanceTimersByTime(2000);
+    });
     expect(offered()).toBe(false);
     act(() => setActiveTour('plan', false));
-    act(() => vi.advanceTimersByTime(800));
+    act(() => {
+      vi.advanceTimersByTime(800);
+    });
     expect(offered()).toBe(true);
   });
 
@@ -159,7 +181,9 @@ describe('TourHost alongside the Plan tour', () => {
     act(() => requestTourRelaunch());
     expect(offered()).toBe(false);
     act(() => setActiveTour('plan', false));
-    act(() => vi.advanceTimersByTime(800));
+    act(() => {
+      vi.advanceTimersByTime(800);
+    });
     expect(offered()).toBe(true);
   });
 
@@ -175,11 +199,15 @@ describe('TourHost alongside the Plan tour', () => {
     editor({ editorMode: { mode: 'plan' } });
     const { rerender } = render(<TourHost />);
     act(() => requestTourRelaunch());
-    act(() => vi.advanceTimersByTime(2000));
+    act(() => {
+      vi.advanceTimersByTime(2000);
+    });
     expect(offered()).toBe(false);
     editor();
     rerender(<TourHost />);
-    act(() => vi.advanceTimersByTime(800));
+    act(() => {
+      vi.advanceTimersByTime(800);
+    });
     expect(offered()).toBe(true);
   });
 });

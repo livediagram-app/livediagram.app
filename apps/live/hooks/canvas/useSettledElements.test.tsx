@@ -36,7 +36,9 @@ describe('useSettledElements', () => {
       end = beginCanvasGesture('move');
     });
     for (let n = 2; n < 30; n++) rerender({ elements: board(n) });
-    act(() => vi.advanceTimersByTime(MAP_REDRAW_MIN_MS * 4));
+    act(() => {
+      vi.advanceTimersByTime(MAP_REDRAW_MIN_MS * 4);
+    });
     expect(result.current).toHaveLength(1);
     act(() => end());
     expect(result.current).toHaveLength(29);
@@ -55,27 +57,37 @@ describe('useSettledElements', () => {
 
   it('shows a change at once after a quiet spell', () => {
     const { result, rerender } = setup();
-    act(() => vi.advanceTimersByTime(MAP_REDRAW_MIN_MS));
+    act(() => {
+      vi.advanceTimersByTime(MAP_REDRAW_MIN_MS);
+    });
     rerender({ elements: board(2) });
     expect(result.current).toHaveLength(2);
   });
 
   it('holds a burst of changes to one trailing redraw', () => {
     const { result, rerender } = setup();
-    act(() => vi.advanceTimersByTime(MAP_REDRAW_MIN_MS));
+    act(() => {
+      vi.advanceTimersByTime(MAP_REDRAW_MIN_MS);
+    });
     rerender({ elements: board(2) });
     rerender({ elements: board(3) });
     rerender({ elements: board(4) });
     expect(result.current).toHaveLength(2);
-    act(() => vi.advanceTimersByTime(MAP_REDRAW_MIN_MS - 1));
+    act(() => {
+      vi.advanceTimersByTime(MAP_REDRAW_MIN_MS - 1);
+    });
     expect(result.current).toHaveLength(2);
-    act(() => vi.advanceTimersByTime(1));
+    act(() => {
+      vi.advanceTimersByTime(1);
+    });
     expect(result.current).toHaveLength(4);
   });
 
   it('holds a trailing redraw that falls due mid-gesture until the gesture ends', () => {
     const { result, rerender } = setup();
-    act(() => vi.advanceTimersByTime(MAP_REDRAW_MIN_MS));
+    act(() => {
+      vi.advanceTimersByTime(MAP_REDRAW_MIN_MS);
+    });
     rerender({ elements: board(2) });
     rerender({ elements: board(3) });
     let end = () => {};
@@ -83,7 +95,9 @@ describe('useSettledElements', () => {
       end = beginCanvasGesture('move');
     });
     rerender({ elements: board(4) });
-    act(() => vi.advanceTimersByTime(MAP_REDRAW_MIN_MS * 2));
+    act(() => {
+      vi.advanceTimersByTime(MAP_REDRAW_MIN_MS * 2);
+    });
     expect(result.current).toHaveLength(2);
     act(() => end());
     expect(result.current).toHaveLength(4);
@@ -94,7 +108,9 @@ describe('useSettledElements', () => {
     act(() => {
       beginCanvasGesture('pan');
     });
-    act(() => vi.advanceTimersByTime(MAP_REDRAW_MIN_MS));
+    act(() => {
+      vi.advanceTimersByTime(MAP_REDRAW_MIN_MS);
+    });
     rerender({ elements: board(3) });
     expect(result.current).toHaveLength(3);
   });

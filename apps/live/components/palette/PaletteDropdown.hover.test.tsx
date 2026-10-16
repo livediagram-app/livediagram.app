@@ -44,17 +44,25 @@ describe('a dropdown that opens on hover', () => {
   it('opens for a resting mouse, stays open on the way into the menu, and closes after leaving both', () => {
     const { onChange, trigger } = show();
     pointer(trigger, 'pointerOver', 'mouse');
-    act(() => vi.advanceTimersByTime(DROPDOWN_HOVER_OPEN_MS - 1));
+    act(() => {
+      vi.advanceTimersByTime(DROPDOWN_HOVER_OPEN_MS - 1);
+    });
     expect(menu()).toBeNull();
-    act(() => vi.advanceTimersByTime(1));
+    act(() => {
+      vi.advanceTimersByTime(1);
+    });
     expect(menu()).toBeTruthy();
     // Out of the trigger and into the menu: still open.
     pointer(trigger, 'pointerOut', 'mouse');
     pointer(menu()!, 'pointerOver', 'mouse');
-    act(() => vi.advanceTimersByTime(DROPDOWN_HOVER_CLOSE_MS));
+    act(() => {
+      vi.advanceTimersByTime(DROPDOWN_HOVER_CLOSE_MS);
+    });
     expect(menu()).toBeTruthy();
     pointer(menu()!, 'pointerOut', 'mouse');
-    act(() => vi.advanceTimersByTime(DROPDOWN_HOVER_CLOSE_MS));
+    act(() => {
+      vi.advanceTimersByTime(DROPDOWN_HOVER_CLOSE_MS);
+    });
     expect(menu()).toBeNull();
     expect(onChange).not.toHaveBeenCalled();
   });
@@ -63,10 +71,14 @@ describe('a dropdown that opens on hover', () => {
     const { trigger } = show();
     pointer(trigger, 'pointerOver', 'mouse');
     pointer(trigger, 'pointerOut', 'mouse');
-    act(() => vi.advanceTimersByTime(DROPDOWN_HOVER_OPEN_MS * 2));
+    act(() => {
+      vi.advanceTimersByTime(DROPDOWN_HOVER_OPEN_MS * 2);
+    });
     expect(menu()).toBeNull();
     pointer(trigger, 'pointerOver', 'touch');
-    act(() => vi.advanceTimersByTime(DROPDOWN_HOVER_OPEN_MS * 2));
+    act(() => {
+      vi.advanceTimersByTime(DROPDOWN_HOVER_OPEN_MS * 2);
+    });
     expect(menu()).toBeNull();
     fireEvent.click(trigger);
     fireEvent.click(trigger);
@@ -76,7 +88,9 @@ describe('a dropdown that opens on hover', () => {
   it('stays click-to-open without it', () => {
     const { trigger } = show(false);
     pointer(trigger, 'pointerOver', 'mouse');
-    act(() => vi.advanceTimersByTime(DROPDOWN_HOVER_OPEN_MS * 2));
+    act(() => {
+      vi.advanceTimersByTime(DROPDOWN_HOVER_OPEN_MS * 2);
+    });
     expect(menu()).toBeNull();
   });
 });

@@ -76,7 +76,9 @@ describe('chevron stage controls', () => {
     ]);
     fireEvent.pointerLeave(zone(1));
     expect(screen.queryAllByRole('toolbar')).toHaveLength(1);
-    act(() => vi.advanceTimersByTime(HOVER_GRACE_MS));
+    act(() => {
+      vi.advanceTimersByTime(HOVER_GRACE_MS);
+    });
     expect(screen.queryAllByRole('toolbar')).toHaveLength(0);
   });
 
@@ -93,13 +95,17 @@ describe('chevron stage controls', () => {
     const drawn = zone(1).parentElement!.querySelector(':scope > :not([data-concept-row-zone])')!;
     const name = drawn.querySelector('*') ?? drawn;
     fireEvent.pointerMove(name, { clientX: 150, clientY: 40 });
-    act(() => vi.advanceTimersByTime(HOVER_GRACE_MS * 2));
+    act(() => {
+      vi.advanceTimersByTime(HOVER_GRACE_MS * 2);
+    });
     expect(screen.getAllByRole('toolbar').map((t) => t.getAttribute('aria-label'))).toEqual([
       'Stage 2',
     ]);
     // Off the names altogether: gone after the grace.
     fireEvent.pointerLeave(name);
-    act(() => vi.advanceTimersByTime(HOVER_GRACE_MS));
+    act(() => {
+      vi.advanceTimersByTime(HOVER_GRACE_MS);
+    });
     expect(screen.queryAllByRole('toolbar')).toHaveLength(0);
   });
 

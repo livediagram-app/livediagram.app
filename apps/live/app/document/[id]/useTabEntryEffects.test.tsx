@@ -24,7 +24,10 @@ function setup(initial: Props) {
 }
 
 // The fit is deferred a frame, so the canvas has its measured size.
-const nextFrame = () => act(() => vi.runAllTimers());
+const nextFrame = () =>
+  act(() => {
+    vi.runAllTimers();
+  });
 
 beforeEach(() => {
   vi.useFakeTimers({ toFake: ['requestAnimationFrame', 'cancelAnimationFrame'] });

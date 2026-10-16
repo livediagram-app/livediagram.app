@@ -160,7 +160,9 @@ describe('a long-press on the empty canvas', () => {
     const { result, calls, setMarquee, setPan, onCanvasContextMenu } = setup();
     act(() => result.current.onPointerDown(touch()));
     expect(calls).toEqual([]);
-    act(() => vi.advanceTimersByTime(LONG_PRESS_MS));
+    act(() => {
+      vi.advanceTimersByTime(LONG_PRESS_MS);
+    });
     expect(calls).toEqual(['deselect', 'menu']);
     expect(onCanvasContextMenu).toHaveBeenCalledWith(70, 80);
     expect(setMarquee).toHaveBeenCalledWith(null);
@@ -182,7 +184,9 @@ describe('a long-press on the empty canvas', () => {
     vi.useFakeTimers();
     const { result } = setup();
     act(() => result.current.onPointerDown(touch()));
-    act(() => vi.advanceTimersByTime(200));
+    act(() => {
+      vi.advanceTimersByTime(200);
+    });
     expect(result.current.canvasLongPress.pressPoint).toEqual({ x: 70, y: 80 });
   });
 });
@@ -210,7 +214,9 @@ describe('a press that pans through an element', () => {
       expect.objectContaining({ startClientX: 10, startClientY: 20 }),
     );
     expect(setMarquee).not.toHaveBeenCalled();
-    act(() => vi.advanceTimersByTime(LONG_PRESS_MS + 50));
+    act(() => {
+      vi.advanceTimersByTime(LONG_PRESS_MS + 50);
+    });
     expect(onCanvasContextMenu).not.toHaveBeenCalled();
     vi.useRealTimers();
   });

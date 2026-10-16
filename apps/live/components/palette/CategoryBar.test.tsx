@@ -53,7 +53,10 @@ const flyout = () => document.querySelector('[data-category-flyout]') as HTMLEle
 const side = () => document.querySelector('[data-category-flyout-side]') as HTMLElement | null;
 const heading = () => flyout()?.querySelector('h3')?.textContent;
 const mouse = { pointerType: 'mouse' };
-const wait = (ms: number) => act(() => vi.advanceTimersByTime(ms));
+const wait = (ms: number) =>
+  act(() => {
+    vi.advanceTimersByTime(ms);
+  });
 
 describe('hover intent', () => {
   it('opens a category the pointer rests on, not one it sweeps across', () => {

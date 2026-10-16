@@ -153,7 +153,9 @@ describe('WhiteboardPenPreview', () => {
         />,
       );
       expect(container.querySelector('[data-recognition-preview]')).toBeNull();
-      act(() => vi.advanceTimersByTime(RECOGNITION_PREVIEW_DWELL_MS + 10));
+      act(() => {
+        vi.advanceTimersByTime(RECOGNITION_PREVIEW_DWELL_MS + 10);
+      });
       const preview = container.querySelector(
         '[data-recognition-preview="square"]',
       ) as HTMLDivElement;
@@ -170,7 +172,9 @@ describe('WhiteboardPenPreview', () => {
       const { container } = render(
         <WhiteboardPenPreview stroke={liveStrokeOf(square)} pen={pen()} ink="#1c1917" zoom={1} />,
       );
-      act(() => vi.advanceTimersByTime(RECOGNITION_PREVIEW_DWELL_MS * 2));
+      act(() => {
+        vi.advanceTimersByTime(RECOGNITION_PREVIEW_DWELL_MS * 2);
+      });
       expect(container.querySelector('[data-recognition-preview]')).toBeNull();
     });
   });
@@ -190,7 +194,9 @@ describe('WhiteboardPenPreview', () => {
       const view = render(
         <WhiteboardPenPreview stroke={stroke} pen={pen({ recognise })} ink="#1c1917" zoom={2} />,
       );
-      act(() => vi.advanceTimersByTime(RECOGNITION_PREVIEW_DWELL_MS + 10));
+      act(() => {
+        vi.advanceTimersByTime(RECOGNITION_PREVIEW_DWELL_MS + 10);
+      });
       return { stroke, ...view };
     };
 

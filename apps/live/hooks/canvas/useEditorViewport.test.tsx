@@ -46,7 +46,9 @@ describe('useEditorViewport scrolling a new element into view', () => {
       view.rerender({ tab: tabOf([near, far]) });
     });
 
-    act(() => vi.advanceTimersByTime(800));
+    act(() => {
+      vi.advanceTimersByTime(800);
+    });
     expect(view.result.current.viewport.get().offset).not.toEqual(before);
   });
 
@@ -58,7 +60,9 @@ describe('useEditorViewport scrolling a new element into view', () => {
       selection.setSelectedId(sheet.id);
       view.rerender({ tab: tabOf([near, sheet]) });
     });
-    act(() => vi.advanceTimersByTime(800));
+    act(() => {
+      vi.advanceTimersByTime(800);
+    });
     expect(view.result.current.viewport.get().offset).toEqual(before);
   });
 
@@ -68,7 +72,9 @@ describe('useEditorViewport scrolling a new element into view', () => {
 
     act(() => view.rerender({ tab: tabOf([near, createShape('square', 3000, 3000)]) }));
 
-    act(() => vi.advanceTimersByTime(800));
+    act(() => {
+      vi.advanceTimersByTime(800);
+    });
     expect(view.result.current.viewport.get().offset).toEqual(before);
   });
 });
@@ -111,15 +117,21 @@ describe('useEditorViewport focus', () => {
     const box = { x: far.x, y: far.y, w: far.width, h: far.height };
     act(() => view.result.current.focusOn(box, 1.5));
     // Part way there, still moving.
-    act(() => vi.advanceTimersByTime(100));
+    act(() => {
+      vi.advanceTimersByTime(100);
+    });
     const mid = view.result.current.viewport.get();
-    act(() => vi.advanceTimersByTime(800));
+    act(() => {
+      vi.advanceTimersByTime(800);
+    });
     const fitted = view.result.current.viewport.get();
     expect(fitted.zoom).toBeCloseTo(1.5);
     expect(fitted.offset).not.toEqual(mid.offset);
     // Already fitted: out to everything.
     act(() => view.result.current.focusOn(box, 1.5));
-    act(() => vi.advanceTimersByTime(800));
+    act(() => {
+      vi.advanceTimersByTime(800);
+    });
     expect(view.result.current.viewport.get().zoom).toBeLessThan(fitted.zoom);
   });
 
@@ -129,16 +141,24 @@ describe('useEditorViewport focus', () => {
     act(() => view.rerender({ tab: tabOf([createShape('square', 10, 10), far]) }));
     const box = { x: far.x, y: far.y, w: far.width, h: far.height };
     act(() => view.result.current.focusOn(box, 1.5));
-    act(() => vi.advanceTimersByTime(100));
+    act(() => {
+      vi.advanceTimersByTime(100);
+    });
     // A wheel or pinch of the person's own.
     act(() => view.result.current.viewport.setOffset({ x: 7, y: 9 }));
-    act(() => vi.advanceTimersByTime(800));
+    act(() => {
+      vi.advanceTimersByTime(800);
+    });
     expect(view.result.current.viewport.get().offset).toEqual({ x: 7, y: 9 });
     act(() => view.result.current.focusOn(box, 1.5));
-    act(() => vi.advanceTimersByTime(100));
+    act(() => {
+      vi.advanceTimersByTime(100);
+    });
     const at = view.result.current.viewport.get();
     view.unmount();
-    act(() => vi.advanceTimersByTime(800));
+    act(() => {
+      vi.advanceTimersByTime(800);
+    });
     expect(view.result.current.viewport.get()).toEqual(at);
   });
 

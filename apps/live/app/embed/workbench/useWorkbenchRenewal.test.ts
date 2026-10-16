@@ -94,11 +94,17 @@ describe('useWorkbenchRenewal', () => {
     const { port } = fakePort();
     mount(port, mounted);
 
-    act(() => vi.advanceTimersByTime(TTL - WORKBENCH_RENEW_LEAD_MS - 1));
+    act(() => {
+      vi.advanceTimersByTime(TTL - WORKBENCH_RENEW_LEAD_MS - 1);
+    });
     expect(renews(port)).toBe(0);
-    act(() => vi.advanceTimersByTime(1));
+    act(() => {
+      vi.advanceTimersByTime(1);
+    });
     expect(port.send).toHaveBeenCalledWith({ type: 'livediagram:renew', v: 1 });
-    act(() => vi.advanceTimersByTime(WORKBENCH_RENEW_RETRY_MS * 2));
+    act(() => {
+      vi.advanceTimersByTime(WORKBENCH_RENEW_RETRY_MS * 2);
+    });
     expect(renews(port)).toBe(3);
   });
 
@@ -106,7 +112,9 @@ describe('useWorkbenchRenewal', () => {
     const { port } = fakePort();
     mount(port, { ...mounted, session: { ...SESSION, expiresAt: NOW + 1_000 } });
 
-    act(() => vi.advanceTimersByTime(0));
+    act(() => {
+      vi.advanceTimersByTime(0);
+    });
 
     expect(renews(port)).toBe(1);
   });
@@ -128,11 +136,15 @@ describe('useWorkbenchRenewal', () => {
     const { port, deliver } = fakePort();
     redeem.mockResolvedValue({ kind: 'opened', session: RENEWED });
     const { result } = mount(port, mounted);
-    act(() => vi.advanceTimersByTime(TTL - WORKBENCH_RENEW_LEAD_MS));
+    act(() => {
+      vi.advanceTimersByTime(TTL - WORKBENCH_RENEW_LEAD_MS);
+    });
     expect(renews(port)).toBe(1);
 
     await act(async () => deliver({ type: 'livediagram:ticket', v: 1, ticket: TICKET }));
-    act(() => vi.advanceTimersByTime(WORKBENCH_RENEW_LEAD_MS));
+    act(() => {
+      vi.advanceTimersByTime(WORKBENCH_RENEW_LEAD_MS);
+    });
 
     expect(result.current.phase).toBe('mounted');
     expect(renews(port)).toBe(1);
@@ -194,11 +206,15 @@ describe('useWorkbenchRenewal', () => {
     const { port, listeners } = fakePort();
     const { result } = mount(port, mounted);
 
-    act(() => vi.advanceTimersByTime(TTL));
+    act(() => {
+      vi.advanceTimersByTime(TTL);
+    });
 
     expect(result.current).toMatchObject({ phase: 'ended', reason: 'expired' });
     const asked = renews(port);
-    act(() => vi.advanceTimersByTime(WORKBENCH_RENEW_RETRY_MS * 3));
+    act(() => {
+      vi.advanceTimersByTime(WORKBENCH_RENEW_RETRY_MS * 3);
+    });
     expect(renews(port)).toBe(asked);
     expect(listeners.size).toBe(0);
   });
@@ -207,7 +223,9 @@ describe('useWorkbenchRenewal', () => {
     const { port } = fakePort();
     mount(port, { phase: 'binding', session: SESSION });
 
-    act(() => vi.advanceTimersByTime(2 * TTL));
+    act(() => {
+      vi.advanceTimersByTime(2 * TTL);
+    });
 
     expect(port.send).not.toHaveBeenCalled();
   });
@@ -215,7 +233,9 @@ describe('useWorkbenchRenewal', () => {
   it('does nothing without a port', () => {
     const { result } = mount(null, mounted);
 
-    act(() => vi.advanceTimersByTime(TTL - 1));
+    act(() => {
+      vi.advanceTimersByTime(TTL - 1);
+    });
 
     expect(result.current.phase).toBe('mounted');
   });

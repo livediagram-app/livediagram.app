@@ -97,7 +97,7 @@ describe('renderUnits', () => {
     for (const anim of ['typewriter', 'words', 'focus'] as const) {
       const plan = planTextAnimation(['one two', 'three'], anim, 'x');
       const counter = { next: 0 };
-      renderUnits('one two', plan, counter);
+      void renderUnits('one two', plan, counter);
       expect(counter.next).toBe(plan.mode === 'block' ? 1 : unitCount('one two', plan));
     }
   });
@@ -167,7 +167,7 @@ describe('performance', () => {
     const start = performance.now();
     for (let i = 0; i < 10; i++) {
       const plan = planTextAnimation([text], 'scramble', 'el1');
-      renderUnits(text, plan, { next: 0 });
+      void renderUnits(text, plan, { next: 0 });
     }
     // Ten splits; the budget is 5 ms each, generous for a loaded CI machine.
     expect((performance.now() - start) / 10).toBeLessThan(5);

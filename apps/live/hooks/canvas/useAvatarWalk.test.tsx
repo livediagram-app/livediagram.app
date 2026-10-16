@@ -65,7 +65,9 @@ describe('useAvatarWalk with a fence', () => {
       const { result } = setup(vi.fn(), [fence]);
       act(() => result.current.teleportTo({ x: 120, y: 200 }));
       act(() => result.current.walkTo({ x: 120, y: 0 }));
-      act(() => vi.advanceTimersByTime(3000));
+      act(() => {
+        vi.advanceTimersByTime(3000);
+      });
       const pos = result.current.pos!;
       expect(pos.y).toBeGreaterThanOrEqual(112 + FENCE_REACH);
       expect(pos.y).toBeLessThan(112 + FENCE_REACH + 1);
@@ -84,7 +86,9 @@ describe('useAvatarWalk with a fence', () => {
       act(() => result.current.teleportTo({ x: 120, y: 200 }));
       // A peer 6 px from the fence's line: the walk stops at the reach, 6 px short of them.
       act(() => result.current.walkTo({ x: 120, y: 118 }, arrived));
-      act(() => vi.advanceTimersByTime(3000));
+      act(() => {
+        vi.advanceTimersByTime(3000);
+      });
       expect(arrived).toHaveBeenCalledTimes(1);
     } finally {
       vi.useRealTimers();
@@ -104,11 +108,17 @@ describe('useAvatarWalk with a drink', () => {
       expect(result.current.holding).toBe('coffee');
       expect(onPresence).toHaveBeenLastCalledWith(expect.objectContaining({ holding: 'coffee' }));
       // Another drink swaps the cup and restarts the minute.
-      act(() => vi.advanceTimersByTime(DRINK_HOLD_MS - 1000));
+      act(() => {
+        vi.advanceTimersByTime(DRINK_HOLD_MS - 1000);
+      });
       act(() => result.current.giveDrink('water'));
-      act(() => vi.advanceTimersByTime(DRINK_HOLD_MS - 1000));
+      act(() => {
+        vi.advanceTimersByTime(DRINK_HOLD_MS - 1000);
+      });
       expect(result.current.holding).toBe('water');
-      act(() => vi.advanceTimersByTime(1000));
+      act(() => {
+        vi.advanceTimersByTime(1000);
+      });
       expect(result.current.holding).toBeNull();
       expect(onPresence).toHaveBeenLastCalledWith(expect.objectContaining({ holding: null }));
     } finally {
@@ -161,7 +171,9 @@ describe('useAvatarWalk with a drink', () => {
       );
       act(() => hook.result.current.teleportTo({ x: 128, y: 400 }));
       act(() => hook.result.current.walkTo({ x: 128, y: 190 }));
-      act(() => vi.advanceTimersByTime(3000));
+      act(() => {
+        vi.advanceTimersByTime(3000);
+      });
       expect(onWalkIntoDrink).toHaveBeenCalledTimes(1);
       expect(onWalkIntoDrink).toHaveBeenCalledWith(expect.objectContaining({ id: 'cooler' }));
     } finally {

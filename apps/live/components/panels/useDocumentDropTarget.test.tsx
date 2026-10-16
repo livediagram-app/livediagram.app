@@ -63,12 +63,18 @@ describe('useDocumentDropTarget', () => {
     render(<Target onDrop={vi.fn()} onLongHover={onLongHover} />);
     const target = screen.getByTestId('target');
     fireEvent.dragOver(target, { dataTransfer: docDrag() });
-    act(() => vi.advanceTimersByTime(DRAG_HOVER_TOGGLE_MS - 1));
+    act(() => {
+      vi.advanceTimersByTime(DRAG_HOVER_TOGGLE_MS - 1);
+    });
     expect(onLongHover).not.toHaveBeenCalled();
-    act(() => vi.advanceTimersByTime(1));
+    act(() => {
+      vi.advanceTimersByTime(1);
+    });
     expect(onLongHover).toHaveBeenCalledTimes(1);
     fireEvent.dragOver(target, { dataTransfer: docDrag() });
-    act(() => vi.advanceTimersByTime(DRAG_HOVER_TOGGLE_MS * 3));
+    act(() => {
+      vi.advanceTimersByTime(DRAG_HOVER_TOGGLE_MS * 3);
+    });
     expect(onLongHover).toHaveBeenCalledTimes(1);
   });
 
@@ -77,10 +83,14 @@ describe('useDocumentDropTarget', () => {
     render(<Target onDrop={vi.fn()} onLongHover={onLongHover} />);
     const target = screen.getByTestId('target');
     fireEvent.dragOver(target, { dataTransfer: docDrag() });
-    act(() => vi.advanceTimersByTime(DRAG_HOVER_TOGGLE_MS));
+    act(() => {
+      vi.advanceTimersByTime(DRAG_HOVER_TOGGLE_MS);
+    });
     fireEvent.dragLeave(target);
     fireEvent.dragOver(target, { dataTransfer: docDrag() });
-    act(() => vi.advanceTimersByTime(DRAG_HOVER_TOGGLE_MS));
+    act(() => {
+      vi.advanceTimersByTime(DRAG_HOVER_TOGGLE_MS);
+    });
     expect(onLongHover).toHaveBeenCalledTimes(2);
   });
 
@@ -89,9 +99,13 @@ describe('useDocumentDropTarget', () => {
     render(<Target onDrop={vi.fn()} onLongHover={onLongHover} />);
     const target = screen.getByTestId('target');
     fireEvent.dragOver(target, { dataTransfer: docDrag() });
-    act(() => vi.advanceTimersByTime(DRAG_HOVER_TOGGLE_MS / 2));
+    act(() => {
+      vi.advanceTimersByTime(DRAG_HOVER_TOGGLE_MS / 2);
+    });
     fireEvent.dragLeave(target);
-    act(() => vi.advanceTimersByTime(DRAG_HOVER_TOGGLE_MS));
+    act(() => {
+      vi.advanceTimersByTime(DRAG_HOVER_TOGGLE_MS);
+    });
     expect(onLongHover).not.toHaveBeenCalled();
     expect(target.dataset.over).toBe('false');
   });
@@ -105,7 +119,9 @@ describe('useDocumentDropTarget', () => {
     // Into the child: it enters the child (bubbling here) before it leaves the row itself.
     fireEvent.dragEnter(screen.getByTestId('child'), { dataTransfer: docDrag() });
     fireEvent.dragLeave(target);
-    act(() => vi.advanceTimersByTime(DRAG_HOVER_TOGGLE_MS));
+    act(() => {
+      vi.advanceTimersByTime(DRAG_HOVER_TOGGLE_MS);
+    });
     expect(onLongHover).toHaveBeenCalledTimes(1);
     expect(target.dataset.over).toBe('true');
     // Out of the child and out of the row: now it has left.
@@ -119,7 +135,9 @@ describe('useDocumentDropTarget', () => {
     const target = screen.getByTestId('target');
     fireEvent.dragOver(target, { dataTransfer: docDrag() });
     fireEvent.drop(target, { dataTransfer: docDrag() });
-    act(() => vi.advanceTimersByTime(DRAG_HOVER_TOGGLE_MS));
+    act(() => {
+      vi.advanceTimersByTime(DRAG_HOVER_TOGGLE_MS);
+    });
     expect(onLongHover).not.toHaveBeenCalled();
   });
 

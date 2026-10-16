@@ -38,16 +38,22 @@ describe('useRecognitionPreview', () => {
 
   it('shows the shape once the pen has held still for the delay, not before', () => {
     const { result } = hook(liveStrokeOf(square()));
-    act(() => vi.advanceTimersByTime(RECOGNITION_PREVIEW_DWELL_MS - 50));
+    act(() => {
+      vi.advanceTimersByTime(RECOGNITION_PREVIEW_DWELL_MS - 50);
+    });
     expect(result.current.shape).toBeNull();
-    act(() => vi.advanceTimersByTime(60));
+    act(() => {
+      vi.advanceTimersByTime(60);
+    });
     expect(result.current.shape?.kind).toBe('square');
   });
 
   it('keeps the shape once shown: dragging on resizes it, and the stroke never comes back', () => {
     const stroke = liveStrokeOf(square());
     const { result } = hook(stroke);
-    act(() => vi.advanceTimersByTime(RECOGNITION_PREVIEW_DWELL_MS + 10));
+    act(() => {
+      vi.advanceTimersByTime(RECOGNITION_PREVIEW_DWELL_MS + 10);
+    });
     const shown = result.current.shape!;
     expect(shown.kind).toBe('square');
     // The pen rests at the top-left corner; dragging it 50 px up and left grows the box there.
@@ -64,7 +70,9 @@ describe('useRecognitionPreview', () => {
   it('keeps it while the pen only trembles within the still radius', () => {
     const stroke = liveStrokeOf(square());
     const { result } = hook(stroke);
-    act(() => vi.advanceTimersByTime(RECOGNITION_PREVIEW_DWELL_MS + 10));
+    act(() => {
+      vi.advanceTimersByTime(RECOGNITION_PREVIEW_DWELL_MS + 10);
+    });
     act(() => {
       stroke.push(2, 1);
       stroke.notify();
@@ -74,13 +82,17 @@ describe('useRecognitionPreview', () => {
 
   it('does nothing with recognition off', () => {
     const { result } = hook(liveStrokeOf(square()), false);
-    act(() => vi.advanceTimersByTime(RECOGNITION_PREVIEW_DWELL_MS * 2));
+    act(() => {
+      vi.advanceTimersByTime(RECOGNITION_PREVIEW_DWELL_MS * 2);
+    });
     expect(result.current.shape).toBeNull();
   });
 
   it('forgets it when the stroke ends', () => {
     const { result, rerender } = hook(liveStrokeOf(square()));
-    act(() => vi.advanceTimersByTime(RECOGNITION_PREVIEW_DWELL_MS + 10));
+    act(() => {
+      vi.advanceTimersByTime(RECOGNITION_PREVIEW_DWELL_MS + 10);
+    });
     rerender({ stroke: null, active: true });
     expect(result.current.shape).toBeNull();
   });
@@ -89,7 +101,9 @@ describe('useRecognitionPreview', () => {
     const stroke = liveStrokeOf(square());
     stroke.constrain(true);
     const { result } = hook(stroke);
-    act(() => vi.advanceTimersByTime(RECOGNITION_PREVIEW_DWELL_MS + 10));
+    act(() => {
+      vi.advanceTimersByTime(RECOGNITION_PREVIEW_DWELL_MS + 10);
+    });
     expect(result.current.shape!.bbox.width).toBe(result.current.shape!.bbox.height);
     expect(stroke.shaped()).toEqual(result.current.shape);
   });
@@ -97,7 +111,9 @@ describe('useRecognitionPreview', () => {
   it('reshapes perfect once Shift is held: what shows is what shaped() commits', () => {
     const stroke = liveStrokeOf(square());
     const { result } = hook(stroke);
-    act(() => vi.advanceTimersByTime(RECOGNITION_PREVIEW_DWELL_MS + 10));
+    act(() => {
+      vi.advanceTimersByTime(RECOGNITION_PREVIEW_DWELL_MS + 10);
+    });
     act(() => {
       stroke.constrain(true);
       stroke.push(-50, -20);
@@ -131,7 +147,10 @@ describe('useRecognitionPreview, flipped', () => {
       stroke.push(x, y);
       stroke.notify();
     });
-  const wait = (ms = RECOGNITION_PREVIEW_DWELL_MS + 10) => act(() => vi.advanceTimersByTime(ms));
+  const wait = (ms = RECOGNITION_PREVIEW_DWELL_MS + 10) =>
+    act(() => {
+      vi.advanceTimersByTime(ms);
+    });
 
   it('shows the shape at once when Alt recognises it with recognition off', () => {
     const stroke = liveStrokeOf(square());
@@ -193,7 +212,10 @@ describe('useRecognitionPreview, the chip', () => {
 
   const hook = (stroke: LiveStroke, active: boolean) =>
     renderHook(() => useRecognitionPreview(stroke, active, 1, 1.5));
-  const wait = () => act(() => vi.advanceTimersByTime(RECOGNITION_PREVIEW_DWELL_MS + 10));
+  const wait = () =>
+    act(() => {
+      vi.advanceTimersByTime(RECOGNITION_PREVIEW_DWELL_MS + 10);
+    });
   const scribble = (): P[] =>
     Array.from({ length: 30 }, (_, i) => ({ x: i * 7, y: (i * 37) % 23 }));
 

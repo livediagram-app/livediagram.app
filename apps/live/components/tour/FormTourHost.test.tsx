@@ -84,9 +84,13 @@ describe('FormTourHost offer', () => {
   it('offers itself after the settle delay on a Form tab', () => {
     editor();
     render(<FormTourHost />);
-    act(() => vi.advanceTimersByTime(799));
+    act(() => {
+      vi.advanceTimersByTime(799);
+    });
     expect(offered()).toBe(false);
-    act(() => vi.advanceTimersByTime(1));
+    act(() => {
+      vi.advanceTimersByTime(1);
+    });
     expect(offered()).toBe(true);
     expect(stage.engine?.active).toBe(true);
   });
@@ -94,11 +98,15 @@ describe('FormTourHost offer', () => {
   it('waits for a Form tab', () => {
     editor({ activeTab: { id: 'board1', kind: 'board', locked: false } });
     const { rerender } = render(<FormTourHost />);
-    act(() => vi.advanceTimersByTime(2000));
+    act(() => {
+      vi.advanceTimersByTime(2000);
+    });
     expect(offered()).toBe(false);
     editor();
     rerender(<FormTourHost />);
-    act(() => vi.advanceTimersByTime(800));
+    act(() => {
+      vi.advanceTimersByTime(800);
+    });
     expect(offered()).toBe(true);
   });
 
@@ -114,7 +122,9 @@ describe('FormTourHost offer', () => {
   ])('makes no offer when %s', (_why, over) => {
     editor(over);
     render(<FormTourHost />);
-    act(() => vi.advanceTimersByTime(2000));
+    act(() => {
+      vi.advanceTimersByTime(2000);
+    });
     expect(offered()).toBe(false);
   });
 
@@ -122,10 +132,14 @@ describe('FormTourHost offer', () => {
     setActiveTour('plan', true);
     editor();
     render(<FormTourHost />);
-    act(() => vi.advanceTimersByTime(2000));
+    act(() => {
+      vi.advanceTimersByTime(2000);
+    });
     expect(offered()).toBe(false);
     act(() => setActiveTour('plan', false));
-    act(() => vi.advanceTimersByTime(800));
+    act(() => {
+      vi.advanceTimersByTime(800);
+    });
     expect(offered()).toBe(true);
   });
 
@@ -133,10 +147,14 @@ describe('FormTourHost offer', () => {
     act(() => setStartPanelOpen(true));
     editor();
     render(<FormTourHost />);
-    act(() => vi.advanceTimersByTime(2000));
+    act(() => {
+      vi.advanceTimersByTime(2000);
+    });
     expect(offered()).toBe(false);
     act(() => setStartPanelOpen(false));
-    act(() => vi.advanceTimersByTime(800));
+    act(() => {
+      vi.advanceTimersByTime(800);
+    });
     expect(offered()).toBe(true);
   });
 
@@ -144,10 +162,14 @@ describe('FormTourHost offer', () => {
   it('reruns from Show Me Around for someone who has seen it', () => {
     editor({ userPreferences: { tourSeen: true, formTourSeen: true } });
     render(<FormTourHost />);
-    act(() => vi.advanceTimersByTime(2000));
+    act(() => {
+      vi.advanceTimersByTime(2000);
+    });
     expect(offered()).toBe(false);
     act(() => requestFormTourRelaunch());
-    act(() => vi.advanceTimersByTime(0));
+    act(() => {
+      vi.advanceTimersByTime(0);
+    });
     expect(offered()).toBe(true);
   });
 });
@@ -156,7 +178,9 @@ describe('FormTourHost steps', () => {
   const start = (tab = formTab()) => {
     editor({ activeTab: tab });
     const r = render(<FormTourHost />);
-    act(() => vi.advanceTimersByTime(800));
+    act(() => {
+      vi.advanceTimersByTime(800);
+    });
     return r;
   };
 
