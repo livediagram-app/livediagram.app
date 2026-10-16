@@ -22,7 +22,7 @@ export function looksLikeMarkdown(text: string): boolean {
 // Bold and italic at once (`***x***`, `___x___`) first, so the two marks are read together rather than as bold inside
 // two literal stars.
 const INLINE =
-  /(\*\*\*([^*]+)\*\*\*|___([^_]+)___|\*\*([^*]+)\*\*|__([^_]+)__|~~([^~]+)~~|`([^`]+)`|\[([^\]]+)\]\(([^)\s]+)\)|\*([^*\s][^*]*)\*|_([^_\s][^_]*)_)/;
+  /(\*\*\*([^*]+)\*\*\*|___([^_]+)___|\*\*([^*]+)\*\*|__([^_]+)__|~~([^~]+)~~|(?<!`)(`+)(?!`)([\s\S]*?[^`])\7(?!`)|\[([^\]]+)\]\(([^)\s]+)\)|\*([^*\s][^*]*)\*|_([^_\s][^_]*)_)/;
 
 // Markdown's backslash escapes (`\\*` is a literal `*`): held as private-use characters while the
 // marks are read, so an escaped character never opens or closes one, then put back as the character.
@@ -34,6 +34,16 @@ const holdEscapes = (text: string) =>
   );
 const releaseEscapes = (text: string) =>
   text.replace(/[\ue000-\ue00f]/g, (c) => ESCAPABLE[c.charCodeAt(0) - HELD]!);
+
+// A code span's text as CommonMark reads it: escapes stay literal (a held escape goes back to its
+// backslash and character), and one space is stripped from each end when both ends have one and the
+// text is not all spaces.
+const releaseLiteral = (text: string) =>
+  text.replace(/[\ue000-\ue00f]/g, (c) => '\\' + ESCAPABLE[c.charCodeAt(0) - HELD]!);
+function codeText(held: string): string {
+  const text = releaseLiteral(held);
+  return /^ [\s\S]*[^ ][\s\S]* $/.test(text) ? text.slice(1, -1) : text;
+}
 
 /** One line's inline Markdown as runs. */
 export function parseInline(text: string, base: Omit<ArticleRun, 'text'> = {}): ArticleRun[] {
@@ -52,11 +62,11 @@ function readInline(text: string, base: Omit<ArticleRun, 'text'>): ArticleRun[] 
       break;
     }
     if (m.index > 0) runs.push({ ...base, text: rest.slice(0, m.index) });
-    const [, , both, both2, bold, bold2, strike, code, linkText, href, ital, ital2] = m;
+    const [, , both, both2, bold, bold2, strike, , code, linkText, href, ital, ital2] = m;
     if (both ?? both2) runs.push(...readInline((both ?? both2)!, { ...base, b: true, i: true }));
     else if (bold ?? bold2) runs.push(...readInline((bold ?? bold2)!, { ...base, b: true }));
     else if (strike) runs.push(...readInline(strike, { ...base, s: true }));
-    else if (code) runs.push({ ...base, text: code, code: true });
+    else if (code) runs.push({ ...base, text: codeText(code), code: true });
     else if (linkText && href) {
       const safe = releaseEscapes(href);
       runs.push(...readInline(linkText, isSafeArticleHref(safe) ? { ...base, href: safe } : base));
