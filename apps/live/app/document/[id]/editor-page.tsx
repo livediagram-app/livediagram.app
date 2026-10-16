@@ -124,17 +124,17 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
       folders={folders}
       loading={documentListLoading}
       shared={sharedDocuments}
-      onDismissShared={dismissSharedDocument}
+      onDismissShared={(id) => void dismissSharedDocument(id)}
       currentDocumentId={null}
       onMoveTo={(x, y) => setExplorerPosition({ x, y })}
       onReset={() => setExplorerPosition(null)}
       onOpenDocument={openDocument}
       onNewDocument={newDocument}
-      onDeleteDocument={deleteDocument}
+      onDeleteDocument={(id) => void deleteDocument(id)}
       onDuplicateDocument={(id) => void duplicateDocument(id)}
       onCreateFolder={createFolder}
       onRenameFolder={renameFolder}
-      onDeleteFolder={deleteFolder}
+      onDeleteFolder={(id) => void deleteFolder(id)}
       onMoveDocumentToFolder={moveDocumentToFolder}
     />
   );

@@ -157,7 +157,7 @@ export function CustomFieldEditor({
           disabled={disabled}
           className="h-4 w-4 accent-brand-600 enabled:cursor-pointer"
           checked={value === true}
-          onChange={(e) => onSave(e.target.checked ? true : undefined)}
+          onChange={(e) => void onSave(e.target.checked ? true : undefined)}
         />
       );
     case 'choice': {
@@ -169,7 +169,7 @@ export function CustomFieldEditor({
           selectClassName="text-[13px]"
           disabled={disabled}
           value={options.includes(text) ? text : ''}
-          onChange={(e) => onSave(e.target.value || undefined)}
+          onChange={(e) => void onSave(e.target.value || undefined)}
         >
           <option value="">None</option>
           {options.map((o) => (
@@ -223,14 +223,14 @@ export function CustomFieldEditor({
             style={scale > RATING_STARS_ON_CARD ? 'numbers' : 'stars'}
             size="sm"
             disabled={disabled}
-            onChange={(v) => onSave(v)}
+            onChange={(v) => void onSave(v)}
           />
           {n !== undefined && !disabled ? (
             <button
               type="button"
               aria-label={`Clear ${field.label}`}
               className="flex h-6 w-6 cursor-pointer items-center justify-center rounded-md text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200"
-              onClick={() => onSave(undefined)}
+              onClick={() => void onSave(undefined)}
             >
               <CloseIcon size={12} />
             </button>

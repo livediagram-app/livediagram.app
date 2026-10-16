@@ -69,7 +69,7 @@ function load(): Promise<LoadedReader> {
   return loading;
 }
 
-scope.addEventListener('message', async ({ data: request }) => {
+async function handle(request: ReaderRequest): Promise<void> {
   if (request.type === 'cancel') {
     cancelled.add(request.id);
     return;
@@ -115,4 +115,7 @@ scope.addEventListener('message', async ({ data: request }) => {
   const seconds = ((performance.now() - started) / 1000).toFixed(1);
   debugLog(`[reader] ${request.crops.length} crops on ${loaded.backend} in ${seconds} s`);
   scope.postMessage({ type: 'done', id: request.id });
-});
+}
+
+// Each failure is answered to the page inside `handle`.
+scope.addEventListener('message', ({ data }) => void handle(data));

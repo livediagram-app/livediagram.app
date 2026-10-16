@@ -246,12 +246,12 @@ function SignInContent() {
           inputRefs={codeInputRefs}
           loading={loading}
           ready={clerkSignIn}
-          onSubmit={handleVerifyCode}
-          onResend={handleResendCode}
+          onSubmit={(e, code) => void handleVerifyCode(e, code)}
+          onResend={() => void handleResendCode()}
           onBack={clearAndGoBack}
         />
       ) : (
-        <form onSubmit={handleSubmitEmail} className="space-y-4">
+        <form onSubmit={(e) => void handleSubmitEmail(e)} className="space-y-4">
           {googleOAuthEnabled ? (
             <>
               <GoogleAuthButton

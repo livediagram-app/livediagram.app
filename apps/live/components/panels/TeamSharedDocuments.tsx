@@ -230,7 +230,7 @@ export function TeamSharedDocuments({
     folderActions,
     onStartRenameDocument: startRenameDocument,
     onDuplicateDocument: duplicateDocument,
-    onDeleteDocument: deleteDocument,
+    onDeleteDocument: (id: string) => void deleteDocument(id),
     onMoveDocument: (id) => setMoveTarget({ kind: 'document', id }),
     childrenCount: (id) => lib.childrenByParent.get(id)?.length ?? 0,
     documentsCount: (id) => lib.documentsByFolder.get(id)?.length ?? 0,
@@ -334,7 +334,7 @@ export function TeamSharedDocuments({
               onCommitRename={(name) => commitRenameDocument(d.id, name)}
               onCancelRename={() => setRenamingDocumentId(null)}
               onDuplicate={() => duplicateDocument(d.id)}
-              onDelete={() => deleteDocument(d.id)}
+              onDelete={() => void deleteDocument(d.id)}
             />
           ))}
         </ul>

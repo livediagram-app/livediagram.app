@@ -101,15 +101,12 @@ export function FormFooter({ code }: { code: string }) {
                 <button
                   type="button"
                   disabled={!reason || state === 'sending'}
-                  onClick={async () => {
+                  onClick={() => {
                     if (!reason) return;
                     setState('sending');
-                    const ok = await reportForm(code, {
-                      reason,
-                      note: note.trim(),
-                      browser: browserId(),
-                    });
-                    setState(ok ? 'sent' : 'failed');
+                    void reportForm(code, { reason, note: note.trim(), browser: browserId() }).then(
+                      (ok) => setState(ok ? 'sent' : 'failed'),
+                    );
                   }}
                   className="h-9 cursor-pointer rounded-lg bg-red-600 px-4 font-semibold text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
                 >

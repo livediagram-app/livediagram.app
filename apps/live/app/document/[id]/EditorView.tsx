@@ -435,7 +435,7 @@ export function EditorView() {
           // is the owner. A Community visitor gets it from the Community bar instead.
           onMakeCopy={
             !canShareDocument && hydrated && !anyWelcomeOpen && documentId && !sessionCommunity
-              ? makeCopy
+              ? () => void makeCopy()
               : undefined
           }
           copying={copying}
@@ -513,7 +513,7 @@ export function EditorView() {
           onRename={renameTab}
           onDuplicate={duplicateTab}
           onDelete={deleteTab}
-          onClearContent={clearTabContent}
+          onClearContent={() => void clearTabContent()}
           onImportTab={() => setImportOpen(true)}
           onExportTab={() => {
             setExportScope('tab');
@@ -630,7 +630,7 @@ export function EditorView() {
                                   {sessionCommunity && appChrome && hydrated ? (
                                     <CommunityBar
                                       community={sessionCommunity}
-                                      onMakeCopy={makeCopy}
+                                      onMakeCopy={() => void makeCopy()}
                                       copying={copying}
                                     />
                                   ) : null}

@@ -241,7 +241,7 @@ function GetStartedContent() {
       }
     >
       {phase === 1 ? (
-        <form onSubmit={handleRegister} className="space-y-4">
+        <form onSubmit={(e) => void handleRegister(e)} className="space-y-4">
           {googleOAuthEnabled ? (
             <>
               <GoogleAuthButton
@@ -300,8 +300,8 @@ function GetStartedContent() {
           inputRefs={codeInputRefs}
           loading={loading}
           ready={clerkSignUp}
-          onSubmit={handleVerifyCode}
-          onResend={handleResendCode}
+          onSubmit={(e, code) => void handleVerifyCode(e, code)}
+          onResend={() => void handleResendCode()}
           onBack={() => {
             setPhase(1);
             setError('');

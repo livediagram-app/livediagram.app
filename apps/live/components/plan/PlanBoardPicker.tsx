@@ -139,7 +139,7 @@ export function PlanBoardPicker({
   onForm?: (starter: StarterId) => void;
   // The document's tabs and their fetch, and making a Dashboard built from its work (Start Planning's Dashboards).
   tabs?: readonly Tab[];
-  loadTabs?: () => void;
+  loadTabs?: () => Promise<unknown>;
   onSuggestedDashboard?: (s: SuggestedDashboard) => void;
   // Makes the tab one chart filling the page (Start Planning's Visualisations).
   onVisualisation?: (view: PlanVisualisation, name: string) => void;

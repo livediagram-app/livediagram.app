@@ -875,7 +875,7 @@ export function EditorCanvasHost() {
               teams={explorerTeams}
               teamFolders={teamFolders}
               teamDocuments={teamDocuments}
-              onDismissShared={dismissSharedDocument}
+              onDismissShared={(id) => void dismissSharedDocument(id)}
               documentListLoading={documentListLoading}
               mapPosition={mapPosition}
               onMoveMap={(x, y) =>
@@ -1063,12 +1063,12 @@ export function EditorCanvasHost() {
                   );
                 if (nextTrim && nextTrim !== prev) track('Document', 'Renamed');
               }}
-              onDeleteDocument={deleteDocument}
+              onDeleteDocument={(id) => void deleteDocument(id)}
               onLibraryChanged={refreshOwnDocuments}
               onDuplicateDocument={(id) => void duplicateDocument(id)}
               onCreateFolder={createFolder}
               onRenameFolder={renameFolder}
-              onDeleteFolder={deleteFolder}
+              onDeleteFolder={(id) => void deleteFolder(id)}
               onTeamFolders={onTeamFolders}
               onMoveDocumentToFolder={moveDocumentToFolder}
               onMoveDocumentTo={moveDocumentTo}
@@ -1243,7 +1243,7 @@ export function EditorCanvasHost() {
               templatePickerLockedName={!isOwner && clerkUserId ? clerkDisplayName : null}
               welcomeOpen={anyWelcomeOpen}
               selfParticipant={selfParticipant}
-              onChooseTemplate={chooseTemplate}
+              onChooseTemplate={(kind) => void chooseTemplate(kind)}
               onSkipTemplatePicker={skipTemplatePicker}
               onOpenTemplatePicker={openTemplatePicker}
               tabThemeId={(activeTab.theme as ThemeId | undefined) ?? 'brand'}

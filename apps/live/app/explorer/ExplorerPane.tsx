@@ -243,7 +243,7 @@ export function ExplorerPane() {
         onCreateDocument={newDocument}
         onCreateFolder={
           offers.newFolder
-            ? () => createFolder(selected.kind === 'folder' ? selected.id : null)
+            ? () => void createFolder(selected.kind === 'folder' ? selected.id : null)
             : undefined
         }
         folderLabel={selected.kind === 'folder' ? 'New Subfolder' : 'New Folder'}
@@ -344,7 +344,7 @@ export function ExplorerPane() {
         <SharedList
           shared={shared.filter((s) => shownIds.has(s.id))}
           ownerId={ownerId}
-          onDismiss={dismissShared}
+          onDismiss={(id) => void dismissShared(id)}
         />
       ) : (
         (() => {
@@ -367,9 +367,9 @@ export function ExplorerPane() {
               folderActions={folderActions}
               onStartRenameDocument={(id) => setRenamingDocumentId(id)}
               onDuplicateDocument={(id) => void duplicateDocument(id)}
-              onDeleteDocument={deleteDocument}
+              onDeleteDocument={(id) => void deleteDocument(id)}
               onMoveDocument={openMovePickerForDocument}
-              onDismissShared={dismissShared}
+              onDismissShared={(id) => void dismissShared(id)}
               recentExcludedIds={prefs.recentExcludedIds ?? []}
               onToggleRecentExclusion={toggleRecentExclusion}
               onShowHistory={(id) => {

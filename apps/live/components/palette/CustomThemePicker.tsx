@@ -146,7 +146,7 @@ export function CustomThemePicker({
         seed={copySeed ?? undefined}
         saving={saving}
         error={saveError}
-        onSave={handleSave}
+        onSave={(draft) => void handleSave(draft)}
         onCancel={closeBuilder}
       />
     );
@@ -164,7 +164,7 @@ export function CustomThemePicker({
         // Without writes (a workbench) there is no builder: no custom themes, no Copy.
         onNewCustomTheme={writable ? () => openBuilder('new') : undefined}
         onEditCustomTheme={writable ? (id) => openBuilder({ id }) : undefined}
-        onDeleteCustomTheme={writable ? confirmDelete : undefined}
+        onDeleteCustomTheme={writable ? (id) => void confirmDelete(id) : undefined}
         onCopyTheme={writable ? copyTheme : undefined}
       />
       {footer}
