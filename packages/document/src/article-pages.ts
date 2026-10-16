@@ -234,7 +234,7 @@ export function withArticlePageCount<T extends PagesTab>(tab: T, flow: string, c
       ...pages.slice(0, lastAt + 1),
       ...added,
       ...pages.slice(lastAt + 1),
-    ]) as T;
+    ]);
   }
   const laid = layOutIllustratePages(pages);
   const drop = new Set<string>();
@@ -246,7 +246,7 @@ export function withArticlePageCount<T extends PagesTab>(tab: T, flow: string, c
   return withIllustratePages(
     tab,
     pages.filter((p) => !drop.has(p.id)),
-  ) as T;
+  );
 }
 
 /** Whether a page still offers the choice of its kind (docs/specs/007-editor/illustrate-pages.md

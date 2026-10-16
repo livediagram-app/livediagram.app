@@ -85,7 +85,7 @@ function buildHalf(theme: ThemeDefinition, target: Appearance | null): ThemeDefi
         kind,
         c ? paintIn(c, background, target) : c,
       ]),
-    ) as Partial<Record<ShapeKind, NonNullable<ThemeDefinition['shapeColors']>[ShapeKind]>>;
+    );
   }
   return half;
 }

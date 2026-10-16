@@ -3,14 +3,14 @@
 import { describe, expect, it } from 'vitest';
 import { createShape } from './shape-factory';
 import { renderElementsToSvg } from './svg-render';
-import type { Element, Tab } from './index';
+import type { Element } from './index';
 
 const shapes = ['bar-chart', 'line-chart', 'pie-chart', 'sankey'] as const;
 
 describe('chart text in an export', () => {
   it.each(shapes)('%s: every text names a font', (shape) => {
     const el = { ...createShape(shape, 0, 0), id: 'c', chartValues: true } as Element;
-    const svg = renderElementsToSvg({ id: 't', name: 'T', elements: [el] } as Tab, {});
+    const svg = renderElementsToSvg({ id: 't', name: 'T', elements: [el] }, {});
     const texts = svg.match(/<text\b[^>]*>/g) ?? [];
     expect(texts.length).toBeGreaterThan(0);
     expect(texts.filter((t) => !t.includes('font-family='))).toEqual([]);

@@ -24,7 +24,7 @@ type Case = { build: (n: number) => string };
 
 function cases(samples: string[], prefix = ''): Case[] {
   return samples.flatMap((sample) => {
-    const gaps = [0, ...[...sample.matchAll(/\s/g)].map((m) => m.index!), sample.length];
+    const gaps = [0, ...[...sample.matchAll(/\s/g)].map((m) => m.index), sample.length];
     return gaps.flatMap((at) =>
       FILLS.map((fill) => ({
         build: (n: number) =>

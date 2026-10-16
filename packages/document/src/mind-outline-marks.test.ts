@@ -15,7 +15,7 @@ import type { Element, ShapeElement } from './index';
 // Bold, italic and underline in an outline (docs/specs/009-elements/mind-node.md "Edit Outline").
 
 const node = (extra: Partial<ShapeElement>) =>
-  ({ ...(createShape('mind-node', 0, 0) as ShapeElement), id: 'n', ...extra }) as ShapeElement;
+  ({ ...createShape('mind-node', 0, 0), id: 'n', ...extra }) as ShapeElement;
 
 describe('mindMarkdownToMarks', () => {
   it('reads bold, italic and underline', () => {

@@ -116,7 +116,7 @@ function stackLayout(
       const s = span(c);
       const main = dir === 1 ? at[axis] + extent(p, axis) + gap : at[axis] - gap - extent(c, axis);
       const side = cursor + s / 2 - extent(c, across) / 2;
-      out.set(c.id, (axis === 'x' ? { x: main, y: side } : { x: side, y: main }) as MindPoint);
+      out.set(c.id, axis === 'x' ? { x: main, y: side } : { x: side, y: main });
       cursor += s + gaps.sibling;
     }
     for (const c of children) place(c, kidsOf(tree, c.id));

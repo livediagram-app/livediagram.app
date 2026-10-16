@@ -292,8 +292,8 @@ function mergeOwn(stored: Element, incoming: Element): Element {
   next.id = stored.id;
   next.type = stored.type;
   next.addedBy = (stored as Bag).addedBy;
-  copyField(next, stored as Bag, 'locked');
-  keepLiveFields(next, stored as Bag);
+  copyField(next, stored, 'locked');
+  keepLiveFields(next, stored);
   return next as Element;
 }
 

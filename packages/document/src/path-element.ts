@@ -62,7 +62,7 @@ export function pathOfContours(
     height,
     nodes: first ?? [],
     ...(rest.length ? { subpaths: rest } : {}),
-  } as PathElement;
+  };
 }
 
 /** Whether the path is a combined shape of several contours (docs/specs/007-editor/logo-pages.md

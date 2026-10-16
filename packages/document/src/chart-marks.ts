@@ -262,7 +262,7 @@ export function lineMarks(
   if (variant === 'scatter' && n > 0 && xs.every((x) => x !== null)) {
     let lo = Infinity;
     let hi = -Infinity;
-    for (const x of xs as number[]) {
+    for (const x of xs) {
       if (x < lo) lo = x;
       if (x > hi) hi = x;
     }

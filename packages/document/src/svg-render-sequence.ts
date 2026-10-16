@@ -41,7 +41,7 @@ function inked(elements: Element[], look: SequenceLook, paper: string): Element[
       const v = value[field];
       if (v && (el as Record<string, unknown>)[field] === undefined) patch[field] = v;
     }
-    return Object.keys(patch).length ? ({ ...el, ...patch } as Element) : el;
+    return Object.keys(patch).length ? { ...el, ...patch } : el;
   });
 }
 
@@ -75,7 +75,7 @@ export function sequenceDrawing(el: ShapeElement, look: SequenceLook = {}): stri
       name: 'seq',
       elements,
       ...(look.finish ? { finish: look.finish } : {}),
-    } as never,
+    },
     { padding: 12, background: paper },
   ).replace(/^(<svg[^>]*>)<rect [^>]*\/>/, '$1');
   // Every word in the element's face: the renderer writes one `font-family` per run of text, each the default.
@@ -93,7 +93,7 @@ export function svgSequencePicture(
   el: BoxedElement & { type: 'shape' },
   look: SequenceLook = {},
 ): string {
-  const drawing = sequenceDrawing(el as ShapeElement, look);
+  const drawing = sequenceDrawing(el, look);
   const open = drawing.indexOf('>');
   const viewBox = /viewBox="([^"]+)"/.exec(drawing.slice(0, open))?.[1] ?? '0 0 1 1';
   const inner = drawing.slice(open + 1, drawing.lastIndexOf('</svg>'));

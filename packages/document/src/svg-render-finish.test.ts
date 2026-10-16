@@ -25,16 +25,19 @@ const sticky: StickyElement = {
   height: 160,
   text: 'Note',
 } as StickyElement;
-const arrow = (over: Partial<ArrowElement> = {}): ArrowElement =>
-  ({
-    id: 'ar',
-    type: 'arrow',
-    from: { kind: 'free', x: 0, y: 200 },
-    to: { kind: 'free', x: 200, y: 260 },
-    ...over,
-  }) as ArrowElement;
-const tab = (elements: Element[], finish?: Tab['finish']): Tab =>
-  ({ id: 't', name: 'T', elements, ...(finish ? { finish } : {}) }) as Tab;
+const arrow = (over: Partial<ArrowElement> = {}): ArrowElement => ({
+  id: 'ar',
+  type: 'arrow',
+  from: { kind: 'free', x: 0, y: 200 },
+  to: { kind: 'free', x: 200, y: 260 },
+  ...over,
+});
+const tab = (elements: Element[], finish?: Tab['finish']): Tab => ({
+  id: 't',
+  name: 'T',
+  elements,
+  ...(finish ? { finish } : {}),
+});
 
 describe('renderElementsToSvg in a finish', () => {
   it('Flexible draws no sketch, as before', () => {
@@ -69,7 +72,7 @@ describe('renderElementsToSvg in a finish', () => {
     const svg = renderElementsToSvg({
       ...tab([node], 'sketch'),
       backgroundColor: '#0d121a',
-    } as Tab);
+    });
     const body = svg.slice(svg.indexOf('data-finish="sketch"'));
     expect(body).toMatch(/<path d="M[^"]+" fill="#dbeafe"\/>/);
     expect(body).toMatch(/stroke="#3b82f6" stroke-opacity="0.15"/);
@@ -108,7 +111,7 @@ describe('svgArrow in a finish', () => {
   });
 
   it('Sketch keeps a meaningful head (a diamond) as drawn', () => {
-    const sketch = draw(arrow({ arrowheadShape: 'diamond' } as Partial<ArrowElement>), 'sketch');
+    const sketch = draw(arrow({ arrowheadShape: 'diamond' }), 'sketch');
     expect(sketch.match(/<path /g)?.length).toBe(1);
   });
 });

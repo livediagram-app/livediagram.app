@@ -2,7 +2,7 @@
 // the same frame the canvas view draws from, so an export, a thumbnail and the canvas show one diagram. The
 // hover readouts and the motion are the canvas's alone.
 
-import type { BoxedElement, ShapeElement } from './index';
+import type { BoxedElement } from './index';
 import { chartTextInk } from './chart-ink';
 import {
   SANKEY_BAND_OPACITY,
@@ -52,7 +52,7 @@ export function svgSankey(
   ground?: readonly string[],
 ): string {
   const textColor = chartTextInk(labelColor, ground);
-  const f = sankeyFrame(el as ShapeElement, palette, ground);
+  const f = sankeyFrame(el, palette, ground);
   const font = ` font-family="${xmlEscape(fontFamily ?? EXPORT_DEFAULT_FONT)}"`;
   if (f.layout.links.length === 0) {
     // The empty state, as the canvas draws it for someone who cannot edit: an outline and a line of text.

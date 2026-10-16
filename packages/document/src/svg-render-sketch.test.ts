@@ -12,7 +12,7 @@ function inkLayer(svg: string): string {
 }
 
 function tabOf(elements: Element[], finish?: 'sketch' | 'flexible'): Tab {
-  return { id: 't', name: 't', elements, ...(finish ? { finish } : {}) } as Tab;
+  return { id: 't', name: 't', elements, ...(finish ? { finish } : {}) };
 }
 
 describe('svgSketchFace', () => {
@@ -129,9 +129,7 @@ describe('svgSketchArtDefs', () => {
 
 describe('a face\'s words under Sketch (docs/specs/008-canvas/finish.md "Lettering")', () => {
   const words = (kind: string) =>
-    renderElementsToSvg(
-      tabOf([{ ...createShape(kind as never, 0, 0), id: 'x' } as Element], 'sketch'),
-    );
+    renderElementsToSvg(tabOf([{ ...createShape(kind as never, 0, 0), id: 'x' }], 'sketch'));
 
   it('writes a checklist, a legend and an empty tab window by hand', () => {
     for (const kind of ['checklist', 'legend', 'tab-window']) {
@@ -148,9 +146,7 @@ describe('a face\'s words under Sketch (docs/specs/008-canvas/finish.md "Letteri
   });
 
   it('leaves a Flexible tab with no font to the default face', () => {
-    const svg = renderElementsToSvg(
-      tabOf([{ ...createShape('idea-box', 0, 0), id: 'x' } as Element]),
-    );
+    const svg = renderElementsToSvg(tabOf([{ ...createShape('idea-box', 0, 0), id: 'x' }]));
     expect(svg).not.toContain('Caveat');
   });
 });

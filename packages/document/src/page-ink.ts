@@ -289,7 +289,7 @@ function inkPass(
       if (labelled) field(el, 'textColor', 'text', ground.tones, patch);
       return;
     }
-    const boxedEl = el as BoxedElement;
+    const boxedEl = el;
     if (el.type !== 'text' && hasInkStroke(el)) {
       const pen = hasPen(el, 'penColour');
       const auto = pen ? undefined : onCard(ground, (s) => defaultStrokeColor(boxedEl, s));

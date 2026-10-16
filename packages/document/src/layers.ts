@@ -101,8 +101,7 @@ function paintTier(el: Element): number {
 function paintOrderIn(elements: Element[]): Element[] {
   const tiers = elements.map(paintTier);
   // Among the backdrops the larger paints first, so a boundary nested in another is never hidden behind it.
-  const area = (el: Element) =>
-    'width' in el && 'height' in el ? (el.width as number) * (el.height as number) : 0;
+  const area = (el: Element) => ('width' in el && 'height' in el ? el.width * el.height : 0);
   const backdropsInOrder = elements.every(
     (el, i) =>
       i === 0 || tiers[i] !== 0 || tiers[i - 1] !== 0 || area(elements[i - 1]!) >= area(el),

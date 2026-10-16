@@ -15,7 +15,7 @@ import {
 } from './index';
 
 const step = (id: string, x: number, y: number, label?: string): ShapeElement => ({
-  ...(createShape('step', 0, 0) as ShapeElement),
+  ...createShape('step', 0, 0),
   id,
   x,
   y,
@@ -24,8 +24,8 @@ const step = (id: string, x: number, y: number, label?: string): ShapeElement =>
 
 describe('chip looks (docs/specs/009-elements/badge.md)', () => {
   it('defaults a badge to Solid and a step to Ink', () => {
-    expect(chipLookOf(createShape('badge', 0, 0) as ShapeElement)).toBe('solid');
-    expect(chipLookOf(createShape('step', 0, 0) as ShapeElement)).toBe('ink');
+    expect(chipLookOf(createShape('badge', 0, 0))).toBe('solid');
+    expect(chipLookOf(createShape('step', 0, 0))).toBe('ink');
   });
 
   it('derives each look from the element colours', () => {
@@ -40,7 +40,7 @@ describe('chip looks (docs/specs/009-elements/badge.md)', () => {
   });
 
   it('writes and clears a look on a chip only', () => {
-    const b = createShape('badge', 0, 0) as ShapeElement;
+    const b = createShape('badge', 0, 0);
     expect(withChipLook(b, 'quiet').chipLook).toBe('quiet');
     expect('chipLook' in withChipLook({ ...b, chipLook: 'quiet' }, null)).toBe(false);
     const sq = createShape('square', 0, 0);
@@ -82,7 +82,7 @@ describe('step numbers (docs/specs/009-elements/step-number.md)', () => {
 
 describe('chip validation, copies and export', () => {
   it('bounds the look and the attachment', () => {
-    const b = createShape('badge', 0, 0) as ShapeElement;
+    const b = createShape('badge', 0, 0);
     expect(isValidElement({ ...b, chipLook: 'quiet', attachedTo: 'x', attachAt: 'top' })).toBe(
       true,
     );
@@ -91,9 +91,9 @@ describe('chip validation, copies and export', () => {
   });
 
   it('follows a copied host, and lands detached when copied alone', () => {
-    const host = { ...(createShape('square', 0, 0) as ShapeElement), id: 'h' };
+    const host = { ...createShape('square', 0, 0), id: 'h' };
     const b = {
-      ...(createShape('badge', 0, 0) as ShapeElement),
+      ...createShape('badge', 0, 0),
       id: 'b',
       attachedTo: 'h',
       attachAt: 'top' as const,
@@ -110,7 +110,7 @@ describe('chip validation, copies and export', () => {
 
   it('exports the pill in its look with its label', () => {
     const b = {
-      ...(createShape('badge', 0, 0) as ShapeElement),
+      ...createShape('badge', 0, 0),
       strokeColor: '#2563eb',
       label: 'Beta',
     };

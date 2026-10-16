@@ -196,9 +196,7 @@ export function withArticleStyleChanged<
   else {
     const { look: _look, ...rest } = { ...was, ...change.patch };
     void _look;
-    style = Object.fromEntries(
-      Object.entries(rest).filter(([, v]) => v !== undefined),
-    ) as ArticleStyle;
+    style = Object.fromEntries(Object.entries(rest).filter(([, v]) => v !== undefined));
   }
   let next: T = withArticleFlow(
     tab,
@@ -217,7 +215,7 @@ export function withArticleStyleChanged<
       void _b;
       return background.fill || background.pattern ? { ...own, background } : own;
     });
-    next = withIllustratePages(next, pages) as T;
+    next = withIllustratePages(next, pages);
   }
   return next;
 }

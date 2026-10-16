@@ -24,7 +24,7 @@ import {
 } from './index';
 
 const make = (kind: ConceptShape, over: Partial<ShapeElement> = {}) =>
-  ({ ...(createShape(kind, 0, 0) as ShapeElement), id: kind, ...over }) as ShapeElement;
+  ({ ...createShape(kind, 0, 0), id: kind, ...over }) as ShapeElement;
 
 describe('concept rows (docs/specs/009-elements/concept-graphics.md)', () => {
   it('bounds rows per kind and ignores a write below the minimum (I1)', () => {

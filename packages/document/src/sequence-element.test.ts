@@ -10,12 +10,11 @@ import {
   sequenceDrawing,
   withSequenceAnim,
   withSequenceRows,
-  type ShapeElement,
 } from './index';
 
 // docs/specs/009-elements/sequence-diagram.md, blueprint sequence-diagram.md.
 
-const seq = () => ({ ...(createShape('sequence', 0, 0) as ShapeElement), id: 'q' });
+const seq = () => ({ ...createShape('sequence', 0, 0), id: 'q' });
 
 describe('sequence diagram element', () => {
   it('a new one is Browser, API and Database with five valid messages', () => {
@@ -84,7 +83,7 @@ describe('sequence diagram element', () => {
   it('draws the same picture for the same rows, and exports it fitted', () => {
     const el = seq();
     expect(sequenceDrawing(el)).toBe(sequenceDrawing({ ...el }));
-    const svg = renderElementsToSvg({ id: 't', name: 't', elements: [el] } as never);
+    const svg = renderElementsToSvg({ id: 't', name: 't', elements: [el] });
     expect(svg).toContain('preserveAspectRatio="xMidYMid meet"');
     expect(svg).toContain('Place order');
     expect(svg).toContain('Database');

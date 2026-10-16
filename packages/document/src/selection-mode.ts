@@ -219,7 +219,7 @@ const clamp = (
 // the API, an import, or an older client gets the same treatment as one typed
 // today — and a tab never fails to load over a duration someone can just fix.
 export function sessionButtonPlan(config: SessionButtonConfig | undefined): SessionPlan | null {
-  const tool = isSessionTool(config?.tool) ? config!.tool : DEFAULT_SESSION_TOOL;
+  const tool = isSessionTool(config?.tool) ? config.tool : DEFAULT_SESSION_TOOL;
   if (tool === 'timer') {
     return { tool, minutes: clamp(config?.minutes, DEFAULT_TIMER_MINUTES, TIMER_MINUTES_RANGE) };
   }

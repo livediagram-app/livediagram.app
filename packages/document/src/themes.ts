@@ -290,7 +290,7 @@ export function recolourElementForTheme(el: Element, theme: ThemeDefinition): El
     const value = theme[themeKey];
     if (value) patch[element] = value;
   }
-  return { ...el, ...patch } as Element;
+  return { ...el, ...patch };
 }
 
 // A page layout's elements in its tab's theme (docs/specs/007-editor/illustrate-pages.md "Layouts"): a layout is built
@@ -314,7 +314,7 @@ export function themedForTab<E extends Element>(
       const value = theme[key];
       if (value && (el as Record<string, unknown>)[element] === undefined) patch[element] = value;
     }
-    return Object.keys(patch).length ? ({ ...el, ...patch } as E) : el;
+    return Object.keys(patch).length ? { ...el, ...patch } : el;
   });
 }
 
@@ -371,7 +371,7 @@ export function switchThemeElement(
       patch.fillColor = next.backgroundColor;
     }
   }
-  return { ...el, ...patch } as Element;
+  return { ...el, ...patch };
 }
 
 // Backdrop counterpart to `switchThemeElement`. The canvas backdrop
@@ -456,10 +456,10 @@ export function resetThemeElement(el: Element, theme: ThemeDefinition): Element 
   // A binding the theme has no variant for is dropped with the plain reset:
   // the shape is forced back to the theme look, so the preset no longer holds.
   if (el.type === 'shape' && el.colorPreset) {
-    return { ...el, ...patch, colorPreset: undefined } as Element;
+    return { ...el, ...patch, colorPreset: undefined };
   }
   if (el.type === 'table' && el.tablePreset) {
-    return { ...el, ...patch, tablePreset: undefined } as Element;
+    return { ...el, ...patch, tablePreset: undefined };
   }
-  return { ...el, ...patch } as Element;
+  return { ...el, ...patch };
 }

@@ -483,7 +483,7 @@ describe('loops', () => {
     const input = box(laid, 'input');
     const mx = (error.x + error.width + input.x + input.width) / 2;
     const corner = mx + loop.curvePoints![0]!.dx;
-    const steps = laid.filter((e) => e.type === 'shape') as ShapeElement[];
+    const steps = laid.filter((e) => e.type === 'shape');
     const between = steps.filter((s) => s.y < error.y + error.height && s.y + s.height > input.y);
     for (const s of between) expect(corner).toBeGreaterThan(s.x + s.width);
   });

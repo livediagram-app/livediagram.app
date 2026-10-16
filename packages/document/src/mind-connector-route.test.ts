@@ -25,7 +25,7 @@ const node = (
   parent?: string,
   flow?: MindFlow,
 ): ShapeElement => ({
-  ...(createShape('mind-node', x, y) as ShapeElement),
+  ...createShape('mind-node', x, y),
   id,
   width: W,
   height: H,

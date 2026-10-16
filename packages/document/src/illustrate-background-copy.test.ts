@@ -24,8 +24,12 @@ const slide = (id: string, extra: Partial<IllustratePage> = {}): IllustratePage 
   ...extra,
 });
 
-const tabOf = (pages: IllustratePage[], elements: Element[] = []): Tab =>
-  ({ id: 't', name: 'Deck', elements, pages }) as unknown as Tab;
+const tabOf = (pages: IllustratePage[], elements: Element[] = []): Tab => ({
+  id: 't',
+  name: 'Deck',
+  elements,
+  pages,
+});
 
 const backgrounds = (tab: Tab) =>
   Object.fromEntries(illustratePagesOf(tab).map((p) => [p.id, p.background]));
@@ -202,22 +206,18 @@ describe('pageBackgroundSpread at the page cap', () => {
     );
     const laid = layOutIllustratePages(pages);
     const elements = laid.flatMap((pg) =>
-      Array.from(
-        { length: 50 },
-        (_, j) =>
-          ({
-            id: `${pg.id}-e${j}`,
-            type: 'shape',
-            shape: 'square',
-            label: 'x',
-            x: pg.rect.x + 20 + (j % 10) * 100,
-            y: pg.rect.y + 20 + Math.floor(j / 10) * 100,
-            width: 80,
-            height: 60,
-            fillColor: '#f0f9ff',
-            strokeColor: '#bae6fd',
-          }) as Element,
-      ),
+      Array.from({ length: 50 }, (_, j): Element => ({
+        id: `${pg.id}-e${j}`,
+        type: 'shape',
+        shape: 'square',
+        label: 'x',
+        x: pg.rect.x + 20 + (j % 10) * 100,
+        y: pg.rect.y + 20 + Math.floor(j / 10) * 100,
+        width: 80,
+        height: 60,
+        fillColor: '#f0f9ff',
+        strokeColor: '#bae6fd',
+      })),
     );
     const tab = tabOf(pages, elements);
     let out: ReturnType<typeof pageBackgroundSpread<Tab>> | undefined;

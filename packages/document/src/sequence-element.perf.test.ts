@@ -21,7 +21,7 @@ function worst(n: number): ShapeElement {
     kind: (['call', 'async', 'reply'] as const)[i % 3]!,
   }));
   return {
-    ...(createShape('sequence', 0, 0) as ShapeElement),
+    ...createShape('sequence', 0, 0),
     sequenceParticipants: participants,
     sequenceMessages: messages,
     sequenceNumbered: true,

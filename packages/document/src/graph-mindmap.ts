@@ -176,7 +176,7 @@ export function layoutMindmapGraph(
       ...('mindParentId' in el && el.mindParentId
         ? { mindParentId: rename.get(el.mindParentId) }
         : {}),
-    } as Element;
+    };
   });
   // Cross-links: the edges the tree left out, dashed and curved.
   const centers = new Map<string, Pt>(

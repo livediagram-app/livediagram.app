@@ -108,7 +108,7 @@ export function penStrokeOutline(stroke: PenStroke): Point[] {
   if (stroke.points.length === 0) return [];
   const options = optionsOf(stroke);
   return getStrokeOutlinePoints(untrimmed(getStrokePoints(inputOf(stroke), options)), options).map(
-    ([x, y]) => ({ x: x!, y: y! }),
+    ([x, y]) => ({ x: x, y: y }),
   );
 }
 
@@ -136,8 +136,8 @@ export function penStrokePath(stroke: PenStroke, fmt: (n: number) => number = (n
 export function penStrokeCentreline(stroke: PenStroke): Point[] {
   if (stroke.points.length === 0) return [];
   return getStrokePoints(inputOf(stroke), optionsOf(stroke)).map(({ point: [x, y] }) => ({
-    x: x!,
-    y: y!,
+    x: x,
+    y: y,
   }));
 }
 

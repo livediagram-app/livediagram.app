@@ -149,11 +149,7 @@ const FILLS: Record<string, PageFill | undefined> = {
 function expectReadable(els: Element[], fill: PageFill | undefined, name: string) {
   const ground = (el: Element) => {
     const b = 'x' in el ? el : { x: 0, y: 0, width: 0, height: 0 };
-    return pageGroundUnder(
-      fill ? { fill } : undefined,
-      rect,
-      b as { x: number; y: number; width: number; height: number },
-    );
+    return pageGroundUnder(fill ? { fill } : undefined, rect, b);
   };
   const check = (
     id: string,
@@ -300,11 +296,11 @@ describe('re-inking a page', () => {
 
   it('leaves stickers, brand icons, highlighters and uncoloured elements as they are', () => {
     const els: Element[] = [
-      shape('sticker', 'sticker' as ShapeElement['shape'], 20, 20, {
+      shape('sticker', 'sticker', 20, 20, {
         stickerId: 'emoji-thumbs-up',
       }),
       shape('brand', 'icon', 200, 20, { iconId: 'aws-lambda', strokeColor: '#0f172a' }),
-      { ...createText(at(20, 200).x, at(20, 200).y), id: 'plain', label: 'Plain' } as Element,
+      { ...createText(at(20, 200).x, at(20, 200).y), id: 'plain', label: 'Plain' },
       shape('plain-shape', 'square', 200, 200, { label: 'Plain' }),
       {
         id: 'hl',
@@ -418,11 +414,11 @@ describe('no colour of its own', () => {
       width: 60,
       height: 20,
       label: 'Customers',
-    } as Element,
+    },
     shape('disc', 'circle', 200, 20, { ...pale, label: '' }),
     shape('glyph', 'icon', 230, 50, { iconId: 'server', width: 20, height: 20 }),
     shape('labelled', 'square', 20, 200, { ...pale, label: 'Plain label' }),
-    { ...createText(at(20, 400).x, at(20, 400).y), id: 'free', label: 'On the page' } as Element,
+    { ...createText(at(20, 400).x, at(20, 400).y), id: 'free', label: 'On the page' },
   ];
 
   it("takes its card's ink when the page's ink would vanish on the card, and gives it back", () => {
@@ -454,12 +450,12 @@ describe('no colour of its own', () => {
   });
 
   it("writes a stat row's captions and figures for its cards", () => {
-    const row = shape('row', 'stat-row' as ShapeElement['shape'], 20, 20, {
+    const row = shape('row', 'stat-row', 20, 20, {
       ...pale,
       strokeColor: '#0ea5e9',
       width: 300,
       stats: [{ value: '12k', caption: 'Customers' }],
-    } as Partial<ShapeElement>);
+    });
     const dark = pageInkFor(tabOf([row]), 'p', { fill: FILLS.dark! });
     const out = byId(dark.tab.elements, 'row');
     expect(out.fillColor).toBe(pale.fillColor);
@@ -478,9 +474,9 @@ describe('no colour of its own', () => {
   // vanish (slate-500 on teal is 1.15:1, sky on yellow 1.8:1), so it is judged there too.
   const straight = (): Element[] => [
     shape('glyph', 'icon', 20, 20, { iconId: 'server', width: 40, height: 40 }),
-    shape('bar', 'progress-bar' as ShapeElement['shape'], 20, 100, { height: 16, width: 200 }),
+    shape('bar', 'progress-bar', 20, 100, { height: 16, width: 200 }),
     shape('outline', 'square', 20, 200, { fillColor: 'transparent', label: 'Outlined' }),
-    { ...createText(at(20, 400).x, at(20, 400).y), id: 'free', label: 'On the page' } as Element,
+    { ...createText(at(20, 400).x, at(20, 400).y), id: 'free', label: 'On the page' },
   ];
   const ON_PAGE = ['glyph', 'bar', 'outline'];
   const hueOf = (hex: string) => {
@@ -603,7 +599,7 @@ describe('going back', () => {
     const dark = pageInkFor(tab, 'p', { fill: FILLS.dark! });
     const recoloured = {
       ...dark.tab,
-      elements: dark.tab.elements.map((e) => ({ ...e, textColor: '#fbbf24' }) as Element),
+      elements: dark.tab.elements.map((e) => ({ ...e, textColor: '#fbbf24' })),
     };
     const back = pageInkFor(recoloured, 'p', undefined, dark.memory);
     expect(byId(back.tab.elements, 't').textColor).not.toBe('#1e293b');

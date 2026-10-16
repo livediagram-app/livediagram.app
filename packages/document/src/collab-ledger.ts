@@ -145,7 +145,7 @@ export function recordInLedger(
   const o = op as { kind?: unknown };
   if (o.kind === 'vote') return recordVote(prev as VoteLedger | undefined, op, seq);
   if (o.kind === 'el-delta') {
-    return recordElement(prev as ElementLedger | undefined, (op as { delta?: unknown }).delta, seq);
+    return recordElement(prev, (op as { delta?: unknown }).delta, seq);
   }
   return null;
 }
@@ -184,7 +184,7 @@ function recordElement(
   if (!delta || typeof delta !== 'object') return null;
   const d = delta as Record<string, unknown>;
   if (d.round !== undefined && !isStr(d.round, COLLAB_ROUND_MAX)) return null;
-  const round = d.round as string | undefined;
+  const round = d.round;
   // Answers and ideas belong to a round; a delta for another one starts it,
   // retiring the one it replaces. A delta naming a retired round is late and
   // dropped (null). Ticks and comments have no round and carry over.
@@ -214,7 +214,7 @@ function recordElement(
         ...base,
         responses: {
           ...responses,
-          [d.participantId]: { value: d.value as string | null, at: d.at, seq },
+          [d.participantId]: { value: d.value, at: d.at, seq },
         },
       };
     }
@@ -241,7 +241,7 @@ function recordElement(
       const events = Object.keys(comments.adds).length + Object.keys(comments.removes).length;
       // A cell names a Sheet cell's thread; anything else there is malformed.
       if (d.cell !== undefined && !isCellKey(d.cell)) return null;
-      const cell = d.cell as string | undefined;
+      const cell = d.cell;
       if (d.kind === 'comment-add') {
         if (!isComment(d.comment)) return null;
         const id = d.comment.id;
@@ -387,7 +387,7 @@ export function tabLedgerFrom(tabId: string, entries: Iterable<[string, unknown]
     if (!key.startsWith(prefix) || !value || typeof value !== 'object') continue;
     const rest = key.slice(prefix.length);
     if (rest === 'vote') ledger.vote = value as VoteLedger;
-    else if (rest.startsWith('el:')) ledger.elements[rest.slice(3)] = value as ElementLedger;
+    else if (rest.startsWith('el:')) ledger.elements[rest.slice(3)] = value;
   }
   return ledger;
 }

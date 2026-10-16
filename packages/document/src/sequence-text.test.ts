@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { cpuBudgetMs, cpuMsOf } from '@livediagram/vitest-config/cpu-time';
-import { createShape, parseSequenceText, sequenceToText, type ShapeElement } from './index';
+import { createShape, parseSequenceText, sequenceToText } from './index';
 
 // docs/specs/009-elements/sequence-diagram.md "The Sequence dialog" (Text).
 
-const seq = () => createShape('sequence', 0, 0) as ShapeElement;
+const seq = () => createShape('sequence', 0, 0);
 
 describe('sequence text', () => {
   it('writes the participants, then a line per message', () => {

@@ -10,7 +10,7 @@ import type { ArrowElement, Element, ShapeElement } from './index';
 
 const node = (id: string, label: string, parent?: string, extra: Partial<ShapeElement> = {}) =>
   ({
-    ...(createShape('mind-node', 0, 0) as ShapeElement),
+    ...createShape('mind-node', 0, 0),
     id,
     label,
     width: 200,
@@ -174,7 +174,7 @@ describe('applyMindOutline', () => {
 
   it('joins a new node with the connector look of the sibling its own look came from', () => {
     const els = offsite().map((e) =>
-      e.id === 'root->travel' ? ({ ...e, strokeColor: '#ec4899' } as Element) : e,
+      e.id === 'root->travel' ? { ...e, strokeColor: '#ec4899' } : e,
     );
     const out = applyMindOutline(els, 'root', parse(`${outlineOf(els)}\n- Fun`), dress)!;
     const fun = byLabel(out, 'Fun');

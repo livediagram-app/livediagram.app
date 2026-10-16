@@ -70,7 +70,7 @@ export function rankTidyComponent(input: TidyRankInput): TidyRanking {
   // Side steps, decided in flow order so a side step's own exits inherit its side.
   const side = new Map<ElementId, SideSpec>();
   for (const u of topo) {
-    const kids = [...new Set(outs.get(u)!)];
+    const kids = [...new Set(outs.get(u))];
     if (kids.length < 2) continue;
     // The exit most in line with its node continues the column.
     const primary = [...kids].sort(

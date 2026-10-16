@@ -161,7 +161,7 @@ describe('deleteLayer', () => {
   it('removes the band, cascades arrows pinned to it, and keeps the rest', () => {
     const pinned = arrow('ar', {
       from: { kind: 'pinned', elementId: 'doomed', anchor: 'e' },
-    } as Partial<Element & { type: 'arrow' }>);
+    });
     const t = tab(
       [box('doomed', { layerId: 'top' }), box('safe'), pinned],
       [L(DEFAULT_LAYER_ID), L('top')],
@@ -315,7 +315,7 @@ describe('layer opacity / clear / hide others', () => {
   it('clearLayerElements empties the band (arrow cascade included) but keeps the layer', () => {
     const pinned = arrow('ar', {
       from: { kind: 'pinned', elementId: 'doomed', anchor: 'e' },
-    } as Partial<Element & { type: 'arrow' }>);
+    });
     const t = tab(
       [box('doomed', { layerId: 'top' }), box('safe'), pinned],
       [L(DEFAULT_LAYER_ID), L('top')],

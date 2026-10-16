@@ -46,7 +46,7 @@ describe('margin notes', () => {
       { id: 'n1', index: 0, y: 200, height: 20 },
       { id: 'n2', index: 0, y: 200, height: 20 },
     ]);
-    const [m1, m2] = out.elements as (typeof a)[];
+    const [m1, m2] = out.elements;
     expect(m2!.y - m1!.y).toBe(ARTICLE_NOTE_SIZE + ARTICLE_NOTE_GAP);
     expect(m2!.x).toBe(m1!.x);
   });
@@ -54,7 +54,7 @@ describe('margin notes', () => {
   it('untints the text of a marker that was deleted', () => {
     const tab = { elements: [], pages, articles: { f: { blocks } } };
     const out = withNoteMarksRemoved(tab, new Set(['n1']));
-    const b = (out.articles as { f: { blocks: ArticleBlock[] } }).f.blocks[0]!;
+    const b = out.articles.f.blocks[0]!;
     expect('runs' in b && b.runs).toEqual([{ text: 'The budget' }]);
     expect(withNoteMarksRemoved(tab, new Set(['other']))).toBe(tab);
   });

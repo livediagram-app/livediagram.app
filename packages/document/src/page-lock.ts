@@ -63,9 +63,7 @@ function putBack(prev: Element, next: Element): Element {
     height: number;
     rotation?: number;
   };
-  const back = { ...next, x: p.x, y: p.y, width: p.width, height: p.height } as typeof next & {
-    rotation?: number;
-  };
+  const back = { ...next, x: p.x, y: p.y, width: p.width, height: p.height };
   if (p.rotation === undefined) delete back.rotation;
   else back.rotation = p.rotation;
   return back;

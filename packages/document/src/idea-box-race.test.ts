@@ -59,8 +59,8 @@ describe('two posters racing for the last card', () => {
     const a = new Browser();
     const b = new Browser();
     const watcher = new Browser();
-    a.post(postA as ElementDelta & { kind: 'idea' });
-    b.post(postB as ElementDelta & { kind: 'idea' });
+    a.post(postA);
+    b.post(postB);
     // Both posters see their own card as the 300th.
     expect(cards(a).at(-1)).toBe('From A');
     expect(cards(b).at(-1)).toBe('From B');

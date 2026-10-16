@@ -25,7 +25,7 @@ export function themeAccent(
   return isHex(theme.elementStroke)
     ? theme.elementStroke
     : isHex(theme.palette?.[0]?.stroke)
-      ? theme.palette![0]!.stroke
+      ? theme.palette[0].stroke
       : FALLBACK_THEME_ACCENT;
 }
 
@@ -35,8 +35,8 @@ export function themeSecondaries(
   theme: Partial<Pick<ThemeDefinition, 'elementStroke' | 'palette'>>,
 ): [string, string] {
   const a = themeAccent(theme);
-  const b = isHex(theme.palette?.[1]?.stroke) ? theme.palette![1]!.stroke : shade(a, 0.25);
-  const c = isHex(theme.palette?.[2]?.stroke) ? theme.palette![2]!.stroke : shade(a, 0.45);
+  const b = isHex(theme.palette?.[1]?.stroke) ? theme.palette[1].stroke : shade(a, 0.25);
+  const c = isHex(theme.palette?.[2]?.stroke) ? theme.palette[2].stroke : shade(a, 0.45);
   return [b, c];
 }
 
@@ -62,7 +62,7 @@ export function withDefaultPageBackgrounds<T extends Partial<Pick<Tab, 'pages'>>
   theme: Partial<Pick<ThemeDefinition, 'elementStroke' | 'palette'>>,
   ids?: ReadonlySet<string>,
 ): T {
-  const pages = illustratePagesOf(tab as Pick<Tab, 'pages'>);
+  const pages = illustratePagesOf(tab);
   let changed = false;
   const next = pages.map((p) => {
     if (p.background || p.flow || pageKindOf(p) !== 'infographic') return p;

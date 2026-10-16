@@ -25,7 +25,7 @@ import {
 import { labelOn } from './readable-colour';
 import { chartTypeOf, lineVariantOf } from './chart-types';
 import { LINE_DEFAULT_CATEGORIES, LINE_DEFAULT_SERIES, type PieSlice } from './data-shapes';
-import type { BoxedElement, ShapeElement } from './index';
+import type { BoxedElement } from './index';
 import { legendFontPx } from './label-font';
 import { EXPORT_DEFAULT_FONT } from './svg-render-labels';
 import { r2, xmlEscape } from './svg-render-primitives';
@@ -129,7 +129,7 @@ export function svgPieChart(
   ground?: readonly string[],
 ): string {
   const textColor = chartTextInk(labelColor, ground);
-  const { data, colorAt, area, legend } = chartFrame(el as ShapeElement, palette, ground);
+  const { data, colorAt, area, legend } = chartFrame(el, palette, ground);
   const doughnut = chartTypeOf(el) === 'doughnut';
   const pie = pieMarks(area, data, doughnut, el.x, el.y);
   const { cx, cy, rad, wedges } = pie;
@@ -165,7 +165,7 @@ export function svgBarChart(
   ground?: readonly string[],
 ): string {
   const textColor = chartTextInk(labelColor, ground);
-  const { data, colorAt, area, legend } = chartFrame(el as ShapeElement, palette, ground);
+  const { data, colorAt, area, legend } = chartFrame(el, palette, ground);
   const horizontal = chartTypeOf(el) === 'bar';
   const barM = barMarks(area, data, horizontal, el.x, el.y, el.chartAxis === true);
   const { baseline: b, bars } = barM;
@@ -217,7 +217,7 @@ export function svgLineChart(
   ground?: readonly string[],
 ): string {
   const textColor = chartTextInk(labelColor, ground);
-  const { colorAt, area, legend } = chartFrame(el as ShapeElement, palette, ground);
+  const { colorAt, area, legend } = chartFrame(el, palette, ground);
   const categories =
     el.lineCategories && el.lineCategories.length > 0 ? el.lineCategories : LINE_DEFAULT_CATEGORIES;
   const series = el.lineSeries && el.lineSeries.length > 0 ? el.lineSeries : LINE_DEFAULT_SERIES;

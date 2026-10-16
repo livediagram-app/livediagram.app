@@ -293,7 +293,7 @@ export function growMindChild(
   // standing on, not its parent.
   sizeFrom: ShapeElement = parent,
 ): MindGrowth & { arrow: ArrowElement } {
-  const base = createShape('mind-node', 0, 0) as ShapeElement;
+  const base = createShape('mind-node', 0, 0);
   // Inherit the source node's size. Resizing one node (or letting a long
   // label widen it) and then growing from it otherwise produced a branch of
   // mismatched boxes, which reads as a mistake rather than a hierarchy.
@@ -324,7 +324,7 @@ export function growMindSibling(elements: Element[], node: ShapeElement): MindGr
     ? elements.find((el) => el.id === node.mindParentId && isMindNode(el))
     : undefined;
   if (parent && isMindNode(parent)) return growMindChild(elements, parent, node);
-  const base = createShape('mind-node', 0, 0) as ShapeElement;
+  const base = createShape('mind-node', 0, 0);
   const size = { width: node.width, height: node.height };
   // A new root joins the END of the root stack, not the gap directly under
   // the node you pressed Enter on: taking that gap wedges it between two

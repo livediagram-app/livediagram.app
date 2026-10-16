@@ -15,7 +15,7 @@ import {
 // docs/specs/009-elements/tag-colours.md, blueprint tag-colours.md.
 
 const card = (over: Partial<ShapeElement> = {}) =>
-  ({ ...(createShape('card', 0, 0) as ShapeElement), id: 'c', ...over }) as ShapeElement;
+  ({ ...createShape('card', 0, 0), id: 'c', ...over }) as ShapeElement;
 
 describe('the tag colour map', () => {
   it('maps, replaces (keeping the first casing) and clears a tag, matching case-insensitively', () => {
@@ -89,9 +89,9 @@ describe('a card under the map', () => {
       name: 't',
       elements: [c],
       tagColours: map,
-    } as never);
+    });
     expect(svg.toLowerCase()).toContain('#d97706');
-    const plain = renderElementsToSvg({ id: 't', name: 't', elements: [c] } as never);
+    const plain = renderElementsToSvg({ id: 't', name: 't', elements: [c] });
     expect(plain.toLowerCase()).not.toContain('#d97706');
   });
 });

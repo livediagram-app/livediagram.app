@@ -15,7 +15,7 @@ function note(id: string, kind: EventStormingNoteKind, x: number, y: number): St
     y,
     width: size.width,
     height: size.height,
-  } as StickyElement;
+  };
 }
 
 describe('the next-note catalogue', () => {

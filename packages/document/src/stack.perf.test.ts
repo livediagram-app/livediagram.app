@@ -12,7 +12,7 @@ function board(): Element[] {
   const els: Element[] = [];
   for (let i = 0; i < 2000; i++)
     els.push({
-      ...(createShape('square', 0, 0) as ShapeElement),
+      ...createShape('square', 0, 0),
       id: `b${i}`,
       x: 5000 + (i % 50) * 120,
       y: Math.floor(i / 50) * 100,
@@ -21,7 +21,7 @@ function board(): Element[] {
     });
   for (let s = 0; s < 20; s++) {
     els.push({
-      ...(createShape('stack', 0, 0) as ShapeElement),
+      ...createShape('stack', 0, 0),
       id: `s${s}`,
       x: 0,
       y: s * 200,
@@ -30,7 +30,7 @@ function board(): Element[] {
     });
     for (let k = 0; k < 10; k++)
       els.push({
-        ...(createShape('square', 0, 0) as ShapeElement),
+        ...createShape('square', 0, 0),
         id: `s${s}k${k}`,
         x: 20 + k * 110,
         y: s * 200 + 30,
@@ -62,7 +62,7 @@ describe('settleStacks budget', () => {
     const added = [
       ...settled,
       {
-        ...(createShape('square', 0, 0) as ShapeElement),
+        ...createShape('square', 0, 0),
         id: 'new',
         x: 40,
         y: 3 * 200 + 40,

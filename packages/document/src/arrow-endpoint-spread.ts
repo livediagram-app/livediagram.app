@@ -10,14 +10,7 @@
 // the SVG export's svgArrow), which is why it lives here rather than in
 // the app.
 
-import {
-  isBoxed,
-  type Anchor,
-  type ArrowElement,
-  type Element,
-  type ElementId,
-  type Endpoint,
-} from './index';
+import { isBoxed, type Anchor, type Element, type ElementId, type Endpoint } from './index';
 import { anchorClass, anchorPrimarySide } from './anchors';
 import { endpointPosition, isElementIndex, type ElementIndex, type Point } from './geometry';
 import { connectorBox } from './shape-outline';
@@ -98,7 +91,7 @@ function computeSpreadMap(elements: Element[], index: ElementIndex): Map<string,
   const anchorAt = new Map<string, Point>();
   for (const el of elements) {
     if (el.type !== 'arrow') continue;
-    const arrow = el as ArrowElement;
+    const arrow = el;
     for (const end of ['from', 'to'] as const) {
       // An end set exactly at its anchor (exactStart, exactEnd) sits out of that anchor's fan.
       if (end === 'from' && arrow.exactStart === true) continue;

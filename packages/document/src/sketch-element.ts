@@ -14,7 +14,7 @@ import {
   cornerRadiusPx,
 } from './border-style';
 import { finishBorderStroke, finishCornerFallbackPx, finishHatches, type Finish } from './finish';
-import type { BoxedElement, ShapeKind } from './index';
+import type { BoxedElement } from './index';
 import { shapeGeometry, type ShapePartRole } from './shape-geometry';
 import {
   outlineOfBox,
@@ -96,7 +96,7 @@ export function sketchElement(el: BoxedElement, o: SketchElementOptions): Sketch
   if (el.shape === 'comment-pin') return null;
 
   const hatches = finishHatches(el, o.fill, o.backdrop);
-  const geometry = shapeGeometry(el.shape as ShapeKind, w / h);
+  const geometry = shapeGeometry(el.shape, w / h);
   if (geometry) {
     const area = el.shape === 'actor' ? actorFigureRect(el) : { x: 0, y: 0, width: w, height: h };
     const pad = geometry.strokeInside ? inset : 0;

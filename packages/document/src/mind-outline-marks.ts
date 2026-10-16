@@ -107,7 +107,7 @@ function restyled(
   kept.forEach((at, i) => {
     if (at < 0 || !want[i]) return;
     const patch: Partial<Record<MarkKey, boolean | undefined>> = {};
-    for (const k of MARK_KEYS) patch[k] = want[i]![k] === base[k] ? undefined : want[i]![k];
+    for (const k of MARK_KEYS) patch[k] = want[i][k] === base[k] ? undefined : want[i][k];
     out = applyFormatToRange(out, at, at + 1, patch);
   });
   out = normalizeRuns(out);

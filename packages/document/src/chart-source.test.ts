@@ -45,9 +45,7 @@ describe('a chart drawn from a sheet range', () => {
     expect(
       shapeValidationIssue({ ...chart, chartSource: { sheetId: 'sheet0001', range } }),
     ).toBeNull();
-    expect(
-      shapeValidationIssue({ ...chart, chartSource: { sheetId: 'x' } as never }),
-    ).not.toBeNull();
+    expect(shapeValidationIssue({ ...chart, chartSource: { sheetId: 'x' } })).not.toBeNull();
   });
 
   it('takes a scatter chart’s x from a numbered read’s first column (pie-chart.md "Charts drawn from a sheet")', () => {
@@ -204,7 +202,7 @@ describe('a chart drawn from a sheet range', () => {
     expect(sheetDrawnChartIds([orphan] as never).size).toBe(0);
     expect(chartsInSheet(els as never, 'sheet0001')).toEqual([inSheet]);
     expect(isSheetAnchoredChart(floating as never)).toBe(false);
-    expect(isSheetAnchoredChart({ ...inSheet, chartSource: undefined } as never)).toBe(false);
+    expect(isSheetAnchoredChart({ ...inSheet, chartSource: undefined })).toBe(false);
   });
 
   it('always moves with its Sheet when anchored in it, wherever its own place is', () => {

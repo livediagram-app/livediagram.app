@@ -11,14 +11,14 @@ function board(boxes: number, chips: number): Element[] {
   const els: Element[] = [];
   for (let i = 0; i < boxes; i++)
     els.push({
-      ...(createShape('square', 0, 0) as ShapeElement),
+      ...createShape('square', 0, 0),
       id: `h${i}`,
       x: (i % 50) * 200,
       y: Math.floor(i / 50) * 160,
     });
   for (let i = 0; i < chips; i++)
     els.push({
-      ...(createShape('badge', 0, 0) as ShapeElement),
+      ...createShape('badge', 0, 0),
       id: `b${i}`,
       label: 'v2',
       x: (i % 50) * 200 + 90,

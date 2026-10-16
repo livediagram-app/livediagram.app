@@ -26,19 +26,21 @@ import type { Element, Tab } from './index';
 // docs/specs/007-editor/illustrate-pages.md "The page panel", "Page actions"; the same edits the
 // agents make (docs/specs/024-agents/illustrate-for-agents.md "change_pages").
 
-const box = (id: string, x: number, y: number): Element =>
-  ({
-    id,
-    type: 'shape',
-    shape: 'square',
-    x,
-    y,
-    width: 40,
-    height: 40,
-  }) as Element;
+const box = (id: string, x: number, y: number): Element => ({
+  id,
+  type: 'shape',
+  shape: 'square',
+  x,
+  y,
+  width: 40,
+  height: 40,
+});
 
-const tabOf = (pages: IllustratePage[], elements: Element[] = [], extra: Partial<Tab> = {}): Tab =>
-  ({ id: 't', name: 'T', elements, pages, ...extra }) as Tab;
+const tabOf = (
+  pages: IllustratePage[],
+  elements: Element[] = [],
+  extra: Partial<Tab> = {},
+): Tab => ({ id: 't', name: 'T', elements, pages, ...extra });
 
 const ok = <T>(out: PageEdit<T>): T => {
   if (!('tab' in out)) throw new Error(`refused ${out.refused}`);

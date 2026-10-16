@@ -182,7 +182,7 @@ export function planMindGrowth(
         height: Math.min(fallback.height, parent.height),
       };
   const base: ShapeElement = {
-    ...(createShape('mind-node', 0, 0) as ShapeElement),
+    ...createShape('mind-node', 0, 0),
     ...size,
     id: ids.node,
     mindParentId: parent.id,

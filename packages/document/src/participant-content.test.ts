@@ -17,8 +17,14 @@ const THEM = 'b'.repeat(32);
 const box = { x: 10, y: 20, width: 120, height: 80 };
 type Endpoint = { kind: string; elementId?: string; anchor?: unknown };
 
-const sticky = (id: string, extra: Record<string, unknown> = {}): Element =>
-  ({ id, type: 'sticky', ...box, label: 'Went well', fillColor: '#fef08a', ...extra }) as Element;
+const sticky = (id: string, extra: Record<string, unknown> = {}): Element => ({
+  id,
+  type: 'sticky',
+  ...box,
+  label: 'Went well',
+  fillColor: '#fef08a',
+  ...extra,
+});
 const shape = (id: string, extra: Record<string, unknown> = {}): Element =>
   ({
     id,
@@ -28,19 +34,18 @@ const shape = (id: string, extra: Record<string, unknown> = {}): Element =>
     label: 'Column',
     ...extra,
   }) as unknown as Element;
-const table = (id: string): Element =>
-  ({
-    id,
-    type: 'table',
-    ...box,
-    cells: [
-      ['a', 'b'],
-      ['c', 'd'],
-    ],
-  }) as Element;
+const table = (id: string): Element => ({
+  id,
+  type: 'table',
+  ...box,
+  cells: [
+    ['a', 'b'],
+    ['c', 'd'],
+  ],
+});
 
 function tabOf(elements: Element[], extra: Partial<Tab> = {}): Tab {
-  return { id: 't1', name: 'Retro', elements, ...extra } as Tab;
+  return { id: 't1', name: 'Retro', elements, ...extra };
 }
 
 function applied(r: ParticipantOpResult) {
@@ -173,9 +178,7 @@ describe("applyParticipantOp: update someone else's element", () => {
     );
     expect(r.tab.elements[0]).toEqual(stored);
     expect(r.changed).toBe(false);
-    expect(
-      participantTabChange(tab, tabOf([{ ...stored, label: 'Mine' } as Element]), ME),
-    ).toBeNull();
+    expect(participantTabChange(tab, tabOf([{ ...stored, label: 'Mine' }]), ME)).toBeNull();
   });
 
   it('clears the words when the sender cleared them', () => {
@@ -536,17 +539,16 @@ describe('copies drop the adder', () => {
 });
 
 describe('mind maps and images (docs/specs/013-workspace/share-roles.md)', () => {
-  const node = (id: string, parent: string | undefined, x: number, y: number): Element =>
-    ({
-      ...createShape('mind-node', x, y),
-      id,
-      label: id,
-      ...(parent ? { mindParentId: parent } : {}),
-    }) as Element;
+  const node = (id: string, parent: string | undefined, x: number, y: number): Element => ({
+    ...createShape('mind-node', x, y),
+    id,
+    label: id,
+    ...(parent ? { mindParentId: parent } : {}),
+  });
   const map = (): Element[] => [
     node('root', undefined, 0, 0),
     node('c1', 'root', 400, 0),
-    { ...createPinnedArrow('root', 'e', 'c1', 'w'), id: 'a1' } as Element,
+    { ...createPinnedArrow('root', 'e', 'c1', 'w'), id: 'a1' },
   ];
 
   it('grows a branch, re-laying the nodes someone else added', () => {
@@ -629,7 +631,7 @@ describe('mind maps and images (docs/specs/013-workspace/share-roles.md)', () =>
 
   it('keeps what it added addable: its connector stays on the map, its node stays one', () => {
     const own = { ...createPinnedArrow('root', 'e', 'c1', 'w'), id: 'a2', addedBy: ME };
-    const tab = tabOf([...map(), sticky('s1'), own as Element]);
+    const tab = tabOf([...map(), sticky('s1'), own]);
     const repointed = { ...own, to: { kind: 'pinned', elementId: 's1', anchor: 'w' } };
     expect(
       applyParticipantOp(tab, { kind: 'update', element: repointed as Element }, ME),
@@ -664,12 +666,11 @@ describe('mind maps and images (docs/specs/013-workspace/share-roles.md)', () =>
 });
 
 describe('removing mind nodes (docs/specs/013-workspace/share-roles.md)', () => {
-  const node = (id: string, parent?: string): Element =>
-    ({
-      ...createShape('mind-node', 0, 0),
-      id,
-      ...(parent ? { mindParentId: parent } : {}),
-    }) as Element;
+  const node = (id: string, parent?: string): Element => ({
+    ...createShape('mind-node', 0, 0),
+    id,
+    ...(parent ? { mindParentId: parent } : {}),
+  });
   const line = { ...createPinnedArrow('root', 'e', 'kid', 'w'), id: 'a1' } as Element;
 
   it("removes anyone's mind node and its connector together, never anyone's other arrow", () => {

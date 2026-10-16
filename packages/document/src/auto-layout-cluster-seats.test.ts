@@ -28,8 +28,15 @@ const arrowBetween = (els: Element[], from: string, to: string) =>
       e.to.kind === 'pinned' &&
       e.to.elementId === to,
   )!;
-const box = (id: string, x: number, y: number, w = 100, h = 60): BoxedElement =>
-  ({ id, type: 'shape', shape: 'square', x, y, width: w, height: h }) as BoxedElement;
+const box = (id: string, x: number, y: number, w = 100, h = 60): BoxedElement => ({
+  id,
+  type: 'shape',
+  shape: 'square',
+  x,
+  y,
+  width: w,
+  height: h,
+});
 
 // Services in a group, each with its own store under it, and the group publishing to a bus.
 const services: DiagramGraph = {
@@ -135,13 +142,12 @@ describe('seatByMembers', () => {
 
 describe('faceGroupEdges', () => {
   const frame = box('g', 0, 0, 600, 200);
-  const edge = (to: string): ArrowElement =>
-    ({
-      id: `g-${to}`,
-      type: 'arrow',
-      from: { kind: 'pinned', elementId: 'g', anchor: 's' },
-      to: { kind: 'pinned', elementId: to, anchor: 'n' },
-    }) as ArrowElement;
+  const edge = (to: string): ArrowElement => ({
+    id: `g-${to}`,
+    type: 'arrow',
+    from: { kind: 'pinned', elementId: 'g', anchor: 's' },
+    to: { kind: 'pinned', elementId: to, anchor: 'n' },
+  });
   const anchorTo = (other: BoxedElement, dir: 'TB' | 'LR' = 'TB') => {
     const [a] = faceGroupEdges([edge(other.id)], [frame], [other], dir);
     return a!.from.kind === 'pinned' ? a!.from.anchor : null;

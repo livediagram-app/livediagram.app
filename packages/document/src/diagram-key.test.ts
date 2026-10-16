@@ -21,7 +21,7 @@ import {
 const arrow = (style?: string) =>
   ({ ...createArrow(0, 0, 100, 0), ...(style ? { strokeStyle: style } : {}) }) as Element;
 const key = (over: Partial<ShapeElement> = {}) =>
-  ({ ...(createShape('diagram-key', 0, 0) as ShapeElement), id: 'k', ...over }) as ShapeElement;
+  ({ ...createShape('diagram-key', 0, 0), id: 'k', ...over }) as ShapeElement;
 const map = [{ tag: 'Payments', color: '#d97706' }];
 
 describe('the diagram key rows', () => {
@@ -90,7 +90,7 @@ describe('meanings', () => {
 describe('exporting a key (I2)', () => {
   it('draws the title, a dashed swatch with its meaning, and a tag edge in its colour', () => {
     const k = settleDiagramKeys([arrow('dashed'), key()], map)[1] as ShapeElement;
-    const svg = renderElementsToSvg({ id: 't', name: 't', elements: [k] } as never);
+    const svg = renderElementsToSvg({ id: 't', name: 't', elements: [k] });
     expect(svg).toContain('>Key<');
     expect(svg).toContain('stroke-dasharray');
     expect(svg).toContain('Dashed line');
@@ -110,7 +110,7 @@ describe('exporting a key (I2)', () => {
       id: 't',
       name: 't',
       elements: [key({ keyRows: [] })],
-    } as never);
+    });
     expect(svg).toContain('Your line styles show here');
   });
 });

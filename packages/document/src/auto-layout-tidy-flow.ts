@@ -127,7 +127,7 @@ export function positionTidyFlowComponent(
     const a = rankIndex.get(e.from);
     const b = rankIndex.get(e.to);
     if (a === undefined || b === undefined || a === b) continue;
-    const need = (dir === 'LR' ? room.w : room.h * 2 + LABEL_PAD) as number;
+    const need = dir === 'LR' ? room.w : room.h * 2 + LABEL_PAD;
     for (let r = Math.min(a, b); r < Math.max(a, b); r++) rankGap[r] = Math.max(rankGap[r]!, need);
   }
   // Beside a node, the gap fits the label of a side edge between them.

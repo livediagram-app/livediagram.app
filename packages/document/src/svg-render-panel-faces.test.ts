@@ -1,13 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { renderElementsToSvg } from './svg-render';
 import { createShape } from './factories';
-import type { ShapeElement, Tab } from './index';
+import type { ShapeElement } from './index';
 
 // The Comment and Action panels export the way they look on the canvas
 // (docs/specs/012-collaboration/comment-pin.md "The look", docs/specs/012-collaboration/action-panel.md "The card").
 
-const svgOf = (el: ShapeElement) =>
-  renderElementsToSvg({ id: 't', name: 'Tab', elements: [el] } as unknown as Tab);
+const svgOf = (el: ShapeElement) => renderElementsToSvg({ id: 't', name: 'Tab', elements: [el] });
 
 const comment = (i: number, name: string, text: string) => ({
   id: `c${i}`,
@@ -32,14 +31,14 @@ const action = (status: 'open' | 'done') => ({
 
 describe('Comment panel export', () => {
   it('invites a first comment when the thread is empty', () => {
-    const svg = svgOf(createShape('comment-pin', 0, 0) as ShapeElement);
+    const svg = svgOf(createShape('comment-pin', 0, 0));
     expect(svg).toContain('Start the Conversation');
     expect(svg).toContain('Write a comment…');
   });
 
   it('draws the thread as authored bubbles with the composer', () => {
     const el = {
-      ...(createShape('comment-pin', 0, 0) as ShapeElement),
+      ...createShape('comment-pin', 0, 0),
       commentThread: {
         resolved: false,
         comments: [comment(1, 'Tom', 'Should this be async?'), comment(2, 'Priya', 'Agreed.')],
@@ -52,7 +51,7 @@ describe('Comment panel export', () => {
 
   it('drops the composer and says Resolved once resolved', () => {
     const el = {
-      ...(createShape('comment-pin', 0, 0) as ShapeElement),
+      ...createShape('comment-pin', 0, 0),
       commentThread: { resolved: true, comments: [comment(1, 'Tom', 'Done here.')] },
     };
     const svg = svgOf(el);
@@ -64,14 +63,14 @@ describe('Comment panel export', () => {
 
 describe('Action panel export', () => {
   it('offers Add Action with no actions', () => {
-    const svg = svgOf(createShape('action-card', 0, 0) as ShapeElement);
+    const svg = svgOf(createShape('action-card', 0, 0));
     expect(svg).toContain('No Actions Yet');
     expect(svg).toContain('Add Action');
   });
 
   it('draws a row per action with its assignee, and the open count', () => {
     const svg = svgOf({
-      ...(createShape('action-card', 0, 0) as ShapeElement),
+      ...createShape('action-card', 0, 0),
       actions: [action('open'), { ...action('done'), id: 'b', name: 'Load test' }],
     });
     for (const s of ['Confirm the retry', 'Load test', 'Sam Lee', '1 OPEN', '>Add Action<'])
@@ -80,7 +79,7 @@ describe('Action panel export', () => {
 
   it('reads a card saved with a single action, and says All done once finished', () => {
     const svg = svgOf({
-      ...(createShape('action-card', 0, 0) as ShapeElement),
+      ...createShape('action-card', 0, 0),
       action: action('done'),
     });
     expect(svg).toContain('Confirm the retry');

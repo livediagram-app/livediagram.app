@@ -18,7 +18,7 @@ const node = (
   parent?: string,
   at: { x?: number; y?: number; w?: number; h?: number } = {},
 ): ShapeElement => ({
-  ...(createShape('mind-node', at.x ?? 0, at.y ?? 0) as ShapeElement),
+  ...createShape('mind-node', at.x ?? 0, at.y ?? 0),
   id,
   width: at.w ?? 200,
   height: at.h ?? 60,

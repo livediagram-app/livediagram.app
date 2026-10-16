@@ -13,8 +13,16 @@ const CHARCOAL = {
   grid: '#636373',
 };
 
-const shape = (o: Record<string, unknown> = {}): Element =>
-  ({ id: 's', type: 'shape', shape: 'square', x: 0, y: 0, width: 10, height: 10, ...o }) as Element;
+const shape = (o: Record<string, unknown> = {}): Element => ({
+  id: 's',
+  type: 'shape',
+  shape: 'square',
+  x: 0,
+  y: 0,
+  width: 10,
+  height: 10,
+  ...o,
+});
 const charcoalShape = (o: Record<string, unknown> = {}) =>
   shape({ fillColor: CHARCOAL.fill, strokeColor: CHARCOAL.stroke, textColor: CHARCOAL.text, ...o });
 

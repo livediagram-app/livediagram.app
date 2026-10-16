@@ -18,7 +18,7 @@ import {
 
 const host = (over: Partial<ShapeElement> = {}) =>
   ({
-    ...(createShape('square', 0, 0) as ShapeElement),
+    ...createShape('square', 0, 0),
     id: 'host',
     x: 100,
     y: 100,
@@ -29,7 +29,7 @@ const host = (over: Partial<ShapeElement> = {}) =>
 
 const note = (over: Partial<ShapeElement> = {}) =>
   ({
-    ...(createShape('pointer-note', 0, 0) as ShapeElement),
+    ...createShape('pointer-note', 0, 0),
     id: 'note',
     x: 300,
     y: 20,
@@ -44,7 +44,7 @@ const byId = (els: Element[], id: string) => els.find((e) => e.id === id) as Sha
 
 describe('a pointer note', () => {
   it('starts as a valid amber note with its tip below its bottom-left', () => {
-    const n = createShape('pointer-note', 0, 0) as ShapeElement;
+    const n = createShape('pointer-note', 0, 0);
     expect(isValidElement(n)).toBe(true);
     expect(pointerTipOf(n)).toEqual({ x: -24, y: 120 });
     expect(isValidElement({ ...n, pointerTip: { x: 1e6, y: 0 } })).toBe(false);
@@ -118,9 +118,12 @@ describe('the tip handle (snapPointerTip)', () => {
 describe('exporting a pointer note (I3)', () => {
   it('draws the box, the label, the leader and the tip, and frames the tip', () => {
     const n = note({ x: 0, y: 0, width: 180, height: 64, pointerTip: { x: -24, y: 120 } });
-    const svg = renderElementsToSvg({ id: 't', name: 't', elements: [n] } as never, {
-      padding: 0,
-    });
+    const svg = renderElementsToSvg(
+      { id: 't', name: 't', elements: [n] },
+      {
+        padding: 0,
+      },
+    );
     expect(svg).toContain('Stale for 60');
     expect(svg).toContain('<line x1="0" y1="64" x2="-24" y2="120"');
     expect(svg).toContain('<circle cx="-24" cy="120" r="3.5"');

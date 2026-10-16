@@ -14,7 +14,7 @@ import {
 
 // docs/specs/009-elements/card.md "Card presets": each preset is an ordinary card with its own slots switched on.
 
-const card = () => createShape('card', 0, 0) as ShapeElement;
+const card = () => createShape('card', 0, 0);
 
 describe('card presets', () => {
   it('leaves the Service preset (no variant) as the card it was', () => {
@@ -65,14 +65,14 @@ describe('card presets', () => {
   });
 
   it('ignores a card variant on another kind', () => {
-    const sq = createShape('square', 0, 0) as ShapeElement;
+    const sq = createShape('square', 0, 0);
     expect(applyShapeVariant(sq, 'panel')).toBe(sq);
   });
 });
 
 // docs/specs/009-elements/badge.md "Badge presets".
 describe('badge presets', () => {
-  const badge = () => createShape('badge', 0, 0) as ShapeElement;
+  const badge = () => createShape('badge', 0, 0);
 
   it('gives each preset its text and look, and keeps it a valid badge', () => {
     expect(applyShapeVariant(badge(), 'beta')).toMatchObject({ label: 'Beta', chipLook: 'tinted' });
@@ -115,7 +115,7 @@ describe('badgePresetFace', () => {
 });
 
 describe('withVariantColours', () => {
-  const badge = () => createShape('badge', 0, 0) as ShapeElement;
+  const badge = () => createShape('badge', 0, 0);
   it("puts the Warning preset's rose back over a theme or remembered colour, and its bindings go", () => {
     const dressed = { ...badge(), strokeColor: '#2563eb', strokeSwatch: 2 } as ShapeElement;
     const out = withVariantColours(dressed, 'warning');

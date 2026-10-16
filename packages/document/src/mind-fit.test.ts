@@ -9,7 +9,7 @@ import type { Element, ShapeElement } from './index';
 // docs/specs/009-elements/mind-node.md "A node grows to fit its label".
 
 const node = (id: string, parent?: string, at: { x?: number; y?: number } = {}): ShapeElement => ({
-  ...(createShape('mind-node', at.x ?? 0, at.y ?? 0) as ShapeElement),
+  ...createShape('mind-node', at.x ?? 0, at.y ?? 0),
   id,
   width: 200,
   height: 60,
@@ -77,7 +77,7 @@ describe('fitMindNodeHeight', () => {
   });
 
   it('ignores anything that is not a mind node, and a height that is not a number', () => {
-    const square = { ...(createShape('square', 0, 0) as ShapeElement), id: 's' };
+    const square = { ...createShape('square', 0, 0), id: 's' };
     const els: Element[] = [...tidyMap(), square];
     expect(fitMindNodeHeight(els, 's', 400)).toBe(els);
     expect(fitMindNodeHeight(els, 'missing', 400)).toBe(els);

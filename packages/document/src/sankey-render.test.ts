@@ -20,8 +20,11 @@ import {
   sankeyDrawnFlows,
 } from './sankey-model';
 
-const budget = (patch: Partial<ShapeElement> = {}): ShapeElement =>
-  ({ ...(createShape('sankey', 10, 20) as ShapeElement), id: 'sk1', ...patch }) as ShapeElement;
+const budget = (patch: Partial<ShapeElement> = {}): ShapeElement => ({
+  ...createShape('sankey', 10, 20),
+  id: 'sk1',
+  ...patch,
+});
 
 describe('a new Sankey', () => {
   it('drops as the starter budget, wide, with no label of its own', () => {
@@ -134,7 +137,7 @@ describe('readouts', () => {
 describe('svgSankey', () => {
   it('draws gradients, bands, nodes and escaped labels at the element position', () => {
     const svg = svgSankey(
-      budget({ sankeyFlows: [{ from: 'R&D <x>', to: 'Ship', value: 5 }] }) as never,
+      budget({ sankeyFlows: [{ from: 'R&D <x>', to: 'Ship', value: 5 }] }),
       '#0f172a',
     );
     expect(svg).toContain('<linearGradient id="lvd-sk-sk1-0"');
@@ -302,7 +305,7 @@ describe('leftovers', () => {
       ...budget(),
       sankeyLeftover: 'maybe',
       sankeyLeftoverName: '  ',
-    } as never) as ShapeElement;
+    }) as ShapeElement;
     expect(n.sankeyLeftover).toBeUndefined();
     expect(n.sankeyLeftoverName).toBeUndefined();
   });
