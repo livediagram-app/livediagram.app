@@ -8,6 +8,8 @@ import { ICON_ART_ALLOWLIST } from '@livediagram/oxlint-config/raw-svg';
 
 const JS_FILES = ['**/*.js', '**/*.mjs', '**/*.cjs', '**/*.jsx'];
 const TS_FILES = ['**/*.ts', '**/*.tsx', '**/*.mts', '**/*.cts'];
+// Tests: unit and e2e specs, and the Playwright suites with their helpers.
+const TEST_FILES = ['**/*.test.*', '**/*.spec.*', '**/e2e/**'];
 
 // A `jsPlugins` specifier resolves from the config file that names it, so plugins are passed as
 // absolute paths: every workspace's config, and the tests' scratch configs, load the same files.
@@ -220,6 +222,15 @@ export default defineConfig({
         'typescript/prefer-promise-reject-errors': ['error', { allowThrowingUnknown: true }],
         'typescript/restrict-plus-operands': 'error',
         'typescript/restrict-template-expressions': 'error',
+        'typescript/unbound-method': 'error',
+      },
+    },
+    {
+      // Source only: a test stubs and restores methods by reference (`Storage.prototype.getItem`,
+      // `element.scrollIntoView`), which is what the rule refuses.
+      files: TEST_FILES,
+      rules: {
+        'typescript/unbound-method': 'off',
       },
     },
     {
