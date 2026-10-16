@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { RECENT_DIAGRAMS_KEY } from '@livediagram/api-schema';
+import { RECENT_DIAGRAMS_KEY, RECENT_FAN_MIN } from '@livediagram/api-schema';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { seededRandom } from '@livediagram/document';
 import { HERO_FAN_OPENING, HERO_FAN_SLOTS, heroTemplate, shuffleFan } from '@/lib/hero-starts';
@@ -139,25 +139,32 @@ describe('the hero', () => {
     ]);
   });
 
-  it('shows no recent row to someone new, and four recent diagrams to a returning visitor', () => {
-    const { unmount } = render(<Hero />);
-    expect(screen.queryByText('Pick up where you left off')).toBeNull();
-    unmount();
-    const diagrams = [1, 2, 3, 4, 5].map((i) => ({
-      id: `d${i}`,
-      name: `Diagram ${i}`,
-      savedAt: Date.now() - i * 3600e3,
-      mode: 'diagram',
-    }));
-    localStorage.setItem(RECENT_DIAGRAMS_KEY, JSON.stringify({ v: 1, diagrams }));
+  it('keeps the template fan below RECENT_FAN_MIN recent diagrams, then deals theirs and Explorer Home', () => {
+    const note = (n: number) =>
+      JSON.stringify({
+        v: 1,
+        diagrams: Array.from({ length: n }, (_, i) => ({
+          id: `d${i + 1}`,
+          name: `Diagram ${i + 1}`,
+          savedAt: Date.now() - (i + 1) * 3600e3,
+          mode: 'diagram',
+        })),
+      });
+    localStorage.setItem(RECENT_DIAGRAMS_KEY, note(RECENT_FAN_MIN - 1));
+    const few = render(<Hero />);
+    expect(fanTitles()).toHaveLength(HERO_FAN_SLOTS);
+    expect(screen.queryByRole('link', { name: /Explorer Home/ })).toBeNull();
+    few.unmount();
+
+    localStorage.setItem(RECENT_DIAGRAMS_KEY, note(6));
     render(<Hero />);
-    const list = screen.getByRole('list', { name: 'Pick up where you left off' });
-    expect(
-      within(list)
-        .getAllByRole('link')
-        .map((a) => a.getAttribute('href')),
-    ).toEqual(['/document/d1', '/document/d2', '/document/d3', '/document/d4']);
-    expect(screen.getByRole('link', { name: /Open Explorer Home/ }).getAttribute('href')).toBe(
+    expect(fanTitles()).toEqual([]);
+    const docs = screen
+      .getAllByRole('link')
+      .map((a) => a.getAttribute('href'))
+      .filter((h) => h?.startsWith('/document/'));
+    expect(docs).toEqual(['/document/d1', '/document/d2', '/document/d3', '/document/d4']);
+    expect(screen.getByRole('link', { name: /Explorer Home/ }).getAttribute('href')).toBe(
       '/explorer/home',
     );
   });

@@ -217,7 +217,7 @@
   }
 }
 
-/* A returning visitor's tile thumbnail (components/HeroRecentRow.tsx) fades in as the cache answers. */
+/* A returning visitor's document preview (components/RecentPreview.tsx) fades in as the cache answers. */
 .hero-recent-thumb {
   animation: hero-recent-thumb-in 240ms ease-out both;
 }

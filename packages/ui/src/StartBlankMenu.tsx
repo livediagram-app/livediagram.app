@@ -9,7 +9,8 @@
 // taking focus, and a press or the keyboard opens it with focus inside (useMenuButton + useMenu).
 
 import { ctaHref, isCtaSource, type CtaSlot, type CtaSurface } from '@livediagram/api-schema';
-import { useRef } from 'react';
+import { cascadeDelayMs } from '@livediagram/tailwind-config/motion';
+import { useRef, type CSSProperties } from 'react';
 import { ButtonContent, buttonClassName } from './Button';
 import { ChevronDownIcon } from './icons';
 import { START_BLANKS } from './start-blanks';
@@ -91,24 +92,25 @@ export function StartBlankMenu({
       {/* pt-2 is a transparent bridge so the pointer can travel from the button to the card
           without crossing a gap that would close it. Dropped from the right edge so it never runs
           past the primary beside it. */}
+      {/* Shown by display (hover, or open), so its rows fan down afresh on every open. */}
       <div
-        className={`absolute right-0 top-full z-50 pt-2 transition-all duration-micro group-hover:visible group-hover:opacity-100 motion-reduce:transition-none ${
-          open ? 'visible opacity-100' : 'invisible opacity-0'
-        }`}
+        className={`absolute right-0 top-full z-50 pt-2 group-hover:block ${open ? 'block' : 'hidden'}`}
       >
         <div
           ref={attach}
           {...surfaceProps}
           className="w-max rounded-xl border border-slate-200 bg-white p-1.5 shadow-lg shadow-slate-900/10 outline-none dark:border-slate-700 dark:bg-slate-800 dark:shadow-black/30"
         >
-          {START_BLANKS.map(({ label, desc, href, blank, Icon }) => (
+          {START_BLANKS.map(({ label, desc, href, blank, Icon }, i) => (
             <a
               key={blank}
               href={blankHref(href, `${place}${blank}`, ctaSurface)}
               role="menuitem"
               tabIndex={-1}
               onClick={close}
-              className="group/blank flex items-start gap-2.5 rounded-lg px-3 py-2 transition hover:bg-slate-100 focus-visible:bg-slate-100 dark:hover:bg-slate-700 dark:focus-visible:bg-slate-700"
+              // Each row drops into place a beat after the one above (menu-fan-row, the shared cascade).
+              style={{ '--menu-row-delay': `${cascadeDelayMs(i)}ms` } as CSSProperties}
+              className="menu-fan-row group/blank flex items-start gap-2.5 rounded-lg px-3 py-2 transition hover:bg-slate-100 focus-visible:bg-slate-100 dark:hover:bg-slate-700 dark:focus-visible:bg-slate-700"
             >
               <span className="mt-0.5 shrink-0 text-slate-500 group-hover/blank:text-brand-700 dark:text-slate-400 dark:group-hover/blank:text-brand-300">
                 <Icon size={16} aria-hidden />

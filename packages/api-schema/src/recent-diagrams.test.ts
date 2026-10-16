@@ -1,9 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { runInlineScript } from '@livediagram/vitest-config/inline-script';
 import {
-  RECENT_DIAGRAMS_KEY,
   RECENT_DIAGRAMS_LIMIT,
-  RETURNING_BOOT_SCRIPT,
   parseRecentDiagrams,
   pickRecentDiagrams,
   recentThumbPath,
@@ -95,21 +92,6 @@ describe('helpers', () => {
   it('reads a snapshot background colour', () => {
     expect(svgBackgroundColor('<svg><rect x="0" fill="#fafafa"/></svg>')).toBe('#fafafa');
     expect(svgBackgroundColor('<svg></svg>')).toBeNull();
-  });
-
-  it('boot script marks <html> only when the note holds a diagram', () => {
-    const run = (value: string | null) => {
-      const attrs: Record<string, string> = {};
-      const localStorage = { getItem: (k: string) => (k === RECENT_DIAGRAMS_KEY ? value : null) };
-      const document = {
-        documentElement: { setAttribute: (k: string, v: string) => (attrs[k] = v) },
-      };
-      runInlineScript(RETURNING_BOOT_SCRIPT, { localStorage, document });
-      return 'data-returning' in attrs;
-    };
-    expect(run(serializeRecentDiagrams(pickRecentDiagrams([doc('a', 1)])))).toBe(true);
-    expect(run(serializeRecentDiagrams([]))).toBe(false);
-    expect(run(null)).toBe(false);
   });
 });
 

@@ -43,15 +43,19 @@ export function HeaderPrimaryCta({ ctaSurface }: { ctaSurface?: CtaSurface }) {
       aria-label={name}
       className={buttonClassName({
         size: 'md',
-        className: 'relative shrink-0 shadow-sm touch-target-y',
+        // A transparent border, so it is the height of Start Blank (a bordered secondary) beside it.
+        className: 'relative shrink-0 border border-transparent shadow-sm touch-target-y',
       })}
     >
       <ButtonContent>
-        <span className="text-optical-line grid justify-items-center">
-          <span className={`[grid-area:1/1] ${signedIn ? 'invisible' : ''}`}>
+        <span className="grid justify-items-center">
+          <span className={`text-optical-line [grid-area:1/1] ${signedIn ? 'invisible' : ''}`}>
             {label('Choose', 'Template')}
           </span>
-          <span aria-hidden className={`[grid-area:1/1] ${signedIn ? '' : 'invisible'}`}>
+          <span
+            aria-hidden
+            className={`text-optical-line [grid-area:1/1] ${signedIn ? '' : 'invisible'}`}
+          >
             {label('Open', 'Explorer')}
           </span>
         </span>

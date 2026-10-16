@@ -4,15 +4,18 @@ Status: shipped
 
 ## What
 
-The landing page's hero asks "What are you making today?" and, under its search, offers five starting
-points (**Or try**; [Marketing site](marketing-site.md), "Hero"): that is for someone new, picking a way
-in. Somebody who already has a diagram mostly wants to get back to it. For them that row becomes **Pick up
-where you left off**: their **four most recent diagrams**, each a tile that opens it, and a link beside
-them to **Explorer Home** ([Explorer Home](../013-workspace/explorer-home.md)) for everything else. Until
-October 2026 this was **Welcome back**, the first window of the hero's old stage, with six tiles.
+The landing page's hero ends in a fan of template cards dealt along its foot ([Marketing site](marketing-site.md),
+"Hero"): that is for someone new, picking a way in. Somebody who already works here mostly wants to get back to
+their work. So a visitor whose recent-diagrams snapshot (below) holds **at least three diagrams**
+(`RECENT_FAN_MIN`) sees **their own documents** on that fan instead: their **four most recent** (fewer if they have
+fewer), most recent first, then a card to **Explorer Home** ([Explorer Home](../013-workspace/explorer-home.md)) for
+everything else. With fewer than three they see the template fan, exactly as someone new does.
+
+Until October 2026 this was **Welcome back**, the first window of the hero's old stage, with six tiles; for a
+short while after, a row of tiles under the hero's search.
 
 A **returning visitor** is a browser whose recent-diagrams snapshot (below) holds at least one diagram.
-Everyone else, including a returning person in a fresh browser, sees Or try as before.
+Everyone else, including a returning person in a fresh browser, sees the templates.
 
 ## The recent-diagrams snapshot
 
@@ -49,35 +52,32 @@ on the same origin (the router serves `/` and `/explorer` from one host).
   the landing page it returns to (and the next person on a shared computer) never shows the account's
   diagrams. Deleting the account does the same.
 
-## Pick up where you left off (the hero's row)
+## Their documents on the fan
 
-- **Where:** in place of the hero's Or try pills, under the search, on the same dark band.
-- **Heading:** "Pick up where you left off" (small, quiet, above the tiles).
-- **Tiles:** up to four across from `sm`, the two most recent on a phone (so the hero still fits its screen),
-  each a **preview of the document**: its snapshot (the one the editor caches on each save) on the diagram's own
-  background colour, as the Explorer's cards draw it, over the diagram's name (one line, truncated) and how long
-  since it was saved ("2 hours ago"). With no snapshot, a quiet placeholder with the diagram's mode glyph. The
-  preview is a fixed height (96 px on a phone, 128 px from `sm`), so the row is too (248 px, 280 px) and its box is
-  held open at exactly that from first paint, only for a returning visitor (`.hero-recent-slot`): someone new gets
-  no empty gap, and the tiles drawing after hydration move nothing. Hovering a tile lifts it and brightens its
-  border. Fewer than four diagrams shows only those.
-- **Team mark:** a diagram from a team's library has the team icon (the Explorer's team mark) before its
-  name; your own diagrams have none.
-- **Pressing a tile** opens the diagram (`/document/<id>`).
-- **Explorer Home link** after the tiles: "Open Explorer Home ›", to `/explorer/home`.
-- **Keyboard and screen readers:** real links in reading order, the row a labelled list.
+- **Cards:** the fan's own cards (`components/HeroFanMine.tsx`), in its fan of poses (four cards for three
+  documents and Explorer Home, five for four): each document's name, its **preview** (`components/RecentPreview.tsx`:
+  its snapshot from this browser's cache, the one the editor leaves on each save, on the diagram's own background
+  colour, as the Explorer's cards draw it; with no snapshot, its mode glyph on a quiet tint) and how long since it was
+  saved ("2 hours ago"). Pressing one opens the document (`/document/<id>`).
+- **Explorer Home**, the last card: "Explorer Home" over a tinted panel ("All your documents") and "Open", to
+  `/explorer/home`.
+- **On a phone** the fan shows three cards: the two most recent documents and Explorer Home.
+- **They stay put.** The template fan deals a new card every few seconds; a returning visitor came for these, so
+  nothing is swapped. Each card springs in a beat after the one before it when the fan deals, and hovering or
+  focusing one straightens and lifts it, as on the template fan.
+- **Keyboard and screen readers:** real links, in reading order.
 
 ## No flash, no shift
 
-The static HTML is the same for everyone (Or try). A tiny inline script in the `<head>` checks for the
-note before first paint and marks `<html data-returning>`; while marked, the Or try pills are hidden
-(their space kept), so a returning visitor never sees them flash before their diagrams. After hydration
-the hero reads the note and draws the tiles in the same box; nothing below moves (no layout shift), and
-the headline, the page's largest paint, is untouched. Thumbnails fade in as the cache answers.
+The static HTML is the same for everyone (the template fan's opening hand). The fan is hidden from first paint
+once script runs (`<html data-hero-deal>`, the hero fan's head script) until it deals, and it deals whichever hand
+fits after hydration: a returning visitor's documents, or a shuffled template hand. The cards are the same size
+either way, so nothing moves, and the headline, the page's largest paint, is untouched. Previews fade in as the
+cache answers.
 
 ## Performance
 
-No new request on the landing page: one `localStorage` read and at most four Cache Storage reads, after
+No new request on the landing page: one `localStorage` read and at most four Cache Storage reads (one per document card), after
 hydration. The landing page loads no Clerk, no api client. The editor's side costs one `localStorage`
 write per document list, and a thumbnail fetch only for a recent diagram whose save time changed. The
 team documents ride the editor's existing document list (no new request): one more query on the api,
@@ -87,5 +87,5 @@ summary for the twelve it keeps, so it grows with the size of your teams' librar
 
 ## Appearance
 
-The tiles sit on the hero's dark band in either appearance; the
-thumbnails are the diagrams as their theme draws them, as in the Explorer.
+The cards are the fan's white cards in either appearance; the
+previews are the diagrams as their theme draws them, as in the Explorer.

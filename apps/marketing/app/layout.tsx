@@ -19,7 +19,6 @@ import {
   trustedTypesBootScript,
 } from '@livediagram/ui';
 import { VIEW_TRANSITION_GUARD_SCRIPT } from '../lib/view-transition-guard';
-import { RETURNING_BOOT_SCRIPT } from '@livediagram/api-schema';
 import { HERO_FAN_BOOT_SCRIPT } from '@/lib/hero-fan-boot';
 
 // SEO and social-card metadata. See docs/specs/019-marketing/marketing-site.md
@@ -162,8 +161,6 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <script dangerouslySetInnerHTML={{ __html: trustedHtml(TRUSTED_TYPES_BOOT) }} />
         <style>{VIEW_TRANSITION_OPT_IN}</style>
         <script dangerouslySetInnerHTML={{ __html: trustedHtml(VIEW_TRANSITION_GUARD_SCRIPT) }} />
-        {/* A returning visitor before first paint (docs/specs/019-marketing/returning-visitor.md). */}
-        <script dangerouslySetInnerHTML={{ __html: trustedHtml(RETURNING_BOOT_SCRIPT) }} />
         {/* The hero fan deals a shuffled hand once script runs (components/HeroFan.tsx). */}
         <script dangerouslySetInnerHTML={{ __html: trustedHtml(HERO_FAN_BOOT_SCRIPT) }} />
       </head>

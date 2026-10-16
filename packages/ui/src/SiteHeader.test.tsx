@@ -37,8 +37,12 @@ describe('SiteHeader', () => {
     expect(primary?.[0]).toContain('aria-label="Choose Template"');
     // The static HTML is for a visitor: Choose Template shows, and Open Explorer only holds its width
     // (invisible, aria-hidden) for a signed-in swap after hydration.
-    expect(primary?.[1]).toMatch(/<span class="\[grid-area:1\/1\] ">.*Choose .*Template<\/span>/);
-    expect(primary?.[1]).toMatch(/<span aria-hidden="true" class="\[grid-area:1\/1\] invisible">/);
+    expect(primary?.[1]).toMatch(
+      /<span class="text-optical-line \[grid-area:1\/1\] ">.*Choose .*Template<\/span>/,
+    );
+    expect(primary?.[1]).toMatch(
+      /<span aria-hidden="true" class="text-optical-line \[grid-area:1\/1\] invisible">/,
+    );
   });
 
   it('drops "Choose" only below 380px, so the bar fits a 360px and a 320px phone', () => {

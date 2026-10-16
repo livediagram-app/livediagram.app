@@ -291,6 +291,29 @@
   transform-origin: right center;
 }
 
+/* A menu's rows dealt down from its trigger one after another (the Start Blank menu): each drops a
+ * few pixels into place as it fades in, on the shared cascade (--menu-row-delay per row). Replays on
+ * every open, since the menu's panel is shown by display. Settled under reduced motion. */
+@keyframes menu-fan-down {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, -8px, 0) scale(0.98);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+.menu-fan-row {
+  animation: menu-fan-down var(--transition-duration-short) cubic-bezier(0.2, 0.85, 0.25, 1)
+    var(--menu-row-delay, 0ms) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .menu-fan-row {
+    animation: none;
+  }
+}
+
 /* The same motion originating from BELOW, used on the collapsed stack so
  * closing one reads as folding back down rather than as another card
  * being dealt. */

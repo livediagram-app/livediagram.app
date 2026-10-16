@@ -43,23 +43,6 @@
   --hero-card-shadow: rgb(0 0 0 / 0.7);
 }
 
-/* A returning visitor's recent diagrams (components/HeroRecentRow.tsx): the <head> script marks
-   <html data-returning> before first paint, so their row's box is held open from the first frame and
-   the tiles draw into it after hydration without moving anything below. Someone new gets no box. */
-[data-returning] .hero-recent-slot,
-.hero-recent-slot:not(:empty) {
-  margin-top: 2.5rem;
-}
-/* The row's height is fixed per breakpoint (its previews are), measured: 248px on a phone, 280px from sm. */
-[data-returning] .hero-recent-slot {
-  min-height: 15.5rem;
-}
-@media (min-width: 40rem) {
-  [data-returning] .hero-recent-slot {
-    min-height: 17.5rem;
-  }
-}
-
 /* The canvas's dot grid, fading out towards the foot so the fan sits on plain ground. */
 .hero-band-dots {
   background-image: radial-gradient(var(--hero-dots) 1px, transparent 1px);

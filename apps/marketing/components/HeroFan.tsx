@@ -1,6 +1,6 @@
 'use client';
 
-import { ctaHref } from '@livediagram/api-schema';
+import { ctaHref, RECENT_FAN_MIN } from '@livediagram/api-schema';
 import { TemplatePreview } from '@livediagram/template-previews';
 import { templateCreateHref, type TemplateKind } from '@livediagram/templates';
 import { PREFERS_REDUCED_MOTION, useMediaQuery } from '@livediagram/ui';
@@ -12,6 +12,8 @@ import {
   nextFanKind,
   shuffleFan,
 } from '@/lib/hero-starts';
+import { HeroFanMine } from './HeroFanMine';
+import { useRecentDiagrams } from './useRecentDiagrams';
 
 // The fan of template cards along the hero's foot (docs/specs/019-marketing/marketing-site.md "Hero"):
 // each the editor picker's preview on a card, tilted out from the middle, its lower part running off
@@ -59,6 +61,11 @@ export function HeroFan() {
   const swaps = useRef(0);
   // The kinds on show, kept beside the state so a swap reads them without an updater.
   const shown = useRef<TemplateKind[]>(slots);
+  // A returning visitor with enough recent diagrams sees theirs here instead (HeroFanMine), and nothing
+  // is dealt.
+  const recent = useRecentDiagrams();
+  const mine = recent && recent.length >= RECENT_FAN_MIN ? recent.slice(0, 4) : null;
+  const returning = mine !== null;
 
   // Deal this visit's hand: shuffle the whole pool and lay its first five in, each springing up.
   useEffect(() => {
@@ -82,7 +89,7 @@ export function HeroFan() {
   }, []);
 
   useEffect(() => {
-    if (!dealt || held || !onScreen || reduceMotion) return;
+    if (!dealt || returning || held || !onScreen || reduceMotion) return;
     let out: number | undefined;
     const tick = window.setInterval(() => {
       if (document.visibilityState === 'hidden') return;
@@ -107,12 +114,12 @@ export function HeroFan() {
       window.clearTimeout(out);
       setLeaving(null);
     };
-  }, [dealt, held, onScreen, reduceMotion, wide]);
+  }, [dealt, returning, held, onScreen, reduceMotion, wide]);
 
   return (
     <div
       ref={rootRef}
-      data-dealt={dealt ? '' : undefined}
+      data-dealt={dealt || returning ? '' : undefined}
       onPointerEnter={() => setHeld(true)}
       onPointerLeave={() => setHeld(false)}
       onFocus={() => setHeld(true)}
@@ -121,34 +128,37 @@ export function HeroFan() {
       }}
       className="hero-fan mt-12 flex h-36 shrink-0 justify-center gap-2 overflow-hidden px-4 pt-3 sm:mt-28 sm:h-56 sm:gap-5"
     >
-      {slots.map((kind, i) => {
-        const t = heroTemplate(kind);
-        const motion =
-          leaving === i ? 'hero-fan-out' : entering === i || firstDeal ? 'hero-fan-in' : '';
-        return (
-          // The pose sits on the slot, the swap's motion on the card inside it, so the two never fight
-          // over one transform; hovering or focusing a card straightens and lifts its slot.
-          <div
-            key={i}
-            className={`shrink-0 transition-transform duration-micro ease-out hover:[transform:translateY(-0.5rem)_rotate(0deg)] has-[:focus-visible]:[transform:translateY(-0.5rem)_rotate(0deg)] motion-reduce:transition-none ${POSE[i]}`}
-            style={{ '--hero-flick': FLICK[i] } as CSSProperties}
-          >
-            <a
-              key={kind}
-              href={ctaHref(templateCreateHref(kind), 'Home.HeroFan')}
-              className={`flex h-56 w-[6.5rem] flex-col gap-2 rounded-xl border border-sky-100 bg-white p-2 text-slate-900 shadow-[0_30px_60px_-30px_var(--hero-card-shadow)] outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-sky-400 sm:h-72 sm:w-56 sm:gap-3 sm:rounded-2xl sm:p-4 dark:border-transparent ${motion}`}
-            >
-              <span className="truncate text-xs font-semibold sm:text-sm">
-                <span className="sr-only">Create a </span>
-                {t.title}
-              </span>
-              <span className="flex h-20 items-center justify-center rounded-lg bg-slate-50 sm:h-32 sm:rounded-xl [&>svg]:h-14 [&>svg]:w-auto sm:[&>svg]:h-24">
-                <TemplatePreview kind={kind} />
-              </span>
-            </a>
-          </div>
-        );
-      })}
+      {mine ? <HeroFanMine diagrams={mine} /> : null}
+      {mine
+        ? null
+        : slots.map((kind, i) => {
+            const t = heroTemplate(kind);
+            const motion =
+              leaving === i ? 'hero-fan-out' : entering === i || firstDeal ? 'hero-fan-in' : '';
+            return (
+              // The pose sits on the slot, the swap's motion on the card inside it, so the two never fight
+              // over one transform; hovering or focusing a card straightens and lifts its slot.
+              <div
+                key={i}
+                className={`shrink-0 transition-transform duration-micro ease-out hover:[transform:translateY(-0.5rem)_rotate(0deg)] has-[:focus-visible]:[transform:translateY(-0.5rem)_rotate(0deg)] motion-reduce:transition-none ${POSE[i]}`}
+                style={{ '--hero-flick': FLICK[i] } as CSSProperties}
+              >
+                <a
+                  key={kind}
+                  href={ctaHref(templateCreateHref(kind), 'Home.HeroFan')}
+                  className={`flex h-56 w-[6.5rem] flex-col gap-2 rounded-xl border border-sky-100 bg-white p-2 text-slate-900 shadow-[0_30px_60px_-30px_var(--hero-card-shadow)] outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-sky-400 sm:h-72 sm:w-56 sm:gap-3 sm:rounded-2xl sm:p-4 dark:border-transparent ${motion}`}
+                >
+                  <span className="truncate text-xs font-semibold sm:text-sm">
+                    <span className="sr-only">Create a </span>
+                    {t.title}
+                  </span>
+                  <span className="flex h-20 items-center justify-center rounded-lg bg-slate-50 sm:h-32 sm:rounded-xl [&>svg]:h-14 [&>svg]:w-auto sm:[&>svg]:h-24">
+                    <TemplatePreview kind={kind} />
+                  </span>
+                </a>
+              </div>
+            );
+          })}
     </div>
   );
 }
