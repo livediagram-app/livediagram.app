@@ -281,7 +281,7 @@ describe('the analysis sheets agree with the drawings they sit beside', () => {
     });
     expect([v('N5'), v('N6'), v('N7'), v('N8')]).toEqual([10, 3, 7, 16]);
     near(v('N9'), 0.3);
-    expect(STRIDE_CATEGORIES.map((_, i) => v(`B${18 + i}`))).toEqual([2, 2, 1, 2, 1, 2]);
+    expect(STRIDE_CATEGORIES.map((_, i) => v(`C${18 + i}`))).toEqual([2, 2, 1, 2, 1, 2]);
   });
 
   it('Driver Model: the baseline and what-if trees, the uplift and each lever', () => {
@@ -317,5 +317,14 @@ describe('the analysis sheets agree with the drawings they sit beside', () => {
     expect(totals.leadDays).toBe(27);
     expect(v('I10')).toBe('Refine');
     expect([v('A14'), v('B14'), v('C14')]).toEqual(['Refine', 8, 0.25]);
+  });
+});
+
+describe('a body cell’s own format (design.ts cellFormats)', () => {
+  it('reads each Driver Model input in its own format: whole counts, rates to one place', () => {
+    const { at } = make('drivers');
+    expect(at(4, 2)?.format).toMatchObject({ nf: 'number', dp: 0 });
+    expect(at(5, 2)?.format).toMatchObject({ nf: 'percent', dp: 1 });
+    expect(at(8, 3)?.format).toMatchObject({ nf: 'number', dp: 2 });
   });
 });

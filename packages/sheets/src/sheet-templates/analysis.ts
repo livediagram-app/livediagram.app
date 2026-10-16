@@ -34,7 +34,7 @@ export function threatsDesign(): SheetDesign {
       'Example threats to a checkout: type over them. Set Likelihood and Impact (yellow) and the score and rating follow.',
     span: 14,
     accent: 'rose',
-    widths: [56, 170, 170, 330, 96, 80, 70, 90, 300, 100, 110, 28, 170, 100],
+    widths: [56, 190, 190, 400, 96, 80, 70, 90, 380, 110, 120, 28, 170, 100],
     freeze: HEAD_ROW + 1,
     blocks: [
       {
@@ -108,16 +108,16 @@ export function threatsDesign(): SheetDesign {
       },
       {
         kind: 'table',
-        at: [countsHead - 1, 0],
+        at: [countsHead - 1, 1],
         head: ['STRIDE', 'Threats'],
         rows: STRIDE_CATEGORIES.map((s, i) => [
           s,
-          `=COUNTIF($C$5:$C$${last},A${countsHead + 1 + i})`,
+          `=COUNTIF($C$5:$C$${last},B${countsHead + 1 + i})`,
         ]),
         formats: [null, WHOLE],
       },
     ],
-    charts: [{ kind: 'bar-chart', table: 3, at: [countsHead - 1, 2], width: 440, height: 230 }],
+    charts: [{ kind: 'bar-chart', table: 3, at: [countsHead - 1, 3], width: 460, height: 230 }],
   };
 }
 
@@ -128,6 +128,14 @@ function typed(key: DriverInputKey, v: number): string {
     return `${Number((v * 100).toFixed(1))}%`;
   if (Number.isInteger(v) && v >= 1000) return v.toLocaleString('en-GB');
   return String(v);
+}
+
+// The format a driver input reads in: a rate as a percentage to one place, a count whole with its thousands, else to
+// two places (orders per customer).
+function inputFormat(key: DriverInputKey): FormatPatch {
+  if (key === 'conversion' || key === 'retention' || key.endsWith('OnTime')) return PERCENT1;
+  if (key === 'visitors' || key === 'lastActives') return WHOLE;
+  return { nf: 'number', dp: 2 };
 }
 
 // The tree in cells: new + returning customers, the actives they make, their orders, the on-time rate, the north
@@ -166,7 +174,7 @@ export function driversDesign(): SheetDesign {
       'A north star worked from the inputs teams own. Type a What If (yellow) and see what it does to on-time orders.',
     span: 11,
     accent: 'indigo',
-    widths: [240, 130, 110, 110, 90, 28, 170, 110, 28, 170, 110],
+    widths: [240, 130, 190, 110, 90, 28, 170, 110, 28, 170, 110],
     freeze: HEAD_ROW + 1,
     blocks: [
       {
@@ -184,6 +192,9 @@ export function driversDesign(): SheetDesign {
           ];
         }),
         formats: [null, null, null, null, PERCENT1],
+        cellFormats: DRIVER_ROWS.flatMap(({ key }, row) =>
+          [2, 3].map((col) => ({ row, col, f: inputFormat(key) })),
+        ),
         inputs: [3],
       },
       {
@@ -229,6 +240,7 @@ export function driversDesign(): SheetDesign {
           leverFormula(key, `B${leversHead + 2 + i}`),
         ]),
         formats: [null, null, WHOLE],
+        cellFormats: DRIVER_LEVERS.map(({ key }, row) => ({ row, col: 1, f: inputFormat(key) })),
         inputs: [1],
       },
     ],
@@ -313,6 +325,16 @@ export function valueStreamDesign(): SheetDesign {
         formats: [null, NUMBER1, NUMBER1],
       },
     ],
-    charts: [{ kind: 'bar-chart', table: 2, at: [splitHead - 1, 3], width: 460, height: 230 }],
+    // A bar chart reads one series: the waiting, which is where the time goes.
+    charts: [
+      {
+        kind: 'bar-chart',
+        table: 2,
+        cols: [0, 1],
+        at: [splitHead - 1, 3],
+        width: 460,
+        height: 230,
+      },
+    ],
   };
 }
