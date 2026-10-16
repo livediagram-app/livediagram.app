@@ -3,7 +3,7 @@ import { act, type ReactElement } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { TelemetrySummary } from '@livediagram/api-schema';
-import { ActiveView } from './ActiveView';
+import { ActiveView, prefetchViews } from './ActiveView';
 import { GROUPS as DASHBOARD } from './DashboardView';
 import { FeaturesView } from './FeaturesView';
 import { HealthView } from './HealthView';
@@ -92,6 +92,15 @@ describe('the Detail tabs', () => {
     expect(scrolled).toEqual([sectionId('settings'), sectionId('settings')]);
   });
 
+  it('scroll to a section from its link, without leaving a hash on the page', () => {
+    const el = render(SECTIONED.health!(null));
+    act(() =>
+      el.querySelector<HTMLAnchorElement>(`nav a[href="#${sectionId('timings')}"]`)!.click(),
+    );
+    expect(scrolled).toEqual([sectionId('timings')]);
+    expect(window.location.hash).toBe('');
+  });
+
   it('never scroll for a section that lives on another tab', () => {
     render(SECTIONED.features!({ section: 'timings', n: 1 }));
     expect(scrolled).toEqual([]);
@@ -127,5 +136,58 @@ describe('the Dashboard', () => {
 describe('the active tab', () => {
   it('is memoised, so a window click paints before the tab redraws', () => {
     expect((ActiveView as unknown as { $$typeof: symbol }).$$typeof).toBe(Symbol.for('react.memo'));
+  });
+
+  it('renders the Dashboard, and says so when the api has no per-metric trends for Search', () => {
+    const props = {
+      summary: SUMMARY,
+      active: 'last7' as const,
+      focus: null,
+      onOpenSection: () => {},
+    };
+    expect(render(<ActiveView view="dashboard" {...props} />).textContent).toContain('At a glance');
+    act(() =>
+      root!.render(
+        <ActiveView view="search" {...props} summary={{ ...SUMMARY, daily: undefined }} />,
+      ),
+    );
+    expect(host!.textContent).toContain('Per-metric trends aren’t available');
+  });
+
+  it.each(['features', 'pages', 'community', 'health', 'search'] as const)(
+    'mounts the %s tab, whose code loads on its own',
+    (view) => {
+      const props = {
+        summary: SUMMARY,
+        active: 'last7' as const,
+        focus: null,
+        onOpenSection: () => {},
+      };
+      expect(() => render(<ActiveView view={view} {...props} />)).not.toThrow();
+    },
+  );
+
+  it('fetches the other tabs once the browser is idle, and cancels if the page goes first', () => {
+    vi.useFakeTimers();
+    try {
+      const idle = window.requestIdleCallback;
+      // jsdom has no requestIdleCallback: the timeout path.
+      (window as { requestIdleCallback?: unknown }).requestIdleCallback = undefined;
+      const cancel = prefetchViews();
+      cancel();
+      vi.runAllTimers();
+      const ran = vi.fn((cb: () => void) => {
+        cb();
+        return 1;
+      });
+      window.requestIdleCallback = ran as unknown as typeof window.requestIdleCallback;
+      window.cancelIdleCallback = vi.fn();
+      prefetchViews()();
+      expect(ran).toHaveBeenCalledTimes(1);
+      expect(window.cancelIdleCallback).toHaveBeenCalledWith(1);
+      window.requestIdleCallback = idle;
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });
