@@ -76,8 +76,9 @@ export function useExplorerMoves({
     // folder under its old parent with nothing left to reconcile it.
     void apiUpdateFolder(ownerId, id, { parentId })
       .then(() => {
-        refreshFolders();
+        const refreshed = refreshFolders();
         track('Folder', 'Moved');
+        return refreshed;
       })
       .catch(() => {});
   };
