@@ -165,7 +165,9 @@ describe('the hero', () => {
       .filter((h) => h?.startsWith('/document/'));
     expect(docs).toEqual(['/document/d1', '/document/d2', '/document/d3', '/document/d4']);
     // The save time sits at the card's foot, after its preview (out of sight until the card lifts).
-    const card = screen.getAllByRole('link').find((l) => l.getAttribute('href') === '/document/d1')!;
+    const card = screen
+      .getAllByRole('link')
+      .find((l) => l.getAttribute('href') === '/document/d1')!;
     expect(card.lastElementChild?.textContent).toMatch(/ago$/);
     expect(card.firstElementChild?.textContent).toBe('Diagram 1');
     expect(screen.getByRole('link', { name: /Explorer Home/ }).getAttribute('href')).toBe(
