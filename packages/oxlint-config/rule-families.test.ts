@@ -42,6 +42,7 @@ const FIXTURES = {
   'script.mjs': 'let a = 1;\nexport default a + undefinedGlobal;\n',
   'module.ts': 'let a = 1;\nexport default a;\n',
   'typed.ts': 'const xs = [1, 2];\nfor (const i in xs) console.log(i);\n',
+  'typed.mjs': 'const xs = [1, 2];\nfor (const i in xs) console.log(i);\n',
 };
 
 let findings: Finding[];
@@ -54,8 +55,11 @@ const rulesIn = (file: keyof typeof FIXTURES) =>
 
 describe('shared oxlint config', () => {
   it('makes every rule an error and enables no category wholesale', () => {
-    const severities = Object.values(config.rules ?? {}).map((v) => (Array.isArray(v) ? v[0] : v));
-    expect(new Set(severities)).toEqual(new Set(['error']));
+    const severity = (v: unknown) => (Array.isArray(v) ? v[0] : v);
+    expect(new Set(Object.values(config.rules ?? {}).map(severity))).toEqual(new Set(['error']));
+    // An override turns a rule on, as an error, or off where it does not apply.
+    const overridden = (config.overrides ?? []).flatMap((o) => Object.values(o.rules ?? {}));
+    for (const v of overridden) expect(['error', 'off']).toContain(severity(v));
     expect(new Set(Object.values(config.categories ?? {}))).toEqual(new Set(['off']));
   });
 
@@ -109,6 +113,10 @@ describe('rule families', () => {
 
   it('runs the type-aware rules, which need the type of an expression', () => {
     expect(rulesIn('typed.ts')).toEqual(['typescript(no-for-in-array)']);
+  });
+
+  it('runs the type-aware rules on TypeScript only, since JavaScript carries no types', () => {
+    expect(rulesIn('typed.mjs')).toEqual([]);
   });
 
   it('runs the JavaScript-only rules on JavaScript and the TypeScript-only rules on TypeScript', () => {

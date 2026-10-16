@@ -36,6 +36,7 @@ is the whole of what the repo enforces.
   - `no-for-in-array`
   - `no-implied-eval`
   - `no-redundant-type-constituents`
+  - `no-unsafe-argument`
   - `no-unsafe-enum-comparison`
   - `no-unsafe-unary-minus`
   - `only-throw-error`
@@ -66,9 +67,12 @@ is the whole of what the repo enforces.
 
 ## Type-aware rules
 
-- A type-aware rule needs the type of an expression, not only its syntax. oxlint hands those rules
-  to `oxlint-tsgolint` (`options.typeAware` in the shared config), which is built on typescript-go:
-  the same TypeScript 7 the repo type-checks with, so no second compiler is involved.
+- A type-aware rule needs the type of an expression, not only its syntax, so the type-aware rules
+  run on TypeScript files only: a JavaScript file carries no types, and every value in it reads as
+  `any`.
+- oxlint hands those rules to `oxlint-tsgolint` (`options.typeAware` in the shared config), which is
+  built on typescript-go: the same TypeScript 7 the repo type-checks with, so no second compiler is
+  involved.
 - A file is typed through the nearest `tsconfig.json` that includes it. Every source file, script
   and test is in one, so what the lint reads is what `pnpm typecheck` checks: `apps/live`'s `.mts`
   scripts and marketing's `.well-known` route are named in their app's tsconfig, and a folder of
@@ -79,7 +83,8 @@ is the whole of what the repo enforces.
 - `oxlint-tsgolint` is a root dev dependency, so every workspace's `oxlint` resolves it as its peer,
   and a dependency of `@livediagram/oxlint-config`, whose tests run it.
 - A finding is fixed where it arises (a truer signature, a handled promise), never cast or
-  suppressed away.
+  suppressed away. A value that crosses into the program untyped (parsed JSON, a library's `any`)
+  is given its type once, where it enters, with a comment when the library's own type is wrong.
 
 ## Disable directives
 
