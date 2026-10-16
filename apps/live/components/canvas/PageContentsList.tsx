@@ -14,7 +14,7 @@ import {
   lucideSearch,
   lucideShapes,
 } from '@livediagram/icons/lucide';
-import { lucideGlyph, Tooltip } from '@livediagram/ui';
+import { lucideGlyph, Tooltip, trustedHtml } from '@livediagram/ui';
 import { SlideDeckIcon } from '@/components/palette/palette-icons';
 import { DropCaret } from '@/components/primitives/DropCaret';
 import { CONTENTS_FIND_AFTER, type ContentsRow } from '@/lib/page-contents';
@@ -124,7 +124,7 @@ export function ContentsList({
             aria-selected={row.id === current}
             data-page-row={row.id}
             data-contents-slot={i}
-            onClick={() => go(row)}
+            onClick={(e) => go(row, e.timeStamp)}
             // A mouse or pen drags the whole row; a finger drags its grip, so the list still scrolls.
             onPointerDown={(e) => {
               if (e.pointerType !== 'touch') reorder.beginDrag(e, row.id);
@@ -215,7 +215,7 @@ function Picture({
           viewBox={thumb.viewBox}
           preserveAspectRatio="xMidYMid slice"
           // Our own renderer's output (every label is xmlEscaped inside it).
-          dangerouslySetInnerHTML={{ __html: thumb.markup }}
+          dangerouslySetInnerHTML={{ __html: trustedHtml(thumb.markup) }}
         />
       ) : null}
     </span>

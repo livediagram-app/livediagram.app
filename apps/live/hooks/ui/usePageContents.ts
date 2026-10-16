@@ -129,9 +129,9 @@ export function usePageContents({
     },
   });
 
-  const go = (row: ContentsRow) => {
+  const go = (row: ContentsRow, clickedAt?: number) => {
     // The release of a drag is not a press of the row.
-    if (reorder.consumeDragClick()) return;
+    if (reorder.consumeDragClick(clickedAt)) return;
     track('UI', 'Used', 'PageContentsJump');
     setCurrent(row.id);
     view.focusPage(row.id);
