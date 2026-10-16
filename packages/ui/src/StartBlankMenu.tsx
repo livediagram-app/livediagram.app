@@ -1,7 +1,7 @@
 'use client';
 
 // The site header's Start Blank (docs/specs/019-marketing/marketing-site.md "The Start Blank
-// menu"): a menu button offering one blank per editor mode, each straight into the editor with no
+// menu"), also in the landing hero's search bar: a menu button offering one blank per editor mode, each straight into the editor with no
 // wizard (docs/specs/007-editor/new-document-route.md "Start Blank"). The rows wear the editor's
 // mode-switch glyphs, so the choice looks the same here as it does in the app.
 //
@@ -9,86 +9,44 @@
 // taking focus, and a press or the keyboard opens it with focus inside (useMenuButton + useMenu).
 
 import { ctaHref, isCtaSource, type CtaSlot, type CtaSurface } from '@livediagram/api-schema';
-import { useRef, type ComponentType } from 'react';
+import { useRef } from 'react';
 import { ButtonContent, buttonClassName } from './Button';
-import {
-  ChevronDownIcon,
-  FlowchartIcon,
-  IllustrateIcon,
-  PlanIcon,
-  FlipchartIcon,
-  MarkerIcon,
-  type IconProps,
-} from './icons';
+import { ChevronDownIcon } from './icons';
+import { START_BLANKS } from './start-blanks';
 import { useMenu } from './menu/useMenu';
 import { useMenuButton } from './menu/useMenuButton';
 import { useClickOutside } from './useClickOutside';
 
 type HeaderSurface = CtaSurface;
 
-const BLANKS: {
-  label: string;
-  desc: string;
-  href: string;
-  slot: CtaSlot<HeaderSurface>;
-  Icon: ComponentType<IconProps>;
-}[] = [
-  {
-    label: 'Blank Diagram',
-    desc: 'Shapes, connectors and structure',
-    href: '/new?blank=1',
-    slot: 'HeaderDraw',
-    Icon: FlowchartIcon,
-  },
-  {
-    label: 'Blank Whiteboard',
-    desc: 'Free drawing without distractions',
-    href: '/new?template=whiteboard',
-    slot: 'HeaderWhiteboard',
-    Icon: MarkerIcon,
-  },
-  {
-    label: 'Blank Session',
-    desc: 'Run a retro or workshop with your team',
-    href: '/new?template=blank-session',
-    slot: 'HeaderSession',
-    Icon: FlipchartIcon,
-  },
-  {
-    label: 'Blank Illustration',
-    desc: 'Pages for infographics and articles',
-    href: '/new?template=blank-illustration',
-    slot: 'HeaderIllustration',
-    Icon: IllustrateIcon,
-  },
-  {
-    label: 'Blank Plan',
-    desc: 'A board of cards to move through columns',
-    href: '/new?template=blank-plan',
-    slot: 'HeaderPlan',
-    Icon: PlanIcon,
-  },
-];
+// Where the menu sits, which names its funnel slots: the header's `Header<Blank>`, or the landing
+// hero's `HeroBlank<Blank>`, so the funnel tells the two apart.
+type StartBlankPlace = 'Header' | 'HeroBlank';
 
 // A blank's link, tagged with its funnel source when the surface lists that slot (docs/specs/019-marketing/
 // landing-funnel.md). Checked against the table rather than cast, so a surface missing a slot sends a plain
 // link instead of a source the editor would drop.
 export function blankHref(
   href: string,
-  slot: CtaSlot<HeaderSurface>,
+  slot: CtaSlot<HeaderSurface> | `HeroBlank${string}`,
   surface?: HeaderSurface,
 ): string {
   const source = surface ? `${surface}.${slot}` : null;
   return isCtaSource(source) ? ctaHref(href, source) : href;
 }
 
-// `className` is the header's placement only (it hides the menu below `sm`).
+// `className` is the placement only (the header hides the menu below `sm`). `triggerClassName`
+// replaces the button's own look where the menu sits on a surface of its own (the hero's search bar).
 export function StartBlankMenu({
   ctaSurface,
   className = '',
+  place = 'Header',
+  triggerClassName,
 }: {
   ctaSurface?: HeaderSurface;
   className?: string;
+  place?: StartBlankPlace;
+  triggerClassName?: string;
 }) {
   const { open, close, toggle, trigger, setTrigger, initialFocus, onTriggerKeyDown } =
     useMenuButton();
@@ -111,11 +69,14 @@ export function StartBlankMenu({
         aria-expanded={open}
         onClick={toggle}
         onKeyDown={onTriggerKeyDown}
-        className={buttonClassName({
-          variant: 'secondary',
-          size: 'md',
-          className: 'cursor-pointer shadow-sm',
-        })}
+        className={
+          triggerClassName ??
+          buttonClassName({
+            variant: 'secondary',
+            size: 'md',
+            className: 'cursor-pointer shadow-sm',
+          })
+        }
       >
         <ButtonContent>Start Blank</ButtonContent>
         <ChevronDownIcon
@@ -140,10 +101,10 @@ export function StartBlankMenu({
           {...surfaceProps}
           className="w-max rounded-xl border border-slate-200 bg-white p-1.5 shadow-lg shadow-slate-900/10 outline-none dark:border-slate-700 dark:bg-slate-800 dark:shadow-black/30"
         >
-          {BLANKS.map(({ label, desc, href, slot, Icon }) => (
+          {START_BLANKS.map(({ label, desc, href, blank, Icon }) => (
             <a
-              key={slot}
-              href={blankHref(href, slot, ctaSurface)}
+              key={blank}
+              href={blankHref(href, `${place}${blank}`, ctaSurface)}
               role="menuitem"
               tabIndex={-1}
               onClick={close}

@@ -4,14 +4,15 @@ Status: shipped
 
 ## What
 
-The landing page's hero opens on an **overview** of every mode ([Marketing site](marketing-site.md), "Hero"): it is
-there for someone new, to see what the canvas does before they pick a way in. Somebody who already has a
-diagram has seen that. For them the hero's first window becomes **Welcome back**: their **six most recent
-diagrams**, each a tile that opens it, and a link under them to **Explorer Home**
-([Explorer Home](../013-workspace/explorer-home.md)) for everything else.
+The landing page's hero asks "What are you making today?" and, under its search, offers five starting
+points (**Or try**; [Marketing site](marketing-site.md), "Hero"): that is for someone new, picking a way
+in. Somebody who already has a diagram mostly wants to get back to it. For them that row becomes **Pick up
+where you left off**: their **four most recent diagrams**, each a tile that opens it, and a link beside
+them to **Explorer Home** ([Explorer Home](../013-workspace/explorer-home.md)) for everything else. Until
+October 2026 this was **Welcome back**, the first window of the hero's old stage, with six tiles.
 
 A **returning visitor** is a browser whose recent-diagrams snapshot (below) holds at least one diagram.
-Everyone else, including a returning person in a fresh browser, sees the overview as before.
+Everyone else, including a returning person in a fresh browser, sees Or try as before.
 
 ## The recent-diagrams snapshot
 
@@ -48,42 +49,33 @@ on the same origin (the router serves `/` and `/explorer` from one host).
   the landing page it returns to (and the next person on a shared computer) never shows the account's
   diagrams. Deleting the account does the same.
 
-## Welcome back (the hero's first window)
+## Pick up where you left off (the hero's row)
 
-- Same board and size as the overview (no editor chrome, the canvas paper and dot grid), so the stage,
-  its dots and arrows are unchanged. It replaces the overview; it is not an extra window.
-- **It never moves on by itself.** The stage does not auto-advance off Welcome back: a returning
-  visitor came for their diagrams, so it stays until they move it with the arrows or dots. Once moved,
-  the other windows auto-advance as usual, and the stage settles again when it comes back round.
-- **Tiles:** three over two on a wide window, two across on a phone (three rows, spread evenly down the tall phone window so no gap gathers above the link), each a 3:2 thumbnail
-  over the diagram's name (one line, truncated) and how long since it was saved ("2 hours ago"). The
-  thumbnail box takes the diagram's own background colour, as the Explorer's cards do; with no thumbnail,
-  a quiet placeholder with the diagram glyph. Hovering a tile lifts it and rings it in brand, as the
-  overview's frames do. Fewer than six diagrams shows only those.
+- **Where:** in place of the hero's Or try pills, under the search, on the same dark band.
+- **Heading:** "Pick up where you left off" (small, quiet, above the tiles).
+- **Tiles:** up to four, in a row on a wide window and two by two below `lg`, each a compact card the height of
+  a button row: a small thumbnail beside the diagram's name (one line, truncated) over how long since it was saved
+  ("2 hours ago"). The thumbnail takes the diagram's own background colour, as the Explorer's cards do; with no
+  thumbnail, a quiet placeholder with the diagram's mode glyph. Hovering a tile lifts it and brightens its border.
+  Fewer than four diagrams shows only those. The row's box is held open from first paint only for a returning
+  visitor (`.hero-recent-slot`), so someone new gets no empty gap.
 - **Team mark:** a diagram from a team's library has the team icon (the Explorer's team mark) before its
-  name, quiet slate, brand on hover with the name; your own diagrams have none.
-- **Pressing a tile** opens the diagram (`/document/<id>`). On a peeking (off-centre) window a press
-  centres the window instead, as everywhere on the stage.
-- **Explorer Home link** under the tiles: "Open Explorer Home ›", to `/explorer/home`.
-- **Heading:** "Welcome back" (in capitals above the tiles, the brand eyebrow style).
-- **Label below the stage:** "Welcome back: your recent diagrams, one press away". The headline's word
-  cycles freely while it shows, as on the overview.
-- **Keyboard and screen readers:** the stage is decorative (`aria-hidden`), so while Welcome back is
-  centred a link to Explorer Home sits under the stage, shown when focused, as each mode window's Build
-  yours does.
+  name; your own diagrams have none.
+- **Pressing a tile** opens the diagram (`/document/<id>`).
+- **Explorer Home link** after the tiles: "Open Explorer Home ›", to `/explorer/home`.
+- **Keyboard and screen readers:** real links in reading order, the row a labelled list.
 
 ## No flash, no shift
 
-The static HTML is the same for everyone (the overview). A tiny inline script in the `<head>` checks for
-the note before first paint and marks `<html data-returning>`; while marked, the overview's frames are
-hidden (their space kept), so a returning visitor never sees the overview flash before their diagrams.
-After hydration the hero reads the note and draws the tiles; the window's size never changes, so nothing
-moves (no layout shift), and the headline, the page's largest paint, is untouched. Thumbnails fade in as
-the cache answers.
+The static HTML is the same for everyone (Or try). A tiny inline script in the `<head>` checks for the
+note before first paint and marks `<html data-returning>`; while marked, the Or try pills are hidden
+(their space kept), so a returning visitor never sees them flash before their diagrams. After hydration
+the hero reads the note and draws the tiles in the same box; nothing below moves (no layout shift), and
+the headline, the page's largest paint, is untouched. Thumbnails fade in as the cache answers.
 
 ## Performance
 
-No new request on the landing page: one `localStorage` read and at most six Cache Storage reads, after
+No new request on the landing page: one `localStorage` read and at most four Cache Storage reads, after
 hydration. The landing page loads no Clerk, no api client. The editor's side costs one `localStorage`
 write per document list, and a thumbnail fetch only for a recent diagram whose save time changed. The
 team documents ride the editor's existing document list (no new request): one more query on the api,
@@ -93,5 +85,5 @@ summary for the twelve it keeps, so it grows with the size of your teams' librar
 
 ## Appearance
 
-The board, tiles, text and link follow light and dark appearance like the rest of the hero; the
+The tiles sit on the hero's dark band in either appearance; the
 thumbnails are the diagrams as their theme draws them, as in the Explorer.

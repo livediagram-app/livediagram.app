@@ -1,23 +1,26 @@
 // @vitest-environment jsdom
-import { render, screen } from '@testing-library/react';
-import { beforeAll, describe, expect, it, vi } from 'vitest';
+import { act, fireEvent, render, screen, within } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { RECENT_DIAGRAMS_KEY } from '@livediagram/api-schema';
+import { renderToStaticMarkup } from 'react-dom/server';
+import { seededRandom } from '@livediagram/document';
+import { HERO_FAN_OPENING, HERO_FAN_SLOTS, heroTemplate, shuffleFan } from '@/lib/hero-starts';
 import { Hero } from './Hero';
+import { HERO_FAN_SWAP_MS } from './HeroFan';
 
-// The hero's text is under test, not the animated stage, headline or connector around it, which need
-// layout jsdom has not got.
-vi.mock('./HeroIllustration', () => ({ HeroIllustration: () => null }));
-vi.mock('./HeroConnectors', () => ({ HeroConnectors: () => null }));
-vi.mock('./HeroTitleLine', () => ({
-  HeroTitleLine: ({ children }: { children: React.ReactNode }) => <>Diagram{children}</>,
-}));
+// docs/specs/019-marketing/marketing-site.md "Hero": the badge and the question, the template search
+// with the Start Blank menu in its bar, a returning visitor's recent diagrams, and the dealing fan.
 
-beforeAll(() => {
-  // The illustration's stage reads the reduced-motion preference.
+let reduceMotion = false;
+let observed: ((entries: { isIntersecting: boolean }[]) => void) | null = null;
+
+beforeEach(() => {
+  reduceMotion = false;
   vi.stubGlobal(
     'matchMedia',
     (query: string) =>
       ({
-        matches: false,
+        matches: query.includes('reduce') ? reduceMotion : true,
         media: query,
         addEventListener() {},
         removeEventListener() {},
@@ -25,21 +28,184 @@ beforeAll(() => {
         removeListener() {},
       }) as unknown as MediaQueryList,
   );
+  vi.stubGlobal(
+    'IntersectionObserver',
+    class {
+      constructor(cb: (entries: { isIntersecting: boolean }[]) => void) {
+        observed = cb;
+      }
+      observe() {}
+      disconnect() {}
+    },
+  );
+  localStorage.clear();
 });
 
-// docs/specs/019-marketing/marketing-site.md "Hero": the headline and the lead, then the stage; the
-// header's Choose Template and Start Blank are the ways in, so the hero carries no buttons.
+afterEach(() => {
+  vi.useRealTimers();
+  vi.restoreAllMocks();
+  vi.unstubAllGlobals();
+});
+
+const fanTitles = () =>
+  screen
+    .getAllByRole('link')
+    .filter((a) => a.getAttribute('href')?.includes('via=Home.HeroFan'))
+    .map((a) => a.textContent?.replace('Create a ', ''));
+
 describe('the hero', () => {
-  it('carries no calls to action of its own', () => {
+  it('asks the question under its two promise badges', () => {
     render(<Hero />);
-    expect(screen.queryByRole('group', { name: 'Ways to start' })).toBeNull();
-    expect(screen.queryAllByRole('link')).toEqual([]);
+    expect(screen.getByRole('heading', { level: 1 }).textContent).toBe(
+      'What are you making today?',
+    );
+    const promises = within(screen.getByRole('list', { name: 'Our promises' })).getAllByRole(
+      'listitem',
+    );
+    expect(promises.map((p) => p.textContent)).toEqual([
+      'Free and open source',
+      'No sign-up to start',
+    ]);
   });
 
-  it('names the four things you can make in its lead', () => {
+  it('lists the best matches as links that create them, once something is typed', () => {
     render(<Hero />);
+    const box = screen.getByLabelText('Search templates');
+    fireEvent.focus(box);
+    expect(screen.queryByRole('list', { name: 'Matching templates' })).toBeNull();
+    fireEvent.change(box, { target: { value: 'retro' } });
+    const list = screen.getByRole('list', { name: 'Matching templates' });
+    const links = within(list).getAllByRole('link');
+    expect(links.length).toBeGreaterThan(0);
+    expect(links[0]!.getAttribute('href')).toBe('/new?template=retrospective&via=Home.HeroSearch');
+    expect(screen.getByRole('link', { name: /Browse every template/ }).getAttribute('href')).toBe(
+      '#templates',
+    );
+  });
+
+  it('opens the top match on Enter, walks the list with the arrows, and clears on Escape', () => {
+    const assign = vi.fn();
+    vi.stubGlobal('location', { ...window.location, assign });
+    render(<Hero />);
+    const box = screen.getByLabelText('Search templates') as HTMLInputElement;
+    box.focus();
+    fireEvent.change(box, { target: { value: 'kanban' } });
+    fireEvent.keyDown(box, { key: 'ArrowDown' });
+    const first = within(screen.getByRole('list', { name: 'Matching templates' })).getAllByRole(
+      'link',
+    )[0]!;
+    expect(document.activeElement).toBe(first);
+    fireEvent.keyDown(first, { key: 'ArrowUp' });
+    expect(document.activeElement).toBe(box);
+    fireEvent.submit(box.form!);
+    expect(assign).toHaveBeenCalledWith('/new?template=kanban&via=Home.HeroSearch');
+    fireEvent.keyDown(box, { key: 'Escape' });
+    expect(box.value).toBe('');
+  });
+
+  it('says so when nothing matches', () => {
+    render(<Hero />);
+    const box = screen.getByLabelText('Search templates');
+    fireEvent.focus(box);
+    fireEvent.change(box, { target: { value: 'zzqqxx' } });
+    expect(screen.getByText(/Nothing matches/)).toBeTruthy();
+  });
+
+  it('offers every blank from its Start Blank menu, as the hero’s own funnel slots', () => {
+    render(<Hero />);
+    const form = screen.getByRole('search');
+    const hrefs = within(form)
+      .getAllByRole('menuitem', { hidden: true })
+      .map((a) => a.getAttribute('href'));
+    expect(hrefs).toEqual([
+      '/new?blank=1&via=Home.HeroBlankDraw',
+      '/new?template=whiteboard&via=Home.HeroBlankWhiteboard',
+      '/new?template=blank-session&via=Home.HeroBlankSession',
+      '/new?template=blank-illustration&via=Home.HeroBlankIllustration',
+      '/new?template=blank-plan&via=Home.HeroBlankPlan',
+    ]);
+  });
+
+  it('shows no recent row to someone new, and four recent diagrams to a returning visitor', () => {
+    const { unmount } = render(<Hero />);
+    expect(screen.queryByText('Pick up where you left off')).toBeNull();
+    unmount();
+    const diagrams = [1, 2, 3, 4, 5].map((i) => ({
+      id: `d${i}`,
+      name: `Diagram ${i}`,
+      savedAt: Date.now() - i * 3600e3,
+      mode: 'diagram',
+    }));
+    localStorage.setItem(RECENT_DIAGRAMS_KEY, JSON.stringify({ v: 1, diagrams }));
+    render(<Hero />);
+    const list = screen.getByRole('list', { name: 'Pick up where you left off' });
     expect(
-      screen.getByText(/from diagrams and whiteboards to illustrations and documents/),
-    ).toBeTruthy();
+      within(list)
+        .getAllByRole('link')
+        .map((a) => a.getAttribute('href')),
+    ).toEqual(['/document/d1', '/document/d2', '/document/d3', '/document/d4']);
+    expect(screen.getByRole('link', { name: /Open Explorer Home/ }).getAttribute('href')).toBe(
+      '/explorer/home',
+    );
+  });
+});
+
+describe('the fan', () => {
+  // A fixed random source, so this visit's shuffle is known.
+  const deck = () => shuffleFan(seededRandom(7));
+  const titles = (kinds: readonly string[]) => kinds.map((k) => heroTemplate(k as never).title);
+  beforeEach(() => {
+    const random = seededRandom(7);
+    vi.spyOn(Math, 'random').mockImplementation(random);
+  });
+
+  it("serves a fixed opening hand, then deals this visit's shuffled one over it", () => {
+    const html = renderToStaticMarkup(<Hero />);
+    for (const t of titles(HERO_FAN_OPENING)) expect(html).toContain(t);
+    render(<Hero />);
+    expect(fanTitles()).toEqual(titles(deck().slice(0, HERO_FAN_SLOTS)));
+  });
+
+  it('deals the next of the shuffled pool into one slot every few seconds', () => {
+    vi.useFakeTimers();
+    render(<Hero />);
+    const first = fanTitles();
+    act(() => {
+      vi.advanceTimersByTime(HERO_FAN_SWAP_MS + 500);
+    });
+    const after = fanTitles();
+    expect(after.filter((t, i) => t !== first[i])).toEqual(titles([deck()[HERO_FAN_SLOTS]!]));
+  });
+
+  it('holds while the pointer is on it, and off screen', () => {
+    vi.useFakeTimers();
+    const { unmount } = render(<Hero />);
+    const first = fanTitles();
+    const card = screen.getAllByRole('link').find((a) => a.textContent?.includes(first[2]!))!;
+    fireEvent.pointerEnter(card.closest('div')!.parentElement!);
+    act(() => {
+      vi.advanceTimersByTime(HERO_FAN_SWAP_MS * 3);
+    });
+    expect(fanTitles()).toEqual(first);
+    unmount();
+
+    render(<Hero />);
+    const again = fanTitles();
+    act(() => observed?.([{ isIntersecting: false }]));
+    act(() => {
+      vi.advanceTimersByTime(HERO_FAN_SWAP_MS * 3);
+    });
+    expect(fanTitles()).toEqual(again);
+  });
+
+  it('never swaps under reduced motion', () => {
+    reduceMotion = true;
+    vi.useFakeTimers();
+    render(<Hero />);
+    const first = fanTitles();
+    act(() => {
+      vi.advanceTimersByTime(HERO_FAN_SWAP_MS * 3);
+    });
+    expect(fanTitles()).toEqual(first);
   });
 });

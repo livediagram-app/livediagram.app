@@ -1,22 +1,34 @@
-// What the hero's Palette strip offers in each editor mode (docs/specs/007-editor/editor-modes.md
-// "The palette per mode"): the mode's glyph and name for its switch, then Diagram's, Illustrate's
-// and Facilitate's Popular tiles with their shortcuts, Draw's dock in place of the palette, and
-// none for Plan, whose board brings its own bar. Keyed by the editor's own EditorMode, so a new mode fails typecheck here. At the mock's
+// What the scenes' Palette strip offers in each editor mode (docs/specs/007-editor/editor-modes.md
+// "The palette per mode", toolbar-layout.md "The category bar"): the mode's glyph and name for its
+// switch, then Diagram's, Facilitate's and Illustrate's category bars (each category's glyph and its
+// one-word name, in bands), Draw's dock in place of the palette, and none for Plan, whose tab brings
+// its own bar (hero-plan-bars.tsx). Keyed by the editor's own EditorMode, so a new mode fails typecheck here. At the mock's
 // scale, drawn from the editor's own glyphs where it has them. The strip is ToolbarStrip
 // (hero-editor-chrome.tsx).
 
 import type { EditorMode } from '@livediagram/document';
-import {
-  lucideChartColumn,
-  lucideChartPie,
-  lucideEyeOff,
-  lucideListOrdered,
-  lucideMessageSquare,
-  lucideTimer,
-  lucideVote,
-} from '@livediagram/icons/lucide';
 import { MODE_GLYPHS } from '@livediagram/icons/mode-glyphs';
-import { EDITOR_MODE_ICONS, Glyph, MarkerIcon, Prims, type IconProps } from '@livediagram/ui';
+import {
+  AskGroupIcon,
+  BehaviourTabIcon,
+  BuildTabIcon,
+  ComponentsTabIcon,
+  ConceptsTabIcon,
+  DataTabIcon,
+  DevicesTabIcon,
+  DrawTabIcon,
+  EDITOR_MODE_ICONS,
+  Glyph,
+  IconsTabIcon,
+  MarkerIcon,
+  MediaTabIcon,
+  Prims,
+  ShapesTabIcon,
+  StickersTabIcon,
+  TechTabIcon,
+  WriteTabIcon,
+  type IconProps,
+} from '@livediagram/ui';
 import type { ComponentType, ReactNode } from 'react';
 import { Shape } from './hero-illustration-glyphs';
 
@@ -40,14 +52,6 @@ export type Tile = {
   group?: boolean;
 };
 
-function Lucide({ prims }: { prims: Parameters<typeof Prims>[0]['prims'] }) {
-  return (
-    <Glyph size={14} units={24}>
-      <Prims prims={prims} />
-    </Glyph>
-  );
-}
-
 // A marker in its ink, as the Draw dock shows Marker 1, 2 and 3.
 // The black marker reads as near-white on the dark strip, as the editor lifts dark ink there.
 function Marker({ color, className }: { color?: string; className?: string }) {
@@ -59,15 +63,6 @@ function SelectGlyph() {
   return (
     <Glyph size={14} units={select.units}>
       <Prims prims={select.prims} />
-    </Glyph>
-  );
-}
-
-// A donut: the pie's ring with its middle open.
-function Donut() {
-  return (
-    <Glyph size={14} weight={2.2}>
-      <circle cx="8" cy="8" r="5" strokeDasharray="20 12" />
     </Glyph>
   );
 }
@@ -88,19 +83,6 @@ function Highlighter() {
   );
 }
 
-// Diagram's Popular: the first nine of its twelve.
-const DIAGRAM_TILES: Tile[] = [
-  { key: 'rect', glyph: <Shape kind="rect" />, hint: 'R' },
-  { key: 'circle', glyph: <Shape kind="circle" />, hint: 'O' },
-  { key: 'diamond', glyph: <Shape kind="diamond" />, hint: 'D' },
-  { key: 'text', glyph: <Shape kind="text" />, hint: 'T' },
-  { key: 'arrow', glyph: <Shape kind="arrow" />, hint: 'A' },
-  { key: 'frame', glyph: <Shape kind="frame" />, hint: 'F' },
-  { key: 'note', glyph: <Shape kind="note" />, hint: 'N' },
-  { key: 'image', glyph: <Shape kind="image" />, hint: '9' },
-  { key: 'pen', glyph: <Shape kind="pen" />, hint: '6' },
-];
-
 // Draw's dock: its drawing tools, the blue marker in hand, then its shapes in a group of their own.
 const DRAW_TILES: Tile[] = [
   { key: 'select', glyph: <SelectGlyph />, hint: 'V' },
@@ -115,38 +97,62 @@ const DRAW_TILES: Tile[] = [
   { key: 'note', glyph: <Shape kind="note" />, hint: 'N' },
 ];
 
-// Illustrate's Popular: the first nine of its twelve.
-const ILLUSTRATE_TILES: Tile[] = [
-  { key: 'text', glyph: <Shape kind="text" />, hint: 'T' },
-  { key: 'rect', glyph: <Shape kind="rect" />, hint: 'R' },
-  { key: 'circle', glyph: <Shape kind="circle" />, hint: 'O' },
-  { key: 'image', glyph: <Shape kind="image" />, hint: '9' },
-  { key: 'bubble', glyph: <Lucide prims={lucideMessageSquare} /> },
-  { key: 'pie', glyph: <Lucide prims={lucideChartPie} /> },
-  { key: 'bar', glyph: <Lucide prims={lucideChartColumn} /> },
-  { key: 'donut', glyph: <Donut /> },
-  { key: 'stat', glyph: <Shape kind="pill" /> },
-];
+// Draw's dock, the one mode whose strip is still tiles.
+export const DRAW_DOCK: readonly Tile[] = DRAW_TILES;
 
-// Facilitate's Popular (docs/specs/012-collaboration/facilitate-mode.md "The palette"): the first nine
-// of its twelve, a session's notes and the buttons that run the room.
-const FACILITATE_TILES: Tile[] = [
-  { key: 'sticky', glyph: <Shape kind="note" />, hint: 'N' },
-  { key: 'text', glyph: <Shape kind="text" />, hint: 'T' },
-  { key: 'frame', glyph: <Shape kind="frame" />, hint: 'F' },
-  { key: 'arrow', glyph: <Shape kind="arrow" />, hint: 'A' },
-  { key: 'timer', glyph: <Lucide prims={lucideTimer} /> },
-  { key: 'vote', glyph: <Lucide prims={lucideVote} /> },
-  { key: 'poll', glyph: <Lucide prims={lucideChartColumn} /> },
-  { key: 'reveal', glyph: <Lucide prims={lucideEyeOff} /> },
-  { key: 'agenda', glyph: <Lucide prims={lucideListOrdered} /> },
-];
+// A category on the bar: its glyph (the editor's own, @livediagram/ui) and its one-word name.
+export type BarCategory = { key: string; label: string; Icon: ComponentType };
 
-export const MODE_TILES: Record<HeroMode, Tile[]> = {
-  diagram: DIAGRAM_TILES,
-  draw: DRAW_TILES,
-  illustrate: ILLUSTRATE_TILES,
-  // A Plan board fills its tab, so the strip gives way to the board's own bar (PlanBoardBar).
-  plan: [],
-  facilitate: FACILITATE_TILES,
+// Each bar mode's categories, band by band (a hairline between bands), as the editor lays them out.
+// Library joins only while someone has a shape library, and Logo only on a logo page, so neither is here.
+export const MODE_BAR: Partial<Record<HeroMode, readonly (readonly BarCategory[])[]>> = {
+  diagram: [
+    [
+      { key: 'shapes', label: 'Shapes', Icon: ShapesTabIcon },
+      { key: 'draw', label: 'Draw', Icon: DrawTabIcon },
+    ],
+    [
+      { key: 'build', label: 'Build', Icon: BuildTabIcon },
+      { key: 'concepts', label: 'Concepts', Icon: ConceptsTabIcon },
+    ],
+    [
+      { key: 'icons', label: 'Icons', Icon: IconsTabIcon },
+      { key: 'tech', label: 'Tech', Icon: TechTabIcon },
+      { key: 'media', label: 'Media', Icon: MediaTabIcon },
+    ],
+  ],
+  facilitate: [
+    [
+      { key: 'shapes', label: 'Shapes', Icon: ShapesTabIcon },
+      { key: 'draw', label: 'Draw', Icon: DrawTabIcon },
+    ],
+    [
+      { key: 'icons', label: 'Icons', Icon: IconsTabIcon },
+      { key: 'stickers', label: 'Stickers', Icon: StickersTabIcon },
+      { key: 'media', label: 'Media', Icon: MediaTabIcon },
+    ],
+    [{ key: 'data', label: 'Data', Icon: DataTabIcon }],
+    [
+      { key: 'ask', label: 'Ask', Icon: AskGroupIcon },
+      { key: 'session', label: 'Session', Icon: BehaviourTabIcon },
+    ],
+  ],
+  illustrate: [
+    [
+      { key: 'shapes', label: 'Shapes', Icon: ShapesTabIcon },
+      { key: 'write', label: 'Write', Icon: WriteTabIcon },
+    ],
+    [
+      { key: 'build', label: 'Build', Icon: BuildTabIcon },
+      { key: 'concepts', label: 'Concepts', Icon: ConceptsTabIcon },
+      { key: 'components', label: 'Components', Icon: ComponentsTabIcon },
+      { key: 'devices', label: 'Devices', Icon: DevicesTabIcon },
+    ],
+    [
+      { key: 'icons', label: 'Icons', Icon: IconsTabIcon },
+      { key: 'stickers', label: 'Stickers', Icon: StickersTabIcon },
+      { key: 'media', label: 'Media', Icon: MediaTabIcon },
+    ],
+    [{ key: 'data', label: 'Data', Icon: DataTabIcon }],
+  ],
 };

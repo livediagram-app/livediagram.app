@@ -1113,7 +1113,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
     label: 'Forms',
     scene: 'form',
     cta: 'Explore forms',
-    title: 'Ask anyone, and every answer lands',
+    title: 'Collect answers straight into your board or sheet',
     description:
       'Build a form where it sits, share one link, and each response lands the moment it is sent: a row in a sheet, or a card on a board ready to work through. No account needed to answer, and nothing else of yours to see.',
     metaDescription:

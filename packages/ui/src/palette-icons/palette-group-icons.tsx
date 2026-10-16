@@ -1,5 +1,6 @@
 import { lucideSmile } from '@livediagram/icons/lucide';
-import { Glyph, lucideGlyph } from '@livediagram/ui';
+import { Glyph } from '../icons/Glyph';
+import { lucideGlyph } from '../icons/lucide-glyph';
 // Glyphs for the collapsible tile groups inside a palette category
 // (PaletteTileGroup), and for the six Collaborate categories, which were groups
 // once (palette-categories.tsx). Kept beside the tab icons rather than inline in

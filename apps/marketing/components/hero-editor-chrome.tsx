@@ -1,8 +1,8 @@
 // Pieces of the hero's editor-window mock drawn from the editor's own glyphs
 // (@livediagram/ui, @livediagram/icons), so they cannot drift from the editor they depict
 // (docs/specs/019-marketing/marketing-site.md): the canvas cluster, the tab bar's toolbelt, the
-// Toolbar panel layout's strip and its menu card (docs/specs/007-editor/toolbar-layout.md), and a
-// Plan board's own bar, which stands where the strip would on a board that fills its tab.
+// Toolbar panel layout's strip and its menu card (docs/specs/007-editor/toolbar-layout.md); a Plan
+// tab's own bar is in hero-plan-bars.tsx.
 // Everything is at the mock's scale, about five eighths of the editor's.
 
 import { MODE_GLYPHS } from '@livediagram/icons/mode-glyphs';
@@ -12,14 +12,12 @@ import {
   lucidePlus,
   lucideSearch,
   lucideSettings,
-  lucideSparkles,
   lucideTimer,
   lucideTrash2,
 } from '@livediagram/icons/lucide';
 import {
   AppearanceIcon,
   ChevronDownIcon,
-  EllipsisIcon,
   Glyph,
   LayersStackIcon,
   MenuIcon,
@@ -30,7 +28,8 @@ import {
   ThemeLookIcon,
   UndoIcon,
 } from '@livediagram/ui';
-import { HERO_MODE, MODE_TILES, type HeroMode, type Tile } from './hero-mode-palette';
+import { DRAW_DOCK, HERO_MODE, MODE_BAR, type HeroMode, type Tile } from './hero-mode-palette';
+import { PlanTabBar, type PlanTab } from './hero-plan-bars';
 
 const CARD =
   'flex h-7 items-center rounded-md border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900';
@@ -182,70 +181,99 @@ function StripTile({ tile, index }: { tile: Tile; index: number }) {
   );
 }
 
-// The Palette in the Toolbar layout: one strip at the top centre of the canvas. The selection
-// mode (Select), the category picker (Popular, its sparkles; Draw has its dock instead), the
-// mode's tiles (the tool in hand marked), More, and the palette's search. Draw's dock splits
-// its drawing tools from its shapes and carries its settings in a card of its own.
-export function ToolbarStrip({ mode }: { mode: HeroMode }) {
+// From which window width each bar shows its names (literal classes, so Tailwind sees them).
+const NAMED_FROM: Partial<Record<HeroMode, string>> = {
+  diagram: 'hidden @[640px]:inline',
+  facilitate: 'hidden @[780px]:inline',
+  illustrate: 'hidden @[900px]:inline',
+};
+
+// The Palette in the Toolbar layout (docs/specs/007-editor/toolbar-layout.md): one strip at the top
+// centre of the canvas. In Diagram, Facilitate and Illustrate it is the category bar: the selection
+// mode, then the mode's categories (each its glyph and one-word name, a hairline between bands; the
+// glyphs alone where the window is narrow), then Search. Draw shows its dock instead, its drawing
+// tools split from its shapes and its settings in a card of its own. A Plan tab brings its own bar
+// (hero-plan-bars.tsx): a board's, a Sheet's toolbar or a Form's status bar.
+export function ToolbarStrip({ mode, planTab = 'board' }: { mode: HeroMode; planTab?: PlanTab }) {
   const { Icon } = HERO_MODE[mode];
   const pill =
     'flex h-6 items-center gap-1 rounded bg-brand-50 px-1.5 text-[9px] font-medium text-brand-700 dark:bg-brand-500/15 dark:text-brand-300';
   const strip =
     'flex items-center gap-0.5 rounded-lg border border-slate-200 bg-white p-0.5 text-slate-600 shadow-md shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300';
-  // A Plan board's bar is for a wide window; on a phone the strip carries only the menu and mode.
+  // On a phone the menu rides at the strip's start, the mode switch joined to it.
+  const phoneMenu = (
+    <>
+      <span className="flex h-6 w-5 items-center justify-center sm:hidden">
+        <MenuIcon size={10} />
+      </span>
+      <span className={`${pill} sm:hidden`}>
+        <Icon size={10} />
+        <ChevronDownIcon size={7} />
+      </span>
+    </>
+  );
+  // A Plan tab's bar is for a wide window; on a phone the strip carries only the menu and mode.
   if (mode === 'plan')
     return (
       <>
-        <PlanBoardBar />
+        <PlanTabBar tab={planTab} />
         <div className="pointer-events-none absolute inset-x-0 top-2 z-10 flex justify-center sm:hidden">
-          <div className={strip}>
-            <span className="flex h-6 w-5 items-center justify-center">
-              <MenuIcon size={10} />
-            </span>
-            <span className={pill}>
-              <Icon size={10} />
-              <ChevronDownIcon size={7} />
-            </span>
-          </div>
+          <div className={strip}>{phoneMenu}</div>
         </div>
       </>
     );
   const select = MODE_GLYPHS.select!;
-  const tiles = MODE_TILES[mode];
-  const draw = mode === 'draw';
+  const bands = MODE_BAR[mode];
+  if (bands) {
+    // Names fit or go, as the editor's bar measures: each bar's names need a window wide enough to clear
+    // the menu card, the longer bars a wider one; narrower, the glyphs alone.
+    const named = NAMED_FROM[mode] ?? 'hidden';
+    return (
+      <div className="pointer-events-none absolute inset-x-0 top-2 z-10 flex justify-center">
+        <div className={strip}>
+          {phoneMenu}
+          <span className="contents sm:hidden">
+            <StripDivider />
+          </span>
+          <span className="flex h-6 items-center gap-0.5 px-1">
+            <Glyph size={10} units={select.units}>
+              <Prims prims={select.prims} />
+            </Glyph>
+            <ChevronDownIcon size={7} />
+          </span>
+          {bands.map((band, b) => (
+            <span key={b} className="contents">
+              <StripDivider />
+              {band.map(({ key, label, Icon: CategoryIcon }) => (
+                <span
+                  key={key}
+                  className="flex h-6 items-center gap-1 rounded px-1 text-[9px] font-medium [&_svg]:h-3 [&_svg]:w-3"
+                >
+                  <CategoryIcon />
+                  <span className={`text-optical-line ${named}`}>{label}</span>
+                </span>
+              ))}
+            </span>
+          ))}
+          <StripDivider />
+          <span className="flex h-6 w-6 items-center justify-center rounded">
+            <SearchIcon size={10} />
+          </span>
+        </div>
+      </div>
+    );
+  }
+  // Draw: the dock.
   return (
     <div className="pointer-events-none absolute inset-x-0 top-2 z-10 flex justify-center gap-1.5">
       <div className={strip}>
-        <span className="flex h-6 w-5 items-center justify-center sm:hidden">
-          <MenuIcon size={10} />
-        </span>
-        {/* On a phone the menu rides here, the mode switch joined to it. */}
-        <span className={`${pill} sm:hidden`}>
-          <Icon size={10} />
-          <ChevronDownIcon size={7} />
-        </span>
+        {phoneMenu}
         <span className="contents sm:hidden">
           <StripDivider />
         </span>
-        {draw ? null : (
-          <>
-            <span className="flex h-6 items-center gap-0.5 px-1">
-              <Glyph size={10} units={select.units}>
-                <Prims prims={select.prims} />
-              </Glyph>
-              <ChevronDownIcon size={7} />
-            </span>
-            <span className={`${pill} max-sm:hidden`}>
-              <Lucide prims={lucideSparkles} size={10} />
-              <span className="text-optical-line">Popular</span>
-              <ChevronDownIcon size={7} />
-            </span>
-            <StripDivider />
-          </>
-        )}
-        {tiles.map((t, i) => (
+        {DRAW_DOCK.map((t, i) => (
           <span key={t.key} className="contents">
-            {draw && t.group && i > 0 ? (
+            {t.group && i > 0 ? (
               // The group's divider shows only where its tiles do.
               <span className={i < NARROW_TILES ? 'contents' : 'hidden @[600px]:contents'}>
                 <StripDivider />
@@ -254,70 +282,12 @@ export function ToolbarStrip({ mode }: { mode: HeroMode }) {
             <StripTile tile={t} index={i} />
           </span>
         ))}
-        {draw ? null : (
-          <>
-            <StripDivider />
-            <span className="flex h-6 items-center gap-0.5 px-1">
-              <EllipsisIcon size={10} />
-              <ChevronDownIcon size={7} />
-            </span>
-            <span className="hidden h-6 w-6 items-center justify-center rounded bg-brand-50 text-brand-700 @[600px]:flex dark:bg-brand-500/15 dark:text-brand-300">
-              <SearchIcon size={10} />
-            </span>
-          </>
-        )}
       </div>
-      {draw ? (
-        <div className={`${strip} hidden @[600px]:flex`}>
-          <span className="flex h-6 w-6 items-center justify-center">
-            <Lucide prims={lucideSettings} size={11} />
-          </span>
-        </div>
-      ) : null}
-    </div>
-  );
-}
-
-// A Plan board fills its tab, so its own bar stands at the top right where the strip would be:
-// how much is done, whether every column is within its WIP limit, the card filter, add, and the
-// board's settings (docs/specs/026-plan/plan-board.md).
-function PlanBoardBar() {
-  const chip =
-    'flex h-6 items-center gap-1 rounded-md border border-slate-200 bg-white px-1.5 text-[9px] font-medium text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300';
-  return (
-    <div className="pointer-events-none absolute right-2 top-2 z-10 hidden items-center gap-1 rounded-lg border border-slate-200 bg-white/90 p-0.5 shadow-sm sm:flex dark:border-slate-700 dark:bg-slate-900/90">
-      <span className={chip}>
-        {/* The done ring: a third of the way round. */}
-        <Glyph size={10} units={10} weight={1.6}>
-          <circle cx="5" cy="5" r="4" className="stroke-slate-200 dark:stroke-slate-700" />
-          <circle
-            cx="5"
-            cy="5"
-            r="4"
-            stroke="#10b981"
-            strokeDasharray="8.3 25.1"
-            transform="rotate(-90 5 5)"
-          />
-        </Glyph>
-        <span className="text-optical-line font-semibold text-slate-800 dark:text-slate-100">
-          33%
+      <div className={`${strip} hidden @[600px]:flex`}>
+        <span className="flex h-6 w-6 items-center justify-center">
+          <Lucide prims={lucideSettings} size={11} />
         </span>
-        <span className="text-optical-line">done · 4/12</span>
-      </span>
-      <span className={`${chip} text-emerald-700 dark:text-emerald-300`}>
-        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-        <span className="text-optical-line">Within WIP</span>
-      </span>
-      <span className={`${chip} hidden w-24 text-slate-400 @[600px]:flex`}>
-        <SearchIcon size={8} />
-        <span className="text-optical-line">Filter cards</span>
-      </span>
-      <span className={`${chip} w-6 justify-center border-dashed px-0`}>
-        <Lucide prims={lucidePlus} size={10} />
-      </span>
-      <span className="flex h-6 w-6 items-center justify-center text-slate-500">
-        <Lucide prims={lucideSettings} size={11} />
-      </span>
+      </div>
     </div>
   );
 }
