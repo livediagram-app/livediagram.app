@@ -329,19 +329,6 @@ type UserPreferences = {
   // or Grid, as last chosen from the dock's Settings; never stored on a tab. Unset, or
   // anything else, is Grid (lib/whiteboard-dock-prefs).
   drawPattern?: 'blank' | 'grid' | 'graph';
-  // Skip the New Document wizard's Location step
-  // (../013-workspace/default-folders.md#skipping-the-location-step): where every
-  // new document is saved, as the Location step's whole selection, plus the
-  // place's name for the "Saving in" line and the Settings row. `null` (written
-  // on Turn Off, so it wins the merge over another device's cache) or missing
-  // is off. Junk reads as off (lib/skip-location-step).
-  skipLocationStep?: {
-    saveLocation: 'livediagram' | 'browser';
-    // 'unsorted' | 'folder:<id>' | 'team:<id>' | 'team:<id>:folder:<id>';
-    // always 'unsorted' for 'browser'.
-    placement: string;
-    placeName: string;
-  } | null;
 
   // Power user mode (docs/specs/007-editor/power-user-mode.md). True while the mode is on.
   // Switching it on applies the preset once; see powerUserBaseline.
@@ -399,11 +386,6 @@ Missing key === undefined === default behaviour. Concretely:
   row along its bottom edge; `'off'` hides them
   ([Element indicators](../008-canvas/element-indicators.md)). Emits `UI`/`Changed`/
   `ElementIndicatorsTop`, `ElementIndicatorsFooter` or `ElementIndicatorsOff`.
-- `skipLocationStep` undefined / `null` → the New Document wizard has its
-  Location step (the default). Set from that step's "Always save new documents
-  in <place> and skip this step" checkbox (`UI`/`Toggled`/`SkipLocationStepOn`),
-  cleared by Settings › Documents › Always Save in One Place's Turn Off
-  (`UI`/`Toggled`/`SkipLocationStepOff`).
 - `dockButtonNames` undefined / true → the editor's bottom buttons named
   beside their icons on a desktop (the default). `false` leaves them icons
   alone, each still named in its hover card. A phone shows icons alone
@@ -449,6 +431,10 @@ Missing key === undefined === default behaviour. Concretely:
   `planModeEnabled` went with the Settings › Experimental category (removed
   2026-10-06, [Editor modes](editor-modes.md#every-mode-always-offered)):
   every mode is always offered, and a stored `false` is dropped the same way.
+  `skipLocationStep` ("Always save new documents in <place> and skip this step") went with the New
+  Document wizard's Location step ([New document route](new-document-route.md#one-step-wizard)): the wizard
+  never asks where a document goes, so a stored place is dropped the same way and new documents follow the
+  [default folders](../013-workspace/default-folders.md).
 - `quickAddOnHover` undefined / false → click to open an element's quick-add
   `+` menu (the default; hover-open can feel twitchy, so it's opt-in). `true`
   opens it on hover instead, closing a beat after the pointer leaves both the
@@ -620,9 +606,7 @@ and the dialog stays as the one complete, browsable index of them.
   Appearance), **Tours** (one switch per guided tour, see **Tours** below),
   **AI Tools** (assistant, with suggested prompts nested under it, and a
   **Manage API Tokens** link row that opens the API
-  Tokens sub-category), **Documents** (a **New Documents** section holding
-  **Always Save in One Place**, the `skipLocationStep` preference with an On / Off
-  pill and a Turn Off button, then a **Default Folders** section with one row per
+  Tokens sub-category), **Documents** (a **Default Folders** section with one row per
   [default folder](../013-workspace/default-folders.md#settings) entry, with Change and Clear; those are not a
   preference, they read and write `/api/placement-defaults`), **Account** (identity, Trash, **Cloud Sync** (the cloud providers the
   deployment offers, [Google Drive mirror](../022-drive-mirror/drive-mirror.md)), delete account, see

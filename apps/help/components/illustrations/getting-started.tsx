@@ -5,9 +5,10 @@
 
 import { Scene, Shape, Arrow, Dialog, Button, Label, Avatar } from './primitives';
 
-/** The New Document wizard on its first step: the Mode / Location rail, the
+/** The New Document wizard, its one question: "What are you making today?", the
  *  five mode cards, three then two at one height (Diagram first and chosen),
- *  each with its number key, and the footer's Skip and Next. */
+ *  each with its number key, and the footer's Skip and Create. Choosing a card
+ *  creates the document there and then. */
 export function NewDocumentWelcome() {
   return (
     <Scene w={420} h={270} bg="plain">
@@ -24,22 +25,9 @@ export function NewDocumentWelcome() {
         <g className="stroke-slate-400" strokeWidth={1.6} fill="none" strokeLinecap="round">
           <path d="M366 26 l7 7 M373 26 l-7 7" />
         </g>
-        {/* Step rail: 1 Mode (current), 2 Location. */}
-        <rect x={42} y={54} width={62} height={20} rx={10} className="fill-brand-50" />
-        <circle cx={53} cy={64} r={8} className="fill-brand-500" />
-        <Label x={53} y={65} anchor="middle" size={10} weight={700} tone="onAccent">
-          1
-        </Label>
-        <Label x={66} y={65} size={10} weight={600} tone="strong">
-          Mode
-        </Label>
-        <rect x={110} y={62} width={20} height={4} rx={2} className="fill-slate-200" />
-        <circle cx={144} cy={64} r={8} className="fill-slate-200" />
-        <Label x={144} y={65} anchor="middle" size={10} weight={700} tone="muted">
-          2
-        </Label>
-        <Label x={157} y={65} size={10} weight={600} tone="muted">
-          Location
+        {/* The one question, under the title. */}
+        <Label x={42} y={65} size={10.5} tone="muted">
+          What are you making today?
         </Label>
         {/* The five mode cards, three then two, every one the same build and height: a plate
             on top, then the name and its number key. Diagram, where most start, leads and is
@@ -113,13 +101,13 @@ export function NewDocumentWelcome() {
           );
         })}
         {/* Footer: Open Existing Document at the left; Skip creates a Blank Diagram straight
-            away; Next goes to Location. */}
+            away; Create makes the chosen mode's document. */}
         <line x1={30} y1={224} x2={390} y2={224} className="stroke-slate-200" strokeWidth={1} />
         <Label x={42} y={243} size={9.5} weight={600} tone="accent">
           Open Existing Document
         </Label>
         <Button x={250} y={231} w={56} h={22} label="Skip" />
-        <Button x={314} y={231} w={64} h={22} label="Next" variant="primary" />
+        <Button x={314} y={231} w={64} h={22} label="Create" variant="primary" />
       </Dialog>
     </Scene>
   );

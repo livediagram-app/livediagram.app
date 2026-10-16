@@ -99,7 +99,7 @@ Kept as they are:
 
 - Keyboard shortcut hints inside hover cards and tooltips.
 - Every control. Minimal chrome hides words, not abilities.
-- The empty-canvas banner ("Tab 1 is empty"): it holds actions (Help, Quick Start), so it is a control, not a hint.
+- The empty-canvas banner ("Tab 1 is empty"): it holds an action (Help), so it is a control, not a hint.
 
 The mode also makes, whatever the Minimal chrome option says:
 

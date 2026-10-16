@@ -1,6 +1,6 @@
 import { FORM_TEMPLATES, type FormTemplateKind } from './form-templates';
 import { titleCase } from '@livediagram/api-schema';
-import { UNTITLED_DOCUMENT_NAME } from './legacy-untitled';
+import { UNTITLED_DOCUMENT_NAME, isUntitledDocumentName } from './legacy-untitled';
 
 export type TemplateKind =
   | 'blank'
@@ -1144,4 +1144,17 @@ export function untitledNameForTemplate(kind: TemplateKind | null): string {
   // A blank names what it makes ("Untitled Whiteboard"), not the card ("Blank Whiteboard").
   const title = TEMPLATES.find((t) => t.kind === kind)?.title.replace(/^Blank /, '');
   return title ? `Untitled ${titleCase(title)}` : UNTITLED_DOCUMENT_NAME;
+}
+
+// Every name a document is given before anyone names it: each template's untitled name, plus "Untitled document" and
+// its legacy spelling. Built once, at first use.
+let DEFAULT_NAMES: ReadonlySet<string> | null = null;
+
+/**
+ * Whether a document still has a default name (docs/specs/007-editor/templates-by-mode.md "The document's name"), so a
+ * template picked on its first tab may name it after itself. A name someone gave it is never default.
+ */
+export function isDefaultDocumentName(name: string): boolean {
+  DEFAULT_NAMES ??= new Set(TEMPLATES.map((t) => untitledNameForTemplate(t.kind)));
+  return isUntitledDocumentName(name) || DEFAULT_NAMES.has(name);
 }

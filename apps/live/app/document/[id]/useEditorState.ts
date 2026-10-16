@@ -443,8 +443,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     formatSourceId,
     setFormatSourceId,
     setMultiSelectedIds,
-    templatePickerMode,
-    setTemplatePickerMode,
+    identityPromptOpen,
+    setIdentityPromptOpen,
   } = uiState;
   // Drag state lives inside the useEditorDrag hook, lifted out of
   // this component to keep the page focused on orchestration. The
@@ -480,9 +480,9 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setCanvasTool,
     setFormatSourceId,
   });
-  // templatePickerMode (from useEditorUiState) gates the derived
-  // `identityOnlyScreenOpen` chrome flag; transitions live in
-  // `openTemplatePicker` / `skipTemplatePicker` / `chooseTemplate`.
+  // identityPromptOpen (from useEditorUiState) gates the derived
+  // `identityOnlyScreenOpen` chrome flag; it closes through useTemplateFlow's
+  // `confirmIdentity` / `cancelIdentity`.
   // Whether the participant has explicitly confirmed their identity in a
   // modal at least once (either Create Document on the welcome flow, Skip,
   // or Join Document on the join flow). Persisted via localStorage so a
@@ -1023,7 +1023,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
       setShareLinks,
       setSharePasswordSet,
       setSharePasswordGate,
-      setTemplatePickerMode,
+      setIdentityPromptOpen,
     },
   });
   useEffect(() => {
@@ -1941,27 +1941,11 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     return actionRowsFromElements(boxed, clerkUserId ?? selfParticipant.id);
   }, [activeTab.elements, clerkUserId, selfParticipant.id]);
 
-  // True only while the first-run welcome modal is up. Drives the chrome
-  // hide rule (palette / explorer / dock / tab bar all suppressed so the
-  // user's focus is on the modal). The Browse-templates flow uses the
-  // same modal but isn't "welcome" — chrome stays visible there.
+  // The visitor name prompt drives the chrome hide rule (palette / explorer / dock / tab bar all suppressed so the
+  // visitor's focus is on it). Gated on `hydrated` so it only shows once the post-mount useLayoutEffect has replaced
+  // the placeholder participant with the loaded / freshly minted one; otherwise IdentityPrompt's
+  // `useState(participant.name)` would capture the SSG placeholder "Guest".
   //
-  // Gated on `hydrated` so the modal (and chrome hide) only kick in once
-  // the post-mount useLayoutEffect has had a chance to replace the
-  // placeholder participant with the loaded / freshly minted one. Without
-  // this, TemplatePicker's `useState(participant.name)` lazy init captures
-  // the SSG placeholder "Guest" and never updates.
-  // Welcome ("New Document") lives on /live/new since docs/specs/007-editor/new-document-route.md, so any
-  // time the picker fires on the editor route it's the per-tab
-  // "Pick a template" variant. Identity (visitor join) keeps its
-  // own mode.
-  const effectiveTemplatePickerMode =
-    templatePickerMode === 'identity' ? ('identity' as const) : ('templates' as const);
-  // The Quick Start (template grid) only opens on an EXPLICIT request — adding
-  // a tab (useTabActions.addTab) or the empty-canvas button, both of which set
-  // templatePickerMode='templates'. It no longer auto-opens just because a tab
-  // is empty, so a freshly-created (truly blank) document lands on the canvas.
-  const templateGridOpen = templatePickerMode === 'templates';
   // Join screen for visitors landing on an existing document who haven't
   // confirmed their identity yet. Same chrome-hide rule as the old
   // welcome modal — focus the user on the name input before they
@@ -1972,9 +1956,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // a chance to set it before joining rather than appearing under a
   // default. The identity card only writes the participant's OWN row
   // (PUT /api/participants/:id, gated on owner === id, not document
-  // edit), so a viewer can confirm a name without any 403. EditorView
-  // lets the IDENTITY mode of the picker through for read-only while
-  // still blocking the template-choosing mode.
+  // edit), so a viewer can confirm a name without any 403.
   //
   // Embeds skip the prompt entirely (docs/specs/013-workspace/embeds.md): a "what's your name"
   // card inside a README iframe is wrong, so embed sessions keep
@@ -1985,7 +1967,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     hydrated &&
     loadedExistingDocument &&
     !nameConfirmed &&
-    templatePickerMode === 'identity';
+    identityPromptOpen;
   const identityOnlyScreenOpen = joinScreenOpen;
   // Combined gate for chrome-hide. Only the join-existing flow lives
   // on this route now; the historical new-document welcome lives on
@@ -2554,7 +2536,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setSelectedId,
     setEditingId,
     setFormatSourceId,
-    setTemplatePickerMode,
     setImportError,
     requestFit,
     refreshDocumentList,
@@ -2656,20 +2637,30 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     confirmName,
   });
 
-  // Template / identity modal actions. See useTemplateFlow. confirmName
+  // Name the open document: its own name, and its row in the Explorer panel's in-memory list, which would otherwise
+  // show the old name until a reload (autosave persists the name). Shared by the header's rename and a template naming
+  // a still-untitled document after itself.
+  const nameDocument = (name: string) => {
+    setDocumentName(name);
+    if (name && documentId)
+      setDocumentList((prev) => prev.map((d) => (d.id === documentId ? { ...d, name } : d)));
+  };
+
+  // Template and identity actions. See useTemplateFlow. confirmName
   // stays in the page (also wired into useShareLinks) and is passed in.
-  const { openTemplatePicker, skipTemplatePicker, chooseTemplate } = useTemplateFlow({
+  const { chooseTemplate, confirmIdentity, cancelIdentity } = useTemplateFlow({
     activeId,
     tabs,
-    templatePickerMode,
     selfParticipant,
+    documentName,
+    nameDocument,
     getViewportCenter,
     commitTabs,
     confirmName,
     setSelectedId,
     setEditingId,
     setSelfParticipant,
-    setTemplatePickerMode,
+    setIdentityPromptOpen,
     requestFit,
     markTabLoaded,
     bringCardTypes: presetCardTypes.bring,
@@ -4072,8 +4063,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     stackSelectedFront,
     stackSelectedBack,
     duplicateTab,
-    effectiveTemplatePickerMode,
-    templateGridOpen,
     embedMode,
     extendShareLink,
     rescopeShareLink,
@@ -4143,7 +4132,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     openComments,
     openDocument,
     openNote,
-    openTemplatePicker,
     participantsByTab,
     pendingDraw,
     pollCollaborators,
@@ -4386,7 +4374,9 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setViewportZoom,
     shareUrlFor,
     shortcutsEnabled,
-    skipTemplatePicker,
+    confirmIdentity,
+    cancelIdentity,
+    nameDocument,
     shiftDupGhostIds,
     snapGuideStore,
     tabLoadErrors,

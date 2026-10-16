@@ -7,7 +7,6 @@ const base = {
   zen: false,
   embed: false,
   readOnly: false,
-  quickStartOpen: false,
   drawToolArmed: false,
   mode: 'diagram' as const,
   elementCount: 0,
@@ -35,7 +34,7 @@ describe('templateStartMode', () => {
   });
 
   it('offers none to someone who cannot edit, nor in zen, an embed, under the Quick Start or with a tool armed', () => {
-    for (const k of ['readOnly', 'zen', 'embed', 'quickStartOpen', 'drawToolArmed'] as const)
+    for (const k of ['readOnly', 'zen', 'embed', 'drawToolArmed'] as const)
       expect(templateStartMode({ ...base, [k]: true }), k).toBeNull();
     expect(templateStartMode({ ...base, hydrated: false })).toBeNull();
   });

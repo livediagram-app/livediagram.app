@@ -61,7 +61,6 @@ const INERT_HANDLERS: CommandHandlers = {
   openImport: noop,
   openSettings: noop,
   openShortcuts: noop,
-  openTemplates: noop,
   setTool: noop,
   openPhotoImport: noop,
 };
@@ -125,7 +124,6 @@ export function useEditorCommands(open: boolean): {
     setImportOpen,
     setSettingsOpen,
     openSettingsOn,
-    openTemplatePicker,
     canvasTool,
     setCanvasTool,
     workbenchMode,
@@ -304,7 +302,6 @@ export function useEditorCommands(open: boolean): {
       openSettingsOn('keyboard');
       track('UI', 'Opened', 'Shortcuts');
     },
-    openTemplates: openTemplatePicker,
     // The context's setter, not the raw one: it carries the pressed-state
     // and telemetry the dropdown's onChange relies on.
     setTool: (tool) => setCanvasTool(tool as CanvasTool),

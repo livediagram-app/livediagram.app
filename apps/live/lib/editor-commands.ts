@@ -135,7 +135,6 @@ export type CommandHandlers = {
   openImport: () => void;
   openSettings: () => void;
   openShortcuts: () => void;
-  openTemplates: () => void;
   // Switches the canvas tool — the same setter the palette's tool dropdown
   // calls, so the pressed state and telemetry are identical either way.
   setTool: (tool: string) => void;
@@ -414,12 +413,6 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
     name: 'Import…',
     keywords: 'import markdown upload load open file',
     run: h.openImport,
-  });
-  out.push({
-    id: 'browse-templates',
-    name: 'Browse Templates',
-    keywords: 'template quick start starter scaffold gallery',
-    run: h.openTemplates,
   });
   out.push({
     id: 'settings',

@@ -78,8 +78,7 @@ Plan must cost nothing to a document that does not use it:
     later.", a search field (**Find a board, sheet or layout**, focused as the panel opens on a desktop) and Help.
   - **The rail** (left, 208 px; on a phone a row of chips under the header that scrolls sideways): **Recommended**,
     **Boards**, **Spreadsheets** and **Dashboards**, each with its glyph and how many it holds (a count badge, tinted with the chosen one), the chosen one tinted in
-    the brand colour; then, under a hairline, **Inspiration** (as the others) and **Something Else** (an arrow out), which opens the regular Quick Start
-    for this tab on **Everything**, as any Quick Start opens. The arrow keys move along the rail. It opens on
+    the brand colour; then, under a hairline, **Inspiration** (as the others). The arrow keys move along the rail. It opens on
     Recommended each time.
   - **The grid** beside the rail: the chosen category's heading and line, then its cards, three a row (two on a narrow
     panel, one on a phone), cascading in when the category changes (the shared cascade, within the motion budget; the
@@ -130,7 +129,7 @@ Plan must cost nothing to a document that does not use it:
       too: it is one Sheet that **Spreadsheets** above already offers, so no choice shows twice; one that sets up more
       tabs, as Task Tracker's Sheet and Overview, stays; `INSPIRATION_TEMPLATES`), each its template preview and a badge of how many tabs it
       adds ("4 Tabs", `planTemplateTabCount`). Choosing one applies the template to this
-      tab, as the Quick Start would, its later tabs after it.
+      tab, its later tabs after it.
   - **A card**: a large picture (112 px tall) on a soft panel of the tab's column colour, then its name with a small
     badge of its kind (**Board**, **Sheet**, **Dashboard**, **Template**) where the grid mixes kinds (Recommended, a search), its line
     (two lines at most), and for a board the card types it takes, as chips with each type's colour (up to three, then
@@ -139,21 +138,22 @@ Plan must cost nothing to a document that does not use it:
     in the middle of the view; a sheet as above; a layout makes the tab a Dashboard of it. Each choice makes the tab
     its kind ([Plan tabs](plan-tabs.md)).
   - **Search** matches names, lines, kinds, a board's card types and each choice's keywords (`START_KEYWORDS`, a sheet template's own `keywords` and a Plan template's
-    `templateKeywords`, the words the Quick Start searches too: what
+    `templateKeywords`, the words every template search reads: what
     it is for and other names for it, a Sprint found by "scrum", Hiring Pipeline by "recruiting", Budget by
     "expenses"; every word typed must match, case ignored), across every category, the results
     grouped under **Boards**, **Spreadsheets**, **Dashboards** and **Inspiration**; the rail shows no choice while a search is typed, and
-    Escape clears it. Nothing found: the shared empty state, "No boards, sheets or layouts match “<text>”" ("Try another word, or
-    browse every template.") with **Browse More Templates**, the Quick Start.
+    Escape clears it. Templates of the other modes that match follow, under **In Other Modes**, and choosing one switches the
+    tab to its mode ([Template starts → Found in other modes](../007-editor/start-diagramming.md#found-in-other-modes)). Nothing
+    found anywhere: the shared empty state, "No boards, sheets or layouts match “<text>”" ("Try another word.").
   - The keyboard reaches everything in reading order; Enter or Space chooses. It is gone once the tab has anything on
     it, and never shown to someone who may only view (a Participant or a Viewer). In the tab's light or dark look.
 - Every list of board types (the palette's Boards, Start Planning) is one list (`PLAN_BOARD_TILES`), and **All
   Cards is always its last option**: a new board type goes before it (and before Archive, which sits just ahead of
   All Cards in the palette).
-- Plan mode has no empty-canvas Quick Start banner: Start Planning is its start, and its **Something Else?** opens the
-  regular Quick Start for this tab, for a diagram template or another kind of tab instead.
+- Plan mode has no empty-canvas card: Start Planning is its start. A diagram template or another mode's is found by
+  its search, or reached through the mode switch that leads the rail.
 - **A new tab from Plan stays Plan**: adding a tab (the tab bar's **+**) while in Plan mode opens it in Plan
-  (`opensIn` Plan, for everyone), straight to **Start Planning**, with no Quick Start. Every mode does the same: a
+  (`opensIn` Plan, for everyone), straight to **Start Planning**. Every mode does the same: a
   new tab opens in the mode it was made from ([Editor modes](../007-editor/editor-modes.md) "A new tab opens in the
   mode it was made from").
 
@@ -187,8 +187,8 @@ Plan mode shows **no palette**, to an Editor or a Participant: a Plan tab is wor
 dashboards, and each carries its own tools on its surface, so a strip of tiles only made them harder to use. What the palette used to place is reached where it is
 used:
 
-- **Boards and Sheets**: Start Planning on an empty tab ([Starting a board](#starting-a-board)); a template from the
-  Quick Start.
+- **Boards and Sheets**: Start Planning on an empty tab ([Starting a board](#starting-a-board)), its templates
+  included.
 - **Cards**: a column's **Add card** ([Plan board](plan-board.md)), and the Plan strip's **New Card**.
 - **Widgets**: the **+** at the end of a board's widgets ([Board widgets](board-widgets.md)).
 - **Card Types**: the **Card Types** button in the bottom-right cluster ([Item types](item-types.md)).

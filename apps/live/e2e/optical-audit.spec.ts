@@ -61,11 +61,8 @@ test.describe('Optical alignment audit', () => {
     await darkVisitor(page);
     await page.goto('/new');
     await page.getByText('New Document', { exact: false }).first().waitFor();
-    await untilHydrated(page.getByRole('button', { name: /^next$/i }));
-    await expectCentred(page, 'wizard, template step');
-    await page.getByRole('button', { name: /^next$/i }).click();
-    await page.getByText('Name your document', { exact: false }).first().waitFor();
-    await expectCentred(page, 'wizard, location step');
+    await untilHydrated(page.getByRole('button', { name: /^create$/i }));
+    await expectCentred(page, 'wizard');
     expectNoPageErrors(pageErrors);
   });
 

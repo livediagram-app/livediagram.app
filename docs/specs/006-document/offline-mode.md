@@ -18,24 +18,18 @@ Tab bodies are stamped with their **tab kind** on the way into IndexedDB (`upser
 
 Offline Mode is **on by default for a guest and off by default for a signed-in person**
 ([Save Locations → The default depends on who is creating](save-locations.md#the-default-depends-on-who-is-creating)).
-Either way it is chosen when creating a document:
+Nobody is asked when creating a document; the default decides:
 
-- The **New Document** wizard ([Dedicated route for new-document creation](../007-editor/new-document-route.md)) runs two steps: Template, then
-  **Location** (the Settings step in code). It carries the **Save location** chooser
-  ([Save Locations](save-locations.md)), alongside the document name and where it is saved (a personal
-  folder or a team library). **livediagram** = a normal cloud
-  document; **Local Browser** = the new document is created offline. The tile
-  pre-selected is the default for who is creating.
+- The **New Document** wizard ([Dedicated route for new-document creation](../007-editor/new-document-route.md#one-step-wizard))
+  asks only for a mode and creates the document in the default location for who is creating
+  ([Save Locations](save-locations.md)): **Local Browser** for a guest, **livediagram** for a signed-in person.
+  Either moves later: **Take Offline** makes a cloud document Local only, **Sync Document** puts a Local only one on
+  livediagram.
 - The links that create without the wizard (`/new?template=`, `/new?blank=1`,
   [Dedicated route for new-document creation → Start Blank](../007-editor/new-document-route.md#start-blank-skip-the-wizard))
   take the same default, so a guest following a template from the landing page
   gets a Local only document.
-- The Local Browser tile is captioned _"This device only"_, and choosing it
-  reveals a data-loss warning and removes the folder / team step (there is
-  nothing to choose), so the durability trade-off is set at the moment of
-  choice.
-- The template and theme choices work identically; the location only changes
-  _where the document is stored_.
+- The location only changes _where the document is stored_; the mode, templates and theme work identically.
 
 No global "offline mode" switch: the choice is **per document**, so a person can
 have cloud documents and offline documents side by side.
@@ -79,8 +73,8 @@ have cloud documents and offline documents side by side.
   clearing site data, some private-browsing sessions, and browser
   storage-pressure eviction can delete it. We request
   `navigator.storage.persist()` to reduce eviction risk, and we surface the
-  trade-off plainly — at the chooser, on the document (see the badge), and in the
-  help article. "Offline" means _yours only_, with the responsibility that
+  trade-off plainly — on the document (see the badge, and its legend), in the Share dialog before a Sync, and in
+  the help article. "Offline" means _yours only_, with the responsibility that
   implies.
 
 <!-- /legacy-names -->

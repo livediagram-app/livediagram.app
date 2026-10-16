@@ -1,12 +1,12 @@
 import { initialsOf, randomName, type Participant } from '@/lib/identity';
 import { RefreshIcon, HoverCard, GlyphDisc, IDENTITY_FILL, identityVars } from '@livediagram/ui';
 
-// The picker's identity row (docs/specs/007-editor/new-document-route.md welcome + join flows): the avatar
+// The name prompt's identity row (IdentityPrompt, the join flow): the avatar
 // bubble, the display-name input (read-only when the name is dictated
 // by the visitor's Clerk account), and the shuffle-a-random-name
-// button. Split out of TemplatePicker; the host keeps the name state
-// (its follow-the-participant effect writes it) and passes it through.
-export function TemplatePickerIdentityRow({
+// button. The host keeps the name state (its follow-the-participant
+// effect writes it) and passes it through.
+export function IdentityNameRow({
   participant,
   name,
   effectiveName,

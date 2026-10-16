@@ -42,9 +42,8 @@ pen widths, dock spacing) are named constants, tuned in place.
   starts](../007-editor/start-diagramming.md)): Blank Whiteboard first under Recommended, then **Visual Notes**,
   **Workshops** and **Prototypes**, with the pen staying in hand around it. The × starts from the blank whiteboard,
   and a top-centre pill brings it back while the tab is empty.
-- **New tab:** a new tab opens on its mode's start, with no Quick Start over it; the Quick Start still offers
-  **Blank Whiteboard** and every Draw template under its **Draw** filter ([Templates by
-  mode](../007-editor/templates-by-mode.md)).
+- **New tab:** a new tab opens on its mode's start; another mode's start finds **Blank Whiteboard** and every
+  Draw template by search ([Template starts](../007-editor/start-diagramming.md#found-in-other-modes)).
 - **No theme step.** A new whiteboard starts on the default theme; the tab looks the same in either mode
   ([Appearance](#appearance)).
 - **Import:** a Microsoft Whiteboard import makes each board its own new
@@ -871,8 +870,7 @@ and dark and snapping custom colours. Registered per
 Draw mode is built in rounds and tuned with the operator between them.
 
 - **Round one** (built, being tuned): the mode and its switch
-  ([Editor modes](../007-editor/editor-modes.md)), the template and Quick Start
-  entry, the dock with every tool above, pen versus touch, the one look,
+  ([Editor modes](../007-editor/editor-modes.md)), the template, the dock with every tool above, pen versus touch, the one look,
   the backgrounds, telemetry and the help article. Entering Draw mode on an
   empty tab, by opening it or by switching, puts the active pen in hand; a
   tab with content opens on Select.

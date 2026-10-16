@@ -1120,6 +1120,16 @@ export const TEMPLATES_USED = chart(
   'A template picked to start a document or seed a tab.',
 );
 
+// A template a start's search found in another mode (docs/specs/007-editor/start-diagramming.md "Found in other
+// modes"), switching the tab to that mode: how often a search crosses modes. Each is a Template Used too.
+export const TEMPLATES_FROM_OTHER_MODES = chart(
+  'UI',
+  'Used',
+  'Templates From Other Modes',
+  "A template chosen from another mode's matches in a start's search, switching the tab to that mode.",
+  { types: ['StartOtherMode'] },
+);
+
 export const THEMES_CHOSEN = chart(
   'Theme',
   'Changed',
@@ -1186,9 +1196,10 @@ export const LOOK_AND_FEEL: MetricStack = {
   stack: true,
   title: 'Look & Feel',
   blurb:
-    'The visual presets people reach for: templates, themes, canvas styles, and their own themes. Headed by themes and canvas styles picked: a template also applies its theme, so adding templates would count that pick twice.',
+    "The visual presets people reach for: templates (and those found in another mode by a start's search), themes, canvas styles, and their own themes. Headed by themes and canvas styles picked: a template also applies its theme, so adding templates would count that pick twice.",
   members: [
     TEMPLATES_USED,
+    TEMPLATES_FROM_OTHER_MODES,
     THEMES_CHOSEN,
     CANVAS_STYLES_PICKED,
     CANVAS_CONTROLS_TWEAKED,
