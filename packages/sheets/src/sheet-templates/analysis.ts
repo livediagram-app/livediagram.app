@@ -158,9 +158,10 @@ function treeCells(c: string, out: string) {
 // The north star with one input taken from `cell` instead of the baseline, less the baseline's.
 function leverFormula(key: DriverInputKey, cell: string): string {
   const v = (k: DriverInputKey) => (k === key ? cell : `C${ROW[k]}`);
+  // Whole orders: what the chart reads (and its tooltip shows) is a count, not a float.
   return (
-    `=(${v('visitors')}*${v('conversion')}+${v('lastActives')}*${v('retention')})` +
-    `*${v('ordersPerCustomer')}*${v('kitchenOnTime')}*${v('courierOnTime')}-$H$10`
+    `=ROUND((${v('visitors')}*${v('conversion')}+${v('lastActives')}*${v('retention')})` +
+    `*${v('ordersPerCustomer')}*${v('kitchenOnTime')}*${v('courierOnTime')}-$H$10,0)`
   );
 }
 

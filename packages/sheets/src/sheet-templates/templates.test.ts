@@ -296,7 +296,7 @@ describe('the analysis sheets agree with the drawings they sit beside', () => {
     near(v('K11'), what.northStar - base.northStar);
     expect(Math.round(base.northStar)).toBe(48_591);
     expect(Math.round(what.northStar)).toBe(50_228);
-    DRIVER_LEVERS.forEach((l, i) => near(v(`C${15 + i}`), leverGain(l)));
+    DRIVER_LEVERS.forEach((l, i) => expect(v(`C${15 + i}`)).toBe(Math.round(leverGain(l))));
     // Frequency is the biggest lever, visitors the smallest.
     const gains = DRIVER_LEVERS.map(leverGain);
     expect(DRIVER_LEVERS[gains.indexOf(Math.max(...gains))]!.key).toBe('ordersPerCustomer');
