@@ -22,12 +22,12 @@ export const OFFICE_KINDS: readonly OfficeKind[] = [
   'rug',
 ];
 
-export function isOfficeShape(kind: ShapeKind | string): kind is OfficeKind {
+export function isOfficeShape(kind: string): kind is OfficeKind {
   return (OFFICE_KINDS as readonly string[]).includes(kind);
 }
 
 // The floor pieces: placed behind everything, never blocking, never a destination.
-export function isFloorShape(kind: ShapeKind | string): kind is 'room' | 'rug' {
+export function isFloorShape(kind: string): kind is 'room' | 'rug' {
   return kind === 'room' || kind === 'rug';
 }
 
@@ -37,7 +37,7 @@ export const DRINK_OF: Partial<Record<ShapeKind, DrinkKind>> = {
   'water-cooler': 'water',
   'coffee-machine': 'coffee',
 };
-export function drinkFrom(kind: ShapeKind | string): DrinkKind | null {
+export function drinkFrom(kind: string): DrinkKind | null {
   return DRINK_OF[kind as ShapeKind] ?? null;
 }
 // How long a drink is held, and how often a sip (docs/specs/009-elements/office.md "Using it").
