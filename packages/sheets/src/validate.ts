@@ -351,6 +351,11 @@ export function sheetProblem(sheet: Sheet): Validation {
     (layout.formatRules?.length ?? 0) > FORMAT_RULES_MAX
   )
     return no('rules_full');
+  return mergeProblem(layout);
+}
+
+// The merges are within their cap and none overlaps another.
+function mergeProblem(layout: SheetLayout): Validation {
   const merges = layout.merges ?? [];
   if (merges.length > SHEET_MERGES_MAX) return no('merge_invalid');
   const boxes = merges.map((m) => posRangeOf(layout, m));
@@ -358,6 +363,11 @@ export function sheetProblem(sheet: Sheet): Validation {
     for (let j = i + 1; j < boxes.length; j++)
       if (boxes[i] && boxes[j] && overlaps(boxes[i]!, boxes[j]!)) return no('merge_invalid');
   return OK;
+}
+
+// The sheet's shape after a write is within the limits, its merges aside (mergeProblem).
+function limitsProblem(sheet: Sheet): Validation {
+  return sheetProblem({ ...sheet, layout: { ...sheet.layout, merges: undefined } });
 }
 
 const refsOk = (refs: unknown[]) => refs.every(isStoredRef);
@@ -437,7 +447,23 @@ export function validateWrite(sheet: Sheet, write: SheetWrite, opts: WriteCheck 
   const more =
     (after.layout.rules?.length ?? 0) > (sheet.layout.rules?.length ?? 0) ||
     (after.layout.formatRules?.length ?? 0) > (sheet.layout.formatRules?.length ?? 0);
-  return grew || more ? sheetProblem(after) : OK;
+  if (grew || more) {
+    const v = limitsProblem(after);
+    if (!v.ok) return v;
+  }
+  // Merges are judged by what the write did to them, grown or not: a reorder can pull a merge over another without
+  // adding anything, and a sheet a sort once broke so (before sorts refused it) must still take its cells' edits.
+  // Checked only when the merges or the lines they sit on changed.
+  const moved =
+    after.layout.merges !== sheet.layout.merges ||
+    after.layout.rows !== sheet.layout.rows ||
+    after.layout.cols !== sheet.layout.cols;
+  if (moved) {
+    const v = mergeProblem(after.layout);
+    if (!v.ok && mergeProblem(sheet.layout).ok) return v;
+    if (!v.ok && (after.layout.merges?.length ?? 0) > (sheet.layout.merges?.length ?? 0)) return v;
+  }
+  return OK;
 }
 
 // A whole new sheet (a create, a copy, a restore).

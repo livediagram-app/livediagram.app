@@ -207,3 +207,16 @@ describe('inserted rows and columns', () => {
     expect(u.cells.get(cellKey(u.layout.rows[3]!, u.layout.cols[2]!))).toBeUndefined();
   });
 });
+
+// docs/specs/029-sheets/sheet.md "Sort": a sort that would pull a merge's rows apart is refused, as in the editor.
+describe('sorting past a merge', () => {
+  it('refuses to sort rows a merge spans, and says to unmerge first', () => {
+    const b = book();
+    b.run({ op: 'set', at: 'A1', rows: [[3], [1], [2]] });
+    b.run({ op: 'merge', range: 'B1:B2' });
+    const sorted = b.run({ op: 'sort', by: 'A' });
+    expect(sorted).toMatchObject({ ok: false, code: 'merge_split' });
+    expect(code(b, { op: 'sort', by: 'A', range: 'A1:B3' })).toBe('merge_split');
+    expect(code(b, { op: 'sort', by: 'A', range: 'A1:A3' })).toBeNull();
+  });
+});

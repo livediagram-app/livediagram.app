@@ -71,6 +71,7 @@ src/write-caps.ts          writesCapsProblem(sheet, writes, documentCells) -> sh
 src/commands.ts            typeInto, typeIntoRanges, clearRanges, formatRanges, borderRange, merge/unmerge,
                            fillRange, fillFromEdge, splitWrite, stepDecimals, boundedRange
 src/commands-axis.ts       insert, append, delete, hide, resize, move, freeze, sort, filter (layout writes)
+src/merge-guards.ts        sortSplitsMerge, moveSplitsMerge: a sort or move that would split a merge is refused
 src/commands-paste.ts      pasteClip, pasteCut, pasteExternal
 src/commands-shift.ts      shiftCells: Insert Cells and Delete Cells (built on the cut-paste move)
 src/selection.ts           Selection ops: move, extend, jump (Ctrl+arrows), select all, rows, columns, cycle
@@ -404,7 +405,7 @@ type SheetWrite =
 `sheet_full` (cells > `SHEET_CELLS_MAX` or bytes > `SHEET_BYTES_MAX`), `input_too_long`, `formula_invalid`
 (template re-parse fails, a ref index out of bounds, `@` misuse), `format_invalid` (unknown key, bad colour,
 size, decimals), `axis_id_invalid` (pattern, or an insert reusing a live id), `title_invalid` (empty or >
-`SHEET_TITLE_MAX`), `merge_invalid` (overlap, or > `SHEET_MERGES_MAX`), `filter_invalid`, `write_too_large`
+`SHEET_TITLE_MAX`), `merge_invalid` (overlap, or > `SHEET_MERGES_MAX`: judged on what the write did to the merges, whether or not it grew anything, whenever the merges or the rows and columns under them changed; a merge problem the sheet already had refuses only a write that adds a merge, so a sheet an older sort broke still takes typed values), `filter_invalid`, `write_too_large`
 (> `SHEET_WRITE_CELLS_MAX` cells or > `SHEET_WRITE_BYTES_MAX`). `validateSheetCreate` checks a whole sheet the
 same way. `writesCapsProblem(sheet, writes, documentCells)` (`write-caps.ts`) applies a change's writes in order
 and answers the cap the result passes: `sheet_full` or `sheet_too_large` by `sheetProblem`, `sheets_full` when

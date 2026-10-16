@@ -11,6 +11,13 @@ import { scalarOf } from './formula/values';
 import type { CellChange, LayoutChange, SheetWrite } from './store';
 import type { Workbook } from './engine/workbook';
 import { currentRegion, type Grid } from './selection';
+import {
+  MERGE_SORT_REFUSAL,
+  mergeMoveRefusal,
+  moveSplitsMerge,
+  sortSplitsMerge,
+  type MergeRefusal,
+} from './merge-guards';
 
 export type Side = 'before' | 'after';
 
@@ -91,9 +98,11 @@ export function moveAxis(
   from: number,
   to: number,
   before: number,
-): SheetWrite | null {
+): SheetWrite | MergeRefusal | null {
   const list = axis === 'r' ? sheet.layout.rows : sheet.layout.cols;
   if (before >= from && before <= to + 1) return null;
+  if (moveSplitsMerge(sheet.layout, axis, from, to, before))
+    return { refused: mergeMoveRefusal(axis) };
   const ids = list.slice(from, to + 1);
   const after = before <= 0 ? null : list[before - 1]!;
   return { kind: 'layout', changes: [{ k: axis === 'r' ? 'moveRows' : 'moveCols', ids, after }] };
@@ -119,7 +128,7 @@ export function sortSheet(
   sheetId: string,
   col: number,
   ascending: boolean,
-): SheetWrite | null {
+): SheetWrite | MergeRefusal | null {
   const sheet = wb.sheet(sheetId);
   if (!sheet) return null;
   const start = sheet.layout.frozenRows ?? 0;
@@ -127,6 +136,7 @@ export function sortSheet(
   const end = Math.max(start, extent.rows);
   const rows = sheet.layout.rows.slice(start, end);
   if (rows.length < 2) return null;
+  if (sortSplitsMerge(sheet.layout, start, end - 1)) return { refused: MERGE_SORT_REFUSAL };
   const order = sortedOrder(rows.length, (i) => scalarOf(wb.value(sheetId, start + i, col)), [
     { col, ascending },
   ]);
@@ -141,7 +151,7 @@ export function sortFilter(
   sheetId: string,
   colId: string,
   ascending: boolean,
-): SheetWrite | null {
+): SheetWrite | MergeRefusal | null {
   const sheet = wb.sheet(sheetId);
   const filter = sheet?.layout.filter;
   if (!sheet || !filter) return null;
@@ -151,6 +161,8 @@ export function sortFilter(
   const start = box.r1 + 1;
   const rows = sheet.layout.rows.slice(start, box.r2 + 1);
   if (rows.length < 2) return null;
+  // The filter's rows move whole, so a merge anywhere across them is pulled apart.
+  if (sortSplitsMerge(sheet.layout, start, box.r2)) return { refused: MERGE_SORT_REFUSAL };
   const order = sortedOrder(rows.length, (i) => scalarOf(wb.value(sheetId, start + i, col)), [
     { col, ascending },
   ]);
@@ -168,12 +180,15 @@ export function sortRange(
   range: GridRange,
   keys: readonly SortKey[],
   hasHeader: boolean,
-): SheetWrite | null {
+): SheetWrite | MergeRefusal | null {
   const sheet = wb.sheet(sheetId);
   if (!sheet) return null;
   const r1 = range.r1 + (hasHeader ? 1 : 0);
   const count = range.r2 - r1 + 1;
   if (count < 2) return null;
+  // Only the range's cells move, but a merge across its rows would take the wrong row's value.
+  if (sortSplitsMerge(sheet.layout, r1, range.r2, range.c1, range.c2))
+    return { refused: MERGE_SORT_REFUSAL };
   const order = sortedOrder(count, (i, c) => scalarOf(wb.value(sheetId, r1 + i, c)), keys);
   const ctx = wb.ctxFor(sheetId);
   const cells: CellChange[] = [];

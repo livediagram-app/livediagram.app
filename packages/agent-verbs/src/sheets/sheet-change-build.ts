@@ -313,6 +313,7 @@ export function buildSheetChange(
       const order = ascending ? 'A to Z' : 'Z to A';
       if (!change.range) {
         const write = sortSheet(wb, sheetId, col, ascending);
+        if (write && 'refused' in write) return refuse('merge_split', write.refused);
         return {
           ok: true,
           writes: write ? [write] : [],
@@ -327,6 +328,7 @@ export function buildSheetChange(
           `Column ${change.by.toUpperCase()} is outside ${formatRange(range)}.`,
         );
       const write = sortRange(wb, sheetId, range, [{ col, ascending }], change.header ?? false);
+      if (write && 'refused' in write) return refuse('merge_split', write.refused);
       return {
         ok: true,
         writes: write ? [write] : [],

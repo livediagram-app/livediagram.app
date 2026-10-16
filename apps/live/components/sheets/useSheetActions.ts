@@ -312,7 +312,8 @@ export function useSheetActions() {
       // Dragged headers: lines from..to moved to before position `before`.
       moveAxis(axis: 'r' | 'c', from: number, to: number, before: number) {
         const w = moveAxis(c.sheet, axis, from, to, before);
-        if (w) c.write(w, axis === 'r' ? 'Rows' : 'Columns');
+        if (w && 'refused' in w) c.toast(w.refused);
+        else if (w) c.write(w, axis === 'r' ? 'Rows' : 'Columns');
       },
       sizeOf(axis: 'r' | 'c', p: number) {
         return axis === 'r'
@@ -322,7 +323,8 @@ export function useSheetActions() {
       // ---- Sort, filter, freeze ----
       sortColumn(ascending: boolean) {
         const w = sortSheet(c.workbook, c.sheet.id, sel().active.c, ascending);
-        if (w) {
+        if (w && 'refused' in w) c.toast(w.refused);
+        else if (w) {
           c.write(w, 'Sort');
           c.announce(ascending ? 'Sorted A to Z' : 'Sorted Z to A');
         }
@@ -330,14 +332,16 @@ export function useSheetActions() {
       // A filter column's own sort: the filter's rows under its header, by that column (not the active cell's).
       sortFilter(colId: string, ascending: boolean) {
         const w = sortFilter(c.workbook, c.sheet.id, colId, ascending);
-        if (w) {
+        if (w && 'refused' in w) c.toast(w.refused);
+        else if (w) {
           c.write(w, 'Sort');
           c.announce(ascending ? 'Sorted A to Z' : 'Sorted Z to A');
         }
       },
       sortRange(keys: SortKey[], header: boolean) {
         const w = sortRange(c.workbook, c.sheet.id, primary(c), keys, header);
-        if (w) c.write(w, 'Sort');
+        if (w && 'refused' in w) c.toast(w.refused);
+        else if (w) c.write(w, 'Sort');
       },
       toggleFilter() {
         const w = toggleFilter(c.workbook, c.sheet.id, primary(c), c.grid);

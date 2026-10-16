@@ -205,6 +205,44 @@ describe('applySheetWrite', () => {
     roundTrip(s, { kind: 'layout', changes: [{ k: 'orderRows', ids: [R(2), R(1), R(0)] }] });
     roundTrip(s, { kind: 'layout', changes: [{ k: 'orderCols', ids: [C(1), C(0)] }] });
   });
+  // A deletion drops a merge it shrinks to one cell, so a merge of one cell never lands: had it, undoing an unrelated
+  // column insert (a deletion) dropped it, and the sheet came back different from before.
+  it('lands no merge of one cell, so undoing a column insert gives the sheet back exactly', () => {
+    const one = { r1: R(1), r2: R(1), c1: C(1), c2: C(1) };
+    const s = applySheetWrite(
+      base(),
+      { kind: 'layout', changes: [{ k: 'merge', range: one }] },
+      ctx,
+    ).sheet;
+    expect(s.layout.merges).toBeUndefined();
+    roundTrip(s, { kind: 'layout', changes: [{ k: 'insertCols', after: null, ids: ['nc'] }] });
+  });
+
+  // A deletion shrinks every range by position, and used to hand back its corners in the order the rows stand now:
+  // after a sort put row 4 above row 3, deleting any column rewrote a merge of rows 3 to 4 as 4 to 3, so undoing
+  // the merge (an unmerge naming 3 to 4) matched nothing and the merge stayed.
+  it('keeps a range’s corners as they were when a deletion leaves them, so undoing a merge still unmerges', () => {
+    const range = { r1: R(3), r2: R(4), c1: C(0), c2: C(1) };
+    const merge = applySheetWrite(
+      base(),
+      { kind: 'layout', changes: [{ k: 'merge', range }] },
+      ctx,
+    );
+    const sorted = applySheetWrite(
+      merge.sheet,
+      { kind: 'layout', changes: [{ k: 'moveRows', ids: [R(4)], after: R(2) }] },
+      ctx,
+    ).sheet;
+    const deleted = applySheetWrite(
+      sorted,
+      { kind: 'layout', changes: [{ k: 'deleteCols', ids: [C(3)] }] },
+      ctx,
+    ).sheet;
+    expect(deleted.layout.merges).toEqual([range]);
+    const undone = applySheetWrite(deleted, inverseSheetWrite(base(), merge, deleted.layout), ctx);
+    expect(undone.sheet.layout.merges).toBeUndefined();
+  });
+
   it('sizes, hides, freezes, merges and filters, all undoable', () => {
     const s = base({ A1: 'a' });
     const sized = roundTrip(s, {
