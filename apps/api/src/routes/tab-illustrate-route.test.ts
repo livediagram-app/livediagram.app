@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { sentJson } from '@livediagram/vitest-config/sent-request';
 import type { IllustrateAnswer } from '@livediagram/api-schema';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import type { Env } from '../types';
@@ -12,12 +13,13 @@ import { layoutCatalogueFor } from '@livediagram/templates';
 // editor's own edit.
 
 function roomRecorder(status = 204) {
-  const bodies: { op: { kind: string; [k: string]: unknown } }[] = [];
+  type Relayed = { op: { kind: string; [k: string]: unknown } };
+  const bodies: Relayed[] = [];
   const binding = {
     idFromName: (name: string) => name,
     get: () => ({
       fetch: async (_url: string, init?: RequestInit) => {
-        if (init?.body) bodies.push(JSON.parse(String(init.body)));
+        if (init?.body) bodies.push(sentJson(init) as Relayed);
         return new Response(null, { status });
       },
     }),

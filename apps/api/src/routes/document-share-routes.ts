@@ -63,7 +63,9 @@ export async function handleDocumentShareRoutes(ctx: RouteContext): Promise<Resp
       // An OMITTED role still defaults to 'edit', the documented behaviour; the three levels are
       // docs/specs/013-workspace/share-roles.md's.
       if (body.role !== undefined && !isAccessLevel(body.role)) {
-        console.warn('[access-levels] invalid role', { value: String(body.role).slice(0, 40) });
+        console.warn('[access-levels] invalid role', {
+          value: typeof body.role === 'string' ? body.role.slice(0, 40) : typeof body.role,
+        });
         return badRequest('invalid role');
       }
       const role: ShareRole = body.role ?? DEFAULT_LINK_LEVEL;

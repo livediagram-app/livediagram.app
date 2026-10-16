@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { sentJson } from '@livediagram/vitest-config/sent-request';
 
 const { db } = vi.hoisted(() => ({ db: { listDocumentsByTeam: vi.fn() } }));
 vi.mock('./db', () => db);
@@ -31,7 +32,7 @@ function roomsEnv(
           calls.push({
             documentId,
             path: new URL(url).pathname,
-            body: JSON.parse(String(init.body)),
+            body: sentJson(init),
           });
           inFlight--;
           return answer(documentId);

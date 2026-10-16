@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { sentJson } from '@livediagram/vitest-config/sent-request';
 import type { Element } from '@livediagram/document';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import type { Env } from '../types';
@@ -24,7 +25,7 @@ function roomRecorder() {
     get: () => ({
       fetch: async (input: string | Request, init?: RequestInit) => {
         const url = typeof input === 'string' ? input : input.url;
-        const body = init?.body ? JSON.parse(String(init.body)) : null;
+        const body = init?.body ? sentJson(init) : null;
         calls.push({ url, body });
         if (url.includes('/selections')) return Response.json({ selections: [] });
         return new Response(null, { status: 204 });

@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { sentJson } from '@livediagram/vitest-config/sent-request';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import type { Env } from '../types';
 import { makeTestRouteContext } from './test-route-context';
@@ -14,7 +15,7 @@ function roomRecorder() {
     idFromName: (name: string) => name,
     get: () => ({
       fetch: async (_url: string, init?: RequestInit) => {
-        bodies.push(init?.body ? JSON.parse(String(init.body)) : null);
+        bodies.push(init?.body ? sentJson(init) : null);
         return new Response(null, { status: 204 });
       },
     }),
