@@ -3,11 +3,7 @@
 import { z } from 'zod';
 import type { ImageSummary } from '@livediagram/api-schema';
 import { defineVerb } from '../define';
-import {
-  IMAGE_LIST_DEFAULT_LIMIT,
-  IMAGE_LIST_MAX_LIMIT,
-  galleryListing,
-} from '../images/gallery';
+import { IMAGE_LIST_DEFAULT_LIMIT, IMAGE_LIST_MAX_LIMIT, galleryListing } from '../images/gallery';
 import { columns } from './shared';
 
 const KIB = 1024;
@@ -56,7 +52,12 @@ export const imageLs = defineVerb({
   text: ({ images, more }) => [
     ...(images.length
       ? columns(
-          images.map((i) => [i.id, `${i.width}x${i.height}`, sizeText(i.size), JSON.stringify(i.name)]),
+          images.map((i) => [
+            i.id,
+            `${i.width}x${i.height}`,
+            sizeText(i.size),
+            JSON.stringify(i.name),
+          ]),
         )
       : ['no images; upload them in the editor']),
     ...(more > 0 ? [`… ${more} more; --limit ${images.length + more}, or narrow the name`] : []),

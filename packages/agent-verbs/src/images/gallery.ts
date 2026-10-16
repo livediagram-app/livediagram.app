@@ -33,7 +33,10 @@ export function imageName(image: ImageSummary): string {
 // The gallery newest first, those whose name holds `query` (any case), at most `limit`.
 export function galleryListing(
   images: readonly ImageSummary[],
-  { query, limit = IMAGE_LIST_DEFAULT_LIMIT }: { query?: string | undefined; limit?: number | undefined },
+  {
+    query,
+    limit = IMAGE_LIST_DEFAULT_LIMIT,
+  }: { query?: string | undefined; limit?: number | undefined },
 ): GalleryListing {
   const q = query?.trim().toLowerCase();
   const matched = [...images]
@@ -70,8 +73,13 @@ export function imagesPlacedIn(input: unknown): PlacedImage[] {
     if (typeof value !== 'object' || value === null) return;
     const rec = value as Record<string, unknown>;
     const here =
-      typeof rec.id === 'string' ? rec.id : typeof rec.elementId === 'string' ? rec.elementId : elementId;
-    if (typeof rec.imageId === 'string' && rec.imageId) out.push({ elementId: here, imageId: rec.imageId });
+      typeof rec.id === 'string'
+        ? rec.id
+        : typeof rec.elementId === 'string'
+          ? rec.elementId
+          : elementId;
+    if (typeof rec.imageId === 'string' && rec.imageId)
+      out.push({ elementId: here, imageId: rec.imageId });
     for (const [key, v] of Object.entries(rec)) if (key !== 'imageId') walk(v, here);
   };
   walk(input, null);
