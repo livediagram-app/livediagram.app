@@ -8,6 +8,10 @@ import { readSettingsView, writeSettingsView } from './settings/settings-view-me
 import type { UserPreferences } from '@/lib/user-preferences';
 import { setPowerUserMode } from '@/lib/power-user-mode';
 
+// Who is reading: a guest unless a test signs in.
+const clerk = vi.hoisted(() => ({ clerkUserId: null as string | null, isSignedIn: false }));
+vi.mock('@/hooks/persistence/useClerkApiBootstrap', () => ({ useClerkApiBootstrap: () => clerk }));
+
 // The dialog takes BOTH iOS Settings shapes, one per viewport (docs/specs/007-editor/user-preferences.md): the
 // iPad split view on desktop, the iPhone push navigation on a phone. Which
 // one renders is the whole point of the rework, and it hangs off a media
@@ -39,6 +43,8 @@ function renderDialog(overrides: Partial<UserPreferences> = {}) {
 const FIRST_CATEGORY = visibleCategories(true, { emailEnabled: true, signedIn: false })[0]!;
 
 afterEach(() => {
+  clerk.clerkUserId = null;
+  clerk.isSignedIn = false;
   cleanup();
   sessionStorage.clear();
   localStorage.clear();
@@ -287,5 +293,23 @@ describe('SettingsDialog', () => {
     const describedBy = sw.getAttribute('aria-describedby');
     expect(describedBy).toBeTruthy();
     expect(document.getElementById(describedBy!)?.textContent).toMatch(/snap lines/i);
+  });
+});
+
+// The footer says where settings live: a guest has no account to sync them to.
+describe('SettingsDialog footer', () => {
+  it('tells a guest their settings stay in this browser', () => {
+    setViewport(false);
+    renderDialog();
+    expect(screen.getByText(/Settings are kept in this browser/)).toBeTruthy();
+    expect(screen.queryByText(/sync to your account/)).toBeNull();
+  });
+
+  it('tells a signed-in person their settings follow their account', () => {
+    clerk.clerkUserId = 'user_1';
+    clerk.isSignedIn = true;
+    setViewport(false);
+    renderDialog();
+    expect(screen.getByText(/Settings sync to your account/)).toBeTruthy();
   });
 });
