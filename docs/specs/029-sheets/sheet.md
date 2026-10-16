@@ -885,15 +885,17 @@ not in Sheet Settings, not anywhere.
 ## CSV
 
 - **Import CSV…** (Sheet Settings) opens a file picker for a `.csv` or `.tsv`, read as tab-separated when its first
-  line holds a tab, semicolon-separated when its first lines (up to 20) read with semicolons split into the same
+  line holds a tab outside quotes, semicolon-separated when its first lines (up to 20) read with semicolons split into the same
   number of fields on every line, more than one, and read with commas do not, or into no more (Excel's CSV where
-  the decimal mark is a comma, so `Tea;3,50` and a header like `Amount, EUR` stay semicolon lines; a quoted comma or
-  semicolon is the field's, never a separator), else comma-separated; on a sheet with filled cells it asks
+  the decimal mark is a comma, so `Tea;3,50` and a header like `Amount, EUR` stay semicolon lines; a quoted comma,
+  semicolon or tab is the field's, never a separator, and a reading that leaves a quote outside RFC 4180's quoting
+  has cut a quoted field apart, so it is never the separator), else comma-separated; on a sheet with filled cells it asks
   first: **Replace Sheet**, **Insert at Selection** or **Cancel**. Values are read as if typed; the grid grows to fit,
   up to its limit (past it: "Imported the first 10,000 rows").
 - Dropping a `.csv` on the canvas in Plan mode places a new sheet with it (above).
 - **Download CSV** saves `<title>.csv`: every row and column up to the last filled cell, each cell's value as shown
-  (formatted), comma-separated with quotes as RFC 4180, UTF-8.
+  (formatted), comma-separated with quotes as RFC 4180 (a field holding a semicolon or a tab quoted too, so it reads back
+  as a comma file), UTF-8.
 - **Safe to open**: every CSV the app downloads (a Sheet's, a board's) makes a field a spreadsheet would run as a
   formula inert, prefixing it with `'`: one starting with `=`, `+`, `-`, `@`, a tab or a carriage return, unless it
   is a number as shown (`-5`, `-£1,200.50`, `+3%`). Read back into a Sheet, `'=1+1` is the text `=1+1` again. Only
