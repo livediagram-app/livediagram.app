@@ -24,6 +24,7 @@ describe('the MCP tool verbs', () => {
       'add_form',
       'change_form',
       'share_form',
+      'try_form',
       'find_documents',
       'read_document',
       'list_templates',

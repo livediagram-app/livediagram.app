@@ -206,23 +206,48 @@ describe('contactSheetTab', () => {
     expect(captions[1]).toBe('2. p1.png');
   });
 
-  it('draws pictures until the pixel budget, and captions the rest as too large', () => {
-    // Retina screenshots of a 1440x900 screen: three fit sixteen megapixels, the fourth does not.
-    const retina = Array.from({ length: 4 }, (_, i) => ({
-      id: `r${i}`,
-      name: `Screenshot ${i}.png`,
-      width: 2880,
-      height: 1800,
+  const drawnIds = (tab: ReturnType<typeof contactSheetTab>) =>
+    tab.elements.flatMap((e) => (e.type === 'image' ? [e.imageId] : []));
+
+  it("draws pictures within the preview's pixel budget, and captions the rest as too large", () => {
+    // A retina screenshot of a 1440x900 screen (5.2 megapixels) fits eight megapixels once; a 1464x784 one still fits
+    // after it, a second retina one does not.
+    const shot = (id: string, width: number, height: number) => ({
+      id,
+      name: `${id}.png`,
+      width,
+      height,
       size: 1,
       uploadedAt: '',
-    }));
-    const tab = contactSheetTab(retina);
-    const ids = tab.elements
-      .filter((e) => e.type === 'image')
-      .map((e) => (e.type === 'image' ? e.imageId : null));
-    expect(ids).toEqual(['r0', 'r1', 'r2', null]);
-    expect(tab.elements.find((e) => e.id === 'caption-4')?.label).toBe(
-      '4. Screenshot 3.png\n(too large to draw here)',
+    });
+    const tab = contactSheetTab([
+      shot('r0', 2880, 1800),
+      shot('r1', 2880, 1800),
+      shot('s2', 1464, 784),
+    ]);
+    expect(drawnIds(tab)).toEqual(['r0', null, 's2']);
+    expect(tab.elements.find((e) => e.id === 'caption-2')?.label).toBe(
+      '2. r1.png\n(too large to draw here)',
     );
+  });
+
+  it("keeps to the preview's byte limits: 2 MB a picture, 6 MB together", () => {
+    const mb = 1024 * 1024;
+    const file = (id: string, size: number) => ({
+      id,
+      name: id,
+      width: 10,
+      height: 10,
+      size,
+      uploadedAt: '',
+    });
+    const tab = contactSheetTab([
+      file('huge', 2 * mb + 1),
+      file('a', 2 * mb),
+      file('b', 2 * mb),
+      file('c', 2 * mb),
+      file('d', 1),
+    ]);
+    expect(drawnIds(tab)).toEqual([null, 'a', 'b', 'c', null]);
   });
 });

@@ -467,6 +467,41 @@ export const shareFormShape = {
     ),
 };
 
+// --- try_form ---------------------------------------------------------------------------------------------------
+
+export const tryFormShape = {
+  documentId,
+  tab,
+  answers: z
+    .record(z.string(), z.unknown())
+    .describe(
+      'Each answer by its question’s id or prompt, as a respondent gives it: text for short, paragraph, email, ' +
+        'link; a number for number and rating; "YYYY-MM-DD" for date; an option for single; a list of options ' +
+        'for multi; true for checkbox. On a choice with Other, any other text is the Other answer. A question ' +
+        'left out is unanswered.',
+    ),
+};
+
+export const tryFormOutput = {
+  documentId: z.string().describe('The document.'),
+  tabId: z.string().describe('The Form tab.'),
+  made: z.enum(['card', 'row']).describe('A card on a board, or a row in a sheet.'),
+  number: z
+    .number()
+    .nullable()
+    .describe(
+      'The response number a published form gave it (it counts); null when nothing counts it.',
+    ),
+  where: z.string().describe('Where it went: the board and column, or the sheet.'),
+  title: z.string().nullable().describe('The card’s title, "Preview: ..."; null for a row.'),
+  itemId: z
+    .string()
+    .nullable()
+    .describe('The card’s id when this call made it (an unpublished form); else null.'),
+  lines: z.array(z.string()).describe('Answers left out because their section did not show.'),
+  url: z.string().describe('The document in the editor.'),
+};
+
 export const addFormOutput = readFormOutput;
 export const changeFormOutput = readFormOutput;
 export const shareFormOutput = readFormOutput;

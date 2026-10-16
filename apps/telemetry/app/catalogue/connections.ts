@@ -145,6 +145,11 @@ export const MCP_TOOL_METRICS: readonly Metric[] = [
     'Changing a form’s questions, sections, look, settings or destination.',
   ),
   mcpTool('ShareForm', 'Share Form', 'Publishing, closing or deleting a form’s link.'),
+  mcpTool(
+    'TryForm',
+    'Try Form',
+    'Filling in a form as a preview response, to check it end to end.',
+  ),
 ];
 
 export const MCP_TOOL_CALLS: MetricStack = {

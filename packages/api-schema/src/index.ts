@@ -519,8 +519,10 @@ export { pkceChallenge, sha256Hex } from './sha256';
 export { base64ToBytes, bytesToBase64, bytesToBase64Url, randomBase64Url } from './bytes';
 
 // Image magic-number sniffing and the server-side image embedder both
-// workers render tabs with (see ./image-sniff.ts, ./embed-images.ts).
+// workers render tabs with, and the header size it budgets pixels by (see ./image-sniff.ts, ./embed-images.ts,
+// ./image-size.ts).
 export { sniffImageType } from './image-sniff';
+export { imagePixelSize, type PixelSize } from './image-size';
 export {
   embedTabImages,
   tabImageIds,

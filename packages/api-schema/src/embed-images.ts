@@ -17,12 +17,19 @@
 //     a time in document order until it is spent, so the result is
 //     deterministic and only one image's bytes are held at a time; without
 //     one, they are read concurrently.
+//   - `totalBudgetPixels` caps the sum of the pictures' sizes in pixels, read
+//     from each header (./image-size.ts), the same way: a rasteriser decodes
+//     every picture at full size, so its memory follows the pixels. An image
+//     whose size cannot be read is left out under this budget.
+//   - `onOverLimit` hears each image left out for a limit (too large alone, or
+//     past a budget), so a caller can say so beside the picture.
 //
 // Any image that is missing, over a limit, fails to load, or isn't one of the
 // accepted raster formats is left out, and the renderer draws its placeholder.
 
 import { pageImageIds, type Tab } from '@livediagram/document';
 import { bytesToBase64 } from './bytes';
+import { imagePixelSize } from './image-size';
 import { sniffImageType } from './image-sniff';
 
 export type EmbedImageSource = (
@@ -32,6 +39,8 @@ export type EmbedImageSource = (
 export type EmbedImageLimits = {
   maxBytesPerImage?: number;
   totalBudgetBytes?: number;
+  totalBudgetPixels?: number;
+  onOverLimit?: (imageId: string) => void;
 };
 
 // The distinct image ids a tab references, in document order.
@@ -63,8 +72,9 @@ export async function embedTabImages(
   limits: EmbedImageLimits = {},
 ): Promise<Map<string, string>> {
   const map = new Map<string, string>();
-  const { maxBytesPerImage = Infinity, totalBudgetBytes } = limits;
+  const { maxBytesPerImage = Infinity, totalBudgetBytes, totalBudgetPixels, onOverLimit } = limits;
   let budget = totalBudgetBytes ?? Infinity;
+  let pixelBudget = totalBudgetPixels ?? Infinity;
 
   // Read one image and, if it fits, add it. Returns nothing: every skip is
   // silent, because a placeholder is the right outcome for each of them.
@@ -77,16 +87,30 @@ export async function embedTabImages(
     }
     if (!loaded) return;
     const size = loaded.bytes.byteLength;
-    if (size > maxBytesPerImage || size > budget) return;
+    if (size > maxBytesPerImage || size > budget) {
+      onOverLimit?.(id);
+      return;
+    }
     const bytes = new Uint8Array(loaded.bytes);
     const type = dataUrlType(bytes, loaded.contentType);
     if (!type) return;
+    let pixels = 0;
+    if (totalBudgetPixels !== undefined) {
+      const dims = imagePixelSize(bytes);
+      if (!dims) return;
+      pixels = dims.width * dims.height;
+      if (pixels > pixelBudget) {
+        onOverLimit?.(id);
+        return;
+      }
+    }
     budget -= size;
+    pixelBudget -= pixels;
     map.set(id, `data:${type};base64,${bytesToBase64(bytes)}`);
   };
 
   const ids = tabImageIds(tab);
-  if (totalBudgetBytes === undefined) {
+  if (totalBudgetBytes === undefined && totalBudgetPixels === undefined) {
     await Promise.all(ids.map(embedOne));
   } else {
     for (const id of ids) await embedOne(id);

@@ -68,7 +68,8 @@ export const FORM_CHANGES_MAX = 50;
 const newId = (prefix: 'q' | 's') => newFormPartId(prefix);
 const tabNamesOf = (world: FormWorld) => new Map(world.tabs.map((t) => [t.id, t.name]));
 
-async function guarded(run: () => Promise<FormCallResult>): Promise<FormCallResult> {
+// An api refusal as a form refusal, in the words agents read; anything else throws.
+export async function guarded<T>(run: () => Promise<T | FormRefusal>): Promise<T | FormRefusal> {
   try {
     return await run();
   } catch (err) {
@@ -81,7 +82,7 @@ async function guarded(run: () => Promise<FormCallResult>): Promise<FormCallResu
 // --- Reading ----------------------------------------------------------------------------------------------------
 
 // The plan, the Form tab named (its body: the one tab read), its link, and the form as read_form answers it.
-async function readingOf(api: ApiClient, documentId: string, tabRef: string | undefined) {
+export async function readingOf(api: ApiClient, documentId: string, tabRef: string | undefined) {
   const world = await readFormWorld(api, documentId);
   const found = resolveFormTab(world.tabs, tabRef);
   if (!found.ok) return found;

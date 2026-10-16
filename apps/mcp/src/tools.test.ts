@@ -254,7 +254,7 @@ const AUTHED = { authInfo: { token: 'tok_test' } };
 const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
 
 describe('registerTools', () => {
-  it('registers the twenty-eight documented tools, each with a description', () => {
+  it('registers the twenty-nine documented tools, each with a description', () => {
     const { registered } = harness();
     const current = registered.filter((r) => !isDeprecated(r));
     expect(current.map((r) => r.name).sort()).toEqual([
@@ -284,6 +284,7 @@ describe('registerTools', () => {
       'search_icons',
       'share_document',
       'share_form',
+      'try_form',
       'update_document',
       'write_article',
     ]);
@@ -411,6 +412,7 @@ describe('tool annotations', () => {
     add_form: 'write',
     change_form: 'destructive',
     share_form: 'write',
+    try_form: 'write',
   };
 
   it('gives every tool one of the three documented presets', () => {

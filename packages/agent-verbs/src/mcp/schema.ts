@@ -333,8 +333,8 @@ Form tabs hold forms (like Google Forms): questions anyone fills in from a link,
 without an account, each response a card on a Board tab or a row in a sheet.
 add_form makes one (from a starter or questions, in a document of its own when
 no documentId is given), change_form changes it, read_form reads it with its
-link, state and anything stopping it being published, and share_form publishes,
-closes or deletes its link. Asked for a form, survey, sign-up or RSVP, make a
+link, state and anything stopping it being published, share_form publishes,
+closes or deletes its link, and try_form fills it in as a test response. Asked for a form, survey, sign-up or RSVP, make a
 form; its responses are read with list_items (cards) or read_sheet (rows).`;
 
 // --- Tool input shapes (ZodRawShape). Element arrays are permissive; isValidTab

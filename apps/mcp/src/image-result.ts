@@ -42,30 +42,32 @@ import { INTER_ITALIC, previewFonts } from './preview-fonts';
 import { planPreviewFor } from './plan-preview';
 import { formPreview } from './form-preview';
 import { coversAnother } from './board-growth';
+import {
+  PREVIEW_IMAGE_BUDGET_BYTES,
+  PREVIEW_IMAGE_BUDGET_PIXELS,
+  PREVIEW_IMAGE_MAX_BYTES,
+  previewLeftOutNote,
+} from './preview-budget';
 import { apiFetch, apiJson } from './api';
 import type { Env } from './env';
 import { textResult, type StructuredValue, type ToolResult } from './tool-helpers';
-
-// Per-image cap for embedding (docs/specs/015-api/mcp-server.md §5): a document can reference large
-// uploads, and inlining them as base64 into the preview PNG's own base64
-// response would bloat what the model receives. Above this, the image falls
-// back to the placeholder box (as before) — the structured elements still carry
-// its id.
-const MAX_EMBED_BYTES = 2 * 1024 * 1024;
 
 // Prefetch the bytes of every image element on the tab and return a
 // resolveImageHref that inlines them as data URIs, so the render shows the real
 // picture instead of a placeholder (docs/specs/015-api/mcp-server.md §5). resvg (WASM) can't fetch, so
 // the bytes must be inlined. Owner-authed via the caller's token — the same
-// GET /api/images/:id the app uses. The shared embedder reads them
-// concurrently under the per-image cap; any failure (missing, too big, error)
-// skips that image and the placeholder shows; a document with no images does no
-// work.
-async function buildImageResolver(
-  env: Env,
-  token: string,
-  tab: Tab,
-): Promise<((imageId: string) => string | undefined) | undefined> {
+// GET /api/images/:id the app uses. The shared embedder reads them in document
+// order within the preview's budget (./preview-budget.ts); any failure
+// (missing, too big, past the budget, error) skips that image and the
+// placeholder shows; a document with no images does no work. `leftOut` counts
+// the pictures a limit kept out, for the preview's note.
+type ImageResolver = {
+  resolveImageHref?: (imageId: string) => string | undefined;
+  leftOut: number;
+};
+
+async function buildImageResolver(env: Env, token: string, tab: Tab): Promise<ImageResolver> {
+  let leftOut = 0;
   const byId = await embedTabImages(
     tab,
     async (id) => {
@@ -73,14 +75,30 @@ async function buildImageResolver(
       if (!res.ok) return null;
       return { bytes: await res.arrayBuffer(), contentType: res.headers.get('Content-Type') };
     },
-    { maxBytesPerImage: MAX_EMBED_BYTES },
+    {
+      maxBytesPerImage: PREVIEW_IMAGE_MAX_BYTES,
+      totalBudgetBytes: PREVIEW_IMAGE_BUDGET_BYTES,
+      totalBudgetPixels: PREVIEW_IMAGE_BUDGET_PIXELS,
+      onOverLimit: () => {
+        leftOut += 1;
+      },
+    },
   );
-  return byId.size > 0 ? (imageId: string) => byId.get(imageId) : undefined;
+  return {
+    ...(byId.size > 0 ? { resolveImageHref: (imageId: string) => byId.get(imageId) } : {}),
+    leftOut,
+  };
 }
 
 // `auth` (env + the caller's token) enables real image embedding; omit it to
 // render placeholders for image elements (the pre-embedding behaviour).
 export type ImageBlock = { type: 'image'; data: string; mimeType: string };
+type TextBlock = { type: 'text'; text: string };
+
+// The preview's blocks: the picture, after a note when the budget drew some pictures as placeholders.
+const previewBlocks = (image: ImageBlock, leftOut: number): (TextBlock | ImageBlock)[] =>
+  leftOut > 0 ? [{ type: 'text', text: previewLeftOutNote(leftOut) }, image] : [image];
+const NO_IMAGES: ImageResolver = { leftOut: 0 };
 
 // A Plan board's or card's items (docs/specs/026-plan/plan-board.md), and a Sheet's window of cells
 // (docs/specs/029-sheets/sheet.md "Exports and images"), so a preview draws them; none when the tab has neither, or
@@ -151,22 +169,23 @@ async function planContentFor(
   };
 }
 
-// A PNG preview of the tab, its images and icons resolved as the editor draws them.
+// A PNG preview of the tab, its images and icons resolved as the editor draws them, after a note when some pictures
+// were left out for the budget.
 export async function tabPreview(
   tab: Tab,
   auth?: { env: Env; token: string; documentId?: string },
   // One page of an Illustrate tab to draw alone (read_document's `page`); every page when absent.
   page?: LaidOutPage,
-): Promise<ImageBlock> {
+): Promise<(TextBlock | ImageBlock)[]> {
   // A Form tab draws as its form, as respondents see it.
   const form = await formPreview(tab);
-  if (form) return form;
+  if (form) return [form];
   // An Illustrate tab draws as its pages (svg-render-pages.ts), as the editor exports them.
   if (laidOutPagesOf(tab).length > 0) {
     // Its pictures, its Plan cards and sheets (a sheet or a sheet-linked chart on a page draws what it holds, as on any
     // tab) and its faces, fetched together rather than one after another.
-    const [resolveImageHref, content, fonts, emoji] = await Promise.all([
-      auth ? buildImageResolver(auth.env, auth.token, tab) : undefined,
+    const [{ resolveImageHref, leftOut }, content, fonts, emoji] = await Promise.all([
+      auth ? buildImageResolver(auth.env, auth.token, tab) : NO_IMAGES,
       planContentFor(tab, auth, undefined),
       previewFonts(tabFontIds(tab)),
       previewEmoji(emojiGlyphsOf(tab.elements)),
@@ -175,15 +194,20 @@ export async function tabPreview(
     const live = sheetJson ? { ...tab, elements: chartsReadLive(tab.elements, sheetJson) } : tab;
     const drawWith = { resolveImageHref, ...previewResolvers(emoji), ...withContent };
     const svg = page ? renderPageToSvg(live, page, drawWith) : renderPagesToSvg(live, drawWith)!;
-    return { type: 'image', data: await svgToPngBase64(svg, fonts), mimeType: 'image/png' };
+    const image: ImageBlock = {
+      type: 'image',
+      data: await svgToPngBase64(svg, fonts),
+      mimeType: 'image/png',
+    };
+    return previewBlocks(image, leftOut);
   }
   // A Plan tab as the editor exports it: a Dashboard laid out, its pictures drawn from the cards.
   const art = previewResolvers(await previewEmoji(emojiGlyphsOf(tab.elements)));
   const plain = (shown: Tab) => renderElementsToSvg(shown, art);
   const laidOut = await planPreviewFor(tab, auth, plain).catch(() => null);
   const drawn = laidOut?.tab ?? tab;
-  const [resolveImageHref, content] = await Promise.all([
-    auth ? buildImageResolver(auth.env, auth.token, drawn) : undefined,
+  const [{ resolveImageHref, leftOut }, content] = await Promise.all([
+    auth ? buildImageResolver(auth.env, auth.token, drawn) : NO_IMAGES,
     planContentFor(drawn, auth, laidOut?.sheets),
   ]);
   // A board scrolls on its tab, so its preview grows to every card rather than cutting the rest off ("+2 more", a lane
@@ -218,7 +242,7 @@ export async function tabPreview(
     }),
     await previewFonts(tabFontIds(live, drawWith.sheets)),
   );
-  return { type: 'image', data: png, mimeType: 'image/png' };
+  return previewBlocks({ type: 'image', data: png, mimeType: 'image/png' }, leftOut);
 }
 
 // The editor's font ids a tab draws in: its elements' and its own, a sheet's cells', and its articles' heading and body
@@ -263,5 +287,5 @@ export async function imageResult(
         ? named.id
         : undefined;
   const preview = await tabPreview(tab, auth && documentId ? { ...auth, documentId } : auth);
-  return { ...result, content: [...result.content, ...texts, preview] };
+  return { ...result, content: [...result.content, ...texts, ...preview] };
 }

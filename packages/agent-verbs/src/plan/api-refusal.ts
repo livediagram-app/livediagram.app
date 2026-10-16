@@ -31,6 +31,10 @@ const BY_CODE: Readonly<Record<string, string>> = {
   form_suspensions:
     "this document's form links were suspended twice after reports, so it cannot publish another.",
   form_already_published: 'the form already has a link: read_form gives it.',
+  form_closed:
+    'the board, column, card type or sheet its responses go to is gone: read_form lists the problem.',
+  form_full: 'the board or sheet its responses go to is full.',
+  form_busy: 'the form is busy: wait a minute, then try again.',
   not_a_form_tab: 'that tab holds no form: add one with add_form.',
 };
 

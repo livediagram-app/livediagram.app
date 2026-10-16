@@ -119,7 +119,7 @@ export async function readDocument(
     if (!args.image) return result;
     const page = pageAsked(tab, args.page);
     if (typeof page === 'string') return errorResult(page);
-    return { ...result, content: [...result.content, await tabPreview(tab, auth, page)] };
+    return { ...result, content: [...result.content, ...(await tabPreview(tab, auth, page))] };
   }
 
   let read: { text: string; etag: string | null };
@@ -147,7 +147,7 @@ export async function readDocument(
   if (plain === null) return result;
   const page = pageAsked(plain.tab, args.page);
   if (typeof page === 'string') return errorResult(page);
-  return { ...result, content: [...result.content, await tabPreview(plain.tab, auth, page)] };
+  return { ...result, content: [...result.content, ...(await tabPreview(plain.tab, auth, page))] };
 }
 
 // The page `page` names on an Illustrate tab, laid out; undefined when none is asked for; a refusal in words when the

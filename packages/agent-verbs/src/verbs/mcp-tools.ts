@@ -15,6 +15,8 @@ import {
   readFormShape,
   shareFormOutput,
   shareFormShape,
+  tryFormOutput,
+  tryFormShape,
 } from '../mcp/form-schema';
 import {
   changePagesOutput,
@@ -483,6 +485,19 @@ export const mcpShareForm = mcpTool('share_form', {
   outputSchema: shareFormOutput,
 });
 
+export const mcpTryForm = mcpTool('try_form', {
+  behaviour: 'write',
+  title: 'Try a form',
+  description:
+    'Fill in a form as a respondent would, to check it end to end, as the builder’s Preview does: the answers are ' +
+    'checked as the form link checks them (a wrong one is refused with why, and nothing is sent), then make what a ' +
+    'response makes, a card or a sheet row, its title starting "Preview: ". On a published form it is a counted ' +
+    'response (it takes the next number and counts toward the limit, taken even while closed, no email); on an ' +
+    'unpublished one it counts toward nothing. Delete a preview card with change_items when done.',
+  inputSchema: tryFormShape,
+  outputSchema: tryFormOutput,
+});
+
 // Every tool, in the order the server registers them.
 export const MCP_TOOL_VERBS: readonly McpToolVerb[] = [
   mcpListItems,
@@ -501,6 +516,7 @@ export const MCP_TOOL_VERBS: readonly McpToolVerb[] = [
   mcpAddForm,
   mcpChangeForm,
   mcpShareForm,
+  mcpTryForm,
   mcpFindDocuments,
   mcpReadDocument,
   mcpListTemplates,
