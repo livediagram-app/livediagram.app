@@ -237,7 +237,7 @@ async function api(request: Request): Promise<Response> {
   if (path === '/teams') return json({ teams: [] });
   if (path.endsWith('/sheets'))
     return request.method === 'POST'
-      ? json({ sheet: { ...SHEET, id: ((await request.json()) as { id: string }).id, cells: [] } })
+      ? json({ sheet: { ...SHEET, id: (await request.json<{ id: string }>()).id, cells: [] } })
       : json({ sheets: [SHEET] });
   if (path.endsWith('/writes')) {
     const { write } = (await request.json()) as { write: SheetWrite };
@@ -508,7 +508,7 @@ describe('share_document level', () => {
     const roles: unknown[] = [];
     const recording = async (request: Request) => {
       if (new URL(request.url).pathname.endsWith('/share'))
-        roles.push(((await request.clone().json()) as { role: unknown }).role);
+        roles.push((await request.clone().json<{ role: unknown }>()).role);
       return api(request);
     };
     const client = await connectTestClient(recording);

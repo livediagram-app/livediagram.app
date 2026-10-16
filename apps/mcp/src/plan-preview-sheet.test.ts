@@ -25,7 +25,7 @@ const tab: Tab = {
   name: 'Deals',
   kind: 'sheet',
   elements: [{ ...createShape('plan-sheet', 0, 0), id: 'el', planSheet: { sheetId: 'sh1' } }],
-} as Tab;
+};
 const auth = { env: {} as never, token: 'x', documentId: 'd' };
 
 describe('a Sheet tab’s preview', () => {

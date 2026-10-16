@@ -131,7 +131,7 @@ export function registerOauthRoutes(app: Hono<{ Bindings: Env }>): void {
     const clientId = randomId();
     const clientName =
       typeof body.client_name === 'string' ? body.client_name.slice(0, 120) : 'MCP client';
-    const reg: ClientReg = { redirectUris: uris as string[], clientName };
+    const reg: ClientReg = { redirectUris: uris, clientName };
     await c.env.OAUTH_KV.put(`client:${clientId}`, JSON.stringify(reg), {
       expirationTtl: CLIENT_TTL,
     });

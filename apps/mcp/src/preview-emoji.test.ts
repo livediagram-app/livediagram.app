@@ -23,7 +23,7 @@ describe('preview emoji', () => {
         el('d', { shape: 'reaction-pad', reaction: 'applause' }),
         el('e', { shape: 'reaction-pad' }),
         el('f', { shape: 'square' }),
-        { id: 'g', type: 'text', ...box, label: '🚀' } as Element,
+        { id: 'g', type: 'text', ...box, label: '🚀' },
       ]),
     ).toEqual(['👍', '👏', '🎉']);
   });
