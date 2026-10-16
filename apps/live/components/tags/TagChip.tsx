@@ -32,7 +32,13 @@ export function TagDot({ colour, size = 8 }: { colour: string; size?: number }) 
 }
 
 const CHIP =
-  'inline-flex min-w-0 shrink-0 items-center gap-1 rounded-full border font-medium text-slate-700 dark:text-slate-200';
+  'inline-flex min-w-0 items-center gap-1 rounded-full border font-medium text-slate-700 dark:text-slate-200';
+// On its own a chip keeps its size. In a row's group it gives up room by truncating its name, down to CHIP_FLOOR_REM
+// (its dot and a few letters): `min-w-12` on the outermost box, since a box's text width otherwise leaks into its
+// automatic minimum and the group spills over the pill beside it.
+const CHIP_FLOOR_REM = 3;
+const FIXED = 'shrink-0';
+const SHRINKS = 'min-w-12';
 const CHIP_SIZE = {
   sm: 'max-w-[9rem] px-1.5 py-px text-[11px] leading-4',
   md: 'max-w-[16rem] px-2.5 py-0.5 text-[13px] leading-5',
@@ -43,10 +49,13 @@ export function TagChip({
   tag,
   onOpen,
   size = 'sm',
+  shrinks = false,
 }: {
   tag: Tag;
   onOpen?: () => void;
   size?: 'sm' | 'md';
+  // In a row's group (DocumentTagChips): truncate rather than overflow when the row is squeezed.
+  shrinks?: boolean;
 }) {
   const hex = useTagHex(tag.colour);
   const body = (
@@ -59,13 +68,17 @@ export function TagChip({
   const sizing = CHIP_SIZE[size];
   if (!onOpen) {
     return (
-      <span className={`${CHIP} ${sizing}`} style={style}>
+      <span className={`${CHIP} ${sizing} ${shrinks ? SHRINKS : FIXED}`} style={style}>
         {body}
       </span>
     );
   }
   return (
-    <HoverCard title={tag.name} description="Show every document with this tag.">
+    <HoverCard
+      title={tag.name}
+      description="Show every document with this tag."
+      className={shrinks ? SHRINKS : FIXED}
+    >
       <button
         type="button"
         onClick={(e: MouseEvent) => {
@@ -75,7 +88,7 @@ export function TagChip({
           onOpen();
         }}
         aria-label={`Tag ${tag.name}`}
-        className={`${CHIP} ${sizing} cursor-pointer transition hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 dark:hover:brightness-125`}
+        className={`${CHIP} ${sizing} ${shrinks ? '' : FIXED} cursor-pointer transition hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 dark:hover:brightness-125`}
         style={style}
       >
         {body}
@@ -84,21 +97,50 @@ export function TagChip({
   );
 }
 
+// The +N's floor: it never shrinks, and "+N" at 11px with its padding fits in this.
+const MORE_FLOOR_REM = 2;
+const GAP_REM = 0.25;
+// Half the name's pull: a squeezed row truncates the document's name faster than its tags, which give up room too
+// rather than overflow. Safe range 0.25 to 1: lower and a long tag truncates the name to nothing first.
+const GROUP_SHRINK = 'shrink-[0.5]';
+
+/** The narrowest a row's group of `chips` chips (and a +N when `more`) may be. */
+export function chipsFloor(chips: number, more: boolean): string {
+  const items = chips + (more ? 1 : 0);
+  const rem =
+    chips * CHIP_FLOOR_REM + (more ? MORE_FLOOR_REM : 0) + Math.max(0, items - 1) * GAP_REM;
+  return `${rem}rem`;
+}
+
 /** A document's tags on a row or card: the first ROW_CHIP_MAX as chips, then +N naming the rest on hover. */
 export function DocumentTagChips({
   tags,
   onOpenTag,
+  hiddenOnPhone = false,
 }: {
   tags: readonly Tag[];
   onOpenTag?: (tagId: string) => void;
+  // A list row shows dots below `sm` instead (DocumentRowTags).
+  hiddenOnPhone?: boolean;
 }) {
   if (tags.length === 0) return null;
   const shown = tags.slice(0, ROW_CHIP_MAX);
   const rest = tags.slice(ROW_CHIP_MAX);
   return (
-    <span className="inline-flex min-w-0 shrink items-center gap-1" data-tag-chips="">
+    <span
+      className={`${hiddenOnPhone ? 'hidden sm:inline-flex' : 'inline-flex'} ${GROUP_SHRINK} items-center gap-1`}
+      // The group's own floor: every chip at its floor, the gaps and the +N. Explicit, so the row never shrinks the
+      // group below what its chips can give up.
+      style={{ minWidth: chipsFloor(shown.length, rest.length > 0) }}
+      data-tag-chips=""
+    >
       {shown.map((t) => (
-        <TagChip key={t.id} tag={t} onOpen={onOpenTag ? () => onOpenTag(t.id) : undefined} />
+        <TagChip
+          key={t.id}
+          tag={t}
+          shrinks
+          onOpen={onOpenTag ? () => onOpenTag(t.id) : undefined}
+        />
       ))}
       {rest.length > 0 ? (
         <HoverCard title={`${rest.length} more`} description={rest.map((t) => t.name).join(', ')}>

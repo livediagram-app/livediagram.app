@@ -12,9 +12,10 @@ export const MADE_BY_AI_LABEL = 'Made by AI';
 export const MADE_BY_AI_DESCRIPTION =
   'Made by an AI tool, through the AI assistant or the MCP server. Filter with Made by AI.';
 
-// The words meet 4.5:1 on the fill, the ring 3:1 against the row.
+// The words meet 4.5:1 on the fill, the ring 3:1 against the row. One line, so a squeezed row never wraps the
+// words and lets the pill spill over the chip beside it.
 const PILL =
-  'optical-edges inline-flex shrink-0 items-center gap-1 rounded-full px-1.5 py-px text-[10px] font-semibold leading-4 bg-violet-50 text-violet-800 ring-1 ring-violet-600 dark:bg-violet-500/15 dark:text-violet-200 dark:ring-violet-400';
+  'optical-edges inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full px-1.5 py-px text-[10px] font-semibold leading-4 bg-violet-50 text-violet-800 ring-1 ring-violet-600 dark:bg-violet-500/15 dark:text-violet-200 dark:ring-violet-400';
 
 /** Whether a listed document was made by AI: the AI assistant or the MCP made it (a CLI document is not). */
 export function isMadeByAi(doc: { source?: string | null }): boolean {

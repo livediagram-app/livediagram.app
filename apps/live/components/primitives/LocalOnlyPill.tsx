@@ -20,7 +20,7 @@ export const LOCAL_ONLY_DESCRIPTION =
 // with the editor header's Local only badge.
 export const LOCAL_ONLY_TONE =
   'bg-amber-50 text-amber-800 ring-1 ring-amber-600 dark:bg-amber-500/15 dark:text-amber-200 dark:ring-amber-400';
-const PILL = `optical-edges inline-flex shrink-0 items-center gap-1 rounded-full px-1.5 py-px text-[10px] font-semibold leading-4 ${LOCAL_ONLY_TONE}`;
+const PILL = `optical-edges inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full px-1.5 py-px text-[10px] font-semibold leading-4 ${LOCAL_ONLY_TONE}`;
 
 export function LocalOnlyPill({
   asLabel = false,
