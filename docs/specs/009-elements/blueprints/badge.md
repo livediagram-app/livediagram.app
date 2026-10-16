@@ -37,8 +37,9 @@ Banned: "pin" (the comment pin), "dock" (legacy docks), "group".
 
 ### Settling (`settleChips(prev, next)`)
 
-Runs at the editor's commit choke point for every tab a commit changed, and in `element-normalise` for agent
-writes (with `prev = []`). Returns `next` itself when nothing changes and when `next` holds no chip.
+Runs at the editor's commit choke point for every tab a commit changed, in `element-normalise` for agent
+writes (with `prev = []`), and on the output of `buildTemplate` and `buildPageLayout` (with `prev = []` and
+`attachLoose: false`, as a stored board reads), so a template or layout lands settled in previews and agent creates. Returns `next` itself when nothing changes and when `next` holds no chip.
 
 For each chip in `next`, in order:
 
@@ -195,6 +196,7 @@ Telemetry: `Element·Added·Badge` / `Step`; `Element·Changed·ChipLook`, `Chip
 | Export draws pill / disc in its look                | `packages/document/src/chip.test.ts`                                                                     |
 | Face, menu section                                  | `apps/live/components/canvas/ChipFace.test.tsx`, `apps/live/components/palette/ChipMenuSection.test.tsx` |
 | Settle budget                                       | `packages/document/src/attachment.perf.test.ts`                                                          |
+| Templates and layouts land settled                  | `packages/templates/src/template-settled.test.ts`                                                        |
 
 ## Constants and configuration
 
