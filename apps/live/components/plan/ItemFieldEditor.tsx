@@ -95,6 +95,8 @@ export function ItemFieldEditor({ f, ctx }: { f: string; ctx: ItemFieldContext }
   const disabled = !canEdit;
   const value = item.fields[f];
   const custom = customFieldOf(type, f);
+  // A save fired from an event: only a text field waits for whether it landed.
+  const save = (v: ItemFieldValue | undefined) => void onSave(f, v);
   // A Card field (docs/specs/026-plan/item-types.md "Card fields"): one card of the type it links to.
   if (custom?.kind === 'card' && custom.linkType) {
     return (
@@ -106,20 +108,14 @@ export function ItemFieldEditor({ f, ctx }: { f: string; ctx: ItemFieldContext }
         items={items}
         types={types}
         disabled={disabled}
-        onSave={(v) => void onSave(f, v)}
+        onSave={save}
         onOpen={(target) => ctx.onOpenItem(target, 'Parent')}
       />
     );
   }
   if (custom) {
     return (
-      <CustomFieldEditor
-        id={id}
-        field={custom}
-        value={value}
-        disabled={disabled}
-        onSave={(v) => void onSave(f, v)}
-      />
+      <CustomFieldEditor id={id} field={custom} value={value} disabled={disabled} onSave={save} />
     );
   }
   if (!isBuiltInFieldId(f)) return null;
@@ -170,23 +166,10 @@ export function ItemFieldEditor({ f, ctx }: { f: string; ctx: ItemFieldContext }
     }
     case 'assignee':
       return (
-        <PersonPicker
-          id={id}
-          value={value}
-          people={ctx.people}
-          disabled={disabled}
-          onSave={(v) => void onSave(f, v)}
-        />
+        <PersonPicker id={id} value={value} people={ctx.people} disabled={disabled} onSave={save} />
       );
     case 'priority':
-      return (
-        <PriorityPicker
-          id={id}
-          value={value}
-          disabled={disabled}
-          onSave={(v) => void onSave(f, v)}
-        />
-      );
+      return <PriorityPicker id={id} value={value} disabled={disabled} onSave={save} />;
     case 'labels':
       return (
         <LabelsEditor
@@ -194,7 +177,7 @@ export function ItemFieldEditor({ f, ctx }: { f: string; ctx: ItemFieldContext }
           value={value}
           disabled={disabled}
           suggestions={ctx.labels}
-          onSave={(v) => void onSave(f, v)}
+          onSave={save}
         />
       );
     case 'color':
@@ -205,27 +188,20 @@ export function ItemFieldEditor({ f, ctx }: { f: string; ctx: ItemFieldContext }
           disabled={disabled}
           value={isHexColour(value) ? value.toLowerCase() : undefined}
           onChange={(c) => {
-            onSave(f, c);
+            save(c);
             track('Plan', 'Changed', 'ProjectColour');
           }}
         />
       );
     case 'estimate':
-      return (
-        <EstimateSelect
-          id={id}
-          value={value}
-          disabled={disabled}
-          onSave={(v) => void onSave(f, v)}
-        />
-      );
+      return <EstimateSelect id={id} value={value} disabled={disabled} onSave={save} />;
     case 'start': {
       // A start after its due date is kept, and said gently (docs/specs/026-plan/items.md "Fields").
       const due = item.fields['due'];
       const late = typeof value === 'string' && typeof due === 'string' && value > due;
       return (
         <div className="flex flex-col gap-1">
-          <DateField id={id} value={value} disabled={disabled} onSave={(v) => void onSave(f, v)} />
+          <DateField id={id} value={value} disabled={disabled} onSave={save} />
           {late ? (
             <span className="text-[12px] text-amber-700 dark:text-amber-300" role="note">
               Starts after it is due
@@ -235,13 +211,9 @@ export function ItemFieldEditor({ f, ctx }: { f: string; ctx: ItemFieldContext }
       );
     }
     case 'due':
-      return (
-        <DateField id={id} value={value} disabled={disabled} onSave={(v) => void onSave(f, v)} />
-      );
+      return <DateField id={id} value={value} disabled={disabled} onSave={save} />;
     case 'checklist':
-      return (
-        <ChecklistEditor value={value} disabled={disabled} onSave={(v) => void onSave(f, v)} />
-      );
+      return <ChecklistEditor value={value} disabled={disabled} onSave={save} />;
     case 'description':
       return <ItemDescription item={item} canEdit={canEdit} onPatch={ctx.onPatch} />;
     case 'comments':
