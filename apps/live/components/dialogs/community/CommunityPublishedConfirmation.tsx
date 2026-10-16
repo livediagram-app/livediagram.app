@@ -58,7 +58,7 @@ export function CommunityPublishedConfirmation({
         </p>
       </div>
       <DialogFooter>
-        <Button variant="secondary" size="xs" onClick={copyLink}>
+        <Button variant="secondary" size="xs" onClick={() => void copyLink()}>
           <LinkIcon />
           {copied ? 'Copied' : 'Copy Link'}
         </Button>

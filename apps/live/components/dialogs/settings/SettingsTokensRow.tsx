@@ -81,9 +81,9 @@ export function SettingsTokensRow({ row }: { row: SettingsTokensRowSpec }) {
           ) : (
             <SettingsTokenList
               tokens={tokens.list}
-              onRevoke={tokens.revoke}
+              onRevoke={(id) => void tokens.revoke(id)}
               pairingsFor={pairings.forToken}
-              onUnpair={pairings.unpair}
+              onUnpair={(id) => void pairings.unpair(id)}
             />
           )}
         </div>

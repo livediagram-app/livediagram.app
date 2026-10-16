@@ -192,7 +192,7 @@ export function DeleteAccountDialog({
             </Button>
             <Button
               variant="primary"
-              onClick={handleDelete}
+              onClick={() => void handleDelete()}
               disabled={!emailsMatch || phase === 'submitting'}
               className="shadow-sm"
             >

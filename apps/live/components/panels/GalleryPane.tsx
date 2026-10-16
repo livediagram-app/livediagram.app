@@ -147,7 +147,7 @@ export function GalleryPane({
                 image={image}
                 ownerId={ownerId}
                 usage={usage[image.id] ?? []}
-                onDelete={() => handleDelete(image)}
+                onDelete={() => void handleDelete(image)}
               />
             ))}
           </ul>

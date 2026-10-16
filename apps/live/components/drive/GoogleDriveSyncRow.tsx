@@ -104,13 +104,16 @@ export function GoogleDriveSyncRow({ row }: { row: SettingsCloudSyncRowSpec }) {
   const now = useSinceNow(status.lastSyncedAt);
   const syncingLong = useSyncingLong(status);
   const [busy, setBusy] = useState<null | 'resume' | 'disconnect' | 'adopt'>(null);
-  const run = (kind: NonNullable<typeof busy>, action: () => Promise<void> | void) => async () => {
+  // A click handler that runs `action`, busy until it settles.
+  const run = (kind: NonNullable<typeof busy>, action: () => Promise<void> | void) => () => {
     setBusy(kind);
-    try {
-      await action();
-    } finally {
-      setBusy(null);
-    }
+    void (async () => {
+      try {
+        await action();
+      } finally {
+        setBusy(null);
+      }
+    })();
   };
   const copy = driveSyncCopy(
     status,

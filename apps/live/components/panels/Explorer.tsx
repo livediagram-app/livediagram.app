@@ -205,7 +205,9 @@ function ExplorerImpl({
     expanded: expandedFolders,
     onToggle: toggleFolder,
     onOpenDocument,
-    onDeleteDocument: openDeleteConfirm,
+    onDeleteDocument: openDeleteConfirm
+      ? (id: string, anchor: HTMLElement | null) => void openDeleteConfirm(id, anchor)
+      : undefined,
     onDuplicateDocument,
     onMoveDocumentRequest: onMoveDocumentToFolder ? openMovePicker : undefined,
     // A team row's move opens the picker for that team; the pick then routes through
@@ -288,7 +290,9 @@ function ExplorerImpl({
         ownerId={ownerId}
         onOpen={() => onOpenDocument(current.id)}
         onRename={onRenameCurrent}
-        onDelete={openDeleteConfirm ? (anchor) => openDeleteConfirm(current.id, anchor) : undefined}
+        onDelete={
+          openDeleteConfirm ? (anchor) => void openDeleteConfirm(current.id, anchor) : undefined
+        }
         onDuplicate={onDuplicateDocument ? () => onDuplicateDocument(current.id) : undefined}
         onMoveRequest={onMoveDocumentToFolder ? () => openMovePicker(current.id) : undefined}
       />
@@ -302,7 +306,7 @@ function ExplorerImpl({
       // Any joined member may delete a team document (docs/specs/013-workspace/team-shared-documents.md); the api
       // enforces team membership.
       onDelete={
-        openDeleteConfirm ? (anchor) => openDeleteConfirm(currentTeam.id, anchor) : undefined
+        openDeleteConfirm ? (anchor) => void openDeleteConfirm(currentTeam.id, anchor) : undefined
       }
       onMoveRequest={
         onMoveDocumentTo

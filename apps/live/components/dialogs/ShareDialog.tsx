@@ -203,7 +203,11 @@ export function ShareDialog({
           aria-labelledby={community ? shareTabId('passes') : undefined}
           className="flex flex-col gap-5 overflow-y-auto px-6 py-5"
         >
-          <ShareComposer tabs={tabs} busy={busy} onIssue={issue} />
+          <ShareComposer
+            tabs={tabs}
+            busy={busy}
+            onIssue={(role, expiry, tabId) => void issue(role, expiry, tabId)}
+          />
 
           <section
             className="flex flex-col gap-2 border-t border-slate-100 pt-5 dark:border-slate-800"
@@ -239,10 +243,12 @@ export function ShareDialog({
                     liveImageTabParam={liveImageTabParam}
                     setLiveImageTabId={setLiveImageTabId}
                     shareUrlFor={shareUrlFor}
-                    onCopy={copy}
+                    onCopy={(code) => void copy(code)}
                     onRevoke={(code) => withBusy(() => onRevokeLink(code))}
                     onRescope={
-                      multiTab ? (code, tabId) => withBusy(() => onRescopeLink(code, tabId)) : null
+                      multiTab
+                        ? (code, tabId) => void withBusy(() => onRescopeLink(code, tabId))
+                        : null
                     }
                   />
                 ))}
@@ -268,7 +274,7 @@ export function ShareDialog({
                     link={link}
                     busy={busy}
                     shareUrlFor={shareUrlFor}
-                    onExtend={(code) => withBusy(() => onExtendLink(code))}
+                    onExtend={(code) => void withBusy(() => onExtendLink(code))}
                     onDelete={(code) => withBusy(() => onRevokeLink(code))}
                   />
                 ))}

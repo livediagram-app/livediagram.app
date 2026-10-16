@@ -100,7 +100,7 @@ export function ActiveSharePass({
       fresh={fresh || exit.ticket.returning}
       highlight={highlight}
       leaving={exit.ticket.leaving}
-      onLeft={exit.ticket.onLeft}
+      onLeft={() => void exit.ticket.onLeft()}
     >
       {/* Line 1: the link, with its copy button inside the field's right
           edge: the field IS the thing being copied, so the action lives in it. */}

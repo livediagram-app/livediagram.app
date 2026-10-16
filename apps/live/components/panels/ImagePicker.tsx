@@ -183,7 +183,7 @@ export function ImagePicker({
             gallery={gallery}
             error={galleryError}
             onSelect={(image) => void selectFromGallery(image)}
-            onDelete={handleDelete}
+            onDelete={(image) => void handleDelete(image)}
           />
         )}
       </div>

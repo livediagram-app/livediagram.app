@@ -134,7 +134,7 @@ export function ThemesPane({ compact = false }: { compact?: boolean } = {}) {
           title={editing ? 'Edit theme' : 'New theme'}
           initial={editing ? { name: editing.name, definition: editing.definition } : undefined}
           saving={saving}
-          onSave={handleSave}
+          onSave={(draft) => void handleSave(draft)}
           onClose={() => setBuilding(null)}
         />
       ) : null}

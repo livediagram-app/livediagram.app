@@ -121,22 +121,18 @@ function PickStep({
       </p>
       <ImportDropZone
         label="Drop a board folder or .zip here, or choose a folder"
-        onChoose={async () => onPicked(await pickExport('folder'))}
-        onDropData={async (data) => onPicked(await readDrop(data))}
+        onChoose={() => void pickExport('folder').then(onPicked)}
+        onDropData={(data) => void readDrop(data).then(onPicked)}
         {...(error ? { error } : {})}
       />
       <div className="mt-4 flex justify-end gap-2">
-        <Button
-          variant="secondary"
-          size="md"
-          onClick={async () => onPicked(await pickExport('zip'))}
-        >
+        <Button variant="secondary" size="md" onClick={() => void pickExport('zip').then(onPicked)}>
           Choose a .zip
         </Button>
         <Button
           variant="primary"
           size="md"
-          onClick={async () => onPicked(await pickExport('folder'))}
+          onClick={() => void pickExport('folder').then(onPicked)}
         >
           Choose a folder
         </Button>
