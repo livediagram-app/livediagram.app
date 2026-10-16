@@ -92,7 +92,9 @@ element leaves unset, plus how a line is drawn (Sketch).
 
   The two layers line up exactly, so a face reads and behaves as in any finish: its controls are pressed and typed
   into as before. The ink is a still copy of the face, so a hover or press tint on a face's own control is not
-  drawn on a Sketch tab. Photos inside a face (an avatar, a link card's preview, a video's poster) are not wobbled,
+  drawn on a Sketch tab. A face's own animations (a quiz's answers fanning out from its disc) play in the copy in
+  step with the live face: each new copy picks up each animation where the live one is, never from the start, so a
+  face that keeps changing (a quiz's countdown) does not drag its moving parts back. Photos inside a face (an avatar, a link card's preview, a video's poster) are not wobbled,
   and a tab window's content keeps the finish of the tab it shows. Exports draw the same two layers.
 
 - **Not affected:** freehand strokes (already hand-drawn) and images (photos, not drawings).
