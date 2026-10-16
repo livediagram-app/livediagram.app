@@ -1,8 +1,17 @@
 // @vitest-environment jsdom
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { ITEM_TYPES, cardLayoutFields, typeCardLayout } from '@livediagram/items';
+import {
+  CARD_SLOTS,
+  ITEM_TYPES,
+  cardLayoutFields,
+  typeCardLayout,
+  type CardSlot,
+} from '@livediagram/items';
+import type { ComponentProps } from 'react';
 import { ItemTypeDisplay } from './ItemTypeDisplay';
+
+type OnChange = ComponentProps<typeof ItemTypeDisplay>['onChange'];
 
 // docs/specs/026-plan/item-types.md "Editing a type": Display. A chip dragged on the card: a copy follows the
 // pointer, a bar marks where it lands, Available Fields takes it off, and Escape cancels.
@@ -14,7 +23,7 @@ afterEach(() => {
 const task = ITEM_TYPES.find((t) => t.id === 'task')!;
 
 function display() {
-  const onChange = vi.fn();
+  const onChange = vi.fn<OnChange>();
   render(<ItemTypeDisplay type={task} display={{}} onChange={onChange} />);
   return onChange;
 }
@@ -26,12 +35,16 @@ const pointAt = (el: Element) =>
   ((document as unknown as { elementsFromPoint: () => Element[] }).elementsFromPoint = () => [el]);
 
 // A slot of the compact card other than the one holding `field`.
-function otherSlot(field: string): string {
+function otherSlot(field: string): CardSlot {
   const from = chip(field).closest<HTMLElement>('[data-slot]')!.dataset.slot;
-  return [...document.querySelectorAll<HTMLElement>('[data-slot]')]
-    .map((el) => el.dataset.slot!)
-    .find((s) => s !== from)!;
+  const shown = [...document.querySelectorAll<HTMLElement>('[data-slot]')].map(
+    (el) => el.dataset.slot,
+  );
+  return CARD_SLOTS.compact.find((slot) => slot !== from && shown.includes(slot))!;
 }
+// The compact layout the last change asked for.
+const lastCompact = (onChange: ReturnType<typeof display>) =>
+  onChange.mock.lastCall![0].compact ?? {};
 
 function startDrag(field: string, over: Element) {
   pointAt(over);
@@ -47,8 +60,7 @@ describe('dragging a field on the card', () => {
     expect(document.querySelector('[data-drop-marker]')!.closest('[data-slot]')).toBe(slotEl(to));
     expect(document.body.lastElementChild!.textContent).toBe('Due Date');
     fireEvent.pointerUp(chip('due'), { clientX: 60, clientY: 60, pointerId: 1 });
-    const layout = onChange.mock.lastCall![0].compact;
-    expect(layout[to]).toContain('due');
+    expect(lastCompact(onChange)[to]).toContain('due');
     expect(document.querySelector('[data-drop-marker]')).toBeNull();
   });
 
@@ -59,7 +71,7 @@ describe('dragging a field on the card', () => {
     const to = otherSlot('due');
     startDrag('due', slotEl(to));
     fireEvent.pointerUp(slotEl(to), { clientX: 60, clientY: 60, pointerId: 1 });
-    expect(onChange.mock.lastCall![0].compact[to]).toContain('due');
+    expect(lastCompact(onChange)[to]).toContain('due');
     expect(document.querySelector('[data-drop-marker]')).toBeNull();
   });
 
@@ -70,7 +82,7 @@ describe('dragging a field on the card', () => {
     expect(document.querySelector('[data-drop-marker]')).toBeNull();
     fireEvent.pointerUp(chip('due'), { clientX: 60, clientY: 60, pointerId: 1 });
     const before = cardLayoutFields('compact', typeCardLayout(task, 'compact'));
-    const after = cardLayoutFields('compact', onChange.mock.lastCall![0].compact);
+    const after = cardLayoutFields('compact', lastCompact(onChange));
     expect(after).toEqual(before.filter((f) => f !== 'due'));
   });
 
@@ -111,12 +123,12 @@ describe('the card’s size', () => {
 // draws on the card as a chip of its value.
 describe('custom fields in the Display', () => {
   it('offers a custom field, and places it on the card', () => {
-    const onChange = vi.fn();
+    const onChange = vi.fn<OnChange>();
     const pet = { ...task, custom: [{ id: 'f-person', label: 'Person', kind: 'text' as const }] };
     render(<ItemTypeDisplay type={pet} display={{}} onChange={onChange} />);
     fireEvent.keyDown(screen.getByRole('button', { name: 'Person' }), { key: 'Enter' });
     fireEvent.click(screen.getByRole('button', { name: 'Bottom Right' }));
-    expect(onChange.mock.lastCall![0].compact.trail).toContain('f-person');
+    expect(lastCompact(onChange).trail).toContain('f-person');
     cleanup();
     render(
       <ItemTypeDisplay

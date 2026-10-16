@@ -122,7 +122,7 @@ export function useArticleIntake({
     const added = activeTab.elements.filter((e) => !before.has(e.id)).map((e) => e.id);
     const loose = added.length
       ? looseOnArticles(activeTab.elements, added, pages, docsNow)
-      : new Map();
+      : new Map<string, string[]>();
     // Each loose group starts a zone in its article's writing (the editor places it), measured now.
     const intakes: {
       flow: string;

@@ -173,15 +173,16 @@ function computeSpreadMap(elements: Element[], index: ElementIndex): Map<string,
 // tab state is immutable, so a changed tab is a new array / index.
 const spreadCache = new WeakMap<object, Map<string, Point>>();
 
+// `instanceof Map` alone narrows a ReadonlyMap to Map<any, any>.
+const isIndex = (elements: Element[] | ElementIndex): elements is ElementIndex =>
+  elements instanceof Map;
+
 function spreadMapFor(elements: Element[] | ElementIndex): Map<string, Point> {
-  const key = elements as object;
+  const key = elements;
   const cached = spreadCache.get(key);
   if (cached) return cached;
-  const list = elements instanceof Map ? [...elements.values()] : (elements as Element[]);
-  const index =
-    elements instanceof Map
-      ? (elements as ElementIndex)
-      : new Map(list.map((el) => [el.id, el] as const));
+  const list = isIndex(elements) ? [...elements.values()] : elements;
+  const index = isIndex(elements) ? elements : new Map(list.map((el) => [el.id, el] as const));
   const map = computeSpreadMap(list, index);
   spreadCache.set(key, map);
   return map;

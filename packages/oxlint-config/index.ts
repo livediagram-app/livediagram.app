@@ -136,20 +136,6 @@ export default defineConfig({
     'typescript/prefer-namespace-keyword': 'error',
     'typescript/triple-slash-reference': 'error',
 
-    // Type-aware rules (typescript-eslint's recommended type-checked set), through oxlint-tsgolint.
-    'typescript/await-thenable': 'error',
-    'typescript/no-array-delete': 'error',
-    'typescript/no-base-to-string': 'error',
-    'typescript/no-duplicate-type-constituents': 'error',
-    'typescript/no-for-in-array': 'error',
-    'typescript/no-implied-eval': 'error',
-    'typescript/no-redundant-type-constituents': 'error',
-    'typescript/no-unsafe-enum-comparison': 'error',
-    'typescript/no-unsafe-unary-minus': 'error',
-    'typescript/only-throw-error': 'error',
-    'typescript/restrict-plus-operands': 'error',
-    'typescript/restrict-template-expressions': 'error',
-
     // Every React hooks rule, the React Compiler's included, is an error with no per-line
     // suppressions (docs/specs/003-system-architecture/react-state-and-effects.md): render is
     // pure, effects only synchronise with the outside world, and dependencies are complete.
@@ -206,6 +192,26 @@ export default defineConfig({
         'eslint/prefer-const': 'error',
         'eslint/prefer-rest-params': 'error',
         'eslint/prefer-spread': 'error',
+      },
+    },
+    {
+      // Type-aware rules (typescript-eslint's recommended type-checked set), through oxlint-tsgolint.
+      // TypeScript only: a JavaScript file carries no types, so every value in it reads as `any`.
+      files: TS_FILES,
+      rules: {
+        'typescript/await-thenable': 'error',
+        'typescript/no-array-delete': 'error',
+        'typescript/no-base-to-string': 'error',
+        'typescript/no-duplicate-type-constituents': 'error',
+        'typescript/no-for-in-array': 'error',
+        'typescript/no-implied-eval': 'error',
+        'typescript/no-redundant-type-constituents': 'error',
+        'typescript/no-unsafe-argument': 'error',
+        'typescript/no-unsafe-enum-comparison': 'error',
+        'typescript/no-unsafe-unary-minus': 'error',
+        'typescript/only-throw-error': 'error',
+        'typescript/restrict-plus-operands': 'error',
+        'typescript/restrict-template-expressions': 'error',
       },
     },
     {

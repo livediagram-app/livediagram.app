@@ -1,5 +1,5 @@
 import { clamp, EVENT_STORMING_NOTES } from '@livediagram/document';
-import type { DetectedSticky, Truth } from '@livediagram/sticky-vision';
+import type { DetectedSticky, Truth, TruthNote } from '@livediagram/sticky-vision';
 
 // Correcting the boxes on a photograph under review (docs/specs/021-event-storming/event-storming.md Phase 9): move,
 // resize, change kind, and reopen a saved label. Pure, in WORKING-image
@@ -69,32 +69,35 @@ const LABEL_ID_BASE = -100_000;
 // come back too, keyed by the new ids. Refused, by name, for another photo —
 // labels are named after the photograph, and one laid over the wrong wall is
 // fifty wrong boxes that look plausible.
+// A label file is untrusted: every note needs a known kind and a box inside the photo (fractions from
+// 0 to 1), or the file is refused whole. An unknown kind made Add throw; a missing number made NaN notes.
+function readLabel(label: unknown): Pick<Truth, 'photo' | 'notes'> {
+  const refused = () => new Error('That file is not a saved label.');
+  if (typeof label !== 'object' || label === null) throw refused();
+  const { photo, notes } = label as { photo?: unknown; notes?: unknown };
+  if (typeof photo !== 'string' || !Array.isArray(notes)) throw refused();
+  const unit = (v: unknown): v is number =>
+    typeof v === 'number' && Number.isFinite(v) && v >= 0 && v <= 1;
+  const entries: readonly unknown[] = notes;
+  return {
+    photo,
+    notes: entries.map((note): TruthNote => {
+      if (typeof note !== 'object' || note === null) throw refused();
+      const { kind, x, y, w, h, text } = note as Partial<Record<keyof TruthNote, unknown>>;
+      if (typeof kind !== 'string' || !SIZE_OF.has(kind)) throw refused();
+      if (!unit(x) || !unit(y) || !unit(w) || !unit(h)) throw refused();
+      if (text !== undefined && typeof text !== 'string') throw refused();
+      return { kind, x, y, w, h, ...(text === undefined ? {} : { text }) };
+    }),
+  };
+}
+
 export function boxesFromLabel(
-  label: Truth,
+  raw: unknown,
   photoName: string,
   frame: Frame,
 ): { boxes: DetectedSticky[]; words: Map<number, string> } {
-  if (typeof label?.photo !== 'string' || !Array.isArray(label.notes)) {
-    throw new Error('That file is not a saved label.');
-  }
-  // A label file is untrusted: every note needs a known kind and a box inside the photo (fractions from
-  // 0 to 1), or the file is refused whole. An unknown kind made Add throw; a missing number made NaN notes.
-  const unit = (v: unknown) => typeof v === 'number' && Number.isFinite(v) && v >= 0 && v <= 1;
-  for (const note of label.notes as unknown[]) {
-    const n = note as Record<string, unknown> | null;
-    if (
-      !n ||
-      typeof n.kind !== 'string' ||
-      !SIZE_OF.has(n.kind) ||
-      !unit(n.x) ||
-      !unit(n.y) ||
-      !unit(n.w) ||
-      !unit(n.h) ||
-      (n.text !== undefined && typeof n.text !== 'string')
-    ) {
-      throw new Error('That file is not a saved label.');
-    }
-  }
+  const label = readLabel(raw);
   const stem = photoName.replace(/\.[^.]+$/, '');
   if (label.photo !== stem) {
     throw new Error(`That label is for "${label.photo}", and this photo is "${stem}".`);

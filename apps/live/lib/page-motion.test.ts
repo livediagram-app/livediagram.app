@@ -33,7 +33,8 @@ describe('animated backgrounds', () => {
     const tab = {
       pages: [{ id: 'p', orientation: 'landscape', kind: 'slide', background: { fill } }],
     };
-    const back = illustratePagesOf(JSON.parse(JSON.stringify(tab)))[0]!.background!.fill!;
+    const back = illustratePagesOf(JSON.parse(JSON.stringify(tab)) as typeof tab)[0]!.background!
+      .fill!;
     expect(back).toEqual(fill);
     const still = { ...fill, motion: undefined } as PageFill;
     expect(sameFill(fill, still)).toBe(false);

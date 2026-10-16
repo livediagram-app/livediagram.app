@@ -1,4 +1,5 @@
 import { isBoxed, type Element, type ElementId } from './index';
+import type { LaneGutterEdge, LaneLike } from './lane-gutter';
 
 // Snapping for a lane's title seam (docs/specs/009-elements/lane.md), the line between its heading
 // and its body that you drag to resize the heading.
@@ -31,8 +32,8 @@ export function laneSeamCoordinates(
   elements: Element[],
   axis: 'x' | 'y',
   excludeId: ElementId,
-  edgeOf: (el: Element) => 'left' | 'right' | 'top' | 'bottom' | 'centre-x',
-  sizeOf: (el: Element) => number,
+  edgeOf: (lane: LaneLike) => LaneGutterEdge,
+  sizeOf: (lane: LaneLike) => number,
 ): number[] {
   const out: number[] = [];
   for (const el of elements) {

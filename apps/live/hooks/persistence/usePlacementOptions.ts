@@ -94,16 +94,13 @@ export function usePlacementOptions({
         const libs = await Promise.all(
           list.map((t) =>
             apiGetTeamLibrary(selfId, t.id)
-              .then(
-                (lib) =>
-                  [
-                    t.id,
-                    lib.folders.map((f) => ({ id: f.id, name: f.name, parentId: f.parentId })),
-                  ] as const,
-              )
-              .catch(() => {
+              .then((lib): [string, PickerFolder[]] => [
+                t.id,
+                lib.folders.map((f) => ({ id: f.id, name: f.name, parentId: f.parentId })),
+              ])
+              .catch((): [string, PickerFolder[]] => {
                 setFailedFor(selfId);
-                return [t.id, []] as const;
+                return [t.id, []];
               }),
           ),
         );

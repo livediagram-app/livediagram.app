@@ -4,9 +4,10 @@ const fromPretrained = vi.fn(async () => ({}));
 vi.mock('@huggingface/transformers', () => ({
   AutoProcessor: { from_pretrained: vi.fn(async () => ({})) },
   AutoModelForVision2Seq: { from_pretrained: fromPretrained },
+  RawImage: { fromURL: vi.fn(async () => ({ width: 200, height: 120 })) },
 }));
 
-import { loadReader, MODEL_ID } from './reader-model';
+import { loadReader, MODEL_ID, readOne, type LoadedReader } from './reader-model';
 
 // Which weights each engine loads (docs/research/vision/handwriting-readers.md). On the
 // processor the embedding table is loaded at q8: its q4 file is the fp32 table,
@@ -45,5 +46,30 @@ describe('loadReader', () => {
       MODEL_ID,
       expect.objectContaining({ device: 'webgpu', dtype: 'q4' }),
     );
+  });
+});
+
+// A model that answers its prompt's five token ids and then three of its own, and a processor that
+// decodes ids as text: what reading keeps is the answer alone.
+describe('readOne', () => {
+  const ids = [1, 2, 3, 4, 5, 60, 70, 80];
+  const tokens = {
+    dims: [1, ids.length],
+    slice: (_rows: null, [from, to]: [number, number | null]) => ids.slice(from, to ?? undefined),
+  };
+  const inputs = { input_ids: { dims: [1, 5] }, pixel_values: { dims: [1, 3] } };
+  const generate = vi.fn(async () => tokens);
+  const processor = Object.assign(
+    vi.fn(async () => inputs),
+    {
+      apply_chat_template: vi.fn(() => 'prompt'),
+      batch_decode: vi.fn((answer: number[]) => [answer.join(' ')]),
+    },
+  );
+  const loaded = { processor, model: { generate }, backend: 'wasm' } as unknown as LoadedReader;
+
+  it('asks once, greedily, with the input tensors, and keeps only the answer', async () => {
+    expect(await readOne(loaded, { id: 1, image: 'data:image/png;base64,' })).toBe('60 70 80');
+    expect(generate).toHaveBeenCalledWith({ ...inputs, max_new_tokens: 48, do_sample: false });
   });
 });

@@ -164,11 +164,13 @@ describe('connectRoom reconnect cursor', () => {
 });
 
 describe('connectRoom outbox (docs/specs/012-collaboration/collab-race-hardening.md)', () => {
+  // A frame the client sent, as far as these tests read it.
+  type Sent = { kind: string; op?: { kind: string } };
   class FakeSocket {
     static OPEN = 1;
     static all: FakeSocket[] = [];
     readyState = 0;
-    sent: { kind: string; op?: { kind: string } }[] = [];
+    sent: Sent[] = [];
     private listeners: Record<string, ((e: { data?: string }) => void)[]> = {};
     url: string;
     constructor(url = '') {
@@ -179,7 +181,7 @@ describe('connectRoom outbox (docs/specs/012-collaboration/collab-race-hardening
       (this.listeners[type] ??= []).push(fn);
     }
     send(data: string) {
-      this.sent.push(JSON.parse(data));
+      this.sent.push(JSON.parse(data) as Sent);
     }
     close() {}
     fire(type: string) {

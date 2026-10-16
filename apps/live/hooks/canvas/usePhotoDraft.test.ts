@@ -10,7 +10,7 @@ import {
   type Tab,
 } from '@livediagram/document';
 import { getPhotoDraftView, setPhotoDraftView } from '@/lib/photo-draft-preview';
-import { usePhotoDraft } from './usePhotoDraft';
+import { usePhotoDraft, type PhotoReview } from './usePhotoDraft';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn(), titleCaseType: (s: string) => s }));
 vi.mock('@/lib/reading/select', () => ({ selectReader: vi.fn() }));
@@ -31,6 +31,9 @@ import {
 } from '@/lib/photo-detect';
 import type { DetectedSticky } from '@livediagram/sticky-vision';
 import { track } from '@/lib/telemetry';
+
+// A review with nothing read yet.
+const noText = (): PhotoReview['textById'] => new Map();
 
 // A photo import as ONE gesture (docs/specs/021-event-storming/event-storming.md Phase 8): the draft lands in the
 // document so the author can correct it with the ordinary machinery, Add
@@ -203,7 +206,7 @@ async function reviewed(opts: Parameters<typeof harness>[0] = {}) {
 async function landed(opts: Parameters<typeof harness>[0] = {}) {
   const h = await reviewed(opts);
   const r = h.api().review;
-  act(() => h.api().confirm(r?.detection?.stickies ?? [], r?.textById ?? new Map()));
+  act(() => h.api().confirm(r?.detection?.stickies ?? [], r?.textById ?? noText()));
   h.rerender();
   return h;
 }
@@ -227,7 +230,7 @@ describe('the review wizard', () => {
     const h = await reviewed();
     expect(h.api().state.stage).toBe('review');
     expect(h.elements()).toEqual([]);
-    act(() => h.api().confirm(kept(h, [0]), h.api().review?.textById ?? new Map()));
+    act(() => h.api().confirm(kept(h, [0]), h.api().review?.textById ?? noText()));
     h.rerender();
     expect(h.api().state.stage).toBe('draft');
     expect(h.drafts()).toHaveLength(1);
@@ -243,7 +246,7 @@ describe('the review wizard', () => {
       ]),
     );
     const h = await reviewed();
-    act(() => h.api().confirm(kept(h, [1]), h.api().review?.textById ?? new Map()));
+    act(() => h.api().confirm(kept(h, [1]), h.api().review?.textById ?? noText()));
     h.rerender();
     expect(h.drafts()).toHaveLength(1);
     expect((h.drafts()[0] as StickyElement).label).toBe('Payment received');
@@ -252,7 +255,7 @@ describe('the review wizard', () => {
   it('lands the boxes the author drew by hand, beside the detected ones', async () => {
     const h = await reviewed();
     const drawn = sticky({ id: -1, kind: 'command', x: 500, y: 500 });
-    act(() => h.api().confirm([...kept(h, [0]), drawn], h.api().review?.textById ?? new Map()));
+    act(() => h.api().confirm([...kept(h, [0]), drawn], h.api().review?.textById ?? noText()));
     h.rerender();
     expect(h.drafts()).toHaveLength(2);
     expect(
@@ -427,7 +430,7 @@ describe('landing a draft', () => {
   it('still keeps the blank draft through Add after a failed read', async () => {
     vi.mocked(readCrops).mockRejectedValue(new Error('ai_error'));
     const h = await reviewed();
-    act(() => h.api().confirm(kept(h, [0]), h.api().review?.textById ?? new Map()));
+    act(() => h.api().confirm(kept(h, [0]), h.api().review?.textById ?? noText()));
     h.rerender();
     act(() => h.api().accept());
     expect(h.drafts()).toHaveLength(0);
