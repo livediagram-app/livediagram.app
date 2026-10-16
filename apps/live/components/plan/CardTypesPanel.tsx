@@ -94,7 +94,7 @@ export function CardTypesPanel({
           <button
             type="button"
             aria-label={`${t.label}, ${label}. Edit`}
-            onClick={() => plan.editType(t.id)}
+            onClick={() => plan.editType({ id: t.id })}
             className="flex min-w-0 flex-1 cursor-pointer items-center gap-2.5 text-left outline-none after:absolute after:inset-0 after:content-['']"
           >
             {face}

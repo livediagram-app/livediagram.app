@@ -25,8 +25,6 @@ const GroupGlyph = lucideGlyph(lucideGroup, 14);
 const OrderGlyph = lucideGlyph(lucideCalendar, 14);
 const StatusGlyph = lucideGlyph(lucideCircleDot, 14);
 
-type Section = 'types' | 'group' | 'lanes' | 'order' | 'statuses';
-
 export function PlanViewSettingsPanel({
   elementId,
   stored,
@@ -45,7 +43,8 @@ export function PlanViewSettingsPanel({
   const [open, setOpen] = useState<string | null>(stored.view === 'workload' ? 'group' : 'types');
   if (!plan) return null;
   const m = planViewSettingsModel(plan, elementId, stored);
-  const section = (id: Section | string) => ({
+  // The panel's own Section, or a host's (`more`).
+  const section = (id: string) => ({
     open: open === id,
     onToggle: () => setOpen((s) => (s === id ? null : id)),
   });

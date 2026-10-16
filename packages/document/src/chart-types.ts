@@ -2,7 +2,6 @@
 // Sheets names it. Each is a chart kind (the stored `shape`) and, for all but the first of its kind, a
 // `chartVariant`, so every chart made before chart types keeps drawing as it did.
 import type { LineSeries, PieSlice } from './data-shapes';
-import type { ShapeKind } from './shape-kind';
 
 export const CHART_TYPES = ['column', 'bar', 'line', 'area', 'scatter', 'pie', 'doughnut'] as const;
 export type ChartType = (typeof CHART_TYPES)[number];
@@ -46,7 +45,7 @@ const isChartKind = (shape: string): shape is ChartKind =>
   shape === 'bar-chart' || shape === 'line-chart' || shape === 'pie-chart';
 
 // Whether a kind takes a variant: one it does not take draws as the kind's first type.
-export function variantFitsKind(shape: ShapeKind | string, variant: unknown): boolean {
+export function variantFitsKind(shape: string, variant: unknown): boolean {
   if (!isChartKind(shape) || !isChartVariant(variant)) return false;
   return Object.values(SHAPES).some((s) => s.shape === shape && s.chartVariant === variant);
 }

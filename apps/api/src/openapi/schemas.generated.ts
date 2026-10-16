@@ -8824,6 +8824,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             "$ref": "#/components/schemas/PlanGlyphId"
           },
           {
+            "const": "item",
             "type": "string"
           }
         ]

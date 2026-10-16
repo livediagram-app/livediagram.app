@@ -4,7 +4,7 @@
 // two sections under their own headings, General (the name field, holding the glyph and the colour) then Fields (the Fields
 // and Tabs list). The editor owns the draft; this only lays it out.
 import { useId, type ReactNode } from 'react';
-import { ITEM_TYPE_LABEL_MAX } from '@livediagram/items';
+import { ITEM_TYPE_LABEL_MAX, type ItemTypeDef, type PlanGlyphId } from '@livediagram/items';
 import { SheetRow } from './PlanModal';
 import { TypeColourButton } from './ColourSwatches';
 import { GlyphPicker } from './GlyphPicker';
@@ -33,8 +33,8 @@ export function ItemTypeConfiguration({
   isNew: boolean;
   label: string;
   onLabel: (next: string) => void;
-  glyph: string;
-  onGlyph: (next: string) => void;
+  glyph: ItemTypeDef['glyph'];
+  onGlyph: (next: PlanGlyphId) => void;
   color: string;
   onColor: (next: string) => void;
   typeId: string | undefined;

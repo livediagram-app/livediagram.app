@@ -109,7 +109,8 @@ export interface ItemTypeDef {
   label: string;
   // The title a new item of this type gets from a palette tile.
   newTitle: string;
-  glyph: PlanGlyphId | string;
+  // Its glyph from the Plan glyph set; the fallback type's own is 'item'.
+  glyph: PlanGlyphId | 'item';
   // The stripe and glyph colour on a card face.
   color: string;
   // The fields its item panel offers, in order: built-in field ids and its custom fields' ids.

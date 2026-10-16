@@ -7,7 +7,13 @@
 // hands focus back to the button, as do Escape (the editor stays open) and a press outside. One radio group; each
 // tile is named "{Name} glyph".
 import { useEffect, useId, useRef, useState } from 'react';
-import { PLAN_GLYPH_CATEGORIES, glyphMatches, planGlyphLabel } from '@livediagram/items';
+import {
+  PLAN_GLYPH_CATEGORIES,
+  glyphMatches,
+  planGlyphLabel,
+  type ItemTypeDef,
+  type PlanGlyphId,
+} from '@livediagram/items';
 import {
   ChevronDownIcon,
   NoMatches,
@@ -36,9 +42,9 @@ export function GlyphPicker({
   onChange,
   inline = false,
 }: {
-  value: string;
+  value: ItemTypeDef['glyph'];
   colour: string;
-  onChange: (glyph: string) => void;
+  onChange: (glyph: PlanGlyphId) => void;
   // Drawn inside another field (the type editor's Name): just the glyph and a chevron, no border and no name.
   inline?: boolean;
 }) {
@@ -107,9 +113,9 @@ export function GlyphGrid({
   colour,
   onPick,
 }: {
-  value: string;
+  value: ItemTypeDef['glyph'];
   colour: string;
-  onPick: (glyph: string) => void;
+  onPick: (glyph: PlanGlyphId) => void;
 }) {
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState(() => categoryOf(value));

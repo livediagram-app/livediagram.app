@@ -201,10 +201,10 @@ export function penColourHex(name: PenColourName, board: Appearance): string {
 }
 
 /**
- * A marker's colour as stored: a stock name ("blue") that adapts to the board, or a custom
- * `#rrggbb` that is the same on both. Null is the board's own ink.
+ * A marker's colour as stored: a stock name ("blue", a PenColourName) that adapts to the board,
+ * or a custom `#rrggbb` that is the same on both. Null is the board's own ink.
  */
-export type PenColour = PenColourName | string;
+export type PenColour = string;
 
 export function isCustomPenColour(v: unknown): v is string {
   return typeof v === 'string' && hexRgb(v) !== null;

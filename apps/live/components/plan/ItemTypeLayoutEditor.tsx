@@ -88,13 +88,15 @@ export function ItemTypeLayoutEditor({
     ...draft.tabs.map((t) => ({ id: t.id, label: t.label.trim() || 'Untitled tab' })),
   ];
 
-  const rowsOf = (group: GroupId | 'card', list: readonly string[]) => {
+  // The card's rows are fixed; a group's (Details or a tab) move within and between groups.
+  const rowsOf = (home: 'card' | { group: GroupId }, list: readonly string[]) => {
     if (list.length === 0) return null;
-    const movable = group === 'card' ? [] : movableIn(draft, group);
+    const group = home === 'card' ? undefined : home.group;
+    const movable = group === undefined ? [] : movableIn(draft, group);
     return (
       <ReorderableRows
         ids={movable}
-        onPlace={(id, to) => group !== 'card' && onChange(placeField(draft, group, id, to))}
+        onPlace={(id, to) => group !== undefined && onChange(placeField(draft, group, id, to))}
       >
         {(drag) =>
           list.map((id) => {
@@ -109,7 +111,7 @@ export function ItemTypeLayoutEditor({
                 removable={!kept.includes(id) && !isRequired(id)}
                 editing={editing === id}
                 onEdit={c ? () => setEditing(editing === id ? null : id) : undefined}
-                moveTargets={group === 'card' ? [] : groups.filter((g) => g.id !== group)}
+                moveTargets={group === undefined ? [] : groups.filter((g) => g.id !== group)}
                 onMoveTo={(to) => onChange({ ...draft, tabs: fileField(draft.tabs, id, to) })}
                 handle={at >= 0 && movable.length > 1 ? drag.handleProps(id) : undefined}
                 dragging={drag.draggingId === id}
@@ -117,7 +119,7 @@ export function ItemTypeLayoutEditor({
                 canUp={at > 0}
                 canDown={at >= 0 && at < movable.length - 1}
                 onMove={
-                  at < 0 || group === 'card'
+                  at < 0 || group === undefined
                     ? undefined
                     : (by) => onChange(moveField(draft, group, id, by))
                 }
@@ -218,7 +220,7 @@ export function ItemTypeLayoutEditor({
           footer={addForm(null)}
           empty="No fields here."
         >
-          {rowsOf(null, groupFields(draft, null))}
+          {rowsOf({ group: null }, groupFields(draft, null))}
         </LayoutGroup>
       </div>
       <div className="flex flex-col gap-2.5 md:col-start-1 md:row-start-2">
@@ -292,7 +294,7 @@ export function ItemTypeLayoutEditor({
                 : 'No fields yet. Add one, or move one here; an empty tab is dropped when you save.'
             }
           >
-            {rowsOf(t.id, t.fields)}
+            {rowsOf({ group: t.id }, t.fields)}
           </LayoutGroup>
         ))}
         <div className="flex flex-col gap-1.5">

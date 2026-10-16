@@ -15,7 +15,7 @@ import { useState } from 'react';
 import { useConfirm } from '@/hooks/ui/useConfirm';
 import { materialiseCustomTheme } from '@/lib/custom-theme-registry';
 import { useCustomThemes } from '@/components/primitives/CustomThemeProvider';
-import type { CustomThemeDraft } from '@/components/palette/CustomThemeBuilder';
+import type { CustomThemeDraft, ThemeBuilding } from '@/components/palette/CustomThemeBuilder';
 import {
   CopyIcon,
   EmptyState,
@@ -32,10 +32,11 @@ import { ThemeSwatch } from '@/components/primitives/ThemeSwatch';
 export function ThemesPane({ compact = false }: { compact?: boolean } = {}) {
   const { themes, loading, createTheme, updateTheme, deleteTheme } = useCustomThemes();
   const confirm = useConfirm();
-  const [building, setBuilding] = useState<null | 'new' | string>(null);
+  const [building, setBuilding] = useState<ThemeBuilding | null>(null);
   const [saving, setSaving] = useState(false);
 
-  const editing = typeof building === 'string' ? themes.find((t) => t.id === building) : undefined;
+  const editing =
+    building !== null && building !== 'new' ? themes.find((t) => t.id === building.id) : undefined;
 
   const handleSave = async (draft: CustomThemeDraft) => {
     setSaving(true);
@@ -97,7 +98,7 @@ export function ThemesPane({ compact = false }: { compact?: boolean } = {}) {
               </span>
               <div className="flex items-center gap-1">
                 <HoverCard title="Edit" description="Open this theme in the builder.">
-                  <IconBtn label="Edit theme" onClick={() => setBuilding(t.id)}>
+                  <IconBtn label="Edit theme" onClick={() => setBuilding({ id: t.id })}>
                     <PencilIcon />
                   </IconBtn>
                 </HoverCard>

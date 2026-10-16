@@ -34,6 +34,7 @@ is the whole of what the repo enforces.
   - `no-duplicate-type-constituents`
   - `no-for-in-array`
   - `no-implied-eval`
+  - `no-redundant-type-constituents`
   - `no-unsafe-enum-comparison`
   - `no-unsafe-unary-minus`
   - `only-throw-error`

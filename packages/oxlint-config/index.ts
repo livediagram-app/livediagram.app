@@ -142,6 +142,7 @@ export default defineConfig({
     'typescript/no-duplicate-type-constituents': 'error',
     'typescript/no-for-in-array': 'error',
     'typescript/no-implied-eval': 'error',
+    'typescript/no-redundant-type-constituents': 'error',
     'typescript/no-unsafe-enum-comparison': 'error',
     'typescript/no-unsafe-unary-minus': 'error',
     'typescript/only-throw-error': 'error',

@@ -26,7 +26,8 @@ import {
 
 // The board's ink as a choice: an unpainted stroke, drawn in whatever ink the appearance gives.
 export const INK_CHOICE = 'ink';
-export type PenColourChoice = typeof INK_CHOICE | PenColour;
+// INK_CHOICE, or a PenColour (a stock name or a custom hex).
+export type PenColourChoice = string;
 export type { PenWidthId };
 
 export type PenColourOption = { value: PenColourChoice; name: string; swatch: string };

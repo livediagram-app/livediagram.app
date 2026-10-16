@@ -101,7 +101,8 @@ export function SheetSettingsPanel({
   const [title, setTitle] = useState<string | null>(null);
   const [confirmClear, setConfirmClear] = useState<HTMLElement | null>(null);
   const pick = useStatusPick();
-  const section = (id: Section | string) => ({
+  // The Sheet's own Section, or a host's (`more`).
+  const section = (id: string) => ({
     open: open === id,
     onToggle: () => setOpen((s) => (s === id ? null : id)),
   });

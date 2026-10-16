@@ -22,7 +22,7 @@ import type { TemplateKind } from './templates';
 
 // An example person's id: what an assignee, a swimlane row and a vote are keyed by. Never a real person's
 // (itemPersonId is a 24-character hex hash), so an example card is never mistaken for anyone's own.
-const personId = (who: SeedPerson | string) => `example-${who}`;
+const personId = (who: string) => `example-${who}`;
 
 // One of the example team, as a card names them.
 export function seedPerson(who: SeedPerson): ItemPerson {

@@ -660,7 +660,7 @@ export function EditorView() {
                                         </CommentBadgesContext.Provider>
                                       </AgentFocusContext.Provider>
                                     </ChangesetRevealContext.Provider>
-                                    {ctx.plan.openItemId || ctx.plan.editingTypeId ? (
+                                    {ctx.plan.openItemId || ctx.plan.editingType ? (
                                       <PlanSheetsHost plan={ctx.plan} />
                                     ) : null}
                                   </AreaErrorBoundary>

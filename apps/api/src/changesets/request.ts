@@ -90,15 +90,14 @@ export function parseChangesetRequest(raw: unknown, log: EditLog = () => {}): Pa
     return refuse(400, { error: 'invalid_body', message: '"strict" must be a boolean' });
   }
   const summary = parseSummary(raw.summary);
-  if (summary === 'too_long') {
-    return refuse(422, {
-      error: 'invalid_value',
-      message: `"summary" holds at most ${CHANGESET_SUMMARY_MAX} characters`,
-      cap: CHANGESET_SUMMARY_MAX,
-    });
-  }
-  if (summary === 'invalid') {
-    return refuse(400, { error: 'invalid_body', message: '"summary" must be a string' });
+  if (!summary.ok) {
+    return summary.refused === 'too_long'
+      ? refuse(422, {
+          error: 'invalid_value',
+          message: `"summary" holds at most ${CHANGESET_SUMMARY_MAX} characters`,
+          cap: CHANGESET_SUMMARY_MAX,
+        })
+      : refuse(400, { error: 'invalid_body', message: '"summary" must be a string' });
   }
   const base = parseBase(raw.base);
   if (base === 'invalid') {
@@ -110,7 +109,7 @@ export function parseChangesetRequest(raw: unknown, log: EditLog = () => {}): Pa
   }
   const body = hasOps ? parseOperations(raw.operations, log) : parseReplace(raw.replace);
   if ('refusal' in body) return { ok: false, refusal: body.refusal };
-  return { ok: true, value: { body, ...(base ? { base } : {}), strict, summary } };
+  return { ok: true, value: { body, ...(base ? { base } : {}), strict, summary: summary.text } };
 }
 
 // The operations in either form: a string of lines (the line form, JSON objects allowed on a line) or
@@ -210,12 +209,18 @@ function replaceBodyOf(
   }
 }
 
-function parseSummary(raw: unknown): string | null | 'too_long' | 'invalid' {
-  if (raw === undefined || raw === null) return null;
-  if (typeof raw !== 'string') return 'invalid';
+// A summary is free text, so a refusal is told apart from it rather than spelled like one.
+type SummaryResult =
+  { ok: true; text: string | null } | { ok: false; refused: 'too_long' | 'invalid' };
+
+function parseSummary(raw: unknown): SummaryResult {
+  if (raw === undefined || raw === null) return { ok: true, text: null };
+  if (typeof raw !== 'string') return { ok: false, refused: 'invalid' };
   const clean = withoutControls(raw).trim();
-  if (clean === '') return null;
-  return [...clean].length > CHANGESET_SUMMARY_MAX ? 'too_long' : clean;
+  if (clean === '') return { ok: true, text: null };
+  return [...clean].length > CHANGESET_SUMMARY_MAX
+    ? { ok: false, refused: 'too_long' }
+    : { ok: true, text: clean };
 }
 
 function parseBase(raw: unknown): ChangesetBase | undefined | 'invalid' {
