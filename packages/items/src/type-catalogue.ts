@@ -38,7 +38,7 @@ export function customFieldCount(custom: readonly unknown[]): number {
 export const ITEM_TYPE_LABEL_MAX = 32;
 export const CUSTOM_FIELD_LABEL_MAX = 32;
 export const CUSTOM_CHOICE_OPTIONS_MAX = 20;
-export const CUSTOM_CHOICE_OPTION_MAX = 40;
+export const CUSTOM_CHOICE_OPTION_MAX = 100;
 // The stored catalogue's JSON, at most (blueprint DEFAULTS: room for 32 full types).
 export const ITEM_TYPES_BYTES = 32_768;
 export const ITEM_TYPE_CATALOGUE_VERSION = 1;

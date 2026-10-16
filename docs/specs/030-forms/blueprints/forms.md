@@ -106,7 +106,7 @@ only when `raw` is not an object. `QUESTION_TYPE_NAMES` and `QUESTION_TYPE_TELEM
 | `FORM_DESCRIPTION_MAX`                                       | 1000        | spec                                                         | 500..2000             |
 | `SECTION_TITLE_MAX`, `PROMPT_MAX`                            | 80, 200     | spec                                                         | 40..120, 100..300     |
 | `HELP_MAX`, `PLACEHOLDER_MAX`                                | 500, 80     | spec                                                         | 200..1000, 40..120    |
-| `OPTION_MAX`, `OPTIONS_MAX`                                  | 40, 20      | = items' Choice limits                                       | fixed                 |
+| `OPTION_MAX`, `OPTIONS_MAX`                                  | 100, 20     | = items' Choice limits                                       | fixed                 |
 | `SHORT_ANSWER_MAX`, `PARAGRAPH_MAX`                          | 200, 2000   | spec (Title, Long Text)                                      | fixed                 |
 | `RATING_SCALE_MIN/MAX/DEFAULT`                               | 3/10/5      | spec; items' `RATING_FIELD_SCALE_*` the same                 | fixed                 |
 | `MESSAGE_MAX`                                                | 500         | spec "Settings"                                              | 200..1000             |

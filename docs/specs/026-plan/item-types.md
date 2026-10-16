@@ -123,7 +123,8 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
 - **Custom field kinds**: Text, Long Text (up to 2,000 characters), Number, Currency, Date, Checkbox, Link (an
   `https://` URL), Email, Choice (one of up to 20 named options), Multiple Choice (several of up to 20 named
   options), Rating (a whole number from 1 to its scale, 3 to 10) and Card (a link to one card of another type,
-  below). Multiple Choice and Rating came with [Forms](../030-forms/forms.md#new-card-field-kinds), which describes
+  below). An option holds up to 100 characters, so a form question's full answers (a Choice field's options are a
+  question's) fit; a card shows a long one shortened, and its details whole. Multiple Choice and Rating came with [Forms](../030-forms/forms.md#new-card-field-kinds), which describes
   how they read and are edited.
   - **Currency** is an amount in the one currency its field names (`currency`, an ISO 4217 code such as GBP, USD or
     EUR, chosen when the field is made and changeable later; GBP when none is given). Its value is a number with up to

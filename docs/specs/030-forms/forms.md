@@ -273,7 +273,7 @@ a card refuses with "Preview can't add its card until Responses Go To names a bo
 | **Checkbox**        | One checkbox beside the prompt ("I agree to...")                                 |                                                                               | true or false                 |
 
 - A prompt is 1 to 200 characters ("Untitled Question" until typed); help text up to 500.
-- Options are 1 to 40 characters (a Choice field's limit, as a question's options may become its field's), unique
+- Options are 1 to 100 characters (a Choice field's limit, as a question's options may become its field's), unique
   ignoring case (a repeat is put back), edited as a list: Enter adds the next ("Option 3", selected), Backspace in an
   empty one removes it, Alt+Up and Alt+Down move it, pasting several lines adds one option a line. **Add “Other”**
   adds an Other option with its own text box to Single and Multiple Choice; typing in it picks it, and its text is
