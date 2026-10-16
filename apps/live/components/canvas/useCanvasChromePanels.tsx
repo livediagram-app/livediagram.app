@@ -17,6 +17,7 @@ import { usePaletteChrome } from './usePaletteChrome';
 import { useCanvasToolPanels } from './useCanvasToolPanels';
 import { stripSegmentGone, type SessionStripTools } from './SessionClusterStrip';
 import { tidyUpOffered } from './tidy-up-actions';
+import { useContentsChrome } from './useContentsChrome';
 
 // Layers is a popover most visits never open: mounted from its first opening on (its code fetched once the
 // editor is idle, lib/editor-deferred-code.ts), and kept mounted after.
@@ -58,10 +59,6 @@ const SessionPopover = dynamic(() => import('./SessionPopover').then((m) => m.Se
 
 // Lazy for the same reason: the Tidy Up popover (docs/specs/008-canvas/layout-cleanup.md "The Tidy Up button")
 // loads on the first press of its button.
-const PageContentsPanel = dynamic(
-  () => import('./PageContentsPanel').then((m) => m.PageContentsPanel),
-  { ssr: false },
-);
 const TidyUpPopover = dynamic(() => import('./TidyUpPopover').then((m) => m.TidyUpPopover), {
   ssr: false,
 });
@@ -114,8 +111,11 @@ export function useCanvasChromePanels({
   sessionPopoverEl: ReactNode;
   // The Tidy Up popover over its button, in Diagram mode.
   tidyUpPopoverEl: ReactNode;
-  // Illustrate mode's Contents popover (docs/specs/007-editor/illustrate-pages.md "Contents").
+  // Illustrate mode's Contents (docs/specs/007-editor/illustrate-pages.md "Contents"): the popover,
+  // or docked as the sidebar (useContentsChrome).
   contentsPopoverEl: ReactNode;
+  contentsSidebarEl: ReactNode;
+  contentsDocked: boolean;
   // The Avatar panel over its button (docs/specs/008-canvas/avatar-mode.md "The Avatar Panel").
   avatarPopoverEl: ReactNode;
   paletteTint: ReturnType<typeof usePaletteChrome>['paletteTint'];
@@ -259,12 +259,13 @@ export function useCanvasChromePanels({
   useEffect(() => {
     if (activeDockPanel === 'slides' && !props.illustratePages) closeDockPanel();
   }, [activeDockPanel, props.illustratePages, closeDockPanel]);
-  // Contents, likewise, belongs to Illustrate mode's button (docs/specs/007-editor/illustrate-pages.md
-  // "Contents").
-  const contentsOpen = activeDockPanel === 'contents' && !!props.illustratePages && !chromeHidden;
-  useEffect(() => {
-    if (activeDockPanel === 'contents' && !props.illustratePages) closeDockPanel();
-  }, [activeDockPanel, props.illustratePages, closeDockPanel]);
+  // Contents, likewise, belongs to Illustrate mode: its popover, or the sidebar docked in its place.
+  const { contentsDocked, contentsSidebarEl, contentsPopoverEl } = useContentsChrome({
+    props,
+    chromeHidden,
+    isMobile,
+    closeDockPanel,
+  });
   // The Card Types popover, likewise, belongs to Plan mode's button.
   const planMode = props.editorMode === 'plan';
   const cardTypesOpen = activeDockPanel === 'card-types' && planMode;
@@ -568,24 +569,9 @@ export function useCanvasChromePanels({
     collaborateEl,
     slidesPopoverEl: slidesOpen ? slideDeckEl : null,
     avatarPopoverEl: avatarEl,
-    contentsPopoverEl:
-      contentsOpen && props.illustratePages ? (
-        <PageContentsPanel
-          view={props.illustratePages}
-          tab={{
-            id: props.activeTabId ?? '',
-            name: '',
-            elements,
-            pages: props.illustratePages.pages,
-            layers: props.layers,
-            font: props.tabFont,
-            finish: props.tabFinish,
-            articles: props.illustratePages.articles?.flows,
-          }}
-          anchor={activeDockAnchor ?? undefined}
-          onClose={closeDockPanel}
-        />
-      ) : null,
+    contentsPopoverEl,
+    contentsSidebarEl,
+    contentsDocked,
     tidyUpPopoverEl:
       tidyUpOpen && tidyUp ? (
         <TidyUpPopover

@@ -80,16 +80,19 @@ export function filterContents(rows: readonly ContentsRow[], query: string): Con
 }
 
 /** The page in view: the one whose rectangle holds the middle of the screen, else the nearest to
- *  it. `view` is the canvas's (a screen point is (canvas + offset) × zoom) and `screen` the canvas
- *  area's size in screen px. */
+ *  it. `view` is the canvas's (the centred transform: a canvas x lands at screen
+ *  `w/2 + zoom(x + offset.x - w/2)`, lib/viewport.ts) and `screen` the canvas area's size in screen
+ *  px. `insetLeft` is the screen px a docked sidebar covers at the canvas's left: the middle is the
+ *  middle of what shows beside it. */
 export function pageInView(
   pages: readonly LaidOutPage[],
   view: { zoom: number; offset: { x: number; y: number } },
   screen: { width: number; height: number },
+  insetLeft = 0,
 ): string | undefined {
   if (pages.length === 0) return undefined;
-  const cx = screen.width / 2 / view.zoom - view.offset.x;
-  const cy = screen.height / 2 / view.zoom - view.offset.y;
+  const cx = screen.width / 2 - view.offset.x + insetLeft / (2 * view.zoom);
+  const cy = screen.height / 2 - view.offset.y;
   let best: LaidOutPage | undefined;
   let bestD = Infinity;
   for (const p of pages) {

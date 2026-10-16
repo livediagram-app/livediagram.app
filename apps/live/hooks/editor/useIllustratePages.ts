@@ -27,7 +27,8 @@ import {
   type LaidOutPage,
   type Tab,
 } from '@livediagram/document';
-import { computeFitBelow, computeReadingFrame } from '@/lib/viewport';
+import { besideLeftInset, computeFitBelow, computeReadingFrame } from '@/lib/viewport';
+import { leftSidebarInset } from '@/lib/left-sidebar-inset';
 import { topStripInset } from '@/lib/top-strip-inset';
 import { debugLog } from '@/lib/debug-log';
 import { track } from '@/lib/telemetry';
@@ -137,12 +138,17 @@ export function useIllustratePages(deps: {
     const canvas = deps.canvasMainRef.current;
     if (!canvas) return;
     const inset = topStripInset(canvas);
-    const size = { width: canvas.offsetWidth, height: canvas.offsetHeight };
+    // Beside the docked Contents sidebar, when it is there (docs/specs/007-editor/illustrate-pages.md
+    // "Contents"): the page centres in what shows right of it.
+    const insetLeft = leftSidebarInset(canvas);
+    const size = { width: canvas.offsetWidth - insetLeft, height: canvas.offsetHeight };
     const doc = page?.flow ? articlesOf(activeTab)[page.flow] : undefined;
-    const { zoom, offset } =
+    const { zoom, offset } = besideLeftInset(
       read && page && doc
         ? computeReadingFrame(size, page.rect, inset, articleMarginPx(doc.style))
-        : computeFitBelow(size, illustratePageFitBox(page), inset);
+        : computeFitBelow(size, illustratePageFitBox(page), inset),
+      insetLeft,
+    );
     glide.current?.();
     glide.current = null;
     if (glides) {
@@ -155,7 +161,14 @@ export function useIllustratePages(deps: {
       deps.setViewportZoom(zoom);
       deps.setViewportOffset(offset);
     }
-    debugLog('[illustrate-page] framed', { tabId, page: page?.id ?? 'first', inset, zoom, glides });
+    debugLog('[illustrate-page] framed', {
+      tabId,
+      page: page?.id ?? 'first',
+      inset,
+      insetLeft,
+      zoom,
+      glides,
+    });
   };
   // The pages laid out once per change to the stored pages, so everything drawn from them (the
   // Map's picture, the export preview) keeps its memo while the view pans and zooms.

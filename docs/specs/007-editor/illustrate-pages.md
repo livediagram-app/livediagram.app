@@ -1052,16 +1052,39 @@ swipe, with no X.
 
 ## Contents
 
-In Illustrate mode the bottom-right cluster holds **Contents** (a list glyph, named beside it on a
-desktop), left of the Theme & canvas button, joined in one frame with **Slides** after it ("Chrome in Illustrate
-mode"), in every Illustrate tab and for every role: finding
-your way round a long document is everyone's. It opens the **Contents** popover above it (a
-bottom sheet on a phone), the way round a big document:
+**Contents** is every page of the Illustrate tab in one list, in every Illustrate tab and for every role:
+finding your way round a long document is everyone's. It has two homes on a desktop, and the person
+chooses between them:
+
+- **Docked as a sidebar** (the default): a filmstrip down the canvas's left, the way a slide editor
+  shows its slides. It starts below the Toolbar strip, 16 px in from the canvas's left edge, 236 px
+  wide (at the panels' UI scale), and is as tall as its pages need, never past 16 px above the
+  canvas's foot (its list scrolls beyond that). Its header holds the list glyph, "Contents", the page
+  count and **Minimise** (a panel-close glyph; HoverCard "Minimise", "Tuck Contents into its button,
+  bottom right."). It stays open while the person works; the cluster has no Contents button while it
+  shows. A page framed on screen (a press here, the pages row's arrows, opening the tab) centres in
+  what shows right of it, never under it, and the left corner stacks start past it.
+- **Minimised to its button**: the bottom-right cluster holds **Contents** (a list glyph, named
+  beside it on a desktop), left of the Theme & canvas button. It opens the **Contents** popover
+  above it, whose header adds **Dock as Sidebar** (a panel-open glyph; HoverCard "Dock as Sidebar",
+  "Keep Contents open down the left."), which closes the popover and docks the sidebar.
+
+Which home is the person's own, kept in their synced preferences (`contentsPlacement`,
+[User preferences](user-preferences.md)), so it follows them across devices and documents; Settings
+› Editor › Illustrate › **Contents** (Sidebar or Button) sets it too. A phone never has the
+sidebar, whatever the choice: there Contents is always the button, opening a bottom sheet. Zen mode
+and presenting hide both. The sidebar slides in from the left as it docks (a 200 ms fade and 12 px
+slide), with none under reduced motion.
+
+Both show the same list:
 
 - **Header**: "Contents", the page count ("12 pages") a badge at the right of the same line; with more than six pages, a **Find a
   Page** box under it that narrows the list by name, kind or number as you type (Escape clears it,
   then closes).
-- **The list**: every page in row order, one row each: its number, a live thumbnail of the page
+- **The list**: every page in row order, one row each (the sidebar lays them out as a filmstrip:
+  the number beside a picture as wide as the column, up to 124 px tall for a portrait page, the name
+  and the kind line under it, "Here · " leading the kind line of the page in view): its number, a
+  live thumbnail of the page
   as it is (its background, motion still, and everything on it, drawn by the same renderer as the
   Slide Deck's thumbnails, 16:9, A4 or square as the page is), its name (its own, else "Page 3"),
   and a line saying what it is: "Infographic · A4 Portrait", "Slide · In the deck" or "Slide ·
@@ -1072,6 +1095,9 @@ bottom sheet on a phone), the way round a big document:
   and marks it as here. On a desktop the popover stays open, so a reader can hop from page to page;
   on a phone the sheet closes so the page shows. Up and Down move between rows, Home and End to
   the first and last; the list scrolls the marked page into view when it opens.
+- **Following the view**: the sidebar keeps marking the page in view as the view moves (a pan, a
+  zoom, the pages row's arrows), read once the view has rested 150 ms, and scrolls its row into view.
+  The page in view is the one holding the middle of what shows beside the sidebar, else the nearest.
 - **Reordering**: an Editor drags a row to move its page: a caret shows where it will land and
   the move commits on release, one edit (one undo), the page's content with it, exactly as
   dragging its label along the pages row does. A page moves with its unit, so an article's pages
@@ -1089,9 +1115,13 @@ bottom sheet on a phone), the way round a big document:
   the list without the footer.
 - **Cost**: thumbnails are drawn when the popover opens and redrawn only when the tab's elements
   or pages change while it is open, arrow labels laid out once for the tab rather than once a
-  page; nothing is drawn while it is closed.
+  page; nothing is drawn while it is closed. The sidebar stays on screen while the person works, so
+  its thumbnails redraw only once the tab has rested 250 ms, never on every frame of a drag or every
+  key typed, and the page in view is read on the view's rest, never on every frame of a pan.
 - **Telemetry**: `UI · Opened · PageContents` on opening; `UI · Used · PageContentsJump` on going
   to a page; `UI · Used · PageContentsReorder` on moving one; adding a page counts as the row's + does.
+  Minimising sends `UI · Changed · ContentsPlacementButton`, docking `UI · Changed ·
+ContentsPlacementSidebar`, before the choice is kept.
 
 ## Slide layouts
 

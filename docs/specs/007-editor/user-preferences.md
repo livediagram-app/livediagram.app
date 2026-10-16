@@ -329,6 +329,10 @@ type UserPreferences = {
   // or Grid, as last chosen from the dock's Settings; never stored on a tab. Unset, or
   // anything else, is Grid (lib/whiteboard-dock-prefs).
   drawPattern?: 'blank' | 'grid' | 'graph';
+  // Where Illustrate's Contents sits on a desktop (./illustrate-pages.md "Contents"):
+  // docked as a sidebar down the canvas's left, or minimised to its cluster button.
+  // Unset, or anything but 'button', is the sidebar (lib/contents-placement).
+  contentsPlacement?: 'sidebar' | 'button';
 
   // Power user mode (docs/specs/007-editor/power-user-mode.md). True while the mode is on.
   // Switching it on applies the preset once; see powerUserBaseline.
@@ -380,6 +384,13 @@ Missing key === undefined === default behaviour. Concretely:
   ignored: there is one panel layout ([Toolbar layout](toolbar-layout.md#one-layout)).
 - `whiteboardDockPosition` undefined → a whiteboard's dock at the top (the
   default). Only `'bottom'` moves it to the bottom.
+- `contentsPlacement` undefined → Illustrate's Contents docked as a sidebar down
+  the canvas's left on a desktop (the default). `'button'` minimises it to its
+  cluster button; a phone always has the button
+  ([Illustrate pages](illustrate-pages.md#contents)). Written by the sidebar's
+  Minimise, the popover's Dock as Sidebar and Settings › Editor › Illustrate ›
+  Contents; emits `UI`/`Changed`/`ContentsPlacementSidebar` or
+  `ContentsPlacementButton`.
 - `elementIndicatorStyle` undefined → Top: an element's link, note, action
   and comment glyphs sit inside it along its top, top-right on a box and centred
   on a round or pointed shape (the default). `'footer'` moves them to a labelled
@@ -593,8 +604,8 @@ and the dialog stays as the one complete, browsable index of them.
   element indicators; a **Mouse** section: quick-add on hover, middle-mouse
   pan; then **Power User**: power user mode, with Minimal chrome and the preset
   readout nested under it while the mode is on; with the sub-categories
-  **Draw** (dock position, Top or Bottom) and **Illustrate** (a **Logo Pages**
-  section: Logo Guides, with Logo Guide Strength and the Guides Shown chips
+  **Draw** (dock position, Top or Bottom) and **Illustrate** (a **Pages**
+  section: Contents, Sidebar or Button; then a **Logo Pages** section: Logo Guides, with Logo Guide Strength and the Guides Shown chips
   nested under it) and **Presenting** (the presenter settings: Slides, Playback and While Presenting,
   [Presentation mode](../012-collaboration/presentation-mode.md) "Presenter settings")), **Appearance** (theme, then an **Interface** section:
   Button Labels, and UI scale with a slider per part nested under it), **Keyboard**
@@ -634,7 +645,8 @@ and the dialog stays as the one complete, browsable index of them.
   A category can hold **sub-categories** (`parent` on the sub-category's
   spec). **Editor** holds one per editor mode whose settings apply only to
   that mode ([Editor modes](editor-modes.md)): **Draw** holds Dock Position,
-  since only Draw mode has a dock. A setting that applies in both modes
+  since only Draw mode has a dock; **Illustrate** holds Contents and the logo
+  guides. A setting that applies in both modes
   stays on Editor itself; quick-add on hover, alignment guides, auto-attach
   arrows, middle-mouse pan and power user mode all act in both. There is no
   **Diagram** sub-category while no setting applies only to Diagram mode: a
