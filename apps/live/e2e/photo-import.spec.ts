@@ -777,7 +777,9 @@ test('a moved box is read again, 8 seconds after the move', async ({ page, pageE
   await openPhotoBoard(page, { boundaryModel: false });
   const asked: number[][] = [];
   await page.route('**/api/ai/read-notes', async (route) => {
-    const crops = (JSON.parse(route.request().postData() ?? '{}').crops ?? []) as { id: number }[];
+    const { crops = [] } = JSON.parse(route.request().postData() ?? '{}') as {
+      crops?: { id: number }[];
+    };
     asked.push(crops.map((c) => c.id));
     const again = asked.length > 1;
     await route.fulfill({

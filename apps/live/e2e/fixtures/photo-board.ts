@@ -26,7 +26,9 @@ export async function openPhotoBoard(
     });
   });
   await page.route('**/api/ai/read-notes', async (route) => {
-    const crops = (JSON.parse(route.request().postData() ?? '{}').crops ?? []) as { id: number }[];
+    const { crops = [] } = JSON.parse(route.request().postData() ?? '{}') as {
+      crops?: { id: number }[];
+    };
     await route.fulfill({
       json: { texts: crops.map((c) => ({ id: c.id, text: '', legible: false })) },
     });
