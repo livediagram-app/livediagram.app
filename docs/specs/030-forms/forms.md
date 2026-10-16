@@ -228,6 +228,9 @@ so text contrast never depends on the theme.
 - A custom theme draws as Default, on the page and in the builder alike: the form link's page cannot read its
   owner's themes, and the builder shows what respondents will see.
 - The look dresses the form alone: the builder's status bar and the cog's panel are the editor's and keep its look.
+- **In the Explorer**: a document whose first tab is a Form tab shows the form, drawn on its look, as its snapshot
+  ([Document snapshots](../006-document/document-snapshots.md)), never "Nothing drawn yet"; a tab holding a form is
+  never empty, so the empty-document clean-up keeps it.
 
 ### Preview
 

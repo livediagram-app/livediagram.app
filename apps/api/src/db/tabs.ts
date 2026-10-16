@@ -1,7 +1,7 @@
 // tabs — one row per tab, linked to documents through the
 // document_tabs many-to-many table (migration 0011 / docs/specs/006-document/tab-document-many-to-many.md).
 
-import { capElementActions, type Tab } from '@livediagram/document';
+import { capElementActions, drawnCount, type Tab } from '@livediagram/document';
 import { rowToTab, type TabRow } from '../tab-row';
 import { MAX_TAB_BYTES, TabTooLargeError, byteLength, logTabRefused } from '../limits';
 
@@ -162,15 +162,14 @@ export async function getTabBody(
   return row ? { id: row.id, data: row.data, elementCount: row.element_count ?? null } : null;
 }
 
-// How many elements the document's first tab holds: its stored count, or a parse of its body while the count is
+// How much the document's first tab has to draw (drawnCount): its stored count, or a parse of its body while the count is
 // not yet known (migration 0059). Zero with no tab or an unreadable body. Needs no snapshot store, unlike a render.
 export async function firstTabElementCount(env: Env, documentId: string): Promise<number> {
   const body = await getTabBody(env, documentId);
   if (!body) return 0;
   if (body.elementCount !== null) return body.elementCount;
   try {
-    const parsed = JSON.parse(body.data) as { elements?: unknown };
-    return Array.isArray(parsed.elements) ? parsed.elements.length : 0;
+    return drawnCount(JSON.parse(body.data) as { elements?: unknown; form?: unknown });
   } catch {
     return 0;
   }
@@ -247,7 +246,7 @@ export function tabWriteStatements(
          element_count = excluded.element_count,
          rev = ${advance ? 'tabs.rev + 1' : 'excluded.rev'}
        RETURNING rev`,
-    ).bind(id, name, data, now, tab.elements.length, insertRev),
+    ).bind(id, name, data, now, drawnCount(tab), insertRev),
     env.DB.prepare(
       `INSERT INTO document_tabs (document_id, tab_id, order_index, added_at)
        VALUES (?, ?, ?, ?)
@@ -361,7 +360,7 @@ export async function seedTabs(
            updated_at = excluded.updated_at,
            element_count = excluded.element_count,
            rev = tabs.rev + 1`,
-      ).bind(id, name, data, now, tab.elements.length),
+      ).bind(id, name, data, now, drawnCount(tab)),
       env.DB.prepare(
         `INSERT INTO document_tabs (document_id, tab_id, order_index, added_at)
          VALUES (?, ?, ?, ?)
