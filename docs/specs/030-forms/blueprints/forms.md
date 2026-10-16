@@ -492,7 +492,7 @@ tabs], source, itemTypes? }`, then the new sheet's headers. Otherwise, in order:
   card, null for a row. Otherwise a board in the world holding the destination's column is required
   (`form_destination_missing` without one) and the card `responseCard(form, tabId, answers, type, null, true)` is
   `POST /documents/:id/items` `{ type, fields, place: { status } }`; its id answered. Answer `{ documentId, tabId,
-made: 'card' | 'row', number, where, title, itemId, lines }`; `where` the board's title (else its tab's name) and
+made: 'card' | 'row', number, where, title, itemId, lines }`; `where` the board's tab name (as `read_form`'s `respondsTo` names it) and
   column, `the sheet "<name>"`, or "its board" / "its sheet" when the world does not show it. The MCP adds `url`.
 - **Answers** (`readFormOf`): `{ tabId, heading, description?, state, closedReason?, code, responses, unseen,
 respondsTo: { to: 'board', board, cardType, column } | { to: 'sheet', sheet } | { to: 'nowhere' },

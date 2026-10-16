@@ -212,4 +212,41 @@ describe('form try', () => {
       formTry.run!(ctx, formTry.input.parse({ doc: DOC_A, answers: '-' })),
     ).rejects.toMatchObject({ code: 'usage' });
   });
+
+  it('prints a row, uncounted, after what it left out', () => {
+    expect(
+      formTry.text!({
+        documentId: 'd',
+        tabId: 'form',
+        made: 'row',
+        number: null,
+        where: 'the sheet "Budget"',
+        title: null,
+        itemId: 'i1',
+        lines: ['"Steps" (q-steps) was left out: its section does not show for these answers'],
+      }),
+    ).toEqual([
+      '~ "Steps" (q-steps) was left out: its section does not show for these answers',
+      '+ row in the sheet "Budget", not counted',
+    ]);
+  });
+
+  it('names an unknown Form tab as not found, and prints a card it made by its id', async () => {
+    const { ctx } = ctxWith('{"Summary": "x"}');
+    await expect(
+      formTry.run!(ctx, formTry.input.parse({ doc: DOC_A, answers: '-', tab: 'Nope' })),
+    ).rejects.toMatchObject({ status: 404, code: 'form_tab_unknown' });
+    expect(
+      formTry.quiet!({
+        documentId: 'd',
+        tabId: 'form',
+        made: 'card',
+        number: null,
+        where: 'w',
+        title: 'Preview: x',
+        itemId: 'i1',
+        lines: [],
+      }),
+    ).toEqual(['i1']);
+  });
 });

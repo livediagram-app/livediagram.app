@@ -58,7 +58,13 @@ function invalidMessage(
         : '';
     return `${listed(q)}: ${answerErrorMessage(q, error)}${options}`;
   });
-  return refuse('invalid_answers', `Nothing was sent. ${lines.join('. ')}.`);
+  // The api names no question when the form changed under it in a way it cannot say: read it again.
+  return refuse(
+    'invalid_answers',
+    lines.length
+      ? `Nothing was sent. ${lines.join('. ')}.`
+      : 'Nothing was sent: the form refused the answers. Read it again with read_form, then try again.',
+  );
 }
 
 // The answers by question id, a choice's text that is no option taken as its Other answer (when it has Other).
@@ -88,9 +94,8 @@ function bodyOf(
   return { answers, other };
 }
 
-// A card's title as its fields hold it.
-const titleOf = (fields: Readonly<Record<string, unknown>>): string =>
-  typeof fields['title'] === 'string' ? fields['title'] : '';
+// A card's title, which every card's fields hold as text.
+const titleOf = (fields: Readonly<Record<string, unknown>>): string => fields['title'] as string;
 
 // The board and column a board form's cards land in, in words.
 function boardWhere(
@@ -101,7 +106,7 @@ function boardWhere(
   const board = world.boards.find((b) => b.columns.some((c) => c.status === status));
   const column = board?.columns.find((c) => c.status === status);
   return board && column
-    ? { board, where: `the "${board.title || board.tabName}" board, column ${column.name}` }
+    ? { board, where: `the "${board.tabName}" board, column ${column.name}` }
     : null;
 }
 
@@ -188,7 +193,7 @@ export async function tryForm(
     return done({
       made: 'card',
       number: null,
-      title: titleOf(item.fields) || titleOf(card.fields),
+      title: titleOf(item.fields),
       itemId: item.id,
     });
   });

@@ -213,4 +213,66 @@ describe('tryForm', () => {
     expect(r).toMatchObject({ ok: false, code: 'form_closed' });
     expect(!r.ok && r.message).toContain('read_form lists the problem');
   });
+
+  it('names the Form tab it cannot find, and takes no answers as none', async () => {
+    const { client } = api();
+    expect(await tryForm(client, 'doc', 'Nope', {})).toMatchObject({
+      ok: false,
+      code: 'form_tab_unknown',
+    });
+    // An MCP call with its answers left out: every question unanswered, the required one refused.
+    expect(await tryForm(client, 'doc', undefined, undefined as never)).toMatchObject({
+      ok: false,
+      code: 'invalid_answers',
+    });
+  });
+
+  it('keeps options picked on a choice with Other as they are, and says Other takes any text', async () => {
+    const form = bugForm();
+    form.sections[0]!.questions.push(
+      { id: 'q-os', type: 'multi', prompt: 'Systems', options: ['Mac', 'Windows'], other: true },
+      { id: 'q-ch', type: 'single', prompt: 'Channel', options: ['Web', 'App'], other: true },
+    );
+    const { client, writes } = api(form, PUBLISHED);
+    await tryForm(client, 'doc', undefined, { Summary: 'x', Systems: ['Mac', 'Windows'] });
+    expect(writes[0]!.body).toEqual({
+      answers: { 'q-sum': 'x', 'q-os': ['Mac', 'Windows'] },
+      other: {},
+    });
+    const r = await tryForm(client, 'doc', undefined, { Summary: 'x', Channel: 3 });
+    expect(!r.ok && r.message).toContain('(options: "Web", "App", or any other text)');
+  });
+
+  it('says where a sheet form’s row went when the plan does not show its sheet', async () => {
+    const form: FormDefinition = {
+      ...bugForm(),
+      destination: undefined,
+      sheet: { tabId: 'gone', sheetId: 'sheet_gone' },
+    };
+    const { client } = api(form, PUBLISHED);
+    expect(await tryForm(client, 'doc', undefined, { Summary: 'x' })).toMatchObject({
+      ok: true,
+      made: 'row',
+      number: 5,
+      where: 'its sheet',
+    });
+  });
+
+  it('words an api refusal of answers it lists no errors for, or errors for questions it lacks', async () => {
+    const bare = api(bugForm(), PUBLISHED, () =>
+      Response.json({ error: 'invalid_answers' }, { status: 400 }),
+    );
+    expect(await tryForm(bare.client, 'doc', undefined, { Summary: 'x' })).toEqual({
+      ok: false,
+      code: 'invalid_answers',
+      message:
+        'Nothing was sent: the form refused the answers. Read it again with read_form, then try again.',
+    });
+    const removed = api(bugForm(), PUBLISHED, () =>
+      Response.json({ error: 'invalid_answers', errors: { 'q-new': 'required' } }, { status: 400 }),
+    );
+    expect(await tryForm(removed.client, 'doc', undefined, { Summary: 'x' })).toMatchObject({
+      message: 'Nothing was sent. q-new: required.',
+    });
+  });
 });
