@@ -17,7 +17,9 @@ import {
   BorderStyleArt,
   BringFocusArt,
   CanvasBackdropArt,
+  CanvasChartsArt,
   CardTypesArt,
+  CodeBlockArt,
   CommentsArt,
   ComponentsArt,
   CustomThemesArt,
@@ -26,11 +28,13 @@ import {
   EmbedArt,
   EntityArt,
   ErasersArt,
+  EventStormingArt,
   ExpiryArt,
   ExportArt,
   FacilitateModeArt,
   FacilitatorArt,
   FlowingArrowsArt,
+  FollowAlongArt,
   FontsArt,
   FormBuilderArt,
   FormResponsesArt,
@@ -50,6 +54,7 @@ import {
   LaserArt,
   LayersArt,
   LinkCardArt,
+  LiveImageArt,
   LivingBackgroundArt,
   LockArt,
   LogoPageArt,
@@ -74,7 +79,9 @@ import {
   RevokeArt,
   RichTextArt,
   RotateArt,
+  SearchPaletteArt,
   SelectionGlowArt,
+  SequenceArt,
   SessionToolsArt,
   ShapesArt,
   ShareLinksArt,
@@ -85,6 +92,7 @@ import {
   SlideDeckArt,
   SlideLayoutsArt,
   SpotlightArt,
+  StickyPhotoArt,
   TabCopyArt,
   TabFoldersArt,
   TablesArt,
@@ -280,6 +288,14 @@ export const LANDING_SECTIONS: LandingSection[] = [
           'Switch to the laser tool and your cursor leaves a glowing trail everyone can see. Point at the thing you mean while you talk it through. Trails fade on their own.',
       },
       {
+        art: <FollowAlongArt />,
+        href: '/help/canvas/follow-along/',
+        group: 'Present & facilitate',
+        title: 'Follow someone\u2019s view',
+        description:
+          'Press Follow beside a teammate and your canvas goes where theirs goes: their tab, their pan, their exact zoom. A pill says who you are following, and the moment you move the canvas yourself, you have your own view back. Anyone can follow anyone, even on a view-only link.',
+      },
+      {
         art: <AvatarModeArt />,
         href: '/help/selection-modes/avatar-mode/',
         group: 'Present & facilitate',
@@ -301,7 +317,15 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Share & access',
         title: 'Editor, participant or view-only links',
         description:
-          'Create an editor link for collaborators, a participant link for a team who should add stickies, write and vote without reshaping the board, or a view-only link for stakeholders who should watch, not touch. Run as many links as you like, side by side, and point one at a single tab to keep the rest of the document private. Any link also embeds in your wiki, Notion, or docs: copy the iframe snippet from the Share dialog. Where iframes are blocked, like a GitHub README, a live image shows the latest version as a plain picture.',
+          'Create an editor link for collaborators, a participant link for a team who should add stickies, write and vote without reshaping the board, or a view-only link for stakeholders who should watch, not touch. Run as many links as you like, side by side, and point one at a single tab to keep the rest of the document private.',
+      },
+      {
+        art: <LiveImageArt />,
+        href: '/help/collaboration/sharing/live-image/',
+        group: 'Share & access',
+        title: 'Live in your wiki, docs or README',
+        description:
+          'Copy an iframe from the Share dialog and the document sits inside your wiki, Notion or site, live as people edit it. Where iframes are blocked, like a GitHub README, paste a live image instead: a plain picture URL that shows the latest version after every save, of whichever tab you pick.',
       },
       {
         art: <TeamsArt />,
@@ -409,6 +433,46 @@ export const LANDING_SECTIONS: LandingSection[] = [
         title: 'Class and entity boxes',
         description:
           'A title bar over a list of name and type rows: the box at the heart of a UML class diagram and an ER model alike. Edit the fields from its menu, join them with the hollow triangle and diamond arrowheads UML expects, and skip building one out of stacked tables.',
+      },
+      {
+        art: <SequenceArt />,
+        href: '/help/palette/sequence-diagrams/',
+        group: 'More than boxes and arrows',
+        title: 'Sequence diagrams you type',
+        description:
+          'List who talks to whom and it draws the lifelines, arrows, activation bars and loops for you. Type a conversation straight down, one message per line, or paste it as text (A -> B: words). Calls, async messages and dashed replies, numbered on request so a review can say \u201cstep 4\u201d.',
+      },
+      {
+        art: <CanvasChartsArt />,
+        href: '/help/palette/tools/data-elements/',
+        group: 'More than boxes and arrows',
+        title: 'Charts and meters on the canvas',
+        description:
+          'Show the number, not just the box: column, bar, line, area and scatter charts from an editable grid or a CSV, a pie, progress bars and rings, a star rating and a timeline rail. They take the theme\u2019s colours and move, lock and export like any other element.',
+      },
+      {
+        art: <CodeBlockArt />,
+        href: '/help/palette/tools/code-blocks/',
+        group: 'More than boxes and arrows',
+        title: 'Code blocks with highlighting',
+        description:
+          'Put the payload beside the API arrow and the query under the database. A code block highlights TypeScript, JavaScript, Python, JSON, Bash, SQL, HTML, CSS and YAML, wraps long lines if you like, and keeps its own colour scheme whatever the theme.',
+      },
+      {
+        art: <EventStormingArt />,
+        href: '/help/canvas/event-storming-boards/',
+        group: 'Event storming',
+        title: 'Event storming boards',
+        description:
+          'A board built for the workshop: the eight note kinds of the notation one click away, written in marker capitals on paper that keeps its size and colour. Notes snap to timeline lanes, and holding Alt over a gap slides the rest of the wall along to make room for the step you missed.',
+      },
+      {
+        art: <StickyPhotoArt />,
+        href: '/help/canvas/event-storming-boards/',
+        group: 'Event storming',
+        title: 'Bring the paper wall in from a photo',
+        description:
+          'Ran the session on a real wall? Take a photo and every sticky comes in as a note: its words read from the handwriting, its kind from the paper\u2019s colour, laid out where it was. Untick what is not a note, fix a misreading, then add them as a draft you check in place.',
       },
       {
         art: <IconsArt />,
@@ -577,6 +641,14 @@ export const LANDING_SECTIONS: LandingSection[] = [
         title: 'Keyboard shortcuts',
         description:
           'The moves you repeat have keys: undo and redo, delete, switch tools, and drop a shape, arrow, sticky, or text without reaching for the palette. Hold Cmd and the palette shows each key. A built-in cheat sheet lists them all, and you can switch them off per device. The canvas itself is a stop in the Tab order: move through its elements from the keyboard, with the selection announced to screen readers.',
+      },
+      {
+        art: <SearchPaletteArt />,
+        href: '/help/search-panel/the-search-panel/command-palette/',
+        group: 'Neat without trying',
+        title: 'Find or run anything with \u2318K',
+        description:
+          'One box finds your documents, tabs and elements, even text inside table cells, and runs commands by name: type \u201ctidy\u201d for Auto Layout or \u201claser\u201d for the pointer. It adds a shape or icon by name, jumps to a setting, and opens the help article for whatever you just searched.',
       },
       {
         art: <UnlimitedTabsArt />,

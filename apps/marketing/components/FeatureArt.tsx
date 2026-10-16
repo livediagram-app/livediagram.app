@@ -49,3 +49,8 @@ export * from './feature-art/sheet';
 export * from './feature-art/forms';
 export * from './feature-art/side-by-side';
 export * from './feature-art/imports';
+// Event storming boards and their photo import; the sequence diagram, charts and code blocks; search,
+// follow along and live images.
+export * from './feature-art/storming';
+export * from './feature-art/canvas-data';
+export * from './feature-art/reach';
