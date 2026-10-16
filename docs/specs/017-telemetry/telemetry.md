@@ -98,7 +98,7 @@ The dashboard surfaces three fixed windows that top out at **30 days** (Last 30 
   string for a null `type`). It drives the Search view's metric trend line so a
   single event can be charted over time, not just a whole category. Same
   zero-filled indexing as `days`/`totals`/`byCategory`.
-  Cached at the edge (Cache API, a few minutes) so a public traffic spike never hammers D1. When disabled, returns `{ enabled: false }`. The cache is bypassed when the worker is serving from a localhost hostname (parallel to the same-origin escape hatch), so a developer iterating on the feature sees fresh counts immediately instead of waiting out a 5-minute TTL per emit.
+  Cached at the edge (Cache API, a few minutes) so a public traffic spike never hammers D1. When disabled, returns `{ enabled: false }`. The dashboard shows that as **Telemetry isn’t enabled here**, never as a failed request. The cache is bypassed when the worker is serving from a localhost hostname (parallel to the same-origin escape hatch), so a developer iterating on the feature sees fresh counts immediately instead of waiting out a 5-minute TTL per emit.
 
 ## On/off env var
 
