@@ -55,6 +55,21 @@ export const CONTAINER_ANIMATIONS: readonly ShapeAnimation[] = [
   'highlight',
 ];
 
+// The Shape set's MOTIONS (docs/specs/028-animation/element-animations.md "Shape motions"): the ones that move or
+// fade the element as a whole, so they suit any silhouette. An element whose own set animates inside it (a photo, a
+// note, a chart, ...) is offered these beside its own set; the rest light or trace a shape's own outline and fill.
+export const SHAPE_MOTIONS: readonly ShapeAnimation[] = [
+  'blink',
+  'heartbeat',
+  'breathe',
+  'bounce',
+  'wobble',
+  'shake',
+  'jelly',
+  'float',
+  'swing',
+];
+
 export type StickyAnimation =
   | 'flutter'
   | 'sway'

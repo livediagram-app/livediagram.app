@@ -123,6 +123,26 @@ When `imageId === null`, `<ImageElementView>` (`apps/live/components/canvas/Imag
 - **The broken state is sized to the box.** Its label is a tenth of the box's shorter side, between 10 and 40 canvas px, and the icon twice the label (at least 16 px, at most 40% of the shorter side) (`imagePlaceholderMetrics`). A box too small to hold the label under the icon shows the icon alone and carries the label as its accessible name.
 - **Telemetry.** Pressing Select Image tracks `Element / Used / ImagePlaceholder`.
 
+### Shown at the size they are seen
+
+A picture is kept whole in the gallery, and exports draw the original, but the editor shows a copy
+no larger than a screen can use (`apps/live/lib/image-display.ts`): at most 2048 px on its longest
+side on a phone or tablet (a coarse pointer), 4096 px elsewhere, and 512 px in a gallery tile.
+A camera photo or a retina screenshot decodes to 25 to 100 MB of pixels whatever size it is drawn
+at, and a phone closes a tab that holds too many, so a slide deck of a dozen screenshots on an
+iPhone was closed while moving between its pages.
+
+- **Made once, one at a time.** The copy is made when the picture is first shown, in the browser
+  (decoded off the main thread, drawn smaller, saved as JPEG for a JPEG and PNG otherwise, so a
+  transparent picture stays transparent), one picture after another so two large decodes never
+  overlap. A picture that already fits, a GIF (whose frames a still copy would lose) and a browser
+  without `createImageBitmap` show the original.
+- **Shared by every view.** The last 24 copies are kept by picture and size, and every view of the
+  same copy (an element used twice, a page background and an element) shows it through one URL,
+  given back when its last view goes, so the browser decodes it once.
+- **Never seen by others.** The copy lives in this browser's memory only; nothing about it is
+  uploaded or stored.
+
 ### Image picker modal
 
 `apps/live/components/panels/ImagePicker.tsx`, lazy-loaded via `next/dynamic` (matches the other on-demand modals like `ExportTabDialog` and `ShareDialog`). Three-tab modal:

@@ -20,8 +20,10 @@ import {
   type ConceptShape,
   type AnimationSetId,
   type Element,
+  type ShapeAnimation,
   type ShapeElement,
-  CONTAINER_ANIMATIONS,
+  inAnimationSet,
+  shapeAnimationsFor,
 } from '@livediagram/document';
 import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
 import { MenuFlyoutSection } from '@/components/primitives/MenuFlyoutSection';
@@ -124,6 +126,17 @@ export function animationCategoriesOf(elements: readonly Element[]): Category[] 
     if (own) present.add(own);
   }
   return ORDER.filter((c) => present.has(c));
+}
+
+/** The Shape values every Shape member of the selection is offered, in the set's order. */
+export function sharedShapeAnimations(elements: readonly Element[]): readonly ShapeAnimation[] {
+  let shared: readonly ShapeAnimation[] | undefined;
+  for (const el of elements) {
+    if (!inAnimationSet('shape', el)) continue;
+    const own = shapeAnimationsFor(el);
+    shared = shared ? shared.filter((v) => own.includes(v)) : own;
+  }
+  return shared ?? [];
 }
 
 /**
@@ -282,12 +295,9 @@ function CategoryBody({
   return (
     <AnimationSetTiles
       set={set}
-      // A boundary is offered only the motions that leave it in place (docs/specs/009-elements/boundary.md).
-      values={
-        set === 'shape' && elements.some((el) => el.type === 'shape' && el.shape === 'boundary')
-          ? CONTAINER_ANIMATIONS
-          : undefined
-      }
+      // Shape offers what every member takes: a boundary only the motions that leave it in place
+      // (docs/specs/009-elements/boundary.md), a photo or a note only the motions (element-animations.md "Shape motions").
+      values={set === 'shape' ? sharedShapeAnimations(elements) : undefined}
       current={state.value}
       legacy={state.legacy}
       speed={state.speed ?? DEFAULT_ANIMATION_SPEED}

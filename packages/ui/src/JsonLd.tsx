@@ -1,3 +1,5 @@
+'use client';
+
 import { trustedHtml } from './trusted-types';
 // Renders a schema.org payload as an inline `<script type="application/ld+json">`.
 // Marketing and the help centre both emit structured data (docs/specs/019-marketing/marketing-site.md, docs/specs/018-help/help-app.md)
@@ -14,6 +16,13 @@ import { trustedHtml } from './trusted-types';
 // Why dangerouslySetInnerHTML is safe here: the payload is built at build time
 // on a static export, never from user input. The `</` escape is the only
 // attack vector for inlined JSON-LD, and the replace covers it.
+//
+// A client component on purpose (docs/specs/016-platform/trusted-types.md "Server-rendered markup"). As a
+// server component, `trustedHtml` ran during the static prerender, where there is no Trusted Types, and handed
+// the RSC payload a plain string. The first load was fine (the script is in the HTML), but a client navigation
+// made React write that plain string through `innerHTML`, the `default` policy refused it, and the page crashed
+// to a blank screen: every breadcrumb and category link in the help centre did this. Running here, the call
+// mints real `TrustedHTML` in the browser before React touches the sink.
 //
 // `suppressHydrationWarning` comes from the help copy. React does not emit it
 // as an attribute, so it changes no output; it silences a hydration warning on

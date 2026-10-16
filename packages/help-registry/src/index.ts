@@ -58,6 +58,9 @@ export interface Category {
   /** Feature-guide categories: grouped under "Feature Guides" on the home page,
    *  apart from the support categories (About, Getting Started, ...). */
   kind?: 'feature';
+  /** The order this category's card groups appear in on its page (docs/specs/018-help/help-pages.md "Groups").
+   *  Names every `group` its articles use; without it, groups appear in first-appearance order. */
+  groups?: string[];
 }
 
 export const categories: Category[] = [
@@ -156,6 +159,7 @@ export const categories: Category[] = [
       'Organise everything you build: how the Explorer keeps your documents, folders, teams, and assets easy to find and manage.',
     articleCount: 18,
     kind: 'feature',
+    groups: ['Your Library', 'Activity', 'Assets and Imports'],
   },
   {
     slug: 'selection-modes',
@@ -172,6 +176,7 @@ export const categories: Category[] = [
       'Your launchpad for everything on the canvas: every element and palette setting explained.',
     articleCount: 35,
     kind: 'feature',
+    groups: ['Everyday Elements', 'Diagram Kits', 'Workshop Kits', 'Palette Settings'],
   },
   {
     slug: 'canvas',
@@ -180,6 +185,13 @@ export const categories: Category[] = [
       'Master the infinite canvas: place, select, link, annotate, layer, rotate, animate, lock and theme elements, undo changes, and start from templates.',
     articleCount: 31,
     kind: 'feature',
+    groups: [
+      'Basics',
+      'Modes and Boards',
+      'Text and Notes',
+      'Styling Elements',
+      'Layers and Locking',
+    ],
   },
   {
     slug: 'tabs',
@@ -911,6 +923,7 @@ export const articles: Article[] = [
     keywords: 'board workspace drawing area infinite surface whiteboard',
     category: 'Canvas',
     categorySlug: 'canvas',
+    group: 'Basics',
   },
   // ---- Selection Modes (own feature category, extracted from Palette) ----
   {
@@ -1050,7 +1063,7 @@ export const articles: Article[] = [
       'square circle rectangle box diamond triangle ellipse cylinder morph node hexagon trapezoid stadium parallelogram pill speech bubble cloud star document',
     category: 'Palette',
     categorySlug: 'palette',
-    group: 'Elements',
+    group: 'Everyday Elements',
   },
   {
     slug: 'arrows',
@@ -1059,7 +1072,7 @@ export const articles: Article[] = [
     keywords: 'connector line link edge join relationship pointer flow',
     category: 'Palette',
     categorySlug: 'palette',
-    group: 'Elements',
+    group: 'Everyday Elements',
   },
   {
     slug: 'tools',
@@ -1069,7 +1082,7 @@ export const articles: Article[] = [
       'tools tab category where find text pencil pen table frame chart sticky note image draw write build structure mind node lane timeline components media behaviour collaborate data moved',
     category: 'Palette',
     categorySlug: 'palette',
-    group: 'Elements',
+    group: 'Everyday Elements',
   },
   {
     slug: 'write',
@@ -1080,7 +1093,7 @@ export const articles: Article[] = [
       'write writing text words wordy prose page document label caption title heading sticky note post-it annotation marker remark comment copy typing type compose pointer note leader event storming domain event command actor policy read model aggregate hotspot brandolini ddd workshop notation',
     category: 'Palette',
     categorySlug: 'palette',
-    group: 'Elements',
+    group: 'Everyday Elements',
   },
   {
     slug: 'event-storming',
@@ -1090,7 +1103,7 @@ export const articles: Article[] = [
       'event storming eventstorming domain event command actor policy read model external system aggregate hotspot brandolini ddd workshop notation sticky colours colors orange blue purple big picture process design stage timeline lanes grid snap photo camera wall import add from photo',
     category: 'Palette',
     categorySlug: 'palette',
-    group: 'Elements',
+    group: 'Diagram Kits',
   },
   {
     slug: 'build',
@@ -1101,7 +1114,7 @@ export const articles: Article[] = [
       'build structure layout container holds frame lane boundary timeline table mind node sankey flow arrange scaffold group section band track grid organise card badge step number diagram key legend stack row column grid auto layout even gaps org chart organisation reports hierarchy sequence diagram uml lifeline message',
     category: 'Palette',
     categorySlug: 'palette',
-    group: 'Elements',
+    group: 'Diagram Kits',
   },
   {
     slug: 'frames',
@@ -1131,7 +1144,7 @@ export const articles: Article[] = [
       'banner callout stat row stat rows kpi badge step number block prebuilt widgets cards sections hero header masthead nav navigation website web page process steps illustrate mode',
     category: 'Palette',
     categorySlug: 'palette',
-    group: 'Elements',
+    group: 'Everyday Elements',
   },
   {
     slug: 'mind-maps',
@@ -1141,7 +1154,7 @@ export const articles: Article[] = [
       'mind map mindmap node branch child sibling tab enter keyboard tree hierarchy brainstorm outline edit outline markdown list indent bullets branching flow leftward upward downward balanced bubble spacing tight compact comfortable wide select branch delete branch',
     category: 'Palette',
     categorySlug: 'palette',
-    group: 'Elements',
+    group: 'Diagram Kits',
   },
   {
     slug: 'flowcharts',
@@ -1151,7 +1164,7 @@ export const articles: Article[] = [
       'flowchart flow chart process diagram step steps decision diamond yes no branch merge loop start end terminator input output parallelogram document database preparation connector iso 5807 tab enter keyboard auto layout tidy swimlane swim lane lanes cross functional direction down right workflow',
     category: 'Palette',
     categorySlug: 'palette',
-    group: 'Elements',
+    group: 'Diagram Kits',
   },
   {
     slug: 'edit-outline',
@@ -1172,7 +1185,7 @@ export const articles: Article[] = [
       'collaborate collaboration comment panel action panel task assign card pin pinned remark note thread reply discuss feedback annotate sticky question estimate estimation planning poker story points fibonacci tshirt t-shirt temperature check fist of five pulse mood vote idea box anonymous brainstorm brainwriting retro retrospective q&a qa slido upvote questions agenda run of show timebox segments decision record adr architecture decision roll call attendance register present room team workshop facilitate facilitation powers of two',
     category: 'Palette',
     categorySlug: 'palette',
-    group: 'Elements',
+    group: 'Workshop Kits',
   },
   {
     slug: 'chairs',
@@ -1182,7 +1195,7 @@ export const articles: Article[] = [
       'chair chairs seat seating sit sitting sat furniture avatar character walk stand table room seating plan attendance behaviour navigate facing up desk desks computer monitor screen office workstation sofa sofas couch settee loveseat two seater',
     category: 'Palette',
     categorySlug: 'palette',
-    group: 'Elements',
+    group: 'Workshop Kits',
   },
   {
     slug: 'fences',
@@ -1192,7 +1205,7 @@ export const articles: Article[] = [
       'fence fences barrier wall block blocked keep out enclosure boundary pen gate avatar character walk collision no entry area navigate behaviour',
     category: 'Palette',
     categorySlug: 'palette',
-    group: 'Elements',
+    group: 'Workshop Kits',
   },
   {
     slug: 'virtual-office',
@@ -1203,7 +1216,7 @@ export const articles: Article[] = [
       'virtual office room rooms walls door doorway meeting table conference plant bookshelf books water cooler coffee machine drink cup rug carpet kitchen lounge reception team avatar walk sit navigate',
     category: 'Palette',
     categorySlug: 'palette',
-    group: 'Elements',
+    group: 'Workshop Kits',
   },
   {
     slug: 'cards-and-callouts',
@@ -1213,7 +1226,7 @@ export const articles: Article[] = [
       'card cards node service component title meta line subtitle body tags chips icon badge tile initial header band callout note tip warning accent edge stripe strip colour color coded side border architecture persona title and caption',
     category: 'Palette',
     categorySlug: 'palette',
-    group: 'Elements',
+    group: 'Workshop Kits',
   },
   {
     slug: 'badges-and-step-numbers',
@@ -1223,7 +1236,7 @@ export const articles: Article[] = [
       'badge badges pill label tag status version new beta count step number numbers numbered disc circle walkthrough order sequence 1 2 3 attach attached corner marker renumber play in order annotate annotation',
     category: 'Palette',
     categorySlug: 'palette',
-    group: 'Elements',
+    group: 'Workshop Kits',
   },
   {
     slug: 'boundaries',
@@ -1233,7 +1246,7 @@ export const articles: Article[] = [
       'boundary boundaries container zone region vpc subnet network cluster trust zone group c4 system cloud aws azure gcp architecture nested nest tab tint cidr dashed',
     category: 'Palette',
     categorySlug: 'palette',
-    group: 'Elements',
+    group: 'Diagram Kits',
   },
   {
     slug: 'pointer-notes',
@@ -1243,7 +1256,7 @@ export const articles: Article[] = [
       'pointer note notes leader line callout remark comment annotate point spot pin pinned dot tip attach detach follow arrow label caveat',
     category: 'Palette',
     categorySlug: 'palette',
-    group: 'Elements',
+    group: 'Workshop Kits',
   },
   {
     slug: 'stacks',
@@ -1253,7 +1266,7 @@ export const articles: Article[] = [
       'stack stacks row column grid auto layout autolayout flex flexbox align distribute even gaps spacing padding container list reflow arrange',
     category: 'Palette',
     categorySlug: 'palette',
-    group: 'Elements',
+    group: 'Diagram Kits',
   },
   {
     slug: 'diagram-keys',
@@ -1263,7 +1276,7 @@ export const articles: Article[] = [
       'diagram key keys legend line styles dashed dotted solid meaning explain tag tags colour color colours colors colour code coding by team status layer card edge',
     category: 'Palette',
     categorySlug: 'palette',
-    group: 'Elements',
+    group: 'Diagram Kits',
   },
   {
     slug: 'org-charts',
@@ -1273,7 +1286,7 @@ export const articles: Article[] = [
       'org chart organisation organization chart people team hierarchy reports manager reporting line structure role initials tree ownership',
     category: 'Palette',
     categorySlug: 'palette',
-    group: 'Elements',
+    group: 'Diagram Kits',
   },
   {
     slug: 'sequence-diagrams',
@@ -1283,7 +1296,7 @@ export const articles: Article[] = [
       'sequence diagram diagrams uml lifeline lifelines message messages call reply async request response interaction api participants actor activation numbered',
     category: 'Palette',
     categorySlug: 'palette',
-    group: 'Elements',
+    group: 'Diagram Kits',
   },
   {
     slug: 'concept-graphics',
@@ -1294,7 +1307,7 @@ export const articles: Article[] = [
       'concept concepts graphic layer stack layers tiers pyramid triangle hierarchy maslow inverted funnel conversion cycle loop ring flywheel pdca plan do check act smartart rows build pulse flow animation hub and spoke hub spoke satellites ecosystem onion rings concentric core chevron chevrons pipeline value chain stages',
     category: 'Palette',
     categorySlug: 'palette',
-    group: 'Elements',
+    group: 'Diagram Kits',
   },
   {
     slug: 'lanes',
@@ -1304,7 +1317,7 @@ export const articles: Article[] = [
       'lane swimlane swim band row role team process cross-functional container pool track column vertical heading gutter upright title draw.io',
     category: 'Palette',
     categorySlug: 'palette',
-    group: 'Elements',
+    group: 'Diagram Kits',
   },
   {
     slug: 'entities',
@@ -1314,7 +1327,7 @@ export const articles: Article[] = [
       'entity class uml er erd record table schema model field attribute method database column inheritance aggregation composition fields popular',
     category: 'Palette',
     categorySlug: 'palette',
-    group: 'Elements',
+    group: 'Diagram Kits',
   },
   {
     slug: 'embed-elements',
@@ -1324,7 +1337,7 @@ export const articles: Article[] = [
       'embed video youtube vimeo loom figma google docs sheets slides play iframe media link website web page site url address browser frame illustrate',
     category: 'Palette',
     categorySlug: 'palette',
-    group: 'Elements',
+    group: 'Workshop Kits',
   },
   {
     slug: 'website',
@@ -1346,7 +1359,7 @@ export const articles: Article[] = [
       'behaviour behavior behaviours behaviors interactive button portal session timer stopwatch countdown count up elapsed vote poll reveal hide cover picker random spinner control mode switch chair seat desk sofa couch fence barrier link card bookmark preview url bring focus look here attention gather reaction pad confetti celebrate sparkles hearts applause fireworks emoji burst done check finished ready waiting who progress everyone mark complete collaborate collaboration estimate quiz trivia question temperature idea box agenda decision roll call ask the room keep a record run the room facilitate facilitation runtime live tools record react navigate selection mode',
     category: 'Palette',
     categorySlug: 'palette',
-    group: 'Elements',
+    group: 'Workshop Kits',
   },
   {
     slug: 'devices',
@@ -1356,7 +1369,7 @@ export const articles: Article[] = [
       'browser phone laptop wireframe mockup frame window screen monitor smartwatch watch tablet foldable fold unfolded desktop device illustrate mode',
     category: 'Palette',
     categorySlug: 'palette',
-    group: 'Elements',
+    group: 'Everyday Elements',
   },
   {
     slug: 'icons',
@@ -1366,7 +1379,7 @@ export const articles: Article[] = [
       'glyph symbol pictogram line art search catalogue catalog theme colour color tint furniture floor plan weight thin regular bold inline icon in shape',
     category: 'Palette',
     categorySlug: 'palette',
-    group: 'Elements',
+    group: 'Everyday Elements',
   },
   {
     slug: 'stickers',
@@ -1376,7 +1389,7 @@ export const articles: Article[] = [
       'emoji sticker badge label approved blocked wip reaction smiley face thumbs up heart fire celebrate party status flag arrow decorate pretty feelings emotion',
     category: 'Palette',
     categorySlug: 'palette',
-    group: 'Elements',
+    group: 'Everyday Elements',
   },
   {
     slug: 'technology',
@@ -1386,7 +1399,7 @@ export const articles: Article[] = [
       'aws azure gcp cloud logos tech stack infrastructure brands kubernetes docker cloudflare firebase postgres database lambda s3 architecture brand',
     category: 'Palette',
     categorySlug: 'palette',
-    group: 'Elements',
+    group: 'Everyday Elements',
   },
   // ---- Palette landings: Palette Settings ----
   {
@@ -1443,6 +1456,7 @@ export const articles: Article[] = [
     keywords: 'multi select marquee group ungroup lasso rubber band combine several many',
     category: 'Canvas',
     categorySlug: 'canvas',
+    group: 'Basics',
   },
   {
     slug: 'text-and-fonts',
@@ -1451,6 +1465,7 @@ export const articles: Article[] = [
     keywords: 'label typography font family typeface type writing edit size colour color',
     category: 'Canvas',
     categorySlug: 'canvas',
+    group: 'Text and Notes',
   },
   {
     slug: 'follow-along',
@@ -1460,7 +1475,7 @@ export const articles: Article[] = [
       'follow following follow me follow along presenter presentation present audience viewport view camera pan zoom tab sync synchronise synchronize mirror watch spectate lead guide tour walkthrough demo',
     category: 'Canvas',
     categorySlug: 'canvas',
-    group: 'Collaboration',
+    group: 'Basics',
   },
   {
     slug: 'themes',
@@ -1469,6 +1484,7 @@ export const articles: Article[] = [
     keywords: 'color colour scheme restyle recolour recolor appearance style palette',
     category: 'Canvas',
     categorySlug: 'canvas',
+    group: 'Styling Elements',
   },
   {
     slug: 'templates',
@@ -1478,16 +1494,7 @@ export const articles: Article[] = [
       'wardley map value chain evolution threat model threat modelling stride security trust boundary threat register service blueprint frontstage backstage line of visibility metric tree north star kpi tree driver model what if value proposition canvas jobs pains gains working backwards pr faq press release amazon family tree genealogy ancestry value stream map vsm lead time flow efficiency kaizen virtual office office rooms coworking cowork team pod all hands town hall auditorium pub quiz quiz night trivia icebreaker icebreakers two truths and a lie would you rather bingo find someone who games starter blank slide deck blank article blank infographic blank logo empty slide empty page artboard kanban flowchart swot gantt sankey flow diagram wireframe prebuilt scaffold quick start retro sailboat postmortem risk stakeholder persona agenda objectives crazy 8s opportunity tree article brief document write writing standup stand-up hiring pipeline recruiting content calendar editorial project planner bug tracker okrs key results product launch go no-go feedback board feature requests onboarding new wizard mode filter draw illustrate plan popular blank category categories finance budget invoice expense report loan calculator mortgage sales pipeline crm spreadsheet sheet inventory guest list rsvp grade book habit tracker meetings workshops presentations timelines roadmaps search words blank spreadsheet empty sheet blank slate',
     category: 'Canvas',
     categorySlug: 'canvas',
-  },
-  {
-    slug: 'event-storming-boards',
-    title: 'Event Storming Boards',
-    description: 'A board built for the workshop: the notation, paper-like notes, one wall.',
-    keywords:
-      'event storming eventstorming board workshop brandolini ddd domain driven design session facilitator wall sticky notes paper big picture process modelling modeling software design pass timeline domain event command aggregate hotspot insert between gap make room slot squeeze in add in the middle reorder shuffle push right alt option modifier hold key move a note rearrange resequence capitals caps uppercase upper case all caps shouting letter case marker font typeface handwriting permanent marker sharpie lane lanes timeline grid rows columns stagger staggered snap align rhythm gap gutter spacing space between line up lined up neighbour neighbor edges next note add beside quick add neighbouring note in front on top stacking order actor hotspot photo camera wall picture ocr scan import read transcribe handwriting capture snapshot draft review accept discard add notes already here duplicate matched change kind re-kind recolour recolor wrong colour misread fix words paste drop image detect stickies zoom zoom in magnify enlarge pan scroll close up untick missed draw box pinch mouse wheel middle click middle mouse button move resize delete remove select handle corner wrong box kind colour always on a lane between lanes free placement ctrl cmd arrow keys nudge up down paste at pointer paste here copy duplicate staggered tidy line up older board settle undo',
-    category: 'Canvas',
-    categorySlug: 'canvas',
-    parentSlug: 'templates',
+    group: 'Basics',
   },
   {
     slug: 'editor-modes',
@@ -1498,6 +1505,7 @@ export const articles: Article[] = [
       'editor mode editor modes mode switch switch mode change mode modes diagram draw illustrate plan facilitate session shift+d shift d cycle next mode opens in open in default mode per tab per person tab pill mode icon whiteboard sketch pages infographic boards kanban phone mobile view only read only kind template leave illustrate switch to diagram confirm convert pages workflow way of working',
     category: 'Canvas',
     categorySlug: 'canvas',
+    group: 'Modes and Boards',
   },
   {
     slug: 'draw-mode',
@@ -1508,6 +1516,7 @@ export const articles: Article[] = [
       'draw mode drawing mode diagram mode editor mode switch modes mode switch toggle shift+d shift d opens in open in default mode per tab whiteboards whiteboard white board chalkboard blackboard sketch draw drawing freehand hand drawn ink pen pens marker stylus apple pencil surface pen touch finger palm rejection pinch zoom dock toolbar eraser rubber partial erase stroke erase sticky text shapes shape recognition recognise recognize snap clean up background plain dots dotted grid graph microsoft whiteboard dark mode chalk colour color width thickness path tool vector pen tool bezier curve curves anchor point points node nodes handle handles edit points corner smooth mirrored aligned illustrator figma undo redo settings cog more shapes shape search find a shape flowchart pin pinned unpin favourite shapes frequent most used simple mode dock mode colour picker color picker custom colour hex eyedropper eye dropper your colours remove colour contrast dock position top bottom move the dock tablet ipad snap colours snap to stock colours stock colors custom colors convert colours adaptive nearest colour',
     category: 'Canvas',
     categorySlug: 'canvas',
+    group: 'Modes and Boards',
   },
   {
     slug: 'plan-mode',
@@ -1518,6 +1527,7 @@ export const articles: Article[] = [
       'plan mode planning board boards kanban scrum sprint agile retro retrospective roadmap now next later bug triage weekly planner jira trello asana linear backlog to do in progress done column columns swimlane swimlanes rows wip limit work in progress card cards ticket tickets task tasks story stories issue issues drag drop move card assign label priority estimate story points vote voting dot vote hide writing private reveal facilitator set up board settings plan card keyboard shift arrow undo editor mode switch shift+d opens in plan templates project planner gantt daily standup bug tracker okrs key results product launch feedback board budget planner timesheet contact list task tracker spreadsheet templates hiring onboarding tabs dashboard trash archive flag finder types hand tool view only phone',
     category: 'Canvas',
     categorySlug: 'canvas',
+    group: 'Modes and Boards',
   },
   {
     slug: 'facilitate-mode',
@@ -1528,6 +1538,7 @@ export const articles: Article[] = [
       'pub quiz trivia icebreaker questions two truths and a lie would you rather people bingo games facilitate mode facilitation facilitator session sessions run a session workshop meeting team meeting retro retrospective town hall all hands lean coffee crazy eights brainstorm board workshop board kickoff ground rules icebreaker q&a questions agenda timer countdown stopwatch vote dot vote voting poll survey pulse check reveal hide estimate planning poker quiz temperature check fist of five idea box anonymous picker random spin reactions confetti stickers emoji sticker badge collaborate category session strip blank session editor mode switch shift+d where did the timer go where are stickers missing tools moved',
     category: 'Canvas',
     categorySlug: 'canvas',
+    group: 'Modes and Boards',
   },
   {
     slug: 'items',
@@ -1667,6 +1678,18 @@ export const articles: Article[] = [
       'illustrate illustrate mode infographic infographics poster one pager one-pager flyer handout report page pages sheet sheets a4 a3 letter us letter square social post instagram linkedin story stories slide portrait landscape orientation size page size background article articles write writing document page kind infographic or article first page choice navigator next page previous page backgrounds colour color gradient pattern dots grid lines theme dark page name rename duplicate move reorder drag delete add page snap margins margin fit resize scale lay out into pages diagram to infographic convert mind map editor mode switch modes opens in templates blank illustration leave lock locked unlock padlock protect freeze read only page lock custom gradient photo background image background picture background photo overlay image overlay wash tint fade upload image stock photo openverse title bar layout button background button tidy up tidy align straighten even spacing widescreen carry over',
     category: 'Canvas',
     categorySlug: 'canvas',
+    group: 'Modes and Boards',
+  },
+  {
+    slug: 'event-storming-boards',
+    title: 'Event Storming Boards',
+    description: 'A board built for the workshop: the notation, paper-like notes, one wall.',
+    keywords:
+      'event storming eventstorming board workshop brandolini ddd domain driven design session facilitator wall sticky notes paper big picture process modelling modeling software design pass timeline domain event command aggregate hotspot insert between gap make room slot squeeze in add in the middle reorder shuffle push right alt option modifier hold key move a note rearrange resequence capitals caps uppercase upper case all caps shouting letter case marker font typeface handwriting permanent marker sharpie lane lanes timeline grid rows columns stagger staggered snap align rhythm gap gutter spacing space between line up lined up neighbour neighbor edges next note add beside quick add neighbouring note in front on top stacking order actor hotspot photo camera wall picture ocr scan import read transcribe handwriting capture snapshot draft review accept discard add notes already here duplicate matched change kind re-kind recolour recolor wrong colour misread fix words paste drop image detect stickies zoom zoom in magnify enlarge pan scroll close up untick missed draw box pinch mouse wheel middle click middle mouse button move resize delete remove select handle corner wrong box kind colour always on a lane between lanes free placement ctrl cmd arrow keys nudge up down paste at pointer paste here copy duplicate staggered tidy line up older board settle undo',
+    category: 'Canvas',
+    categorySlug: 'canvas',
+    group: 'Modes and Boards',
+    parentSlug: 'templates',
   },
   {
     slug: 'infographic-layouts',
@@ -1865,6 +1888,7 @@ export const articles: Article[] = [
       'url hyperlink bookmark card website jump navigate external resources add link edit link remove link',
     category: 'Canvas',
     categorySlug: 'canvas',
+    group: 'Basics',
   },
   {
     slug: 'explorer-page',
@@ -1875,6 +1899,7 @@ export const articles: Article[] = [
       'library home dashboard files my documents my diagrams list manage browse sidebar overview spaces more keyboard navigation tree',
     category: 'Explorer',
     categorySlug: 'explorer',
+    group: 'Your Library',
   },
   {
     slug: 'shape-libraries',
@@ -1885,6 +1910,7 @@ export const articles: Article[] = [
       'shape library libraries my shapes custom shapes reusable stencil stencils preset presets scratchpad drawio draw.io mxlibrary uml icons notation import palette rename delete',
     category: 'Explorer',
     categorySlug: 'explorer',
+    group: 'Assets and Imports',
   },
   {
     slug: 'tags',
@@ -1905,6 +1931,7 @@ export const articles: Article[] = [
       'drawio draw.io diagrams.net diagrams net mxfile import migrate migration move google drive drive save no extension json export folder files pages tabs png svg library libraries preset scratchpad confluence vs code desktop',
     category: 'Explorer',
     categorySlug: 'explorer',
+    group: 'Assets and Imports',
   },
   {
     slug: 'microsoft-whiteboard-import',
@@ -1915,6 +1942,7 @@ export const articles: Article[] = [
       'microsoft whiteboard ms whiteboard import migrate migration move retire retired retirement deleted export board boards folder zip ink pen strokes pressure sticky notes personal account keep save rescue',
     category: 'Explorer',
     categorySlug: 'explorer',
+    group: 'Assets and Imports',
   },
   {
     slug: 'explorer-panel',
@@ -1925,6 +1953,7 @@ export const articles: Article[] = [
       'sidebar overview spaces more tree keyboard switch documents diagrams files library in editor menu button hamburger popover open more menu new share export github',
     category: 'Explorer',
     categorySlug: 'explorer',
+    group: 'Your Library',
   },
   {
     slug: 'list-and-card-views',
@@ -1935,6 +1964,7 @@ export const articles: Article[] = [
       'card grid view toggle thumbnail preview snapshot layout rows tiles gallery details table columns sort type mode comments access permission size objects created updated date',
     category: 'Explorer',
     categorySlug: 'explorer',
+    group: 'Your Library',
   },
   {
     slug: 'timeline',
@@ -1945,6 +1975,7 @@ export const articles: Article[] = [
       'home jump back in within reach most used last used recent see more grid strip return often what happened others teammates summary expand see timeline timeline all activity landing start feed activity history what happened whats new latest events log stream notifications updates recent changes calendar month view upcoming expiring stacked grouped collapse day colour color red amber green deleted preview thumbnail card cards grid menu ellipsis rename move duplicate created updated unread unseen new badge since last visit who did what other people filter local time remove dismiss hide clutter tidy clean up refresh live update revoke token accept decline invite leave team edit theme share',
     category: 'Explorer',
     categorySlug: 'explorer',
+    group: 'Activity',
   },
   {
     slug: 'activity',
@@ -1955,6 +1986,7 @@ export const articles: Article[] = [
       'activity inbox to do todo tasks my actions assigned to me assigned by me outstanding waiting open threads unresolved comments replies pending work queue what needs me badge count cross document all documents cross diagram all diagrams',
     category: 'Explorer',
     categorySlug: 'explorer',
+    group: 'Activity',
   },
   {
     slug: 'recent',
@@ -1964,6 +1996,7 @@ export const articles: Article[] = [
       'history last opened latest edited previously hide exclude remove clutter show restore visible folder location where filed root breadcrumb diagrams filter newest twelve',
     category: 'Explorer',
     categorySlug: 'explorer',
+    group: 'Activity',
   },
   {
     slug: 'shared-with-you',
@@ -1973,6 +2006,7 @@ export const articles: Article[] = [
       'shared with me received from others incoming shares collaborations dismiss role owner',
     category: 'Explorer',
     categorySlug: 'explorer',
+    group: 'Activity',
   },
   {
     slug: 'folders',
@@ -1981,6 +2015,7 @@ export const articles: Article[] = [
     keywords: 'organise organize directory nest move tree group files',
     category: 'Explorer',
     categorySlug: 'explorer',
+    group: 'Your Library',
   },
   {
     slug: 'default-folders',
@@ -2001,6 +2036,7 @@ export const articles: Article[] = [
       'search find filter filters chips narrow refine query token tokens made by ai generated opens in mode diagram draw kind event storming template retrospective kanban edited date last week recent people me others owner space team shared unsorted unfiled root lens results illustrate plan',
     category: 'Explorer',
     categorySlug: 'explorer',
+    group: 'Your Library',
   },
   {
     slug: 'personal-space',
@@ -2011,6 +2047,7 @@ export const articles: Article[] = [
       'my documents personal space library my work your documents your diagrams own files root folder organise organize unsorted unfiled made by ai generated favourite favorite star starred bookmark pin quick access',
     category: 'Explorer',
     categorySlug: 'explorer',
+    group: 'Your Library',
   },
   {
     slug: 'team-spaces',
@@ -2019,6 +2056,7 @@ export const articles: Article[] = [
     keywords: 'teams team spaces shared workspace invites membership group new team',
     category: 'Explorer',
     categorySlug: 'explorer',
+    group: 'Your Library',
   },
   {
     slug: 'image-gallery',
@@ -2027,6 +2065,7 @@ export const articles: Article[] = [
     keywords: 'uploads pictures photos assets manage delete media guest upload used unused',
     category: 'Explorer',
     categorySlug: 'explorer',
+    group: 'Assets and Imports',
   },
   {
     slug: 'themes-library',
@@ -2035,6 +2074,7 @@ export const articles: Article[] = [
     keywords: 'custom themes swatches colours colors library reuse manage',
     category: 'Explorer',
     categorySlug: 'explorer',
+    group: 'Assets and Imports',
   },
   {
     slug: 'profile',
@@ -2045,6 +2085,7 @@ export const articles: Article[] = [
       'account profile settings email delete avatar name preferences identity danger zone menu sign out picture mentions',
     category: 'Explorer',
     categorySlug: 'explorer',
+    group: 'Your Library',
   },
   {
     slug: 'teams',
@@ -2132,6 +2173,7 @@ export const articles: Article[] = [
     keywords: 'note marker callout tooltip pin footnote comment hover rich text formatting',
     category: 'Canvas',
     categorySlug: 'canvas',
+    group: 'Text and Notes',
   },
   {
     slug: 'notes',
@@ -2142,6 +2184,7 @@ export const articles: Article[] = [
       'note notes memo remark caveat detail context description rich text formatting bold italic underline heading bullet numbered list link popover badge resources',
     category: 'Canvas',
     categorySlug: 'canvas',
+    group: 'Text and Notes',
   },
   {
     slug: 'layers',
@@ -2150,6 +2193,7 @@ export const articles: Article[] = [
     keywords: 'photoshop stack hide lock organise organize panel z order',
     category: 'Canvas',
     categorySlug: 'canvas',
+    group: 'Layers and Locking',
   },
   {
     slug: 'layers-visibility-and-locking',
@@ -2158,6 +2202,7 @@ export const articles: Article[] = [
     keywords: 'show visibility solo preview toggle eye protect',
     category: 'Canvas',
     categorySlug: 'canvas',
+    group: 'Layers and Locking',
     parentSlug: 'layers',
   },
   {
@@ -2167,6 +2212,7 @@ export const articles: Article[] = [
     keywords: 'organize rename reorder merge move clear manage',
     category: 'Canvas',
     categorySlug: 'canvas',
+    group: 'Layers and Locking',
     parentSlug: 'layers',
   },
   {
@@ -2177,6 +2223,7 @@ export const articles: Article[] = [
       'transparency transparent translucent alpha fade see through bring to front send to back stacking z index overlap behind above',
     category: 'Canvas',
     categorySlug: 'canvas',
+    group: 'Layers and Locking',
   },
   {
     slug: 'size',
@@ -2186,6 +2233,7 @@ export const articles: Article[] = [
       'size width height dimensions exact pixels px resize scale bigger smaller aspect ratio lock proportion square stretch squash reset match',
     category: 'Canvas',
     categorySlug: 'canvas',
+    group: 'Styling Elements',
   },
   {
     slug: 'rotation',
@@ -2195,6 +2243,7 @@ export const articles: Article[] = [
     keywords: 'rotate turn angle spin degrees tilt flip orientation',
     category: 'Canvas',
     categorySlug: 'canvas',
+    group: 'Styling Elements',
   },
   {
     slug: 'animations',
@@ -2204,6 +2253,7 @@ export const articles: Article[] = [
       'animate animation motion pulse loop effects moving flow wiggle typewriter typing reveal text words cascade highlight underline flutter sticky draw trace ken burns zoom pan photo table rows',
     category: 'Canvas',
     categorySlug: 'canvas',
+    group: 'Styling Elements',
   },
   {
     slug: 'shadows',
@@ -2212,6 +2262,7 @@ export const articles: Article[] = [
     keywords: 'shadow drop depth elevation blur offset lift float soft hard card 3d shade video',
     category: 'Canvas',
     categorySlug: 'canvas',
+    group: 'Styling Elements',
   },
   {
     slug: 'finish',
@@ -2221,6 +2272,7 @@ export const articles: Article[] = [
       'finish sketch sketchy hand drawn handdrawn whiteboard rough wobbly hatching professional crisp print clean flexible look style drawing',
     category: 'Canvas',
     categorySlug: 'canvas',
+    group: 'Styling Elements',
   },
   {
     slug: 'quick-style-panel',
@@ -2230,6 +2282,7 @@ export const articles: Article[] = [
       'quick style panel colour color stroke background fill width thickness dashed dotted flowing animated arrow align alignment icon remember memory next shape clear styles reset format custom swatch override picker hex brand highlighter highlight marker corners ink turn off disable settings',
     category: 'Canvas',
     categorySlug: 'canvas',
+    group: 'Styling Elements',
   },
   {
     slug: 'locking',
@@ -2238,6 +2291,7 @@ export const articles: Article[] = [
     keywords: 'lock protect freeze prevent editing pin fixed immovable',
     category: 'Canvas',
     categorySlug: 'canvas',
+    group: 'Layers and Locking',
   },
   {
     slug: 'element-indicators',
@@ -2248,6 +2302,7 @@ export const articles: Article[] = [
       'indicators indicator badges badge icons markers chip pip status metadata link note action comment comments count top footer off hide hidden mind map edit outline tidy map settings editor color colour',
     category: 'Canvas',
     categorySlug: 'canvas',
+    group: 'Styling Elements',
   },
   {
     slug: 'undo',
@@ -2257,6 +2312,7 @@ export const articles: Article[] = [
       'ctrl z cmd z revert back mistake reverse cancel history 500 steps collaborator escape',
     category: 'Canvas',
     categorySlug: 'canvas',
+    group: 'Basics',
   },
   {
     slug: 'redo',
@@ -2265,6 +2321,7 @@ export const articles: Article[] = [
     keywords: 'ctrl y cmd shift z repeat restore forward again history',
     category: 'Canvas',
     categorySlug: 'canvas',
+    group: 'Basics',
   },
   {
     slug: 'snapping',
@@ -2275,6 +2332,7 @@ export const articles: Article[] = [
       'snap align guides grid free placement override precise position resize size match equal spacing distribute alignment',
     category: 'Canvas',
     categorySlug: 'canvas',
+    group: 'Basics',
   },
   {
     slug: 'colours-borders-opacity',
@@ -2285,6 +2343,7 @@ export const articles: Article[] = [
       'colour color fill background border outline stroke text colour ink reset to theme picker swatch custom colour hex eyedropper pipette strength thickness pattern dashed dotted radius corners rounded pill circle opacity transparency fade see-through',
     category: 'Canvas',
     categorySlug: 'canvas',
+    group: 'Styling Elements',
   },
 
   // ---- Sub-articles: Canvas ----
@@ -3063,7 +3122,7 @@ export function getArticlesByCategory(categorySlug: string): Article[] {
 
 /**
  * A feature category's landing cards, split into sub-category groups in the
- * order each group first appears in {@link articles}. Used by the category
+ * category's `groups` order, else the order each group first appears in {@link articles}. Used by the category
  * index to render grouped sections (e.g. Palette's Selection Modes / Elements
  * / Palette Settings). A category whose landings have no `group` collapses to
  * a single section with an empty `group` label, so callers can render a plain
@@ -3078,19 +3137,35 @@ export function getCategoryGroups(categorySlug: string): { group: string; articl
     if (existing) existing.articles.push(article);
     else groups.push({ group: label, articles: [article] });
   }
-  return groups;
+  // A category may fix its groups' order; a group it does not name keeps its place after the named ones.
+  const order = categories.find((c) => c.slug === categorySlug)?.groups ?? [];
+  const rank = (g: string) => (order.includes(g) ? order.indexOf(g) : order.length);
+  return groups.sort((a, b) => rank(a.group) - rank(b.group));
 }
 
 export function getSubArticles(parentSlug: string): Article[] {
   return articles.filter((a) => a.parentSlug === parentSlug);
 }
 
+/**
+ * The articles matching `query` (case-insensitive, on title, description and keywords), best first: a title that
+ * starts with the query, then a title with a word starting with it, then a title containing it, then a match in
+ * the description, then one in the keywords alone. Registry order breaks ties.
+ */
 export function searchArticles(query: string): Article[] {
   const lower = query.toLowerCase();
-  return articles.filter(
-    (a) =>
-      a.title.toLowerCase().includes(lower) ||
-      a.description.toLowerCase().includes(lower) ||
-      a.keywords.toLowerCase().includes(lower),
-  );
+  const rank = (a: Article): number => {
+    const title = a.title.toLowerCase();
+    if (title.startsWith(lower)) return 0;
+    if (title.includes(` ${lower}`)) return 1;
+    if (title.includes(lower)) return 2;
+    if (a.description.toLowerCase().includes(lower)) return 3;
+    if (a.keywords.toLowerCase().includes(lower)) return 4;
+    return -1;
+  };
+  return articles
+    .map((a) => ({ a, r: rank(a) }))
+    .filter(({ r }) => r >= 0)
+    .sort((x, y) => x.r - y.r)
+    .map(({ a }) => a);
 }

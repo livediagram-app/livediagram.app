@@ -86,13 +86,14 @@ const BAR: readonly string[] = [
   'Tech',
   'Media',
 ];
-// A name's width at the strip's 8.5px type, and the padding either side of it.
-const charW = 4.8;
-const PAD = 8;
+// A name's width at the strip's 8.5px type, and the padding either side of it. Tight enough that the whole
+// strip, Search included, fits a 420-wide scene beside the menu card (the figure scan in help-pages.md).
+const charW = 4.5;
+const PAD = 5;
 const nameW = (name: string) => Math.round(name.length * charW + 2 * PAD);
 
 /** The width of the strip drawn by `Strip`. */
-export const STRIP_W = 49 + BAR.reduce((w, c) => w + (c === '|' ? 9 : nameW(c)), 0) + 40;
+export const STRIP_W = 49 + BAR.reduce((w, c) => w + (c === '|' ? 9 : nameW(c)), 0) + 36;
 
 /** The palette strip as Diagram's category bar, top-left corner at (x, y), STRIP_W wide and 32 tall: the selection
  *  mode, the categories by name (`open` pressed, its flyout showing), and Search. */
@@ -152,16 +153,16 @@ export function Strip({ x, y, open }: { x: number; y: number; open?: string }) {
       <path d={`M${x + 43} ${y + 8}v16`} className="stroke-slate-200" strokeWidth={1} />
       {items}
       {/* Search, last on the strip behind its own divider. */}
-      <path d={`M${end + 6} ${y + 8}v16`} className="stroke-slate-200" strokeWidth={1} />
+      <path d={`M${end + 5} ${y + 8}v16`} className="stroke-slate-200" strokeWidth={1} />
       <circle
-        cx={end + 21}
+        cx={end + 19}
         cy={y + 15}
         r={5}
         className="fill-none stroke-slate-500"
         strokeWidth={1.6}
       />
       <path
-        d={`M${end + 25} ${y + 19} l4 4`}
+        d={`M${end + 23} ${y + 19} l4 4`}
         className="stroke-slate-500"
         strokeWidth={1.6}
         strokeLinecap="round"

@@ -897,7 +897,7 @@ export const CANVAS_ZOOMS = chart(
   'Canvas',
   'Zoomed',
   'Canvas Zooms',
-  'Zoomed in or out, to fit, or to a preset.',
+  'Zoomed in or out, to fit, to a preset, or on a double-tapped spot.',
 );
 
 export const ZEN_MODE = chart('UI', 'Toggled', 'Zen Mode', 'Zen mode switched on or off.', {

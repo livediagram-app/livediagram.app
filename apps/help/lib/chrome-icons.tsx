@@ -1,4 +1,5 @@
 import {
+  lucideArrowLeft,
   lucideArrowRight,
   lucideChevronUp,
   lucideClock,
@@ -7,6 +8,7 @@ import {
   lucideInfo,
   lucideLightbulb,
   lucideMail,
+  lucideMessageCircle,
   lucideTextAlignStart,
 } from '@livediagram/icons/lucide';
 import { lucideGlyph } from '@livediagram/ui';
@@ -18,7 +20,9 @@ export const ContentsIcon = lucideGlyph(lucideTextAlignStart, 16);
 export const ChevronUpIcon = lucideGlyph(lucideChevronUp, 16);
 export const FileIcon = lucideGlyph(lucideFile, 12);
 export const ArrowRightIcon = lucideGlyph(lucideArrowRight, 14);
+export const ArrowLeftIcon = lucideGlyph(lucideArrowLeft, 14);
 export const MailIcon = lucideGlyph(lucideMail, 16);
+export const MessageIcon = lucideGlyph(lucideMessageCircle, 16);
 export const ExternalLinkIcon = lucideGlyph(lucideExternalLink, 16);
 export const TipIcon = lucideGlyph(lucideLightbulb, 20);
 export const NoteIcon = lucideGlyph(lucideInfo, 20);

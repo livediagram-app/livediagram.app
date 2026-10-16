@@ -265,8 +265,10 @@ The **Visualisations** palette category charts the cards. Each is resizable (720
 
 - The month opens on today's, weeks from Monday; **‹** and **›** step a month (each viewer's own, unsaved),
   and **Today** comes back. Today's day is ringed.
-- Each day lists its due cards as **compact cards**, as a board draws them at Compact size (done ones faded), where a
-  day has room for one (50 px: a maximised calendar, a Visualisation tab, a tall slot); on a small calendar, as a
+- Each day lists its due cards as **minimal cards**, as a board draws them at Minimal size (the title, up to
+  two lines, between its type dot and its fields; done ones faded), where a day has room for one (50 px: a maximised calendar, a
+  Visualisation tab, a tall slot); a calendar is a dense grid of narrow days, so it never draws Compact or Detailed
+  faces. On a small calendar, as a
   type-coloured dot and title, done ones muted and struck through. As many as fit and then **+N more**; pressing one
   opens it.
 - The header counts the cards due that month: `5 due`. No card due that month: **Nothing due this month.**
@@ -296,7 +298,7 @@ The **Visualisations** palette category charts the cards. Each is resizable (720
 
 ### Start Calendar
 
-- The Due Calendar by the cards' **Start** (`start-calendar`): the same month grid, steps, Today, compact cards or
+- The Due Calendar by the cards' **Start** (`start-calendar`): the same month grid, steps, Today, minimal cards or
   lines and **+N more**, each day listing the cards that start then. It shows the card types with a Start field.
 - Header `Start Calendar · October 2026`, its count `3 starting`; no card starting that month: **Nothing starts
   this month.**

@@ -11,6 +11,7 @@ import {
   getWorkbenchConfinement,
 } from './core';
 import { blobToDataUrl } from '@/lib/blob-data-url';
+import { cachedDisplayCopy, displayEdge, releaseShownUrl, shownUrl } from '@/lib/image-display';
 
 // Listing the owner's gallery. Returns null when the server reports
 // 503 (R2 not provisioned on this deployment), letting the picker
@@ -107,21 +108,31 @@ async function _apiImageUsage(
 export const apiImageUsage = dedupeInFlight(_apiImageUsage, (ownerId) => ownerId);
 
 // Fetch the bytes of one image (authenticated) and return a blob
-// URL the caller can stick on an `<img>`. The caller is responsible
-// for revoking the URL when the element unmounts to prevent leaks.
+// URL the caller can stick on an `<img>`. The caller gives it back with
+// releaseImageBlobUrl when the element unmounts (the URL is shared by
+// every view of the same picture, so it is never revoked directly).
 // Native `<img>` can't send auth headers, so the fetch-then-blob
 // dance is the way every read gets owner / share auth without
 // exposing the bytes publicly. Returns null on 404 / 403 / 503 so
 // the renderer can show a broken-image placeholder.
+// The bytes are the picture as shown (image-display.ts): no larger than `maxEdge` on its longest side,
+// this device's display size by default, made once and shared by every view of the same picture.
+// Exports read the original (apiFetchImageDataUrl).
 export async function apiFetchImageBlobUrl(
   ownerId: string,
   imageId: string,
-  opts: { documentId?: string; shareCode?: string | null } = {},
+  opts: { documentId?: string; shareCode?: string | null; maxEdge?: number } = {},
 ): Promise<string | null> {
-  const res = await fetchImage(ownerId, imageId, opts);
-  if (!res) return null;
-  return URL.createObjectURL(await res.blob());
+  const key = [ownerId, imageId, opts.documentId ?? '', opts.shareCode ?? ''].join('\0');
+  const blob = await cachedDisplayCopy(key, opts.maxEdge ?? displayEdge(), async () => {
+    const res = await fetchImage(ownerId, imageId, opts);
+    return res ? res.blob() : null;
+  });
+  return blob ? shownUrl(blob) : null;
 }
+
+/** Gives back a URL apiFetchImageBlobUrl handed out. */
+export const releaseImageBlobUrl = releaseShownUrl;
 
 // Same authenticated fetch, but as a base64 `data:` URL rather than a blob
 // URL. Used by the tab exporters (PNG / SVG / PDF): a data URL stays valid

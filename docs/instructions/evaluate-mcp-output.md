@@ -119,7 +119,9 @@ The kit lives in `apps/mcp/eval/`:
   never its host.
 - A form's response lands through `try_form`: a check reads the "Preview: ..." card with `list_items` (or the row
   with `read_sheet`) to see each answer where `read_form`'s `goesTo` and `column` say it goes. On a published form a
-  preview counts as a response, so a check on the response count allows for it.
+  preview counts as a response, so a check on the response count allows for it. Judge a try from its own result
+  (`call.result`: `made`, `where`, `title`), never from the final snapshot: models check the card, then delete it as
+  the tool suggests, so a snapshot check fails a run that did everything right (Q6 and Q7, 2026-10-16).
 - A lint finding that names a template's own design (its colours, its shape) invites the agent to undo it. Check
   `templates.test.ts` stays clean after a lint change, and lint a fresh template of each kind the round touched.
 - Measure a new layout pass at 2,000 boxes and 2,000 arrows before the PR: a per-arrow scan of the tab looked free on

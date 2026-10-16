@@ -431,7 +431,7 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   },
 
   // The help centre.
-  'apps/help/components/ArticleLayout.tsx Help·View': { values: SLUGS, open: SLUG_WHY },
+  'apps/help/components/ArticleShell.tsx Help·View': { values: SLUGS, open: SLUG_WHY },
   'apps/help/components/useArticleVote.ts Help·Helpful': { values: SLUGS, open: SLUG_WHY },
   'apps/help/components/useArticleVote.ts Help·Unhelpful': { values: SLUGS, open: SLUG_WHY },
 

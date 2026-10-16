@@ -170,6 +170,8 @@ function ImageElementViewImpl({
       <img
         src={state.src}
         alt={element.alt ?? ''}
+        // Decoded off the main thread, so a picture coming into view never stalls a pan.
+        decoding="async"
         draggable={false}
         className="block h-full w-full select-none"
         style={{ objectFit: fit }}

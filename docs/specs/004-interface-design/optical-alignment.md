@@ -95,7 +95,9 @@ Existing ad-hoc shapes move onto these primitives. A new shape that frames a gly
   whatever face the browser picks. It judges each shape as if it sat on a whole pixel: the part of
   the baseline snap a shape inherits from its position is taken out of the reading, so a verdict
   never turns on unrelated content above the shape. The part that comes from the shape's own size
-  and type still counts.
+  and type still counts. A shape the viewport cuts is skipped like an overlapped one: the audit reads a viewport
+  screenshot, which holds only part of its glyph. An SVG disc follows the same horizontal rules as an
+  HTML one, so a numeral in it is judged by its advance, not its ink.
 - **A snap guard** holds the browser to that whole-pixel baseline, so the audit's correction fails
   loudly if the browser ever paints text differently.
 - **A static guard** fails when a circle or chip framing text bypasses the primitives or the

@@ -23,7 +23,8 @@ import { PageGalleryPicker } from './PageGalleryPicker';
 import { ImageCreditRow } from '@/components/palette/ImageCreditRow';
 import { MenuSliderRow } from '@/components/primitives/MenuSliderRow';
 import { useImageBlobUrl } from '@/hooks/persistence/useImageBlobUrl';
-import { apiFetchImageBlobUrl } from '@/lib/api-client';
+import { apiFetchImageBlobUrl, releaseImageBlobUrl } from '@/lib/api-client';
+import { DISPLAY_EDGE_TILE } from '@/lib/image-display';
 import type { OpenverseFilters } from '@/lib/image-search/openverse';
 import { pageImageCssUrl, pageImageOverlayCss } from '@/lib/page-image-paint';
 import { sampleImageTone } from '@/lib/page-image-tone';
@@ -125,15 +126,17 @@ export function ImageBackgroundChoices({
   // A thumbnail that would not load: the tone from the stored picture instead.
   const storedTone = async (imageId: string): Promise<string | undefined> => {
     if (imageId.startsWith('data:')) return sampleImageTone(imageId);
+    // A tile's copy is plenty for an average colour.
     const url = await apiFetchImageBlobUrl(access.ownerId, imageId, {
       documentId: access.documentId,
       shareCode: access.shareCode,
+      maxEdge: DISPLAY_EDGE_TILE,
     }).catch(() => null);
     if (!url) return undefined;
     try {
       return await sampleImageTone(url);
     } finally {
-      URL.revokeObjectURL(url);
+      releaseImageBlobUrl(url);
     }
   };
 

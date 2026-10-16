@@ -49,14 +49,21 @@ export function useCanvasPinchZoom(deps: Deps): Api {
   const isPinchingRef = useRef(false);
 
   useEffect(() => {
-    // Per-gesture state for the 2-finger pinch.
+    // Per-gesture state for the 2-finger pinch. The wrapper's centre is measured once, at the start:
+    // reading layout on every move, straight after the last move wrote the view, forced a layout per
+    // touch event.
     let pinch: {
       startDist: number;
       startZoom: number;
       startOffset: { x: number; y: number };
       midX: number;
       midY: number;
+      wCX: number;
+      wCY: number;
     } | null = null;
+    // The latest finger positions, applied once per frame (touch events can outrun the display).
+    let pinchRaf: number | null = null;
+    let pendingPinch: { dist: number; midX: number; midY: number } | null = null;
 
     const wrapperCenter = () => {
       const r = depsRef.current.canvasMainRef.current?.getBoundingClientRect();
@@ -125,18 +132,44 @@ export function useCanvasPinchZoom(deps: Deps): Api {
         startOffset: { ...depsRef.current.viewport.get().offset },
         midX: (t0.clientX + t1.clientX) / 2,
         midY: (t0.clientY + t1.clientY) / 2,
+        ...wrapperCenter(),
       };
+    };
+
+    // The pinch as it stands: the zoom the fingers' spread asks for, with the canvas point that was
+    // between the fingers at the start kept between them now, so the board zooms about the fingers
+    // and follows them as they move together (docs/specs/008-canvas/canvas-and-palette.md "Touch").
+    const flushPinch = () => {
+      pinchRaf = null;
+      const at = pendingPinch;
+      pendingPinch = null;
+      if (!pinch || !at) return;
+      const zoom = clamp(pinch.startZoom * (at.dist / pinch.startDist), ZOOM_MIN, ZOOM_MAX);
+      depsRef.current.viewport.setView({
+        zoom,
+        offset: pinchOffset(pinch, zoom, at.midX, at.midY),
+      });
     };
 
     const onTouchMove = (e: TouchEvent) => {
       if (!pinch || e.touches.length !== 2) return;
       e.preventDefault();
-      const currentDist = touchDist(e.touches[0]!, e.touches[1]!);
-      const rawZoom = pinch.startZoom * (currentDist / pinch.startDist);
-      zoomAtFocal(rawZoom, pinch.midX, pinch.midY, pinch.startZoom, pinch.startOffset);
+      const t0 = e.touches[0]!;
+      const t1 = e.touches[1]!;
+      pendingPinch = {
+        dist: touchDist(t0, t1),
+        midX: (t0.clientX + t1.clientX) / 2,
+        midY: (t0.clientY + t1.clientY) / 2,
+      };
+      pinchRaf ??= requestAnimationFrame(flushPinch);
     };
 
     const onTouchEnd = () => {
+      // Land on the last finger positions, even when they arrived inside the frame now ending.
+      if (pinchRaf !== null) {
+        cancelAnimationFrame(pinchRaf);
+        flushPinch();
+      }
       pinch = null;
       isPinchingRef.current = false;
       endPinchGesture?.();
@@ -237,6 +270,7 @@ export function useCanvasPinchZoom(deps: Deps): Api {
 
     return () => {
       if (panRaf !== null) cancelAnimationFrame(panRaf);
+      if (pinchRaf !== null) cancelAnimationFrame(pinchRaf);
       endWheelGesture();
       endPinchGesture?.();
       document.removeEventListener('touchstart', onTouchStart);
@@ -248,6 +282,32 @@ export function useCanvasPinchZoom(deps: Deps): Api {
   }, [depsRef]); // stable — all mutable state read through depsRef at call time
 
   return { isPinchingRef };
+}
+
+/**
+ * The offset that puts the canvas point between a pinch's fingers at its start (`midX`, `midY` at
+ * `startZoom` and `startOffset`) between them now (`toX`, `toY`) at `zoom`. The transform is
+ * `scale(z) translate(t)` about the wrapper's centre (wCX, wCY), so a screen point s shows canvas
+ * point (s - wC) / z - t; holding that point fixed across the change gives
+ * t2 = (to - wC) / z2 - (mid - wC) / z1 + t1.
+ */
+export function pinchOffset(
+  pinch: {
+    startZoom: number;
+    startOffset: { x: number; y: number };
+    midX: number;
+    midY: number;
+    wCX: number;
+    wCY: number;
+  },
+  zoom: number,
+  toX: number,
+  toY: number,
+): { x: number; y: number } {
+  return {
+    x: (toX - pinch.wCX) / zoom - (pinch.midX - pinch.wCX) / pinch.startZoom + pinch.startOffset.x,
+    y: (toY - pinch.wCY) / zoom - (pinch.midY - pinch.wCY) / pinch.startZoom + pinch.startOffset.y,
+  };
 }
 
 // Whether `target`, or an element between it and the canvas, scrolls on its own: the wheel is its.

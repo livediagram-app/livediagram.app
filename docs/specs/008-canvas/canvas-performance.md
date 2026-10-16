@@ -45,11 +45,20 @@ A gesture's cost scales with what it changes and what is on screen, never with t
 - **A pan or zoom moves the canvas, not its elements.** The viewport is one transform on the
   element layer. No element view takes the pan offset as a prop or reads it from a context; zoom
   reaches only what is counter-scaled to stay a constant screen size (grips, handles, badges).
+- **A pan or zoom repaints no filter.** A look every element of a kind wears by default (a soft
+  shadow) is drawn as a picture made once, never as a live CSS or SVG filter: Safari runs every
+  filter on screen again on every frame of a pan, a zoom or a page glide, and fifty sticky notes'
+  blurred peel cost about 180 ms a frame in WebKit at a phone's size. The sticky note's peel is a
+  border-image computed from its recipe ([Canvas and palette](canvas-and-palette.md) "Sticky notes
+  read as paper"); it takes no pointer, so a click or a drop beside a note reaches the board. A filter a person chooses for one element (an element shadow, the Sketch finish)
+  stays a filter.
 - **A pan or zoom renders the canvas, not the editor.** The view (pan offset and zoom) is held in
   one viewport store per editor, not as the editor's render state. A wheel tick, a pinch frame, a
   pan or a glide renders what shows the view (the canvas and its counter-scaled parts, the zoom
   controls, the Map's view box) and nothing else: the editor root, the panels and the chrome do not
-  render for it. Handlers read the view from the store when they run.
+  render for it. Handlers read the view from the store when they run. A touch pinch, whose events can
+  outrun the display, changes the view at most once a frame, and measures the canvas once, as it
+  starts.
 - **A gesture frame never reads layout after writing it.** Chrome that follows a selection (the
   floating toolbar, the selection popover) is **hidden while a selection is being moved or
   resized** and placed again when the gesture ends; elsewhere it positions from canvas geometry

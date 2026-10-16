@@ -12,7 +12,8 @@
     "./seo": "./src/seo.ts",
     "./clerk-key": "./src/clerk-key.ts",
     "./relative-time": "./src/relative-time.ts",
-    "./trusted-types": "./src/trusted-types.ts"
+    "./trusted-types": "./src/trusted-types.ts",
+    "./hero-band.css": "./hero-band.css"
   },
   "scripts": {
     "lint": "oxlint",
