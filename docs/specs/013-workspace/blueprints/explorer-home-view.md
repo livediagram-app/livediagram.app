@@ -24,14 +24,14 @@ Scope, by file:
 | `apps/live/app/explorer/entry-path.ts`                                  | `ENTRY_PATH`, `ARRIVED_ON_HOME`, `ARRIVED_ON_TIMELINE`: where the page load began       |
 | `apps/live/lib/explorer-landing.ts`                                     | `EXPLORER_LANDING_PATH`, the one landing path                                           |
 | `apps/live/components/panels/home/HomePane.tsx`                         | One column of two sections; the error state; the landing telemetry                      |
-| `apps/live/components/panels/home/JumpBackIn.tsx`                       | The section: heading row, See more, the grid or the strip, the empty line               |
+| `apps/live/components/panels/home/JumpBackIn.tsx`                       | The section: heading row, See more, the grid or the strip, the empty state              |
 | `apps/live/components/panels/home/JumpBackInStrip.tsx`                  | The phone's strip, its fade and its See more tile                                       |
 | `apps/live/components/panels/home/JumpBackInTile.tsx`                   | One document's tile (grid and strip) and the See more tile                              |
 | `apps/live/components/panels/home/HomeSection.tsx`                      | `HomeSection` (wrapper, heading row, rule, quiet link) and `InAppLink`                  |
 | `apps/live/components/panels/home/WhatHappened.tsx`                     | The section: day headings, See timeline, the entries                                    |
 | `apps/live/components/panels/home/WhatHappenedEntry.tsx`                | `ActionEntry` (one person) and `SummaryEntry` (the disclosure)                          |
 | `apps/live/components/panels/home/HomeAvatar.tsx`                       | `HomeAvatar`, `AvatarStack`: people without presence rings                              |
-| `apps/live/components/panels/home/home-icons.tsx`                       | The verb icons                                                                          |
+| `apps/live/components/panels/home/home-icons.tsx`                       | The verb icons and the empty states' glyphs                                             |
 | `apps/live/components/panels/home/HomeSkeletons.tsx`                    | The skeletons, sized as what replaces them                                              |
 | `apps/live/components/panels/home/home-styles.ts`                       | The shared classes                                                                      |
 | `apps/live/components/panels/home/home-test-utils.ts`                   | Test fixtures: a document, a person, an action, a group, a Jump back in item            |
@@ -230,7 +230,9 @@ export const HOME_COPY: {
   whatHappened: 'What happened';
   seeMore: 'See more';
   seeTimeline: 'See timeline';
+  jumpBackInEmptyTitle: 'No documents yet';
   jumpBackInEmpty: 'The documents you use most and last will gather here.';
+  whatHappenedEmptyTitle: 'No updates yet';
   whatHappenedEmpty: string;
   readFailed: string;
   tryAgain: 'Try again';
@@ -275,7 +277,7 @@ Component props:
 | A document in both groups                      | Most used only (`withinReach`)                                                                    |
 | No most used document, some recent             | The recent take the grid's top row; the phone's strip is the recent alone                         |
 | Fewer than 8 documents                         | Only what exists; the grid's minimum height keeps two rows                                        |
-| No document at all                             | The empty line; on a phone the strip still ends in See more                                       |
+| No document at all                             | The empty state; on a phone the strip still ends in See more                                      |
 | Group whose actor has no name                  | "Someone"                                                                                         |
 | Group of more than three people                | "Priya, Sam, Lee and 2 others"                                                                    |
 | Shared document                                | Opens through `?s=<code>`; location "Shared by <owner>" ("Shared with you" without an owner name) |
@@ -314,8 +316,10 @@ dark:border-slate-700` (the page's line colour), 12 px above the section's body.
   dashed slate border, a chevron-right icon over "See more" (`text-xs font-medium`), the label also as its name.
   Fade: 48 px `bg-gradient-to-l from-slate-50 dark:from-slate-900` (the page), `pointer-events-none`, opacity
   transition.
-- Empty line: `text-sm text-slate-500 dark:text-slate-400`, at the top of the grid's reserved box; on a phone in the
-  strip, before the See more tile.
+- Empty states: the shared `CompactEmptyState` (docs/specs/004-interface-design/empty-states.md) with the glyphs in
+  `home-icons.tsx` (file for Jump back in, history for What happened). The grid's is regular size, centred in the
+  grid's reserved box (`GRID_MIN_HEIGHT`) with heading and line; the strip's is small size, `w-48`, heading alone (the
+  strip's height holds no second line), before the See more tile; What happened's is regular size with `py-8`.
 - What happened: day heading (`h3`, `text-xs font-medium text-slate-500`), entries in a `ul` with 4 px between.
   `ActionEntry`: a link row, 28 px avatar, text column: "**Priya** commented on **Payments architecture**"
   (`text-sm`), the detail in quotes (`text-xs`, muted, truncated), then "location · time" (`text-xs`, muted,

@@ -118,6 +118,7 @@ describe('JumpBackIn, desktop and tablet', () => {
 
   it('says what will gather here when there is nothing yet', () => {
     renderIt(set([], []));
+    expect(screen.getByText('No documents yet')).toBeTruthy();
     expect(screen.getByText('The documents you use most and last will gather here.')).toBeTruthy();
     expect(screen.queryByRole('list')).toBeNull();
     expect(screen.getByRole('link', { name: 'See more' })).toBeTruthy();
@@ -170,9 +171,9 @@ describe('JumpBackIn, phone', () => {
     expect(fade.className).toContain('opacity-0');
   });
 
-  it('keeps its See more tile beside the empty line', () => {
+  it('keeps its See more tile beside the empty state', () => {
     renderIt(set([], []));
-    expect(screen.getByText('The documents you use most and last will gather here.')).toBeTruthy();
+    expect(screen.getByText('No documents yet')).toBeTruthy();
     expect(screen.getByRole('link', { name: 'See more' })).toBeTruthy();
   });
 });
