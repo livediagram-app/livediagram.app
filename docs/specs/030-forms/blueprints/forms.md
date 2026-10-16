@@ -143,7 +143,7 @@ unknown ids are dropped. `answerErrorMessage(q, error)` is the page's copy, shar
 `fieldTakes(q, field)`: the kind fits; a rating field's scale ≥ the question's; a choice field holds every option
 and the question has no Other. `effectiveTarget(q, type)` resolves `goesTo` or falls back to Description with
 `broken: true` (field gone, not in `type.fields`, no longer fits; Title on a type that cannot be one).
-`fieldChoices(form, q, type)` lists fitting fields with the question using each; `titleTakenBy`; `newFieldFor`.
+`fieldChoices(form, q, type)` lists fitting fields with the question using each; `titleTakenBy`; `newFieldFor` (a choice with Other a text field, `MAPPABLE_KINDS[type][1]`, so the field it makes always fits).
 
 ## 6. Response → card (`card.ts`)
 
@@ -492,7 +492,7 @@ showIfBroken?, questions: [{ id, type, typeName, prompt, …settings, goesTo?, g
   question's `column` on a sheet form.
 - **Placing a question**: `before` a question (its index), else `after` one (its index + 1), else the end of
   `section` (`placeQuestion`); `move_question` needs one of them.
-- **New fields** (`newFieldOf`): a choice with Other a text field (`MAPPABLE_KINDS[type][1]`); a new choice,
+- **New fields** (`newFieldOf`, over `newFieldFor`): a choice with Other a text field (`MAPPABLE_KINDS[type][1]`); a new choice,
   multichoice or rating field `onCard`. The line says so.
 
 ### The picture (`form-art.ts`)
