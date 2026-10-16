@@ -162,6 +162,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone turned timeline lanes on for an event-storming board. No longer recorded: lanes are always on now.',
   'Canvas|Used|Undock':
     'Someone pulled a docked note away from its host on an event-storming board. No longer recorded.',
+  'Canvas|Zoomed|DoubleTap':
+    'Someone double-tapped the canvas with a finger to zoom in on that spot.',
   'Canvas|Zoomed|Fit': 'Someone tapped "Fit to screen".',
   'Canvas|Zoomed|In': 'Someone tapped the zoom-in button.',
   'Canvas|Zoomed|Out': 'Someone tapped the zoom-out button.',

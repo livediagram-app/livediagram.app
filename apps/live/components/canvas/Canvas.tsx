@@ -4,6 +4,7 @@ import { CanvasMenu } from './canvas-menu-context';
 import { CanvasFinishProvider } from './CanvasFinishContext';
 import { LongPressRing } from '@/components/primitives/LongPressRing';
 import { useViewportOf, useViewportStore } from '@/hooks/canvas/useViewportStore';
+import { useDoubleTapZoom } from '@/hooks/canvas/useDoubleTapZoom';
 import { useCallback, useEffect, useMemo, useRef, ViewTransition } from 'react';
 import { isAnimatedPattern } from '@livediagram/document';
 import { tabBackgroundStyle, worldPatternOrigin } from '@/lib/canvas-backgrounds';
@@ -393,6 +394,7 @@ function CanvasView(props: CanvasProps) {
   // Bare-surface press routing (capture intercepts, background context
   // menu, pan-vs-marquee) lives in useCanvasSurfaceGestures; the JSX
   // below mounts its handlers verbatim.
+  const zoomInOn = useDoubleTapZoom(mainRef, viewportStore);
   const surface = useCanvasSurfaceGestures({
     canvasTool,
     middleMousePan: props.settings?.middleMousePan !== false,
@@ -415,8 +417,10 @@ function CanvasView(props: CanvasProps) {
     onEraseStart: props.onEraseStart,
     onCanvasContextMenu,
     onDeselect,
-    // On a whiteboard a double-click inside a shape edits it (lib/whiteboard-edit-target).
-    onCanvasDoubleClick: (x, y) =>
+    // On a whiteboard a double-click inside a shape edits it (lib/whiteboard-edit-target). On the bare board a
+    // finger's double-tap zooms in on the spot, a mouse's double-click drops text
+    // (docs/specs/008-canvas/canvas-and-palette.md "Double-tap to zoom").
+    onCanvasDoubleClick: (x, y, byFinger) =>
       routeBoardDoubleClick(
         {
           whiteboard: props.editorMode === 'draw',
@@ -425,7 +429,10 @@ function CanvasView(props: CanvasProps) {
           inertIds: props.layerInertIds,
         },
         { x, y },
-        { edit: props.onBeginEdit, board: onCanvasDoubleClick },
+        {
+          edit: props.onBeginEdit,
+          board: byFinger ? (bx, by) => zoomInOn({ x: bx, y: by }) : onCanvasDoubleClick,
+        },
       ),
   });
 
@@ -486,6 +493,11 @@ function CanvasView(props: CanvasProps) {
             onContextMenu={surface.onContextMenu}
             onPointerUp={surface.onContextMenuPointerUp}
             onPointerDown={surface.onPointerDown}
+            onDoubleClick={(e) => {
+              if (e.target !== e.currentTarget) return;
+              if (handlePolygonDoubleClick() || pathTool.handlePathDoubleClick()) return;
+              surface.onSurfaceDoubleClick(e);
+            }}
             // focus-visible ring only: pointer focus stays outline-free, but a
             // keyboard user Tabbing to the canvas sees where they landed.
             // overflow-clip, not overflow-hidden: a hidden box still scrolls (focus revealing a label
@@ -546,7 +558,8 @@ function CanvasView(props: CanvasProps) {
                 // Polygon finish-line double-click (docs/specs/008-canvas/polygon-tool.md) wins over the
                 // add-text double-click while the intent is armed.
                 if (handlePolygonDoubleClick() || pathTool.handlePathDoubleClick()) return;
-                if (offPage(e)) return;
+                // Off an Illustrate page nothing is made, but a finger's double-tap still zooms there.
+                if (offPage(e) && !surface.pressedByFinger()) return;
                 surface.onWrapperDoubleClick(e);
               }}
               // Spotlight (docs/specs/008-canvas/canvas-and-palette.md) is a non-editing presenter mode: make the whole

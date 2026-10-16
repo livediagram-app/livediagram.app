@@ -494,7 +494,8 @@ Explorer Home's Jump back in.
   double-click inside the topmost outline-picked shape there (by its drawn
   outline, following its rotation) opens that shape's label editor, unless
   the shape is locked, on a hidden or locked layer, or has no label to edit.
-  Beside every shape, a double-click makes a text box as on any canvas. (A
+  Beside every shape, a double-click makes a text box as on any canvas (a finger's
+  double-tap zooms instead, [Double-tap to zoom](../008-canvas/canvas-and-palette.md#double-tap-to-zoom)). (A
   selected shape's first click puts it down, so its second reaches the board:
   the same rule edits it.)
 - The **outline is the one drawn**, not the box: an ellipse by its curve, a
