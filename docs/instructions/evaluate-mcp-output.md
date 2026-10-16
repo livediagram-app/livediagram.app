@@ -10,8 +10,9 @@ The kit lives in `apps/mcp/eval/`:
 
 - `bench/tasks/*.mjs`: the task bank, one file per area (`D` diagrams, `P` plan, `S` sheets, `I` illustrate, `F`
   facilitate, `W` draw, `Q` forms). Each task is a prompt as a user would type it, its checks, an optional `after`
-  (an edit, run as a second turn of the same session) and an optional `setup` (what the prompt takes for granted,
-  made in the run's empty library). Ids are stable: rounds compare on the ids they share.
+  (an edit, run as a second turn of the same session), an optional `setup` (what the prompt takes for granted,
+  made in the run's empty library) and an optional `gallery` (pictures from `bench/fixtures/` the user has uploaded,
+  seeded into the run's image gallery before the round starts, under the names the prompt's user would have). Ids are stable: rounds compare on the ids they share.
 - `bench/checks.mjs`: the readers checks are written with (boxes, arrows, cards, card types, sheet cells, forms,
   pages, the reply), each answering yes or no, with a reason on a no.
 - `bench/run.mjs`: runs a round. `bench/score.mjs`: scores one, offline. `bench/summary.mjs`: the report.
@@ -124,5 +125,12 @@ The kit lives in `apps/mcp/eval/`:
   a fourteen-box diagram and took 1.8 s there.
 - When a fix moves where a row's members sit (stores under services), replay every past input of that shape from the
   rounds' transcripts and compare box geometry before and after: only the inputs the fix was for should move.
+- The gallery seeding runs wrangler commands that block Node's event loop; seeded while runs were talking to the
+  server, it made their requests time out ("fetch failed"). `run.mjs` seeds every gallery before the first run starts.
+- The local dev server now and then drops a request ("Error: Network connection lost"); the bench client retries a
+  request twice before the error stands. One such drop in a transcript is the server, not the tools.
+- To measure a change before and after, run the before half on a detached worktree of the last commit started on the
+  same `--persist-to` state, then the after half on the branch: a wrangler session reloads edits under it, so the
+  branch's own server is never the "before".
 - Timing tests fail under load while a round and the coverage gate share the machine; rerun them alone before
   treating them as real.
