@@ -9,7 +9,7 @@ and from [Avatar tour](../avatar-tour.md).
 | ------------------------------------------------------ | ------------------------------------------------------------------------------------------------- |
 | `packages/api-schema/src/avatar-say.ts`                | `AvatarSayOp`, the limits, `parseAvatarSay`, `countWords`, `clampSayText`                         |
 | `packages/api-schema/src/room-messages.ts`             | `avatar-say` in `PRESENCE_OP_KINDS`                                                               |
-| `apps/api/src/document-room.ts`                        | Drops a Viewer's `avatar-say`, and one `parseAvatarSay` refuses                                   |
+| `apps/api/src/room-op-gate.ts`                         | Drops a Viewer's `avatar-say`, and one `parseAvatarSay` refuses                                   |
 | `apps/live/lib/avatar-speech.ts`                       | Pure: `flightMs`, `bubbleMotion`, `admitBubble`, `headPoint`, `SeenIds`                           |
 | `apps/live/lib/avatar-speech-store.ts`                 | The bubbles on screen: `addOwnBubble`, `receivePeerSay`, `useSpeechBubbles`, `resetSpeechBubbles` |
 | `apps/live/hooks/canvas/useAvatarSpeech.ts`            | Composer state, cooldown, the floating bubbles, send and receive                                  |

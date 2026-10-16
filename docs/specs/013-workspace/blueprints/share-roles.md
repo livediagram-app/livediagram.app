@@ -31,7 +31,7 @@ socket, the answers route, a look-only Viewer) are not derived here; their earli
 | `apps/api/src/routes/document-share-routes.ts`                                                               | `POST /share` takes three levels                                                               |
 | `apps/api/src/adder-key.ts` (new)                                                                            | `adderKeyFor(documentId, ownerId)`                                                             |
 | `apps/api/src/routes/document-room-routes.ts`                                                                | The ticket carries `adderKey` for a Participant; the upgrade forwards `X-Verified-Adder`       |
-| `apps/api/src/document-room.ts`, `document-room-rules.ts`                                                    | Level on the session; op gate by class; participant `el` ops through the tab write queue       |
+| `apps/api/src/document-room.ts`, `room-op-gate.ts`, `document-room-rules.ts`                                 | Level on the session; op gate by class; participant `el` ops through the tab write queue       |
 | `apps/api/src/participant-write.ts` (new)                                                                    | `writeParticipantOps`, `writeParticipantAnswers`: compare-and-swap writes of the rule's output |
 | `apps/api/src/routes/item-routes.ts`, `item-patches-route.ts`                                                | Create, patch, move and patches at participate                                                 |
 | `apps/api/src/routes/sheet-route-kit.ts`, `sheet-write-route.ts`                                             | `cells` writes at participate                                                                  |

@@ -406,9 +406,11 @@ Durable Object storage, never D1, and none of it a copy of the document:
 - **`order-state`**: `{ epoch, seq }`, written on every mutation.
 - **The collaboration ledger** (`RoomLedgerStore`, `room-ledger-store.ts`; entries defined by the pure `collab-ledger.ts` in `@livediagram/document`): for every `el-delta` and `vote` it sequences, the latest state of each answer, idea, checklist tick, comment and the round's dots, one key per element (plus the tab's vote), tagged with the `seq` that set it. An entry that would pass the storage value limit stops growing. The api reads it back to merge a tab save (see the tab `PUT` above).
 - **The live poll** (`RoomLivePoll`, `room-live-poll.ts`, key `live-poll`): the running poll and every answer, replayed on `hello`, dropped on `poll-end`.
-- **The facilitator baton** (key `facilitator`, `facilitator.ts`): who holds it, the token only the holder was sent, and a grace deadline enforced by a DO alarm when the holder's socket goes away ([Facilitator](../012-collaboration/facilitator.md)).
+- **The facilitator baton** (`RoomFacilitator`, `room-facilitator.ts`, key `facilitator`; rules in `facilitator.ts`): who holds it, the token only the holder was sent, and a grace deadline enforced by a DO alarm when the holder's socket goes away ([Facilitator](../012-collaboration/facilitator.md)).
 
 Per-session state (presence id, verified role, owner bit, tab scope, admitting share code, presence) lives in each socket's serialized attachment, so it survives hibernation; only the rate-cap windows and the catch-up log reset on a wake.
+
+The room's other parts each have a module beside `document-room.ts`: the session attachment and the verified upgrade headers (`room-session.ts`), the role gate on client ops (`room-op-gate.ts`, the [Share roles](../013-workspace/share-roles.md) level ladder), the worker-only internal endpoints (`room-internal.ts`) and the presence roster each socket is sent (`room-roster.ts`).
 
 ### What the room writes to D1
 
