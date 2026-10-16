@@ -25,26 +25,22 @@ import {
   type TabRename,
 } from '@/hooks/editor/active-tab-name-store';
 import { NAME_MAX_LENGTH } from '@livediagram/document';
+import { createListeners } from '@/lib/listeners';
 
 let slot: HTMLElement | null = null;
-const listeners = new Set<() => void>();
+const listeners = createListeners();
 
 // The menu box's slot mounting (an element) or going (null).
 export function setMenuNameSlot(el: HTMLElement | null): void {
   if (el === slot) return;
   slot = el;
-  for (const l of listeners) l();
-}
-
-function subscribe(listener: () => void): () => void {
-  listeners.add(listener);
-  return () => listeners.delete(listener);
+  listeners.notify();
 }
 
 const getSlot = () => slot;
 const noSlot = () => null;
 export function useMenuNameSlot(): HTMLElement | null {
-  return useSyncExternalStore(subscribe, getSlot, noSlot);
+  return useSyncExternalStore(listeners.subscribe, getSlot, noSlot);
 }
 
 // The cover's band came or went (CanvasCover): every name looks again for a band above it.

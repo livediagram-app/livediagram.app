@@ -5,6 +5,7 @@
 
 import type { SetStateAction } from 'react';
 import { debugLog } from './debug-log';
+import { createListeners } from '@/lib/listeners';
 
 export type Selection = {
   readonly selectedId: string | null;
@@ -42,7 +43,7 @@ export function sameMembers(a: ReadonlySet<string>, b: ReadonlySet<string>): boo
 
 export function createSelectionStore(): SelectionStore {
   let current = EMPTY_SELECTION;
-  const listeners = new Set<() => void>();
+  const listeners = createListeners();
 
   const commit = (next: Selection) => {
     if (
@@ -56,17 +57,12 @@ export function createSelectionStore(): SelectionStore {
       single: next.selectedId,
       multi: next.multiSelectedIds.size,
     });
-    for (const listener of [...listeners]) listener();
+    listeners.notify();
   };
 
   return {
     get: () => current,
-    subscribe(listener) {
-      listeners.add(listener);
-      return () => {
-        listeners.delete(listener);
-      };
-    },
+    subscribe: listeners.subscribe,
     setSelectedId(next) {
       const selectedId = typeof next === 'function' ? next(current.selectedId) : next;
       commit({ selectedId, multiSelectedIds: current.multiSelectedIds });

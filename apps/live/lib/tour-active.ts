@@ -1,4 +1,5 @@
 import { useSyncExternalStore } from 'react';
+import { createListeners } from '@/lib/listeners';
 
 // Which guided tour is on screen (docs/specs/026-plan/plan-tour.md "Where it appears",
 // docs/specs/012-collaboration/facilitate-tour.md): the welcome, Plan and Facilitate tours never run at
@@ -8,7 +9,7 @@ type ActiveTour =
   'welcome' | 'plan' | 'facilitate' | 'draw' | 'illustrate' | 'avatar' | 'form' | 'element';
 
 let current: ActiveTour | null = null;
-const listeners = new Set<() => void>();
+const listeners = createListeners();
 
 export function activeTour(): ActiveTour | null {
   return current;
@@ -19,14 +20,9 @@ export function setActiveTour(tour: ActiveTour, on: boolean): void {
   const next = on ? tour : current === tour ? null : current;
   if (next === current) return;
   current = next;
-  for (const l of listeners) l();
-}
-
-function subscribe(listener: () => void): () => void {
-  listeners.add(listener);
-  return () => listeners.delete(listener);
+  listeners.notify();
 }
 
 export function useActiveTour(): ActiveTour | null {
-  return useSyncExternalStore(subscribe, activeTour, () => null);
+  return useSyncExternalStore(listeners.subscribe, activeTour, () => null);
 }

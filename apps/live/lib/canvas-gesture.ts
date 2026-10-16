@@ -7,6 +7,7 @@
 
 import { useSyncExternalStore } from 'react';
 import { debugLog } from './debug-log';
+import { createListeners } from '@/lib/listeners';
 
 export type CanvasGesture =
   'pan' | 'zoom' | 'move' | 'resize' | 'reshape' | 'marquee' | 'stroke' | 'erase';
@@ -35,13 +36,13 @@ type OpenGesture = { token: number; kind: CanvasGesture };
 let open: OpenGesture[] = [];
 let nextToken = 1;
 let reported: CanvasGestureState = 'idle';
-const listeners = new Set<() => void>();
+const listeners = createListeners();
 
 function refresh(): void {
   const now = open.at(-1)?.kind ?? 'idle';
   if (now === reported) return;
   reported = now;
-  for (const fn of listeners) fn();
+  listeners.notify();
 }
 
 // Opens a gesture; the returned end() closes it and is safe to call more than once.
@@ -62,20 +63,13 @@ export function canvasGestureNow(): CanvasGestureState {
   return reported;
 }
 
-function subscribe(cb: () => void): () => void {
-  listeners.add(cb);
-  return () => {
-    listeners.delete(cb);
-  };
-}
-
 /** Called whenever the reported gesture changes (a gesture opening or closing). */
-export const subscribeCanvasGesture = subscribe;
+export const subscribeCanvasGesture = listeners.subscribe;
 
 const serverSnapshot = (): CanvasGestureState => 'idle';
 
 export function useCanvasGesture(): CanvasGestureState {
-  return useSyncExternalStore(subscribe, canvasGestureNow, serverSnapshot);
+  return useSyncExternalStore(listeners.subscribe, canvasGestureNow, serverSnapshot);
 }
 
 // Whether an element gesture (move, resize, reshape, stroke, erase) is open. For readers that only ask
@@ -86,7 +80,7 @@ const elementGestureNow = (): boolean => {
 };
 const notElementGesture = () => false;
 export function useElementGestureActive(): boolean {
-  return useSyncExternalStore(subscribe, elementGestureNow, notElementGesture);
+  return useSyncExternalStore(listeners.subscribe, elementGestureNow, notElementGesture);
 }
 
 export function resetCanvasGesturesForTests(): void {

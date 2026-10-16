@@ -3,6 +3,7 @@
 // tour page's panel on the tab a step is about. IllustratePages owns the panel and follows each new request once.
 import { useState, useSyncExternalStore } from 'react';
 import type { PagePanelTab } from '@/components/canvas/IllustratePagePanel';
+import { createListeners } from '@/lib/listeners';
 
 type PagePanelRequest = {
   seq: number;
@@ -12,21 +13,16 @@ type PagePanelRequest = {
 };
 
 let request: PagePanelRequest = { seq: 0, pageId: null, tab: 'page' };
-const listeners = new Set<() => void>();
-
-const subscribe = (listener: () => void) => {
-  listeners.add(listener);
-  return () => listeners.delete(listener);
-};
+const listeners = createListeners();
 
 export function requestPagePanel(pageId: string | null, tab: PagePanelTab = 'page'): void {
   request = { seq: request.seq + 1, pageId, tab };
-  listeners.forEach((l) => l());
+  listeners.notify();
 }
 
 function usePagePanelRequest(): PagePanelRequest {
   return useSyncExternalStore(
-    subscribe,
+    listeners.subscribe,
     () => request,
     () => request,
   );

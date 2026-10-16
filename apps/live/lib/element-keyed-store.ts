@@ -1,4 +1,5 @@
 import { useSyncExternalStore } from 'react';
+import { createListeners } from '@/lib/listeners';
 
 // A module store holding one value for one element at a time, read per element: a reader subscribes with its own
 // element id and re-renders only when the value for that element comes, changes or goes. Element tours use it for
@@ -14,21 +15,17 @@ export function createElementKeyedStore<T extends { elementId: string }>(
   same: (a: T, b: T) => boolean = (a, b) => a === b,
 ): ElementKeyedStore<T> {
   let current: T | null = null;
-  const listeners = new Set<() => void>();
-  const subscribe = (listener: () => void) => {
-    listeners.add(listener);
-    return () => listeners.delete(listener);
-  };
+  const listeners = createListeners();
   return {
     set: (next) => {
       if (next === current || (next && current && same(next, current))) return;
       current = next;
-      for (const listener of [...listeners]) listener();
+      listeners.notify();
     },
     get: () => current,
     use: (elementId) =>
       useSyncExternalStore(
-        subscribe,
+        listeners.subscribe,
         () => (elementId !== null && current?.elementId === elementId ? current : null),
         () => null,
       ),

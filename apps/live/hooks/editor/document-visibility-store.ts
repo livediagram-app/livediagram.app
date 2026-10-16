@@ -6,6 +6,7 @@
 // editor's own churn and no prop runs through the chrome to reach it.
 import { useLayoutEffect, useSyncExternalStore } from 'react';
 import { useLatest } from '@/hooks/ui/useLatest';
+import { createListeners } from '@/lib/listeners';
 
 type DocumentVisibility = {
   shareable: boolean;
@@ -17,23 +18,18 @@ type DocumentVisibility = {
 };
 
 let visibility: DocumentVisibility | null = null;
-const listeners = new Set<() => void>();
+const listeners = createListeners();
 
 export function setDocumentVisibility(next: DocumentVisibility | null): void {
   if (next === visibility) return;
   visibility = next;
-  for (const l of listeners) l();
-}
-
-function subscribe(listener: () => void): () => void {
-  listeners.add(listener);
-  return () => listeners.delete(listener);
+  listeners.notify();
 }
 
 const get = () => visibility;
 const none = () => null;
 export function useDocumentVisibility(): DocumentVisibility | null {
-  return useSyncExternalStore(subscribe, get, none);
+  return useSyncExternalStore(listeners.subscribe, get, none);
 }
 
 // The editor's side: republished only when a field changes; Manage stays stable while its handler changes.

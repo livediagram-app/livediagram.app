@@ -7,6 +7,7 @@
 
 import { getOnline } from './online-status';
 import { claimReloadIn } from './reload-guard';
+import { createListeners } from '@/lib/listeners';
 
 export type LoadStep = 'identity' | 'participant' | 'document' | 'share' | 'first-tab' | 'done';
 
@@ -38,21 +39,18 @@ export type LoadProgress = {
 
 const INITIAL: LoadProgress = { step: null, startedAt: null, timedOut: false, healing: false };
 let progress: LoadProgress = INITIAL;
-const listeners = new Set<() => void>();
+const listeners = createListeners();
 
 function set(patch: Partial<LoadProgress>): void {
   progress = { ...progress, ...patch };
-  listeners.forEach((fn) => fn());
+  listeners.notify();
 }
 
 export function getLoadProgress(): LoadProgress {
   return progress;
 }
 
-export function subscribeLoadProgress(fn: () => void): () => void {
-  listeners.add(fn);
-  return () => listeners.delete(fn);
-}
+export const subscribeLoadProgress = listeners.subscribe;
 
 export function setLoadStep(step: LoadStep): void {
   if (progress.step !== step) set({ step });

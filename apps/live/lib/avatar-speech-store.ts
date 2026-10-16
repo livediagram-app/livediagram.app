@@ -15,16 +15,17 @@ import {
   SeenIds,
   type SpeechBubble,
 } from '@/lib/avatar-speech';
+import { createListeners } from '@/lib/listeners';
 
 let bubbles: SpeechBubble[] = [];
-const listeners = new Set<() => void>();
+const listeners = createListeners();
 const timers = new Map<string, ReturnType<typeof setTimeout>>();
 let seen = new SeenIds();
 
 const now = () => performance.now();
 
 function emit() {
-  for (const l of listeners) l();
+  listeners.notify();
 }
 
 function prune() {
@@ -93,16 +94,12 @@ export function receivePeerSay(from: string, op: unknown): void {
   add({ ...say, from, own: false, bornAt: now(), flightMs: flightMs(say.text) });
 }
 
-function subscribe(l: () => void) {
-  listeners.add(l);
-  return () => listeners.delete(l);
-}
 const snapshot = () => bubbles;
 const EMPTY: SpeechBubble[] = [];
 
 /** The bubbles on screen, newest last. */
 export function useSpeechBubbles(): SpeechBubble[] {
-  return useSyncExternalStore(subscribe, snapshot, () => EMPTY);
+  return useSyncExternalStore(listeners.subscribe, snapshot, () => EMPTY);
 }
 
 /** Empties the store (tests, and leaving a document). */

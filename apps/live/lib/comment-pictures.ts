@@ -11,18 +11,14 @@ import { isProfilePictureUrl } from '@livediagram/api-schema';
 import { elementThreads, type Element } from '@livediagram/document';
 import { useDeferredAuth } from '@/components/providers/deferred-auth';
 import { API_BASE, apiFetch, apiHeaders } from '@/lib/api/core';
+import { createListeners } from '@/lib/listeners';
 
 const pictures = new Map<string, string>();
 const asked = new Set<string>();
-const listeners = new Set<() => void>();
+const listeners = createListeners();
 
 function notify(): void {
-  for (const l of listeners) l();
-}
-
-function subscribe(onChange: () => void): () => void {
-  listeners.add(onChange);
-  return () => listeners.delete(onChange);
+  listeners.notify();
 }
 
 /** Test seam: forget everything. */
@@ -91,7 +87,7 @@ export function useCommentAuthorPicture(commentId: string, authorId: string | un
   // The snapshot IS the value: read the map anywhere else and the React Compiler, which treats
   // module state as constant, memoizes the first answer for good.
   const reported = useSyncExternalStore(
-    subscribe,
+    listeners.subscribe,
     () => pictures.get(commentId) ?? null,
     () => null,
   );

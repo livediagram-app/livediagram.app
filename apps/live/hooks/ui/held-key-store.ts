@@ -1,6 +1,7 @@
 'use client';
 
 import { useSyncExternalStore } from 'react';
+import { createListeners } from '@/lib/listeners';
 
 // The machinery behind "is the user currently holding <key>": one singleton
 // store per key, so subscribers re-render on the transitions (down -> up, up ->
@@ -32,12 +33,12 @@ type HeldKeyStore = {
 export function createHeldKeyStore(attach: (set: (next: boolean) => void) => void): HeldKeyStore {
   let held = false;
   let attached = false;
-  const listeners = new Set<() => void>();
+  const listeners = createListeners();
 
   const set = (next: boolean): void => {
     if (next === held) return;
     held = next;
-    for (const fn of listeners) fn();
+    listeners.notify();
   };
 
   const subscribe = (cb: () => void): (() => void) => {
@@ -45,10 +46,7 @@ export function createHeldKeyStore(attach: (set: (next: boolean) => void) => voi
       attached = true;
       attach(set);
     }
-    listeners.add(cb);
-    return () => {
-      listeners.delete(cb);
-    };
+    return listeners.subscribe(cb);
   };
 
   const getSnapshot = (): boolean => held;

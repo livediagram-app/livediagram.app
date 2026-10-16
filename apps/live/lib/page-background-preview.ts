@@ -8,26 +8,22 @@
 import { useSyncExternalStore } from 'react';
 import type { LaidOutPage, PageBackground } from '@livediagram/document';
 import { withBackgroundPatch } from './illustrate-page-paint';
+import { createListeners } from '@/lib/listeners';
 
 type PageBackgroundPreview = { pageId: string; patch: Partial<PageBackground> } | null;
 
 let current: PageBackgroundPreview = null;
-const listeners = new Set<() => void>();
+const listeners = createListeners();
 
 export function setPageBackgroundPreview(next: PageBackgroundPreview): void {
   if (current === next) return;
   current = next;
-  for (const l of listeners) l();
+  listeners.notify();
 }
-
-const subscribe = (l: () => void) => {
-  listeners.add(l);
-  return () => listeners.delete(l);
-};
 
 export function usePageBackgroundPreview(): PageBackgroundPreview {
   return useSyncExternalStore(
-    subscribe,
+    listeners.subscribe,
     () => current,
     () => null,
   );

@@ -6,6 +6,7 @@
 import { useLayoutEffect, useSyncExternalStore } from 'react';
 import type { SheetController } from './sheet-controller';
 import type { SheetActions } from './useSheetActions';
+import { createListeners } from '@/lib/listeners';
 
 type SheetSettingsEntry = {
   controller: SheetController;
@@ -14,17 +15,10 @@ type SheetSettingsEntry = {
 };
 
 const entries = new Map<string, SheetSettingsEntry>();
-const listeners = new Set<() => void>();
+const listeners = createListeners();
 const emit = () => {
-  for (const l of [...listeners]) l();
+  listeners.notify();
 };
-const subscribe = (l: () => void) => {
-  listeners.add(l);
-  return () => {
-    listeners.delete(l);
-  };
-};
-
 // A drawn Sheet publishes its settings each render, and takes them back when it goes.
 export function usePublishSheetSettings(elementId: string, entry: SheetSettingsEntry): void {
   useLayoutEffect(() => {
@@ -47,7 +41,7 @@ export function sheetSettingsEntryOf(elementId: string): SheetSettingsEntry | un
 
 export function useSheetSettingsEntry(elementId: string): SheetSettingsEntry | undefined {
   return useSyncExternalStore(
-    subscribe,
+    listeners.subscribe,
     () => entries.get(elementId),
     () => undefined,
   );

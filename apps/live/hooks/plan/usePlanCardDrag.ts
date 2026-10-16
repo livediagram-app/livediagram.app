@@ -11,6 +11,7 @@ import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from '
 import { isDragTravel } from '@/lib/press-gestures';
 import type { Item } from '@livediagram/items';
 import { otherPlanBoardAt, planBoardTarget } from './plan-board-targets';
+import { createListeners } from '@/lib/listeners';
 
 export type PlanDropSlot = {
   status: string;
@@ -73,17 +74,14 @@ export type PlanDragPointerStore = {
 
 function createPointerStore(): PlanDragPointerStore & { set: (p: PlanDragPointer | null) => void } {
   let current: PlanDragPointer | null = null;
-  const listeners = new Set<() => void>();
+  const listeners = createListeners();
   return {
     get: () => current,
     set: (p) => {
       current = p;
-      for (const l of listeners) l();
+      listeners.notify();
     },
-    subscribe: (listener) => {
-      listeners.add(listener);
-      return () => listeners.delete(listener);
-    },
+    subscribe: listeners.subscribe,
   };
 }
 

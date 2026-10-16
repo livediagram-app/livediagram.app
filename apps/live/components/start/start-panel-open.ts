@@ -2,26 +2,20 @@
 // (docs/specs/007-editor/start-diagramming.md "The tours wait"): the Diagram and Facilitate tours hold their offer
 // until it has gone, so the welcome card never lands over the panel. One panel shows at a time (the active tab's).
 import { useSyncExternalStore } from 'react';
+import { createListeners } from '@/lib/listeners';
 
 let open = false;
-const listeners = new Set<() => void>();
+const listeners = createListeners();
 
 export function setStartPanelOpen(next: boolean): void {
   if (open === next) return;
   open = next;
-  for (const l of listeners) l();
+  listeners.notify();
 }
-
-const subscribe = (l: () => void) => {
-  listeners.add(l);
-  return () => {
-    listeners.delete(l);
-  };
-};
 
 export function useStartPanelOpen(): boolean {
   return useSyncExternalStore(
-    subscribe,
+    listeners.subscribe,
     () => open,
     () => false,
   );
