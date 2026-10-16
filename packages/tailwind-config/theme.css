@@ -292,8 +292,8 @@
 }
 
 /* A menu's rows dealt down from its trigger one after another (the Start Blank menu): each drops a
- * few pixels into place as it fades in, on the shared cascade (--menu-row-delay per row). Replays on
- * every open, since the menu's panel is shown by display. Settled under reduced motion. */
+ * few pixels into place as it fades in, its delay set per row from the shared cascade (cascadeDelayMs).
+ * Replays on every open, since the menu's panel is shown by display. Settled under reduced motion. */
 @keyframes menu-fan-down {
   0% {
     opacity: 0;
@@ -305,8 +305,7 @@
   }
 }
 .menu-fan-row {
-  animation: menu-fan-down var(--transition-duration-short) cubic-bezier(0.2, 0.85, 0.25, 1)
-    var(--menu-row-delay, 0ms) both;
+  animation: menu-fan-down var(--transition-duration-short) cubic-bezier(0.2, 0.85, 0.25, 1) both;
 }
 @media (prefers-reduced-motion: reduce) {
   .menu-fan-row {

@@ -10,7 +10,7 @@
 
 import { ctaHref, isCtaSource, type CtaSlot, type CtaSurface } from '@livediagram/api-schema';
 import { cascadeDelayMs } from '@livediagram/tailwind-config/motion';
-import { useRef, type CSSProperties } from 'react';
+import { useRef } from 'react';
 import { ButtonContent, buttonClassName } from './Button';
 import { ChevronDownIcon } from './icons';
 import { START_BLANKS } from './start-blanks';
@@ -109,7 +109,7 @@ export function StartBlankMenu({
               tabIndex={-1}
               onClick={close}
               // Each row drops into place a beat after the one above (menu-fan-row, the shared cascade).
-              style={{ '--menu-row-delay': `${cascadeDelayMs(i)}ms` } as CSSProperties}
+              style={{ animationDelay: `${cascadeDelayMs(i)}ms` }}
               className="menu-fan-row group/blank flex items-start gap-2.5 rounded-lg px-3 py-2 transition hover:bg-slate-100 focus-visible:bg-slate-100 dark:hover:bg-slate-700 dark:focus-visible:bg-slate-700"
             >
               <span className="mt-0.5 shrink-0 text-slate-500 group-hover/blank:text-brand-700 dark:text-slate-400 dark:group-hover/blank:text-brand-300">
