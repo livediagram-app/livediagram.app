@@ -18,7 +18,7 @@ const venue: ShapeElement = {
 
 function editing(el: ShapeElement = venue) {
   const grow = vi.fn();
-  const onCommit = vi.fn();
+  const onCommit = vi.fn<Parameters<typeof renderLabel>[7]>();
   const onLiveText = vi.fn();
   render(
     <MindGrowProvider value={{ grow, abandon: () => false }}>

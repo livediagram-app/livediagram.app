@@ -24,7 +24,7 @@ const box = (id: number, over: Partial<DetectedSticky> = {}): DetectedSticky => 
 const detected = [box(0), box(1), box(2)];
 
 function setup(skip: (id: number) => boolean = () => false) {
-  const onReread = vi.fn();
+  const onReread = vi.fn<Parameters<typeof useRereadOnChange>[0]['onReread']>();
   const view = renderHook(
     ({ boxes }: { boxes: DetectedSticky[] }) =>
       useRereadOnChange({ boxes, initial: detected, skip, onReread }),

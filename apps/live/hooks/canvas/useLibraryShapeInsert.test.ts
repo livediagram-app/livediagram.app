@@ -48,7 +48,7 @@ function setup(over: Partial<LibraryShapeInsertDeps> = {}) {
   const deps: LibraryShapeInsertDeps = {
     activeTab: { id: 't', name: 'T', elements: [] } as Tab,
     editsBlocked: false,
-    commit: vi.fn((map) => {
+    commit: vi.fn<LibraryShapeInsertDeps['commit']>((map) => {
       elements = map(elements);
     }),
     setSelectedId: vi.fn(),

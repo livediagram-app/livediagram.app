@@ -59,10 +59,10 @@ let h: SheetHarness;
 
 function makeBridge(): SheetsBridge {
   return {
-    commitElements: vi.fn((map: (els: Element[]) => Element[]) => {
+    commitElements: vi.fn<SheetsBridge['commitElements']>((map) => {
       elements = map(elements);
     }),
-    placeElement: vi.fn((_at, make) => {
+    placeElement: vi.fn<SheetsBridge['placeElement']>((_at, make) => {
       elements = [...elements, make(0, 0)];
     }),
   } as unknown as SheetsBridge;

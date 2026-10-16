@@ -25,7 +25,7 @@ const card = (id: string, status: string) =>
 const items = new Map([card('c1', 'todo~ab12'), card('c2', 'todo')]);
 
 function run(enabled: boolean, itemsReady = true) {
-  const tickTabs = vi.fn();
+  const tickTabs = vi.fn<Parameters<typeof useMergeDuplicateStatuses>[0]['tickTabs']>();
   const writeQuiet = vi.fn(async () => true);
   renderHook(() =>
     useMergeDuplicateStatuses({ tabs, enabled, itemsReady, items, tickTabs, writeQuiet }),

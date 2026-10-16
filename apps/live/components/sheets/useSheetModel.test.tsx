@@ -269,7 +269,7 @@ describe('a sheet deleted with its element', () => {
 // editor to draw it, from its start, and the mark dropped quietly.
 describe('a template’s Sheet not yet made', () => {
   it('makes it from its start and drops the mark with no undo step', async () => {
-    const tickElements = vi.fn();
+    const tickElements = vi.fn<SheetsBridge['tickElements']>();
     const b = bridge({ tickElements });
     const el = element({ sheetId: 'sheetTPL1', start: 'budget-planner' });
     const { result } = model(el, b);
@@ -301,7 +301,7 @@ describe('a template’s Sheet not yet made', () => {
   });
 
   it('adds no charts when someone else made it first: theirs are the ones', async () => {
-    const tickElements = vi.fn();
+    const tickElements = vi.fn<SheetsBridge['tickElements']>();
     const b = bridge({ tickElements });
     // The other editor's sheet is on the server by the time this one's create arrives.
     createSheet.mockImplementation(async () => {

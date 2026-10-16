@@ -2,7 +2,10 @@
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { presetSetup, statusColumn } from '@livediagram/items';
+import type { ComponentProps } from 'react';
 import { PlanColumnPopover } from './PlanColumnPopover';
+
+type Props = ComponentProps<typeof PlanColumnPopover>;
 
 // docs/specs/026-plan/plan-board.md "Column settings": Remove Column takes the column off this board and keeps
 // the state; Delete Status deletes the state, its columns coming off every board.
@@ -17,7 +20,11 @@ const setup = {
 };
 
 function open() {
-  const fns = { onChange: vi.fn(), onDeleteStatus: vi.fn(), onClose: vi.fn() };
+  const fns = {
+    onChange: vi.fn<Props['onChange']>(),
+    onDeleteStatus: vi.fn<NonNullable<Props['onDeleteStatus']>>(),
+    onClose: vi.fn<Props['onClose']>(),
+  };
   render(
     <PlanColumnPopover
       getAnchor={() => document.body}
