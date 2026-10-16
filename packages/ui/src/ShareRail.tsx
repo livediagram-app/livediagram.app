@@ -116,7 +116,7 @@ export function ShareRail({ share = true, wide = false }: { share?: boolean; wid
           <span aria-hidden="true" className="my-0.5 h-px w-5 bg-slate-200 dark:bg-slate-700" />
           <button
             type="button"
-            onClick={copyLink}
+            onClick={() => void copyLink()}
             aria-label={copied ? 'Link copied' : 'Copy link'}
             className={iconButton}
           >

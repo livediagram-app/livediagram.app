@@ -52,7 +52,7 @@ export function CopyButton({
     <>
       <button
         type="button"
-        onClick={copy}
+        onClick={() => void copy()}
         aria-label={label === 'Copy' ? `Copy ${what}` : `${label}: ${what}`}
         className={`inline-flex shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-md px-3 font-medium transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 touch-target-y relative ${sizes[size]} ${tones[tone]} ${className}`}
       >
