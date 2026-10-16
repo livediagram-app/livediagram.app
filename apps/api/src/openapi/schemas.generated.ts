@@ -6734,6 +6734,32 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "FontSize": {
     "type": "number"
   },
+  "FormCanvas": {
+    "additionalProperties": false,
+    "description": "A canvas style as a form draws it: the pattern in each half's colour, at the tab's size, speed and strength.",
+    "properties": {
+      "color": {
+        "$ref": "#/components/schemas/FormHalves"
+      },
+      "opacity": {
+        "type": "number"
+      },
+      "pattern": {
+        "$ref": "#/components/schemas/BackgroundPattern"
+      },
+      "scale": {
+        "type": "number"
+      },
+      "speed": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "pattern",
+      "color"
+    ],
+    "type": "object"
+  },
   "FormCover": {
     "$ref": "#/components/schemas/ColourBackground"
   },
@@ -6891,6 +6917,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "backdrop": {
         "$ref": "#/components/schemas/FormHalves"
+      },
+      "canvas": {
+        "$ref": "#/components/schemas/FormCanvas"
       },
       "finish": {
         "$ref": "#/components/schemas/Finish"

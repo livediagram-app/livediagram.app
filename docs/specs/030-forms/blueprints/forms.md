@@ -225,7 +225,11 @@ responses, now })`: `switched_off | no_destination | closes_at | limit`.
   `getBuiltInTheme(tab.theme, half)` (a custom or unknown theme draws Default); the accent is the shared
   `themeAccent(half)`, or on Default (no stroke, no palette) the brand `#0284c7` /
   `#38bdf8`; `onAccent` is `deriveTextColorForBg(accent)` per half; `finish` is `resolveFinish(undefined,
-tab.finish)`; `font` the tab font when `resolveFontStack` knows it.
+tab.finish)`; `font` the tab font when `resolveFontStack` knows it; `canvas` (`FormCanvas`) only for a pattern
+  `isBackgroundPattern` knows that is neither `blank` nor either half's theme pattern (Plan's plain canvas otherwise,
+  as `resolveViewBackdrop`): `color` per half is `viewBackdropInTheme({ patternColor: tab.patternColor ??
+DEFAULT_PATTERN_COLOR }, the built-in source or Default, half)`; `scale` (0.5 to 2), `speed` (0.25 to 3) and
+  `opacity` (0 to 1) clamped, each left out at 1 or when not a finite number.
 - `TabKind` gains `'form'`; `PLAN_TAB_KINDS`, `isPlanTabKind`, `tabKindOf` take it. `Tab.form?: FormDefinition`,
   stored as tab JSON; readers call `readForm`.
 - A rename (`useTabActions`) and a duplicate set `form.heading` with the name (`apps/live/lib/form-tab.ts`).
@@ -340,7 +344,10 @@ with `open: true` and the publish `POST` share `notReadyToOpen` (`form-link-rout
 `app/form/[code]/page.tsx` (one placeholder built; `index: false`); the live worker rewrites every `/form/…` to
 `/form/placeholder`, with the same security headers (not frameable). `FormRespondPage` reads the code from the path,
 loads `GET /api/forms/:code`, and draws loading, not found, error, closed or `FormFill`, its `<main>` carrying the
-look (and the backdrop's `--bd-light` / `--bd-dark`); the Report panel stays unthemed. `FormFill` / `useFormFill`:
+look (and the backdrop's `--bd-light` / `--bd-dark`), and, when the look has a `canvas`, `FormCanvasLayer` (loaded on
+demand) under the form: `TabPatternLayer` fixed to the window, in the half `useAppearance` resolves. In the builder,
+`CanvasCover` draws an animated pattern from `CanvasPatternContext` (EditorView's `resolveViewBackdrop`, memoised);
+the canvas's own layer is hidden under a cover (`canvas-motion.css`). The Report panel stays unthemed. `FormFill` / `useFormFill`:
 sections, checks, the summary, Submit, the confirmation; drafts in session storage `livediagram:form:<code>`.
 `FormFooter`: the made-with line and Report This Form (browser id `livediagram:form-browser`). The page imports no
 editor modules: `forms-public.ts`, the shared controls and `@livediagram/ui`.
@@ -353,7 +360,7 @@ editor modules: `forms-public.ts`, the shared controls and `@livediagram/ui`.
 | Every answer error per type; copy for each                                                                                        | `answers.test.ts`                                                                                                                                                                                       |
 | Mapping table, fitting fields, fallback                                                                                           | `mapping.test.ts`                                                                                                                                                                                       |
 | Title, Description, field values, numbering, `fromForm`, a preview's card                                                         | `card.test.ts`                                                                                                                                                                                          |
-| The look: theme accent per half, Default's brand, finish, font, custom as Default                                                 | `packages/document/src/form-look.test.ts`                                                                                                                                                               |
+| The look: theme accent per half, Default's brand, finish, font, custom as Default, the picked canvas style                        | `packages/document/src/form-look.test.ts`                                                                                                                                                               |
 | Preview makes the card, refuses as the api does, needs a destination                                                              | `apps/live/hooks/forms/form-preview.test.ts`                                                                                                                                                            |
 | The form page wears the look                                                                                                      | `apps/live/components/forms/respond/FormRespondPage.test.tsx`                                                                                                                                           |
 | Starters valid, mappings resolve, fields reused                                                                                   | `starters.test.ts`                                                                                                                                                                                      |

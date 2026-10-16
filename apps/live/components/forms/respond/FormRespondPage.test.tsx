@@ -57,6 +57,30 @@ const submit = () =>
   act(async () => fireEvent.click(screen.getByRole('button', { name: 'Submit' })));
 
 describe('the form page', () => {
+  // docs/specs/030-forms/forms.md "Look": the tab's canvas style is behind the form, as in the builder.
+  it('draws the tab’s canvas style behind the form, and none without one', async () => {
+    const look = formLook({
+      theme: 'forest',
+      backgroundPattern: 'aurora',
+      patternColor: '#ff0000',
+    });
+    replies.push({ status: 200, body: { ...OPEN, look } });
+    render(<FormRespondPage />);
+    await screen.findByRole('heading', { name: 'Feedback' });
+    const moving = await waitFor(() => {
+      const el = document.querySelector<HTMLElement>('[data-animated-pattern="aurora"]');
+      expect(el).not.toBeNull();
+      return el!;
+    });
+    expect(moving.style.getPropertyValue('--lvd-pat')).toBe('#ff0000');
+    expect(moving.closest('[data-tab-pattern-layer]')!.className).toContain('fixed');
+    cleanup();
+    replies.push({ status: 200, body: OPEN });
+    render(<FormRespondPage />);
+    await screen.findByRole('heading', { name: 'Feedback' });
+    expect(document.querySelector('[data-tab-pattern-layer]')).toBeNull();
+  });
+
   it('shows the form, sends a response and confirms it', async () => {
     replies.push({ status: 200, body: OPEN }, { status: 201, body: { number: 4 } });
     render(<FormRespondPage />);

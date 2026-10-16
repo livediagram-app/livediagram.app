@@ -1453,3 +1453,10 @@ html[data-presenting][data-slide-move='pending'] [data-canvas-a11y-root] {
     transition: none;
   }
 }
+
+/* An animated canvas style under a cover (a form, a dashboard, a board filling its tab: CanvasCover) moves in the
+   cover's own layer (TabPatternLayer), so the canvas's copy beneath it stops rather than animate unseen
+   (docs/specs/008-canvas/canvas-and-palette.md "Canvas"). */
+[data-canvas-root]:has(> [data-canvas-cover]) > [data-animated-pattern] {
+  display: none;
+}

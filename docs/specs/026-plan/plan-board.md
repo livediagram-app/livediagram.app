@@ -529,8 +529,8 @@ A board can be maximised to work on it without the rest of the canvas around it.
   side in, one nearer the right the right side). It runs down to the canvas's foot: the bottom-right controls (undo, the dock, zoom) float over it,
   still clickable, and its last cards are reached by scrolling. The Map is hidden while a board is maximised or fills
   its tab (there is no canvas to map) and comes back when it is restored. Around the board, the whole canvas area is
-  painted with the canvas's own background (its colour and pattern), so nothing on the canvas shows through, in any
-  strip the board leaves beside or below the panels. A sheet
+  painted with the canvas's own background (its colour and pattern, an animated pattern moving there as on the canvas),
+  so nothing on the canvas shows through, in any strip the board leaves beside or below the panels. A sheet
   across the canvas (a phone) pushes the top or bottom instead. It never gives up more than 45% of the canvas on an
   axis. It follows the chrome as it changes (a panel opened, closed, moved or collapsed, the window resized), and a
   panel dragged over it still floats above it. A panel opened for a moment (the Trash, the Cards panel, card search,
