@@ -51,6 +51,7 @@ export function TeamSharedDocuments({
   moveDests,
   onMoveDocumentTo,
   lens,
+  onLibraryChange,
 }: {
   ownerId: string;
   teamId: string;
@@ -70,11 +71,14 @@ export function TeamSharedDocuments({
   // `moveDocumentTo`, which picks the right API call from the document's
   // current placement. Same-team picks keep using lib.moveDocument.
   onMoveDocumentTo?: (id: string, dest: MoveDestination) => void;
+  // A library changed from this page: this team's (null for My documents, from the move picker's New Folder), so the
+  // Explorer's own lists (the sidebar, search, every other move picker) follow without a reload.
+  onLibraryChange?: (teamId: string | null) => void;
   // The Explorer's lens (docs/specs/013-workspace/explorer-filters.md): while it is set, the
   // library lists every matching document at or below the open spot, its folders stepping aside.
   lens?: LibraryLens;
 }) {
-  const lib = useTeamLibrary(ownerId, teamId);
+  const lib = useTeamLibrary(ownerId, teamId, { onChange: () => onLibraryChange?.(teamId) });
   // Default folders (docs/specs/013-workspace/default-folders.md): a joined member may send new
   // documents to this team's folders.
   const teamFolderLists = useMemo(() => ({ [teamId]: lib.folders }), [teamId, lib.folders]);
@@ -377,8 +381,8 @@ export function TeamSharedDocuments({
             // In-team creates go through the lib so the local list updates
             // immediately. Other scopes (personal / another team, reachable
             // via moveDests) create through the API directly: the fresh
-            // folder is a valid destination straight away, and the sweep
-            // picks its tile up on the next explorer refresh.
+            // folder is a valid destination straight away, and the Explorer's
+            // lists hear of it through onLibraryChange.
             if (destTeamId === teamId) {
               const created = await lib.createFolder(parentId, name);
               return created
@@ -393,6 +397,7 @@ export function TeamSharedDocuments({
                 teamId: destTeamId,
               });
               track('Folder', 'Created', destTeamId ? 'Team' : undefined);
+              onLibraryChange?.(destTeamId ?? null);
               return { id: folder.id, name: folder.name, parentId: folder.parentId };
             } catch {
               return null;

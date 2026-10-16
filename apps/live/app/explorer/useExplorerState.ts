@@ -621,6 +621,13 @@ export function useExplorerState() {
       if (ownerId) void refresh(ownerId);
       refreshTeamLibraries();
     },
+    // A team page changed a library (docs/specs/013-workspace/team-shared-documents.md): its own team's, or, from its
+    // move picker, My documents' folders or another team's. The sidebar, the search panel and every move picker read
+    // the Explorer's lists, which never heard of it until a reload.
+    refreshAfterTeamPage: (teamId: string | null) => {
+      if (teamId) refreshTeamLibraries();
+      else void refreshFolders();
+    },
     teamModalOpen,
     setTeamModalOpen,
   };
