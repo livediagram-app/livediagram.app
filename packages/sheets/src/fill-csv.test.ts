@@ -107,6 +107,35 @@ describe('CSV', () => {
     expect(parseCsv(toCsv(rows)).rows).toEqual(rows);
   });
 
+  // A tab only in a field is the field's: the first line holding one used to make the whole file tab-separated, so a
+  // sheet whose first row held a tab came back from its own download garbled.
+  it("reads a download whose first row holds a tab back as it was, and a quoted tab as a field's", () => {
+    const rows = [
+      ['a\tb', 'c'],
+      ['d', 'e\tf'],
+    ];
+    expect(parseCsv(toCsv(rows)).rows).toEqual(rows);
+    expect(parseCsv('"x\ty",z\n1,2').rows).toEqual([
+      ['x\ty', 'z'],
+      ['1', '2'],
+    ]);
+    // A tab outside quotes on the first line still makes a tab-separated file.
+    expect(parseCsv('"a,b"\tc\n1\t2').rows).toEqual([
+      ['a,b', 'c'],
+      ['1', '2'],
+    ]);
+  });
+
+  // The tie between commas and semicolons went to semicolons even when reading by semicolons broke a quoted field:
+  // a one-row download holding a semicolon came back split inside its quotes.
+  it("reads a quoted semicolon as a field's, even where both separators split a line alike", () => {
+    for (const rows of [[['', ';']], [['a\tb', 'a;']], [['=SUM(A1)', ';x"']]]) {
+      expect(parseCsv(toCsv(rows)).rows).toEqual(rows);
+    }
+    // A real semicolon file still reads as one, its quoted comma kept.
+    expect(parseCsv('"Doe, J";7').rows).toEqual([['Doe, J', '7']]);
+  });
+
   it('cuts at the limits', () => {
     expect(parseCsv(`${'a,'.repeat(250)}a`).rows[0]).toHaveLength(200);
     const big = parseCsv('1\n'.repeat(10_005));

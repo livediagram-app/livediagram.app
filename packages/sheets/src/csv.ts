@@ -13,8 +13,7 @@ const SEPARATOR_SAMPLE_LINES = 20;
 // the fields rather than counting characters keeps a quoted comma or semicolon out of it, and lets a comma-decimal
 // value ("Tea;3,50") or header ("Amount, EUR") stand on a semicolon line.
 function separatorOf(body: string): string {
-  const firstLine = body.slice(0, body.search(/\r?\n|$/));
-  if (firstLine.includes('\t')) return '\t';
+  if (firstRecordHasTab(body)) return '\t';
   let end = -1;
   for (let n = 0; n < SEPARATOR_SAMPLE_LINES; n++) {
     const next = body.indexOf('\n', end + 1);
@@ -27,8 +26,11 @@ function separatorOf(body: string): string {
   const sample = body.slice(0, end).replace(/\r$/, '');
   if (!sample.includes(';')) return ',';
   const width = (d: string) => {
+    const read = readCsv(sample, d);
+    // A reading that leaves a quote outside RFC 4180's quoting has cut a quoted field apart: not this separator.
+    if (read.stray) return 0;
     // A blank line splits no way at all, so it takes no part.
-    const rows = parseCsv(sample, d).rows.filter((r) => r.length > 1 || r[0] !== '');
+    const rows = read.rows.filter((r) => r.length > 1 || r[0] !== '');
     const n = rows[0]?.length ?? 0;
     return n > 1 && rows.every((r) => r.length === n) ? n : 0;
   };
@@ -36,19 +38,43 @@ function separatorOf(body: string): string {
   return semicolons > 0 && semicolons >= width(',') ? ';' : ',';
 }
 
+// Whether the first record holds a tab outside quotes: one inside a quoted field is the field's, not a separator. A
+// quote opens and closes a field, and a doubled one inside it turns twice, so it reads as one record does. Stops at the
+// first line break outside quotes, so it costs one record.
+function firstRecordHasTab(body: string): boolean {
+  let quoted = false;
+  for (let i = 0; i < body.length; i++) {
+    const ch = body[i];
+    if (ch === '"') quoted = !quoted;
+    else if (quoted) continue;
+    else if (ch === '\t') return true;
+    else if (ch === '\n' || ch === '\r') return false;
+  }
+  return false;
+}
+
 // Rows of fields, split by `sep`, else by the separator the text was written with (separatorOf).
 export function parseCsv(text: string, sep?: string): ParsedCsv {
   const body = text.startsWith('\ufeff') ? text.slice(1) : text;
-  const d = sep ?? separatorOf(body);
+  const { rows, truncated } = readCsv(body, sep ?? separatorOf(body));
+  return { rows, truncated };
+}
+
+// RFC 4180 read by `d`. `stray`: a quote was taken as text (one mid-field, or text after a field's closing quote),
+// which a file written with `d` never holds.
+function readCsv(body: string, d: string): ParsedCsv & { stray: boolean } {
   const rows: string[][] = [];
   let row: string[] = [];
   let field = '';
   let quoted = false;
+  let closed = false;
+  let stray = false;
   let truncated = false;
   let i = 0;
   const endRow = () => {
     row.push(field);
     field = '';
+    closed = false;
     if (row.length > SHEET_COLS_MAX) {
       row = row.slice(0, SHEET_COLS_MAX);
       truncated = true;
@@ -66,6 +92,7 @@ export function parseCsv(text: string, sep?: string): ParsedCsv {
           continue;
         }
         quoted = false;
+        closed = true;
         i++;
         continue;
       }
@@ -81,6 +108,7 @@ export function parseCsv(text: string, sep?: string): ParsedCsv {
     if (ch === d) {
       row.push(field);
       field = '';
+      closed = false;
       i++;
       continue;
     }
@@ -90,21 +118,22 @@ export function parseCsv(text: string, sep?: string): ParsedCsv {
       i++;
       if (rows.length >= SHEET_ROWS_MAX) {
         truncated = i < body.length;
-        return { rows, truncated };
+        return { rows, truncated, stray };
       }
       continue;
     }
+    if (ch === '"' || closed) stray = true;
     field += ch;
     i++;
   }
   if (field !== '' || row.length > 0) endRow();
-  return { rows, truncated };
+  return { rows, truncated, stray };
 }
 
-// A semicolon is quoted too, though the file is comma-separated: a one-column sheet whose cells hold one would
-// otherwise read back as semicolon-separated (separatorOf).
+// A semicolon and a tab are quoted too, though the file is comma-separated: a sheet whose cells hold one would
+// otherwise read back as semicolon- or tab-separated (separatorOf).
 function quote(field: string): string {
-  return /[",;\r\n]/.test(field) ? `"${field.replace(/"/g, '""')}"` : field;
+  return /[",;\t\r\n]/.test(field) ? `"${field.replace(/"/g, '""')}"` : field;
 }
 
 // A field a spreadsheet would run as a formula when the file is opened (CSV injection): one starting with = + - @, a
