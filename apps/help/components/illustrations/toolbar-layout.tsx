@@ -74,8 +74,8 @@ function Pill({
   );
 }
 
-// Diagram's category bar, in order, a divider between the bands.
-const BAR: readonly (string | '|')[] = [
+// Diagram's category bar, in order: category names, and '|' for the divider between the bands.
+const BAR: readonly string[] = [
   'Shapes',
   'Draw',
   '|',

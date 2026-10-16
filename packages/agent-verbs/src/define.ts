@@ -63,7 +63,8 @@ export type CliProjection = {
 
 // Inputs are objects: their keys become positionals and flags.
 export type Verb<I extends z.ZodObject = z.ZodObject, O extends z.ZodType = z.ZodType> = {
-  id: `${string}.${string}` | string;
+  // A bare word at the top (`guide`), a dotted path below it (`tab.ls`).
+  id: string;
   summary: string;
   description: string;
   behaviour: VerbBehaviour;

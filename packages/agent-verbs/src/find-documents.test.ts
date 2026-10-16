@@ -30,7 +30,8 @@ function summary(overrides: Partial<DocumentSummary>): DocumentSummary {
   };
 }
 
-function apiRouting(routes: Record<string, unknown | Error>): ApiClient & { calls: string[] } {
+// Each path answers its body as JSON, or a 500 with the message when it is an Error.
+function apiRouting(routes: Record<string, unknown>): ApiClient & { calls: string[] } {
   const calls: string[] = [];
   const api = createApiClient({
     baseUrl: 'https://x/api',
