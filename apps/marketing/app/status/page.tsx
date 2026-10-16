@@ -1,7 +1,7 @@
 import { BreadcrumbJsonLd } from '@/components/BreadcrumbJsonLd';
 import { Footer } from '@/components/Footer';
 import { Header } from '@/components/Header';
-import { pageMetadata, REPO_URL } from '@livediagram/ui';
+import { CONTACT_FORM_URL, pageMetadata, REPO_URL } from '@livediagram/ui';
 
 const STATUS_TITLE = 'Status · livediagram';
 const STATUS_DESCRIPTION =
@@ -133,12 +133,14 @@ export default function StatusPage() {
         </ul>
 
         <p className="mt-8 text-xs text-slate-500 dark:text-slate-400">
-          This page reflects the latest deployed state. Spotted something wrong? Email{' '}
+          This page reflects the latest deployed state. Spotted something wrong? Tell us through the{' '}
           <a
-            href="mailto:hello@livediagram.app"
+            href={CONTACT_FORM_URL}
+            target="_blank"
+            rel="noopener noreferrer"
             className="underline hover:text-slate-800 dark:hover:text-slate-100"
           >
-            hello@livediagram.app
+            contact form
           </a>{' '}
           or file an issue on{' '}
           <a
