@@ -61,7 +61,7 @@ function tabsOf(sql: DatabaseSync, documentId: string) {
     .map((r) => ({
       id: r.id as string,
       name: r.name as string,
-      data: JSON.parse(r.data as string),
+      data: JSON.parse(r.data as string) as { elements: { link?: { tabId?: string } }[] },
     }));
 }
 
@@ -111,9 +111,12 @@ describe('POST /api/documents with a tab id held elsewhere', () => {
     expect(fork!.name).toBe('Glossary, edited offline');
     // The copy's own navigation and deck follow the fork.
     expect(own!.id).toBe('own');
-    expect(own!.data.elements[0].link.tabId).toBe(fork!.id);
+    expect(own!.data.elements[0]?.link?.tabId).toBe(fork!.id);
     const deck = db.sql.prepare("SELECT presentation FROM documents WHERE id = 'A'").get();
-    expect(JSON.parse(deck!.presentation as string).decks[0].slides[0].tabId).toBe(fork!.id);
+    expect(JSON.parse(deck!.presentation as string)).toHaveProperty(
+      ['decks', 0, 'slides', 0, 'tabId'],
+      fork!.id,
+    );
   });
 
   it('never rewrites a tab in someone else’s document', async () => {

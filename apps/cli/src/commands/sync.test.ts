@@ -322,7 +322,9 @@ describe('sync at index and none', () => {
       '/work/livediagram.toml',
       INDEX,
     ]);
-    const state = JSON.parse(file(io, `${await stateDir()}/state.json`)!);
+    const state = JSON.parse(file(io, `${await stateDir()}/state.json`)!) as {
+      documents: Record<string, unknown>;
+    };
     expect(state.documents['d-home']).toEqual({
       name: 'Home screen',
       tabs: { 'd-home-t1': { rev: 1, syncedAt: expect.any(Number) } },

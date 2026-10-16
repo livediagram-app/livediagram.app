@@ -137,13 +137,16 @@ describe('migration 0055 (the container is a document)', () => {
 
   it('upgrades element links and keeps the tab kind', () => {
     const { sql } = migrated();
-    const data = JSON.parse(one(sql, "SELECT data FROM tabs WHERE id = 't1'")!.data as string);
-    expect(data.kind).toBe('diagram');
-    expect(data.elements[0].link).toEqual({ kind: 'document', documentId: 'B', name: 'Other' });
-    const before = JSON.parse(
+    const data: unknown = JSON.parse(
+      one(sql, "SELECT data FROM tabs WHERE id = 't1'")!.data as string,
+    );
+    const link = { kind: 'document', documentId: 'B', name: 'Other' };
+    expect(data).toHaveProperty('kind', 'diagram');
+    expect(data).toHaveProperty(['elements', 0, 'link'], link);
+    const before: unknown = JSON.parse(
       one(sql, "SELECT before_state FROM change_log WHERE id = 'c1'")!.before_state as string,
     );
-    expect(before[0].link).toEqual({ kind: 'document', documentId: 'B', name: 'Other' });
+    expect(before).toHaveProperty([0, 'link'], link);
   });
 
   it('renames the timeline types, scopes, titles and snapshot keys', () => {

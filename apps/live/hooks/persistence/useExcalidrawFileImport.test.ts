@@ -32,7 +32,7 @@ const photo = () =>
   );
 
 function setup(importScenes: ImportScenes) {
-  const onDone = vi.fn();
+  const onDone = vi.fn<Parameters<typeof useExcalidrawFileImport>[0]['onDone']>();
   const spy = vi.fn<ImportScenes>(importScenes);
   const { result } = renderHook(() => useExcalidrawFileImport({ importScenes: spy, onDone }));
   return { result, onDone, importScenes: spy };
@@ -73,7 +73,7 @@ describe('useExcalidrawFileImport', () => {
     await act(() =>
       h.result.current.open([saved('Plan.excalidraw'), saved('Big.excalidraw'), photo()]),
     );
-    expect(h.onDone.mock.calls[0]![0].failures).toEqual([
+    expect(h.onDone.mock.calls[0]![0]?.failures).toEqual([
       { title: 'photo', message: EXCALIDRAW_NOT_A_SCENE },
       { title: 'Big', message: 'Too big.' },
     ]);

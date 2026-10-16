@@ -210,6 +210,7 @@ export default defineConfig({
         'typescript/no-unsafe-argument': 'error',
         'typescript/no-unsafe-call': 'error',
         'typescript/no-unsafe-enum-comparison': 'error',
+        'typescript/no-unsafe-member-access': 'error',
         'typescript/no-unsafe-return': 'error',
         'typescript/no-unsafe-unary-minus': 'error',
         'typescript/only-throw-error': 'error',

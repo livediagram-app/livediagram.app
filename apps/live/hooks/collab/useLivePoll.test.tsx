@@ -62,7 +62,7 @@ describe('starting a collaborators poll (docs/specs/012-collaboration/live-poll.
     style: 'collaborators' | 'choice' = 'collaborators',
     options: string[] = [],
   ) {
-    const send = vi.fn();
+    const send = vi.fn<(msg: RoomOutgoing) => void>();
     const { result } = renderHook(() =>
       useLivePoll({
         roomRef: { current: { send } },
@@ -70,7 +70,7 @@ describe('starting a collaborators poll (docs/specs/012-collaboration/live-poll.
       }),
     );
     act(() => result.current.startPoll({ question: 'Who chose this?', style, options }));
-    const op = send.mock.calls[0]?.[0]?.op;
+    const op = sentOps(send)[0];
     return { op, send, result };
   }
 
@@ -79,8 +79,7 @@ describe('starting a collaborators poll (docs/specs/012-collaboration/live-poll.
       { id: '1', name: 'Ariel' },
       { id: '2', name: 'Pete' },
     ]);
-    expect(op.poll.style).toBe('collaborators');
-    expect(op.poll.options).toEqual(['Ariel', 'Pete']);
+    expect(op).toMatchObject({ poll: { style: 'collaborators', options: ['Ariel', 'Pete'] } });
   });
 
   it('numbers shared names, so two Guests cannot share a bar', () => {
@@ -88,13 +87,13 @@ describe('starting a collaborators poll (docs/specs/012-collaboration/live-poll.
       { id: '1', name: 'Guest' },
       { id: '2', name: 'Guest' },
     ]);
-    expect(op.poll.options).toEqual(['Guest', 'Guest (2)']);
+    expect(op).toMatchObject({ poll: { options: ['Guest', 'Guest (2)'] } });
   });
 
   it('reads the roster at the press, not when the composer rendered', () => {
     // The whole reason the roster arrives as a ref: someone joining between
     // opening the Studio and pressing Ask should be on the ballot.
-    const send = vi.fn();
+    const send = vi.fn<(msg: RoomOutgoing) => void>();
     const roster = { current: [{ id: '1', name: 'Ariel' }] };
     const { result } = renderHook(() =>
       useLivePoll({ roomRef: { current: { send } }, collaboratorsRef: roster }),
@@ -104,7 +103,7 @@ describe('starting a collaborators poll (docs/specs/012-collaboration/live-poll.
       { id: '2', name: 'Pete' },
     ];
     act(() => result.current.startPoll({ question: 'Who?', style: 'collaborators', options: [] }));
-    expect(send.mock.calls[0]![0].op.poll.options).toEqual(['Ariel', 'Pete']);
+    expect(sentOps(send)[0]).toMatchObject({ poll: { options: ['Ariel', 'Pete'] } });
   });
 
   it('refuses a room too small to vote on, sending nothing', () => {
@@ -115,7 +114,7 @@ describe('starting a collaborators poll (docs/specs/012-collaboration/live-poll.
 
   it('leaves a choice poll’s own answers alone', () => {
     const { op } = startWith([{ id: '1', name: 'Ariel' }], 'choice', ['Tea', 'Coffee']);
-    expect(op.poll.options).toEqual(['Tea', 'Coffee']);
+    expect(op).toMatchObject({ poll: { options: ['Tea', 'Coffee'] } });
   });
 });
 

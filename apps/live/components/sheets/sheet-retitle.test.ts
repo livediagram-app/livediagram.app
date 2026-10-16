@@ -24,6 +24,6 @@ describe('retitleSheets', () => {
   it('keeps the new title unique on the tab', () => {
     const s = store({ a: 'Tab 1', b: 'Launch' });
     retitleSheets(s, ['a'], 'Tab 1', 'Launch');
-    expect(s.write.mock.lastCall![1].title).not.toBe('Launch');
+    expect(s.write.mock.lastCall![1]).not.toHaveProperty('title', 'Launch');
   });
 });

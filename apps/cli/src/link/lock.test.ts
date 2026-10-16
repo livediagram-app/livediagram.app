@@ -32,7 +32,7 @@ describe('acquireLinkLock', () => {
     const logs: string[] = [];
     const io = fakeIo({ files: { [LOCK]: holder(77) } });
     await acquireLinkLock(io, '/state', '/repo/livediagram.toml', 'sync', (l) => logs.push(l));
-    expect(JSON.parse(io.fileMap.get(LOCK)!.data).pid).toBe(4242);
+    expect(JSON.parse(io.fileMap.get(LOCK)!.data)).toHaveProperty('pid', 4242);
     expect(logs).toEqual(['lock stale 77', 'lock taken']);
   });
 
@@ -62,7 +62,7 @@ describe('acquireLinkLock', () => {
       await sleep(ms);
     };
     await acquireLinkLock(io, '/state', '/repo/livediagram.toml', 'sync', (l) => logs.push(l));
-    expect(JSON.parse(io.fileMap.get(LOCK)!.data).pid).toBe(4242);
+    expect(JSON.parse(io.fileMap.get(LOCK)!.data)).toHaveProperty('pid', 4242);
     expect(io.slept).toEqual([SYNC_LOCK_POLL_MS, SYNC_LOCK_POLL_MS]);
     expect(logs).toEqual(['lock-wait 77', 'lock stale 77', 'lock taken']);
   });
@@ -172,7 +172,7 @@ describe('two passes taking over the same stale lock', () => {
       code: 'lock_held',
       hint: 'wait for it, or stop process 4242',
     });
-    expect(JSON.parse(first.fileMap.get(LOCK)!.data).pid).toBe(4242);
+    expect(JSON.parse(first.fileMap.get(LOCK)!.data)).toHaveProperty('pid', 4242);
     expect([...first.fileMap.keys()].filter((k) => k.startsWith(LOCK))).toEqual([LOCK]);
     expect(secondLogs.slice(0, 2)).toEqual(['lock stale 77', 'lock stale already taken']);
   });
@@ -198,7 +198,7 @@ describe('a stale lock another pass moves first', () => {
       logs.push(l),
     ).catch((err: unknown) => (err as CliError).failure);
     expect(failure).toMatchObject({ code: 'lock_held', hint: 'wait for it, or stop process 88' });
-    expect(JSON.parse(io.fileMap.get(LOCK)!.data).pid).toBe(88);
+    expect(JSON.parse(io.fileMap.get(LOCK)!.data)).toHaveProperty('pid', 88);
     expect(logs.slice(0, 2)).toEqual(['lock stale 77', 'lock-wait 88']);
   });
 });

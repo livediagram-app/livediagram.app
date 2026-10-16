@@ -101,7 +101,7 @@ describe('writeParticipantAnswers', () => {
     expect(
       await writeParticipantAnswers({} as never, { documentId: 'd1', tabId: 't1', ledger }),
     ).toEqual({ ok: true, changed: true });
-    expect(JSON.parse(db.swapTabData.mock.calls[0]![4] as string).vote.votes).toEqual({
+    expect(JSON.parse(db.swapTabData.mock.calls[0]![4] as string)).toHaveProperty('vote.votes', {
       s1: ['k1'],
     });
   });

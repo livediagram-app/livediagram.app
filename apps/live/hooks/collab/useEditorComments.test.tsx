@@ -41,13 +41,12 @@ describe('useEditorComments telemetry', () => {
       result.current.resolveThread('el');
       result.current.replaceCommentId('el', 'a', 'b');
     });
-    expect(applyElementDelta.mock.calls.map((c): unknown => [c[0], c[1].kind])).toEqual([
-      ['el', 'comment-add'],
-      ['el', 'comment-remove'],
-      ['el', 'comment-resolve'],
-      ['el', 'comment-rekey'],
+    expect(applyElementDelta.mock.calls).toMatchObject([
+      ['el', { kind: 'comment-add', comment: { id, text: 'hi' } }],
+      ['el', { kind: 'comment-remove' }],
+      ['el', { kind: 'comment-resolve' }],
+      ['el', { kind: 'comment-rekey' }],
     ]);
-    expect(applyElementDelta.mock.calls[0]![1].comment).toMatchObject({ id, text: 'hi' });
   });
 
   it('counts a local add, delete, resolve and unresolve once each', () => {
@@ -104,10 +103,10 @@ describe('useEditorComments telemetry', () => {
     expect(trackMock).not.toHaveBeenCalled();
     await act(flush);
     expect(trackMock.mock.calls).toEqual([['Comment', 'Resolved']]);
-    expect(applyElementDelta.mock.calls.map((c): unknown => c[1].resolved)).toEqual([
-      true,
-      false,
-      true,
+    expect(applyElementDelta.mock.calls).toMatchObject([
+      ['el', { resolved: true }],
+      ['el', { resolved: false }],
+      ['el', { resolved: true }],
     ]);
     expect(warn).toHaveBeenCalledWith('[comments] thread state not saved', {
       resolved: false,
@@ -174,12 +173,13 @@ describe('useEditorComments on a Sheet cell', () => {
     });
     vi.spyOn(console, 'warn').mockImplementation(() => {});
     await act(flush);
-    expect(
-      applyElementDelta.mock.calls.map((c): unknown => [c[1].kind, c[1].cell, c[1].resolved]),
-    ).toEqual([
-      ['comment-add', 'r1:c1', undefined],
-      ['comment-resolve', 'r1:c1', true],
-      ['comment-resolve', 'r1:c1', false],
+    expect(applyElementDelta.mock.calls).toMatchObject([
+      ['sheet', { kind: 'comment-add', cell: 'r1:c1' }],
+      ['sheet', { kind: 'comment-resolve', cell: 'r1:c1', resolved: true }],
+      ['sheet', { kind: 'comment-resolve', cell: 'r1:c1', resolved: false }],
     ]);
+    expect(applyElementDelta.mock.calls[0]![1]).toEqual(
+      expect.not.objectContaining({ resolved: expect.anything() }),
+    );
   });
 });

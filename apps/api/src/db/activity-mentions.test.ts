@@ -219,7 +219,7 @@ describe('an Action panel list past the cap', () => {
     const stored = db.sql.prepare('SELECT data FROM tabs WHERE id = ?').get('t1') as {
       data: string;
     };
-    expect(JSON.parse(stored.data).elements[0].actions).toHaveLength(50);
+    expect(JSON.parse(stored.data)).toHaveProperty(['elements', 0, 'actions', 'length'], 50);
     const rows = db.sql.prepare('SELECT COUNT(*) AS n FROM collab_actions').get() as { n: number };
     expect(rows.n).toBe(50);
   });

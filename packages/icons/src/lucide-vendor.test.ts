@@ -47,7 +47,7 @@ describe('lucideExportName', () => {
 describe('vendored Lucide', () => {
   it('pins an exact version', () => {
     expect(manifest.version).toMatch(/^\d+\.\d+\.\d+$/);
-    expect(require('lucide-static/package.json').version).toBe(manifest.version);
+    expect(require('lucide-static/package.json')).toHaveProperty('version', manifest.version);
   });
 
   it('holds exactly the manifest glyphs, in order', () => {

@@ -63,7 +63,7 @@ describe('ExportTabDialog, Plan', () => {
     open();
     fireEvent.click(screen.getByRole('button', { name: /JSON/ }));
     const text = (screen.getByRole('textbox') as HTMLTextAreaElement).value;
-    expect(JSON.parse(text).items).toEqual([item]);
+    expect(JSON.parse(text)).toHaveProperty('items', [item]);
   });
 
   it('lists the cards in the Markdown outline', () => {

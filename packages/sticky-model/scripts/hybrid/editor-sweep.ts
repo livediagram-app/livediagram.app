@@ -76,7 +76,9 @@ async function openBoard(page: Page) {
     r.fulfill({ json: { aiEnabled: true, emailEnabled: false } }),
   );
   await page.route('**/api/ai/read-notes', async (r) => {
-    const crops = (JSON.parse(r.request().postData() ?? '{}').crops ?? []) as { id: number }[];
+    const { crops = [] } = JSON.parse(r.request().postData() ?? '{}') as {
+      crops?: { id: number }[];
+    };
     await r.fulfill({
       json: { texts: crops.map((c) => ({ id: c.id, text: '', legible: false })) },
     });
