@@ -5,7 +5,13 @@ const DOC = '981c336f-c993-4206-a00c-8d1cc03822ff';
 const line = (o: unknown) => JSON.stringify(o);
 
 const transcript = [
-  line({ type: 'system', subtype: 'init', model: 'claude-haiku-5-5', session_id: 's-1' }),
+  line({
+    type: 'system',
+    subtype: 'init',
+    model: 'claude-haiku-5-5',
+    session_id: 's-1',
+    mcp_servers: [{ name: 'livediagram', status: 'connected' }],
+  }),
   line({
     type: 'assistant',
     message: {
@@ -98,6 +104,7 @@ describe('parseTranscript', () => {
   it('reads the model, session, reply and usage', () => {
     expect(run.model).toBe('claude-haiku-5-5');
     expect(run.sessionId).toBe('s-1');
+    expect(run.mcpConnected).toBe(true);
     expect(run.finalText).toBe('Here is your form.');
     expect(run.result).toMatchObject({
       turns: 4,
@@ -111,6 +118,18 @@ describe('parseTranscript', () => {
     const cut = transcript.split('\n').slice(0, -1).join('\n');
     expect(parseTranscript(cut).finalText).toBe('Here is your form.');
     expect(metricsOf(parseTranscript(cut)).finished).toBe(false);
+  });
+});
+
+describe('mcpConnected', () => {
+  it('is false when the server failed to come up, null with no init line', () => {
+    const failed = JSON.stringify({
+      type: 'system',
+      subtype: 'init',
+      mcp_servers: [{ name: 'livediagram', status: 'failed' }],
+    });
+    expect(parseTranscript(failed).mcpConnected).toBe(false);
+    expect(parseTranscript('').mcpConnected).toBeNull();
   });
 });
 

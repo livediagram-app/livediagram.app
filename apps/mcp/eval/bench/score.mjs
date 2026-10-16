@@ -23,6 +23,8 @@ export function scoreRound(round) {
     meta.tools.filter((t) => /^Deprecated\b/.test(t.description ?? '')).map((t) => t.name),
   );
   const runs = [];
+  // Runs whose MCP never connected: they had no tools, so they say nothing about the tools and are left out.
+  const excluded = [];
   for (const file of readdirSync(dir).sort()) {
     const m = RUN_FILE.exec(file);
     if (!m) continue;
@@ -30,6 +32,10 @@ export function scoreRound(round) {
     const name = file.slice(0, -'.jsonl'.length);
     const task = taskById(taskId);
     const run = parseTranscript(readFileSync(join(dir, file), 'utf8'));
+    if (run.mcpConnected === false) {
+      excluded.push(name);
+      continue;
+    }
     const snapFile = join(dir, `${name}.snapshot.json`);
     const snap = existsSync(snapFile)
       ? JSON.parse(readFileSync(snapFile, 'utf8'))
@@ -62,6 +68,7 @@ export function scoreRound(round) {
       toolChars,
     },
     deprecated: [...deprecated],
+    excluded,
     runs,
   };
 }

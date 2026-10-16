@@ -98,6 +98,9 @@ describe('summarise', () => {
     ])
       expect(md).toContain(heading);
     expect(md).toContain('| Q1 · c1 | 2/3 | haiku | why 1 |');
+    expect(summarise({ ...results, excluded: ['S1-sonnet-1'] })).toContain(
+      'Left out, the MCP never connected: S1-sonnet-1.',
+    );
   });
 });
 

@@ -21,6 +21,8 @@ export interface RunResult {
 export interface Run {
   model: string | null;
   sessionId: string | null;
+  // Whether the livediagram MCP server connected; null with no init line.
+  mcpConnected: boolean | null;
   calls: Call[];
   texts: string[];
   finalText: string;

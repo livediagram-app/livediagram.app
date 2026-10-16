@@ -153,7 +153,13 @@ async function runJob(job) {
       parsed.documentIds.forEach((id) => touched.add(id));
       resume = parsed.sessionId ?? undefined;
     }
-    const turn = await claudeTurn({ prompt: task.prompt, model, token, cwd, resume });
+    let turn = await claudeTurn({ prompt: task.prompt, model, token, cwd, resume });
+    // The local server now and then refuses a session's first connection: such a run never had the tools, so it is
+    // run once more rather than scored.
+    if (parseTranscript(turn.transcript).mcpConnected === false) {
+      console.log(`retry ${name}: the MCP did not connect`);
+      turn = await claudeTurn({ prompt: task.prompt, model, token, cwd, resume });
+    }
     writeFileSync(join(OUT, `${name}.jsonl`), turn.transcript);
     if (turn.code !== 0) writeFileSync(join(OUT, `${name}.stderr.txt`), turn.stderr);
     parseTranscript(turn.transcript).documentIds.forEach((id) => touched.add(id));

@@ -25,6 +25,7 @@ export function parseTranscript(jsonl) {
   const run = {
     model: null,
     sessionId: null,
+    mcpConnected: null,
     calls,
     texts: [],
     finalText: '',
@@ -42,6 +43,9 @@ export function parseTranscript(jsonl) {
     if (m.type === 'system' && m.subtype === 'init') {
       run.model = m.model ?? null;
       run.sessionId = m.session_id ?? null;
+      // Whether the livediagram server came up for this session: a run without it never had the tools.
+      const server = (m.mcp_servers ?? []).find((s) => s.name === 'livediagram');
+      run.mcpConnected = server ? server.status === 'connected' : false;
     } else if (m.type === 'assistant' && Array.isArray(m.message?.content)) {
       for (const c of m.message.content) {
         if (c.type === 'text' && c.text.trim()) run.texts.push(c.text);

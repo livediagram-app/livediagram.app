@@ -123,6 +123,9 @@ export function summarise(results) {
     `Commit ${meta.commit?.slice(0, 9) ?? '?'} · ${runs.length} runs · ${meta.toolCount} tools ` +
       `(${meta.toolChars.toLocaleString('en-GB')} characters of names, descriptions and schemas)`,
     '',
+    ...(results.excluded?.length
+      ? [`Left out, the MCP never connected: ${results.excluded.join(', ')}.`, '']
+      : []),
     '## By model',
     '',
     table(
