@@ -6,11 +6,10 @@ import { cardLayout, cardMediaOf, cardSlotsOf } from './card';
 import { colorWash } from './color-wash';
 import { borderOf } from './svg-render-border';
 import { labelOn } from './readable-colour';
-import { TAG_CHIP_WASH, tagColourOf, type TagColour } from './tag-colours';
+import { TAG_CHIP_WASH, tagColourOf } from './tag-colours';
 import type { BoxedElement } from './index';
-import type { ResolveIconArt } from './svg-render-describe';
 import { r2, svgIconGlyph as glyph, xmlEscape } from './svg-render-primitives';
-import { label as webLabel, line as webLine } from './svg-render-web';
+import { label as webLabel, line as webLine, type WebFaceOptions } from './svg-render-web';
 import { ACCENT_BAR_TEXT, type LayoutRect } from './web-components';
 
 type Shape = BoxedElement & { type: 'shape' };
@@ -24,19 +23,7 @@ const inset = (r: LayoutRect, share: number): LayoutRect => {
 };
 
 /** The card's slots, or '' for any other kind. */
-export function svgCard(
-  el: Shape,
-  o: {
-    stroke: string;
-    fill: string;
-    labelColor: string;
-    label: string;
-    fontFamily?: string;
-    resolveIconArt?: ResolveIconArt;
-    // The tab's tag colours (docs/specs/009-elements/tag-colours.md), for a card's tinted tag chips.
-    tagColours?: readonly TagColour[];
-  },
-): string {
+export function svgCard(el: Shape, o: WebFaceOptions): string {
   const { stroke, label: text, fontFamily } = o;
   const ink = el.textColor ?? o.labelColor;
   const l = cardLayout(el.width, el.height, cardSlotsOf(el));
