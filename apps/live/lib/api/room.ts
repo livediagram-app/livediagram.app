@@ -329,8 +329,14 @@ export function connectRoom(
       lastHeard = Date.now();
       // The keepalive's answer: proof of life, nothing to apply.
       if (e.data === ROOM_PONG) return;
+      // The room speaks JSON text frames; anything else is no message of ours.
+      const data: unknown = e.data;
+      if (typeof data !== 'string') {
+        debugLog('[room] non-text frame ignored');
+        return;
+      }
       try {
-        const msg = JSON.parse(e.data) as RoomIncoming;
+        const msg = JSON.parse(data) as RoomIncoming;
         if (msg.kind === 'presence') {
           settleTimings(true);
           const frame = splitPresenceFrame(msg);
@@ -366,7 +372,7 @@ export function connectRoom(
           }
         }
       } catch {
-        // Malformed frame — ignore. Production would log here.
+        debugLog('[room] malformed frame ignored');
       }
     });
     const onClose = (event: CloseEvent) => {
