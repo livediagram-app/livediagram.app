@@ -17,9 +17,9 @@ function seedVersionOne(records: object[]): Promise<void> {
         db.close();
         resolve();
       };
-      tx.onerror = () => reject(tx.error);
+      tx.onerror = () => reject(tx.error ?? new Error('IndexedDB transaction failed'));
     };
-    req.onerror = () => reject(req.error);
+    req.onerror = () => reject(req.error ?? new Error('IndexedDB request failed'));
   });
 }
 

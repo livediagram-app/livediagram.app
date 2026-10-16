@@ -46,6 +46,7 @@ is the whole of what the repo enforces.
   - `no-unsafe-return`
   - `no-unsafe-unary-minus`
   - `only-throw-error`
+  - `prefer-promise-reject-errors`, a reason of type `unknown` allowed
   - `restrict-plus-operands`
   - `restrict-template-expressions`
 - **Known gap**: `no-useless-assignment` in the oxlint release the repo uses does not report a value
@@ -88,6 +89,10 @@ is the whole of what the repo enforces.
   (`oxlint.config.ts`, `vitest.config.ts`) are.
 - `oxlint-tsgolint` is a root dev dependency, so every workspace's `oxlint` resolves it as its peer,
   and a dependency of `@livediagram/oxlint-config`, whose tests run it.
+- A caught reason passed on unchanged keeps its type, `unknown`: `only-throw-error` allows throwing it
+  by default, and `prefer-promise-reject-errors` is set to allow rejecting with it
+  (`allowThrowingUnknown`). Wrapping it would lose what was caught. A value typed `any` is still
+  refused, so a forwarded reason is given `unknown` where it is read.
 - A finding is fixed where it arises (a truer signature, a handled promise), never cast or
   suppressed away. A value that crosses into the program untyped (parsed JSON, a library's `any`)
   is given its type once, where it enters, with a comment when the library's own type is wrong.
