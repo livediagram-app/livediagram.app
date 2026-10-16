@@ -17,8 +17,7 @@ import {
 import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
 import { useRowMenu } from '@/components/primitives/useRowMenu';
 import { useDocumentTags } from './DocumentTagsProvider';
-import { TagColourPopover } from './TagColourButton';
-import { TagDialog } from './TagDialog';
+import { LazyTagColourPopover, LazyTagDialog } from './tag-lazy';
 
 /** What Delete asks, naming the documents it comes off (spec "Making, renaming, recolouring and deleting"). */
 export function deleteTagMessage(name: string, documents: number): string {
@@ -80,9 +79,9 @@ export function useTagActionsMenu(
           />
         </PortalMenu>
       ) : null}
-      {open === 'rename' ? <TagDialog tag={tag} onClose={() => setOpen(null)} /> : null}
+      {open === 'rename' ? <LazyTagDialog tag={tag} onClose={() => setOpen(null)} /> : null}
       {open === 'colour' && anchor ? (
-        <TagColourPopover
+        <LazyTagColourPopover
           name={tag.name}
           colour={tag.colour}
           anchor={anchor}

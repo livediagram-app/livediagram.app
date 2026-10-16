@@ -11,8 +11,11 @@ import { DocumentTagChips, DocumentTagDots } from './TagChip';
 export function DocumentRowTags({
   documentId,
   compactOnPhone = false,
+  line = false,
 }: {
   documentId: string;
+  // A card: the chips on a line of their own.
+  line?: boolean;
   // A list row: dots below `sm`, chips above.
   compactOnPhone?: boolean;
 }) {
@@ -26,6 +29,7 @@ export function DocumentRowTags({
       onOpenTag={explorer ? (id) => explorer.go({ kind: 'tags', id }) : undefined}
     />
   );
+  if (line) return <div className="flex min-w-0">{chips}</div>;
   if (!compactOnPhone) return chips;
   return (
     <>

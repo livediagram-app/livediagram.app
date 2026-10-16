@@ -21,7 +21,6 @@ import { useExplorerImport } from './useExplorerImport';
 import { explorerPathFor } from './routes';
 import { VIEW_TITLES } from './view-titles';
 import { paneHeaderActions } from './pane-header-actions';
-import { TagsPane } from './tags/TagsPane';
 import { useTagsPage } from './tags/useTagsPage';
 
 // The three layouts of a browse section, by the toggle.
@@ -100,6 +99,10 @@ const HomePane = dynamic(
   () => import('@/components/panels/home/HomePane').then((m) => m.HomePane),
   { ssr: false },
 );
+// The Tags page (docs/specs/013-workspace/tags.md), lazy like every pane.
+const TagsPane = dynamic(() => import('./tags/TagsPane').then((m) => m.TagsPane), {
+  ssr: false,
+});
 const ActivityPane = dynamic(
   () => import('@/components/panels/ActivityPane').then((m) => m.ActivityPane),
   { ssr: false },

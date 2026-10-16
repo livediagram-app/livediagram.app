@@ -67,3 +67,11 @@ describe('deleteTagMessage', () => {
     expect(deleteTagMessage('Design', 0)).toBe("Delete the tag Design? It isn't on any documents.");
   });
 });
+
+describe('documentCountLabel', () => {
+  it('counts one and many', async () => {
+    const { documentCountLabel } = await import('./tag-copy');
+    expect(documentCountLabel(1)).toBe('1 document');
+    expect(documentCountLabel(3)).toBe('3 documents');
+  });
+});

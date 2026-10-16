@@ -10,7 +10,7 @@ import type { Tag } from '@livediagram/api-schema';
 import { PlusIcon } from '@/components/primitives/explorer-icons';
 import { useDocumentTags } from '@/components/tags/DocumentTagsProvider';
 import { useTagActionsMenu } from '@/components/tags/TagActionsMenu';
-import { TagDialog } from '@/components/tags/TagDialog';
+import { LazyTagDialog } from '@/components/tags/tag-lazy';
 import { VIEW_TITLES } from '../view-titles';
 import type { SelectedNode } from '../views';
 
@@ -41,7 +41,7 @@ export function useTagsPage(selected: SelectedNode, go: (node: SelectedNode) => 
       </Button>
     </>
   ) : null;
-  const dialog: ReactNode = creating ? <TagDialog onClose={() => setCreating(false)} /> : null;
+  const dialog: ReactNode = creating ? <LazyTagDialog onClose={() => setCreating(false)} /> : null;
   return { title, crumbs, headerActions, dialog, openTag, newTag };
 }
 

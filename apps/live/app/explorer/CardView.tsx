@@ -156,6 +156,9 @@ function DocumentCard(
             <EllipsisTriggerButton {...menu.triggerProps} tuck label={`Menu for ${liveDoc.name}`} />
           )}
         </div>
+        {/* The reader's tags (docs/specs/013-workspace/tags.md "Where tags show"), a line of their own so the meta
+            row below keeps its time. */}
+        <DocumentRowTags documentId={liveDoc.id} line />
         {/* Keep every column the list shows: owner, visibility, updated. */}
         {/* One line: the badges keep their size, the time gives way with an
             ellipsis, the sync mark holds the right edge. */}
@@ -167,8 +170,6 @@ function DocumentCard(
           ) : null}
           {favourite ? <FavouriteMarker /> : null}
           <DriveNoticeMarker documentId={liveDoc.id} />
-          {/* The reader's tags (docs/specs/013-workspace/tags.md "Where tags show"). */}
-          <DocumentRowTags documentId={liveDoc.id} />
           {folderChip ? <FolderChip label={folderChip.label} onOpen={folderChip.onOpen} /> : null}
           {/* A flex box, so the time centres on the row like its neighbours;
               the time truncates itself. */}

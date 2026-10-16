@@ -67,7 +67,7 @@ A small panel (an anchored popover named "Tags for <document>") that stays open 
 ## Where tags show
 
 - **On a row or card.** A tagged document shows its tags as **chips** after its name in the list and Details views and
-  in the card's meta row: a pill holding a dot of the tag's colour and its name, on a faint wash of that colour, so any
+  on a line of its own under a card's name (so the card's meta row keeps its time): a pill holding a dot of the tag's colour and its name, on a faint wash of that colour, so any
   colour reads on either appearance. At most **two chips**, then **+N** for the rest, whose tooltip names them all.
   Pressing a chip opens that tag's page; it never opens the document. On a phone a list row shows the dots below
   instead, so the name keeps its room; cards keep their chips.

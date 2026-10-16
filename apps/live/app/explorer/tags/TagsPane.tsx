@@ -11,16 +11,13 @@ import { PlusIcon, TagIcon } from '@/components/primitives/explorer-icons';
 import { useDocumentTags } from '@/components/tags/DocumentTagsProvider';
 import { useTagActionsMenu } from '@/components/tags/TagActionsMenu';
 import { TagChip } from '@/components/tags/TagChip';
+import { documentCountLabel } from '@/components/tags/tag-copy';
 import { LoadFailed } from '../lens/LensStates';
 import { SkeletonRows, type PaneDocument } from '../views';
 
 export const TAGS_EMPTY_TITLE = 'Group related documents with tags';
 export const TAGS_EMPTY_DESCRIPTION =
   "Make a tag here, or choose Tags in any document's menu. Your tags are yours alone: nobody else sees them.";
-
-export function documentCountLabel(n: number): string {
-  return n === 1 ? '1 document' : `${n} documents`;
-}
 
 type Props = {
   // Every document the reader's tags can sit on (their own and their teams'), newest first.

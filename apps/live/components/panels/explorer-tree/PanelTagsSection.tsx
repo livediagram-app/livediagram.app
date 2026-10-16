@@ -8,7 +8,7 @@ import type { PaneDocument } from '@/app/explorer/views';
 import { TagIcon } from '@/components/primitives/explorer-icons';
 import { useDocumentTags } from '@/components/tags/DocumentTagsProvider';
 import { TagChip } from '@/components/tags/TagChip';
-import { documentCountLabel } from '@/app/explorer/tags/TagsPane';
+import { documentCountLabel } from '@/components/tags/tag-copy';
 import { PaneEmpty, PaneFailed, PaneList, PaneSkeleton } from '../explorer-panel/pane-parts';
 import { PanelDocumentItem } from './PanelDocumentItem';
 

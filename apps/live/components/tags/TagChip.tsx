@@ -32,7 +32,11 @@ export function TagDot({ colour, size = 8 }: { colour: string; size?: number }) 
 }
 
 const CHIP =
-  'inline-flex min-w-0 max-w-[9rem] shrink-0 items-center gap-1 rounded-full border px-1.5 py-px text-[11px] font-medium leading-4 text-slate-700 dark:text-slate-200';
+  'inline-flex min-w-0 shrink-0 items-center gap-1 rounded-full border font-medium text-slate-700 dark:text-slate-200';
+const CHIP_SIZE = {
+  sm: 'max-w-[9rem] px-1.5 py-px text-[11px] leading-4',
+  md: 'max-w-[16rem] px-2.5 py-0.5 text-[13px] leading-5',
+} as const;
 
 /** One tag as a chip; a button when `onOpen` is given (it opens the tag's page, never the row under it). */
 export function TagChip({
@@ -52,7 +56,7 @@ export function TagChip({
     </>
   );
   const style = tagWash(hex);
-  const sizing = size === 'md' ? 'px-2.5 py-0.5 text-[13px] leading-5 max-w-[16rem]' : '';
+  const sizing = CHIP_SIZE[size];
   if (!onOpen) {
     return (
       <span className={`${CHIP} ${sizing}`} style={style}>
