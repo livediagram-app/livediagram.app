@@ -3,19 +3,18 @@ import { createShape, type Element } from '@livediagram/document';
 import { newTypeForBoard, withTypeOnBoard } from './useTypeForBoard';
 
 // docs/specs/026-plan/plan-board.md "Add New Card Type".
-const board = (id: string, addTypes?: string[]): Element =>
-  ({
-    ...createShape('plan-board', 0, 0),
-    id,
-    planBoard: {
-      title: 'Retro',
-      columns: [{ id: 'c1', status: 'went-well', name: 'Went Well' }],
-      swimlaneBy: 'none',
-      cardFields: [],
-      hideWriting: false,
-      ...(addTypes ? { addTypes } : {}),
-    },
-  }) as Element;
+const board = (id: string, addTypes?: string[]): Element => ({
+  ...createShape('plan-board', 0, 0),
+  id,
+  planBoard: {
+    title: 'Retro',
+    columns: [{ id: 'c1', status: 'went-well', name: 'Went Well' }],
+    swimlaneBy: 'none',
+    cardFields: [],
+    hideWriting: false,
+    ...(addTypes ? { addTypes } : {}),
+  },
+});
 
 describe('a type made from a board', () => {
   it('starts with only the board’s statuses on', () => {

@@ -159,7 +159,7 @@ export function applyStyleMemory<T extends Element>(
   const kind = styleKindOf(el, board);
   const entry = kind ? memory[kind] : undefined;
   if (!entry) return el;
-  let dressed: Element = { ...el, ...entry } as Element;
+  let dressed: Element = { ...el, ...entry };
   dressed = rederiveQuickSwatches(dressed, theme);
   if (dressed.type === 'shape' && dressed.colorPreset) {
     dressed = rederiveColorPresetForTheme(dressed, theme);

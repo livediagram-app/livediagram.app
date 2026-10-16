@@ -63,7 +63,7 @@ const chart: ShapeElement = {
   width: 260,
   height: 220,
   chartSource: { sheetId: 'sheetBIG01', range },
-} as ShapeElement;
+};
 
 let docSeq = 0;
 function bridge(): SheetsBridge {
@@ -87,7 +87,7 @@ function bridge(): SheetsBridge {
     sheetRetitled: vi.fn(),
     attach: vi.fn(() => () => {}),
   };
-  return b as unknown as SheetsBridge;
+  return b;
 }
 
 const reads = vi.mocked(sheets.sheetChartTable);

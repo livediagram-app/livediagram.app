@@ -24,7 +24,7 @@ describe('AgendaMenuSection', () => {
       onSetItems={vi.fn()}
     />
   );
-  const name = (i: number) => screen.getByLabelText(`Segment ${i} name`) as HTMLInputElement;
+  const name = (i: number) => screen.getByLabelText<HTMLInputElement>(`Segment ${i} name`);
 
   // Same loop as the decision drivers below: a fresh `?? []` per render, set by an effect.
   it('settles for an element without segments', () => {
@@ -84,7 +84,7 @@ describe('DecisionMenuSection', () => {
       onSetDrivers={vi.fn()}
     />
   );
-  const driver = (i: number) => screen.getByLabelText(`Driver ${i}`) as HTMLInputElement;
+  const driver = (i: number) => screen.getByLabelText<HTMLInputElement>(`Driver ${i}`);
 
   // An element without drivers once re-rendered forever: `?? []` minted a new array per render and
   // the follow effect set it, which rendered again.

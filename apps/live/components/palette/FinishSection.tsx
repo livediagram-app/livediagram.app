@@ -39,7 +39,7 @@ export function FinishSwatch({ finish, size = 16 }: { finish: Finish; size?: num
 
 /** The finish an element carries itself, undefined when it follows its tab (or stores an unknown value). */
 export function resolveOwnFinish(el: object | undefined): Finish | undefined {
-  const own = (el as { finish?: unknown } | undefined)?.finish;
+  const own = el && 'finish' in el ? el.finish : undefined;
   return isFinish(own) ? own : undefined;
 }
 

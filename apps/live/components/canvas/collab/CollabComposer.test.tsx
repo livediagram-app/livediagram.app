@@ -11,7 +11,7 @@ import { QaComposer } from './qa/QaComposer';
 
 afterEach(cleanup);
 
-const field = () => screen.getByRole('textbox') as HTMLInputElement;
+const field = () => screen.getByRole<HTMLInputElement>('textbox');
 const type = (text: string) => fireEvent.change(field(), { target: { value: text } });
 const send = () => fireEvent.click(screen.getByRole('button', { name: 'Send' }));
 

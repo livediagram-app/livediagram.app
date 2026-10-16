@@ -41,7 +41,7 @@ describe('an image’s element menu', () => {
       width: 100,
       height: 80,
       imageId: null,
-    } as Element);
+    });
     expect(screen.queryAllByRole('button').some((b) => b.textContent?.trim() === 'Style')).toBe(
       true,
     );

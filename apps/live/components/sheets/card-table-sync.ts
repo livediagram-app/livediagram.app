@@ -75,7 +75,7 @@ export function pullChanges(sheet: Sheet, plan: CardPlan): CellChange[] {
       if (!ix.rowPos.has(r) || !live(item) || t.drafts?.includes(r)) continue;
       for (const col of t.cols) {
         if (!ix.colPos.has(col.c)) continue;
-        const want = cardCell(source.fieldOf(item, col.field) as never, col.field);
+        const want = cardCell(source.fieldOf(item, col.field), col.field);
         if (sameInput(sheet.cells.get(cellKey(r, col.c))?.input, want.i)) continue;
         out.push({ r, c: col.c, i: want.i, ...(want.f ? { f: want.f } : {}) });
       }
@@ -205,7 +205,7 @@ export function rowSave(
     for (const col of table.cols) {
       const field = norm(col.field);
       if (field === NUMBER || !ix.colPos.has(col.c)) continue;
-      const want = cardCell(source.fieldOf(item, col.field) as never, col.field);
+      const want = cardCell(source.fieldOf(item, col.field), col.field);
       if (sameInput(sheet.cells.get(cellKey(r, col.c))?.input, want.i)) continue;
       const v = fieldValue(valueAt(col.c), col.field);
       if (field === TYPE) {
@@ -255,7 +255,7 @@ export function rowSave(
     .find(live);
   const status =
     typeof f['status'] === 'string'
-      ? (f['status'] as string)
+      ? f['status']
       : ((firstLinked?.fields['status'] as string | undefined) ?? '');
   delete f['status'];
   if (blank(f['title'])) f['title'] = typeDef.newTitle;

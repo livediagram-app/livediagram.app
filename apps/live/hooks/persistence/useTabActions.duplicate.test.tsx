@@ -10,13 +10,13 @@ vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
 function duplicate(src: Tab): Tab {
   const commitTabs = vi.fn();
-  const deps = new Proxy(
+  const deps = new Proxy<Record<string, unknown>>(
     {
       tabs: [src],
       activeId: src.id,
       commitTabs,
       isTabLoaded: () => true,
-    } as Record<string, unknown>,
+    },
     { get: (target, key: string) => (key in target ? target[key] : vi.fn()) },
   );
   const { result } = renderHook(() => useTabActions(deps as never));
@@ -40,7 +40,7 @@ const chart = {
 
 describe('duplicating a tab', () => {
   it("titles a Board tab copy's board as the copy", () => {
-    const copy = duplicate({ id: 't1', name: 'Bugs', kind: 'board', elements: [board] } as Tab);
+    const copy = duplicate({ id: 't1', name: 'Bugs', kind: 'board', elements: [board] });
     expect(copy.name).toBe('Bugs copy');
     const el = copy.elements[0] as { planBoard: { title: string } };
     expect(el.planBoard.title).toBe('Bugs copy');
@@ -69,7 +69,7 @@ describe('duplicating a tab', () => {
   });
 
   it('leaves the boards on any other tab as they are', () => {
-    const copy = duplicate({ id: 't1', name: 'Plans', elements: [board] } as Tab);
+    const copy = duplicate({ id: 't1', name: 'Plans', elements: [board] });
     expect((copy.elements[0] as { planBoard: { title: string } }).planBoard.title).toBe('Bugs');
   });
 });

@@ -72,7 +72,7 @@ describe('duplicating a Sheet', () => {
           selectedId: selection.selectedId,
           multiSelectedIds: new Set(selection.multi),
         }),
-        activeTab: { id: 't', name: 'T', elements } as Tab,
+        activeTab: { id: 't', name: 'T', elements },
         commit: (m) => {
           elements = m(elements);
         },
@@ -112,7 +112,7 @@ describe('duplicating a Sheet', () => {
     const { result } = renderHook(() =>
       useElementDuplication({
         readSelection: () => ({ selectedId: null, multiSelectedIds: new Set(['sheet', 'box']) }),
-        activeTab: { id: 't', name: 'T', elements } as Tab,
+        activeTab: { id: 't', name: 'T', elements },
         commit: (m) => {
           elements = m(elements);
         },
@@ -137,7 +137,7 @@ describe('quick-add duplicating a Sheet', () => {
     const actions = buildSelectionActions({
       currentSelectionIds: () => new Set(['sheet']),
       readSelection: () => ({ selectedId: 'sheet', multiSelectedIds: new Set() }),
-      activeTab: { id: 't', name: 'T', elements } as Tab,
+      activeTab: { id: 't', name: 'T', elements },
       commit: (m) => {
         elements = m(elements);
       },
@@ -163,7 +163,7 @@ describe('deleting a Sheet', () => {
     const actions = buildSelectionActions({
       currentSelectionIds: () => new Set(['sheet']),
       readSelection: () => ({ selectedId: 'sheet', multiSelectedIds: new Set() }),
-      activeTab: { id: 't', name: 'T', elements } as Tab,
+      activeTab: { id: 't', name: 'T', elements },
       commit: (m) => {
         commits += 1;
         elements = m(elements);
@@ -232,7 +232,7 @@ describe('copying and pasting a Sheet', () => {
         readSelection: () => ({ selectedId: 'sheet', multiSelectedIds: new Set() }),
         editingId: null,
         setEditingId: () => {},
-        activeTab: { id: 't', name: 'Board', elements } as Tab,
+        activeTab: { id: 't', name: 'Board', elements },
         commit: (m) => {
           elements = m(elements);
         },

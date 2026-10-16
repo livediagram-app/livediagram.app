@@ -26,7 +26,7 @@ export function useWizardSkipLocation({
   const active = enabled && !!place && !locationShown;
   return {
     /** The saved place while the wizard is one step, else null. */
-    place: active ? place! : null,
+    place: active ? place : null,
     ticked,
     setTicked,
     /** The Location step is showing: the checkbox starts unticked, the visit is two steps. */

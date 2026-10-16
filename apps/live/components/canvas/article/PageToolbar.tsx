@@ -200,12 +200,12 @@ export function PageToolbar({
   const insertBlock = (what: BlockInsert) => {
     handle.insert(
       what === 'divider'
-        ? [S.nodes.divider!.create()]
+        ? [S.nodes.divider.create()]
         : what === 'pageBreak'
-          ? [S.nodes.page_break!.create(), S.nodes.paragraph!.create()]
+          ? [S.nodes.page_break.create(), S.nodes.paragraph.create()]
           : what === 'quote'
-            ? [S.nodes.paragraph!.create({ style: 'quote' })]
-            : [S.nodes.code_block!.create()],
+            ? [S.nodes.paragraph.create({ style: 'quote' })]
+            : [S.nodes.code_block.create()],
     );
     track('Element', 'Added', ARTICLE_BLOCK_INSERT_EVENT[what]);
   };

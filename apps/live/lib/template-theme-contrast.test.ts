@@ -7,7 +7,6 @@ import {
   viewElementInTheme,
   type Appearance,
   type Element,
-  type Tab,
 } from '@livediagram/document';
 import { withThemeApplied } from './tab-theme-apply';
 import { themeViewMap } from './themes';
@@ -33,7 +32,7 @@ describe('templates keep their text readable in both halves of every theme', () 
       const problems: string[] = [];
       for (const theme of THEMES)
         for (const picker of APPEARANCES) {
-          const tab = withThemeApplied({ id: 't', name: 't', elements } as Tab, theme.id, picker);
+          const tab = withThemeApplied({ id: 't', name: 't', elements }, theme.id, picker);
           for (const viewer of APPEARANCES) {
             const map = themeViewMap(tab.theme, viewer);
             for (const el of tab.elements as Painted[]) {

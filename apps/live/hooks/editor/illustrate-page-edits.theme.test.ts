@@ -22,14 +22,14 @@ function harness(tab: Tab) {
     illustratePageEdits({
       tabId: tab.id,
       tab: tabs[0]!,
-      current: illustratePagesOf(tabs[0]!),
+      current: illustratePagesOf(tabs[0]),
       elements: tabs[0]!.elements,
       commitTabs,
       onGoTo: vi.fn(),
       onLayoutPlaced: vi.fn(),
       theme,
     });
-  return { edits, pages: () => illustratePagesOf(tabs[0]!) };
+  return { edits, pages: () => illustratePagesOf(tabs[0]) };
 }
 const tabOf = (pages: unknown[]) => ({ id: 't', name: 'T', elements: [], pages }) as unknown as Tab;
 
@@ -49,7 +49,7 @@ describe("a new page's background", () => {
 
   it('gives the first page the theme gradient when it is chosen as an infographic', () => {
     const h = harness(tabOf([{ id: 'page-1', orientation: 'portrait' }]));
-    h.edits().choosePageKind!('page-1', 'infographic');
+    h.edits().choosePageKind('page-1', 'infographic');
     expect(h.pages()[0]!.background).toEqual(defaultPageBackground(theme));
   });
 

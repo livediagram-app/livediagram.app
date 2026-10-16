@@ -7,6 +7,8 @@ import { useStableObject } from './useStableObject';
 // editor rebuilds per render (data plus actions) keeps its identity until its data changes.
 
 type Bag = { count: number; label?: string; act?: (n: number) => number };
+// The first props, checked as the type every rerender passes.
+const bag = (b: Bag): Bag => b;
 
 describe('useStableObject', () => {
   it('keeps its identity while only the functions were rebuilt, calling the newest', () => {
@@ -23,7 +25,7 @@ describe('useStableObject', () => {
 
   it('changes identity when a data field changes, keeping the same forwarders', () => {
     const { result, rerender } = renderHook((b: Bag) => useStableObject(b), {
-      initialProps: { count: 1, act: vi.fn() } as Bag,
+      initialProps: bag({ count: 1, act: vi.fn() }),
     });
     const first = result.current;
 
@@ -36,7 +38,7 @@ describe('useStableObject', () => {
 
   it('changes identity when a function appears or goes, and keeps an absent one absent', () => {
     const { result, rerender } = renderHook((b: Bag) => useStableObject(b), {
-      initialProps: { count: 1 } as Bag,
+      initialProps: bag({ count: 1 }),
     });
     const first = result.current;
     expect(first.act).toBeUndefined();
@@ -49,7 +51,7 @@ describe('useStableObject', () => {
 
   it('changes identity when a field is added or removed', () => {
     const { result, rerender } = renderHook((b: Bag) => useStableObject(b), {
-      initialProps: { count: 1 } as Bag,
+      initialProps: bag({ count: 1 }),
     });
     const first = result.current;
 

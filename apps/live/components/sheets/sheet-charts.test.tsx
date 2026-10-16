@@ -88,19 +88,18 @@ function bridge(over: Partial<SheetsBridge> = {}): SheetsBridge & { elements: El
   return b;
 }
 
-const chart = (over: Partial<ShapeElement> = {}): ShapeElement =>
-  ({
-    id: 'chart1',
-    type: 'shape',
-    shape: 'bar-chart',
-    x: 0,
-    y: 0,
-    width: 260,
-    height: 220,
-    pieSlices: [{ label: 'A', value: 1, color: '#ff0000' }],
-    chartSource: { sheetId: 'sheetAAAA', range },
-    ...over,
-  }) as ShapeElement;
+const chart = (over: Partial<ShapeElement> = {}): ShapeElement => ({
+  id: 'chart1',
+  type: 'shape',
+  shape: 'bar-chart',
+  x: 0,
+  y: 0,
+  width: 260,
+  height: 220,
+  pieSlices: [{ label: 'A', value: 1, color: '#ff0000' }],
+  chartSource: { sheetId: 'sheetAAAA', range },
+  ...over,
+});
 
 const shown = (el: ShapeElement) => (
   <span data-testid="chart">

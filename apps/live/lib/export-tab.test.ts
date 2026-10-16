@@ -374,7 +374,7 @@ describe('an article page export cuts a drawing off at its zone', () => {
         },
       },
       elements: [shape('poke', { x: zoneX - 40, y: page.rect.y + 120, width: 80, height: 40 })],
-    } as Partial<Tab>);
+    });
     const svg = renderTabToSvg(t, { page });
     expect(svg).toContain('<clipPath id="lvd-zc-poke">');
     expect(svg).toContain('clip-path="url(#lvd-zc-poke)"');

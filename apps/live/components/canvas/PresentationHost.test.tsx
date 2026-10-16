@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
-import { DEFAULT_PRESENTATION_CONFIG, type PresentationConfig } from '@/lib/presentation-config';
+import { DEFAULT_PRESENTATION_CONFIG } from '@/lib/presentation-config';
 import { loadPresentationOverlay } from '@/lib/editor-deferred-code';
 import { PresentationHost } from './PresentationHost';
 
@@ -16,7 +16,7 @@ const deck = {
     { slide: { id: 's3' } },
     { slide: { id: 's4' } },
   ],
-  config: DEFAULT_PRESENTATION_CONFIG as PresentationConfig,
+  config: DEFAULT_PRESENTATION_CONFIG,
   setPresentingAt: vi.fn(),
   exitPresentation: vi.fn(),
   updateConfig: vi.fn(),

@@ -148,7 +148,7 @@ export function SankeyFlowsDialog({
       sankeyFlows: draftFlows(rows),
       sankeyNodes: nodes,
       sankeyAnim: undefined,
-    } as ShapeElement;
+    };
   }, [element, rows, nodes]);
   const leftovers = element.sankeyLeftover !== 'hide';
   const notes = useMemo(

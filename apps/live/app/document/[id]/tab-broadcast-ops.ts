@@ -83,7 +83,7 @@ function tabMetaPatch(before: Tab, after: Tab): Partial<Omit<Tab, 'elements'>> {
     if (k === 'vote' && voteChangeIsDotsOnly(b, a)) continue;
     patch[k] = a;
   }
-  return patch as Partial<Omit<Tab, 'elements'>>;
+  return patch;
 }
 
 // One `board` delta per Plan board whose set-up changed (docs/specs/012-collaboration/collab-race-hardening.md,
@@ -148,7 +148,7 @@ export function tabBroadcastOps(before: Tab | undefined, after: Tab): RoomOp[] {
     ops.push({
       kind: 'tab-meta',
       tabId: after.id,
-      patch: patch as Partial<Omit<Tab, 'elements'>>,
+      patch: patch,
       ...(clear.length ? { clear } : {}),
     });
   }

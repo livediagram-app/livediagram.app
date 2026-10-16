@@ -5,7 +5,7 @@
 
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
-import { createElementAction, createShape, type ShapeElement } from '@livediagram/document';
+import { createElementAction, createShape } from '@livediagram/document';
 import { hasReadableDetail, PresentationElementPopover } from './PresentationElementPopover';
 
 afterEach(cleanup);
@@ -21,14 +21,14 @@ const action = (name: string) =>
 
 describe('PresentationElementPopover', () => {
   it('treats an Action panel with actions as readable, and an empty one as not', () => {
-    const empty = createShape('action-card', 0, 0) as ShapeElement;
+    const empty = createShape('action-card', 0, 0);
     expect(hasReadableDetail(empty)).toBe(false);
     expect(hasReadableDetail({ ...empty, actions: [action('One')] })).toBe(true);
   });
 
   it('lists every action on a card', () => {
     const card = {
-      ...(createShape('action-card', 0, 0) as ShapeElement),
+      ...createShape('action-card', 0, 0),
       actions: [action('Write the runbook'), action('Load test')],
     };
     render(<PresentationElementPopover element={card} at={{ x: 10, y: 10 }} onClose={() => {}} />);

@@ -33,7 +33,7 @@ function harness(pages: IllustratePage[], tabId = 'deck', mayEdit = () => true) 
     illustratePageEdits({
       tabId,
       tab: tabs[0]!,
-      current: illustratePagesOf(tabs[0]!),
+      current: illustratePagesOf(tabs[0]),
       elements: tabs[0]!.elements,
       commitTabs,
       onGoTo: vi.fn(),
@@ -42,7 +42,7 @@ function harness(pages: IllustratePage[], tabId = 'deck', mayEdit = () => true) 
       mayEdit,
     });
   const backgrounds = () =>
-    Object.fromEntries(illustratePagesOf(tabs[0]!).map((p) => [p.id, p.background]));
+    Object.fromEntries(illustratePagesOf(tabs[0]).map((p) => [p.id, p.background]));
   return { edits, commitTabs, toastInfo, backgrounds };
 }
 

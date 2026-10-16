@@ -205,8 +205,8 @@ export default function ArticleEditor(props: ArticleEditorProps) {
     else if (a.kind === 'block')
       done = insertBlocksAfterCaret(
         a.block === 'divider'
-          ? [articleSchema.nodes.divider!.create()]
-          : [articleSchema.nodes.page_break!.create(), articleSchema.nodes.paragraph!.create()],
+          ? [articleSchema.nodes.divider.create()]
+          : [articleSchema.nodes.page_break.create(), articleSchema.nodes.paragraph.create()],
       )(view.state, view.dispatch, view);
     else latest.current.onInsert(latest.current.flow, a.what);
     // A block put in from the menu counts as the toolbar's Insert does, once it went in; an
@@ -392,7 +392,7 @@ export default function ArticleEditor(props: ArticleEditorProps) {
           onComment: () => requestArticleComment(),
           onEscape: () => {
             flush();
-            (viewRef.current?.dom as HTMLElement | undefined)?.blur();
+            viewRef.current?.dom?.blur();
           },
         }),
         articleInputRules(),

@@ -30,7 +30,7 @@ function event(over: Partial<TimelineEvent>): TimelineEvent {
     actorId: ME,
     snapshot: { documentId: 'd1', documentName: 'Payments' },
     ...over,
-  } as TimelineEvent;
+  };
 }
 
 function render(e: TimelineEvent) {

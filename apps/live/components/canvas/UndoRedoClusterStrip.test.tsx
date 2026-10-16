@@ -22,8 +22,8 @@ describe('UndoRedoClusterStrip', () => {
 
   it('disables a button with nothing to do', () => {
     render(<UndoRedoClusterStrip canUndo={false} canRedo={false} />);
-    expect((screen.getByRole('button', { name: 'Undo' }) as HTMLButtonElement).disabled).toBe(true);
-    expect((screen.getByRole('button', { name: 'Redo' }) as HTMLButtonElement).disabled).toBe(true);
+    expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Undo' }).disabled).toBe(true);
+    expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Redo' }).disabled).toBe(true);
   });
 
   it('carries no Tab Activity button', () => {

@@ -28,7 +28,7 @@ function show(planView: PlanViewRef, overrides: Record<string, unknown> = {}, op
   render(
     <PlanViewMenuSection
       element={chart(planView)}
-      flyoutProps={{} as never}
+      flyoutProps={{}}
       sectionProps={(id) => ({ open, onToggle: () => onToggle(id) })}
     />,
   );

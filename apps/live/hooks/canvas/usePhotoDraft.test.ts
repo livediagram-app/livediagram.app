@@ -103,7 +103,7 @@ function esNote(id: string, label: string, x = 0): StickyElement {
     y: 0,
     width: 200,
     height: 200,
-  } as StickyElement;
+  };
 }
 
 function harness(
@@ -528,7 +528,7 @@ describe('Discard', () => {
     // No checkpoint to go back to (a reload): the notes are still drafts, and
     // Discard has to be able to clear them anyway.
     const h = harness({
-      elements: [esNote('a', 'Kept'), { ...esNote('d', 'Draft'), esDraft: true } as Element],
+      elements: [esNote('a', 'Kept'), { ...esNote('d', 'Draft'), esDraft: true }],
     });
     act(() => h.api().discard());
     expect(h.elements().map((el) => el.id)).toEqual(['a']);
@@ -537,10 +537,7 @@ describe('Discard', () => {
 
 describe('the pure lifecycle the hook leans on', () => {
   it('accept and discard are the two ends of it', () => {
-    const board: Element[] = [
-      esNote('a', 'Kept'),
-      { ...esNote('d', 'Draft'), esDraft: true } as Element,
-    ];
+    const board: Element[] = [esNote('a', 'Kept'), { ...esNote('d', 'Draft'), esDraft: true }];
     expect(acceptDraft(board).every((el) => (el as StickyElement).esDraft === undefined)).toBe(
       true,
     );

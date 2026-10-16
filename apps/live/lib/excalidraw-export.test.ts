@@ -307,7 +307,7 @@ describe('boxed element degradation', () => {
     expect(draw!.type).toBe('freedraw');
     // Within the packed points' precision (a hundredth of a px here).
     expect(
-      draw!.points!.map(([x, y]) => [Math.round(x! * 100) / 100, Math.round(y! * 100) / 100]),
+      draw!.points!.map(([x, y]) => [Math.round(x * 100) / 100, Math.round(y * 100) / 100]),
     ).toEqual([
       [0, 0],
       [50, 50],

@@ -14,8 +14,15 @@ vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 describe('mirror while drawing', () => {
   const pages = layOutIllustratePages([newLogoPage('l')]);
   const mirrored = pages.map((p) => ({ ...p, mirror: DEFAULT_MIRROR }));
-  const shape = (id: string, x: number): Element =>
-    ({ id, type: 'shape', shape: 'circle', x, y: -50, width: 100, height: 100 }) as Element;
+  const shape = (id: string, x: number): Element => ({
+    id,
+    type: 'shape',
+    shape: 'circle',
+    x,
+    y: -50,
+    width: 100,
+    height: 100,
+  });
 
   it('twins only what a commit adds', () => {
     const prev = [shape('old', -300)];

@@ -20,7 +20,7 @@ import { ActionPanelFace } from './ActionPanelFace';
 
 afterEach(cleanup);
 
-const card = () => createShape('action-card', 0, 0) as ShapeElement;
+const card = () => createShape('action-card', 0, 0);
 
 const withAction = (status: 'open' | 'done' = 'open'): ShapeElement => ({
   ...card(),

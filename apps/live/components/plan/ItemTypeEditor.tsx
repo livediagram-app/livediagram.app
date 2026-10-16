@@ -81,7 +81,7 @@ export function ItemTypeEditor({
   const [layout, setLayout] = useState<LayoutDraft>(() => ({
     fields: [...start.fields],
     custom: [...(start.custom ?? [])],
-    tabs: tabsOf({ ...start, id: '', newTitle: '' } as ItemTypeDef).map((t) => ({
+    tabs: tabsOf({ ...start, id: '', newTitle: '' }).map((t) => ({
       ...t,
       fields: [...t.fields],
     })),

@@ -19,7 +19,7 @@ afterEach(cleanup);
 
 // docs/specs/026-plan/item-types.md "Editing a type": Show Me, never offered, run on the editor itself.
 function Editor({ showTab }: { showTab: (tab: string) => void }) {
-  const tour = useCardTypeTour(showTab as never);
+  const tour = useCardTypeTour(showTab);
   return (
     <div>
       <CardTypeShowMeButton tour={tour} />

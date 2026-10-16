@@ -33,7 +33,7 @@ function show(
   );
 }
 const title = (h: SheetHarness) => h.store.sheet(SHEET_ID)!.title;
-const field = () => screen.getByLabelText('Sheet title') as HTMLInputElement;
+const field = () => screen.getByLabelText<HTMLInputElement>('Sheet title');
 const cog = () => screen.getByRole('button', { name: 'Sheet Settings' });
 const openSettings = () => fireEvent.click(cog());
 const section = (name: string) => fireEvent.click(screen.getByRole('button', { name }));
@@ -259,7 +259,7 @@ describe('the sheet header', () => {
     fireEvent.doubleClick(screen.getByText('Sheet 1'));
     expect(screen.queryByLabelText('Sheet title')).toBeNull();
     openSettings();
-    expect((screen.getByLabelText('Title') as HTMLInputElement).disabled).toBe(true);
+    expect(screen.getByLabelText<HTMLInputElement>('Title').disabled).toBe(true);
     expect(screen.queryByRole('button', { name: 'Import CSV…' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Clear Sheet' })).toBeNull();
     expect(screen.queryByRole('button', { name: /Sheet Options/ })).toBeNull();

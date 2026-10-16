@@ -21,7 +21,7 @@ import { resolveBoxedMove } from './boxed-drag-resolve';
 const TIMELINE: EsTimeline = { originY: 0 };
 
 function note(id: string, x: number, y: number): StickyElement {
-  return { id, type: 'sticky', x, y, width: 200, height: 200 } as StickyElement;
+  return { id, type: 'sticky', x, y, width: 200, height: 200 };
 }
 
 const START: ShapeBounds = { x: 1000, y: 1000, width: 200, height: 200 };
@@ -86,7 +86,7 @@ describe('resolveBoxedMove — timeline lanes', () => {
     const wide: ShapeBounds = { x: 1000, y: 1000, width: 300, height: 180 };
     const out = resolveBoxedMove({
       elements: [
-        { id: 'drag', type: 'sticky', x: 1000, y: 1000, width: 300, height: 180 } as Element,
+        { id: 'drag', type: 'sticky', x: 1000, y: 1000, width: 300, height: 180 },
         ...pair,
       ],
       startBounds: new Map([['drag', wide]]),

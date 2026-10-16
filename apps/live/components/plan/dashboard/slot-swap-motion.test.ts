@@ -9,7 +9,7 @@ function slotAt(id: string, top: number) {
   el.setAttribute('data-dashboard-slot', id);
   el.getBoundingClientRect = () =>
     ({ top, left: 16, bottom: top + 300, right: 374, width: 358, height: 300 }) as DOMRect;
-  el.animate = vi.fn() as unknown as HTMLElement['animate'];
+  el.animate = vi.fn();
   el.scrollIntoView = vi.fn();
   document.body.append(el);
   return el;

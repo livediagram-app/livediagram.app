@@ -346,7 +346,7 @@ describe('usePerTabLoad never counts an in-flight tab as loaded', () => {
     expect(apiLoadTab).toHaveBeenCalledTimes(1);
     expect(secondDone).toBe(false);
     await act(async () => {
-      resolveT2({ id: 't2', name: 't2', elements: [] } as unknown as Tab);
+      resolveT2({ id: 't2', name: 't2', elements: [] });
       await sweep;
     });
     expect(await second).toEqual([]);
@@ -374,7 +374,7 @@ describe('usePerTabLoad never counts an in-flight tab as loaded', () => {
     await flush();
     expect(apiLoadTab).toHaveBeenCalledTimes(1);
     await act(async () => {
-      resolveT2({ id: 't2', name: 't2', elements: [] } as unknown as Tab);
+      resolveT2({ id: 't2', name: 't2', elements: [] });
     });
     expect(await sweep).toEqual([]);
     expect(loadedTabIdsRef.current.has('t2')).toBe(true);

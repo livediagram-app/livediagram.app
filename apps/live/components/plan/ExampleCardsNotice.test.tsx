@@ -14,19 +14,18 @@ afterEach(() => {
   track.mockReset();
 });
 
-const item = (id: string, fields: Item['fields']): Item =>
-  ({
-    id,
-    type: 'task',
-    key: 1,
-    rank: 'i',
-    fields: { title: id, status: 'todo', ...fields },
-    rev: 1,
-    createdAt: 0,
-    updatedAt: 0,
-    createdBy: { id: 'p', name: 'Sam', color: '#2563eb' },
-    updatedBy: { id: 'p', name: 'Sam', color: '#2563eb' },
-  }) as Item;
+const item = (id: string, fields: Item['fields']): Item => ({
+  id,
+  type: 'task',
+  key: 1,
+  rank: 'i',
+  fields: { title: id, status: 'todo', ...fields },
+  rev: 1,
+  createdAt: 0,
+  updatedAt: 0,
+  createdBy: { id: 'p', name: 'Sam', color: '#2563eb' },
+  updatedBy: { id: 'p', name: 'Sam', color: '#2563eb' },
+});
 
 const example = item('example1', { example: true });
 const exampleElsewhere = item('example2', { example: true, status: 'done' });

@@ -42,7 +42,7 @@ describe('the swimlane template', () => {
     for (const s of steps) {
       const lane = lanes[laneOf(s)];
       expect(lane, `${s.label} sits in no lane`).toBeDefined();
-      const gutter = lane!.type === 'shape' ? (lane!.headerSize ?? 132) : 0;
+      const gutter = lane!.type === 'shape' ? (lane.headerSize ?? 132) : 0;
       expect(s.x).toBeGreaterThan(lane!.x + gutter);
       expect(s.y).toBeGreaterThanOrEqual(lane!.y);
       expect(s.y + s.height).toBeLessThanOrEqual(lane!.y + lane!.height);
@@ -126,7 +126,7 @@ describe('the data flow diagram template', () => {
     const nodeLabels = new Set(boxes(els).map((b) => b.label));
     for (const f of flows) {
       expect(f.label).toBeTruthy();
-      expect(nodeLabels.has(f.label!)).toBe(false);
+      expect(nodeLabels.has(f.label)).toBe(false);
       const { from, to } = pinnedIds(f);
       expect(map.get(from)).toBeDefined();
       expect(map.get(to)).toBeDefined();

@@ -12,7 +12,7 @@ import { setActiveTour } from '@/lib/tour-active';
 afterEach(cleanup);
 
 const seq = (over: Partial<ShapeElement> = {}) =>
-  ({ ...(createShape('sequence', 0, 0) as ShapeElement), id: 'q', ...over }) as ShapeElement;
+  ({ ...createShape('sequence', 0, 0), id: 'q', ...over }) as ShapeElement;
 
 function open(element = seq()) {
   const onCommit = vi.fn<(rows: SequenceRows, type: string) => void>();
@@ -80,7 +80,7 @@ describe('SequenceDialog', () => {
     expect(stored()!.participants.map((p) => p.id)).toEqual(['browser', 'api']);
     expect(stored()!.messages).toHaveLength(3);
     fireEvent.click(screen.getByRole('button', { name: 'API' }));
-    expect((screen.getByRole('button', { name: 'Remove API' }) as HTMLButtonElement).disabled).toBe(
+    expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Remove API' }).disabled).toBe(
       true,
     );
   });

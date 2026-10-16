@@ -30,9 +30,9 @@ function show(target: ShapeElement, stepsInOrder = false) {
 }
 
 const badge = (over: Partial<ShapeElement> = {}) =>
-  ({ ...(createShape('badge', 0, 0) as ShapeElement), ...over }) as ShapeElement;
+  ({ ...createShape('badge', 0, 0), ...over }) as ShapeElement;
 const step = (over: Partial<ShapeElement> = {}) =>
-  ({ ...(createShape('step', 0, 0) as ShapeElement), ...over }) as ShapeElement;
+  ({ ...createShape('step', 0, 0), ...over }) as ShapeElement;
 
 describe('ChipMenuSection', () => {
   it('picks a look', () => {

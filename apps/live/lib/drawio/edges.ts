@@ -115,7 +115,7 @@ function captionWidth(label: string, size: TextSize | undefined): number {
 function soleRunColour(cell: DrawioCell): string | undefined {
   const runs = cellLabel(cell).runs?.filter((r) => r.text.trim() !== '');
   const first = runs?.[0]?.color;
-  return first && runs!.every((r) => r.color === first) ? first : undefined;
+  return first && runs.every((r) => r.color === first) ? first : undefined;
 }
 
 // A pinned end on the anchor nearest the route's end, on the axis the route leaves along; an end

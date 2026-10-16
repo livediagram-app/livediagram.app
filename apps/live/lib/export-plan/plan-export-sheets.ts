@@ -21,7 +21,7 @@ export function sheetModelsFor(
   store: Pick<SheetStore, 'sheet' | 'workbook'>,
 ): Map<string, SheetRenderModel> {
   const out = new Map<string, SheetRenderModel>();
-  for (const frame of sheetFramesOf(elements as never)) {
+  for (const frame of sheetFramesOf(elements)) {
     if (out.has(frame.sheetId)) continue;
     const sheet = store.sheet(frame.sheetId);
     if (!sheet) continue;

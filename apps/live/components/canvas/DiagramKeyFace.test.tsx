@@ -17,7 +17,7 @@ const rows: KeyRow[] = [
 ];
 const key = (over: Partial<ShapeElement> = {}) =>
   ({
-    ...(createShape('diagram-key', 0, 0) as ShapeElement),
+    ...createShape('diagram-key', 0, 0),
     keyRows: rows,
     ...over,
   }) as ShapeElement;

@@ -34,10 +34,10 @@ describe('Plan template Dashboards', () => {
           c.type === 'tab'
             ? { kind: 'tab', tabId: c.tabId, of: c.of ?? 'board' }
             : c.type === 'element'
-              ? ({
+              ? {
                   kind: 'view',
                   view: (byId.get(c.elementId) as { planView: { view: string } }).planView.view,
-                } as DashboardItem)
+                }
               : { kind: 'note' };
         const size = { width: (inner * slot.span) / 12, height: row.height };
         expect(fitsSlot(item, size), `${JSON.stringify(c)} in ${JSON.stringify(size)}`).toBe(true);

@@ -17,7 +17,7 @@ function run(
 ) {
   const commitTabs = vi.fn();
   const setTemplatePickerMode = vi.fn();
-  const deps = new Proxy(
+  const deps = new Proxy<Record<string, unknown>>(
     {
       tabs: [active],
       activeId: 't1',
@@ -26,7 +26,7 @@ function run(
       createTab: (name: string) => ({ id: 't2', name, elements: [] }) as unknown as Tab,
       commitTabs,
       setTemplatePickerMode,
-    } as Record<string, unknown>,
+    },
     // Every other dependency the hook takes is a no-op here.
     { get: (target, key: string) => (key in target ? target[key] : vi.fn()) },
   );

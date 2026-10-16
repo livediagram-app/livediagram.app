@@ -249,7 +249,7 @@ export function BackgroundSection({
       onPointerLeave={() => onPreview(null)}
       // Focus leaving the section, not moving inside it (the colour picker's controls).
       onBlur={(e) => {
-        if (!e.currentTarget.contains(e.relatedTarget as Node | null)) onPreview(null);
+        if (!e.currentTarget.contains(e.relatedTarget)) onPreview(null);
       }}
     >
       <PanelSection title="Background">

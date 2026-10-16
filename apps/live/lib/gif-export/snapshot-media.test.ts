@@ -26,12 +26,9 @@ describe('inlining pictures', () => {
   });
 
   it('leaves a picture it cannot read empty, never failing the export', async () => {
-    const images = createImageInliner(
-      (async () => new Response('', { status: 404 })) as unknown as typeof fetch,
-    );
+    const images = createImageInliner(async () => new Response('', { status: 404 }));
     await expect(images.dataUrl('/gone.png')).resolves.toBe(TRANSPARENT_PIXEL);
-    const offline = createImageInliner((async () =>
-      Promise.reject(new TypeError('offline'))) as typeof fetch);
+    const offline = createImageInliner(async () => Promise.reject(new TypeError('offline')));
     await expect(offline.dataUrl('/x.png')).resolves.toBe(TRANSPARENT_PIXEL);
   });
 

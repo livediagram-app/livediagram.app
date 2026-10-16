@@ -84,7 +84,7 @@ describe('PlanCardView', () => {
   });
 
   it('draws at its own Card Size: Minimal leaves the number off, Detailed shows it', () => {
-    setup(true, { ...card, planCard: { itemId: item.id, size: 'minimal' } } as ShapeElement);
+    setup(true, { ...card, planCard: { itemId: item.id, size: 'minimal' } });
     expect(screen.queryByText('#3')).toBeNull();
     cleanup();
     setup();

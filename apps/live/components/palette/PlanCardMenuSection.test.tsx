@@ -26,7 +26,7 @@ function show(planCard: PlanCardRef, canEdit = true, open = true) {
   const view = render(
     <PlanCardMenuSection
       element={card(planCard)}
-      flyoutProps={{} as never}
+      flyoutProps={{}}
       sectionProps={(id) => ({ open, onToggle: () => onToggle(id) })}
     />,
   );

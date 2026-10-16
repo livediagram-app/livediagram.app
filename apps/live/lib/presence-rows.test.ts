@@ -388,7 +388,7 @@ describe('buildRemoteSelectionsByElement holds', () => {
       ['e', { elementId: 'c' }],
       ['old', { elementId: 'd' }],
     ]);
-    const out = buildRemoteSelectionsByElement(selections, presence as never, 'self', 't');
+    const out = buildRemoteSelectionsByElement(selections, presence, 'self', 't');
     expect(out.get('a')?.[0]?.holds).toBe(false);
     expect(out.get('b')?.[0]?.holds).toBe(true);
     expect(out.get('c')?.[0]?.holds).toBe(true);

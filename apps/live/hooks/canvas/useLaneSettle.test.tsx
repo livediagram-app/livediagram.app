@@ -107,7 +107,7 @@ describe('useLaneSettle', () => {
   });
 
   it('leaves an ordinary tab alone', () => {
-    const h = harness({ id: 't1', name: 'D', elements: [note('a', 130)] } as Tab);
+    const h = harness({ id: 't1', name: 'D', elements: [note('a', 130)] });
     expect(h.commits).toHaveLength(0);
     expect(h.marks).toEqual([]);
   });

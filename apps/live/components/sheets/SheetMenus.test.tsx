@@ -452,8 +452,8 @@ describe('the filter menu', () => {
     fireEvent.click(btn('OK'));
     expect(cond()).toEqual({ op: 'contains', a: 'pp' });
     reopen();
-    expect((screen.getByLabelText('Condition') as HTMLSelectElement).value).toBe('contains');
-    expect((screen.getByLabelText('Value') as HTMLInputElement).value).toBe('pp');
+    expect(screen.getByLabelText<HTMLSelectElement>('Condition').value).toBe('contains');
+    expect(screen.getByLabelText<HTMLInputElement>('Value').value).toBe('pp');
     fireEvent.change(screen.getByLabelText('Condition'), { target: { value: 'between' } });
     fireEvent.change(screen.getByLabelText('Value'), { target: { value: '1' } });
     fireEvent.change(screen.getByLabelText('And'), { target: { value: '5' } });
@@ -552,8 +552,8 @@ describe('the sort dialog', () => {
     act(() => h.ctl().setGridEl(grid));
     const dialog = screen.getByRole('dialog', { name: 'Sort range' });
     expect(within(dialog).getByText('Sort by')).toBeTruthy();
-    const columns = () => within(dialog).getAllByLabelText('Column') as HTMLSelectElement[];
-    const orders = () => within(dialog).getAllByLabelText('Order') as HTMLSelectElement[];
+    const columns = () => within(dialog).getAllByLabelText<HTMLSelectElement>('Column');
+    const orders = () => within(dialog).getAllByLabelText<HTMLSelectElement>('Order');
     expect([...columns()[0]!.options].map((o) => o.text)).toEqual([
       'Column A',
       'Column B',

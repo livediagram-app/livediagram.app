@@ -428,7 +428,7 @@ export function usePlanTabActions({
           if (content.type === 'element') {
             const el = t.elements.find((e) => e.id === content.elementId);
             if (!el || (el.type === 'shape' && el.shape === 'plan-sheet')) return t;
-            add = { ...structuredClone(el), id: newId() } as Element;
+            add = { ...structuredClone(el), id: newId() };
             copy = { ...content, elementId: add.id };
           }
           return {

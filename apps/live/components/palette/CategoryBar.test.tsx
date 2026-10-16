@@ -49,8 +49,8 @@ function show(mode: EditorMode = 'diagram', { minimal = false }: { minimal?: boo
 }
 
 const button = (name: string) => screen.getByRole('button', { name });
-const flyout = () => document.querySelector('[data-category-flyout]') as HTMLElement | null;
-const side = () => document.querySelector('[data-category-flyout-side]') as HTMLElement | null;
+const flyout = () => document.querySelector<HTMLElement>('[data-category-flyout]');
+const side = () => document.querySelector<HTMLElement>('[data-category-flyout-side]');
 const heading = () => flyout()?.querySelector('h3')?.textContent;
 const mouse = { pointerType: 'mouse' };
 const wait = (ms: number) =>

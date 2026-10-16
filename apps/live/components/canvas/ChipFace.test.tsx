@@ -10,7 +10,7 @@ import { ChipFace } from './ChipFace';
 afterEach(cleanup);
 
 const show = (over: Partial<ShapeElement>) => {
-  const element = { ...(createShape('badge', 0, 0) as ShapeElement), ...over };
+  const element = { ...createShape('badge', 0, 0), ...over };
   const { container } = render(
     <ChipFace
       element={element}

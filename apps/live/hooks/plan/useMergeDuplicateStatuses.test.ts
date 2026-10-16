@@ -37,7 +37,7 @@ describe('useMergeDuplicateStatuses', () => {
   it('takes boards and cards to the first state of the name, once', () => {
     const { tickTabs, writeQuiet } = run(true);
     expect(tickTabs).toHaveBeenCalledOnce();
-    const next = tickTabs.mock.calls[0]![0](tabs) as Tab[];
+    const next = tickTabs.mock.calls[0]![0](tabs);
     const second = next[1]!.elements[0] as unknown as {
       planBoard: { columns: { status: string }[] };
     };

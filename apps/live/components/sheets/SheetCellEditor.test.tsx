@@ -23,7 +23,7 @@ function show(h: SheetHarness, at = 'B2') {
     { at },
   );
 }
-const editor = () => screen.getByRole('textbox') as HTMLTextAreaElement;
+const editor = () => screen.getByRole<HTMLTextAreaElement>('textbox');
 const overlay = () => editor().previousElementSibling as HTMLElement;
 const frame = () => editor().parentElement as HTMLElement;
 
@@ -111,11 +111,11 @@ describe('the cell editor', () => {
     fireEvent.change(editor(), { target: { value: '=COUN', selectionStart: 5 } });
     const options = screen.getAllByRole('option');
     expect(options.length).toBeGreaterThan(1);
-    expect(options.every((o) => o.textContent!.startsWith('COUN'))).toBe(true);
+    expect(options.every((o) => o.textContent.startsWith('COUN'))).toBe(true);
     expect(options[0]!.getAttribute('aria-selected')).toBe('true');
     fireEvent.keyDown(editor(), { key: 'ArrowDown' });
     expect(screen.getAllByRole('option')[1]!.getAttribute('aria-selected')).toBe('true');
-    const name = options[1]!.querySelector('.font-semibold')!.textContent!;
+    const name = options[1]!.querySelector('.font-semibold')!.textContent;
     fireEvent.pointerDown(screen.getAllByRole('option')[1]!);
     expect(h.ctl().editing?.draft).toBe(`=${name}(`);
     expect(screen.queryByRole('listbox')).toBeNull();

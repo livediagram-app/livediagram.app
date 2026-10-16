@@ -71,15 +71,13 @@ function MoodButton({
       aria-pressed={chosen}
       aria-label={`${value}, ${word}`}
       className="mood-button pointer-events-auto flex w-full min-w-0 cursor-pointer flex-col items-center gap-1 rounded-xl border px-1 pb-2 pt-2.5 disabled:cursor-default"
-      style={
-        {
-          color: chosen ? hue : textColor,
-          backgroundColor: chosen ? tint(hue, 0.16) : tint(textColor, 0.04),
-          borderColor: chosen ? tint(hue, 0.7) : tint(textColor, 0.1),
-          boxShadow: chosen ? `0 8px 16px -8px ${hue}` : undefined,
-          transform: chosen ? 'translateY(-2px)' : undefined,
-        } as React.CSSProperties
-      }
+      style={{
+        color: chosen ? hue : textColor,
+        backgroundColor: chosen ? tint(hue, 0.16) : tint(textColor, 0.04),
+        borderColor: chosen ? tint(hue, 0.7) : tint(textColor, 0.1),
+        boxShadow: chosen ? `0 8px 16px -8px ${hue}` : undefined,
+        transform: chosen ? 'translateY(-2px)' : undefined,
+      }}
     >
       <span key={pop ? 'pop' : 'rest'} className={pop ? 'qa-pop inline-flex' : 'inline-flex'}>
         <MoodGlyph value={index + 1} size={26} />

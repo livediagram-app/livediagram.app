@@ -268,7 +268,7 @@ export function SheetFormatRules({
   const colour = (k: 'fc' | 'bg', id: string) =>
     d && set({ style: { ...d.style, [k]: id === 'none' ? undefined : id.toLowerCase() } });
   const clean = (s: FormatStyle): FormatStyle =>
-    Object.fromEntries(Object.entries(s).filter(([, v]) => v !== undefined)) as FormatStyle;
+    Object.fromEntries(Object.entries(s).filter(([, v]) => v !== undefined));
   const done = () => {
     if (!d) return;
     const made = ruleOf(c, { ...d, style: clean(d.style) }, actions);

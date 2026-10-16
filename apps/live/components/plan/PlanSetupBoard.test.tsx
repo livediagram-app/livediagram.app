@@ -121,7 +121,7 @@ describe('Setup Board', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Clear' }));
     fireEvent.click(screen.getByRole('button', { name: 'Add New Card Type' }));
     expect(onCreateType).toHaveBeenCalled();
-    const kudos = { ...ITEM_TYPES[0]!, id: 'kudos', label: 'Kudos' };
+    const kudos = { ...ITEM_TYPES[0], id: 'kudos', label: 'Kudos' };
     rerender(<PlanSetupBoard {...props} types={[...ITEM_TYPES, kudos]} />);
     expect(screen.getByRole('checkbox', { name: /Kudos/ }).getAttribute('aria-checked')).toBe(
       'true',

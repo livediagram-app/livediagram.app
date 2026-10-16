@@ -4,7 +4,7 @@ import type { ShapeBounds } from '@/lib/canvas';
 import { isSingleNoteDrag, landNoteInSlot, resolveNoteInsertion } from './note-insertion-drag';
 
 function note(id: string, x: number, y = 0): StickyElement {
-  return { id, type: 'sticky', x, y, width: 200, height: 200, label: id } as StickyElement;
+  return { id, type: 'sticky', x, y, width: 200, height: 200, label: id };
 }
 
 // a: 0..200, b: 272..472, c: 544..744, plus the note being dragged, parked
@@ -97,7 +97,7 @@ describe('resolveNoteInsertion', () => {
         y: 0,
         width: 200,
         height: 200,
-      } as Element,
+      },
     ];
     expect(resolve({ elements: withShape })).toBeNull();
   });

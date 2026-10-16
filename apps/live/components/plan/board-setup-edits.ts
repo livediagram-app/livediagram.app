@@ -89,7 +89,7 @@ export function setDoneColumn(setup: PlanBoardSetup, id: string, done: boolean):
   if (setup.doneColumnId !== id) return setup;
   const { doneColumnId: _old, ...rest } = setup;
   void _old;
-  return rest as PlanBoardSetup;
+  return rest;
 }
 
 export function moveColumn(setup: PlanBoardSetup, id: string, step: -1 | 1): PlanBoardSetup {

@@ -93,6 +93,6 @@ export function scalePage(elements: Element[], k: number): Element[] {
         grown.rowHeights = grown.rowHeights.map((h) => (h === null ? h : h * k));
       if (grown.colWidths) grown.colWidths = grown.colWidths.map((w) => (w === null ? w : w * k));
     }
-    return grown as Element;
+    return grown;
   });
 }

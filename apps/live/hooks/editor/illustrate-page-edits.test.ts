@@ -25,7 +25,7 @@ function harness(tab: Tab) {
     illustratePageEdits({
       tabId: tab.id,
       tab: tabs[0]!,
-      current: illustratePagesOf(tabs[0]!),
+      current: illustratePagesOf(tabs[0]),
       elements: tabs[0]!.elements,
       commitTabs,
       onGoTo,
@@ -520,7 +520,7 @@ describe('Fit to Content page edits', () => {
     edits.splitPage('f');
     expect(toastInfo).toHaveBeenCalledWith('Split into 2 pages. Undo puts it back.');
     const [after] = later[0]!([tab]);
-    expect(onGoTo).toHaveBeenLastCalledWith(illustratePagesOf(after!)[0]!.id);
+    expect(onGoTo).toHaveBeenLastCalledWith(illustratePagesOf(after)[0]!.id);
   });
 
   // docs/specs/003-system-architecture/react-state-and-effects.md "A handler decides before it commits": an edit that

@@ -19,7 +19,7 @@ describe('useEditModeContextMenu', () => {
     y: 0,
     width: 200,
     height: 200,
-  } as Element;
+  };
   const shape: Element = {
     id: 'q1',
     type: 'shape',
@@ -28,7 +28,7 @@ describe('useEditModeContextMenu', () => {
     y: 0,
     width: 120,
     height: 120,
-  } as Element;
+  };
 
   it('never auto-opens the menu when the edited element is a sticky', () => {
     const setContextMenu = vi.fn();

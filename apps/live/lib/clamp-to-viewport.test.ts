@@ -10,20 +10,19 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { clampToViewport } from './clamp-to-viewport';
 
-const rect = (left: number, top: number, width: number, height: number): DOMRect =>
-  ({
-    x: left,
-    y: top,
-    left,
-    top,
-    width,
-    height,
-    right: left + width,
-    bottom: top + height,
-    toJSON() {
-      return this;
-    },
-  }) as DOMRect;
+const rect = (left: number, top: number, width: number, height: number): DOMRect => ({
+  x: left,
+  y: top,
+  left,
+  top,
+  width,
+  height,
+  right: left + width,
+  bottom: top + height,
+  toJSON() {
+    return this;
+  },
+});
 
 const VW = 1200;
 const VH = 800;

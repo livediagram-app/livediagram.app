@@ -262,7 +262,7 @@ describe('disconnect and reconnect', () => {
     };
     const second = makeEngine(w);
     await second.engine.start();
-    expect(w.ld.connection!.rootFolderId).toBe(root);
+    expect(w.ld.connection.rootFolderId).toBe(root);
     expect(w.google.appFiles(OWNER).length).toBe(files);
     expect(w.ld.items.size).toBe(2);
   });

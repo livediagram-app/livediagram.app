@@ -62,13 +62,11 @@ describe('PathEditToolbar', () => {
 
   it('asks for a node before typing, deleting or opening', () => {
     renderBar({ hasSelection: false, type: null, closed: true, canOpen: false });
-    expect((screen.getByRole('radio', { name: 'Corner' }) as HTMLButtonElement).disabled).toBe(
+    expect(screen.getByRole<HTMLButtonElement>('radio', { name: 'Corner' }).disabled).toBe(true);
+    expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Delete Point' }).disabled).toBe(
       true,
     );
-    expect(
-      (screen.getByRole('button', { name: 'Delete Point' }) as HTMLButtonElement).disabled,
-    ).toBe(true);
-    expect((screen.getByRole('button', { name: 'Open Path' }) as HTMLButtonElement).disabled).toBe(
+    expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Open Path' }).disabled).toBe(
       true,
     );
   });

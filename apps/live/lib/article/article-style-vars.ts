@@ -40,5 +40,5 @@ export function articleStyleVars(
     '--article-rule': ink.dark ? 'rgb(255 255 255 / 0.22)' : 'rgb(15 23 42 / 0.16)',
     '--article-code-bg': ink.dark ? 'rgb(255 255 255 / 0.08)' : 'rgb(15 23 42 / 0.05)',
   };
-  return { vars: vars as CSSProperties, rules: r.rules };
+  return { vars: vars, rules: r.rules };
 }

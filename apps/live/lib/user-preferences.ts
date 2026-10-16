@@ -343,7 +343,7 @@ export function readUserPreferences(): UserPreferences {
     if (typeof parsed !== 'object' || parsed === null) return {};
     // Keep unknown keys: forward-compat for future-versioned flags
     // a different client may have written.
-    return upgradeLegacyPreferences(parsed as Record<string, unknown>) as UserPreferences;
+    return upgradeLegacyPreferences(parsed as Record<string, unknown>);
   } catch {
     return {};
   }
@@ -392,7 +392,7 @@ export function rebaseUserPreferences(
     if (key in after) rebased[key] = after[key];
     else delete rebased[key];
   }
-  return rebased as UserPreferences;
+  return rebased;
 }
 
 // Rebase a change (above), write it, and answer what was written, for a
@@ -425,7 +425,7 @@ export async function fetchUserPreferences(ownerId: string): Promise<UserPrefere
   const remote = await apiGetPreferences(ownerId);
   if (remote === null) return null;
   const local = readUserPreferences();
-  const server = upgradeLegacyPreferences(remote as Record<string, unknown>) as UserPreferences;
+  const server = upgradeLegacyPreferences(remote) as UserPreferences;
   const unsynced = preferencesUnsynced(ownerId);
   const merged = fitPreferences(unsynced ? { ...server, ...local } : { ...local, ...server });
   writeLocalStorageSafe(STORAGE_KEY, JSON.stringify(merged));

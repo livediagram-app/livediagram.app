@@ -234,8 +234,8 @@ export function QuizFace({
                 pickers={
                   pickers[i] ? (
                     <QuizPickers
-                      people={pickers[i]!.people}
-                      unknown={pickers[i]!.unknown}
+                      people={pickers[i].people}
+                      unknown={pickers[i].unknown}
                       index={i}
                       textColor={textColor}
                     />

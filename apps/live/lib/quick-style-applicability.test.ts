@@ -29,13 +29,13 @@ const mixed: Element[] = [
   pen('stroke-1'),
   pen('stroke-2'),
   { ...createShape('square', 0, 0), id: 'shape' },
-  { id: 'text', type: 'text', x: 0, y: 0, width: 9, height: 9, label: 'Hi' } as Element,
+  { id: 'text', type: 'text', x: 0, y: 0, width: 9, height: 9, label: 'Hi' },
   {
     id: 'arrow',
     type: 'arrow',
     from: { kind: 'free', x: 0, y: 0 },
     to: { kind: 'free', x: 9, y: 9 },
-  } as Element,
+  },
   {
     ...createPath(
       [
@@ -47,8 +47,8 @@ const mixed: Element[] = [
     ),
     id: 'path',
   },
-  { id: 'sticky', type: 'sticky', x: 0, y: 0, width: 9, height: 9 } as Element,
-  { id: 'image', type: 'image', x: 0, y: 0, width: 9, height: 9, imageId: null } as Element,
+  { id: 'sticky', type: 'sticky', x: 0, y: 0, width: 9, height: 9 },
+  { id: 'image', type: 'image', x: 0, y: 0, width: 9, height: 9, imageId: null },
   { ...createShape('frame', 0, 0), id: 'frame' },
   { ...createShape('square', 0, 0), id: 'locked', locked: true },
 ];

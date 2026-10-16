@@ -89,7 +89,7 @@ export function parseImportedTab(text: string): ImportResult {
   if (!env.tab || typeof env.tab !== 'object') {
     return { ok: false, error: 'Envelope is missing the tab payload.' };
   }
-  const tab = env.tab as Tab;
+  const tab = env.tab;
   if (typeof tab.id !== 'string' || typeof tab.name !== 'string' || !Array.isArray(tab.elements)) {
     return { ok: false, error: 'Tab payload is missing required fields (id, name, elements).' };
   }

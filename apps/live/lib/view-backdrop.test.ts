@@ -6,8 +6,7 @@ import { MODE_PATTERNS, resolveViewBackdrop } from './view-backdrop';
 
 // docs/specs/007-editor/editor-modes.md "One look": one backdrop colour in both modes; the pattern
 // is the tab's in Diagram mode and the person's own in Draw mode.
-const tab = (over: Partial<Tab> = {}): Tab =>
-  ({ id: 't1', name: 'Tab 1', elements: [], ...over }) as Tab;
+const tab = (over: Partial<Tab> = {}): Tab => ({ id: 't1', name: 'Tab 1', elements: [], ...over });
 
 afterEach(() => resetAppearanceForTests());
 

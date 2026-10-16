@@ -12,9 +12,9 @@ import { dressMindConnector, dressMindNode } from './mind-dress';
 // docs/specs/009-elements/org-chart.md "Growing" (blueprint org-chart.md I1), and the ordinary mind node's dress.
 
 const tab = { theme: 'default' };
-const root = applyShapeVariant(createShape('mind-node', 0, 0) as ShapeElement, 'org-chart');
-const fresh = () => ({ ...(createShape('mind-node', 0, 200) as ShapeElement), label: '' });
-const arrow = () => createArrow(0, 0, 10, 10) as ArrowElement;
+const root = applyShapeVariant(createShape('mind-node', 0, 0), 'org-chart');
+const fresh = () => ({ ...createShape('mind-node', 0, 200), label: '' });
+const arrow = () => createArrow(0, 0, 10, 10);
 
 describe('dressing a grown mind node', () => {
   it("makes a person map's new node a person node with no role, sized like the root when it is the first report", () => {
@@ -29,7 +29,7 @@ describe('dressing a grown mind node', () => {
     const node = dressMindNode(fresh(), sibling, tab, root);
     expect(node.width).toBe(240);
     expect(node.pageSubtitle).toBeUndefined();
-    const plainRoot = createShape('mind-node', 0, 0) as ShapeElement;
+    const plainRoot = createShape('mind-node', 0, 0);
     expect(dressMindNode(fresh(), null, tab, plainRoot).mindLook).toBeUndefined();
   });
 

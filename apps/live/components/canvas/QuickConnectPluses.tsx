@@ -106,7 +106,7 @@ export function QuickConnectPluses({
           // A flowchart step grows the same way (docs/specs/009-elements/flowchart.md): Add Step / Add Branch.
           onGrowMind={
             (selectedIsMind || selectedIsStep) && growMind
-              ? (relation) => growMind.grow(selectedElement!.id, relation)
+              ? (relation) => growMind.grow(selectedElement.id, relation)
               : undefined
           }
           growing={selectedIsStep ? 'flowchart' : 'mind'}

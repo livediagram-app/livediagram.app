@@ -17,7 +17,6 @@ import {
   supportsShadow,
   type BorderStroke,
   type BorderStyle,
-  type BoxedElement,
   type ElementShadow,
   type Padding,
   type ShapeElement,
@@ -301,8 +300,7 @@ export function MultiSelectionContextMenu({
                     currentSize={(alignSrc as { textSize?: TextSize }).textSize ?? 'sm'}
                     presetPx={presetPxFor(alignSrc.type)}
                     padding={
-                      (alignSrc as { padding?: Padding }).padding ??
-                      defaultPadding(alignSrc as BoxedElement)
+                      (alignSrc as { padding?: Padding }).padding ?? defaultPadding(alignSrc)
                     }
                     onSetFont={props.onSetFont}
                     onSetSize={props.onSetTextSize}

@@ -90,8 +90,7 @@ describe('resolvePortalDestination', () => {
   // — the part that is easy to get wrong — WHICH TAB'S ELEMENTS come back with
   // it. A cross-tab traveller who is handed the departure tab's elements gets
   // the far portal named from the wrong list.
-  const tabOf = (id: string, name: string, elements: Element[]): Tab =>
-    ({ id, name, elements }) as Tab;
+  const tabOf = (id: string, name: string, elements: Element[]): Tab => ({ id, name, elements });
 
   it('returns the far portal, its tab, and that tab’s elements', () => {
     const here = portal('a', { portalTarget: 'b' });

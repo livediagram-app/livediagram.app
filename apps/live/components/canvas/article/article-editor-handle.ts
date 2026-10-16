@@ -178,7 +178,7 @@ export function createArticleHandle({
     markNote: (id, kind) => {
       const { from, to, empty } = view.state.selection;
       if (empty) return null;
-      const mark = articleSchema.marks.note!.create({ id, kind });
+      const mark = articleSchema.marks.note.create({ id, kind });
       view.dispatch(view.state.tr.addMark(from, to, mark));
       const { frame, root, z } = scale();
       const el = view.dom.querySelector<HTMLElement>(`[data-note-id="${CSS.escape(id)}"]`);
@@ -221,7 +221,7 @@ export function createArticleHandle({
       const ids = new Set<string>();
       doc.forEach((n) => ids.add(n.attrs.id as string));
       const id = nextArticleBlockId(ids);
-      const node = articleSchema.nodes.zone!.create({ id, ...spec });
+      const node = articleSchema.nodes.zone.create({ id, ...spec });
       // The block boundary nearest the point; with no point, after the caret's block.
       let at = doc.content.size;
       const blockAt = (at: number) => {
@@ -252,7 +252,7 @@ export function createArticleHandle({
       const tr = view.state.tr.replaceWith(at, replaceTo, node);
       // Always somewhere to write after it; the caret goes there, so writing carries on below.
       if (at + node.nodeSize >= tr.doc.content.size)
-        tr.insert(tr.doc.content.size, articleSchema.nodes.paragraph!.create());
+        tr.insert(tr.doc.content.size, articleSchema.nodes.paragraph.create());
       tr.setSelection(TextSelection.near(tr.doc.resolve(at + node.nodeSize + 1)));
       view.dispatch(tr);
       return landedOf(id);

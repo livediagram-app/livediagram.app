@@ -50,7 +50,7 @@ function card(responseKeys: string[]): ShapeElement {
       value: DONE_VALUE,
       at: 1,
     })),
-  } as ShapeElement;
+  };
 }
 
 function count(): string {

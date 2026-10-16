@@ -150,7 +150,7 @@ describe('the Seasonal toggle', () => {
   });
 
   it('opens on, with the look selected, when the tab already wears a seasonal look', () => {
-    const tab = withLookApplied({ id: 't', name: 'T', elements: [] } as never, SEASONAL_LOOKS[3]!);
+    const tab = withLookApplied({ id: 't', name: 'T', elements: [] }, SEASONAL_LOOKS[3]!);
     plain(tab);
     expect(toggle().getAttribute('aria-pressed')).toBe('true');
     const selected = screen

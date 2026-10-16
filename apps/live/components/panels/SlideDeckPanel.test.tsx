@@ -125,7 +125,7 @@ describe('the Slide Deck popover', () => {
   ) =>
     render(
       <SlideDeckPanel
-        state={{ ...state(deck), ...extra } as SlideDeckState}
+        state={{ ...state(deck), ...extra }}
         tabs={tabs}
         activeTabId="a"
         isReadOnly={false}

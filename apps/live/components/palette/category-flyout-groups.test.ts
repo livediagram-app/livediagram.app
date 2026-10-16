@@ -18,16 +18,15 @@ import type { PaletteTileDef } from './palette-tile-defs';
 const tiles = (mode: 'diagram' | 'facilitate' | 'illustrate', id: string): PaletteTileDef[] =>
   paletteCategoriesFor(mode).find((c) => c.id === id)?.tiles ?? [];
 
-const tile = (id: string, dividerAfter = false): PaletteTileDef =>
-  ({
-    id,
-    label: id,
-    description: '',
-    icon: null,
-    section: 'shapes',
-    action: { type: 'text' },
-    ...(dividerAfter ? { dividerAfter } : {}),
-  }) as PaletteTileDef;
+const tile = (id: string, dividerAfter = false): PaletteTileDef => ({
+  id,
+  label: id,
+  description: '',
+  icon: null,
+  section: 'shapes',
+  action: { type: 'text' },
+  ...(dividerAfter ? { dividerAfter } : {}),
+});
 
 describe('the category bar', () => {
   it('is Diagram’s, Facilitate’s and Illustrate’s strip, not Plan’s or Draw’s', () => {

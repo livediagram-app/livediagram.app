@@ -20,7 +20,7 @@ describe('a wrapping one-line field (the card title)', () => {
         className="title"
       />,
     );
-    return { onSave, onEnter, field: screen.getByLabelText('Title') as HTMLTextAreaElement };
+    return { onSave, onEnter, field: screen.getByLabelText<HTMLTextAreaElement>('Title') };
   };
 
   it('is a one-row textarea, so it wraps without keeping room it does not need', () => {

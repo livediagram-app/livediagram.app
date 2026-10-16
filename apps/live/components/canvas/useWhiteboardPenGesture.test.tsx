@@ -40,8 +40,10 @@ function setup(zoom = 1) {
   const onCommitFreehand =
     vi.fn<Parameters<typeof useWhiteboardPenGesture>[0]['onCommitFreehand']>();
   let renders = 0;
+  type Props = { pendingDraw: PendingDraw | null; whiteboard?: boolean };
+  const initialProps: Props = { pendingDraw: PEN };
   const hook = renderHook(
-    (p: { pendingDraw: PendingDraw | null; whiteboard?: boolean }) => {
+    (p: Props) => {
       renders++;
       return useWhiteboardPenGesture({
         pendingDraw: p.pendingDraw,
@@ -52,12 +54,7 @@ function setup(zoom = 1) {
         whiteboard: p.whiteboard ?? true,
       });
     },
-    {
-      initialProps: { pendingDraw: PEN } as {
-        pendingDraw: PendingDraw | null;
-        whiteboard?: boolean;
-      },
-    },
+    { initialProps },
   );
   const press = (x: number, y: number, pointerType = 'mouse', pressure = 0.5) =>
     act(() => {
@@ -302,7 +299,7 @@ describe('useWhiteboardPenGesture', () => {
             pointerId: 1,
             pressure: 0.5,
             shiftKey: true,
-          } as ReactPointerEvent,
+          },
           { x: 100, y: 60 },
         );
       });

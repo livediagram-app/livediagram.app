@@ -198,7 +198,7 @@ export function SankeyFlowsTable({
 
   // The cursor leaving the table lets the groups catch up with what was typed.
   const onTableBlur = (e: FocusEvent<HTMLDivElement>) => {
-    if (e.currentTarget.contains(e.relatedTarget as Node | null)) return;
+    if (e.currentTarget.contains(e.relatedTarget)) return;
     setWriting(new Set());
     setGrouped(rows);
   };

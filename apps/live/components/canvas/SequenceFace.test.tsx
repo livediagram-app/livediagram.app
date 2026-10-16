@@ -11,7 +11,7 @@ import { CanvasFinishProvider } from './CanvasFinishContext';
 afterEach(cleanup);
 
 const seq = (over: Partial<ShapeElement> = {}) =>
-  ({ ...(createShape('sequence', 0, 0) as ShapeElement), ...over }) as ShapeElement;
+  ({ ...createShape('sequence', 0, 0), ...over }) as ShapeElement;
 
 describe('SequenceFace', () => {
   it('draws the picture fitted to the box, labelled with its participants', () => {

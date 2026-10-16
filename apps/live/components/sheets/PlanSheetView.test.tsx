@@ -50,17 +50,16 @@ const sheetJson = (id: string, over: Partial<SheetJson> = {}): SheetJson => ({
   ...over,
 });
 
-const element = (planSheet: { sheetId: string; copyOf?: string }): ShapeElement =>
-  ({
-    id: 'el1',
-    type: 'shape',
-    shape: 'plan-sheet',
-    x: 0,
-    y: 0,
-    width: 400,
-    height: 300,
-    planSheet,
-  }) as ShapeElement;
+const element = (planSheet: { sheetId: string; copyOf?: string }): ShapeElement => ({
+  id: 'el1',
+  type: 'shape',
+  shape: 'plan-sheet',
+  x: 0,
+  y: 0,
+  width: 400,
+  height: 300,
+  planSheet,
+});
 
 function bridge(over: Partial<SheetsBridge> = {}) {
   const b = {

@@ -29,7 +29,7 @@ function setup(over: Partial<BoardSceneInsertDeps> = {}, drawMode = true) {
     multi: new Set<string>(),
   };
   const deps: BoardSceneInsertDeps = {
-    activeTab: { id: 'tab', name: 'Board', elements: [] } as unknown as Tab,
+    activeTab: { id: 'tab', name: 'Board', elements: [] },
     drawMode,
     editsBlocked: false,
     commit: (map) => {
@@ -168,7 +168,7 @@ describe('useBoardSceneInsert', () => {
     const blocked = setup({ editsBlocked: true });
     expect(await insert(blocked.hook, boardScene([square('a', 0)]))).toBe(false);
     const locked = setup({
-      activeTab: { id: 'tab', name: 'B', elements: [], locked: true } as Tab,
+      activeTab: { id: 'tab', name: 'B', elements: [], locked: true },
     });
     expect(await insert(locked.hook, boardScene([square('a', 0)]))).toBe(false);
     expect(blocked.state.commits + locked.state.commits).toBe(0);

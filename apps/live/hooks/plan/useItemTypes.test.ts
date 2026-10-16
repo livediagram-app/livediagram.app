@@ -19,7 +19,7 @@ vi.mock('@/lib/api/item-types', async (actual) => ({
 import { ItemTypesStaleError } from '@/lib/api/item-types';
 import { useItemTypes } from './useItemTypes';
 
-const def = (id: string): ItemTypeDef => ({ ...ITEM_TYPES[1]!, id, label: id });
+const def = (id: string): ItemTypeDef => ({ ...ITEM_TYPES[1], id, label: id });
 const cat = (...ids: string[]): ItemTypeCatalogue => ({ version: 1, types: ids.map(def) });
 const ids = (c: ItemTypeCatalogue | null) => c?.types.map((t) => t.id);
 

@@ -7,19 +7,18 @@ import { useSnapColours } from './useSnapColours';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
-const stroke = (id: string, strokeColor?: string): Element =>
-  ({
-    id,
-    type: 'freehand',
-    x: 0,
-    y: 0,
-    width: 10,
-    height: 10,
-    packedPoints: 'AQA=',
-    closed: false,
-    penWidth: 1.5,
-    ...(strokeColor ? { strokeColor } : {}),
-  }) as Element;
+const stroke = (id: string, strokeColor?: string): Element => ({
+  id,
+  type: 'freehand',
+  x: 0,
+  y: 0,
+  width: 10,
+  height: 10,
+  packedPoints: 'AQA=',
+  closed: false,
+  penWidth: 1.5,
+  ...(strokeColor ? { strokeColor } : {}),
+});
 
 function setup(elements: Element[], over: { inertIds?: Set<string>; editsBlocked?: boolean } = {}) {
   let live = elements;

@@ -51,7 +51,7 @@ describe('importShapeLibraries', () => {
     const progress = vi.fn();
     const r = await importShapeLibraries(files, {
       ownerId: 'o',
-      createLibrary: createLibrary as never,
+      createLibrary: createLibrary,
       createImageSession,
       onProgress: progress,
     });
@@ -102,7 +102,7 @@ describe('importShapeLibraries', () => {
     ]);
     file.items[0]!.title = 'x';
     file.items[0]!.elements = [
-      { ...file.items[0]!.elements[0]!, label: 'y'.repeat(MAX_TAB_BYTES) } as never,
+      { ...file.items[0]!.elements[0]!, label: 'y'.repeat(MAX_TAB_BYTES) },
     ];
     const r = await importShapeLibraries([file], {
       ownerId: 'o',

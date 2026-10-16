@@ -6,8 +6,15 @@ import type { Element } from '@livediagram/document';
 import { createRevealStore } from '@/lib/changeset-reveals';
 import { ChangesetRevealContext, ChangesetRevealOverlay } from './ChangesetRevealOverlay';
 
-const box = (id: string, x: number): Element =>
-  ({ id, type: 'shape', shape: 'square', x, y: 10, width: 100, height: 50 }) as Element;
+const box = (id: string, x: number): Element => ({
+  id,
+  type: 'shape',
+  shape: 'square',
+  x,
+  y: 10,
+  width: 100,
+  height: 50,
+});
 
 describe('ChangesetRevealOverlay', () => {
   beforeEach(() => vi.useFakeTimers());

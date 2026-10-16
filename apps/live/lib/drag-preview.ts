@@ -141,7 +141,7 @@ function mergedFor(tabId: string, elements: readonly Element[]): DragOverlay | n
     for (const p of theirs)
       for (const patch of p.patches) {
         const base = byId.get(patch.id);
-        if (base) changed.set(patch.id, { ...base, ...patch } as Element);
+        if (base) changed.set(patch.id, { ...base, ...patch });
       }
     if (ours) for (const [id, el] of ours.changed) changed.set(id, el);
     overlay =

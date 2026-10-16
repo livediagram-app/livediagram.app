@@ -57,7 +57,7 @@ function wordsOnto(note: StickyElement, text: TextElement): StickyElement {
     ...note,
     ...keep,
     ...(text.textColor ? {} : { textColor: note.textColor }),
-  } as StickyElement;
+  };
 }
 
 const repoint = (end: Endpoint, from: string, to: string): Endpoint =>

@@ -74,14 +74,12 @@ describe('WebRowsMenuSection (docs/specs/009-elements/web-components-and-no-grou
     }
     cleanup();
     renderSection('stat-row', { stats: [{ value: '1', caption: 'a' }].slice(0, STATS_MIN) });
-    expect(
-      (screen.getByRole('button', { name: 'Remove stat' }) as HTMLButtonElement).disabled,
-    ).toBe(true);
-    cleanup();
-    renderSection('site-header', { navLinks: Array(NAV_LINKS_MAX).fill('l') });
-    expect((screen.getByRole('button', { name: 'Add Link' }) as HTMLButtonElement).disabled).toBe(
+    expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Remove stat' }).disabled).toBe(
       true,
     );
+    cleanup();
+    renderSection('site-header', { navLinks: Array(NAV_LINKS_MAX).fill('l') });
+    expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Add Link' }).disabled).toBe(true);
   });
 
   it('commits a retyped stat on blur', () => {

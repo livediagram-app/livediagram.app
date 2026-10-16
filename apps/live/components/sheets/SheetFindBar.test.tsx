@@ -14,7 +14,7 @@ function show(h: SheetHarness, mode: 'find' | 'replace' = 'find') {
   act(() => h.ctl().setFindOpen(mode));
   return view;
 }
-const find = () => screen.getByLabelText('Find') as HTMLInputElement;
+const find = () => screen.getByLabelText<HTMLInputElement>('Find');
 const type = (text: string) => fireEvent.change(find(), { target: { value: text } });
 const count = () => find().parentElement!.querySelector('span')!.textContent;
 const enter = (shiftKey = false) => fireEvent.keyDown(find(), { key: 'Enter', shiftKey });

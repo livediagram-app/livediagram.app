@@ -97,7 +97,7 @@ describe('commitLabel', () => {
 
 // docs/specs/009-elements/mind-node.md "New lines" and "A node grows to fit its label".
 describe('committing a mind node label', () => {
-  const venue = { ...(createShape('mind-node', 0, 0) as ShapeElement), id: 'venue' };
+  const venue = { ...createShape('mind-node', 0, 0), id: 'venue' };
 
   it('keeps a new line inside the label', () => {
     mindLines.height = 0;

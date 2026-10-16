@@ -19,7 +19,7 @@ function setViewport(mobile: boolean) {
     media: query,
     addEventListener: () => {},
     removeEventListener: () => {},
-  })) as unknown as typeof window.matchMedia;
+  }));
 }
 
 function renderDialog(overrides: Partial<UserPreferences> = {}) {
@@ -114,7 +114,7 @@ describe('SettingsDialog', () => {
     setViewport(false);
     render(
       <SettingsDialog
-        settings={{} as UserPreferences}
+        settings={{}}
         onChange={() => {}}
         onClose={() => {}}
         aiCapable
@@ -204,7 +204,7 @@ describe('SettingsDialog', () => {
       writeSettingsView({ categoryId: 'privacy', anchor: null });
       render(
         <SettingsDialog
-          settings={{} as UserPreferences}
+          settings={{}}
           onChange={() => {}}
           onClose={() => {}}
           aiCapable

@@ -11,8 +11,7 @@ type Shape = Extract<Element, { type: 'shape' }>;
 type Table = Extract<Element, { type: 'table' }>;
 type Box = { x: number; y: number; width: number; height: number };
 
-const texts = (els: Element[]) =>
-  els.filter((el) => el.type === 'text') as Extract<Element, { type: 'text' }>[];
+const texts = (els: Element[]) => els.filter((el) => el.type === 'text');
 const labels = (els: Element[]) =>
   els.map((el) => ('label' in el ? (el.label ?? '') : '')).filter(Boolean);
 const shapesOf = (els: Element[], shape: string) =>

@@ -21,7 +21,7 @@ describe('FormLockedStrip', () => {
 
   it('holds Edit Form while the link is busy', () => {
     render(<FormLockedStrip onEdit={() => {}} busy />);
-    expect((screen.getByRole('button', { name: 'Edit Form' }) as HTMLButtonElement).disabled).toBe(
+    expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Edit Form' }).disabled).toBe(
       true,
     );
   });

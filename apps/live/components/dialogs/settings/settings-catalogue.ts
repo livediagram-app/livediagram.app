@@ -515,7 +515,7 @@ function presentingChoice(
     helpArticle: 'slideDeck',
     ...row,
     read: (p) => readPresentationConfig(p)[field],
-    write: (p, v) => withPresentationConfig(p, { [field]: v } as Partial<PresentationConfig>),
+    write: (p, v) => withPresentationConfig(p, { [field]: v }),
     event: { category: 'UI', changed: `Presentation-${field}` },
   };
 }

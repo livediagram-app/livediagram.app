@@ -30,7 +30,7 @@ function mkShape(
     ...(comments.length > 0
       ? { commentThread: { comments, resolved: opts.resolved ?? false } }
       : {}),
-  } as BoxedElement;
+  };
 }
 
 describe('commentRowsFromElements', () => {
@@ -56,7 +56,7 @@ describe('commentRowsFromElements', () => {
       width: 10,
       height: 10,
       commentThread: { comments: [], resolved: false },
-    } as BoxedElement;
+    };
     expect(commentRowsFromElements([empty])).toEqual([]);
   });
 

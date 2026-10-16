@@ -67,7 +67,7 @@ function event(over: Partial<TimelineEvent>): TimelineEvent {
     actorId: 'me',
     snapshot: {},
     ...over,
-  } as TimelineEvent;
+  };
 }
 
 function menuFor(value = explorer()) {

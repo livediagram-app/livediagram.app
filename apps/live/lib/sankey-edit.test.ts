@@ -6,7 +6,7 @@ import { resolveEditorCapabilities } from './editor-capabilities';
 // Who may edit a Sankey (docs/specs/009-elements/sankey.md "Who may do what"): an Editor, on an unlocked diagram.
 const sankey = createShape('sankey', 0, 0);
 const can = (level: 'edit' | 'participate' | 'view') =>
-  resolveEditorCapabilities({ level, adderKey: 'key' } as never);
+  resolveEditorCapabilities({ level, adderKey: 'key' });
 
 describe('canEditSankey', () => {
   it('lets an Editor edit an unlocked diagram', () => {

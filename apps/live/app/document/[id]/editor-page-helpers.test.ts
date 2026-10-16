@@ -220,7 +220,7 @@ describe('computeTabSaveDiff (autosave decision kernel)', () => {
         y: 0,
         width: 1,
         height: 1,
-      } as Tab['elements'][number],
+      },
     ]);
     const peerEdited = { ...peer, name: 'p (edited)' };
     const diff = computeTabSaveDiff([a, peer], [a, peerEdited], 'Doc', 'Doc', new Set(['a']));

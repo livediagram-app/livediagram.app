@@ -50,7 +50,7 @@ const slotsOf = (t: Tab) => dashboardOf(t).rows.flatMap((r) => r.slots);
 
 describe('a new board picked for a slot', () => {
   it('makes a Board tab after the dashboard, named after its board, and shows it in the slot, in one step', () => {
-    const s = setup([{ id: 'z', name: 'Later', elements: [] } as unknown as Tab]);
+    const s = setup([{ id: 'z', name: 'Later', elements: [] }]);
     act(() => s.result.current.placeItem({ kind: 'board', preset: 'kanban' }, null));
     const [dash, made, later] = s.tabs();
     expect(s.commits).toHaveLength(1);
@@ -142,7 +142,7 @@ describe('withLookOf', () => {
       name: 'Overview',
       theme: 'ocean',
       elements: [],
-    } as unknown as Tab);
+    });
     expect(looked).toMatchObject({ id: made.id, name: made.name, kind: 'board', theme: 'ocean' });
   });
 });

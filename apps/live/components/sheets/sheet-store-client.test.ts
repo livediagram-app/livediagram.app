@@ -118,9 +118,9 @@ function store(
     scope: { documentId: 'd1', ownerId: 'o', shareCode: null, tabId: null },
     self: () => by,
     locale: 'en-GB',
-    pushUndo: (extra.pushUndo ?? (() => {})) as never,
+    pushUndo: extra.pushUndo ?? (() => {}),
     toast: extra.toast ?? (() => {}),
-    api: api as never,
+    api: api,
     ...(extra.wait ? { wait: extra.wait } : {}),
   });
 }
@@ -405,7 +405,7 @@ describe('the sheet store client', () => {
     const slow = store({
       ...srv.api,
       fetchSheets: vi.fn(() => new Promise<SheetJson[]>((resolve) => (answer = resolve))),
-    } as never);
+    });
     const first = slow.loadTab('t1');
     let secondDone = false;
     const second = slow.loadTab('t1').then(() => (secondDone = true));
@@ -421,7 +421,7 @@ describe('the sheet store client', () => {
       fetchSheets: vi.fn(async () => {
         throw new ApiError('sheets', 500, null);
       }),
-    } as never);
+    });
     await bad.loadTab('t1');
     expect(bad.status('t1')).toBe('error');
     s.resync();
@@ -533,7 +533,7 @@ describe('the sheet store client, edges', () => {
           i: { f: { t: 'CARDCOUNT()', r: [] } },
         },
       ],
-    } as SheetWrite);
+    });
     expect(s.usesCards()).toBe(true);
   });
 

@@ -11,7 +11,7 @@ import type { ElementStyleOps } from '@/lib/element-style-ops';
 afterEach(cleanup);
 
 const stack = (over: Partial<ShapeElement> = {}) =>
-  ({ ...(createShape('stack', 0, 0) as ShapeElement), ...over }) as ShapeElement;
+  ({ ...createShape('stack', 0, 0), ...over }) as ShapeElement;
 
 function show(target: ShapeElement) {
   const ops: ElementStyleOps = {

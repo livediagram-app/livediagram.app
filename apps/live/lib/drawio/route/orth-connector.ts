@@ -227,24 +227,24 @@ export const orthConnector: EdgeStyle = (
     prefOrdering[i] = [vertPref[i]!, horPref[i]!];
   }
   if (preferredVertDist > 0 && preferredHorizDist > 0) {
-    if ((horPref[0]! & portConstraint[0]!) > 0 && (vertPref[1]! & portConstraint[1]!) > 0) {
-      prefOrdering[0] = [horPref[0]!, vertPref[0]!];
-      prefOrdering[1] = [vertPref[1]!, horPref[1]!];
+    if ((horPref[0] & portConstraint[0]!) > 0 && (vertPref[1] & portConstraint[1]!) > 0) {
+      prefOrdering[0] = [horPref[0], vertPref[0]];
+      prefOrdering[1] = [vertPref[1], horPref[1]];
       preferredOrderSet = true;
-    } else if ((vertPref[0]! & portConstraint[0]!) > 0 && (horPref[1]! & portConstraint[1]!) > 0) {
-      prefOrdering[0] = [vertPref[0]!, horPref[0]!];
-      prefOrdering[1] = [horPref[1]!, vertPref[1]!];
+    } else if ((vertPref[0] & portConstraint[0]!) > 0 && (horPref[1] & portConstraint[1]!) > 0) {
+      prefOrdering[0] = [vertPref[0], horPref[0]];
+      prefOrdering[1] = [horPref[1], vertPref[1]];
       preferredOrderSet = true;
     }
   }
   if (preferredVertDist > 0 && !preferredOrderSet) {
-    prefOrdering[0] = [vertPref[0]!, horPref[0]!];
-    prefOrdering[1] = [vertPref[1]!, horPref[1]!];
+    prefOrdering[0] = [vertPref[0], horPref[0]];
+    prefOrdering[1] = [vertPref[1], horPref[1]];
     preferredOrderSet = true;
   }
   if (preferredHorizDist > 0 && !preferredOrderSet) {
-    prefOrdering[0] = [horPref[0]!, vertPref[0]!];
-    prefOrdering[1] = [horPref[1]!, vertPref[1]!];
+    prefOrdering[0] = [horPref[0], vertPref[0]];
+    prefOrdering[1] = [horPref[1], vertPref[1]];
   }
 
   // Compact the preference lists past any gaps.
@@ -320,7 +320,7 @@ export const orthConnector: EdgeStyle = (
 
     if ((sou || tar) && side < 9) {
       const souTar = sou ? 0 : 1;
-      const g = geo[souTar]!;
+      const g = geo[souTar];
       let limit: number;
       if (center && currentOrientation === 0) limit = g[0] + constraint[souTar]![0]! * g[2];
       else if (center) limit = g[1] + constraint[souTar]![1]! * g[3];

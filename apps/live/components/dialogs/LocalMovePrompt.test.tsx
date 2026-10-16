@@ -6,12 +6,18 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 // once signed in when this browser holds Local only documents, every one ticked; Move syncs each in
 // turn and names any that stayed; Not Now is remembered until the count grows.
 
-const { auth, store, convert, track } = vi.hoisted(() => ({
-  auth: { authLoaded: true, clerkUserId: 'user_1' as string | null },
-  store: { offlineListDocuments: vi.fn(), offlineIdCount: vi.fn() },
-  convert: { saveOfflineToCloud: vi.fn() },
-  track: vi.fn(),
-}));
+const { auth, store, convert, track } = vi.hoisted(() => {
+  const auth: { authLoaded: boolean; clerkUserId: string | null } = {
+    authLoaded: true,
+    clerkUserId: 'user_1',
+  };
+  return {
+    auth,
+    store: { offlineListDocuments: vi.fn(), offlineIdCount: vi.fn() },
+    convert: { saveOfflineToCloud: vi.fn() },
+    track: vi.fn(),
+  };
+});
 vi.mock('@/hooks/persistence/useClerkApiBootstrap', () => ({ useClerkApiBootstrap: () => auth }));
 vi.mock('@/lib/offline/offline-store', () => store);
 vi.mock('@/lib/offline/offline-convert', () => convert);

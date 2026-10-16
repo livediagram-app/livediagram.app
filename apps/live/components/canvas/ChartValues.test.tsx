@@ -13,7 +13,7 @@ import { PieChartView } from './PieChartView';
 afterEach(cleanup);
 
 const chart = (shape: ShapeElement['shape'], over: Partial<ShapeElement> = {}): ShapeElement => ({
-  ...(createShape(shape, 0, 0) as ShapeElement),
+  ...createShape(shape, 0, 0),
   width: 320,
   height: 240,
   ...over,

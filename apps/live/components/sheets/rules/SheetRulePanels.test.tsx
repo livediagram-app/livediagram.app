@@ -59,8 +59,8 @@ describe('the Data Validation editor', () => {
     act(() => h.select('A2:A6'));
     act(() => actions().openValidation(anchor, { start: 'list' }));
     const dialog = await screen.findByRole('dialog', { name: 'Data Validation' });
-    expect((within(dialog).getByLabelText('Option 1') as HTMLInputElement).value).toBe('Red');
-    expect((within(dialog).getByLabelText('Option 2') as HTMLInputElement).value).toBe('Green');
+    expect(within(dialog).getByLabelText<HTMLInputElement>('Option 1').value).toBe('Red');
+    expect(within(dialog).getByLabelText<HTMLInputElement>('Option 2').value).toBe('Green');
     expect(within(dialog).queryByLabelText('Option 3')).toBeNull();
     fireEvent.click(within(dialog).getByRole('button', { name: 'Add Another Option' }));
     fireEvent.change(within(dialog).getByLabelText('Option 3'), { target: { value: 'Blue' } });
@@ -263,9 +263,9 @@ describe('the Custom Number Format popover', () => {
     expect(within(dialog).getByText('1,234.50')).toBeTruthy();
     fireEvent.change(field, { target: { value: '"open' } });
     expect(within(dialog).getByText("That format code can't be read")).toBeTruthy();
-    expect(
-      (within(dialog).getByRole('button', { name: 'Apply' }) as HTMLButtonElement).disabled,
-    ).toBe(true);
+    expect(within(dialog).getByRole<HTMLButtonElement>('button', { name: 'Apply' }).disabled).toBe(
+      true,
+    );
     fireEvent.change(field, { target: { value: '0.0 "h"' } });
     fireEvent.click(within(dialog).getByRole('button', { name: 'Apply' }));
     expect(h.cell('B2')?.format).toMatchObject({ nf: 'custom', nc: '0.0 "h"' });

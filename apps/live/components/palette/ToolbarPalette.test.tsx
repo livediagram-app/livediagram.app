@@ -107,7 +107,7 @@ const barNames = () =>
   [...document.querySelectorAll('[data-category-bar-button]')].map((b) =>
     b.getAttribute('aria-label'),
   );
-const flyout = () => document.querySelector('[data-category-flyout]') as HTMLElement | null;
+const flyout = () => document.querySelector<HTMLElement>('[data-category-flyout]');
 const openFlyout = (name: string) => {
   fireEvent.click(screen.getByRole('button', { name }));
   const el = flyout();
@@ -602,8 +602,7 @@ describe('ToolbarPalette', () => {
       fireEvent.click(screen.getByRole('button', { name: 'Search elements' }));
       popover = openSearch();
       expect(
-        (within(popover).getByRole('textbox', { name: 'Search elements' }) as HTMLInputElement)
-          .value,
+        within(popover).getByRole<HTMLInputElement>('textbox', { name: 'Search elements' }).value,
       ).toBe('');
     });
   });

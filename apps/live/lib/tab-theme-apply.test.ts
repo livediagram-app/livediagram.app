@@ -4,30 +4,28 @@ import { getTheme } from '@/lib/themes';
 import { withThemeApplied } from './tab-theme-apply';
 
 // Applying a theme to a tab (docs/specs/011-theme/canvas-and-theme-dialog.md "Colours panel").
-const shape = (over: Partial<ShapeElement> = {}): Element =>
-  ({
-    id: 's',
-    type: 'shape',
-    shape: 'square',
-    x: 0,
-    y: 0,
-    width: 100,
-    height: 60,
-    ...over,
-  }) as Element;
-const arrow = (over: Partial<ArrowElement> = {}): Element =>
-  ({
-    id: 'a',
-    type: 'arrow',
-    from: { kind: 'free', x: 0, y: 0 },
-    to: { kind: 'free', x: 50, y: 0 },
-    ...over,
-  }) as Element;
+const shape = (over: Partial<ShapeElement> = {}): Element => ({
+  id: 's',
+  type: 'shape',
+  shape: 'square',
+  x: 0,
+  y: 0,
+  width: 100,
+  height: 60,
+  ...over,
+});
+const arrow = (over: Partial<ArrowElement> = {}): Element => ({
+  id: 'a',
+  type: 'arrow',
+  from: { kind: 'free', x: 0, y: 0 },
+  to: { kind: 'free', x: 50, y: 0 },
+  ...over,
+});
 
 describe('withThemeApplied', () => {
   it('records the theme and its backdrop on a tab that had none', () => {
     const forest = getTheme('forest');
-    const out = withThemeApplied({ id: 't', name: 'T', elements: [] } as Tab, 'forest');
+    const out = withThemeApplied({ id: 't', name: 'T', elements: [] }, 'forest');
     expect(out.theme).toBe('forest');
     expect(out.backgroundColor).toBe(forest.backgroundColor);
   });

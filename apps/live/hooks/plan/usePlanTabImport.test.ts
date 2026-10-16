@@ -20,7 +20,7 @@ const item = (id: string, type = 'task'): Item => ({
   createdBy: person,
   updatedBy: person,
 });
-const bug = { ...ITEM_TYPES[1]!, id: 'bug', label: 'Bug' };
+const bug = { ...ITEM_TYPES[1], id: 'bug', label: 'Bug' };
 
 function setup(existing: Item[], ok = true, status: 'loading' | 'ready' | 'error' = 'ready') {
   const addTypes = vi.fn();

@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, cleanup, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { ArrowElement, Element, ShapeElement, Tab } from '@livediagram/document';
+import type { ArrowElement, Element, ShapeElement } from '@livediagram/document';
 import { useClipboard } from './useClipboard';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn(), titleCaseType: (s: string) => s }));
@@ -9,17 +9,16 @@ vi.mock('@/lib/telemetry', () => ({ track: vi.fn(), titleCaseType: (s: string) =
 // docs/specs/009-elements/mind-node.md "Deleting": a Cut takes a mind node's branch, so it copies the branch too;
 // a plain Copy copies only what is selected.
 
-const mind = (id: string, parent?: string): ShapeElement =>
-  ({
-    id,
-    type: 'shape',
-    shape: 'mind-node',
-    x: 0,
-    y: 0,
-    width: 10,
-    height: 10,
-    ...(parent ? { mindParentId: parent } : {}),
-  }) as ShapeElement;
+const mind = (id: string, parent?: string): ShapeElement => ({
+  id,
+  type: 'shape',
+  shape: 'mind-node',
+  x: 0,
+  y: 0,
+  width: 10,
+  height: 10,
+  ...(parent ? { mindParentId: parent } : {}),
+});
 
 const link = (id: string, from: string, to: string): ArrowElement => ({
   id,
@@ -62,7 +61,7 @@ function copied(opts?: { cut: boolean }): string[] {
       readSelection: () => ({ selectedId: 'a', multiSelectedIds: new Set() }),
       editingId: null,
       setEditingId: () => {},
-      activeTab: { id: 't', name: 'Board', elements: map } as Tab,
+      activeTab: { id: 't', name: 'Board', elements: map },
       commit: () => {},
       setSelectedId: () => {},
       setMultiSelectedIds: () => {},

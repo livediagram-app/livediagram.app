@@ -122,7 +122,7 @@ export function ItemDescription({
       className="rounded-xl bg-slate-50 p-2 dark:bg-slate-800/40"
       onBlur={(e) => {
         // Focus moving within (the toolbar, the link field) keeps the editor open.
-        if (e.currentTarget.contains(e.relatedTarget as Node | null)) return;
+        if (e.currentTarget.contains(e.relatedTarget)) return;
         save();
         setEditing(false);
       }}

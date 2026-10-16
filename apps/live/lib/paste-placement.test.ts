@@ -17,7 +17,7 @@ function workshop(id: string, x: number, y: number): Element {
     esKind: 'domain-event',
     fillColor: '#fdba74',
     fixedSize: true,
-  } as Element;
+  };
 }
 
 const shape = (id: string, x: number, y: number) =>

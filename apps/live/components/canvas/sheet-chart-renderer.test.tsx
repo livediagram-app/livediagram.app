@@ -10,24 +10,23 @@ import { useSheetChartRenderer, sheetChartElement, type BoxedShared } from './sh
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
 const range = { r1: 'aaaa', c1: 'bbbb', r2: 'cccc', c2: 'dddd' };
-const pie = (over: Partial<ShapeElement> = {}): ShapeElement =>
-  ({
-    id: 'chart1',
-    type: 'shape',
-    shape: 'pie-chart',
-    x: 400,
-    y: 300,
-    width: 260,
-    height: 220,
-    pieSlices: [
-      { label: 'A', value: 3 },
-      { label: 'B', value: 2 },
-      { label: 'C', value: 1 },
-    ],
-    chartSource: { sheetId: 'sheet0001', range },
-    sheetAnchor: { x: 10, y: 10 },
-    ...over,
-  }) as ShapeElement;
+const pie = (over: Partial<ShapeElement> = {}): ShapeElement => ({
+  id: 'chart1',
+  type: 'shape',
+  shape: 'pie-chart',
+  x: 400,
+  y: 300,
+  width: 260,
+  height: 220,
+  pieSlices: [
+    { label: 'A', value: 3 },
+    { label: 'B', value: 2 },
+    { label: 'C', value: 1 },
+  ],
+  chartSource: { sheetId: 'sheet0001', range },
+  sheetAnchor: { x: 10, y: 10 },
+  ...over,
+});
 
 const shared = (): BoxedShared => ({
   isPaintMode: false,

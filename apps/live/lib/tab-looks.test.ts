@@ -6,19 +6,22 @@ import { LOOKS_PER_PAGE, TAB_LOOKS, activeLookId, tabLookById, withLookApplied }
 import { withThemeApplied } from './tab-theme-apply';
 
 // Looks (docs/specs/011-theme/canvas-and-theme-dialog.md "Looks"): shortcuts over a tab's existing settings.
-const shape = (over: Record<string, unknown> = {}): Element =>
-  ({
-    id: 's',
-    type: 'shape',
-    shape: 'square',
-    x: 0,
-    y: 0,
-    width: 100,
-    height: 60,
-    ...over,
-  }) as Element;
-const tab = (over: Partial<Tab> = {}): Tab =>
-  ({ id: 't', name: 'T', elements: [shape()], ...over }) as Tab;
+const shape = (over: Record<string, unknown> = {}): Element => ({
+  id: 's',
+  type: 'shape',
+  shape: 'square',
+  x: 0,
+  y: 0,
+  width: 100,
+  height: 60,
+  ...over,
+});
+const tab = (over: Partial<Tab> = {}): Tab => ({
+  id: 't',
+  name: 'T',
+  elements: [shape()],
+  ...over,
+});
 
 describe('TAB_LOOKS', () => {
   it('fills four pages of six after the Mashup card, in order, each built only from settings that exist', () => {

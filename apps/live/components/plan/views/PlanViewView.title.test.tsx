@@ -96,9 +96,7 @@ describe('a chart filling its Visualisation tab', () => {
     ['a Viewer', { canEdit: false, canEditCards: false }],
   ])('offers no rename to %s', (_who, over) => {
     fillTab();
-    const plan = planWith(over as Partial<PlanContextValue>, [
-      card({ title: 'a', status: 'todo' }),
-    ]);
+    const plan = planWith(over, [card({ title: 'a', status: 'todo' })]);
     draw('workload', plan);
     fireEvent.doubleClick(screen.getByText('Cards by Assignee'));
     expect(screen.queryByLabelText('Chart name')).toBeNull();

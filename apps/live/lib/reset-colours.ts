@@ -42,7 +42,7 @@ export function resetElementColours(el: Element, theme: ThemeDefinition): Elemen
     // A sticky's amber palette is its identity: wipe any user overrides,
     // but never apply theme colours.
     const { fillColor: _f, strokeColor: _s, textColor: _t, ...rest } = el;
-    return rest as typeof el;
+    return rest;
   }
   if (el.type === 'table') {
     // Reset to Theme: grid + text; clear cell fill + header overrides.

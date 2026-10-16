@@ -17,8 +17,7 @@ import { deriveNewBoxedColours, getTheme, resolveTabBackdrop, switchThemeBackdro
 // resolves, which backdrop the canvas paints, and the rule that keeps Default
 // from ever baking a colour (which is what would break the other viewer).
 
-const tab = (over: Partial<Tab> = {}): Tab =>
-  ({ id: 't1', name: 'Tab 1', elements: [], ...over }) as Tab;
+const tab = (over: Partial<Tab> = {}): Tab => ({ id: 't1', name: 'Tab 1', elements: [], ...over });
 
 afterEach(() => {
   resetAppearanceForTests();

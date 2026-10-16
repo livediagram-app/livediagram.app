@@ -3,7 +3,6 @@
 import { act, renderHook } from '@testing-library/react';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
-import type { Tab } from '@livediagram/document';
 import type { CanvasTool } from '@/components/palette/palette.types';
 import { useShapeDrawing } from './useShapeDrawing';
 import { createSelectionStore } from '@/lib/selection-store';
@@ -27,7 +26,7 @@ function setup(commit = vi.fn<Commit>()) {
         readSelection: selection.get,
         canvasTool: tool,
         setCanvasTool: vi.fn(),
-        activeTab: { id: 't1', name: 'Tab', elements: [] } as unknown as Tab,
+        activeTab: { id: 't1', name: 'Tab', elements: [] },
         drawMode: false,
         commit,
         setSelectedId: selection.setSelectedId,
@@ -159,7 +158,7 @@ describe('placing a badge preset', () => {
         readSelection: selection.get,
         canvasTool: 'select',
         setCanvasTool: vi.fn(),
-        activeTab: { id: 't1', name: 'Tab', theme: 'ocean', elements: [] } as unknown as Tab,
+        activeTab: { id: 't1', name: 'Tab', theme: 'ocean', elements: [] },
         drawMode: false,
         commit,
         setSelectedId: selection.setSelectedId,

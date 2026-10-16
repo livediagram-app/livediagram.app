@@ -201,7 +201,7 @@ export function paintableBoxedFields(source: BoxedElement): Partial<BoxedElement
     out.iconSize = ext.iconSize;
     out.iconWeight = ext.iconWeight;
   }
-  return out as Partial<BoxedElement>;
+  return out;
 }
 
 // Arrow painter projection. Arrows carry stroke + opacity + arrowhead
@@ -302,7 +302,7 @@ export function fitPaintToTarget(
     out.animationSpeed = undefined;
     out.animationRepeat = undefined;
   }
-  return out as Partial<BoxedElement>;
+  return out;
 }
 
 export function applyPaint<T extends BoxedElement | ArrowElement>(

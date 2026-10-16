@@ -8,8 +8,16 @@ import { applyCollisionAvoidance } from './arrow-avoidance-apply';
 // these assertions pin the mapping around it (role assignment, the
 // untouched-default guard, and the written wire fields).
 
-const shape = (id: string, x: number, y: number, w = 120, h = 80): Element =>
-  ({ id, type: 'shape', shape: 'square', x, y, width: w, height: h, label: id }) as Element;
+const shape = (id: string, x: number, y: number, w = 120, h = 80): Element => ({
+  id,
+  type: 'shape',
+  shape: 'square',
+  x,
+  y,
+  width: w,
+  height: h,
+  label: id,
+});
 
 const arrowBetween = (id: string, fromId: string, toId: string): ArrowElement => ({
   id,
@@ -90,7 +98,7 @@ describe('applyCollisionAvoidance', () => {
         type: 'arrow',
         from: { kind: 'pinned', elementId: 'b', anchor: 'e' },
         to: { kind: 'pinned', elementId: 'a', anchor: 'e' },
-      } as ArrowElement,
+      },
     ];
     const out = applyCollisionAvoidance(els, 'arr');
     const arr = out.find((e) => e.id === 'arr') as ArrowElement;
@@ -111,7 +119,7 @@ describe('applyCollisionAvoidance', () => {
         type: 'arrow',
         from: { kind: 'pinned', elementId: 'b', anchor: 'ne' },
         to: { kind: 'pinned', elementId: 'a', anchor: 'se' },
-      } as ArrowElement,
+      },
     ];
     const out = applyCollisionAvoidance(els, 'arr');
     const arr = out.find((e) => e.id === 'arr') as ArrowElement;

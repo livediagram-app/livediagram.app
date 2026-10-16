@@ -46,7 +46,7 @@ function blockRule(pattern: RegExp, make: (m: RegExpMatchArray) => Command): Inp
     });
     if (!out) return null;
     // One transaction: the deletion, then the change on top.
-    for (const step of (out as typeof tr).steps) tr = tr.step(step);
+    for (const step of out.steps) tr = tr.step(step);
     tr.setSelection(TextSelection.create(tr.doc, tr.mapping.map(start)));
     return tr;
   });
@@ -83,8 +83,8 @@ function dividerRule(): InputRule {
     // The whole paragraph is the two characters typed so far.
     if ($start.parent.content.size !== end - start) return null;
     const tr = state.tr.replaceWith(blockStart, blockEnd, [
-      S.nodes.divider!.create(),
-      S.nodes.paragraph!.create(),
+      S.nodes.divider.create(),
+      S.nodes.paragraph.create(),
     ]);
     tr.setSelection(TextSelection.create(tr.doc, blockStart + 2));
     return tr;
@@ -113,11 +113,11 @@ export function articleInputRules(): Plugin {
       ),
       blockRule(/^```$/, () => setBlockStyle('code')),
       dividerRule(),
-      markRule(/\*\*([^*]+)\*\*$/, S.marks.bold!, 2),
-      markRule(/(?:^|[^*])\*([^*\s][^*]*)\*$/, S.marks.italic!, 1),
-      markRule(/(?:^|[^_\w])_([^_\s][^_]*)_$/, S.marks.italic!, 1),
-      markRule(/~~([^~]+)~~$/, S.marks.strike!, 2),
-      markRule(/`([^`]+)`$/, S.marks.code!, 1),
+      markRule(/\*\*([^*]+)\*\*$/, S.marks.bold, 2),
+      markRule(/(?:^|[^*])\*([^*\s][^*]*)\*$/, S.marks.italic, 1),
+      markRule(/(?:^|[^_\w])_([^_\s][^_]*)_$/, S.marks.italic, 1),
+      markRule(/~~([^~]+)~~$/, S.marks.strike, 2),
+      markRule(/`([^`]+)`$/, S.marks.code, 1),
     ],
   });
 }

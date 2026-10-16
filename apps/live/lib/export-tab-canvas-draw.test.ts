@@ -7,18 +7,21 @@ import { drawBoxed } from './export-tab-canvas-draw';
 
 function recordingContext() {
   const alphas: number[] = [];
-  const ctx = new Proxy({ globalAlpha: 1 } as Record<string, unknown>, {
-    get(target, key) {
-      if (key === 'fillText') return () => alphas.push(target.globalAlpha as number);
-      if (key === 'measureText') return (s: string) => ({ width: s.length * 7 });
-      if (key in target) return target[key as string];
-      return () => undefined;
+  const ctx = new Proxy<Record<string, unknown>>(
+    { globalAlpha: 1 },
+    {
+      get(target, key) {
+        if (key === 'fillText') return () => alphas.push(target.globalAlpha as number);
+        if (key === 'measureText') return (s: string) => ({ width: s.length * 7 });
+        if (key in target) return target[key as string];
+        return () => undefined;
+      },
+      set(target, key, value) {
+        target[key as string] = value;
+        return true;
+      },
     },
-    set(target, key, value) {
-      target[key as string] = value;
-      return true;
-    },
-  });
+  );
   return { ctx: ctx as unknown as CanvasRenderingContext2D, alphas };
 }
 

@@ -18,13 +18,21 @@ vi.mock('@/lib/telemetry', async (orig) => ({
 }));
 
 // The tab's finish setters (docs/specs/008-canvas/finish.md "Where it is set").
-const box = (id: string, over: Record<string, unknown> = {}): Element =>
-  ({ id, type: 'shape', shape: 'square', x: 0, y: 0, width: 10, height: 10, ...over }) as Element;
+const box = (id: string, over: Record<string, unknown> = {}): Element => ({
+  id,
+  type: 'shape',
+  shape: 'square',
+  x: 0,
+  y: 0,
+  width: 10,
+  height: 10,
+  ...over,
+});
 
 function setup(elements: Element[], editsBlocked = false, notify = vi.fn()) {
   let tabs: Tab[] = [
-    { id: 't1', name: 'One', elements } as Tab,
-    { id: 't2', name: 'Two', elements: [] } as Tab,
+    { id: 't1', name: 'One', elements },
+    { id: 't2', name: 'Two', elements: [] },
   ];
   const commitTabs = vi.fn((map: (ts: Tab[]) => Tab[]) => {
     tabs = map(tabs);

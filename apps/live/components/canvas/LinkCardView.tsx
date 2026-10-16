@@ -124,7 +124,7 @@ export function LinkCardView({
       {showImage ? (
         <div className="min-h-0 flex-1 overflow-hidden bg-slate-100 dark:bg-slate-800">
           <img
-            src={meta!.image}
+            src={meta.image}
             alt=""
             onError={() => setImgOk(false)}
             referrerPolicy="no-referrer"

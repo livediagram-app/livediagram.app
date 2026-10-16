@@ -107,7 +107,7 @@ export function slideThumbFor(slide: Slide, tab: Tab, opts: SlideThumbOptions): 
           tab.elements,
           surface,
           tab.font,
-          labels!,
+          labels,
           `lvd-slide-${slide.id}-ko-`,
           elements,
           undefined,

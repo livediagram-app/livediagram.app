@@ -95,7 +95,7 @@ describe('CommunitySection, every face', () => {
     cleanup();
     render(<CommunitySection {...base({ sharePasswordSet: true })} />);
     expect(
-      (screen.getByRole('button', { name: 'Share to Community' }) as HTMLButtonElement).disabled,
+      screen.getByRole<HTMLButtonElement>('button', { name: 'Share to Community' }).disabled,
     ).toBe(true);
     expect(
       screen.getByText('Remove the share password to share it to the Community.'),

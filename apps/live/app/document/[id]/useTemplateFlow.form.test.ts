@@ -9,7 +9,7 @@ import { useTemplateFlow } from './useTemplateFlow';
 
 describe('chooseTemplate with a form template', () => {
   it('starts the form on the tab and closes the picker', async () => {
-    let tabs: Tab[] = [{ id: 't1', name: '', elements: [] } as Tab];
+    let tabs: Tab[] = [{ id: 't1', name: '', elements: [] }];
     const startForm = vi.fn();
     const setTemplatePickerMode = vi.fn();
     const { result } = renderHook(() =>

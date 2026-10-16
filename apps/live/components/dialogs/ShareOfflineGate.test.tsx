@@ -54,8 +54,8 @@ describe('ShareOfflineGate', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Sync Document' }));
     await act(async () => {});
     expect(toast.error).toHaveBeenCalledOnce();
-    expect(
-      (screen.getByRole('button', { name: 'Sync Document' }) as HTMLButtonElement).disabled,
-    ).toBe(false);
+    expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Sync Document' }).disabled).toBe(
+      false,
+    );
   });
 });

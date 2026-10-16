@@ -28,8 +28,8 @@ export function swapSlotsWithMotion(fromId: string, toId: string, apply: () => v
   const from = slotEl(fromId);
   const to = slotEl(toId);
   const still = prefersReducedMotion() || !from || !to || typeof from.animate !== 'function';
-  const a = still ? null : from!.getBoundingClientRect();
-  const b = still ? null : to!.getBoundingClientRect();
+  const a = still ? null : from.getBoundingClientRect();
+  const b = still ? null : to.getBoundingClientRect();
   apply();
   // On the frame the swap draws: React has committed the new layout by then.
   requestAnimationFrame(() => {

@@ -13,29 +13,28 @@ afterEach(cleanup);
 
 const laidOut = (page: IllustratePage) => layOutIllustratePages([page])[0]!;
 
-const edits = (): IllustratePageEdits =>
-  ({
-    setOrientation: vi.fn(),
-    setSize: vi.fn(),
-    rename: vi.fn(),
-    setBackground: vi.fn(),
-    applyToAllReach: vi.fn(() => 0),
-    applyBackgroundToAll: vi.fn(),
-    copyBackground: vi.fn(() => false),
-    movePage: vi.fn(),
-    movePageTo: vi.fn(),
-    choosePageKind: vi.fn(),
-    canDuplicate: () => true,
-    canMove: () => false,
-    applyLayout: vi.fn(),
-    contentCount: () => 0,
-    previewInk: vi.fn(),
-    isLocked: () => false,
-    setLocked: vi.fn(),
-    startBlank: vi.fn(),
-    splitPage: vi.fn(),
-    removePage: vi.fn(),
-  }) as IllustratePageEdits;
+const edits = (): IllustratePageEdits => ({
+  setOrientation: vi.fn(),
+  setSize: vi.fn(),
+  rename: vi.fn(),
+  setBackground: vi.fn(),
+  applyToAllReach: vi.fn(() => 0),
+  applyBackgroundToAll: vi.fn(),
+  copyBackground: vi.fn(() => false),
+  movePage: vi.fn(),
+  movePageTo: vi.fn(),
+  choosePageKind: vi.fn(),
+  canDuplicate: () => true,
+  canMove: () => false,
+  applyLayout: vi.fn(),
+  contentCount: () => 0,
+  previewInk: vi.fn(),
+  isLocked: () => false,
+  setLocked: vi.fn(),
+  startBlank: vi.fn(),
+  splitPage: vi.fn(),
+  removePage: vi.fn(),
+});
 
 function renderPanel(page: IllustratePage, initialTab: PagePanelTab, onPreview = vi.fn()) {
   render(

@@ -67,7 +67,7 @@ describe('the card face', () => {
           { id: 'a', text: 'a', done: true },
           { id: 'b', text: 'b' },
         ] as never,
-        assignee: PERSON as never,
+        assignee: PERSON,
       }),
     );
     expect(screen.getByText('Task')).toBeTruthy();

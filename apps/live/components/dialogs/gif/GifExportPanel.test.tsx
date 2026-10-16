@@ -69,7 +69,7 @@ function open(over: Partial<{ pages: typeof pages }> = {}) {
   );
   return { onDone };
 }
-const hold = () => screen.getByRole('slider') as HTMLInputElement;
+const hold = () => screen.getByRole<HTMLInputElement>('slider');
 
 // A make yields one task per frame (make-gif.ts), so under a loaded runner (the pre-push coverage
 // run, CI) it can outlast Testing Library's 1 s wait and Vitest's 5 s test: the tests that wait
@@ -129,9 +129,9 @@ describe('the GIF panel', () => {
     open();
     fireEvent.change(hold(), { target: { value: '20' } });
     expect(screen.getByText(GIF_TOO_LONG_COPY)).toBeTruthy();
-    expect(
-      (screen.getByRole('button', { name: 'Download GIF' }) as HTMLButtonElement).disabled,
-    ).toBe(true);
+    expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Download GIF' }).disabled).toBe(
+      true,
+    );
     fireEvent.click(screen.getByRole('button', { name: 'One page' }));
     expect(screen.queryByText(GIF_TOO_LONG_COPY)).toBeNull();
   });

@@ -221,7 +221,7 @@ export function IllustratePages({
     articles?.flows[flow] ? (
       <ArticleStyleSection
         part={part}
-        style={articles.flows[flow]!.style}
+        style={articles.flows[flow].style}
         themeAccent={view.themeAccent}
         onChange={(change) => articles.setStyle(flow, change)}
         onPreview={(style) => articles.setStylePreview(style ? { flow, style } : null)}

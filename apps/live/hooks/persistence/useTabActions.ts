@@ -323,7 +323,7 @@ export function useTabActions(deps: TabActionsDeps) {
             if (el.link.kind !== 'tab' && el.link.kind !== 'element') return el;
             if (el.link.tabId !== id) return el;
             const { link: _drop, ...rest } = el;
-            return rest as typeof el;
+            return rest;
           }),
         })),
     );

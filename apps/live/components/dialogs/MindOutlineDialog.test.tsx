@@ -102,7 +102,7 @@ describe('MindOutlineDialog', () => {
   it('cannot save without a root', () => {
     open(none, '');
     expect(screen.getByText('Write the root first')).toBeTruthy();
-    expect((screen.getByRole('button', { name: 'Save' }) as HTMLButtonElement).disabled).toBe(true);
+    expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Save' }).disabled).toBe(true);
   });
 
   it('asks before removing nodes, naming them, and Keep Editing goes back', () => {

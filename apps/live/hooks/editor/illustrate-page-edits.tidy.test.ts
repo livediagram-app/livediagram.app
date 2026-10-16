@@ -33,7 +33,7 @@ function harness(tab: Tab) {
     illustratePageEdits({
       tabId: tab.id,
       tab: tabs[0]!,
-      current: illustratePagesOf(tabs[0]!),
+      current: illustratePagesOf(tabs[0]),
       elements: tabs[0]!.elements,
       layers: tabs[0]!.layers,
       commitTabs,
@@ -155,7 +155,7 @@ describe('Tidy Up a page', () => {
         { id: 'base', name: 'Base' },
         { id: 'L', name: 'L', locked: true },
       ],
-    } as unknown as Tab);
+    });
     layered.edits().tidyPage!('page-1');
     expect(xOf(layered.tab(), 'a')).toBe(-200);
     expect(xOf(layered.tab(), 'b')).toBe(-341);

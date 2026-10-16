@@ -22,7 +22,7 @@ const boardTab = (id: string, setup = presetSetup('kanban'), kind: Tab['kind'] =
   id,
   name: id,
   kind,
-  elements: [{ ...createShape('plan-board', 0, 0), planBoard: setup } as Element],
+  elements: [{ ...createShape('plan-board', 0, 0), planBoard: setup }],
 });
 const formTab: Tab = { id: 'form', name: 'Tab 2', elements: [], theme: 'ocean' };
 

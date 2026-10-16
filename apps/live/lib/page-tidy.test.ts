@@ -13,20 +13,19 @@ import { cpuBudgetMs, cpuMsOf } from '@livediagram/vitest-config/cpu-time';
 
 // A4 portrait: the page is 794 x 1123 centred on the origin, its margin 56, so the content box runs
 // x -341..341, y -505.5..505.5, and the tolerance is 0.012 x 794, about 9.5 px.
-const [A4] = layOutIllustratePages([{ id: 'p', orientation: 'portrait' } as IllustratePage]);
+const [A4] = layOutIllustratePages([{ id: 'p', orientation: 'portrait' }]);
 const BOX = { left: -341, right: 341, top: -505.5, bottom: 505.5 };
 
 const shape = (id: string, x: number, y: number, width = 100, height = 80, more = {}): Element =>
   ({ id, type: 'shape', shape: 'square', x, y, width, height, ...more }) as unknown as Element;
 const text = (id: string, x: number, y: number, width = 120, height = 40): Element =>
   ({ id, type: 'text', text: id, x, y, width, height }) as Element;
-const arrow = (id: string, from: string, to: string): Element =>
-  ({
-    id,
-    type: 'arrow',
-    from: { kind: 'pinned', elementId: from, anchor: 's' },
-    to: { kind: 'pinned', elementId: to, anchor: 'n' },
-  }) as Element;
+const arrow = (id: string, from: string, to: string): Element => ({
+  id,
+  type: 'arrow',
+  from: { kind: 'pinned', elementId: from, anchor: 's' },
+  to: { kind: 'pinned', elementId: to, anchor: 'n' },
+});
 
 const inputFor = (
   elements: Element[],
@@ -130,7 +129,7 @@ describe('tidyPageElements', () => {
           y: 200,
           width: 99.3,
           height: 66.2,
-        } as Element,
+        },
       ]),
     );
     expect(out.get('rect')).toMatchObject({ w: 100, h: 80 });
@@ -208,9 +207,7 @@ describe('tidyPageElements on real layouts', () => {
   const jitter = (els: Element[], amp: number, seed: number) => {
     const next = random(seed);
     return els.map((e) =>
-      isBoxed(e)
-        ? ({ ...e, x: e.x + (next() - 0.5) * amp, y: e.y + (next() - 0.5) * amp } as Element)
-        : e,
+      isBoxed(e) ? { ...e, x: e.x + (next() - 0.5) * amp, y: e.y + (next() - 0.5) * amp } : e,
     );
   };
 

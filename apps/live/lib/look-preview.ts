@@ -28,12 +28,12 @@ function colouringSample(): Element[] {
     return { kind: 'free' as const, x: end.anchor === 'e' ? el.x + el.width : el.x, y };
   };
   const [step, ...rest] = FINISH_PREVIEW_ELEMENTS.map((el) =>
-    el.type === 'arrow' ? ({ ...el, from: edge(el.from), to: edge(el.to) } as Element) : el,
+    el.type === 'arrow' ? { ...el, from: edge(el.from), to: edge(el.to) } : el,
   );
-  const spacers = Array.from(
-    { length: PALETTE_SKIP },
-    (_, i) => ({ ...step!, id: `${SPACER_ID}${i}` }) as Element,
-  );
+  const spacers = Array.from({ length: PALETTE_SKIP }, (_, i) => ({
+    ...step!,
+    id: `${SPACER_ID}${i}`,
+  }));
   return [step!, ...spacers, ...rest];
 }
 

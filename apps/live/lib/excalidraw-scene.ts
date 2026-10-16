@@ -129,7 +129,7 @@ export function excalidrawToBoardScene(envelope: ExcalidrawEnvelope): BoardScene
       items.push({
         ...common,
         kind: 'shape',
-        shape: SHAPES[type]!,
+        shape: SHAPES[type],
         ...boxOf(el),
         ...(el.roundness ? { rounded: true } : {}),
         stroke: strokeOf(el, notes),

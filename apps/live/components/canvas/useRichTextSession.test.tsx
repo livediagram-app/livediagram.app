@@ -22,7 +22,7 @@ function Harness({ onCommit }: { onCommit: RichTextEditorProps['onCommit'] }) {
     cursorAtEnd: false,
     onCommit,
     onCancel: vi.fn(),
-  } as Parameters<typeof useRichTextSession>[0]);
+  });
   return (
     <div
       data-testid="editor"

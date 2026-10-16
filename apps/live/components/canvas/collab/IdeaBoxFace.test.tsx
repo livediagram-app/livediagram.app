@@ -74,6 +74,6 @@ describe('IdeaBoxFace', () => {
     show(box({ ideaCards: Array.from({ length: IDEA_MAX_CARDS }, (_, i) => `idea ${i}`) }), {
       onAddIdea: vi.fn(() => false),
     });
-    expect((screen.getByRole('textbox') as HTMLInputElement).placeholder).toBe('Box is full');
+    expect(screen.getByRole<HTMLInputElement>('textbox').placeholder).toBe('Box is full');
   });
 });

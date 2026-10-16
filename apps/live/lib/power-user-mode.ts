@@ -62,7 +62,7 @@ function switchOn(prefs: UserPreferences): Switched {
   next.powerUserMode = true;
   next.powerUserBaseline = baseline;
   debugLog('[power-user] on', { applied: Object.keys(POWER_USER_PRESET) });
-  return { prefs: next as UserPreferences, restored: [], kept: [] };
+  return { prefs: next, restored: [], kept: [] };
 }
 
 // Does this preset setting still hold what switching on wrote? Switch-off
@@ -93,5 +93,5 @@ function switchOff(prefs: UserPreferences): Switched {
   delete next.powerUserMode;
   delete next.powerUserBaseline;
   debugLog('[power-user] off', { restored, kept });
-  return { prefs: next as UserPreferences, restored, kept };
+  return { prefs: next, restored, kept };
 }

@@ -11,26 +11,25 @@ import type { PaneDocument } from './views';
 
 afterEach(cleanup);
 
-const entry = (ownerId: string): DocumentEntryProps =>
-  ({
-    // Empty, so the thumbnail draws its placeholder rather than fetching.
-    document: {
-      id: 'd1',
-      name: 'Workshop notes',
-      ownerId,
-      savedAt: 1,
-      folderId: null,
-      empty: true,
-    } as PaneDocument,
-    ownerId: 'me',
-    renaming: false,
-    onStartRename: vi.fn(),
-    onCommitRename: vi.fn(),
-    onCancelRename: vi.fn(),
-    onDuplicate: vi.fn(),
-    onDelete: vi.fn(),
-    onMove: vi.fn(),
-  }) as unknown as DocumentEntryProps;
+const entry = (ownerId: string): DocumentEntryProps => ({
+  // Empty, so the thumbnail draws its placeholder rather than fetching.
+  document: {
+    id: 'd1',
+    name: 'Workshop notes',
+    ownerId,
+    savedAt: 1,
+    folderId: null,
+    empty: true,
+  } as PaneDocument,
+  ownerId: 'me',
+  renaming: false,
+  onStartRename: vi.fn(),
+  onCommitRename: vi.fn(),
+  onCancelRename: vi.fn(),
+  onDuplicate: vi.fn(),
+  onDelete: vi.fn(),
+  onMove: vi.fn(),
+});
 
 describe('DocumentRow', () => {
   it('shows the Local only pill for a document in this browser', () => {

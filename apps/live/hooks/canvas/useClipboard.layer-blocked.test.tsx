@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, cleanup, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { Element, StickyElement, Tab } from '@livediagram/document';
+import type { Element, StickyElement } from '@livediagram/document';
 import { serialiseElements } from '@/lib/clipboard-payload';
 import { blockedLayerMessage } from '@/app/document/[id]/useLayersState';
 import { useClipboard } from './useClipboard';
@@ -20,7 +20,7 @@ const copied: StickyElement = {
   width: 200,
   height: 200,
   label: 'Order placed',
-} as StickyElement;
+};
 
 function harness(createBlocked: boolean) {
   let elements: Element[] = [copied];
@@ -35,7 +35,7 @@ function harness(createBlocked: boolean) {
       readSelection: () => ({ selectedId: 'copied', multiSelectedIds: new Set<string>() }),
       editingId: null,
       setEditingId: () => {},
-      activeTab: { id: 't', name: 'Board', elements } as Tab,
+      activeTab: { id: 't', name: 'Board', elements },
       commit: (m) => {
         elements = m(elements);
       },

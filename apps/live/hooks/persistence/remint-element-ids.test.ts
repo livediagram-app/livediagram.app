@@ -8,8 +8,16 @@ const remintElementIds = (elements: Element[]) => remintElements(elements).eleme
 // References between elements must follow the new ids, or the copy points
 // back at the source tab.
 
-const shape = (id: string, extra: Partial<ShapeElement> = {}): Element =>
-  ({ id, type: 'shape', shape: 'square', x: 0, y: 0, width: 10, height: 10, ...extra }) as Element;
+const shape = (id: string, extra: Partial<ShapeElement> = {}): Element => ({
+  id,
+  type: 'shape',
+  shape: 'square',
+  x: 0,
+  y: 0,
+  width: 10,
+  height: 10,
+  ...extra,
+});
 
 describe('remintElementIds', () => {
   it('re-parents mind-map nodes and re-pairs portals onto the new ids', () => {
@@ -33,7 +41,7 @@ describe('remintElementIds', () => {
         type: 'arrow',
         from: { kind: 'free', x: 0, y: 0 },
         to: { kind: 'free', x: 1, y: 1 },
-      } as Element,
+      },
       shape('s'),
     ]);
     expect(out.map((e) => e.type)).toEqual(['arrow', 'shape']);
@@ -84,15 +92,15 @@ describe('remintTabElements on a Dashboard', () => {
     const out = remintTabElements(tab);
     const copy = (out.elements[0] as ShapeElement).planSheet!.sheetId;
     expect(copy).not.toBe(SHEET);
-    const [element, figure] = out.dashboard!.rows[0]!.slots;
+    const [element, figure] = out.dashboard.rows[0]!.slots;
     expect(element!.content).toEqual({ type: 'element', elementId: out.elements[0]!.id });
     expect(figure!.content).toMatchObject({ type: 'sheet-metric', sheetId: copy });
   });
 
   it('gives every row and slot a new id', () => {
     const out = remintTabElements(tab);
-    expect(out.dashboard!.rows[0]!.id).not.toBe('r');
-    expect(out.dashboard!.rows[0]!.slots.map((s) => s.id)).not.toContain('a');
-    expect(out.dashboard!.rows[0]!.slots.map((s) => s.id)).not.toContain('b');
+    expect(out.dashboard.rows[0]!.id).not.toBe('r');
+    expect(out.dashboard.rows[0]!.slots.map((s) => s.id)).not.toContain('a');
+    expect(out.dashboard.rows[0]!.slots.map((s) => s.id)).not.toContain('b');
   });
 });

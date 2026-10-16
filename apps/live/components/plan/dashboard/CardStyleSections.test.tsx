@@ -62,7 +62,7 @@ const sectionTitles = () =>
     .map((b) => b.textContent?.trim() ?? '')
     .filter((t) => /^[A-Z][a-z]+$/.test(t));
 const frame = (view: ReturnType<typeof render>) =>
-  view.container.querySelector('[data-dashboard-slot] > div:last-of-type') as HTMLElement | null;
+  view.container.querySelector<HTMLElement>('[data-dashboard-slot] > div:last-of-type');
 const status: DashboardContent = { type: 'status', state: 'on-track', text: '', at: 0 };
 
 describe('a Utility’s Style row', () => {

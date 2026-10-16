@@ -32,16 +32,18 @@ vi.mock('@/lib/article/article-editor-store', () => ({
 // Leaving Illustrate (docs/specs/007-editor/editor-modes.md "Leaving Illustrate"): articles ask
 // the articles question, other content a lighter confirmation, an empty tab switches at once.
 
-const tab = (extra: Partial<Tab> = {}): Tab =>
-  ({ id: 't', name: 'Tab', elements: [], opensIn: 'illustrate', ...extra }) as Tab;
+const tab = (extra: Partial<Tab> = {}): Tab => ({
+  id: 't',
+  name: 'Tab',
+  elements: [],
+  opensIn: 'illustrate',
+  ...extra,
+});
 
 function setup(t: Tab) {
   const rawSet = vi.fn<(m: EditorMode, alsoChange?: (t: Tab) => Tab) => void>();
   const { result } = renderHook(() =>
-    useLeaveIllustrate(
-      { mode: 'illustrate' as EditorMode, setMode: rawSet },
-      { tab: t, canEdit: true },
-    ),
+    useLeaveIllustrate({ mode: 'illustrate', setMode: rawSet }, { tab: t, canEdit: true }),
   );
   return { result, rawSet };
 }
@@ -72,7 +74,7 @@ describe('leaving Illustrate', () => {
       tab({
         elements: [createShape('square', 0, 0)],
         articles: { a: { blocks: [] } },
-      } as Partial<Tab>),
+      }),
     );
     act(() => result.current.editorMode.setMode('draw'));
     expect(result.current.leave.pending).toBe('draw');
@@ -86,7 +88,7 @@ describe('leaving Illustrate', () => {
       tab({
         elements: [createShape('square', 0, 0)],
         articles: { a: { blocks: [] } },
-      } as Partial<Tab>),
+      }),
     );
     act(() => result.current.editorMode.setMode('diagram'));
     act(() => result.current.leave.convert());
@@ -107,7 +109,7 @@ describe('leaving Illustrate', () => {
         a: { blocks: [], style: { look: 'clean' } },
         b: { blocks: [{ id: 'q', type: 'paragraph', runs: [{ text: 'Saved' }] }] },
       },
-    } as Partial<Tab>);
+    });
     const { result, rawSet } = setup(t);
     act(() => result.current.editorMode.setMode('diagram'));
     act(() => result.current.leave.convert());
@@ -125,7 +127,7 @@ describe('leaving Illustrate', () => {
     const t = tab({
       elements: [createShape('square', 0, 0)],
       articles: { a: { blocks: [] } },
-    } as Partial<Tab>);
+    });
     const { result, rawSet } = setup(t);
     act(() => result.current.editorMode.setMode('draw'));
     act(() => result.current.leave.convert());
@@ -138,7 +140,7 @@ describe('leaving Illustrate', () => {
       tab({
         elements: [createShape('square', 0, 0)],
         articles: { a: { blocks: [] } },
-      } as Partial<Tab>),
+      }),
     );
     act(() => result.current.editorMode.setMode('draw'));
     act(() => result.current.leave.cancel());
@@ -156,7 +158,7 @@ describe('leaving Illustrate', () => {
       tab({
         pages: [{ id: 'pa', orientation: 'portrait', kind: 'article', flow: 'a', locked: true }],
         articles: { a: { blocks: [] } },
-      } as Partial<Tab>),
+      }),
     );
     act(() => result.current.editorMode.setMode('draw'));
     expect(result.current.leave.pending).toBeNull();
@@ -174,7 +176,7 @@ describe('leaving Illustrate', () => {
         a: { blocks: [{ id: 'k', type: 'paragraph', runs: [{ text: 'Held' }] }] },
         b: { blocks: [{ id: 'q', type: 'paragraph', runs: [{ text: 'Saved' }] }] },
       },
-    } as Partial<Tab>);
+    });
     const { result, rawSet } = setup(t);
     act(() => result.current.editorMode.setMode('diagram'));
     expect(result.current.leave.pending).toBe('diagram');

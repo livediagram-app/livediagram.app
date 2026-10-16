@@ -245,7 +245,7 @@ describe('historyApplyRemoteOp', () => {
 // snapshot, each exactly once. (A CPU-time ratio here swung with garbage collection on CI and turned main red.)
 describe('historyApplyRemoteOp cost', () => {
   it('runs the op once per snapshot, so it grows linearly with the history', () => {
-    const board = (n: number): Tab[] => [{ id: 'a', name: `${n}`, elements: [] } as unknown as Tab];
+    const board = (n: number): Tab[] => [{ id: 'a', name: `${n}`, elements: [] }];
     const h: History = {
       past: Array.from({ length: 300 }, (_, i) => board(i)),
       present: board(300),

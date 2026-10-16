@@ -2,7 +2,7 @@
 
 import { describe, expect, it, vi } from 'vitest';
 import { renderHook } from '@testing-library/react';
-import { createText, type Element, type Tab, type TextElement } from '@livediagram/document';
+import { createText, type Element, type TextElement } from '@livediagram/document';
 import { useTextStyleSetters } from './useTextStyleSetters';
 
 // Stands in for the DOM measure: the text block is 10 px a character at 14 px, scaled with the
@@ -30,7 +30,7 @@ function setup(el: TextElement) {
       currentSelectionIds: () => new Set([el.id]),
       selectionPrimary: () => els[0]!,
       commit,
-      activeTab: { font: undefined } as unknown as Tab,
+      activeTab: { font: undefined },
     }),
   );
   return { setters: result.current, current: () => els[0] as TextElement };

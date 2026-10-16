@@ -127,7 +127,7 @@ describe('remintTabElements', () => {
       elements: [view],
       dashboard: { rows: [{ id: 'r', height: 99999, slots: [{ id: 's', span: 12 }] }] },
     });
-    expect(out.dashboard!.rows[0]!.height).toBe(1200);
+    expect(out.dashboard.rows[0]!.height).toBe(1200);
   });
 });
 

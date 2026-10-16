@@ -4,12 +4,7 @@
 // layout on the page"): the page's own words and pictures carried in, as placing it lands them.
 import { act, cleanup, render } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import {
-  illustratePagesOf,
-  layOutIllustratePages,
-  type Element,
-  type Tab,
-} from '@livediagram/document';
+import { illustratePagesOf, layOutIllustratePages, type Element } from '@livediagram/document';
 import { buildPageLayout } from '@livediagram/templates';
 import { InfographicLayoutPreview } from './InfographicLayoutPreview';
 import { PageImageAccessProvider } from './page-image-access';
@@ -20,7 +15,7 @@ vi.mock('@/lib/api-client', () => ({ apiFetchImageBlobUrl: fetched }));
 afterEach(cleanup);
 
 const pages = layOutIllustratePages(
-  illustratePagesOf({ pages: [{ id: 'p', orientation: 'portrait' }] } as unknown as Tab),
+  illustratePagesOf({ pages: [{ id: 'p', orientation: 'portrait' }] }),
 );
 const page = pages[0]!;
 const written = (): Element[] =>

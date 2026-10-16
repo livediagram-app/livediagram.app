@@ -15,8 +15,7 @@ function harness(initial: Tab[]) {
   return { result, tabs: () => tabs };
 }
 
-const tab = (id: string, elements: Tab['elements'] = []): Tab =>
-  ({ id, name: id, elements }) as unknown as Tab;
+const tab = (id: string, elements: Tab['elements'] = []): Tab => ({ id, name: id, elements });
 
 describe('useTourSquare', () => {
   it('places the square on the active tab and takes only it away', () => {

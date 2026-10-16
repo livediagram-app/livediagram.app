@@ -395,26 +395,24 @@ function ArrowViewImpl({
             ? headMarker
             : undefined
         }
-        style={
-          {
-            pointerEvents: 'none',
-            // Flow speed scales each path animation's duration; phase-sync
-            // across arrows is pinned via the Web Animations API in the effect
-            // below, not animation-delay. The width-breathing flows (grow /
-            // heartbeat / breathe) need the base stroke width to swell relative
-            // to it; the halo flows (glow / shimmer) need the stroke colour to
-            // tint it.
-            ...(flowPathClass ? { '--lvd-flow-speed': flowFactor } : {}),
-            ...(arrow.flow === 'grow' || arrow.flow === 'heartbeat' || arrow.flow === 'breathe'
-              ? { '--lvd-flow-w': `${strokeWidth}px` }
-              : {}),
-            ...(arrow.flow === 'glow' || arrow.flow === 'shimmer'
-              ? { '--lvd-flow-color': baseStroke }
-              : {}),
-            // Repeat off = the flow plays once and holds (docs/specs/008-canvas/canvas-and-palette.md).
-            ...(arrow.flowRepeat === false ? { '--lvd-flow-iter': 1 } : {}),
-          } as React.CSSProperties
-        }
+        style={{
+          pointerEvents: 'none',
+          // Flow speed scales each path animation's duration; phase-sync
+          // across arrows is pinned via the Web Animations API in the effect
+          // below, not animation-delay. The width-breathing flows (grow /
+          // heartbeat / breathe) need the base stroke width to swell relative
+          // to it; the halo flows (glow / shimmer) need the stroke colour to
+          // tint it.
+          ...(flowPathClass ? { '--lvd-flow-speed': flowFactor } : {}),
+          ...(arrow.flow === 'grow' || arrow.flow === 'heartbeat' || arrow.flow === 'breathe'
+            ? { '--lvd-flow-w': `${strokeWidth}px` }
+            : {}),
+          ...(arrow.flow === 'glow' || arrow.flow === 'shimmer'
+            ? { '--lvd-flow-color': baseStroke }
+            : {}),
+          // Repeat off = the flow plays once and holds (docs/specs/008-canvas/canvas-and-palette.md).
+          ...(arrow.flowRepeat === false ? { '--lvd-flow-iter': 1 } : {}),
+        }}
       />
       {sketch?.heads && sketchedHeads ? (
         <path

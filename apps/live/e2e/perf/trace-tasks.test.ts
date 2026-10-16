@@ -47,16 +47,15 @@ describe("mainThreadTasks and the probe's own scripts", () => {
     ts: number,
     dur: number,
     data: Record<string, unknown> = {},
-  ): TraceEvent =>
-    ({
-      name,
-      ph: 'X',
-      pid: 1,
-      tid: 10,
-      ts: ts * 1000,
-      dur: dur * 1000,
-      args: { data },
-    }) as TraceEvent;
+  ): TraceEvent => ({
+    name,
+    ph: 'X',
+    pid: 1,
+    tid: 10,
+    ts: ts * 1000,
+    dur: dur * 1000,
+    args: { data },
+  });
   const at = (ts: number, dur: number): TraceEvent => ({ ...task(1, 10, dur), ts: ts * 1000 });
 
   it('leaves out a task that only evaluates a script with no URL', () => {

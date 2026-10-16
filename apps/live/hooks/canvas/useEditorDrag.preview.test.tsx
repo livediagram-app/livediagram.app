@@ -11,8 +11,15 @@ vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 // docs/specs/008-canvas/drag-preview.md: a gesture draws from a preview and writes the document once,
 // on release; a cancelled gesture writes nothing.
 
-const BOX = (id: string, x: number): Element =>
-  ({ id, type: 'shape', shape: 'square', x, y: 0, width: 100, height: 60 }) as Element;
+const BOX = (id: string, x: number): Element => ({
+  id,
+  type: 'shape',
+  shape: 'square',
+  x,
+  y: 0,
+  width: 100,
+  height: 60,
+});
 
 function harness() {
   let elements: Element[] = [BOX('a', 0), BOX('b', 400)];

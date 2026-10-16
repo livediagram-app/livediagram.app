@@ -4,7 +4,6 @@
 
 import {
   EXCALIDRAW_ENVELOPE_TYPES,
-  type ExcalidrawAppState,
   type ExcalidrawElement,
   type ExcalidrawEnvelope,
   type ExcalidrawEnvelopeType,
@@ -72,7 +71,7 @@ export function readExcalidrawEnvelope(
     files,
   };
   if (type === 'excalidraw' && isRecord(raw.appState)) {
-    envelope.appState = raw.appState as ExcalidrawAppState;
+    envelope.appState = raw.appState;
   }
   return { ok: true, envelope };
 }

@@ -27,7 +27,7 @@ async function savedElements(page: Page): Promise<El[]> {
     const got = (await (
       await fetch(`/api/documents/${id}/tabs/${tabId}`, { headers })
     ).json()) as StoredTab<El>;
-    return (got.tab?.elements ?? []) as El[];
+    return got.tab?.elements ?? [];
   }, headers);
 }
 

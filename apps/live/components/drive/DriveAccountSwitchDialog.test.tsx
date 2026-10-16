@@ -40,7 +40,7 @@ describe('DriveAccountSwitchDialog', () => {
     const busy = screen.getByRole('button', { name: 'Switching…' }) as HTMLButtonElement;
     expect(busy.disabled).toBe(true);
     expect(
-      (screen.getByRole('button', { name: 'Keep Current Account' }) as HTMLButtonElement).disabled,
+      screen.getByRole<HTMLButtonElement>('button', { name: 'Keep Current Account' }).disabled,
     ).toBe(true);
     finish();
     expect(onKeep).not.toHaveBeenCalled();
@@ -73,8 +73,8 @@ describe('DriveAccountSwitchDialog', () => {
     });
     fireEvent.click(screen.getByRole('button', { name: 'Keep Current Account' }));
     await waitFor(() => expect(screen.getByRole('alert').textContent).toBe(ACCOUNT_SWITCH_FAILED));
-    expect(
-      (screen.getByRole('button', { name: 'Switch Account' }) as HTMLButtonElement).disabled,
-    ).toBe(false);
+    expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Switch Account' }).disabled).toBe(
+      false,
+    );
   });
 });

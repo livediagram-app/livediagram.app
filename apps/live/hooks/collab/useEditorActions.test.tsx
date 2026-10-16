@@ -28,7 +28,7 @@ const input = (name: string): SaveActionInput => ({
 
 function setup(elements: Tab['elements']) {
   const notify = vi.fn();
-  let tabs: Tab[] = [{ id: 't', name: 'T', elements } as Tab];
+  let tabs: Tab[] = [{ id: 't', name: 'T', elements }];
   const find = (id: string) => tabs[0]!.elements.find((e) => e.id === id)!;
   const { result } = renderHook(() =>
     useEditorActions({

@@ -67,7 +67,7 @@ function stubImaging(bitmap: { width: number; height: number } | 'throw', painte
     vi.fn(async (_file: Blob, opts?: ImageBitmapOptions) => {
       created.push(opts ?? {});
       if (bitmap === 'throw') throw new Error('decode failed');
-      return { ...bitmap, close: vi.fn() } as unknown as ImageBitmap;
+      return { ...bitmap, close: vi.fn() };
     }),
   );
   vi.spyOn(document, 'createElement').mockImplementation((tag: string) => {

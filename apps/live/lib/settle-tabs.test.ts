@@ -6,9 +6,9 @@ const tab = (id: string, elements: Tab['elements']) => ({ id, name: id, elements
 
 describe('settleChipsInTabs (docs/specs/009-elements/badge.md "Attachment")', () => {
   it('settles only the tabs a write changed, against how each was', () => {
-    const host = { ...(createShape('square', 0, 0) as ShapeElement), id: 'h', x: 0, y: 0 };
+    const host = { ...createShape('square', 0, 0), id: 'h', x: 0, y: 0 };
     const badge = {
-      ...(createShape('badge', 0, 0) as ShapeElement),
+      ...createShape('badge', 0, 0),
       id: 'b',
       attachedTo: 'h',
       attachAt: 'top-left' as const,
@@ -24,7 +24,7 @@ describe('settleChipsInTabs (docs/specs/009-elements/badge.md "Attachment")', ()
 
   it('fits a key to its rows before the stack holding it lays out, so a second settle changes nothing', () => {
     const stack = {
-      ...(createShape('stack', 0, 0) as ShapeElement),
+      ...createShape('stack', 0, 0),
       id: 's',
       x: 0,
       y: 0,
@@ -32,8 +32,8 @@ describe('settleChipsInTabs (docs/specs/009-elements/badge.md "Attachment")', ()
       height: 400,
       stackDirection: 'column' as const,
     };
-    const key = { ...(createShape('diagram-key', 0, 0) as ShapeElement), id: 'k', x: 40, y: 40 };
-    const below = { ...(createShape('square', 0, 0) as ShapeElement), id: 'q', x: 40, y: 300 };
+    const key = { ...createShape('diagram-key', 0, 0), id: 'k', x: 40, y: 40 };
+    const below = { ...createShape('square', 0, 0), id: 'q', x: 40, y: 300 };
     const first = settleChipsInTabs([], [tab('a', [stack, key, below])]);
     // Two line styles take the key past the one row an empty key keeps, so the square under it must move down.
     const solid = { ...createArrow(500, 500, 600, 600), id: 'x' };

@@ -9,8 +9,7 @@ import { TagColoursBlock } from './TagColoursBlock';
 
 afterEach(cleanup);
 
-const card = (tags: string[]) =>
-  ({ ...(createShape('card', 0, 0) as ShapeElement), tags }) as ShapeElement;
+const card = (tags: string[]) => ({ ...createShape('card', 0, 0), tags }) as ShapeElement;
 
 describe('TagColoursBlock', () => {
   it("lists the card's tags, and clears a mapped one", () => {

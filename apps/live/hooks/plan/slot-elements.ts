@@ -24,7 +24,7 @@ export function dashboardViewElement(view: string): Element {
     ...createShape('plan-view', 0, 0),
     ...(isPlanViewId(view) ? { planView: { view } } : {}),
     ...planViewSize(view),
-  } as Element;
+  };
 }
 
 // A plan view's element, or a new board or Sheet: a board of its preset, named after it; a Sheet of its start, named
@@ -35,7 +35,7 @@ export function dashboardElement(
   if (item.kind === 'view') return dashboardViewElement(item.view);
   if (item.kind === 'board') {
     const placed = planBoardPlacement(item.preset, '');
-    return { ...createShape('plan-board', 0, 0), ...placed } as Element;
+    return { ...createShape('plan-board', 0, 0), ...placed };
   }
   return {
     ...createShape('plan-sheet', 0, 0),
@@ -49,7 +49,7 @@ export function dashboardElement(
           ? { setUp: item.start }
           : { blank: true as const }),
     }),
-  } as Element;
+  };
 }
 
 // The name a new Board or Sheet tab takes from what fills it: the board's title, or the title its Sheet is placed with.

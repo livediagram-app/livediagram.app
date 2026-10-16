@@ -18,7 +18,7 @@ function Harness({ initial = [] as string[] }) {
   );
 }
 
-const field = () => screen.getByLabelText('Tags') as HTMLInputElement;
+const field = () => screen.getByLabelText<HTMLInputElement>('Tags');
 const tags = () => screen.getByTestId('tags').textContent;
 
 describe('TagInput', () => {

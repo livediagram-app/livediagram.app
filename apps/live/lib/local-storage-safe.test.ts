@@ -39,7 +39,7 @@ function memoryStorage(): Storage {
 }
 
 function mockWindow(storage: Storage): { cleanup: () => void } {
-  vi.stubGlobal('window', { localStorage: storage } as unknown as Window);
+  vi.stubGlobal('window', { localStorage: storage });
   return {
     cleanup: () => {
       vi.unstubAllGlobals();

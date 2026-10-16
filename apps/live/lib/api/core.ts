@@ -538,5 +538,5 @@ export function stripUiTabFields(tab: Tab): Tab {
   const { templateChosen: _tc, folder: _f, ...rest } = tab;
   void _tc;
   void _f;
-  return rest as Tab;
+  return rest;
 }

@@ -15,17 +15,13 @@ import { createLayerPreviewStore, type LayerPreviewInputs } from './useLayerDrag
 // fastest of five after warm-up.
 const N = 2000;
 const DRAGGED = 20;
-const boxes = Array.from(
-  { length: N },
-  (_, i) =>
-    ({
-      ...createShape('square', (i % 50) * 160, Math.floor(i / 50) * 120),
-      id: `b${i}`,
-    }) as Element,
-);
+const boxes = Array.from({ length: N }, (_, i) => ({
+  ...createShape('square', (i % 50) * 160, Math.floor(i / 50) * 120),
+  id: `b${i}`,
+}));
 const arrows = boxes
   .slice(1)
-  .map((b, i) => ({ ...createPinnedArrow(boxes[i]!.id, 'e', b.id, 'w'), id: `a${i}` }) as Element);
+  .map((b, i) => ({ ...createPinnedArrow(boxes[i]!.id, 'e', b.id, 'w'), id: `a${i}` }));
 const BOARD = [...boxes, ...arrows];
 const tracker = createElementGridTracker();
 const inputs: LayerPreviewInputs = {
@@ -39,7 +35,7 @@ const inputs: LayerPreviewInputs = {
     renderOf: () => ({ layout: null, knockouts: [] }),
     labelRectOf: () => null,
     draftLayout: () => null,
-  } as unknown as LayerPreviewInputs['arrowLabels'],
+  },
   tabFinish: undefined,
 };
 const moved = (dx: number) =>

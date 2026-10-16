@@ -19,7 +19,7 @@ function setup(over: Partial<Parameters<typeof useTabWindowContextValue>[0]> = {
   const loadTabs = vi.fn(async (_: readonly string[]) => [] as string[]);
   const openTab = vi.fn();
   let elements: Element[] = [
-    { id: 'w', type: 'shape', shape: 'tab-window', x: 0, y: 0, width: 640, height: 360 } as Element,
+    { id: 'w', type: 'shape', shape: 'tab-window', x: 0, y: 0, width: 640, height: 360 },
   ];
   const commitElements = vi.fn((map: (els: Element[]) => Element[]) => {
     elements = map(elements);
@@ -33,7 +33,7 @@ function setup(over: Partial<Parameters<typeof useTabWindowContextValue>[0]> = {
         loadTabs,
         openTab,
         canChoose: true,
-        commitElements: commitElements as never,
+        commitElements: commitElements,
         ...over,
       }),
     { initialProps: { loaded } },

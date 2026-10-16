@@ -49,7 +49,7 @@ describe('scalePage', () => {
         height: 50,
         headerSize: 30,
         strokeWidth: 'thin',
-      } as Element,
+      },
       {
         id: 'a',
         type: 'arrow',
@@ -58,7 +58,7 @@ describe('scalePage', () => {
         curvePoints: [{ dx: 10, dy: -4 }],
         strokeWidth: 3,
         labelOffset: { t: 0.3, offset: 8 },
-      } as ArrowElement,
+      },
     ];
     const [lane, arrow] = scalePage(els, 2) as [Record<string, unknown>, ArrowElement];
     expect(lane).toMatchObject({
@@ -76,7 +76,7 @@ describe('scalePage', () => {
   });
 
   it('returns the elements untouched at scale 1', () => {
-    const els: Element[] = [{ id: 't', type: 'text', x: 1, y: 2, width: 3, height: 4 } as Element];
+    const els: Element[] = [{ id: 't', type: 'text', x: 1, y: 2, width: 3, height: 4 }];
     expect(scalePage(els, 1)).toBe(els);
   });
 });

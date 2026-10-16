@@ -112,7 +112,7 @@ function withoutLabel(el: Element): Element {
     richText: _richText,
     ...rest
   } = el as Element & { label?: unknown; richText?: unknown };
-  return rest as Element;
+  return rest;
 }
 // The map's on-screen size in px (the w-64 panel — matching the Palette — and
 // its h-36 svg). The viewBox is expanded to this aspect ratio so the wireframe

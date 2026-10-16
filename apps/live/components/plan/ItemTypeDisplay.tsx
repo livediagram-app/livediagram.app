@@ -111,7 +111,7 @@ function sampleCard(type: ItemTypeDef): Item {
     updatedAt: 0,
     createdBy: SAMPLE_PERSON,
     updatedBy: SAMPLE_PERSON,
-  } as unknown as Item;
+  };
 }
 
 // A custom field's sample value, by its kind (none for a Link to Card: the chip then reads its name).
