@@ -289,6 +289,6 @@ describe("DocumentRoom: a Participant's answers", () => {
     expect(ops(editor)).toEqual([expect.objectContaining({ from: 'P', op: dot })]);
     expect(store.writes).toBe(0);
     await vi.advanceTimersByTimeAsync(ANSWERS_FLUSH_MS);
-    expect(JSON.parse(store.data!).vote.votes).toEqual({ ed: ['key-P'] });
+    expect(JSON.parse(store.data!)).toHaveProperty('vote.votes', { ed: ['key-P'] });
   });
 });

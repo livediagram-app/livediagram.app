@@ -191,7 +191,7 @@ describe('share-link scope calls', () => {
     stubFetch(201, { link: { code: 'C', tabId: null } });
     await apiCreateShareLink('owner-1', 'd1', 'view');
     const init = vi.mocked(fetch).mock.calls[0]![1]!;
-    expect(JSON.parse(init.body as string).tabId).toBeNull();
+    expect(JSON.parse(init.body as string)).toHaveProperty('tabId', null);
   });
 
   it('rescopes a link with a PUT and hands back the link', async () => {

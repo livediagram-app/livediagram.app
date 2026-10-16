@@ -54,10 +54,11 @@ describe('sendEmail', () => {
     expect(url).toBe('https://api.resend.com/emails');
     expect(init.method).toBe('POST');
     expect(init.headers.Authorization).toBe('Bearer re_test');
-    const body = JSON.parse(init.body as string);
-    expect(body.to).toEqual(['a@b.com']);
-    expect(body.subject).toBe('Hi');
-    expect(body.from).toContain('hello@livediagram.app');
+    expect(JSON.parse(init.body as string)).toMatchObject({
+      to: ['a@b.com'],
+      subject: 'Hi',
+      from: expect.stringContaining('hello@livediagram.app'),
+    });
   });
 
   it('honours a RESEND_FROM override', async () => {
@@ -69,7 +70,8 @@ describe('sendEmail', () => {
       subject: 's',
       html: 'h',
     });
-    expect(JSON.parse((f.mock.calls[0]![1] as RequestInit).body as string).from).toBe(
+    expect(JSON.parse((f.mock.calls[0]![1] as RequestInit).body as string)).toHaveProperty(
+      'from',
       'X <x@y.com>',
     );
   });

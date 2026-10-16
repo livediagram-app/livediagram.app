@@ -4,6 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { penColourHex } from '@livediagram/document';
 import { presetSetup, statusColumn } from '@livediagram/items';
 import { EditorContext } from '@/app/document/[id]/EditorContext';
+import type { ComponentProps } from 'react';
 import { PlanColumnPopover } from './PlanColumnPopover';
 
 // docs/specs/026-plan/plan-board.md "Column settings" on the one colour picker
@@ -21,7 +22,7 @@ function open(color?: string, onClose: (focus: boolean) => void = () => {}) {
       { ...statusColumn('done', 'Done'), color: '#abcdef' },
     ],
   };
-  const onChange = vi.fn();
+  const onChange = vi.fn<ComponentProps<typeof PlanColumnPopover>['onChange']>();
   // Inside an editor with an empty document: no custom colours picked yet.
   render(
     <EditorContext.Provider value={{ tabs: [] } as never}>
@@ -38,8 +39,8 @@ function open(color?: string, onClose: (focus: boolean) => void = () => {}) {
   );
   return onChange;
 }
-const columnColour = (onChange: ReturnType<typeof vi.fn>) =>
-  onChange.mock.lastCall![0].columns[0].color as string | undefined;
+const columnColour = (onChange: ReturnType<typeof open>) =>
+  onChange.mock.lastCall![0].columns[0]?.color;
 
 describe('a column colour', () => {
   it('offers No colour first, picked when the column has none, and the standard colours by hex', () => {

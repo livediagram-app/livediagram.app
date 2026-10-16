@@ -172,9 +172,12 @@ describe('useQuickStyle for a tool in hand', () => {
     expect(result.current.view?.sections.boardStroke).toBeTruthy();
     act(() => result.current.setWidth('thick'));
     expect(commit).not.toHaveBeenCalled();
-    const [before, after] = memory.recordEdit.mock.calls[0]!;
-    expect(before[0]).toMatchObject({ type: 'shape', shape: 'square' });
-    expect(after[0]).toMatchObject({ strokeWidth: 'thick' });
+    const edit = memory.recordEdit.mock.calls[0]!;
+    expect(edit).toHaveProperty(
+      [0, 0],
+      expect.objectContaining({ type: 'shape', shape: 'square' }),
+    );
+    expect(edit).toHaveProperty([1, 0], expect.objectContaining({ strokeWidth: 'thick' }));
   });
 
   it('forgets the tool style on Clear styles', () => {

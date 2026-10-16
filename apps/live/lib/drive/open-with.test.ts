@@ -135,7 +135,10 @@ describe('importOpenWithCopy', () => {
     expect(copy.tabs).toHaveLength(1);
     expect(copy.tabs[0]!.id).not.toBe('t1');
     expect(copy.tabs[0]!.folder).toBe('Ideas');
-    expect(JSON.parse(copy.presentation!).decks[0].slides[0].tabId).toBe(copy.tabs[0]!.id);
+    expect(JSON.parse(copy.presentation!)).toHaveProperty(
+      ['decks', 0, 'slides', 0, 'tabId'],
+      copy.tabs[0]!.id,
+    );
   });
 
   it('names an unreadable envelope', async () => {

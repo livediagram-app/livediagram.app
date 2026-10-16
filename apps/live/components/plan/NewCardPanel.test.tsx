@@ -47,7 +47,8 @@ describe('the New Card panel', () => {
       expect.objectContaining({ type: 'task', fields: { title: 'New task' }, after: null }),
     );
     expect(onClose).toHaveBeenCalled();
-    expect(plan['openNewItem']).toHaveBeenCalledWith(add.mock.calls[0]![0].id);
+    const [made] = add.mock.calls[0]! as [{ id: string }];
+    expect(plan['openNewItem']).toHaveBeenCalledWith(made.id);
   });
 
   it('offers no Create Card Type (types are made from Edit Cards or a board)', () => {

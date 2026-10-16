@@ -61,7 +61,7 @@ describe('usePowerUserOffer', () => {
     );
     const { offers } = setup({ settled: false });
     expect(offers).toHaveLength(0);
-    expect(JSON.parse(localStorage.getItem(OFFER_COUNTERS_KEY)!).days).toBe(0);
+    expect(JSON.parse(localStorage.getItem(OFFER_COUNTERS_KEY)!)).toHaveProperty('days', 0);
   });
 
   it('offers on the 50th shortcut, marks it shown, and never offers again', () => {

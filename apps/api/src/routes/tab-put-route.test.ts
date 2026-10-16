@@ -44,8 +44,11 @@ async function documentWith(elements: Element[], env: Partial<Env> = {}): Promis
 }
 
 const stored = (db: SqliteD1) =>
-  JSON.parse(db.sql.prepare("SELECT data FROM tabs WHERE id = 't1'").get()!.data as string)
-    .elements as Element[];
+  (
+    JSON.parse(db.sql.prepare("SELECT data FROM tabs WHERE id = 't1'").get()!.data as string) as {
+      elements: Element[];
+    }
+  ).elements;
 const revOf = (db: SqliteD1) => db.sql.prepare("SELECT rev FROM tabs WHERE id = 't1'").get()!.rev;
 
 // A changeset recorded as the pipeline records it: the tab advanced to `rev` with `n` added.

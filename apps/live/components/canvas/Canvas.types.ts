@@ -1,4 +1,5 @@
 import type { TidyUpActions } from './tidy-up-actions';
+import type { PenInk } from '@/hooks/canvas/commit-freehand';
 import type { SnapGuideStore } from '@/hooks/canvas/useSnapGuideState';
 import type { CombineOp } from '@/lib/combine/combine';
 import type { RemoteSelector } from '@/lib/presence-rows';
@@ -17,7 +18,6 @@ import type {
   EventStormingNoteKind,
   Finish,
   FrameHandle,
-  RecognisedShape,
 } from '@livediagram/document';
 import type {
   BackgroundPattern,
@@ -417,8 +417,9 @@ export type CanvasProps = {
   onCommitFreehand: (
     points: { x: number; y: number }[],
     recogniseShapes: boolean,
-    // `snapped`: the shape a held-still stroke locked to, as the pen reshaped it (lib/live-stroke).
-    ink?: { pressures?: number[]; streamline?: number; snapped?: RecognisedShape },
+    // `snapped`: the shape a held-still stroke locked to, as the pen reshaped it (lib/live-stroke);
+    // `keepInk`: the stroke was broken out of a shape, so it lands as drawn.
+    ink?: PenInk,
   ) => void;
   // Polygon commit (docs/specs/008-canvas/polygon-tool.md). Receives the deliberately clicked
   // vertices in canvas coords (no simplification — the user placed

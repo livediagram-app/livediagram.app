@@ -105,7 +105,7 @@ describe('document and tab names through the MCP SDK', () => {
     );
     expect(renamed.at(-1)?.body?.name).toBe(CAPPED);
     const text = (result.content as { type: string; text: string }[])[0]!.text;
-    expect(JSON.parse(text).name).toBe(CAPPED);
+    expect(JSON.parse(text)).toHaveProperty('name', CAPPED);
   });
 
   it('rename_document sends the shortened document name', async () => {

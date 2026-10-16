@@ -159,10 +159,11 @@ describe('useIdentityBootstrap in a workbench', () => {
 
     await vi.waitFor(() => expect(set.setHydrated).toHaveBeenCalledWith(true));
 
-    const self = set.setSelfParticipant!.mock.calls[0]![0];
-    expect(self.id).toBe('user_1');
-    expect(self.name).toEqual(expect.any(String));
-    expect(self.color).toEqual(expect.any(String));
+    expect(set.setSelfParticipant!.mock.calls[0]![0]).toMatchObject({
+      id: 'user_1',
+      name: expect.any(String),
+      color: expect.any(String),
+    });
     expect(api.apiSaveSelf).not.toHaveBeenCalled();
   });
 

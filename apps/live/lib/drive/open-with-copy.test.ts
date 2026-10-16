@@ -101,7 +101,7 @@ describe('Open with on a copy of a mirrored file', () => {
     expect(w.ld.item('document', 'd1')!.driveFileId).toBe(originalId);
     expect(w.ld.item('document', newId)!.driveFileId).toBe(copyId);
     // Outbound wrote the new document into the copy.
-    expect(JSON.parse(w.google.get(copyId)!.content).document.id).toBe(newId);
+    expect(JSON.parse(w.google.get(copyId)!.content)).toHaveProperty('document.id', newId);
     expect(w.statuses.at(-1)).toMatchObject({ error: null, notices: [] });
     // The copy now opens its own document.
     expect(await resolveOpenWith(w.deps, w.openWith(copyId))).toEqual({

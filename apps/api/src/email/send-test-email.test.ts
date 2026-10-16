@@ -55,10 +55,12 @@ function devVars(): Record<string, string> {
   }
 }
 
-const vars = { ...devVars(), ...process.env } as Record<string, string | undefined>;
+// Node's environment. The Workers types this package compiles with leave `process` untyped.
+const nodeEnv = (process as { env: Record<string, string | undefined> }).env;
+const vars: Record<string, string | undefined> = { ...devVars(), ...nodeEnv };
 const TO = vars.RESEND_TEST_TO;
 const KEY = vars.RESEND_API_KEY;
-const ENABLED = process.env.RESEND_LIVE_TEST === '1' && !!TO && !!KEY;
+const ENABLED = nodeEnv.RESEND_LIVE_TEST === '1' && !!TO && !!KEY;
 
 const env = {
   RESEND_API_KEY: KEY,

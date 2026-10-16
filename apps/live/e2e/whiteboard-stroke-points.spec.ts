@@ -1,4 +1,5 @@
 import type { Browser, Page } from '@playwright/test';
+import type { StoredDocument, StoredTab } from './stored';
 import {
   dismissQuickTour,
   expect,
@@ -39,10 +40,14 @@ async function savedElements(page: Page): Promise<SavedElement[]> {
   return page.evaluate(
     async ({ base, headers }) => {
       const id = location.pathname.split('/').filter(Boolean).pop()!;
-      const doc = await (await fetch(`${base}/documents/${id}`, { headers })).json();
+      const doc = (await (
+        await fetch(`${base}/documents/${id}`, { headers })
+      ).json()) as StoredDocument;
       const tabId = doc.document?.tabs?.[0]?.id;
       if (!tabId) return [];
-      const got = await (await fetch(`${base}/documents/${id}/tabs/${tabId}`, { headers })).json();
+      const got = (await (
+        await fetch(`${base}/documents/${id}/tabs/${tabId}`, { headers })
+      ).json()) as StoredTab<SavedElement>;
       return (got.tab?.elements ?? []) as SavedElement[];
     },
     { base: apiBase, headers },

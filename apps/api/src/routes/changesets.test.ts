@@ -82,8 +82,11 @@ async function setUp(
 const submit = (db: SqliteD1, body: unknown, who: Who = { token: true }, query = '') =>
   call(db, 'POST', `/api/documents/D/tabs/t1/changesets${query}`, body, who);
 const stored = (db: SqliteD1, tab = 't1') =>
-  (JSON.parse(db.sql.prepare('SELECT data FROM tabs WHERE id = ?').get(tab)!.data as string)
-    .elements ?? []) as Element[];
+  (
+    JSON.parse(db.sql.prepare('SELECT data FROM tabs WHERE id = ?').get(tab)!.data as string) as {
+      elements?: Element[];
+    }
+  ).elements ?? [];
 const records = (db: SqliteD1) =>
   db.sql.prepare('SELECT * FROM agent_changesets ORDER BY rev').all() as Record<string, unknown>[];
 const events = (db: SqliteD1) =>

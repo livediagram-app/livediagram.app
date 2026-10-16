@@ -1,4 +1,5 @@
 import type { Page } from '@playwright/test';
+import type { StoredDocument, StoredTab } from './stored';
 import { expect, expectNoPageErrors, test, openStartBlank, pageOwnerHeaders } from './fixtures';
 
 // The quick style panel and style memory, end to end (docs/specs/008-canvas/quick-style-panel.md). Unit
@@ -18,10 +19,14 @@ async function savedElements(page: Page): Promise<El[]> {
   const headers = await pageOwnerHeaders(page);
   return page.evaluate(async (headers) => {
     const id = location.pathname.split('/').filter(Boolean).pop()!;
-    const liveDoc = await (await fetch(`/api/documents/${id}`, { headers })).json();
+    const liveDoc = (await (
+      await fetch(`/api/documents/${id}`, { headers })
+    ).json()) as StoredDocument;
     const tabId = liveDoc.document?.tabs?.[0]?.id;
     if (!tabId) return [];
-    const got = await (await fetch(`/api/documents/${id}/tabs/${tabId}`, { headers })).json();
+    const got = (await (
+      await fetch(`/api/documents/${id}/tabs/${tabId}`, { headers })
+    ).json()) as StoredTab<El>;
     return (got.tab?.elements ?? []) as El[];
   }, headers);
 }

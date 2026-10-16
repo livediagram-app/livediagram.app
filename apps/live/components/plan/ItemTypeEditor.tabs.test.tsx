@@ -233,6 +233,6 @@ describe('the Display tab', () => {
       key: 'ArrowUp',
     });
     fireEvent.click(screen.getByRole('button', { name: 'Save' }));
-    expect(onSave.mock.lastCall![0].display).toEqual({ minimal: { lead: ['due'] } });
+    expect(onSave.mock.lastCall![0]).toHaveProperty('display', { minimal: { lead: ['due'] } });
   });
 });

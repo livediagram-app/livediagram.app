@@ -5,6 +5,7 @@ import {
   type Locator,
   type Page,
 } from '@playwright/test';
+import type { StoredDocument, StoredTab } from './stored';
 import { DEBUG_STORAGE_KEY } from '../lib/debug-log';
 import { TOUR_PENDING_KEY } from '../lib/tour-pending';
 
@@ -210,16 +211,19 @@ export async function startEventStormingRow(page: Page): Promise<void> {
       const id = location.pathname.split('/').filter(Boolean).pop()!;
       // Wait for the new board's first save to land (its seeded note on the
       // server), so the row is not written over by it.
-      let tab: { elements: { width: number; x: number }[] } | null = null;
+      type Seed = { width: number; x: number };
+      let tab: (Record<string, unknown> & { elements: Seed[] }) | null = null;
       let tabId = '';
       for (let i = 0; i < 50 && !tab; i += 1) {
-        const liveDoc = await (await fetch(`${base}/documents/${id}`, { headers })).json();
+        const liveDoc = (await (
+          await fetch(`${base}/documents/${id}`, { headers })
+        ).json()) as StoredDocument;
         tabId = liveDoc.document?.tabs?.[0]?.id ?? '';
         if (tabId) {
-          const got = await (
+          const got = (await (
             await fetch(`${base}/documents/${id}/tabs/${tabId}`, { headers })
-          ).json();
-          if (got.tab?.elements?.length === 1) tab = got.tab;
+          ).json()) as StoredTab<Seed>;
+          if (got.tab?.elements?.length === 1) tab = { ...got.tab, elements: got.tab.elements };
         }
         if (!tab) await new Promise((r) => setTimeout(r, 100));
       }
@@ -323,12 +327,14 @@ export async function seedTab(page: Page, elements: Seed): Promise<void> {
       let tab: Record<string, unknown> | null = null;
       let tabId = '';
       for (let i = 0; i < 50 && !tab; i += 1) {
-        const liveDoc = await (await fetch(`${base}/documents/${id}`, { headers })).json();
+        const liveDoc = (await (
+          await fetch(`${base}/documents/${id}`, { headers })
+        ).json()) as StoredDocument;
         tabId = liveDoc.document?.tabs?.[0]?.id ?? '';
         if (tabId) {
-          const got = await (
+          const got = (await (
             await fetch(`${base}/documents/${id}/tabs/${tabId}`, { headers })
-          ).json();
+          ).json()) as StoredTab;
           tab = got.tab ?? null;
         }
         if (!tab) await new Promise((r) => setTimeout(r, 100));

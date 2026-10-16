@@ -119,6 +119,6 @@ describe('TimelineLanesOverlay', () => {
 
   it('never takes a pointer event away from the drag it describes', () => {
     setLanePreview({ laneIndex: 0 });
-    expect(draw().querySelector('svg')!.className.baseVal).toContain('pointer-events-none');
+    expect(draw().querySelector('svg')!.getAttribute('class')).toContain('pointer-events-none');
   });
 });

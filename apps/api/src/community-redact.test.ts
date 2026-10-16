@@ -64,8 +64,8 @@ describe('redactElementsForCommunity', () => {
 describe('redactTabDataForCommunity', () => {
   it('redacts stored tab data, keeping its other fields', () => {
     const data = JSON.stringify({ elements, background: 'dots' });
-    const parsed = JSON.parse(redactTabDataForCommunity(data).data);
-    expect(parsed.background).toBe('dots');
+    const parsed: unknown = JSON.parse(redactTabDataForCommunity(data).data);
+    expect(parsed).toHaveProperty('background', 'dots');
     expect(JSON.stringify(parsed)).not.toContain('secret');
   });
 

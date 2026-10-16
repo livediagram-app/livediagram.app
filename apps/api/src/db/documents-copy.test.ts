@@ -32,8 +32,10 @@ describe('remapTabDataLinks', () => {
     const data = JSON.stringify({
       elements: [{ id: 'w', type: 'shape', shape: 'tab-window', windowTabId: 't1' }],
     });
-    const out = JSON.parse(remapTabDataLinks(data, map));
-    expect(out.elements[0].windowTabId).toBe('T1');
+    expect(JSON.parse(remapTabDataLinks(data, map))).toHaveProperty(
+      ['elements', 0, 'windowTabId'],
+      'T1',
+    );
   });
 
   it('copies link-free and unparseable data byte for byte', () => {

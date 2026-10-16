@@ -74,9 +74,9 @@ describe('writeQaAction', () => {
     db.swapTabData.mockResolvedValueOnce(false).mockResolvedValueOnce(true);
     const out = await writeQaAction({} as never, req({ type: 'vote', noteId: 'n1', on: true }));
     expect(out).toMatchObject({ ok: true, rev: 1 });
-    const written = JSON.parse(db.swapTabData.mock.calls[1]![4] as string);
-    expect(written.elements[0]).toMatchObject({ x: 500, qaRev: 1 });
-    expect(written.elements[0].qaNotes[0].voters).toEqual(['v1']);
+    const written: unknown = JSON.parse(db.swapTabData.mock.calls[1]![4] as string);
+    expect(written).toHaveProperty(['elements', 0], expect.objectContaining({ x: 500, qaRev: 1 }));
+    expect(written).toHaveProperty(['elements', 0, 'qaNotes', 0, 'voters'], ['v1']);
   });
 
   it('gives up with a 409 rather than looping forever', async () => {

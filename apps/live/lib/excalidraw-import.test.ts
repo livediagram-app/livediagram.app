@@ -133,8 +133,10 @@ describe('rounded corners', () => {
   it('export a rounded corner back as roundness type 3', () => {
     const r = importOnDiagram(scene([small]));
     if (!r.ok) throw new Error(r.error);
-    const back = JSON.parse(tabToExcalidrawText({ id: 't', name: 'T', elements: r.elements }));
-    expect(back.elements[0].roundness).toEqual({ type: 3 });
+    const back: unknown = JSON.parse(
+      tabToExcalidrawText({ id: 't', name: 'T', elements: r.elements }),
+    );
+    expect(back).toHaveProperty(['elements', 0, 'roundness'], { type: 3 });
   });
 });
 

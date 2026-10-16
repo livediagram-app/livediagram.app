@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import type { ReactNode } from 'react';
+import type { ComponentProps, ReactNode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ITEM_TYPES, ITEM_TYPES_MAX, duplicateItemType } from '@livediagram/items';
 import { CardTypesPanel } from './CardTypesPanel';
@@ -60,7 +60,7 @@ describe('duplicating a card type', () => {
 
   it('fills a new type in the editor, saved as a new type', () => {
     const task = ITEM_TYPES.find((t) => t.id === 'task')!;
-    const onSave = vi.fn();
+    const onSave = vi.fn<ComponentProps<typeof ItemTypeEditor>['onSave']>();
     render(
       <ItemTypeEditor
         type={null}

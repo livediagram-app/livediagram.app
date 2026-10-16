@@ -35,12 +35,14 @@ describe('a slot moved up or down the stack', () => {
     const apply = vi.fn();
     swapSlotsWithMotion('a', 'b', apply);
     expect(apply).toHaveBeenCalledTimes(1);
-    const [movedFrames, movedOpts] = (b.animate as ReturnType<typeof vi.fn>).mock.calls[0]!;
-    expect(movedFrames[0]).toMatchObject({ transform: 'translate(0px, -320px)', zIndex: 2 });
-    expect(movedFrames[1]).toMatchObject({ transform: 'none' });
-    expect(movedOpts).toMatchObject({ duration: MOTION_MS.long });
-    const [otherFrames] = (a.animate as ReturnType<typeof vi.fn>).mock.calls[0]!;
-    expect(otherFrames[0]).toMatchObject({ transform: 'translate(0px, 320px)', zIndex: 1 });
+    expect(vi.mocked(b.animate).mock.calls[0]).toMatchObject([
+      [{ transform: 'translate(0px, -320px)', zIndex: 2 }, { transform: 'none' }],
+      { duration: MOTION_MS.long },
+    ]);
+    expect(vi.mocked(a.animate).mock.calls[0]?.[0]).toMatchObject([
+      { transform: 'translate(0px, 320px)', zIndex: 1 },
+      expect.anything(),
+    ]);
     expect(b.scrollIntoView).toHaveBeenCalledWith({ block: 'nearest', behavior: 'smooth' });
   });
 

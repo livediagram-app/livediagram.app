@@ -51,9 +51,10 @@ async function submit(db: SqliteD1, operations: unknown[]) {
 
 const labels = (db: SqliteD1) =>
   (
-    JSON.parse(db.sql.prepare("SELECT data FROM tabs WHERE id = 't1'").get()!.data as string)
-      .elements as Element[]
-  ).map((e) => [e.id, (e as { label?: string }).label]);
+    JSON.parse(db.sql.prepare("SELECT data FROM tabs WHERE id = 't1'").get()!.data as string) as {
+      elements: Element[];
+    }
+  ).elements.map((e) => [e.id, (e as { label?: string }).label]);
 
 // Every batch the pipeline sends meets a person's save first, `times` times.
 function interleave(db: SqliteD1, times: number) {
@@ -146,9 +147,9 @@ describe('a template’s Sheets', () => {
     }[];
     expect(sheets).toHaveLength(1);
     expect(sheets[0]).toMatchObject({ tab_id: 't1', title: 'Timesheet' });
-    const els = JSON.parse(
+    const { elements: els } = JSON.parse(
       db.sql.prepare("SELECT data FROM tabs WHERE id = 't1'").get()!.data as string,
-    ).elements as { planSheet?: { sheetId: string; start?: string; fillTab?: true } }[];
+    ) as { elements: { planSheet?: { sheetId: string; start?: string; fillTab?: true } }[] };
     const ref = els.find((e) => e.planSheet)!.planSheet!;
     expect(ref).toEqual({ sheetId: sheets[0]!.id, fillTab: true });
   });

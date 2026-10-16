@@ -141,8 +141,8 @@ describe('Swimlanes by a field', () => {
     render(<PlanSwimlaneSettings element={laned} />);
     fireEvent.click(screen.getByRole('radio', { name: 'Assignee' }));
     const next = updateBoard.mock.calls[0]![1];
-    expect(next.swimlaneBy).toBe('assignee');
-    expect(next.swimlaneField).toBeUndefined();
+    expect(next).toMatchObject({ swimlaneBy: 'assignee' });
+    expect(next).toEqual(expect.not.objectContaining({ swimlaneField: expect.anything() }));
   });
 });
 
@@ -158,7 +158,10 @@ describe('Card Types', () => {
     // Kanban shows Task, Action and Note: pressing Project shows Projects too.
     // The first Project tile is the type's (the Show on Cards group has a Project field tile too).
     fireEvent.click(screen.getAllByRole('checkbox', { name: 'Project' })[0]!);
-    expect(updateBoard.mock.calls[0]![1].addTypes).toContain('project');
+    expect(updateBoard.mock.calls[0]![1]).toHaveProperty(
+      'addTypes',
+      expect.arrayContaining(['project']),
+    );
   });
 });
 
@@ -179,7 +182,8 @@ describe('Card Types after a type is deleted', () => {
     const tile = (name: string) => screen.getAllByRole('checkbox', { name })[0]!;
     for (const t of ITEM_TYPES) expect(tile(t.label).getAttribute('aria-checked')).toBe('true');
     fireEvent.click(tile('Note'));
-    expect(updateBoard.mock.calls[0]![1].addTypes).toEqual(
+    expect(updateBoard.mock.calls[0]![1]).toHaveProperty(
+      'addTypes',
       ITEM_TYPES.map((t) => t.id).filter((id) => id !== 'note'),
     );
   });

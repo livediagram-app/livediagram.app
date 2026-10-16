@@ -289,11 +289,11 @@ describe('cell threads elsewhere in the model', () => {
 describe('copies of a Sheet', () => {
   it('never carry its cell threads', () => {
     const el = sheet({ cellComments: { [B4]: thread('a') } });
-    expect(
-      JSON.parse(JSON.stringify({ ...el, ...freshCopyFields(el) })).cellComments,
-    ).toBeUndefined();
+    expect(JSON.parse(JSON.stringify({ ...el, ...freshCopyFields(el) }))).not.toHaveProperty(
+      'cellComments',
+    );
     const { newElements } = duplicateElements([el], new Set([el.id]), 10, 10);
-    expect(JSON.parse(JSON.stringify(newElements[0])).cellComments).toBeUndefined();
+    expect(JSON.parse(JSON.stringify(newElements[0]))).not.toHaveProperty('cellComments');
     // Anything without cell threads gains no field.
     expect('cellComments' in freshCopyFields(square())).toBe(false);
   });

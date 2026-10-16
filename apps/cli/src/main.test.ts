@@ -105,7 +105,7 @@ describe('run', () => {
   it('picks fields of each finding, and asks the api for JSON when a verb takes --json', async () => {
     const lint = await cli(['tab', 'lint', 'auth flow', '--json=code,fix']);
     expect(lint.code).toBe(1);
-    expect(JSON.parse(lint.out).findings).toEqual([
+    expect(JSON.parse(lint.out)).toHaveProperty('findings', [
       { code: 'box-overlap', fix: 'move b right-of:a' },
     ]);
     const view = await cli(['tab', 'view', 'auth flow', '--json']);
@@ -384,10 +384,10 @@ describe('auth', () => {
       code: 0,
       out: 'signed in to https://livediagram.app as Ada\n',
     });
-    expect(JSON.parse(io.fileMap.get(CREDENTIALS)!.data).profiles.default).toMatchObject({
-      token: TOKEN,
-      tokenId: 't1',
-    });
+    expect(JSON.parse(io.fileMap.get(CREDENTIALS)!.data)).toHaveProperty(
+      'profiles.default',
+      expect.objectContaining({ token: TOKEN, tokenId: 't1' }),
+    );
     expect(io.requests.at(-1)).toMatchObject({ method: 'DELETE' });
     expect(io.requests.at(-1)!.headers.get('Authorization')).toBe(
       'Bearer lvd_old_0000000000000000000000',
@@ -504,7 +504,7 @@ describe('auth', () => {
       code: 0,
       out: 'signed out of https://livediagram.app\n',
     });
-    expect(JSON.parse(io.fileMap.get(CREDENTIALS)!.data).profiles).toEqual({});
+    expect(JSON.parse(io.fileMap.get(CREDENTIALS)!.data)).toHaveProperty('profiles', {});
     expect((await cli(['auth', 'logout'])).code).toBe(2);
     const gone = fakeIo({
       routes: [capabilities, tokens],
@@ -518,7 +518,7 @@ describe('auth', () => {
       files: { [CREDENTIALS]: storedAs(TOKEN, 't1') },
     });
     expect((await cli(['auth', 'logout'], broken)).code).toBe(7);
-    expect(JSON.parse(broken.fileMap.get(CREDENTIALS)!.data).profiles.default).toBeDefined();
+    expect(JSON.parse(broken.fileMap.get(CREDENTIALS)!.data)).toHaveProperty('profiles.default');
   });
 });
 

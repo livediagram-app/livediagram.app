@@ -1,4 +1,5 @@
 import { deflateRawSync } from 'node:zlib';
+import type { StoredDocument, StoredTab } from './stored';
 import { join } from 'node:path';
 import type { Page } from '@playwright/test';
 import {
@@ -62,10 +63,12 @@ async function stored(page: Page): Promise<Stored[]> {
   const headers = await pageOwnerHeaders(page);
   return page.evaluate(async (headers) => {
     const id = location.pathname.split('/').filter(Boolean).pop()!;
-    const doc = await (await fetch(`/api/documents/${id}`, { headers })).json();
+    const doc = (await (await fetch(`/api/documents/${id}`, { headers })).json()) as StoredDocument;
     const tabId = doc.document?.tabs?.[0]?.id;
     if (!tabId) return [];
-    const tab = await (await fetch(`/api/documents/${id}/tabs/${tabId}`, { headers })).json();
+    const tab = (await (
+      await fetch(`/api/documents/${id}/tabs/${tabId}`, { headers })
+    ).json()) as StoredTab<Stored>;
     return (tab.tab?.elements ?? []) as Stored[];
   }, headers);
 }

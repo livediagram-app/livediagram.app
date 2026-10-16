@@ -38,9 +38,10 @@ describe('serialiseElements', () => {
   });
 
   it('writes the envelope the reader discriminates on', () => {
-    const env = JSON.parse(serialiseElements([shape('a')]));
-    expect(env.kind).toBe(CLIPBOARD_KIND);
-    expect(env.schemaVersion).toBe(CLIPBOARD_SCHEMA_VERSION);
+    expect(JSON.parse(serialiseElements([shape('a')]))).toMatchObject({
+      kind: CLIPBOARD_KIND,
+      schemaVersion: CLIPBOARD_SCHEMA_VERSION,
+    });
   });
 
   // A copy can travel to another document, another account, another person.
@@ -109,7 +110,7 @@ describe('parseElementsPayload refuses', () => {
   });
 
   it('a schema version from the future', () => {
-    const env = JSON.parse(serialiseElements([shape('a')]));
+    const env = JSON.parse(serialiseElements([shape('a')])) as Record<string, unknown>;
     env.schemaVersion = CLIPBOARD_SCHEMA_VERSION + 1;
     expect(parseElementsPayload(JSON.stringify(env))).toBeNull();
   });

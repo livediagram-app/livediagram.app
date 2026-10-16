@@ -144,7 +144,8 @@ async function collectMeta(res: Response, maxBytes: number): Promise<CollectedMe
       },
     });
   const transformed = rewriter.transform(res);
-  const reader = transformed.body?.getReader();
+  // A response body streams bytes; the Workers types leave its chunks untyped.
+  const reader: ReadableStreamDefaultReader<Uint8Array> | undefined = transformed.body?.getReader();
   if (reader) {
     let read = 0;
     while (read < maxBytes) {
