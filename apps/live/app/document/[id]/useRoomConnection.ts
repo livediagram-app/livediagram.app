@@ -38,6 +38,8 @@ import { keepUnsavedTabChanges } from './meta-keep-local';
 import { peerModeSwitchOf } from '@/lib/peer-mode-switch';
 import { migrateRoomOp } from './room-op-migrate';
 import { foldRemoteOpIntoBaseline, type SaveBaselineRefs } from './save-baseline';
+import { isSupersededByOwnWrite, type OwnElementWrites } from './own-element-writes';
+import { debugLog } from '@/lib/debug-log';
 import { shareLinkOpEffect } from './share-link-ops';
 import {
   endPeerDragPreview,
@@ -87,6 +89,9 @@ export function useRoomConnection(opts: {
   // folded into it as well as into the tabs on screen, so the next local save
   // neither mistakes it for ours nor ships it back out.
   saveBaseline: SaveBaselineRefs;
+  // This editor's element writes the room has not sequenced yet: a peer's update of one was ordered first, and
+  // ours replaces it everywhere, so it is not shown here (own-element-writes.ts).
+  ownWrites?: OwnElementWrites;
   // Counts a peer op applied to `tabs` (useEditorState's opsApplied, read by the autosave).
   countAppliedOp: () => void;
   sessionShareCodeRef: MutableRefObject<string | null>;
@@ -203,6 +208,7 @@ export function useRoomConnection(opts: {
     markSeen,
     selfParticipantRef,
     saveBaseline,
+    ownWrites,
     countAppliedOp,
     sessionShareCodeRef,
     roomRef,
@@ -434,6 +440,13 @@ export function useRoomConnection(opts: {
         if (op.kind === 'tab') markTabLoaded(op.tabId);
         // A dragger's real change has arrived: their live preview has done its job.
         endPeerDragPreview(from);
+        // Ordered before our own pending write of the same element, which replaces it on every screen: showing it
+        // here alone would leave this screen on the peer's copy (realtime-conflict-resolution.md "Same-element
+        // edits converge").
+        if (ownWrites && isSupersededByOwnWrite(ownWrites, op)) {
+          debugLog('[room] peer update superseded by our pending write');
+          return;
+        }
         // A peer's tab list keeps what this editor has not saved yet: a tab added here, one deleted here
         // (keepUnsavedTabChanges), judged against the baseline as it was before the list arrived.
         const savedBefore = saveBaseline.tabs.current;

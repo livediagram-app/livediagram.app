@@ -40,7 +40,8 @@ op: ElementOp }` and `{ kind: 'tab-meta'; tabId; patch }` alongside the kept
   is `applyElementOp(elements, op)` by id — an op for an already-removed id is a
   safe no-op.
 - `update` replaces the whole element by id (simple + correct). Two peers editing
-  the same element are still last-writer-wins per element, in room order. The
+  the same element are still last-writer-wins per element, in room order, on every screen
+  ([Same-element edits converge](#same-element-edits-converge)). The
   selection lock makes that rare; it is advisory and client-only, so it does not
   prevent it. Only the multi-writer fields (answers, ideas, checklist ticks,
   comments, dots) survive a same-element collision, because they travel as
@@ -52,6 +53,21 @@ op: ElementOp }` and `{ kind: 'tab-meta'; tabId; patch }` alongside the kept
   travels by name in the `tab-meta` op's `clear` list. It used to force a
   whole-`tab` op too, and Clear Timer / Clear Vote then replaced every element
   on every receiver ([Collaboration race hardening](collab-race-hardening.md)).
+
+### Same-element edits converge
+
+Last-writer-wins in room order holds on every screen, including the writer's own. A save derives its element ops at
+its snapshot, writes the tab, then sends them, so the room orders them after any peer op it already had. A peer's
+`update` or `patch` of an element this editor is writing, arriving before the room confirms our op, was therefore
+ordered first, and our op replaces it on every other screen. So it is not applied here: from the snapshot until the
+room confirms the element ops (they go through `sequence`, its `ref` echoed in the `cursor` frame), the elements a
+save writes are **held** (`own-element-writes.ts`), and a peer's update of a held element is left out of the screen
+and the save baseline alike. A peer's `remove` is never held back (our later update of a removed element is a no-op
+everywhere), and a hold ends when the room confirms, when the write fails (the retry still carries the change, since
+the skipped op never reached the baseline) or when the room cannot say (a closed socket, the confirm timeout).
+
+Before this, two people dragging one element at once each ended up seeing the other's position, and stayed that way
+until a reload (`realtime-same-element.spec.ts` locks it).
 
 ### Live drags
 

@@ -23,7 +23,8 @@ import { saveFailureStatus } from './save-failure';
 import { isDocumentDeleted } from '@/lib/document-tombstones';
 import { isDocumentTrashedError } from '@/lib/document-trashed';
 import { computeTabSaveDiff } from './editor-page-helpers';
-import { relayParticipantChanges, saveTabAndRelay } from './tab-save-flow';
+import { prepareTabSave, relayParticipantChanges, saveTabAndRelay } from './tab-save-flow';
+import type { OwnElementWrites } from './own-element-writes';
 import {
   baselineAfterSave,
   closeSaveWindow,
@@ -58,6 +59,8 @@ export function useAutosave(opts: {
   // Peer ops that arrive while a save is in flight, so the save's success
   // doesn't roll the baseline back to before them (docs/specs/012-collaboration/collab-race-hardening.md, save-baseline.ts).
   remoteOpJournalRef: MutableRefObject<RemoteOpJournal>;
+  // The element writes this editor's saves have not had sequenced yet (own-element-writes.ts).
+  ownWrites?: OwnElementWrites;
   // How many peer ops this render's `tabs` include: state, bumped in the same batch that applies each op.
   opsApplied: number;
   // True while a hover-preview is on screen. Previews mutate `tabs` (so they
@@ -92,6 +95,7 @@ export function useAutosave(opts: {
     lastSavedNameRef,
     loadedTabIdsRef,
     remoteOpJournalRef,
+    ownWrites,
     opsApplied,
     previewingRef,
     roomRef,
@@ -276,9 +280,11 @@ export function useAutosave(opts: {
         // peers saw, so concurrent different-element edits merge instead of the whole tab clobbering.
         const before = lastSavedTabsRef.current.find((s) => s.id === t.id);
         if (participant) {
-          writes.push(relayParticipantChanges(before, t, () => roomRef.current));
+          writes.push(relayParticipantChanges(before, t, () => roomRef.current, ownWrites));
           continue;
         }
+        // Derived and held now, at the snapshot, though the queue may run the save later.
+        const prepared = prepareTabSave(before, t, ownWrites);
         const write = saveQueueRef
           .current!.run(t.id, () =>
             saveTabAndRelay(
@@ -296,6 +302,7 @@ export function useAutosave(opts: {
                   // From the same render as `t`, never ahead of it (useChangesetSeen).
                   ...(changesetSeen.has(t.id) ? { changesetSeen: changesetSeen.get(t.id) } : {}),
                 }),
+              prepared,
             ),
           )
           .then((rev) => {
@@ -423,6 +430,7 @@ export function useAutosave(opts: {
     loadedTabIdsRef,
     previewingRef,
     remoteOpJournalRef,
+    ownWrites,
     roomRef,
     setDocumentList,
     setSaveStatus,

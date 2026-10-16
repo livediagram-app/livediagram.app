@@ -205,6 +205,7 @@ import { useRoomResync } from './useRoomResync';
 import { useIdentityBootstrap } from './useIdentityBootstrap';
 import { useEditorHistory } from './useEditorHistory';
 import { useTemplateFlow } from './useTemplateFlow';
+import { createOwnElementWrites, type OwnElementWrites } from './own-element-writes';
 import { usePanelLayout } from './usePanelLayout';
 import { usePresenceRows } from './usePresenceRows';
 import { usePresenceState } from './usePresenceState';
@@ -898,6 +899,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   const lastSavedNameRef = useRef<string>('');
   // Peer ops that land while a save is in flight (docs/specs/012-collaboration/collab-race-hardening.md); see save-baseline.
   const remoteOpJournalRef = useRef<RemoteOpJournal>(createRemoteOpJournal());
+  // This editor's element writes the room has not sequenced yet (own-element-writes.ts): one stable object.
+  const [ownWrites] = useState<OwnElementWrites>(createOwnElementWrites);
   // Peer ops applied to `tabs`, as state: the journal's count as of this render, for the autosave.
   const [opsApplied, setOpsApplied] = useState(0);
   const countAppliedOp = useCallback(() => setOpsApplied((n) => n + 1), []);
@@ -940,6 +943,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     lastSavedNameRef,
     loadedTabIdsRef,
     remoteOpJournalRef,
+    ownWrites,
     opsApplied,
     previewingRef,
     roomRef,
@@ -1257,6 +1261,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     markSeen,
     selfParticipantRef,
     saveBaseline: { tabs: lastSavedTabsRef, name: lastSavedNameRef, journal: remoteOpJournalRef },
+    ownWrites,
     countAppliedOp,
     sessionShareCodeRef,
     roomRef,
