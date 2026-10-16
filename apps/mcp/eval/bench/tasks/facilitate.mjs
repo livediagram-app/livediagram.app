@@ -12,6 +12,8 @@ import {
 } from '../checks.mjs';
 
 const stickies = (snap) => shapes(snap, 'sticky').filter((s) => (s.label ?? '').trim());
+// The containers a cluster can sit in.
+const themes = (snap) => ['frame', 'lane', 'boundary'].flatMap((k) => shapes(snap, k));
 // A note people add to a board: a sticky on the canvas, or a card on a Plan board (a retro or Q&A board's own way).
 const notes = (snap) => [
   ...stickies(snap).map((s) => s.label),
@@ -64,15 +66,11 @@ export default [
     checks: [
       ['about reducing churn', ({ snap }) => mentionsAll(snap, [/churn/i])],
       ['15 sticky ideas', ({ snap }) => atLeast(15, stickies(snap).length, 'stickies')],
-      [
-        'clustered into themes',
-        ({ snap }) =>
-          atLeast(3, shapes(snap, 'frame').length + shapes(snap, 'lane').length, 'theme groups'),
-      ],
+      ['clustered into themes', ({ snap }) => atLeast(3, themes(snap).length, 'theme groups')],
       [
         'the ideas sit in their themes',
         ({ snap }) => {
-          const groups = [...shapes(snap, 'frame'), ...shapes(snap, 'lane')];
+          const groups = themes(snap);
           const inGroup = stickies(snap).filter((s) =>
             groups.some(
               (g) =>

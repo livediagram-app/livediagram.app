@@ -281,9 +281,11 @@ export function questionsOf(form) {
   return (form?.sections ?? []).flatMap((s) => s.questions ?? []);
 }
 
+// The question about something: by its wording, else by the field its answer goes to ("How severe is it?" → Severity).
 export function questionAbout(form, word) {
   const re = asRegex(word);
-  return questionsOf(form).find((q) => re.test(q.prompt ?? '')) ?? null;
+  const qs = questionsOf(form);
+  return qs.find((q) => re.test(q.prompt ?? '')) ?? qs.find((q) => re.test(q.goesTo ?? '')) ?? null;
 }
 
 // ---- checks with a reason --------------------------------------------------------------------------------------
