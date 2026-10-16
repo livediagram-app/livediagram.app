@@ -1,7 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { isLocalOnly } from '@/lib/document-space';
+import { searchPanelSources } from '@/components/panels/search-panel-sources';
 
 import { buildPaletteSearchItems } from '@/lib/palette-search';
 import { HELP_SEARCH_ITEMS } from '@/lib/help-search';
@@ -60,25 +60,14 @@ export function EditorSearchPanel() {
 
   return (
     <SearchPanel
-      documents={documentList.map((d) => ({
-        id: d.id,
-        name: d.name,
-        localOnly: isLocalOnly(d),
-      }))}
-      folders={folders.map((f) => ({ id: f.id, name: f.name }))}
-      shared={sharedDocuments.map((s) => ({
-        id: s.id,
-        name: s.name,
-        shareCode: s.shareCode,
-      }))}
-      teams={teams.map((t) => ({ id: t.id, name: t.name }))}
+      {...searchPanelSources({
+        documents: documentList,
+        folders,
+        shared: sharedDocuments,
+        teams,
+        teamDocuments,
+      })}
       teamFolders={teamFolders}
-      teamDocuments={teamDocuments.map((d) => ({
-        id: d.id,
-        name: d.name,
-        teamId: d.team.id,
-        teamName: d.team.name,
-      }))}
       tabs={tabs}
       currentTabId={activeId}
       onSelectDocument={(id) => {
@@ -123,6 +112,7 @@ export function EditorSearchPanel() {
                   mode: add.mode,
                   estimateScale: add.estimateScale,
                   plan: add.plan,
+                  variant: add.variant,
                 });
               else if (add.type === 'icon') addIcon(add.iconId);
               else if (add.type === 'sticker') addSticker(add.stickerId);

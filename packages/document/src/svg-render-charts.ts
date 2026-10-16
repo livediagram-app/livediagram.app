@@ -1,5 +1,5 @@
-// Chart elements in the headless render (docs/specs/009-elements/pie-chart.md): pie, bar and line, plus the
-// key they share.
+// Chart elements in the headless render (docs/specs/009-elements/pie-chart.md): every chart type, plus the key
+// they share. The marks come from `chart-marks`, which the canvas views draw from too.
 //
 // These drew NOTHING before this: the exporter had no branch for them, so a
 // chart fell through to the generic box and came out of an export as an empty
@@ -11,10 +11,23 @@
 // differ. Hover, readouts and the looping animations are the canvas's alone
 // and have no meaning in a still image.
 
-import { chartAxisLabel, chartFrame, type ChartLegendRect } from './chart-frame';
+import { AXIS_TICK_FONT_PX, AXIS_TICK_GAP } from './chart-axis';
+import { chartFrame, type ChartLegendRect } from './chart-frame';
+import { chartTextInk } from './chart-ink';
+import { AREA_FILL_OPACITY, barMarks, lineMarks, pieMarks } from './chart-marks';
+import {
+  barValueLabels,
+  chartValueFontPx,
+  lineValueLabels,
+  pieValueLabels,
+  type ChartValueLabel,
+} from './chart-values';
+import { labelOn } from './readable-colour';
+import { chartTypeOf, lineVariantOf } from './chart-types';
 import { LINE_DEFAULT_CATEGORIES, LINE_DEFAULT_SERIES, type PieSlice } from './data-shapes';
-import type { BoxedElement, ShapeElement } from './index';
+import type { BoxedElement } from './index';
 import { legendFontPx } from './label-font';
+import { EXPORT_DEFAULT_FONT } from './svg-render-labels';
 import { r2, xmlEscape } from './svg-render-primitives';
 
 type Chart = BoxedElement & { type: 'shape' };
@@ -35,7 +48,7 @@ function svgChartLegend(
 ): string {
   const vertical = legend.pos === 'left' || legend.pos === 'right';
   if (!legend.show || (vertical ? legend.w < 48 : legend.h < 18)) return '';
-  const font = fontFamily ? ` font-family="${xmlEscape(fontFamily)}"` : '';
+  const font = ` font-family="${xmlEscape(fontFamily ?? EXPORT_DEFAULT_FONT)}"`;
   // Text Size (docs/specs/009-elements/pie-chart.md), on the canvas's scale; the swatch and row pitch keep
   // their proportion to it, as ChartLegend's do.
   const fontPx = legendFontPx(el.textSize);
@@ -88,127 +101,200 @@ function svgChartLegend(
   return parts.join('');
 }
 
-/** A pie chart: wedges clockwise from twelve o'clock, plus the key. */
+// Show Values (docs/specs/009-elements/pie-chart.md): each number as text, a wedge's in the ink that reads on it.
+function svgValueLabels(
+  labels: readonly ChartValueLabel[],
+  textColor: string,
+  fillOf: (i: number) => string,
+  fontPx: number,
+  fontFamily?: string,
+): string {
+  const font = ` font-family="${xmlEscape(fontFamily ?? EXPORT_DEFAULT_FONT)}"`;
+  return labels
+    .map((l) => {
+      const ink = l.onMark !== undefined ? labelOn(fillOf(l.onMark)) : textColor;
+      const weight = l.category ? '' : ' font-weight="600"';
+      return `<text x="${r2(l.x)}" y="${r2(l.y)}" text-anchor="${l.anchor}"${font} font-size="${fontPx}"${weight} fill="${xmlEscape(ink)}">${xmlEscape(l.text)}</text>`;
+    })
+    .join('');
+}
+
+/** A pie chart (or doughnut): wedges clockwise from twelve o'clock, plus the key. */
 export function svgPieChart(
   el: Chart,
-  textColor: string,
+  labelColor: string,
   palette?: readonly string[],
   fontFamily?: string,
+  // What the chart sits on (chartPageGrounds): its series and text drawn adapted to it.
+  ground?: readonly string[],
 ): string {
-  const { data, colorAt, area, legend } = chartFrame(el as ShapeElement, palette);
-  const total = data.reduce((sum, s) => sum + Math.max(0, s.value), 0) || 1;
-  const rad = Math.max(10, (Math.min(area.w, area.h) * 0.86) / 2);
-  const cx = el.x + area.x + area.w / 2;
-  const cy = el.y + area.y + area.h / 2;
-  let angle = -Math.PI / 2;
-  const wedges = data
-    .map((s, i) => {
-      const frac = Math.max(0, s.value) / total;
-      const a0 = angle;
-      const a1 = angle + frac * Math.PI * 2;
-      angle = a1;
-      const fill = xmlEscape(colorAt(i, s));
-      // A single 100% slice is a full circle: an arc from a point back to
-      // itself is degenerate and draws nothing.
-      if (frac >= 0.999)
+  const textColor = chartTextInk(labelColor, ground);
+  const { data, colorAt, area, legend } = chartFrame(el, palette, ground);
+  const doughnut = chartTypeOf(el) === 'doughnut';
+  const pie = pieMarks(area, data, doughnut, el.x, el.y);
+  const { cx, cy, rad, wedges } = pie;
+  const marks = wedges
+    .map((wedge, i) => {
+      const fill = xmlEscape(colorAt(i, data[i]!));
+      if (wedge.full && !doughnut)
         return `<circle cx="${r2(cx)}" cy="${r2(cy)}" r="${r2(rad)}" fill="${fill}"/>`;
-      if (frac <= 0) return '';
-      const large = frac > 0.5 ? 1 : 0;
-      const p = (a: number) => `${r2(cx + rad * Math.cos(a))} ${r2(cy + rad * Math.sin(a))}`;
-      return `<path d="M ${r2(cx)} ${r2(cy)} L ${p(a0)} A ${r2(rad)} ${r2(rad)} 0 ${large} 1 ${p(a1)} Z" fill="${fill}"/>`;
+      if (!wedge.d) return '';
+      return `<path d="${wedge.d}"${doughnut ? ' fill-rule="evenodd"' : ''} fill="${fill}"/>`;
     })
     .join('');
-  return wedges + svgChartLegend(el, data, colorAt, legend, textColor, fontFamily);
+  const px = chartValueFontPx(el.textSize);
+  const values = el.chartValues
+    ? svgValueLabels(
+        pieValueLabels(pie, data, px),
+        textColor,
+        (i) => colorAt(i, data[i]!),
+        px,
+        fontFamily,
+      )
+    : '';
+  return marks + values + svgChartLegend(el, data, colorAt, legend, textColor, fontFamily);
 }
 
-/** A bar chart: a baseline and one bar per value, plus the key. */
+/** A column chart (or, horizontal, a bar chart): a baseline and one bar per value, plus the key. */
 export function svgBarChart(
   el: Chart,
-  textColor: string,
+  labelColor: string,
   palette?: readonly string[],
   fontFamily?: string,
+  // What the chart sits on (chartPageGrounds): its series and text drawn adapted to it.
+  ground?: readonly string[],
 ): string {
-  const { data, colorAt, area, legend } = chartFrame(el as ShapeElement, palette);
-  const maxVal = data.reduce((m, d) => Math.max(m, Math.max(0, d.value)), 0) || 1;
-  const padX = Math.min(20, area.w * 0.08);
-  const topPad = el.y + area.y + area.h * 0.1;
-  const baseY = el.y + area.y + area.h * 0.88;
-  const innerW = Math.max(1, area.w - padX * 2);
-  const slot = innerW / data.length;
-  const barW = Math.min(slot * 0.7, 48);
-  const fullH = Math.max(1, baseY - topPad);
-  const x0 = el.x + area.x + padX;
-  const baseline = `<path d="M ${r2(x0)} ${r2(baseY)} L ${r2(x0 + innerW)} ${r2(baseY)}" stroke="${AXIS}" stroke-width="1"/>`;
-  const bars = data
-    .map((d, i) => {
-      const barH = (Math.max(0, d.value) / maxVal) * fullH;
-      const cx = x0 + slot * (i + 0.5);
-      return `<rect x="${r2(cx - barW / 2)}" y="${r2(baseY - barH)}" width="${r2(barW)}" height="${r2(barH)}" rx="${r2(Math.min(3, barW / 4))}" fill="${xmlEscape(colorAt(i, d))}"/>`;
-    })
+  const textColor = chartTextInk(labelColor, ground);
+  const { data, colorAt, area, legend } = chartFrame(el, palette, ground);
+  const horizontal = chartTypeOf(el) === 'bar';
+  const barM = barMarks(area, data, horizontal, el.x, el.y, el.chartAxis === true);
+  const { baseline: b, bars } = barM;
+  const font = ` font-family="${xmlEscape(fontFamily ?? EXPORT_DEFAULT_FONT)}"`;
+  // Show Axis: a faint gridline at each tick and its label, under a column chart's left side or a bar chart's bottom.
+  const [s0, s1] = barM.axis.span;
+  const axis = barM.axis.ticks
+    .map((t) =>
+      horizontal
+        ? `<path d="M ${r2(t.at)} ${r2(s0)} L ${r2(t.at)} ${r2(s1)}" stroke="${AXIS_FAINT}" stroke-width="1"/>` +
+          `<text x="${r2(t.at)}" y="${r2(s1 + AXIS_TICK_GAP + AXIS_TICK_FONT_PX)}" text-anchor="middle"${font} font-size="${AXIS_TICK_FONT_PX}" fill="${xmlEscape(textColor)}">${xmlEscape(t.text)}</text>`
+        : `<path d="M ${r2(s0)} ${r2(t.at)} L ${r2(s1)} ${r2(t.at)}" stroke="${AXIS_FAINT}" stroke-width="1"/>` +
+          `<text x="${r2(s0 - AXIS_TICK_GAP)}" y="${r2(t.at + AXIS_TICK_FONT_PX / 3)}" text-anchor="end"${font} font-size="${AXIS_TICK_FONT_PX}" fill="${xmlEscape(textColor)}">${xmlEscape(t.text)}</text>`,
+    )
     .join('');
-  return baseline + bars + svgChartLegend(el, data, colorAt, legend, textColor, fontFamily);
+  const baseline = `<path d="M ${r2(b.x1)} ${r2(b.y1)} L ${r2(b.x2)} ${r2(b.y2)}" stroke="${AXIS}" stroke-width="1"/>`;
+  const rects = bars
+    .map(
+      (bar, i) =>
+        `<rect x="${r2(bar.x)}" y="${r2(bar.y)}" width="${r2(bar.w)}" height="${r2(bar.h)}" rx="${r2(bar.rx)}" fill="${xmlEscape(colorAt(i, data[i]!))}"/>`,
+    )
+    .join('');
+  const px = chartValueFontPx(el.textSize);
+  const values = el.chartValues
+    ? svgValueLabels(
+        barValueLabels(barM, data, horizontal, px),
+        textColor,
+        (i) => colorAt(i, data[i]!),
+        px,
+        fontFamily,
+      )
+    : '';
+  return (
+    axis +
+    baseline +
+    rects +
+    values +
+    svgChartLegend(el, data, colorAt, legend, textColor, fontFamily)
+  );
 }
 
-/** A line chart: axes, a polyline + points per series, category labels, key. */
+/** A line, area or scatter chart: axes, its marks per series, the x labels, the key. */
 export function svgLineChart(
   el: Chart,
-  textColor: string,
+  labelColor: string,
   palette?: readonly string[],
   fontFamily?: string,
+  // What the chart sits on (chartPageGrounds): its series and text drawn adapted to it.
+  ground?: readonly string[],
 ): string {
-  const { colorAt, area, legend } = chartFrame(el as ShapeElement, palette);
+  const textColor = chartTextInk(labelColor, ground);
+  const { colorAt, area, legend } = chartFrame(el, palette, ground);
   const categories =
     el.lineCategories && el.lineCategories.length > 0 ? el.lineCategories : LINE_DEFAULT_CATEGORIES;
   const series = el.lineSeries && el.lineSeries.length > 0 ? el.lineSeries : LINE_DEFAULT_SERIES;
-  const n = categories.length;
-  const padL = 10;
-  const padTop = 12;
-  const padBottom = 22;
-  const plotX0 = el.x + area.x + padL;
-  const plotW = Math.max(1, area.w - padL - 8);
-  const plotY0 = el.y + area.y + padTop;
-  const plotH = Math.max(1, area.h - padTop - padBottom);
-  // Zero is always in range so the baseline reads naturally; the degenerate
-  // all-equal case is guarded so the line isn't flat against the top edge.
-  let minV = 0;
-  let maxV = 0;
-  for (const s of series)
-    for (const v of s.values) {
-      if (v < minV) minV = v;
-      if (v > maxV) maxV = v;
-    }
-  if (maxV === minV) maxV = minV + 1;
-  const xAt = (i: number) => (n <= 1 ? plotX0 + plotW / 2 : plotX0 + (i / (n - 1)) * plotW);
-  const yAt = (v: number) => plotY0 + plotH - ((v - minV) / (maxV - minV)) * plotH;
-  const valAt = (s: number, i: number) => series[s]?.values[i] ?? 0;
+  const m = lineMarks(
+    area,
+    categories,
+    series,
+    lineVariantOf(el),
+    el.x,
+    el.y,
+    el.chartAxis === true,
+  );
+  const { x, y, w, h } = m.plot;
+  const tickFont = ` font-family="${xmlEscape(fontFamily ?? EXPORT_DEFAULT_FONT)}" font-size="${AXIS_TICK_FONT_PX}"`;
+  // Show Axis: a faint gridline and a label at each left tick, the right axis's labels in its first series' colour.
+  const rightInk = xmlEscape(
+    colorAt(
+      Math.max(
+        0,
+        series.findIndex((s) => s.axis === 'right'),
+      ),
+      series.find((s) => s.axis === 'right') ?? {},
+    ),
+  );
+  const ticks =
+    m.axis.left
+      .map(
+        (t) =>
+          `<path d="M ${r2(x)} ${r2(t.y)} L ${r2(x + w)} ${r2(t.y)}" stroke="${AXIS_FAINT}" stroke-width="1"/>` +
+          `<text x="${r2(x - AXIS_TICK_GAP)}" y="${r2(t.y + AXIS_TICK_FONT_PX / 3)}" text-anchor="end"${tickFont} fill="${xmlEscape(textColor)}">${xmlEscape(t.text)}</text>`,
+      )
+      .join('') +
+    m.axis.right
+      .map(
+        (t) =>
+          `<text x="${r2(x + w + AXIS_TICK_GAP)}" y="${r2(t.y + AXIS_TICK_FONT_PX / 3)}" text-anchor="start"${tickFont} fill="${xmlEscape(textColor)}">${xmlEscape(t.text)}</text>`,
+      )
+      .join('') +
+    (m.axis.right.length
+      ? `<path d="M ${r2(x + w)} ${r2(y)} L ${r2(x + w)} ${r2(y + h)}" stroke="${rightInk}" stroke-width="2"/>`
+      : '');
   const axes =
-    `<path d="M ${r2(plotX0)} ${r2(plotY0)} L ${r2(plotX0)} ${r2(plotY0 + plotH)}" stroke="${AXIS_FAINT}" stroke-width="1"/>` +
-    `<path d="M ${r2(plotX0)} ${r2(plotY0 + plotH)} L ${r2(plotX0 + plotW)} ${r2(plotY0 + plotH)}" stroke="${AXIS}" stroke-width="1"/>`;
-  const lines = series
+    ticks +
+    `<path d="M ${r2(x)} ${r2(y)} L ${r2(x)} ${r2(y + h)}" stroke="${AXIS_FAINT}" stroke-width="1"/>` +
+    `<path d="M ${r2(x)} ${r2(y + h)} L ${r2(x + w)} ${r2(y + h)}" stroke="${AXIS}" stroke-width="1"/>`;
+  const marks = series
     .map((s, si) => {
       const color = xmlEscape(colorAt(si, s));
-      const pts = categories.map((_, i) => `${r2(xAt(i))},${r2(yAt(valAt(si, i)))}`).join(' ');
-      const dots = categories
-        .map(
-          (_, i) =>
-            `<circle cx="${r2(xAt(i))}" cy="${r2(yAt(valAt(si, i)))}" r="3" fill="${color}"/>`,
-        )
-        .join('');
-      return (
-        `<polyline points="${pts}" fill="none" stroke="${color}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>` +
-        dots
-      );
+      const fill = m.areas[si]
+        ? `<path d="${m.areas[si]}" fill="${color}" fill-opacity="${AREA_FILL_OPACITY}"/>`
+        : '';
+      const line = m.lines[si]
+        ? `<polyline points="${m.lines[si]}" fill="none" stroke="${color}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`
+        : '';
+      const dots = m.points[si]!.map(
+        (p) => `<circle cx="${r2(p.x)}" cy="${r2(p.y)}" r="${m.dot}" fill="${color}"/>`,
+      ).join('');
+      return fill + line + dots;
     })
     .join('');
-  const font = fontFamily ? ` font-family="${xmlEscape(fontFamily)}"` : '';
-  const labels = categories
+  const font = ` font-family="${xmlEscape(fontFamily ?? EXPORT_DEFAULT_FONT)}"`;
+  const labels = m.labels
     .map(
-      (c, i) =>
-        `<text x="${r2(xAt(i))}" y="${r2(plotY0 + plotH + 13)}" text-anchor="middle"${font} font-size="9" fill="${xmlEscape(textColor)}">${xmlEscape(chartAxisLabel(c, plotW, n))}</text>`,
+      (l) =>
+        `<text x="${r2(l.x)}" y="${r2(y + h + 13)}" text-anchor="middle"${font} font-size="9" fill="${xmlEscape(textColor)}">${xmlEscape(l.text)}</text>`,
     )
     .join('');
   const legendItems = series.map((s) => ({ label: s.name, value: 0, color: s.color }));
+  const px = chartValueFontPx(el.textSize);
+  const values = el.chartValues
+    ? svgValueLabels(lineValueLabels(m, series), textColor, () => textColor, px, fontFamily)
+    : '';
   return (
-    axes + lines + labels + svgChartLegend(el, legendItems, colorAt, legend, textColor, fontFamily)
+    axes +
+    marks +
+    values +
+    labels +
+    svgChartLegend(el, legendItems, colorAt, legend, textColor, fontFamily)
   );
 }

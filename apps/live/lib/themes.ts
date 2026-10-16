@@ -6,15 +6,17 @@
 // consumers are unchanged — every symbol they imported is still exported here.
 import {
   getBuiltInTheme,
-  defaultScheme,
+  isDefaultSchemeBackdrop,
   THEMES,
   DEFAULT_BACKGROUND_COLOR,
   DEFAULT_PATTERN_COLOR,
   DEFAULT_SCHEME_ID,
   deriveShapeColours,
   deriveTextColorForBg,
-  isDefaultSchemeBackdrop,
-  schemeBackdrop,
+  DEFAULT_SCHEME_LIGHT,
+  themeColourMap,
+  themeHalf,
+  viewBackdropInTheme,
   type Appearance,
   type BackgroundPattern,
   type BoxedElement,
@@ -41,12 +43,7 @@ export {
   themePresetColors,
   themeChartPalette,
 } from '@livediagram/document';
-export type {
-  ThemeId,
-  ThemeDefinition,
-  ThemeCategory,
-  ShapeColorPreset,
-} from '@livediagram/document';
+export type { ThemeId, ThemeDefinition, ShapeColorPreset } from '@livediagram/document';
 
 // Resolve an id to its real ThemeDefinition, or `undefined` when the id names
 // nothing we know — a deleted custom theme (docs/specs/011-theme/custom-themes.md), or a custom id whose owner
@@ -57,15 +54,29 @@ export function resolveTheme(
   id: string | undefined,
   appearance: Appearance = getResolvedAppearance(),
 ): ThemeDefinition | undefined {
-  if (id) {
-    const custom = lookupCustomTheme(id);
-    if (custom) return custom;
-  }
+  // Every scheme in the viewer's half (docs/specs/011-theme/light-and-dark.md): Default's hand-made halves, every
+  // other built-in's and every custom theme's native or derived half.
+  const source = themeSource(id);
+  return source ? themeHalf(source, appearance) : undefined;
+}
+
+/** The scheme as written (its native half, before tuning): what its light / dark halves and its colour map are built
+ *  from. Undefined for an id that names nothing known. */
+export function themeSource(id: string | undefined): ThemeDefinition | undefined {
   if (!id) return undefined;
-  // Default is the one scheme with two halves; `defaultScheme` picks the
-  // viewer's. Everything else is stored colour and reads the same for everyone.
-  if (id === DEFAULT_SCHEME_ID) return defaultScheme(appearance);
+  const custom = lookupCustomTheme(id);
+  if (custom) return custom;
+  if (id === DEFAULT_SCHEME_ID) return DEFAULT_SCHEME_LIGHT;
   return THEMES.find((t) => t.id === id);
+}
+
+/** Every colour the tab's scheme paints, in either half, mapped to the viewer's half (themeColourMap): what the canvas
+ *  and the exports redraw a tab's elements through. Empty for a scheme nobody can resolve. */
+export function themeViewMap(
+  id: string | undefined,
+  appearance: Appearance = getResolvedAppearance(),
+): ReadonlyMap<string, string> {
+  return themeColourMap(themeSource(id) ?? DEFAULT_SCHEME_LIGHT, appearance);
 }
 
 // Custom themes (docs/specs/011-theme/custom-themes.md) win: the editor registers the owner's saved themes
@@ -87,9 +98,9 @@ export function getTheme(
 }
 
 // The backdrop a tab actually PAINTS, which is not always the backdrop it
-// stores. A tab on the Default scheme whose canvas is still the scheme's own
-// (nobody has hand-picked a colour) follows the viewer's appearance instead:
-// the off-white canvas in light chrome, blue-slate in dark. It is the same in both editor modes
+// stores. A tab whose canvas is still its scheme's own (nobody has hand-picked a colour) follows the viewer's
+// appearance instead: the scheme's light half in light chrome, its dark half in dark
+// (docs/specs/011-theme/light-and-dark.md). It is the same in both editor modes
 // (docs/specs/007-editor/editor-modes.md "One look"); a viewer's Draw pattern is laid over it by
 // resolveViewBackdrop. Nothing is written back —
 // the document keeps whichever half was current when the scheme was applied,
@@ -117,9 +128,10 @@ export function resolveTabBackdrop(
     backgroundPattern: tab.backgroundPattern,
     backgroundOpacity: tab.backgroundOpacity,
   };
-  const onDefault = tab.theme === undefined || tab.theme === DEFAULT_SCHEME_ID;
-  if (!onDefault || !isDefaultSchemeBackdrop(stored)) return stored;
-  return { ...stored, ...schemeBackdrop(getBuiltInTheme(DEFAULT_SCHEME_ID, appearance)) };
+  // A canvas or pattern colour the scheme painted, in either half, follows the viewer; a picked colour stays.
+  const source = themeSource(tab.theme ?? DEFAULT_SCHEME_ID);
+  if (!source) return stored;
+  return { ...stored, ...viewBackdropInTheme(stored, source, appearance) };
 }
 
 // Colour projection for a NEWLY-added boxed element, given the active tab's

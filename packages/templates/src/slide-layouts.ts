@@ -1,10 +1,44 @@
 // Slide layouts (docs/specs/007-editor/illustrate-pages.md "Slide layouts"): the layouts a slide
-// page starts from. Seven built for a slide here, the rest the infographic layouts that already
-// set things side by side on a landscape page, filed under the slide categories. Pure builders like
+// page starts from, at least nine to a category. Seven built for a slide here, more in the
+// category files (slide-layouts-openers.ts and its siblings), the rest the infographic layouts
+// that already set things side by side on a landscape page, filed under the slide categories. Pure builders like
 // the page layouts: the slide's content box in, ordinary themed elements out, in proportions of
 // the box so a 16:9 and a 4:3 slide both fit. Type is sized up for reading across a room.
-import { LABEL_FONT_PX, type Element, type TextElement } from '@livediagram/document';
+import type { Element } from '@livediagram/document';
 import { heading, kit, type Kit, type LayoutBox } from './page-layout-kit';
+import { bullets, rule, slideType } from './slide-layout-kit';
+import {
+  bigChartSlide,
+  chartInsightsSlide,
+  goalsProgressSlide,
+  threeStatsSlide,
+} from './slide-layouts-data';
+import {
+  agendaGridSlide,
+  keynoteSlide,
+  objectivesSlide,
+  openingQuestionSlide,
+  speakerSlide,
+  titleImageSlide,
+} from './slide-layouts-openers';
+import {
+  fourIdeasSlide,
+  fullImageSlide,
+  takeawaySlide,
+  threePointsSlide,
+} from './slide-layouts-content';
+import { milestonesSlide, nowNextLaterSlide, processFlowSlide } from './slide-layouts-steps';
+import {
+  callToActionSlide,
+  contactSlide,
+  nextStepsSlide,
+  questionsSlide,
+  resourcesSlide,
+  summarySlide,
+  thanksImageSlide,
+} from './slide-layouts-closers';
+
+export { slideType } from './slide-layout-kit';
 import { PAGE_LAYOUTS, type PageLayout, type PageLayoutId } from './page-layouts';
 
 export type SlideLayoutId =
@@ -14,7 +48,31 @@ export type SlideLayoutId =
   | 'slide-two-columns'
   | 'slide-image-text'
   | 'slide-statement'
-  | 'slide-closing';
+  | 'slide-closing'
+  | 'slide-title-image'
+  | 'slide-keynote'
+  | 'slide-question'
+  | 'slide-speaker'
+  | 'slide-objectives'
+  | 'slide-agenda-grid'
+  | 'slide-three-points'
+  | 'slide-full-image'
+  | 'slide-takeaway'
+  | 'slide-four-ideas'
+  | 'slide-three-stats'
+  | 'slide-big-chart'
+  | 'slide-chart-insights'
+  | 'slide-goals'
+  | 'slide-process-flow'
+  | 'slide-milestones'
+  | 'slide-now-next-later'
+  | 'slide-summary'
+  | 'slide-cta'
+  | 'slide-next-steps'
+  | 'slide-contact'
+  | 'slide-questions'
+  | 'slide-thanks-image'
+  | 'slide-resources';
 
 export type SlideLayoutCategoryId =
   'slide-openers' | 'slide-content' | 'slide-data' | 'slide-steps' | 'slide-closers';
@@ -26,48 +84,6 @@ export const SLIDE_LAYOUT_CATEGORIES: readonly { id: SlideLayoutCategoryId; labe
   { id: 'slide-steps', label: 'Steps and Time' },
   { id: 'slide-closers', label: 'Closers' },
 ];
-
-// Body type on a slide: large text scaled so its glyphs stand this many units tall (a unit is the
-// box's short side over 100), so a slide reads from the back of the room.
-const BODY_UNITS = 4.6;
-
-/** Slide type: large text scaled so its glyphs stand `units` of the box tall (a unit is its short
- *  side over 100), shared with the slide deck template. */
-export function slideType(k: Kit, units = BODY_UNITS): Partial<TextElement> {
-  return {
-    textSize: 'lg',
-    textScale: Math.round(((k.u * units) / LABEL_FONT_PX.lg) * 100) / 100,
-  };
-}
-
-// A short accent rule: a filled bar in the theme's colour.
-function rule(k: Kit, x: number, y: number): Element {
-  return k.shape('square', x, y, k.u * 14, k.u * 1.2, { label: '', borderRadius: 'full' });
-}
-
-// Bullet points down a column: a dot beside each line, the lines sharing the height they are given.
-function bullets(
-  k: Kit,
-  x: number,
-  y: number,
-  w: number,
-  h: number,
-  lines: readonly string[],
-): Element[] {
-  const { u } = k;
-  const rowH = Math.min(h / lines.length, u * 14);
-  const dot = u * 2.2;
-  return lines.flatMap((line, i) => {
-    const top = y + i * rowH;
-    return [
-      k.shape('circle', x, top + (rowH - dot) / 2, dot, dot, { label: '' }),
-      k.text(x + dot + u * 3, top, w - dot - u * 3, rowH, line, {
-        ...slideType(k),
-        textAlignY: 'middle',
-      }),
-    ];
-  });
-}
 
 function titleSlide(k: Kit): Element[] {
   const { width: W, height: H } = k.box;
@@ -232,6 +248,48 @@ export const SLIDE_LAYOUTS: readonly SlideLayout[] = [
   ),
   reused('agenda', 'slide-openers'),
   own(
+    'slide-title-image',
+    'slide-openers',
+    'Title and Image',
+    'A title and subtitle beside a full-height picture',
+    titleImageSlide,
+  ),
+  own(
+    'slide-keynote',
+    'slide-openers',
+    'Keynote Title',
+    'A large title, centred, over the event',
+    keynoteSlide,
+  ),
+  own(
+    'slide-question',
+    'slide-openers',
+    'Opening Question',
+    'One question set large to open the talk',
+    openingQuestionSlide,
+  ),
+  own(
+    'slide-speaker',
+    'slide-openers',
+    'About the Speaker',
+    'A round photo, name, role and three facts',
+    speakerSlide,
+  ),
+  own(
+    'slide-objectives',
+    'slide-openers',
+    'Objectives',
+    'Three numbered cards: what the room will leave with',
+    objectivesSlide,
+  ),
+  own(
+    'slide-agenda-grid',
+    'slide-openers',
+    'Agenda Grid',
+    'Four numbered parts on cards, each with its time',
+    agendaGridSlide,
+  ),
+  own(
     'slide-bullets',
     'slide-content',
     'Title and Bullets',
@@ -260,13 +318,95 @@ export const SLIDE_LAYOUTS: readonly SlideLayout[] = [
     statementSlide,
   ),
   reused('quote', 'slide-content'),
+  own(
+    'slide-three-points',
+    'slide-content',
+    'Three Points',
+    'Three icons, each with a heading and a line',
+    threePointsSlide,
+  ),
+  own(
+    'slide-full-image',
+    'slide-content',
+    'Full Image',
+    'A picture filling the slide under a caption card',
+    fullImageSlide,
+  ),
+  own(
+    'slide-takeaway',
+    'slide-content',
+    'Key Takeaway',
+    'The one thing to remember on a card, and why',
+    takeawaySlide,
+  ),
+  own(
+    'slide-four-ideas',
+    'slide-content',
+    'Four Ideas',
+    'Four cards, two by two, each an icon and a line',
+    fourIdeasSlide,
+  ),
   reused('big-number', 'slide-data'),
   reused('key-stats', 'slide-data'),
   reused('chart-story', 'slide-data'),
   reused('comparison', 'slide-data'),
+  own(
+    'slide-three-stats',
+    'slide-data',
+    'Three Big Numbers',
+    'Three figures across, a caption and note under each',
+    threeStatsSlide,
+  ),
+  own(
+    'slide-big-chart',
+    'slide-data',
+    'Big Chart',
+    'A full-height bar chart and its headline figure',
+    bigChartSlide,
+  ),
+  own(
+    'slide-chart-insights',
+    'slide-data',
+    'Chart and Insights',
+    'A trend beside three numbered insights',
+    chartInsightsSlide,
+  ),
+  own(
+    'slide-goals',
+    'slide-data',
+    'Goals Progress',
+    'Three progress rings against their targets',
+    goalsProgressSlide,
+  ),
+  reused('kpi-dashboard', 'slide-data'),
+  reused('market-share', 'slide-data'),
   reused('process', 'slide-steps'),
   reused('timeline', 'slide-steps'),
   reused('roadmap', 'slide-steps'),
+  own(
+    'slide-process-flow',
+    'slide-steps',
+    'Process Flow',
+    'Four steps as pills joined by arrows, a note under each',
+    processFlowSlide,
+  ),
+  own(
+    'slide-milestones',
+    'slide-steps',
+    'Milestones',
+    'Five years along a rail, what happened under each',
+    milestonesSlide,
+  ),
+  own(
+    'slide-now-next-later',
+    'slide-steps',
+    'Now, Next, Later',
+    'A roadmap in three columns of cards',
+    nowNextLaterSlide,
+  ),
+  reused('funnel', 'slide-steps'),
+  reused('cycle', 'slide-steps'),
+  reused('project-plan', 'slide-steps'),
   own(
     'slide-closing',
     'slide-closers',
@@ -275,4 +415,53 @@ export const SLIDE_LAYOUTS: readonly SlideLayout[] = [
     closingSlide,
   ),
   reused('team', 'slide-closers'),
+  own(
+    'slide-summary',
+    'slide-closers',
+    'Summary',
+    'Three numbered takeaways to end on',
+    summarySlide,
+  ),
+  own(
+    'slide-cta',
+    'slide-closers',
+    'Call to Action',
+    'One bold ask, a button and where to start',
+    callToActionSlide,
+  ),
+  own(
+    'slide-next-steps',
+    'slide-closers',
+    'Next Steps',
+    'Four actions with who owns each and by when',
+    nextStepsSlide,
+  ),
+  own(
+    'slide-contact',
+    'slide-closers',
+    'Contact',
+    'A round photo, name and where to find them',
+    contactSlide,
+  ),
+  own(
+    'slide-questions',
+    'slide-closers',
+    'Questions',
+    'Questions set large under an icon',
+    questionsSlide,
+  ),
+  own(
+    'slide-thanks-image',
+    'slide-closers',
+    'Thank You and Image',
+    'A thank you beside a full-height picture',
+    thanksImageSlide,
+  ),
+  own(
+    'slide-resources',
+    'slide-closers',
+    'Resources',
+    'Four links to read further, each with an icon',
+    resourcesSlide,
+  ),
 ];

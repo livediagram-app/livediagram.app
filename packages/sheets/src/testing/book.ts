@@ -41,7 +41,7 @@ export function makeSheets(spec: BookSpec, opts: { rows?: number; cols?: number 
           ? {
               format: {
                 nf: read.hint.nf,
-                ...(read.hint.cur ? { cur: read.hint.cur as never } : {}),
+                ...(read.hint.cur ? { cur: read.hint.cur } : {}),
               },
             }
           : {}),

@@ -5,7 +5,7 @@ import { StuckCanvas } from '@/components/illustrations/troubleshooting';
 export const metadata = helpMetadata({
   title: 'A Document Will Not Load',
   description:
-    'A checklist for when a livediagram document does not open or is stuck loading, including expired or revoked share links, password gates and repairing your browser.',
+    'Fix a livediagram document that will not open or is stuck loading: check for expired or revoked share links and password gates, and repair your browser.',
   path: '/help/troubleshooting/document-not-loading/',
 });
 
@@ -29,9 +29,19 @@ The opening screen tries to fix a slow load on its own:
 
 1. **After 10 seconds** it says "This is taking longer than usual." and offers **Refresh**.
 2. **After 30 seconds** it reloads the page once by itself, with a fresh start.
-3. **If that does not help**, it shows "Couldn't load document" with two more ways out: **Copy Diagnostics**, a short report to send to [support](/help/contact/), and **Repair This Browser**, which clears stuck settings and caches while keeping your documents. You can also run the repair from [Repair This Browser](/help/troubleshooting/repair-this-browser/), even if the editor will not start.
+3. **If that does not help**, it shows "Something went wrong" ("We couldn't load this document: it didn't finish loading.") with **Try again**, and under "Still not loading?" two more ways out: **Copy Diagnostics**, a short report to send to [support](/help/contact/), and **Repair This Browser**, which clears stuck settings and caches while keeping your documents. You can also run the repair from [Repair This Browser](/help/troubleshooting/repair-this-browser/), even if the editor will not start.
 
 If your browser is offline, the screen says "You're offline" instead, and the document opens by itself as soon as you reconnect. While you are offline in an open document, a banner says so: your changes stay in that tab and save when the connection is back, so keep the tab open until it does.
+
+## A Single Tab Won't Load
+
+Each tab's content loads on its own when you open it, so a document can open fine while one tab doesn't. While a tab is loading, the canvas shows "Loading tab…" and can't be clicked. If the load fails, a card reads "Couldn't load this tab" ("We couldn't reach the server to load this tab's contents. Your work is safe. Check your connection and try again.") with a **Retry** button.
+
+1. **Press Retry.** It asks for the tab again, and a brief connection blip usually clears with one try.
+2. **Carry on in another tab.** Only the canvas is covered: the tab bar and the header above it keep working, so you can switch to another tab or leave the document.
+3. **Check your connection,** then reload the page if the card keeps coming back.
+
+The card covers the canvas on purpose. Until the tab's real content has arrived, what is underneath would be an empty canvas, and drawing on it could save over your work. Nothing you made is lost while the card is up.
 
 ## It opens for a colleague but not for you
 
@@ -55,7 +65,7 @@ A share link is the most common reason a document refuses to load, and the fixes
 
 1. **Try a different browser or an incognito window** to rule out an extension or cached data. See [browser compatibility](/help/troubleshooting/browser-compatibility/).
 2. **Try another device** on a different network to separate a local problem from a document problem.
-3. **Confirm you are signed in as the right identity.** A guest document is tied to the browser that made it; a different browser or a signed-in account owns a different set of documents. See [working as a guest](/help/getting-started/guest-vs-account/).
+3. **Confirm you are signed in as the right identity.** A guest document is tied to the browser that made it, so a different browser has a different guest identity. Signing in moves this browser's guest documents into your account. See [working as a guest](/help/getting-started/guest-vs-account/).
 
 If none of this helps, the document itself may be reachable but stuck on real-time connection; see [real-time collaboration problems](/help/troubleshooting/collaboration-issues/). If you are still stuck, [contact us](/help/contact/) with the URL you used, what you see, and the report from **Copy Diagnostics**.
 

@@ -4,7 +4,7 @@ import { pv } from './motion';
 import { Pop } from './story-parts';
 
 // Group 12: the Illustrate templates and the blanks (docs/specs/007-editor/templates-by-mode.md
-// "Illustrate templates" and "Four blanks"): Blank Diagram, Blank Illustration, Event Poster, Year in Review, Résumé and
+// "Illustrate templates" and "Five blanks"): Blank Diagram, Blank Illustration, Event Poster, Year in Review, Résumé and
 // Recipe Card. Each draws its pages as sheets in their own proportions (A3, A4, Square, 4:5) with
 // the designed content sketched in, in the template's own colours. Static SVG preview tiles (one
 // branch per TemplateKind; see template-preview.tsx for who renders them); TemplatePreview chains
@@ -18,10 +18,10 @@ const INK = 'rgb(15 23 42)';
 export function templatePreviewGroup12(kind: TemplateKind): ReactElement | null {
   switch (kind) {
     case 'blank':
-      // Blank Diagram (docs/specs/007-editor/templates-by-mode.md "Four blanks"): an empty canvas on
+      // Blank Diagram (docs/specs/007-editor/templates-by-mode.md "Five blanks"): an empty canvas on
       // a faint dot grid, the first shape just placed and selected, a dashed ghost of the next one
       // with a "+". Framed like Blank Whiteboard's board and Blank Illustration's page, so the
-      // four blanks read as a set. Hover story: the connector draws across and the next shape
+      // five blanks read as a set. Hover story: the connector draws across and the next shape
       // lands where the ghost was.
       return (
         <svg width="72" height="40" viewBox="0 0 80 44" aria-hidden>

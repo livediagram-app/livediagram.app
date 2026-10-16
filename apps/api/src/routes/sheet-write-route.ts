@@ -12,8 +12,11 @@ import {
   cellKey,
   cellsFromJson,
   validateWrite,
+  valuesOnly,
+  writesFormats,
   type CellChange,
   type Sheet,
+  type SheetPerson,
   type SheetWrite,
 } from '@livediagram/sheets';
 import {
@@ -27,6 +30,7 @@ import {
   readFormulaCells,
   readSheetHead,
   recountStatement,
+  documentSavedStatement,
   type SheetHead,
 } from '../db';
 import { forbidden, json } from '../responses';
@@ -51,6 +55,7 @@ function readWrite(raw: unknown): SheetWriteRequest | null {
     write: b.write as SheetWrite,
     ...(typeof b.wid === 'string' ? { wid: b.wid } : {}),
     ...(b.undo === true ? { undo: true } : {}),
+    ...(b.unchecked === true ? { unchecked: true } : {}),
   };
 }
 
@@ -114,13 +119,35 @@ export async function writeSheet(
   // (docs/specs/013-workspace/share-roles.md "What a Participant changes").
   const caller = await sheetCaller(ctx, documentId, 'participate');
   if (caller instanceof Response) return caller;
-  const body = readWrite(await readBody(ctx));
-  if (!body) return sheetRejected('write_invalid');
-  if (body.write.kind !== 'cells' && !(await sheetCallerEdits(ctx, caller))) return forbidden();
+  const read = readWrite(await readBody(ctx));
+  if (!read) return sheetRejected('write_invalid');
+  if (read.write.kind !== 'cells' && !(await sheetCallerEdits(ctx, caller))) return forbidden();
+  // And a cell's value, never its format (docs/specs/029-sheets/sheet.md "Who may do what"): a Participant's
+  // write lands as its values, and one of formats alone is refused. Only a write carrying formats asks the gate.
+  let body = read;
+  if (writesFormats(read.write) && !(await sheetCallerEdits(ctx, caller))) {
+    const values = valuesOnly(read.write);
+    if (!values) return forbidden();
+    body = { ...read, write: values };
+  }
   const by = await writer(ctx, caller.owner);
+  return storeSheetWrite(ctx, documentId, sheetId, body, by, caller.scopeTab ?? null);
+}
+
+// A checked write stored (docs/specs/029-sheets/sheet-store.md "Changing a sheet"): validated and applied by the engine,
+// capped, stored in one batch guarded by the sheet's rev (retried on a lost race), answered with the cells it touched
+// and relayed. The sheet route's, after its gates, and a form's response row's (forms/sheet-response.ts).
+export async function storeSheetWrite(
+  ctx: RouteContext,
+  documentId: string,
+  sheetId: string,
+  body: SheetWriteRequest,
+  by: SheetPerson,
+  scopeTab: string | null,
+): Promise<Response> {
   for (let attempt = 0; attempt < SHEET_WRITE_RETRIES; attempt++) {
     const head = await readSheetHead(ctx.env, documentId, sheetId);
-    if (!head || (caller.scopeTab && head.tabId !== caller.scopeTab)) return sheetNotFound();
+    if (!head || (scopeTab && head.tabId !== scopeTab)) return sheetNotFound();
     const write = body.write;
     if (write.kind === 'title') {
       const heads = await listSheetHeads(ctx.env, documentId, head.tabId);
@@ -137,9 +164,15 @@ export async function writeSheet(
     };
     let landed;
     try {
-      const check = validateWrite(light, write);
+      // Validation rules are checked unless the write is an undo or one stored as it is (data-validation.md).
+      const check = validateWrite(light, write, { checkRules: !body.undo && !body.unchecked });
       if (!check.ok)
-        return sheetRejected(check.error, check.error === 'sheet_too_large' ? 413 : 400, check.at);
+        return sheetRejected(
+          check.error,
+          check.error === 'sheet_too_large' ? 413 : 400,
+          check.at,
+          check.line,
+        );
       landed = applySheetWrite(
         light,
         write.kind === 'title' ? { ...write, title: write.title.trim() } : write,
@@ -181,6 +214,7 @@ export async function writeSheet(
           );
     statements.push(...cellWriteStatements(ctx.env, documentId, sheetId, nonce, cells));
     statements.push(recountStatement(ctx.env, documentId, sheetId));
+    statements.push(documentSavedStatement(ctx.env, documentId, sheetId, nonce, now));
     const results = await ctx.env.DB.batch(statements);
     const raised = (results[0]?.results ?? []) as { rev: number }[];
     if (raised.length === 0) {

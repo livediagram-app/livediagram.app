@@ -1,10 +1,10 @@
 'use client';
 
 import { useDeferredValue, useEffect, useMemo, useState } from 'react';
-import type { Tab } from '@livediagram/document';
+import { tabWindowNames, type Tab } from '@livediagram/document';
 import { tabAsSeen } from '@/lib/export-as-seen';
 import { loadTabImages, renderTabToSvg } from '@/lib/export-tab';
-import type { ExportImageMap } from '@/lib/export-tab-images';
+import { tabImageKey, type ExportImageMap } from '@/lib/export-tab-images';
 import { ensureIconCatalogs } from '@/lib/icon-registry';
 import { svgFrameOf } from '@/lib/svg-frame';
 import { usePlan } from '@/components/plan/PlanContext';
@@ -23,20 +23,17 @@ export type TabSvg = {
   background: string;
 };
 
-// The image ids a tab draws, joined: the key its bitmaps are fetched on, so an edit that moves a
-// shape doesn't refetch every photo.
-function imageKey(tab: Tab): string {
-  const ids = new Set<string>();
-  for (const el of tab.elements) if (el.type === 'image' && el.imageId) ids.add(el.imageId);
-  return [...ids].sort().join(',');
-}
-
 // A tab drawn as the editor would show it (docs/specs/007-editor/split-view.md "The right pane"):
 // the export renderer's SVG, in the viewer's appearance, with the document's Plan items and the
 // tab's photos. Re-rendered when the tab changes (an edit, a collaborator's op) at a deferred
 // priority, so a burst of remote edits never competes with the editor beside it.
 export function useTabSvg(tab: Tab | undefined): TabSvg | null {
-  const { imageContext } = useEditorContext();
+  const { imageContext, tabs } = useEditorContext();
+  // A window inside this tab is named for the tab it shows, as the export names it. Keyed on the tabs' names, not the
+  // tabs, so an edit anywhere in the document does not redraw this one.
+  const nameKey = tabs.map((t) => `${t.id}\u0000${t.name}`).join('\u0001');
+  // oxlint-disable-next-line react/exhaustive-deps
+  const windowNames = useMemo(() => tabWindowNames(tabs), [nameKey]);
   const plan = usePlan();
   const { appearance } = useAppearance();
   const deferredTab = useDeferredValue(tab);
@@ -51,7 +48,7 @@ export function useTabSvg(tab: Tab | undefined): TabSvg | null {
     };
   }, []);
 
-  const wantedImages = deferredTab ? imageKey(deferredTab) : '';
+  const wantedImages = deferredTab ? tabImageKey(deferredTab) : '';
   useEffect(() => {
     if (!deferredTab || !wantedImages || !imageContext) return;
     let live = true;
@@ -62,7 +59,7 @@ export function useTabSvg(tab: Tab | undefined): TabSvg | null {
       live = false;
     };
     // Keyed on the ids, not the tab: the bitmaps only change when the set of photos does.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps
   }, [wantedImages, imageContext]);
 
   return useMemo(() => {
@@ -73,6 +70,7 @@ export function useTabSvg(tab: Tab | undefined): TabSvg | null {
     const markup = renderTabToSvg(seen, {
       pattern: false,
       images: images?.map,
+      resolveTabWindow: windowNames,
       ...(plan ? { items: plan.items, itemTypes: plan.types } : {}),
     });
     return {
@@ -80,5 +78,5 @@ export function useTabSvg(tab: Tab | undefined): TabSvg | null {
       ...svgFrameOf(markup),
       background: seen.backgroundColor ?? '#ffffff',
     };
-  }, [deferredTab, appearance, images, plan, iconsReady]);
+  }, [deferredTab, appearance, images, plan, iconsReady, windowNames]);
 }

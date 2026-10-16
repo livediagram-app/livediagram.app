@@ -17,7 +17,7 @@ import type { EditorDragDeps } from './useEditorDrag.types';
 // of the pure resolver (that is note-insertion-drag.test.ts).
 
 function note(id: string, x: number, y = 0): StickyElement {
-  return { id, type: 'sticky', x, y, width: 200, height: 200, label: id } as StickyElement;
+  return { id, type: 'sticky', x, y, width: 200, height: 200, label: id };
 }
 
 // a: 0..200, b: 272..472, c: 544..744; `drag` parked clear of the row.

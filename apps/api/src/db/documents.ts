@@ -22,6 +22,7 @@ import { imageGrantCopyStatements, imageGrantOwnerChangeStatement } from './imag
 import { imageRefAddStatements } from './image-refs';
 import { sheetRefCopyStatement } from './sheet-refs';
 import { documentRemovalStatements } from './document-removal';
+import { purgeRooms } from '../room-purge-client';
 import { firstTabCountSql, isEmptyCount } from './tabs';
 import {
   documentStatsSql,
@@ -58,7 +59,7 @@ type DocumentRow = {
   community_state?: string | null;
 } & RecordedIntentRow;
 
-type SummaryRow = DocumentRow & { first_tab_count: number | null; doc_stats: string | null };
+export type SummaryRow = DocumentRow & { first_tab_count: number | null; doc_stats: string | null };
 
 async function listTabSummariesFor(env: Env, documentId: string): Promise<TabSummaryDTO[]> {
   // Read through the document_tabs link table (migration 0011 /
@@ -135,7 +136,7 @@ const DOCUMENT_COLS = `id, owner_id, name, shareable, folder_id, team_id, source
 // The list projection deliberately omits `presentation`: listing 100 documents
 // has no use for 100 decks, and a deck is the one metadata field whose size
 // grows with the document.
-const DOCUMENT_SUMMARY_COLS = `id, owner_id, name, shareable, folder_id, team_id, source, ${INTENT_COLS}, saved_at, created_at, ${SHARE_CODE_EXPR}, ${COMMUNITY_STATE_EXPR}, ${firstTabCountSql('documents.id')}, ${documentStatsSql('documents.id')}`;
+export const DOCUMENT_SUMMARY_COLS = `id, owner_id, name, shareable, folder_id, team_id, source, ${INTENT_COLS}, saved_at, created_at, ${SHARE_CODE_EXPR}, ${COMMUNITY_STATE_EXPR}, ${firstTabCountSql('documents.id')}, ${documentStatsSql('documents.id')}`;
 
 // Gate-only projection: the columns access checks need (owner + team +
 // name for notifications) in ONE query — no participant join, no tab
@@ -202,6 +203,19 @@ export async function getDocumentThumbMeta(
     : null;
 }
 
+// A document's card types alone, for a snapshot that draws its cards (a board, a Sheet's CARD formulas): the
+// thumbnail route's one read (getDocumentThumbMeta) leaves the catalogue out, as most previews are cache hits that
+// never draw. Null for a document with no catalogue, or none at all.
+export async function getDocumentItemTypes(
+  env: Env,
+  id: string,
+): Promise<ItemTypeCatalogue | null> {
+  const row = await env.DB.prepare('SELECT item_types FROM documents WHERE id = ?')
+    .bind(id)
+    .first<{ item_types: string | null }>();
+  return readItemTypeCatalogue(row?.item_types ?? null);
+}
+
 export async function getDocument(env: Env, id: string): Promise<DocumentDTO | null> {
   const row = await env.DB.prepare(
     `SELECT ${DOCUMENT_COLS} FROM documents WHERE id = ? AND trashed_at IS NULL`,
@@ -211,7 +225,7 @@ export async function getDocument(env: Env, id: string): Promise<DocumentDTO | n
   return row ? rowToDocument(env, row) : null;
 }
 
-function rowToSummary(row: SummaryRow): DocumentSummary {
+export function rowToSummary(row: SummaryRow): DocumentSummary {
   return {
     id: row.id,
     ownerId: row.owner_id,
@@ -456,6 +470,8 @@ export async function upgradeDocumentSharePassword(
 // still holds survives either.
 export async function deleteDocument(env: Env, id: string): Promise<void> {
   await env.DB.batch(documentRemovalStatements(env, { column: 'id', value: id }));
+  // The room's storage too: an Offline document keeps nothing on the server. Best effort.
+  await purgeRooms(env, [id]);
   // Drop the cached SVG snapshot (docs/specs/006-document/document-snapshots.md) alongside the row so a
   // deleted document doesn't leave an orphaned R2 object behind. Best
   // effort: a missing binding or a missing object is a no-op, and a
@@ -644,7 +660,8 @@ async function copiedItemIds(
 // the copy's tab ids. The data is only parsed when it mentions a tab id, so
 // the common link-free tab is copied byte for byte as before.
 export function remapTabDataLinks(data: string, tabIdMap: Map<string, string>): string {
-  if (!data.includes('"tabId"')) return data;
+  // A tab or element link, or a Tab Window's tab: nothing to re-point without one.
+  if (!data.includes('"tabId"') && !data.includes('"windowTabId"')) return data;
   try {
     const parsed = JSON.parse(data) as { elements?: Element[] };
     if (!Array.isArray(parsed.elements)) return data;

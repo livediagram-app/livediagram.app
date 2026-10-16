@@ -65,6 +65,25 @@ export { API_BASE };
 // timeout, so it lives here next to the list-load calls.
 export const DOCUMENT_LIST_LOAD_SAFETY_MS = 10_000;
 
+// How long an autosave write may take before it is abandoned (docs/specs/006-document/per-tab-storage.md "Retrying a
+// failed save"). Each tab's saves run one after another (tab-save-queue.ts), so a save left hanging on a stalled
+// connection (a laptop switching networks can leave a request open for minutes before the browser fails it) held
+// back every later save of that tab. Abandoned, it fails like any network error: the retry runs on a fresh
+// connection with the newest content. The bound is a base for the round trip plus the time to upload the body at a
+// slow uplink, so a large tab on a poor connection still has its time. Safe ranges: base 10 s to 60 s, rate 8 to
+// 64 KB/s.
+export const SAVE_TIMEOUT_BASE_MS = 20_000;
+export const SAVE_UPLOAD_BYTES_PER_SECOND = 16 * 1024;
+
+export function saveTimeoutMs(bodyBytes: number): number {
+  return SAVE_TIMEOUT_BASE_MS + Math.ceil((bodyBytes / SAVE_UPLOAD_BYTES_PER_SECOND) * 1000);
+}
+
+// The signal an autosave write carries: aborts once saveTimeoutMs has passed for a body of this size.
+export function saveTimeoutSignal(body: string): AbortSignal {
+  return AbortSignal.timeout(saveTimeoutMs(new TextEncoder().encode(body).byteLength));
+}
+
 // WebSocket counterpart of API_BASE. Converts http(s):// to ws(s):// for
 // absolute bases; for the same-origin default it builds from
 // `window.location` at call time (so SSR-safe modules can still import
@@ -519,5 +538,5 @@ export function stripUiTabFields(tab: Tab): Tab {
   const { templateChosen: _tc, folder: _f, ...rest } = tab;
   void _tc;
   void _f;
-  return rest as Tab;
+  return rest;
 }

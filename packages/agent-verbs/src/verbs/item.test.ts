@@ -154,6 +154,13 @@ describe('item writes', () => {
 
   it('refuses an item it cannot name, and a field without a value', async () => {
     const { ctx } = api();
+    // A value the field cannot hold is refused before anything is sent, saying what it takes.
+    await expect(
+      itemSet.run!(
+        ctx,
+        itemSet.input.parse({ doc: DOC_A, item: '#1', fields: ['estimate=a lot'] }),
+      ),
+    ).rejects.toThrow('"a lot" is not an Estimate: give a number from 0 to 999.');
     await expect(itemRm.run!(ctx, { doc: DOC_A, item: '#9' })).rejects.toBeInstanceOf(VerbRefusal);
     expect(() => fieldsFromPairs(['priority'])).toThrow(VerbRefusal);
   });
@@ -168,9 +175,9 @@ describe('item output and refusals', () => {
     expect(itemAdd.quiet!(added)).toEqual(['#3']);
     const set = await itemSet.run!(
       ctx,
-      itemSet.input.parse({ doc: DOC_A, item: '#1', fields: ['estimate=a lot'] }),
+      itemSet.input.parse({ doc: DOC_A, item: '#1', fields: ['estimate=3'] }),
     );
-    expect(seen[1]!.body).toEqual({ set: { estimate: 'a lot' } });
+    expect(seen[1]!.body).toEqual({ set: { estimate: 3 } });
     expect(itemSet.text!(set)).toEqual(['~ #3 [task] New']);
     expect(itemSet.quiet!(set)).toEqual(['#3']);
     const moved = await itemMove.run!(ctx, {

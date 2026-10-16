@@ -12,6 +12,7 @@ import type { ReactNode } from 'react';
 import { Glyph, lucideGlyph, EDITOR_MODE_ICONS } from '@livediagram/ui';
 import { lucideLayers, lucideMap, lucidePalette } from '@livediagram/icons/lucide';
 import { CollaborateGlyph } from '@/components/panels/collaborate/CollaborateGlyph';
+import { SlideDeckIcon } from '@/components/palette/palette-icons';
 
 // The categories that carry a tile: every top-level one. A sub-category
 // (one per panel under Panels, one per mode under Editor, Notifications and
@@ -24,6 +25,7 @@ export type SettingsIconId =
   | 'keyboard'
   | 'panels'
   | 'accessibility'
+  | 'tours'
   | 'ai'
   | 'privacy';
 
@@ -31,6 +33,7 @@ export type SettingsIconId =
 export type SettingsSubcategoryId =
   | 'draw'
   | 'illustrate'
+  | 'presenting'
   | 'layers'
   | 'map'
   | 'collaborate'
@@ -53,6 +56,7 @@ const TILE: Record<SettingsIconId, string> = {
   keyboard: 'bg-orange-500',
   panels: 'bg-amber-500',
   accessibility: 'bg-indigo-500',
+  tours: 'bg-pink-600',
   ai: 'bg-violet-500',
   privacy: 'bg-emerald-600',
 };
@@ -146,6 +150,14 @@ const AccessibilityGlyph = (
   </Svg>
 );
 
+// Tours: a compass, for being shown around.
+const ToursGlyph = (
+  <Svg>
+    <circle cx="10" cy="10" r="7" />
+    <path d="m12.8 7.2-1.6 4-4 1.6 1.6-4Z" />
+  </Svg>
+);
+
 // AI: a spark.
 const AiGlyph = (
   <Svg>
@@ -178,6 +190,7 @@ export const CATEGORY_GLYPHS: Record<SettingsIconId, ReactNode> = {
   keyboard: KeyboardGlyph,
   panels: PanelsGlyph,
   accessibility: AccessibilityGlyph,
+  tours: ToursGlyph,
   ai: AiGlyph,
   privacy: PrivacyGlyph,
 };
@@ -200,6 +213,7 @@ const IllustrateSubGlyph = EDITOR_MODE_ICONS.illustrate;
 const SUBCATEGORY_GLYPHS: Record<SettingsSubcategoryId, () => ReactNode> = {
   draw: () => <DrawSubGlyph size={16} />,
   illustrate: () => <IllustrateSubGlyph size={16} />,
+  presenting: () => <SlideDeckIcon />,
   layers: () => <LayersSubGlyph />,
   map: () => <MapSubGlyph />,
   collaborate: () => <CollaborateGlyph size={16} />,

@@ -775,7 +775,7 @@ export const SLIDES_ADDED = chart(
   'Added',
   'Slides Added',
   'A slide added to a deck: from a selection, an Illustrate page, a Plan card or a whole Plan board as a slide.',
-  { types: ['Slide', 'PageSlide', 'ItemSlide', 'BoardSlide'] },
+  { types: ['Slide', 'PageSlide', 'ItemSlide', 'BoardSlide', 'AllPageSlides'] },
 );
 
 export const SLIDES_REMOVED = chart(
@@ -804,6 +804,15 @@ export const PRESENTER_SETTINGS_CHANGED = chart(
   { typeIn: (type) => (type ?? '').startsWith('Presentation-') },
 );
 
+// The Settings dialog's presenter switches send UI·Toggled·Presentation-<field>On|Off.
+export const PRESENTER_SETTINGS_TOGGLED = chart(
+  'UI',
+  'Toggled',
+  'Presenter Settings Switched',
+  'A presentation switch turned on or off in Settings: advance on click, loop, or what the presenter sees.',
+  { typeIn: (type) => (type ?? '').startsWith('Presentation-') },
+);
+
 export const PRESENTATIONS: MetricStack = {
   stack: true,
   title: 'Presentations',
@@ -818,6 +827,7 @@ export const PRESENTATIONS: MetricStack = {
     SLIDE_NOTES,
     SLIDES_REORDERED,
     PRESENTER_SETTINGS_CHANGED,
+    PRESENTER_SETTINGS_TOGGLED,
   ],
   headline: PRESENTATIONS_STARTED,
 };

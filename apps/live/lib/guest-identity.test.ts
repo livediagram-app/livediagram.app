@@ -24,7 +24,7 @@ function fakeStorage(): Storage {
     clear: () => m.clear(),
     key: () => null,
     length: 0,
-  } as unknown as Storage;
+  };
 }
 
 beforeEach(() => {

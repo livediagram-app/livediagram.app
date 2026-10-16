@@ -22,7 +22,6 @@ export type FocusInvite = {
   from: string;
   tabId: string;
   at: { x: number; y: number };
-  zoom: number;
 };
 
 // Long enough to look up from what you were doing, short enough that it is
@@ -32,20 +31,16 @@ const EXPIRY_MS = 60_000;
 export function useFocusInvite(deps: {
   /** Switch to the tab the invitation points at, when it is not this one. */
   onFollowTab: (tabId: string) => void;
-  /** Centre a canvas point at a given zoom. */
-  onCentreOn: (at: { x: number; y: number }, zoom: number) => void;
+  /** Centre a canvas point, keeping this viewer's own zoom: the presser's zoom
+   *  shows a different amount of canvas on a different screen size. */
+  onCentreOn: (at: { x: number; y: number }) => void;
   /** Is this view already the one the invitation would give? */
-  isAlreadyThere: (tabId: string, at: { x: number; y: number }, zoom: number) => boolean;
+  isAlreadyThere: (tabId: string, at: { x: number; y: number }) => boolean;
 }): {
   invite: FocusInvite | null;
   /** An invitation arrived. Replaces any earlier one: the room has one current
    *  "look at this", and an older one is stale by definition. */
-  receiveFocusHere: (
-    from: string,
-    tabId: string,
-    at: { x: number; y: number },
-    zoom: number,
-  ) => void;
+  receiveFocusHere: (from: string, tabId: string, at: { x: number; y: number }) => void;
   /** Take it: switch tab if needed, then centre. One-off, so it clears itself
    *  and leaves nothing pinned. */
   acceptFocus: () => void;
@@ -65,14 +60,14 @@ export function useFocusInvite(deps: {
   }, [invite]);
 
   const receiveFocusHere = useCallback(
-    (from: string, tabId: string, at: { x: number; y: number }, zoom: number) => {
-      // Already looking at it, at about that zoom? Then there is nothing to
+    (from: string, tabId: string, at: { x: number; y: number }) => {
+      // Already looking at it? Then there is nothing to
       // offer. A press gets repeated (to catch latecomers, or because the
       // first one went out before somebody joined), and a repeat has to reach
       // the people who said no without putting a dialog over the people who
       // came. Their view is the difference between the two, so it decides.
-      if (ref.current.isAlreadyThere(tabId, at, zoom)) return;
-      setInvite({ from, tabId, at, zoom });
+      if (ref.current.isAlreadyThere(tabId, at)) return;
+      setInvite({ from, tabId, at });
     },
     [ref],
   );
@@ -89,7 +84,7 @@ export function useFocusInvite(deps: {
     // Tab first: centring a point on a tab you are not on yet would leave you
     // looking at the right coordinates of the wrong canvas.
     ref.current.onFollowTab(current.tabId);
-    ref.current.onCentreOn(current.at, current.zoom);
+    ref.current.onCentreOn(current.at);
   }, [ref, liveRef]);
 
   const dismissFocus = useCallback(() => setInvite(null), []);

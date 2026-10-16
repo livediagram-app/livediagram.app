@@ -9,7 +9,7 @@
 // and a single string-length walk converts between DOM points and character
 // offsets in both directions.
 
-import { normalizeRuns, type RunSize, type TextRun } from '@livediagram/document';
+import { normalizeRuns, type TextRun } from '@livediagram/document';
 
 // data-* attribute names carried on each rendered span. Render
 // (`dataAttrsForRun`) and read-back (`readRunsFromDom`) must agree, so they
@@ -28,6 +28,8 @@ const DATA = {
   // character inside a heading or a link inherits it.
   link: 'data-rt-link',
   heading: 'data-rt-heading',
+  // A caption's quieter run (docs/specs/009-elements/block-type-picker.md "Title and Caption").
+  muted: 'data-rt-muted',
 } as const;
 
 // Marks the render-only trailing <br>. A '\n' at the very end of the content
@@ -76,6 +78,7 @@ export function dataAttrsForRun(run: TextRun): Record<string, string> {
   if (run.color !== undefined) out[DATA.color] = run.color;
   if (run.link !== undefined) out[DATA.link] = run.link;
   if (run.heading !== undefined) out[DATA.heading] = String(run.heading);
+  if (run.muted !== undefined) out[DATA.muted] = String(run.muted);
   return out;
 }
 
@@ -96,13 +99,17 @@ function attrsFromElement(el: HTMLElement): Omit<TextRun, 'text'> {
   if (u !== undefined) out.underline = u;
   if (s !== undefined) out.strikethrough = s;
   const size = el.getAttribute(DATA.size);
-  if (size === 'xs' || size === 'sm' || size === 'md' || size === 'lg') out.size = size as RunSize;
+  if (size === 'xs' || size === 'sm' || size === 'md' || size === 'lg') out.size = size;
   const color = el.getAttribute(DATA.color);
   if (color) out.color = color;
   const link = el.getAttribute(DATA.link);
   if (link) out.link = link;
   const heading = el.getAttribute(DATA.heading);
-  if (heading === '1' || heading === '2') out.heading = heading === '1' ? 1 : 2;
+  // Every level the picker offers reads back, or a typed character inside a Heading 3 lost it.
+  if (heading === '1' || heading === '2' || heading === '3')
+    out.heading = Number(heading) as 1 | 2 | 3;
+  const muted = bool(DATA.muted);
+  if (muted !== undefined) out.muted = muted;
   return out;
 }
 

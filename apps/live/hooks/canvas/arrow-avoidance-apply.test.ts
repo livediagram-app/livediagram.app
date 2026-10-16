@@ -8,8 +8,16 @@ import { applyCollisionAvoidance } from './arrow-avoidance-apply';
 // these assertions pin the mapping around it (role assignment, the
 // untouched-default guard, and the written wire fields).
 
-const shape = (id: string, x: number, y: number, w = 120, h = 80): Element =>
-  ({ id, type: 'shape', shape: 'square', x, y, width: w, height: h, label: id }) as Element;
+const shape = (id: string, x: number, y: number, w = 120, h = 80): Element => ({
+  id,
+  type: 'shape',
+  shape: 'square',
+  x,
+  y,
+  width: w,
+  height: h,
+  label: id,
+});
 
 const arrowBetween = (id: string, fromId: string, toId: string): ArrowElement => ({
   id,
@@ -38,6 +46,25 @@ describe('applyCollisionAvoidance', () => {
     expect(arr.curveOffset!.dx).toBeGreaterThan(0);
     // Everything else passes through untouched (same references).
     expect(out.find((e) => e.id === 'mid')).toBe(out.find((e) => e.id === 'mid'));
+  });
+
+  it('makes a Professional arrow a right-angled connector, from its tab or its own finish', () => {
+    const els = scene();
+    const style = (out: Element[]) => (out.find((e) => e.id === 'arr') as ArrowElement).arrowStyle;
+    const fromTab = applyCollisionAvoidance(els, 'arr', 'professional');
+    expect(style(fromTab)).toBe('angled');
+    expect((fromTab.find((e) => e.id === 'arr') as ArrowElement).curveOffset).toBeUndefined();
+    // Clear chord too: still angled.
+    const clear = els.filter((e) => e.id !== 'mid');
+    expect(style(applyCollisionAvoidance(clear, 'arr', 'professional'))).toBe('angled');
+    const own = els.map((e) => (e.id === 'arr' ? { ...e, finish: 'professional' as const } : e));
+    expect(style(applyCollisionAvoidance(own, 'arr'))).toBe('angled');
+    // An arrow's own Flexible beats a Professional tab.
+    const flexible = els.map((e) => (e.id === 'arr' ? { ...e, finish: 'flexible' as const } : e));
+    const out = applyCollisionAvoidance(flexible, 'arr', 'professional');
+    expect((out.find((e) => e.id === 'arr') as ArrowElement).arrowStyle).toBe('curved');
+    // Sketch bows like Flexible.
+    expect(applyCollisionAvoidance(els, 'arr', 'sketch')).not.toBe(els);
   });
 
   it('leaves the arrow alone when the chord is clear', () => {
@@ -71,7 +98,7 @@ describe('applyCollisionAvoidance', () => {
         type: 'arrow',
         from: { kind: 'pinned', elementId: 'b', anchor: 'e' },
         to: { kind: 'pinned', elementId: 'a', anchor: 'e' },
-      } as ArrowElement,
+      },
     ];
     const out = applyCollisionAvoidance(els, 'arr');
     const arr = out.find((e) => e.id === 'arr') as ArrowElement;
@@ -92,7 +119,7 @@ describe('applyCollisionAvoidance', () => {
         type: 'arrow',
         from: { kind: 'pinned', elementId: 'b', anchor: 'ne' },
         to: { kind: 'pinned', elementId: 'a', anchor: 'se' },
-      } as ArrowElement,
+      },
     ];
     const out = applyCollisionAvoidance(els, 'arr');
     const arr = out.find((e) => e.id === 'arr') as ArrowElement;

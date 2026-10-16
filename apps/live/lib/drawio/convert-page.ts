@@ -94,7 +94,7 @@ export function convertPage(graph: DrawioGraph, input: PageContext): ConvertedPa
   });
 
   const place = (el: Element, layerId: string | undefined) => {
-    slots.push(layered && layerId ? ({ ...el, layerId } as Element) : el);
+    slots.push(layered && layerId ? { ...el, layerId } : el);
   };
 
   const visit = (id: string, layerId: string | undefined) => {
@@ -197,7 +197,7 @@ export function convertPage(graph: DrawioGraph, input: PageContext): ConvertedPa
       continue;
     }
     for (const el of edges.build(slot)) {
-      elements.push(layered && slot.layerId ? ({ ...el, layerId: slot.layerId } as Element) : el);
+      elements.push(layered && slot.layerId ? { ...el, layerId: slot.layerId } : el);
     }
   }
   elements = edges.finish(elements);

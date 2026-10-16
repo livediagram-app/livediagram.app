@@ -12,6 +12,7 @@
 // colours given a `palette` (Setup Board), else the menu's.
 import { useRef, type KeyboardEvent, type ReactNode } from 'react';
 import { CheckIcon, useMenuKind } from '@livediagram/ui';
+import { onMouseHover } from '@/components/primitives/hover-preview';
 import type { PlanPalette } from './plan-palette';
 
 export type OptionRow = {
@@ -42,6 +43,8 @@ export function OptionRows({
   label,
   rows,
   onPick,
+  onPreview,
+  onPreviewEnd,
   palette,
   className = '',
   ...kind
@@ -50,6 +53,9 @@ export function OptionRows({
   label: string;
   rows: readonly OptionRow[];
   onPick: (id: string) => void;
+  // A live preview while a mouse rests on a row (a style picker's hover preview); touch never previews.
+  onPreview?: (id: string) => void;
+  onPreviewEnd?: () => void;
   palette?: PlanPalette;
   // The caller's spacing only.
   className?: string;
@@ -131,6 +137,8 @@ export function OptionRows({
             }
             onKeyDown={move}
             onClick={() => onPick(r.id)}
+            onPointerEnter={onPreview ? onMouseHover(() => onPreview(r.id)) : undefined}
+            onPointerLeave={onPreviewEnd ? onMouseHover(onPreviewEnd) : undefined}
           >
             {r.icon ? (
               <span aria-hidden className="flex shrink-0 items-center justify-center">
@@ -158,7 +166,7 @@ export function OptionRows({
                 aria-hidden
                 className={`flex h-4 w-4 shrink-0 items-center justify-center rounded ${
                   on
-                    ? 'bg-brand-500 text-white dark:bg-brand-600'
+                    ? 'bg-brand-700 text-white dark:bg-brand-600'
                     : 'border border-slate-300 dark:border-slate-600'
                 }`}
               >

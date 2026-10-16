@@ -28,6 +28,20 @@ type RoomHandle = { send: (msg: RoomOutgoing) => void };
 // it is never rendered (docs/specs/012-collaboration/live-poll.md — results carry no identity).
 export type PollAnswers = Map<string, string | null>;
 
+// Who may end the poll and sees its host controls (docs/specs/012-collaboration/facilitator.md "Poll: start, end"):
+// its starter, unless somebody else has since taken the baton (the room would refuse the end), and the facilitator
+// whoever started it, as the room allows, so a baton taken mid-poll never leaves it without an End.
+export function pollHostFor(input: {
+  started: boolean;
+  open: boolean;
+  sessionToolsBlocked: boolean;
+  facilitating: boolean;
+}): boolean {
+  if (!input.open) return false;
+  if (input.facilitating) return true;
+  return input.started && !input.sessionToolsBlocked;
+}
+
 export function useLivePoll(deps: {
   roomRef: React.RefObject<RoomHandle | null>;
   // The people currently in the document, for a `collaborators` poll (docs/specs/012-collaboration/live-poll.md).

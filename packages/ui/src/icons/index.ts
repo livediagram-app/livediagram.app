@@ -31,7 +31,14 @@ export {
   MinimizeIcon,
   SearchIcon,
 } from './navigation';
-export { CircleXIcon, PrivateDotIcon, SharedDotIcon, SparkleIcon, TabsLabelIcon } from './status';
+export {
+  CircleXIcon,
+  PrivateDotIcon,
+  SharedDotIcon,
+  SparkleIcon,
+  TabsLabelIcon,
+  TeamIcon,
+} from './status';
 export {
   ActionIcon,
   CommentIcon,
@@ -47,8 +54,15 @@ export {
   IllustrateIcon,
   PlanCardsIcon,
   PlanIcon,
+  FlipchartIcon,
   MarkerIcon,
-  MindmapIcon,
 } from './drawing-kinds';
-export { LayersStackIcon, RedoIcon, SettingsIcon, ThemeBrushIcon, UndoIcon } from './editor-chrome';
+export {
+  LayersStackIcon,
+  RedoIcon,
+  SettingsIcon,
+  ThemeLookIcon,
+  TidyUpIcon,
+  UndoIcon,
+} from './editor-chrome';
 export { HeartIcon } from './community';

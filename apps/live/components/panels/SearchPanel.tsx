@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { LocalOnlyPill } from '@/components/primitives/LocalOnlyPill';
-import { SearchIcon, useEscape } from '@livediagram/ui';
+import { NoMatches, SearchIcon, useEscape } from '@livediagram/ui';
 import type { Tab } from '@livediagram/document';
 import {
   buildSearchResults,
@@ -16,6 +16,14 @@ import {
 } from '@/lib/search';
 import { titleCaseType, track } from '@/lib/telemetry';
 import { SearchResultIcon } from './search-panel-icons';
+import type {
+  SearchPanelDocument,
+  SearchPanelFolder,
+  SearchPanelShared,
+  SearchPanelTeam,
+  SearchPanelTeamDocument,
+  SearchPanelTeamFolder,
+} from './search-panel-sources';
 
 // Global search panel: triggered from a footer button, blurs the
 // canvas behind it, pops up near the top-centre. The scope is
@@ -27,13 +35,6 @@ import { SearchResultIcon } from './search-panel-icons';
 // Selection navigates to the right surface (open the document /
 // switch tabs / select the element / jump to the team). Esc +
 // outside-click close; Enter on the first match picks it.
-
-type SearchPanelDocument = { id: string; name: string; localOnly?: boolean };
-type SearchPanelFolder = { id: string; name: string };
-type SearchPanelShared = { id: string; name: string; shareCode: string };
-type SearchPanelTeam = { id: string; name: string };
-type SearchPanelTeamFolder = { id: string; path: string; teamId: string; teamName: string };
-type SearchPanelTeamDocument = { id: string; name: string; teamId: string; teamName: string };
 
 type SearchPanelProps = {
   documents: SearchPanelDocument[];
@@ -290,9 +291,24 @@ export function SearchPanel({
         </div>
         <div className="max-h-[60vh] overflow-y-auto py-1">
           {groups.length === 0 ? (
-            <p className="px-3 py-6 text-center text-xs text-slate-500 dark:text-slate-400">
-              {query ? 'No matches.' : 'Start typing to search.'}
-            </p>
+            query.trim() ? (
+              // The shared empty state (docs/specs/004-interface-design/empty-states.md), naming what is searched.
+              <NoMatches
+                size="regular"
+                className="py-6"
+                things={
+                  tabs
+                    ? 'documents, tabs, elements or help articles'
+                    : 'documents, folders or help articles'
+                }
+                query={query}
+                onClear={() => setQuery('')}
+              />
+            ) : (
+              <p className="px-3 py-6 text-center text-xs text-slate-500 dark:text-slate-400">
+                Start typing to search.
+              </p>
+            )
           ) : (
             groups.map((group) => {
               const baseIndex = flatItems.findIndex((f) => f === group.items[0]);

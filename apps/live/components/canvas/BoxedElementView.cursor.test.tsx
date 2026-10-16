@@ -7,7 +7,12 @@ import { BoxedElementView } from '@/components/canvas/BoxedElementView';
 // docs/specs/013-workspace/share-roles.md: a Participant moves stickies and what it added, nothing else, so the
 // move cursor shows only where a drag would start.
 
-function wrapperFor(props: { readOnly: boolean; movable?: boolean; locked?: boolean }) {
+function wrapperFor(props: {
+  readOnly: boolean;
+  movable?: boolean;
+  locked?: boolean;
+  remoteSelectors?: { id: string; name: string; color: string; holds: boolean }[];
+}) {
   const element = { ...createShape('square', 0, 0), locked: props.locked } as BoxedElement;
   const { container } = render(
     <BoxedElementView
@@ -33,7 +38,7 @@ function wrapperFor(props: { readOnly: boolean; movable?: boolean; locked?: bool
       tabSummaries={[]}
       readOnly={props.readOnly}
       movable={props.movable}
-      remoteSelectors={[]}
+      remoteSelectors={props.remoteSelectors ?? []}
     />,
   );
   return container.querySelector<HTMLElement>(`[data-element-id="${element.id}"]`)!;
@@ -56,5 +61,28 @@ describe('the move cursor', () => {
 
   it('is the plain arrow on a locked element', () => {
     expect(wrapperFor({ readOnly: false, locked: true }).className).toContain('cursor-default');
+  });
+});
+
+// docs/specs/007-editor/live-app.md "Concurrent-selection lock": an Editor's or Participant's selection locks the
+// element for everyone else; a Viewer's only shows its disc.
+describe('a remote selection', () => {
+  const peer = { id: 'p1', name: 'Jae', color: '#8b5cf6' };
+
+  it('locks the element when its holder edits', () => {
+    const cls = wrapperFor({
+      readOnly: false,
+      remoteSelectors: [{ ...peer, holds: true }],
+    }).className;
+    expect(cls).toContain('cursor-not-allowed');
+  });
+
+  it('leaves the element free when a Viewer selected it', () => {
+    const cls = wrapperFor({
+      readOnly: false,
+      remoteSelectors: [{ ...peer, holds: false }],
+    }).className;
+    expect(cls).not.toContain('cursor-not-allowed');
+    expect(cls).toContain('cursor-move');
   });
 });

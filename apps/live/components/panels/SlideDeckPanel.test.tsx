@@ -27,6 +27,7 @@ function state(deck: Deck, pageLabels = new Map<string, string | null>()): Slide
     runnable: [],
     thumbs: new Map(),
     pageLabels,
+    headlines: new Map(),
     newSlideFromSelection: noop,
     newPageSlide: noop,
     addSelectionToSlide: noop,
@@ -49,7 +50,7 @@ const tabs = [
   { id: 'a', name: 'Here' },
   { id: 'b', name: 'There' },
 ];
-const pages = [{ id: 'p1', label: 'Page 1 · A4 · Portrait · Infographic' }];
+const pages = [{ id: 'p1', label: 'Page 1 · A4 · Portrait' }];
 
 function panel(deck: Deck, labels?: Map<string, string | null>, withPages = true) {
   return render(
@@ -68,14 +69,16 @@ function panel(deck: Deck, labels?: Map<string, string | null>, withPages = true
 describe('SlideDeckPanel on an Illustrate tab', () => {
   it('names the page picker button in the empty hint', () => {
     panel({ slides: [] });
-    expect(screen.getByText(/Pick a page, then press/).textContent).toBe(
-      'No slides yet. Pick a page, then press Add as slide.',
+    expect(screen.getByText(/pick any page below and press/).textContent).toBe(
+      'Add your slide pages in one go, or pick any page below and press Add as slide.',
     );
   });
 
   it('keeps the selection hint off an Illustrate tab', () => {
     panel({ slides: [] }, undefined, false);
-    expect(screen.getByText(/No slides yet/).textContent).toContain('then press New slide.');
+    expect(screen.getByText(/first slide, then press/).textContent).toContain(
+      'then press New slide.',
+    );
   });
 
   it("names a page slide's page on another tab, and a deleted page as deleted", () => {
@@ -111,5 +114,64 @@ describe('SlideDeckPanel on an Illustrate tab', () => {
     panel({ slides: [{ id: 's1', tabId: 'a', elementIds: ['x'] }] }, undefined, false);
     fireEvent.click(screen.getByRole('button', { name: /Options for/ }));
     expect(screen.getByText('Selection')).toBeTruthy();
+  });
+});
+
+describe('the Slide Deck popover', () => {
+  const popover = (
+    deck: Deck,
+    extra: Partial<SlideDeckState> = {},
+    pageList: { id: string; label: string; slide?: boolean }[] = pages,
+  ) =>
+    render(
+      <SlideDeckPanel
+        state={{ ...state(deck), ...extra }}
+        tabs={tabs}
+        activeTabId="a"
+        isReadOnly={false}
+        pages={pageList}
+        position={null}
+        onMoveTo={noop}
+        asPopover
+        popoverOpen
+      />,
+    );
+
+  it('names a slide by its headline, counts the deck and its minutes, and presents from a row', () => {
+    const start = vi.fn(async () => {});
+    popover(
+      {
+        slides: [
+          { id: 's1', tabId: 'a', elementIds: [], pageId: 'p1', minutes: 3 },
+          { id: 's2', tabId: 'a', elementIds: [], pageId: 'p2', minutes: 2, notes: 'Hi' },
+        ],
+      },
+      {
+        headlines: new Map([['s1', 'The next ten years']]),
+        runnable: [{ slide: { id: 's1' } }, { slide: { id: 's2' } }] as never,
+        start,
+      },
+    );
+    expect(screen.getByText('The next ten years')).toBeTruthy();
+    expect(screen.getByText('2 slides · 5 min')).toBeTruthy();
+    expect(screen.getByLabelText('Has speaker notes')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Present from slide 2' }));
+    expect(start).toHaveBeenCalledWith('s2');
+  });
+
+  it('adds every slide page not yet in the deck at once', () => {
+    const newPageSlide = vi.fn();
+    popover(
+      { slides: [{ id: 's1', tabId: 'a', elementIds: [], pageId: 'p1' }] },
+      { newPageSlide },
+      [
+        { id: 'p1', label: 'Page 1', slide: true },
+        { id: 'p2', label: 'Page 2', slide: true },
+        { id: 'p3', label: 'Page 3', slide: true },
+        { id: 'p4', label: 'Page 4' },
+      ],
+    );
+    fireEvent.click(screen.getByRole('button', { name: /Add All 2 Slide Pages/ }));
+    expect(newPageSlide.mock.calls.map((c): unknown => c[0])).toEqual(['p2', 'p3']);
   });
 });

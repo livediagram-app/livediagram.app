@@ -3,10 +3,11 @@ import {
   expect,
   dismissQuickTour,
   expectNoPageErrors,
+  openBlankSession,
   startBlankDocument,
   startEventStormingRow,
   startTemplateDocument,
-  untilHydrated,
+  paletteTile,
 } from './fixtures';
 
 // End-to-end smoke suite (docs/specs/003-system-architecture/e2e-smoke.md). Small by design: it answers "does
@@ -17,31 +18,23 @@ import {
 test('the new-document wizard renders', async ({ page, pageErrors }) => {
   await page.goto('/new');
   await expect(page.getByText('New Document', { exact: false })).toBeVisible();
-  // The template shelf is the client-rendered heart of the wizard; its
-  // Popular heading proves the picker mounted, not just the shell.
-  await expect(page.getByRole('heading', { name: 'Popular' })).toBeVisible();
-  await expect(page.getByText('Blank Diagram', { exact: false })).toBeVisible();
+  // The Mode step is the client-rendered heart of the wizard (docs/specs/007-editor/new-document-route.md
+  // "Choosing a mode"); its five mode cards prove the picker mounted, not just the shell.
+  const modes = page.getByRole('group', { name: 'What are you making?' });
+  await expect(modes).toBeVisible();
+  await expect(modes.locator('[data-new-mode]')).toHaveCount(5);
   expectNoPageErrors(pageErrors);
 });
 
-// The wizard dims nothing, so the header stays live beside it: the header's
-// apps menu must paint (and take clicks) in front of the wizard card, not
-// open invisibly behind it.
-test('the apps menu opens in front of the new-document wizard', async ({ page, pageErrors }) => {
+// The editor header carries no apps menu over the new-document wizard: the product's links live in the Explorer
+// panel's footer (docs/specs/013-workspace/explorer-structure.md "Layout").
+test('the new-document wizard shows with no apps menu in the header', async ({
+  page,
+  pageErrors,
+}) => {
   await page.goto('/new');
-  await expect(page.getByText('Blank Diagram', { exact: false })).toBeVisible();
-
-  const switcher = page.getByRole('button', { name: /^switch section/i });
-  await untilHydrated(switcher);
-  await switcher.click();
-  const menu = page.getByRole('menu');
-  await expect(menu).toBeVisible();
-  const menuOnTop = await menu.evaluate((panel) => {
-    const r = panel.getBoundingClientRect();
-    const hit = document.elementFromPoint(Math.round(r.right - 8), Math.round(r.y + r.height / 2));
-    return !!hit && panel.contains(hit);
-  });
-  expect(menuOnTop).toBe(true);
+  await expect(page.locator('[data-new-mode="diagram"]')).toBeVisible();
+  await expect(page.getByRole('button', { name: /^switch section/i })).toHaveCount(0);
   expectNoPageErrors(pageErrors);
 });
 
@@ -72,7 +65,7 @@ test('create a blank document, add a shape, and it survives a reload', async ({
   // into canvas internals.
   const canvas = page.locator('[data-canvas-a11y-root]');
   const square = page.getByRole('img', { name: 'Square', exact: true });
-  await page.getByRole('button', { name: 'Add Square', exact: true }).click();
+  await (await paletteTile(page, 'Add Square')).click();
   await canvas.click({ position: { x: 420, y: 300 } });
   await expect(square).toHaveCount(1);
 
@@ -92,7 +85,7 @@ test('create a blank document, add a shape, and it survives a reload', async ({
 // walks that whole path in a browser, then reloads to prove the board is
 // still a board after a round trip through the api.
 test('an event-storming board stays a board across a reload', async ({ page, pageErrors }) => {
-  await startTemplateDocument(page, /Browse Technical templates/, /^Event storming/i);
+  await startTemplateDocument(page, 'Technical', /^Event storming/i);
   await expect(page).toHaveURL(/\/document\/[0-9a-f-]{36}/);
 
   // The notation palette is the board presenting itself: on any other tab
@@ -310,8 +303,10 @@ test('a note already on the board inserts between two others', async ({ page, pa
 //
 // The bug it guards: the bottom-right cluster gained the Session strip (Timer, Vote, Poll), and at
 // phone width one row could no longer hold it beside Undo, Redo, Layers, the brush and Fit, so Undo
-// was pushed off the left edge. The strip now takes a row of its own on a phone
-// (docs/specs/012-collaboration/session-tools.md "The Session strip"). A desktop run is blind to it.
+// was pushed off the left edge. On a phone the cluster's buttons now share the row's width, so the
+// strip fits beside Undo (docs/specs/012-collaboration/session-tools.md "The Session strip"), and the
+// empty-canvas hint rides just above that one row, clear of the strip's popovers. A desktop run is
+// blind to both.
 test.describe('mobile', () => {
   // Only the properties that create the condition — a narrow viewport and a
   // real touch pointer. Spreading a whole `devices[...]` entry would also set
@@ -327,15 +322,25 @@ test.describe('mobile', () => {
     page,
     pageErrors,
   }) => {
-    await startBlankDocument(page);
-    // A fresh guest gets the tour offer over a scrim that eats taps, a beat after the canvas.
-    await dismissQuickTour(page);
+    // The strip is Facilitate's (docs/specs/012-collaboration/facilitate-mode.md), so a Blank Session.
+    await openBlankSession(page);
 
     // Every cluster button is inside the viewport: nothing pushed off the left edge.
     const undo = page.getByRole('button', { name: /^undo/i });
     await expect(undo).toBeVisible();
     const undoBox = await undo.boundingBox();
     expect(undoBox && undoBox.x >= 0).toBe(true);
+    // And the whole cluster is one row at phone width, the Session strip beside Undo
+    // (docs/specs/012-collaboration/session-tools.md "The Session strip").
+    const rows = await page.locator('[data-zoom-cluster] button').evaluateAll((buttons) => [
+      ...new Set(
+        buttons
+          .map((b) => b.getBoundingClientRect())
+          .filter((r) => r.width > 0)
+          .map((r) => Math.round((r.top + r.bottom) / 2 / 10)),
+      ),
+    ]);
+    expect(rows).toHaveLength(1);
 
     // The Timer opens its set-up as a popover that is genuinely on top, not just present.
     await page.getByRole('button', { name: 'Open Timer' }).tap();

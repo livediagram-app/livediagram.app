@@ -11,8 +11,7 @@ type Shape = Extract<Element, { type: 'shape' }>;
 type Table = Extract<Element, { type: 'table' }>;
 type Box = { x: number; y: number; width: number; height: number };
 
-const texts = (els: Element[]) =>
-  els.filter((el) => el.type === 'text') as Extract<Element, { type: 'text' }>[];
+const texts = (els: Element[]) => els.filter((el) => el.type === 'text');
 const labels = (els: Element[]) =>
   els.map((el) => ('label' in el ? (el.label ?? '') : '')).filter(Boolean);
 const shapesOf = (els: Element[], shape: string) =>
@@ -122,11 +121,12 @@ describe('funnel template', () => {
   const l = labels(els);
   const chips = shapesOf(els, 'stadium').filter((s) => s.label?.includes('move on'));
 
-  it('ramps four tiers from a pale mouth to a saturated tip, theme-locked', () => {
-    const tiers = shapesOf(els, 'trapezoid');
-    expect(tiers).toHaveLength(4);
-    expect(tiers.every((s) => s.themeLockFill && s.rotation === 180)).toBe(true);
-    expect(new Set(tiers.map((s) => s.fillColor)).size).toBe(4);
+  it('is one theme-locked Funnel element ramping from a pale mouth to a saturated tip', () => {
+    expect(shapesOf(els, 'trapezoid')).toHaveLength(0);
+    const [funnel] = shapesOf(els, 'pyramid');
+    expect(funnel).toMatchObject({ pyramidVariant: 'funnel', themeLockFill: true });
+    expect(funnel!.conceptRows).toHaveLength(4);
+    expect(funnel!.strokeColor).not.toBe(funnel!.fillColor);
   });
 
   it('derives each step rate from the counts', () => {
@@ -141,7 +141,11 @@ describe('funnel template', () => {
     expect(arrow.type === 'arrow' && arrow.from.kind === 'pinned' && arrow.from.elementId).toBe(
       worst.id,
     );
-    expect(l).toContain('Biggest drop-off');
+    const callout = shapesOf(els, 'card').find((c) => c.pageTitle === 'Biggest drop-off')!;
+    expect(callout.cardMedia).toBe('badge');
+    expect(arrow.type === 'arrow' && arrow.to.kind === 'pinned' && arrow.to.elementId).toBe(
+      callout.id,
+    );
     const list = shapesOf(els, 'checklist')[0]!;
     expect(list.checklistItems).toHaveLength(3);
     // Each experiment names an owner.
@@ -151,28 +155,24 @@ describe('funnel template', () => {
 
 describe('flywheel template', () => {
   const els = buildTemplate('flywheel', 0, 0);
-  const circles = shapesOf(els, 'circle');
-  const hub = circles.find((c) => c.label === 'Momentum')!;
-  const stages = circles.filter((c) => c !== hub);
+  const [wheel] = shapesOf(els, 'cycle');
 
-  it('spins the hub glyph and tints each stage its own locked hue', () => {
-    expect(hub.iconId).toBe('refresh-cw');
-    expect(hub.iconAnimation).toBe('spin');
-    expect(stages).toHaveLength(4);
-    expect(stages.every((s) => s.themeLockFill && s.iconId)).toBe(true);
-    expect(new Set(stages.map((s) => s.fillColor)).size).toBe(4);
+  it('is one Cycle of the four stages round Momentum, flowing and theme-locked', () => {
+    expect(wheel?.label).toBe('Momentum');
+    expect(wheel?.conceptRows?.map((r) => r.label)).toEqual([
+      'More subscribers',
+      'More weekly orders',
+      'Better farm deals',
+      'Lower box prices',
+    ]);
+    expect(wheel).toMatchObject({ conceptAnim: 'flow', themeLockFill: true });
   });
 
-  it('closes a clockwise loop of flowing pinned arrows', () => {
-    const arrows = els.filter((el) => el.type === 'arrow');
-    expect(arrows).toHaveLength(4);
-    const ids = stages.map((s) => s.id);
-    arrows.forEach((a, i) => {
-      if (a.type !== 'arrow') throw new Error('arrow');
-      expect(a.flow).toBe('dashes');
-      expect(a.from.kind === 'pinned' && a.from.elementId).toBe(ids[i]);
-      expect(a.to.kind === 'pinned' && a.to.elementId).toBe(ids[(i + 1) % 4]);
-    });
+  it('spins the hub glyph over the centre', () => {
+    const hub = shapesOf(els, 'icon').find((i) => i.iconId === 'refresh-cw')!;
+    expect(hub.iconAnimation).toBe('spin');
+    const c = { x: wheel!.x + wheel!.width / 2, y: wheel!.y + wheel!.height / 2 };
+    expect(Math.abs(hub.x + hub.width / 2 - c.x)).toBeLessThan(1);
   });
 
   it('gives every stage a metric and names a push and a friction', () => {
@@ -180,7 +180,6 @@ describe('flywheel template', () => {
     const notes = stickies(els).map((s) => s.label ?? '');
     expect(notes.some((n) => n.startsWith('Push'))).toBe(true);
     expect(notes.some((n) => n.startsWith('Friction'))).toBe(true);
-    for (const s of stickies(els)) for (const c of circles) expect(overlaps(s, c)).toBe(false);
   });
 });
 

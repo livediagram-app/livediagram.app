@@ -4,7 +4,6 @@ import {
   isPlanViewId,
   normaliseBoardSetup,
   presetSetup,
-  type PlanBoardSetup,
 } from '@livediagram/items';
 import { isValidElement, type Element } from '@livediagram/document';
 import { describe, expect, it } from 'vitest';
@@ -12,12 +11,12 @@ import {
   PLAN_TEMPLATE_KINDS,
   PLAN_TEMPLATE_TABS,
   boardSetup,
-  buildPlanTab,
   buildPlanTemplate,
   isPlanTemplateKind,
   planTemplateTabs,
 } from './template-builders-plan';
 import { templateTabs } from './build-template';
+import { planTemplateTabCount } from './plan-template-catalogue';
 
 // The Plan templates (docs/specs/026-plan/plan-templates.md): ways of working across tabs, no cards.
 
@@ -34,14 +33,12 @@ const everyTab = () =>
 
 const boardsOf = (els: Element[]) =>
   els.flatMap((el) =>
-    el.type === 'shape' && el.shape === 'plan-board' && el.planBoard
-      ? [el.planBoard as PlanBoardSetup]
-      : [],
+    el.type === 'shape' && el.shape === 'plan-board' && el.planBoard ? [el.planBoard] : [],
   );
 
-type Box = { x: number; y: number; width: number; height: number };
-const overlaps = (a: Box, b: Box) =>
-  a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height;
+// A template's Dashboard elements: its plan views.
+const viewsOf = (kind: (typeof PLAN_TEMPLATE_KINDS)[number]) =>
+  planTemplateTabs(kind).flatMap((d) => d.build(0, 0));
 
 describe('plan templates', () => {
   it('pins each template’s tabs, in order', () => {
@@ -50,6 +47,7 @@ describe('plan templates', () => {
     );
     expect(names).toEqual({
       'blank-plan': ['Board'],
+      'blank-spreadsheet': ['Sheet'],
       'project-planner': ['Roadmap', 'Backlog', 'Sprint', 'Daily Standup'],
       kanban: ['Board', 'Requests', 'Flow'],
       'bug-triage': ['Triage', 'Fixing', 'Health'],
@@ -64,6 +62,14 @@ describe('plan templates', () => {
       timesheet: ['Timesheet'],
       'contact-list': ['Contacts'],
       'task-tracker': ['Tracker'],
+      invoice: ['Invoice'],
+      'expense-report': ['Expense Report'],
+      'loan-calculator': ['Loan Calculator'],
+      'sales-pipeline': ['Sales Pipeline'],
+      inventory: ['Inventory'],
+      'guest-list': ['Guest List'],
+      'grade-book': ['Grade Book'],
+      'habit-tracker': ['Habit Tracker'],
     });
   });
 
@@ -148,13 +154,13 @@ describe('plan templates', () => {
 
   it('puts a Gantt of the board’s cards under every board of dated cards', () => {
     const dated = new Set(['project', 'role', 'objective']);
-    for (const { spec, label } of everyTab()) {
+    for (const { kind, spec, label } of everyTab()) {
       if (!spec.board) continue;
       const types = boardSetup(spec.board).addTypes ?? [];
       const ofDated = types.length === 1 && dated.has(types[0]!);
       expect(spec.charts?.includes('gantt') ?? false, label).toBe(ofDated);
       if (!ofDated) continue;
-      const gantt = buildPlanTab(spec, 0, 0).find(
+      const gantt = viewsOf(kind).find(
         (el) => el.type === 'shape' && el.shape === 'plan-view' && el.planView?.view === 'gantt',
       );
       const shown = gantt?.type === 'shape' ? gantt.planView?.types : undefined;
@@ -216,60 +222,94 @@ describe('plan templates', () => {
     expect(takes('product-launch')).toEqual([['project'], ['task'], ['launch-check']]);
   });
 
-  it('lays a tab out without overlaps, every view a real one, centred on the point', () => {
-    for (const { spec, label } of everyTab()) {
-      const els = buildPlanTab(spec, 100, -50) as unknown as (Element & Box)[];
-      expect(els.length, label).toBeGreaterThan(0);
-      for (let i = 0; i < els.length; i++)
-        for (let j = i + 1; j < els.length; j++)
-          expect(overlaps(els[i]!, els[j]!), `${label} ${i}/${j}`).toBe(false);
+  // docs/specs/026-plan/plan-tabs.md "Templates": a Board tab per board, a Sheet tab per Sheet, and a Dashboard.
+  it('makes a Board tab of each board alone and a Sheet tab of each Sheet alone', () => {
+    for (const kind of PLAN_TEMPLATE_KINDS) {
+      const defs = planTemplateTabs(kind);
+      const ids = defs.map((_, i) => `id${i}`);
+      defs.forEach((def) => {
+        const els = def.build(100, -50);
+        const fields = def.tab?.(ids) ?? {};
+        const label = `${kind} › ${def.name}`;
+        if (fields.kind === 'board') {
+          expect(boardsOf(els), label).toHaveLength(1);
+          expect(els, label).toHaveLength(1);
+          // Centred on the point.
+          const el = els[0]!;
+          if ('width' in el)
+            expect(Math.abs(el.x + el.width / 2 - 100), label).toBeLessThanOrEqual(1);
+        } else if (fields.kind === 'sheet') {
+          expect(
+            els.map((e) => (e.type === 'shape' ? e.shape : e.type)),
+            label,
+          ).toEqual(['plan-sheet']);
+        } else if (fields.kind === 'dashboard') {
+          for (const el of els)
+            expect(el.type === 'shape' && isPlanViewId(el.planView?.view), label).toBe(true);
+        } else {
+          expect(els, label).toEqual([]);
+        }
+        expect(fields.kind === undefined || fields.opensIn === 'plan', label).toBe(true);
+      });
+    }
+  });
+
+  it('gathers every view and note on the Dashboard, which shows each Board and Sheet tab', () => {
+    for (const kind of PLAN_TEMPLATE_KINDS) {
+      const defs = planTemplateTabs(kind);
+      const ids = defs.map((_, i) => `id${i}`);
+      const dash = defs.findIndex((d) => d.tab?.(ids).kind === 'dashboard');
+      const specs = PLAN_TEMPLATE_TABS[kind];
+      const viewCount = specs.reduce(
+        (n, s) => n + (s.metrics?.length ?? 0) + (s.charts?.length ?? 0),
+        0,
+      );
+      const notes = specs.flatMap((s) => (s.rail ?? []).filter((r) => r.kind === 'sticky'));
+      if (viewCount + notes.length === 0) {
+        expect(dash, kind).toBe(-1);
+        continue;
+      }
+      const layout = defs[dash]!.tab!(ids).dashboard!;
+      const slots = layout.rows.flatMap((r) => r.slots);
+      const els = defs[dash]!.build(0, 0);
+      expect(els, kind).toHaveLength(viewCount);
+      // Every element is in a slot, every tab slot a Board or Sheet tab of the template.
       for (const el of els)
-        if (el.type === 'shape' && el.shape === 'plan-view')
-          expect(isPlanViewId(el.planView?.view), label).toBe(true);
-      const minX = Math.min(...els.map((e) => e.x));
-      const maxX = Math.max(...els.map((e) => e.x + e.width));
-      const minY = Math.min(...els.map((e) => e.y));
-      const maxY = Math.max(...els.map((e) => e.y + e.height));
-      expect(Math.abs((minX + maxX) / 2 - 100), label).toBeLessThanOrEqual(1);
-      expect(Math.abs((minY + maxY) / 2 + 50), label).toBeLessThanOrEqual(1);
+        expect(
+          slots.some((s) => s.content?.type === 'element' && s.content.elementId === el.id),
+          kind,
+        ).toBe(true);
+      const shown = slots.flatMap((s) => (s.content?.type === 'tab' ? [s.content.tabId] : []));
+      const work = defs.flatMap((d, i) =>
+        ['board', 'sheet'].includes(d.tab?.(ids).kind ?? '') ? [ids[i]!] : [],
+      );
+      expect(shown, kind).toEqual(work);
+      expect(
+        slots.filter((s) => s.content?.type === 'note'),
+        kind,
+      ).toHaveLength(notes.length);
     }
   });
 
   it('leaves Blank Plan’s one tab empty, so the tab shows Start Planning', () => {
     expect(PLAN_TEMPLATE_TABS['blank-plan']).toHaveLength(1);
-    expect(buildPlanTab(PLAN_TEMPLATE_TABS['blank-plan'][0]!, 100, -50)).toEqual([]);
+    expect(planTemplateTabs('blank-plan')[0]!.build(100, -50)).toEqual([]);
   });
 
-  it('gives a dashboard tab views only, a spreadsheet tab one Sheet, and every other tab exactly one board', () => {
-    for (const { spec, label } of everyTab()) {
-      const els = buildPlanTab(spec, 0, 0);
-      expect(boardsOf(els), label).toHaveLength(spec.board ? 1 : 0);
-      if (!spec.board && !spec.sheet) expect(spec.charts?.length ?? 0, label).toBeGreaterThan(0);
-    }
-  });
-
-  // plan-templates.md "Spreadsheet templates": a Sheet naming its start, filling its tab when the sheet is the job.
-  it('builds each spreadsheet template’s Sheet, naming its start, filling its tab or on the canvas', () => {
+  // plan-templates.md "Spreadsheet templates": a Sheet naming its start.
+  it('builds each spreadsheet template’s Sheet, naming its start', () => {
     const sheetOf = (kind: Parameters<typeof buildPlanTemplate>[0]) => {
       const els = buildPlanTemplate(kind, 0, 0);
       const sheets = els.filter((el) => el.type === 'shape' && el.shape === 'plan-sheet');
       expect(sheets, kind).toHaveLength(1);
       return sheets[0] as Extract<Element, { type: 'shape' }>;
     };
-    expect(sheetOf('budget-planner').planSheet).toMatchObject({
-      start: 'budget-planner',
-      fillTab: true,
-    });
-    expect(sheetOf('timesheet').planSheet).toMatchObject({ start: 'timesheet', fillTab: true });
-    expect(sheetOf('contact-list').planSheet).toMatchObject({
-      start: 'contact-list',
-      fillTab: true,
-    });
-    const tracker = sheetOf('task-tracker');
-    expect(tracker.planSheet?.start).toBe('task-tracker');
-    expect(tracker.planSheet?.fillTab).toBeUndefined();
-    // The tracker keeps its how-to beside it on the canvas.
-    expect(buildPlanTemplate('task-tracker', 0, 0).some((el) => el.type === 'sticky')).toBe(true);
+    expect(sheetOf('budget-planner').planSheet?.start).toBe('budget-planner');
+    expect(sheetOf('timesheet').planSheet?.start).toBe('timesheet');
+    expect(sheetOf('contact-list').planSheet?.start).toBe('contact-list');
+    expect(sheetOf('task-tracker').planSheet?.start).toBe('task-tracker');
+    // The tracker's how-to is a note on its Overview.
+    expect(planTemplateTabs('task-tracker').map((t) => t.name)).toEqual([null, 'Overview']);
     // Every build is a fresh sheet.
     expect(sheetOf('timesheet').planSheet?.sheetId).not.toBe(
       sheetOf('timesheet').planSheet?.sheetId,
@@ -277,44 +317,13 @@ describe('plan templates', () => {
     for (const el of buildPlanTemplate('contact-list', 0, 0)) expect(isValidElement(el)).toBe(true);
   });
 
-  it('runs the standup with a timer and a picker, and the retro with a check-in', () => {
-    const shapes = (els: Element[]) =>
-      els.flatMap((el) =>
-        el.type === 'shape' ? [el.shape] : el.type === 'sticky' ? ['sticky'] : [],
-      );
-    const daily = PLAN_TEMPLATE_TABS['project-planner'][3]!;
-    expect(shapes(buildPlanTab(daily, 0, 0))).toEqual([
-      'plan-board',
-      'sticky',
-      'session-button',
-      'picker',
-    ]);
-    const timer = buildPlanTab(daily, 0, 0).find(
-      (el) => el.type === 'shape' && el.shape === 'session-button',
-    );
-    expect(timer && 'session' in timer ? timer.session : null).toEqual({
-      tool: 'timer',
-      minutes: 15,
-    });
-    const retro = PLAN_TEMPLATE_TABS['team-retro'][0]!;
-    expect(shapes(buildPlanTab(retro, 0, 0))).toEqual([
-      'plan-board',
-      'sticky',
-      'temperature',
-      'session-button',
-      'session-button',
-    ]);
-    // The retro votes with the tab's session vote (docs/specs/012-collaboration/session-tools.md "Voting on Plan
-    // cards"): a Vote button, 5 dots each.
-    const vote = buildPlanTab(retro, 0, 0).filter(
-      (el) => el.type === 'shape' && el.shape === 'session-button',
-    )[1];
-    expect(vote && 'session' in vote ? vote.session : null).toEqual({ tool: 'vote', dots: 5 });
-  });
-
   it('names the tabs of a template with several, and leaves a one-tab template’s name to the caller', () => {
     expect(planTemplateTabs('blank-plan').map((t) => t.name)).toEqual([null]);
-    expect(planTemplateTabs('okrs').map((t) => t.name)).toEqual(['Objectives', 'Key Results']);
+    expect(planTemplateTabs('okrs').map((t) => t.name)).toEqual([
+      'Objectives',
+      'Key Results',
+      'Overview',
+    ]);
     expect(templateTabs('swot').map((t) => t.name)).toEqual([null]);
     // The first tab is what buildTemplate makes.
     expect(boardsOf(templateTabs('kanban')[0]!.build(0, 0))).toEqual(
@@ -362,5 +371,22 @@ describe('default widgets', () => {
       expect(widgets, label).not.toContain('mine');
       expect(widgets.length, label).toBeLessThanOrEqual(3);
     }
+  });
+});
+
+describe('counting a Plan template’s tabs without building them', () => {
+  it('matches the tabs it makes, for every Plan template', () => {
+    for (const kind of PLAN_TEMPLATE_KINDS)
+      expect(planTemplateTabCount(kind), kind).toBe(planTemplateTabs(kind).length);
+  });
+});
+
+describe('a template board fills its tab', () => {
+  it('draws its cards Detailed, whatever its preset uses on a canvas', () => {
+    for (const kind of PLAN_TEMPLATE_KINDS)
+      for (const def of planTemplateTabs(kind))
+        for (const el of def.build(0, 0))
+          if (el.type === 'shape' && el.shape === 'plan-board')
+            expect(el.planBoard?.cardSize, kind).toBeUndefined();
   });
 });

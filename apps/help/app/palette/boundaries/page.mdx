@@ -1,0 +1,59 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { BoundaryNesting } from '@/components/illustrations/palette-diagram-elements';
+
+export const metadata = helpMetadata({
+  title: 'Boundaries',
+  description:
+    'A boundary is a titled, tinted container for a cloud region, a VPC, a cluster or a C4 system. It carries what sits inside it, and nested boundaries read deeper.',
+  path: '/help/palette/boundaries/',
+});
+
+<ArticleLayout
+  title="Boundaries"
+  description="Titled, tinted containers for regions, networks and systems."
+  categoryTitle="Palette"
+  categorySlug="palette"
+  subArticles={getSubArticles("boundaries")}
+>
+
+A **Boundary** is a container that means something: a cloud region, a VPC, a subnet, a cluster, a trust zone, a system in a C4 diagram. It has a title, a dashed edge and a light tint of its colour, and it carries everything inside it when it moves.
+
+It sits in the palette's [Build](/help/palette/build/) category in Diagram mode, after Frame and Lane.
+
+<Figure caption="A region with its title in a tab, holding an inset VPC that holds a subnet. Each wash stacks, so the subnet reads deepest.">
+  <BoundaryNesting />
+</Figure>
+
+## Take the tour
+
+The first time you select a boundary, a small **Tour** toolbar appears beside its toolbar. Press **Play** for a short tour on your own boundary: what it holds, its title and icon, its meta line, and its three styles. Press the cross if you would rather not; either way it is not offered again. To be offered it again, open **Settings**, then **Tours**, open **Element Tours** and switch **Boundary Tour** back on.
+
+## Styles
+
+Right-click and open the **Boundary** section to pick a style:
+
+- **Tab Style** (the default): the title in a small tab on the top edge, the way cloud vendors draw their regions.
+- **Inset Style**: the title inside the top-left corner. Use it for a boundary nested in another, so the titles don't pile up on the edges.
+- **C4 Style**: the title bold in the bottom-left corner with its type under it in brackets, as the C4 model draws a system boundary.
+
+Double-click to edit the title. Select the boundary and click its second line to type a **meta line**, such as a CIDR range ("10.0.0.0/16") or a C4 type. Drop an icon on a boundary to put it before the title, a cloud for a region or a lock for a trust zone.
+
+## Nesting
+
+Put a boundary inside another and the tints stack, so the deeper a zone is nested, the deeper it reads. Region, VPC and subnet need nothing more than dropping one inside the next. Pick a **Background** colour in **Colours** to use your own fill instead.
+
+## What it holds
+
+A boundary holds the same things a [frame](/help/palette/build/frames/) does:
+
+- An element belongs to it when its **centre** is inside it, and dragging the boundary carries it along.
+- Something inside two containers belongs to the smaller one, so a subnet inside a VPC carries its own contents.
+- It always paints behind what it holds.
+
+Resizing a boundary leaves its contents where they are. Arrows connect to its edge like any shape, for "Internet to VPC".
+
+Its animations are the ones that keep it still (Trace, Glow, Blink, Shimmer, Gradient and Highlight), since a container that bounces while its contents stay put looks broken. Trace runs a light round the dashed edge.
+
+</ArticleLayout>

@@ -849,21 +849,21 @@ Refusals (the `error` string, final copy):
 
 ## Errors and edge cases
 
-| Case                                        | Handling                                                          |
-| ------------------------------------------- | ----------------------------------------------------------------- |
-| Empty text / only whitespace                | Refused `not-xml` (the dialog's Import button is disabled anyway) |
-| A `diagram` with no content                 | An empty page: an empty tab, counted in `pages`                   |
-| A cell with no geometry                     | Vertex: skipped, `hidden-skipped` += 1 (D20); edge: fine          |
-| Zero or negative width / height             | Clamped to 1                                                      |
-| Duplicate cell ids                          | Last one wins in the map; both walk (D21)                         |
-| A parent id that does not exist             | Treated as a child of the first layer                             |
-| A cycle in parents                          | The walk visits each id once; the cycle is broken                 |
-| Edge source = target (self-loop)            | Both ends pinned to the element, different anchors kept as mapped |
-| Non-finite numbers in geometry              | Treated as 0                                                      |
-| An entity with no text rows                 | Not an entity: an ordinary lane                                   |
-| A table with no rows                        | A `square` with the table's label, `shape-approximated`           |
-| `DecompressionStream` missing (old browser) | Compressed pages refused `page-unreadable`; uncompressed import   |
-| A locked active tab                         | Refused before reading, as every format                           |
+| Case                                           | Handling                                                          |
+| ---------------------------------------------- | ----------------------------------------------------------------- |
+| Empty text / only whitespace                   | Refused `not-xml` (the dialog's Import button is disabled anyway) |
+| A `diagram` with no content                    | An empty page: an empty tab, counted in `pages`                   |
+| A cell with no geometry                        | Vertex: skipped, `hidden-skipped` += 1 (D20); edge: fine          |
+| Zero or negative width / height                | Clamped to 1                                                      |
+| Duplicate cell ids                             | Last one wins in the map; both walk (D21)                         |
+| A parent id that does not exist                | Treated as a child of the first layer                             |
+| A cycle in parents                             | The walk visits each id once; the cycle is broken                 |
+| Edge source = target (self-loop)               | Both ends pinned to the element, different anchors kept as mapped |
+| Non-finite or past-`IMPORT_COORD_MAX` geometry | Treated as 0                                                      |
+| An entity with no text rows                    | Not an entity: an ordinary lane                                   |
+| A table with no rows                           | A `square` with the table's label, `shape-approximated`           |
+| `DecompressionStream` missing (old browser)    | Compressed pages refused `page-unreadable`; uncompressed import   |
+| A locked active tab                            | Refused before reading, as every format                           |
 
 ## Security and trust
 
@@ -1005,6 +1005,7 @@ End to end: `e2e/drawio-import.spec.ts` on the production build (`scripts/e2e-st
 | `DRAWIO_MAX_FILE_BYTES`                         | 50 MiB                                                                                                                                                      | Spec; 10 to 200 MiB                                                                                                                           |
 | `DRAWIO_MAX_INFLATED_BYTES`                     | 100 MiB                                                                                                                                                     | Spec; at least the file limit                                                                                                                 |
 | `DRAWIO_MAX_PAGES`                              | 100                                                                                                                                                         | Spec; 1 to 500                                                                                                                                |
+| `IMPORT_COORD_MAX`                              | 1e7 px either side of zero, `apps/live/lib/import-coords.ts`; a geometry number past it reads as 0                                                          | Shared with the board scene landing; 1e6 to 1e12. A finite 1e308 plus a parent offset overflowed to Infinity                                  |
 | `MAX_ELEMENTS_PER_TAB`                          | 10 000                                                                                                                                                      | `@livediagram/document` validate.ts                                                                                                           |
 | `DRAWIO_DEFAULT_ARC_SIZE`                       | 10 (%)                                                                                                                                                      | draw.io's `mxConstants.RECTANGLE_ROUNDING_FACTOR`                                                                                             |
 | `DRAWIO_SHADOW`                                 | `{2, 3, 3, 0.25}`                                                                                                                                           | draw.io's shadow offset (2, 3) and opacity, D22                                                                                               |

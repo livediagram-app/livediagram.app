@@ -12,17 +12,8 @@ import { MenuFlyoutSection } from '@/components/primitives/MenuFlyoutSection';
 import { MenuAccordionSection, MenuActionRow } from '@/components/primitives/PortalMenu';
 import { PlanTypeGlyph } from '@/components/plan/plan-type-glyph';
 import { usePlan } from '@/components/plan/PlanContext';
-import { track } from '@/lib/telemetry';
-import {
-  GANTT_DEFAULT_TYPES,
-  breakdownGroupingOf,
-  viewChosenTypes,
-  viewEligibleTypes,
-  viewNeeds,
-  viewShownTypes,
-  readPlanViewSettings,
-} from '@livediagram/items';
 import { InfoNote, SwimlaneOptions, CardTypeOptions } from './plan-menu-parts';
+import { planViewSettingsModel, viewTypesNote } from '@/components/plan/views/plan-view-settings';
 
 type FlyoutProps = Omit<ComponentProps<typeof MenuFlyoutSection>, 'title' | 'icon' | 'children'>;
 type SectionProps = { open: boolean; onToggle: () => void; flush?: boolean };
@@ -38,16 +29,8 @@ export function PlanViewMenuSection({
   sectionProps: (id: string) => SectionProps;
 }) {
   const plan = usePlan();
-  // The old Parent grouping reads as the Parent field (legacy-parent).
-  const settings = element.planView ? readPlanViewSettings(element.planView) : undefined;
-  if (!plan || !plan.canEdit || !settings) return null;
-  const view = settings.view;
-  const gantt = view === 'gantt';
-  const eligible = viewEligibleTypes(view, plan.types);
-  const eligibleIds = new Set(eligible.map((t) => t.id));
-  const chosen = viewChosenTypes(view, settings, plan.types);
-  const shown = plan.types.filter((t) => viewShownTypes(view, settings, plan.types).includes(t.id));
-  const grouping = view === 'workload' ? breakdownGroupingOf(settings) : null;
+  if (!plan || !plan.canEdit || !element.planView) return null;
+  const m = planViewSettingsModel(plan, element.id, element.planView);
   return (
     <MenuFlyoutSection title="View" icon={<PlanIcon size={16} />} {...flyoutProps}>
       <MenuAccordionSection
@@ -55,28 +38,10 @@ export function PlanViewMenuSection({
         icon={<PlanIcon size={16} />}
         {...sectionProps('plan-view-types')}
       >
-        <ViewTypesNote needs={viewNeeds(view)} />
-        <CardTypeOptions
-          types={eligible}
-          selected={chosen.filter((id) => eligibleIds.has(id))}
-          onChange={(picked) => {
-            const { types: _types, ...rest } = settings;
-            // A named type that has lost a field the view needs is not listed, but the view keeps naming it (it
-            // comes back when the type has it again): the toggle keeps it alongside what was picked.
-            const kept = chosen.filter((id) => !eligibleIds.has(id));
-            const next = [...picked, ...kept];
-            // The default is dropped rather than stored: Project alone for a Gantt chart, every type otherwise.
-            const isDefault = gantt
-              ? next.length === GANTT_DEFAULT_TYPES.length &&
-                next.every((t) => GANTT_DEFAULT_TYPES.includes(t))
-              : eligible.every((t) => next.includes(t.id)) && kept.length === 0;
-            plan.updateView(element.id, isDefault ? rest : { ...rest, types: next });
-            if (gantt) track('Plan', 'Changed', 'GanttTypes');
-            else track('Plan', 'Changed', 'ViewTypes');
-          }}
-        />
+        <InfoNote>{viewTypesNote(m.needs)}</InfoNote>
+        <CardTypeOptions types={m.eligible} selected={m.selected} onChange={m.setTypes} />
       </MenuAccordionSection>
-      {grouping ? (
+      {m.grouping ? (
         <MenuAccordionSection
           title="Group By"
           icon={<PlanIcon size={16} />}
@@ -84,76 +49,37 @@ export function PlanViewMenuSection({
         >
           <InfoNote>The field this chart gives a bar to each value of.</InfoNote>
           <SwimlaneOptions
-            by={grouping.by}
-            field={grouping.field}
-            types={shown}
+            by={m.grouping.by}
+            field={m.grouping.field}
+            types={m.shown}
             allTypes={plan.types}
             noNone
-            onPick={(by, field) => {
-              const { swimlaneBy: _by, swimlaneField: _field, ...rest } = settings;
-              plan.updateView(
-                element.id,
-                by === 'assignee'
-                  ? rest
-                  : { ...rest, swimlaneBy: by, ...(field ? { swimlaneField: field } : {}) },
-              );
-              track('Plan', 'Changed', 'ViewGrouping');
-            }}
+            onPick={m.setGrouping}
           />
         </MenuAccordionSection>
       ) : null}
-      {gantt ? (
+      {m.gantt ? (
         <MenuAccordionSection
           title="Swimlanes"
           icon={<PlanIcon size={16} />}
           {...sectionProps('plan-view-swimlanes')}
         >
           <SwimlaneOptions
-            by={settings.swimlaneBy ?? 'none'}
-            field={settings.swimlaneField}
-            types={shown}
+            by={m.settings.swimlaneBy ?? 'none'}
+            field={m.settings.swimlaneField}
+            types={m.shown}
             allTypes={plan.types}
-            onPick={(by, field) => {
-              const { swimlaneBy: _by, swimlaneField: _field, ...rest } = settings;
-              plan.updateView(
-                element.id,
-                by === 'none'
-                  ? rest
-                  : { ...rest, swimlaneBy: by, ...(field ? { swimlaneField: field } : {}) },
-              );
-              track('Plan', 'Changed', 'GanttSwimlanes');
-            }}
+            onPick={m.setSwimlanes}
           />
         </MenuAccordionSection>
       ) : null}
-      {gantt && settings.rowOrder ? (
+      {m.gantt && m.settings.rowOrder ? (
         <MenuActionRow
           label="Sort by Date"
           icon={<PlanTypeGlyph glyph="calendar" size={16} />}
-          onClick={() => {
-            const { rowOrder: _order, ...rest } = settings;
-            plan.updateView(element.id, rest);
-            track('Plan', 'Changed', 'GanttRowOrder');
-          }}
+          onClick={m.sortByDate}
         />
       ) : null}
     </MenuFlyoutSection>
   );
-}
-
-const NEED_LABELS: Record<string, string> = {
-  start: 'Start',
-  due: 'Due',
-  priority: 'Priority',
-  assignee: 'Assignee',
-  estimate: 'Estimate',
-  votes: 'Votes',
-};
-
-// Which card types the view charts, and why some are missing: the view reads fields a type must offer.
-function ViewTypesNote({ needs }: { needs: readonly string[] }) {
-  if (needs.length === 0) return <InfoNote>The card types this view charts.</InfoNote>;
-  const names = needs.map((f) => NEED_LABELS[f] ?? f);
-  const list = names.length === 1 ? `a ${names[0]} field` : `${names.join(' and ')} fields`;
-  return <InfoNote>The card types this view charts; only those with {list} are listed.</InfoNote>;
 }

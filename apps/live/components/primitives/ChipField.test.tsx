@@ -32,7 +32,7 @@ function Harness({ initial = [] as string[], readOnly = false }) {
   );
 }
 
-const field = () => screen.getByLabelText('Chips') as HTMLInputElement;
+const field = () => screen.getByLabelText<HTMLInputElement>('Chips');
 const chips = () => screen.getByTestId('chips').textContent;
 
 describe('ChipField', () => {

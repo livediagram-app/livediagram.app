@@ -94,6 +94,25 @@ describe('handleFolders auth', () => {
     expect(res.status).toBe(201);
   });
 
+  it('409 on a create whose id is already taken, never a 500', async () => {
+    db.createFolder.mockRejectedValue(
+      new Error('D1_ERROR: UNIQUE constraint failed: folders.id: SQLITE_CONSTRAINT'),
+    );
+    const res = await handleFolders(
+      makeCtx('POST', '/api/folders', { body: { id: 'f2', name: 'Sub' } }),
+    );
+    expect(res.status).toBe(409);
+    expect(await res.json()).toEqual({ error: 'folder_exists' });
+    expect(timeline.recordFolderCreated).not.toHaveBeenCalled();
+  });
+
+  it('still throws an unexpected create failure', async () => {
+    db.createFolder.mockRejectedValue(new Error('D1_ERROR: network'));
+    await expect(
+      handleFolders(makeCtx('POST', '/api/folders', { body: { id: 'f2', name: 'Sub' } })),
+    ).rejects.toThrow('network');
+  });
+
   it('404 when updating a folder that does not exist', async () => {
     db.getFolder.mockResolvedValue(null);
     const res = await handleFolders(makeCtx('PUT', '/api/folders/f9', { body: { name: 'x' } }));

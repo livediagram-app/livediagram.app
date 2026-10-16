@@ -60,6 +60,36 @@ describe('PlanCardMenu', () => {
     expect(onEditType).toHaveBeenCalledOnce();
   });
 
+  // docs/specs/013-workspace/share-roles.md: a Participant works on cards (duplicates, moves, flags) and never
+  // retires them or changes their type, as the item panel's menu offers it; a Viewer only opens.
+  it('gives a Participant Duplicate, Move to and Flag, and a Viewer Open alone', () => {
+    const menu = (canEdit: boolean, canRetire: boolean) =>
+      render(
+        <PlanCardMenu
+          at={{ x: 10, y: 10 }}
+          title="Ship"
+          canEdit={canEdit}
+          canRetire={canRetire}
+          columns={[{ status: 'done', name: 'Done' }]}
+          onOpen={vi.fn()}
+          onDuplicate={vi.fn()}
+          onMove={vi.fn()}
+          onTrash={vi.fn()}
+          onArchive={vi.fn()}
+          onFlag={vi.fn()}
+          onEditType={vi.fn()}
+          onAddSlide={vi.fn()}
+          onClose={vi.fn()}
+        />,
+      );
+    const rows = () => screen.getAllByRole('button').map((b) => b.textContent);
+    menu(true, false);
+    expect(rows()).toEqual(['Open', 'Duplicate', 'Move to Done', 'Flag']);
+    cleanup();
+    menu(false, false);
+    expect(rows()).toEqual(['Open']);
+  });
+
   // docs/specs/026-plan/item-types.md "An item type": Move To never offers a status the card's type leaves out.
   it('offers no column whose status the card’s type leaves out', () => {
     const types = ITEM_TYPES.map((t) =>

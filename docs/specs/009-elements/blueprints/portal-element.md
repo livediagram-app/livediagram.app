@@ -13,7 +13,7 @@ Scope, by file:
 | `packages/document/src/svg-render-faces.ts`          | The export ring (`'portal'`)                                      |
 | `apps/live/lib/portals.ts`                           | Names, sites, resolution, exit point, camera centring             |
 | `apps/live/components/canvas/portal-travel.ts`       | `usePortalTravel`: `enterPortal` and `resolvePortal`, no state    |
-| `apps/live/components/canvas/Canvas.tsx`             | Calls `usePortalTravel`; walk-in through `enterPortalRef`         |
+| `apps/live/components/canvas/useCanvasAvatar.tsx`    | Calls `usePortalTravel`; walk-in through `enterPortalRef`         |
 | `apps/live/hooks/canvas/useAvatarWalk.ts`            | Arrival hook, `teleportTo`, the ignored exit portal               |
 | `apps/live/components/canvas/PortalFace.tsx`         | The ring, lit / dead states, the press, hover cards               |
 | `apps/live/components/canvas/ElementFaceRouter.tsx`  | Renders the face while not editing                                |

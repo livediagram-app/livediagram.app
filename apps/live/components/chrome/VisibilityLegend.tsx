@@ -44,9 +44,9 @@ const LOOK: Record<
   team: {
     icon: <TeamGlyph />,
     reach: 'Team',
-    stop: 'bg-brand-600 text-white ring-brand-200 dark:bg-brand-600 dark:ring-brand-500/40',
+    stop: 'bg-brand-700 text-white ring-brand-200 dark:bg-brand-600 dark:ring-brand-500/40',
     hero: 'from-brand-50 to-white dark:from-brand-500/15 dark:to-slate-900',
-    ink: 'text-brand-600 dark:text-brand-300',
+    ink: 'text-brand-700 dark:text-brand-300',
     eyebrow: 'text-brand-700 dark:text-brand-300',
   },
   community: {
@@ -117,7 +117,6 @@ function ReachRings({ state }: { state: ShareState }) {
 }
 
 function Hero({ state, current }: { state: ShareState; current: boolean }) {
-  const m = SHARE_STATE_META[state];
   const look = LOOK[state];
   return (
     <div
@@ -125,18 +124,46 @@ function Hero({ state, current }: { state: ShareState; current: boolean }) {
       className={`flex items-center gap-3 rounded-t-xl bg-gradient-to-b px-4 pb-3 pt-4 transition-colors duration-short ${look.hero}`}
     >
       <ReachRings state={state} />
-      <div className="min-w-0 flex-1">
-        <p className={`text-[10.5px] font-semibold uppercase tracking-wide ${look.eyebrow}`}>
-          {current ? 'Who Can See This' : 'If It Were'}
-        </p>
-        <p className="mt-0.5 flex items-center gap-1.5 text-base font-semibold leading-tight text-slate-900 dark:text-slate-50">
-          <span className={look.ink}>{look.icon}</span>
-          {m.label}
-        </p>
-        <p className="mt-1 text-[12px] leading-snug text-slate-600 dark:text-slate-300">
-          {m.description}
-        </p>
+      {/* Every state's words share one grid cell, only the shown one visible, so the hero keeps the tallest's
+          height and the popover never changes size as the stops are hovered; each is centred in it, so a shorter
+          one sits level with the rings rather than at the top. */}
+      <div className="grid min-w-0 flex-1">
+        {HERO_STATES.map((s) => (
+          <HeroText key={s} state={s} current={current} shown={s === state} />
+        ))}
       </div>
+    </div>
+  );
+}
+
+const HERO_STATES: readonly ShareState[] = [...LADDER, 'offline'];
+
+function HeroText({
+  state,
+  current,
+  shown,
+}: {
+  state: ShareState;
+  current: boolean;
+  shown: boolean;
+}) {
+  const m = SHARE_STATE_META[state];
+  const look = LOOK[state];
+  return (
+    <div
+      className={`min-w-0 self-center [grid-area:1/1] ${shown ? '' : 'invisible'}`}
+      aria-hidden={shown ? undefined : true}
+    >
+      <p className={`text-[10.5px] font-semibold uppercase tracking-wide ${look.eyebrow}`}>
+        {current ? 'Who Can See This' : 'If It Were'}
+      </p>
+      <p className="mt-0.5 flex items-center gap-1.5 text-base font-semibold leading-tight text-slate-900 dark:text-slate-50">
+        <span className={look.ink}>{look.icon}</span>
+        {m.label}
+      </p>
+      <p className="mt-1 text-[12px] leading-snug text-slate-600 dark:text-slate-300">
+        {m.description}
+      </p>
     </div>
   );
 }
@@ -252,8 +279,12 @@ function LocalOnlyRow({
 export function VisibilityLegend({
   current,
   onManage,
+  align = 'center',
 }: {
   current: ShareState;
+  // Centred under the pill (the header), or laid out by a host that places it (`floating`: the Explorer's card portals
+  // it over the panel, whose scroll would clip it).
+  align?: 'center' | 'floating';
   // Opens Share; absent where the reader may not change who can see the document.
   onManage?: () => void;
 }) {
@@ -265,7 +296,9 @@ export function VisibilityLegend({
     <div
       aria-hidden
       data-visibility-legend=""
-      className="absolute left-1/2 top-full z-10 w-[20rem] max-w-[calc(100vw-2rem)] -translate-x-1/2 pt-2 text-left"
+      className={`w-[20rem] max-w-[calc(100vw-2rem)] pt-2 text-left ${
+        align === 'floating' ? '' : 'absolute top-full z-10 left-1/2 -translate-x-1/2'
+      }`}
     >
       <div className="animate-dialog-in overflow-hidden rounded-xl border border-slate-200 bg-white pb-3 shadow-2xl shadow-slate-900/15 dark:border-slate-700 dark:bg-slate-900 dark:shadow-black/50">
         <Hero state={shown} current={shown === current} />
@@ -277,7 +310,7 @@ export function VisibilityLegend({
               type="button"
               tabIndex={-1}
               onClick={onManage}
-              className={`group flex w-full items-center justify-center gap-1.5 rounded-lg bg-brand-500 px-3 py-2 text-xs font-semibold text-white shadow-sm shadow-brand-500/30 transition hover:bg-brand-600 ${SOLID_BRAND_DARK_CONTROL}`}
+              className={`group flex w-full items-center justify-center gap-1.5 rounded-lg bg-brand-700 px-3 py-2 text-xs font-semibold text-white shadow-sm shadow-brand-500/30 transition hover:bg-brand-800 ${SOLID_BRAND_DARK_CONTROL}`}
             >
               Change Who Can See This
               <span className="transition-transform duration-micro group-hover:translate-x-0.5">

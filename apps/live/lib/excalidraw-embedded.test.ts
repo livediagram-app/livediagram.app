@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { cpuMsOfAsync } from '@livediagram/vitest-config/cpu-time';
+import { cpuBudgetMs, cpuMsOfAsync } from '@livediagram/vitest-config/cpu-time';
 import { extractExcalidrawScene } from './excalidraw-embedded';
 
 const SCENE = JSON.stringify({
@@ -219,7 +219,7 @@ describe('extractExcalidrawScene on hostile SVG', () => {
       read = await extractExcalidrawScene(svg);
     });
     expect(read?.ok).toBe(false);
-    expect(spent).toBeLessThan(50);
+    expect(spent).toBeLessThan(cpuBudgetMs(50));
   });
 
   it('treats an empty payload as no payload', async () => {

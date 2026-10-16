@@ -217,7 +217,7 @@ function PrivacyCard({
       <span
         className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-md ${
           checked
-            ? `bg-brand-500 text-white ${SOLID_BRAND_DARK}`
+            ? `bg-brand-700 text-white ${SOLID_BRAND_DARK}`
             : 'bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-300'
         }`}
       >

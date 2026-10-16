@@ -7,6 +7,7 @@
 // (a Gantt keeps its scale, window and collapsed lanes; a drag in flight survives), and PlanContext and the canvas
 // surface still reach it. While maximised, its presses stop at the slot so the canvas never selects or moves the
 // element underneath.
+import { useCanvasMenu } from '@/components/canvas/canvas-menu-context';
 import {
   useCallback,
   useEffect,
@@ -27,10 +28,15 @@ import {
   type MaximisedKind,
 } from '@/hooks/plan/maximised-plan';
 import { MOTION_MS } from '@livediagram/tailwind-config/motion';
+import { isAnimatedPattern } from '@livediagram/document';
+import { TabPatternLayer } from '@/components/canvas/TabPatternLayer';
+import { useCanvasPattern } from '@/components/canvas/canvas-pattern-context';
 import { prefersReducedMotion } from '@/lib/motion-preference';
 import { useCanvasLayerInsets } from '@/hooks/ui/useCanvasLayerInsets';
-import type { CanvasLayout } from '@/lib/canvas-layer-insets';
+import type { CanvasLayout, PhoneRow } from '@/lib/canvas-layer-insets';
 import { announceHeaderBand } from './menu-name-slot';
+import { BAND_CARD_PX } from './band-controls';
+import { useUiScale } from '@/components/providers/ui-scale';
 import type { PlanPalette } from './plan-palette';
 
 const stop = (e: { stopPropagation: () => void }) => e.stopPropagation();
@@ -50,13 +56,25 @@ export const CANVAS_LAYER_Z = 'z-[calc(var(--z-panel)-1)]';
 export function CanvasCover({
   layout,
   marker,
+  tint,
+  blend,
   children,
 }: {
   layout: CanvasLayout;
   marker: Record<string, string>;
+  // The element's hue (planBandTint), worn by the menu box and palette while its header holds the top row.
+  tint?: string | undefined;
+  // The element's own surface and border (planBandBlend): with it, the chrome in the band takes them instead, flat
+  // (no shadow), so the top row reads as part of the element.
+  blend?: BandBlend | undefined;
   children: ReactNode;
 }) {
-  const { insets, band } = layout;
+  const { insets, band, row } = layout;
+  // An animated canvas style is a layer of the canvas's own, under this cover: drawn again here, as the inherited
+  // background carries only the colour and a static pattern (the canvas's copy stops meanwhile: canvas-motion.css).
+  const pattern = useCanvasPattern();
+  // The menu box is drawn at the toolbar's UI scale; the band's cards take its height (band-controls BAND_CARD_PX).
+  const toolbarScale = useUiScale('toolbar');
   // The element's name moves to the menu box while there is a band, and back when it goes (menu-name-slot).
   const banded = !!band;
   useLayoutEffect(() => {
@@ -73,13 +91,37 @@ export function CanvasCover({
     setStripEnd(main, stripEnd);
     return () => clearStripEnd(main);
   }, [stripEnd]);
+  // The chrome in the band wears the element's hue (toolbar-surface BAND_TINT): set on the canvas they sit in.
+  const bandTint = band && tint && !blend ? tint : null;
+  useLayoutEffect(() => {
+    const main = coverRef.current?.parentElement;
+    if (!main || !bandTint) return;
+    setBandTint(main, bandTint);
+    return () => clearBandTint(main);
+  }, [bandTint]);
+  // On a phone's shared row too (canvas-layer-insets phoneRow), so the menu box reads as part of the element.
+  const blendSurface = (band || row) && blend ? blend.surface : null;
+  const blendLine = blend?.line ?? null;
+  useLayoutEffect(() => {
+    const main = coverRef.current?.parentElement;
+    if (!main || !blendSurface || !blendLine) return;
+    main.setAttribute('data-band-blend', '');
+    main.style.setProperty('--band-surface', blendSurface);
+    main.style.setProperty('--band-line', blendLine);
+    return () => {
+      main.removeAttribute('data-band-blend');
+      main.style.removeProperty('--band-surface');
+      main.style.removeProperty('--band-line');
+    };
+  }, [blendSurface, blendLine]);
   return (
     <div
       ref={coverRef}
       data-canvas-cover=""
-      className={`absolute inset-0 ${CANVAS_LAYER_Z}`}
-      // An opaque backdrop: the canvas's own background (colour and pattern, from the canvas `main` it sits in), so
-      // nothing on the canvas shows through around the element, yet it still reads as the canvas.
+      // The default cursor: it takes every press, so the canvas's pan hand (inherited from `main`) never shows over it.
+      className={`absolute inset-0 cursor-default ${CANVAS_LAYER_Z}`}
+      // An opaque backdrop: the canvas's own background (colour and static pattern, from the canvas `main` it sits in),
+      // so nothing on the canvas shows through around the element, yet it still reads as the canvas.
       style={{ background: 'inherit' }}
       onPointerDown={stop}
       onDoubleClick={stop}
@@ -89,13 +131,18 @@ export function CanvasCover({
       }}
       onWheel={stop}
     >
+      {pattern && isAnimatedPattern(pattern.pattern) ? <TabPatternLayer {...pattern} /> : null}
       <div
         {...marker}
         {...(band ? { 'data-header-band': '' } : {})}
         className="absolute p-2 sm:p-3"
         // The header band (docs/specs/026-plan/plan-board.md "The header holds the top row"): the element's header
         // reads these, each with its own size as the fallback, so on the canvas nothing changes.
-        style={{ ...insets, ...(band ? bandVars(band) : {}) } as CSSProperties}
+        // On a phone, the row it shares with the menu (canvas-layer-insets phoneRow): the same height and start, no more.
+        style={{
+          ...insets,
+          ...(band ? bandVars(band, toolbarScale) : row ? rowVars(row) : {}),
+        }}
       >
         {children}
       </div>
@@ -112,23 +159,48 @@ export function setStripEnd(main: HTMLElement, stripEnd: number): void {
   main.style.setProperty('--plan-strip-end', `${Math.round(stripEnd / zoom)}px`);
 }
 
+// An element's own surface and border, for the chrome in its band to take (toolbar-surface BAND_BLEND).
+export type BandBlend = { surface: string; line: string };
+
+// The element's hue on the chrome in its band (toolbar-surface BAND_TINT), set on the canvas they sit in.
+export function setBandTint(main: HTMLElement, tint: string): void {
+  main.setAttribute('data-band-tint', '');
+  main.style.setProperty('--band-tint', tint);
+}
+
+export function clearBandTint(main: HTMLElement): void {
+  main.removeAttribute('data-band-tint');
+  main.style.removeProperty('--band-tint');
+}
+
 export function clearStripEnd(main: HTMLElement): void {
   main.style.removeProperty('--plan-strip-align');
   main.style.removeProperty('--plan-strip-end');
 }
 
 // The header band as the CSS properties a maximised element's header reads (PLAN_BAND_*).
-export function bandVars(band: NonNullable<CanvasLayout['band']>): Record<string, string> {
+export function bandVars(
+  band: NonNullable<CanvasLayout['band']>,
+  toolbarScale = 1,
+): Record<string, string> {
   return {
     '--plan-band-h': `${band.height}px`,
+    // The menu box's height on screen, which each card in the band matches: its controls and inset at the toolbar's
+    // scale, its hairline border a screen px whatever the scale.
+    '--plan-band-card-h': `${Math.round(((BAND_CARD_PX - 2) * toolbarScale + 2) * 10) / 10}px`,
     '--plan-band-left': `${band.left}px`,
     '--plan-band-mid': `${band.mid}px`,
   };
 }
 
+// A phone's shared top row as the properties the element's header reads: its height and where its content starts.
+export function rowVars(row: PhoneRow): Record<string, string> {
+  return { '--plan-band-h': `${row.height}px`, '--plan-band-left': `${row.left}px` };
+}
+
 // The canvas `main` holding the slot, found from a marker rendered in the slot as it mounts: the marker's ref
 // callback, and the element once found (null until then).
-function useCanvasRoot(): [(node: HTMLElement | null) => void, HTMLElement | null] {
+export function useCanvasRoot(): [(node: HTMLElement | null) => void, HTMLElement | null] {
   const [canvas, setCanvas] = useState<HTMLElement | null>(null);
   const mark = useCallback((node: HTMLElement | null) => {
     if (node) setCanvas(node.closest<HTMLElement>('[data-canvas-a11y-root]') ?? document.body);
@@ -154,6 +226,30 @@ const GHOST_CLASSES = [
 const REVEAL_MS = 120;
 
 // The transform that lays a box drawn at `to` over `from` (top-left origin): where the element sits on the canvas.
+type BoxSize = { width: number; height: number };
+
+// The box's laid-out size (untransformed, so the open animation never shows in it), for a view to fit: reported now
+// and on every resize, and null when the box goes. Both maximised layers report through it.
+function useReportedBoxSize(
+  boxRef: { current: HTMLElement | null },
+  onSize: ((size: BoxSize | null) => void) | undefined,
+  canvas: unknown,
+): void {
+  useEffect(() => {
+    const box = boxRef.current;
+    if (!box || !onSize) return;
+    const report = () => onSize({ width: box.offsetWidth, height: box.offsetHeight });
+    report();
+    if (typeof ResizeObserver === 'undefined') return () => onSize(null);
+    const ro = new ResizeObserver(report);
+    ro.observe(box);
+    return () => {
+      ro.disconnect();
+      onSize(null);
+    };
+  }, [boxRef, onSize, canvas]);
+}
+
 export function flipTransform(from: DOMRect, to: DOMRect): string {
   if (to.width <= 0 || to.height <= 0) return 'none';
   const sx = from.width / to.width;
@@ -161,11 +257,17 @@ export function flipTransform(from: DOMRect, to: DOMRect): string {
   return `translate(${from.left - to.left}px, ${from.top - to.top}px) scale(${sx}, ${sy})`;
 }
 
-// The element's place on the canvas, from its canvas node.
-function originOf(id: string): DOMRect | null {
-  const node = document.querySelector(`[data-element-id="${CSS.escape(id)}"]`);
-  const box = node?.getBoundingClientRect();
-  return box && box.width > 0 && box.height > 0 ? box : null;
+// Where the element is drawn on screen, measured at the moment it is asked: its slot (MaximisableSlot's own box, which
+// stays in place while the body is away), else its canvas node. The slot is where it really is: in a Dashboard slot the
+// element is drawn in the slot, while its canvas node sits out of sight under the page (plan-tabs.md "Slot content"),
+// so growing from or shrinking to the canvas node would fly to a place the element is not.
+export function originOf(id: string): DOMRect | null {
+  const key = CSS.escape(id);
+  for (const selector of [`[data-plan-slot="${key}"]`, `[data-element-id="${key}"]`]) {
+    const box = document.querySelector(selector)?.getBoundingClientRect();
+    if (box && box.width > 0 && box.height > 0) return box;
+  }
+  return null;
 }
 
 // Escape restores, unless a dialog over the element (the item panel, a confirm) or an open menu has it first
@@ -221,6 +323,8 @@ export function MaximisableSlot({
   fill = false,
   placeholder,
   onMaximisedSize,
+  tint,
+  blend,
   children,
 }: {
   id: string;
@@ -230,6 +334,9 @@ export function MaximisableSlot({
   fill?: boolean;
   placeholder: CSSProperties;
   onMaximisedSize?: (size: { width: number; height: number } | null) => void;
+  // The element's hue for the chrome in its header band (planBandTint), or its own surface and border (blend).
+  tint?: string | undefined;
+  blend?: BandBlend | undefined;
   children: ReactNode;
 }) {
   const [host] = useState(() => {
@@ -239,6 +346,7 @@ export function MaximisableSlot({
     return el;
   });
   const slotRef = useRef<HTMLDivElement>(null);
+  const openCanvasMenu = useCanvasMenu();
   // On the canvas: the host back in its slot (the overlay puts it in its box while maximised).
   const over = maximised || fill;
   useLayoutEffect(() => {
@@ -260,16 +368,34 @@ export function MaximisableSlot({
       // element underneath is never selected, moved or menu'd from the overlay.
       onPointerDown={over ? stop : undefined}
       onDoubleClick={over ? stop : undefined}
-      onContextMenu={over ? stop : undefined}
+      // A right-click on the body's empty space (a card's own menu stops it first) opens the tab's menu, as the
+      // canvas's does, never the browser's.
+      onContextMenu={
+        over
+          ? (e) => {
+              e.stopPropagation();
+              if (e.defaultPrevented || !openCanvasMenu) return;
+              e.preventDefault();
+              openCanvasMenu(e.clientX, e.clientY);
+            }
+          : undefined
+      }
       onWheel={over ? stop : undefined}
     >
       {createPortal(children, host)}
       {fill ? (
-        <FilledTabLayer host={host} />
+        <FilledTabLayer
+          host={host}
+          tint={tint}
+          blend={blend}
+          {...(onMaximisedSize ? { onSize: onMaximisedSize } : {})}
+        />
       ) : maximised ? (
         <MaximisedPlanLayer
           id={id}
           host={host}
+          tint={tint}
+          blend={blend}
           {...(onMaximisedSize ? { onSize: onMaximisedSize } : {})}
         />
       ) : null}
@@ -373,9 +499,13 @@ export function MaximisedPlanLayer({
   id,
   host,
   onSize,
+  tint,
+  blend,
 }: {
   id: string;
   host: HTMLElement;
+  tint?: string | undefined;
+  blend?: BandBlend | undefined;
   onSize?: (size: { width: number; height: number } | null) => void;
 }) {
   const boxRef = useRef<HTMLDivElement>(null);
@@ -394,20 +524,7 @@ export function MaximisedPlanLayer({
     return closing ? closeBox(box, id, host) : openBox(box, id, host);
   }, [closing, id, host, canvas]);
 
-  // The box's laid-out size (untransformed, so the open animation never shows in it), for a view to fit.
-  useEffect(() => {
-    const box = boxRef.current;
-    if (!box || !onSize) return;
-    const report = () => onSize({ width: box.offsetWidth, height: box.offsetHeight });
-    report();
-    if (typeof ResizeObserver === 'undefined') return () => onSize(null);
-    const ro = new ResizeObserver(report);
-    ro.observe(box);
-    return () => {
-      ro.disconnect();
-      onSize(null);
-    };
-  }, [onSize, canvas]);
+  useReportedBoxSize(boxRef, onSize, canvas);
 
   if (typeof document === 'undefined') return null;
   return (
@@ -415,7 +532,12 @@ export function MaximisedPlanLayer({
       <span hidden ref={mark} />
       {canvas
         ? createPortal(
-            <CanvasCover layout={layout} marker={{ 'data-maximised-board': '' }}>
+            <CanvasCover
+              layout={layout}
+              marker={{ 'data-maximised-board': '' }}
+              tint={tint}
+              blend={blend}
+            >
               <div
                 ref={boxRef}
                 className="relative h-full w-full origin-top-left will-change-transform"
@@ -430,7 +552,18 @@ export function MaximisedPlanLayer({
 
 // The layer a board filling its tab moves its host into: the canvas area, as a maximised element's, at once (no
 // grow). Presses stop here, as on a maximised board.
-export function FilledTabLayer({ host }: { host: HTMLElement }) {
+export function FilledTabLayer({
+  host,
+  tint,
+  blend,
+  onSize,
+}: {
+  host: HTMLElement;
+  tint?: string | undefined;
+  blend?: BandBlend | undefined;
+  // The layer's size, for a view to lay itself out at (a Visualisation tab's chart).
+  onSize?: ((size: { width: number; height: number } | null) => void) | undefined;
+}) {
   const [mark, canvas] = useCanvasRoot();
   // Clear of the chrome over the canvas: the top row (or holding it in the header band), side panels.
   const layout = useCanvasLayerInsets(canvas);
@@ -442,12 +575,18 @@ export function FilledTabLayer({ host }: { host: HTMLElement }) {
       announceHeaderBand();
     }
   }, [canvas, host]);
+  useReportedBoxSize(boxRef, onSize, canvas);
   return (
     <>
       <span hidden ref={mark} />
       {canvas
         ? createPortal(
-            <CanvasCover layout={layout} marker={{ 'data-fill-tab-board': '' }}>
+            <CanvasCover
+              layout={layout}
+              marker={{ 'data-fill-tab-board': '' }}
+              tint={tint}
+              blend={blend}
+            >
               <div ref={boxRef} className="relative h-full w-full" />
             </CanvasCover>,
             canvas,

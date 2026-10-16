@@ -3,7 +3,7 @@
 // A board card's right-click menu (docs/specs/026-plan/plan-board.md "Working on a board"): Open,
 // Duplicate, Add to Slides, Move to another column, Flag (or Remove Flag),
 // Archive (or Restore), and Trash. Someone who
-// may only view gets Open alone. Built on the shared ContextMenu, so it opens at the click, re-clamps to
+// may only view gets Open alone; a Participant gets Open, Duplicate, Move to and Flag, as the item panel's menu gives it. Built on the shared ContextMenu, so it opens at the click, re-clamps to
 // the window as it grows, is a bottom sheet on a phone and keeps the long-press grace, like the element menu.
 import type { SyntheticEvent } from 'react';
 import { DuplicateIcon, PencilIcon, TrashIcon, PlanCardsIcon } from '@livediagram/ui';
@@ -26,6 +26,7 @@ export function PlanCardMenu({
   at,
   title,
   canEdit,
+  canRetire = canEdit,
   columns,
   onOpen,
   onDuplicate,
@@ -43,7 +44,10 @@ export function PlanCardMenu({
   at: { x: number; y: number };
   // The card's title, naming the menu.
   title: string;
+  // Works on the card: an Editor or a Participant (docs/specs/013-workspace/share-roles.md).
   canEdit: boolean;
+  // Add to Slides, Edit Card Type, Archive and Trash: an Editor's alone. Absent: as canEdit.
+  canRetire?: boolean;
   // The board's other columns, to move the card to.
   columns: readonly { status: string; name: string; color?: string }[];
   onOpen: () => void;
@@ -90,7 +94,7 @@ export function PlanCardMenu({
               icon={<DuplicateIcon />}
               onClick={act(onDuplicate)}
             />
-            {onAddSlide ? (
+            {canRetire && onAddSlide ? (
               <MenuActionRow
                 plain
                 label="Add to Slides"
@@ -98,7 +102,7 @@ export function PlanCardMenu({
                 onClick={act(onAddSlide)}
               />
             ) : null}
-            {onEditType ? (
+            {canRetire && onEditType ? (
               <MenuActionRow
                 plain
                 label="Edit Card Type"
@@ -134,13 +138,17 @@ export function PlanCardMenu({
               icon={<PlanTypeGlyph glyph="flag" size={16} />}
               onClick={act(onFlag)}
             />
-            <MenuActionRow
-              plain
-              label={archived ? 'Restore' : 'Archive'}
-              icon={<PlanBoardTileArt preset="archive" size={16} />}
-              onClick={act(onArchive)}
-            />
-            <MenuActionRow plain label="Trash" icon={<TrashIcon />} onClick={act(onTrash)} />
+            {canRetire ? (
+              <>
+                <MenuActionRow
+                  plain
+                  label={archived ? 'Restore' : 'Archive'}
+                  icon={<PlanBoardTileArt preset="archive" size={16} />}
+                  onClick={act(onArchive)}
+                />
+                <MenuActionRow plain label="Trash" icon={<TrashIcon />} onClick={act(onTrash)} />
+              </>
+            ) : null}
           </>
         ) : null}
       </ContextMenu>
@@ -154,12 +162,14 @@ export function PlanCardMenuHost({
   plan,
   setup,
   canEdit,
+  canRetire = canEdit,
   onClose,
 }: {
   menu: { itemId: string; at: { x: number; y: number } };
   plan: PlanContextValue;
   setup: PlanBoardSetup;
   canEdit: boolean;
+  canRetire?: boolean;
   onClose: () => void;
 }) {
   const item = plan.items.get(menu.itemId);
@@ -170,6 +180,7 @@ export function PlanCardMenuHost({
       at={menu.at}
       title={itemTitle(item) || 'Card'}
       canEdit={canEdit}
+      canRetire={canRetire}
       // The other columns, but none whose status the card's type leaves out (docs/specs/026-plan/item-types.md).
       columns={setup.columns
         .filter(
@@ -179,7 +190,7 @@ export function PlanCardMenuHost({
         )
         .map((c) => ({ status: c.status, name: c.name, ...(c.color ? { color: c.color } : {}) }))}
       onOpen={() => plan.openItem(item.id)}
-      onEditType={() => plan.editType(item.type)}
+      onEditType={() => plan.editType({ id: item.type })}
       {...(plan.addItemSlide
         ? {
             onAddSlide: () => {
@@ -202,7 +213,7 @@ export function PlanCardMenuHost({
       archived={isArchived(item)}
       onArchive={() => {
         const was = isArchived(item);
-        plan.patchItem(item.id, was ? { clear: ['archived'] } : { set: { archived: true } });
+        void plan.patchItem(item.id, was ? { clear: ['archived'] } : { set: { archived: true } });
         plan.announce(was ? 'Card restored' : 'Card archived');
         if (was) track('Plan', 'Restored', 'Card');
         else track('Plan', 'Moved', 'Archive');

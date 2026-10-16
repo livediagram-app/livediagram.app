@@ -8,21 +8,29 @@ import {
   type ChangesetResponse,
   type TabResponse,
 } from '@livediagram/api-schema';
-import { elementFingerprint, type Element } from '@livediagram/document';
+import { elementFingerprint } from '@livediagram/document';
 import {
+  CARD_FIELD_LABELS,
+  SWIMLANE_BY,
+  laneFieldsOf,
+  type ItemTypeDef,
   normaliseBoardSetup,
   planBoardWidthFor,
   reshapeBoard,
   resolveType,
   statusKey,
   type BoardChange,
+  type CardSize,
   type PlanBoardOutline,
 } from '@livediagram/items';
 import { apiRefusalOf } from './api-refusal';
 import { readPlanState } from './plan-state';
 import { tabPath } from '../verbs/shared';
 
-export interface ChangeBoardInput extends Omit<BoardChange, 'types'> {
+export interface ChangeBoardInput extends Omit<BoardChange, 'types' | 'swimlanes'> {
+  // Its swimlanes, as the board's menu names them: none, assignee, type, priority, status (or "column"), or a field
+  // by name ("Severity").
+  swimlanes?: string;
   // The board: its title, or its element id.
   board: string;
   // Card types by id or name; an empty list takes none (as the editor's last type turned off does), and
@@ -41,10 +49,34 @@ export type ChangeBoardResult =
       title: string;
       columns: { name: string; status: string }[];
       takes: string[] | 'every type';
+      cardSize: CardSize;
+      cardFields: string[];
       changesetId: string | null;
       rev: number | null;
     }
   | { ok: false; code: string; message: string };
+
+// A board's swimlanes by name: a built-in grouping, else a field any card type has that rows can group by.
+export function swimlanesNamed(
+  name: string,
+  types: readonly ItemTypeDef[],
+):
+  | { ok: true; value: NonNullable<BoardChange['swimlanes']> }
+  | { ok: false; code: string; message: string } {
+  const key = statusKey(name);
+  const by = key === 'column' ? 'status' : SWIMLANE_BY.find((b) => b !== 'field' && b === key);
+  if (by) return { ok: true, value: { by } };
+  const fields = laneFieldsOf(types);
+  const field = fields.find((f) => statusKey(f.label) === key || f.id === name);
+  if (field) return { ok: true, value: { by: 'field', field: field.id } };
+  return {
+    ok: false,
+    code: 'board_invalid',
+    message:
+      `No swimlanes "${name}". Swimlanes: none, assignee, type, priority, status` +
+      `${fields.length ? `, or a field: ${fields.map((f) => f.label).join(', ')}` : ''}.`,
+  };
+}
 
 const describe = (b: PlanBoardOutline) => `"${b.title}" on ${b.tabName} (${b.elementId})`;
 
@@ -92,8 +124,14 @@ export async function changeBoard(
         types.push(t.type.id);
       }
     }
+    let swimlanes: BoardChange['swimlanes'];
+    if (input.swimlanes !== undefined) {
+      const lanes = swimlanesNamed(input.swimlanes, state.plan.types);
+      if (!lanes.ok) return lanes;
+      swimlanes = lanes.value;
+    }
     const { tab } = await api.json<TabResponse>(tabPath(documentId, tabId));
-    const element = (tab.elements as Element[]).find((e) => e.id === elementId);
+    const element = tab.elements.find((e) => e.id === elementId);
     const setup =
       element?.type === 'shape' && 'planBoard' in element
         ? normaliseBoardSetup(element.planBoard)
@@ -108,6 +146,11 @@ export async function changeBoard(
       setup,
       {
         ...(input.title !== undefined ? { title: input.title } : {}),
+        ...(input.renameColumns ? { renameColumns: input.renameColumns } : {}),
+        ...(input.cardSize ? { cardSize: input.cardSize } : {}),
+        ...(swimlanes ? { swimlanes } : {}),
+        ...(input.doneColumn !== undefined ? { doneColumn: input.doneColumn } : {}),
+        ...(input.cardFields ? { cardFields: input.cardFields } : {}),
         ...(input.columns ? { columns: input.columns } : {}),
         ...(types !== undefined ? { types } : {}),
       },
@@ -139,6 +182,11 @@ export async function changeBoard(
       title: reshaped.setup.title,
       columns: reshaped.setup.columns.map((c) => ({ name: c.name, status: c.status })),
       takes: reshaped.setup.addTypes ? reshaped.setup.addTypes.map(label) : 'every type',
+      cardSize: reshaped.setup.cardSize ?? 'detailed',
+      // A board's card fields are built-in fields only (normaliseBoardSetup keeps CARD_FIELDS alone).
+      cardFields: reshaped.setup.cardFields.map(
+        (f) => CARD_FIELD_LABELS[f as keyof typeof CARD_FIELD_LABELS],
+      ),
       changesetId: answer.changeset?.id ?? null,
       rev: answer.changeset?.rev ?? null,
     };

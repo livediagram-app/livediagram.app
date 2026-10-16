@@ -45,9 +45,14 @@ async function boardTab(page: Page, settle = 1500): Promise<BoardTab> {
   return page.evaluate(
     async ({ base, headers }) => {
       const id = location.pathname.split('/').filter(Boolean).pop()!;
-      const liveDoc = await (await fetch(`${base}/documents/${id}`, { headers })).json();
-      const tabId = liveDoc.document.tabs[0].id;
-      return (await (await fetch(`${base}/documents/${id}/tabs/${tabId}`, { headers })).json()).tab;
+      const liveDoc = (await (await fetch(`${base}/documents/${id}`, { headers })).json()) as {
+        document: { tabs: { id: string }[] };
+      };
+      const tabId = liveDoc.document.tabs[0]!.id;
+      const got = (await (
+        await fetch(`${base}/documents/${id}/tabs/${tabId}`, { headers })
+      ).json()) as { tab: BoardTab };
+      return got.tab;
     },
     { base: API, headers },
   );
@@ -177,10 +182,13 @@ test('paste lands at the pointer over the canvas, and staggers when it is elsewh
   await page.evaluate(
     async ({ base, note, headers }) => {
       const id = location.pathname.split('/').filter(Boolean).pop()!;
-      const liveDoc = await (await fetch(`${base}/documents/${id}`, { headers })).json();
-      const tabId = liveDoc.document.tabs[0].id;
-      const tab = (await (await fetch(`${base}/documents/${id}/tabs/${tabId}`, { headers })).json())
-        .tab;
+      const liveDoc = (await (await fetch(`${base}/documents/${id}`, { headers })).json()) as {
+        document: { tabs: { id: string }[] };
+      };
+      const tabId = liveDoc.document.tabs[0]!.id;
+      const { tab } = (await (
+        await fetch(`${base}/documents/${id}/tabs/${tabId}`, { headers })
+      ).json()) as { tab: { esLanesSettled?: unknown; elements: { y: number }[] } };
       await fetch(`${base}/documents/${id}/tabs/${tabId}`, {
         method: 'PUT',
         headers,
@@ -269,13 +277,16 @@ test('an older board is lined up on the lanes once, and undo keeps the choice', 
   await page.evaluate(
     async ({ base, headers }) => {
       const id = location.pathname.split('/').filter(Boolean).pop()!;
-      const liveDoc = await (await fetch(`${base}/documents/${id}`, { headers })).json();
-      const tabId = liveDoc.document.tabs[0].id;
-      const tab = (await (await fetch(`${base}/documents/${id}/tabs/${tabId}`, { headers })).json())
-        .tab;
+      const liveDoc = (await (await fetch(`${base}/documents/${id}`, { headers })).json()) as {
+        document: { tabs: { id: string }[] };
+      };
+      const tabId = liveDoc.document.tabs[0]!.id;
+      const { tab } = (await (
+        await fetch(`${base}/documents/${id}/tabs/${tabId}`, { headers })
+      ).json()) as { tab: { esLanesSettled?: unknown; elements: { y: number }[] } };
       const { esLanesSettled: _gone, ...older } = tab;
       void _gone;
-      const elements = tab.elements.map((el: { y: number }, i: number) =>
+      const elements = tab.elements.map((el, i) =>
         i === 0 ? { ...el, y: el.y + 130 } : i === 1 ? { ...el, y: el.y - 70 } : el,
       );
       await fetch(`${base}/documents/${id}/tabs/${tabId}`, {

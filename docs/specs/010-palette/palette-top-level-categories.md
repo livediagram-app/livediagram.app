@@ -6,6 +6,11 @@ Status: shipped
 
 A flattening of the palette's category structure.
 
+In Diagram, Facilitate and Illustrate the strip now shows these categories as a **category bar**, each opening a
+flyout of its tiles, with no Popular, one-word names, Write and Draw as one, and Facilitate's session tools gathered
+into Session ([Toolbar layout](../007-editor/toolbar-layout.md#the-category-bar)). The bands below are the bar's
+dividers there; the banded picker remains Plan's.
+
 This is the category catalogue and each category's **default** tiles. Which
 categories a palette offers, under what names and holding which tiles, is now
 per editor mode: see [Editor modes, "The palette per
@@ -37,14 +42,14 @@ tools plus Frame). The **User / actor** tile was deleted outright — see below.
 **The category dropdown gets bands**, the way the canvas-tool dropdown got them
 ([Tile grids for the palette dropdowns](../004-interface-design/dropdown-tile-grid.md)):
 
-| Band           | Categories                                                                                                                                                                                      |
-| -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| _(no heading)_ | Popular, full width                                                                                                                                                                             |
-| **Plan**       | Cards, Boards, Widgets, Metrics, Visualisations ([Plan mode](../026-plan/plan-mode.md#the-palette) only)                                                                                        |
-| **Common**     | Logo (Illustrate, with a [logo page](../007-editor/logo-pages.md#the-logo-palette)), Shapes, My shapes (only with a [shape library](../013-workspace/shape-libraries.md) to place), Write, Draw |
-| **Structure**  | Build, Components, Devices, Event Storming (on an event-storming board only)                                                                                                                    |
-| **Decorate**   | Icons, Stickers, Technology, Media                                                                                                                                                              |
-| **Dynamic**    | Data, Collaborate                                                                                                                                                                               |
+| Band            | Categories                                                                                                                                                                                      |
+| --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| _(no heading)_  | Popular, full width                                                                                                                                                                             |
+| **Common**      | Logo (Illustrate, with a [logo page](../007-editor/logo-pages.md#the-logo-palette)), Shapes, My shapes (only with a [shape library](../013-workspace/shape-libraries.md) to place), Write, Draw |
+| **Structure**   | Build, Components, Concepts ([Concept graphics](../009-elements/concept-graphics.md)), Devices, Event Storming (on an event-storming board only)                                                |
+| **Decorate**    | Icons, Stickers, Technology, Media                                                                                                                                                              |
+| **Dynamic**     | Data (Illustrate, Facilitate)                                                                                                                                                                   |
+| **Collaborate** | Ask, Tools, Record, React, Selection Mode, Navigate ([Facilitate](../012-collaboration/facilitate-mode.md#the-palette) only)                                                                    |
 
 ## Why flatten
 
@@ -75,7 +80,7 @@ label rather than above it.
 
 ## Rows, not tiles, for most categories
 
-Write, Draw, Collaborate, Data, Components, Media and Devices render as **rows
+Write, Draw, Collaborate, Data, Components, Concepts, Media and Devices render as **rows
 with a one-line blurb**, not as the icon-over-caption grid.
 
 The rule is whether the picture explains the thing, and only four categories
@@ -154,6 +159,14 @@ which two groups they are. A rename that broke seven live links to say
 
 ## Collaborate: one category, fully grouped
 
+**Collaborate is Facilitate's, as six categories.** Since [Facilitate mode](../012-collaboration/facilitate-mode.md#the-palette),
+only Facilitate's layout offers the Collaborate elements, and it offers each group below as its
+own category in a **Collaborate** band of its own (`collab-ask`, `collab-tools`, `collab-record`, `collab-react`,
+`collab-mode`, `collab-navigate`), so the parent category and its group browser are gone. Diagram
+keeps only the Comment panel and the Action card, in its Write category. Search still finds every
+Collaborate tile from any mode. What follows is how the groups came to be; they are unchanged as
+categories.
+
 **Renamed from Behaviours to Collaborate.** The category is what you open to run a
 session with the room, and "Collaborate" names that job where "Behaviours" named the
 mechanism. The rename is display-only: the id stays `behaviour` (persisted in the
@@ -175,14 +188,14 @@ arguably a Collaborate element by this spec's own rule, and said so.
 What is left is one honest test for the category: **does this element's content
 arrive at runtime rather than being drawn by the author?**
 
-| Group              | Holds                                                                  |
-| ------------------ | ---------------------------------------------------------------------- |
-| **Ask**            | the three estimate scales, Quiz, Temperature, Idea box, Dot vote, Poll |
-| **Tools**          | Reveal, Done, Picker, Timer                                            |
-| **Record**         | Comment panel, Agenda, Decision record, Roll call                      |
-| **Reactions**      | the five pads                                                          |
-| **Selection Mode** | one button per mode (8)                                                |
-| **Navigate**       | Portal, Chair, Link card                                               |
+| Group              | Holds                                                                                                                 |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------- |
+| **Ask**            | the three estimate scales, Quiz, Temperature, Idea box, Dot vote, Poll                                                |
+| **Tools**          | Reveal, Done, Picker, Timer                                                                                           |
+| **Record**         | Comment panel, Agenda, Decision record, Roll call                                                                     |
+| **Reactions**      | the five pads                                                                                                         |
+| **Selection Mode** | one button per mode (8)                                                                                               |
+| **Navigate**       | Portal, Chair, Desk, Sofa, Fence, Link card, Room, Meeting Table, Plant, Bookshelf, Water Cooler, Coffee Machine, Rug |
 
 **There is no Session group.** It held the Timer, the Dot vote and the Poll —
 a group named after the machinery that runs them rather than the job they do.

@@ -4,8 +4,10 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { Element, Tab } from '@livediagram/document';
 import { settleToast, useLaneSettle } from './useLaneSettle';
 
-const track = vi.fn();
-vi.mock('@/lib/telemetry', () => ({ track: (...args: unknown[]) => track(...args) }));
+const track = vi.fn<typeof import('@/lib/telemetry').track>();
+vi.mock('@/lib/telemetry', () => ({
+  track: (...args: Parameters<typeof track>) => track(...args),
+}));
 
 // The one-time settle of an older event-storming board
 // (docs/specs/021-event-storming/event-storming.md "Always on a lane": older boards settle once).
@@ -105,7 +107,7 @@ describe('useLaneSettle', () => {
   });
 
   it('leaves an ordinary tab alone', () => {
-    const h = harness({ id: 't1', name: 'D', elements: [note('a', 130)] } as Tab);
+    const h = harness({ id: 't1', name: 'D', elements: [note('a', 130)] });
     expect(h.commits).toHaveLength(0);
     expect(h.marks).toEqual([]);
   });

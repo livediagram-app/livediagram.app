@@ -1,7 +1,7 @@
 // Feature illustration: bringing boards in from other tools (the Diagrams category's AI & your
 // tools group). Three sources, draw.io, Excalidraw and Microsoft Whiteboard, each landing as
 // an editable document in the Explorer. Motion reuses the canvas card timeline (fa-a-* in
-// app/feature-art-animations.css), which settles to the finished frame under reduced motion.
+// app/feature-art/canvas.css), which settles to the finished frame under reduced motion.
 import { Connector, MUTED, Panel, Scene, TEXT, at } from './canvas-parts';
 
 const SOURCES = [

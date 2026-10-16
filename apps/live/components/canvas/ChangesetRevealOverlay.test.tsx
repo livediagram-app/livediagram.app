@@ -6,8 +6,15 @@ import type { Element } from '@livediagram/document';
 import { createRevealStore } from '@/lib/changeset-reveals';
 import { ChangesetRevealContext, ChangesetRevealOverlay } from './ChangesetRevealOverlay';
 
-const box = (id: string, x: number): Element =>
-  ({ id, type: 'shape', shape: 'square', x, y: 10, width: 100, height: 50 }) as Element;
+const box = (id: string, x: number): Element => ({
+  id,
+  type: 'shape',
+  shape: 'square',
+  x,
+  y: 10,
+  width: 100,
+  height: 50,
+});
 
 describe('ChangesetRevealOverlay', () => {
   beforeEach(() => vi.useFakeTimers());
@@ -49,7 +56,9 @@ describe('ChangesetRevealOverlay', () => {
     expect(
       view.container.querySelector('[data-changeset-reveal]')!.getAttribute('aria-hidden'),
     ).toBe('true');
-    act(() => vi.advanceTimersByTime(CHANGESET_REVEAL_MS));
+    act(() => {
+      vi.advanceTimersByTime(CHANGESET_REVEAL_MS);
+    });
     expect(view.container.querySelector('[data-reveal-id]')).toBeNull();
   });
 

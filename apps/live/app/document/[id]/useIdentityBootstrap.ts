@@ -40,14 +40,14 @@ import { loadWorkbenchDocument } from './workbench-bootstrap';
 
 type SetState<T> = Dispatch<SetStateAction<T>>;
 
+const isCallable = (v: unknown): v is (...args: unknown[]) => unknown => typeof v === 'function';
+
 // Every function of `fns`, doing nothing once `live` says its run was superseded.
 function guardRun<T extends object>(fns: T, live: () => boolean): T {
   return new Proxy(fns, {
     get: (target, name) => {
       const fn: unknown = Reflect.get(target, name);
-      return typeof fn === 'function'
-        ? (...args: unknown[]) => (live() ? fn(...args) : undefined)
-        : fn;
+      return isCallable(fn) ? (...args: unknown[]) => (live() ? fn(...args) : undefined) : fn;
     },
   });
 }
@@ -116,7 +116,7 @@ export function useIdentityBootstrap(opts: {
     setShareLinks: SetState<ShareLink[]>;
     setSharePasswordSet: SetState<boolean>;
     setSharePasswordGate: SetState<{ invalid: boolean } | null>;
-    setTemplatePickerMode: SetState<'welcome' | 'templates' | 'identity'>;
+    setIdentityPromptOpen: SetState<boolean>;
   };
 }) {
   const {
@@ -194,7 +194,7 @@ export function useIdentityBootstrap(opts: {
       setShareLinks,
       setSharePasswordSet,
       setSharePasswordGate,
-      setTemplatePickerMode,
+      setIdentityPromptOpen,
     } = guardRun(set, live);
 
     // The tab-seeding + owner-field body both arrival branches share —
@@ -497,7 +497,7 @@ export function useIdentityBootstrap(opts: {
           // they can't pretend to be someone else.
           const isOwnerVisit = session.isOwner;
           if (!isOwnerVisit && !viaCommunity && !hasConfirmedName()) {
-            setTemplatePickerMode('identity');
+            setIdentityPromptOpen(true);
           }
           // Optimistically add the current document to the shared-with
           // list so it appears in the Explorer immediately, before the
@@ -578,7 +578,9 @@ export function useIdentityBootstrap(opts: {
         setDocumentServerStored(!offline);
         setIsOwner(offline || fetched.ownerId === self.id);
         setSessionRole('edit');
-        if (offline || fetched.ownerId === self.id) {
+        // A team document opened here was let in as owner or joined member, and every joined
+        // member may share it (mayShareDocument), so they get the list too.
+        if (offline || fetched.ownerId === self.id || fetched.teamId) {
           // Prefetch the share-link list so the dialog opens
           // populated — cloud only; an offline document has nothing
           // on the server to share.
@@ -597,7 +599,7 @@ export function useIdentityBootstrap(opts: {
         // back to the legacy localStorage gate so they still get the
         // one-time naming nudge.
         if (!early && !clerkUserId && !hasConfirmedName()) {
-          setTemplatePickerMode('identity');
+          setIdentityPromptOpen(true);
         }
         setDocumentId(id);
       }
@@ -637,7 +639,7 @@ export function useIdentityBootstrap(opts: {
       opts.set.setSelfParticipant({ ...self, key: ensureCollabKey(), status: 'online' });
       lastPersistedSelfRef.current = { name: self.name, color: self.color };
       trackDailyReturn(!!clerkUserId);
-      if (!clerkUserId && !hasConfirmedName()) opts.set.setTemplatePickerMode('identity');
+      if (!clerkUserId && !hasConfirmedName()) opts.set.setIdentityPromptOpen(true);
       opts.set.setNameConfirmed(hasConfirmedName());
       opts.refreshDocumentList(self.id);
       opts.refreshSharedList(self.id);

@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { sentJson } from '@livediagram/vitest-config/sent-request';
 import { ITEM_BULK_MAX } from '@livediagram/items';
 import { __setOfflineBackend } from '../offline/offline-store';
 import { memBackend } from '../offline/offline-test-utils';
@@ -20,7 +21,7 @@ describe('writeItem patches', () => {
   it('sends one request per batch, flagged when an undo, and folds the answers', async () => {
     let rev = 0;
     const fetch = vi.fn(async (_url: string, init: RequestInit) => {
-      const { items } = JSON.parse(String(init.body)) as { items: { id: string }[] };
+      const { items } = sentJson(init) as { items: { id: string }[] };
       rev += 1;
       return Response.json({ items: items.map((i) => ({ id: i.id, rev: 2 })), rev });
     });
@@ -33,7 +34,7 @@ describe('writeItem patches', () => {
     expect(fetch).toHaveBeenCalledTimes(2);
     const [url, init] = fetch.mock.calls[1] as unknown as [string, RequestInit];
     expect(url).toContain('/documents/doc-cloud/items/patches');
-    expect(JSON.parse(String(init.body))).toEqual({
+    expect(sentJson(init)).toEqual({
       items: patches.slice(ITEM_BULK_MAX).map((p) => ({ id: p.id, set: { status: 'trash' } })),
       undo: true,
     });
@@ -53,7 +54,7 @@ describe('writeItem tally', () => {
     );
     const [url, init] = fetch.mock.calls[0] as unknown as [string, RequestInit];
     expect(url).toContain('/documents/doc-cloud/items/tally');
-    expect(JSON.parse(String(init.body))).toEqual({ items: [{ id: 'i1', votes: { p: 2 } }] });
+    expect(sentJson(init)).toEqual({ items: [{ id: 'i1', votes: { p: 2 } }] });
     expect(answer.rev).toBe(3);
   });
 });
@@ -72,7 +73,7 @@ describe('writeItem patches refused part way', () => {
       'fetch',
       vi.fn(async (_url: string, init: RequestInit) => {
         call += 1;
-        const { items } = JSON.parse(String(init.body)) as { items: { id: string }[] };
+        const { items } = sentJson(init) as { items: { id: string }[] };
         if (call === 1) return Response.json({ items: items.map((i) => ({ id: i.id })), rev: 4 });
         return Response.json(
           { error: 'item_busy', items: [{ id: items[0]!.id }], rev: 5 },
@@ -80,11 +81,12 @@ describe('writeItem patches refused part way', () => {
         );
       }),
     );
-    const failure = await writeItem(scope, { kind: 'patches', patches }, by).catch((e) => e);
+    const failure = await writeItem(scope, { kind: 'patches', patches }, by).catch(
+      (e: unknown) => e,
+    );
     expect(failure).toBeInstanceOf(ItemWritePartlyLanded);
-    expect(failure.code).toBe('item_busy');
-    expect(failure.landed.upserts).toHaveLength(ITEM_BULK_MAX + 1);
-    expect(failure.landed.rev).toBe(5);
+    expect(failure).toMatchObject({ code: 'item_busy', landed: { rev: 5 } });
+    expect(failure).toHaveProperty('landed.upserts.length', ITEM_BULK_MAX + 1);
   });
 
   it('throws the plain refusal when nothing landed', async () => {
@@ -92,8 +94,10 @@ describe('writeItem patches refused part way', () => {
       'fetch',
       vi.fn(async () => Response.json({ error: 'item_busy' }, { status: 409 })),
     );
-    const failure = await writeItem(scope, { kind: 'patches', patches }, by).catch((e) => e);
+    const failure = await writeItem(scope, { kind: 'patches', patches }, by).catch(
+      (e: unknown) => e,
+    );
     expect(failure).not.toBeInstanceOf(ItemWritePartlyLanded);
-    expect(failure.code).toBe('item_busy');
+    expect(failure).toMatchObject({ code: 'item_busy' });
   });
 });

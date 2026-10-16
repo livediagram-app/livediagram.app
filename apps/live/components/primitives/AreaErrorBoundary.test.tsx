@@ -1,10 +1,10 @@
 // @vitest-environment jsdom
 
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi, type MockInstance } from 'vitest';
 
-const track = vi.fn();
-vi.mock('@/lib/telemetry', () => ({ track: (...a: unknown[]) => track(...a) }));
+const track = vi.fn<typeof import('@/lib/telemetry').track>();
+vi.mock('@/lib/telemetry', () => ({ track: (...a: Parameters<typeof track>) => track(...a) }));
 
 import { AreaErrorBoundary } from './AreaErrorBoundary';
 
@@ -14,7 +14,7 @@ function Flaky() {
   return <p>Canvas content</p>;
 }
 
-let quiet: ReturnType<typeof vi.spyOn>;
+let quiet: MockInstance<typeof console.error>;
 beforeEach(() => {
   shouldThrow = true;
   track.mockClear();

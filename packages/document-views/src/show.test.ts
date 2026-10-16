@@ -118,6 +118,7 @@ describe('person ids (security)', () => {
     responses: [{ participantId: secret, value: '3', at: 0 }],
     qaNotes: [{ id: 'n', text: 'Q', at: 0, voters: [secret] }],
     commentThread: { comments: [comment], resolved: false },
+    cellComments: { 'row001:col001': { comments: [comment], resolved: false } },
     addedBy: secret,
   } as unknown as Element;
 
@@ -137,9 +138,14 @@ describe('person ids (security)', () => {
       'stickerId',
       'imageId',
       'mindParentId',
+      // A flowchart's id (its first step's) and a step's lane (docs/specs/009-elements/flowchart.md).
+      'flowchartId',
+      'flowLaneId',
       'ideaCardIds',
+      // The tab a tab window shows (docs/specs/009-elements/tab-window.md).
+      'windowTabId',
     ]);
-    const roots = new Set(PERSON_ID_FIELDS.map((p) => p.split(/[.[]/)[0]));
+    const roots = new Set(PERSON_ID_FIELDS.map((p) => p.split(/[.[{]/)[0]));
     const idLike = Object.values(ELEMENT_FIELD_NAMES)
       .flat()
       .filter((field) => /(Id|Ids|voters|By)$/.test(field));

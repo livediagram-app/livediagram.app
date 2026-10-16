@@ -27,7 +27,9 @@ export type ItemFieldId =
   // Archived (docs/specs/026-plan/items.md "Archive"): kept, but off every board but an Archive board.
   | 'archived'
   // Flagged (docs/specs/026-plan/items.md "Flags"): marked for attention, on every board it is on.
-  | 'flagged';
+  | 'flagged'
+  // An example card a Plan template made (docs/specs/026-plan/items.md "Example cards").
+  | 'example';
 
 // A field a person adds to a type (docs/specs/026-plan/item-types.md "An item type"): its value is
 // an ordinary entry in the item's `fields`, under `id`.
@@ -35,23 +37,62 @@ export const CUSTOM_FIELD_KINDS = [
   'text',
   'longtext',
   'number',
+  // An amount in the field's own currency (`currency`), read as the locale formats it.
+  'currency',
   'date',
   'checkbox',
   'link',
+  // One email address.
+  'email',
   'choice',
+  // Several of its named options (docs/specs/030-forms/forms.md "New card field kinds").
+  'multichoice',
+  // A whole number from 1 to its `scale`, drawn as stars.
+  'rating',
   // A link to one other card, of the type `linkType` names (docs/specs/026-plan/item-types.md "Card fields").
   'card',
 ] as const;
 export type CustomFieldKind = (typeof CUSTOM_FIELD_KINDS)[number];
 
+// The currencies a Currency field offers first, and the one it takes when none is given (docs/specs/026-plan/
+// item-types.md "Custom field kinds"); any other ISO 4217 code is kept too.
+export const COMMON_CURRENCIES = [
+  'GBP',
+  'USD',
+  'EUR',
+  'JPY',
+  'CAD',
+  'AUD',
+  'CHF',
+  'INR',
+  'CNY',
+  'SEK',
+] as const;
+export const CURRENCY_DEFAULT = 'GBP';
+// A Rating field's scale (docs/specs/030-forms/forms.md "New card field kinds").
+export const RATING_FIELD_SCALE_MIN = 3;
+export const RATING_FIELD_SCALE_MAX = 10;
+export const RATING_FIELD_SCALE_DEFAULT = 5;
+export const ratingScaleOf = (field: Pick<CustomFieldDef, 'scale'>): number =>
+  field.scale ?? RATING_FIELD_SCALE_DEFAULT;
+export const CURRENCY_CODE = /^[A-Z]{3}$/;
+// An email address as a field keeps it: something@domain.tld, no spaces, up to 254 characters.
+export const EMAIL_MAX = 254;
+export const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+export const isEmailAddress = (v: string) => v.length <= EMAIL_MAX && EMAIL_PATTERN.test(v);
+
 export interface CustomFieldDef {
   id: string;
   label: string;
   kind: CustomFieldKind;
-  // Choice's options, in order.
+  // Choice's and Multiple Choice's options, in order.
   options?: readonly string[];
+  // A Rating's top score, RATING_FIELD_SCALE_MIN..MAX; RATING_FIELD_SCALE_DEFAULT when absent.
+  scale?: number;
   // A Card field's target card type id: its value is the id of one card of that type.
   linkType?: string;
+  // A Currency field's ISO 4217 code ("GBP"); CURRENCY_DEFAULT when absent.
+  currency?: string;
   // Drawn on the card face, after the board's card fields.
   onCard?: boolean;
 }
@@ -68,7 +109,8 @@ export interface ItemTypeDef {
   label: string;
   // The title a new item of this type gets from a palette tile.
   newTitle: string;
-  glyph: PlanGlyphId | string;
+  // Its glyph from the Plan glyph set; the fallback type's own is 'item'.
+  glyph: PlanGlyphId | 'item';
   // The stripe and glyph colour on a card face.
   color: string;
   // The fields its item panel offers, in order: built-in field ids and its custom fields' ids.

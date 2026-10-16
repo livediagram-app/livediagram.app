@@ -1,6 +1,6 @@
 'use client';
 
-// The Explorer's Inbox (docs/specs/013-workspace/inbox.md): three card-lists of what
+// The Explorer's Inbox (docs/specs/013-workspace/inbox.md): card-lists of what
 // is outstanding for the reader — actions and Plan cards assigned to them, actions
 // they assigned, and the comment threads they are in — each hidden
 // when empty, one empty state when all three are.
@@ -18,12 +18,14 @@ import {
   ActivityCardRow,
   ActivityEmptyState,
   ActivityFailedState,
+  ActivityFormResponsesRow,
   ActivitySection,
   ActivityCardThreadRow,
   ActivityThreadRow,
 } from './activity-pane-parts';
 
-export function ActivityPane({ feed }: { feed: ActivityFeed }) {
+// `compact`: inside the editor's Explorer pane, the small empty state.
+export function ActivityPane({ feed, compact = false }: { feed: ActivityFeed; compact?: boolean }) {
   // Once per visit to the section, not per fetch: the feed re-reads on
   // return-to-tab and a guest signing in, neither of which is a visit.
   useEffect(() => {
@@ -32,8 +34,12 @@ export function ActivityPane({ feed }: { feed: ActivityFeed }) {
 
   if (feed.loading) return <SkeletonRows />;
   if (feed.error) return <ActivityFailedState onRetry={feed.retry} />;
-  const total = feed.assignedToMe.length + feed.youAssigned.length + feed.threads.length;
-  if (total === 0) return <ActivityEmptyState />;
+  const total =
+    feed.assignedToMe.length +
+    feed.youAssigned.length +
+    feed.threads.length +
+    feed.formResponses.length;
+  if (total === 0) return <ActivityEmptyState compact={compact} />;
 
   return (
     <div>
@@ -54,6 +60,17 @@ export function ActivityPane({ feed }: { feed: ActivityFeed }) {
               />
             ),
           )}
+        </ActivitySection>
+      ) : null}
+      {feed.formResponses.length > 0 ? (
+        <ActivitySection title="Form Responses" count={feed.formResponses.length}>
+          {feed.formResponses.map((f) => (
+            <ActivityFormResponsesRow
+              key={`form:${f.documentId}:${f.tabId}`}
+              form={f}
+              onOpen={() => track('Activity', 'Selected', 'FormResponses')}
+            />
+          ))}
         </ActivitySection>
       ) : null}
       {feed.youAssigned.length > 0 ? (

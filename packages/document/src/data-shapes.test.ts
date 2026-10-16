@@ -15,6 +15,7 @@ import {
   isRatingShape,
   isSelfDrawingShape,
 } from './data-shapes';
+import { isSankeyShape } from './sankey-model';
 
 // The self-drawing shape family decides real behaviour: BoxedElementView picks
 // a renderer off it, elementSupportsText uses isSelfDrawingShape to decide
@@ -43,6 +44,7 @@ const FAMILIES: { name: string; guard: (k: ShapeKind) => boolean }[] = [
   { name: 'code block', guard: isCodeBlockShape },
   { name: 'checklist', guard: isChecklistShape },
   { name: 'legend', guard: isLegendShape },
+  { name: 'sankey', guard: isSankeyShape },
   { name: 'plan', guard: isPlanShape },
 ];
 
@@ -53,12 +55,25 @@ describe('the self-drawing shape family', () => {
     expect(ALL.length).toBeGreaterThan(40);
   });
 
-  it('claims exactly the kinds its members claim, plus the sticker and the label-less web components', () => {
+  it('claims exactly the kinds its members claim, plus the sticker, the label-less web components and concept graphics, and the tab window', () => {
     const fromMembers = new Set(FAMILIES.flatMap((f) => kindsMatching(f.guard)));
     fromMembers.add('sticker');
     // docs/specs/009-elements/web-components-and-no-groups.md: their text is their rows, so there is no label to edit.
     fromMembers.add('stat-row');
     fromMembers.add('process');
+    // docs/specs/009-elements/concept-graphics.md: a layer stack, a pyramid, an onion and a chevron process draw all
+    // their own text.
+    fromMembers.add('layer-stack');
+    fromMembers.add('pyramid');
+    // docs/specs/009-elements/tab-window.md: a tab window draws another tab and takes no label.
+    fromMembers.add('tab-window');
+    fromMembers.add('onion');
+    fromMembers.add('chevrons');
+    // docs/specs/009-elements/fence.md: a fence is posts and rails, with nothing to write on.
+    fromMembers.add('fence');
+    // docs/specs/009-elements/office.md: the scenery and machines have nothing to write on.
+    for (const k of ['plant', 'bookshelf', 'water-cooler', 'coffee-machine', 'rug'] as const)
+      fromMembers.add(k);
     expect(kindsMatching(isSelfDrawingShape)).toEqual([...fromMembers].sort());
   });
 

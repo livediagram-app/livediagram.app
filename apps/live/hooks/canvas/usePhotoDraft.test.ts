@@ -10,7 +10,7 @@ import {
   type Tab,
 } from '@livediagram/document';
 import { getPhotoDraftView, setPhotoDraftView } from '@/lib/photo-draft-preview';
-import { usePhotoDraft } from './usePhotoDraft';
+import { usePhotoDraft, type PhotoReview } from './usePhotoDraft';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn(), titleCaseType: (s: string) => s }));
 vi.mock('@/lib/reading/select', () => ({ selectReader: vi.fn() }));
@@ -19,10 +19,10 @@ vi.mock('@/lib/photo-detect', async () => {
   return { ...actual, detectAndCrop: vi.fn(), cropBoxes: vi.fn() };
 });
 
-import { selectReader } from '@/lib/reading/select';
+import { selectReader, type SelectedReader } from '@/lib/reading/select';
 
 // The hook asks `selectReader` who reads; the tests drive that reader directly.
-const readCrops = vi.fn();
+const readCrops = vi.fn<SelectedReader['read']>();
 import {
   cropBoxes,
   detectAndCrop,
@@ -31,6 +31,9 @@ import {
 } from '@/lib/photo-detect';
 import type { DetectedSticky } from '@livediagram/sticky-vision';
 import { track } from '@/lib/telemetry';
+
+// A review with nothing read yet.
+const noText = (): PhotoReview['textById'] => new Map();
 
 // A photo import as ONE gesture (docs/specs/021-event-storming/event-storming.md Phase 8): the draft lands in the
 // document so the author can correct it with the ordinary machinery, Add
@@ -100,7 +103,7 @@ function esNote(id: string, label: string, x = 0): StickyElement {
     y: 0,
     width: 200,
     height: 200,
-  } as StickyElement;
+  };
 }
 
 function harness(
@@ -203,7 +206,7 @@ async function reviewed(opts: Parameters<typeof harness>[0] = {}) {
 async function landed(opts: Parameters<typeof harness>[0] = {}) {
   const h = await reviewed(opts);
   const r = h.api().review;
-  act(() => h.api().confirm(r?.detection?.stickies ?? [], r?.textById ?? new Map()));
+  act(() => h.api().confirm(r?.detection?.stickies ?? [], r?.textById ?? noText()));
   h.rerender();
   return h;
 }
@@ -227,7 +230,7 @@ describe('the review wizard', () => {
     const h = await reviewed();
     expect(h.api().state.stage).toBe('review');
     expect(h.elements()).toEqual([]);
-    act(() => h.api().confirm(kept(h, [0]), h.api().review?.textById ?? new Map()));
+    act(() => h.api().confirm(kept(h, [0]), h.api().review?.textById ?? noText()));
     h.rerender();
     expect(h.api().state.stage).toBe('draft');
     expect(h.drafts()).toHaveLength(1);
@@ -243,7 +246,7 @@ describe('the review wizard', () => {
       ]),
     );
     const h = await reviewed();
-    act(() => h.api().confirm(kept(h, [1]), h.api().review?.textById ?? new Map()));
+    act(() => h.api().confirm(kept(h, [1]), h.api().review?.textById ?? noText()));
     h.rerender();
     expect(h.drafts()).toHaveLength(1);
     expect((h.drafts()[0] as StickyElement).label).toBe('Payment received');
@@ -252,7 +255,7 @@ describe('the review wizard', () => {
   it('lands the boxes the author drew by hand, beside the detected ones', async () => {
     const h = await reviewed();
     const drawn = sticky({ id: -1, kind: 'command', x: 500, y: 500 });
-    act(() => h.api().confirm([...kept(h, [0]), drawn], h.api().review?.textById ?? new Map()));
+    act(() => h.api().confirm([...kept(h, [0]), drawn], h.api().review?.textById ?? noText()));
     h.rerender();
     expect(h.drafts()).toHaveLength(2);
     expect(
@@ -427,7 +430,7 @@ describe('landing a draft', () => {
   it('still keeps the blank draft through Add after a failed read', async () => {
     vi.mocked(readCrops).mockRejectedValue(new Error('ai_error'));
     const h = await reviewed();
-    act(() => h.api().confirm(kept(h, [0]), h.api().review?.textById ?? new Map()));
+    act(() => h.api().confirm(kept(h, [0]), h.api().review?.textById ?? noText()));
     h.rerender();
     act(() => h.api().accept());
     expect(h.drafts()).toHaveLength(0);
@@ -525,7 +528,7 @@ describe('Discard', () => {
     // No checkpoint to go back to (a reload): the notes are still drafts, and
     // Discard has to be able to clear them anyway.
     const h = harness({
-      elements: [esNote('a', 'Kept'), { ...esNote('d', 'Draft'), esDraft: true } as Element],
+      elements: [esNote('a', 'Kept'), { ...esNote('d', 'Draft'), esDraft: true }],
     });
     act(() => h.api().discard());
     expect(h.elements().map((el) => el.id)).toEqual(['a']);
@@ -534,10 +537,7 @@ describe('Discard', () => {
 
 describe('the pure lifecycle the hook leans on', () => {
   it('accept and discard are the two ends of it', () => {
-    const board: Element[] = [
-      esNote('a', 'Kept'),
-      { ...esNote('d', 'Draft'), esDraft: true } as Element,
-    ];
+    const board: Element[] = [esNote('a', 'Kept'), { ...esNote('d', 'Draft'), esDraft: true }];
     expect(acceptDraft(board).every((el) => (el as StickyElement).esDraft === undefined)).toBe(
       true,
     );
@@ -718,12 +718,12 @@ describe('when the free budget is spent', () => {
 describe('where the in-browser reader runs', () => {
   it('carries the reason it is the processor', async () => {
     vi.mocked(readCrops).mockImplementation(async (_crops, opts) => {
-      opts.onBackend?.('wasm', 'no-f16');
+      opts.onBackend?.('wasm', 'no-webgpu');
       return read([{ id: 0, text: 'Order placed' }]);
     });
     const h = await reviewed();
     expect(h.api().state.readerBackend).toBe('wasm');
-    expect(h.api().state.readerWhy).toBe('no-f16');
+    expect(h.api().state.readerWhy).toBe('no-webgpu');
   });
 });
 

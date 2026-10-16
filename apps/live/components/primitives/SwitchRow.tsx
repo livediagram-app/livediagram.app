@@ -13,20 +13,24 @@ export function SwitchRow({
   onChange,
   children,
   className = '',
+  disabled = false,
 }: {
   checked: boolean;
   onChange: (on: boolean) => void;
   children: ReactNode;
   // The caller's spacing, border and type size only.
   className?: string;
+  // Can't be flipped now; the caller says why beside it.
+  disabled?: boolean;
 }) {
   return (
     <button
       type="button"
       role="switch"
       aria-checked={checked}
+      disabled={disabled}
       onClick={() => onChange(!checked)}
-      className={`flex w-full items-center justify-between gap-3 rounded-md text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 ${className}`}
+      className={`flex w-full items-center justify-between gap-3 rounded-md text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 disabled:cursor-not-allowed disabled:opacity-50 ${className}`}
     >
       <span className="min-w-0">{children}</span>
       <ToggleSwitch checked={checked} label="" presentational />

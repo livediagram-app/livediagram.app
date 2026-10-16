@@ -1,5 +1,5 @@
 // Editor-mode illustrations for the Canvas article on Editor Modes (docs/specs/018-help/help-app.md,
-// docs/specs/007-editor/editor-modes.md): the tab menu's mode rows, the four modes at its foot
+// docs/specs/007-editor/editor-modes.md): the tab menu's mode rows, the five modes at its foot
 // (chrome/TabModeMenuRows.tsx), the tab pill leading with the mode icon (TabModeIcon.tsx), and the
 // confirmation card that hangs from the mode switch when an editor leaves Illustrate on a tab with
 // pages (dialogs/LeaveIllustrateConfirm.tsx). The mode switch itself is `ModeSwitchScene` in
@@ -8,74 +8,18 @@
 
 import { Scene, Label, Button } from './primitives';
 import { MenuCard } from './toolbar-layout';
+import { ModeMark, type Mode } from './mode-mark';
 
-type Mode = 'Diagram' | 'Draw' | 'Illustrate' | 'Plan';
-
-/** Each mode's mark (packages/ui EDITOR_MODE_ICONS) on its 24-unit grid, centred on (0, 0) and
- *  drawn at `scale`: a flowchart, a marker, a page with a chart over two lines, a board. */
-function ModeMark({
-  mode,
-  className = 'stroke-slate-500',
-  scale = 0.6,
-}: {
-  mode: Mode;
-  className?: string;
-  scale?: number;
-}) {
-  const common = {
-    fill: 'none',
-    className,
-    strokeWidth: 2,
-    strokeLinecap: 'round' as const,
-    strokeLinejoin: 'round' as const,
-  };
-  const body = (() => {
-    switch (mode) {
-      case 'Diagram':
-        return (
-          <>
-            <rect x={3} y={3} width={8} height={8} rx={2} {...common} />
-            <path d="M7 11v4a2 2 0 0 0 2 2h4" {...common} />
-            <rect x={13} y={13} width={8} height={8} rx={2} {...common} />
-          </>
-        );
-      case 'Draw':
-        return (
-          <>
-            <path d="M7 13 L15.5 4.5 L18 7 L9.5 15.5 L6.4 16 Z" {...common} />
-            <path d="M4 19.5 H20" {...common} />
-          </>
-        );
-      case 'Illustrate':
-        return (
-          <>
-            <rect x={4.5} y={2.5} width={15} height={19} rx={2} {...common} />
-            <path d="M8.5 11V8.5M12 11V6M15.5 11V9" {...common} />
-            <path d="M8.5 15H15.5M8.5 18H13" {...common} />
-          </>
-        );
-      default:
-        return (
-          <>
-            <rect x={2.5} y={4} width={19} height={16} rx={2} {...common} />
-            <path d="M8.83 4V20M15.17 4V20" {...common} />
-            <rect x={10.2} y={6} width={3.6} height={5} rx={0.8} {...common} />
-          </>
-        );
-    }
-  })();
-  return <g transform={`scale(${scale}) translate(-12 -12)`}>{body}</g>;
-}
-
-// The four modes as the tab menu's mode rows list them: name, then the catalogue's description, wrapped.
+// The five modes as the tab menu's mode rows list them: name, then the catalogue's description, wrapped.
 const OPENS_IN: { mode: Mode; lines: string[] }[] = [
-  { mode: 'Diagram', lines: ['Shapes, arrows, the palette and snapping.'] },
-  { mode: 'Draw', lines: ['Pens, the eraser and shape recognition.'] },
-  { mode: 'Illustrate', lines: ['Pages: infographics to lay out, and', 'articles to write.'] },
-  { mode: 'Plan', lines: ['Boards of items: columns, cards and', 'the work moving through them.'] },
+  { mode: 'Diagram', lines: ['Flowcharts, architecture and org charts', 'with snapping shapes.'] },
+  { mode: 'Draw', lines: ['Sketch freehand with pens, tidied into', 'shapes as you go.'] },
+  { mode: 'Facilitate', lines: ['Run a live session: timers, votes, polls', 'and reveals.'] },
+  { mode: 'Illustrate', lines: ['Lay out slides, infographics, articles', 'and logos on pages.'] },
+  { mode: 'Plan', lines: ['Boards of cards moving through columns,', 'with types and fields.'] },
 ];
 
-/** The foot of the tab menu: the content rows (Import, Export, Clear), a hairline, then the four
+/** The foot of the tab menu: the content rows (Import, Export, Clear), a hairline, then the five
  *  mode rows, each with its mark, name and what it is for, a dot on the tab's current one (Draw),
  *  above the tab bar whose pill leads with the same mark. */
 export function TabModeMenuScene() {
@@ -209,7 +153,7 @@ export function LeaveIllustrateScene() {
   const pointerX = 55;
   return (
     <Scene w={460} h={200}>
-      <MenuCard x={12} y={8} />
+      <MenuCard x={12} y={8} mode="Illustrate" />
       {/* An Illustrate page on the canvas */}
       <rect x={350} y={40} width={80} height={112} rx={2} className="fill-white stroke-slate-200" />
       <rect x={362} y={70} width={10} height={20} className="fill-brand-200" />
@@ -218,7 +162,7 @@ export function LeaveIllustrateScene() {
       <rect x={362} y={102} width={52} height={5} rx={2.5} className="fill-slate-300" />
       <rect x={362} y={114} width={38} height={5} rx={2.5} className="fill-slate-300" />
       <Label x={390} y={170} size={10} tone="muted" anchor="middle">
-        A4 · Portrait · Infographic
+        A4 · Portrait
       </Label>
       {/* The card, pointing up at the switch */}
       <rect

@@ -60,12 +60,38 @@ function PromptShell({
   body,
   action,
   onDismiss,
+  bar = false,
 }: {
   title: string;
   body: string;
   action?: React.ReactNode;
   onDismiss: () => void;
+  // One quiet line (the editor's Explorer, under its Current Document card): the title as a lead-in, the action, the
+  // dismiss.
+  bar?: boolean;
 }) {
+  if (bar)
+    return (
+      <div
+        data-signin-bar=""
+        className="flex items-center gap-3 rounded-lg bg-amber-50/70 py-1.5 pl-3 pr-1.5 text-xs ring-1 ring-amber-200/70 dark:bg-amber-500/10 dark:ring-amber-400/25"
+      >
+        <p className="min-w-0 flex-1 leading-snug text-slate-600 dark:text-slate-300">
+          <span className="font-semibold text-slate-800 dark:text-white">{title}.</span>{' '}
+          {/* On a phone a note with an action keeps to its title and the action, so it stays one line. */}
+          <span className={action ? 'max-sm:hidden' : undefined}>{body}</span>
+        </p>
+        {action}
+        <button
+          type="button"
+          onClick={onDismiss}
+          aria-label="Dismiss"
+          className="flex h-6 w-6 shrink-0 touch-target cursor-pointer items-center justify-center rounded text-slate-400 transition hover:bg-slate-200/70 hover:text-slate-700 dark:hover:bg-slate-700 dark:hover:text-slate-100"
+        >
+          <CloseIcon size={12} />
+        </button>
+      </div>
+    );
   return (
     <div className="relative rounded-md border border-dashed border-slate-200 bg-slate-50/60 px-3 py-3 text-xs text-slate-600 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-200">
       <button
@@ -91,9 +117,10 @@ function PromptShell({
 // for dismissed guests. While Clerk / the dismissal read are still
 // loading we render nothing, so the fallback doesn't flash in before the
 // prompt has a chance to claim the slot.
-type SignInPromptProps = { fallback?: React.ReactNode };
+// `bar`: the one-line form (the editor's Explorer, under its Current Document card).
+type SignInPromptProps = { fallback?: React.ReactNode; bar?: boolean };
 
-function SignInPromptEnabled({ fallback }: SignInPromptProps) {
+function SignInPromptEnabled({ fallback, bar = false }: SignInPromptProps) {
   const { authLoaded: isLoaded, isSignedIn } = useDeferredAuth();
   const { dismissed, dismiss } = usePromptDismissed();
   const { signInHref } = useAuthHrefs();
@@ -101,13 +128,21 @@ function SignInPromptEnabled({ fallback }: SignInPromptProps) {
   if (isSignedIn || dismissed) return <>{fallback ?? null}</>;
   return (
     <PromptShell
-      title="Sign in to keep your content"
-      body="A free account keeps your documents and content across sessions and devices."
+      bar={bar}
+      title={bar ? 'Keep your work' : 'Sign in to keep your content'}
+      body={
+        bar
+          ? 'A free account saves it across devices.'
+          : 'A free account keeps your documents and content across sessions and devices.'
+      }
       onDismiss={dismiss}
       action={
         <Link
           href={signInHref}
-          className={buttonClassName({ size: 'xs', className: 'w-full shadow-sm' })}
+          className={buttonClassName({
+            size: 'xs',
+            className: bar ? 'shrink-0 shadow-sm' : 'w-full shadow-sm',
+          })}
         >
           <ButtonContent>Sign in</ButtonContent>
         </Link>
@@ -116,14 +151,19 @@ function SignInPromptEnabled({ fallback }: SignInPromptProps) {
   );
 }
 
-function SignInPromptDisabled({ fallback }: SignInPromptProps) {
+function SignInPromptDisabled({ fallback, bar = false }: SignInPromptProps) {
   const { dismissed, dismiss } = usePromptDismissed();
   if (dismissed === null) return null;
   if (dismissed) return <>{fallback ?? null}</>;
   return (
     <PromptShell
-      title="Documents saved to this browser"
-      body="Sign-in isn't enabled on this deployment, so documents stay local to this browser. Clear your storage and they're gone."
+      bar={bar}
+      title={bar ? 'Browser only' : 'Documents saved to this browser'}
+      body={
+        bar
+          ? 'Clearing site data deletes it.'
+          : "Sign-in isn't enabled on this deployment, so documents stay local to this browser. Clear your storage and they're gone."
+      }
       onDismiss={dismiss}
     />
   );

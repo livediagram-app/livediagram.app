@@ -511,9 +511,14 @@ export function SpotlightTool() {
   return (
     <Scene w={420} h={230}>
       <defs>
+        {/* The default Soft edge: the light feathers out into the dim. */}
+        <radialGradient id="mtt-spot-soft">
+          <stop offset="0.7" stopColor="black" />
+          <stop offset="1" stopColor="white" />
+        </radialGradient>
         <mask id="mtt-spot-hole">
           <rect x={0} y={0} width={420} height={230} fill="white" />
-          <circle cx={232} cy={150} r={52} fill="black" />
+          <circle cx={234} cy={158} r={62} fill="url(#mtt-spot-soft)" />
         </mask>
       </defs>
       <PickerTrigger tool="spotlight" />
@@ -528,8 +533,10 @@ export function SpotlightTool() {
         className="fill-slate-900/55"
         mask="url(#mtt-spot-hole)"
       />
-      <circle cx={232} cy={150} r={52} className="fill-none stroke-amber-300" strokeWidth={2} />
-      <circle cx={232} cy={150} r={4} className="fill-amber-300" />
+      {/* The cursor's stand-in, as the app draws it: a sky dot with a white rim and a glow,
+          below B's label so the lit shape still reads. No ring: the light's edge is the shroud. */}
+      <circle cx={234} cy={166} r={8} className="fill-sky-400/30" />
+      <circle cx={234} cy={166} r={4.5} className="fill-sky-400 stroke-white" strokeWidth={1.5} />
     </Scene>
   );
 }
@@ -603,16 +610,8 @@ export function WalkingTogether() {
     <Scene w={420} h={220}>
       <Shape x={40} y={60} w={96} h={48} label="Sign up" />
       <Shape x={250} y={60} w={150} h={48} accent label="Payment" />
+      {/* No ring under Priya: only your own character rings what it stands on (Canvas.tsx). */}
       <Arrow from={[136, 84]} to={[250, 84]} tone="muted" />
-      <rect
-        x={246}
-        y={56}
-        width={158}
-        height={56}
-        rx={9}
-        className="fill-none stroke-violet-400"
-        strokeWidth={2}
-      />
       <PixelCharacter fx={92} fy={196} />
       <PixelCharacter fx={204} fy={186} shirt="emerald" name="Sam" hair="fill-slate-800" />
       <PixelCharacter fx={272} fy={112} shirt="violet" name="Priya" hair="fill-slate-900" />

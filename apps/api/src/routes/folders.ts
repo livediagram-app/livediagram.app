@@ -55,7 +55,7 @@ export async function handleFolders(ctx: RouteContext): Promise<Response> {
     if (request.method === 'POST') {
       const read = await readBody(ctx);
       if (read instanceof Response) return read;
-      const body = read as Record<string, unknown>;
+      const body = read;
       const newId = body.id;
       if (typeof newId !== 'string' || !newId) return badRequest('missing id/name');
       const name = readFolderName(body.name);
@@ -65,7 +65,7 @@ export async function handleFolders(ctx: RouteContext): Promise<Response> {
       if (parentId instanceof Response) return parentId;
       if (body.teamId != null && typeof body.teamId !== 'string')
         return badRequest('invalid teamId');
-      const teamId = (body.teamId as string | null | undefined) ?? null;
+      const teamId = body.teamId ?? null;
       if (teamId && !(await canManageTeamFolder(ctx, teamId))) return forbidden();
       // Parent must exist and live in the same scope before we accept
       // it — otherwise the tree could grow into another user's (or
@@ -76,13 +76,23 @@ export async function handleFolders(ctx: RouteContext): Promise<Response> {
         if (teamId ? parent.teamId !== teamId : parent.teamId !== null || parent.ownerId !== owner)
           return notFound();
       }
-      const folder = await createFolder(env, {
-        id: newId,
-        ownerId: owner,
-        parentId: parentId ?? null,
-        name,
-        teamId,
-      });
+      let folder: FolderDTO;
+      try {
+        folder = await createFolder(env, {
+          id: newId,
+          ownerId: owner,
+          parentId: parentId ?? null,
+          name,
+          teamId,
+        });
+      } catch (err) {
+        // An id already taken (a retried create, or a client reusing one) is the caller's conflict, not a 500.
+        if (err instanceof Error && /UNIQUE constraint failed: folders\.id/.test(err.message)) {
+          console.info('[folders] create refused: id already exists');
+          return conflict('folder_exists');
+        }
+        throw err;
+      }
       ctx.waitUntil?.(recordFolderCreated(env, { id: folder.id, name: folder.name }, owner));
       return json({ folder }, { status: 201 });
     }
@@ -97,7 +107,7 @@ export async function handleFolders(ctx: RouteContext): Promise<Response> {
     if (request.method === 'PUT') {
       const read = await readBody(ctx);
       if (read instanceof Response) return read;
-      const body = read as Record<string, unknown>;
+      const body = read;
       // Validate the whole body before writing any of it, so a bad parentId never leaves a
       // half-applied rename behind.
       const name = readFolderName(body.name);

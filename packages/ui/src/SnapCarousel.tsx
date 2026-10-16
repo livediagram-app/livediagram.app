@@ -114,11 +114,13 @@ export function SnapCarousel({
           </div>
         </div>
       </div>
-      {/* The scrollbar is hidden: the arrows and swipe are the controls. */}
+      {/* The scrollbar is hidden: the arrows and swipe are the controls. Positioned, so a card's
+          absolutely placed parts (its sr-only text) are clipped by the track, not placed against
+          the page: a card scrolled off the right would otherwise widen the whole page. */}
       <ul
         ref={track}
         onScroll={measure}
-        className={`flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden [&>li]:shrink-0 [&>li]:grow [&>li]:snap-start ${itemClassName} ${trackClassName}`}
+        className={`relative flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden [&>li]:shrink-0 [&>li]:grow [&>li]:snap-start ${itemClassName} ${trackClassName}`}
       >
         {children}
       </ul>
@@ -144,7 +146,7 @@ function CarouselArrow({
       onClick={onClick}
       disabled={disabled}
       aria-label={`${prev ? 'Previous' : 'Next'} ${label}`}
-      className="flex items-center justify-center rounded-full border border-slate-200 bg-white p-1.5 text-slate-600 transition enabled:hover:border-brand-300 enabled:hover:text-brand-700 disabled:cursor-default disabled:opacity-35 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:enabled:hover:border-brand-500/60 dark:enabled:hover:text-white"
+      className="touch-target-y relative flex items-center justify-center rounded-full border border-slate-200 bg-white p-1.5 text-slate-600 transition enabled:hover:border-brand-300 enabled:hover:text-brand-700 disabled:cursor-default disabled:opacity-35 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:enabled:hover:border-brand-500/60 dark:enabled:hover:text-white"
     >
       <Glyph size={18} units={24}>
         {prev ? <path d="M15 6 L9 12 L15 18" /> : <path d="M9 6 L15 12 L9 18" />}

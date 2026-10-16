@@ -12,11 +12,14 @@
 // nothing from February; the team's own scope carries the whole history
 // and is readable by any joined member.
 
-import { Timeline, TimelineControls } from '@livediagram/ui';
+import { CompactEmptyState, Timeline, TimelineControls, lucideGlyph } from '@livediagram/ui';
+import { lucideHistory } from '@livediagram/icons/lucide';
 import type { TimelineScopeRef } from '@livediagram/api-schema';
 import { track } from '@/lib/telemetry';
 import { TIMELINE_RENDERERS } from '@/app/explorer/timeline/renderers';
 import { useTimelineFeed } from '@/app/explorer/useTimelineFeed';
+
+const ActivityIcon = lucideGlyph(lucideHistory, 18);
 
 export function ScopedTimeline({
   ownerId,
@@ -46,9 +49,13 @@ export function ScopedTimeline({
         loading={feed.loading}
         isEmpty={feed.events.length === 0}
         emptyState={
-          <p className="rounded-lg border border-dashed border-slate-200 px-6 py-8 text-center text-sm text-slate-500 dark:border-slate-700 dark:text-slate-400">
-            {emptyMessage}
-          </p>
+          // The shared empty state (docs/specs/004-interface-design/empty-states.md).
+          <CompactEmptyState
+            className="py-8"
+            icon={<ActivityIcon />}
+            title="No activity yet"
+            description={emptyMessage}
+          />
         }
         // A team's activity or a document's history can fail to read for
         // exactly the reasons the landing feed can, and "nothing has
@@ -75,7 +82,7 @@ export function TeamTimeline({ ownerId, teamId }: { ownerId: string; teamId: str
       ownerId={ownerId}
       scope={{ scopeType: 'team', scopeId: teamId }}
       title="Team Activity"
-      emptyMessage="Nothing has happened in this team yet."
+      emptyMessage="What the team does will show here."
     />
   );
 }
@@ -86,7 +93,7 @@ export function DocumentTimeline({ ownerId, documentId }: { ownerId: string; doc
       ownerId={ownerId}
       scope={{ scopeType: 'document', scopeId: documentId }}
       title="History"
-      emptyMessage="Nothing has happened to this document yet."
+      emptyMessage="What happens to this document will show here."
     />
   );
 }

@@ -1,8 +1,8 @@
 // @vitest-environment jsdom
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { createShape, type PlanViewRef, type ShapeElement } from '@livediagram/document';
-import { ITEM_TYPES, type Item, type PlanViewId } from '@livediagram/items';
+import { ITEM_TYPES, planViewSize, type Item, type PlanViewId } from '@livediagram/items';
 import { PlanProvider, type PlanContextValue } from '../PlanContext';
 import { PlanViewView } from './PlanViewView';
 
@@ -52,6 +52,8 @@ function draw(
 ) {
   const el = {
     ...createShape('plan-view', 0, 0),
+    // A metric at the size the palette places it: small, as a header widget.
+    ...(view.startsWith('metric:') ? planViewSize(view) : {}),
     planView: { view, ...settings },
   } as ShapeElement;
   return render(
@@ -61,7 +63,17 @@ function draw(
   );
 }
 
-afterEach(cleanup);
+// The fixtures' dates sit around early October 2026: pin today there, so a due date never turns
+// overdue (drawn red) just because the calendar moved on. Only Date is faked; React's timers stay real.
+const TODAY = new Date('2026-10-05T12:00:00Z');
+beforeEach(() => {
+  vi.useFakeTimers({ toFake: ['Date'] });
+  vi.setSystemTime(TODAY);
+});
+afterEach(() => {
+  cleanup();
+  vi.useRealTimers();
+});
 
 describe('plan views', () => {
   it('say so while the cards load, and show their empty state without any', () => {
@@ -150,6 +162,33 @@ describe('plan views', () => {
     expect(screen.getByRole('button', { name: /Ship it/ })).toBeTruthy();
   });
 
+  it('draws compact cards on a calendar with the room, a line each on a small one', () => {
+    const now = new Date();
+    const p = (x: number) => String(x).padStart(2, '0');
+    const due = `${now.getFullYear()}-${p(now.getMonth() + 1)}-15`;
+    const plan = planWith([item({ title: 'Ship it', due })]);
+    const big = {
+      ...createShape('plan-view', 0, 0),
+      width: 1400,
+      height: 900,
+      planView: { view: 'calendar' },
+    } as ShapeElement;
+    const { container, unmount } = render(
+      <PlanProvider value={plan}>
+        <PlanViewView element={big} />
+      </PlanProvider>,
+    );
+    const entry = screen.getByRole('button', { name: /Ship it/ });
+    // A card face (rounded and bordered as a board's), not a dot and a line.
+    expect(entry.querySelector('[data-plan-card-face], .rounded-xl, .rounded-lg')).not.toBeNull();
+    unmount();
+    draw('calendar', plan);
+    expect(
+      screen.getByRole('button', { name: /Ship it/ }).querySelector('.rounded-full'),
+    ).not.toBeNull();
+    void container;
+  });
+
   it('charts workload, status and priority', () => {
     const cards = [
       item({ title: 'a', assignee: SAM, status: 'done', priority: 'urgent' }),
@@ -175,6 +214,24 @@ describe('plan views', () => {
     cleanup();
     draw('metric:progress', planWith(cards, { statusPhases: new Map() }));
     expect(screen.getByText('No done column')).toBeTruthy();
+  });
+
+  // docs/specs/026-plan/plan-tabs.md "Metric tiles": with room, a metric is a tile.
+  it('draws a metric with room as a tile: its figure, its line and a ring', () => {
+    const cards = [item({ title: 'a', status: 'done' }), item({ title: 'b', status: 'todo' })];
+    const el = {
+      ...createShape('plan-view', 0, 0),
+      width: 480,
+      height: 300,
+      planView: { view: 'metric:progress' },
+    } as ShapeElement;
+    render(
+      <PlanProvider value={planWith(cards)}>
+        <PlanViewView element={el} />
+      </PlanProvider>,
+    );
+    expect(screen.getByRole('group', { name: 'Completion: 50 %, 1 of 2 cards done' })).toBeTruthy();
+    expect(screen.getByRole('img', { name: '50%' })).toBeTruthy();
   });
 });
 
@@ -301,18 +358,20 @@ describe('the Gantt rows', () => {
 
 // docs/specs/026-plan/plan-views.md "Gantt Chart": card types, and a drag that never opens a card.
 describe('the Gantt chart’s card types and drags', () => {
-  it('draws the card types it names, counting cards, under its new name', () => {
+  it('draws the card types it names, with no count beside its name', () => {
     const p = item({ title: 'Launch', due: '2026-10-20' }, 'project');
     const t = item({ title: 'Write copy', start: '2026-10-01', due: '2026-10-05' }, 'task');
     // A Task offers Start once its type has it: the chart draws only types with Start and Due.
     const dated = ITEM_TYPES.map((x) =>
       x.id === 'task' ? { ...x, fields: [...x.fields, 'start'] } : x,
     );
-    draw('gantt', planWith([p, t], { types: dated }), { types: ['task'] });
+    draw('gantt', planWith([p, t], { types: dated, canEditCards: true }), { types: ['task'] });
     expect(screen.getByText('Gantt Chart')).toBeTruthy();
     expect(screen.getByText('Write copy')).toBeTruthy();
     expect(screen.queryByText('Launch')).toBeNull();
-    expect(screen.getByLabelText('1 card')).toBeTruthy();
+    expect(screen.queryByLabelText('1 card')).toBeNull();
+    // Add Card sits under the last row.
+    expect(screen.getByRole('button', { name: 'Add Card' })).toBeTruthy();
     cleanup();
     // Without Start on Task, the chart names it but draws none of its cards.
     draw('gantt', planWith([p, t]), { types: ['task'] });

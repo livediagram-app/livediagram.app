@@ -1,8 +1,13 @@
 // @vitest-environment jsdom
+import { useState } from 'react';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { VIEWPORT_EDGE_MARGIN as EDGE } from '@/lib/clamp-to-viewport';
+import { ColourSwatchButton } from '@/components/colour/ColourSwatchButton';
+import { standardGroup } from '@/components/colour/colour-options';
 import { AnchoredPopover, placeAnchored } from './AnchoredPopover';
+import { ConfirmPopover } from './ConfirmPopover';
+import { openPopoverCount } from './popover-stack';
 
 // docs/specs/026-plan/item-types.md "Editing a type": Add Field's and Glyph's popovers.
 afterEach(cleanup);
@@ -37,6 +42,24 @@ describe('placeAnchored', () => {
   });
 });
 
+// tooltips-hover-cards-popovers.md "On-screen keyboard": a window shrunk under the panel (a keyboard that resizes
+// it) never squeezes it to nothing; it keeps MIN_ROOM_PX (or its own height, when smaller) and is moved into view.
+describe('placeAnchored with almost no room', () => {
+  it('keeps the least room on its side, or the panel’s own height when that is less', async () => {
+    const { MIN_ROOM_PX } = await import('./AnchoredPopover');
+    const short = { width: 1000, height: 420 };
+    const anchor = { left: 0, top: 380, bottom: 400 };
+    expect(placeAnchored(anchor, { width: 300, height: 400 }, short, 'below').maxHeight).toBe(
+      MIN_ROOM_PX,
+    );
+    expect(placeAnchored(anchor, { width: 300, height: 90 }, short, 'below').maxHeight).toBe(90);
+    expect(
+      placeAnchored({ left: 0, top: 10, bottom: 30 }, { width: 300, height: 400 }, view, 'above')
+        .maxHeight,
+    ).toBe(MIN_ROOM_PX);
+  });
+});
+
 describe('AnchoredPopover', () => {
   const draw = () => {
     const anchor = document.createElement('button');
@@ -67,5 +90,85 @@ describe('AnchoredPopover', () => {
     fireEvent.pointerDown(document.body);
     expect(onClose).toHaveBeenCalled();
     anchor.remove();
+  });
+});
+
+// A popover opened from inside another (a cog's Style section opening a colour picker, a ConfirmPopover): the stack
+// in popover-stack.ts gives Escape and presses to the one on top.
+describe('AnchoredPopover nested in another', () => {
+  function Cog({ onClose, confirm = false }: { onClose: () => void; confirm?: boolean }) {
+    const [cog, setCog] = useState<HTMLElement | null>(null);
+    const [ask, setAsk] = useState<HTMLElement | null>(null);
+    return (
+      <div>
+        <button ref={setCog}>Settings</button>
+        {cog ? (
+          <AnchoredPopover anchor={cog} name="Slot Settings" width={240} onClose={onClose}>
+            <p>Style</p>
+            <ColourSwatchButton
+              label="Fill"
+              standard={[standardGroup('strong', 'light', 'hex')]}
+              value={null}
+              swatch="#000"
+              onPick={vi.fn()}
+            />
+            {confirm ? <button onClick={(e) => setAsk(e.currentTarget)}>Delete</button> : null}
+            {ask ? (
+              <ConfirmPopover
+                anchor={ask}
+                message="Delete it?"
+                confirmLabel="Delete"
+                onConfirm={() => setAsk(null)}
+                onCancel={() => setAsk(null)}
+              />
+            ) : null}
+          </AnchoredPopover>
+        ) : null}
+      </div>
+    );
+  }
+
+  it('closes only the colour picker on Escape, handing focus back to its swatch', () => {
+    const onClose = vi.fn();
+    render(<Cog onClose={onClose} />);
+    const swatch = screen.getByRole('button', { name: 'Fill' });
+    fireEvent.click(swatch);
+    expect(screen.getByRole('dialog', { name: 'Fill' })).toBeTruthy();
+    fireEvent.keyDown(document.activeElement ?? document.body, { key: 'Escape' });
+    expect(screen.queryByRole('dialog', { name: 'Fill' })).toBeNull();
+    expect(onClose).not.toHaveBeenCalled();
+    expect(document.activeElement).toBe(swatch);
+    // The next Escape is the cog's.
+    fireEvent.keyDown(document.activeElement ?? document.body, { key: 'Escape' });
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps the cog open on a press inside the colour picker, closing the picker on one in the cog', () => {
+    const onClose = vi.fn();
+    render(<Cog onClose={onClose} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Fill' }));
+    fireEvent.pointerDown(screen.getByRole('button', { name: 'Blue' }));
+    expect(onClose).not.toHaveBeenCalled();
+    fireEvent.pointerDown(screen.getByText('Style'));
+    expect(screen.queryByRole('dialog', { name: 'Fill' })).toBeNull();
+    expect(onClose).not.toHaveBeenCalled();
+  });
+
+  it('lets a ConfirmPopover it opened take Escape, the cog staying open', () => {
+    const onClose = vi.fn();
+    render(<Cog onClose={onClose} confirm />);
+    fireEvent.click(screen.getByRole('button', { name: 'Delete' }));
+    expect(document.querySelector('[data-confirm-popover]')).not.toBeNull();
+    fireEvent.keyDown(document.body, { key: 'Escape' });
+    expect(document.querySelector('[data-confirm-popover]')).toBeNull();
+    expect(onClose).not.toHaveBeenCalled();
+  });
+
+  it('leaves the stack empty once everything is closed', () => {
+    const { unmount } = render(<Cog onClose={vi.fn()} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Fill' }));
+    expect(openPopoverCount()).toBe(2);
+    unmount();
+    expect(openPopoverCount()).toBe(0);
   });
 });

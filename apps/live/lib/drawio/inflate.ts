@@ -66,7 +66,7 @@ export function base64Bytes(text: string): Uint8Array {
 }
 
 // draw.io's Graph.zapGremlins: C0 controls other than tab, LF, CR.
-// eslint-disable-next-line no-control-regex -- the control range IS the point
+// oxlint-disable-next-line no-control-regex -- the control range IS the point
 const GREMLINS = /[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g;
 
 /** A compressed `<diagram>` body back to its `mxGraphModel` XML (draw.io's

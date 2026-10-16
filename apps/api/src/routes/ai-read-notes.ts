@@ -152,7 +152,7 @@ export async function handleAiReadNotes(ctx: RouteContext): Promise<Response> {
 // The model is asked for JSON and given JSON mode, but a reasoning model still
 // sometimes wraps its answer in a fence or a sentence. Take the JSON out of
 // whatever shape it arrived in, rather than trusting the mode to have worked.
-function extractJson(raw: string): unknown | null {
+function extractJson(raw: string): unknown {
   const trimmed = raw.trim();
   try {
     return JSON.parse(trimmed);

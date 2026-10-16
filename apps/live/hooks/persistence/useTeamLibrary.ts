@@ -15,6 +15,7 @@ import {
 import { duplicateDocument as duplicateDocumentApi } from '@/lib/duplicate-document';
 import { accepted } from '@/lib/accepted';
 import { track } from '@/lib/telemetry';
+import { useLatest } from '@/hooks/ui/useLatest';
 import { indexFolders, folderBreadcrumb, groupDocumentsByFolder } from '@/lib/folder-tree';
 
 // One team's shared library (docs/specs/013-workspace/team-shared-documents.md): the folder tree + documents the
@@ -24,7 +25,13 @@ import { indexFolders, folderBreadcrumb, groupDocumentsByFolder } from '@/lib/fo
 // mutations refetch — the library is shared, so optimistic local
 // state would drift the moment a teammate touches it anyway.
 
-export function useTeamLibrary(ownerId: string | null, teamId: string) {
+export function useTeamLibrary(
+  ownerId: string | null,
+  teamId: string,
+  // Called after each change this library makes, once it has refetched: the Explorer's own lists follow.
+  opts: { onChange?: () => void } = {},
+) {
+  const onChange = useLatest(opts.onChange);
   const [folders, setFolders] = useState<Folder[]>([]);
   const [liveDocs, setDocuments] = useState<DocumentSummary[]>([]);
   const [loading, setLoading] = useState(true);
@@ -91,12 +98,13 @@ export function useTeamLibrary(ownerId: string | null, teamId: string) {
         });
         track('Folder', 'Created', 'Team');
         await refresh();
+        onChange.current?.();
         return folder;
       } catch {
         return undefined;
       }
     },
-    [ownerId, teamId, refresh],
+    [ownerId, teamId, refresh, onChange],
   );
 
   const renameFolder = useCallback(
@@ -105,8 +113,9 @@ export function useTeamLibrary(ownerId: string | null, teamId: string) {
       if (await accepted(apiUpdateFolder(ownerId, id, { name: name.trim() })))
         track('Folder', 'Renamed', 'Team');
       await refresh();
+      onChange.current?.();
     },
-    [ownerId, refresh],
+    [ownerId, refresh, onChange],
   );
 
   const moveFolder = useCallback(
@@ -115,8 +124,9 @@ export function useTeamLibrary(ownerId: string | null, teamId: string) {
       if (await accepted(apiUpdateFolder(ownerId, id, { parentId })))
         track('Folder', 'Moved', 'Team');
       await refresh();
+      onChange.current?.();
     },
-    [ownerId, refresh],
+    [ownerId, refresh, onChange],
   );
 
   const deleteFolder = useCallback(
@@ -124,8 +134,9 @@ export function useTeamLibrary(ownerId: string | null, teamId: string) {
       if (!ownerId) return;
       if (await accepted(apiDeleteFolder(ownerId, id))) track('Folder', 'Deleted', 'Team');
       await refresh();
+      onChange.current?.();
     },
-    [ownerId, refresh],
+    [ownerId, refresh, onChange],
   );
 
   // Re-folder a document WITHIN the team (folderId null = the team's
@@ -136,19 +147,24 @@ export function useTeamLibrary(ownerId: string | null, teamId: string) {
       if (await accepted(apiSetDocumentFolder(ownerId, documentId, folderId, teamId)))
         track('Team', 'Moved', 'Document');
       await refresh();
+      onChange.current?.();
     },
-    [ownerId, teamId, refresh],
+    [ownerId, teamId, refresh, onChange],
   );
 
-  // Hard-delete a team document. Any joined member may delete it
+  // Delete a team document, to the team's Trash. Any joined member may delete it
   // (docs/specs/013-workspace/team-shared-documents.md), gated server-side by the team-member delete check.
+  // Whether the delete landed, so the caller offers its Undo only then.
   const deleteDocument = useCallback(
-    async (documentId: string) => {
-      if (!ownerId) return;
-      if (await accepted(apiDeleteDocument(ownerId, documentId))) track('Document', 'Deleted');
+    async (documentId: string): Promise<boolean> => {
+      if (!ownerId) return false;
+      const ok = await accepted(apiDeleteDocument(ownerId, documentId));
+      if (ok) track('Document', 'Deleted');
       await refresh();
+      onChange.current?.();
+      return ok;
     },
-    [ownerId, refresh],
+    [ownerId, refresh, onChange],
   );
 
   // Rename a team document in place. Any joined member may edit it
@@ -162,8 +178,9 @@ export function useTeamLibrary(ownerId: string | null, teamId: string) {
       if (await accepted(apiSaveDocumentMeta(ownerId, { id: documentId, name: trimmed })))
         track('Document', 'Renamed');
       await refresh();
+      onChange.current?.();
     },
-    [ownerId, refresh],
+    [ownerId, refresh, onChange],
   );
 
   // Duplicate a team document, keeping the copy IN the team alongside
@@ -180,8 +197,9 @@ export function useTeamLibrary(ownerId: string | null, teamId: string) {
       if (!newId) return;
       track('Document', 'Duplicated');
       await refresh();
+      onChange.current?.();
     },
-    [ownerId, teamId, liveDocs, refresh],
+    [ownerId, teamId, liveDocs, refresh, onChange],
   );
 
   return {

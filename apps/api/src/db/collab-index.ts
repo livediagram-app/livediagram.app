@@ -9,6 +9,7 @@
 // keeps the index in the same transaction as the blob it mirrors. The
 // read is the Inbox's one query per kind.
 
+import { FORM_RESPONSES_SQL, formResponsesFromRows, type FormResponsesRow } from './activity-forms';
 import type { Element } from '@livediagram/document';
 import type { ActivityAction, ActivityReadResult, ActivityThread } from '@livediagram/api-schema';
 import { collabIndexRowsFromElements } from '../collab-index/rows';
@@ -231,7 +232,8 @@ export const CARDS_SQL = `${SCOPE_CTES}${CARDS_CTES}${CARDS_SELECT}`;
 // A Plan card's comment threads (§2.5), read from the item store like the cards.
 export const CARD_THREADS_SQL = `${SCOPE_CTES}${CARD_THREADS_CTES}${CARD_THREADS_SELECT}`;
 
-const THREADS_SQL = `${SCOPE_CTES}
+// Exported for the query-plan guard in activity-plans.test.ts.
+export const THREADS_SQL = `${SCOPE_CTES}
   SELECT ct.tab_id, ct.element_id, ct.element_label, ct.comment_count,
          ct.latest_text, ct.latest_author_name, ct.latest_author_color, ct.first_at, ct.latest_at,
          v.id AS document_id, v.name AS document_name, v.team_id AS document_team_id,
@@ -243,9 +245,11 @@ const THREADS_SQL = `${SCOPE_CTES}
                             WHERE jm.value IN (SELECT id FROM me)
                                OR jm.value IN (SELECT id FROM my_members)) THEN 1 ELSE 0 END
            AS mentions_you
-    FROM collab_threads ct
-    JOIN document_tabs dt ON dt.tab_id = ct.tab_id
-    JOIN visible v ON v.id = dt.document_id
+    -- From the reader's documents to their tabs' threads, in that order (CROSS JOIN fixes it): led by
+    -- the open-threads index instead, the read walked every open thread in the database.
+    FROM visible v
+    CROSS JOIN document_tabs dt ON dt.document_id = v.id
+    CROSS JOIN collab_threads ct ON ct.tab_id = dt.tab_id
     JOIN tabs t ON t.id = ct.tab_id
    WHERE ct.resolved = 0
      AND (v.scope_tab_id IS NULL OR v.scope_tab_id = ct.tab_id)
@@ -299,11 +303,12 @@ export async function readActivity(
   const now = Date.now();
   // Cards are matched on hashed ids (§2.4), which SQL cannot compute: the reader's aliases are read first.
   const personIds = await readerPersonIds(env, ownerId);
-  const [actionsRes, threadsRes, cardsRes, cardThreadsRes] = await env.DB.batch([
+  const [actionsRes, threadsRes, cardsRes, cardThreadsRes, formsRes] = await env.DB.batch([
     env.DB.prepare(ACTIONS_SQL).bind(ownerId, now, opts.limit),
     env.DB.prepare(THREADS_SQL).bind(ownerId, now, opts.limit),
     env.DB.prepare(CARDS_SQL).bind(ownerId, now, opts.limit, JSON.stringify(personIds)),
     env.DB.prepare(CARD_THREADS_SQL).bind(ownerId, now, opts.limit),
+    env.DB.prepare(FORM_RESPONSES_SQL).bind(ownerId, now, opts.limit),
   ]);
   const actions: ActivityAction[] = dedupePlaces((actionsRes?.results ?? []) as ActionRow[]).map(
     (r) => ({
@@ -337,7 +342,8 @@ export async function readActivity(
   );
   const cards = cardsFromRows((cardsRes?.results ?? []) as CardRow[]);
   const cardThreads = cardThreadsFromRows((cardThreadsRes?.results ?? []) as CardThreadRow[]);
-  return { actions, threads, cards, cardThreads };
+  const formResponses = formResponsesFromRows((formsRes?.results ?? []) as FormResponsesRow[]);
+  return { actions, threads, cards, cardThreads, formResponses };
 }
 
 // ---------- Backfill state + aliases ----------------------------------

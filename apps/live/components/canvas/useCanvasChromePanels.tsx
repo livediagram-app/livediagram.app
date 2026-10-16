@@ -1,20 +1,27 @@
 'use client';
 
+import { isTypingTarget } from '@/lib/typing-target';
 import dynamic from 'next/dynamic';
-import { useCallback, useEffect, useMemo, useRef, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useStableCallbacks } from '@/hooks/ui/useStableCallbacks';
 import { participantKey } from '@/lib/identity';
 import type { useCornerDocking } from '@/hooks/ui/useCornerDocking';
 import type { PanelId } from '@/lib/panel-layout';
-import { LayersPanel } from '@/components/panels/LayersPanel';
+import { loadLayersPanel } from '@/lib/editor-deferred-code';
 import { visibleLayerElements } from '@livediagram/document';
 import { CanvasAiPanel } from './CanvasAiPanel';
-import { Explorer } from '@/components/panels/Explorer';
+import { LazyExplorer } from '@/components/panels/LazyExplorer';
 import { ViewMinimap } from '@/components/canvas/view-readers';
 import type { CanvasChromeProps } from './CanvasChrome';
 import { usePaletteChrome } from './usePaletteChrome';
 import { useCanvasToolPanels } from './useCanvasToolPanels';
-import { sessionStripTools } from './SessionClusterStrip';
+import { stripSegmentGone, type SessionStripTools } from './SessionClusterStrip';
+import { tidyUpOffered } from './tidy-up-actions';
+import { useContentsChrome } from './useContentsChrome';
+
+// Layers is a popover most visits never open: mounted from its first opening on (its code fetched once the
+// editor is idle, lib/editor-deferred-code.ts), and kept mounted after.
+const LayersPanel = dynamic(loadLayersPanel, { ssr: false });
 
 // Plan's UI loads only when it is drawn (docs/specs/026-plan/plan-mode.md "Cost"), so a document without
 // Plan pays nothing for it.
@@ -50,6 +57,12 @@ const SessionPopover = dynamic(() => import('./SessionPopover').then((m) => m.Se
   ssr: false,
 });
 
+// Lazy for the same reason: the Tidy Up popover (docs/specs/008-canvas/layout-cleanup.md "The Tidy Up button")
+// loads on the first press of its button.
+const TidyUpPopover = dynamic(() => import('./TidyUpPopover').then((m) => m.TidyUpPopover), {
+  ssr: false,
+});
+
 // Lazy for the same reason: the Actions panel (docs/specs/012-collaboration/assigned-actions.md) only mounts when
 // the active tab has at least one element with an OPEN assigned action.
 
@@ -66,12 +79,15 @@ const NO_MOVE = () => {};
 
 export function useCanvasChromePanels({
   props,
+  stripTools,
   chromeHidden,
   isMobile,
   panelWiringFor,
   panelsOn,
 }: {
   props: CanvasChromeProps;
+  // The tools the mode's Session strip offers (sessionStripTools), as CanvasChrome drew them.
+  stripTools: SessionStripTools | null;
   chromeHidden: boolean;
   isMobile: boolean;
   panelWiringFor: ReturnType<typeof useCornerDocking>['panelWiringFor'];
@@ -93,6 +109,15 @@ export function useCanvasChromePanels({
   cardFinderPopoverEl: ReactNode;
   // The Session strip's open popover (Timer, Vote or Poll), over its button.
   sessionPopoverEl: ReactNode;
+  // The Tidy Up popover over its button, in Diagram mode.
+  tidyUpPopoverEl: ReactNode;
+  // Illustrate mode's Contents (docs/specs/007-editor/illustrate-pages.md "Contents"): the popover,
+  // or docked as the sidebar (useContentsChrome).
+  contentsPopoverEl: ReactNode;
+  contentsSidebarEl: ReactNode;
+  contentsDocked: boolean;
+  // The Avatar panel over its button (docs/specs/008-canvas/avatar-mode.md "The Avatar Panel").
+  avatarPopoverEl: ReactNode;
   paletteTint: ReturnType<typeof usePaletteChrome>['paletteTint'];
 } {
   const {
@@ -144,6 +169,7 @@ export function useCanvasChromePanels({
     onMoveCommentsPanel,
     onMoveDocumentToFolder,
     onMoveDocumentTo,
+    onLibraryChanged,
     onNewDocument,
     explorerMenuActions,
     onOpenActionForElement,
@@ -155,6 +181,7 @@ export function useCanvasChromePanels({
     onTeamFolders,
     onResetCommentsPanel,
     readOnly,
+    takePart,
     selfParticipant,
     setActiveDockAnchor,
     setActiveDockPanel,
@@ -185,6 +212,7 @@ export function useCanvasChromePanels({
     onDeleteFolder,
     onMoveDocumentToFolder,
     onMoveDocumentTo,
+    onLibraryChanged,
     onMenuShare: explorerMenuActions?.onShare,
     onMenuExport: explorerMenuActions?.onExport,
     onMenuSearch: explorerMenuActions?.onSearch,
@@ -231,6 +259,13 @@ export function useCanvasChromePanels({
   useEffect(() => {
     if (activeDockPanel === 'slides' && !props.illustratePages) closeDockPanel();
   }, [activeDockPanel, props.illustratePages, closeDockPanel]);
+  // Contents, likewise, belongs to Illustrate mode: its popover, or the sidebar docked in its place.
+  const { contentsDocked, contentsSidebarEl, contentsPopoverEl } = useContentsChrome({
+    props,
+    chromeHidden,
+    isMobile,
+    closeDockPanel,
+  });
   // The Card Types popover, likewise, belongs to Plan mode's button.
   const planMode = props.editorMode === 'plan';
   const cardTypesOpen = activeDockPanel === 'card-types' && planMode;
@@ -247,6 +282,37 @@ export function useCanvasChromePanels({
     )
       closeDockPanel();
   }, [activeDockPanel, planMode, closeDockPanel]);
+  // The Tidy Up popover belongs to its button: leaving Diagram mode, Zen or a locked-out session closes it.
+  const tidyUp = props.tidyUp;
+  const tidyUpShown = tidyUpOffered({
+    actions: tidyUp,
+    editorMode: props.editorMode,
+    zenMode: !!zenMode,
+  });
+  const tidyUpOpen = activeDockPanel === 'tidy-up' && tidyUpShown && !chromeHidden;
+  useEffect(() => {
+    if (activeDockPanel === 'tidy-up' && !tidyUpShown) closeDockPanel();
+  }, [activeDockPanel, tidyUpShown, closeDockPanel]);
+  // The Avatar panel belongs to its button, which belongs to the mode: leaving Avatar mode closes it.
+  const avatarMode = props.canvasTool === 'avatar';
+  const avatarOpen = activeDockPanel === 'avatar' && avatarMode;
+  useEffect(() => {
+    if (activeDockPanel === 'avatar' && !avatarMode) closeDockPanel();
+  }, [activeDockPanel, avatarMode, closeDockPanel]);
+  // Escape closes the Avatar panel and nothing else (docs/specs/008-canvas/avatar-mode.md "The Avatar Panel"):
+  // caught ahead of the editor's shortcuts, where Escape would otherwise leave Avatar mode altogether. A typing
+  // field in the panel (the message view) handles its own Escape first.
+  useEffect(() => {
+    if (!avatarOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape' || e.defaultPrevented || isTypingTarget(e.target)) return;
+      e.preventDefault();
+      e.stopPropagation();
+      closeDockPanel();
+    };
+    window.addEventListener('keydown', onKey, true);
+    return () => window.removeEventListener('keydown', onKey, true);
+  }, [avatarOpen, closeDockPanel]);
   const { avatarEl, laserEl, spotlightEl, eraserEl, formatEl, slideDeckEl } = useCanvasToolPanels({
     props,
     chromeHidden,
@@ -254,11 +320,19 @@ export function useCanvasChromePanels({
     slidesPopover: slidesOpen
       ? { anchor: activeDockAnchor ?? undefined, onClose: closeDockPanel }
       : null,
+    avatarPopover: avatarOpen
+      ? { anchor: activeDockAnchor ?? undefined, onClose: closeDockPanel }
+      : null,
   });
 
+  // Mounted from its first opening on, never before (its code loads then), and kept mounted after so
+  // the folders someone expanded stay expanded.
+  const explorerOpen = activeDockPanel === 'explorer';
+  const [explorerOpened, setExplorerOpened] = useState(explorerOpen);
+  if (explorerOpen && !explorerOpened) setExplorerOpened(true);
   const explorerEl =
-    zenMode || props.explorerHidden ? null : (
-      <Explorer
+    zenMode || props.explorerHidden || !explorerOpened ? null : (
+      <LazyExplorer
         recentExcludedIds={userPreferences.recentExcludedIds ?? []}
         onToggleRecentExclusion={onToggleRecentExclusion}
         favouriteIds={favouriteIds}
@@ -281,6 +355,7 @@ export function useCanvasChromePanels({
         menuActions={explorerMenu}
         onRenameCurrent={explorerHandlers.onRenameCurrent}
         onDeleteDocument={explorerHandlers.onDeleteDocument}
+        onLibraryChanged={explorerHandlers.onLibraryChanged}
         onDuplicateDocument={explorerHandlers.onDuplicateDocument}
         onCreateFolder={explorerHandlers.onCreateFolder}
         onRenameFolder={explorerHandlers.onRenameFolder}
@@ -288,7 +363,7 @@ export function useCanvasChromePanels({
         onTeamFolders={onTeamFolders}
         onMoveDocumentToFolder={explorerHandlers.onMoveDocumentToFolder}
         onMoveDocumentTo={onMoveDocumentTo ? explorerHandlers.onMoveDocumentTo : undefined}
-        popoverOpen={activeDockPanel === 'explorer'}
+        popoverOpen={explorerOpen}
         popoverAnchor={activeDockAnchor ?? undefined}
         asPopover
         dismissOnOutside
@@ -311,8 +386,8 @@ export function useCanvasChromePanels({
         onReset={collaborateWiring.onReset}
         // It steps aside once a row takes you somewhere, or on a phone it
         // would cover the card you just went to.
-        onCommentRowClick={(id) => {
-          onOpenCommentsForElement(id);
+        onCommentRowClick={(id, cell) => {
+          onOpenCommentsForElement(id, cell);
           closeDockPanel();
         }}
         onActionRowClick={(id) => {
@@ -338,15 +413,18 @@ export function useCanvasChromePanels({
   // path). A popover over its bottom-right cluster button, always mounted so
   // that button can pop it open (popoverOpen gates the actual render).
   // Its Settings switch removes it outright; layers themselves keep applying.
+  const layersOpen = activeDockPanel === 'layers';
+  const [layersOpened, setLayersOpened] = useState(layersOpen);
+  if (layersOpen && !layersOpened) setLayersOpened(true);
   const layersEl =
-    !chromeHidden && !readOnly && panelsOn.layers ? (
+    !chromeHidden && !readOnly && panelsOn.layers && layersOpened ? (
       <LayersPanel
         layers={layers}
         tabFont={props.tabFont}
         activeLayerId={activeLayerId}
         counts={layerCounts}
         elements={elements}
-        popoverOpen={activeDockPanel === 'layers'}
+        popoverOpen={layersOpen}
         popoverAnchor={activeDockAnchor ?? undefined}
         onPopoverClose={closeDockPanel}
         onSelectLayer={onSelectLayer}
@@ -380,11 +458,11 @@ export function useCanvasChromePanels({
     () => visibleLayerElements(elements, props.tabLayers),
     [elements, props.tabLayers],
   );
+  // The Map is Diagram, Draw and Facilitate's: Illustrate has Contents for its pages, and a Plan
+  // board is a list, not a space to find your way round.
+  const mapMode = !props.illustratePages && props.editorMode !== 'plan';
   const minimapEl =
-    !chromeHidden &&
-    !isMobile &&
-    mapEnabled &&
-    (elements.length >= 4 || (props.illustratePages?.pages.length ?? 0) > 0) ? (
+    !chromeHidden && !isMobile && mapEnabled && mapMode && elements.length >= 4 ? (
       <ViewMinimap
         elements={mapElements}
         pages={props.illustratePages?.pages}
@@ -414,16 +492,13 @@ export function useCanvasChromePanels({
       ? activeDockPanel
       : null;
   // Only the tools the mode's strip offers (docs/specs/012-collaboration/session-tools.md).
-  const stripTools = sessionStripTools(props.editorMode);
   const sessionTools = stripTools ? props.sessionTools : undefined;
-  const sessionButtonGone =
-    sessionSegment !== null &&
-    (!sessionTools ||
-      (sessionSegment === 'session-poll' && !stripTools?.poll) ||
-      (!!readOnly &&
-        ((sessionSegment === 'session-timer' && !sessionTools.timer) ||
-          (sessionSegment === 'session-vote' && !tabVote) ||
-          (sessionSegment === 'session-poll' && !pollPanel))));
+  const sessionButtonGone = stripSegmentGone({
+    segment: sessionSegment,
+    tools: sessionTools ? stripTools : null,
+    readOnly: !!readOnly,
+    running: { timer: !!sessionTools?.timer, vote: !!tabVote, poll: !!pollPanel },
+  });
   useEffect(() => {
     if (sessionButtonGone) closeDockPanel();
   }, [sessionButtonGone, closeDockPanel]);
@@ -454,6 +529,7 @@ export function useCanvasChromePanels({
         onClose={closeDockPanel}
         session={sessionTools}
         readOnly={!!readOnly}
+        canVote={!readOnly || !!takePart}
         holdOpen={!isMobile}
         voteSelfId={participantKey(selfParticipant)}
         pollPanel={pollPanel}
@@ -479,7 +555,6 @@ export function useCanvasChromePanels({
     collaborate: null,
     ai: aiEl,
     minimap: minimapEl,
-    avatar: avatarEl,
     laser: laserEl,
     spotlight: spotlightEl,
     eraser: eraserEl,
@@ -493,6 +568,19 @@ export function useCanvasChromePanels({
     // The cluster popovers, rendered beside the corner layer rather than in it (see panelEls).
     collaborateEl,
     slidesPopoverEl: slidesOpen ? slideDeckEl : null,
+    avatarPopoverEl: avatarEl,
+    contentsPopoverEl,
+    contentsSidebarEl,
+    contentsDocked,
+    tidyUpPopoverEl:
+      tidyUpOpen && tidyUp ? (
+        <TidyUpPopover
+          actions={tidyUp}
+          empty={elements.length === 0}
+          anchor={activeDockAnchor ?? undefined}
+          onClose={closeDockPanel}
+        />
+      ) : null,
     cardTypesPopoverEl: cardTypesOpen ? (
       <CardTypesPanel
         popoverOpen

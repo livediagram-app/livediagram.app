@@ -7,6 +7,8 @@ import type { ReactNode } from 'react';
 // the description; custom fields; label chips; then a footer of pills and who has it). The type's colour fills
 // the card's number (a dot on Minimal, which shows none); the card lifts a little under the pointer. Face-down while its board hides writing;
 // ringed in someone's colour while they drag or read it. The parts live in plan-card-parts.tsx.
+import { NewResponseMark } from '@/components/forms/NewResponseMark';
+import { useFreshResponse } from '@/components/forms/fresh-responses';
 import {
   isFlagged,
   isPriority,
@@ -103,6 +105,8 @@ export function PlanCardFace({
   // A custom field shows wherever the type's Display places it (the board's field list names built-ins only).
   const show = (f: CardField) => (isCustomCardField(f) ? typeShows.includes(f) : shown.includes(f));
   const ring = presence ? `0 0 0 2px ${presence.color}` : undefined;
+  // A response's card is New until opened (docs/specs/030-forms/forms.md "Hearing about responses").
+  const fresh = useFreshResponse(item);
   if (faceDown) {
     return (
       <div
@@ -137,7 +141,12 @@ export function PlanCardFace({
   const progress = checklistProgress(item);
   const votes = itemVoteTotal(item);
   const title = itemTitle(item) || 'Untitled';
-  const flag = isFlagged(item) ? <FlagMark /> : null;
+  const flag = (
+    <>
+      {fresh ? <NewResponseMark /> : null}
+      {isFlagged(item) ? <FlagMark /> : null}
+    </>
+  );
   const frame = {
     backgroundColor: palette.card,
     borderColor: palette.cardBorder,

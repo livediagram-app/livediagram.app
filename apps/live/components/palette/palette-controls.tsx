@@ -250,14 +250,6 @@ export function ColorSwatch({
   );
 }
 
-// Coerce a colour to a 6-digit hex, or fall back to white, for a swatch that
-// can't draw 'transparent' or a named colour. Shared with the element menu's
-// colour rows.
-export function hexish(color: string): string {
-  if (/^#[0-9a-fA-F]{6}$/.test(color)) return color;
-  return '#ffffff';
-}
-
 // iOS-style toggle switch. Used by the Shape accordion's Lock-aspect
 // row but generic enough for any future boolean preference that
 // belongs alongside its label rather than as an icon button.

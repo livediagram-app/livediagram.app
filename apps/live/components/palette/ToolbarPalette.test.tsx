@@ -5,13 +5,19 @@ import { act, cleanup, fireEvent, render, screen, within } from '@testing-librar
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { PALETTE_ADD_HANDLER_KEYS, type PaletteAddHandlers } from './palette-add-handlers';
 import { ToolbarPalette } from './ToolbarPalette';
+import { ensureIconCatalogs } from '@/lib/icon-registry';
 import type { EsBoardControls } from './EventStormingBoardRows';
+import { COLLABORATE_CATEGORY_GROUPS } from './palette-tile-defs';
+import { paletteCategoriesFor } from './palette-layouts';
 import { createShape, type EditorMode, type Element } from '@livediagram/document';
 import type { ReactNode } from 'react';
 import { EditorModeProvider } from '@/components/chrome/editor-mode/editor-mode-context';
 import { requestToolbarSearch } from '@/lib/toolbar-search-request';
 
 const mobile = vi.hoisted(() => ({ value: false }));
+// The window's width: a narrow one leaves Plan's strip room for only a few tiles, the rest behind More.
+const viewport = vi.hoisted(() => ({ width: 1440 }));
+vi.mock('@/hooks/ui/useViewportWidth', () => ({ useViewportWidth: () => viewport.width }));
 vi.mock('@/hooks/ui/useIsMobileViewport', () => ({
   useIsMobileViewport: () => mobile.value,
 }));
@@ -21,7 +27,7 @@ const sheetFilling = vi.hoisted(() => ({ value: false }));
 vi.mock('@/hooks/plan/plan-cover-store', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/hooks/plan/plan-cover-store')>()),
   useBoardFillingTab: () => covering.value,
-  useSheetFillingTab: () => sheetFilling.value,
+  useSheetCovering: () => sheetFilling.value,
 }));
 
 beforeAll(() => {
@@ -38,6 +44,7 @@ afterEach(() => {
   cleanup();
   localStorage.clear();
   mobile.value = false;
+  viewport.width = 1440;
   covering.value = false;
   sheetFilling.value = false;
 });
@@ -63,7 +70,6 @@ function show({
   hidden?: boolean;
   esBoardControls?: EsBoardControls;
   mode?: EditorMode;
-  onAddPage?: () => void;
   tabElements?: Element[];
 } = {}) {
   const h = handlers();
@@ -94,21 +100,51 @@ function pickCategory(id: string) {
 // The tiles in the strip itself, not in the More popover.
 const strip = () => document.querySelector('[data-toolbar-palette] > div') as HTMLElement;
 
+const COLLAB_IDS = Object.keys(COLLABORATE_CATEGORY_GROUPS);
+
+// The category bar's buttons, in order (docs/specs/007-editor/toolbar-layout.md "The category bar").
+const barNames = () =>
+  [...document.querySelectorAll('[data-category-bar-button]')].map((b) =>
+    b.getAttribute('aria-label'),
+  );
+const flyout = () => document.querySelector<HTMLElement>('[data-category-flyout]');
+const openFlyout = (name: string) => {
+  fireEvent.click(screen.getByRole('button', { name }));
+  const el = flyout();
+  expect(el, `${name}'s flyout`).not.toBeNull();
+  return el!;
+};
+
+// A Plan category's tiles (Plan keeps the category picker and its tiles).
+const planTiles = (id: string) => {
+  const tiles = paletteCategoriesFor('plan').find((c) => c.id === id)?.tiles ?? [];
+  expect(tiles.length, `${id}'s tiles`).toBeGreaterThan(0);
+  return tiles;
+};
+
 describe('ToolbarPalette', () => {
-  it('opens on Popular with the selection mode and category pickers', () => {
+  it("shows Diagram's categories on the strip, with the selection mode and Search, and no category picker", () => {
     show();
     expect(screen.getByRole('button', { name: 'Selection mode' })).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'Palette category' }).textContent).toContain(
-      'Popular',
-    );
-    // Diagram's Popular leads with the square.
-    expect(within(strip()).getByRole('button', { name: 'Add Square' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Search elements' })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Palette category' })).toBeNull();
+    // No Popular, Write and Draw as one, every name one word.
+    expect(barNames()).toEqual(['Shapes', 'Draw', 'Build', 'Concepts', 'Icons', 'Tech', 'Media']);
+    // No tiles of their own on the strip: they are in the flyouts.
+    expect(within(strip()).queryByRole('button', { name: 'Add Square' })).toBeNull();
   });
 
-  it('reaches the same add-handler as the Palette from a strip tile', () => {
+  it('keeps the category picker and its tiles in Plan', () => {
+    show({ mode: 'plan' });
+    expect(screen.getByRole('button', { name: 'Palette category' })).toBeTruthy();
+    expect(document.querySelector('[data-category-bar-button]')).toBeNull();
+  });
+
+  it("reaches the same add-handler as the Palette from a category's flyout, and closes it", () => {
     const { h } = show();
-    fireEvent.click(within(strip()).getByRole('button', { name: 'Add Square' }));
+    fireEvent.click(within(openFlyout('Shapes')).getByRole('button', { name: 'Add Square' }));
     expect(h.onAddShape).toHaveBeenCalledWith('square', expect.anything());
+    expect(flyout()).toBeNull();
   });
 
   // docs/specs/026-plan/plan-mode.md "The palette": Boards until the tab has a board, then Cards.
@@ -137,9 +173,9 @@ describe('ToolbarPalette', () => {
     again([]);
     expect(picked()).toContain('Boards');
     // A category the person picked stays when a board lands.
-    pickCategory('plan-widgets');
+    pickCategory('plan-metrics');
     again([board]);
-    expect(picked()).toContain('Widgets');
+    expect(picked()).toContain('Metrics');
   });
 
   it('opens a Plan tab with a board on Cards', () => {
@@ -217,89 +253,126 @@ describe('ToolbarPalette', () => {
   });
 
   it('swaps the tiles when the category changes', () => {
-    show({ mode: 'illustrate' });
-    pickCategory('devices');
+    show({ mode: 'plan' });
+    pickCategory('plan-metrics');
     expect(screen.getByRole('button', { name: 'Palette category' }).textContent).toContain(
-      'Devices',
+      'Metrics',
     );
-    expect(within(strip()).getByRole('button', { name: 'Add Web Browser' })).toBeTruthy();
-    expect(within(strip()).queryByRole('button', { name: 'Add Square' })).toBeNull();
+    expect(
+      within(strip()).getByRole('button', { name: planTiles('plan-metrics')[0]!.label }),
+    ).toBeTruthy();
   });
 
   it('only offers More when the category has more than the strip shows', () => {
-    show();
-    // Collaborate always has More: its group browser lives there.
-    pickCategory('behaviour');
-    expect(screen.getByRole('button', { name: 'More Collaborate' })).toBeTruthy();
-    cleanup();
-    // Devices fits in the strip whole.
-    show({ mode: 'illustrate' });
-    pickCategory('devices');
+    show({ mode: 'plan' });
+    pickCategory('plan-boards');
     expect(screen.queryByRole('button', { name: /^More/ })).toBeNull();
+    cleanup();
+    // A narrow window fits two tiles; the rest is behind More.
+    viewport.width = 500;
+    show({ mode: 'plan' });
+    pickCategory('plan-boards');
+    expect(screen.getByRole('button', { name: /^More/ })).toBeTruthy();
   });
 
   // The palette per mode (docs/specs/007-editor/editor-modes.md "The palette per mode").
   it('offers the mock-up kit and the charts in Illustrate mode only', () => {
     show();
-    fireEvent.click(screen.getByRole('button', { name: 'Palette category' }));
-    expect(document.querySelector('[data-option-id="devices"]')).toBeNull();
-    expect(document.querySelector('[data-option-id="components"]')).toBeNull();
-    expect(document.querySelector('[data-option-id="data"]')).toBeNull();
+    expect(barNames()).not.toContain('Devices');
+    expect(barNames()).not.toContain('Components');
+    expect(barNames()).not.toContain('Data');
     cleanup();
     show({ mode: 'illustrate' });
-    fireEvent.click(screen.getByRole('button', { name: 'Palette category' }));
-    expect(document.querySelector('[data-option-id="devices"]')).not.toBeNull();
-    expect(document.querySelector('[data-option-id="data"]')).not.toBeNull();
-    expect(document.querySelector('[data-option-id="behaviour"]')).toBeNull();
-    expect(document.querySelector('[data-option-id="technology"]')).toBeNull();
-    expect(document.querySelector('[data-option-id="stickers"]')).not.toBeNull();
+    expect(barNames()).toEqual([
+      'Shapes',
+      'Write',
+      'Build',
+      'Concepts',
+      'Components',
+      'Devices',
+      'Icons',
+      'Stickers',
+      'Media',
+      'Data',
+    ]);
+  });
+
+  // Facilitate mode (docs/specs/012-collaboration/facilitate-mode.md "The palette").
+  it('offers Stickers, Data, Ask and Session in Facilitate, not in Diagram, and Icons in both', () => {
+    show();
+    for (const name of ['Ask', 'Session', 'Stickers', 'Data'])
+      expect(barNames()).not.toContain(name);
+    expect(barNames()).toContain('Icons');
+    expect(barNames()).toContain('Tech');
+    cleanup();
+    show({ mode: 'facilitate' });
+    expect(barNames()).toEqual([
+      'Shapes',
+      'Draw',
+      'Icons',
+      'Stickers',
+      'Media',
+      'Data',
+      'Ask',
+      'Session',
+    ]);
+    // The other Collaborate categories are Session's groups, not buttons of their own.
+    expect(COLLAB_IDS.length).toBeGreaterThan(0);
+    const session = openFlyout('Session');
+    for (const group of ['Tools', 'Record', 'React', 'Selection Mode', 'Navigate'])
+      expect(
+        within(session).getByRole('button', { name: new RegExp(`^${group}`) }),
+        group,
+      ).toBeTruthy();
   });
 
   it("opens the category's full body under More, and closes it when a tile is used", () => {
-    const { h } = show();
-    pickCategory('shapes');
-    fireEvent.click(screen.getByRole('button', { name: 'More Shapes' }));
+    viewport.width = 500;
+    show({ mode: 'plan' });
+    pickCategory('plan-boards');
+    fireEvent.click(screen.getByRole('button', { name: /^More/ }));
     const popover = document.querySelector('[data-toolbar-more]') as HTMLElement;
     expect(popover).not.toBeNull();
-    fireEvent.click(within(popover).getByRole('button', { name: 'Add Circle' }));
-    expect(h.onAddShape).toHaveBeenCalledWith('circle', expect.anything());
+    const last = planTiles('plan-boards').at(-1)!;
+    fireEvent.click(within(popover).getAllByRole('button', { name: last.label }).at(-1)!);
     expect(document.querySelector('[data-toolbar-more]')).toBeNull();
   });
 
-  it('focuses the search field when More opens (docs/specs/007-editor/toolbar-layout.md)', () => {
-    show();
-    pickCategory('behaviour');
-    fireEvent.click(screen.getByRole('button', { name: 'More Collaborate' }));
-    const popover = document.querySelector('[data-toolbar-more]') as HTMLElement;
-    expect(document.activeElement).toBe(
-      within(popover).getByPlaceholderText('Search collaboration'),
-    );
+  it("focuses a catalogue's search field when its flyout opens (docs/specs/007-editor/toolbar-layout.md)", () => {
+    show({ mode: 'facilitate' });
+    const popover = openFlyout('Icons');
+    expect(document.activeElement).toBe(within(popover).getByPlaceholderText('Search icons'));
   });
 
   it('leaves focus alone on a phone, where it would raise the keyboard', () => {
     mobile.value = true;
-    show();
-    pickCategory('behaviour');
-    fireEvent.click(screen.getByRole('button', { name: 'More Collaborate' }));
-    const popover = document.querySelector('[data-toolbar-more]') as HTMLElement;
-    expect(document.activeElement).not.toBe(
-      within(popover).getByPlaceholderText('Search collaboration'),
-    );
+    show({ mode: 'facilitate' });
+    const popover = openFlyout('Icons');
+    expect(document.activeElement).not.toBe(within(popover).getByPlaceholderText('Search icons'));
   });
 
-  it('closes More when the category changes, since it showed the old one', () => {
-    show();
-    pickCategory('behaviour');
-    fireEvent.click(screen.getByRole('button', { name: 'More Collaborate' }));
-    expect(document.querySelector('[data-toolbar-more]')).not.toBeNull();
-    pickCategory('shapes');
-    expect(document.querySelector('[data-toolbar-more]')).toBeNull();
+  it('switches the flyout to the category pressed next', () => {
+    show({ mode: 'facilitate' });
+    openFlyout('Icons');
+    fireEvent.click(screen.getByRole('button', { name: 'Shapes' }));
+    expect(within(flyout()!).getByRole('button', { name: 'Add Square' })).toBeTruthy();
+    expect(within(flyout()!).queryByPlaceholderText('Search icons')).toBeNull();
+  });
+
+  it('closes the flyout on Escape', () => {
+    show({ mode: 'facilitate' });
+    openFlyout('Icons');
+    act(() => {
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+    });
+    expect(flyout()).toBeNull();
   });
 
   it('closes More on Escape', () => {
-    show();
-    pickCategory('behaviour');
-    fireEvent.click(screen.getByRole('button', { name: 'More Collaborate' }));
+    viewport.width = 500;
+    show({ mode: 'plan' });
+    pickCategory('plan-boards');
+    fireEvent.click(screen.getByRole('button', { name: /^More/ }));
     act(() => {
       document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
     });
@@ -341,13 +414,13 @@ describe('ToolbarPalette', () => {
   });
 
   it('hides rather than unmounts, so the chosen category survives', () => {
-    const view = show({ mode: 'illustrate' });
-    pickCategory('devices');
+    const view = show({ mode: 'plan' });
+    pickCategory('plan-metrics');
     const h = handlers();
     const rerender = (hidden: boolean) =>
       view.rerender(
         inMode(
-          'illustrate',
+          'plan',
           <ToolbarPalette
             canvasTool="select"
             onSetCanvasTool={vi.fn()}
@@ -364,20 +437,15 @@ describe('ToolbarPalette', () => {
     rerender(false);
     expect(root.classList.contains('hidden')).toBe(false);
     expect(screen.getByRole('button', { name: 'Palette category' }).textContent).toContain(
-      'Devices',
+      'Metrics',
     );
   });
 
-  it('ends with Add Page in Illustrate mode, but not on a phone (docs/specs/007-editor/illustrate-pages.md)', () => {
-    show({ mode: 'illustrate', onAddPage: vi.fn() });
-    expect(screen.getByRole('button', { name: 'Add Page' })).toBeTruthy();
-    cleanup();
-    mobile.value = true;
-    show({ mode: 'illustrate', onAddPage: vi.fn() });
-    expect(screen.queryByRole('button', { name: 'Add Page' })).toBeNull();
-  });
-
   describe('Search (docs/specs/007-editor/toolbar-layout.md "Search: every element type")', () => {
+    // The icon catalogues load as a chunk of their own, as the editor loads them on its first paint: loaded
+    // before the searches run, so what they find never depends on whether the chunk happened to land.
+    beforeAll(() => ensureIconCatalogs());
+
     const openSearch = () => {
       fireEvent.click(screen.getByRole('button', { name: 'Search elements' }));
       return document.querySelector('[data-toolbar-search]') as HTMLElement;
@@ -414,14 +482,39 @@ describe('ToolbarPalette', () => {
     it("keeps other modes' elements in a closed accordion until asked", () => {
       const { h } = show();
       const popover = openSearch();
-      type(popover, 'pie chart');
+      // A pie chart's other name: the Diagram icons include a pie chart glyph, which `pie chart` finds here.
+      type(popover, 'doughnut');
       expect(within(popover).queryByRole('button', { name: 'Add Pie Chart' })).toBeNull();
-      expect(popover.textContent).toContain('No Diagram elements match');
-      const accordion = within(popover).getByRole('button', { name: /Not in Diagram Mode/ });
+      expect(popover.textContent).toContain('No Diagram elements match “doughnut”');
+      expect(popover.textContent).toContain('Other modes have');
+      const accordion = within(popover).getByRole('button', { name: /Elements From Other Modes/ });
       expect(accordion.getAttribute('aria-expanded')).toBe('false');
       fireEvent.click(accordion);
       fireEvent.click(within(popover).getByRole('button', { name: 'Add Pie Chart' }));
       expect(h.onAddShape).toHaveBeenCalledWith('pie-chart', expect.anything());
+    });
+
+    it("shows Plan's own elements in other modes, but never adds them", () => {
+      const { h } = show();
+      const popover = openSearch();
+      type(popover, 'gantt');
+      expect(
+        within(popover).queryByRole('button', { name: /Elements From Other Modes/ }),
+      ).toBeNull();
+      const accordion = within(popover).getByRole('button', {
+        name: /Not Available in Diagram Mode/,
+      });
+      expect(accordion.getAttribute('aria-expanded')).toBe('false');
+      fireEvent.click(accordion);
+      const gantt = within(popover).getByRole('button', { name: /Gantt/ });
+      expect(gantt.getAttribute('aria-disabled')).toBe('true');
+      expect(gantt.getAttribute('draggable')).not.toBe('true');
+      fireEvent.click(gantt);
+      fireEvent.keyDown(within(popover).getByRole('textbox', { name: 'Search elements' }), {
+        key: 'Enter',
+      });
+      expect(h.onAddShape).not.toHaveBeenCalled();
+      expect(document.querySelector('[data-toolbar-search]')).not.toBeNull();
     });
 
     it('lists only the element types on the tab before anything is typed', () => {
@@ -440,14 +533,14 @@ describe('ToolbarPalette', () => {
       ).toEqual(['Add Diamond']);
       cleanup();
       show();
-      expect(openSearch().textContent).toContain('Nothing on this tab yet');
+      expect(openSearch().textContent).toContain('No elements on this tab yet');
     });
 
     it("picks up Draw mode's markers from the other modes' section", () => {
       const { h } = show();
       const popover = openSearch();
       type(popover, 'marker');
-      fireEvent.click(within(popover).getByRole('button', { name: /Not in Diagram Mode/ }));
+      fireEvent.click(within(popover).getByRole('button', { name: /Elements From Other Modes/ }));
       fireEvent.click(within(popover).getByRole('button', { name: 'Marker 2' }));
       expect(h.onBeginMarker).toHaveBeenCalledWith('second');
       expect(document.querySelector('[data-toolbar-search]')).toBeNull();
@@ -481,18 +574,19 @@ describe('ToolbarPalette', () => {
       show();
       const popover = openSearch();
       type(popover, 'zzqqxx');
-      expect(popover.textContent).toContain('No elements match');
-      expect(within(popover).queryByRole('button', { name: /Not in/ })).toBeNull();
+      expect(popover.textContent).toContain('No elements match “zzqqxx”');
+      expect(
+        within(popover).queryByRole('button', { name: /Elements From Other Modes|Not Available/ }),
+      ).toBeNull();
     });
 
-    it('is one strip menu at a time with More, and closes on Escape', () => {
-      show();
-      pickCategory('behaviour');
-      fireEvent.click(screen.getByRole('button', { name: 'More Collaborate' }));
+    it("is one strip menu at a time with a category's flyout, and closes on Escape", () => {
+      show({ mode: 'facilitate' });
+      openFlyout('Icons');
       const searchButton = screen.getByRole('button', { name: 'Search elements' });
       fireEvent.pointerDown(searchButton);
       fireEvent.click(searchButton);
-      expect(document.querySelector('[data-toolbar-more]')).toBeNull();
+      expect(flyout()).toBeNull();
       expect(document.querySelector('[data-toolbar-search]')).not.toBeNull();
       act(() => {
         document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
@@ -504,12 +598,11 @@ describe('ToolbarPalette', () => {
       show();
       let popover = openSearch();
       type(popover, 'pie chart');
-      fireEvent.click(within(popover).getByRole('button', { name: /Not in Diagram Mode/ }));
+      fireEvent.click(within(popover).getByRole('button', { name: /Elements From Other Modes/ }));
       fireEvent.click(screen.getByRole('button', { name: 'Search elements' }));
       popover = openSearch();
       expect(
-        (within(popover).getByRole('textbox', { name: 'Search elements' }) as HTMLInputElement)
-          .value,
+        within(popover).getByRole<HTMLInputElement>('textbox', { name: 'Search elements' }).value,
       ).toBe('');
     });
   });

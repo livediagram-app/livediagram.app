@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useRef, useState } from 'react';
-import { DialogCloseButton } from '@livediagram/ui';
+import { DialogCloseButton, NoMatches } from '@livediagram/ui';
 import { Dialog } from '@/components/dialogs/Dialog';
 import {
   SettingsCategoryList,
@@ -18,7 +18,12 @@ import { useCapabilities } from '@/hooks/persistence/useCapabilities';
 import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { markTourPending, requestTourRelaunch } from '@/lib/tour-pending';
-import { requestPlanTourRelaunch } from '@/lib/plan-tour';
+import { planTourOwed, requestPlanTourRelaunch } from '@/lib/plan-tour';
+import { requestFacilitateTourRelaunch } from '@/lib/facilitate-tour';
+import { requestFormTourRelaunch } from '@/lib/form-tour';
+import { requestDrawTourRelaunch } from '@/lib/draw-tour';
+import { requestAvatarTourRelaunch } from '@/lib/avatar-tour';
+import { illustrateTourOwed, requestIllustrateTourRelaunch } from '@/lib/illustrate-tour';
 import { track } from '@/lib/telemetry';
 import {
   visibleCategories,
@@ -170,7 +175,7 @@ export function SettingsDialog({
     track('UI', 'Opened', `Settings${id.charAt(0).toUpperCase()}${id.slice(1)}`);
   };
 
-  // "Show Welcome Tour" (docs/specs/007-editor/editor-tour.md). The row is ON when the tour has not been
+  // Tours › "Diagram Tour" (docs/specs/007-editor/editor-tour.md). The row is ON when the tour has not been
   // resolved, and promises it will be offered, so closing the dialog has to
   // MAKE that true. `tourSeen !== true` alone never was: TourHost also needs
   // the per-tab pending flag, which only /new sets for a brand-new user. A
@@ -182,16 +187,37 @@ export function SettingsDialog({
   // in place, which is the "run it again" case the row's copy describes.
   const tourSeen = settings.tourSeen === true;
   const tourSeenAtOpen = useRef(tourSeen);
-  // "Show Plan Tour" (docs/specs/026-plan/plan-tour.md): no handoff flag to arm, as the Plan tour offers
+  // Tours › "Plan Tour" (docs/specs/026-plan/plan-tour.md): no handoff flag to arm, as the Plan tour offers
   // itself on entering Plan; turning the row on from off reruns it in place.
-  const planTourSeen = settings.planTourSeen === true;
+  // Seen = no track still owed (lib/tour-tracks.ts), as the row's switch reads it.
+  const planTourSeen = !planTourOwed(settings);
   const planTourSeenAtOpen = useRef(planTourSeen);
+  // Tours › "Facilitate Tour" (docs/specs/012-collaboration/facilitate-tour.md): as Plan Tour.
+  const facilitateTourSeen = settings.facilitateTourSeen === true;
+  const facilitateTourSeenAtOpen = useRef(facilitateTourSeen);
+  // Tours › "Draw Tour" (docs/specs/023-draw-mode/draw-tour.md): as Plan Tour.
+  const drawTourSeen = settings.drawTourSeen === true;
+  const drawTourSeenAtOpen = useRef(drawTourSeen);
+  // Tours › "Forms Tour" (docs/specs/030-forms/forms.md "The Forms tour"): as Plan Tour.
+  const formTourSeen = settings.formTourSeen === true;
+  const formTourSeenAtOpen = useRef(formTourSeen);
+  // Tours › "Avatar Tour" (docs/specs/008-canvas/avatar-tour.md): as Plan Tour.
+  const avatarTourSeen = settings.avatarTourSeen === true;
+  const avatarTourSeenAtOpen = useRef(avatarTourSeen);
+  // Tours › "Illustrate Tour" (docs/specs/007-editor/illustrate-tour.md): as Plan Tour.
+  const illustrateTourSeen = !illustrateTourOwed(settings);
+  const illustrateTourSeenAtOpen = useRef(illustrateTourSeen);
   const close = () => {
     if (!tourSeen) {
       markTourPending();
       if (tourSeenAtOpen.current) requestTourRelaunch();
     }
     if (!planTourSeen && planTourSeenAtOpen.current) requestPlanTourRelaunch();
+    if (!facilitateTourSeen && facilitateTourSeenAtOpen.current) requestFacilitateTourRelaunch();
+    if (!drawTourSeen && drawTourSeenAtOpen.current) requestDrawTourRelaunch();
+    if (!formTourSeen && formTourSeenAtOpen.current) requestFormTourRelaunch();
+    if (!avatarTourSeen && avatarTourSeenAtOpen.current) requestAvatarTourRelaunch();
+    if (!illustrateTourSeen && illustrateTourSeenAtOpen.current) requestIllustrateTourRelaunch();
     onClose();
   };
 
@@ -227,7 +253,7 @@ export function SettingsDialog({
           <button
             type="button"
             onClick={() => setSelectedId(backTo?.id ?? null)}
-            className="-ml-1.5 flex items-center gap-0.5 rounded-md py-1 pr-2 pl-1 text-sm font-medium text-brand-600 transition hover:bg-brand-50 dark:text-brand-300 dark:hover:bg-brand-500/15"
+            className="-ml-1.5 flex items-center gap-0.5 rounded-md py-1 pr-2 pl-1 text-sm font-medium text-brand-700 transition hover:bg-brand-50 dark:text-brand-300 dark:hover:bg-brand-500/15"
           >
             <NavChevron direction="back" />
             {backTo?.label ?? 'Settings'}
@@ -270,9 +296,13 @@ export function SettingsDialog({
               searching={result.searching}
             />
             {isMobile && result.searching && result.totalMatches === 0 ? (
-              <p className="mt-4 text-center text-xs text-slate-500 dark:text-slate-400">
-                No settings match “{query.trim()}”.
-              </p>
+              <NoMatches
+                size="regular"
+                className="mt-4"
+                things="settings"
+                query={query}
+                onClear={() => setQuery('')}
+              />
             ) : null}
           </div>
         ) : null}
@@ -318,9 +348,12 @@ export function SettingsDialog({
           </div>
         ) : result.searching && !isMobile ? (
           <div className="flex min-w-0 flex-1 items-center justify-center px-6 py-10">
-            <p className="text-center text-xs text-slate-500 dark:text-slate-400">
-              No settings match “{query.trim()}”.
-            </p>
+            <NoMatches
+              size="regular"
+              things="settings"
+              query={query}
+              onClear={() => setQuery('')}
+            />
           </div>
         ) : null}
       </div>

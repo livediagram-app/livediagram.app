@@ -198,14 +198,33 @@ describe('edge heads and stroke', () => {
     expect(convert(boxA + boxB + edge('endSize=10;')).arrow.arrowheadSize).toBe('extra-large');
   });
 
-  it('counts heads livediagram does not draw, and mismatched pairs', () => {
-    expect(convert(boxA + boxB + edge('endArrow=ERmany;')).notes).toEqual([
+  it('counts heads livediagram does not draw', () => {
+    expect(convert(boxA + boxB + edge('endArrow=async;')).notes).toEqual([
       { kind: 'arrowhead-approximated', count: 1 },
     ]);
-    expect(convert(boxA + boxB + edge('startArrow=diamond;endArrow=classic;')).notes).toEqual([
+    expect(convert(boxA + boxB + edge('endArrow=ERone;')).notes).toEqual([
       { kind: 'arrowhead-approximated', count: 1 },
     ]);
     expect(convert(boxA + boxB + edge('endArrow=none;')).arrow.arrowEnds).toBe('none');
+  });
+
+  it('draws the ER ends, and keeps two different heads, the start as its own', () => {
+    const er = convert(boxA + boxB + edge('startArrow=ERmandOne;endArrow=ERzeroToMany;'));
+    expect(er.arrow).toMatchObject({
+      arrowEnds: 'both',
+      arrowheadShape: 'zero-or-many',
+      arrowheadStartShape: 'one',
+    });
+    expect(er.notes).toEqual([]);
+    for (const [name, shape] of [
+      ['ERmany', 'many'],
+      ['ERoneToMany', 'one-or-many'],
+      ['ERzeroToOne', 'zero-or-one'],
+    ] as const)
+      expect(convert(boxA + boxB + edge(`endArrow=${name};`)).arrow.arrowheadShape).toBe(shape);
+    const mixed = convert(boxA + boxB + edge('startArrow=diamond;endArrow=classic;'));
+    expect(mixed.arrow).toMatchObject({ arrowheadStartShape: 'diamond' });
+    expect(mixed.notes).toEqual([]);
   });
 
   it('reads a label of nothing but line breaks as no label, so the arrow saves', () => {

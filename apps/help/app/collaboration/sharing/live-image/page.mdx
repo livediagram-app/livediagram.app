@@ -12,7 +12,7 @@ export const metadata = helpMetadata({
 
 <ArticleLayout title="Live Image" description="An image URL that follows your document, so a README or doc always shows the latest version." categoryTitle="Collaboration" categorySlug="collaboration" parentArticle={{ title: "Sharing and Embeds", slug: "sharing" }} subArticles={getSubArticles("sharing").filter((a) => a.slug !== "live-image")}>
 
-A live image is a plain image URL for a document that **follows the document as it changes**: the server keeps an SVG snapshot that re-renders whenever the document is saved, so wherever you place the URL shows the current document. It is the companion to an [embed](/help/collaboration/sharing/embeds/): the embed is interactive (pan, zoom, live updates), while a live image is a single static picture, which is exactly what you need somewhere an `<iframe>` is not allowed, like a **GitHub README** or a Markdown file.
+A live image is a plain image URL for a document that **follows the document as it changes**: the server keeps an SVG snapshot that is redrawn on the first load after each save, so wherever you place the URL shows the current document. It is the companion to an [embed](/help/collaboration/sharing/embeds/): the embed is interactive (pan, zoom, live updates), while a live image is a single static picture, which is exactly what you need somewhere an `<iframe>` is not allowed, like a **GitHub README** or a Markdown file.
 
 ## How it differs from an embed
 
@@ -24,14 +24,14 @@ Both come from a share link and both stay current, but they suit different homes
 ## Getting a live image
 
 <Step n={1}>Open the **Share** dialog and create or pick a pass for the document.</Step>
-<Step n={2}>Open the pass's **Live image** menu, beside **Embed**, and choose the format you need: **Copy image URL** for the bare link, **Copy Markdown** for a `![](…)` snippet, or **Copy HTML** for an `<img>` tag.</Step>
+<Step n={2}>Open the pass's **Live image** menu, beside **Embed**, and choose the format you need: **Copy image URL** for the bare link, **Copy Markdown** for a `![diagram](…)` snippet, or **Copy HTML** for an `<img>` tag.</Step>
 <Step n={3}>Paste it where you want the diagram to appear. A README takes the Markdown; a web page takes the HTML or the raw URL.</Step>
 
 <Figure caption="The Live image menu copies the image as a URL, Markdown or HTML, with a Tab picker on documents with several tabs.">
   <ShareLiveImageMenu />
 </Figure>
 
-The image serves a cached snapshot that re-renders after the document is saved, so editing the document updates the image the next time it loads. Browsers and sites may keep a copy for about 30 seconds (a little longer while they fetch a fresh one), so a page can show the previous version briefly after an edit.
+The image serves a cached snapshot that is redrawn on the first load after the document is saved, so editing the document updates the image the next time it loads (an image of another tab is drawn fresh on each load). Browsers and sites may keep a copy for about 30 seconds, and may show it for up to five minutes more while they fetch a fresh one, so a page can show the previous version briefly after an edit.
 
 ## Scoping the image to one tab
 
@@ -47,7 +47,7 @@ A live image also stops working when its share link is revoked or [expires](/hel
 
 ## Privacy and self-hosting
 
-A live image only exposes what its share link exposes, as a flat picture with no editing actions. It works on self-hosted instances with no external services: the URL is built from your own origin, so a self-hosted document produces a self-hosted image.
+A live image only exposes what its share link exposes, as a flat picture with no editing actions. It works on self-hosted instances once the optional R2 bucket is set up (without it, image URLs return not found): the URL is built from your own origin, so a self-hosted document produces a self-hosted image.
 
 <Tip>
   A live image in your project's README keeps the architecture diagram beside the code and always

@@ -10,7 +10,7 @@ function run(sql: DatabaseSync, statement: string, ...args: (string | number | n
 }
 const one = (sql: DatabaseSync, q: string, ...args: (string | number)[]) =>
   sql.prepare(q).get(...args) as Record<string, unknown> | undefined;
-const all = (sql: DatabaseSync, q: string) => sql.prepare(q).all() as Record<string, unknown>[];
+const all = (sql: DatabaseSync, q: string) => sql.prepare(q).all();
 
 function seed(sql: DatabaseSync) {
   run(
@@ -137,13 +137,16 @@ describe('migration 0055 (the container is a document)', () => {
 
   it('upgrades element links and keeps the tab kind', () => {
     const { sql } = migrated();
-    const data = JSON.parse(one(sql, "SELECT data FROM tabs WHERE id = 't1'")!.data as string);
-    expect(data.kind).toBe('diagram');
-    expect(data.elements[0].link).toEqual({ kind: 'document', documentId: 'B', name: 'Other' });
-    const before = JSON.parse(
+    const data: unknown = JSON.parse(
+      one(sql, "SELECT data FROM tabs WHERE id = 't1'")!.data as string,
+    );
+    const link = { kind: 'document', documentId: 'B', name: 'Other' };
+    expect(data).toHaveProperty('kind', 'diagram');
+    expect(data).toHaveProperty(['elements', 0, 'link'], link);
+    const before: unknown = JSON.parse(
       one(sql, "SELECT before_state FROM change_log WHERE id = 'c1'")!.before_state as string,
     );
-    expect(before[0].link).toEqual({ kind: 'document', documentId: 'B', name: 'Other' });
+    expect(before).toHaveProperty([0, 'link'], link);
   });
 
   it('renames the timeline types, scopes, titles and snapshot keys', () => {
@@ -180,9 +183,12 @@ describe('migration 0055 (the container is a document)', () => {
 
   it('renames the telemetry history and nothing that names a drawing or the tab kind', () => {
     const { sql } = migrated();
-    const rows = all(sql, 'SELECT category, action, type FROM events ORDER BY id').map(
-      (r) => `${r.category}|${r.action}|${r.type ?? ''}`,
-    );
+    const events = all(sql, 'SELECT category, action, type FROM events ORDER BY id') as {
+      category: string;
+      action: string;
+      type: string | null;
+    }[];
+    const rows = events.map((r) => `${r.category}|${r.action}|${r.type ?? ''}`);
     expect(rows).toEqual([
       'Document|Created|Cloud',
       'Team|Added|Document',

@@ -4,6 +4,7 @@
 
 import {
   OpenverseSearchError,
+  type OpenverseFilters,
   openverseSearchUrl,
   parseOpenverseSearch,
   type OpenverseSearchPage,
@@ -13,10 +14,11 @@ export async function searchOpenverse(
   query: string,
   page: number,
   fetchImpl: typeof fetch = fetch,
+  filters: OpenverseFilters = {},
 ): Promise<OpenverseSearchPage> {
   let res: Response;
   try {
-    res = await fetchImpl(openverseSearchUrl(query, page), {
+    res = await fetchImpl(openverseSearchUrl(query, page, filters), {
       credentials: 'omit',
       referrerPolicy: 'no-referrer',
       headers: { Accept: 'application/json' },

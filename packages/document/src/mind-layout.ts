@@ -15,11 +15,12 @@
 // why every coordinate is rounded.
 
 import {
-  MIND_CHILD_GAP_X,
-  MIND_CHILD_GAP_Y,
-  MIND_SIBLING_GAP_Y,
+  isMindSpacing,
+  isVerticalMindFlow,
   mindConnectorAnchors,
+  mindGaps,
   type MindFlow,
+  type MindGaps,
 } from './mind-flow';
 import { isMindNode, mindChildren } from './mind-map';
 import type { ArrowElement, Element, ElementId, ShapeElement } from './index';
@@ -82,8 +83,8 @@ const kidsOf = (tree: Tree, id: ElementId) => tree.get(id) ?? [];
 // --- Tree, balanced, downward: stacked layouts ------------------------------
 
 // The stacked flows are one layout with two parameters: which axis the levels
-// run along (x for a tree, y for a downward map) and which way (a balanced
-// map's left side runs backwards).
+// run along (x for a tree, y for a downward map) and which way (a leftward or
+// upward map, and a balanced map's left side, run backwards).
 type Axis = 'x' | 'y';
 const cross = (axis: Axis): Axis => (axis === 'x' ? 'y' : 'x');
 const extent = (n: ShapeElement, axis: Axis) => (axis === 'x' ? n.width : n.height);
@@ -95,29 +96,28 @@ function stackLayout(
   kids: readonly ShapeElement[],
   axis: Axis,
   dir: 1 | -1,
+  gaps: MindGaps,
 ) {
   const across = cross(axis);
-  const gap = axis === 'x' ? MIND_CHILD_GAP_X : MIND_CHILD_GAP_Y;
+  const gap = axis === 'x' ? gaps.child : gaps.level;
   // The room a whole subtree needs across the stacking axis: its own node, or
   // its children's blocks stacked, whichever is bigger.
   const span = (n: ShapeElement): number => {
     const k = kidsOf(tree, n.id);
-    const block =
-      k.reduce((s, c) => s + span(c), 0) + MIND_SIBLING_GAP_Y * Math.max(0, k.length - 1);
+    const block = k.reduce((s, c) => s + span(c), 0) + gaps.sibling * Math.max(0, k.length - 1);
     return Math.max(extent(n, across), block);
   };
   const place = (p: ShapeElement, children: readonly ShapeElement[]) => {
     const at = out.get(p.id)!;
     const block =
-      children.reduce((s, c) => s + span(c), 0) +
-      MIND_SIBLING_GAP_Y * Math.max(0, children.length - 1);
+      children.reduce((s, c) => s + span(c), 0) + gaps.sibling * Math.max(0, children.length - 1);
     let cursor = at[across] + extent(p, across) / 2 - block / 2;
     for (const c of children) {
       const s = span(c);
       const main = dir === 1 ? at[axis] + extent(p, axis) + gap : at[axis] - gap - extent(c, axis);
       const side = cursor + s / 2 - extent(c, across) / 2;
-      out.set(c.id, (axis === 'x' ? { x: main, y: side } : { x: side, y: main }) as MindPoint);
-      cursor += s + MIND_SIBLING_GAP_Y;
+      out.set(c.id, axis === 'x' ? { x: main, y: side } : { x: side, y: main });
+      cursor += s + gaps.sibling;
     }
     for (const c of children) place(c, kidsOf(tree, c.id));
   };
@@ -133,7 +133,7 @@ function stackLayout(
 // branch points east, the way a tree would start.
 const BUBBLE_SEAM = Math.PI;
 
-function bubbleLayout(tree: Tree, out: MindLayout, root: ShapeElement) {
+function bubbleLayout(tree: Tree, out: MindLayout, root: ShapeElement, gaps: MindGaps) {
   const leaves = new Map<ElementId, number>();
   const count = (n: ShapeElement): number => {
     const k = kidsOf(tree, n.id);
@@ -156,8 +156,8 @@ function bubbleLayout(tree: Tree, out: MindLayout, root: ShapeElement) {
     const ring = byDepth[d]!;
     const inner = Math.max(...byDepth[d - 1]!.map(footprint));
     const outer = Math.max(...ring.map(footprint));
-    const clear = radius[d - 1]! + inner / 2 + outer / 2 + MIND_CHILD_GAP_X;
-    const around = ring.reduce((s, n) => s + footprint(n) + MIND_SIBLING_GAP_Y, 0) / TAU;
+    const clear = radius[d - 1]! + inner / 2 + outer / 2 + gaps.child;
+    const around = ring.reduce((s, n) => s + footprint(n) + gaps.sibling, 0) / TAU;
     radius.push(Math.max(clear, around));
   }
   const origin = centre(root);
@@ -195,7 +195,7 @@ function orderKeyFor(
   flow: MindFlow,
   root: ShapeElement,
 ): (node: ShapeElement, parent: ShapeElement) => number {
-  if (flow === 'downward') return (n) => centre(n).x;
+  if (isVerticalMindFlow(flow)) return (n) => centre(n).x;
   if (flow !== 'bubble') return (n) => centre(n).y;
   const o = centre(root);
   const angle = (n: ShapeElement) => Math.atan2(centre(n).y - o.y, centre(n).x - o.x);
@@ -256,13 +256,24 @@ export function layoutMindTree(
     : orderKeyFor(orderFlow, root);
   const tree = buildTree(elements, root, key, hint);
   out.set(root.id, { x: root.x, y: root.y });
-  if (flow === 'bubble') bubbleLayout(tree, out, root);
-  else if (flow === 'downward') stackLayout(tree, out, root, kidsOf(tree, root.id), 'y', 1);
-  else if (flow === 'tree') stackLayout(tree, out, root, kidsOf(tree, root.id), 'x', 1);
+  // The map's spacing lives on its root, like its flow (docs/specs/009-elements/mind-node.md "Spacing").
+  const gaps = mindGaps(isMindSpacing(root.mindSpacing) ? root.mindSpacing : undefined);
+  const kids = kidsOf(tree, root.id);
+  if (flow === 'bubble') bubbleLayout(tree, out, root, gaps);
+  else if (flow === 'downward') stackLayout(tree, out, root, kids, 'y', 1, gaps);
+  else if (flow === 'upward') stackLayout(tree, out, root, kids, 'y', -1, gaps);
+  else if (flow === 'tree') stackLayout(tree, out, root, kids, 'x', 1, gaps);
+  else if (flow === 'leftward') stackLayout(tree, out, root, kids, 'x', -1, gaps);
   else {
-    const { left, right } = balancedSides(tree, root, hint, !!order || orderFlow !== 'balanced');
-    stackLayout(tree, out, root, right, 'x', 1);
-    stackLayout(tree, out, root, left, 'x', -1);
+    const { left, right } = balancedSides(
+      tree,
+      root,
+      hint,
+      !!order || orderFlow !== 'balanced',
+      gaps,
+    );
+    stackLayout(tree, out, root, right, 'x', 1, gaps);
+    stackLayout(tree, out, root, left, 'x', -1, gaps);
   }
   for (const [id, p] of out) out.set(id, { x: Math.round(p.x), y: Math.round(p.y) });
   return out;
@@ -276,12 +287,19 @@ function balancedSides(
   root: ShapeElement,
   hint: MindOrderHint | undefined,
   fresh: boolean,
+  gaps: MindGaps,
 ): { left: ShapeElement[]; right: ShapeElement[] } {
   const kids = kidsOf(tree, root.id);
   const rootX = centre(root).x;
-  // Less on the left, by total height, sends a branch left; a tie goes right,
-  // which is where the very first branch always goes.
-  const height = (side: ShapeElement[]) => side.reduce((s, n) => s + n.height, 0);
+  // Less on the left, by the height each branch's whole subtree takes, sends a branch left; a tie goes right,
+  // which is where the very first branch always goes. Weighed by the branch boxes alone, every branch counted the
+  // same, and a map of 10 leaves against 7 stood lopsided.
+  const span = (n: ShapeElement): number => {
+    const k = kidsOf(tree, n.id);
+    const block = k.reduce((s, c) => s + span(c), 0) + gaps.sibling * Math.max(0, k.length - 1);
+    return Math.max(n.height, block);
+  };
+  const height = (side: ShapeElement[]) => side.reduce((s, n) => s + span(n), 0);
   const hinted = hint ? kids.find((k) => k.id === hint.id) : undefined;
   const left: ShapeElement[] = [];
   const right: ShapeElement[] = [];

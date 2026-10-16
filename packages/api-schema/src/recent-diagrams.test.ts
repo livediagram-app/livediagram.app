@@ -1,8 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  RECENT_DIAGRAMS_KEY,
   RECENT_DIAGRAMS_LIMIT,
-  RETURNING_BOOT_SCRIPT,
   parseRecentDiagrams,
   pickRecentDiagrams,
   recentThumbPath,
@@ -42,7 +40,16 @@ describe('pickRecentDiagrams', () => {
       name: 'Doc a',
       savedAt: 1,
       mode: 'diagram',
+      teamName: null,
     });
+  });
+
+  it('carries the team of a team library document', () => {
+    const picked = pickRecentDiagrams([doc('own', 1), { ...doc('team', 2), teamName: 'Design' }]);
+    expect(picked.map((d) => [d.id, d.teamName])).toEqual([
+      ['team', 'Design'],
+      ['own', null],
+    ]);
   });
 });
 
@@ -59,6 +66,18 @@ describe('parseRecentDiagrams', () => {
     expect(parseRecentDiagrams('{"v":1,"diagrams":[{"id":1}]}')).toEqual([]);
   });
 
+  it('reads a note written before teams as your own diagrams', () => {
+    const raw = '{"v":1,"diagrams":[{"id":"a","name":"A","savedAt":1,"mode":"draw"}]}';
+    expect(parseRecentDiagrams(raw)[0]?.teamName).toBeNull();
+  });
+
+  it('round-trips a team name, and drops a malformed one to null', () => {
+    const raw =
+      '{"v":1,"diagrams":[{"id":"a","name":"A","savedAt":2,"teamName":"Design"},' +
+      '{"id":"b","name":"B","savedAt":1,"teamName":42},{"id":"c","name":"C","savedAt":0,"teamName":""}]}';
+    expect(parseRecentDiagrams(raw).map((d) => d.teamName)).toEqual(['Design', null, null]);
+  });
+
   it('drops an unknown mode to null', () => {
     const raw = '{"v":1,"diagrams":[{"id":"a","name":"A","savedAt":1,"mode":"bogus"}]}';
     expect(parseRecentDiagrams(raw)[0]?.mode).toBeNull();
@@ -73,21 +92,6 @@ describe('helpers', () => {
   it('reads a snapshot background colour', () => {
     expect(svgBackgroundColor('<svg><rect x="0" fill="#fafafa"/></svg>')).toBe('#fafafa');
     expect(svgBackgroundColor('<svg></svg>')).toBeNull();
-  });
-
-  it('boot script marks <html> only when the note holds a diagram', () => {
-    const run = (value: string | null) => {
-      const attrs: Record<string, string> = {};
-      const localStorage = { getItem: (k: string) => (k === RECENT_DIAGRAMS_KEY ? value : null) };
-      const document = {
-        documentElement: { setAttribute: (k: string, v: string) => (attrs[k] = v) },
-      };
-      new Function('localStorage', 'document', RETURNING_BOOT_SCRIPT)(localStorage, document);
-      return 'data-returning' in attrs;
-    };
-    expect(run(serializeRecentDiagrams(pickRecentDiagrams([doc('a', 1)])))).toBe(true);
-    expect(run(serializeRecentDiagrams([]))).toBe(false);
-    expect(run(null)).toBe(false);
   });
 });
 

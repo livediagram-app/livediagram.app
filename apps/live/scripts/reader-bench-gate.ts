@@ -19,6 +19,9 @@ export type BenchResult = {
   ms: number;
 };
 
+// A bench run's file: its reader, its results, and whatever else the bench recorded.
+type BenchRun = { reader: string; results: BenchResult[]; [field: string]: unknown };
+
 const key = (r: { wall: string; index: number }) => `${r.wall}-${r.index}`;
 
 export function gateRun(vlm: BenchResult[], det: BenchResult[]): BenchResult[] {
@@ -33,8 +36,8 @@ export function gateRun(vlm: BenchResult[], det: BenchResult[]): BenchResult[] {
 if (process.argv[1]?.endsWith('reader-bench-gate.ts')) {
   const [vlmFile, detFile, out] = process.argv.slice(2);
   if (!vlmFile || !detFile || !out) throw new Error('usage: <smolvlm.json> <det.json> <out.json>');
-  const vlm = JSON.parse(readFileSync(vlmFile, 'utf8'));
-  const det = JSON.parse(readFileSync(detFile, 'utf8'));
+  const vlm = JSON.parse(readFileSync(vlmFile, 'utf8')) as BenchRun;
+  const det = JSON.parse(readFileSync(detFile, 'utf8')) as BenchRun;
   writeFileSync(
     out,
     JSON.stringify(

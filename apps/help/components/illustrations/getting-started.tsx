@@ -1,55 +1,14 @@
 // Getting-started-category illustrations (docs/specs/018-help/help-app.md): beginner walkthroughs for
-// the new-document welcome flow, the shape palette, quick-connecting arrows,
+// the new-document welcome flow, quick-connecting arrows,
 // guest vs account, and the essential keyboard shortcuts. Composed only from
 // the shared primitives so the house style holds.
 
-import type { ReactNode } from 'react';
-import { Scene, Shape, Arrow, Dialog, Button, Tile, Label, Avatar } from './primitives';
+import { Scene, Shape, Arrow, Dialog, Button, Label, Avatar } from './primitives';
 
-/** A template card in the New Document wizard: a thumbnail over its title. */
-function TemplateCard({
-  x,
-  y,
-  title,
-  selected = false,
-  children,
-}: {
-  x: number;
-  y: number;
-  title: string;
-  selected?: boolean;
-  children?: ReactNode;
-}) {
-  return (
-    <g>
-      <rect
-        x={x}
-        y={y}
-        width={98}
-        height={84}
-        rx={9}
-        className={selected ? 'fill-white stroke-brand-500' : 'fill-white stroke-slate-200'}
-        strokeWidth={selected ? 2.5 : 1.5}
-      />
-      <rect x={x + 8} y={y + 8} width={82} height={46} rx={5} className="fill-slate-50" />
-      {children}
-      <Label
-        x={x + 49}
-        y={y + 70}
-        anchor="middle"
-        size={10}
-        weight={selected ? 700 : 600}
-        tone={selected ? 'strong' : 'body'}
-      >
-        {title}
-      </Label>
-    </g>
-  );
-}
-
-/** The New Document wizard on its first step: the Template / Location rail,
- *  the template search, the Popular shelf led by Blank Diagram, and the
- *  footer's Skip and Next. */
+/** The New Document wizard, its one question: "What are you making today?", the
+ *  five mode cards, three then two at one height (Diagram first and chosen),
+ *  each with its number key, and the footer's Skip and Create. Choosing a card
+ *  creates the document there and then. */
 export function NewDocumentWelcome() {
   return (
     <Scene w={420} h={270} bg="plain">
@@ -66,169 +25,102 @@ export function NewDocumentWelcome() {
         <g className="stroke-slate-400" strokeWidth={1.6} fill="none" strokeLinecap="round">
           <path d="M366 26 l7 7 M373 26 l-7 7" />
         </g>
-        {/* Step rail: 1 Template (current), 2 Location. */}
-        <rect x={42} y={54} width={78} height={20} rx={10} className="fill-brand-50" />
-        <circle cx={53} cy={64} r={8} className="fill-brand-500" />
-        <Label x={53} y={65} anchor="middle" size={10} weight={700} tone="onAccent">
-          1
+        {/* The one question, under the title. */}
+        <Label x={42} y={65} size={10.5} tone="muted">
+          What are you making today?
         </Label>
-        <Label x={66} y={65} size={10} weight={600} tone="strong">
-          Template
-        </Label>
-        <rect x={126} y={62} width={20} height={4} rx={2} className="fill-slate-200" />
-        <circle cx={160} cy={64} r={8} className="fill-slate-200" />
-        <Label x={160} y={65} anchor="middle" size={10} weight={700} tone="muted">
-          2
-        </Label>
-        <Label x={173} y={65} size={10} weight={600} tone="muted">
-          Location
-        </Label>
-        {/* Search field. */}
-        <rect
-          x={42}
-          y={84}
-          width={336}
-          height={22}
-          rx={6}
-          className="fill-white stroke-slate-200"
-          strokeWidth={1.5}
-        />
-        <Label x={54} y={96} size={10} tone="muted">
-          Search templates...
-        </Label>
-        <Label x={42} y={120} size={10} weight={700} tone="strong">
-          Popular
-        </Label>
-        <TemplateCard x={42} y={130} title="Blank Diagram" selected>
-          <path
-            d="M83 155 h16 M91 147 v16"
-            className="stroke-brand-400"
-            strokeWidth={2.5}
-            strokeLinecap="round"
-          />
-        </TemplateCard>
-        <TemplateCard x={161} y={130} title="Flowchart">
-          <rect x={180} y={146} width={22} height={13} rx={3} className="fill-brand-200" />
-          <rect x={220} y={146} width={22} height={13} rx={3} className="fill-brand-400" />
-          <line x1={202} y1={152} x2={220} y2={152} className="stroke-slate-300" strokeWidth={2} />
-          <rect x={200} y={166} width={22} height={11} rx={3} className="fill-brand-300" />
-        </TemplateCard>
-        <TemplateCard x={280} y={130} title="Mind map">
-          <circle cx={329} cy={158} r={8} className="fill-emerald-400" />
-          <rect x={295} y={146} width={18} height={9} rx={3} className="fill-violet-400" />
-          <rect x={345} y={162} width={18} height={9} rx={3} className="fill-amber-400" />
-        </TemplateCard>
-        {/* Footer: Skip creates a Blank Diagram straight away; Next goes to Location. */}
+        {/* The five mode cards, three then two, every one the same build and height: a plate
+            on top, then the name and its number key. Diagram, where most start, leads and is
+            chosen; its plate holds a small flow. */}
+        {(['Diagram', 'Draw', 'Facilitate', 'Illustrate', 'Plan'] as const).map((mode, i) => {
+          const top = i < 3;
+          const w = top ? 106 : 164;
+          const x = 42 + (top ? i * (w + 9) : (i - 3) * (w + 8));
+          const y = top ? 84 : 152;
+          const chosen = i === 0;
+          return (
+            <g key={mode}>
+              <rect
+                x={x}
+                y={y}
+                width={w}
+                height={62}
+                rx={9}
+                className={chosen ? 'fill-white stroke-brand-500' : 'fill-white stroke-slate-200'}
+                strokeWidth={chosen ? 2.5 : 1.5}
+              />
+              <rect
+                x={x + 6}
+                y={y + 6}
+                width={w - 12}
+                height={30}
+                rx={5}
+                className={chosen ? 'fill-brand-50' : 'fill-slate-50'}
+              />
+              {chosen ? (
+                <g>
+                  <g className="fill-white stroke-brand-400" strokeWidth={1.5}>
+                    <rect x={x + 20} y={y + 14} width={22} height={13} rx={3} />
+                    <rect x={x + 64} y={y + 14} width={22} height={13} rx={3} />
+                  </g>
+                  <path
+                    d={`M${x + 42} ${y + 20.5} h18 m-4 -3.5 l4 3.5 l-4 3.5`}
+                    className="fill-none stroke-brand-400"
+                    strokeWidth={1.5}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </g>
+              ) : (
+                <rect
+                  x={x + w / 2 - 13}
+                  y={y + 13}
+                  width={26}
+                  height={16}
+                  rx={3}
+                  className="fill-brand-100"
+                />
+              )}
+              <Label x={x + 9} y={y + 50} size={10} weight={chosen ? 700 : 600} tone="strong">
+                {mode}
+              </Label>
+              {/* The card's number key, at the row's end. */}
+              <rect
+                x={x + w - 21}
+                y={y + 43}
+                width={13}
+                height={13}
+                rx={2.5}
+                className="fill-white stroke-slate-300"
+                strokeWidth={1}
+              />
+              <Label x={x + w - 14.5} y={y + 50} anchor="middle" size={8} weight={500} tone="muted">
+                {String(i + 1)}
+              </Label>
+            </g>
+          );
+        })}
+        {/* Footer: Open Existing Document at the left; Skip creates a Blank Diagram straight
+            away; Create makes the chosen mode's document. */}
         <line x1={30} y1={224} x2={390} y2={224} className="stroke-slate-200" strokeWidth={1} />
+        <Label x={42} y={243} size={9.5} weight={600} tone="accent">
+          Open Existing Document
+        </Label>
         <Button x={250} y={231} w={56} h={22} label="Skip" />
-        <Button x={314} y={231} w={64} h={22} label="Next" variant="primary" />
+        <Button x={314} y={231} w={64} h={22} label="Create" variant="primary" />
       </Dialog>
     </Scene>
   );
 }
 
-/** A dropdown chip in the palette's header band: a label and a caret. */
-function DropdownChip({ x, y, w, label }: { x: number; y: number; w: number; label: string }) {
-  return (
-    <g>
-      <rect
-        x={x}
-        y={y}
-        width={w}
-        height={20}
-        rx={6}
-        className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
-      />
-      <Label x={x + 9} y={y + 11} size={10} weight={600} tone="strong">
-        {label}
-      </Label>
-      <path
-        d={`M${x + w - 14} ${y + 8} l4 4 l4 -4`}
-        className="stroke-slate-400"
-        strokeWidth={1.5}
-        fill="none"
-        strokeLinecap="round"
-      />
-    </g>
-  );
-}
-
-/** The palette strip across the top of the canvas: the selection-mode and category dropdowns,
- *  Popular's twelve tiles, then More (⋯) and Search. */
-export function ShapePalette() {
-  const stroke = { className: 'stroke-brand-500', strokeWidth: 2, fill: 'none' } as const;
-  const glyphs: ReactNode[] = [
-    <rect
-      key="sq"
-      x={-7}
-      y={-7}
-      width={14}
-      height={14}
-      rx={2}
-      className="stroke-white"
-      strokeWidth={2}
-      fill="none"
-    />,
-    <circle key="ci" r={7} {...stroke} />,
-    <path key="di" d="M0 -8 L8 0 L0 8 L-8 0 Z" {...stroke} />,
-    <path key="tx" d="M-6 -6 h12 M0 -6 v13" {...stroke} strokeLinecap="round" />,
-    <path key="ar" d="M-7 5 L6 -6 M1 -6 h5 v5" {...stroke} strokeLinecap="round" />,
-    <rect key="fr" x={-8} y={-7} width={16} height={14} rx={2} {...stroke} strokeDasharray="3 2" />,
-    <rect key="st" x={-7} y={-7} width={14} height={14} rx={1.5} className="fill-amber-400" />,
-    <path key="im" d="M-8 6 L-3 -1 L1 3 L4 0 L8 6 Z" className="fill-brand-300" />,
-    <path key="pe" d="M-7 4 q3 -9 7 -2 t7 -4" {...stroke} strokeLinecap="round" />,
-    <path key="tb" d="M-8 -6 h16 v12 h-16 Z M-8 0 h16 M-2 -6 v12" {...stroke} strokeWidth={1.5} />,
-    <path key="co" d="M-3 -5 L-8 0 L-3 5 M3 -5 L8 0 L3 5" {...stroke} strokeLinecap="round" />,
-    <path key="en" d="M-8 -7 h16 v14 h-16 Z M-8 -2 h16" {...stroke} strokeWidth={1.5} />,
-  ];
-  return (
-    <Scene w={600} h={96}>
-      <rect
-        x={10}
-        y={24}
-        width={580}
-        height={46}
-        rx={10}
-        className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
-      />
-      <DropdownChip x={20} y={37} w={70} label="Select" />
-      <path d="M98 33v28" className="stroke-slate-200" strokeWidth={1} />
-      <DropdownChip x={106} y={37} w={80} label="Popular" />
-      <path d="M194 33v28" className="stroke-slate-200" strokeWidth={1} />
-      {glyphs.map((g, i) => (
-        <Tile key={i} x={202 + i * 28} y={34} active={i === 0}>
-          {g}
-        </Tile>
-      ))}
-      <path d="M544 33v28" className="stroke-slate-200" strokeWidth={1} />
-      {/* More (⋯), then Search. */}
-      <g className="fill-slate-400">
-        <circle cx={551} cy={47} r={1.6} />
-        <circle cx={556} cy={47} r={1.6} />
-        <circle cx={561} cy={47} r={1.6} />
-      </g>
-      <circle cx={576} cy={46} r={5} className="fill-none stroke-slate-500" strokeWidth={1.6} />
-      <path d="M580 50 l4 4" className="stroke-slate-500" strokeWidth={1.6} strokeLinecap="round" />
-    </Scene>
-  );
-}
-
-/** Quick-connect: a selected shape shows + buttons on its sides; clicking one
- *  fans out its options (Duplicate, Arrow, Pencil, Text), and dragging Arrow
- *  onto a second shape pins an arrow to both. */
+/** Quick-connect: a selected shape shows + buttons on its sides; clicking one opens a card of
+ *  icon buttons (Duplicate, Arrow, Pencil, Text), and dragging Arrow onto a second shape pins
+ *  an arrow to both. */
 export function QuickConnect() {
   const plus: [number, number][] = [
     [90, 54],
     [90, 150],
     [26, 102],
-  ];
-  const options: { label: string; cx: number; cy: number }[] = [
-    { label: 'Duplicate', cx: 190, cy: 52 },
-    { label: 'Arrow', cx: 204, cy: 86 },
-    { label: 'Pencil', cx: 204, cy: 120 },
-    { label: 'Text', cx: 190, cy: 154 },
   ];
   return (
     <Scene w={420} h={210}>
@@ -255,7 +147,8 @@ export function QuickConnect() {
           />
         </g>
       ))}
-      {/* The clicked + on the right, its options fanned in an arc. */}
+      {/* The clicked + on the right opens one card of icon buttons beside it (QuickConnectRing):
+          Duplicate, Arrow, Pencil and Text, their names in hover cards. */}
       <circle cx={158} cy={102} r={8} className="fill-brand-500" />
       <path
         d="M154 102 h8 M158 98 v8"
@@ -263,36 +156,56 @@ export function QuickConnect() {
         strokeWidth={2}
         strokeLinecap="round"
       />
-      {options.map((o) => (
-        <g key={o.label}>
-          <circle
-            cx={o.cx}
-            cy={o.cy}
-            r={11}
-            className={o.label === 'Arrow' ? 'fill-brand-500' : 'fill-white stroke-slate-300'}
-            strokeWidth={1.5}
-          />
-          <Label
-            x={o.cx}
-            y={o.cy - 17}
-            anchor="middle"
-            size={10}
-            weight={o.label === 'Arrow' ? 700 : 500}
-            tone={o.label === 'Arrow' ? 'accent' : 'muted'}
-          >
-            {o.label}
-          </Label>
-        </g>
+      <rect
+        x={172}
+        y={50}
+        width={32}
+        height={106}
+        rx={8}
+        className="fill-white stroke-slate-200"
+        strokeWidth={1.5}
+      />
+      {[0, 1, 2].map((i) => (
+        <line
+          key={i}
+          x1={176}
+          y1={76 + i * 26}
+          x2={200}
+          y2={76 + i * 26}
+          className="stroke-slate-100"
+          strokeWidth={1}
+        />
       ))}
+      {/* Duplicate */}
+      <g className="fill-none stroke-slate-500" strokeWidth={1.4}>
+        <rect x={181} y={57} width={10} height={10} rx={2} />
+        <path d="M185 57 v-2 a2 2 0 0 1 2 -2 h6 a2 2 0 0 1 2 2 v6 a2 2 0 0 1 -2 2 h-2" />
+      </g>
+      {/* Arrow, the one being dragged */}
+      <rect x={176} y={80} width={24} height={22} rx={5} className="fill-brand-500" />
       <path
-        d="M199 86 h11 M206 82 l4 4 l-4 4"
-        className="stroke-white help-art-as-drawn"
+        d="M182 91 h11 M189 87 l4 4 l-4 4"
+        className="fill-none stroke-white help-art-as-drawn"
         strokeWidth={1.8}
-        fill="none"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      {/* Pencil */}
+      <path
+        d="M182 124 l9 -9 l3 3 l-9 9 h-3 Z"
+        className="fill-none stroke-slate-500"
+        strokeWidth={1.4}
+        strokeLinejoin="round"
+      />
+      {/* Text */}
+      <path
+        d="M182 137 h12 M188 137 v11"
+        className="fill-none stroke-slate-500"
+        strokeWidth={1.6}
         strokeLinecap="round"
       />
       {/* Drag the Arrow option onto the second shape. */}
-      <Arrow from={[216, 88]} to={[290, 118]} kind="curved" tone="accent" />
+      <Arrow from={[204, 91]} to={[294, 118]} kind="curved" tone="accent" />
       <Shape x={296} y={100} w={96} h={52} kind="rect" accent label="Pay" />
     </Scene>
   );
@@ -462,8 +375,8 @@ export function KeyboardEssentials() {
   );
 }
 
-/** The welcome tour's offer card: a short welcome, then No thanks or Show me around. */
-export function WelcomeTourCard() {
+/** The Diagram tour's offer card: a short welcome, then No or Yes. */
+export function DiagramTourCard() {
   return (
     <Scene w={420} h={170} bg="plain">
       <rect
@@ -476,15 +389,18 @@ export function WelcomeTourCard() {
         strokeWidth={2}
       />
       <Label x={210} y={34} anchor="middle" size={10} weight={700} tone="accent">
-        QUICK TOUR
+        DIAGRAM TOUR
       </Label>
       <Label x={210} y={54} anchor="middle" size={14} weight={700} tone="strong">
-        Welcome to livediagram
+        Getting started with Diagrams?
       </Label>
       <rect x={110} y={68} width={200} height={6} rx={3} className="fill-slate-200" />
       <rect x={130} y={82} width={160} height={6} rx={3} className="fill-slate-200" />
-      <Button x={110} y={116} w={92} h={26} label="No thanks" />
-      <Button x={210} y={116} w={104} h={26} label="Show me around" variant="primary" />
+      {/* No is a plain text button, beside the primary. */}
+      <Label x={156} y={130} anchor="middle" size={11} weight={600} tone="body">
+        No
+      </Label>
+      <Button x={210} y={116} w={104} h={26} label="Yes" variant="primary" />
     </Scene>
   );
 }

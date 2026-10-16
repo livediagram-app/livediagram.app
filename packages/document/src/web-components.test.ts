@@ -23,7 +23,6 @@ import {
   canAppendWebRow,
   withWebRows,
   type ComponentKind,
-  type ImageElement,
   type ShapeElement,
   type Tab,
 } from './index';
@@ -49,7 +48,8 @@ describe('components are single elements (docs/specs/009-elements/web-components
     const kind = (k: ComponentKind) => (createComponent(k, 0, 0, colors) as ShapeElement).shape;
     expect(kind('banner')).toBe('banner');
     expect(kind('header')).toBe('site-header');
-    expect(kind('callout')).toBe('callout');
+    // The Callout is a Card preset (docs/specs/009-elements/card.md).
+    expect(kind('callout')).toBe('card');
     expect(kind('stat')).toBe('stat-row');
     expect(kind('process')).toBe('process');
   });
@@ -221,7 +221,7 @@ describe('headless render (docs/specs/009-elements/web-components-and-no-groups.
   });
 
   it('draws the hero caption over the image', () => {
-    const svg = svgOf([createHero(0, 0, '#000') as ImageElement]);
+    const svg = svgOf([createHero(0, 0, '#000')]);
     expect(svg).toContain('Hero title');
   });
 });

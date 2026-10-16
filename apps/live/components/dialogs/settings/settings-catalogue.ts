@@ -1,6 +1,15 @@
 import type { HelpArticleKey } from '@/lib/help-articles';
+import {
+  AUTO_ADVANCE_CHOICES,
+  readPresentationConfig,
+  SLIDE_SPEEDS,
+  SLIDE_TRANSITIONS,
+  SLIDE_ZOOMS,
+  withPresentationConfig,
+  type PresentationConfig,
+} from '@/lib/presentation-config';
 import type { SettingsCategoryId, SettingsIconId } from './settings-icons';
-import type { TelemetryCategory } from '@livediagram/api-schema';
+import { titleCase, type TelemetryCategory } from '@livediagram/api-schema';
 import {
   autoRebindArrowsEnabled,
   showProfilePictureEnabled,
@@ -10,6 +19,15 @@ import {
   type UserPreferences,
 } from '@/lib/user-preferences';
 import { isPowerUserMode, setPowerUserMode } from '@/lib/power-user-mode';
+import { ILLUSTRATE_TOUR_KINDS, illustrateTourOwed } from '@/lib/illustrate-tour';
+import { PLAN_TOUR_TRACKS, planTourOwed } from '@/lib/plan-tour';
+import {
+  ELEMENT_TOUR_KINDS,
+  elementTourSeen,
+  markElementTourSeen,
+  offerElementTourAgain,
+  type ElementTourKind,
+} from '@/lib/element-tours';
 import {
   readElementIndicatorStyle,
   withElementIndicatorStyle,
@@ -33,6 +51,11 @@ import {
   withWhiteboardDockPosition,
   type WhiteboardDockPosition,
 } from '@/lib/whiteboard-dock-prefs';
+import {
+  readContentsPlacement,
+  withContentsPlacement,
+  type ContentsPlacement,
+} from '@/lib/contents-placement';
 import type { SettingsIllustrationId } from './settings-illustrations';
 import {
   LOGO_GUIDE_PARTS,
@@ -50,23 +73,46 @@ import {
   type CloudSyncProviderId,
 } from '@/lib/cloud-sync/providers';
 
-// One logo guide's row (docs/specs/007-editor/logo-pages.md "Construction guides"): shown or
-// hidden, in Settings > Editor > Illustrate as in the logo page's panel.
-function logoGuidePartRow(
+// One logo guide's switch (docs/specs/007-editor/logo-pages.md "Construction guides"): a tile in
+// Settings > Editor > Illustrate's Guides Shown grid, as in a logo page's Guides popover. The token
+// is written out per guide so the telemetry dashboard reads it.
+function logoGuidePart(
   part: LogoGuidePart,
-  row: Pick<SettingsToggleRowSpec, 'kind' | 'event'>,
-): SettingsToggleRowSpec {
-  const label = LOGO_GUIDE_PARTS.find((p) => p.id === part)!.label;
+  event: SettingsToggleOptionSpec['event'],
+): SettingsToggleOptionSpec {
   return {
-    ...row,
     key: `logoGuide-${part}`,
-    keywords: `logo guides ${label.toLowerCase()} construction`,
-    label: `Logo ${label}`,
-    description: `Shows the ${label.toLowerCase()} among a logo page's construction guides.`,
-    helpArticle: 'logoPages',
-    alsoIn: "a logo page's panel",
+    label: LOGO_GUIDE_PARTS.find((p) => p.id === part)!.label,
     read: (p) => readLogoGuideParts(p).has(part),
     write: (p, v) => withLogoGuidePart(p, part, v),
+    event,
+  };
+}
+
+// One email notification switch (docs/specs/014-identity/profile-and-email-notifications.md): only
+// where the deployment sends email AND the reader is signed in, since a guest has no address.
+type EmailKey =
+  | 'notifyDocumentJoin'
+  | 'notifyInviteResponse'
+  | 'notifyComments'
+  | 'notifyActionAssigned'
+  | 'notifyMentions'
+  | 'notifyFormResponses'
+  | 'notifyTips'
+  | 'notifyMilestones';
+
+function emailSwitch(
+  key: EmailKey,
+  copy: Pick<SettingsToggleRowSpec, 'label' | 'description' | 'keywords' | 'event'>,
+): SettingsToggleRowSpec {
+  return {
+    kind: 'toggle',
+    key,
+    section: 'Email',
+    ...copy,
+    available: (ctx) => ctx.emailEnabled && ctx.signedIn,
+    read: (p) => p[key] !== false,
+    write: (p, v) => ({ ...p, [key]: v }),
   };
 }
 
@@ -165,6 +211,25 @@ export type SettingsToggleRowSpec = RowBase & {
   event: { category: TelemetryCategory; on: string; off: string };
 };
 
+// One switch inside a toggle group: its own preference and telemetry, like a toggle row, drawn as a
+// tile in the group's grid under the group's heading and description.
+export type SettingsToggleOptionSpec = {
+  key: string;
+  label: string;
+  // Linked from the group's description by this switch's label.
+  helpArticle?: HelpArticleKey;
+  read: (prefs: UserPreferences) => boolean;
+  write: (prefs: UserPreferences, next: boolean) => UserPreferences;
+  event: { category: TelemetryCategory; on: string; off: string };
+};
+
+// Several related switches as one control (the guided tours): one heading and one description over a
+// grid of switch tiles, where separate rows would repeat the same paragraph each time.
+export type SettingsToggleGroupRowSpec = RowBase & {
+  kind: 'toggleGroup';
+  toggles: SettingsToggleOptionSpec[];
+};
+
 export type SettingsChoiceRowSpec = RowBase & {
   kind: 'choice';
   options: { id: string; label: string }[];
@@ -260,13 +325,9 @@ export type SettingsPlacementDefaultRowSpec = RowBase & {
   placementKey: PlacementDefaultKey;
 };
 
-// Skip the Location step (docs/specs/013-workspace/default-folders.md "Skipping the Location
-// step"): where new documents go without asking, and Turn Off. Turned on from the wizard, where the
-// place is chosen, so the row reads and clears the preference rather than toggling it.
-export type SettingsSkipLocationRowSpec = RowBase & { kind: 'skipLocationStep' };
-
 export type SettingsRowSpec =
   | SettingsToggleRowSpec
+  | SettingsToggleGroupRowSpec
   | SettingsChoiceRowSpec
   | SettingsSliderRowSpec
   | SettingsAppearanceRowSpec
@@ -280,8 +341,7 @@ export type SettingsRowSpec =
   | SettingsTrashRowSpec
   | SettingsPresetSummaryRowSpec
   | SettingsCloudSyncRowSpec
-  | SettingsPlacementDefaultRowSpec
-  | SettingsSkipLocationRowSpec;
+  | SettingsPlacementDefaultRowSpec;
 
 export type SettingsCategorySpec = {
   id: SettingsCategoryId;
@@ -294,6 +354,12 @@ export type SettingsCategorySpec = {
   parent?: SettingsIconId;
   // Only rendered when the api worker advertises AI capability (docs/specs/007-editor/ai-assistance.md).
   requiresAi?: boolean;
+  // A line under a section's heading, for what every row in it shares (Documents' Default Folders,
+  // the Tours' "offer again"), said once rather than under each row.
+  sectionNotes?: Record<string, { note: string; helpArticle?: HelpArticleKey }>;
+  // Sections drawn as a closed accordion, for rows people rarely look for (the Tours' Element Tours): the heading
+  // opens them, and Settings opened on one of their rows opens them itself.
+  collapsedSections?: readonly string[];
   rows: SettingsRowSpec[];
 };
 
@@ -351,6 +417,108 @@ function panelSwitch(
   };
 }
 
+// A tour's switch (docs/specs/007-editor/user-preferences.md "Tours"). INVERTED against its stored
+// preference: the switch asks "offer me this tour?", the preference records "already seen". The
+// telemetry tokens still track the PREFERENCE, not the switch, so each dashboard series keeps
+// meaning what it always has: switching ON sets `<tour>Seen` false, which is '<Tour>SeenOff'.
+function tourSwitch(
+  key: TourSeenKey,
+  row: Pick<SettingsToggleRowSpec, 'label' | 'description' | 'helpArticle' | 'keywords' | 'event'>,
+  section = 'Offer Again',
+): SettingsToggleRowSpec {
+  return {
+    kind: 'toggle',
+    key,
+    section,
+    ...row,
+    read: (p) => p[key] !== true,
+    write: (p, v) => ({ ...p, [key]: !v }),
+  };
+}
+
+// A tour of several tracks (lib/tour-tracks.ts): on while any track is still owed. Off answers every track; on
+// forgets those answered, so each offers itself again. Its telemetry tokens are its seen flag's, as above.
+// One element tour's switch (docs/specs/007-editor/element-tours.md "Settings"), nested under Element Tours: on while
+// its kind is still offered; on forgets its answer, off answers it.
+function elementTourSwitch(
+  kind: ElementTourKind,
+  row: Pick<SettingsToggleRowSpec, 'label' | 'description' | 'helpArticle' | 'keywords' | 'event'>,
+): SettingsToggleRowSpec {
+  return {
+    kind: 'toggle',
+    key: `elementTour-${kind}`,
+    section: ELEMENT_TOURS_SECTION,
+    parent: 'elementToursSeen',
+    ...row,
+    read: (p) => !elementTourSeen(p, kind),
+    write: (p, v) => (v ? offerElementTourAgain(p, kind) : markElementTourSeen(p, kind)),
+  };
+}
+
+export const ELEMENT_TOURS_SECTION = 'Element Tours';
+
+function tourTracksSwitch(
+  key: 'planTourSeen' | 'illustrateTourSeen' | 'elementToursSeen',
+  tracksKey: 'planTourTracks' | 'illustrateTourKinds' | 'elementTourKinds',
+  tracks: readonly string[],
+  owed: (p: UserPreferences) => boolean,
+  row: Pick<SettingsToggleRowSpec, 'label' | 'description' | 'helpArticle' | 'keywords' | 'event'>,
+  section?: string,
+): SettingsToggleRowSpec {
+  return {
+    ...tourSwitch(key, row, section),
+    read: owed,
+    write: (p, v) => {
+      if (!v) return { ...p, [key]: true, [tracksKey]: [...tracks] };
+      const { [tracksKey]: _answered, ...rest } = p;
+      return { ...rest, [key]: false };
+    },
+  };
+}
+
+type TourSeenKey =
+  | 'tourSeen'
+  | 'planTourSeen'
+  | 'facilitateTourSeen'
+  | 'drawTourSeen'
+  | 'formTourSeen'
+  | 'avatarTourSeen'
+  | 'illustrateTourSeen'
+  | 'elementToursSeen';
+
+// A presenter setting's row (docs/specs/012-collaboration/presentation-mode.md "Settings"): read and written through
+// lib/presentation-config, which keeps the whole config in one preference. The telemetry token is the one the
+// cog's change already sends, `Presentation-<field>`.
+type PresentingKey = Exclude<keyof PresentationConfig, 'autoAdvanceSeconds'>;
+function presentingToggle(
+  field: { [K in PresentingKey]: PresentationConfig[K] extends boolean ? K : never }[PresentingKey],
+  row: Pick<SettingsToggleRowSpec, 'section' | 'label' | 'description' | 'keywords' | 'alsoIn'>,
+): SettingsToggleRowSpec {
+  return {
+    kind: 'toggle',
+    key: `presentation-${field}`,
+    helpArticle: 'slideDeck',
+    ...row,
+    read: (p) => readPresentationConfig(p)[field],
+    write: (p, v) => withPresentationConfig(p, { [field]: v }),
+    event: { category: 'UI', on: `Presentation-${field}On`, off: `Presentation-${field}Off` },
+  };
+}
+function presentingChoice(
+  field: 'transition' | 'speed' | 'zoom',
+  row: Pick<SettingsChoiceRowSpec, 'section' | 'label' | 'description' | 'keywords' | 'options'>,
+): SettingsChoiceRowSpec {
+  return {
+    kind: 'choice',
+    key: `presentation-${field}`,
+    helpArticle: 'slideDeck',
+    ...row,
+    read: (p) => readPresentationConfig(p)[field],
+    write: (p, v) => withPresentationConfig(p, { [field]: v }),
+    event: { category: 'UI', changed: `Presentation-${field}` },
+  };
+}
+
 export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
   {
     id: 'editor',
@@ -358,15 +526,32 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
     rows: [
       {
         kind: 'toggle',
-        key: 'quickAddOnHover',
-        keywords: 'plus menu hover add shortcut',
-        label: 'Quick-Add on Hover',
+        key: 'alignmentGuides',
+        keywords: 'snap lines smart guides align',
+        section: 'Canvas',
+        illustration: 'alignmentGuides',
+        label: 'Alignment Guides',
         description:
-          "Opens an element's quick-add “+” menu when you hover it, instead of waiting for a click; moving away closes it again. The “+” buttons still only appear on the selected element either way.",
-        helpArticle: 'quickAddOnHover',
-        read: (p) => p.quickAddOnHover === true,
-        write: (p, v) => ({ ...p, quickAddOnHover: v }),
-        event: { category: 'UI', on: 'QuickAddHoverOn', off: 'QuickAddHoverOff' },
+          'Snap lines while you move or resize, so elements line up with their neighbours.',
+        helpArticle: 'alignmentGuides',
+        read: (p) => p.alignmentGuides !== false,
+        write: (p, v) => ({ ...p, alignmentGuides: v }),
+        event: { category: 'UI', on: 'AlignmentGuidesOn', off: 'AlignmentGuidesOff' },
+      },
+      {
+        kind: 'toggle',
+        key: 'autoRebindArrows',
+        keywords: 'connector reattach sticky arrows connections',
+        section: 'Canvas',
+        label: 'Auto-Attach Arrows',
+        description:
+          'After a move, an arrow that cuts through its shape reattaches to the side facing its other end.',
+        helpArticle: 'autoAttachArrows',
+        // On by default (docs/specs/007-editor/user-preferences.md); the editor gates the rebind on this
+        // same helper, so the switch and the behaviour cannot disagree.
+        read: autoRebindArrowsEnabled,
+        write: (p, v) => ({ ...p, autoRebindArrows: v }),
+        event: { category: 'UI', on: 'AutoRebindOn', off: 'AutoRebindOff' },
       },
       {
         // docs/specs/008-canvas/element-indicators.md: how an element shows its link, note,
@@ -375,9 +560,10 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         key: 'elementIndicatorStyle',
         keywords:
           'badges icons note action comment link markers indicators top corner footer metadata chip hide off',
+        section: 'Canvas',
         label: 'Element Indicators',
         description:
-          'How an element shows that it has a link, a note, an action or comments. Top puts quiet icons near its top (top-right on boxes, centred on round or pointed shapes); Footer puts a labelled row along its bottom edge; Off hides them. On an element too small for either, they sit in a small chip on its edge.',
+          'How an element shows it has a link, note, action or comments: quiet icons at its top, a labelled footer, or nothing.',
         options: [
           { id: 'top', label: 'Top' },
           { id: 'footer', label: 'Footer' },
@@ -389,38 +575,25 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
       },
       {
         kind: 'toggle',
-        key: 'alignmentGuides',
-        keywords: 'snap lines smart guides align',
-        illustration: 'alignmentGuides',
-        label: 'Alignment Guides',
+        key: 'quickAddOnHover',
+        keywords: 'plus menu hover add shortcut',
+        section: 'Mouse',
+        label: 'Quick-Add on Hover',
         description:
-          'Shows snap lines while you move or resize an element, so it lines up with its neighbours.',
-        helpArticle: 'alignmentGuides',
-        read: (p) => p.alignmentGuides !== false,
-        write: (p, v) => ({ ...p, alignmentGuides: v }),
-        event: { category: 'UI', on: 'AlignmentGuidesOn', off: 'AlignmentGuidesOff' },
-      },
-      {
-        kind: 'toggle',
-        key: 'autoRebindArrows',
-        keywords: 'connector reattach sticky arrows connections',
-        label: 'Auto-Attach Arrows',
-        description:
-          'When a move leaves an arrow running through a shape it connects, its end moves to the side facing the other end and keeps its corner, quarter or middle spot.',
-        helpArticle: 'autoAttachArrows',
-        // On by default (docs/specs/007-editor/user-preferences.md); the editor gates the rebind on this
-        // same helper, so the switch and the behaviour cannot disagree.
-        read: autoRebindArrowsEnabled,
-        write: (p, v) => ({ ...p, autoRebindArrows: v }),
-        event: { category: 'UI', on: 'AutoRebindOn', off: 'AutoRebindOff' },
+          "Opens the selected element's “+” menu as soon as you hover it, instead of on click.",
+        helpArticle: 'quickAddOnHover',
+        read: (p) => p.quickAddOnHover === true,
+        write: (p, v) => ({ ...p, quickAddOnHover: v }),
+        event: { category: 'UI', on: 'QuickAddHoverOn', off: 'QuickAddHoverOff' },
       },
       {
         kind: 'toggle',
         key: 'middleMousePan',
         keywords: 'scroll wheel drag pan navigate mouse',
+        section: 'Mouse',
         label: 'Middle-Mouse Pan',
         description:
-          'Hold the middle mouse button and drag to pan the canvas in any direction, from anywhere, over empty space or over elements, whatever tool is active. Turn off to leave the middle button to your browser.',
+          'Hold the middle button and drag to pan, whatever tool is active. Off leaves the button to your browser.',
         read: (p) => p.middleMousePan !== false,
         write: (p, v) => ({ ...p, middleMousePan: v }),
         event: { category: 'UI', on: 'MiddleMousePanOn', off: 'MiddleMousePanOff' },
@@ -434,7 +607,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         section: 'Power User',
         label: 'Power User Mode',
         description:
-          'Applies a set of recommended settings for people who know their way around: alignment guides and auto-attach arrows on, the welcome and Plan tours marked as seen, and AI suggested prompts off. Change any of them afterwards and the mode stays on. Switching it off puts back the settings you did not change.',
+          'Applies recommended settings for experienced users and hides the tours. Switching it off puts back whatever you did not change since.',
         helpArticle: 'powerUserMode',
         read: isPowerUserMode,
         write: (p, v) => setPowerUserMode(p, v).prefs,
@@ -447,7 +620,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         section: 'Power User',
         label: 'Minimal Chrome',
         description:
-          'Hides labels and hints you no longer need: palette captions, panel titles, the selection caption, status bar text and onboarding notices. Every control stays; its name shows when you hover or focus it.',
+          'Hides captions, panel titles and hints. Every control stays, and shows its name on hover.',
         helpArticle: 'powerUserMode',
         parent: 'powerUserMode',
         available: (ctx) => ctx.powerUserMode === true,
@@ -461,8 +634,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         keywords: 'power user preset recommended defaults restore',
         section: 'Power User',
         label: 'Set By Power User Mode',
-        description:
-          'What switching the mode on set. Change any of them in its own row; switching the mode off restores the ones you left alone.',
+        description: 'Change any of them in its own row.',
         parent: 'powerUserMode',
         available: (ctx) => ctx.powerUserMode === true,
       },
@@ -486,7 +658,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
           'draw mode drawing mode whiteboard dock toolbar tools pens top bottom position tablet ipad drawing',
         label: 'Dock Position',
         description:
-          "Where Draw mode's dock of pens, shapes and tools sits. Top keeps it where the palette strip sits; Bottom puts it closer to hand when drawing on a tablet. Only Draw mode has a dock, so Diagram mode is unchanged.",
+          'Where the dock of pens, shapes and tools sits. Bottom is closer to hand on a tablet.',
         helpArticle: 'drawMode',
         options: [
           { id: 'top', label: 'Top' },
@@ -499,20 +671,41 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
     ],
   },
   {
-    // Illustrate mode's own settings (docs/specs/007-editor/logo-pages.md "Construction guides").
+    // Illustrate mode's own settings (docs/specs/007-editor/logo-pages.md "Construction guides"):
+    // the master switch, then how strong and which guides, nested under it.
     id: 'illustrate',
     label: 'Illustrate',
     parent: 'editor',
     rows: [
       {
+        // docs/specs/007-editor/illustrate-pages.md "Contents": the sidebar's minimise and the
+        // popover's dock button write the same choice.
+        kind: 'choice',
+        key: 'contentsPlacement',
+        keywords:
+          'contents pages page list sidebar side bar left panel filmstrip slides navigator thumbnails minimise minimize maximise maximize dock button',
+        section: 'Pages',
+        label: 'Contents',
+        description:
+          'Where the list of pages sits on a computer: docked down the left, or tucked into its button. A phone always has the button.',
+        options: [
+          { id: 'sidebar', label: 'Sidebar' },
+          { id: 'button', label: 'Button' },
+        ],
+        read: readContentsPlacement,
+        write: (p, v) => withContentsPlacement(p, v as ContentsPlacement),
+        event: { category: 'UI', changed: 'ContentsPlacement' },
+      },
+      {
         kind: 'toggle',
         key: 'logoGuides',
         keywords: 'logo guides construction grid keylines safe area centre lines snap artboard',
+        section: 'Logo Pages',
         label: 'Logo Guides',
         description:
-          "Shows a logo page's construction guides: centre lines, keyline circles and square, the safe area and a grid. The keylines snap while they show. A page you switch them on or off for keeps its own choice.",
+          'Draws centre lines, keylines, the safe area and a grid over a logo page; the keylines snap. A page you set on its own keeps its choice.',
         helpArticle: 'logoPages',
-        alsoIn: "a logo page's panel",
+        alsoIn: "a logo page's Guides button",
         read: (p) => p.logoGuides !== false,
         write: (p, v) => ({ ...p, logoGuides: v }),
         event: { category: 'UI', on: 'LogoGuidesOn', off: 'LogoGuidesOff' },
@@ -521,10 +714,10 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         kind: 'choice',
         key: 'logoGuideStrength',
         keywords: 'logo guides strength opacity faint strong contrast',
+        section: 'Logo Pages',
+        parent: 'logoGuides',
         label: 'Logo Guide Strength',
-        description: "How strongly a logo page's construction guides show over the artwork.",
-        helpArticle: 'logoPages',
-        alsoIn: "a logo page's panel",
+        description: 'How strongly the guides show over the artwork.',
         options: [
           { id: 'faint', label: 'Faint' },
           { id: 'medium', label: 'Medium' },
@@ -534,31 +727,135 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         write: (p, v) => ({ ...p, logoGuideStrength: v as LogoGuideStrength }),
         event: { category: 'UI', changed: 'LogoGuideStrength' },
       },
-      // One row per guide (docs/specs/007-editor/logo-pages.md "Construction guides"); each event
-      // written out, so the telemetry dashboard reads its tokens.
-      logoGuidePartRow('centre', {
-        kind: 'toggle',
-        event: { category: 'UI', on: 'LogoGuideCentreLinesOn', off: 'LogoGuideCentreLinesOff' },
+      {
+        // One switch per guide (docs/specs/007-editor/logo-pages.md "Construction guides") as one
+        // grid; each event written out, so the telemetry dashboard reads its tokens.
+        kind: 'toggleGroup',
+        key: 'logoGuideParts',
+        keywords:
+          'logo guides centre lines diagonals safe area circles square grid construction keylines',
+        section: 'Logo Pages',
+        parent: 'logoGuides',
+        label: 'Guides Shown',
+        description: 'Which guides draw while they are on.',
+        toggles: [
+          logoGuidePart('centre', {
+            category: 'UI',
+            on: 'LogoGuideCentreLinesOn',
+            off: 'LogoGuideCentreLinesOff',
+          }),
+          logoGuidePart('diagonals', {
+            category: 'UI',
+            on: 'LogoGuideDiagonalsOn',
+            off: 'LogoGuideDiagonalsOff',
+          }),
+          logoGuidePart('safe', {
+            category: 'UI',
+            on: 'LogoGuideSafeAreaOn',
+            off: 'LogoGuideSafeAreaOff',
+          }),
+          logoGuidePart('circles', {
+            category: 'UI',
+            on: 'LogoGuideCirclesOn',
+            off: 'LogoGuideCirclesOff',
+          }),
+          logoGuidePart('square', {
+            category: 'UI',
+            on: 'LogoGuideSquareOn',
+            off: 'LogoGuideSquareOff',
+          }),
+          logoGuidePart('grid', { category: 'UI', on: 'LogoGuideGridOn', off: 'LogoGuideGridOff' }),
+        ],
+      },
+    ],
+  },
+  {
+    // The presenter settings (docs/specs/012-collaboration/presentation-mode.md "Settings"): how slides change, how
+    // the deck plays and what shows while presenting. They follow the account; the cog in a running presentation
+    // keeps only Transition, Speed and the two clocks, the things changed in front of the room.
+    id: 'presenting',
+    label: 'Presenting',
+    parent: 'editor',
+    rows: [
+      presentingChoice('transition', {
+        section: 'Slides',
+        label: 'Transition',
+        description: 'How one slide gives way to the next.',
+        keywords: 'slide transition animation fade cut move present presentation',
+        options: SLIDE_TRANSITIONS.map((t) => ({ id: t.id, label: t.label })),
       }),
-      logoGuidePartRow('diagonals', {
-        kind: 'toggle',
-        event: { category: 'UI', on: 'LogoGuideDiagonalsOn', off: 'LogoGuideDiagonalsOff' },
+      presentingChoice('speed', {
+        section: 'Slides',
+        label: 'Speed',
+        description: 'How long a transition takes.',
+        keywords: 'transition speed quick slow duration present presentation',
+        options: SLIDE_SPEEDS.map((t) => ({ id: t.id, label: t.label })),
       }),
-      logoGuidePartRow('safe', {
-        kind: 'toggle',
-        event: { category: 'UI', on: 'LogoGuideSafeAreaOn', off: 'LogoGuideSafeAreaOff' },
+      presentingChoice('zoom', {
+        section: 'Slides',
+        label: 'Slide Size',
+        description:
+          'Fill Screen blows a small slide up to fill the screen; Actual Size never zooms past 100%.',
+        keywords: 'zoom fill screen actual size scale present presentation',
+        options: SLIDE_ZOOMS.map((t) => ({ id: t.id, label: t.label })),
       }),
-      logoGuidePartRow('circles', {
-        kind: 'toggle',
-        event: { category: 'UI', on: 'LogoGuideCirclesOn', off: 'LogoGuideCirclesOff' },
+      {
+        kind: 'choice',
+        key: 'presentationAutoAdvance',
+        section: 'Playback',
+        label: 'Auto-Advance',
+        description:
+          'Move to the next slide on its own after this long; Off moves only when you say.',
+        keywords: 'auto advance timer kiosk loop slideshow seconds present presentation',
+        helpArticle: 'slideDeck',
+        options: AUTO_ADVANCE_CHOICES.map((c) => ({ id: String(c.seconds), label: c.label })),
+        read: (p) => String(readPresentationConfig(p).autoAdvanceSeconds),
+        write: (p, v) => withPresentationConfig(p, { autoAdvanceSeconds: Number(v) }),
+        event: { category: 'UI', changed: 'Presentation-autoAdvanceSeconds' },
+      },
+      presentingToggle('advanceOnClick', {
+        section: 'Playback',
+        label: 'Click to Advance',
+        description: "Off if you'd rather only the keys and buttons move the deck.",
+        keywords: 'click advance next mouse present presentation',
       }),
-      logoGuidePartRow('square', {
-        kind: 'toggle',
-        event: { category: 'UI', on: 'LogoGuideSquareOn', off: 'LogoGuideSquareOff' },
+      presentingToggle('loop', {
+        section: 'Playback',
+        label: 'Loop the Deck',
+        description: 'After the last slide, start again rather than ending.',
+        keywords: 'loop repeat kiosk restart present presentation',
       }),
-      logoGuidePartRow('grid', {
-        kind: 'toggle',
-        event: { category: 'UI', on: 'LogoGuideGridOn', off: 'LogoGuideGridOff' },
+      presentingToggle('showPosition', {
+        section: 'While Presenting',
+        label: 'Show Position',
+        description: "The 7 / 23 counter and the slide's name.",
+        keywords: 'position counter slide number name hud present presentation',
+      }),
+      presentingToggle('keepControls', {
+        section: 'While Presenting',
+        label: 'Keep Controls Visible',
+        description: 'Stop the controls fading out when the pointer rests.',
+        keywords: 'controls hud fade visible present presentation',
+      }),
+      presentingToggle('hidePointer', {
+        section: 'While Presenting',
+        label: 'Hide the Pointer',
+        description: 'A still cursor left on a projector is a distraction.',
+        keywords: 'cursor pointer mouse hide projector present presentation',
+      }),
+      presentingToggle('showElapsed', {
+        section: 'While Presenting',
+        label: 'Show Elapsed Time',
+        description: 'A clock counting from the moment you started.',
+        keywords: 'clock timer elapsed time pacing present presentation',
+        alsoIn: "a presentation's cog",
+      }),
+      presentingToggle('showBudget', {
+        section: 'While Presenting',
+        label: 'Show Slide Budget',
+        description: 'Time on this slide against the minutes it was given.',
+        keywords: 'budget minutes pacing timer slide time present presentation',
+        alsoIn: "a presentation's cog",
       }),
     ],
   },
@@ -572,9 +869,27 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         keywords: 'dark mode light theme colour color night scheme',
         label: 'Theme',
         description:
-          "Sets whether the editor chrome is light or dark. System follows your device. A tab's own canvas theme is a separate setting, except for Default, which follows this one. Stored on this device only, so it does not sync with your other settings.",
+          'Light or dark editor chrome, or System to follow your device. Saved on this device only.',
         alsoIn: 'the editor’s footer bar',
         illustration: 'appearance',
+      },
+      {
+        // docs/specs/007-editor/live-app.md "Named on a wide desktop": the names beside the bottom
+        // buttons' icons, the footer bar's and the bottom-right cluster's. A phone never names them,
+        // so the row is inert there.
+        kind: 'toggle',
+        key: 'dockButtonNames',
+        keywords:
+          'button labels names text captions bottom bar corner buttons zoom layers style tidy up icons only',
+        section: 'Interface',
+        label: 'Button Labels',
+        description:
+          'Names the buttons along the bottom (Search, Settings, the theme, Layers, Style) beside their icons.',
+        desktopOnly:
+          'Phones always show these buttons as icons. Your choice still applies on a larger screen.',
+        read: (p) => p.dockButtonNames !== false,
+        write: (p, v) => ({ ...p, dockButtonNames: v }),
+        event: { category: 'UI', on: 'DockButtonNamesOn', off: 'DockButtonNamesOff' },
       },
       // UI scale (docs/specs/007-editor/ui-scale.md): the working chrome only,
       // never the canvas, dialogs or menus. The master sets every part; each
@@ -584,9 +899,10 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         key: 'uiScale',
         keywords:
           'zoom size bigger smaller larger text font scale magnify chrome interface ui accessibility',
+        section: 'Interface',
         label: 'UI Scale',
         description:
-          'Makes the panels, the toolbar and the buttons in the bottom-right corner bigger or smaller. The canvas, dialogs and menus stay as they are. Sets all three; adjust one on its own below.',
+          'Sizes the panels, the toolbar and the corner buttons. The canvas, dialogs and menus stay as they are.',
         read: (p: UserPreferences) => resolveUiScale(p),
         write: (p: UserPreferences, v: number) => withUiScalePatch(p, uiScalePatch(v)),
         preview: (v) => setUiScalePreview(v === null ? null : uiScalePatch(v)),
@@ -594,21 +910,20 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
       },
       uiScalePartRow('panels', {
         label: 'Panel Scale',
-        keywords: 'panels explorer palette layers popover size bigger smaller zoom',
-        description: 'Every panel, docked or opened from a button, and the Quick Style panel.',
+        keywords: 'panels explorer palette layers popover size bigger smaller zoom panel scale',
+        description: 'Every panel, docked or opened from a button.',
         changed: 'UiScalePanels',
       }),
       uiScalePartRow('toolbar', {
         label: 'Toolbar Scale',
-        keywords: 'toolbar strip top bar menu button size bigger smaller zoom',
+        keywords: 'toolbar strip top bar menu button size bigger smaller zoom toolbar scale',
         description: 'The toolbar strip and its menu button.',
         changed: 'UiScaleToolbar',
       }),
       uiScalePartRow('cornerButtons', {
         label: 'Corner Buttons Scale',
-        keywords: 'undo redo zoom controls layers theme corner buttons size bigger smaller',
-        description:
-          'The buttons in the bottom-right corner: Undo and Redo, Layers, theme and zoom.',
+        keywords: 'undo redo zoom controls layers theme corner buttons size bigger smaller scale',
+        description: 'Undo and Redo, Layers, Style and zoom.',
         changed: 'UiScaleCornerButtons',
       }),
     ],
@@ -627,7 +942,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         keywords: 'hotkeys keybindings keys accelerators cmd ctrl',
         label: 'Keyboard Shortcuts',
         description:
-          'Binds the editor’s keyboard shortcuts, undo, delete, Escape to cancel a mode, and the rest. Turn off if you dictate into this browser, or share it with something that needs the keys. Stored on this device only, so it does not sync with your other settings.',
+          'Turn off if you dictate into this browser or something else needs the keys. Saved on this device only.',
         helpArticle: 'keyboardShortcuts',
       },
       {
@@ -635,7 +950,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         key: 'shortcutList',
         keywords: 'hotkeys keybindings list reference cheat sheet keys cmd ctrl',
         label: 'All Shortcuts',
-        description: '⌘ = Cmd on Mac, Ctrl on Windows / Linux.',
+        description: '⌘ is Cmd on a Mac and Ctrl on Windows and Linux.',
       },
     ],
   },
@@ -649,7 +964,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         keywords: 'transparency translucent fade see through alpha',
         label: 'Panel Opacity',
         description:
-          'Fades every panel and the toolbar so the canvas shows through behind it; a panel snaps back to fully opaque while hovered or focused. Buttons stay opaque.',
+          'Lets the canvas show through panels and the toolbar. A panel turns solid while you use it.',
         helpArticle: 'panelOpacity',
         min: 0.3,
         max: 1,
@@ -668,9 +983,9 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
     rows: [
       panelSwitch('layersPanelEnabled', {
         label: 'Enable Layers Panel',
-        keywords: 'layers panel hide show turn off remove move to layer',
+        keywords: 'layers panel enable hide show turn off remove move to layer',
         description:
-          'Shows the Layers panel, its button in the bottom-right corner and the “Move to layer” choices in the element menu. Turned off, layers keep working: their order, visibility and lock still apply.',
+          'The panel, its corner button and “Move to layer”. Off, layers still keep their order, visibility and lock.',
         event: { category: 'UI', on: 'LayersPanelOn', off: 'LayersPanelOff' },
       }),
       {
@@ -680,8 +995,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         keywords: 'thumbnail preview layer picture',
         illustration: 'layerThumbnails',
         label: 'Layer Thumbnails',
-        description:
-          'Draws a small preview of each layer’s contents beside its row in the Layers panel.',
+        description: 'A small preview of what each layer holds.',
         read: (p) => p.layersShowPreview !== false,
         write: (p, v) => ({ ...p, layersShowPreview: v }),
         event: { category: 'UI', on: 'LayerPreviewOn', off: 'LayerPreviewOff' },
@@ -690,10 +1004,9 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         kind: 'toggle',
         key: 'layersShowCount',
         parent: 'layersPanelEnabled',
-        keywords: 'number badge count layer',
+        keywords: 'number badge count layer element counts',
         label: 'Layer Element Counts',
-        description:
-          'Shows how many elements each layer holds, beside its name in the Layers panel.',
+        description: 'How many elements each layer holds, beside its name.',
         read: (p) => p.layersShowCount !== false,
         write: (p, v) => ({ ...p, layersShowCount: v }),
         event: { category: 'UI', on: 'LayerCountOn', off: 'LayerCountOff' },
@@ -702,10 +1015,9 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         kind: 'toggle',
         key: 'layerHoverPreview',
         parent: 'layersPanelEnabled',
-        keywords: 'highlight hover layer preview',
+        keywords: 'highlight hover layer preview solo',
         label: 'Preview Layer on Hover',
-        description:
-          'Shows only that layer on the canvas while you rest on its row, so you can see what a layer holds without selecting it.',
+        description: 'Shows only that layer on the canvas while you rest on its row.',
         read: (p) => p.layerHoverPreview !== false,
         write: (p, v) => ({ ...p, layerHoverPreview: v }),
         event: { category: 'UI', on: 'LayerHoverPreviewOn', off: 'LayerHoverPreviewOff' },
@@ -723,12 +1035,12 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         // carry over the rename from "Show Map".
         kind: 'toggle',
         key: 'showMinimap',
-        keywords: 'minimap overview thumbnail navigator birds eye hide show turn off',
+        keywords: 'minimap overview thumbnail navigator birds eye hide show turn off enable',
         illustration: 'showMinimap',
         label: 'Enable Map',
         desktopOnly: MINIMAP_DESKTOP_ONLY,
         description:
-          'Shows the Map, a small overview of the whole canvas in the bottom-left corner, once a tab has a few elements. Tap or drag it to jump around; scroll on it to zoom. Desktop only.',
+          'An overview of the whole canvas in the bottom-left corner, once a tab has a few elements. Drag it to move around.',
         read: (p) => p.showMinimap !== false,
         write: (p, v) => ({ ...p, showMinimap: v }),
         event: { category: 'UI', on: 'MinimapOn', off: 'MinimapOff' },
@@ -741,8 +1053,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         illustration: 'mapDimOutside',
         label: 'Dim Outside the View',
         desktopOnly: MINIMAP_DESKTOP_ONLY,
-        description:
-          'Shades the part of the Map that falls outside what you are currently looking at, so the viewport rectangle stands out.',
+        description: 'Shades what is off screen, so the part you are looking at stands out.',
         read: (p) => p.mapDimOutside !== false,
         write: (p, v) => ({ ...p, mapDimOutside: v }),
         event: { category: 'UI', on: 'MapDimOn', off: 'MapDimOff' },
@@ -754,7 +1065,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         keywords: 'minimap height short medium tall',
         label: 'Map Size',
         desktopOnly: MINIMAP_DESKTOP_ONLY,
-        description: 'How much of the bottom-left corner the Map takes up.',
+        description: 'How much of the corner the Map takes up.',
         options: [
           { id: 'short', label: 'Short' },
           { id: 'medium', label: 'Medium' },
@@ -773,9 +1084,9 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
     rows: [
       panelSwitch('collaboratePanelEnabled', {
         label: 'Enable Collaborate Panel',
-        keywords: 'collaborate comments threads actions tasks panel hide show turn off',
+        keywords: 'collaborate comments threads actions tasks panel enable hide show turn off',
         description:
-          'Shows the Collaborate panel, a list of the tab’s comment threads and actions, and its button in the bottom-right corner. It only appears while the tab has a comment or an action. Turned off, comments and actions still work from the elements themselves.',
+          "Lists the tab's comments and actions, behind a corner button that shows once there are some. Off, they still work on the elements.",
         event: { category: 'UI', on: 'CollaboratePanelOn', off: 'CollaboratePanelOff' },
       }),
     ],
@@ -787,9 +1098,10 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
     rows: [
       panelSwitch('quickStylePanelEnabled', {
         label: 'Enable Quick Style Panel',
-        keywords: 'quick style colour color stroke fill width panel selection hide show turn off',
+        keywords:
+          'quick style colour color stroke fill width panel selection enable hide show turn off',
         description:
-          'Shows the Quick Style panel beside a selected shape or arrow, with its most-used colours, widths and alignments. Turned off, every style is still in the element’s right-click menu.',
+          "The most-used colours, widths and alignments beside a selected shape or arrow. Off, they are all in the element's menu.",
         event: { category: 'UI', on: 'QuickStylePanelOn', off: 'QuickStylePanelOff' },
       }),
     ],
@@ -804,43 +1116,261 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         keywords: 'animation transitions accessibility motion sickness vestibular',
         label: 'Reduce Motion',
         description:
-          "Turns off the editor's decorative animations and transitions (panels, popovers, the snap guides, etc.) so the interface appears instantly instead of sliding or popping. Your device's own 'reduce motion' setting is always respected; this lets you force it on here too, and it syncs across your devices.",
+          "Turns off the editor's animations and transitions on every device you use. Your device's own setting is always respected too.",
         read: (p) => p.reduceMotion === true,
         write: (p, v) => ({ ...p, reduceMotion: v }),
         event: { category: 'UI', on: 'ReduceMotionOn', off: 'ReduceMotionOff' },
       },
       {
-        kind: 'toggle',
-        key: 'tourSeen',
-        keywords: 'walkthrough onboarding intro show me around getting started',
-        label: 'Show Welcome Tour',
-        description:
-          'Offers the Show me around tour the next time you open a document. It switches itself off once you have taken or dismissed the tour, so it only ever offers itself once. Turn it back on and close Settings to run the tour again straight away.',
-        helpArticle: 'welcomeTour',
-        // INVERTED against the stored preference: the row asks "show me the
-        // tour?", `tourSeen` records "already seen". Switch on === not seen.
-        read: (p) => p.tourSeen !== true,
-        write: (p, v) => ({ ...p, tourSeen: !v }),
-        // The tokens still track the PREFERENCE, not the switch, so the
-        // dashboard series keeps meaning what it has always meant: turning
-        // the row ON sets tourSeen=false, which is 'TourSeenOff'.
+        kind: 'link',
+        key: 'uiScaleLink',
+        keywords: 'zoom size bigger larger text font scale magnify low vision',
+        label: 'UI Scale',
+        cta: 'Open Appearance',
+        target: 'appearance',
+        description: 'Make the panels, toolbar and corner buttons bigger, in Appearance.',
+      },
+    ],
+  },
+  {
+    // The guided tours (docs/specs/007-editor/user-preferences.md "Tours"), one switch each. A tour
+    // offers itself once, in its own mode, and its switch turns itself off once taken or dismissed.
+    id: 'tours',
+    label: 'Tours',
+    collapsedSections: [ELEMENT_TOURS_SECTION],
+    sectionNotes: {
+      [ELEMENT_TOURS_SECTION]: {
+        note: 'The first time you select a complex element, a small Tour toolbar beside it offers to show how it works. Switch one back on to be offered it again.',
+      },
+      'Offer Again': {
+        note: 'Each tour offers itself once. Switch one back on and close Settings to take it again: it starts straight away if you are in its mode, or the next time you are.',
+      },
+    },
+    rows: [
+      tourSwitch('tourSeen', {
+        // The Diagram tour (docs/specs/007-editor/editor-tour.md; the welcome tour until October 2026).
+        label: 'Diagram Tour',
         event: { category: 'UI', on: 'TourSeenOff', off: 'TourSeenOn' },
-      },
-      {
-        kind: 'toggle',
-        key: 'planTourSeen',
         keywords:
-          'walkthrough onboarding intro show me around plan board kanban cards getting started',
-        label: 'Show Plan Tour',
-        description:
-          'Offers a short tour of Plan mode the next time you work in Plan. It switches itself off once you have taken or dismissed the tour. Turn it back on and close Settings to run it again: straight away if you are in Plan, otherwise the next time you are.',
-        helpArticle: 'planTour',
-        // Inverted like Show Welcome Tour: the row asks "show me the tour?", `planTourSeen` records
-        // "already seen" (docs/specs/026-plan/plan-tour.md).
-        read: (p) => p.planTourSeen !== true,
-        write: (p, v) => ({ ...p, planTourSeen: !v }),
+          'tour walkthrough onboarding tutorial intro welcome getting started diagram shapes arrows palette replay',
+        description: 'On a Diagram tab: the palette, selecting, the element menu and tabs.',
+        helpArticle: 'diagramTour',
+      }),
+      tourTracksSwitch('planTourSeen', 'planTourTracks', PLAN_TOUR_TRACKS, planTourOwed, {
+        label: 'Plan Tour',
         event: { category: 'UI', on: 'PlanTourSeenOff', off: 'PlanTourSeenOn' },
-      },
+        keywords:
+          'tour walkthrough onboarding tutorial plan board kanban cards sheet spreadsheet replay',
+        description: 'The first time you work on a board, and on a sheet, in Plan.',
+        helpArticle: 'planTour',
+      }),
+      tourSwitch('facilitateTourSeen', {
+        label: 'Facilitate Tour',
+        event: { category: 'UI', on: 'FacilitateTourSeenOff', off: 'FacilitateTourSeenOn' },
+        keywords: 'tour walkthrough onboarding tutorial facilitate session retro workshop replay',
+        description: 'The first time you work in Facilitate.',
+        helpArticle: 'facilitateTour',
+      }),
+      tourSwitch('drawTourSeen', {
+        label: 'Draw Tour',
+        event: { category: 'UI', on: 'DrawTourSeenOff', off: 'DrawTourSeenOn' },
+        keywords: 'tour walkthrough onboarding tutorial draw whiteboard pen sketch replay',
+        description: 'The first time you work in Draw.',
+        helpArticle: 'drawTour',
+      }),
+      tourSwitch('formTourSeen', {
+        label: 'Forms Tour',
+        event: { category: 'UI', on: 'FormTourSeenOff', off: 'FormTourSeenOn' },
+        keywords: 'tour walkthrough onboarding tutorial form survey questions responses replay',
+        description: 'The first time you open a Form tab.',
+        helpArticle: 'planForms',
+      }),
+      tourSwitch('avatarTourSeen', {
+        label: 'Avatar Tour',
+        event: { category: 'UI', on: 'AvatarTourSeenOff', off: 'AvatarTourSeenOn' },
+        keywords:
+          'tour walkthrough onboarding tutorial avatar character walk speech message push replay',
+        description: 'The first time you walk as an avatar.',
+        helpArticle: 'avatarTour',
+      }),
+      tourTracksSwitch(
+        'illustrateTourSeen',
+        'illustrateTourKinds',
+        ILLUSTRATE_TOUR_KINDS,
+        illustrateTourOwed,
+        {
+          label: 'Illustrate Tour',
+          event: { category: 'UI', on: 'IllustrateTourSeenOff', off: 'IllustrateTourSeenOn' },
+          keywords:
+            'tour walkthrough onboarding tutorial illustrate pages slides infographic article logo present replay',
+          description:
+            'The first time you work on each kind of page: slides, infographics, articles and logos.',
+          helpArticle: 'illustrateTour',
+        },
+      ),
+      // Element tours (docs/specs/007-editor/element-tours.md "Settings"): their own closed section, one switch for
+      // them all over one per toured kind.
+      tourTracksSwitch(
+        'elementToursSeen',
+        'elementTourKinds',
+        ELEMENT_TOUR_KINDS,
+        (p) => ELEMENT_TOUR_KINDS.some((k) => !elementTourSeen(p, k)),
+        {
+          label: 'Element Tours',
+          event: { category: 'UI', on: 'ElementToursSeenOff', off: 'ElementToursSeenOn' },
+          keywords: 'tour walkthrough tutorial element sankey how to use learn replay',
+          description: 'Every element tour at once.',
+        },
+        ELEMENT_TOURS_SECTION,
+      ),
+      elementTourSwitch('sankey', {
+        label: 'Sankey Diagram Tour',
+        event: { category: 'UI', on: 'SankeyTourSeenOff', off: 'SankeyTourSeenOn' },
+        keywords: 'tour walkthrough tutorial sankey flows bands nodes leftover replay',
+        description: 'The first time you select a Sankey diagram.',
+        helpArticle: 'sankeyDiagram',
+      }),
+      elementTourSwitch('layer-stack', {
+        label: 'Layer Stack Tour',
+        event: { category: 'UI', on: 'LayerStackTourSeenOff', off: 'LayerStackTourSeenOn' },
+        keywords: 'tour walkthrough tutorial layer stack layers bands concept rows replay',
+        description: 'The first time you select a layer stack.',
+        helpArticle: 'conceptGraphics',
+      }),
+      elementTourSwitch('pyramid', {
+        label: 'Pyramid Tour',
+        event: { category: 'UI', on: 'PyramidTourSeenOff', off: 'PyramidTourSeenOn' },
+        keywords: 'tour walkthrough tutorial pyramid tiers triangle inverted concept rows replay',
+        description: 'The first time you select a pyramid.',
+        helpArticle: 'conceptGraphics',
+      }),
+      elementTourSwitch('funnel', {
+        label: 'Funnel Tour',
+        event: { category: 'UI', on: 'FunnelTourSeenOff', off: 'FunnelTourSeenOn' },
+        keywords:
+          'tour walkthrough tutorial funnel conversion stages bands values concept rows replay',
+        description: 'The first time you select a funnel.',
+        helpArticle: 'conceptGraphics',
+      }),
+      elementTourSwitch('cycle', {
+        label: 'Cycle Tour',
+        event: { category: 'UI', on: 'CycleTourSeenOff', off: 'CycleTourSeenOn' },
+        keywords:
+          'tour walkthrough tutorial cycle loop ring flywheel pdca steps clockwise flow concept replay',
+        description: 'The first time you select a cycle.',
+        helpArticle: 'conceptGraphics',
+      }),
+      elementTourSwitch('hub', {
+        label: 'Hub and Spoke Tour',
+        event: { category: 'UI', on: 'HubTourSeenOff', off: 'HubTourSeenOn' },
+        keywords: 'tour walkthrough tutorial hub spoke satellites ecosystem centre concept replay',
+        description: 'The first time you select a hub and spoke.',
+        helpArticle: 'conceptGraphics',
+      }),
+      elementTourSwitch('onion', {
+        label: 'Onion Tour',
+        event: { category: 'UI', on: 'OnionTourSeenOff', off: 'OnionTourSeenOn' },
+        keywords:
+          'tour walkthrough tutorial onion rings concentric core layers architecture concept replay',
+        description: 'The first time you select an onion.',
+        helpArticle: 'conceptGraphics',
+      }),
+      elementTourSwitch('chevrons', {
+        label: 'Chevrons Tour',
+        event: { category: 'UI', on: 'ChevronsTourSeenOff', off: 'ChevronsTourSeenOn' },
+        keywords:
+          'tour walkthrough tutorial chevrons chevron process stages pipeline value chain stage bar concept replay',
+        description: 'The first time you select a chevron process.',
+        helpArticle: 'conceptGraphics',
+      }),
+      elementTourSwitch('mind-node', {
+        label: 'Mind Map Tour',
+        event: { category: 'UI', on: 'MindMapTourSeenOff', off: 'MindMapTourSeenOn' },
+        keywords:
+          'tour walkthrough tutorial mind map node tab enter child sibling branch tidy outline replay',
+        description: 'The first time you select a mind map node.',
+        helpArticle: 'mindMaps',
+      }),
+      elementTourSwitch('flowchart', {
+        label: 'Flowchart Tour',
+        event: { category: 'UI', on: 'FlowchartTourSeenOff', off: 'FlowchartTourSeenOn' },
+        keywords:
+          'tour walkthrough tutorial flowchart step tab enter branch decision step type lane swimlane direction replay',
+        description: 'The first time you select a flowchart step.',
+        helpArticle: 'flowcharts',
+      }),
+      elementTourSwitch('org-chart', {
+        label: 'Org Chart Tour',
+        event: { category: 'UI', on: 'OrgChartTourSeenOff', off: 'OrgChartTourSeenOn' },
+        keywords:
+          'tour walkthrough tutorial org chart organisation organization person role initials report peer team replay',
+        description: 'The first time you select a person in an org chart.',
+        helpArticle: 'orgCharts',
+      }),
+      elementTourSwitch('sequence', {
+        label: 'Sequence Tour',
+        event: { category: 'UI', on: 'SequenceTourSeenOff', off: 'SequenceTourSeenOn' },
+        keywords:
+          'tour walkthrough tutorial sequence diagram participants messages call reply async lifeline numbered uml replay',
+        description: 'The first time you select a sequence diagram.',
+        helpArticle: 'sequenceDiagram',
+      }),
+      elementTourSwitch('chart', {
+        label: 'Chart Tour',
+        event: { category: 'UI', on: 'ChartTourSeenOff', off: 'ChartTourSeenOn' },
+        keywords: 'chart pie bar column line area scatter doughnut data graph tour',
+        description: 'The first time you select a chart.',
+        helpArticle: 'dataElements',
+      }),
+      elementTourSwitch('stack', {
+        label: 'Stack Tour',
+        event: { category: 'UI', on: 'StackTourSeenOff', off: 'StackTourSeenOn' },
+        keywords: 'stack row column grid layout container reflow tour',
+        description: 'The first time you select a stack.',
+        helpArticle: 'stacks',
+      }),
+      elementTourSwitch('entity', {
+        label: 'Entity Tour',
+        event: { category: 'UI', on: 'EntityTourSeenOff', off: 'EntityTourSeenOn' },
+        keywords: 'entity uml class er table fields record tour',
+        description: 'The first time you select an entity.',
+        helpArticle: 'entities',
+      }),
+      elementTourSwitch('tab-window', {
+        label: 'Tab Window Tour',
+        event: { category: 'UI', on: 'TabWindowTourSeenOff', off: 'TabWindowTourSeenOn' },
+        keywords: 'tab window live slide embed another tab tour',
+        description: 'The first time you select a tab window.',
+        helpArticle: 'tabWindows',
+      }),
+      elementTourSwitch('lane', {
+        label: 'Lane Tour',
+        event: { category: 'UI', on: 'LaneTourSeenOff', off: 'LaneTourSeenOn' },
+        keywords: 'lane swimlane band gutter seam column tour',
+        description: 'The first time you select a lane.',
+        helpArticle: 'lanes',
+      }),
+      elementTourSwitch('boundary', {
+        label: 'Boundary Tour',
+        event: { category: 'UI', on: 'BoundaryTourSeenOff', off: 'BoundaryTourSeenOn' },
+        keywords: 'boundary zone region vpc cluster c4 container tour',
+        description: 'The first time you select a boundary.',
+        helpArticle: 'boundaries',
+      }),
+      elementTourSwitch('diagram-key', {
+        label: 'Diagram Key Tour',
+        event: { category: 'UI', on: 'DiagramKeyTourSeenOff', off: 'DiagramKeyTourSeenOn' },
+        keywords: 'diagram key legend line styles tag colours meanings tour',
+        description: 'The first time you select a diagram key.',
+        helpArticle: 'diagramKeys',
+      }),
+      elementTourSwitch('portal', {
+        label: 'Portal Tour',
+        event: { category: 'UI', on: 'PortalTourSeenOff', off: 'PortalTourSeenOn' },
+        keywords: 'portal link travel teleport avatar shortcut tour',
+        description: 'The first time you select a portal.',
+        helpArticle: 'portals',
+      }),
     ],
   },
   {
@@ -855,7 +1385,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         section: 'Assistant',
         label: 'AI Assistant',
         description:
-          'Shows an AI panel in the editor with two modes: Ask questions about the active tab, and Clean to tidy up labels, sizes, and styles. Off by default.',
+          'An AI panel to Ask about the active tab, or Clean up its labels, sizes and styles. Off by default.',
         helpArticle: 'aiTools',
         read: (p) => p.aiAssistanceEnabled === true,
         write: (p, v) => ({ ...p, aiAssistanceEnabled: v }),
@@ -866,8 +1396,9 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         key: 'aiSuggestedPrompts',
         keywords: 'starter questions prompts suggestions ai',
         section: 'Assistant',
+        parent: 'aiAssistanceEnabled',
         label: 'Suggested Prompts',
-        description: 'Shows a row of one-click starter prompts under the AI panel’s mode buttons.',
+        description: 'One-click starter prompts under the panel’s mode buttons.',
         read: (p) => p.aiSuggestedPrompts !== false,
         write: (p, v) => ({ ...p, aiSuggestedPrompts: v }),
         event: { category: 'AI', on: 'AiSuggestedPromptsOn', off: 'AiSuggestedPromptsOff' },
@@ -880,8 +1411,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         label: 'API Tokens',
         cta: 'Manage API Tokens',
         target: 'tokens',
-        description:
-          'Tokens let your own scripts, and AI tools connected over MCP, call the livediagram API as you. They have their own category in Settings.',
+        description: 'Let your scripts, and AI tools connected over MCP, use livediagram as you.',
         available: (ctx) => ctx.authEnabled === true,
       },
     ],
@@ -889,29 +1419,24 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
   {
     id: 'documents',
     label: 'Documents',
-    rows: [
-      {
-        kind: 'skipLocationStep',
-        key: 'skipLocationStep',
-        section: 'Where New Documents Go',
-        label: 'Skip the Location Step',
-        keywords:
-          'skip location step new document wizard always save every new document same place folder ask where',
-        description:
-          'Saves every new document in one place without asking. Turn it on from the Location step of the New Document wizard.',
+    sectionNotes: {
+      'Default Folders': {
+        note: 'Where each kind of new document is saved when you create it without choosing a place.',
         helpArticle: 'defaultFolders',
       },
+    },
+    rows: [
       // One row per default folder entry, in list order: guests have defaults too.
       ...DEFAULT_KEY_ENTRIES.map((entry): SettingsPlacementDefaultRowSpec => ({
         kind: 'placementDefault',
         key: `placementDefault-${entry.key}`,
         placementKey: entry.key,
-        section: 'Where New Documents Go',
+        section: 'Default Folders',
+        // Settings labels are title case ("Kanban Boards"); the entries' own labels are sentence case.
         label: titleCase(entry.label),
         keywords:
           'default folder where new documents go save location place file automatically always save placement',
         description: `Where new ${entry.noun} go when you create one without choosing a place.`,
-        helpArticle: 'defaultFolders',
       })),
     ],
   },
@@ -927,7 +1452,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         keywords:
           'account profile identity name email signed in sign in avatar picture photo google joined',
         description:
-          'Your name, email and picture come from your account and are changed there, not here. Signing in keeps your documents across browsers and devices; without it they belong to this browser alone.',
+          'Your name, email and picture come from your account. Signed out, your documents belong to this browser.',
         helpArticle: 'guestVsAccount',
       },
       {
@@ -937,7 +1462,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         section: 'You',
         label: 'Show My Profile Picture',
         description:
-          'Signed-in collaborators see your picture on presence, cursors, comments and teams. People who open your share links without signing in always see your initials. You always see it yourself.',
+          'To signed-in collaborators, on presence, cursors and comments. Others always see your initials.',
         available: (ctx) => ctx.signedIn,
         read: (p) => showProfilePictureEnabled(p),
         write: (p, v) => ({ ...p, showProfilePicture: v }),
@@ -950,8 +1475,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         label: 'Trash',
         keywords:
           'trash bin recycle deleted undo undelete restore recover get back document diagram permanently empty',
-        description:
-          'Deleted documents wait here for 30 days before they are removed for good. Restore one to put it back where it was.',
+        description: 'Deleted documents wait here for 30 days, ready to restore.',
         helpArticle: 'trash',
       },
       // One row per provider, from the Cloud Sync catalogue.
@@ -973,7 +1497,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         label: 'Delete Account',
         keywords: 'delete account remove wipe erase close cancel data gdpr',
         description:
-          'Removes your documents, folders, and the account itself, everywhere. There is no undo and no recovery, so you are asked to type your email to confirm.',
+          'Removes your documents, folders, and the account itself, everywhere. There is no undo.',
       },
     ],
   },
@@ -986,17 +1510,15 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         kind: 'toggle',
         key: 'notificationsEnabled',
         keywords: 'toast popup confirmation message alert',
-        section: 'In the editor',
+        section: 'In the Editor',
         label: 'In-Editor Notifications',
         description:
-          "Shows a brief confirmation when you do something whose result isn't on screen, like moving a document to a folder or linking a tab. Errors are always shown so a failure is never hidden. Turn off for a quieter editor.",
+          'A brief note when something happens off screen, like moving a document to a folder. Errors always show.',
         read: (p) => p.notificationsEnabled !== false,
         write: (p, v) => ({ ...p, notificationsEnabled: v }),
         event: { category: 'UI', on: 'NotificationsOn', off: 'NotificationsOff' },
       },
-      // The email rows below were reachable only from the Explorer's Profile
-      // pane, so the category named after notifications held one of seven.
-      // A guest gets the stand-in card instead of six switches that could
+      // A guest gets the stand-in row instead of six switches that could
       // never apply: the same shape the API tokens row uses, so "you need
       // an account for this" looks the same wherever it appears.
       {
@@ -1011,92 +1533,55 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
           'We can email you when someone joins one of your documents, comments on it, assigns you an action, and for a few other moments. Which ones is an account setting.',
         available: (ctx) => ctx.emailEnabled && !ctx.signedIn,
       },
-      {
-        kind: 'toggle',
-        key: 'notifyDocumentJoin',
-        keywords: 'email join collaborator opened',
-        section: 'Email',
-        label: 'Someone Joins My Document',
-        description: 'When a new person opens one of your shared documents for the first time.',
-        available: (ctx) => ctx.emailEnabled && ctx.signedIn,
-        read: (p) => p.notifyDocumentJoin !== false,
-        write: (p, v) => ({ ...p, notifyDocumentJoin: v }),
+      emailSwitch('notifyDocumentJoin', {
         event: { category: 'UI', on: 'NotifyDocumentJoinOn', off: 'NotifyDocumentJoinOff' },
-      },
-      {
-        kind: 'toggle',
-        key: 'notifyInviteResponse',
-        keywords: 'email invite team accepted declined',
-        section: 'Email',
-        label: 'Someone Responds to a Team Invite',
-        description: 'When someone you invited accepts or declines, for teams you’re an admin of.',
-        available: (ctx) => ctx.emailEnabled && ctx.signedIn,
-        read: (p) => p.notifyInviteResponse !== false,
-        write: (p, v) => ({ ...p, notifyInviteResponse: v }),
-        event: { category: 'UI', on: 'NotifyInviteResponseOn', off: 'NotifyInviteResponseOff' },
-      },
-      {
-        kind: 'toggle',
-        key: 'notifyComments',
-        keywords: 'email comment reply feedback',
-        section: 'Email',
-        label: 'Someone Comments on My Document',
-        description: 'When someone leaves a comment on a document you own.',
-        available: (ctx) => ctx.emailEnabled && ctx.signedIn,
-        read: (p) => p.notifyComments !== false,
-        write: (p, v) => ({ ...p, notifyComments: v }),
+        keywords: 'email join collaborator opened',
+        label: 'Someone Joins My Document',
+        description: 'A new person opens one of your shared documents.',
+      }),
+      emailSwitch('notifyComments', {
         event: { category: 'UI', on: 'NotifyCommentsOn', off: 'NotifyCommentsOff' },
-      },
-      {
-        kind: 'toggle',
-        key: 'notifyActionAssigned',
-        keywords: 'email action assigned task todo',
-        section: 'Email',
-        label: 'Someone Assigns Me an Action',
-        description: 'When a teammate assigns you an action on an element.',
-        available: (ctx) => ctx.emailEnabled && ctx.signedIn,
-        read: (p) => p.notifyActionAssigned !== false,
-        write: (p, v) => ({ ...p, notifyActionAssigned: v }),
-        event: { category: 'UI', on: 'NotifyActionAssignedOn', off: 'NotifyActionAssignedOff' },
-      },
-      {
-        kind: 'toggle',
-        key: 'notifyMentions',
-        keywords: 'email mention tag at comment',
-        section: 'Email',
-        label: 'Someone Mentions Me in a Comment',
-        description: 'When a teammate @mentions you in a comment.',
-        available: (ctx) => ctx.emailEnabled && ctx.signedIn,
-        read: (p) => p.notifyMentions !== false,
-        write: (p, v) => ({ ...p, notifyMentions: v }),
+        keywords: 'email comment reply feedback',
+        label: 'Someone Comments on My Document',
+        description: 'Someone leaves a comment on a document you own.',
+      }),
+      emailSwitch('notifyMentions', {
         event: { category: 'UI', on: 'NotifyMentionsOn', off: 'NotifyMentionsOff' },
-      },
-      {
-        kind: 'toggle',
-        key: 'notifyTips',
-        keywords: 'email tips onboarding nudge newsletter',
-        section: 'Email',
-        label: 'Tips and Check-Ins',
+        keywords: 'email mention tag at comment',
+        label: 'Someone Mentions Me in a Comment',
+        description: 'A teammate @mentions you in a comment.',
+      }),
+      emailSwitch('notifyFormResponses', {
+        event: { category: 'UI', on: 'NotifyFormResponsesOn', off: 'NotifyFormResponsesOff' },
+        keywords: 'email form response survey submission answer',
+        label: 'Someone Fills In My Form',
         description:
-          'Occasional getting-started tips, and a friendly nudge if you’ve been away for a while.',
-        available: (ctx) => ctx.emailEnabled && ctx.signedIn,
-        read: (p) => p.notifyTips !== false,
-        write: (p, v) => ({ ...p, notifyTips: v }),
+          'Someone responds to a form in a document you own (at most one email every 15 minutes per form).',
+      }),
+      emailSwitch('notifyActionAssigned', {
+        event: { category: 'UI', on: 'NotifyActionAssignedOn', off: 'NotifyActionAssignedOff' },
+        keywords: 'email action assigned task todo',
+        label: 'Someone Assigns Me an Action',
+        description: 'A teammate assigns you an action on an element.',
+      }),
+      emailSwitch('notifyInviteResponse', {
+        event: { category: 'UI', on: 'NotifyInviteResponseOn', off: 'NotifyInviteResponseOff' },
+        keywords: 'email invite team accepted declined',
+        label: 'Someone Responds to a Team Invite',
+        description: 'Someone you invited accepts or declines, for teams you are an admin of.',
+      }),
+      emailSwitch('notifyTips', {
         event: { category: 'UI', on: 'NotifyTipsOn', off: 'NotifyTipsOff' },
-      },
-      {
-        kind: 'toggle',
-        key: 'notifyMilestones',
-        keywords: 'email milestone achievement celebrate',
-        section: 'Email',
-        label: 'Milestones',
-        description:
-          'A note when you hit a milestone, like sharing your first document or reaching your tenth.',
-        available: (ctx) => ctx.emailEnabled && ctx.signedIn,
-        read: (p) => p.notifyMilestones !== false,
-        write: (p, v) => ({ ...p, notifyMilestones: v }),
+        keywords: 'email tips onboarding nudge newsletter',
+        label: 'Tips and Check-Ins',
+        description: 'Occasional getting-started tips, and a nudge if you have been away a while.',
+      }),
+      emailSwitch('notifyMilestones', {
         event: { category: 'UI', on: 'NotifyMilestonesOn', off: 'NotifyMilestonesOff' },
-      },
+        keywords: 'email milestone achievement celebrate',
+        label: 'Milestones',
+        description: 'A note when you hit one, like sharing your first document.',
+      }),
     ],
   },
   {
@@ -1110,7 +1595,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         keywords: 'api token key mcp integration script developer access create revoke secret',
         label: 'API Tokens',
         description:
-          'Tokens let your own scripts, and AI tools connected over MCP, call the livediagram API as you. Treat one like a password. Each expires six months after it is created, and you can revoke any of them at any time.',
+          'Let your scripts, and AI tools connected over MCP, use livediagram as you. Treat each like a password: it lasts six months, and you can revoke it any time.',
         helpArticle: 'apiTokens',
         available: (ctx) => ctx.authEnabled === true,
       },
@@ -1126,7 +1611,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         keywords: 'analytics tracking usage data privacy anonymous',
         label: 'Send Anonymous Usage Events',
         description:
-          'Sends the small, first-party events listed on /telemetry (no user content, no third-party trackers) so we can see which features actually help. Turn off to keep everything you do strictly on your device.',
+          'Small first-party events, listed publicly on /telemetry, that show which features help. Never your content, no third-party trackers.',
         helpArticle: 'whatWeCollect',
         read: (p) => p.telemetryEnabled !== false,
         write: (p, v) => ({ ...p, telemetryEnabled: v }),
@@ -1135,11 +1620,6 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
     ],
   },
 ];
-
-// Settings labels are title case ("Kanban Boards"); the entries' own labels are sentence case.
-function titleCase(label: string): string {
-  return label.replace(/\b\w/g, (c) => c.toUpperCase());
-}
 
 // A section's target id: "Cloud Sync" → "cloud-sync". Settings can open on one
 // (docs/specs/007-editor/user-preferences.md).

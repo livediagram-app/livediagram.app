@@ -12,7 +12,9 @@ import {
   type SheetHarness,
 } from './sheet-ui-test-utils';
 import { SheetToolbar } from './SheetToolbar';
-import { FUNCTION_FAMILY_LABELS } from './SheetFunctionMenu';
+import { SheetToolbarEnd } from './sheet-toolbar-end';
+import { FUNCTION_FAMILY_LABELS, FUNCTION_HIGHLIGHT_MS } from './SheetFunctionMenu';
+import { FUNCTION_SEARCH_MAX, searchFunctions } from './SheetFunctionSearch';
 import { FUNCTION_FAMILIES } from '@livediagram/sheets';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
@@ -65,10 +67,8 @@ const CATEGORY_OF: Record<string, string> = {
   'More Decimals': 'Numbers',
   Sort: 'Data',
   Filter: 'Data',
-  Freeze: 'Data',
-  'Bar Chart': 'Charts',
-  'Line Chart': 'Charts',
-  'Pie Chart': 'Charts',
+  Freeze: 'Cells',
+  'Insert Chart': 'Data',
   'Maths Functions': 'Functions',
   'Statistics Functions': 'Functions',
   'All Functions': 'Functions',
@@ -89,7 +89,7 @@ const btn = (name: string) => {
 // A menu row (a command menu's item), after its check mark or glyph if it has one.
 const row = (label: string) =>
   screen.getByRole('menuitem', { name: new RegExp(`^(\\S\\s*)?${esc(label)}$`) });
-const checked = (label: string) => row(label).textContent!.includes('✓');
+const checked = (label: string) => row(label).textContent.includes('✓');
 const open = (name: string) => fireEvent.click(btn(name));
 
 describe('the sheet toolbar', () => {
@@ -101,18 +101,25 @@ describe('the sheet toolbar', () => {
   it('makes a chart from the selection, or the data around the cell, and says so when there is none', () => {
     show(h);
     act(() => h.select('A1:A2'));
-    fireEvent.click(btn('Bar Chart'));
+    open('Insert Chart');
+    // The seven chart types, each its glyph and name (docs/specs/009-elements/pie-chart.md "Chart types").
+    for (const name of ['Column', 'Bar', 'Line', 'Area', 'Scatter', 'Pie', 'Doughnut'])
+      expect(row(`${name} Chart`)).toBeTruthy();
+    fireEvent.click(row('Column Chart'));
     const [kind, pick] = h.placeChart.mock.calls[0]!;
-    expect(kind).toBe('bar-chart');
+    expect(kind).toBe('column');
     const { rows, cols } = h.store.sheet(SHEET_ID)!.layout;
     expect(pick).toEqual({ range: { r1: rows[0], c1: cols[0], r2: rows[1], c2: cols[0] } });
     act(() => h.select('A1'));
-    fireEvent.click(btn('Pie Chart'));
+    open('Insert Chart');
+    fireEvent.click(row('Doughnut Chart'));
+    expect(h.placeChart.mock.calls[1]![0]).toBe('doughnut');
     expect(h.placeChart.mock.calls[1]![1]).toEqual({
       range: { r1: rows[0], c1: cols[0], r2: rows[1], c2: cols[1] },
     });
     act(() => h.select('F9'));
-    fireEvent.click(btn('Line Chart'));
+    open('Insert Chart');
+    fireEvent.click(row('Scatter Chart'));
     expect(h.toast).toHaveBeenCalledWith('Select the cells to chart first');
     expect(h.placeChart).toHaveBeenCalledTimes(2);
   });
@@ -357,9 +364,10 @@ describe('the sheet toolbar', () => {
     pickCategory('Data');
     pickCategory('Cells');
     expect(btn('Align Left').closest('.lvd-cascade')).toBeTruthy();
-    // Fill, borders, the horizontal and vertical alignments, merge and wrap, then Clear Formatting.
+    // Paint Format, fill, borders, the horizontal and vertical alignments, merge, wrap and freeze, then Clear
+    // Formatting; and the one before Search, at the far right.
     const toolbar = btn('Align Left').closest('[role=toolbar]')!;
-    expect(toolbar.querySelectorAll('span[aria-hidden].w-px')).toHaveLength(5);
+    expect(toolbar.querySelectorAll('span[aria-hidden].w-px')).toHaveLength(7);
   });
 
   it('offers every function, a menu per family, each starting its function in the active cell', () => {
@@ -523,7 +531,8 @@ describe('the sheet toolbar', () => {
   });
 
   it('folds the buttons that do not fit into More, from the right', () => {
-    width = 200;
+    // Room for Bold and little else beside Search, which keeps its own place at the far right.
+    width = 216;
     show(h);
     pickCategory('Text');
     expect(btn('Bold')).toBeTruthy();
@@ -536,6 +545,70 @@ describe('the sheet toolbar', () => {
     fireEvent.click(row('Font Size'));
     fireEvent.click(row('18'));
     expect(h.cell('A1')?.format?.fs).toBe(18);
+  });
+
+  // In a header band the header's own controls (Maximise or Restore, the cog) end the row: the buttons fold to leave
+  // them their room, so they are never clipped in a narrow window.
+  it('leaves the header controls at its end their room', () => {
+    const endPx = 400;
+    const was = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'offsetWidth');
+    Object.defineProperty(HTMLElement.prototype, 'offsetWidth', {
+      configurable: true,
+      get(this: HTMLElement) {
+        return this.hasAttribute('data-sheet-toolbar-end') ? endPx : 0;
+      },
+    });
+    try {
+      renderSheet(h, ({ actions }) => (
+        <SheetToolbarEnd.Provider
+          value={
+            <>
+              <button type="button" aria-label="Maximise" />
+              <button type="button" aria-label="Sheet Settings" />
+            </>
+          }
+        >
+          <SheetToolbar actions={actions} inBand />
+        </SheetToolbarEnd.Provider>
+      ));
+      pickCategory('Text');
+      // At 1,000 px every Text button fits on its own; with the end's 400 px taken, some fold into More.
+      expect(screen.getByRole('button', { name: 'More' })).toBeTruthy();
+      expect(screen.getByRole('button', { name: 'Sheet Settings' })).toBeTruthy();
+    } finally {
+      if (was) Object.defineProperty(HTMLElement.prototype, 'offsetWidth', was);
+    }
+  });
+
+  it("fills a header band card's height with the category switcher, as the menu box's mode tile does", () => {
+    renderSheet(h, ({ actions }) => <SheetToolbar actions={actions} inBand />);
+    const wrap = screen.getByRole('button', { name: 'Toolbar category' }).parentElement!
+      .parentElement!;
+    expect(wrap.className).toContain('self-stretch');
+    expect(wrap.className).toContain('[&>div>button]:h-full');
+  });
+
+  it('keeps the switcher its own size on the canvas', () => {
+    show(h);
+    const wrap = screen.getByRole('button', { name: 'Toolbar category' }).parentElement!
+      .parentElement!;
+    expect(wrap.className).not.toContain('self-stretch');
+  });
+
+  it("wears the Sheet's colours on Font and Font Size", () => {
+    show(h);
+    pickCategory('Text');
+    const font = screen.getByRole('button', { name: /^Font: / });
+    expect(font.style.borderColor).not.toBe('');
+    const size = screen.getByLabelText('Font Size');
+    expect(size.style.color).not.toBe('');
+  });
+
+  it('opens Search as a menu', () => {
+    show(h);
+    expect(screen.getByRole('button', { name: 'Search' }).getAttribute('aria-haspopup')).toBe(
+      'menu',
+    );
   });
 
   it('folds every button at no width, and none when all fit', () => {
@@ -553,8 +626,8 @@ describe('the sheet toolbar', () => {
   });
 
   it('labels the buttons when they all fit, never on a phone or a narrow Sheet, and never the plain four', () => {
-    // Room for every Cells button with its label, its menu chevrons and dividers counted.
-    width = 1200;
+    // Room for every Cells button with its label, its menu chevrons and dividers counted, and Search.
+    width = 1400;
     const view = show(h);
     pickCategory('Text');
     // Bold, Italic, Underline and Strikethrough are their glyph alone, named by their tooltip.
@@ -574,5 +647,86 @@ describe('the sheet toolbar', () => {
     pickCategory('Cells');
     expect(screen.queryByText('Wrap Text')).toBeNull();
     expect(screen.getByRole('button', { name: 'Wrap Text' })).toBeTruthy();
+  });
+
+  it('packs a phone’s toolbar: no Search, and wide controls as glyphs opening their menus', () => {
+    // A phone's Sheet: on a desktop the swatches alone overflow this.
+    width = 376;
+    phone = true;
+    show(h);
+    pickCategory('Text');
+    expect(screen.queryByRole('button', { name: 'Search' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'More' })).toBeNull();
+    for (const name of ['Bold', 'Italic', 'Underline', 'Strikethrough'])
+      expect(btn(name)).toBeTruthy();
+    const colour = btn('Text Colour');
+    expect(colour.getAttribute('aria-haspopup')).toBe('menu');
+    expect(btn('Font Size').getAttribute('aria-haspopup')).toBe('menu');
+    fireEvent.click(btn('Font Size'));
+    fireEvent.click(row('18'));
+    expect(h.cell('A1')?.format?.fs).toBe(18);
+    // The function families are their glyph alone, named by the tooltip.
+    pickCategory('Functions');
+    expect(btn('Maths Functions')).toBeTruthy();
+    expect(screen.queryByText('Maths')).toBeNull();
+  });
+});
+
+// docs/specs/029-sheets/sheet.md "Toolbar": Search, at the far right, finds a function by name or by what it does,
+// and takes you to it: Functions, its family's menu, the function highlighted for a moment.
+describe('the toolbar’s function Search', () => {
+  let h: SheetHarness;
+  beforeEach(async () => {
+    h = await makeSheet();
+  });
+
+  it('finds a function and highlights it in its family’s menu for a moment', () => {
+    vi.useFakeTimers();
+    try {
+      show(h);
+      const buttons = screen.getAllByRole('button');
+      expect(buttons.at(-1)!.getAttribute('aria-label')).toBe('Search');
+      fireEvent.click(screen.getByRole('button', { name: 'Search' }));
+      const field = screen.getByRole('searchbox', { name: 'Search functions' });
+      fireEvent.change(field, { target: { value: 'sumif' } });
+      fireEvent.click(screen.getByRole('button', { name: /^SUMIF, Maths$/ }));
+      expect(track).toHaveBeenCalledWith('Sheet', 'Searched', 'Function');
+      const found = screen.getByRole('menuitem', { name: 'Insert SUMIF' });
+      expect(found.hasAttribute('data-highlighted')).toBe(true);
+      act(() => {
+        vi.advanceTimersByTime(FUNCTION_HIGHLIGHT_MS);
+      });
+      expect(found.hasAttribute('data-highlighted')).toBe(false);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+});
+
+describe('the toolbar’s function Search, by keyboard', () => {
+  it('takes Enter to the first match without inserting it', async () => {
+    const h = await makeSheet({ cells: { A1: 'kept' } });
+    show(h);
+    fireEvent.click(screen.getByRole('button', { name: 'Search' }));
+    const field = screen.getByRole('searchbox', { name: 'Search functions' });
+    fireEvent.change(field, { target: { value: 'average' } });
+    const enter = new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true });
+    act(() => {
+      field.dispatchEvent(enter);
+    });
+    expect(enter.defaultPrevented).toBe(true);
+    expect(screen.getByRole('menuitem', { name: 'Insert AVERAGE' })).toBeTruthy();
+    expect(h.cell('A1')).toEqual({ input: { s: 'kept' } });
+  });
+});
+
+describe('searchFunctions', () => {
+  it('ranks names that start with the query, then hold it, then say it', () => {
+    const names = searchFunctions('sum').map((m) => m.name);
+    expect(names[0]).toBe('SUM');
+    expect(names.indexOf('SUMIF')).toBeLessThan(names.length);
+    expect(searchFunctions('')).toEqual([]);
+    expect(searchFunctions('zzzz')).toEqual([]);
+    expect(searchFunctions('a').length).toBeLessThanOrEqual(FUNCTION_SEARCH_MAX);
   });
 });

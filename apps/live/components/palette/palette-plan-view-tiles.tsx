@@ -10,20 +10,26 @@ import {
 } from '@livediagram/items';
 import { BoardWidgetArt } from '@/components/plan/plan-tile-art';
 import { PlanViewArt } from '@/components/plan/plan-view-art';
-import { BOARD_WIDGET_INFO } from '@/components/plan/board-widget-catalogue';
+import { BOARD_WIDGET_INFO } from '@livediagram/plan-art';
 import type { PaletteTileDef } from './palette-tile-defs';
 
 const GLYPH_PX = 18;
 
-const VISUALISATION_INFO: Record<PlanVisualisation, { caption: string; description: string }> = {
+export const VISUALISATION_INFO: Record<
+  PlanVisualisation,
+  { caption: string; description: string }
+> = {
   gantt: {
     caption: 'Gantt Chart',
-    description:
-      'Every Project card on a timeline, from its start to its due date, with its cards’ progress.',
+    description: 'Every card with a start and a due date on a timeline, with how far along it is.',
   },
   calendar: {
     caption: 'Due Calendar',
     description: 'This month as a calendar, each day listing the cards due then.',
+  },
+  'start-calendar': {
+    caption: 'Start Calendar',
+    description: 'This month as a calendar, each day listing the cards starting then.',
   },
   workload: {
     caption: 'Cards by Field',

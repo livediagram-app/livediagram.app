@@ -18,7 +18,7 @@ function event(over: Partial<TimelineEvent> & { id: string }): TimelineEvent {
     actorId: 'me',
     snapshot: { documentId: 'd1', documentName: 'Payments' },
     ...over,
-  } as TimelineEvent;
+  };
 }
 
 describe('collapseSameDayCreate', () => {

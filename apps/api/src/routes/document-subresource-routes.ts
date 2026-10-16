@@ -7,10 +7,12 @@ import { broadcastShareOp } from '../room-client';
 import { redactCommentAuthorIds } from '../comments';
 import { redactTabForCommunity } from '../community-redact';
 import {
+  deleteFormLinksForTab,
   deleteShareLinksForTab,
   deleteTabRow,
   documentsContainingTab,
   getDocument,
+  getDocumentForSave,
   getParticipant,
   getTab,
   linkTabToDocument,
@@ -22,9 +24,11 @@ import { DOCUMENT_OPEN_HEADER, readDocumentOpen, tabEtag } from '@livediagram/ap
 import { recordDocumentOpen } from '../home/record-open';
 import { handleDocumentShareRoutes } from './document-share-routes';
 import { handleQaBoardRoute } from './qa-board-routes';
+import { handleFormLinkRoutes } from './form-link-routes';
 import { handleCommentPicturesRoute } from './comment-pictures-routes';
 import { handleTabPut, refuseTokenTabPut } from './tab-put-route';
 import { handleTabRename } from './tab-name-route';
+import { handleTabForm } from './tab-form-route';
 import { handleTabIllustrate } from './tab-illustrate-route';
 import { handleChangesetRoutes } from './changesets';
 import { handleCommentRoutes } from './comment-routes';
@@ -46,6 +50,7 @@ import {
   type RouteContext,
 } from './context';
 import { answerTabView, parseViewQuery } from './document-views-route';
+import { pauseFormsFeeding } from '../forms/form-tab';
 
 // Tab-content sub-resource routes for /api/documents/<id>/...,
 // split out of documents.ts. Returns a Response when it handles the path, or
@@ -58,6 +63,9 @@ export async function handleDocumentSubresources(ctx: RouteContext): Promise<Res
   // /api/documents/<id>/tabs/<tabId>/qa — a Q&A board action (docs/specs/012-collaboration/qa-board.md).
   const qa = await handleQaBoardRoute(ctx);
   if (qa) return qa;
+  // /api/documents/<id>/tabs/<tabId>/form-link and form-seen (docs/specs/030-forms/forms.md).
+  const formLink = await handleFormLinkRoutes(ctx);
+  if (formLink) return formLink;
   // /api/documents/<id>/tabs/<tabId>/comment-pictures (docs/specs/014-identity/profile-picture.md §6).
   const commentPictures = await handleCommentPicturesRoute(ctx);
   if (commentPictures) return commentPictures;
@@ -81,6 +89,15 @@ export async function handleDocumentSubresources(ctx: RouteContext): Promise<Res
   ) {
     return handleTabIllustrate(ctx, segments[2]!, segments[4]!);
   }
+  // /api/documents/<id>/tabs/<tabId>/form: an agent's form write (docs/specs/030-forms/forms.md "Agents").
+  if (
+    segments.length === 6 &&
+    segments[3] === 'tabs' &&
+    segments[5] === 'form' &&
+    ctx.request.method === 'POST'
+  ) {
+    return handleTabForm(ctx, segments[2]!, segments[4]!);
+  }
   if (
     segments.length === 6 &&
     segments[3] === 'tabs' &&
@@ -98,6 +115,16 @@ export async function handleDocumentSubresources(ctx: RouteContext): Promise<Res
     }
     const owner = requireOwner(ctx);
     if (owner instanceof Response) return owner;
+    // A save reads only what it needs of the document, in one query (getDocumentForSave): it runs on
+    // every autosave.
+    if (request.method === 'PUT') {
+      const saving = await getDocumentForSave(env, id);
+      if (!saving) return missingDocument(ctx, id);
+      // Owner or edit-role share visitor only, and a tab-scoped visitor on their own tab only.
+      const allowed = await gateEdit(ctx, id, saving.ownerId, saving.teamId, tabId);
+      if (!allowed) return forbidden();
+      return handleTabPut(ctx, saving, tabId, owner);
+    }
     const existing = await getDocument(env, id);
     if (!existing) return missingDocument(ctx, id);
 
@@ -173,7 +200,6 @@ export async function handleDocumentSubresources(ctx: RouteContext): Promise<Res
     // visitor on their own tab only.
     const allowed = await gateEdit(ctx, id, existing.ownerId, existing.teamId, tabId);
     if (!allowed) return forbidden();
-    if (request.method === 'PUT') return handleTabPut(ctx, existing, tabId, owner);
     if (request.method === 'DELETE') {
       // A tab-scoped link can't delete the tab it is scoped to: that would
       // end its own link, and the document's structure isn't the visitor's.
@@ -194,6 +220,10 @@ export async function handleDocumentSubresources(ctx: RouteContext): Promise<Res
       for (const code of revoked) {
         ctx.waitUntil?.(broadcastShareOp(env, id, { kind: 'share-revoked', code }));
       }
+      // A Form tab's link goes with it, and a form whose board or sheet it was stops taking responses (its link kept)
+      // (docs/specs/030-forms/forms.md "Publishing and the form link").
+      await deleteFormLinksForTab(env, id, tabId);
+      await pauseFormsFeeding(env, id, tabId);
       return noContent();
     }
   }

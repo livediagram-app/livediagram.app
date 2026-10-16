@@ -95,8 +95,8 @@ describe('crazy 8s template', () => {
   it('keeps every sketch element inside its panel', () => {
     for (const el of els) {
       if (el.layerId !== CONTENT || el.type === 'arrow' || !('x' in el)) continue;
-      if (!overlaps(el as Box, sheet) || (el.type === 'shape' && el.shape === 'sticker')) continue;
-      if (inside(el as Box, { ...sheet, height: 90 })) continue; // the sheet's name + status
+      if (!overlaps(el, sheet) || (el.type === 'shape' && el.shape === 'sticker')) continue;
+      if (inside(el, { ...sheet, height: 90 })) continue; // the sheet's name + status
       expect(
         panels.some((p) => inside(el as Box, p)),
         labelOf(el) || (el as Shape).shape,

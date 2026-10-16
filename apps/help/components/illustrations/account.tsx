@@ -1,8 +1,8 @@
 // Account-and-data category illustrations (docs/specs/018-help/help-app.md): the per-browser guest
-// identity, signing in and migrating guest work, and deleting a document. Composed only from the shared primitives so the house style
+// identity, and signing in and migrating guest work. Composed only from the shared primitives so the house style
 // holds.
 
-import { Scene, Shape, Arrow, Panel, Button, Menu, Label, TextBar } from './primitives';
+import { Scene, Shape, Arrow, Panel, Button, Label, TextBar } from './primitives';
 
 /** A browser window holding a per-browser guest id that owns the documents it
  *  created, with no sign-in required. */
@@ -115,7 +115,7 @@ export function SignInCard() {
         {/* divider */}
         <line x1={114} y1={128} x2={196} y2={128} className="stroke-slate-200" strokeWidth={1.5} />
         <Label x={210} y={129} anchor="middle" size={10} tone="muted">
-          or
+          OR
         </Label>
         <line x1={224} y1={128} x2={306} y2={128} className="stroke-slate-200" strokeWidth={1.5} />
         <Label x={114} y={150} size={10} weight={600} tone="body">
@@ -187,60 +187,6 @@ export function MigrateOnSignUp() {
       <Shape x={328} y={96} w={50} h={32} kind="circle" />
       <TextBar x={268} y={142} w={108} />
       <TextBar x={268} y={154} w={78} tone="faint" />
-    </Scene>
-  );
-}
-
-/** The delete confirmation as a popover beside a document's Delete action:
- *  the question, the share-links line, and a Delete button that is the soft
- *  amber caution rather than red, because the document waits in the Trash. */
-export function DeleteDialog() {
-  return (
-    <Scene w={420} h={220} bg="plain">
-      {/* The document's action menu, Delete highlighted */}
-      <Menu
-        x={28}
-        y={36}
-        w={150}
-        items={['Rename', 'Duplicate', 'Change Folder', 'Delete']}
-        active={3}
-        rowH={30}
-      />
-      {/* The confirm popover, its arrow pointing at Delete */}
-      <path
-        d="M196 135 L190 141 L196 147"
-        className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
-        strokeLinejoin="round"
-      />
-      <rect
-        x={196}
-        y={96}
-        width={200}
-        height={98}
-        rx={9}
-        className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
-      />
-      <Label x={210} y={118} size={11} weight={600} tone="strong">
-        Delete &ldquo;System overview&rdquo;?
-      </Label>
-      <Label x={210} y={136} size={10} tone="muted">
-        Its share links stop working.
-      </Label>
-      <Button x={256} y={156} w={62} h={24} label="Cancel" />
-      <rect
-        x={324}
-        y={156}
-        width={60}
-        height={24}
-        rx={7}
-        className="fill-amber-100 stroke-amber-400"
-        strokeWidth={1.5}
-      />
-      <Label x={354} y={169} anchor="middle" size={11} weight={600} tone="strong">
-        Delete
-      </Label>
     </Scene>
   );
 }

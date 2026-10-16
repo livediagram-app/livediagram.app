@@ -176,14 +176,14 @@ describe('readActivity', () => {
     const { env, batches } = fakeEnv();
     await readActivity(env, 'me', { limit: 7 });
     expect(batches).toHaveLength(1);
-    expect(batches[0]).toHaveLength(4);
+    expect(batches[0]).toHaveLength(5);
     for (const s of batches[0]!) {
       expect(s.args[0]).toBe('me');
       expect(typeof s.args[1]).toBe('number');
       expect(s.args[2]).toBe(7);
     }
     expect(batches[0]![0]!.sql).toMatch(/FROM collab_actions/);
-    expect(batches[0]![1]!.sql).toMatch(/FROM collab_threads/);
+    expect(batches[0]![1]!.sql).toMatch(/JOIN collab_threads ct/);
     // Cards also bind the reader's hashed person ids (docs/specs/013-workspace/inbox.md §2.4).
     expect(batches[0]![2]!.sql).toMatch(/FROM items i/);
     expect(JSON.parse(batches[0]![2]!.args[3] as string)).toEqual([
@@ -192,6 +192,9 @@ describe('readActivity', () => {
     // A card's comment threads read the item store too (§2.5), with no ids of their own to bind.
     expect(batches[0]![3]!.sql).toMatch(/\$\.comments\.resolved/);
     expect(batches[0]![3]!.args).toHaveLength(3);
+    // Forms with unseen responses (docs/specs/030-forms/forms.md "Hearing about responses").
+    expect(batches[0]![4]!.sql).toMatch(/CROSS JOIN form_links l/);
+    expect(batches[0]![4]!.args).toHaveLength(3);
   });
 
   // docs/specs/013-workspace/tab-scoped-share-links.md: a visitor shown one tab gets a code of exactly that

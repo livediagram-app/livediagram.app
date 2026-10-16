@@ -16,7 +16,7 @@ import { useEffect, useState } from 'react';
 // after hydration only (the static HTML is the overview for everyone), and never from the network.
 
 // The visitor's recent diagrams: null until read (and for a new visitor, or anywhere storage is
-// blocked), so the overview stays. A returning visitor is one with at least one.
+// blocked). A returning visitor is one with at least one.
 export function useRecentDiagrams(): RecentDiagram[] | null {
   const [diagrams, setDiagrams] = useState<RecentDiagram[] | null>(null);
   useEffect(() => {
@@ -29,14 +29,13 @@ export function useRecentDiagrams(): RecentDiagram[] | null {
     const read = parseRecentDiagrams(raw);
     // Reading browser storage is the one thing this effect is for; it cannot happen in render, since
     // the static HTML has to match for everyone.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+    // oxlint-disable-next-line react/set-state-in-effect
     if (read.length > 0) setDiagrams(read);
-    else document.documentElement.removeAttribute('data-returning');
   }, []);
   return diagrams;
 }
 
-export type RecentThumb =
+type RecentThumb =
   | { status: 'loading' }
   | { status: 'none' }
   | { status: 'ready'; url: string; backgroundColor: string | null };

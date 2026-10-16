@@ -12,6 +12,7 @@ import { PlanViewArt } from '@/components/plan/plan-view-art';
 import {
   BehaviourTabIcon,
   BuildTabIcon,
+  ConceptsTabIcon,
   ComponentsTabIcon,
   DataTabIcon,
   DevicesTabIcon,
@@ -27,9 +28,22 @@ import {
   EventStormingTabIcon,
   LogoTabIcon,
   ParticipateTabIcon,
-} from './palette-tab-icons';
+} from '@livediagram/ui';
+import {
+  AskGroupIcon,
+  FacilitateGroupIcon,
+  ModeGroupIcon,
+  MoveGroupIcon,
+  ReactionGroupIcon,
+  RecordGroupIcon,
+} from '@livediagram/ui';
 import { PlanCardsIcon, PlanIcon } from '@livediagram/ui';
 import { SheetArt } from '@/components/sheets/sheet-art';
+import { lucideGlyph } from '@livediagram/ui';
+import { lucidePanelTop, lucideRows2 } from '@livediagram/icons/lucide';
+
+const DashboardLayoutIcon = lucideGlyph(lucideRows2, 18);
+const TabsIcon = lucideGlyph(lucidePanelTop, 18);
 
 /**
  * The category catalogue's IDENTITY: which categories exist, in band order,
@@ -42,7 +56,8 @@ import { SheetArt } from '@/components/sheets/sheet-art';
  *
  * Order IS layout: the category picker renders the dropdown straight from this
  * array, grouping by `group` under the CATEGORY_BANDS headings (0 Common,
- * 1 Structure, 2 Decorate, 3 Dynamic, 4 Boards & Cards, 5 Spreadsheets; Plan mode lists its bands first).
+ * 1 Structure, 2 Decorate, 3 Dynamic, 4 Boards & Cards, 5 Spreadsheets, 6 Collaborate; Plan mode lists its
+ * bands first).
  */
 export const PALETTE_CATEGORIES: {
   id: string;
@@ -91,30 +106,38 @@ export const PALETTE_CATEGORIES: {
     icon: <PlanIcon size={18} />,
   },
   {
-    // A board header's widgets (docs/specs/026-plan/board-widgets.md), after Boards.
-    id: 'plan-widgets',
-    label: 'Widgets',
-    group: 4,
-    description:
-      'Read-outs and controls for a board’s header: completion, a filter, people and more.',
-    icon: <BoardWidgetArt kind="progress" size={18} />,
-  },
-  {
     // Plan views (docs/specs/026-plan/plan-views.md): the read-out widgets free on the canvas, then charts
     // of every card.
     id: 'plan-metrics',
-    label: 'Metrics',
+    label: 'Card Metrics',
     group: 4,
     description:
       'Live metrics over every card, placed anywhere on the canvas: completion, due soon and more.',
     icon: <BoardWidgetArt kind="count" size={18} />,
   },
   {
+    // A Dashboard's rows and slots (docs/specs/026-plan/plan-tabs.md), on a Dashboard tab alone.
+    id: 'dashboard-layout',
+    label: 'Layout',
+    group: 4,
+    description: 'Rows, slots and section titles for the dashboard: drag one onto the page.',
+    icon: <DashboardLayoutIcon />,
+  },
+  {
+    // The document's Board and Sheet tabs, each shown in a slot (docs/specs/026-plan/plan-tabs.md "The Tabs
+    // category"), on a Dashboard tab alone, while the document has one.
+    id: 'dashboard-tabs',
+    label: 'Tabs',
+    group: 4,
+    description: 'This document’s board and sheet tabs: drop one in a slot to show it there, live.',
+    icon: <TabsIcon />,
+  },
+  {
     id: 'plan-visualisations',
     label: 'Visualisations',
     group: 4,
     description:
-      'Charts of the cards: a project Gantt chart, a due calendar, cards by any field, priority by status and a card search.',
+      'Charts of the cards: a project Gantt chart, due and start calendars, cards by any field, priority by status and a card search.',
     icon: <PlanViewArt view="gantt" size={18} />,
   },
   {
@@ -164,7 +187,7 @@ export const PALETTE_CATEGORIES: {
     id: 'write',
     label: 'Write',
     group: 0,
-    description: 'The wordy elements: pages, text, sticky notes, and annotations.',
+    description: 'The wordy elements: pages, text, sticky notes, annotations and pointer notes.',
     icon: <WriteTabIcon />,
   },
   {
@@ -188,15 +211,25 @@ export const PALETTE_CATEGORIES: {
     id: 'build',
     label: 'Build',
     group: 1,
-    description: 'The structural elements: mind nodes, lanes, frames, timelines, and tables.',
+    description:
+      'The structural elements: mind nodes, org charts, flowcharts, sequence diagrams, lanes, frames, stacks, boundaries, a diagram key, timelines, tables, and Sankey diagrams.',
     icon: <BuildTabIcon />,
+  },
+  {
+    // Concept graphics (docs/specs/009-elements/concept-graphics.md): the shapes ideas come in, as single elements.
+    id: 'concepts',
+    label: 'Concepts',
+    group: 1,
+    description:
+      'Concept graphics that lay out their own rows: a layer stack, a pyramid, a funnel, a cycle, a hub and spoke, onion rings and chevrons. Add, reorder and retitle rows in place.',
+    icon: <ConceptsTabIcon />,
   },
   {
     id: 'components',
     label: 'Components',
     group: 1,
     description:
-      'Ready-made web components that follow the tab theme: Banner, Callout, Stat row, Process, Hero, and Header. Each is one element that re-flows as you resize it, with every line of text editable in place.',
+      'Ready-made blocks that follow the tab theme: the Card, Badge and Step number, the web components (Banner, Callout, Stat row, Process, Hero, Header) and the code block, checklist and entity. Each is one element that re-flows as you resize it, with every line of text editable in place.',
     icon: <ComponentsTabIcon />,
   },
   {
@@ -245,7 +278,8 @@ export const PALETTE_CATEGORIES: {
     id: 'media',
     label: 'Media',
     group: 2,
-    description: 'Pictures and figures: an uploaded image, or a circular avatar.',
+    description:
+      'Pictures and figures: an uploaded image or a circular avatar; in Illustrate, embeds and a Tab Window onto another tab.',
     icon: <MediaTabIcon />,
   },
   {
@@ -256,22 +290,58 @@ export const PALETTE_CATEGORIES: {
       'Charts and meters: pie, bar and line charts, progress bars and rings, and ratings.',
     icon: <DataTabIcon />,
   },
+  // The Collaborate elements (docs/specs/010-palette/palette-top-level-categories.md): everything whose
+  // content arrives at RUNTIME rather than being drawn by the author, the ones that do something when
+  // pressed and the ones that collect what the room thinks. Their own Collaborate band. Six categories, one per group, in
+  // room-first order: Facilitate offers them in place of one Collaborate category with a group
+  // browser inside it, since every group is something a facilitator reaches for mid-session and a
+  // parent category was a click in front of each (docs/specs/012-collaboration/facilitate-mode.md
+  // "The palette"). Their tiles: COLLABORATE_CATEGORY_GROUPS.
   {
-    // Collaborate, id `behaviour` (docs/specs/010-palette/palette-top-level-categories.md): everything whose content arrives at RUNTIME
-    // rather than being drawn by the author — the elements that do something
-    // when pressed (docs/specs/009-elements/mode-button.md to docs/specs/012-collaboration/picker.md, docs/specs/009-elements/reaction-pad.md) and the ones that collect
-    // what the room thinks (docs/specs/012-collaboration/estimate-card.md to docs/specs/012-collaboration/roll-call.md, docs/specs/012-collaboration/comment-pin.md).
-    //
-    // ONE category, not two. They were split on "pressing this does something
-    // to your session" versus "the canvas is collecting an answer from
-    // everybody" — a real distinction, and a useless one to navigate by. You
-    // reach for both while facilitating, and nothing told a user hunting for
-    // the Done check why it lived apart from the Estimate card.
-    id: 'behaviour',
-    label: 'Collaborate',
-    group: 3,
+    id: 'collab-ask',
+    label: 'Ask',
+    group: 6,
     description:
-      'Elements that come alive with the room: ask for an estimate or a temperature, run a quiz, leave a comment or an action on the canvas, collect ideas, rank the room’s questions, check who is done, run a timer or a stopwatch, vote or poll, keep an agenda or a decision, throw a reaction, switch a mode, jump through a portal, or bring everyone to look at one spot.',
-    icon: <BehaviourTabIcon />,
+      'Put a question to the room: dot votes, polls, quizzes, estimates, a temperature check, an idea box and a Q&A board.',
+    icon: <AskGroupIcon />,
+  },
+  {
+    id: 'collab-tools',
+    label: 'Tools',
+    group: 6,
+    description:
+      'Run the session: a timer or a stopwatch, a reveal zone, a done check and a picker.',
+    icon: <FacilitateGroupIcon />,
+  },
+  {
+    id: 'collab-record',
+    label: 'Record',
+    group: 6,
+    description:
+      'Leave a record on the canvas: comments, actions, an agenda, decisions and a roll call.',
+    icon: <RecordGroupIcon />,
+  },
+  {
+    id: 'collab-react',
+    label: 'React',
+    group: 6,
+    description: 'Pads that throw confetti, sparkles, hearts, applause or fireworks for everyone.',
+    icon: <ReactionGroupIcon />,
+  },
+  {
+    id: 'collab-mode',
+    label: 'Selection Mode',
+    group: 6,
+    description:
+      'Buttons that hand everyone a selection mode: select, pan, laser, spotlight and more.',
+    icon: <ModeGroupIcon />,
+  },
+  {
+    id: 'collab-navigate',
+    label: 'Navigate',
+    group: 6,
+    description:
+      'Take people somewhere and build an office: a portal, a bring-focus button, a chair, desk or sofa, a fence, a link card, rooms, a meeting table, plants, shelves, a water cooler, a coffee machine and rugs.',
+    icon: <MoveGroupIcon />,
   },
 ];

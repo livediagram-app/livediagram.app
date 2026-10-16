@@ -56,8 +56,9 @@ describe('copyItemsStatements', () => {
     const db = seeded();
     await db.env.DB.batch(copyItemsStatements(db.env, 'src', 'dst', ['i1']));
     const row = copied(db);
-    expect(JSON.parse(row.fields).assignee.name).toBe('Ali');
-    expect(JSON.parse(row.fields).comments.comments).toHaveLength(1);
+    const fields: unknown = JSON.parse(row.fields);
+    expect(fields).toHaveProperty('assignee.name', 'Ali');
+    expect(fields).toHaveProperty('comments.comments.length', 1);
     expect(row.created_by).toBe(ALI);
   });
 });

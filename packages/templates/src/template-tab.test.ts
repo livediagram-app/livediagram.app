@@ -4,8 +4,10 @@ import {
   buildTemplateTab,
   buildTemplateTabs,
   resolveTemplate,
+  templateTabName,
   validTemplateKinds,
 } from './template-tab';
+import { templateTabs } from './build-template';
 import { TEMPLATES } from './templates';
 
 // Templates drawn from sketches (the sailboat scene) carry freehand strokes: what the MCP writes
@@ -61,7 +63,10 @@ describe('buildTemplateTabs', () => {
       ['first', 'Mine'],
       ['t1', 'Actions'],
       ['t2', 'Archive'],
+      ['t3', 'Overview'],
     ]);
+    // A Board tab per board and a Dashboard showing them (docs/specs/026-plan/plan-tabs.md "Templates").
+    expect(tabs.map((t) => t.kind)).toEqual(['board', 'board', 'board', 'dashboard']);
     for (const tab of tabs) {
       expect(isValidTab(tab), tab.name).toBe(true);
       expect(tab.opensIn).toBe('plan');
@@ -78,5 +83,20 @@ describe('buildTemplateTabs', () => {
     });
     const tabs = buildTemplateTabs({ id: 's', name: 'SWOT' }, 'swot', newId);
     expect(tabs.map(shape)).toEqual([shape(buildTemplateTab('s', 'SWOT', 'swot'))]);
+  });
+});
+
+describe('templateTabName', () => {
+  const names = templateTabs('hiring-pipeline').map((d) => d.name);
+
+  it('takes the name given, unless it is a later tab’s', () => {
+    expect(templateTabName('Hiring', 'hiring-pipeline')).toBe('Hiring');
+    expect(templateTabName(` ${names[1]!.toUpperCase()}`, 'hiring-pipeline')).toBe(names[0]);
+  });
+
+  it('takes the template’s own first name, else Tab 1, when none is given', () => {
+    expect(templateTabName(undefined, 'hiring-pipeline')).toBe(names[0]);
+    expect(templateTabName('  ', 'hiring-pipeline')).toBe(names[0]);
+    expect(templateTabName(undefined, 'flowchart')).toBe('Tab 1');
   });
 });

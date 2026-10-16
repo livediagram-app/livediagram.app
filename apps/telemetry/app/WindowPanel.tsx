@@ -48,7 +48,9 @@ export function WindowPanel({
                 <span
                   className={
                     'text-[10px] font-semibold uppercase tracking-wide ' +
-                    (isActive ? 'text-brand-700 dark:text-brand-300' : 'text-slate-400')
+                    (isActive
+                      ? 'text-brand-700 dark:text-brand-300'
+                      : 'text-slate-500 dark:text-slate-400')
                   }
                 >
                   {w.label}
@@ -60,7 +62,8 @@ export function WindowPanel({
               <span className="mt-1 block text-2xl font-semibold text-slate-900 dark:text-slate-100">
                 {totals[w.key].toLocaleString()}
               </span>
-              <span className="mt-0.5 block text-xs text-slate-500 dark:text-slate-400">
+              {/* Slate-600: on the active card's brand-50 tint slate-500 reads 4.47:1, just under AA. */}
+              <span className="mt-0.5 block text-xs text-slate-600 dark:text-slate-400">
                 {w.hint}
               </span>
             </button>

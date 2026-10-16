@@ -8,8 +8,8 @@
 // dragged onto the bar's pinned side, or pinned from its menu. Fixed size, so typing never resizes
 // the flyout; the slots are taken as it opens, so they never change under the pointer.
 
-import { useEffect, useId, useRef, useState } from 'react';
-import { Tooltip } from '@livediagram/ui';
+import { Fragment, useEffect, useId, useRef, useState, type FragmentInstance } from 'react';
+import { NoMatches, Tooltip } from '@livediagram/ui';
 import { SearchInput } from '@/components/primitives/SearchInput';
 import { useLongPress } from '@/hooks/ui/useLongPress';
 import type { WhiteboardShapeEntry, WhiteboardShapeKey } from '@/lib/whiteboard-shape-catalogue';
@@ -62,7 +62,9 @@ export function ShapesFlyout({
   const current = flat[active];
   const activeId = current ? optionId(current.key) : undefined;
   const [menuFor, setMenuFor] = useState<WhiteboardShapeKey | null>(null);
-  const fieldRef = useRef<HTMLDivElement>(null);
+  // The search field's group, through a Fragment ref: focus() lands on its input, with no wrapper node
+  // (docs/specs/003-system-architecture/react-state-and-effects.md "Fragments and DOM events").
+  const fieldRef = useRef<FragmentInstance>(null);
   const menuRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
@@ -71,13 +73,13 @@ export function ShapesFlyout({
 
   const closeMenu = () => {
     setMenuFor(null);
-    fieldRef.current?.querySelector('input')?.focus({ preventScroll: true });
+    fieldRef.current?.focus({ preventScroll: true });
   };
 
   let index = 0;
   return (
     <div data-shape-search="" className="relative flex w-[8.5rem] flex-col gap-2">
-      <div ref={fieldRef}>
+      <Fragment ref={fieldRef}>
         <SearchInput
           value={query}
           onChange={(next) => {
@@ -101,7 +103,7 @@ export function ShapesFlyout({
           activeDescendantId={activeId}
           listboxId={listboxId}
         />
-      </div>
+      </Fragment>
       <div
         id={listboxId}
         role="listbox"
@@ -110,9 +112,12 @@ export function ShapesFlyout({
         style={{ height: `${idleRows * 2.5 + (idleRows - 1) * 0.25}rem` }}
       >
         {flat.length === 0 ? (
-          <p className="px-1 py-6 text-center text-xs text-slate-500 dark:text-slate-400">
-            No shapes match
-          </p>
+          <NoMatches
+            className="h-full"
+            things="shapes"
+            query={query}
+            onClear={() => setQuery('')}
+          />
         ) : (
           groups.map((group) => (
             <div
@@ -241,7 +246,7 @@ function ShapeEntry({
         {key ? (
           <span
             aria-hidden
-            className="pointer-events-none absolute bottom-0.5 right-1 text-[8px] font-medium uppercase leading-none text-slate-500 dark:text-slate-400"
+            className="pointer-events-none absolute bottom-0.5 right-1 text-[8px] font-medium uppercase leading-none text-slate-500 pointer-coarse:hidden dark:text-slate-400"
           >
             {key}
           </span>

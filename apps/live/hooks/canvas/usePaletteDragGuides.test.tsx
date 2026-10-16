@@ -19,7 +19,7 @@ import { usePaletteDragGuides } from './usePaletteDragGuides';
 
 // A row of three 200x200 notes with 72 gaps: 0..200, 272..472, 544..744.
 function note(id: string, x: number): Element {
-  return { id, type: 'sticky', x, y: 0, width: 200, height: 200 } as Element;
+  return { id, type: 'sticky', x, y: 0, width: 200, height: 200 };
 }
 const ROW = [note('a', 0), note('b', 272), note('c', 544)];
 

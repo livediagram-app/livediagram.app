@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { Env } from '../types';
-import { appBaseUrl, emailEnabled, sendEmail } from './client';
+import { appBaseUrl, EMAIL_SEND_TIMEOUT_MS, emailEnabled, sendEmail } from './client';
 
 const withKey = { RESEND_API_KEY: 're_test' } as unknown as Env;
 const noKey = {} as Env;
@@ -54,10 +54,11 @@ describe('sendEmail', () => {
     expect(url).toBe('https://api.resend.com/emails');
     expect(init.method).toBe('POST');
     expect(init.headers.Authorization).toBe('Bearer re_test');
-    const body = JSON.parse(init.body as string);
-    expect(body.to).toEqual(['a@b.com']);
-    expect(body.subject).toBe('Hi');
-    expect(body.from).toContain('hello@livediagram.app');
+    expect(JSON.parse(init.body as string)).toMatchObject({
+      to: ['a@b.com'],
+      subject: 'Hi',
+      from: expect.stringContaining('hello@livediagram.app'),
+    });
   });
 
   it('honours a RESEND_FROM override', async () => {
@@ -69,7 +70,8 @@ describe('sendEmail', () => {
       subject: 's',
       html: 'h',
     });
-    expect(JSON.parse((f.mock.calls[0]![1] as RequestInit).body as string).from).toBe(
+    expect(JSON.parse((f.mock.calls[0]![1] as RequestInit).body as string)).toHaveProperty(
+      'from',
       'X <x@y.com>',
     );
   });
@@ -90,5 +92,26 @@ describe('sendEmail', () => {
     ).toEqual({
       sent: false,
     });
+  });
+});
+
+// A hung Resend call no longer holds the daily email cron behind it: the send gives up, as a failure.
+describe('sendEmail timeout', () => {
+  it('fails a send Resend never answers, after EMAIL_SEND_TIMEOUT_MS', async () => {
+    // The bound itself is the platform's (AbortSignal.timeout); stand in an already-expired one.
+    const timeout = vi
+      .spyOn(AbortSignal, 'timeout')
+      .mockImplementation(() => AbortSignal.abort(new DOMException('timed out', 'TimeoutError')));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (_url: string, init: RequestInit) => {
+        if (init.signal?.aborted) throw init.signal.reason;
+        return new Response('{}', { status: 200 });
+      }),
+    );
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const sent = sendEmail(withKey, { kind: 'Welcome', to: 'a@b.com', subject: 's', html: 'h' });
+    expect(await sent).toEqual({ sent: false });
+    expect(timeout).toHaveBeenCalledWith(EMAIL_SEND_TIMEOUT_MS);
   });
 });

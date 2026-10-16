@@ -13,9 +13,12 @@ import {
   pageAdded,
   PAGE_GRADIENT_ANGLE,
   pageBackgroundSet,
+  pageBackgroundSpread,
   pageDuplicated,
   pageKindOf,
   pageLaidOut,
+  themedForTab,
+  pageIsDark,
   pageLockSet,
   pageMovedTo,
   pageRemoved,
@@ -29,10 +32,9 @@ import {
   type PageBackground,
   type PageEdit,
   type PageEditRefusal,
-  type PageKind,
   type Tab,
 } from '@livediagram/document';
-import { buildPageLayout, layoutCatalogueFor, type PageLayoutId } from '@livediagram/templates';
+import { buildPageLayout, layoutCatalogueFor } from '@livediagram/templates';
 import { enterIllustrate, type IllustrateIds } from './enter';
 import { pageLabel, pageSummaries, resolvePage, sizeLabel } from './summary';
 
@@ -112,7 +114,14 @@ export function applyPageChanges(
   const lines: string[] = entered.switched ? ['Switched the tab to Illustrate.'] : [];
   const newPageId = ids.page ?? (() => nextIllustratePageId(illustratePagesOf(current)));
   const newFlowId = ids.flow ?? (() => nextArticleFlowId());
+  // The pages a delete in this change took, an article's whole flow among them: a later delete naming one by id is
+  // already done, never a missing page that undoes the change.
+  // The pages an earlier delete in this change took (an article's pages go together), as they were, so a later delete
+  // naming one by its id or its name is answered rather than refused.
+  const removed: IllustratePage[] = [];
   try {
+    // The pages this call has added, which a later add never takes as a blank.
+    const madeHere = new Set<string>();
     changes.forEach((change, i) => {
       const stop = (code: IllustrateRefusal['code'], message: string): never => {
         throw new Stop({ code, message, change: i });
@@ -151,7 +160,13 @@ export function applyPageChanges(
         const laid = layOutIllustratePages(pages()).find((p) => p.id === page.id)!;
         const replaced = onPage(page.id);
         current = take(
-          pageLaidOut(current, page.id, buildPageLayout(found!.id as PageLayoutId, laid)),
+          pageLaidOut(
+            current,
+            page.id,
+            themedForTab(buildPageLayout(found!.id, laid), current.theme, {
+              dark: pageIsDark(laid),
+            }),
+          ),
           page,
         );
         return `${found!.label}${replaced ? ` (replaced ${replaced} elements)` : ''}`;
@@ -186,13 +201,24 @@ export function applyPageChanges(
           let page: IllustratePage;
           if (offersPageKindChoice(ps, first.id, onPage(first.id))) {
             // The fresh tab's empty, unchosen first page becomes the page asked for.
-            current = withPageKindChosen(current, first.id, change.kind as PageKind, newFlowId())!;
+            current = withPageKindChosen(current, first.id, change.kind, newFlowId())!;
             page = pages()[0]!;
+          } else if (
+            ps.length === 1 &&
+            !madeHere.has(first.id) &&
+            first.kind === change.kind &&
+            !first.name?.trim() &&
+            onPage(first.id) === 0
+          ) {
+            // A blank of that kind (the Blank Slide Deck's one empty slide) becomes the page asked for, so a deck made
+            // from it does not open on an empty slide.
+            page = first;
           } else {
             const id = newPageId();
-            current = take(pageAdded(current, change.kind as PageKind, id, newFlowId()));
+            current = take(pageAdded(current, change.kind, id, newFlowId()));
             page = pages().find((p) => p.id === id)!;
           }
+          madeHere.add(page.id);
           const said = setFields(page, change);
           if (change.at !== undefined)
             current = take(pageMovedTo(current, page.id, unitAt(change.at)), page);
@@ -236,16 +262,40 @@ export function applyPageChanges(
           );
           return;
         }
-        case 'delete': {
+        case 'apply_background_to_all': {
           const page = pageOf(change);
+          const out = pageBackgroundSpread(current, page.id);
+          // The page was found above, so the one refusal left is a page with no other of its kind.
+          if ('refused' in out)
+            stop(
+              'no_other_pages',
+              `Page ${placeOf(page.id)} is the only ${pageKindOf(page)} page (or article): there is no other to give its background.`,
+            );
+          const done = out as Extract<typeof out, { tab: Tab }>;
+          current = done.tab;
+          const kept = done.skipped ? `; ${done.skipped} locked kept their own` : '';
+          lines.push(
+            `Gave ${done.applied} other ${pageKindOf(page)} page${done.applied === 1 ? '' : 's'} the background of page ${placeOf(page.id)}${kept}.`,
+          );
+          return;
+        }
+        case 'delete': {
+          if (
+            typeof change.page === 'string' &&
+            !resolvePage(pages(), change.page) &&
+            resolvePage(removed, change.page)
+          ) {
+            lines.push(`Page ${change.page} went with what an earlier delete in this change took.`);
+            return;
+          }
+          const page = pageOf(change);
+          // An article's pages go together.
+          const gone = page.flow ? pages().filter((p) => p.flow === page.flow) : [page];
           const at = placeOf(page.id);
-          const count = page.flow ? pages().filter((p) => p.flow === page.flow).length : 1;
-          const els = page.flow
-            ? pages()
-                .filter((p) => p.flow === page.flow)
-                .reduce((n, p) => n + onPage(p.id), 0)
-            : onPage(page.id);
+          const count = gone.length;
+          const els = gone.reduce((n, p) => n + onPage(p.id), 0);
           current = take(pageRemoved(current, page.id), page);
+          removed.push(...gone);
           lines.push(
             page.flow
               ? `Deleted the article on page ${at} (${count} pages, writing and ${els} elements).`

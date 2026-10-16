@@ -22,6 +22,10 @@ export const PAGE_COLOUR_GROUPS: readonly ColourGroup[] = [
 ];
 
 // The custom gradient's editor: From and To, the Angle, and Swap.
+// The custom swatch's look: every hue round a wheel, saying "any colour you like".
+export const RAINBOW =
+  'conic-gradient(#f87171, #fbbf24, #4ade80, #22d3ee, #818cf8, #e879f9, #f87171)';
+
 export function CustomGradientEditor({
   fill,
   onPreview,

@@ -63,16 +63,38 @@ describe('elementTileSections', () => {
     expect([...ids(here), ...ids(elsewhere)].filter((id) => needsImage.includes(id))).toEqual([]);
   });
 
+  it("keeps Plan's own tiles out of other modes, greyed out with the reason", () => {
+    const planOwn = (t: { section: string }) => t.section.startsWith('plan-');
+    for (const mode of ['diagram', 'illustrate', 'facilitate'] as const) {
+      const { here, elsewhere, unavailable } = elementTileSections({ mode, hasImage: true });
+      expect([...here, ...elsewhere].filter(planOwn), mode).toEqual([]);
+      expect(ids(unavailable), mode).toEqual(
+        expect.arrayContaining(['plan:board-kanban', 'plan:view-gantt', 'plan:sheet']),
+      );
+      for (const t of unavailable) {
+        expect(planOwn(t), t.id).toBe(true);
+        expect(t.disabled, t.id).toEqual({ reason: 'Only in Plan Mode' });
+      }
+    }
+  });
+
+  it('has nothing unavailable in Plan itself', () => {
+    expect(elementTileSections({ mode: 'plan', hasImage: true }).unavailable).toEqual([]);
+  });
+
   it("uses the document's own card types in Plan, and keeps the built-in ones out of elsewhere", () => {
-    const own = [{ ...ITEM_TYPES[0]!, id: 'custom', label: 'Custom' }];
+    const own = [{ ...ITEM_TYPES[0], id: 'custom', label: 'Custom' }];
     const { here, elsewhere } = elementTileSections({
       mode: 'plan',
       hasImage: true,
       planCardTiles: own.map(planCardTile),
     });
     expect(ids(here)).toContain('plan:card-custom');
-    expect(ids(here)).not.toContain(`plan:card-${ITEM_TYPES[0]!.id}`);
+    expect(ids(here)).not.toContain(`plan:card-${ITEM_TYPES[0].id}`);
     expect(elsewhere.filter((t) => t.section === 'plan-cards')).toEqual([]);
+    expect(
+      elementTileSections({ mode: 'plan', hasImage: true, planCardTiles: [] }).unavailable,
+    ).toEqual([]);
   });
 });
 
@@ -96,6 +118,7 @@ describe('searchElementTiles', () => {
     expect(searchElementTiles({ query: 'zzqqxx', mode: 'diagram', hasImage: true })).toEqual({
       here: [],
       elsewhere: [],
+      unavailable: [],
     });
   });
 
@@ -120,6 +143,7 @@ describe('searchElementTiles', () => {
     expect(searchElementTiles({ query: '', mode: 'diagram', hasImage: true })).toEqual({
       here: [],
       elsewhere: [],
+      unavailable: [],
     });
   });
 });
@@ -233,5 +257,25 @@ describe('a worst-case query', () => {
       searchElementTiles({ query: 'e', mode: 'diagram', hasImage: true });
     // 50 searches matching most of the catalogue; a keystroke runs one.
     expect((performance.now() - start) / 50).toBeLessThan(16);
+  });
+});
+
+// Facilitate mode (docs/specs/012-collaboration/facilitate-mode.md "What Diagram gives up"): the
+// Collaborate tiles leave Diagram's palette but Search still finds them, with the other modes'.
+describe('the session kit from Diagram', () => {
+  it("lists Collaborate tiles in Diagram's other-modes section and Facilitate's own", () => {
+    const diagram = elementTileSections({ mode: 'diagram', hasImage: true });
+    expect(ids(diagram.here)).not.toContain('tools:session-timer');
+    expect(ids(diagram.elsewhere)).toContain('tools:session-timer');
+    expect(ids(diagram.elsewhere)).toContain('collab:quiz');
+    const facilitate = elementTileSections({ mode: 'facilitate', hasImage: true });
+    expect(ids(facilitate.here)).toContain('tools:session-timer');
+    expect(ids(facilitate.here)).toContain('collab:quiz');
+  });
+
+  it("keeps the Comment panel and the Action card in Diagram's own section", () => {
+    const here = ids(elementTileSections({ mode: 'diagram', hasImage: true }).here);
+    expect(here).toContain('collab:comment-pin');
+    expect(here).toContain('collab:action-card');
   });
 });

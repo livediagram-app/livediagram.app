@@ -173,6 +173,16 @@ describe('copy and paste', () => {
     expect(readPastedText('one\ntwo, three')).toEqual([['one'], ['two, three']]);
     expect(readPastedText('')).toEqual([['']]);
   });
+  // A sentence pasted on a cell stays in that cell: one line is never read as commas, only as tabs.
+  it('keeps one pasted line with a comma in one cell', () => {
+    expect(readPastedText('Thanks, Sam')).toEqual([['Thanks, Sam']]);
+    expect(readPastedText('Thanks, Sam\n')).toEqual([['Thanks, Sam']]);
+    expect(readPastedText('a\tb, c')).toEqual([['a', 'b, c']]);
+  });
+  // Two lines, not two records: one quoted record running over lines is still CSV, its quotes taken off.
+  it('reads one quoted record over two lines as its cells', () => {
+    expect(readPastedText('"Line one\nline two",B')).toEqual([['Line one\nline two', 'B']]);
+  });
   it('pastes external rows read as typed, with formats', () => {
     const b = book({});
     const id = b.sheets[0]!.id;
@@ -370,7 +380,7 @@ describe('find, filter and render', () => {
     [{ op: 'gt', a: 'x' }, 4, '4', false],
     [{}, 'x', 'x', true],
   ])('condition %j on %j', (cond, v, shown, ok) => {
-    expect(conditionMatches(cond as never, v as never, shown as string, 'en-GB')).toBe(ok);
+    expect(conditionMatches(cond as never, v as never, shown, 'en-GB')).toBe(ok);
   });
   it("carries the sheet's look into the model", () => {
     const b = book({ A1: '1' });

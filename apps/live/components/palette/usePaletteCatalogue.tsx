@@ -19,11 +19,14 @@ import type { PaletteAddHandlers } from './palette-add-handlers';
 import { useLogoMarkerTiles } from './PaletteLogoTab';
 import {
   coveredPaletteCategories,
+  dashboardPaletteCategories,
   paletteCategoriesFor,
   participantPaletteCategories,
   PARTICIPANT_CANVAS_TOOLS,
 } from './palette-layouts';
-import { useBoardFillingTab } from '@/hooks/plan/plan-cover-store';
+import { useBoardFillingTab, usePlanTabKind } from '@/hooks/plan/plan-cover-store';
+import { usePlanTabList } from '@/hooks/plan/plan-tab-list-store';
+import { dashboardTabTiles } from './palette-dashboard-tiles';
 import { getMaximisedPlanId, restorePlanElement } from '@/hooks/plan/maximised-plan';
 import type { WhiteboardPenId } from '@/lib/whiteboard-prefs';
 import { useEditorModeState } from '@/components/chrome/editor-mode/editor-mode-context';
@@ -79,6 +82,7 @@ export function usePaletteCatalogue({
   onAddCallout,
   onAddStatRow,
   onAddProcess,
+  onAddFlowchart,
   onAddAvatar,
   onAddImage,
   onAddArrow,
@@ -131,6 +135,7 @@ export function usePaletteCatalogue({
       mode?: import('@livediagram/document').SelectionMode;
       estimateScale?: import('@livediagram/document').EstimateScale;
       plan?: string;
+      variant?: string;
     },
   ) => armed(() => onAddShape(kind, opts))();
   // Icons, stickers and tech icons arm the draw gesture too (they ride the
@@ -170,6 +175,7 @@ export function usePaletteCatalogue({
       callout: onAddCallout,
       stat: onAddStatRow,
       process: onAddProcess,
+      flowchart: onAddFlowchart,
     } as const;
     armed(byKind[kind])();
   };
@@ -250,6 +256,10 @@ export function usePaletteCatalogue({
   const hasLibraryShapes = libraries.some((l) => l.items.length > 0);
   // A board filling its tab: cards land only on a board (a maximised one keeps the mode's palette).
   const boardFillingTab = useBoardFillingTab();
+  // A Dashboard tab's palette is what fills a slot (docs/specs/026-plan/plan-tabs.md "Dashboard tab").
+  const dashboardTab = usePlanTabKind() === 'dashboard';
+  // Its Tabs category: the document's Board and Sheet tabs (plan-tab-list-store), gone while it has none.
+  const planTabList = usePlanTabList();
   // Logo only while the tab has a logo page (docs/specs/007-editor/logo-pages.md), its markers
   // added as tiles in this person's colours and widths (logoMarkerTiles).
   const markers = useLogoMarkerTiles(!!logoPages);
@@ -258,9 +268,18 @@ export function usePaletteCatalogue({
     ? participantPaletteCategories(editorMode, !!esBoard)
     : boardFillingTab
       ? coveredPaletteCategories()
-      : paletteCategoriesFor(editorMode, { esBoard: !!esBoard, logoPages: !!logoPages })
-          .filter((c) => hasLibraryShapes || c.id !== 'my-shapes')
-          .map((c) => (c.id === 'logo' ? { ...c, tiles: [...(c.tiles ?? []), ...markers] } : c));
+      : dashboardTab
+        ? dashboardPaletteCategories().flatMap((c) =>
+            c.id !== 'dashboard-tabs'
+              ? [c]
+              : planTabList.length
+                ? [{ ...c, tiles: dashboardTabTiles(planTabList) }]
+                : [],
+          )
+        : paletteCategoriesFor(editorMode, { esBoard: !!esBoard, logoPages: !!logoPages })
+            .filter((c) => hasLibraryShapes || c.id !== 'my-shapes')
+
+            .map((c) => (c.id === 'logo' ? { ...c, tiles: [...(c.tiles ?? []), ...markers] } : c));
   const tabs = paletteCategoryTabs({
     categories,
     pendingDraw,
@@ -291,6 +310,7 @@ export function usePaletteCatalogue({
     isMobile,
     includeZen: !!onToggleZen,
     planMode: editorMode === 'plan',
+    facilitateMode: editorMode === 'facilitate',
   });
   const canvasToolOptions = participant
     ? allCanvasToolOptions.filter((o) => PARTICIPANT_CANVAS_TOOLS.includes(o.id))

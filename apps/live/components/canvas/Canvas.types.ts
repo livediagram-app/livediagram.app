@@ -1,4 +1,8 @@
+import type { TidyUpActions } from './tidy-up-actions';
+import type { PenInk } from '@/hooks/canvas/commit-freehand';
+import type { SnapGuideStore } from '@/hooks/canvas/useSnapGuideState';
 import type { CombineOp } from '@/lib/combine/combine';
+import type { RemoteSelector } from '@/lib/presence-rows';
 import type { Dispatch, SetStateAction } from 'react';
 import type { ShapeLibraryItem } from '@livediagram/api-schema';
 import type { LibraryShapeRef } from '@/lib/shape-library-dnd';
@@ -12,13 +16,11 @@ import type {
   EmbedProvider,
   EsSide,
   EventStormingNoteKind,
+  Finish,
   FrameHandle,
-  RecognisedShape,
 } from '@livediagram/document';
 import type {
-  AlignmentGuide,
   BackgroundPattern,
-  DistributionGuide,
   TabKind,
   EditorMode,
   Element,
@@ -31,7 +33,6 @@ import type {
 } from '@livediagram/document';
 import type { ArrowEnd, DragMode, QuickConnectDirection, QuickConnectKind } from '@/lib/canvas';
 import type { PendingDraw } from '@/lib/draw-mode';
-import type { TemplateKind } from '@livediagram/templates';
 import type { UserPreferences } from '@/lib/user-preferences';
 import type { DocumentListItem, Folder, SharedWithItem } from '@/lib/api-client';
 import type { TeamFolderHandlers } from '@/components/panels/Explorer.types';
@@ -74,6 +75,8 @@ export type CanvasProps = {
   // own `font` render in this; undefined = the editor default. Used by
   // the inline label editor (CanvasElementsLayer) for font inheritance.
   tabFont?: string;
+  // The tab's finish (docs/specs/008-canvas/finish.md); undefined is Flexible.
+  tabFinish?: Finish;
   mainRef: Ref<HTMLElement>;
   setViewportOffset: (offset: { x: number; y: number }) => void;
   // The view itself is not a prop: it lives in the viewport store, read where it shows
@@ -110,16 +113,10 @@ export type CanvasProps = {
   // start position, so the set under the cursor shows as a ghost. Null
   // outside a shift-held move drag.
   shiftDupGhostIds: ReadonlySet<string> | null;
-  // Faint alignment guides for the active move / resize drag (the edge
-  // / centre lines the dragged element shares with neighbours). Empty
-  // when no snap is in effect. Rendered by CanvasChrome. See docs/specs/008-canvas/canvas-and-palette.md.
-  snapGuides: AlignmentGuide[];
-  // Equal-spacing guides: the gap segments shown when a moved element
-  // snaps to even spacing with its neighbours. Rendered by CanvasChrome.
-  distGuides: DistributionGuide[];
-  // Connection-point markers revealed while dragging an arrow endpoint near
-  // a shape, so the user can see exactly where it will snap. Empty otherwise.
-  snapTargets: SnapTarget[];
+  // The active move / resize drag's snap guides (alignment lines, equal-spacing gaps, arrow-endpoint
+  // markers; see docs/specs/008-canvas/canvas-and-palette.md), in the editor's store. Only CanvasChrome,
+  // which draws them, reads it, so a new set renders the chrome and not the canvas.
+  snapGuideStore: SnapGuideStore;
   onSelectMarquee: (ids: Set<string>) => void;
   canvasTool: CanvasTool;
   onSetCanvasTool: (tool: CanvasTool) => void;
@@ -136,6 +133,9 @@ export type CanvasProps = {
   // True when this viewer can't start session tools (view role): the button
   // renders inert and says why instead of failing silently on press.
   sessionStartBlocked?: boolean;
+  // Who is running the session when it is somebody else (docs/specs/012-collaboration/facilitator.md), so a blocked
+  // face names the person to ask; null when nobody else holds the baton.
+  sessionRunBy?: string | null;
   // The tab timer's state for the session button's face (docs/specs/012-collaboration/session-button.md).
   timerState?: import('@/components/canvas/SessionButtonFace').TimerState;
   // Reveal zones (docs/specs/009-elements/reveal-zone.md) this viewer has lifted for themselves. Ephemeral
@@ -191,7 +191,7 @@ export type CanvasProps = {
   // Chair (docs/specs/009-elements/chair.md): who presence says is seated on a given chair.
   chairSitters?: (
     elementId: string,
-  ) => import('@/components/canvas/collab/ChairView').ChairSitter[];
+  ) => import('@/components/canvas/collab/FurnitureView').ChairSitter[];
   // Portal (docs/specs/009-elements/portal-element.md): resolve a portal's pairing — the paired portal's name and, when
   // it has one, the action that travels there.
   onEnterPortal?: (element: import('@livediagram/document').ShapeElement) => {
@@ -212,11 +212,6 @@ export type CanvasProps = {
   // palette (any tile pick) and to a palette drag-drop, both of which are
   // edits the read-only mode would otherwise swallow.
   onExitAvatarMode?: () => void;
-  // Avatar Panel placement (docs/specs/008-canvas/avatar-mode.md + docs/specs/007-editor/panel-docking.md). Position is null until the
-  // user drags it; the panel itself only exists while the mode is active.
-  avatarPanelPosition?: { x: number; y: number } | null;
-  onMoveAvatarPanel?: (x: number, y: number) => void;
-  onResetAvatarPanel?: () => void;
   // The laser pen (docs/specs/008-canvas/spotlight-panel.md). Owned in editor state, not here: the broadcaster
   // stamps it onto every sample and the trail rows carry it, both of which sit
   // above Canvas — so Canvas forwards it to the panel rather than owning it.
@@ -245,7 +240,7 @@ export type CanvasProps = {
   formatConfig?: import('@/lib/format-config').FormatConfig;
   onToggleFormatGroup?: (group: import('@/lib/format-config').FormatGroup) => void;
   onSetFormatMode?: (mode: import('@/lib/format-config').FormatMode) => void;
-  formatBrushSource?: { name: string; fill?: string; stroke?: string; textColor?: string } | null;
+  formatBrushSource?: import('@/components/panels/FormatPanel').FormatBrushSource | null;
   formatPanelPosition?: { x: number; y: number } | null;
   onMoveFormatPanel?: (x: number, y: number) => void;
   onResetFormatPanel?: () => void;
@@ -262,7 +257,7 @@ export type CanvasProps = {
   // Map of elementId -> remote participants currently focused on that
   // element. Drives a small badge ring on each element so participants
   // can see in real time what others are working on.
-  remoteSelectionsByElement: Map<string, { id: string; name: string; color: string }[]>;
+  remoteSelectionsByElement: Map<string, RemoteSelector[]>;
   // Live cursor positions for remote participants — canvas-coords +
   // participant identity. Rendered inside the transformed wrapper so
   // they pan and zoom with the canvas.
@@ -282,6 +277,9 @@ export type CanvasProps = {
   // Shove a peer's character (docs/specs/008-canvas/avatar-mode.md): sent when our character finishes
   // walking up to the one we clicked. Optional — no room, no push.
   onAvatarPush?: (targetId: string, dx: number, dy: number) => void;
+  // Say something (docs/specs/008-canvas/avatar-mode.md "Speech bubbles"): sends one message to the room.
+  // Optional: with no room the bubble is still drawn for you.
+  onAvatarSay?: (say: { id: string; text: string; x: number; y: number }) => void;
   // A shove somebody sent US, as a direction plus a sequence number so the same
   // push isn't replayed on every render. Null until someone pushes.
   avatarShove?: { dx: number; dy: number; seq: number } | null;
@@ -340,6 +338,7 @@ export type CanvasProps = {
   onAddCallout: () => void;
   onAddStatRow: () => void;
   onAddProcess: () => void;
+  onAddFlowchart: () => void;
   onAddAvatar: () => void;
   onAddText: () => void;
   // Optional fill + kind: an Event Storming note (docs/specs/021-event-storming/event-storming.md).
@@ -417,8 +416,9 @@ export type CanvasProps = {
   onCommitFreehand: (
     points: { x: number; y: number }[],
     recogniseShapes: boolean,
-    // `snapped`: the shape a held-still stroke locked to, as the pen reshaped it (lib/live-stroke).
-    ink?: { pressures?: number[]; streamline?: number; snapped?: RecognisedShape },
+    // `snapped`: the shape a held-still stroke locked to, as the pen reshaped it (lib/live-stroke);
+    // `keepInk`: the stroke was broken out of a shape, so it lands as drawn.
+    ink?: PenInk,
   ) => void;
   // Polygon commit (docs/specs/008-canvas/polygon-tool.md). Receives the deliberately clicked
   // vertices in canvas coords (no simplification — the user placed
@@ -515,12 +515,15 @@ export type CanvasProps = {
   // Whether the local participant started the running vote — the only
   // one who may end / reveal / clear it or move the results focus.
   isVoteHost: boolean;
-  // Everyone in the room right now (remote presence + you), the turnout
-  // denominator.
+  // Everyone in the room right now who can cast (remote presence + you, one per person, no Viewers or agents),
+  // the turnout denominator.
   participantCount: number;
   // Bottom-dock "Theme & canvas" button (docs/specs/011-theme/canvas-and-theme-dialog.md): opens the
   // CanvasThemeDialog. Omitted in read-only / embed sessions (no button).
   onOpenCanvasTheme?: () => void;
+  // Diagram mode's Tidy Up button and popover (docs/specs/008-canvas/layout-cleanup.md "The Tidy Up
+  // button"). Absent in a session that may not tidy (a Participant, a Viewer, an embed): no button.
+  tidyUp?: TidyUpActions;
   onSelectLayer: (layerId: string) => void;
   onAddLayer: () => void;
   onRemoveLayer: (layerId: string) => void;
@@ -545,7 +548,8 @@ export type CanvasProps = {
   onMoveCommentsPanel: (x: number, y: number) => void;
   onResetCommentsPanel: () => void;
   // Row click: editor selects the element + opens its thread popover.
-  onOpenCommentsForElement: (elementId: string) => void;
+  // `cell` names a Sheet cell's thread (docs/specs/029-sheets/sheet.md "Cell comments").
+  onOpenCommentsForElement: (elementId: string, cell?: string) => void;
   // Floating Actions panel (docs/specs/012-collaboration/assigned-actions.md). Mirrors the Comments panel: only
   // mounted when actionRows is non-empty (at least one OPEN action on
   // the active tab).
@@ -562,6 +566,8 @@ export type CanvasProps = {
   explorerMenuActions?: import('@/components/panels/Explorer.types').ExplorerMenuActions;
   onRenameCurrent: (name: string) => void;
   onDeleteDocument: (id: string) => void;
+  // The Explorer panel's Trash restored or deleted a document: refetch the lists.
+  onLibraryChanged?: () => void;
   onDuplicateDocument: (id: string) => void;
   onCreateFolder: (input: { name: string; parentId: string | null }) => Promise<Folder | void>;
   onRenameFolder: (id: string, name: string) => void;
@@ -648,6 +654,9 @@ export type CanvasProps = {
   // fields, so they commit through here rather than the label editor.
   // Mind map (docs/specs/009-elements/mind-node.md): grows the next node from the label editor.
   onGrowMindNode: (id: string, kind: 'child' | 'sibling') => void;
+  // Flowchart (docs/specs/009-elements/flowchart.md): a step's type and lane from its toolbar. An
+  // Editor's only, so absent for anyone else (who still grows a chart through onGrowMindNode).
+  flowchartActions?: import('@/hooks/canvas/useFlowchartSetters').FlowchartActions;
   // Edit Outline (docs/specs/009-elements/mind-node.md): whether `id` is a root whose outline may be
   // edited, and opening it.
   canEditMindOutline?: (id: string) => boolean;
@@ -660,6 +669,8 @@ export type CanvasProps = {
   // The web components (docs/specs/009-elements/web-components-and-no-groups.md): a row edited in place, one more row from
   // the quick-connect ring, and a hero's caption line. Omitted in read-only.
   onSetWebRows?: (elementId: string, rows: import('@livediagram/document').WebRows) => void;
+  // A pointer note's tip let go at a canvas point (docs/specs/009-elements/pointer-note.md). Omitted in read-only.
+  onSetPointerTip?: (elementId: string, tipAbs: { x: number; y: number }) => void;
   onAppendWebRow?: (elementId: string) => void;
   onSetHeroCaptionLine?: (
     elementId: string,
@@ -683,6 +694,10 @@ export type CanvasProps = {
   // Wrap up the Format canvas tool (the palette tool): drops back to the
   // tool active before it. Drives the format-tool mode banner's "Done" button.
   onExitFormatTool: () => void;
+  // The Format tool's press on an Illustrate page's paper (docs/specs/007-editor/illustrate-pages.md
+  // "Copying a background"): arms or paints that page's background. Absent where pages cannot be
+  // painted (another mode, a person who may not edit them), so such a press is an empty-canvas one.
+  onFormatPagePress?: (pageId: string) => void;
   onFollowLink: (link: import('@livediagram/document').ElementLink) => void;
   onOpenComments: (elementId: string) => void;
   // Open the element's assigned-action popover (docs/specs/012-collaboration/assigned-actions.md). Available in
@@ -700,9 +715,9 @@ export type CanvasProps = {
   // Open the link picker for a link-card element (docs/specs/009-elements/link-cards.md), on double-click.
   // Omitted for read-only viewers.
   onEditLink?: (id: string) => void;
-  // Open the code edit dialog for a code-block shape (docs/specs/009-elements/code-block.md), on
-  // double-click. Omitted for read-only viewers.
-  onEditCode?: (id: string) => void;
+  // Open an element's own edit dialog on double-click: a code block's code (docs/specs/009-elements/code-block.md),
+  // a Sankey's flows (docs/specs/009-elements/sankey.md). Omitted for read-only viewers.
+  onOpenEditDialog?: (id: string) => void;
   // Per-render context for image elements: identity + auth bits the
   // ImageElementView needs to fetch bitmap bytes. Optional so the
   // welcome / new-document surface (where Canvas mounts before
@@ -716,18 +731,17 @@ export type CanvasProps = {
   // Touch-friendly fallback for right-click: a SelectionPopover
   // ellipsis button opens the same context menu under the cursor.
   onOpenElementContextMenu?: (elementId: string, screenX: number, screenY: number) => void;
-  showTemplatePicker: boolean;
+  // The visitor name prompt (IdentityPrompt).
+  showIdentityPrompt: boolean;
   // True after the page has resolved its initial identity + document
   // fetch. Used to suppress the empty-state card during the brief
   // window between "loader dropped" and "welcome modal mounted" so
   // a fresh New Document doesn't flash the Empty Canvas message.
   hydrated: boolean;
-  templatePickerMode: 'welcome' | 'templates' | 'identity';
   // When non-null, the visitor is signed in via Clerk and their
-  // display name is fixed to their account name — TemplatePicker
-  // locks the input. Only relevant in 'identity' mode; ignored
-  // otherwise.
-  templatePickerLockedName?: string | null;
+  // display name is fixed to their account name: IdentityPrompt
+  // locks the input.
+  identityLockedName?: string | null;
   // Hides the floating chrome (palette, explorer, zoom + history dock,
   // plus buttons, selection popover) while the first-run welcome modal
   // is taking the user through identity / template / theme selection.
@@ -735,15 +749,9 @@ export type CanvasProps = {
   // blank page) but free of distracting controls.
   welcomeOpen: boolean;
   selfParticipant: import('@/lib/identity').Participant;
-  onChooseTemplate: (
-    kind: TemplateKind,
-    name: string,
-    // string, not ThemeId: the picker can hand back a custom `custom:<uuid>`
-    // theme id (docs/specs/011-theme/custom-themes.md).
-    themeId: string,
-  ) => void;
-  onSkipTemplatePicker: () => void;
-  onOpenTemplatePicker: () => void;
+  // The name prompt's Join (the name typed) and Cancel.
+  onConfirmIdentity: (name: string) => void;
+  onCancelIdentity: () => void;
   tabThemeId: import('@/lib/themes').ThemeId;
   // Set the active tab's default font (docs/specs/004-interface-design/fonts.md); null clears it.
   // Set the active tab's default text size for new palette elements.

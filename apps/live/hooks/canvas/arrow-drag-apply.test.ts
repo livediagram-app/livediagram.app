@@ -58,7 +58,7 @@ describe('applyArrowDragMove', () => {
       startFromY: 0,
       startToX: 100,
       startToY: 0,
-    } as ArrowDragState);
+    });
     const a = out[0] as Element & {
       from: { x: number; y: number };
       to: { x: number; y: number };
@@ -83,7 +83,7 @@ describe('applyArrowDragMove', () => {
         startFromY: 0,
         startToX: 100,
         startToY: 0,
-      } as ArrowDragState,
+      },
       dx: 5,
       dy: 5,
       noSnap: false,
@@ -121,6 +121,27 @@ describe('applyArrowDragMove', () => {
     expect((off.out[0] as Element & { curveOffset?: unknown }).curveOffset).toBeDefined();
   });
 
+  // docs/specs/008-canvas/snap-override.md: Cmd / Ctrl places an arrow handle freely, like every other drag.
+  it('drags a curve or elbow handle freely with Cmd / Ctrl held', () => {
+    const curve = {
+      kind: 'arrow-curve',
+      arrowId: 'a1',
+      startClientX: 0,
+      startClientY: 0,
+      startMidX: 50,
+      startMidY: 0,
+      grabDx: 0,
+      grabDy: 0,
+    } as ArrowDragState;
+    const offsetOf = (r: ReturnType<typeof run>) =>
+      (r.out[0] as Element & { curveOffset?: { dx: number; dy: number } }).curveOffset;
+    // A hair off the straight line snaps back onto it, unless snapping is held off.
+    expect(offsetOf(run(curve, { dx: 0, dy: 2 }))).toEqual({ dx: 0, dy: 0 });
+    const free = run(curve, { dx: 0, dy: 2, noSnap: true });
+    expect(offsetOf(free)).toEqual({ dx: 0, dy: 2 });
+    expect(free.scheduleGuides).toHaveBeenCalledWith([]);
+  });
+
   it('does not fire the connected callback on an ordinary endpoint move', () => {
     // onArrowConnected is telemetry for landing on ANOTHER arrow; a drag
     // through empty canvas must stay silent (the caller's once-guard can
@@ -134,7 +155,7 @@ describe('applyArrowDragMove', () => {
       startCanvasX: 100,
       startCanvasY: 0,
       reposition: true,
-    } as ArrowDragState);
+    });
     expect(onArrowConnected).not.toHaveBeenCalled();
   });
 
@@ -148,7 +169,7 @@ describe('applyArrowDragMove', () => {
       startClientX: 0,
       startClientY: 0,
       plan,
-    } as ArrowDragState);
+    });
     const a = out[0] as ArrowElement;
     expect(a.arrowStyle).toBe('curved');
     expect(a.curveOffset).toBeDefined();
@@ -163,7 +184,7 @@ describe('applyArrowDragMove', () => {
       startClientY: 0,
       box: { x: 0, y: 0, width: 100, height: 0 },
       start: arrow() as ArrowElement,
-    } as ArrowDragState);
+    });
     const a = out[0] as ArrowElement;
     expect(a.from).toEqual({ kind: 'free', x: 0, y: 0 });
     expect(a.to.kind === 'free' && a.to.x).toBeCloseTo(110);
@@ -210,7 +231,7 @@ describe('sliding an angled segment', () => {
         startClientX: 0,
         startClientY: 0,
         plan: planArrowBend(a, els, { x: 100, y: 50 }),
-      } as ArrowDragState,
+      },
       dx: 3,
       dy: 0,
       noSnap,

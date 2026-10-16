@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { ChevronRightIcon } from '@livediagram/ui';
 import { featureAnchor } from '@/lib/feature-anchor';
+import { EYEBROW } from '@/components/eyebrow';
 
 type SectionProps = {
   id?: string;
@@ -25,11 +26,7 @@ export function Section({
     <section id={id} className={`${bg} border-t border-slate-200/70 dark:border-slate-800/70`}>
       <div className="mx-auto max-w-6xl px-6 py-20 sm:py-24">
         <div className="mx-auto max-w-2xl text-center">
-          {eyebrow ? (
-            <p className="text-sm font-semibold tracking-wide text-brand-600 uppercase dark:text-brand-300">
-              {eyebrow}
-            </p>
-          ) : null}
+          {eyebrow ? <p className={EYEBROW}>{eyebrow}</p> : null}
           <h2 className="mt-3 text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl dark:text-slate-100">
             {title}
           </h2>
@@ -93,7 +90,7 @@ function FeatureCard({ title, description, art, href }: FeatureProps) {
         </p>
       </div>
       {href ? (
-        <div className="flex items-center justify-between gap-2 border-t border-slate-100 bg-slate-50/70 px-6 py-3 text-sm font-medium text-brand-600 transition-colors group-hover:bg-brand-50 dark:group-hover:bg-brand-500/15 group-hover:text-brand-700 dark:border-slate-800 dark:bg-slate-900/70 dark:text-brand-300 dark:group-hover:text-brand-200">
+        <div className="flex items-center justify-between gap-2 border-t border-slate-100 bg-slate-50/70 px-6 py-3 text-sm font-medium text-brand-700 transition-colors group-hover:bg-brand-50 dark:group-hover:bg-brand-500/15 group-hover:text-brand-800 dark:border-slate-800 dark:bg-slate-900/70 dark:text-brand-300 dark:group-hover:text-brand-200">
           <span>
             Learn more<span className="sr-only"> (opens in a new tab)</span>
           </span>

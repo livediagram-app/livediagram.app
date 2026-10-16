@@ -2,7 +2,6 @@ import { useState, type ReactNode } from 'react';
 import { NameEditor } from '@/components/primitives/NameEditor';
 import {
   Brand,
-  ProductNav,
   HoverCard,
   SOLID_BRAND_DARK_CONTROL,
   Glyph,
@@ -12,6 +11,7 @@ import {
 import { AuthControls } from '@/components/chrome/AuthControls';
 import { SharedBadge } from '@/components/chrome/SharedBadge';
 import { HEADER_ACTION_BTN, HeaderGlyph } from '@/components/chrome/header-action';
+import { useFormShareHost } from '@/lib/form-share-store';
 
 // The autosave's sync state. No header pill shows it any more: the failure
 // states each raise a toast (editor-persistence.ts), so silent failures
@@ -69,6 +69,9 @@ type EditorHeaderProps = {
   renameNonce?: number;
   // The role pill (docs/specs/007-editor/live-app.md#role-pill), after the visibility badge.
   rolePill?: ReactNode;
+  // The Present button (docs/specs/012-collaboration/presentation-mode.md "The header's Present
+  // button"): passed only while the deck has a presentable slide, so absent means no button.
+  present?: { slideCount: number; starting: boolean; onPresent: () => void };
 };
 
 export function EditorHeader({
@@ -88,7 +91,9 @@ export function EditorHeader({
   onRename,
   renameNonce = 0,
   rolePill,
+  present,
 }: EditorHeaderProps) {
+  const formShare = useFormShareHost();
   const [editing, setEditing] = useState(false);
 
   // The command palette requests a rename by bumping renameNonce. Each request is
@@ -117,8 +122,13 @@ export function EditorHeader({
       className="relative z-[var(--z-modal)] flex shrink-0 items-center justify-between gap-2 border-y border-slate-200 bg-white sm:gap-4 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
     >
       <div className="flex w-auto items-center gap-2.5">
-        <Brand href="/" size="md" accentColor={brandAccent} wordmarkClassName="hidden sm:inline" />
-        <ProductNav current="editor" />
+        <Brand
+          href="/"
+          size="md"
+          accentColor={brandAccent}
+          wordmarkClassName="hidden sm:inline"
+          className="relative touch-target"
+        />
       </div>
       <div className="flex flex-1 items-center justify-start sm:justify-center">
         {hideTitle ? null : editing && !readOnly ? (
@@ -142,7 +152,8 @@ export function EditorHeader({
                 <button
                   type="button"
                   onClick={() => setEditing(true)}
-                  className="truncate rounded px-2 py-0.5 text-sm text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-white"
+                  // 44px tall on a touch screen; padding, not a pad, since `truncate` clips a ::before.
+                  className="truncate rounded px-2 py-0.5 text-sm text-slate-600 transition pointer-coarse:py-3 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-white"
                 >
                   {documentName}
                 </button>
@@ -179,17 +190,65 @@ export function EditorHeader({
             </button>
           </HoverCard>
         ) : null}
-        {showShare ? (
+        {present ? (
+          <HoverCard
+            title="Present"
+            description={`Present the slide deck: ${present.slideCount} ${
+              present.slideCount === 1 ? 'slide' : 'slides'
+            }.`}
+          >
+            <button
+              type="button"
+              onClick={present.onPresent}
+              disabled={present.starting}
+              className={`${HEADER_ACTION_BTN} text-slate-600 enabled:hover:bg-slate-50 disabled:cursor-wait disabled:opacity-60 dark:text-slate-200 dark:enabled:hover:bg-slate-800`}
+            >
+              <HeaderGlyph>
+                <PresentIcon />
+              </HeaderGlyph>
+              <span>{present.starting ? 'Starting' : 'Present'}</span>
+            </button>
+          </HoverCard>
+        ) : null}
+        {formShare ? (
+          // On a Form tab an Editor's Share is the form's (lib/form-share-store.ts): one share button, never two.
+          <HoverCard
+            title="Share Form"
+            description={
+              formShare.published
+                ? 'Copy the form’s link, or close it.'
+                : 'Publish the form and copy its link.'
+            }
+          >
+            <button
+              type="button"
+              data-tour-id="share-form"
+              onClick={formShare.open}
+              className={`${HEADER_ACTION_BTN} ${
+                formShare.published
+                  ? `bg-brand-700 text-white hover:bg-brand-800 ${SOLID_BRAND_DARK_CONTROL}`
+                  : 'text-slate-600 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-800'
+              }`}
+              aria-pressed={formShare.published}
+            >
+              <HeaderGlyph>
+                <ShareIcon />
+              </HeaderGlyph>
+              <span>Share Form</span>
+            </button>
+          </HoverCard>
+        ) : showShare ? (
           <HoverCard
             title={shareable ? 'Shared' : 'Share'}
             description={shareable ? 'Click to manage links.' : 'Invite collaborators with a link.'}
           >
             <button
               type="button"
+              data-tour-id="share"
               onClick={onOpenShare}
               className={`${HEADER_ACTION_BTN} ${
                 shareable
-                  ? `bg-brand-500 text-white hover:bg-brand-600 ${SOLID_BRAND_DARK_CONTROL}`
+                  ? `bg-brand-700 text-white hover:bg-brand-800 ${SOLID_BRAND_DARK_CONTROL}`
                   : 'text-slate-600 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-800'
               }`}
               aria-pressed={shareable}
@@ -205,9 +264,10 @@ export function EditorHeader({
             </button>
           </HoverCard>
         ) : null}
-        {/* Explorer + Help used to sit here as top-right links; both now live
-            in the ProductNav apps menu next to the logo, so the header keeps
-            just its primary actions. */}
+        {/* Explorer + Help used to sit here as top-right links; the product's
+            surfaces now live in the Explorer panel's footer
+            (docs/specs/013-workspace/explorer-structure.md "Layout"), so the
+            header keeps just its primary actions. */}
         <AuthControls onOpenAccount={onOpenAccount} />
       </div>
     </header>
@@ -219,6 +279,14 @@ function CopyIcon() {
     <Glyph size={13} units={16}>
       <rect x="5" y="5" width="8" height="8.5" rx="1.5" />
       <path d="M3 11V3.5A1.5 1.5 0 0 1 4.5 2H10" />
+    </Glyph>
+  );
+}
+
+function PresentIcon() {
+  return (
+    <Glyph size={13} units={16}>
+      <path d="M5 3.2v9.6a.6.6 0 0 0 .9.5l7.4-4.8a.6.6 0 0 0 0-1L5.9 2.7a.6.6 0 0 0-.9.5Z" />
     </Glyph>
   );
 }

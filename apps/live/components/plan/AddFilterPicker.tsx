@@ -8,6 +8,7 @@ import { useState } from 'react';
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
+  NoMatches,
   PlusIcon,
   SearchIcon,
   TextInput,
@@ -143,9 +144,7 @@ export function AddFilterPicker({
                   ))}
             </ul>
             {(field ? shownValues : shownFields).length === 0 ? (
-              <p className="px-2 py-2 text-[12px] text-slate-500 dark:text-slate-400">
-                Nothing matches “{query.trim()}”.
-              </p>
+              <NoMatches things={field ? 'values' : 'fields'} query={query} />
             ) : null}
           </div>
         </AnchoredPopover>

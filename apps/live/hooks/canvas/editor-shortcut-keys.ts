@@ -36,7 +36,7 @@ export type EditorKeyboardShortcutsDeps = {
   // draw is pending. The hook only needs to know "is something
   // pending" so we accept the opaque truthiness rather than the
   // discriminated union type itself.
-  pendingDraw: unknown | null;
+  pendingDraw: unknown;
   onCancelDraw: () => void;
   // Selection state. Delete / Backspace acts on whichever is
   // populated (multi wins).
@@ -52,6 +52,8 @@ export type EditorKeyboardShortcutsDeps = {
   // A Participant (docs/specs/013-workspace/share-roles.md): read-only, yet it deletes, types into and
   // Space-edits elements; what it may touch is decided where each lands (the commit guard, beginEdit).
   participant?: boolean;
+  // The tab is in Facilitate, the one mode whose W walks (docs/specs/008-canvas/avatar-mode.md "Where it is offered").
+  facilitateMode?: boolean;
   // Action callbacks that perform the actual mutation. Each one is
   // a fresh closure every render: the hook reads them via a ref so
   // the keydown listener always sees the latest version.
@@ -93,6 +95,10 @@ export type EditorKeyboardShortcutsDeps = {
   // it can't go stale against the selection.
   canGrowMindNode: (id: string) => boolean;
   onGrowMindNode: (id: string, kind: 'child' | 'sibling') => void;
+  // Escape on the empty node a growth just made (the Tab one time too many):
+  // removes it and selects its parent. False when that is not the case, so
+  // Escape deselects as usual.
+  onEscapeMindNode: (id: string) => boolean;
   // S arms the shape pen — the same gesture as the pencil, but the stroke is
   // run through shape recognition on release (docs/specs/008-canvas/two-pens.md).
   onBeginShapePen: () => void;
@@ -201,7 +207,10 @@ export const VIEW_TOOL_KEYS: Record<string, ShortcutAction> = {
   h: (l) => l.setCanvasTool('pan'),
   k: (l) => l.setCanvasTool('laser'),
   i: (l) => l.setCanvasTool('isometric'), // docs/specs/008-canvas/isometric-view.md: pans like Hand, non-mutating
-  w: (l) => l.setCanvasTool('avatar'), // docs/specs/008-canvas/avatar-mode.md: walk mode, read-only canvas
+  // docs/specs/008-canvas/avatar-mode.md: walk mode, read-only canvas; Facilitate only, as in the dropdown.
+  w: (l) => {
+    if (l.facilitateMode) l.setCanvasTool('avatar');
+  },
   z: (l) => l.onToggleZen(), // docs/specs/007-editor/zen-mode.md focus mode
 };
 

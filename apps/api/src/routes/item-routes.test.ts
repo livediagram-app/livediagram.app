@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { sentJson } from '@livediagram/vitest-config/sent-request';
 import type { ItemResponse, ItemsResponse } from '@livediagram/api-schema';
 import { itemPersonId, presetSetup, type Item } from '@livediagram/items';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
@@ -54,7 +55,7 @@ beforeEach(() => {
     idFromName: (n: string) => n,
     get: () => ({
       fetch: async (_url: string, init: RequestInit) => {
-        relayed.push(JSON.parse(String(init.body)));
+        relayed.push(sentJson(init));
         return new Response(null, { status: 204 });
       },
     }),
@@ -1014,6 +1015,36 @@ describe('a vote’s tally', () => {
     expect(relayed).toHaveLength(1);
     await call({ path: '/items/tally', body: { items: [{ id: a.id, votes: { p1: 1 } }] } });
     expect((await db.readItem(sql.env, 'd1', a.id))!.fields['votes']).toEqual({ p1: 3, p2: 1 });
+  });
+
+  // A card that keeps changing fails the tally after the others landed: the refusal names the cards tallied, so the
+  // host never sends their dots again (a resent tally would add them twice).
+  it('answers a busy tally with the cards already tallied', async () => {
+    const a = (await add({ title: 'A' })).body.item;
+    const b = (await add({ title: 'B' })).body.item;
+    const real = db.updateItemsAtRev;
+    const racing = vi.spyOn(db, 'updateItemsAtRev').mockImplementation((env, doc, writes) =>
+      real(
+        env,
+        doc,
+        writes.filter((w) => w.next.id !== b.id),
+      ),
+    );
+    const res = await call<ItemsResponse & { error: string }>({
+      path: '/items/tally',
+      body: {
+        items: [
+          { id: a.id, votes: { p1: 2 } },
+          { id: b.id, votes: { p1: 1 } },
+        ],
+      },
+    });
+    racing.mockRestore();
+    expect(res.status).toBe(409);
+    expect(res.body.error).toBe('item_busy');
+    expect(res.body.items.map((i) => [i.id, i.fields['votes']])).toEqual([[a.id, { p1: 2 }]]);
+    expect(res.body.rev).toBeGreaterThan(0);
+    expect((await db.readItem(sql.env, 'd1', b.id))!.fields['votes']).toBeUndefined();
   });
 
   it('refuses a malformed tally, and needs edit access', async () => {

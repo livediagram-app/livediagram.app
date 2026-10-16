@@ -25,6 +25,7 @@ import {
   carriesWords,
   hasRichFormatting,
   normalizeRuns,
+  supportsAccentEdge,
   type AnimationSpeed,
   type ArrowElement,
   type BorderRadius,
@@ -33,6 +34,7 @@ import {
   type QuickSwatchSlot,
   type BoxedElement,
   type ElementShadow,
+  type Finish,
   type IconAnimation,
   type IconSize,
   type IconWeight,
@@ -78,6 +80,9 @@ function uniformRunValue<K extends keyof TextRun>(
   if (first === undefined) return undefined;
   return runs.every((r) => r[key] === first) ? first : undefined;
 }
+
+// The boxed kinds that carry a finish (docs/specs/008-canvas/finish.md).
+const FINISH_KINDS: ReadonlySet<string> = new Set(['shape', 'text', 'sticky', 'table']);
 
 // Boxed (shape / text / sticky / ...) painter projection. Carries every
 // formatting field the source's kind renders: size + aspect lock +
@@ -168,7 +173,14 @@ export function paintableBoxedFields(source: BoxedElement): Partial<BoxedElement
     out.strokeStyle = ext.strokeStyle;
   }
   if (RADIUS_KINDS.has(kind)) out.borderRadius = ext.borderRadius;
+  // The accent edge (docs/specs/008-canvas/accent-edge.md) travels with Border, on the kinds that draw one.
+  if (supportsAccentEdge(source)) {
+    out.accentEdge = (source as { accentEdge?: unknown }).accentEdge;
+    out.accentEdgeColor = (source as { accentEdgeColor?: unknown }).accentEdgeColor;
+  }
   if (kind === 'table') out.headerTextColor = ext.headerTextColor;
+  // The finish (docs/specs/008-canvas/finish.md), on the kinds that carry one; unset copies Follow Tab.
+  if (FINISH_KINDS.has(kind)) out.finish = (source as { finish?: Finish }).finish;
   // A text element's quick-swatch binding, beside its colour; not when a
   // uniform run colour is what was painted, which the slot does not describe.
   if (kind === 'text') out.textSwatch = uniformRunValue(rt, 'color') ? undefined : ext.textSwatch;
@@ -189,7 +201,7 @@ export function paintableBoxedFields(source: BoxedElement): Partial<BoxedElement
     out.iconSize = ext.iconSize;
     out.iconWeight = ext.iconWeight;
   }
-  return out as Partial<BoxedElement>;
+  return out;
 }
 
 // Arrow painter projection. Arrows carry stroke + opacity + arrowhead
@@ -209,6 +221,8 @@ export function paintableArrowFields(source: ArrowElement): Partial<ArrowElement
     arrowheadColor: source.arrowheadColor,
     arrowheadSize: source.arrowheadSize,
     arrowheadShape: source.arrowheadShape,
+    // An ER relationship's own start head (one, many...); absent, the start takes the end's shape.
+    arrowheadStartShape: source.arrowheadStartShape,
     arrowStyle: source.arrowStyle,
     // Route behind boxes (docs/specs/008-canvas/arrow-route-behind.md): a look choice like the rest. Absent
     // means on, so a default source turns it back on for the target.
@@ -229,6 +243,7 @@ export function paintableArrowFields(source: ArrowElement): Partial<ArrowElement
     textStrikethrough: source.textStrikethrough,
     labelFill: source.labelFill,
     font: source.font,
+    finish: source.finish,
   };
 }
 
@@ -287,7 +302,7 @@ export function fitPaintToTarget(
     out.animationSpeed = undefined;
     out.animationRepeat = undefined;
   }
-  return out as Partial<BoxedElement>;
+  return out;
 }
 
 export function applyPaint<T extends BoxedElement | ArrowElement>(
@@ -317,6 +332,12 @@ export function applyPaint<T extends BoxedElement | ArrowElement>(
     if (!(colour in painted)) continue;
     if (painted[binding] !== undefined) next[binding] = painted[binding];
     else delete next[binding];
+  }
+
+  // An accent edge lands only on a kind that draws one (docs/specs/008-canvas/accent-edge.md).
+  if (!supportsAccentEdge(target)) {
+    delete next.accentEdge;
+    delete next.accentEdgeColor;
   }
 
   const runs = next.richText as TextRun[] | undefined;

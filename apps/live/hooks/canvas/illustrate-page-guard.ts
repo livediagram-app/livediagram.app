@@ -22,3 +22,19 @@ export function pressIsOffPage(
   if (off) debugLog('[illustrate-page] press off the pages ignored', at);
   return off;
 }
+
+/** The page a press lands on (its paper or anything on it), or null off every page. */
+export function pageIdAtPress(
+  view: IllustratePagesView | null | undefined,
+  press: { clientX: number; clientY: number },
+  wrapperRef: RefObject<HTMLElement | null>,
+  zoom: number,
+): string | null {
+  if (!view) return null;
+  const rect = wrapperRef.current?.getBoundingClientRect();
+  if (!rect) return null;
+  return (
+    illustratePageAt(view.pages, pointerToCanvas(press.clientX, press.clientY, rect, zoom))?.id ??
+    null
+  );
+}

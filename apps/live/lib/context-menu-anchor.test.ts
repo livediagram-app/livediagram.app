@@ -10,7 +10,7 @@
 // clamp-to-viewport.test.ts).
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { elementMenuAnchor } from './context-menu-anchor';
+import { editMenuAnchor, elementMenuAnchor } from './context-menu-anchor';
 
 const MENU_WIDTH = 224;
 const GAP = 8;
@@ -53,5 +53,17 @@ describe('elementMenuAnchor', () => {
   it('never places the menu past the right viewport edge', () => {
     const out = elementMenuAnchor({ left: 100, right: 300, top: 50 });
     expect(out.x + MENU_WIDTH + GAP).toBeLessThanOrEqual(VW);
+  });
+});
+
+// docs/specs/008-canvas/canvas-and-palette.md "Rich text labels": the menu beside a label being edited clears the
+// floating text toolbar, which is wider than a small element.
+describe('editMenuAnchor', () => {
+  it('opens beside the toolbar when it reaches past the element, at the element top', () => {
+    const element = { left: 500, right: 600, top: 300 };
+    expect(editMenuAnchor(element, { left: 400, right: 700 })).toEqual({ x: 708, y: 300 });
+    expect(editMenuAnchor(element, null)).toEqual(elementMenuAnchor(element));
+    // A toolbar narrower than the element changes nothing.
+    expect(editMenuAnchor(element, { left: 520, right: 580 })).toEqual(elementMenuAnchor(element));
   });
 });

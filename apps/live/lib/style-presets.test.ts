@@ -23,6 +23,7 @@ import {
   applyIconWeightToEl,
   applyRotationToEl,
   applyShadowToEl,
+  applyFinishToEl,
   applyStrokeColorToEl,
   applyTextColorToEl,
 } from './style-presets';
@@ -128,6 +129,18 @@ describe('applyTablePresetToEl', () => {
 });
 
 describe('applyChartPaletteToEl', () => {
+  // docs/specs/009-elements/pie-chart.md "Legend": a legend sets its own palette, and can follow the theme again.
+  it('sets a legend palette, clears it with null, and leaves a plain shape alone', () => {
+    const legend = el('shape', { shape: 'legend' });
+    const set = applyChartPaletteToEl(legend, 'berry');
+    expect(set).toMatchObject({ chartPalette: 'berry' });
+    expect(
+      (applyChartPaletteToEl(set, null) as { chartPalette?: string }).chartPalette,
+    ).toBeUndefined();
+    const square = el('shape', { shape: 'square' });
+    expect(applyChartPaletteToEl(square, 'berry')).toBe(square);
+  });
+
   it('sets the palette on a chart without touching its data', () => {
     const chart = el('shape', { shape: 'pie-chart', pieSlices: [{ label: 'A', value: 1 }] });
     const applied = applyChartPaletteToEl(chart, 'ocean');
@@ -454,5 +467,34 @@ describe('Ink where no name can be stored', () => {
     expect(applyTextColorToEl(table, 'ink')).toBe(table);
     const note = el('sticky', { strokeColor: '#123456' });
     expect(applyStrokeColorToEl(note, 'ink')).toBe(note);
+  });
+});
+
+describe('applyFinishToEl (docs/specs/008-canvas/finish.md)', () => {
+  it('sets a finish on shapes, arrows, text, stickies and tables', () => {
+    for (const type of ['shape', 'arrow', 'text', 'sticky', 'table']) {
+      const out = applyFinishToEl(el(type), 'sketch') as { finish?: unknown };
+      expect(out.finish, type).toBe('sketch');
+    }
+  });
+
+  it('stores Flexible when picked, so it beats a Sketch tab', () => {
+    expect((applyFinishToEl(el('shape'), 'flexible') as { finish?: unknown }).finish).toBe(
+      'flexible',
+    );
+  });
+
+  it('Follow Tab (null) removes the key rather than storing a value', () => {
+    const out = applyFinishToEl(el('shape', { finish: 'sketch' }), null);
+    expect('finish' in out).toBe(false);
+    const bare = el('shape');
+    expect(applyFinishToEl(bare, null)).toBe(bare);
+  });
+
+  it('no-ops (same reference) on types without a finish', () => {
+    for (const type of ['freehand', 'image', 'annotation']) {
+      const source = el(type);
+      expect(applyFinishToEl(source, 'sketch'), type).toBe(source);
+    }
   });
 });

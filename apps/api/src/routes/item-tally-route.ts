@@ -1,21 +1,21 @@
 // POST /items/tally (docs/specs/026-plan/items.md "Tally"): a session vote's tally, added to its cards' votes when the
 // vote's host ends it. Each entry is a card id and its voters' dots (pseudonymous person ids to counts); a card gone
 // meanwhile is skipped, the rest land. The updates go in one D1 batch, each guarded by the rev read, with one store
-// rev raise and one room op; a card a concurrent write moved on is read again and retried. Edit access.
+// rev raise and one room op; a card a concurrent write moved on is read again and retried (item-write-loop.ts), and a
+// retry still busy at the end carries the cards already tallied, so the host never sends them again. Edit access.
 import type { ItemsResponse } from '@livediagram/api-schema';
 import {
   ITEM_BULK_MAX,
   ITEM_VOTES_PER_PERSON_MAX,
   ITEM_VOTERS_MAX,
-  ITEM_WRITE_RETRIES,
   applyTally,
   type Item,
   type ItemTally,
 } from '@livediagram/items';
-import { readItems, updateItemsAtRev } from '../db';
 import { badRequest, json } from '../responses';
 import { readBody, type RouteContext } from './context';
-import { forCaller, itemBusy, itemCaller, itemNotFound, relay, writer } from './item-route-kit';
+import { forCaller, itemCaller, itemNotFound, writer } from './item-route-kit';
+import { writeItemsWithRetry } from './item-write-loop';
 
 // A person id as items carry it: a short token.
 const PERSON_ID_MAX = 64;
@@ -53,37 +53,24 @@ export async function tally(ctx: RouteContext, documentId: string): Promise<Resp
   if (caller.scope && wanted.some((w) => !caller.scope!.has(w.id))) return itemNotFound();
   const by = await writer(ctx, caller.owner);
   const now = Date.now();
-  const done = new Map<string, Item>();
-  let pending = wanted;
-  let rev = -1;
-  for (let attempt = 1; attempt <= ITEM_WRITE_RETRIES; attempt += 1) {
-    const stored = new Map(
-      (await readItems(ctx.env, documentId, [...new Set(pending.map((t) => t.id))])).map((i) => [
-        i.id,
-        i,
-      ]),
-    );
-    // A card gone meanwhile is skipped.
-    pending = pending.filter((t) => stored.has(t.id));
-    const nexts = new Map<string, Item>();
-    for (const t of pending)
-      nexts.set(t.id, applyTally(nexts.get(t.id) ?? stored.get(t.id)!, t.votes, { now, by }));
-    if (nexts.size === 0) break;
-    const written = await updateItemsAtRev(
-      ctx.env,
-      documentId,
-      [...nexts].map(([id, next]) => ({ next, expectedRev: stored.get(id)!.rev })),
-    );
-    rev = written.rev;
-    const landed = [...nexts.values()].filter((i) => written.landed.has(i.id));
-    if (landed.length) relay(ctx, documentId, landed, [], rev);
-    for (const item of landed) done.set(item.id, item);
-    pending = pending.filter((t) => !written.landed.has(t.id));
-    if (pending.length === 0) break;
-    console.info('[items] items.write.retry', { documentId, attempt, left: pending.length });
-  }
-  if (pending.length) return itemBusy();
-  console.info('[items] tallied', { documentId, count: done.size });
-  const answer: ItemsResponse = { items: forCaller(caller, [...done.values()]), rev };
+  // A card gone meanwhile is skipped.
+  const result = await writeItemsWithRetry(
+    ctx,
+    caller,
+    documentId,
+    wanted,
+    async (pending, stored) => {
+      const nexts = new Map<string, Item>();
+      for (const t of pending)
+        nexts.set(t.id, applyTally(nexts.get(t.id) ?? stored.get(t.id)!, t.votes, { now, by }));
+      return nexts;
+    },
+  );
+  if (result instanceof Response) return result;
+  console.info('[items] tallied', { documentId, count: result.done.size });
+  const answer: ItemsResponse = {
+    items: forCaller(caller, [...result.done.values()]),
+    rev: result.rev,
+  };
   return json(answer);
 }

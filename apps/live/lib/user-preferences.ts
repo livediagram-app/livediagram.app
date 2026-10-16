@@ -21,7 +21,9 @@ export type MapSize = 'short' | 'medium' | 'tall';
 // render would otherwise be undone.
 
 import { upgradeLegacyPreferences } from '@livediagram/api-schema';
-import type { SkipLocationStep } from './skip-location-step';
+import type { PageKind } from '@livediagram/document';
+import type { ElementTourKind } from './element-tours';
+import type { PlanTourTrack } from './plan-tour';
 import type { SwatchOverrideStore } from './swatch-overrides';
 import type { WhiteboardShapeKey } from './whiteboard-shape-catalogue';
 import type { ShapePicks } from './whiteboard-shape-slots';
@@ -166,6 +168,10 @@ export type UserPreferences = {
   // Missing / undefined / true === on, the default. Flipped from the
   // panel's settings gear (desktop-only chrome, like the hover itself).
   layerHoverPreview?: boolean;
+  // Whether the bottom-right cluster names its buttons beside their icons on a wide desktop
+  // (docs/specs/007-editor/live-app.md "Named on a wide desktop"). Missing === on; a phone never
+  // names them, whatever this says. Read through useDockNames.
+  dockButtonNames?: boolean;
   // Email notifications (docs/specs/014-identity/profile-and-email-notifications.md). Account-level settings flipped from the
   // Settings dialog; the api worker reads them server-side before
   // sending the matching transactional email (docs/specs/014-identity/transactional-email.md). Distinct from
@@ -184,21 +190,50 @@ export type UserPreferences = {
   notifyActionAssigned?: boolean;
   // "A teammate @-mentioned me in a comment" (docs/specs/012-collaboration/comment-mentions.md).
   notifyMentions?: boolean;
+  // "Someone fills in one of my forms" (docs/specs/030-forms/forms.md "Hearing about responses").
+  notifyFormResponses?: boolean;
   // "Show my profile picture" (docs/specs/014-identity/profile-picture.md §4): whether signed-in
   // collaborators see this account's picture. Missing = SHOW_PROFILE_PICTURE_DEFAULT. The owner
   // always sees their own picture whatever this says.
   showProfilePicture?: boolean;
-  // The interactive editor tour's seen-guard (docs/specs/007-editor/editor-tour.md). True once the
+  // The Diagram tour's seen-guard (docs/specs/007-editor/editor-tour.md; named for the welcome tour it was
+  // until October 2026, so earlier answers still hold). True once the
   // tour's welcome offer has been answered (taken, skipped, or declined),
   // so the offer never re-appears for this user — synced, so it follows
   // the account across devices like every other preference. Surfaced in
-  // Settings as "I've seen the editor tour"; unchecking it there and
+  // Settings as Tours › "Diagram Tour" (inverted); turning it on there and
   // closing Settings replays the tour. Missing / undefined === not seen.
   tourSeen?: boolean;
-  // The Plan tour's seen-guard (docs/specs/026-plan/plan-tour.md), as `tourSeen` is the welcome tour's:
-  // true once its offer has been answered, so it never offers itself again on any device. Surfaced in
-  // Settings as "Show Plan Tour" (inverted). Missing / undefined === not seen.
+  // The Plan tour's seen-guard (docs/specs/026-plan/plan-tour.md): true counts both tracks as seen while Power user
+  // mode is on (lib/tour-tracks.ts); set with every track by Settings' Tours › "Plan Tour" switched off.
   planTourSeen?: boolean;
+  // The Plan tour tracks (Boards, Sheets) whose offer has been answered (taken, skipped or declined), so each offers
+  // itself once ever. Cleared with `planTourSeen` when the Settings switch is turned on.
+  planTourTracks?: PlanTourTrack[];
+  // The Facilitate tour's seen-guard (docs/specs/012-collaboration/facilitate-tour.md), as `planTourSeen`.
+  // Surfaced in Settings as Tours › "Facilitate Tour" (inverted). Missing / undefined === not seen.
+  facilitateTourSeen?: boolean;
+  // The Draw tour's seen-guard (docs/specs/023-draw-mode/draw-tour.md), as `facilitateTourSeen`.
+  // Surfaced in Settings as Tours › "Draw Tour" (inverted). Missing / undefined === not seen.
+  drawTourSeen?: boolean;
+  // The Forms tour's seen-guard (docs/specs/030-forms/forms.md "The Forms tour"), as `drawTourSeen`; Show Me in the
+  // form's cog panel reruns it. Missing / undefined === not seen.
+  formTourSeen?: boolean;
+  // The Avatar tour's seen-guard (docs/specs/008-canvas/avatar-tour.md), as `drawTourSeen`.
+  // Surfaced in Settings as Tours › "Avatar Tour" (inverted). Missing / undefined === not seen.
+  avatarTourSeen?: boolean;
+  // The Illustrate tour's seen-guard (docs/specs/007-editor/illustrate-tour.md), as `planTourSeen`: true counts every
+  // page kind's track as seen while Power user mode is on. Set with every kind by Settings' Tours › "Illustrate Tour".
+  illustrateTourSeen?: boolean;
+  // The page kinds whose Illustrate tour track has been offered and answered (taken, skipped or declined), so each
+  // kind offers its own once ever. Cleared with `illustrateTourSeen` when the Settings switch is turned on.
+  illustrateTourKinds?: PageKind[];
+  // Element tours (docs/specs/007-editor/element-tours.md): the toured element kinds whose offer has been answered
+  // (Play or Cancel), so each offers itself once ever. Surfaced in Settings as Tours › Element Tours, one switch
+  // per kind (inverted). Read through lib/element-tours.
+  elementTourKinds?: ElementTourKind[];
+  // Counts every element tour as answered while Power user mode is on (lib/tour-tracks.ts); written by its preset.
+  elementToursSeen?: boolean;
   // Documents this user has hidden from the Explorer's Recent list
   // (docs/specs/013-workspace/hide-from-recent.md). PER-USER rather than a field on the document: your Recent
   // is your view of your own work, and on a shared document one
@@ -244,10 +279,14 @@ export type UserPreferences = {
   // Draw mode's pattern, the person's own (docs/specs/007-editor/editor-modes.md "One look"):
   // Plain, Dots or Grid. Read through lib/whiteboard-dock-prefs. Missing === Grid.
   drawPattern?: 'blank' | 'grid' | 'graph';
-  // Skip the New Document wizard's Location step (docs/specs/013-workspace/default-folders.md
-  // "Skipping the Location step"): where every new document is saved. Read through
-  // lib/skip-location-step, which parses it. Missing or null === off; Turn Off writes null.
-  skipLocationStep?: SkipLocationStep | null;
+  // How Illustrate's Contents shows on a desktop (docs/specs/007-editor/illustrate-pages.md
+  // "Contents"): docked as a sidebar down the canvas's left, or minimised to its cluster button. Read
+  // through lib/contents-placement. Missing (or anything but 'button') === the sidebar.
+  contentsPlacement?: 'sidebar' | 'button';
+  // The presenter settings (docs/specs/012-collaboration/presentation-mode.md "Settings"): transition, speed,
+  // playback and display, as one object. Read through lib/presentation-config, which trusts it only once parsed.
+  // Missing === what this browser kept before they followed the account, else the defaults.
+  presentation?: Record<string, unknown>;
 };
 
 // How many excluded ids we keep. A document id is a 36-char UUID, so 200
@@ -303,7 +342,7 @@ export function readUserPreferences(): UserPreferences {
     if (typeof parsed !== 'object' || parsed === null) return {};
     // Keep unknown keys: forward-compat for future-versioned flags
     // a different client may have written.
-    return upgradeLegacyPreferences(parsed as Record<string, unknown>) as UserPreferences;
+    return upgradeLegacyPreferences(parsed as Record<string, unknown>);
   } catch {
     return {};
   }
@@ -352,7 +391,7 @@ export function rebaseUserPreferences(
     if (key in after) rebased[key] = after[key];
     else delete rebased[key];
   }
-  return rebased as UserPreferences;
+  return rebased;
 }
 
 // Rebase a change (above), write it, and answer what was written, for a
@@ -385,7 +424,7 @@ export async function fetchUserPreferences(ownerId: string): Promise<UserPrefere
   const remote = await apiGetPreferences(ownerId);
   if (remote === null) return null;
   const local = readUserPreferences();
-  const server = upgradeLegacyPreferences(remote as Record<string, unknown>) as UserPreferences;
+  const server = upgradeLegacyPreferences(remote) as UserPreferences;
   const unsynced = preferencesUnsynced(ownerId);
   const merged = fitPreferences(unsynced ? { ...server, ...local } : { ...local, ...server });
   writeLocalStorageSafe(STORAGE_KEY, JSON.stringify(merged));

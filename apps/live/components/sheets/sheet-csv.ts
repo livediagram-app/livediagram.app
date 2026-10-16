@@ -16,6 +16,7 @@ import { track } from '@/lib/telemetry';
 import { downloadBlob } from '@/lib/download-blob';
 import type { SheetController } from './sheet-controller';
 
+// The file Download CSV saves: made safe for a spreadsheet to open (no field runs as a formula, sheet.md "CSV").
 export function sheetCsvText(wb: Workbook, sheet: Sheet): string {
   const ext = wb.extent(sheet.id);
   const rows: string[][] = [];
@@ -27,7 +28,7 @@ export function sheetCsvText(wb: Workbook, sheet: Sheet): string {
     }
     rows.push(row);
   }
-  return toCsv(rows);
+  return toCsv(rows, { safe: true });
 }
 
 export function downloadSheetCsv(wb: Workbook, sheet: Sheet): void {
@@ -82,6 +83,8 @@ export function importCsvText(c: SheetController, text: string, mode: 'replace' 
     !c.writeAll(
       writes.map((write) => ({ sheetId: c.sheet.id, write })),
       'Paste',
+      // An import is stored as it is; values its rules do not allow are marked (data-validation.md).
+      { unchecked: true },
     )
   )
     return;

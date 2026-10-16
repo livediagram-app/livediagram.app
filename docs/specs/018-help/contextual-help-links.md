@@ -86,7 +86,7 @@ Grouped by priority; each links the keyed article.
 > already has a prominent global Help icon, and a `?` on every panel made the
 > canvas chrome noisy. Contextual links now live only in dialogs, in-panel
 > settings (the Settings dialog's rows), and **empty-state messages** (the
-> empty-canvas Quick Start banner keeps its link). The articles themselves
+> empty-canvas card keeps its link). The articles themselves
 > (`explorerPanel`, `palette`, `comments`, `ai-tools`)
 > stay in the registry, reachable from the help centre and the header.
 
@@ -121,8 +121,8 @@ Grouped by priority; each links the keyed article.
 
 **Onboarding / empty states**
 
-- Empty-canvas Quick Start banner -> `your-first-diagram`
-- Template picker -> `templates`
+- Empty-canvas card -> `your-first-diagram`
+- Template starts -> `templates` (Start Facilitating, Start Illustrating)
 - Settings - Keyboard category (was the Shortcuts dialog) -> `keyboard-shortcuts`
 - Sign-in reasons modal -> `guest-vs-account`
 

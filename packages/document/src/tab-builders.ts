@@ -3,10 +3,13 @@
 // event-storming landing every authoring path shares. Render-free, so the MCP, the api and the CLI
 // all build tabs the same way. Template tabs are `buildTemplateTab` in @livediagram/templates.
 
+import { withFacingBends } from './arrow-orthogonal';
+import { settleDiagramKeys } from './diagram-key';
 import { autoLayoutElements, isLayoutCandidate, nodesLookUnplaced } from './auto-layout';
-import { isEventStormingNote, isEventStormingTab } from './event-storming';
+import { eventStormingLayers, isEventStormingNote, isEventStormingTab } from './event-storming';
 import { landArrivals } from './event-storming-lane-landing';
 import { layoutGraph, type GraphInput } from './graph-input';
+import { agendaFitHeight } from './svg-render-agenda';
 import { recolourElementsForTheme } from './theme-graph';
 import { getBuiltInTheme } from './themes';
 import { coerceShapeKind } from './validate';
@@ -40,10 +43,15 @@ export function buildTab(
   const theme = getBuiltInTheme(themeId);
   // Coerce off-vocabulary shape kinds (e.g. a model emitting "rectangle", which
   // isn't a kind — the box is "square") so every node actually renders a box.
-  const coerced = elements.map((el) =>
-    el.type === 'shape' ? { ...el, shape: coerceShapeKind(el.shape) } : el,
-  );
-  const laidOut = applyLayout(layout, coerced);
+  // An agenda grows to draw every segment it is given (docs/specs/012-collaboration/agenda.md "The face").
+  const coerced = elements.map((el) => {
+    if (el.type !== 'shape') return el;
+    const shape = coerceShapeKind(el.shape);
+    return shape === 'agenda' ? { ...el, shape, height: agendaFitHeight(el) } : { ...el, shape };
+  });
+  // An angled arrow left as an L between ends that face each other bends twice instead (layout-cleanup.md).
+  // A diagram key's rows follow the tab's lines (diagram-key.md), settled as the editor settles them on commit.
+  const laidOut = settleDiagramKeys(withFacingBends(applyLayout(layout, coerced)));
   return {
     id: tabId,
     name,
@@ -65,7 +73,12 @@ export function buildGraphTab(
   graph: GraphInput,
   themeId: string | undefined,
 ): Tab {
-  return buildTab(tabId, name, layoutGraph(graph), 'preserve', themeId);
+  const tab = buildTab(tabId, name, layoutGraph(graph), 'preserve', themeId);
+  // A storm is an event-storming board, born settled on its lanes as the template's is
+  // (docs/specs/021-event-storming/event-storming.md "Always on a lane").
+  return graph.style === 'storm'
+    ? { ...tab, kind: 'event-storming', esLanesSettled: true, layers: eventStormingLayers() }
+    : tab;
 }
 
 // Workshop notes a call adds or moves on an event-storming tab land on lanes

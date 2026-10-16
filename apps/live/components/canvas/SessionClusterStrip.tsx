@@ -19,14 +19,60 @@ import { ClusterPopoverSegment, ClusterStrip } from './ClusterPopoverButton';
 export type SessionSegment = 'session-timer' | 'session-vote' | 'session-poll';
 
 // Which tools a mode's strip offers (docs/specs/012-collaboration/session-tools.md "The Session strip"):
-// all three in Diagram; Timer and Vote in Plan, where cards take the dots; none in Draw or Illustrate.
+// all three in Facilitate (docs/specs/012-collaboration/facilitate-mode.md), and on an event-storming
+// board, a workshop that is always Diagram and cannot switch; Timer and Vote in Plan, where cards take
+// the dots, only while `planVoting` (usePlanVoting: a board on the tab made for voting, or a session running);
+// in Illustrate, Vote and Poll only while one runs (`runningOnly`), so a vote or poll started from a
+// session button there can be watched and ended; none in Diagram or Draw, even while a tool runs.
+export type SessionStripTools = {
+  timer: boolean;
+  vote: boolean;
+  poll: boolean;
+  // Only the buttons of tools that are running, for everyone: nothing is started from the strip.
+  runningOnly?: boolean;
+};
+
 export function sessionStripTools(
   mode: string | undefined,
-): { timer: boolean; vote: boolean; poll: boolean } | null {
-  const m = mode ?? 'diagram';
-  if (m === 'diagram') return { timer: true, vote: true, poll: true };
-  if (m === 'plan') return { timer: true, vote: true, poll: false };
+  esBoard = false,
+  planVoting = true,
+): SessionStripTools | null {
+  if (mode === 'facilitate' || esBoard) return { timer: true, vote: true, poll: true };
+  if (mode === 'plan') return planVoting ? { timer: true, vote: true, poll: false } : null;
+  if (mode === 'illustrate') return { timer: false, vote: true, poll: true, runningOnly: true };
   return null;
+}
+
+// Whether this strip offers its idle tools, to start one: an editor's, outside a running-only strip. The one
+// rule both the strip's buttons and its popovers' closing read, so they never disagree about what is there.
+export function stripCanStart(tools: SessionStripTools, readOnly: boolean): boolean {
+  return !readOnly && !tools.runningOnly;
+}
+
+// Has the button under an open strip popover gone? Then the popover closes rather than float with nothing
+// under it: the mode offers no strip or not that tool (a mode switch), or the strip shows only running tools
+// (a view-role visitor's, or Illustrate's for everyone) and that tool's activity has ended. `running.poll`
+// is a poll whose results are ours to see, which is when its button shows.
+export function stripSegmentGone({
+  segment,
+  tools,
+  readOnly,
+  running,
+}: {
+  segment: SessionSegment | null;
+  /** The strip's tools, or null when it has none (or no session to run them). */
+  tools: SessionStripTools | null;
+  readOnly: boolean;
+  running: { timer: boolean; vote: boolean; poll: boolean };
+}): boolean {
+  if (segment === null) return false;
+  if (!tools) return true;
+  if (segment === 'session-poll' && !tools.poll) return true;
+  if (segment === 'session-timer' && !tools.timer) return true;
+  if (stripCanStart(tools, readOnly)) return false;
+  if (segment === 'session-timer') return !running.timer;
+  if (segment === 'session-vote') return !running.vote;
+  return !running.poll;
 }
 
 type Toggle = (button: HTMLElement) => void;
@@ -42,6 +88,7 @@ export function SessionClusterStrip({
   voteButtonRef,
   pollRunning,
   canStart,
+  offersTimer = true,
   offersPoll = true,
   open,
   onToggle,
@@ -58,13 +105,15 @@ export function SessionClusterStrip({
   pollRunning: boolean;
   // An editor: the idle tools are offered too, to start one.
   canStart: boolean;
+  // The mode has a Timer button (not in Illustrate).
+  offersTimer?: boolean;
   // The mode has a Poll button (not in Plan).
   offersPoll?: boolean;
   // Which of the strip's popovers is open, if any.
   open: SessionSegment | null;
   onToggle: (segment: SessionSegment, button: HTMLElement) => void;
 }) {
-  const showTimer = canStart || !!timer;
+  const showTimer = offersTimer && (canStart || !!timer);
   const showVote = canStart || voteRunning;
   const showPoll = offersPoll && (canStart || pollRunning);
   if (!showTimer && !showVote && !showPoll) return null;
@@ -80,6 +129,7 @@ export function SessionClusterStrip({
         ) : (
           <ClusterPopoverSegment
             label="Open Timer"
+            name="Timer"
             hoverTitle="Timer"
             hoverDescription="Start a countdown or a stopwatch everyone on this tab can see."
             icon={<TimerMenuIcon size={ICON_SIZE} />}
@@ -98,6 +148,7 @@ export function SessionClusterStrip({
                 ? 'Open Vote'
                 : 'Start a Vote'
           }
+          name="Vote"
           hoverTitle="Vote"
           hoverDescription={
             voteRunning
@@ -124,6 +175,7 @@ export function SessionClusterStrip({
         <ClusterPopoverSegment
           divided={showTimer || showVote}
           label={pollRunning ? 'Open Poll' : 'Start a Poll'}
+          name="Poll"
           hoverTitle="Poll"
           hoverDescription={
             pollRunning ? 'The answers to the poll running now.' : 'Ask everyone here a question.'
@@ -169,7 +221,7 @@ function CountBadge({ count, icon }: { count: number; icon: React.ReactNode }) {
       {icon}
       <span
         aria-hidden
-        className={`absolute -right-2 -top-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-brand-500 px-1 text-[10px] font-semibold leading-none text-white ring-2 ring-white dark:ring-slate-900 ${SOLID_BRAND_DARK}`}
+        className={`absolute -right-2 -top-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-brand-700 px-1 text-[10px] font-semibold leading-none text-white ring-2 ring-white dark:ring-slate-900 ${SOLID_BRAND_DARK}`}
       >
         <span className="text-optical-centre">{count}</span>
       </span>

@@ -1,5 +1,5 @@
 import { renderToStaticMarkup } from 'react-dom/server';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { SiteFooter } from './SiteFooter';
 
@@ -14,7 +14,7 @@ const labels = [...footerNav.matchAll(/<a [^>]*>(?:<svg[\s\S]*?<\/svg>)?([^<]+)<
 describe('SiteFooter', () => {
   it('opens with the large logo, linking home', () => {
     const brand = html.slice(0, html.indexOf('aria-label="Footer"'));
-    expect(brand).toMatch(/<a href="\/" class="[^"]*gap-3 text-2xl/);
+    expect(brand).toMatch(/<a href="\/" aria-label="livediagram" class="[^"]*gap-3 text-2xl/);
     expect(brand).toContain('size-10');
   });
 
@@ -67,5 +67,31 @@ describe('SiteFooter legal strip', () => {
     expect(strip).toContain('text-slate-500');
     expect(strip).toContain('dark:text-slate-400');
     expect(strip).not.toContain('text-slate-400');
+  });
+});
+
+// docs/specs/003-system-architecture/react-state-and-effects.md "Rendering in the browser only": the year is the
+// build's, inlined at build (NEXT_PUBLIC_BUILD_YEAR), so the prerender and the browser render the same text.
+describe('SiteFooter year', () => {
+  const render = () => renderToStaticMarkup(<SiteFooter />);
+
+  it("shows the build's year, whatever the clock says", () => {
+    vi.stubEnv('NEXT_PUBLIC_BUILD_YEAR', '2026');
+    vi.useFakeTimers({ now: new Date('2031-01-01T00:00:00Z') });
+    try {
+      expect(render()).toContain('© 2026 livediagram. MIT licensed.');
+    } finally {
+      vi.useRealTimers();
+      vi.unstubAllEnvs();
+    }
+  });
+
+  it('shows no year rather than a wrong one when the build gave none', () => {
+    vi.stubEnv('NEXT_PUBLIC_BUILD_YEAR', '');
+    try {
+      expect(render()).toContain('© livediagram. MIT licensed.');
+    } finally {
+      vi.unstubAllEnvs();
+    }
   });
 });

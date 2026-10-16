@@ -16,6 +16,8 @@ const CANVAS_STYLESHEETS = [
   'app/motion-drawing.css',
   'app/motion-media.css',
   'app/motion-table.css',
+  // A slide's animated backgrounds (docs/specs/007-editor/illustrate-pages.md "Animated backgrounds").
+  'app/motion-page.css',
 ];
 
 describe('editor motion budget', () => {

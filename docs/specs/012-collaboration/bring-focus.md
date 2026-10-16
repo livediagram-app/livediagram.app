@@ -5,7 +5,7 @@ Status: shipped
 ## What
 
 A **Bring Focus** element: press it and everyone else in the room is offered a
-jump to it, at your zoom, on your tab.
+jump to it, on your tab, at their own zoom.
 
 It lives in the palette's **Behaviours → Navigate** group, beside Portal, Chair
 and Link card. All four take somebody somewhere; this is the one that takes
@@ -51,26 +51,34 @@ lost, and the cost of the extra click is one click.
   to break out. If you want to stay on somebody's shoulder, that is Follow Me
   and it already exists.
 - **Nobody already there is asked.** If your view is already on that tab,
-  showing that point at about that zoom, the invitation never appears. A press
+  showing that point in its middle, the invitation never appears. A press
   gets repeated (to catch a latecomer, or because half the room said no the
   first time), and a repeat has to reach the people who declined without
   putting a dialog over the people who came. Their view is the difference
-  between the two, so it decides: within 5% of the zoom, and within a tenth of
-  the viewport of the point, counts as already there. Someone who took it and
+  between the two, so it decides: the point within a tenth of the viewport of
+  the middle counts as already there, at any zoom. Someone who took it and
   then panned away is offered it again, which is right, because they are no
   longer looking at it.
 
 ## Where it takes you
 
-The op carries the element's **centre in canvas coordinates** and the presser's
-**zoom**, not the presser's pan. Two people rarely have the same window size, so
-copying a pan lands the element off-centre (or off-screen) for anyone whose
-canvas is a different shape. Centring the point is the correct translation of
-"come and look at this", and the zoom is what makes their view show the same
-amount of canvas as the presser's.
+The op carries the element's **centre in canvas coordinates**, not the
+presser's pan. Two people rarely have the same window size, so copying a pan
+lands the element off-centre (or off-screen) for anyone whose canvas is a
+different shape. Taking it **pans** your view so that point sits in the middle,
+and **leaves your zoom as it was**: the presser's zoom on a phone or a wide
+monitor shows a different amount of canvas than it did for them, and the zoom
+you chose for your own screen is yours.
+
+The op still carries the presser's `zoom` (the wire is unchanged, so clients
+from before this rule keep working); a receiver ignores it.
 
 If the element is on another tab, **taking it switches you there first**, through the
-same tab-switch Follow Me uses.
+same tab-switch Follow Me uses. You have no zoom of your own for that canvas yet,
+and the one fitted to the tab you left can be far too far in or out for this one
+(a huge board fitted at 8% leaves a small diagram unreadable), so the tab enters
+as any tab does, fitted to its content, and the point is then centred at that
+fitted zoom.
 
 ## Wire
 
@@ -103,11 +111,14 @@ renamed participant's invitation reads correctly.
 - **The presser is told what the press did**, rather than watching a button do
   nothing visible. Three sentences, because there are three outcomes: "Asked
   everyone else to look here", "Everyone else is already looking at it" (every
-  peer whose view we know is on that tab, on that point, at about that zoom),
-  and "Nobody else is on this canvas right now" when the room is empty. Saying
+  peer whose view we know is on that tab with that point in its middle, judged
+  on their own canvas size, which their `viewport` op carries),
+  and "Nobody else is on this canvas right now" when the room is empty.
+  Already looking at it ignores zoom, for the same reason taking it does. Saying
   the last one to a presser looking at a row of avatars reads as the feature
   being broken, which is why the middle one exists. A peer who has published no
-  viewport counts as asked, not as already there: unknown is not the same as
+  viewport, or one without a size (a client from before it was sent), counts
+  as asked, not as already there: unknown is not the same as
   present, and erring that way is the harmless direction.
 - **You never invite yourself.** The presser's own view does not move; they are
   already looking at it.

@@ -63,10 +63,10 @@ function makeCtx(
     verifiedUserId: opts.clerkUserId ?? null,
     clerkEmail: null,
     resolveOwner: () => (opts.owner === null ? null : (opts.owner ?? 'owner-anon')),
-  } as RouteContext;
+  };
 }
 
-const answer = async (res: Response) => (await res.json()) as { texts: NoteText[] };
+const answer = async (res: Response) => await res.json<{ texts: NoteText[] }>();
 
 describe('the shared gate still guards this route', () => {
   it('503 without a key — the self-host default', async () => {
@@ -101,7 +101,7 @@ describe('the shared gate still guards this route', () => {
   it('429 when the caller is over the rate limit', async () => {
     const res = await handleAiReadNotes(
       makeCtx({
-        env: { AI_RATE_LIMITER: { limit: async () => ({ success: false }) } } as Partial<Env>,
+        env: { AI_RATE_LIMITER: { limit: async () => ({ success: false }) } },
       }),
     );
     expect(res.status).toBe(429);
@@ -111,7 +111,7 @@ describe('the shared gate still guards this route', () => {
     globalThis.fetch = providerSays({ texts: [] });
     const res = await handleAiReadNotes(
       makeCtx({
-        env: { AI_RATE_LIMITER: { limit: async () => ({ success: true }) } } as Partial<Env>,
+        env: { AI_RATE_LIMITER: { limit: async () => ({ success: true }) } },
       }),
     );
     expect(res.status).toBe(200);
@@ -235,12 +235,12 @@ describe('when the provider answers', () => {
       await vi.runAllTimersAsync();
       return pending;
     };
-    globalThis.fetch = vi.fn(async () => new Response('no', { status: 500 })) as typeof fetch;
+    globalThis.fetch = vi.fn(async () => new Response('no', { status: 500 }));
     expect((await settled(handleAiReadNotes(makeCtx()))).status).toBe(502);
 
     globalThis.fetch = vi.fn(async () => {
       throw new Error('network');
-    }) as typeof fetch;
+    });
     expect((await settled(handleAiReadNotes(makeCtx()))).status).toBe(502);
 
     globalThis.fetch = vi.fn(
@@ -248,7 +248,7 @@ describe('when the provider answers', () => {
         new Response(JSON.stringify({ choices: [{ message: { content: 'not json' } }] }), {
           status: 200,
         }),
-    ) as typeof fetch;
+    );
     expect((await handleAiReadNotes(makeCtx())).status).toBe(502);
   });
 
@@ -287,7 +287,7 @@ describe('the answer shape the provider is held to', () => {
     ['google', { OPENAI_API_KEY: undefined, GOOGLE_AI_STUDIO_API_KEY: 'k' }],
     ['openai', {}],
   ])('asks %s for a strict schema of the answer', async (_name, env) => {
-    const sent = await sentBody(env as Partial<Env>);
+    const sent = await sentBody(env);
     expect(sent.response_format.type).toBe('json_schema');
     expect(sent.response_format.json_schema?.strict).toBe(true);
     expect(JSON.stringify(sent.response_format.json_schema?.schema)).toContain('legible');
@@ -309,12 +309,12 @@ describe('what leaves this worker', () => {
     const log = vi.spyOn(console, 'log').mockImplementation(() => {});
     globalThis.fetch = providerSays({ texts: [{ id: 7, text: 'Order placed', legible: true }] });
     await handleAiReadNotes(makeCtx({ body: { crops: [{ id: 7, image: TINY_JPEG }] } }));
-    const sent = JSON.parse(
+    const sent: unknown = JSON.parse(
       (vi.mocked(globalThis.fetch).mock.calls[0]![1] as RequestInit).body as string,
     );
     expect(JSON.stringify(sent)).toContain('Crop 7:');
     expect(JSON.stringify(sent)).toContain(TINY_JPEG);
-    expect(sent.stream).toBeUndefined();
+    expect(sent).not.toHaveProperty('stream');
     for (const call of log.mock.calls) {
       expect(String(call[0])).not.toContain('base64');
       expect(String(call[0])).not.toContain('Order placed');
@@ -326,10 +326,10 @@ describe('what leaves this worker', () => {
     await handleAiReadNotes(
       makeCtx({ env: { AI_MODEL: 'flash', AI_VISION_MODEL: 'flash-vision' } }),
     );
-    const sent = JSON.parse(
+    const sent: unknown = JSON.parse(
       (vi.mocked(globalThis.fetch).mock.calls[0]![1] as RequestInit).body as string,
     );
-    expect(sent.model).toBe('flash-vision');
+    expect(sent).toHaveProperty('model', 'flash-vision');
   });
 
   it('goes wherever the KEY says — a Google key reaches Google', async () => {
@@ -351,7 +351,10 @@ describe('what leaves this worker', () => {
     const [url, init] = vi.mocked(globalThis.fetch).mock.calls[0]!;
     expect(url).toBe('https://generativelanguage.googleapis.com/v1beta/openai/chat/completions');
     expect(new Headers((init as RequestInit).headers).get('Authorization')).toBe('Bearer g');
-    expect(JSON.parse((init as RequestInit).body as string).model).toBe('gemini-2.5-flash-lite');
+    expect(JSON.parse((init as RequestInit).body as string)).toHaveProperty(
+      'model',
+      'gemini-2.5-flash-lite',
+    );
   });
 });
 
@@ -365,7 +368,7 @@ describe('what the author is told when the provider says no', () => {
         new Response(JSON.stringify({ error: { code: 429, message: 'exceeded your quota' } }), {
           status: 429,
         }),
-    ) as typeof fetch;
+    );
     const res = await handleAiReadNotes(makeCtx());
     expect(res.status).toBe(429);
     expect(await res.json()).toEqual({ error: 'ai_quota' });
@@ -392,7 +395,7 @@ describe('a truncated answer says so', () => {
           }),
           { status: 200 },
         ),
-    ) as typeof fetch;
+    );
 
     expect((await handleAiReadNotes(makeCtx())).status).toBe(502);
     expect(warnings.join(' ')).toMatch(/finish_reason=length|truncated/i);

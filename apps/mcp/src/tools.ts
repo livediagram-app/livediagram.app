@@ -14,13 +14,16 @@ import type {
 import {
   buildGraphTab,
   buildTab,
+  contentOrigin,
   isValidTab,
   normaliseElements,
   resolveGraphInput,
   type Tab,
 } from '@livediagram/document';
 import {
+  buildDashboardTab,
   buildTemplateTabs,
+  templateTabName,
   resolveTemplate,
   templateCatalogue,
   templateFamilyOf,
@@ -39,8 +42,15 @@ import { createdFolderLabel } from './created-folder';
 import { ApiError, apiFetch, apiJson, clientFor, reportApiFailure } from './api';
 import { readDocument } from './read-document';
 import type { Env } from './env';
-import { bringBoardCardTypes, fetchTeamLibraries, matchDocuments } from '@livediagram/agent-verbs';
-import { catalogueWithBoardTypes } from '@livediagram/items';
+import {
+  bringBoardCardTypes,
+  fetchTeamLibraries,
+  matchDocuments,
+  resolveDashboardInput,
+  type DashboardInput,
+} from '@livediagram/agent-verbs';
+import { catalogueWithBoardTypes, typesOf } from '@livediagram/items';
+import { dashboardTabKind, documentDashboard } from './dashboard-tabs';
 import {
   deepLink,
   errorResult,
@@ -50,13 +60,21 @@ import {
   textResult,
   type Extra,
 } from './tool-helpers';
-import { lintLineOf, lintLinesOf } from './lint-summary';
+import { lintLineOf, lintReportsOf, lintTextOf } from './lint-summary';
+import { withoutFindings } from '@livediagram/diagram-lint';
+import { idsOf, resolveArrowEnds } from './arrow-ends';
+import { elementsIssue, graphIconIssue } from './element-values';
+import { packFreehandPoints } from './freehand-points';
+import { searchIcons } from '@livediagram/icons/search';
 import { imageResult } from './image-result';
+import { imageIdIssue, registerImageTools } from './image-tools';
 import {
   baseFor,
   changesetErrorText,
+  editsBase,
   isChangesetRefusal,
   mcpOpsToEditOperations,
+  mcpResultText,
   replaceBodyFrom,
   submitChangeset,
 } from './changeset-client';
@@ -64,7 +82,9 @@ import { registerTool } from './tool-annotations';
 import { registerPlanTools } from './plan-tools';
 import { registerSheetTools } from './sheet-tools';
 import { registerIllustrateTools } from './illustrate-tools';
+import { registerFormTools } from './form-tools';
 import {
+  createDocumentTab,
   mcpAddTab,
   mcpCreateDocument,
   mcpDeleteDocument,
@@ -74,6 +94,7 @@ import {
   mcpReadDocument,
   mcpRenameDocument,
   mcpRestoreDocument,
+  mcpSearchIcons,
   mcpShareDocument,
   mcpUpdateDocument,
 } from '@livediagram/agent-verbs/mcp';
@@ -84,8 +105,11 @@ export function registerTools(server: McpServer, env: Env): void {
   // Sheets, by title and A1 (docs/specs/029-sheets/sheet-store.md "Agents").
   registerSheetTools(server, env);
   registerIllustrateTools(server, env);
+  // The user's image gallery, for image elements (docs/specs/015-api/mcp-server.md §4.5b).
+  registerImageTools(server, env);
+  registerFormTools(server, env);
   registerTool(server, env, mcpFindDocuments, async (args, extra) => {
-    const token = requireToken(extra as Extra);
+    const token = requireToken(extra);
     // Personal + team shared libraries (docs/specs/013-workspace/team-shared-documents.md): a document filed into a
     // team leaves the personal list, so both must be swept.
     const [{ documents: liveDocs }, teamLibraries] = await Promise.all([
@@ -103,25 +127,58 @@ export function registerTools(server: McpServer, env: Env): void {
   );
 
   registerTool(server, env, mcpListTemplates, async (_args, extra) => {
-    requireToken(extra as Extra);
+    requireToken(extra);
     return textResult(templateCatalogue());
   });
 
+  // The icon catalogue is bundled, so a search needs no api call (docs/specs/015-api/mcp-server.md §4.5a).
+  registerTool(server, env, mcpSearchIcons, async (args, extra) => {
+    requireToken(extra);
+    return textResult(searchIcons(args.query, args.limit ?? 20));
+  });
+
   registerTool(server, env, mcpCreateDocument, async (args, extra) => {
-    const token = requireToken(extra as Extra);
-    // Accept either `tabs` (preferred) or a single `tab` alias.
-    const inputTabs = args.tabs ?? (args.tab ? [args.tab] : undefined);
+    const token = requireToken(extra);
+    // An imageId names a picture in the caller's gallery (docs/specs/009-elements/images.md "Agents").
+    const imageIssue = await imageIdIssue(env, token, args);
+    if (imageIssue) return errorResult(imageIssue);
+    // Accept either `tabs` (preferred) or a single `tab` alias, checked here against the tab shape.
+    const single =
+      args.tabs || args.tab === undefined ? null : createDocumentTab.safeParse(args.tab);
+    if (single && !single.success)
+      return errorResult(
+        `"tab": ${single.error.issues.map((i) => `${i.path.join('.') || 'tab'}: ${i.message}`).join('; ')}. ` +
+          'Pass "tabs": [{ name, graph | mermaid | elements | template }].',
+      );
+    const inputTabs = args.tabs ?? (single ? [single.data] : undefined);
     if (!inputTabs || inputTabs.length === 0) {
       return errorResult('Provide "tabs": an array of { name, elements } (or a single "tab").');
     }
     const tabs: Tab[] = [];
+    // What a graph tab could not keep of what it asked (a Mermaid subgraph nested in another), said back.
+    const graphNotes: string[] = [];
+    const dashboards: {
+      at: number;
+      tabId: string;
+      name: string;
+      input: DashboardInput;
+      theme: string | undefined;
+    }[] = [];
     // The template the first tab is made from, for the creation intent.
     let firstTemplate: TemplateKind | null = null;
     // Every template tab's elements: their Plan boards bring their card types
     // (docs/specs/026-plan/plan-templates.md "Card types a template uses").
     const templateElements: Tab['elements'] = [];
-    for (const t of inputTabs) {
+    // The tabs a template made, whose colours are its own.
+    const templateTabIds = new Set<string>();
+    for (const [index, given] of inputTabs.entries()) {
       const tabId = crypto.randomUUID();
+      // A template tab's name follows the templates' rule; any other unnamed tab is "Tab n".
+      const kindOf = given.template ? resolveTemplate(given.template) : null;
+      const t = {
+        ...given,
+        name: kindOf ? templateTabName(given.name, kindOf) : (given.name ?? `Tab ${index + 1}`),
+      };
       // Template tab (docs/specs/015-api/mcp-server.md §4.5): materialise the curated scaffold
       // instead of expecting elements.
       if (t.template) {
@@ -139,24 +196,48 @@ export function registerTools(server: McpServer, env: Env): void {
           { id: tabId, name: t.name },
           kind,
           () => crypto.randomUUID(),
-          args.theme,
+          t.theme ?? args.theme,
         );
         tabs.push(...made);
-        for (const m of made) templateElements.push(...m.elements);
+        for (const m of made) {
+          templateElements.push(...m.elements);
+          templateTabIds.add(m.id);
+        }
+        continue;
+      }
+      // A Dashboard (docs/specs/026-plan/plan-agents.md "Making a dashboard"): made once every other tab is, so it
+      // can show them by name.
+      if (t.dashboard) {
+        dashboards.push({
+          at: tabs.length,
+          tabId,
+          name: t.name,
+          input: t.dashboard,
+          theme: t.theme ?? args.theme,
+        });
         continue;
       }
       // Graph-first (docs/specs/015-api/mcp-server.md §4.7): the server builds + lays out the boxes
       // and arrows from a node/edge graph, or the same graph as Mermaid.
       const input = resolveGraphInput(t);
       if (input.error) return errorResult(`Tab "${t.name}": ${input.error}`);
+      for (const note of input.notes ?? []) graphNotes.push(`Tab "${t.name}": ${note}`);
+      const iconIssue = input.graph ? graphIconIssue(input.graph.nodes) : null;
+      if (iconIssue) return errorResult(`Tab "${t.name}": ${iconIssue}`);
       if (input.graph) {
-        tabs.push(buildGraphTab(tabId, t.name, input.graph, args.theme));
+        tabs.push(buildGraphTab(tabId, t.name, input.graph, t.theme ?? args.theme));
         continue;
       }
+      const drawn = packFreehandPoints(t.elements ?? []);
+      if ('error' in drawn) return errorResult(`Tab "${t.name}": ${drawn.error}`);
+      const valueIssue = elementsIssue(drawn.elements);
+      if (valueIssue) return errorResult(`Tab "${t.name}": ${valueIssue}`);
+      const ended = resolveArrowEnds(drawn.elements, idsOf(drawn.elements));
+      if ('error' in ended) return errorResult(`Tab "${t.name}": ${ended.error}`);
       const candidate: unknown = {
         id: tabId,
         name: t.name,
-        elements: normaliseElements(t.elements ?? []),
+        elements: normaliseElements(ended.elements),
       };
       if (!t.elements || !isValidTab(candidate)) {
         return errorResult(
@@ -166,8 +247,20 @@ export function registerTools(server: McpServer, env: Env): void {
             'be well-formed.',
         );
       }
-      tabs.push(buildTab(tabId, t.name, (candidate as Tab).elements, args.layout, args.theme));
+      tabs.push(buildTab(tabId, t.name, candidate.elements, args.layout, t.theme ?? args.theme));
     }
+    // Each Dashboard, showing the call's other tabs by name, in its place among them.
+    if (dashboards.length) {
+      const refs = tabs.map((t) => ({ id: t.id, name: t.name, of: dashboardTabKind(t) }));
+      const types = typesOf(catalogueWithBoardTypes(null, templateElements));
+      for (const [n, d] of dashboards.entries()) {
+        const resolved = resolveDashboardInput(d.input, refs, types);
+        if (!resolved.ok) return errorResult(`Tab "${d.name}": ${resolved.message}`);
+        tabs.splice(d.at + n, 0, buildDashboardTab(d.tabId, d.name, resolved.spec, d.theme).tab);
+      }
+    }
+    // The finish asked for (docs/specs/008-canvas/finish.md) is every new tab's.
+    if (args.finish) for (const t of tabs) t.finish = args.finish;
     const id = crypto.randomUUID();
     // Tag the document as made by AI (docs/specs/013-workspace/folders.md): the Explorer's Made by AI
     // filter and badge read source != null, wherever the document is filed.
@@ -189,7 +282,12 @@ export function registerTools(server: McpServer, env: Env): void {
       }),
     });
     const tabIds = tabs.map((t) => t.id);
-    const lint = await lintLinesOf(env, token, id, tabIds);
+    // A template's colours are its design, not the agent's doing (diagram-lint.md "Where it runs"): its tabs' lint
+    // names none.
+    const reports = (await lintReportsOf(env, token, id, tabIds)).map((r, i) =>
+      r && templateTabIds.has(tabIds[i]!) ? withoutFindings(r, 'colour-on-themed') : r,
+    );
+    const lint = reports.map(lintLineOf);
     return imageResult(
       {
         id,
@@ -200,15 +298,19 @@ export function registerTools(server: McpServer, env: Env): void {
         folder: await createdFolderLabel(env, token, created),
         url: deepLink(env, id),
         lint,
+        ...(graphNotes.length ? { notes: graphNotes } : {}),
       },
       tabs[0]!,
       { env, token },
-      lint,
+      reports.map(lintTextOf),
     );
   });
 
   registerTool(server, env, mcpAddTab, async (args, extra) => {
-    const token = requireToken(extra as Extra);
+    const token = requireToken(extra);
+    // An imageId names a picture in the caller's gallery (docs/specs/009-elements/images.md "Agents").
+    const imageIssue = await imageIdIssue(env, token, args);
+    if (imageIssue) return errorResult(imageIssue);
     const tabId = crypto.randomUUID();
     // Template tab (docs/specs/015-api/mcp-server.md §4.5): resolved up front so an unknown kind
     // fails before any network round trip.
@@ -219,12 +321,26 @@ export function registerTools(server: McpServer, env: Env): void {
     }
     const input = resolveGraphInput(args);
     if (input.error) return errorResult(input.error);
-    if (!args.template && !input.graph && !args.elements) {
+    // A Dashboard (docs/specs/026-plan/plan-agents.md "Making a dashboard"): the document's tabs and card types by name.
+    let dashboard: Record<string, unknown> | undefined;
+    if (args.dashboard) {
+      const resolved = await documentDashboard(env, token, args.documentId, args.dashboard);
+      if (!resolved.ok) return errorResult(resolved.message);
+      dashboard = resolved.spec;
+    }
+    if (!args.template && !input.graph && !args.elements && !dashboard) {
       return errorResult(
         'Invalid input. Provide a "graph" (nodes + edges), "mermaid", "elements", or a "template" kind ' +
           'from list_templates. Check the livediagram://schema/elements resource.',
       );
     }
+    const drawn = args.elements ? packFreehandPoints(args.elements) : null;
+    if (drawn && 'error' in drawn) return errorResult(drawn.error);
+    const given = drawn?.elements;
+    const valueIssue = given ? elementsIssue(given) : null;
+    if (valueIssue) return errorResult(valueIssue);
+    const ended = given ? resolveArrowEnds(given, idsOf(given)) : null;
+    if (ended && 'error' in ended) return errorResult(ended.error);
     // Default the new tab's theme to the document's existing one so it matches the other tabs
     // rather than landing as a clashing brand-white tab; the model can still pass a theme.
     let themeId = args.theme;
@@ -243,9 +359,11 @@ export function registerTools(server: McpServer, env: Env): void {
         replace: replaceBodyFrom({
           ...(input.graph ? { graph: input.graph } : {}),
           ...(args.template ? { template: args.template } : {}),
-          ...(args.elements ? { elements: args.elements } : {}),
+          ...(dashboard ? { dashboard } : {}),
+          ...(ended ? { elements: ended.elements } : {}),
           ...(args.layout ? { layout: args.layout } : {}),
           ...(themeId ? { theme: themeId } : {}),
+          ...(args.finish ? { finish: args.finish } : {}),
           name: args.name,
         }),
       });
@@ -270,18 +388,22 @@ export function registerTools(server: McpServer, env: Env): void {
         url: deepLink(env, args.documentId),
         changesetId: answer.changeset?.id ?? null,
         rev: tab.rev,
-        text: answer.text,
+        text: mcpResultText(answer.text),
         lint: lintLineOf(answer.lint),
         ...templateNote(args.template),
+        ...(input.notes ? { notes: input.notes } : {}),
       },
       tab,
       { env, token },
-      [lintLineOf(answer.lint)],
+      [lintTextOf(answer.lint)],
     );
   });
 
   registerTool(server, env, mcpUpdateDocument, async (args, extra) => {
-    const token = requireToken(extra as Extra);
+    const token = requireToken(extra);
+    // An imageId names a picture in the caller's gallery (docs/specs/009-elements/images.md "Agents").
+    const imageIssue = await imageIdIssue(env, token, args);
+    if (imageIssue) return errorResult(imageIssue);
     const loaded = await loadTab(env, token, args.documentId, args.tabId);
     if (!loaded) return errorResult('That document has no tabs.');
     const { tab } = loaded;
@@ -290,21 +412,43 @@ export function registerTools(server: McpServer, env: Env): void {
     // relayed by the api, kept through anyone's next save. ops mode is based on what the model
     // read, so nothing a person saved in between is overwritten.
     let body: ChangesetRequest;
+    let graphNotes: string[] | undefined;
     if (args.mode === 'replace') {
       const input = resolveGraphInput(args);
       if (input.error) return errorResult(input.error);
-      if (!input.graph && !args.elements) {
-        return errorResult('replace mode requires "graph", "mermaid" or "elements".');
+      graphNotes = input.notes;
+      // A Dashboard tab rebuilt whole (docs/specs/026-plan/plan-agents.md "Making a dashboard").
+      if (args.dashboard) {
+        const resolved = await documentDashboard(env, token, args.documentId, args.dashboard);
+        if (!resolved.ok) return errorResult(resolved.message);
+        body = {
+          replace: replaceBodyFrom({ dashboard: resolved.spec }),
+        };
+      } else if (!input.graph && !args.elements) {
+        return errorResult('replace mode requires "graph", "mermaid", "elements" or "dashboard".');
+      } else {
+        const drawn = args.elements ? packFreehandPoints(args.elements) : null;
+        if (drawn && 'error' in drawn) return errorResult(drawn.error);
+        const given = drawn?.elements;
+        const valueIssue = given ? elementsIssue(given) : null;
+        if (valueIssue) return errorResult(valueIssue);
+        // The new elements are the whole tab, so an arrow end may name only them.
+        const ended = given ? resolveArrowEnds(given, idsOf(given)) : null;
+        if (ended && 'error' in ended) return errorResult(ended.error);
+        body = {
+          replace: replaceBodyFrom({
+            ...(input.graph ? { graph: input.graph } : {}),
+            ...(!input.graph && ended ? { elements: ended.elements } : {}),
+            ...(!input.graph && args.layout ? { layout: args.layout } : {}),
+          }),
+        };
       }
-      body = {
-        replace: replaceBodyFrom({
-          ...(input.graph ? { graph: input.graph } : {}),
-          ...(!input.graph && args.elements ? { elements: args.elements } : {}),
-          ...(!input.graph && args.layout ? { layout: args.layout } : {}),
-        }),
-      };
+    } else if (args.edits !== undefined) {
+      if (args.ops) return errorResult('ops mode takes "ops" or "edits", not both.');
+      // Edit operations as text, parsed and applied by the api (docs/specs/015-api/mcp-server.md §4.4 "Edits").
+      body = { operations: args.edits, base: editsBase(tab, args.rev) };
     } else {
-      if (!args.ops) return errorResult('ops mode requires "ops".');
+      if (!args.ops) return errorResult('ops mode requires "ops" or "edits".');
       const operations = mcpOpsToEditOperations(args.ops, tab);
       if (typeof operations === 'string') return errorResult(operations);
       body = { operations, base: baseFor(args.ops, tab, args.rev) };
@@ -321,6 +465,11 @@ export function registerTools(server: McpServer, env: Env): void {
       token,
       `/documents/${encodeURIComponent(args.documentId)}/tabs/${encodeURIComponent(tabId)}`,
     );
+    // An edit that changed nothing records no changeset and so carries no lint: the tab's own lint is read instead, so
+    // the answer still says what is wrong with it rather than "lint unavailable".
+    const lint =
+      answer.lint ??
+      (answer.changeset ? null : (await lintReportsOf(env, token, args.documentId, [tabId]))[0]!);
     return imageResult(
       {
         id: args.documentId,
@@ -329,17 +478,18 @@ export function registerTools(server: McpServer, env: Env): void {
         url: deepLink(env, args.documentId),
         changesetId: answer.changeset?.id ?? null,
         rev: next.rev,
-        text: answer.text,
-        lint: lintLineOf(answer.lint),
+        text: mcpResultText(answer.text, contentOrigin(tab.elements)),
+        lint: lintLineOf(lint),
+        ...(graphNotes ? { notes: graphNotes } : {}),
       },
       next,
       { env, token },
-      [lintLineOf(answer.lint)],
+      [lintTextOf(lint)],
     );
   });
 
   registerTool(server, env, mcpShareDocument, async (args, extra) => {
-    const token = requireToken(extra as Extra);
+    const token = requireToken(extra);
     // Default to Participant (docs/specs/013-workspace/share-roles.md): people take part without reshaping the
     // board, and an automated share never silently grants edit. The api's own default is edit, so the role is
     // always sent.
@@ -359,7 +509,7 @@ export function registerTools(server: McpServer, env: Env): void {
   });
 
   registerTool(server, env, mcpRenameDocument, async (args, extra) => {
-    const token = requireToken(extra as Extra);
+    const token = requireToken(extra);
     if (args.tabId) {
       // The tab name route: the name only, relayed to anyone with the document open
       // (docs/specs/024-agents/agent-changesets.md "Whole-tab saves and tab renames").
@@ -386,7 +536,7 @@ export function registerTools(server: McpServer, env: Env): void {
   });
 
   registerTool(server, env, mcpDeleteDocument, async (args, extra) => {
-    const token = requireToken(extra as Extra);
+    const token = requireToken(extra);
     // A whole document only ever goes to the Trash (docs/specs/013-workspace/trash.md):
     // a permanent delete is the REST API's, never an AI tool's. A tab has no Trash.
     const path = args.tabId
@@ -420,7 +570,7 @@ export function registerTools(server: McpServer, env: Env): void {
   // GET /api/trash and POST /api/trash/<id>/restore: the user's personal Trash
   // and every team Trash they have joined.
   registerTool(server, env, mcpListTrash, async (_args, extra) => {
-    const token = requireToken(extra as Extra);
+    const token = requireToken(extra);
     const { trash } = await apiJson<{ trash?: TrashedDocument[] }>(env, token, '/trash');
     return textResult({
       trash: (trash ?? []).map((t) => ({
@@ -435,7 +585,7 @@ export function registerTools(server: McpServer, env: Env): void {
   });
 
   registerTool(server, env, mcpRestoreDocument, async (args, extra) => {
-    const token = requireToken(extra as Extra);
+    const token = requireToken(extra);
     try {
       const { document: liveDoc } = await apiJson<{
         document?: { id: string; name: string } | null;

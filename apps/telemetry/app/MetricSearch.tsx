@@ -140,7 +140,7 @@ function SelectedMetric({
               style={rise(3 + i)}
               className="metric-rise rounded-xl border border-slate-200 p-3 dark:border-slate-700"
             >
-              <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">
+              <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
                 {w.label}
               </p>
               <p className="mt-1 text-xl font-semibold text-slate-900 dark:text-slate-100">

@@ -7,6 +7,7 @@ import {
   articlesOf,
   articleTitleOf,
   articleWordCount,
+  estimateArticle,
   elementIdsOnPage,
   illustratePagesOf,
   layOutIllustratePages,
@@ -19,7 +20,12 @@ import type { ArticleSummary, PageSummary } from './illustrate';
 
 export type PagesTab = Pick<Tab, 'elements' | 'pages' | 'articles'> & { pageOrientation?: unknown };
 
-/** A background in words: `#0f172a`, `gradient #fde68a → #fca5a5`, `dots`, or null for the paper. */
+// A picture's overlay in words: "light 60%", or "no overlay".
+const overlayWords = (o: { kind: string; strength: number } | undefined) =>
+  o ? `${o.kind} ${Math.round(o.strength * 100)}%` : 'no overlay';
+
+/** A background in words: `#0f172a`, `gradient #fde68a → #fca5a5`, `image, light 60%`, `dots`, or
+ *  null for the paper. */
 export function describeBackground(b: PageBackground | undefined): string | null {
   if (!b) return null;
   const fill =
@@ -27,7 +33,9 @@ export function describeBackground(b: PageBackground | undefined): string | null
       ? b.fill.color
       : b.fill?.kind === 'gradient'
         ? `gradient ${b.fill.from} → ${b.fill.to}`
-        : null;
+        : b.fill?.kind === 'image'
+          ? `image, ${overlayWords(b.fill.overlay)}`
+          : null;
   return [fill, b.pattern ? `${b.pattern} pattern` : null].filter(Boolean).join(', ') || null;
 }
 
@@ -57,6 +65,7 @@ export function pageSummaries(tab: PagesTab): PageSummary[] {
 /** Every article as the answers list it, in row order. */
 export function articleSummaries(tab: PagesTab): ArticleSummary[] {
   const pages = illustratePagesOf(tab);
+  const laid = layOutIllustratePages(pages);
   const articles = articlesOf(tab);
   const seen: string[] = [];
   for (const p of pages)
@@ -69,6 +78,9 @@ export function articleSummaries(tab: PagesTab): ArticleSummary[] {
       pages: pages.flatMap((p, i) => (p.flow === flow ? [i + 1] : [])),
       blocks: doc.blocks.length,
       words: articleWordCount(doc),
+      // How many pages its writing reaches once laid out, estimated without a browser (the editor adds pages to
+      // hold it, and drops those it leaves empty).
+      estimatedPages: Math.max(1, estimateArticle(tab, flow, laid, '#000000').pagesUsed),
       look: doc.style?.look ?? null,
     };
   });

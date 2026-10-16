@@ -62,14 +62,14 @@ describe('ExportTabDialog, Plan', () => {
   it('puts the cards in the JSON file', () => {
     open();
     fireEvent.click(screen.getByRole('button', { name: /JSON/ }));
-    const text = (screen.getByRole('textbox') as HTMLTextAreaElement).value;
-    expect(JSON.parse(text).items).toEqual([item]);
+    const text = screen.getByRole<HTMLTextAreaElement>('textbox').value;
+    expect(JSON.parse(text)).toHaveProperty('items', [item]);
   });
 
   it('lists the cards in the Markdown outline', () => {
     open();
     fireEvent.click(screen.getByRole('button', { name: /Markdown/ }));
-    expect((screen.getByRole('textbox') as HTMLTextAreaElement).value).toContain(
+    expect(screen.getByRole<HTMLTextAreaElement>('textbox').value).toContain(
       '- #7 Write the spec (Task)',
     );
   });

@@ -90,8 +90,7 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
   // render layer (CanvasChrome) draws them as faint lines.
   // Cosmetic snap-guide overlay state (alignment + distribution guides,
   // arrow snap markers), coalesced through rAF. See useSnapGuideState.
-  const { snapGuides, distGuides, snapTargets, scheduleGuides, scheduleSnapTargets } =
-    useSnapGuideState();
+  const { snapGuideStore, scheduleGuides, scheduleSnapTargets } = useSnapGuideState();
   // Whether the current body drag has crossed DRAG_ENGAGE_PX. Reset at the
   // start of each gesture (in the move effect below); flipped true once the
   // pointer travels far enough that the press is unambiguously a drag.
@@ -473,7 +472,7 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
               ? {
                   mode: drag.mode,
                   constrain: drag.aspectLocked || e.shiftKey,
-                  measure: measureDrawnText(activeTab.font),
+                  measure: measureDrawnText(activeTab.font, activeTab.finish),
                 }
               : null;
           tick((els) =>
@@ -609,7 +608,9 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
         ) <= 6;
       if (drag?.kind === 'arrow-endpoint' && drag.end === 'to' && !drag.reposition && !tapStill) {
         const arrowId = drag.arrowId;
-        previewTick((els) => applyCollisionAvoidance(els, arrowId));
+        previewTick((els) =>
+          applyCollisionAvoidance(els, arrowId, depsRef.current.activeTab.finish),
+        );
       }
       // The gesture's result, as the release logic below reads it, then written in one change before
       // anything else writes (docs/specs/008-canvas/drag-preview.md).
@@ -822,7 +823,9 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
       // written, as the press-drag end in onUp above does.
       if (drag.end === 'to' && !drag.reposition) {
         const arrowId = drag.arrowId;
-        previewTick((els) => applyCollisionAvoidance(els, arrowId));
+        previewTick((els) =>
+          applyCollisionAvoidance(els, arrowId, depsRef.current.activeTab.finish),
+        );
       }
       commitPreview();
       // The endpoint already tracks the cursor (last pointermove); this
@@ -951,9 +954,7 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
   return {
     drag,
     shiftDupGhostIds,
-    snapGuides,
-    distGuides,
-    snapTargets,
+    snapGuideStore,
     beginDrag,
     beginAnchorDrag,
     beginArrowTranslate,

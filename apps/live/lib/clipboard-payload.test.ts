@@ -17,30 +17,30 @@ import {
 // the editor did not write: on every Cmd+V, whatever the OS clipboard happens
 // to hold. So the tests care mostly about what it REFUSES.
 
-const shape = (id: string, over: Partial<ShapeElement> = {}): ShapeElement =>
-  ({
-    id,
-    type: 'shape',
-    shape: 'square',
-    x: 0,
-    y: 0,
-    width: 120,
-    height: 120,
-    ...over,
-  }) as ShapeElement;
+const shape = (id: string, over: Partial<ShapeElement> = {}): ShapeElement => ({
+  id,
+  type: 'shape',
+  shape: 'square',
+  x: 0,
+  y: 0,
+  width: 120,
+  height: 120,
+  ...over,
+});
 
 describe('serialiseElements', () => {
   it('round-trips a selection', () => {
     const elements = [shape('a'), shape('b', { x: 40 })];
     const back = parseElementsPayload(serialiseElements(elements));
     expect(back?.map((el) => el.id)).toEqual(['a', 'b']);
-    expect((back?.[1] as ShapeElement).x).toBe(40);
+    expect((back?.[1] as ShapeElement | undefined)?.x).toBe(40);
   });
 
   it('writes the envelope the reader discriminates on', () => {
-    const env = JSON.parse(serialiseElements([shape('a')]));
-    expect(env.kind).toBe(CLIPBOARD_KIND);
-    expect(env.schemaVersion).toBe(CLIPBOARD_SCHEMA_VERSION);
+    expect(JSON.parse(serialiseElements([shape('a')]))).toMatchObject({
+      kind: CLIPBOARD_KIND,
+      schemaVersion: CLIPBOARD_SCHEMA_VERSION,
+    });
   });
 
   // A copy can travel to another document, another account, another person.
@@ -61,7 +61,7 @@ describe('serialiseElements', () => {
         ],
       },
       responses: [{ participantId: 'p1', value: 'done', at: 1 }],
-    } as Partial<ShapeElement>);
+    });
     const text = serialiseElements([withIdentity]);
     expect(text).not.toContain('Someone Else');
     expect(text).not.toContain('p1');
@@ -83,7 +83,7 @@ describe('serialiseElements', () => {
   it('leaves the source element untouched', () => {
     const el = shape('a', {
       commentThread: { comments: [], resolved: false },
-    } as Partial<ShapeElement>);
+    });
     serialiseElements([el]);
     expect(el.commentThread).toBeDefined();
   });
@@ -109,7 +109,7 @@ describe('parseElementsPayload refuses', () => {
   });
 
   it('a schema version from the future', () => {
-    const env = JSON.parse(serialiseElements([shape('a')]));
+    const env = JSON.parse(serialiseElements([shape('a')])) as Record<string, unknown>;
     env.schemaVersion = CLIPBOARD_SCHEMA_VERSION + 1;
     expect(parseElementsPayload(JSON.stringify(env))).toBeNull();
   });

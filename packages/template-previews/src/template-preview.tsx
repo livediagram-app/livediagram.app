@@ -16,6 +16,14 @@ import { templatePreviewGroup13 } from './template-preview-13';
 import { templatePreviewGroup14 } from './template-preview-14';
 import { templatePreviewGroup15 } from './template-preview-15';
 import { templatePreviewGroup16 } from './template-preview-16';
+import { templatePreviewGroup17 } from './template-preview-17';
+import { templatePreviewGroup18 } from './template-preview-18';
+import { templatePreviewGroup19 } from './template-preview-19';
+import { templatePreviewGroup20 } from './template-preview-20';
+import { templatePreviewGroup21 } from './template-preview-21';
+import { templatePreviewGroup22 } from './template-preview-22';
+import { templatePreviewGroup23 } from './template-preview-23';
+import { templatePreviewGroup24 } from './template-preview-24';
 
 // Static SVG preview tiles, one branch per TemplateKind, rendered by the
 // editor's template picker and the marketing site's template gallery
@@ -24,7 +32,7 @@ import { templatePreviewGroup16 } from './template-preview-16';
 // switch case in a group file plus adding the kind to TEMPLATES in
 // @livediagram/templates; template-preview.test.ts fails until both exist.
 
-// The per-kind SVGs are split across template-preview-{1..16}.tsx (each a
+// The per-kind SVGs are split across template-preview-{1..24}.tsx (each a
 // switch returning null for kinds it doesn't own) to keep every file under the
 // ~1000-line budget; we try each group in turn.
 export function TemplatePreview({ kind }: { kind: TemplateKind }): ReactElement | null {
@@ -44,6 +52,14 @@ export function TemplatePreview({ kind }: { kind: TemplateKind }): ReactElement 
     templatePreviewGroup13(kind) ??
     templatePreviewGroup14(kind) ??
     templatePreviewGroup15(kind) ??
-    templatePreviewGroup16(kind)
+    templatePreviewGroup16(kind) ??
+    templatePreviewGroup17(kind) ??
+    templatePreviewGroup18(kind) ??
+    templatePreviewGroup19(kind) ??
+    templatePreviewGroup20(kind) ??
+    templatePreviewGroup21(kind) ??
+    templatePreviewGroup22(kind) ??
+    templatePreviewGroup23(kind) ??
+    templatePreviewGroup24(kind)
   );
 }

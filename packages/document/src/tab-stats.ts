@@ -26,9 +26,19 @@ export function tabStatsOf(body: TabStatsBody, data: string): TabStats {
   const elements = Array.isArray(body.elements) ? (body.elements as unknown[]) : [];
   let commentCount = 0;
   for (const el of elements) {
-    const comments = (el as { commentThread?: { comments?: unknown } } | null)?.commentThread
-      ?.comments;
+    const host = el as {
+      commentThread?: { comments?: unknown };
+      cellComments?: Record<string, { comments?: unknown }>;
+    } | null;
+    const comments = host?.commentThread?.comments;
     if (Array.isArray(comments)) commentCount += comments.length;
+    // A Sheet's cell threads (docs/specs/029-sheets/sheet.md "Cell comments") count too.
+    const cells = host?.cellComments;
+    if (cells && typeof cells === 'object') {
+      for (const thread of Object.values(cells)) {
+        if (Array.isArray(thread?.comments)) commentCount += thread.comments.length;
+      }
+    }
   }
   return {
     mode: opensInOf(body as Parameters<typeof opensInOf>[0]),

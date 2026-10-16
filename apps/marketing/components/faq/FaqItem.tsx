@@ -18,7 +18,7 @@ export function FaqItem({ q, open, children }: { q: string; open?: boolean; chil
           <ChevronIcon />
         </span>
       </summary>
-      <div className="px-5 pb-5 leading-relaxed text-slate-600 dark:text-slate-300 [&_a]:font-medium [&_a]:text-brand-600 [&_a]:underline [&_a]:decoration-brand-300 [&_a]:underline-offset-2 hover:[&_a]:decoration-brand-600 dark:[&_a]:text-brand-300 dark:[&_a]:decoration-brand-500/50">
+      <div className="px-5 pb-5 leading-relaxed text-slate-600 dark:text-slate-300 [&_a]:font-medium [&_a]:text-brand-700 [&_a]:underline [&_a]:decoration-brand-300 [&_a]:underline-offset-2 hover:[&_a]:decoration-brand-700 dark:[&_a]:text-brand-300 dark:[&_a]:decoration-brand-500/50">
         {children}
       </div>
     </details>

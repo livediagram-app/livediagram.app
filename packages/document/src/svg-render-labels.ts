@@ -7,12 +7,16 @@
 import { LABEL_LINE_HEIGHT, labelMeasure, r2, xmlEscape } from './svg-render-primitives';
 
 // One resolved span of a rich label (run + element defaults).
+import { MUTED_RUN_OPACITY } from './title-caption';
+
 export type ExportRun = {
   text: string;
   color: string;
   size: number;
   bold: boolean;
   italic: boolean;
+  // Drawn at MUTED_RUN_OPACITY (a Title and Caption caption, docs/specs/009-elements/block-type-picker.md).
+  muted?: boolean;
 };
 
 // The default face an export paints in when nothing else is asked for — the
@@ -63,24 +67,6 @@ function trackingAttr(attrs: WordmarkAttrs | undefined, size: number): string {
 
 function weightOf(bold: boolean, attrs: WordmarkAttrs | undefined): number {
   return attrs?.weight ?? (bold ? 600 : 400);
-}
-
-export function svgLabel(
-  text: string,
-  x: number,
-  y: number,
-  anchor: 'start' | 'middle' | 'end',
-  color: string,
-  fontSize: number,
-  bold: boolean,
-  italic: boolean,
-  fontFamily?: string,
-): string {
-  return (
-    `<text x="${r2(x)}" y="${r2(y)}"${svgFontFamilyAttr(fontFamily)} font-size="${fontSize}"` +
-    ` font-weight="${bold ? 600 : 400}"${italic ? ' font-style="italic"' : ''}` +
-    ` fill="${xmlEscape(color)}" text-anchor="${anchor}" dominant-baseline="central">${xmlEscape(text)}</text>`
-  );
 }
 
 // Where a wrapped block's FIRST line sits so the block hangs off `y` per
@@ -169,7 +155,8 @@ export function wrapExportRuns(
           last.color === run.color &&
           last.size === run.size &&
           last.bold === run.bold &&
-          last.italic === run.italic
+          last.italic === run.italic &&
+          !!last.muted === !!run.muted
         ) {
           last.text += frag;
         } else {
@@ -208,7 +195,7 @@ export function svgRichWrappedLabel(
       const frags = line
         .map(
           (run) =>
-            `<tspan fill="${xmlEscape(run.color)}" font-size="${run.size}"` +
+            `<tspan fill="${xmlEscape(run.color)}"${run.muted ? ` fill-opacity="${MUTED_RUN_OPACITY}"` : ''} font-size="${run.size}"` +
             ` font-weight="${run.bold ? 600 : weightOf(false, wordmark)}"${run.italic ? ' font-style="italic"' : ''}>` +
             `${xmlEscape(run.text)}</tspan>`,
         )
@@ -220,27 +207,5 @@ export function svgRichWrappedLabel(
     `<text x="${r2(x)}" y="${r2(firstY)}"${svgFontFamilyAttr(fontFamily)}` +
     `${trackingAttr(wordmark, maxSize)}` +
     ` text-anchor="${anchor}" dominant-baseline="central">${body}</text>`
-  );
-}
-
-// Per-range label: one anchored <text> with a <tspan> per run.
-export function svgRichLabel(
-  runs: ExportRun[],
-  x: number,
-  y: number,
-  anchor: 'start' | 'middle' | 'end',
-  fontFamily?: string,
-): string {
-  const spans = runs
-    .map(
-      (run) =>
-        `<tspan fill="${xmlEscape(run.color)}" font-size="${run.size}"` +
-        ` font-weight="${run.bold ? 600 : 400}"${run.italic ? ' font-style="italic"' : ''}>` +
-        `${xmlEscape(run.text)}</tspan>`,
-    )
-    .join('');
-  return (
-    `<text x="${r2(x)}" y="${r2(y)}"${svgFontFamilyAttr(fontFamily)}` +
-    ` text-anchor="${anchor}" dominant-baseline="central">${spans}</text>`
   );
 }

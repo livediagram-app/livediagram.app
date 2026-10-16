@@ -103,15 +103,21 @@ export async function readItems(env: Env, documentId: string, ids: string[]): Pr
   return (res.results ?? []).map(itemFromRow);
 }
 
+// Every card write raises the store's rev and marks the document saved (`saved_at`), as a tab write does: a card is
+// part of the document, so the Explorer's "Updated" line, its snapshot (docs/specs/006-document/document-snapshots.md:
+// a board draws its cards) and the Drive mirror all follow it. Both in the documents statement the write runs anyway.
+const SAVED = 'saved_at = MAX(saved_at, ?)';
+
 function bumpRev(env: Env, documentId: string, nextKey?: number): D1PreparedStatement {
+  const now = Date.now();
   return nextKey === undefined
     ? env.DB.prepare(
-        'UPDATE documents SET items_rev = items_rev + 1 WHERE id = ? RETURNING items_rev',
-      ).bind(documentId)
+        `UPDATE documents SET items_rev = items_rev + 1, ${SAVED} WHERE id = ? RETURNING items_rev`,
+      ).bind(now, documentId)
     : env.DB.prepare(
-        `UPDATE documents SET items_rev = items_rev + 1, items_next_key = MAX(items_next_key, ?)
+        `UPDATE documents SET items_rev = items_rev + 1, items_next_key = MAX(items_next_key, ?), ${SAVED}
           WHERE id = ? RETURNING items_rev`,
-      ).bind(nextKey, documentId);
+      ).bind(nextKey, now, documentId);
 }
 
 function insertStatement(env: Env, documentId: string, item: Item): D1PreparedStatement {
@@ -160,9 +166,9 @@ export async function updateItemAtRev(
     updateAtRevStatement(env, documentId, next, expectedRev),
     // Raises the store rev only when the guarded update landed.
     env.DB.prepare(
-      `UPDATE documents SET items_rev = items_rev + 1
+      `UPDATE documents SET items_rev = items_rev + 1, ${SAVED}
         WHERE id = ? AND changes() > 0 RETURNING items_rev`,
-    ).bind(documentId),
+    ).bind(Date.now(), documentId),
   ]);
   if ((results[0]?.meta?.changes ?? 0) === 0) return null;
   return revOf(results[1]);
@@ -222,9 +228,9 @@ export async function deleteItemRow(
       id,
     ),
     env.DB.prepare(
-      `UPDATE documents SET items_rev = items_rev + 1
+      `UPDATE documents SET items_rev = items_rev + 1, ${SAVED}
         WHERE id = ? AND changes() > 0 RETURNING items_rev`,
-    ).bind(documentId),
+    ).bind(Date.now(), documentId),
   ]);
   const row = (results[0]?.results as ItemRow[] | undefined)?.[0];
   if (!row) return null;

@@ -9,8 +9,16 @@ describe('combinableSelection', () => {
     { id: 'l', orientation: 'portrait', size: 'logo', kind: 'logo' },
     { id: 'i', orientation: 'portrait' },
   ]);
-  const sq = (id: string, x: number, extra: object = {}): Element =>
-    ({ id, type: 'shape', shape: 'square', x, y: 0, width: 50, height: 50, ...extra }) as Element;
+  const sq = (id: string, x: number, extra: object = {}): Element => ({
+    id,
+    type: 'shape',
+    shape: 'square',
+    x,
+    y: 0,
+    width: 50,
+    height: 50,
+    ...extra,
+  });
   const els = [sq('a', 0), sq('b', 20), sq('c', 2000), sq('d', 30, { locked: true })];
 
   it('gives the selection in stacking order on one logo page', () => {

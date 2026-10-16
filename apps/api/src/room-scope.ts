@@ -20,12 +20,13 @@ const TAB_LESS_DELIVERED = new Set([
 ]);
 
 // The tab-less ops a scoped session may itself send.
-const TAB_LESS_SENDABLE = new Set(['poll-start', 'poll-answer', 'poll-end']);
+// A follow (docs/specs/012-collaboration/follow-me-viewport.md) names a person, not a tab, so a scoped visitor may follow too.
+const TAB_LESS_SENDABLE = new Set(['poll-start', 'poll-answer', 'poll-end', 'follow']);
 
 type LooseOp = { kind?: unknown; tabId?: unknown; tabs?: unknown };
 
 function asOp(op: unknown): LooseOp | null {
-  return typeof op === 'object' && op !== null ? (op as LooseOp) : null;
+  return typeof op === 'object' && op !== null ? op : null;
 }
 
 // Whether an op is about the scoped tab. `undefined` = the op names no tab

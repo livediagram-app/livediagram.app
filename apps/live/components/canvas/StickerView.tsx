@@ -1,3 +1,4 @@
+import { trustedHtml } from '@livediagram/ui';
 // A sticker on the canvas (docs/specs/010-palette/stickers.md): the die-cut plate, its shadow, and the
 // emoji or badge on top, filling the element box.
 //
@@ -26,7 +27,7 @@ export function StickerArt({ def, className }: { def: StickerDef; className?: st
       preserveAspectRatio="xMidYMid meet"
       // The markup is our own authored SVG from the catalogue, not user
       // content — safe to inject, the same way the Technology marks are.
-      dangerouslySetInnerHTML={{ __html: art.markup }}
+      dangerouslySetInnerHTML={{ __html: trustedHtml(art.markup) }}
       aria-hidden
     />
   );

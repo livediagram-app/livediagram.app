@@ -6,7 +6,9 @@ import {
   MAX_INSET_SHARE,
   headerBand,
   layerInsets,
+  PHONE_ROW_MIN_PX,
   measureCanvasChrome,
+  phoneRow,
   sameLayout,
 } from './canvas-layer-insets';
 
@@ -81,6 +83,30 @@ describe('measureCanvasChrome', () => {
       insets: { top: 0, left: 272, right: 0, bottom: 0 },
       band: null,
     });
+  });
+
+  // plan-tabs.md: on a Dashboard, the strip stops short of the maximised element's controls, never a slot's smaller ones.
+  it('measures the maximised element’s controls, not a Dashboard slot’s', () => {
+    document.body.innerHTML = `
+      <main data-canvas-a11y-root="">
+        <div data-dashboard=""><div data-canvas-cover=""><div><div data-band-controls=""></div></div></div></div>
+        <div data-canvas-cover=""><div><div data-band-controls=""></div></div></div>
+      </main>
+      <div data-toolbar-menu=""></div>`;
+    const main = document.querySelector('main')!;
+    const menu = document.querySelector<HTMLElement>('[data-toolbar-menu]')!;
+    const [slotControls, maxControls] = [
+      ...document.querySelectorAll<HTMLElement>('[data-band-controls]'),
+    ];
+    const rect = (r: { left: number; top: number; right: number; bottom: number }) => () =>
+      ({ ...r, x: r.left, y: r.top, width: r.right - r.left, height: r.bottom - r.top }) as DOMRect;
+    main.getBoundingClientRect = rect(canvas);
+    menu.getBoundingClientRect = rect(box(16, 92, 200, 136));
+    Object.defineProperty(slotControls!, 'offsetWidth', { value: 60 });
+    Object.defineProperty(maxControls!, 'offsetWidth', { value: 140 });
+    const { band } = measureCanvasChrome(main);
+    // The strip's right edge: the controls (140) and the gap (12) inside the cover's padding (12).
+    expect(band?.stripEnd).toBe(12 + 140 + 12);
   });
 
   // "Maximised board": a panel opened for a moment (the Trash, a card search) floats over the board, never moving it.
@@ -226,5 +252,58 @@ describe('sameLayout', () => {
     expect(sameLayout({ insets, band }, { insets, band: { ...band, stripEnd: 280 } })).toBe(false);
     expect(sameLayout({ insets, band }, { insets, band: null })).toBe(false);
     expect(sameLayout({ insets, band: null }, { insets, band: null })).toBe(true);
+  });
+
+  it('compares the phone row by value, a missing one as none', () => {
+    const row = { height: 50, left: 62 };
+    expect(sameLayout({ insets, band: null, row }, { insets, band: null, row: { ...row } })).toBe(
+      true,
+    );
+    expect(
+      sameLayout({ insets, band: null, row }, { insets, band: null, row: { ...row, left: 70 } }),
+    ).toBe(false);
+    expect(sameLayout({ insets, band: null, row }, { insets, band: null })).toBe(false);
+    expect(sameLayout({ insets, band: null, row: null }, { insets, band: null })).toBe(true);
+  });
+});
+
+// "The header holds the top row", on a phone: no band, yet the element starts at the canvas's top and its header
+// shares the row with the menu button.
+describe('phoneRow', () => {
+  const phone = { left: 0, top: 56, right: 390, bottom: 796 };
+  const none = { left: 0, right: 0 };
+  const menu = box(12, 68, 58, 114);
+
+  it('grows the header to the menu and starts it after the menu', () => {
+    // From the element's box (8 px in): 114 - 64 tall, and 58 - 8 + 12 in.
+    expect(phoneRow(phone, none, menu)).toEqual({ height: 50, left: 62 });
+  });
+
+  it('is none on a canvas wide enough for a band, with no menu, or a menu below the middle', () => {
+    expect(phoneRow(canvas, none, box(16, 92, 200, 136))).toBeNull();
+    expect(phoneRow(phone, none, null)).toBeNull();
+    expect(phoneRow(phone, none, box(12, 700, 58, 746))).toBeNull();
+  });
+
+  it('is none when a panel pushes the element past the menu, or leaves too little room after it', () => {
+    expect(phoneRow(phone, { left: 40, right: 0 }, menu)).toBeNull();
+    const tight = { left: 0, right: 58 + 12 + 8 + PHONE_ROW_MIN_PX - 1 };
+    expect(phoneRow({ ...phone, right: tight.right }, none, menu)).toBeNull();
+  });
+
+  it('takes the top row on the page: the element starts at the canvas top', () => {
+    document.body.innerHTML = `<main data-canvas-a11y-root=""></main><div data-toolbar-menu=""></div>`;
+    const [main, menuEl] = [...document.body.children] as HTMLElement[];
+    const rect = (r: { left: number; top: number; right: number; bottom: number }) => () =>
+      ({ ...r, x: r.left, y: r.top, width: r.right - r.left, height: r.bottom - r.top }) as DOMRect;
+    main!.getBoundingClientRect = rect(phone);
+    menuEl!.getBoundingClientRect = rect(menu);
+    expect(measureCanvasChrome(main!)).toEqual({
+      insets: { top: 0, left: 0, right: 0, bottom: 0 },
+      band: null,
+      row: { height: 50, left: 62 },
+    });
+    // A Dashboard's page starts below the top row, as on a desktop.
+    expect(measureCanvasChrome(main!, false).row).toBeUndefined();
   });
 });

@@ -1,6 +1,6 @@
 import { useMemo, useState, type ReactNode } from 'react';
 import { BackBar } from '@/components/primitives/BackBar';
-import { Button } from '@livediagram/ui';
+import { Button, trustedHtml } from '@livediagram/ui';
 import { ToggleSwitch } from '@/components/palette/palette-controls';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { track } from '@/lib/telemetry';
@@ -87,7 +87,7 @@ export function ImageExportPanel({
             data-testid="export-preview"
             className="flex max-h-full max-w-full items-center justify-center [&>svg]:max-h-[176px] [&>svg]:w-auto [&>svg]:max-w-full"
             style={checkerboard ? { background: PREVIEW_CHECKER } : undefined}
-            dangerouslySetInnerHTML={{ __html: previewSvg }}
+            dangerouslySetInnerHTML={{ __html: trustedHtml(previewSvg) }}
           />
         ) : (
           <span className="text-xs text-slate-400">Preparing preview…</span>

@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLatest } from '@/hooks/ui/useLatest';
-import { usePlanFillTab } from './usePlanFillTab';
 import {
   createShape,
   hasPlanInput,
@@ -19,6 +18,7 @@ import {
   isTrashed,
   itemStatus,
   type Item,
+  type ItemCreate,
   type ItemMove,
   type ItemPatch,
   type ItemPatchOf,
@@ -31,18 +31,21 @@ import {
 const NO_PHASES: ReadonlyMap<string, StatusPhase> = new Map();
 const NO_STATUS_TYPES: BoardStatusTypes = new Map();
 import { stepTrail, type ItemOpenVia } from '@/components/plan/item-trail';
-import type { PlanCardPresence, PlanContextValue } from '@/components/plan/PlanContext';
+import type {
+  ItemTypeEditing,
+  PlanCardPresence,
+  PlanContextValue,
+} from '@/components/plan/PlanContext';
 import { titleCaseType, track } from '@/lib/telemetry';
 import type { PlanItems } from './usePlanItems';
 import type { ItemCommentAction } from '@/lib/api/items';
 import type { ItemTypesSlice } from './useItemTypes';
 import { planBoardTarget } from './plan-board-targets';
 import { useTypeForBoard } from './useTypeForBoard';
+import { tabNamedForBoard, tabNamedForView } from '@/lib/tab-named-plan';
 import type { StatusBoard } from './usePlanStatusNames';
 
 const NO_STATUS_BOARDS: readonly StatusBoard[] = [];
-const NO_TAB_ELEMENTS: readonly Element[] = [];
-const NO_ELEMENTS = () => NO_TAB_ELEMENTS;
 import { moveStatusRefusal } from './status-refusal';
 
 // The editor's Plan slice (docs/specs/026-plan/blueprints/plan-board.md "Editor components"): the
@@ -71,7 +74,6 @@ export function usePlanSlice(opts: {
   select: (elementId: string | null) => void;
   announce: (message: string) => void;
   addItemSlide?: (itemId: string) => void;
-  addBoardSlide?: (boardId: string) => void;
   statusNames: ReadonlyMap<string, string>;
   // The phase the tab's boards give each status (the plan views).
   statusPhases?: ReadonlyMap<string, StatusPhase>;
@@ -83,8 +85,8 @@ export function usePlanSlice(opts: {
   publishPresence?: (itemId: string | null, state: 'drag' | 'view') => void;
   // Shows a refusal on screen (a toast): a canvas Plan card dropped where it cannot go.
   notify?: (message: string) => void;
-  // Fill Tab (usePlanFillTab): the open tab's live elements.
-  readTabElements?: () => readonly Element[];
+  // New Form on a board's cog (useFormActions); stable.
+  newFormFor?: (boardElementId: string) => void;
 }) {
   const { planItems, itemTypes, editorMode, canEdit, canVote, presence } = opts;
   const canEditCards = opts.canEditCards ?? canEdit;
@@ -96,10 +98,30 @@ export function usePlanSlice(opts: {
   const announceRef = useLatest(opts.announce);
   const publishRef = useLatest(opts.publishPresence);
   const slideRef = useLatest(opts.addItemSlide);
-  const boardSlideRef = useLatest(opts.addBoardSlide);
   const commit = useCallback(
     (mapElements: (els: Element[]) => Element[]) => commitRef.current(mapElements),
     [commitRef],
+  );
+  // A change to one element on whichever tab holds it: a board shown in a Dashboard's slot lives on its own Board tab
+  // (docs/specs/026-plan/plan-tabs.md), so its set-up is changed there; on the open tab as ever otherwise.
+  // `retab` may change the tab itself in the same step (a Board tab's name following its board's title).
+  const commitOn = useCallback(
+    (elementId: string, mapElements: (els: Element[]) => Element[], retab?: (tab: Tab) => Tab) => {
+      const commitTabs = commitTabsRef.current;
+      if (!commitTabs) return commitRef.current(mapElements);
+      commitTabs((ts) => {
+        const at = ts.findIndex((t) => t.elements.some((el) => el.id === elementId));
+        if (at < 0) return ts;
+        const next = mapElements(ts[at]!.elements);
+        if (next === ts[at]!.elements) return ts;
+        return ts.map((t, i) => {
+          if (i !== at) return t;
+          const changed = { ...t, elements: next };
+          return retab ? retab(changed) : changed;
+        });
+      });
+    },
+    [commitRef, commitTabsRef],
   );
   const select = useCallback((id: string | null) => selectRef.current(id), [selectRef]);
   const announce = useCallback((message: string) => announceRef.current(message), [announceRef]);
@@ -109,27 +131,23 @@ export function usePlanSlice(opts: {
   );
   const hasSlides = !!opts.addItemSlide;
   const addItemSlide = useCallback((itemId: string) => slideRef.current?.(itemId), [slideRef]);
-  const addBoardSlide = useCallback(
-    (boardId: string) => boardSlideRef.current?.(boardId),
-    [boardSlideRef],
-  );
   const [openItemId, setOpenItemId] = useState<string | null>(null);
   // The card this person just made and opened (openNewItem): its panel selects its title so typing names it.
   const [freshItemId, setFreshItemId] = useState<string | null>(null);
   // The cards opened from inside the item panel, ending on the open one (docs/specs/026-plan/plan-board.md
   // "Breadcrumb"): a card opened any other way starts it afresh.
   const [itemTrail, setItemTrail] = useState<readonly string[]>([]);
-  // The type the type editor is open on, or 'new' (docs/specs/026-plan/item-types.md "Editing a type").
-  const [editingTypeId, setEditingTypeId] = useState<string | 'new' | null>(null);
+  // What the type editor is open on (docs/specs/026-plan/item-types.md "Editing a type"), or null.
+  const [editingType, setEditingType] = useState<ItemTypeEditing | null>(null);
   // A new type filled from this one (Duplicate), or none.
   const [typeTemplateId, setTypeTemplateId] = useState<string | null>(null);
   // Add New Card Type from a board's Add a Card menu: the board the new type is for (useTypeForBoard).
-  const forBoard = useTypeForBoard(commit);
+  const forBoard = useTypeForBoard(commitOn);
   const { setTypeForBoard } = forBoard;
   const editType = useCallback(
-    (typeId: string | 'new', fromId?: string) => {
-      setEditingTypeId(typeId);
-      setTypeTemplateId(typeId === 'new' && fromId ? fromId : null);
+    (target: ItemTypeEditing, fromId?: string) => {
+      setEditingType(target);
+      setTypeTemplateId(target === 'new' && fromId ? fromId : null);
       setTypeForBoard(null);
     },
     [setTypeForBoard],
@@ -138,9 +156,18 @@ export function usePlanSlice(opts: {
   const [setupBoardId, openBoardSetup] = useState<string | null>(null);
   const createTypeForBoard = useCallback(
     (boardId: string, statuses: readonly string[]) => {
-      setEditingTypeId('new');
+      setEditingType('new');
       setTypeTemplateId(null);
       setTypeForBoard({ boardId, statuses });
+    },
+    [setTypeForBoard],
+  );
+  // A Gantt chart's Add New Card Type: a new type with Start and Due, so it draws on the chart once saved.
+  const createTypeForView = useCallback(
+    (viewId: string) => {
+      setEditingType('new');
+      setTypeTemplateId(null);
+      setTypeForBoard({ viewId, fields: ['start', 'due'] });
     },
     [setTypeForBoard],
   );
@@ -184,6 +211,13 @@ export function usePlanSlice(opts: {
       track('Plan', 'Added', titleCaseType(input.type));
       return made;
     },
+    [write],
+  );
+
+  // Many new cards as one write and one undo step (a board's Import CSV, docs/specs/026-plan/plan-board.md "CSV").
+  const addItems = useCallback(
+    (creates: readonly ItemCreate[]) =>
+      creates.length ? write({ kind: 'create', creates: [...creates] }) : Promise.resolve(true),
     [write],
   );
 
@@ -237,6 +271,18 @@ export function usePlanSlice(opts: {
     },
     [write, planItems.items],
   );
+  // Many cards changed as one write and one undo step (Keep Them on a template's example cards).
+  const patchItems = useCallback(
+    (patches: readonly ItemPatchOf[]) => {
+      if (patches.length === 0) return;
+      void write(
+        patches.length === 1
+          ? { kind: 'patch', id: patches[0]!.id, patch: patches[0]!.patch }
+          : { kind: 'patches', patches: [...patches] },
+      );
+    },
+    [write],
+  );
   const trashItem = useCallback((itemId: string) => void trashItems([itemId]), [trashItems]);
   const restoreItem = useCallback(
     (itemId: string) => {
@@ -278,22 +324,24 @@ export function usePlanSlice(opts: {
     [commentFn],
   );
 
-  const fill = usePlanFillTab({
-    readElements: opts.readTabElements ?? NO_ELEMENTS,
-    commit,
-  });
-
   const updateBoard = useCallback(
     (boardId: string, setup: PlanBoardSetup) => {
-      commit((els) =>
-        els.map((el) =>
-          el.id === boardId && el.type === 'shape' && el.shape === 'plan-board'
-            ? { ...el, planBoard: setup }
-            : el,
-        ),
+      // The board's title before this change: only a change of title renames the tab, so any other setting (a column,
+      // a card type) never takes a tab that has drifted from its board, such as a Duplicate's copy, back.
+      let before: string | undefined;
+      commitOn(
+        boardId,
+        (els) =>
+          els.map((el) => {
+            if (el.id !== boardId || el.type !== 'shape' || el.shape !== 'plan-board') return el;
+            before = el.planBoard?.title;
+            return { ...el, planBoard: setup };
+          }),
+        // A Board tab and its board share one name (docs/specs/026-plan/plan-tabs.md "Names"): renamed, the tab follows.
+        (tab) => (before === setup.title ? tab : tabNamedForBoard(tab, setup.title)),
       );
     },
-    [commit],
+    [commitOn],
   );
 
   // Delete Status (docs/specs/026-plan/plan-board.md "Column settings"): the state's columns come off every other
@@ -330,15 +378,21 @@ export function usePlanSlice(opts: {
 
   const updateView = useCallback(
     (viewId: string, settings: PlanViewRef) => {
-      commit((els) =>
-        els.map((el) =>
-          el.id === viewId && el.type === 'shape' && el.shape === 'plan-view'
-            ? { ...el, planView: settings }
-            : el,
-        ),
+      // The chart's title before this change: only a new title renames the tab (as updateBoard).
+      let before: string | undefined;
+      commitOn(
+        viewId,
+        (els) =>
+          els.map((el) => {
+            if (el.id !== viewId || el.type !== 'shape' || el.shape !== 'plan-view') return el;
+            before = el.planView?.title;
+            return { ...el, planView: settings };
+          }),
+        // A Visualisation tab and its chart share one name (plan-tabs.md "Names"): titled, the tab follows.
+        (tab) => (before === settings.title ? tab : tabNamedForView(tab, viewId, settings.title)),
       );
     },
-    [commit],
+    [commitOn],
   );
 
   const placeCardOut = useCallback(
@@ -400,6 +454,7 @@ export function usePlanSlice(opts: {
   // has landed.
   const statusNamesRef = useLatest(opts.statusNames);
   const notifyRef = useLatest(opts.notify);
+  const notify = useCallback((message: string) => notifyRef.current?.(message), [notifyRef]);
   const dropPlanCardOnBoard = useCallback(
     (card: Element, status: string, boardId?: string): 'refused' | undefined => {
       const itemId = card.type === 'shape' ? card.planCard?.itemId : undefined;
@@ -453,8 +508,10 @@ export function usePlanSlice(opts: {
       itemTypes,
       editType,
       createTypeForBoard,
+      createTypeForView,
       setupBoardId,
       openBoardSetup,
+      ...(opts.newFormFor && canEdit ? { newFormFor: opts.newFormFor } : {}),
       status: planItems.status,
       self: planItems.self,
       people,
@@ -468,10 +525,12 @@ export function usePlanSlice(opts: {
       openNewItem,
       openItemId,
       addItem,
+      addItems,
       moveItem,
       patchItem,
       deleteItem,
       commentItem,
+      notify,
       ownerId: planItems.ownerId,
       updateBoard,
       removeStatusColumns,
@@ -484,20 +543,21 @@ export function usePlanSlice(opts: {
       draggingItemId,
       trashItem,
       trashItems,
+      patchItems,
       restoreItem,
       emptyTrash,
       statusNames: opts.statusNames,
       statusPhases: opts.statusPhases ?? NO_PHASES,
       statusTypes: opts.statusTypes ?? NO_STATUS_TYPES,
       statusBoards: opts.statusBoards ?? NO_STATUS_BOARDS,
-      ...fill,
-      ...(hasSlides ? { addItemSlide, addBoardSlide } : {}),
+      ...(hasSlides ? { addItemSlide } : {}),
     }),
     [
       planItems.items,
       itemTypes,
       editType,
       createTypeForBoard,
+      createTypeForView,
       setupBoardId,
       planItems.status,
       planItems.self,
@@ -512,10 +572,12 @@ export function usePlanSlice(opts: {
       openNewItem,
       openItemId,
       addItem,
+      addItems,
       moveItem,
       patchItem,
       deleteItem,
       commentItem,
+      notify,
       planItems.ownerId,
       updateBoard,
       removeStatusColumns,
@@ -528,16 +590,16 @@ export function usePlanSlice(opts: {
       draggingItemId,
       trashItem,
       trashItems,
+      patchItems,
       restoreItem,
       emptyTrash,
       addItemSlide,
-      addBoardSlide,
       hasSlides,
       opts.statusNames,
       opts.statusPhases,
       opts.statusTypes,
       opts.statusBoards,
-      fill,
+      opts.newFormFor,
     ],
   );
 
@@ -552,12 +614,13 @@ export function usePlanSlice(opts: {
     },
     // Opens an item without counting it as the person's (the Plan tour's card panel step).
     showItem: setOpenItemId,
-    editingTypeId,
+    editingType,
     typeTemplateId,
     typeForBoard: forBoard.typeForBoard,
     addTypeToBoard: forBoard.addTypeToBoard,
+    addTypeToView: forBoard.addTypeToView,
     closeTypeEditor: () => {
-      setEditingTypeId(null);
+      setEditingType(null);
       setTypeTemplateId(null);
       setTypeForBoard(null);
     },

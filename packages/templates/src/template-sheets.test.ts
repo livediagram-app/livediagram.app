@@ -1,7 +1,7 @@
 // docs/specs/029-sheets/sheet-store.md "Template starts": a template's Sheets are made into sheets beside the tabs,
 // on their tab, tinted for its canvas, and the mark dropped; anything else is left as it is.
 import { describe, expect, it } from 'vitest';
-import { createShape, type Element } from '@livediagram/document';
+import { createShape, type Element, type ShapeElement } from '@livediagram/document';
 import { hasTemplateSheets, materialiseTemplateSheets } from './template-sheets';
 import { buildPlanTemplate } from './template-builders-plan';
 
@@ -29,6 +29,19 @@ describe('materialiseTemplateSheets', () => {
     expect(out[1]).toBe(tabs[1]);
   });
 
+  it('places the charts a template’s sheet has, anchored in its Sheet with their first read', () => {
+    const { tabs: out, sheets } = materialiseTemplateSheets(
+      [tab('t', buildPlanTemplate('budget-planner', 0, 0))],
+      NOW,
+    );
+    const chart = out[0]!.elements.find(
+      (el): el is ShapeElement => el.type === 'shape' && el.shape === 'pie-chart',
+    );
+    expect(chart?.chartSource?.sheetId).toBe(sheets[0]!.id);
+    expect(chart?.sheetAnchor).toBeDefined();
+    expect(chart?.pieSlices).toHaveLength(5);
+  });
+
   it('keeps Fill Tab and tints the header for a dark canvas', () => {
     const light = materialiseTemplateSheets([tab('t', buildPlanTemplate('timesheet', 0, 0))], NOW);
     const dark = materialiseTemplateSheets(
@@ -38,7 +51,7 @@ describe('materialiseTemplateSheets', () => {
     const el = light.tabs[0]!.elements[0] as { planSheet: { fillTab?: true } };
     expect(el.planSheet.fillTab).toBe(true);
     const headBg = (s: (typeof light.sheets)[number]) =>
-      s.cells!.find((c) => c.r === s.layout!.rows[0] && c.c === s.layout!.cols[0])?.f?.bg;
+      s.cells!.find((c) => c.r === s.layout!.rows[3] && c.c === s.layout!.cols[0])?.f?.bg;
     expect(headBg(light.sheets[0]!)).not.toBe(headBg(dark.sheets[0]!));
   });
 

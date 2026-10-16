@@ -15,12 +15,16 @@ import {
   isCustomGradient,
   type ThemeBackgroundPreset,
 } from '@/lib/illustrate-page-paint';
-import { BackgroundSection } from './page-background-section';
+import { BackgroundSection, pageThemeColours } from './page-background-section';
 
 afterEach(() => cleanup());
 
 const theme: ThemeBackgroundPreset[] = [
-  { id: 'theme-wash', label: 'Theme wash', fill: { kind: 'solid', color: '#eef2ff' } },
+  {
+    id: 'theme-glow',
+    label: 'Theme glow',
+    fill: { kind: 'gradient', from: '#eef2ff', to: '#ddd6fe', angle: 160 },
+  },
 ];
 const custom: PageFill = { kind: 'gradient', from: '#123456', to: '#abcdef', angle: 90 };
 
@@ -42,11 +46,13 @@ function show(fill?: PageFill, presets: ThemeBackgroundPreset[] = theme) {
 const radio = (name: string) => screen.getByRole('radio', { name });
 
 describe('background categories', () => {
-  it('names a fill’s category: a theme preset, a gradient, else solid', () => {
-    expect(backgroundCategoryOf(undefined, theme)).toBe('solid');
-    expect(backgroundCategoryOf(theme[0]!.fill, theme)).toBe('theme');
-    expect(backgroundCategoryOf(custom, theme)).toBe('gradient');
+  it('names a fill’s category: any gradient, else solid', () => {
+    expect(backgroundCategoryOf(undefined)).toBe('solid');
+    expect(backgroundCategoryOf({ kind: 'solid', color: '#eef2ff' })).toBe('solid');
+    expect(backgroundCategoryOf(theme[0]!.fill)).toBe('gradient');
+    expect(backgroundCategoryOf(custom)).toBe('gradient');
     expect(isCustomGradient(custom, theme)).toBe(true);
+    expect(isCustomGradient(theme[0]!.fill, theme)).toBe(false);
     expect(isCustomGradient(undefined, theme)).toBe(false);
   });
 
@@ -69,9 +75,37 @@ describe('BackgroundSection', () => {
     expect(screen.getByRole('group', { name: 'Background colour' })).toBeTruthy();
   });
 
-  it('offers Theme only while the theme has backgrounds', () => {
-    show(undefined, []);
+  it('offers Solid and Gradient, the theme’s gradients in their own row', () => {
+    show();
     expect(screen.queryByRole('radio', { name: 'Theme' })).toBeNull();
+    fireEvent.click(radio('Gradient'));
+    const names = (group: string) =>
+      within(screen.getByRole('radiogroup', { name: group }))
+        .getAllByRole('radio')
+        .map((r) => r.getAttribute('aria-label'));
+    expect(names('Theme gradients')).toEqual(['Theme glow']);
+    expect(names('Background gradient')).toHaveLength(14);
+    expect(names('Background gradient').at(-1)).toBe('Custom gradient');
+  });
+
+  it('keeps the Solid theme row to one row of ten, never the theme white', () => {
+    const row = (hexes: string[]) =>
+      pageThemeColours(hexes.map((h) => ({ id: h, colour: h, label: h })));
+    const ten = [
+      '#111111',
+      '#222222',
+      '#ffffff',
+      '#333333',
+      '#444444',
+      '#555555',
+      '#666666',
+      '#777777',
+      '#888888',
+      '#999999',
+    ];
+    expect(row(ten).map((o) => o.colour)).not.toContain('#ffffff');
+    expect(row(ten)).toHaveLength(9);
+    expect(row([...ten, '#aaaaaa', '#bbbbbb'])).toHaveLength(9);
   });
 
   it('makes a custom gradient from the custom swatch, and edits it', () => {
@@ -190,5 +224,126 @@ describe('BackgroundSection', () => {
       fill: { ...custom, to: penColourHex('blue', 'light') },
     });
     expect(screen.queryByRole('dialog', { name: 'Gradient to colour' })).toBeNull();
+  });
+});
+
+describe('the Animated category', () => {
+  const slide = (fill?: PageFill) => {
+    const page = {
+      id: 's',
+      orientation: 'landscape',
+      kind: 'slide',
+      ...(fill ? { background: { fill } } : {}),
+    };
+    const onBackground = vi.fn();
+    onPreview = vi.fn();
+    render(
+      <BackgroundSection
+        page={page as IllustratePage}
+        themePresets={theme}
+        onBackground={onBackground}
+        onPreview={onPreview}
+      />,
+    );
+    return onBackground;
+  };
+
+  it('is offered on a slide page alone', () => {
+    show();
+    expect(screen.queryByRole('radio', { name: 'Animated' })).toBeNull();
+    cleanup();
+    slide();
+    expect(radio('Animated')).toBeTruthy();
+  });
+
+  it('previews a motion on hover and sets it on a press, as a gradient with its motion', () => {
+    const onBackground = slide();
+    fireEvent.click(radio('Animated'));
+    fireEvent.pointerEnter(radio('Starfield'));
+    expect(onPreview).toHaveBeenLastCalledWith({
+      fill: expect.objectContaining({ kind: 'gradient', motion: 'starfield' }),
+    });
+    fireEvent.click(radio('Aurora'));
+    expect(onBackground).toHaveBeenLastCalledWith({
+      fill: expect.objectContaining({ kind: 'gradient', motion: 'aurora' }),
+    });
+  });
+
+  it('opens on Animated for a slide that has one, the motion marked', () => {
+    slide({ kind: 'gradient', from: '#0b1020', to: '#123456', angle: 160, motion: 'waves' });
+    expect(radio('Animated').getAttribute('aria-checked')).toBe('true');
+    expect(radio('Waves').getAttribute('aria-checked')).toBe('true');
+  });
+});
+
+describe('the Animated speed', () => {
+  it('previews while dragged and is set once, on letting go, keeping the motion', () => {
+    const page = {
+      id: 's',
+      orientation: 'landscape',
+      kind: 'slide',
+      background: {
+        fill: { kind: 'gradient', from: '#0b1020', to: '#123456', angle: 160, motion: 'waves' },
+      },
+    };
+    const onBackground = vi.fn();
+    onPreview = vi.fn();
+    render(
+      <BackgroundSection
+        page={page as IllustratePage}
+        themePresets={theme}
+        onBackground={onBackground}
+        onPreview={onPreview}
+      />,
+    );
+    const slider = screen.getByRole('slider', { name: 'Animation speed' });
+    fireEvent.change(slider, { target: { value: '2' } });
+    expect(onPreview).toHaveBeenLastCalledWith({
+      fill: expect.objectContaining({ motion: 'waves', speed: 2 }),
+    });
+    expect(onBackground).not.toHaveBeenCalled();
+    fireEvent.pointerUp(slider);
+    expect(onBackground).toHaveBeenCalledTimes(1);
+    expect(onBackground).toHaveBeenLastCalledWith({
+      fill: expect.objectContaining({ motion: 'waves', speed: 2 }),
+    });
+  });
+});
+
+describe('Animated custom colours', () => {
+  const customFill = {
+    kind: 'gradient',
+    from: '#ff0066',
+    to: '#330099',
+    angle: 160,
+    motion: 'waves',
+    speed: 2,
+  } as const;
+  const slideWith = (fill: PageFill) => {
+    const onBackground = vi.fn();
+    onPreview = vi.fn();
+    render(
+      <BackgroundSection
+        page={{
+          id: 's',
+          orientation: 'landscape',
+          kind: 'slide',
+          background: { fill },
+        }}
+        themePresets={theme}
+        onBackground={onBackground}
+        onPreview={onPreview}
+      />,
+    );
+    return onBackground;
+  };
+
+  it('marks Custom for colours that are not the theme’s, and keeps them through a motion change', () => {
+    const onBackground = slideWith(customFill);
+    expect(radio('Custom Colours').getAttribute('aria-checked')).toBe('true');
+    fireEvent.click(radio('Aurora'));
+    expect(onBackground).toHaveBeenLastCalledWith({
+      fill: expect.objectContaining({ from: '#ff0066', to: '#330099', motion: 'aurora', speed: 2 }),
+    });
   });
 });

@@ -3,20 +3,20 @@
 // shows the active cell's input (a spilled cell's greyed and read-only) and edits it as the cell does.
 import { act, fireEvent, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { makeSheet, renderSheet, type SheetHarness } from './sheet-ui-test-utils';
+import { SHEET_ID, makeSheet, renderSheet, type SheetHarness } from './sheet-ui-test-utils';
 import { SheetFormulaBar } from './SheetFormulaBar';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
-function show(h: SheetHarness, opts: { canEdit?: boolean; at?: string } = {}) {
+function show(h: SheetHarness, opts: { canEdit?: boolean; canShape?: boolean; at?: string } = {}) {
   return renderSheet(
     h,
     ({ actions, input }) => <SheetFormulaBar actions={actions} input={input} />,
     opts,
   );
 }
-const nameBox = () => screen.getByLabelText('Name box') as HTMLInputElement;
-const fx = () => screen.getByLabelText('Formula bar') as HTMLTextAreaElement;
+const nameBox = () => screen.getByLabelText<HTMLInputElement>('Name box');
+const fx = () => screen.getByLabelText<HTMLTextAreaElement>('Formula bar');
 
 describe('the formula bar', () => {
   let h: SheetHarness;
@@ -78,6 +78,38 @@ describe('the formula bar', () => {
     type('Rate2');
     expect(h.toast).toHaveBeenLastCalledWith('There is no RATE2 on this sheet');
     expect(h.store.sheet(h.ctl().sheet.id)!.layout.names).toHaveLength(1);
+  });
+
+  // docs/specs/029-sheets/sheet.md "Named ranges": naming is an Editor's; a Participant writes cells only, and still
+  // goes to a name that is there.
+  it('names nothing for a Participant, who still goes to an existing name', () => {
+    const { rows, cols } = h.store.sheet(SHEET_ID)!.layout;
+    h.store.write(SHEET_ID, {
+      kind: 'layout',
+      changes: [
+        {
+          k: 'name',
+          name: 'Top',
+          range: { r1: rows[0]!, c1: cols[0]!, r2: rows[0]!, c2: cols[0]! },
+        },
+      ],
+    });
+    show(h, { canEdit: true, canShape: false });
+    withGrid();
+    act(() => h.select('B1:B3'));
+    const type = (text: string) => {
+      fireEvent.focus(nameBox());
+      fireEvent.change(nameBox(), { target: { value: text } });
+      fireEvent.keyDown(nameBox(), { key: 'Enter' });
+    };
+    type('Amounts');
+    expect(h.store.sheet(h.ctl().sheet.id)!.layout.names).toMatchObject([{ name: 'Top' }]);
+    // Said, not swallowed: the same line any other change to the sheet's shape gives.
+    expect(h.toast).toHaveBeenCalledWith(
+      "Only an editor can change a Sheet's rows, columns or settings.",
+    );
+    type('top');
+    expect(h.ctl().selection.ranges).toEqual([{ r1: 0, c1: 0, r2: 0, c2: 0 }]);
   });
 
   it('ignores what is not a reference on the grid, and restores on Escape or blur', () => {

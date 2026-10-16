@@ -36,35 +36,40 @@ export async function renderWorkingImages(
     for (const name of todo) {
       const bytes = readFileSync(`${photoDir}/${name}`).toString('base64');
       const type = /\.png$/i.test(name) ? 'image/png' : 'image/jpeg';
-      const out = await page.evaluate(
-        async ({ bytes, type, edge, rule }) => {
-          const workingSizeOf = new Function(`return (${rule})`)() as (
-            w: number,
-            h: number,
-            e: number,
-          ) => { width: number; height: number };
-          const blob = new Blob([Uint8Array.from(atob(bytes), (c) => c.charCodeAt(0))], { type });
-          const bitmap = await createImageBitmap(blob, { imageOrientation: 'from-image' });
-          const { width, height } = workingSizeOf(bitmap.width, bitmap.height, edge);
+      // Decode in the page, size in Node (the editor's own rule, not a copy of its source), draw
+      // in the page: the bitmap stays there between the steps, behind a handle.
+      const bitmap = await page.evaluateHandle(
+        ({ bytes, type }) =>
+          createImageBitmap(
+            new Blob([Uint8Array.from(atob(bytes), (c) => c.charCodeAt(0))], { type }),
+            { imageOrientation: 'from-image' },
+          ),
+        { bytes, type },
+      );
+      const decoded = await bitmap.evaluate((b) => ({ width: b.width, height: b.height }));
+      const { width, height } = workingSizeOf(decoded.width, decoded.height, edge);
+      const rgba = await bitmap.evaluate(
+        (b, { width, height }) => {
           const canvas = document.createElement('canvas');
           canvas.width = width;
           canvas.height = height;
           const ctx = canvas.getContext('2d', { willReadFrequently: true })!;
           ctx.imageSmoothingEnabled = true;
           ctx.imageSmoothingQuality = 'high';
-          ctx.drawImage(bitmap, 0, 0, width, height);
+          ctx.drawImage(b, 0, 0, width, height);
           const data = ctx.getImageData(0, 0, width, height).data;
           let binary = '';
           for (let i = 0; i < data.length; i += 0x8000) {
             binary += String.fromCharCode(...data.subarray(i, i + 0x8000));
           }
-          return { width, height, rgba: btoa(binary) };
+          return btoa(binary);
         },
-        { bytes, type, edge, rule: workingSizeOf.toString() },
+        { width, height },
       );
+      await bitmap.dispose();
       const paths = cachePathOf(name);
-      writeFileSync(paths.rgba, Buffer.from(out.rgba, 'base64'));
-      writeFileSync(paths.meta, JSON.stringify({ width: out.width, height: out.height }));
+      writeFileSync(paths.rgba, Buffer.from(rgba, 'base64'));
+      writeFileSync(paths.meta, JSON.stringify({ width, height }));
     }
   } finally {
     await browser.close();

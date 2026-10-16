@@ -1,6 +1,7 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { use, useCallback, useDeferredValue, useEffect, useMemo, useState } from 'react';
+import { browser } from 'react-dom';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { useAppNavigation } from '@/hooks/navigation/useAppNavigation';
 import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
@@ -30,6 +31,7 @@ import { useTokens } from '@/hooks/persistence/useTokens';
 import { useConfirm } from '@/hooks/ui/useConfirm';
 import { useDocumentListActions } from '@/hooks/persistence/useDocumentListActions';
 import { useToast } from '@/hooks/ui/useToast';
+import { useDeleteUndoHandoff } from '@/hooks/persistence/useDeleteUndoHandoff';
 import { explorerPathFor, selectedFromRoute } from './routes';
 import { useExplorerLens } from './lens/useExplorerLens';
 import { carriedHref, lensViewOf } from './lens/lens-views';
@@ -39,7 +41,6 @@ import { useActivityFeed } from './useActivityFeed';
 import { useExplorerMoves } from './useExplorerMoves';
 import { useExplorerPane } from './useExplorerPane';
 import { useSidebarExpansion } from './sidebar/useSidebarExpansion';
-import { useHydrated } from '@/hooks/ui/useHydrated';
 import { MY_DOCUMENTS_EXPAND_KEY } from './sidebar/sidebar-structure';
 import type { SelectedNode } from './views';
 import { indexFolders, folderBreadcrumb, folderDescendants } from '@/lib/folder-tree';
@@ -83,7 +84,10 @@ export function useExplorerState() {
   // prerenders this shell, and that render must match the HTML (the sidebar's Minimal chrome, the
   // appearance control's power-user wording).
   const prefs = useCachedPreferences();
-  const hydrated = useHydrated();
+  // The shell renders in the browser only (docs/specs/003-system-architecture/react-state-and-effects.md
+  // "Rendering in the browser only"): the prerender shows the layout's Suspense fallback, so the URL and the
+  // device's state are read from the first render on.
+  use(browser());
   // Owner id resolution mirrors new/page.tsx + editor-page.tsx: a
   // signed-in user is keyed by Clerk userId, a guest is keyed by the
   // localStorage UUID (minted on first visit). Null until Clerk has
@@ -174,10 +178,8 @@ export function useExplorerState() {
   // it means. Opened during render, once per link. The params stay while
   // Settings is open, so a page left for Google and reached again with Back
   // reopens it (docs/specs/007-editor/user-preferences.md), and go when it closes.
-  // Read once hydrated: the page is prerendered without a query string, so opening Settings in the
-  // render that hydrates it would not match the HTML it hydrates.
-  const settingsLink = hydrated ? (searchParams?.get('settings') ?? null) : null;
-  const sectionLink = hydrated ? (searchParams?.get('section') ?? null) : null;
+  const settingsLink = searchParams?.get('settings') ?? null;
+  const sectionLink = searchParams?.get('section') ?? null;
   const [settingsLinkSeen, setSettingsLinkSeen] = useState<string | null>(null);
   if (settingsLink !== settingsLinkSeen) {
     setSettingsLinkSeen(settingsLink);
@@ -284,6 +286,11 @@ export function useExplorerState() {
   useEffect(() => {
     if (loadOwner) void load(loadOwner);
   }, [loadOwner, load]);
+  // The open document deleted from the editor: its Undo, offered here on arrival.
+  useDeleteUndoHandoff(loadOwner, () => {
+    if (loadOwner) void load(loadOwner);
+    refreshTeamLibraries();
+  });
   // A change made in Google Drive reaches this page without a reload
   // (docs/specs/022-drive-mirror/drive-mirror.md, "Other views follow"). Quietly:
   // no skeleton, the lists just settle.
@@ -376,24 +383,29 @@ export function useExplorerState() {
   // these actions are wired against the personal `liveDocs` list, so a
   // team document in Recent (which lives in the sweep, not `liveDocs`)
   // wouldn't otherwise repaint after the action lands (docs/specs/013-workspace/team-shared-documents.md).
+  // Only for a team document: the sweep is a request per team, and a personal
+  // document's action changes no team library.
+  const refreshIfTeamDocument = (id: string) => {
+    if (teamDocuments.some((d) => d.id === id)) refreshTeamLibraries();
+  };
   const renameDocument = (id: string, name: string) => {
     setRenamingDocumentId(null);
     listRenameDocument(id, name);
-    refreshTeamLibraries();
+    refreshIfTeamDocument(id);
   };
 
   const deleteDocument = async (
     id: string,
     beforeRemove?: () => Promise<void> | void,
-    opts?: { skipConfirm?: boolean },
+    opts?: { onRestored?: () => void },
   ) => {
     await listDeleteDocument(id, beforeRemove, opts);
-    refreshTeamLibraries();
+    refreshIfTeamDocument(id);
   };
 
   const duplicateDocument = async (id: string) => {
     await listDuplicateDocument(id);
-    refreshTeamLibraries();
+    refreshIfTeamDocument(id);
   };
 
   // The unified move picker's state, handlers, and destination trees
@@ -441,6 +453,9 @@ export function useExplorerState() {
   // list on every Explorer section.
   const activity = useActivityFeed(ownerId);
 
+  // The rows follow the lens a beat behind the field: narrowing every row, and rendering the list, on each
+  // keystroke held up the field itself on a long list. React drops the stale pass when typing continues.
+  const shownLens = useDeferredValue(lens.parsed.lens);
   const {
     documentsByFolder,
     offlineDocuments,
@@ -461,7 +476,7 @@ export function useExplorerState() {
     go,
     recentExcludedIds: prefs.recentExcludedIds ?? [],
     favouriteIds,
-    lens: lens.parsed.lens,
+    lens: shownLens,
     viewerId: ownerId ?? '',
     now: lens.now,
   });
@@ -611,6 +626,13 @@ export function useExplorerState() {
     refreshLibraries: () => {
       if (ownerId) void refresh(ownerId);
       refreshTeamLibraries();
+    },
+    // A team page changed a library (docs/specs/013-workspace/team-shared-documents.md): its own team's, or, from its
+    // move picker, My documents' folders or another team's. The sidebar, the search panel and every move picker read
+    // the Explorer's lists, which never heard of it until a reload.
+    refreshAfterTeamPage: (teamId: string | null) => {
+      if (teamId) refreshTeamLibraries();
+      else void refreshFolders();
     },
     teamModalOpen,
     setTeamModalOpen,

@@ -37,13 +37,24 @@ const ANSWER: IllustrateAnswer = {
       elements: 3,
     },
   ],
-  articles: [{ flow: 'art-1', title: 'Brief', pages: [2], blocks: 2, words: 4, look: null }],
+  articles: [
+    {
+      flow: 'art-1',
+      title: 'Brief',
+      pages: [2],
+      blocks: 2,
+      words: 4,
+      estimatedPages: 1,
+      look: null,
+    },
+  ],
   article: {
     flow: 'art-1',
     title: 'Brief',
     pages: [2],
     blocks: 2,
     words: 4,
+    estimatedPages: 1,
     look: null,
     created: true,
   },
@@ -234,6 +245,10 @@ describe('page ls and page set', () => {
         { op: 'duplicate', page: 'Cover' },
       ],
       [
+        { page: '1', backgroundToAll: true },
+        { op: 'apply_background_to_all', page: 1 },
+      ],
+      [
         { page: '2', move: 1 },
         { op: 'move', page: 2, to: 1 },
       ],
@@ -283,7 +298,9 @@ describe('page ls and page set', () => {
           Response.json({ error: 'page_unknown', message: 'No page.', change: 0 }, { status: 400 }),
         input,
       );
-      return pageSet.run!(ctx, pageSet.input.parse({ doc: DOC_A, ...flags })).catch((e) => e);
+      return pageSet.run!(ctx, pageSet.input.parse({ doc: DOC_A, ...flags })).catch(
+        (e: unknown) => e,
+      );
     };
     expect(await run({})).toBeInstanceOf(VerbRefusal);
     expect(await run({ page: '2' })).toBeInstanceOf(VerbRefusal);

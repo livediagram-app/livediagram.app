@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useRef, useState } from 'react';
-import type { DetectedSticky, Truth } from '@livediagram/sticky-vision';
+import type { DetectedSticky } from '@livediagram/sticky-vision';
 import { boxesFromLabel } from '@/lib/photo-boxes';
 
 // The boxes on the photograph under review, as the author has corrected them
@@ -64,7 +64,7 @@ export function useReviewBoxes(detected: DetectedSticky[], detectionKey: unknown
   // words it carried, for the review's edited words. Throws, with a sentence
   // for the author, when the file is not a label for this photo.
   const load = useCallback(
-    (label: Truth, photoName: string, frame: { width: number; height: number }) => {
+    (label: unknown, photoName: string, frame: { width: number; height: number }) => {
       const { boxes: labelled, words } = boxesFromLabel(label, photoName, frame);
       setBoxes(labelled);
       setTicked(new Set(labelled.map((b) => b.id)));

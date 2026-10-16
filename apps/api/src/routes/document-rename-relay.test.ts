@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { sentJson } from '@livediagram/vitest-config/sent-request';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import type { Env } from '../types';
 import { makeTestRouteContext } from './test-route-context';
@@ -14,7 +15,7 @@ function roomRecorder(status = 204) {
     idFromName: (name: string) => name,
     get: () => ({
       fetch: async (_url: string, init?: RequestInit) => {
-        bodies.push(init?.body ? JSON.parse(String(init.body)) : null);
+        bodies.push(init?.body ? sentJson(init) : null);
         if (status === 0) throw new Error('room down');
         return new Response(null, { status });
       },
@@ -99,7 +100,7 @@ describe('a document rename', () => {
       ).toBe(200);
       await Promise.all(pending);
     }
-    expect(warn.mock.calls.map((c) => [c[0], (c[1] as { error: string }).error])).toEqual([
+    expect(warn.mock.calls.map((c): unknown => [c[0], (c[1] as { error: string }).error])).toEqual([
       ['[room-mutation] document-meta did not reach the room', 'status 500'],
       ['[room-mutation] document-meta did not reach the room', 'Error: room down'],
     ]);

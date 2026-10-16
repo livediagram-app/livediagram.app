@@ -5,7 +5,11 @@
 import { upgradeLegacyLinks } from './legacy-links';
 import { migrateWhiteboardKind } from './legacy-whiteboard-tab';
 import { migrateRetiredScheme } from './retired-schemes';
+import { migrateRetiredTheme } from './retired-themes';
 import { migrateStoredElements } from './stored-elements';
+import { settleDiagramKeys } from './diagram-key';
+import { settleStacks } from './stack';
+import { tagColoursOf } from './tag-colours';
 import type { Element, Tab } from './index';
 import { isRecord } from './is-record';
 
@@ -13,10 +17,18 @@ export function migrateStoredTab<
   T extends Pick<Tab, 'theme' | 'backgroundColor' | 'patternColor' | 'elements'>,
 >(tab: T): T {
   // A former whiteboard (./legacy-whiteboard-tab) first: it inks the elements the rest then see.
-  const schemed = migrateRetiredScheme(migrateWhiteboardKind(tab));
+  const schemed = migrateRetiredTheme(migrateRetiredScheme(migrateWhiteboardKind(tab)));
   if (!Array.isArray(schemed.elements)) return schemed;
   // Element links from before the document rename (./legacy-links) are upgraded here too.
-  const elements = upgradeLegacyLinks(migrateStoredElements(schemed.elements));
+  // A diagram key's rows are re-derived from the tab (docs/specs/009-elements/diagram-key.md), its tag colours included.
+  // Keys settle before stacks lay out (docs/specs/009-elements/stack.md): a key's rows come from the arrows and tag
+  // colours, not from where anything is, and a key a stack holds must have its height before the stack lays it out.
+  const elements = settleStacks(
+    settleDiagramKeys(
+      upgradeLegacyLinks(migrateStoredElements(schemed.elements)),
+      tagColoursOf(schemed as { tagColours?: unknown }),
+    ),
+  );
   return elements === schemed.elements ? schemed : { ...schemed, elements };
 }
 
@@ -28,12 +40,26 @@ export function migrateStoredTab<
  */
 export function migrateIncomingTab(tab: unknown): unknown {
   if (!isRecord(tab) || !Array.isArray(tab.elements) || !tab.elements.every(isRecord)) return tab;
-  return migrateStoredTab(
-    tab as Pick<Tab, 'theme' | 'backgroundColor' | 'patternColor' | 'elements'>,
+  const elements = tab.elements.length;
+  return readableOr(tab, elements, () =>
+    migrateStoredTab(tab as Pick<Tab, 'theme' | 'backgroundColor' | 'patternColor' | 'elements'>),
   );
 }
 
 /** Untrusted elements (a paste, a file) through the stored-element migrations; non-objects dropped. */
 export function migrateIncomingElements(elements: readonly unknown[]): Element[] {
-  return migrateStoredElements(elements.filter(isRecord) as unknown as Element[]);
+  const records = elements.filter(isRecord) as unknown as Element[];
+  return readableOr(records, records.length, () => migrateStoredElements(records));
+}
+
+// The migrations run before validation and read an element's fields as their types (a chip's label as text): a
+// malformed element can make one throw. Untrusted input that does is handed back as it came, for validation to refuse
+// as it refuses any malformed input, never thrown out of an api route, a peer's op or an import.
+function readableOr<T>(received: T, elements: number, migrate: () => T): T {
+  try {
+    return migrate();
+  } catch {
+    console.warn('[migrate] incoming-unreadable', { elements });
+    return received;
+  }
 }

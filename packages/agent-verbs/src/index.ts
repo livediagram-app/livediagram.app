@@ -72,6 +72,9 @@ export {
   apiRefusalOf,
   changeBoard,
   resolveBoard,
+  resolveDashboardInput,
+  type DashboardInput,
+  type DashboardTabRef,
   type ChangeBoardInput,
   type ChangeBoardResult,
   applyItemChanges,
@@ -96,6 +99,7 @@ export {
   applySheetChanges,
   buildSheetChange,
   changeSheet,
+  chartsReadLive,
   formatPatchOf,
   listSheets,
   readSheet,
@@ -115,3 +119,5 @@ export {
   type SheetRefusal,
 } from './sheets';
 export * from './illustrate';
+export * from './forms';
+export * from './images';

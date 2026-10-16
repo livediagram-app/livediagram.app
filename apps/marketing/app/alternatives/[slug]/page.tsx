@@ -147,7 +147,7 @@ export default async function AlternativePage({ params }: { params: Promise<{ sl
               <div className="mt-6 grid gap-5 md:grid-cols-2">
                 <div className="rounded-2xl border border-brand-200 bg-brand-50/60 p-6 dark:border-brand-500/30 dark:bg-brand-500/10">
                   <h3 className="flex items-center gap-2.5 font-semibold text-slate-900 dark:text-slate-100">
-                    <span className="flex size-8 items-center justify-center rounded-lg bg-brand-500 text-white dark:bg-brand-600">
+                    <span className="flex size-8 items-center justify-center rounded-lg bg-brand-700 text-white dark:bg-brand-600">
                       <BrandMark className="size-5" tone="mono" />
                     </span>
                     Why pick livediagram
@@ -155,7 +155,7 @@ export default async function AlternativePage({ params }: { params: Promise<{ sl
                   <ul className="mt-4 space-y-3 text-sm leading-relaxed text-slate-700 dark:text-slate-200">
                     {alt.usBest.map((point) => (
                       <li key={point} className="flex gap-2.5">
-                        <span className="mt-0.5 shrink-0 text-brand-600 dark:text-brand-300">
+                        <span className="mt-0.5 shrink-0 text-brand-700 dark:text-brand-300">
                           <CheckIcon />
                         </span>
                         <span>{point}</span>

@@ -35,7 +35,7 @@ export default function HelpHome() {
           <SearchInput large />
           <a
             href="/help/contact/"
-            className="mt-6 inline-flex items-center gap-2 text-sm text-slate-500 transition-colors hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100"
+            className="relative mt-6 inline-flex items-center gap-2 text-sm text-slate-500 touch-target-y transition-colors hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100"
           >
             <MailIcon className="h-4 w-4" />
             Can&apos;t find what you need? Contact us
@@ -45,6 +45,8 @@ export default function HelpHome() {
 
       <section className="mx-auto max-w-7xl px-4 pb-12 md:px-8">
         <div className="mb-10 border-t border-slate-200 dark:border-slate-800" />
+        {/* The category cards title themselves with h3, like the Features grid under its h2 below. */}
+        <h2 className="sr-only">Help Topics</h2>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {supportCategories.map((category) => (
             <CategoryCard key={category.slug} category={category} />

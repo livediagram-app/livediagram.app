@@ -21,15 +21,11 @@ import {
 import { clientFor } from './api';
 import type { Env } from './env';
 import { registerTool } from './tool-annotations';
-import { deepLink, errorResult, requireToken, textResult, type Extra } from './tool-helpers';
-
-// A refusal after some changes went through says which did.
-const stopped = (message: string, applied: readonly string[]) =>
-  errorResult(applied.length ? `${message} Applied before it: ${applied.join('; ')}.` : message);
+import { deepLink, errorResult, requireToken, stopped, textResult } from './tool-helpers';
 
 export function registerPlanTools(server: McpServer, env: Env): void {
   registerTool(server, env, mcpListItems, async (args, extra) => {
-    const api = clientFor(env, requireToken(extra as Extra));
+    const api = clientFor(env, requireToken(extra));
     const state = await readPlanState(api, args.documentId);
     // A column or card type named as change_items names them; an unknown one is refused with the names there are.
     const filter = resolveListingFilter(state, args);
@@ -38,7 +34,7 @@ export function registerPlanTools(server: McpServer, env: Env): void {
   });
 
   registerTool(server, env, mcpChangeItems, async (args, extra) => {
-    const api = clientFor(env, requireToken(extra as Extra));
+    const api = clientFor(env, requireToken(extra));
     const state = await readPlanState(api, args.documentId);
     const result = await applyItemChanges(api, args.documentId, args.changes, state);
     if (result.refusal) return stopped(result.refusal.message, result.applied);
@@ -46,7 +42,7 @@ export function registerPlanTools(server: McpServer, env: Env): void {
   });
 
   registerTool(server, env, mcpAddBoard, async (args, extra) => {
-    const api = clientFor(env, requireToken(extra as Extra));
+    const api = clientFor(env, requireToken(extra));
     const { documentId, ...input } = args;
     const result = await addBoard(api, documentId, input, 'mcp');
     if (!result.ok) return errorResult(result.message);
@@ -55,7 +51,7 @@ export function registerPlanTools(server: McpServer, env: Env): void {
   });
 
   registerTool(server, env, mcpChangeBoard, async (args, extra) => {
-    const api = clientFor(env, requireToken(extra as Extra));
+    const api = clientFor(env, requireToken(extra));
     const { documentId, ...input } = args;
     const result = await changeBoard(api, documentId, input, 'mcp');
     if (!result.ok) return errorResult(result.message);
@@ -64,7 +60,7 @@ export function registerPlanTools(server: McpServer, env: Env): void {
   });
 
   registerTool(server, env, mcpChangeCardTypes, async (args, extra) => {
-    const api = clientFor(env, requireToken(extra as Extra));
+    const api = clientFor(env, requireToken(extra));
     const result = await changeCardTypes(api, args.documentId, args.changes);
     if (result.refusal) return stopped(result.refusal.message, result.applied);
     return textResult({

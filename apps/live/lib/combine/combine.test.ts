@@ -208,7 +208,7 @@ describe("combine keeps each input's look", () => {
     const r = await combineElements([a, b], 'unite', 'u');
     expect(r.ok && r.path).toMatchObject({ fillColor: '#f1f5f9', strokeColor: '#1e293b' });
     const named = await combineElements(
-      [sq('c', 0, 0, 100, { penColour: 'red' } as Partial<ShapeElement>), sq('d', 50, 0, 100)],
+      [sq('c', 0, 0, 100, { penColour: 'red' }), sq('d', 50, 0, 100)],
       'unite',
       'v',
     );

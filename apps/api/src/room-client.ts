@@ -105,22 +105,39 @@ export async function mergeRoomLedger(
   tab: Tab,
   cursorHeader: string | null,
 ): Promise<RoomMerge> {
-  const unmerged: RoomMerge = { tab, commentAuthors: new Map() };
+  return applyRoomLedger(tab, await fetchRoomLedger(env, documentId, tab.id, cursorHeader));
+}
+
+// The ledger fetch alone: it needs only the tab's id and the cursor, so a save asks for it alongside
+// its own reads instead of after them (applyRoomLedger merges it once the tab is ready).
+export type FetchedRoomLedger = { ledger: TabLedger; seq: number } | null;
+
+export async function fetchRoomLedger(
+  env: Env,
+  documentId: string,
+  tabId: string,
+  cursorHeader: string | null,
+): Promise<FetchedRoomLedger> {
   const cursor = parseRoomCursor(cursorHeader);
-  if (!cursor) return unmerged;
+  if (!cursor) return null;
   try {
-    const query = `tab=${encodeURIComponent(tab.id)}&epoch=${encodeURIComponent(cursor.epoch)}`;
+    const query = `tab=${encodeURIComponent(tabId)}&epoch=${encodeURIComponent(cursor.epoch)}`;
     const res = await roomStubFor(env, documentId).fetch(`https://room/ledger?${query}`);
-    if (!res.ok) return unmerged;
+    if (!res.ok) return null;
     const ledger = (await res.json()) as TabLedger;
-    if (!ledger || typeof ledger !== 'object' || !ledger.elements) return unmerged;
-    return {
-      tab: mergeLedgerIntoTab(tab, ledger, cursor.seq),
-      commentAuthors: ledgerCommentAuthors(ledger),
-    };
+    if (!ledger || typeof ledger !== 'object' || !ledger.elements) return null;
+    return { ledger, seq: cursor.seq };
   } catch {
-    return unmerged;
+    return null;
   }
+}
+
+export function applyRoomLedger(tab: Tab, fetched: FetchedRoomLedger): RoomMerge {
+  if (!fetched) return { tab, commentAuthors: new Map() };
+  return {
+    tab: mergeLedgerIntoTab(tab, fetched.ledger, fetched.seq),
+    commentAuthors: ledgerCommentAuthors(fetched.ledger),
+  };
 }
 
 // `<epoch>:<seq>`, as the editor sends it. Null for anything else.
@@ -278,11 +295,13 @@ export async function relayTabRename(
 
 // An agent's Illustrate edit (docs/specs/024-agents/illustrate-for-agents.md "The route"), as the ops an
 // editor's own edit sends: a `tab-meta` patch of the pages and mode, then each article's frames, in
-// order. Best-effort and logged, like the tab rename relay; answers how many reached the room.
+// order; and an agent's form write (docs/specs/030-forms/forms.md "Agents"), its form and name as one
+// `tab-meta`. Best-effort and logged under `tag`, like the tab rename relay; answers how many reached the room.
 export async function relayIllustrate(
   env: Env,
   documentId: string,
   ops: readonly RoomOp[],
+  tag = '[illustrate-agent]',
 ): Promise<number> {
   let reached = 0;
   for (const op of ops) {
@@ -298,13 +317,13 @@ export async function relayIllustrate(
         reached += 1;
         continue;
       }
-      console.warn('[illustrate-agent] relay-missed', {
+      console.warn(`${tag} relay-missed`, {
         documentId,
         op: op.kind,
         error: `status ${res.status}`,
       });
     } catch (err) {
-      console.warn('[illustrate-agent] relay-missed', {
+      console.warn(`${tag} relay-missed`, {
         documentId,
         op: op.kind,
         error: String(err),
@@ -427,7 +446,7 @@ export async function deleteAgentPresence(
     throw new RoomUnavailableError(err);
   }
   if (!res.ok) throw new RoomUnavailableError(`status ${res.status}`);
-  return ((await res.json()) as { cleared: boolean }).cleared;
+  return (await res.json<{ cleared: boolean }>()).cleared;
 }
 
 // A token's changeset refreshes its presence on the tab (spec "Presence"); a refresh that fails is logged and the

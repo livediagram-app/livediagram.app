@@ -23,6 +23,9 @@ export function crossingPairs(ctx: LintContext): Crossings | null {
   for (let i = 0; i < arrows.length; i++) {
     for (let j = i + 1; j < arrows.length; j++) {
       const [p, q] = [arrows[i]!, arrows[j]!];
+      // A line drawn over what it crosses on purpose (routeBehind false: a lifeline, a message, a divider) crosses
+      // by design.
+      if (p.arrow.routeBehind === false || q.arrow.routeBehind === false) continue;
       if (!intersects(p.bounds, q.bounds) || !pathsCross(p.polyline, q.polyline)) continue;
       pairs++;
       for (const id of [p.arrow.id, q.arrow.id]) perArrow.set(id, (perArrow.get(id) ?? 0) + 1);

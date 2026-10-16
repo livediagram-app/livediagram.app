@@ -14,6 +14,7 @@ import {
   arrowLabelPass,
   layoutArrowLabel,
   type ArrowElement,
+  type Finish,
   type ArrowLabelLayout,
   type ArrowLabelLayoutOptions,
   type Element,
@@ -53,10 +54,12 @@ export function useArrowLabelLayouts(
   elements: Element[],
   hasArrows: boolean,
   tabFont: string | undefined,
-  // Re-lay out once webfonts land: labels measured in a fallback face wrap
-  // differently to the real one.
-  fontsReady: boolean,
+  // Re-lay out whenever webfonts land (useFontEpoch): labels measured in a
+  // fallback face wrap differently to the real one.
+  fontEpoch: number,
   options: Partial<ArrowLabelLayoutOptions> = {},
+  // The tab's finish (docs/specs/008-canvas/finish.md): a Sketch caption measures in the handwriting font.
+  tabFinish?: Finish,
 ) {
   // `options` arrives as a fresh object every render. Hold one per value (by
   // its JSON), so the layout below re-runs only when the options change.
@@ -67,12 +70,12 @@ export function useArrowLabelLayouts(
   const renders = useMemo(() => {
     const next = new Map<ElementId, ArrowLabelRender>();
     if (!hasArrows) return next;
-    const fontFamilyOf = (a: ArrowElement) => arrowLabelFontStack(a, tabFont);
+    const fontFamilyOf = (a: ArrowElement) => arrowLabelFontStack(a, tabFont, tabFinish);
     // The font epoch makes words measured in a fallback face measure again once webfonts land.
     const pass = arrowLabelPass(elements, {
       ...stableOptions,
       fontFamilyOf,
-      fontEpoch: fontsReady ? 1 : 0,
+      fontEpoch,
     });
     for (const el of elements) {
       if (el.type !== 'arrow') continue;
@@ -81,7 +84,7 @@ export function useArrowLabelLayouts(
       if (layout || knockouts.length > 0) next.set(el.id, { layout, knockouts });
     }
     return next;
-  }, [elements, hasArrows, tabFont, fontsReady, stableOptions]);
+  }, [elements, hasArrows, tabFont, tabFinish, fontEpoch, stableOptions]);
 
   // Lays out an arrow's label for text being typed, against the other labels
   // as placed, so the editor sits and wraps where the label will land.
@@ -99,11 +102,11 @@ export function useArrowLabelLayouts(
         options: {
           ...DEFAULT_ARROW_LABEL_LAYOUT_OPTIONS,
           ...stableOptions,
-          fontFamilyOf: (a) => arrowLabelFontStack(a, tabFont),
-          fontEpoch: fontsReady ? 1 : 0,
+          fontFamilyOf: (a) => arrowLabelFontStack(a, tabFont, tabFinish),
+          fontEpoch,
         },
       });
-  }, [renders, elements, tabFont, stableOptions, fontsReady]);
+  }, [renders, elements, tabFont, tabFinish, stableOptions, fontEpoch]);
   // One identity for the editor's lifetime, laying out against the newest pass, so every ArrowView's
   // memo holds across element changes (docs/specs/008-canvas/canvas-performance.md).
   const { draftLayout } = useStableHandlers({ draftLayout: latestDraftLayout });

@@ -1,13 +1,13 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { PLAN_GLYPH_CATEGORIES } from '@livediagram/items';
+import { PLAN_GLYPH_CATEGORIES, type ItemTypeDef } from '@livediagram/items';
 import { GlyphPicker } from './GlyphPicker';
 
 // docs/specs/026-plan/item-types.md "Editing a type": the Glyph button and its popover of categories and a search.
 afterEach(cleanup);
 
-const draw = (value = 'task') => {
+const draw = (value: ItemTypeDef['glyph'] = 'task') => {
   const onChange = vi.fn();
   render(<GlyphPicker value={value} colour="#2563eb" onChange={onChange} />);
   return onChange;
@@ -32,9 +32,7 @@ describe('the glyph picker', () => {
     expect(screen.getByRole('radio', { name: 'Chat glyph' }).getAttribute('aria-checked')).toBe(
       'true',
     );
-    expect((screen.getByLabelText('Glyph category') as HTMLSelectElement).value).toBe(
-      'communication',
-    );
+    expect(screen.getByLabelText<HTMLSelectElement>('Glyph category').value).toBe('communication');
   });
 
   it('switches category from its menu, or shows every glyph for All', () => {
@@ -57,10 +55,10 @@ describe('the glyph picker', () => {
     fireEvent.change(search, { target: { value: 'money' } });
     const names = screen.getAllByRole('radio').map((r) => r.getAttribute('aria-label'));
     expect(names).toEqual(expect.arrayContaining(['Coin glyph', 'Wallet glyph']));
-    expect((screen.getByLabelText('Glyph category') as HTMLSelectElement).value).toBe('all');
+    expect(screen.getByLabelText<HTMLSelectElement>('Glyph category').value).toBe('all');
     fireEvent.change(search, { target: { value: 'zzz' } });
     expect(screen.queryAllByRole('radio')).toHaveLength(0);
-    expect(screen.getByText('No glyphs match “zzz”.')).toBeTruthy();
+    expect(screen.getByText('No glyphs match “zzz”')).toBeTruthy();
   });
 
   it('picks a glyph, closes and hands focus back', () => {

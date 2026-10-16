@@ -2,11 +2,14 @@
 
 // Focus (docs/specs/026-plan/plan-board.md "Focus", docs/specs/029-sheets/sheet.md "Header"): in a board's or a
 // Sheet's header, left of Maximise, a button that glides the view to fit the element, a margin round it. Not drawn
-// while the element is maximised (it already fills the view) or outside an editor's canvas.
+// while the element is maximised (it already fills the view), outside an editor's canvas, or in a Dashboard's slot
+// (docs/specs/026-plan/plan-tabs.md "Dashboard tab"), where the page covers the canvas it would move.
 import { Tooltip, lucideGlyph } from '@livediagram/ui';
 import { lucideScanEye } from '@livediagram/icons/lucide';
 import { useCanvasFocus } from '@/hooks/canvas/useCanvasFocus';
+import { useContext } from 'react';
 import { track } from '@/lib/telemetry';
+import { DashboardContext } from './dashboard/dashboard-context';
 import type { PlanPalette } from './plan-palette';
 
 const FocusIcon = lucideGlyph(lucideScanEye, 16);
@@ -24,7 +27,8 @@ export function FocusElementButton({
   palette: PlanPalette;
 }) {
   const focus = useCanvasFocus();
-  if (!focus) return null;
+  const inDashboard = useContext(DashboardContext) !== null;
+  if (!focus || inDashboard) return null;
   const label = `Focus ${kind}`;
   return (
     <Tooltip label={label}>

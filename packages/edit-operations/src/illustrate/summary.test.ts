@@ -22,6 +22,12 @@ describe('backgrounds in words', () => {
       }),
     ).toBe('gradient #000 → #fff, grid pattern');
     expect(describeBackground({ pattern: 'lines' })).toBe('lines pattern');
+    expect(
+      describeBackground({
+        fill: { kind: 'image', imageId: 'i', overlay: { kind: 'light', strength: 0.6 } },
+      }),
+    ).toBe('image, light 60%');
+    expect(describeBackground({ fill: { kind: 'image', imageId: 'i' } })).toBe('image, no overlay');
   });
 });
 
@@ -89,8 +95,24 @@ describe('articles in the answer', () => {
       },
     } as unknown as Pick<Tab, 'elements' | 'pages' | 'articles'>;
     expect(articleSummaries(tab)).toEqual([
-      { flow: 'b', title: 'Untitled', pages: [2], blocks: 1, words: 2, look: null },
-      { flow: 'a', title: 'Alpha', pages: [3, 4], blocks: 1, words: 1, look: 'report' },
+      {
+        flow: 'b',
+        title: 'Untitled',
+        pages: [2],
+        blocks: 1,
+        words: 2,
+        estimatedPages: 1,
+        look: null,
+      },
+      {
+        flow: 'a',
+        title: 'Alpha',
+        pages: [3, 4],
+        blocks: 1,
+        words: 1,
+        estimatedPages: 1,
+        look: 'report',
+      },
     ]);
   });
 });

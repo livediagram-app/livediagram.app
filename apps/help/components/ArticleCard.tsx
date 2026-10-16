@@ -26,14 +26,14 @@ export function ArticleCard({ article, number }: { article: Article; number?: nu
           <GlyphDisc
             size={28}
             aria-hidden
-            className="bg-brand-600 text-sm font-semibold text-white transition-colors group-hover:bg-brand-700"
+            className="bg-brand-700 text-sm font-semibold text-white transition-colors group-hover:bg-brand-800"
           >
             {number}
           </GlyphDisc>
         ) : (
           <span
             aria-hidden
-            className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-brand-600 transition-colors group-hover:bg-brand-100 dark:bg-brand-500/15 dark:group-hover:bg-brand-500/25 dark:text-brand-300"
+            className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-brand-700 transition-colors group-hover:bg-brand-100 dark:bg-brand-500/15 dark:group-hover:bg-brand-500/25 dark:text-brand-300"
           >
             {icon}
           </span>
@@ -45,7 +45,7 @@ export function ArticleCard({ article, number }: { article: Article; number?: nu
       <p className="mt-2 text-sm leading-relaxed text-slate-500 dark:text-slate-400">
         {article.description}
       </p>
-      <span className="mt-3 inline-flex items-center gap-1 text-sm text-brand-600 transition-all group-hover:gap-2 dark:text-brand-300">
+      <span className="mt-3 inline-flex items-center gap-1 text-sm text-brand-700 transition-all group-hover:gap-2 dark:text-brand-300">
         Read article
         <ArrowRightIcon />
       </span>

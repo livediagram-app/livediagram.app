@@ -12,6 +12,7 @@ describe('lint wire types', () => {
       'label-overflow',
       'node-isolated',
       'group-escape',
+      'text-overflow',
     ]);
     expect(by('info')).toEqual([
       'group-split-edges',

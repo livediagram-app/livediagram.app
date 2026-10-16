@@ -7,17 +7,24 @@ import {
   type ExportedTabEnvelope,
 } from './export-tab-text';
 
-const shape = (id: string, over: Record<string, unknown> = {}): Element =>
-  ({ id, type: 'shape', shape: 'square', x: 0, y: 0, width: 10, height: 10, ...over }) as Element;
+const shape = (id: string, over: Record<string, unknown> = {}): Element => ({
+  id,
+  type: 'shape',
+  shape: 'square',
+  x: 0,
+  y: 0,
+  width: 10,
+  height: 10,
+  ...over,
+});
 
-const arrow = (id: string, over: Partial<ArrowElement> = {}): Element =>
-  ({
-    id,
-    type: 'arrow',
-    from: { kind: 'free', x: 0, y: 0 },
-    to: { kind: 'free', x: 10, y: 10 },
-    ...over,
-  }) as Element;
+const arrow = (id: string, over: Partial<ArrowElement> = {}): Element => ({
+  id,
+  type: 'arrow',
+  from: { kind: 'free', x: 0, y: 0 },
+  to: { kind: 'free', x: 10, y: 10 },
+  ...over,
+});
 
 const tab = (name: string, elements: Element[]): Tab => ({ name, elements }) as Tab;
 
@@ -80,7 +87,7 @@ describe('tabToMarkdownText', () => {
           label: 'flows to',
           from: { kind: 'pinned', elementId: 'a', anchor: 's' },
           to: { kind: 'free', x: 12.4, y: 30.6 },
-        } as Partial<ArrowElement>),
+        }),
       ]),
     );
     expect(lines).toContain('## Connections');
@@ -95,7 +102,7 @@ describe('tabToMarkdownText', () => {
           label: 'dangles',
           from: { kind: 'pinned', elementId: 'gone', anchor: 'n' },
           to: { kind: 'free', x: 0, y: 0 },
-        } as Partial<ArrowElement>),
+        }),
       ]),
     );
     expect(lines).toContain('- *dangles*: ? → (0, 0)');

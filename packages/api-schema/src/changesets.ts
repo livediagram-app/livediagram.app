@@ -4,7 +4,7 @@
 // rejections of the edit-operations engine travel inside a changeset's answer, so their wire
 // shapes live here too and the engine re-exports them.
 
-import type { Element, ElementOp, Tab } from '@livediagram/document';
+import type { Element, ElementOp, Finish, Tab } from '@livediagram/document';
 import type { LintReport } from './lint';
 import { MAX_TAB_BYTES } from './tab-size';
 import { TRASH_RETENTION_DAYS } from './trash';
@@ -181,9 +181,17 @@ export type ChangesetReplaceBody = {
   graph?: unknown;
   mermaid?: string;
   template?: string;
+  // A new Dashboard tab (docs/specs/026-plan/plan-agents.md "Making a dashboard").
+  dashboard?: Record<string, unknown>;
+  // A new Form tab's form (docs/specs/030-forms/forms.md "Agents").
+  form?: Record<string, unknown>;
+  // A new tab of elements made a Board or Sheet tab (a form's responses).
+  kind?: 'board' | 'sheet';
   elements?: unknown[];
   layout?: 'auto' | 'preserve';
   theme?: string;
+  // The new tab's finish (docs/specs/008-canvas/finish.md).
+  finish?: Finish;
   name?: string;
 };
 

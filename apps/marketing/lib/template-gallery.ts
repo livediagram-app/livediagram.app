@@ -1,13 +1,16 @@
 import type { EditorMode } from '@livediagram/document';
+import { EDITOR_MODES, seededRandom } from '@livediagram/document';
 import {
-  POPULAR_PER_MODE,
-  POPULAR_TEMPLATE_KINDS,
-  popularKindsFor,
+  BLANK_TEMPLATE_FOR_MODE,
+  EXTRA_BLANK_TEMPLATES,
   TEMPLATES,
   TEMPLATE_CATEGORIES,
   isBlankTemplate,
-  templateCategory,
+  templateCategories,
+  templateCategoryLabel,
   templateEditorMode,
+  templateMatchesQuery,
+  templateQueryWords,
   type TemplateCategory,
   type TemplateDescriptor,
 } from '@livediagram/templates';
@@ -15,89 +18,74 @@ import {
 // The landing page's template gallery (docs/specs/019-marketing/marketing-site.md): every template
 // the editor ships, each a link that creates that document straight away (/new?template=<kind>,
 // docs/specs/007-editor/new-document-route.md), laid out as the editor's template step lays them
-// out (docs/specs/008-canvas/canvas-and-palette.md "Templates"): Popular first (the four blanks,
-// then the starters most people reach for), then one shelf per category. The data half lives here
+// out (docs/specs/008-canvas/canvas-and-palette.md "Templates"): Blank Slate first (every blank and nothing else: each
+// mode's, and Blank Spreadsheet), then one shelf per category. The data half lives here
 // so the lists and the filters can be tested without rendering the section.
 
-export type GalleryTemplate = TemplateDescriptor & {
-  category: TemplateCategory;
+type GalleryTemplate = TemplateDescriptor & {
+  // Its primary category (docs/specs/008-canvas/canvas-and-palette.md "Template categories"), then any it is
+  // cross-listed in; a blank has none.
+  category: TemplateCategory | null;
+  categories: readonly TemplateCategory[];
   categoryLabel: string;
   // The editor mode the template opens in (docs/specs/007-editor/templates-by-mode.md).
   mode: EditorMode;
 };
 
-// The open shelf: Popular, or a category.
+// The open shelf: Blank Slate (its id `popular`, the shelf it replaced), or a category.
 export type ShelfId = 'popular' | TemplateCategory;
 
 export type GalleryShelf = { id: ShelfId; label: string; templates: GalleryTemplate[] };
 
-// Everything, or one editor mode (the gallery's mode filter, as the template step's).
-export type ModeChoice = 'all' | EditorMode;
+const POPULAR_LABEL = 'Blank Slate';
 
-export const POPULAR_LABEL = 'Popular';
-
-const LABELS = new Map(TEMPLATE_CATEGORIES.map((c) => [c.id, c.label]));
 const BY_KIND = new Map(TEMPLATES.map((t) => [t.kind, t]));
 
 function toGallery(t: TemplateDescriptor): GalleryTemplate {
-  const category = templateCategory(t.kind);
+  const categories = templateCategories(t.kind);
+  const category = categories[0] ?? null;
   return {
     ...t,
     category,
-    categoryLabel: LABELS.get(category) ?? category,
+    categories,
+    categoryLabel: category ? templateCategoryLabel(category) : '',
     mode: templateEditorMode(t.kind),
   };
 }
 
 // Every listed template on a category shelf: hidden templates never appear in a listing, and the
-// four blanks are only ever on Popular, never on a category shelf
-// (docs/specs/007-editor/templates-by-mode.md "Four blanks").
+// blanks are only ever on Blank Slate, never on a category shelf
+// (docs/specs/007-editor/templates-by-mode.md "Five blanks").
 export function galleryTemplates(): GalleryTemplate[] {
   return TEMPLATES.filter((t) => !t.hidden && !isBlankTemplate(t.kind)).map(toGallery);
 }
 
-// Popular, in its fixed order, the four blanks first.
+// Blanks the row already shows by another name: Blank Infographic is Blank Illustration's own
+// empty infographic page, so it is left off rather than shown twice.
+const SHOWN_AS_ANOTHER_BLANK: readonly string[] = ['blank-infographic'];
+
+// Blank Slate's blanks in mode order (the mode switch's), Blank Spreadsheet beside Blank Plan.
+const BLANK_SLATE_KINDS = EDITOR_MODES.flatMap((mode) => [
+  BLANK_TEMPLATE_FOR_MODE[mode],
+  ...EXTRA_BLANK_TEMPLATES.filter(
+    (k) => templateEditorMode(k) === mode && !SHOWN_AS_ANOTHER_BLANK.includes(k),
+  ),
+]);
+
+// Blank Slate: every blank and nothing else, in its fixed order.
 export function popularTemplates(): GalleryTemplate[] {
-  return POPULAR_TEMPLATE_KINDS.flatMap((kind) => {
+  return BLANK_SLATE_KINDS.flatMap((kind) => {
     const t = BY_KIND.get(kind);
     return t && !t.hidden ? [toGallery(t)] : [];
   });
 }
 
-// Case-insensitive word match over the title, the description and the category name, every typed
-// word having to hit somewhere ("agile board" finds Kanban through its category and description).
-// An empty query is the whole list.
+// The editor's own search (templateMatchesQuery): every typed word has to hit the title, the description, the
+// kind, a category name or the template's search words ("plan board" finds Kanban through its category, "mortgage"
+// the Loan Calculator through its words). An empty query is the whole list.
 export function filterGallery(items: GalleryTemplate[], query: string): GalleryTemplate[] {
-  const words = query.toLowerCase().split(/\s+/).filter(Boolean);
-  if (words.length === 0) return items;
-  return items.filter((t) => {
-    const haystack = `${t.title} ${t.description} ${t.categoryLabel}`.toLowerCase();
-    return words.every((w) => haystack.includes(w));
-  });
-}
-
-// Only the templates of one mode; Everything keeps them all.
-export function byMode(items: GalleryTemplate[], choice: ModeChoice): GalleryTemplate[] {
-  return choice === 'all' ? items : items.filter((t) => t.mode === choice);
-}
-
-// How many templates each choice holds, across Popular and every category (each counted once).
-export function modeCounts(): Record<ModeChoice, number> {
-  const out: Record<ModeChoice, number> = {
-    all: 0,
-    diagram: 0,
-    draw: 0,
-    illustrate: 0,
-    plan: 0,
-  };
-  const seen = new Set<string>();
-  for (const t of [...popularTemplates(), ...galleryTemplates()]) {
-    if (seen.has(t.kind)) continue;
-    seen.add(t.kind);
-    out.all += 1;
-    out[t.mode] += 1;
-  }
-  return out;
+  if (templateQueryWords(query).length === 0) return items;
+  return items.filter((t) => templateMatchesQuery(t, query));
 }
 
 // The order the cards sit in on each category shelf: the catalogue's order is the order templates
@@ -106,22 +94,10 @@ export function modeCounts(): Record<ModeChoice, number> {
 // hydrate differently). Change the seed to deal a new order.
 const SHUFFLE_SEED = 20261004;
 
-// mulberry32: a tiny seeded PRNG, enough to deal a stable order.
-function seeded(seed: number) {
-  let a = seed >>> 0;
-  return () => {
-    a = (a + 0x6d2b79f5) >>> 0;
-    let t = a;
-    t = Math.imul(t ^ (t >>> 15), t | 1);
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
-
 // Each template's place on its shelf, dealt once from the whole catalogue.
 const SHELF_RANK: ReadonlyMap<string, number> = (() => {
   const kinds = TEMPLATES.map((t) => t.kind);
-  const random = seeded(SHUFFLE_SEED);
+  const random = seededRandom(SHUFFLE_SEED);
   for (let i = kinds.length - 1; i > 0; i--) {
     const j = Math.floor(random() * (i + 1));
     [kinds[i], kinds[j]] = [kinds[j]!, kinds[i]!];
@@ -131,52 +107,21 @@ const SHELF_RANK: ReadonlyMap<string, number> = (() => {
 const byShelfRank = (a: GalleryTemplate, b: GalleryTemplate) =>
   (SHELF_RANK.get(a.kind) ?? 0) - (SHELF_RANK.get(b.kind) ?? 0);
 
-// Group in catalogue category order, each shelf in its dealt order, dropping categories the
-// filters emptied.
+// Group in catalogue category order, each shelf in its dealt order, dropping empty categories. A
+// template shows on every category it is listed in (cross-listing).
 export function groupGallery(items: GalleryTemplate[]): GalleryShelf[] {
   return TEMPLATE_CATEGORIES.map((c) => ({
     id: c.id as ShelfId,
     label: c.label,
-    templates: items.filter((t) => t.category === c.id).sort(byShelfRank),
+    templates: items.filter((t) => t.categories.includes(c.id)).sort(byShelfRank),
   })).filter((g) => g.templates.length > 0);
 }
 
-// Popular under a mode filter, topped up from the mode's best (popularKindsFor, shared with the editor's
-// template step).
-export { POPULAR_PER_MODE };
-
-export function popularFor(choice: ModeChoice): GalleryTemplate[] {
-  return popularKindsFor(choice).flatMap((kind) => {
-    const t = BY_KIND.get(kind);
-    return t ? [toGallery(t)] : [];
-  });
-}
-
-// Popular and every category, under the mode filter, emptied shelves dropped.
-export function galleryShelves(choice: ModeChoice): GalleryShelf[] {
-  const popular = popularFor(choice);
+// Blank Slate, then every category. Searching lives in the hero (lib/hero-starts.ts), so the gallery
+// only browses.
+export function galleryShelves(): GalleryShelf[] {
   return [
-    ...(popular.length > 0
-      ? [{ id: 'popular' as const, label: POPULAR_LABEL, templates: popular }]
-      : []),
-    ...groupGallery(byMode(galleryTemplates(), choice)),
-  ];
-}
-
-// A search's shelves: the matching blanks under Popular (the only shelf they are on), then every
-// category with a match, all under the mode filter.
-export function searchShelves(query: string, choice: ModeChoice): GalleryShelf[] {
-  const blanks = byMode(
-    filterGallery(
-      popularTemplates().filter((t) => isBlankTemplate(t.kind)),
-      query,
-    ),
-    choice,
-  );
-  return [
-    ...(blanks.length > 0
-      ? [{ id: 'popular' as const, label: POPULAR_LABEL, templates: blanks }]
-      : []),
-    ...groupGallery(byMode(filterGallery(galleryTemplates(), query), choice)),
+    { id: 'popular' as const, label: POPULAR_LABEL, templates: popularTemplates() },
+    ...groupGallery(galleryTemplates()),
   ];
 }

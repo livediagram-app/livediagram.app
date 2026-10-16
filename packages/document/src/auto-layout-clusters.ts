@@ -15,9 +15,13 @@ import {
   graphToElements,
   type DiagramGraph,
   type GraphCluster,
+  type GraphLook,
 } from './graph-authoring';
 import { unionRects, type Rect } from './geometry-primitives';
 import { bowReciprocalEdges } from './arrow-reciprocal';
+import { faceGroupEdges, headingLead, seatByMembers } from './auto-layout-cluster-seats';
+import { lineUpStackedFrames } from './auto-layout-cluster-stack';
+import { isRowHub, seatMembersByNeighbours } from './auto-layout-cluster-members';
 import { isBoxed, type ArrowElement, type BoxedElement, type Element } from './index';
 
 // Space between a frame's border and its members: the top band is deeper so
@@ -28,6 +32,10 @@ export const FRAME_TOP = 64;
 export type ClusteredLayoutOptions = {
   direction?: LayoutDirection;
   makeEdgeId?: () => string;
+  // The template look graph input wears (graph-authoring.ts); absent for the editor's Mermaid import.
+  look?: GraphLook;
+  // Side steps level with their decision (auto-layout.ts `flatEdges`).
+  flatEdges?: ReadonlySet<string>;
 };
 
 // Every caller passes a non-empty block (placed nodes, or a cluster's
@@ -111,12 +119,15 @@ function sanitizeClusters(graph: DiagramGraph): GraphCluster[] {
 // Without clusters this is exactly graphToElements + autoLayoutElements
 // (plus the edgeless sweep) — the plain path every flowchart without
 // subgraphs takes.
+// Rounds of seating rows by their neighbours (3c): the second settles a row seated before its partner moved.
+const SEAT_PASSES = 2;
+
 export function layoutClusteredGraph(
   graph: DiagramGraph,
   opts: ClusteredLayoutOptions = {},
 ): Element[] {
   const makeEdgeId = opts.makeEdgeId ?? (() => crypto.randomUUID());
-  const direction = opts.direction;
+  const { direction, look, flatEdges } = opts;
   const clusters = sanitizeClusters(graph);
 
   // Every node arrives sized to its own label (graphToElements), so the
@@ -127,7 +138,11 @@ export function layoutClusteredGraph(
   if (clusters.length === 0) {
     return bowReciprocalEdges(
       sweepEdgelessNodes(
-        autoLayoutElements(graphToElements(graph, makeEdgeId), { direction, fixedSizeIds: sized }),
+        autoLayoutElements(graphToElements(graph, makeEdgeId, look), {
+          direction,
+          fixedSizeIds: sized,
+          ...(flatEdges ? { flatEdges } : {}),
+        }),
       ),
     );
   }
@@ -145,8 +160,8 @@ export function layoutClusteredGraph(
     };
     const laid = lineUpLoose(
       autoLayoutElements(
-        graphToElements(induced, () => `tmp-${makeEdgeId()}`),
-        { direction, fixedSizeIds: sized },
+        graphToElements(induced, () => `tmp-${makeEdgeId()}`, look),
+        { direction, fixedSizeIds: sized, ...(flatEdges ? { flatEdges } : {}) },
       ).filter(isBoxed),
       new Set(induced.edges.flatMap((e) => [e.from, e.to])),
       direction ?? 'TB',
@@ -156,6 +171,27 @@ export function layoutClusteredGraph(
 
   // 2. Contract: one frame element per cluster, sized to its members' block,
   // plus the free nodes, joined by the edges projected through the clusters.
+  // A line into a group's first members lands clear of its heading: the members start that much further in.
+  // (docs/specs/015-api/mcp-server.md "Groups keep their lines clear")
+  const lead = new Map(
+    clusters.map((c) => {
+      const inside = new Set(c.members);
+      const entered = new Set(
+        graph.edges.filter((e) => inside.has(e.to) && !inside.has(e.from)).map((e) => e.to),
+      );
+      return [
+        c.id,
+        headingLead(
+          c.label ?? c.id,
+          memberEls.get(c.id)!,
+          entered,
+          FRAME_PAD,
+          direction ?? 'TB',
+          look?.textSize,
+        ),
+      ] as const;
+    }),
+  );
   const frames: BoxedElement[] = clusters.map((c) => {
     const b = bbox(memberEls.get(c.id)!);
     return {
@@ -164,7 +200,8 @@ export function layoutClusteredGraph(
       shape: 'frame' as const,
       x: 0,
       y: 0,
-      width: b.width + 2 * FRAME_PAD,
+      // The lead both sides: the members stay centred in the frame, which the contracted layout lines up on.
+      width: b.width + 2 * (FRAME_PAD + lead.get(c.id)!),
       height: b.height + FRAME_TOP + FRAME_PAD,
       label: c.label ?? c.id,
       // A header in the band FRAME_TOP reserves: top-left, bold, at the nodes'
@@ -172,7 +209,7 @@ export function layoutClusteredGraph(
       // the frame, a giant word across its members (docs/specs/020-import-export/mermaid.md).
       textAlignY: 'top' as const,
       textAlignX: 'left' as const,
-      textSize: 'sm' as const,
+      textSize: look?.textSize ?? ('sm' as const),
       textBold: true,
       padding: 'lg' as const,
     };
@@ -180,6 +217,7 @@ export function layoutClusteredGraph(
   const freeNodes = graphToElements(
     { nodes: graph.nodes.filter((n) => !clusterOf.has(n.id)), edges: [] },
     makeEdgeId,
+    look,
   ).filter(isBoxed);
 
   const frameIds = new Set(frames.map((f) => f.id));
@@ -189,7 +227,8 @@ export function layoutClusteredGraph(
     const from = project(e.from);
     const to = project(e.to);
     if (from === to) return;
-    contractedArrows.push(edgeToArrow({ from, to }, `contracted-${i}`));
+    // Its label kept, so the gap between the ranks it crosses fits it (auto-layout.ts).
+    contractedArrows.push(edgeToArrow({ from, to, label: e.label }, `contracted-${i}`));
   });
 
   const contracted = autoLayoutElements([...frames, ...freeNodes, ...contractedArrows], {
@@ -202,11 +241,21 @@ export function layoutClusteredGraph(
   const placedNodes: BoxedElement[] = freeNodes.map((n) => placedById.get(n.id) ?? n);
   const placedFrames: BoxedElement[] = [];
   for (const c of clusters) {
-    const frame = placedById.get(c.id)!;
-    placedFrames.push(frame);
+    const placed = placedById.get(c.id)!;
     const members = memberEls.get(c.id)!;
     const b = bbox(members);
-    const dx = frame.x + FRAME_PAD - b.x;
+    // The lead was laid out both sides, so the contracted layout lined the members up on the frame's middle; the
+    // heading needs it on its own side only. Given back on the far side, a long heading no longer framed two boxes
+    // in twice the room they need.
+    // An edge to or from the group itself leaves its frame's middle, which must stay on the members' line: kept
+    // centred there.
+    const framed = graph.edges.some((e) => e.from === c.id || e.to === c.id);
+    const frame =
+      (direction ?? 'TB') === 'TB' && !framed
+        ? { ...placed, width: placed.width - lead.get(c.id)! }
+        : placed;
+    placedFrames.push(frame);
+    const dx = frame.x + FRAME_PAD + lead.get(c.id)! - b.x;
     const dy = frame.y + FRAME_TOP - b.y;
     for (const m of members) placedNodes.push({ ...m, x: m.x + dx, y: m.y + dy });
   }
@@ -214,6 +263,22 @@ export function layoutClusteredGraph(
   // 3b. Within each group, order members that share a rank by where their
   // outside neighbours ended up, so edges into the group don't cross it.
   orderMembersByNeighbours(clusters, placedNodes, placedFrames, graph, direction ?? 'TB');
+  // 3c. A row of members with no lines among them sits by the outside nodes they link to. Twice: a row seated by
+  // another that then moved (services by their stores, before the stores were seated by them) sat a notch off it.
+  for (let pass = 0; pass < SEAT_PASSES; pass++)
+    seatMembersByNeighbours(
+      placedNodes,
+      placedFrames,
+      clusterOf,
+      graph,
+      direction ?? 'TB',
+      FRAME_PAD,
+    );
+  // 3d. Groups stacked down the flow keep the spine straight: a stage's one entry lines up with what feeds it. Before
+  // 3e: it moves a stage's members, and a node seated by them first was left behind.
+  lineUpStackedFrames(placedFrames, placedNodes, clusterOf, graph, direction ?? 'TB');
+  // 3e. Each node outside the groups that members link to sits by those members, not by the group's middle.
+  seatByMembers(placedNodes, placedFrames, clusterOf, graph, direction ?? 'TB');
 
   // 4. Real arrows over the final geometry: every edge whose endpoints name
   // a node or a frame, re-anchored to the sides that face. Self-loops are
@@ -231,13 +296,15 @@ export function layoutClusteredGraph(
   const arrows: ArrowElement[] = graph.edges
     .filter((e) => known.has(e.from) && known.has(e.to))
     .map((e) => reanchorArrow(edgeToArrow(e, makeEdgeId()), centers, direction ?? 'TB'));
+  // An edge to or from a group leaves its frame facing the other end.
+  const faced = faceGroupEdges(arrows, placedFrames, placedNodes, direction ?? 'TB');
 
   // Frames first so they render behind their members. The final sweep only
   // catches free nodes with no edges at all — frames and cluster members
   // are deliberately placed, so they're exempt.
   const deliberate = new Set([...frameIds, ...clusterOf.keys()]);
   return bowReciprocalEdges(
-    sweepEdgelessNodes([...placedFrames, ...placedNodes, ...arrows], deliberate),
+    sweepEdgelessNodes([...placedFrames, ...placedNodes, ...faced], deliberate),
   );
 }
 
@@ -308,7 +375,7 @@ function orderMembersByNeighbours(
       const gaps = rank
         .slice(1)
         .map((el, i) => crossStart(el) - crossStart(rank[i]!) - crossLen(rank[i]!));
-      const keyed = rank.map((el, i) => {
+      const outsideOf = (el: BoxedElement) => {
         const outside: number[] = [];
         for (const e of graph.edges) {
           const other = e.from === el.id ? e.to : e.to === el.id ? e.from : null;
@@ -316,9 +383,16 @@ function orderMembersByNeighbours(
           const o = byId.get(other);
           if (o) outside.push(cross(o));
         }
-        const key = outside.length
-          ? outside.reduce((a, b) => a + b, 0) / outside.length
-          : cross(el);
+        return outside;
+      };
+      const rowLinks = rank.map((el) => outsideOf(el).length);
+      const keyed = rank.map((el, i) => {
+        const outside = outsideOf(el);
+        const key = isRowHub(outside.length, rowLinks)
+          ? Infinity
+          : outside.length
+            ? outside.reduce((a, b) => a + b, 0) / outside.length
+            : cross(el);
         return { el, key, i };
       });
       keyed.sort((a, b) => a.key - b.key || a.i - b.i);

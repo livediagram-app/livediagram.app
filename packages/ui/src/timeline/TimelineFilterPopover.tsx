@@ -116,7 +116,7 @@ export function TimelineFilterPopover({
           toolbar). The icons are shared, which is the part that would
           actually drift. */}
       <div className="sm:hidden">
-        <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-400">
+        <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
           View
         </p>
         <div className="mb-4 flex rounded-lg border border-slate-200 p-0.5 dark:border-slate-700">
@@ -128,7 +128,7 @@ export function TimelineFilterPopover({
               onClick={() => onModeChange(value)}
               className={`flex flex-1 items-center justify-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium transition ${
                 mode === value
-                  ? `bg-brand-600 text-white ${SOLID_BRAND_DARK_CONTROL}`
+                  ? `bg-brand-700 text-white ${SOLID_BRAND_DARK_CONTROL}`
                   : 'text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white'
               }`}
             >
@@ -143,7 +143,7 @@ export function TimelineFilterPopover({
           rather than labelled "Others": on its own that word doesn't say
           others-what, and the option only means anything next to the
           alternative it replaces. */}
-      <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+      <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
         Activity by
       </p>
       <div className="mb-4 flex rounded-lg border border-slate-200 p-0.5 dark:border-slate-700">
@@ -160,7 +160,7 @@ export function TimelineFilterPopover({
             onClick={() => onActorFilterChange(value)}
             className={`flex-1 rounded-md px-2 py-1 text-[11px] font-medium transition ${
               actorFilter === value
-                ? `bg-brand-600 text-white ${SOLID_BRAND_DARK_CONTROL}`
+                ? `bg-brand-700 text-white ${SOLID_BRAND_DARK_CONTROL}`
                 : 'text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white'
             }`}
           >
@@ -170,7 +170,9 @@ export function TimelineFilterPopover({
       </div>
 
       <div className="mb-2 flex items-center justify-between">
-        <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Show</p>
+        <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+          Show
+        </p>
         {/* Shown whenever ANY control is narrowing the feed. Gating on
             `excluded.size` alone hid the only way out of an actor filter
             that had emptied the list. */}
@@ -178,7 +180,7 @@ export function TimelineFilterPopover({
           <button
             type="button"
             onClick={onReset}
-            className="text-[11px] text-brand-600 hover:underline dark:text-brand-400"
+            className="text-[11px] text-brand-700 hover:underline dark:text-brand-400"
           >
             Reset
           </button>
@@ -198,7 +200,7 @@ export function TimelineFilterPopover({
               // same popover would make the reader learn both.
               className={`rounded-full border px-2.5 py-1 text-[11px] transition ${
                 on
-                  ? `border-transparent bg-brand-600 text-white ${SOLID_BRAND_DARK_CONTROL}`
+                  ? `border-transparent bg-brand-700 text-white ${SOLID_BRAND_DARK_CONTROL}`
                   : 'border-slate-200 text-slate-500 hover:text-slate-700 dark:border-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
               }`}
             >

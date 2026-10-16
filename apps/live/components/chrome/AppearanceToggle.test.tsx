@@ -45,11 +45,17 @@ describe('AppearanceToggle', () => {
     it('cycles Light, Dark, System', () => {
       renderToggle(false);
       expect(toggle().getAttribute('aria-label')).toBe('Appearance: System. Switch to Light.');
-      act(() => fireEvent.click(toggle()));
+      act(() => {
+        fireEvent.click(toggle());
+      });
       expect(stored()).toBe('light');
-      act(() => fireEvent.click(toggle()));
+      act(() => {
+        fireEvent.click(toggle());
+      });
       expect(stored()).toBe('dark');
-      act(() => fireEvent.click(toggle()));
+      act(() => {
+        fireEvent.click(toggle());
+      });
       expect(stored()).toBe('system');
     });
 
@@ -65,16 +71,22 @@ describe('AppearanceToggle', () => {
   describe('in power user mode', () => {
     it('switches between Light and Dark on click', () => {
       renderToggle(true);
-      act(() => fireEvent.click(toggle()));
+      act(() => {
+        fireEvent.click(toggle());
+      });
       expect(stored()).toBe('dark');
       expect(painted()).toBe('dark');
       expect(toggle().getAttribute('aria-label')).toBe(
         'Appearance: Dark. Switch to Light. Right-click to follow your device.',
       );
-      act(() => fireEvent.click(toggle()));
+      act(() => {
+        fireEvent.click(toggle());
+      });
       expect(stored()).toBe('light');
       expect(painted()).toBe('light');
-      act(() => fireEvent.click(toggle()));
+      act(() => {
+        fireEvent.click(toggle());
+      });
       expect(stored()).toBe('dark');
       expect(track.mock.calls).toEqual([
         ['UI', 'Toggled', 'Dark'],
@@ -90,7 +102,9 @@ describe('AppearanceToggle', () => {
       expect(toggle().getAttribute('aria-label')).toBe(
         'Appearance: System. Switch to Light. Right-click to follow your device.',
       );
-      act(() => fireEvent.click(toggle()));
+      act(() => {
+        fireEvent.click(toggle());
+      });
       expect(stored()).toBe('light');
       expect(painted()).toBe('light');
     });

@@ -157,7 +157,7 @@ export function buildPaperPrototype(cx: number, cy: number): Element[] {
         width: 4,
         amp: 0.4,
       }),
-      letter(x + 24, py + 220, PHONE_W - 48, 44, 'Reminder set!', {
+      letter(x + 24, py + 220, PHONE_W - 48, 44, 'All set!', {
         textSize: 'lg',
         textBold: true,
         textAlignX: 'center',

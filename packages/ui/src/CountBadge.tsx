@@ -35,7 +35,7 @@ export function CountBadge({
   const colours = painted
     ? 'font-semibold'
     : tone === 'brand'
-      ? `bg-brand-500 font-semibold text-white ${SOLID_BRAND_DARK}`
+      ? `bg-brand-700 font-semibold text-white ${SOLID_BRAND_DARK}`
       : 'bg-slate-200 font-medium text-slate-600 dark:bg-slate-700 dark:text-slate-300';
   const box =
     size === 'md'

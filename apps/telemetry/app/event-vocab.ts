@@ -9,73 +9,6 @@ import { titleCase, type TelemetryCategory, type TelemetryCount } from '@livedia
 import type { Appearance } from '@livediagram/ui';
 import { forAppearance } from './appearance-colours';
 
-// One-line plain-language explanation per category, shown under the
-// group heading so visitors can read the dashboard cold without
-// knowing the product. Kept short so the layout stays scannable. Keyed by
-// the full TelemetryCategory union so a new category fails the typecheck
-// here until it gets a description (the lookup still tolerates stray
-// strings via the `?? fallback` at the call site).
-export const CATEGORY_DESCRIPTIONS: Record<TelemetryCategory, string> = {
-  Document:
-    'Whole-document lifecycle: opening, creating, sharing, joining, exporting, undo/redo, moving between folders.',
-  Element:
-    'Things on the canvas: shapes, text, stickies, arrows, images. Add, delete, group, link, layer order.',
-  Tab: 'Per-tab actions: open, create, rename, reorder, lock, import JSON, clear content, auto-align.',
-  Theme: 'Tab theme switches (the canvas-content palette: brand, slate, mint, etc.).',
-  Canvas: 'Canvas background pattern changes and zoom controls (in, out, fit, reset).',
-  Template: 'Template scaffolds picked when starting a new document or seeding a fresh tab.',
-  Comment: 'Per-element comment threads: add, delete, resolve, reopen, open the popover.',
-  Note: 'Per-element notes (a single paragraph, no thread): add, edit, delete, open the popover.',
-  Action:
-    'Per-element assigned actions: assigning (with or without the email nudge), completing, reopening, editing / reassigning, deleting, opening the popover.',
-  Search: 'Global search panel: open, query, picked-result kind.',
-  UI: 'Editor chrome: light/dark toggle, dialogs (Settings, Shortcuts, Share, and the since-removed Activity panel), share-link copy, welcome dismiss.',
-  Folder:
-    'Folders: create, rename, delete, re-parent. Explorer folders of documents, or (type Tab) tab folders inside one document.',
-  Layer:
-    'Tab layers (Photoshop-style stacking bands): add, rename, delete, restack, show / hide, lock, move elements between layers, open the panel.',
-  Session: 'Accounts, where sign-in is set up: signing up, signing in, signing out.',
-  Facilitator:
-    'The live-session baton: somebody taking the timer / votes / polls for a room, handing them on, or stepping down.',
-  AI: 'The optional in-editor AI assistant: running its Ask / Clean requests on the current tab.',
-  Team: 'Teams: creating and joining, renaming, role changes, member invites and removals, and the shared team library of documents.',
-  Participant:
-    'Visitor arrivals: a first-time visitor (once per new browser), and a returning browser reopening the app (once per day, split guest vs signed-in).',
-  Help: 'Help-centre articles: views and per-article helpful / not-really feedback.',
-  Page: 'Pages viewed across the whole site (marketing, editor, help centre, this dashboard), by path, with ids and query strings stripped.',
-  Cta: 'The landing funnel: a call to action on a public page (the landing hero, a template card, a header button) brought somebody to the New Document page, and whether that visit created a document. Named by which button it was, never who pressed it.',
-  Home: "The Explorer's landing view: arriving on it (straight away, or after starting elsewhere), opening a document from Jump back in, What happened or the Timeline column, expanding a summary of several people's work, and loading more of the Timeline.",
-  Timeline:
-    "The Explorer's Timeline, the feed of everything that happened: opening it (split by whether the page load started on it or it was reached from elsewhere), switching between the list and calendar views, toggling a filter chip, expanding a collapsed run of same-day events, and paging further back.",
-  Activity:
-    "The Explorer's Inbox (open actions, Plan cards and comment threads across every document): opening it, clicking a row through to the document (split by action, card and thread), and retrying a failed read.",
-  Token: 'API tokens: created by hand or by an AI tool connecting over MCP, and revoked.',
-  Trash:
-    'The Trash deleted documents wait in for 30 days: opened, restored from, deleted from for good, and emptied.',
-  Drive:
-    'The Google Drive mirror: connected, disconnected, needing reconnection, finishing its first copy, changes coming back from Drive, and files opened from Drive.',
-  Mcp: 'MCP server tool calls made by connected AI assistants.',
-  Cli: 'Commands agents and scripts ran with the livediagram command line, by command.',
-  Plan: 'Plan boards: items made, moved, opened, voted on and deleted, and board set-up and reveal.',
-  Sheet:
-    'Sheets, the spreadsheet tabs on Plan tabs: changes by kind, functions used, Find, and CSV in and out. Never what was typed.',
-  Agent:
-    "Agents changing documents through changesets: applied, refused because something changed since the agent read it or a person had it selected, and reverted, by where they came from (MCP, CLI, API, or the editor's Undo). Never what changed.",
-  Community:
-    'The public gallery of shared boards: publishing, editing and removing a post, and people opening, liking, copying, reporting and filtering them. Never a title, tag or who.',
-  Email:
-    'Emails the product sends (welcome, onboarding, team invites, notifications). Which email only, never who received it.',
-  Editor:
-    'Editor modes: a person switching a tab between Diagram mode (shapes, arrows and the palette) and Draw mode (freehand pens). Only the mode, never the tab or what is on it.',
-  Draw: 'Draw mode, drawn in with a dock of pens: a Whiteboard tab created (from the New Document wizard, as a new tab or by an import), a pen picked or given a new colour or width, the eraser mode or board background changed, and shape recognition switched on or off. Never what was drawn.',
-  Explorer:
-    "The Explorer's filters: which kind of filter a person reached for (words, Opens in, Kind, Template, Made by AI, Edited, People, Space), from a chip, a suggestion or a typed token. Never what they typed or picked.",
-  Error:
-    'Failures, counted generically: API responses that errored (by HTTP status, plus worker-reported internal crashes) client-side uncaught exceptions, and warnings (a degradation the author was carried through, such as a spent AI budget failing over to the in-browser reader). Never a message, stack, or URL.',
-  Timing:
-    "How long the key moments take: a document opening, a tab switch, a save, the live room connecting and reconnecting, and every page's Core Web Vitals. Bucketed in the browser, so never a raw number.",
-};
-
 // Per-category colour used by every chart so the category-share bar,
 // per-category sparkline, and category-card legend dot all agree. Hand-
 // picked so adjacent slices in the stacked bar stay visually distinct
@@ -129,6 +62,8 @@ const CATEGORY_COLORS: Record<TelemetryCategory, string> = {
   Plan: '#2563eb',
   // Green, the spreadsheet's own.
   Sheet: '#16a34a',
+  // Violet, the Event RSVP starter's: apart from Plan's blue and Sheet's green.
+  Form: '#7c3aed',
   // Pink, the heart on a Community card.
   Community: '#db2777',
   Email: '#0d9488',

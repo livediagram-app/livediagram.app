@@ -1,7 +1,7 @@
 import { BreadcrumbJsonLd } from '@/components/BreadcrumbJsonLd';
 import { Footer } from '@/components/Footer';
 import { Header } from '@/components/Header';
-import { pageMetadata, REPO_URL } from '@livediagram/ui';
+import { CONTACT_FORM_URL, pageMetadata, REPO_URL } from '@livediagram/ui';
 
 const STATUS_TITLE = 'Status · livediagram';
 const STATUS_DESCRIPTION =
@@ -100,7 +100,7 @@ export default function StatusPage() {
 
         <div className="mt-8 flex items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50 p-5 dark:border-emerald-500/30 dark:bg-emerald-500/10">
           <span className="relative inline-flex">
-            <span className="absolute inline-flex h-3 w-3 animate-ping rounded-full bg-emerald-400 opacity-60" />
+            <span className="absolute inline-flex h-3 w-3 motion-safe:animate-ping rounded-full bg-emerald-400 opacity-60" />
             <span className="relative inline-flex h-3 w-3 rounded-full bg-emerald-500" />
           </span>
           <div>
@@ -116,11 +116,15 @@ export default function StatusPage() {
         <ul className="mt-8 divide-y divide-slate-200 rounded-xl border border-slate-200 bg-white dark:divide-slate-800 dark:border-slate-800 dark:bg-slate-900">
           {COMPONENTS.map((c) => (
             <li key={c.name} className="flex items-center justify-between gap-4 px-5 py-4">
-              <div>
+              {/* min-w-0 + break-words: a long host in a description wraps instead of pushing the
+                  badge off a 320px phone. */}
+              <div className="min-w-0">
                 <p className="text-sm font-medium text-slate-800 dark:text-slate-100">{c.name}</p>
-                <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">{c.description}</p>
+                <p className="mt-0.5 break-words text-xs text-slate-500 dark:text-slate-400">
+                  {c.description}
+                </p>
               </div>
-              <span className="flex items-center gap-1.5 rounded-full bg-emerald-100 px-2.5 py-1 text-[11px] font-semibold text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-200">
+              <span className="flex shrink-0 items-center gap-1.5 rounded-full bg-emerald-100 px-2.5 py-1 text-[11px] font-semibold text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-200">
                 <span className="h-2 w-2 rounded-full bg-emerald-500" />
                 Operational
               </span>
@@ -129,12 +133,14 @@ export default function StatusPage() {
         </ul>
 
         <p className="mt-8 text-xs text-slate-500 dark:text-slate-400">
-          This page reflects the latest deployed state. Spotted something wrong? Email{' '}
+          This page reflects the latest deployed state. Spotted something wrong? Tell us through the{' '}
           <a
-            href="mailto:hello@livediagram.app"
+            href={CONTACT_FORM_URL}
+            target="_blank"
+            rel="noopener noreferrer"
             className="underline hover:text-slate-800 dark:hover:text-slate-100"
           >
-            hello@livediagram.app
+            contact form
           </a>{' '}
           or file an issue on{' '}
           <a

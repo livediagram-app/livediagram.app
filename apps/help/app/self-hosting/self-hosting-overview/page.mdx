@@ -29,7 +29,7 @@ livediagram runs entirely on Cloudflare. The frontends are static (built with Ne
 - **Cloudflare Workers** serve the apps and host the API.
 - **Cloudflare D1** is the database where documents live, reached only through the API Worker.
 - **Cloudflare Durable Objects** power the per-document real-time room.
-- **Cloudflare R2** (optional) stores uploaded images and the thumbnails the Explorer shows. Without it, image uploads and live images are unavailable and documents show a generic icon in the Explorer.
+- **Cloudflare R2** (optional) stores uploaded images and the thumbnails the Explorer shows. The api `wrangler.toml` already binds a `livediagram-images` bucket, so create it, or remove that `[[r2_buckets]]` block to run without one. Without it, image uploads and live images are unavailable and documents show a generic icon in the Explorer.
 
 This means there is no separate database server, no container fleet, and no always-on box to babysit. You deploy Workers and static assets to your Cloudflare account. Durable Objects need the Workers paid plan on that account.
 
@@ -39,7 +39,7 @@ This means there is no separate database server, no container fleet, and no alwa
 
 ## What you keep control of
 
-A self-hosted instance has no required calls to any outside service.
+A self-hosted instance's servers make no required calls to any outside service. Visitors' browsers still load the editor's fonts from Google Fonts, and image search contacts Openverse when someone uses it.
 
 - **Sign-in is optional.** Leave it unconfigured and the app runs in pure-guest mode, fully usable, with no account system at all.
 - **Telemetry is off by default.** A self-host emits and serves nothing unless you explicitly enable it.

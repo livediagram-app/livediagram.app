@@ -1,6 +1,6 @@
 // Feature illustration: Side by Side tabs (the Diagrams category's Tabs group). Two tabs of one
 // document on screen at once, the right pane sliding in from the edge where its tab was dropped.
-// Motion reuses the canvas card timeline (fa-a-* in app/feature-art-animations.css), which
+// Motion reuses the canvas card timeline (fa-a-* in app/feature-art/canvas.css), which
 // settles to the finished frame under reduced motion.
 import {
   ALEX,

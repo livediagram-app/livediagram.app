@@ -287,11 +287,11 @@ describe('card tables', () => {
     const s = base();
     const many = Array.from({ length: 9 }, (_, i) => table({ id: `tbl${i}x` }));
     expect(
-      validateSheetCreate({ ...s, layout: { ...s.layout, cardTables: many.slice(0, 8) as never } }),
+      validateSheetCreate({ ...s, layout: { ...s.layout, cardTables: many.slice(0, 8) } }),
     ).toEqual({ ok: true });
-    expect(
-      validateSheetCreate({ ...s, layout: { ...s.layout, cardTables: many as never } }),
-    ).toMatchObject({ error: 'write_invalid' });
+    expect(validateSheetCreate({ ...s, layout: { ...s.layout, cardTables: many } })).toMatchObject({
+      error: 'write_invalid',
+    });
   });
 });
 

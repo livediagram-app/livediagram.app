@@ -33,6 +33,17 @@ describe('resetElementColours', () => {
     expect(out.strokeSwatch).toBeUndefined();
   });
 
+  it('hands a chart back to the theme’s palette', () => {
+    const chart: ShapeElement = {
+      id: 'c',
+      type: 'shape',
+      shape: 'pie-chart',
+      ...box,
+      chartPalette: 'sunset',
+    };
+    expect((resetElementColours(chart, theme) as ShapeElement).chartPalette).toBeUndefined();
+  });
+
   it('drops a text box’s named text colour', () => {
     const text: TextElement = {
       id: 't',

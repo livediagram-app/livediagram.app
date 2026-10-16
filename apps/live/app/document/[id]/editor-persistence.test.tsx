@@ -22,6 +22,7 @@ function toastAfter(status: SaveStatus): string[] {
     info: vi.fn(),
     offer: vi.fn(),
     action: vi.fn(),
+    dismissAction: vi.fn(),
   };
   const { result } = renderHook(() => useEditorPersistence({ toast }));
   act(() => result.current.setSaveStatus(status));

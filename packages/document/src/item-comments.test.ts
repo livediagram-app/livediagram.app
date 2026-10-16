@@ -30,7 +30,7 @@ function card(thread?: CommentThread): Item {
     type: 'task',
     key: 1,
     rank: 'i',
-    fields: thread ? { title: 'A', comments: thread as never } : { title: 'A' },
+    fields: thread ? { title: 'A', comments: thread } : { title: 'A' },
     rev: 3,
     createdAt: 0,
     updatedAt: 0,

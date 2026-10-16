@@ -1,10 +1,14 @@
-import { lucideLayers, lucideSlidersHorizontal } from '@livediagram/icons/lucide';
+import {
+  lucideBrushCleaning,
+  lucideLayers,
+  lucideSlidersHorizontal,
+} from '@livediagram/icons/lucide';
 
 import { Glyph, type IconProps } from './Glyph';
 import { lucideGlyph } from './lucide-glyph';
 
 // The editor's bottom chrome (docs/specs/004-interface-design/iconography.md): the canvas cluster
-// (undo / redo, layers, the look-and-feel brush) and the tab bar's settings. Shared
+// (undo / redo, tidy up, layers, the look-and-feel brush) and the tab bar's settings. Shared
 // so the marketing hero's editor mock draws the very same glyphs as the editor it depicts.
 
 export function UndoIcon({ size = 13, ...rest }: IconProps = {}) {
@@ -25,19 +29,26 @@ export function RedoIcon({ size = 13, ...rest }: IconProps = {}) {
   );
 }
 
-// The Tab Look & Feel brush.
-export function ThemeBrushIcon({ size = 20, ...rest }: IconProps = {}) {
+// The Theme & canvas button in the bottom-right cluster (docs/specs/011-theme/canvas-and-theme-dialog.md): a
+// painter's palette with four filled paint wells, so it reads as "how this tab looks" at a glance. Monochrome, in
+// the button's own colour, like every other chrome icon.
+export function ThemeLookIcon({ size = 20, ...rest }: IconProps = {}) {
   return (
-    <Glyph size={size} units={20} {...rest}>
-      <path d="M17 3c-3 1-6.4 3.6-8.3 6.1l2.2 2.2C13.4 9.4 16 6 17 3z" />
-      <path d="M8.7 9.1 6.5 11.3" />
-      <path d="M8 13.4a2.6 2.6 0 1 1-3.7-2.3c.8-.4 1.9-.2 2.6.5.7.7.9 1.3 1.1 1.8z" />
+    <Glyph size={size} units={24} {...rest}>
+      <path d="M12 22a1 1 0 0 1 0-20 10 9 0 0 1 10 9 5 5 0 0 1-5 5h-2.25a1.75 1.75 0 0 0-1.4 2.8l.3.4a1.75 1.75 0 0 1-1.4 2.8z" />
+      <circle cx="13.5" cy="6.5" r="1.7" fill="currentColor" stroke="none" />
+      <circle cx="17.5" cy="10.5" r="1.7" fill="currentColor" stroke="none" />
+      <circle cx="8.5" cy="7.5" r="1.7" fill="currentColor" stroke="none" />
+      <circle cx="6.5" cy="12.5" r="1.7" fill="currentColor" stroke="none" />
     </Glyph>
   );
 }
 
 // The Layers button in the bottom-right cluster (20px).
 export const LayersStackIcon = lucideGlyph(lucideLayers, 20);
+
+// The Tidy Up button, left of Layers in Diagram mode (docs/specs/008-canvas/layout-cleanup.md): a broom (20px).
+export const TidyUpIcon = lucideGlyph(lucideBrushCleaning, 20);
 
 // Settings: two sliders, never a cog (a cog's spokes read as a sun, the appearance toggle).
 export const SettingsIcon = lucideGlyph(lucideSlidersHorizontal, 16);

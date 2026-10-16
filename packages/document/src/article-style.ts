@@ -117,9 +117,11 @@ export const ARTICLE_LOOKS: Readonly<Record<ArticleLookId, { label: string } & L
   },
 };
 
-/** Every field of an article's style, its own or its default. */
+/** Every field of an article's style: its own, else its look's, else Clean's. */
 export function resolveArticleStyle(style: ArticleStyle | undefined): ResolvedArticleStyle {
-  const base = ARTICLE_LOOKS.clean;
+  // The look it names is the base (an agent's write names a look and sets no field), its own fields over it; Clean
+  // when it names none.
+  const base = ARTICLE_LOOKS[style?.look ?? 'clean'] ?? ARTICLE_LOOKS.clean;
   return {
     headingFont: style?.headingFont ?? base.headingFont,
     bodyFont: style?.bodyFont ?? base.bodyFont,
@@ -194,9 +196,7 @@ export function withArticleStyleChanged<
   else {
     const { look: _look, ...rest } = { ...was, ...change.patch };
     void _look;
-    style = Object.fromEntries(
-      Object.entries(rest).filter(([, v]) => v !== undefined),
-    ) as ArticleStyle;
+    style = Object.fromEntries(Object.entries(rest).filter(([, v]) => v !== undefined));
   }
   let next: T = withArticleFlow(
     tab,
@@ -215,7 +215,7 @@ export function withArticleStyleChanged<
       void _b;
       return background.fill || background.pattern ? { ...own, background } : own;
     });
-    next = withIllustratePages(next, pages) as T;
+    next = withIllustratePages(next, pages);
   }
   return next;
 }

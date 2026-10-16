@@ -9,15 +9,14 @@ import type { TeamInviteLink } from '@livediagram/api-schema';
 import { TeamInviteLinkDialog } from './TeamInviteLinkDialog';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
-const generate = vi.fn();
+const generate = vi.fn<typeof import('@/lib/api-client').apiGenerateTeamInviteLink>();
 vi.mock('@/lib/api-client', () => ({
-  apiGenerateTeamInviteLink: (...args: unknown[]) => generate(...args),
+  apiGenerateTeamInviteLink: (...args: Parameters<typeof generate>) => generate(...args),
   apiRevokeTeamInviteLink: vi.fn(),
 }));
 
 const DAY = 86_400_000;
-const link = (): TeamInviteLink =>
-  ({ token: 'tok', expiresAt: Date.now() + 3 * DAY }) as TeamInviteLink;
+const link = (): TeamInviteLink => ({ token: 'tok', expiresAt: Date.now() + 3 * DAY });
 
 type Props = Parameters<typeof TeamInviteLinkDialog>[0];
 const props = (over: Partial<Props> = {}): Props => ({

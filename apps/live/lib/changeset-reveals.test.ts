@@ -43,8 +43,15 @@ describe('createRevealStore', () => {
 });
 
 describe('boundsOfElements', () => {
-  const box = (id: string, x: number, y: number): Element =>
-    ({ id, type: 'shape', shape: 'square', x, y, width: 10, height: 10 }) as Element;
+  const box = (id: string, x: number, y: number): Element => ({
+    id,
+    type: 'shape',
+    shape: 'square',
+    x,
+    y,
+    width: 10,
+    height: 10,
+  });
 
   it('boxes the named elements still present, and answers null for none', () => {
     const elements = [box('a', 0, 0), box('b', 100, 50), box('c', 500, 500)];

@@ -9,6 +9,9 @@ import {
   type BoxedElement,
   type Element,
   type IconPosition,
+  isContainerKind,
+  isChipShape,
+  isConceptShape,
 } from '@livediagram/document';
 
 // Which side of a boxed element a screen point sits nearest, normalised by
@@ -62,14 +65,27 @@ export function inheritedSizeFor(
   ) {
     return { width: base.width, height: base.height };
   }
-  // A CONTAINER never donates its size. A frame or a lane (docs/specs/009-elements/lane.md) is a big
+  // And the kinds drawn to their own proportions or placed around other things: a step number (a disc), a container
+  // (a boundary, a stack: a box to put things in), a concept graphic, a sequence diagram, a Diagram key and a tab
+  // window. A step tapped while a 300 x 150 card is selected came out a 300 x 150 "disc".
+  if (
+    base.type === 'shape' &&
+    (isChipShape(base.shape) ||
+      isContainerKind(base.shape) ||
+      isConceptShape(base.shape) ||
+      base.shape === 'sequence' ||
+      base.shape === 'diagram-key' ||
+      base.shape === 'tab-window')
+  ) {
+    return { width: base.width, height: base.height };
+  }
+  // A CONTAINER never donates its size. A frame, a lane or a boundary (docs/specs/009-elements/lane.md) is a big
   // backdrop you put things in, so a square added while one is selected came
   // out 900x200 — the size of the lane, which is never what anyone meant. The
   // rule reads the other way round from the guards above: those are about what
   // the NEW element is, this is about what the selected one is.
   const donor = selected && isBoxed(selected) ? selected : null;
-  const isContainer =
-    donor?.type === 'shape' && (donor.shape === 'frame' || donor.shape === 'lane');
+  const isContainer = donor?.type === 'shape' && isContainerKind(donor.shape);
   const inherit = isContainer ? null : donor;
   let width = inherit?.width ?? base.width;
   let height = inherit?.height ?? base.height;

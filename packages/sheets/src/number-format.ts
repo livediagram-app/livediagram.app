@@ -155,8 +155,13 @@ export function displayValue(
   if (typeof v === 'boolean') return { text: v ? 'TRUE' : 'FALSE', align: 'c', kind: 'boolean' };
   if (typeof v === 'number') {
     if (!Number.isFinite(v)) return { text: '#NUM!', align: 'c', kind: 'error' };
+    // A Custom code draws the same in every locale, as TEXT writes it (sheet.md "Formatting").
+    if (format?.nf === 'custom' && format.nc)
+      return { text: formatCodeText(v, format.nc), align: 'r', kind: 'number' };
     return { text: formatNumber(v, format, locale), align: 'r', kind: 'number' };
   }
+  if (format?.nf === 'custom' && format.nc)
+    return { text: formatCodeText(v, format.nc), align: 'l', kind: 'text' };
   return { text: v, align: 'l', kind: 'text' };
 }
 

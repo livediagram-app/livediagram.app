@@ -62,7 +62,7 @@ export function resolveColourValue(
   return { rule: 'a theme colour or a hex', allowed: [...slots.keys()] };
 }
 
-export const isHexColour = (value: unknown): boolean =>
+export const isHexColour = (value: unknown): value is string =>
   typeof value === 'string' && HEX.test(value);
 
 // A fill as it reads: its slot's name when bound to one, else the colour.

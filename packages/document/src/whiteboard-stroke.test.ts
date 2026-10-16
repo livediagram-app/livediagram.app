@@ -143,7 +143,7 @@ describe('eraseStrokePart', () => {
     const src = line({
       label: 'note',
       link: { kind: 'url', url: 'https://x.test' },
-    } as Partial<FreehandElement>);
+    });
     const pieces = eraseStrokePart(src, { x: 40, y: 100 }, { x: 40, y: 100 }, 10, mint)!;
     const [short, long] = pieces;
     expect(short!.label).toBeUndefined();

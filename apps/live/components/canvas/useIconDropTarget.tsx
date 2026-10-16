@@ -37,7 +37,7 @@ export function useIconDropTarget(
     if (!iconId) return;
     e.preventDefault();
     e.stopPropagation();
-    onDropIcon!(
+    onDropIcon(
       element.id,
       iconId,
       iconDropSide(e.clientX, e.clientY, e.currentTarget.getBoundingClientRect()),

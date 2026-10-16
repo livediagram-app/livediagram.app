@@ -1,4 +1,4 @@
-// The models behind the Due Calendar, Workload by Person, Status Breakdown and Priority by Status
+// The models behind the Due and Start Calendars, Workload by Person, Status Breakdown and Priority by Status
 // (docs/specs/026-plan/plan-views.md "Visualisations"), each over the document's live cards. Pure.
 import type { Item, ItemPerson } from './item';
 import { PRIORITIES, isPriority, type Priority } from './fields';
@@ -6,10 +6,11 @@ import { laneGroups, namedStatus, statusLabel, type SwimlaneBy } from './board';
 import { ITEM_TYPES, type ItemTypeDef } from './item-types';
 import { dayNumber, dayParts, MONTH_LONG, monthStart, shiftMonth } from './plan-view-dates';
 import { STATUS_PHASES, liveCards, phaseOf, type StatusPhase } from './plan-views';
+import type { CalendarField } from './calendar-move';
 
 const byKey = (a: Item, b: Item) => a.key - b.key;
 
-// ---- Due Calendar ----
+// ---- Due Calendar and Start Calendar ----
 
 export interface CalendarDay {
   day: number;
@@ -22,15 +23,17 @@ export interface CalendarModel {
   label: string;
   // Rows of seven days, Monday first.
   weeks: CalendarDay[][];
-  // Cards due in the month.
-  due: number;
+  // Cards due (or starting, on a Start Calendar) in the month.
+  count: number;
 }
 
+// A month of the cards placed by their date `field`: Due on a Due Calendar, Start on a Start Calendar.
 export function calendarModel(
   items: Iterable<Item>,
   phases: ReadonlyMap<string, StatusPhase>,
   year: number,
   month: number,
+  field: CalendarField = 'due',
 ): CalendarModel {
   const first = monthStart(year, month);
   const next = shiftMonth(year, month, 1);
@@ -39,24 +42,24 @@ export function calendarModel(
   const gridTo = last + (6 - dayParts(last).weekday);
   const byDay = new Map<number, Item[]>();
   for (const it of liveCards(items)) {
-    const d = dayNumber(it.fields['due']);
+    const d = dayNumber(it.fields[field]);
     if (d === undefined || d < gridFrom || d > gridTo) continue;
     const list = byDay.get(d);
     if (list) list.push(it);
     else byDay.set(d, [it]);
   }
   const weeks: CalendarDay[][] = [];
-  let due = 0;
+  let count = 0;
   for (let day = gridFrom; day <= gridTo; day += 1) {
     if ((day - gridFrom) % 7 === 0) weeks.push([]);
     const inMonth = day >= first && day <= last;
     const cards = (byDay.get(day) ?? [])
       .sort(byKey)
       .map((item) => ({ item, done: phaseOf(item, phases) === 'done' }));
-    if (inMonth) due += cards.length;
+    if (inMonth) count += cards.length;
     weeks[weeks.length - 1]!.push({ day, date: dayParts(day).date, inMonth, cards });
   }
-  return { label: `${MONTH_LONG[month]} ${year}`, weeks, due };
+  return { label: `${MONTH_LONG[month]} ${year}`, weeks, count };
 }
 
 // ---- Cards by Field (was Workload by Person) ----
@@ -81,9 +84,12 @@ export function breakdownModel(
   grouping: { by: SwimlaneBy; field?: string | undefined },
   types: readonly ItemTypeDef[] = ITEM_TYPES,
   statusNames?: ReadonlyMap<string, string>,
+  // Every card of the document, so a row per linked card (a Card field grouping) names a card of a type the chart
+  // does not count (a Candidate's Role); the counted cards alone when absent.
+  everyCard?: ReadonlyMap<string, Item>,
 ): { rows: BreakdownRow[]; max: number; total: number } {
   const cards = liveCards(items);
-  const all = new Map(cards.map((c) => [c.id, c]));
+  const all = everyCard ?? new Map(cards.map((c) => [c.id, c]));
   const groups = laneGroups(grouping.by, grouping.field, cards, all, types, statusNames);
   const rows = new Map<string, BreakdownRow>(
     groups.lanes.map((l) => [

@@ -15,10 +15,12 @@ import {
   isUserCode,
   newUserCode,
   normaliseUserCode,
+  objectOrEmpty,
 } from '@livediagram/api-schema';
 import type { Context, Hono } from 'hono';
 import type { Env } from './env';
 import { BUILT_IN_CLIENTS } from './oauth-clients';
+import { formText } from './oauth-form';
 
 type DeviceRecord = {
   clientId: string;
@@ -114,8 +116,8 @@ const randomBytes = (n: number) => crypto.getRandomValues(new Uint8Array(n));
 
 export function registerDeviceRoutes(app: Hono<{ Bindings: Env }>): void {
   app.post('/oauth/device_authorization', async (c) => {
-    const form = await c.req.parseBody().catch(() => ({}) as Record<string, unknown>);
-    const clientId = String(form.client_id ?? '');
+    const form: Record<string, unknown> = await c.req.parseBody().catch(() => ({}));
+    const clientId = formText(form, 'client_id');
     const client = BUILT_IN_CLIENTS[clientId];
     if (!client) return c.json({ error: 'invalid_client' }, 400);
     if (await overLimit(c.env, 'device-start', ipOf(c), START_LIMIT))
@@ -160,7 +162,7 @@ export function registerDeviceRoutes(app: Hono<{ Bindings: Env }>): void {
     // A user code is guessable only slowly: the same budget as a lookup, shared with it and with Deny.
     if (await overLimit(c.env, 'device-lookup', ipOf(c), LOOKUP_LIMIT))
       return c.json({ error: 'rate_limited' }, 429);
-    const body = (await c.req.json().catch(() => ({}))) as {
+    const body = objectOrEmpty(await c.req.json().catch(() => null)) as {
       userCode?: unknown;
       token?: unknown;
       expiresAt?: unknown;
@@ -183,7 +185,7 @@ export function registerDeviceRoutes(app: Hono<{ Bindings: Env }>): void {
   app.post('/oauth/device/deny', async (c) => {
     if (await overLimit(c.env, 'device-lookup', ipOf(c), LOOKUP_LIMIT))
       return c.json({ error: 'rate_limited' }, 429);
-    const body = (await c.req.json().catch(() => ({}))) as { userCode?: unknown };
+    const body = objectOrEmpty(await c.req.json().catch(() => null)) as { userCode?: unknown };
     const found = await pendingByUserCode(c.env, body.userCode);
     if (!found) return c.json({ error: 'invalid_code' }, 400);
     await save(c.env, found.deviceCode, { ...found.record, status: 'denied' });
@@ -198,8 +200,8 @@ export async function handleDeviceToken(
   c: Context<{ Bindings: Env }>,
   form: Record<string, unknown>,
 ): Promise<Response> {
-  const deviceCode = String(form.device_code ?? '');
-  const clientId = String(form.client_id ?? '');
+  const deviceCode = formText(form, 'device_code');
+  const clientId = formText(form, 'client_id');
   if (!BUILT_IN_CLIENTS[clientId]) return c.json({ error: 'invalid_client' }, 400);
   const record = deviceCode
     ? await c.env.OAUTH_KV.get<DeviceRecord>(deviceKey(deviceCode), 'json')

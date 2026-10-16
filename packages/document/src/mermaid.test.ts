@@ -190,6 +190,19 @@ describe('parseMermaid', () => {
     expect(r.graph.clusters).toEqual([{ id: 's1', label: 'Group', members: ['A'] }]);
   });
 
+  // An empty subgraph makes no frame, so its node stays and the edge keeps a target (as mermaid-state does).
+  it('keeps an edge to an EMPTY subgraph (its node survives, no frame)', () => {
+    const r = parseMermaid(`flowchart TD
+  subgraph s1["Group"]
+  end
+  B --> s1`);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.graph.nodes.map((n) => n.id).sort()).toEqual(['B', 's1']);
+    expect(r.graph.edges).toEqual([{ from: 'B', to: 's1' }]);
+    expect(r.graph.clusters).toBeUndefined();
+  });
+
   it('imports click href lines as node URL links (callback form skipped)', () => {
     const r = parseMermaid(`flowchart TD
   A[Docs] --> B[App]
@@ -628,7 +641,7 @@ describe('mermaidFromTab fallbacks and line forms', () => {
           type: 'arrow',
           from: { kind: 'free', x: 0, y: 0 },
           to: { kind: 'pinned', elementId: 'b', anchor: 'w' },
-        } as Element,
+        },
         arrow('to-nowhere', 'a', 'gone'),
         arrow('free-head', 'a', 'b', { to: { kind: 'free', x: 9, y: 9 } }),
       ],

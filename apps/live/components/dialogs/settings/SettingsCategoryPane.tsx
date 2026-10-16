@@ -1,10 +1,13 @@
 'use client';
 
-import { Fragment, useCallback, useEffect, useRef, type ReactNode } from 'react';
+import { Fragment, useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
+import { AccordionSection } from '@/components/primitives/AccordionSection';
+import type { HelpArticleKey } from '@/lib/help-articles';
 import { SettingsPresetSummaryRow } from './SettingsPresetSummaryRow';
 import type { SettingsCategoryId } from './settings-icons';
 
 import { SettingsChoiceRow } from './SettingsChoiceRow';
+import { SettingsToggleGroupRow } from './SettingsToggleGroupRow';
 import { SettingsRow } from './SettingsRow';
 import { SettingsDeleteAccountRow, SettingsIdentityRow } from './SettingsAccountRows';
 import { SettingsShortcutsRow } from './SettingsShortcutsRow';
@@ -16,7 +19,8 @@ import { SettingsTokensRow } from './SettingsTokensRow';
 import { SettingsTrashRow } from './SettingsTrashRow';
 import { SettingsCloudSyncRow } from './SettingsCloudSyncRow';
 import { SettingsPlacementDefaultRow } from './SettingsPlacementDefaultRow';
-import { SettingsSkipLocationRow } from './SettingsSkipLocationRow';
+import { SETTINGS_CARD_SLOT, SettingsGroup, SettingsGroupChildren } from './SettingsGroup';
+import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { usePlacementOptions } from '@/hooks/persistence/usePlacementOptions';
 import { useAppearance } from '@/hooks/ui/useAppearance';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
@@ -90,49 +94,100 @@ export function SettingsCategoryPane({
 
   return (
     <div className="flex flex-col gap-6">
-      {groups.map((group, groupIndex) => (
-        <section
-          key={group.section ?? groupIndex}
-          className="flex flex-col gap-5"
-          {...(group.section ? { 'data-settings-section': settingsSectionId(group.section) } : {})}
-        >
-          {group.section ? (
-            <SectionHeading
+      {groups.map((group, groupIndex) => {
+        const note = group.section ? category.sectionNotes?.[group.section] : undefined;
+        if (group.section && category.collapsedSections?.includes(group.section)) {
+          // A section people rarely look for, as a closed accordion: opened by its heading, or on its own when
+          // Settings was opened on one of its rows or on the section.
+          const all = group.rows.flatMap((r) => [r, ...childrenOf(r)]);
+          return (
+            <CollapsedSection
+              key={group.section}
               name={group.section}
-              focused={settingsSectionId(group.section) === focusSectionId}
-            />
-          ) : null}
-          {group.rows.map((row) => {
-            const children = childrenOf(row);
-            return (
-              <Fragment key={row.key}>
-                <FocusRing rowKey={row.key} focused={row.key === focusRowKey}>
-                  {renderRow(row)}
-                </FocusRing>
-                {children.length > 0 ? (
-                  <div
-                    role="group"
-                    aria-label={`${row.label} settings`}
-                    className="-mt-2 ml-3 flex flex-col gap-5 border-l-2 border-slate-200 pl-4 dark:border-slate-700"
-                  >
-                    {children.map((child) => (
-                      <FocusRing
-                        key={child.key}
-                        rowKey={child.key}
-                        focused={child.key === focusRowKey}
-                      >
-                        {renderRow(child)}
-                      </FocusRing>
-                    ))}
-                  </div>
+              note={note}
+              focused={
+                settingsSectionId(group.section) === focusSectionId ||
+                all.some((r) => r.key === focusRowKey)
+              }
+              onCount={onCount(all)}
+            >
+              {renderGroup(group.rows)}
+            </CollapsedSection>
+          );
+        }
+        return (
+          <section
+            key={group.section ?? groupIndex}
+            className="flex flex-col gap-2"
+            {...(group.section
+              ? { 'data-settings-section': settingsSectionId(group.section) }
+              : {})}
+          >
+            {group.section ? (
+              <SectionHeading
+                name={group.section}
+                focused={settingsSectionId(group.section) === focusSectionId}
+              />
+            ) : null}
+            {note ? (
+              <p className="-mt-1 px-1 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+                {note.note}
+                {note.helpArticle ? (
+                  <>
+                    {' '}
+                    <HelpArticleLink article={note.helpArticle} variant="text" />
+                  </>
                 ) : null}
-              </Fragment>
-            );
-          })}
-        </section>
-      ))}
+              </p>
+            ) : null}
+            {renderGroup(group.rows)}
+          </section>
+        );
+      })}
     </div>
   );
+
+  // One section's rows as its card, each nested row beneath its parent.
+  function renderGroup(rows: SettingsRowSpec[]) {
+    return (
+      <SettingsGroup>
+        {rows.map((row) => {
+          const children = childrenOf(row);
+          return (
+            <Fragment key={row.key}>
+              <FocusRing rowKey={row.key} focused={row.key === focusRowKey}>
+                {renderRow(row)}
+              </FocusRing>
+              {children.length > 0 ? (
+                <SettingsGroupChildren label={`${row.label} settings`}>
+                  {children.map((child) => (
+                    <FocusRing
+                      key={child.key}
+                      rowKey={child.key}
+                      focused={child.key === focusRowKey}
+                    >
+                      {renderRow(child)}
+                    </FocusRing>
+                  ))}
+                </SettingsGroupChildren>
+              ) : null}
+            </Fragment>
+          );
+        })}
+      </SettingsGroup>
+    );
+  }
+
+  // How many of a section's switches are on, for a closed section's heading ("1 of 1 On"): its leaf switches, a
+  // parent standing for its children. Null when it holds none.
+  function onCount(rows: SettingsRowSpec[]): string | null {
+    const leaves = rows.filter(
+      (r) => r.kind === 'toggle' && !rows.some((c) => c.parent === r.key),
+    ) as Extract<SettingsRowSpec, { kind: 'toggle' }>[];
+    if (leaves.length === 0) return null;
+    const on = leaves.filter((r) => r.read(settings)).length;
+    return `${on} of ${leaves.length} On`;
+  }
 
   // Fire BEFORE the write so an opt-out event still reaches the wire ahead of
   // the preference that gates it (docs/specs/017-telemetry/telemetry.md).
@@ -150,6 +205,18 @@ export function SettingsCategoryPane({
             onChange={(next) => {
               track(row.event.category, 'Toggled', next ? row.event.on : row.event.off);
               onChange(row.write(settings, next));
+            }}
+          />
+        );
+      case 'toggleGroup':
+        return (
+          <SettingsToggleGroupRow
+            row={row}
+            checked={(key) => row.toggles.find((t) => t.key === key)!.read(settings)}
+            onChange={(key, next) => {
+              const toggle = row.toggles.find((t) => t.key === key)!;
+              track(toggle.event.category, 'Toggled', next ? toggle.event.on : toggle.event.off);
+              onChange(toggle.write(settings, next));
             }}
           />
         );
@@ -201,8 +268,6 @@ export function SettingsCategoryPane({
         return <SettingsCloudSyncRow row={row} />;
       case 'placementDefault':
         return <SettingsPlacementDefaultRow row={row} lists={placementLists} />;
-      case 'skipLocationStep':
-        return <SettingsSkipLocationRow row={row} settings={settings} onChange={onChange} />;
       case 'presetSummary':
         return (
           <SettingsPresetSummaryRow
@@ -239,10 +304,84 @@ function SectionHeading({ name, focused }: { name: string; focused: boolean }) {
       ref={ref}
       id={`settings-section-${settingsSectionId(name)}`}
       tabIndex={-1}
-      className="-mb-1.5 scroll-mt-2 rounded px-1 text-[10px] font-semibold uppercase tracking-wider text-slate-500 outline-none focus-visible:ring-2 focus-visible:ring-brand-400 dark:text-slate-400"
+      className="scroll-mt-2 rounded px-1 text-[10px] font-semibold uppercase tracking-wider text-slate-500 outline-none focus-visible:ring-2 focus-visible:ring-brand-400 dark:text-slate-400"
     >
       {name}
     </h3>
+  );
+}
+
+// How long a closed section's body takes to ease open (AccordionSection's duration-short), before it is scrolled to.
+const COLLAPSED_SECTION_OPEN_MS = 200;
+
+// A closed accordion section (SettingsCategorySpec.collapsedSections): its heading is the toggle, with the section's
+// switch count beside the chevron, so it says what it holds while closed.
+function CollapsedSection({
+  name,
+  note,
+  focused,
+  onCount,
+  children,
+}: {
+  name: string;
+  note?: { note: string; helpArticle?: HelpArticleKey };
+  focused: boolean;
+  onCount: string | null;
+  children: ReactNode;
+}) {
+  const [open, setOpen] = useState(focused);
+  const ref = useRef<HTMLElement>(null);
+  // Opened by hand, it brings what it unfolded into view once the body has eased open, rather than leaving it
+  // below the fold of the pane.
+  useEffect(() => {
+    if (!open) return;
+    const timer = window.setTimeout(() => {
+      const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
+      ref.current?.scrollIntoView?.({ block: 'nearest', behavior: reduce ? 'auto' : 'smooth' });
+    }, COLLAPSED_SECTION_OPEN_MS);
+    return () => window.clearTimeout(timer);
+  }, [open]);
+  // Opened on its own when Settings lands on it, adjusted during render so the row is there to be scrolled to.
+  const [wasFocused, setWasFocused] = useState(focused);
+  if (focused !== wasFocused) {
+    setWasFocused(focused);
+    if (focused) setOpen(true);
+  }
+  return (
+    <section
+      ref={ref}
+      className="flex flex-col"
+      data-settings-section={settingsSectionId(name)}
+      id={`settings-section-${settingsSectionId(name)}`}
+    >
+      <AccordionSection
+        title={name}
+        open={open}
+        onToggle={() => setOpen((o) => !o)}
+        trailing={
+          onCount ? (
+            <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
+              {onCount}
+            </span>
+          ) : undefined
+        }
+        headerClassName="flex w-full items-center justify-between rounded px-1 py-1 text-left outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
+        bodyClassName="flex flex-col gap-2 pt-1"
+      >
+        {note ? (
+          <p className="px-1 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+            {note.note}
+            {note.helpArticle ? (
+              <>
+                {' '}
+                <HelpArticleLink article={note.helpArticle} variant="text" />
+              </>
+            ) : null}
+          </p>
+        ) : null}
+        {children}
+      </AccordionSection>
+    </section>
   );
 }
 
@@ -269,11 +408,7 @@ function FocusRing({
     <div
       ref={ref}
       {...{ [SETTINGS_ROW_ATTRIBUTE]: rowKey }}
-      className={
-        focused
-          ? 'rounded-2xl ring-2 ring-brand-400 ring-offset-4 ring-offset-white dark:ring-offset-slate-900'
-          : undefined
-      }
+      className={`${SETTINGS_CARD_SLOT} ${focused ? 'ring-2 ring-inset ring-brand-400' : ''}`}
     >
       {children}
     </div>

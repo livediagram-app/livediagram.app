@@ -12,8 +12,16 @@ import { handleDocuments } from './documents';
 // read.
 
 const OWNER = 'user_owner';
-const box = (id: string, label = id): Element =>
-  ({ id, type: 'shape', shape: 'square', x: 0, y: 0, width: 10, height: 10, label }) as Element;
+const box = (id: string, label = id): Element => ({
+  id,
+  type: 'shape',
+  shape: 'square',
+  x: 0,
+  y: 0,
+  width: 10,
+  height: 10,
+  label,
+});
 
 function call(
   db: SqliteD1,
@@ -44,8 +52,11 @@ async function documentWith(elements: Element[], env: Partial<Env> = {}): Promis
 }
 
 const stored = (db: SqliteD1) =>
-  JSON.parse(db.sql.prepare("SELECT data FROM tabs WHERE id = 't1'").get()!.data as string)
-    .elements as Element[];
+  (
+    JSON.parse(db.sql.prepare("SELECT data FROM tabs WHERE id = 't1'").get()!.data as string) as {
+      elements: Element[];
+    }
+  ).elements;
 const revOf = (db: SqliteD1) => db.sql.prepare("SELECT rev FROM tabs WHERE id = 't1'").get()!.rev;
 
 // A changeset recorded as the pipeline records it: the tab advanced to `rev` with `n` added.
@@ -101,6 +112,18 @@ const save = (
 afterEach(() => vi.restoreAllMocks());
 
 describe('the tab PUT', () => {
+  // A malformed element is refused by the schema gate like any other, never thrown on by the migrations that run
+  // before it: a step chip's label a number, not text, threw in settleChips and answered 500.
+  it('refuses a malformed chip as an invalid tab, not a server error', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const db = await documentWith([box('a')]);
+    const step = { ...box('s'), shape: 'step', label: 5 } as unknown as Element;
+    const res = await save(db, [box('a'), step]);
+    expect(res.status).toBe(400);
+    expect(await res.json()).toEqual({ error: 'bad_request', message: 'invalid tab' });
+    expect(stored(db).map((e) => e.id)).toEqual(['a']);
+  });
+
   it('refuses an API token with use_changesets, naming the route, before reading anything', async () => {
     const info = vi.spyOn(console, 'info').mockImplementation(() => {});
     const db = await documentWith([box('a')]);
@@ -217,13 +240,13 @@ describe('the tab PUT', () => {
     // A changeset lands between the save's read and its write, once.
     const batch = db.env.DB.batch.bind(db.env.DB);
     let interleave = 1;
-    db.env.DB.batch = (async (statements: D1PreparedStatement[]) => {
+    db.env.DB.batch = async (statements: D1PreparedStatement[]) => {
       if (interleave > 0) {
         interleave -= 1;
         recordAdd(db, box(`raced${interleave}`));
       }
       return batch(statements);
-    }) as typeof db.env.DB.batch;
+    };
     expect((await save(db, [box('a', 'mine')], { 'X-Changeset-Seen': seen })).status).toBe(200);
     expect(stored(db).map((e) => e.id)).toEqual(['a', 'raced0']);
 
@@ -239,7 +262,7 @@ describe('the tab read', () => {
     await save(db, [box('a', 'b')]);
     const res = await call(db, 'GET', '/api/documents/D/tabs/t1');
     expect(res.headers.get('ETag')).toBe('W/"2"');
-    expect(((await res.json()) as { tab: { rev: number } }).tab.rev).toBe(2);
+    expect((await res.json<{ tab: { rev: number } }>()).tab.rev).toBe(2);
   });
 });
 
@@ -279,8 +302,8 @@ describe("someone else's tab id", () => {
       name: 'Taken',
       elements: [box('x', 'Overwritten')],
     });
-    expect(res!.status).toBe(409);
-    expect(await res!.json()).toEqual({ error: 'tab_id_taken' });
+    expect(res.status).toBe(409);
+    expect(await res.json()).toEqual({ error: 'tab_id_taken' });
     const oldData = JSON.parse(
       db.sql.prepare("SELECT data FROM tabs WHERE id = 'old'").get()!.data as string,
     ) as { elements: { label?: string }[] };
@@ -295,10 +318,10 @@ describe("someone else's tab id", () => {
     const fresh = await call(db, 'PUT', '/api/documents/D/tabs/t2', {
       body: { id: 't2', name: 'Second', elements: [box('b')] },
     });
-    expect(fresh!.status).toBeLessThan(300);
+    expect(fresh.status).toBeLessThan(300);
     const again = await call(db, 'PUT', '/api/documents/D/tabs/t1', {
       body: { id: 't1', name: 'Board', elements: [box('a', 'Edited')] },
     });
-    expect(again!.status).toBeLessThan(300);
+    expect(again.status).toBeLessThan(300);
   });
 });

@@ -27,7 +27,14 @@ type GalleryPaneProps = {
 
 type Usage = Record<string, { id: string; name: string }[]>;
 
-export function GalleryPane({ ownerId }: GalleryPaneProps) {
+// `compact`: inside the editor's Explorer pane, a narrow column: three tiles to a row and the small empty state.
+export function GalleryPane({
+  ownerId,
+  compact = false,
+}: GalleryPaneProps & { compact?: boolean }) {
+  const grid = compact
+    ? 'grid grid-cols-3 gap-2.5'
+    : 'grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4';
   const [gallery, setGallery] = useState<ImageSummary[] | null>(null);
   const [usage, setUsage] = useState<Usage>({});
   const [galleryError, setGalleryError] = useState<string | null>(null);
@@ -105,6 +112,7 @@ export function GalleryPane({ ownerId }: GalleryPaneProps) {
         uploading={uploading}
         error={uploadError}
         prompt="Drop, paste, or click to upload an image"
+        {...(compact ? { heightClass: 'h-28', gapClass: 'gap-1.5' } : {})}
       />
 
       <div className="mt-4">
@@ -115,7 +123,7 @@ export function GalleryPane({ ownerId }: GalleryPaneProps) {
         ) : !gallery ? (
           // Tile skeletons matching the gallery grid, rather than a bare
           // "Loading…" line, the editor's animate-pulse / aria-busy convention.
-          <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4" aria-busy="true">
+          <ul className={grid} aria-busy="true">
             {[0, 1, 2, 3].map((i) => (
               <li
                 key={i}
@@ -126,19 +134,20 @@ export function GalleryPane({ ownerId }: GalleryPaneProps) {
           </ul>
         ) : gallery.length === 0 ? (
           <EmptyState
+            compact={compact}
             icon={<ImageIcon />}
             title="No images yet"
             description="Drop an image onto the canvas (or the area above) and every image you add collects here, ready to reuse in any document."
           />
         ) : (
-          <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+          <ul className={grid}>
             {gallery.map((image) => (
               <GalleryCard
                 key={image.id}
                 image={image}
                 ownerId={ownerId}
                 usage={usage[image.id] ?? []}
-                onDelete={() => handleDelete(image)}
+                onDelete={() => void handleDelete(image)}
               />
             ))}
           </ul>

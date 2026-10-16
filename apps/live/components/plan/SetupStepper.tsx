@@ -30,7 +30,7 @@ export function SetupStepper<Id extends string>({
             size={24}
             aria-hidden
             className={`shrink-0 text-[12px] font-semibold tabular-nums transition-colors motion-reduce:transition-none ${
-              current || done ? 'bg-brand-500 text-white dark:bg-brand-600' : 'border'
+              current || done ? 'bg-brand-700 text-white dark:bg-brand-600' : 'border'
             }`}
             style={
               current || done

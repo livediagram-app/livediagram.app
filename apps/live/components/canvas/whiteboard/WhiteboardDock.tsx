@@ -7,7 +7,7 @@
 // flyouts open on its board side; on a narrow screen the groups scroll sideways together. One
 // flyout at a time, and nothing moves under the pointer when a tool is picked.
 
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import type { WhiteboardDockModel } from '@/hooks/canvas/useWhiteboard';
 import type { WhiteboardDockPosition } from '@/lib/whiteboard-dock-prefs';
@@ -27,6 +27,7 @@ import {
   SettingsFlyoutBody,
   SlotMenuBody,
 } from './dock-flyouts';
+import { DockDivider } from './DockToolbar';
 import { DrawingToolsGroup } from './DrawingToolsGroup';
 import { SettingsGroup } from './SettingsGroup';
 import { ShapesFlyout } from './ShapesFlyout';
@@ -39,19 +40,19 @@ import { debugLog } from '@/lib/debug-log';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { useUiScale } from '@/components/providers/ui-scale';
 import { toSurfacePx, uiScaleStyle } from '@/lib/ui-scale';
+import { TOOLBAR_CARD } from '@/components/chrome/toolbar-surface';
 
 // How long the "seven pinned" hint stays up.
 const HINT_MS = 4000;
 
 // Where the wrapper sits. At the top it keeps clear of the Explorer menu card (top-left, 12 + 98
 // px with the editor mode switch beside the button, plus an 8px gap): beside it on a phone or a tablet, centred with the same clearance on both sides from lg
-// (D33), so a tablet in portrait still shows the whole dock. Beside the card it starts 12px further
-// in again (8.25rem), because its scroller bleeds 12px left for the groups' shadows (DockBody's
-// `-m-3`): at 7.5rem that bleed reached under the card, and scrolled tools slid beneath it. At the
+// (D33), so a tablet in portrait still shows the whole dock. The dock is one card that scrolls
+// inside itself, with no bleed, so beside the menu card it starts at 7.5rem. At the
 // bottom it is lifted above the bottom-right cluster (history, layers, zoom) until the viewport is
 // wide enough for the two side by side (D9).
 const WRAPPER_PLACEMENT: Record<WhiteboardDockPosition, string> = {
-  top: 'top-3 left-[8.25rem] max-w-[calc(100%-9rem)] lg:left-1/2 lg:-translate-x-1/2 lg:max-w-[calc(100%-15rem)]',
+  top: 'top-3 left-[7.5rem] max-w-[calc(100%-8.25rem)] lg:left-1/2 lg:-translate-x-1/2 lg:max-w-[calc(100%-15rem)]',
   bottom:
     'bottom-[4.25rem] left-1/2 -translate-x-1/2 max-w-[calc(100%-1.5rem)] min-[1760px]:bottom-4',
 };
@@ -60,9 +61,15 @@ export type WhiteboardDockProps = {
   model: WhiteboardDockModel;
   // The board's ink for this appearance: what the main pen draws with.
   ink: string;
+  // Called in the commit the dock is first in the page: its code loads on demand, so whatever
+  // measures against it (the top corners giving way, CanvasChrome) waits for it.
+  onDrawn?: () => void;
 };
 
-export function WhiteboardDock({ model, ink }: WhiteboardDockProps) {
+export function WhiteboardDock({ model, ink, onDrawn }: WhiteboardDockProps) {
+  useLayoutEffect(() => {
+    onDrawn?.();
+  }, [onDrawn]);
   // The dock is the Toolbar layout strip's twin, so it draws at the toolbar UI scale
   // (docs/specs/007-editor/ui-scale.md).
   const scale = useUiScale('toolbar');
@@ -227,6 +234,7 @@ export function WhiteboardDock({ model, ink }: WhiteboardDockProps) {
   const groups = (
     <>
       <DrawingToolsGroup model={model} ink={ink} fly={fly} pickAndClose={pickAndClose} />
+      <DockDivider data-dock-group-divider="" />
       <ShapesGroup
         model={model}
         pinned={pins.onBar}
@@ -236,6 +244,7 @@ export function WhiteboardDock({ model, ink }: WhiteboardDockProps) {
         refusing={refusing}
         pickAndClose={pickAndClose}
       />
+      <DockDivider data-dock-group-divider="" />
       <SettingsGroup fly={fly} />
       {drag ? (
         <SlotGhost dragKey={drag.source.key} x={drag.x} y={drag.y} refusing={refusing} />
@@ -336,12 +345,13 @@ function DockBody({
       <p role="status" className="sr-only">
         {hint ? PINS_FULL_HINT : ''}
       </p>
-      {/* The groups scroll together on a narrow screen; the padding keeps their shadows
-          unclipped. Scrolling moves the openers, so an open flyout follows its button. */}
+      {/* One card, the Toolbar layout strip's, the groups between hairlines; they scroll
+          together inside it on a narrow screen. Scrolling moves the openers, so an open flyout
+          follows its button. */}
       <div
         data-dock-scroller=""
         onScroll={fly.reanchor}
-        className="-m-3 flex items-center gap-3 overflow-x-auto p-3 [scrollbar-width:none]"
+        className={`${TOOLBAR_CARD} pointer-events-auto animate-pop-in overflow-x-auto [scrollbar-width:none]`}
       >
         {groups}
       </div>

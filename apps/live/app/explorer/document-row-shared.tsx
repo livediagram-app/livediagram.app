@@ -37,6 +37,7 @@ import { documentSpace, isLocalOnly } from '@/lib/document-space';
 import { startDocumentDrag } from '@/components/panels/explorer-drag-mime';
 import type { DocumentEntryProps } from './explorer-view-props';
 import { VisibilityBadge } from './document-badges';
+import { teamFolderPath } from './routes';
 
 // Shared documents open on the visitor URL (the owner-only path 404s for
 // a non-owner); everything else opens on the owned path.
@@ -258,11 +259,7 @@ export function DocumentActionsMenu({
           icon={<TeamIcon />}
           label="Open Team"
           onClick={() => {
-            window.location.assign(
-              `/explorer/team?id=${encodeURIComponent(liveDoc.team!.id)}${
-                liveDoc.folderId ? `&folder=${encodeURIComponent(liveDoc.folderId)}` : ''
-              }`,
-            );
+            window.location.assign(teamFolderPath(liveDoc.team!.id, liveDoc.folderId ?? null));
           }}
         />
       ) : null}

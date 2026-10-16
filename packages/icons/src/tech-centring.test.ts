@@ -31,7 +31,7 @@ function offset(glyph: string) {
 describe('technology tile centring', () => {
   it('centres every tile glyph within tolerance, or names why not', () => {
     const off = LINE_ART.filter((d) => !CENTRING_EXCEPTIONS[d.id])
-      .map((d) => ({ id: d.id, o: offset(d.glyph!) }))
+      .map((d) => ({ id: d.id, o: offset(d.glyph) }))
       .filter(({ o }) => o && (Math.abs(o.dx) > TOLERANCE_PX || Math.abs(o.dy) > TOLERANCE_PX))
       .map(({ id, o }) => `${id} dx=${o!.dx} dy=${o!.dy}`);
     expect(off).toEqual([]);
@@ -39,7 +39,7 @@ describe('technology tile centring', () => {
 
   it('measures every tile glyph', () => {
     expect(
-      LINE_ART.filter((d) => !CENTRED_BY_CONSTRUCTION[d.id] && !offset(d.glyph!)).map((d) => d.id),
+      LINE_ART.filter((d) => !CENTRED_BY_CONSTRUCTION[d.id] && !offset(d.glyph)).map((d) => d.id),
     ).toEqual([]);
   });
 

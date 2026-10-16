@@ -2,8 +2,10 @@
 import { renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const trackMock = vi.fn();
-vi.mock('@/lib/telemetry', () => ({ track: (...args: unknown[]) => trackMock(...args) }));
+const trackMock = vi.fn<typeof import('@/lib/telemetry').track>();
+vi.mock('@/lib/telemetry', () => ({
+  track: (...args: Parameters<typeof trackMock>) => trackMock(...args),
+}));
 
 const api = vi.hoisted(() => ({
   apiCreateFolder: vi.fn(),
@@ -24,7 +26,7 @@ function handlers() {
       viewerId: 'user_1',
       teamFolders: [{ id: 'f1', name: 'Specs' } as never],
       refreshTeamLibraries: () => {},
-      confirm: (async () => true) as never,
+      confirm: async () => true,
     }),
   );
   return result.current!;

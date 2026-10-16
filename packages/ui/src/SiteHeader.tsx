@@ -1,7 +1,8 @@
-import { ctaHref, type CtaSurface } from '@livediagram/api-schema';
+import type { CtaSurface } from '@livediagram/api-schema';
 import type { ReactNode } from 'react';
 import { Brand } from './Brand';
-import { ButtonContent, buttonClassName } from './Button';
+import { BuildWithAiLink } from './BuildWithAiLink';
+import { HeaderPrimaryCta } from './HeaderPrimaryCta';
 import { ProductNav, type ProductNavKey } from './ProductNav';
 import { ShareRail } from './ShareRail';
 import { StartBlankMenu } from './StartBlankMenu';
@@ -18,7 +19,7 @@ import { StartBlankMenu } from './StartBlankMenu';
 // no gutter for the rail it is left out (the device's own setting applies through System).
 //
 // `productNav` is the current section key for the apps-menu dropdown next to
-// the logo (the landing page passes 'home', which reads as "Welcome").
+// the logo (the landing page passes 'home', which reads as "Home").
 // `center` is an optional slot between the two clusters, shown from `sm` up
 // (the help centre's search box). `actions` replaces the default CTA pair
 // (no surface uses it today). `shareRail` (default true) puts the
@@ -34,11 +35,15 @@ import { StartBlankMenu } from './StartBlankMenu';
 // pair's hrefs carry `via=<surface>.Header` / `.HeaderDraw` so the editor can
 // count which page's header brought somebody in. A surface passing its own
 // `actions` tags those links itself.
+//
+// `buildWithAi` adds the Build with AI link (desktop only) left of Start Blank: 'link' on a marketing page,
+// 'current' on /ai itself (docs/specs/019-marketing/build-with-ai.md "Entry points").
 export function SiteHeader({
   productNav,
   ctaSurface,
   center,
   actions,
+  buildWithAi,
   shareRail = true,
   wide = false,
 }: {
@@ -46,6 +51,7 @@ export function SiteHeader({
   ctaSurface?: CtaSurface;
   center?: ReactNode;
   actions?: ReactNode;
+  buildWithAi?: 'link' | 'current';
   shareRail?: boolean;
   wide?: boolean;
 }) {
@@ -63,8 +69,10 @@ export function SiteHeader({
             wide ? 'max-w-7xl md:px-8' : 'max-w-6xl sm:px-6'
           }`}
         >
+          {/* The bar's controls are under 44px tall; on a touch screen each tap area reaches to 44px
+              vertically (touch-target-y, touch-targets.md), never sideways into a neighbour's. */}
           <div className="flex shrink-0 items-center gap-2.5">
-            <Brand href="/" size="md" />
+            <Brand href="/" size="md" className="relative touch-target-y" />
             {productNav ? <ProductNav current={productNav} showOnMobile /> : null}
           </div>
           {center ? (
@@ -73,6 +81,7 @@ export function SiteHeader({
             </div>
           ) : null}
           <div className="flex shrink-0 items-center gap-2">
+            {buildWithAi ? <BuildWithAiLink current={buildWithAi === 'current'} /> : null}
             {actions ?? <DefaultActions ctaSurface={ctaSurface} roomy={!center} />}
           </div>
         </div>
@@ -86,9 +95,10 @@ export function SiteHeader({
 // The default CTA pair. The Start Blank menu is hidden on mobile: Brand + dropdown + the
 // primary already fill a narrow bar, and the wizard's own Skip covers the
 // escape. `max-sm:hidden` (a variant, so it wins over the base inline-flex). Beside a centre slot (help's
-// search) it waits for `md`, so the search box keeps room to read on a small tablet. Below 360px
-// (a 320px phone) Brand + dropdown + "Choose Template" overran the bar by ~35px, so the primary
-// drops "Choose " there; the aria-label keeps its full name.
+// search) it waits for `md`, so the search box keeps room to read on a small tablet. Brand + dropdown +
+// "Choose Template" need about 367px, so below 380px (a 360px Android phone ran 7px past its screen,
+// a 320px one ~35px) the primary drops its verb; the aria-label keeps its full name. Signed in, the
+// primary is Open Explorer instead (HeaderPrimaryCta).
 function DefaultActions({ ctaSurface, roomy }: { ctaSurface?: CtaSurface; roomy: boolean }) {
   return (
     <>
@@ -96,17 +106,7 @@ function DefaultActions({ ctaSurface, roomy }: { ctaSurface?: CtaSurface; roomy:
         ctaSurface={ctaSurface}
         className={roomy ? 'max-sm:hidden' : 'max-md:hidden'}
       />
-      <a
-        href={ctaSurface ? ctaHref('/new', `${ctaSurface}.Header`) : '/new'}
-        aria-label="Choose Template"
-        className={buttonClassName({ size: 'md', className: 'shrink-0 shadow-sm' })}
-      >
-        <ButtonContent>
-          <span className="text-optical-line">
-            <span className="max-[359px]:hidden">Choose </span>Template
-          </span>
-        </ButtonContent>
-      </a>
+      <HeaderPrimaryCta ctaSurface={ctaSurface} />
     </>
   );
 }

@@ -10,12 +10,11 @@ import { CommunityBar } from './CommunityBar';
 
 afterEach(cleanup);
 
-const session = (ownDocumentId: string | null): CommunitySession =>
-  ({
-    postId: 'post1',
-    author: { name: 'Anonymous', color: '#64748b', picture: null },
-    ownDocumentId,
-  }) as CommunitySession;
+const session = (ownDocumentId: string | null): CommunitySession => ({
+  postId: 'post1',
+  author: { name: 'Anonymous', color: '#64748b', picture: null },
+  ownDocumentId,
+});
 
 describe('CommunityBar', () => {
   it('names who shared it, leads back to the post, and offers a visitor Make a Copy', () => {
@@ -33,9 +32,7 @@ describe('CommunityBar', () => {
 
   it('says Copying while it copies, and gives the author Edit Your Document instead', () => {
     render(<CommunityBar community={session(null)} onMakeCopy={vi.fn()} copying />);
-    expect((screen.getByRole('button', { name: /Copying/ }) as HTMLButtonElement).disabled).toBe(
-      true,
-    );
+    expect(screen.getByRole<HTMLButtonElement>('button', { name: /Copying/ }).disabled).toBe(true);
     cleanup();
     render(<CommunityBar community={session('doc-9')} onMakeCopy={vi.fn()} copying={false} />);
     expect(screen.queryByRole('button', { name: /Make a Copy/ })).toBeNull();

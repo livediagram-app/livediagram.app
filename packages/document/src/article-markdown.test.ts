@@ -64,6 +64,21 @@ describe('Markdown pasted into an article', () => {
     ]);
   });
 
+  // `***x***` is bold and italic at once, as every Markdown writes it (this file's own writer too): it read as a
+  // literal `*`, bold text and another `*`, so the italic was lost and two stars were left in the words.
+  it('reads triple stars and underscores as bold and italic at once', () => {
+    expect(parseInline('a ***b*** c')).toEqual([
+      { text: 'a ' },
+      { text: 'b', b: true, i: true },
+      { text: ' c' },
+    ]);
+    expect(parseInline('___b___')).toEqual([{ text: 'b', b: true, i: true }]);
+    expect(parseInline('*x****y***')).toEqual([
+      { text: 'x', i: true },
+      { text: 'y', b: true, i: true },
+    ]);
+  });
+
   it('tells Markdown from plain text, which pastes a paragraph a line', () => {
     expect(looksLikeMarkdown('## Heading')).toBe(true);
     expect(looksLikeMarkdown('Dear team,\nthanks for today.')).toBe(false);

@@ -10,8 +10,16 @@ import { submitChangeset } from './submit';
 // The pipeline's attempt loop and relay (docs/specs/024-agents/blueprints/agent-changesets.md "The
 // pipeline" steps 9 and 10), on real SQLite with an injected interleaving.
 
-const box = (id: string, label = id): Element =>
-  ({ id, type: 'shape', shape: 'square', x: 0, y: 0, width: 120, height: 60, label }) as Element;
+const box = (id: string, label = id): Element => ({
+  id,
+  type: 'shape',
+  shape: 'square',
+  x: 0,
+  y: 0,
+  width: 120,
+  height: 60,
+  label,
+});
 
 function roomThat(relay: 'ok' | 'throws') {
   return {
@@ -51,15 +59,16 @@ async function submit(db: SqliteD1, operations: unknown[]) {
 
 const labels = (db: SqliteD1) =>
   (
-    JSON.parse(db.sql.prepare("SELECT data FROM tabs WHERE id = 't1'").get()!.data as string)
-      .elements as Element[]
-  ).map((e) => [e.id, (e as { label?: string }).label]);
+    JSON.parse(db.sql.prepare("SELECT data FROM tabs WHERE id = 't1'").get()!.data as string) as {
+      elements: Element[];
+    }
+  ).elements.map((e) => [e.id, (e as { label?: string }).label]);
 
 // Every batch the pipeline sends meets a person's save first, `times` times.
 function interleave(db: SqliteD1, times: number) {
   const batch = db.env.DB.batch.bind(db.env.DB);
   let left = times;
-  db.env.DB.batch = (async (statements: D1PreparedStatement[]) => {
+  db.env.DB.batch = async (statements: D1PreparedStatement[]) => {
     if (left > 0) {
       left -= 1;
       const row = db.sql.prepare("SELECT data FROM tabs WHERE id = 't1'").get()!;
@@ -70,7 +79,7 @@ function interleave(db: SqliteD1, times: number) {
         .run(JSON.stringify(data));
     }
     return batch(statements);
-  }) as typeof db.env.DB.batch;
+  };
 }
 
 afterEach(() => vi.restoreAllMocks());
@@ -146,9 +155,9 @@ describe('a template’s Sheets', () => {
     }[];
     expect(sheets).toHaveLength(1);
     expect(sheets[0]).toMatchObject({ tab_id: 't1', title: 'Timesheet' });
-    const els = JSON.parse(
+    const { elements: els } = JSON.parse(
       db.sql.prepare("SELECT data FROM tabs WHERE id = 't1'").get()!.data as string,
-    ).elements as { planSheet?: { sheetId: string; start?: string; fillTab?: true } }[];
+    ) as { elements: { planSheet?: { sheetId: string; start?: string; fillTab?: true } }[] };
     const ref = els.find((e) => e.planSheet)!.planSheet!;
     expect(ref).toEqual({ sheetId: sheets[0]!.id, fillTab: true });
   });

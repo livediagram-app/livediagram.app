@@ -7,6 +7,9 @@ import { useModKeyHeld } from '@/hooks/ui/useModKeyHeld';
 import { createContext, useContext } from 'react';
 import { HoverCard, Tooltip } from '@livediagram/ui';
 import { useMinimalChrome } from '@/components/providers/minimal-chrome';
+import { useTabFinish } from '@/components/canvas/CanvasFinishContext';
+import { paletteFinishClass } from './palette-tile-finish';
+import type { PaletteTileDef } from './palette-tile-defs';
 
 // The active tab theme's element colours, made available to every palette
 // tile so the palette previews the theme rather than a fixed slate. `stroke`
@@ -23,6 +26,8 @@ import { useMinimalChrome } from '@/components/providers/minimal-chrome';
 export type PaletteTint = {
   stroke?: string;
   fill?: string;
+  // The theme's element text colour, for a tile that draws an element's label in it (a badge preset).
+  text?: string;
   shapeColors?: Partial<Record<ShapeKind, { fill?: string; stroke?: string }>>;
 };
 
@@ -36,6 +41,11 @@ export function PaletteTintProvider({
   children: React.ReactNode;
 }) {
   return <PaletteTintContext.Provider value={tint}>{children}</PaletteTintContext.Provider>;
+}
+
+/** The theme tint the palette is drawn in; undefined on the Default theme. */
+export function usePaletteTint(): PaletteTint | undefined {
+  return useContext(PaletteTintContext);
 }
 
 export type TileHint = 'tooltip' | 'hover-card';
@@ -84,6 +94,8 @@ type IconButtonProps = {
   // its glyphs are a dense gallery where per-tile names would be noise (and
   // it stays a 6-up grid), unlike the shape / tool / device grids.
   hideCaption?: boolean;
+  // A Toolbar strip tile (PaletteTile `compact`): a phone's strip draws it a little narrower, so more fit in view.
+  stripTile?: boolean;
   // Override the caption text (default is derived from `label`). Used where
   // the derived name is too long for the tile, e.g. "Bubble".
   caption?: string;
@@ -109,6 +121,9 @@ type IconButtonProps = {
   // Toolbar layout's strip (docs/specs/007-editor/toolbar-layout.md) sets it: a tool bar is where people
   // learn the letters, so it shows them the whole time.
   shortcutAlwaysVisible?: boolean;
+  // The tile's action: its glyph previews the tab's finish (palette-tile-finish.ts). Omitted for a button that
+  // places nothing (a tool).
+  finishAction?: PaletteTileDef['action'];
 };
 
 export function IconButton({
@@ -126,11 +141,13 @@ export function IconButton({
   onDragEnd,
   hint,
   hideCaption,
+  stripTile = false,
   caption: captionOverride,
   dragKind,
   filled,
   noTint,
   shortcutAlwaysVisible,
+  finishAction,
 }: IconButtonProps) {
   // A reason greys the tile out as `disabled` does, but keeps it focusable so the reason can be read.
   const refused = !!disabledReason && !disabledProp;
@@ -163,6 +180,7 @@ export function IconButton({
           width,
           height,
           ...(dragKind === 'plan-card' && dragChoice ? { planType: dragChoice } : {}),
+          ...(dragChoice ? { choice: dragChoice } : {}),
         });
       }
     : onDragStart;
@@ -174,29 +192,13 @@ export function IconButton({
     : active
       ? 'bg-brand-100 text-brand-700 ring-1 ring-brand-300 dark:bg-brand-500/20 dark:text-brand-200 dark:ring-brand-500/50'
       : 'text-slate-600 enabled:hover:bg-slate-100 enabled:hover:text-slate-900 dark:text-slate-100 dark:enabled:hover:bg-slate-800 dark:enabled:hover:text-white';
-  // Theme tint for the glyph. The active (queued) tile keeps the brand
-  // pressed treatment so it still reads as "selected"; disabled + opted-out
-  // tiles render plain. The stroke colour drives every `currentColor` glyph;
-  // the filled tiles additionally expose the fill as a CSS var consumed by
-  // the `palette-tile-filled` rule. Caption text stays on the slate `tone`
-  // (the style only lands on the glyph wrapper), so labels keep their
-  // contrast.
-  const themeTint = useContext(PaletteTintContext);
-  // Per-shape themes (UML / custom) colour a tile by its own kind; fall
-  // back to the theme's single element stroke / fill for kinds without an
-  // override (and for non-shape tiles, which carry no dragKind).
-  const shapeOverride = dragKind ? themeTint?.shapeColors?.[dragKind] : undefined;
-  const baseStroke = shapeOverride?.stroke ?? themeTint?.stroke;
-  const baseFill = shapeOverride?.fill ?? themeTint?.fill;
-  const tintStroke = !active && !disabled && !noTint ? baseStroke : undefined;
-  const tintFill = tintStroke && filled ? baseFill : undefined;
-  const glyphStyle: React.CSSProperties | undefined = tintStroke
-    ? ({
-        color: tintStroke,
-        ...(tintFill ? { '--tile-fill': tintFill } : {}),
-      } as React.CSSProperties)
-    : undefined;
-  const glyphClass = tintFill ? 'palette-tile-filled ' : '';
+  const { glyphStyle, glyphClass } = useTileGlyph({
+    dragKind,
+    filled,
+    noTint,
+    plain: !!active || !!disabled,
+    finishAction,
+  });
   // Short caption under the icon (see tileCaption — shared with the Tools
   // tab's rows so the same tool is never named two ways).
   const caption = tileCaption(label, captionOverride);
@@ -226,7 +228,7 @@ export function IconButton({
       }}
       className={
         hideCaption
-          ? `relative flex h-9 w-9 items-center justify-center rounded-md transition disabled:cursor-not-allowed disabled:opacity-50 ${tone}`
+          ? `relative flex h-9 w-9 items-center justify-center rounded-md transition disabled:cursor-not-allowed disabled:opacity-50 ${stripTile ? 'phone:w-8' : ''} ${tone}`
           : minimalChrome
             ? // Keeps its grid cell's width, so the icon stays centred where the
               // captioned tile had it.
@@ -261,7 +263,7 @@ export function IconButton({
       {showCornerLetter ? (
         <span
           aria-hidden
-          className="pointer-events-none absolute bottom-0 right-0.5 text-[8px] font-medium uppercase leading-none text-slate-400"
+          className="pointer-events-none absolute bottom-0 right-0.5 text-[8px] font-medium uppercase leading-none text-slate-400 pointer-coarse:hidden"
         >
           {shortcut}
         </span>
@@ -282,4 +284,48 @@ export function IconButton({
       {button}
     </HoverCard>
   );
+}
+
+/** How a tile's glyph is drawn: in the tab theme's tint (a shape kind's own colours where the theme has them, its
+ *  fill too for a `filled` tile), and previewing the tab's finish. `plain` (an armed or disabled tile) keeps the
+ *  brand treatment instead. Shared by the palette tile and the category flyout's tiles, so the two never differ. */
+export function useTileGlyph({
+  dragKind,
+  filled,
+  noTint,
+  plain,
+  finishAction,
+}: {
+  dragKind?: ShapeKind | undefined;
+  filled?: boolean | undefined;
+  noTint?: boolean | undefined;
+  plain: boolean;
+  finishAction?: PaletteTileDef['action'] | undefined;
+}): { glyphStyle: React.CSSProperties | undefined; glyphClass: string } {
+  const tabFinish = useTabFinish();
+  // Theme tint for the glyph. The active (queued) tile keeps the brand
+  // pressed treatment so it still reads as "selected"; disabled + opted-out
+  // tiles render plain. The stroke colour drives every `currentColor` glyph;
+  // the filled tiles additionally expose the fill as a CSS var consumed by
+  // the `palette-tile-filled` rule. Caption text stays on the slate `tone`
+  // (the style only lands on the glyph wrapper), so labels keep their
+  // contrast.
+  const themeTint = useContext(PaletteTintContext);
+  // Per-shape themes (UML / custom) colour a tile by its own kind; fall
+  // back to the theme's single element stroke / fill for kinds without an
+  // override (and for non-shape tiles, which carry no dragKind).
+  const shapeOverride = dragKind ? themeTint?.shapeColors?.[dragKind] : undefined;
+  const baseStroke = shapeOverride?.stroke ?? themeTint?.stroke;
+  const baseFill = shapeOverride?.fill ?? themeTint?.fill;
+  const tintStroke = !plain && !noTint ? baseStroke : undefined;
+  const tintFill = tintStroke && filled ? baseFill : undefined;
+  const glyphStyle: React.CSSProperties | undefined = tintStroke
+    ? {
+        color: tintStroke,
+        ...(tintFill ? { '--tile-fill': tintFill } : {}),
+      }
+    : undefined;
+  const finishClass = finishAction ? paletteFinishClass(tabFinish, finishAction) : '';
+  const glyphClass = `${tintFill ? 'palette-tile-filled ' : ''}${finishClass ? `${finishClass} ` : ''}`;
+  return { glyphStyle, glyphClass };
 }

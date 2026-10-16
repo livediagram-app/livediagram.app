@@ -6,7 +6,7 @@
 // onto the export canvas without tainting it — then decode it to an
 // HTMLImageElement for the canvas path. Browser-only (uses Image / FileReader);
 // never reached in the no-DOM test runs.
-import type { Tab } from '@livediagram/document';
+import { pageImageIds, type Tab } from '@livediagram/document';
 import { apiFetchImageDataUrl } from './api/images';
 
 type ExportImageEntry = {
@@ -23,16 +23,31 @@ export type ExportImageMap = Map<string, ExportImageEntry>;
 // The raster types an upload can hold (the api sniffs to these four).
 const SAFE_INLINE_IMAGE = /^data:image\/(png|jpeg|gif|webp);base64,[A-Za-z0-9+/=]+$/;
 
-// Identify + de-duplicate the image ids on a tab, fetch + decode each once,
+/** The image ids a tab draws, once each: its image elements' and its pages' pictures
+ *  (docs/specs/007-editor/illustrate-pages.md "Image backgrounds"). */
+export function tabImageIds(tab: Pick<Tab, 'elements' | 'pages'>): string[] {
+  return Array.from(
+    new Set([
+      ...tab.elements.flatMap((el) => (el.type === 'image' && el.imageId ? [el.imageId] : [])),
+      ...pageImageIds(tab.pages),
+    ]),
+  );
+}
+
+/** Those ids sorted and joined: the key a tab's bitmaps are fetched on, so an edit that moves a
+ *  shape, or one on another tab, does not fetch every photo again. */
+export function tabImageKey(tab: Pick<Tab, 'elements' | 'pages'>): string {
+  return tabImageIds(tab).sort().join(',');
+}
+
+// Identify + de-duplicate the image ids on a tab (tabImageIds), fetch + decode each once,
 // and return them keyed by id. Failures are swallowed per-image so one broken
 // bitmap never aborts the export — that element just renders its placeholder.
 export async function loadTabImages(
   tab: Tab,
   ctx: { ownerId: string; documentId: string; shareCode: string | null },
 ): Promise<ExportImageMap> {
-  const ids = Array.from(
-    new Set(tab.elements.flatMap((el) => (el.type === 'image' && el.imageId ? [el.imageId] : []))),
-  );
+  const ids = tabImageIds(tab);
   const map: ExportImageMap = new Map();
   await Promise.all(
     ids.map(async (id) => {

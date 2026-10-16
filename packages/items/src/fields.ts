@@ -24,7 +24,7 @@ import {
   ITEM_VOTERS_MAX,
   ITEM_VOTES_PER_PERSON_MAX,
 } from './limits';
-import { HEX_COLOUR } from './validate';
+import { HEX_COLOUR, isObj } from './validate';
 import { itemColourValue } from './item-colour';
 
 export type ItemFieldKind =
@@ -58,6 +58,7 @@ export const KNOWN_FIELDS: Readonly<Record<ItemFieldId, ItemFieldKind>> = {
   comments: 'comments',
   archived: 'flag',
   flagged: 'flag',
+  example: 'flag',
 };
 
 export const PRIORITIES = ['urgent', 'high', 'medium', 'low'] as const;
@@ -125,10 +126,6 @@ function isScalar(v: unknown): v is string | number | boolean | null {
   );
 }
 
-function isPlainObject(v: unknown): v is Record<string, unknown> {
-  return !!v && typeof v === 'object' && !Array.isArray(v);
-}
-
 function validDate(s: string): boolean {
   const m = DATE.exec(s);
   if (!m) return false;
@@ -153,7 +150,7 @@ function normaliseKnown(kind: ItemFieldKind, v: unknown): ItemFieldValue | undef
         ? v.trim()
         : undefined;
     case 'person': {
-      if (!isPlainObject(v)) return undefined;
+      if (!isObj(v)) return undefined;
       const { id, name, color } = v;
       if (typeof id !== 'string' || id.length === 0 || id.length > 64) return undefined;
       if (typeof name !== 'string' || name.length > 80) return undefined;
@@ -183,7 +180,7 @@ function normaliseKnown(kind: ItemFieldKind, v: unknown): ItemFieldValue | undef
       if (!Array.isArray(v) || v.length > ITEM_CHECKLIST_MAX) return undefined;
       const rows: ItemFieldValue[] = [];
       for (const r of v) {
-        if (!isPlainObject(r)) return undefined;
+        if (!isObj(r)) return undefined;
         if (typeof r['text'] !== 'string' || r['text'].length > ITEM_CHECKLIST_TEXT_MAX)
           return undefined;
         if (typeof r['done'] !== 'boolean') return undefined;
@@ -209,7 +206,7 @@ function normaliseUnknown(v: unknown): ItemFieldValue | undefined {
 // `create` requires a title; `patch` validates only the keys it is given.
 // Votes and comments are never accepted here: they change only through voting and the comment writes.
 export function validateFields(input: unknown, mode: 'create' | 'patch'): FieldsResult {
-  if (!isPlainObject(input)) return { ok: false, error: 'field_value_invalid' };
+  if (!isObj(input)) return { ok: false, error: 'field_value_invalid' };
   const keys = Object.keys(input);
   if (keys.length > ITEM_FIELDS_MAX) return { ok: false, error: 'fields_too_many' };
   const fields: ItemFields = {};

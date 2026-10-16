@@ -10,7 +10,7 @@ import {
 import { tabArticleOps, type RoomOp } from '@livediagram/api-schema';
 
 // The article framing is shared with the api's relay of an agent's write.
-export { ARTICLE_FRAME_CHARS, tabArticleOps } from '@livediagram/api-schema';
+export { tabArticleOps } from '@livediagram/api-schema';
 
 // Turn the before/after of an autosaved tab into the realtime ops to
 // broadcast (docs/specs/012-collaboration/realtime-conflict-resolution.md, Level 0). The room used to send the whole `Tab` on
@@ -83,7 +83,7 @@ function tabMetaPatch(before: Tab, after: Tab): Partial<Omit<Tab, 'elements'>> {
     if (k === 'vote' && voteChangeIsDotsOnly(b, a)) continue;
     patch[k] = a;
   }
-  return patch as Partial<Omit<Tab, 'elements'>>;
+  return patch;
 }
 
 // One `board` delta per Plan board whose set-up changed (docs/specs/012-collaboration/collab-race-hardening.md,
@@ -148,7 +148,7 @@ export function tabBroadcastOps(before: Tab | undefined, after: Tab): RoomOp[] {
     ops.push({
       kind: 'tab-meta',
       tabId: after.id,
-      patch: patch as Partial<Omit<Tab, 'elements'>>,
+      patch: patch,
       ...(clear.length ? { clear } : {}),
     });
   }

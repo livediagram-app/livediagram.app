@@ -1,8 +1,8 @@
 # Board widgets
 
 A Plan board's header is a row of **widgets**: small, live read-outs and controls (completion, a filter, who is
-on the board) that a team picks and orders for the board. Widgets come from the palette's **Widgets** category
-and are placed by dragging them into a board's header.
+on the board) that a team picks and orders for the board. Widgets are added from the **+** at the end of a board's
+header; they are not in the palette.
 
 ## Domain language
 
@@ -20,10 +20,14 @@ and are placed by dragging them into a board's header.
 - Widgets are drawn for the header: the same height (28 px), a quiet border, the board's own theme colours,
   each led by a picture of what it measures (its glyph, a ring, a split bar, column bars or pips).
 - A board with no widgets shows nothing in the zone. Only while the board is selected does it say, to someone
-  who may edit, **Drag Widgets here from the palette** in muted type, with an info glyph and the **+**; an
-  unselected board's header stays clean. A widget dragged from the palette over the board still shows the
-  dashed drop bar there, selected or not, so the drop target is found mid-drag.
-- The zone ends in a **+** (for someone who may edit) that switches the palette to its Widgets category.
+  who may edit, **Add widgets to this board** in muted type, with an info glyph and the **+**; an unselected board's
+  header stays clean. Maximised or filling its tab (where no selection shows), the widgets' place in the controls
+  card keeps its **+** for someone who may edit, so the hairline before the cog never stands alone; someone who may not
+  edit sees neither the zone nor its hairline there.
+- **Not on a phone**: below 640 px the header shows no widgets and their narrowing stands down
+  ([Plan board](plan-board.md#on-a-phone)).
+- The zone ends in a **+** (for someone who may edit, tooltip-free, named "Add a widget") that opens the widget
+  gallery below it.
 - A press on the zone's empty space selects (and moves) the board, as the rest of the header does.
 - A board holds each kind **at most once**: a filter is the board's filter, not one of several.
 - **Widgets that narrow the board**: pressing a person in People, a type in Card Types, the overdue or due-soon
@@ -34,29 +38,52 @@ and are placed by dragging them into a board's header.
   `3 of 14 · Show all`, and pressing it clears every narrowing (the Filter text and Only Mine too).
 - **Completion without a done column** offers **Set Done Column** to someone who may edit: it makes the board's
   last column the done one.
+- **Completion's percent** (and Points', and the dashboard tiles') is the share done, rounded, but reads 100% only when
+  every card is done and 0% only when none is: 199 of 200 is 99%, 1 of 300 is 1%. Points counts points, not cards,
+  so it reads 100% once every point is done (an unestimated card left open counts for nothing); a dashboard Sheet
+  Metric's goal percent reads 100% only once its target is met.
 - Lone counts in widgets and column heads are badges: the figure in a small pill.
 - The Filter and Only Mine widgets are each viewer's own and unsaved (the quick filter, see plan-board.md); taking
   either widget off the board clears that narrowing.
 
 ## Placing and arranging widgets
 
-- **From the palette**: the **Widgets** category, after Boards, has a tile per kind. Dragged over a board's
-  header, the zone highlights and a bar shows where the widget would go; dropped there, it is added at that
-  place. Dropped anywhere else, nothing happens. A widget the board already has moves to the drop place instead, and flashes.
-- **Tapped** (a phone, or a press without a drag), a widget tile adds the widget to the end of the selected board,
-  or the only board on the tab; with no board to choose, it says **Select a board to add the widget to**. A
-  widget the board already has flashes, and the editor says **Completion is already on this board**.
+- **Add**: the zone's **+** opens the **widget gallery** under it (see below). Picking a widget adds it at the end
+  of the header and closes the gallery; the + pressed again, Escape or a press outside closes it.
 - **Reorder**: drag a widget left or right along the zone; the others make way at the bar, and it lands there.
   From the keyboard, a focused widget moves with Alt+← and Alt+→.
-- **Remove**: a widget's × (shown only while the board is selected, on every device: a × on every widget all the time read as clutter, most of all on a tablet, where hover never hid it), or Delete or Backspace while it
+- **Remove**: a widget's × (only while the board is selected, and then only on hover over the widget, while it has keyboard focus, or once a touch has tapped it: a maximised or tab-filling board is always selected, and a × on every widget all the time read as clutter), or Delete or Backspace while it
   is focused.
+  Once one is taken off, nothing of it stays selected: no widget keeps the tap or the focus. A tapped widget's × goes away
+  again on a tap anywhere outside the widget zone, or Escape.
 - Each placement, move and removal is one board edit: undoable, live for everyone, and saved with the board.
 - Only someone who may edit the board places, moves or removes widgets; everyone sees and uses them.
+
+## The widget gallery
+
+**Add a Widget**, a 560 px popover, with the line "Widgets sit in the board’s header, live as its cards change." and a
+**Find a widget** search beside the title (focused on open). Under it, every widget in three sections, each with its
+line:
+
+| Section         | Line                                                | Widgets                                                       |
+| --------------- | --------------------------------------------------- | ------------------------------------------------------------- |
+| Focus the Board | Narrow the cards to the ones that matter right now. | Filter, Only Mine, People, Priorities, Card Types, Unassigned |
+| Track Progress  | See how the work is going at a glance.              | Item Count, Completion, Points, Due Soon, Top Voted           |
+| Keep It Healthy | Catch what is stuck, overloaded or off the board.   | WIP Alerts, Stale Cards, Not on Board                         |
+
+- Each widget is a **card** two to a row: a strip on top drawing the widget **live**, from this board's own cards in
+  its own colours, exactly as it would sit in the header (inert there); under it its glyph, name and line.
+- A widget already on the board is left out of the gallery (a section with none left goes too). The others are named
+  "Add <name>" and lift a pixel on hover (not with reduced motion).
+- The search narrows the cards to those whose name or line holds the text, dropping empty sections; with none left
+  it shows the shared empty state, **No widgets match “<text>”**. With every widget on the board it says **No widgets
+  left to add** ("Every widget is on this board."), as [Empty states](../004-interface-design/empty-states.md).
+- The arrow keys move between the cards that can be picked (left and right one, up and down a row).
 
 ## Defaults
 
 - A new board starts with **few** widgets, only ones that read true on that board from the start; the rest are a
-  drag away in the palette. The rules every board's defaults keep:
+  **+** away. The rules every board's defaults keep:
   - **Completion** only on a board with a done column (it would read 0% for ever, or ask to set one).
   - **WIP Alerts** only on a board whose columns have WIP limits.
   - No widget that repeats the board's rows: no People on a board laned by person, no Priorities on one laned by

@@ -4,12 +4,14 @@
 // parts through context: the selection, the cell being edited and its draft, the grid's scroll and size, the menu
 // open over it, and the write helper every command goes through. Lives inside MaximisableSlot, so maximising and
 // restoring keep all of it.
-import type { SheetChartKind } from './sheet-charts';
-import type { ChartPick } from './sheet-charts';
+import type { ChartPick, PlaceChartOpts } from './sheet-charts';
+import type { ChartType, SheetAnchor } from '@livediagram/document';
+import type { ItemUndoStep } from '@/hooks/plan/item-undo-journal';
 import { createContext, useCallback, useContext, useMemo, useRef, useState } from 'react';
 import {
   filteredOutRows,
   single,
+  valuesOnly,
   type GridRange,
   type Selection,
   type Sheet,
@@ -23,6 +25,7 @@ import type { PlanPalette } from '@/components/plan/plan-palette';
 import type { SheetStore } from './sheet-store-client';
 import { geometryOf, mergeAt, type Geometry } from './sheet-geometry';
 import { useFollowLayout } from './useFollowLayout';
+import { useSheetRulesState, type SheetRulesState } from './rules/useSheetRulesState';
 import type { Grid } from '@livediagram/sheets';
 import type { SheetChangeKind } from '@livediagram/api-schema';
 
@@ -86,10 +89,13 @@ export type SheetController = {
   setFindHits: (hits: readonly { r: number; c: number }[]) => void;
   setFindOpen: (f: 'find' | 'replace' | null) => void;
   // Send a write and count it; false when it was refused (said in a toast).
-  write: (w: SheetWrite, kind: SheetChangeKind) => boolean;
+  // `alongside`: a change outside the sheet made with this write, one undo step with it (sheet-store-client.ts).
+  write: (w: SheetWrite, kind: SheetChangeKind, alongside?: ItemUndoStep) => boolean;
+  // `unchecked`: stored past the validation rules (an import; data-validation.md "Where values are checked").
   writeAll: (
     edits: readonly { sheetId: string; write: SheetWrite }[],
     kind: SheetChangeKind,
+    opts?: { unchecked?: boolean },
   ) => boolean;
   // The grid's focusable frame (held as state through a callback ref), so commands can hand focus back.
   gridEl: HTMLDivElement | null;
@@ -98,13 +104,26 @@ export type SheetController = {
   announce: (message: string) => void;
   toast: (message: string) => void;
   notify: (message: string) => void;
-  // Place a chart reading `range` over the Sheet (sheet-charts.ts).
-  placeChart?: (kind: SheetChartKind, pick: ChartPick) => void;
+  // Place a chart reading `range` in the Sheet at `anchor` (sheet-charts.ts).
+  placeChart?: (
+    type: ChartType,
+    pick: ChartPick,
+    anchor: SheetAnchor,
+    opts?: PlaceChartOpts,
+  ) => void;
+  // Dropdowns, rule panels, a format rule's preview and Paint Format (rules/useSheetRulesState.ts).
+  rules: SheetRulesState;
+  // Taking the charts anchored in this Sheet off its tab (Clear Sheet): `redo` takes them, `undo` puts them back.
+  // Null when it has none, or they are not this tab's to change (a Dashboard slot showing another tab's Sheet).
+  chartsRemoval?: () => ItemUndoStep | null;
 };
 
 const SheetControllerContext = createContext<SheetController | null>(null);
 
 export const SheetControllerProvider = SheetControllerContext.Provider;
+
+// What a Participant is told when a change to a Sheet's shape is held back (docs/specs/013-workspace/share-roles.md).
+export const SHAPE_REFUSED = "Only an editor can change a Sheet's rows, columns or settings.";
 
 export function useSheetController(): SheetController {
   const c = useContext(SheetControllerContext);
@@ -143,7 +162,13 @@ export function useSheetControllerState(opts: {
   announce: (message: string) => void;
   toast: (message: string) => void;
   notify: (message: string) => void;
-  placeChart?: (kind: SheetChartKind, pick: ChartPick) => void;
+  placeChart?: (
+    type: ChartType,
+    pick: ChartPick,
+    anchor: SheetAnchor,
+    opts?: PlaceChartOpts,
+  ) => void;
+  chartsRemoval?: () => ItemUndoStep | null;
   // After this person's own write to this sheet lands locally (card tables push it to the cards).
   onWrote?: (before: Sheet, write: SheetWrite) => void;
 }): SheetController {
@@ -181,6 +206,7 @@ export function useSheetControllerState(opts: {
   const [findOpen, setFindOpen] = useState<'find' | 'replace' | null>(null);
   const [findHits, setFindHits] = useState<readonly { r: number; c: number }[]>([]);
   const [gridEl, setGridEl] = useState<HTMLDivElement | null>(null);
+  const rules = useSheetRulesState();
   // A layout change this person made keeps their selection where it is (as a spreadsheet's Insert does); only
   // someone else's moves it.
   const ownLayout = useRef(false);
@@ -201,7 +227,7 @@ export function useSheetControllerState(opts: {
   // Rows the filter hides are drawn at no height; worked out again whenever a value may have changed.
   const filtered = useMemo(
     () => (sheet.layout.filter ? filteredOutRows(workbook, sheet.id) : new Set<string>()),
-    [workbook, sheet.id, sheet.layout.filter, version], // eslint-disable-line react-hooks/exhaustive-deps
+    [workbook, sheet.id, sheet.layout.filter, version], // oxlint-disable-line react/exhaustive-deps
   );
   const geometry = useMemo(() => geometryOf(sheet.layout, filtered), [sheet.layout, filtered]);
   const grid = useMemo<Grid>(() => {
@@ -222,28 +248,47 @@ export function useSheetControllerState(opts: {
   // it too, so it is held back here rather than shown and taken away.
   const canShape = opts.canShape ?? opts.canEdit;
   const shapeRefused = useLatest(() => {
-    opts.toast("Only an editor can change a Sheet's rows, columns or settings.");
+    opts.toast(SHAPE_REFUSED);
+    return false;
+  });
+  // And its cells' values, never their formats (sheet.md "Who may do what"): a paste or a fill lands as its values,
+  // and a change of formats alone is refused. The api holds a non-Editor's writes to the same (valuesOnly).
+  const formatRefused = useLatest(() => {
+    opts.toast("Only an editor can format a Sheet's cells.");
     return false;
   });
   const write = useCallback(
-    (w: SheetWrite, kind: SheetChangeKind) => {
-      if (!canShape && w.kind !== 'cells') return shapeRefused.current();
+    (given: SheetWrite, kind: SheetChangeKind, alongside?: ItemUndoStep) => {
+      if (!canShape && given.kind !== 'cells') return shapeRefused.current();
+      const w = canShape ? given : valuesOnly(given);
+      if (!w) return formatRefused.current();
       const before = store.sheet(sheet.id);
-      const refused = store.write(sheet.id, w);
+      const refused = store.write(sheet.id, w, alongside ? { alongside } : {});
       if (refused) return false;
       if (w.kind === 'layout') ownLayout.current = true;
       track('Sheet', 'Changed', kind);
       if (before) onWrote.current?.(before, w);
       return true;
     },
-    [store, sheet.id, onWrote, canShape, shapeRefused],
+    [store, sheet.id, onWrote, canShape, shapeRefused, formatRefused],
   );
   // Writes to several sheets as one change, one undo step (Insert Cells, a cut other sheets' formulas follow).
   const writeAll = useCallback(
-    (edits: readonly { sheetId: string; write: SheetWrite }[], kind: SheetChangeKind) => {
-      if (!canShape && edits.some((e) => e.write.kind !== 'cells')) return shapeRefused.current();
+    (
+      given: readonly { sheetId: string; write: SheetWrite }[],
+      kind: SheetChangeKind,
+      opts?: { unchecked?: boolean },
+    ) => {
+      if (!canShape && given.some((e) => e.write.kind !== 'cells')) return shapeRefused.current();
+      const edits = canShape
+        ? given
+        : given.flatMap((e) => {
+            const write = valuesOnly(e.write);
+            return write ? [{ ...e, write }] : [];
+          });
+      if (!edits.length) return formatRefused.current();
       const before = store.sheet(sheet.id);
-      const refused = store.writeAll(edits);
+      const refused = store.writeAll(edits, opts?.unchecked ? { unchecked: true } : {});
       if (refused) return false;
       if (edits.some((e) => e.write.kind === 'layout' && e.sheetId === sheet.id))
         ownLayout.current = true;
@@ -252,7 +297,7 @@ export function useSheetControllerState(opts: {
         for (const e of edits) if (e.sheetId === sheet.id) onWrote.current?.(before, e.write);
       return true;
     },
-    [store, sheet.id, onWrote, canShape, shapeRefused],
+    [store, sheet.id, onWrote, canShape, shapeRefused, formatRefused],
   );
   const focusGrid = useCallback(() => gridEl?.focus({ preventScroll: true }), [gridEl]);
   return {
@@ -286,5 +331,6 @@ export function useSheetControllerState(opts: {
     gridEl,
     setGridEl,
     focusGrid,
+    rules,
   };
 }

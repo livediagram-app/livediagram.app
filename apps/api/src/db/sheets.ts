@@ -160,6 +160,14 @@ export async function readFormulaCells(
   }));
 }
 
+// The cells a JSON array of `row:col` keys (cellKey) names, matched as (row_id, col_id) pairs so the primary key
+// seeks each one. Matched on the joined `row_id || ':' || col_id` instead, a write read every cell of the sheet.
+// The key splits at its first ':', as readCells splits it.
+export function cellsNamedBy(param: string): string {
+  return `(row_id, col_id) IN (SELECT substr(value, 1, instr(value, ':') - 1), substr(value, instr(value, ':') + 1)
+                                 FROM json_each(${param}))`;
+}
+
 // The stored state of named cells (missing ones come back as just their ids), for a write's answer.
 export async function readCells(
   env: Env,
@@ -170,7 +178,7 @@ export async function readCells(
   if (keys.length === 0) return [];
   const rows = await env.DB.prepare(
     `SELECT sheet_id, row_id, col_id, input, format FROM sheet_cells
-      WHERE document_id = ? AND sheet_id = ? AND row_id || ':' || col_id IN (SELECT value FROM json_each(?))`,
+      WHERE document_id = ? AND sheet_id = ? AND ${cellsNamedBy('?')}`,
   )
     .bind(documentId, sheetId, JSON.stringify(keys))
     .all<CellRow>();
@@ -187,6 +195,20 @@ export async function readCells(
   });
 }
 
+// The rows of a sheet holding any cell (a form's response goes under the last of them).
+export async function usedSheetRows(
+  env: Env,
+  documentId: string,
+  sheetId: string,
+): Promise<Set<string>> {
+  const rows = await env.DB.prepare(
+    `SELECT DISTINCT row_id FROM sheet_cells WHERE document_id = ? AND sheet_id = ?`,
+  )
+    .bind(documentId, sheetId)
+    .all<{ row_id: string }>();
+  return new Set((rows.results ?? []).map((r) => r.row_id));
+}
+
 // How many of `keys` exist, and their stored bytes, for an exact cap check near the limit.
 export async function existingCells(
   env: Env,
@@ -197,7 +219,7 @@ export async function existingCells(
   const row = await env.DB.prepare(
     `SELECT COUNT(*) AS n, COALESCE(SUM(COALESCE(length(input), 0) + COALESCE(length(format), 0)), 0) AS b
        FROM sheet_cells
-      WHERE document_id = ? AND sheet_id = ? AND row_id || ':' || col_id IN (SELECT value FROM json_each(?))`,
+      WHERE document_id = ? AND sheet_id = ? AND ${cellsNamedBy('?')}`,
   )
     .bind(documentId, sheetId, JSON.stringify(keys))
     .first<{ n: number; b: number }>();
@@ -263,7 +285,7 @@ export function cellWriteStatements(
              FROM json_each(?3) j
             WHERE j.value ->> 'r' = sheet_cells.row_id AND j.value ->> 'c' = sheet_cells.col_id)
           WHERE document_id = ?1 AND sheet_id = ?2
-            AND row_id || ':' || col_id IN (SELECT (value ->> 'r') || ':' || (value ->> 'c') FROM json_each(?3))
+            AND (row_id, col_id) IN (SELECT value ->> 'r', value ->> 'c' FROM json_each(?3))
             AND ${LANDED}`,
       ).bind(documentId, sheetId, JSON.stringify(fmts), nonce),
     );
@@ -272,7 +294,7 @@ export function cellWriteStatements(
     out.push(
       env.DB.prepare(
         `UPDATE sheet_cells SET input = NULL
-          WHERE document_id = ?1 AND sheet_id = ?2 AND row_id || ':' || col_id IN (SELECT value FROM json_each(?3))
+          WHERE document_id = ?1 AND sheet_id = ?2 AND ${cellsNamedBy('?3')}
             AND ${LANDED}`,
       ).bind(documentId, sheetId, JSON.stringify(clears), nonce),
     );
@@ -282,7 +304,7 @@ export function cellWriteStatements(
       env.DB.prepare(
         `DELETE FROM sheet_cells
           WHERE document_id = ?1 AND sheet_id = ?2 AND input IS NULL AND (format IS NULL OR format = '{}')
-            AND row_id || ':' || col_id IN (SELECT value FROM json_each(?3)) AND ${LANDED}`,
+            AND ${cellsNamedBy('?3')} AND ${LANDED}`,
       ).bind(documentId, sheetId, JSON.stringify(touched), nonce),
     );
   return out;
@@ -330,6 +352,21 @@ export function headWriteStatement(
     sheetId,
     fromRev,
   );
+}
+
+// The document marked saved (`saved_at`) by a landed write, as a tab write marks it: a Sheet's cells are part of the
+// document, so the Explorer's "Updated" line and its snapshot (docs/specs/006-document/document-snapshots.md: a Sheet
+// draws its cells) follow them.
+export function documentSavedStatement(
+  env: Env,
+  documentId: string,
+  sheetId: string,
+  nonce: string,
+  now: number,
+): D1PreparedStatement {
+  return env.DB.prepare(
+    `UPDATE documents SET saved_at = MAX(saved_at, ?3) WHERE id = ?1 AND ${LANDED}`,
+  ).bind(documentId, sheetId, now, nonce);
 }
 
 // Keep cell_count and cell_bytes exact after a write.

@@ -10,7 +10,6 @@ import {
   REACTION_LABEL,
   REACTIONS,
   SHAPE_KINDS,
-  type ShapeElement,
 } from '@livediagram/document';
 
 // The reaction pad's model (docs/specs/009-elements/reaction-pad.md).
@@ -21,7 +20,7 @@ describe('reaction pad', () => {
   });
 
   it('starts on the default reaction with a label naming the act', () => {
-    const pad = createShape('reaction-pad', 0, 0) as ShapeElement;
+    const pad = createShape('reaction-pad', 0, 0);
     expect(pad.reaction).toBe(REACTION_DEFAULT);
     // The glyph carries the meaning, so the label says what pressing DOES.
     expect(pad.label).toBe('Celebrate');

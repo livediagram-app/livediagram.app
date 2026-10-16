@@ -29,6 +29,7 @@ function anonymiseAction(action: ElementAction): ElementAction {
 
 type PeopleFields = {
   commentThread?: unknown;
+  cellComments?: unknown;
   action?: ElementAction;
   actions?: ElementAction[];
   responses?: { participantId: string }[];
@@ -39,6 +40,7 @@ type PeopleFields = {
 function hasPeople(e: PeopleFields): boolean {
   return Boolean(
     e.commentThread ||
+    e.cellComments ||
     e.action ||
     Array.isArray(e.actions) ||
     Array.isArray(e.responses) ||
@@ -51,7 +53,7 @@ export function redactElementsForCommunity(elements: Element[]): Element[] {
   return elements.map((el) => {
     const e = el as Element & PeopleFields;
     if (!hasPeople(e)) return el;
-    const { commentThread: _thread, ...rest } = e;
+    const { commentThread: _thread, cellComments: _cells, ...rest } = e;
     const out = { ...rest } as Element & PeopleFields;
     if (e.action) out.action = anonymiseAction(e.action);
     if (Array.isArray(e.actions)) out.actions = e.actions.map(anonymiseAction);
@@ -68,7 +70,7 @@ export function redactElementsForCommunity(elements: Element[]): Element[] {
     if (Array.isArray(e.rollCall)) {
       out.rollCall = e.rollCall.map((entry, i) => ({ ...entry, name: `Participant ${i + 1}` }));
     }
-    return out as Element;
+    return out;
   });
 }
 

@@ -59,7 +59,10 @@ describe('useTabImport, draw.io', () => {
     expect(deps.commitTabs).toHaveBeenCalledOnce();
     expect(tabs().map((t) => t.name)).toEqual(['Overview', 'Detail', 'Scratch']);
     expect(tabs()[0]!.id).toBe('a');
-    expect(deps.markTabLoaded.mock.calls.map(([id]) => id)).toEqual([tabs()[1]!.id, tabs()[2]!.id]);
+    expect(deps.markTabLoaded.mock.calls.map(([id]): unknown => id)).toEqual([
+      tabs()[1]!.id,
+      tabs()[2]!.id,
+    ]);
     expect(deps.requestFit).toHaveBeenCalledOnce();
     expect(track).toHaveBeenCalledWith('Tab', 'Imported', 'Drawio');
     // The shared report: every element of the three pages counted by kind, with what changed.

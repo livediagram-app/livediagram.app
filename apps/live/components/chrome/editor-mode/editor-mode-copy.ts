@@ -12,6 +12,12 @@ export const EDITOR_MODE_KEY_LABEL = '⇧D';
 export type EditorModeSwitchProps = {
   mode: EditorMode;
   onChange: (mode: EditorMode) => void;
+  // The tab keeps `mode`, for this reason (shown under the modes): picking another asks to open a new tab in it
+  // instead (`newTabIn`).
+  lockedReason?: string | undefined;
+  newTabIn?: ((mode: EditorMode) => void) | undefined;
+  // The tab is empty: Plan's line is open, every mode a plain switch (useEditorMode `crossPlan`).
+  crossPlan?: boolean | undefined;
 };
 
 // The keyboard focus ring on the switch's light chrome surfaces: brand-500 (the shared default)

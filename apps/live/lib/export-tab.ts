@@ -28,6 +28,9 @@ import {
   type Element,
   type LaidOutPage,
   type PageRect,
+  type ResolvePlanArt,
+  type ResolveTabWindow,
+  type SheetRenderModel,
   type Tab,
 } from '@livediagram/document';
 // Shared SVG render helpers (docs/specs/015-api/mcp-server.md §5): moved into the document package so the
@@ -45,6 +48,7 @@ import {
   r2,
   supportsShadow,
   svgArrow,
+  sketchBackdropIds,
   svgBoxed,
   svgFontDefs,
   svgShadowDefs,
@@ -64,6 +68,8 @@ import {
 import { drawBoxed, drawBoxedExtrusion } from './export-tab-canvas-draw';
 import { EXPORT_PAPER, pageExportFrame } from './export-page';
 import type { ExportImageMap } from './export-tab-images';
+import { exportChartInk } from './export-chart-ink';
+import { motionFrameHref, paintMotionFrame, type MotionFrameCache } from './page-motion-canvas';
 
 // Shared options for the image exports (PNG / SVG / PDF). `isometric` tilts
 // the rendered scene into the editor's isometric projection (docs/specs/008-canvas/isometric-view.md / 48),
@@ -91,11 +97,28 @@ export type ImageExportOpts = {
   // A logo page's plain paper left see-through (docs/specs/007-editor/logo-pages.md "Export"):
   // PNG and SVG pass it, PDF never does.
   transparentPaper?: boolean;
+  // Slides' animated backgrounds painted so far in this export, so a background repeated across a
+  // deck is painted once (lib/page-motion-canvas.ts). Absent, each page paints its own.
+  motionFrames?: MotionFrameCache;
+  // A slide's animated background drawn as its still gradient (a thumbnail): no frame is painted or
+  // embedded. The Layouts tab's tiles pass it, as a full-size picture in each 120 px tile was
+  // megabytes of markup for nothing seen.
+  stillBackground?: boolean;
   // The document's items, so Plan boards and cards export with their cards
   // (docs/specs/026-plan/plan-board.md "Both elements everywhere").
   items?: ReadonlyMap<string, Item>;
   // And its item types (docs/specs/026-plan/item-types.md), so custom types keep their colour.
   itemTypes?: readonly ItemTypeDef[];
+  // Each Sheet's window of cells by sheet id (docs/specs/029-sheets/sheet.md "Exports and images"), from the sheet
+  // store (plan-export-sheets.ts). Without it a Sheet draws its frame and headers alone.
+  sheets?: ReadonlyMap<string, SheetRenderModel>;
+  // A plan view's picture (docs/specs/026-plan/plan-tabs.md "Export"), drawn by the editor, which has the charts'
+  // models; without it a plan view draws as its labelled box.
+  resolvePlanArt?: ResolvePlanArt;
+  // Each tab window's tab drawn (docs/specs/009-elements/tab-window.md "Exports"), and the typefaces those tabs write
+  // in, so their words export in their own faces; without it a window draws its frame named for its tab.
+  resolveTabWindow?: ResolveTabWindow;
+  tabWindowFontIds?: readonly string[];
 };
 
 // Re-export so callers (the export dialog) get the loader from the same
@@ -143,7 +166,7 @@ function withWritingFonts(ids: string[], writing: Pick<PageWriting, 'fonts'> | n
 
 // Default backdrop pattern colour when a tab leaves it unset (matches the
 // editor's fallback).
-const EXPORT_PATTERN_COLOR = '#cbd5e1'; // slate-300
+export const EXPORT_PATTERN_COLOR = '#cbd5e1'; // slate-300
 
 // One <pattern> id for the export SVG / canvas rasterisation.
 const BG_PATTERN_ID = 'lvd-export-bg';
@@ -212,11 +235,13 @@ export async function renderTabToCanvas(
     ? pageExportFrame(opts.page, {
         ruling: pageRulingOf(tab, opts.page),
         transparentPaper: opts.transparentPaper,
+        imageHref: (id) => opts.images?.get(id)?.href,
       })
     : null;
   // An article page's writing (docs/specs/007-editor/article-pages.md "Everywhere a page goes").
   const writing = opts.page ? pageWriting(tab, opts.page) : null;
   const clips = exportZoneClips(tab, opts.page);
+  const chartInk = exportChartInk(tab, opts.page);
   const reaches = (el: Element) =>
     !isArticleNoteMarker(el) && (!frame || frame.reaches(el, tab.elements));
   // Hidden layers drop out of the export (bounds included) unless the
@@ -233,8 +258,10 @@ export async function renderTabToCanvas(
   );
   // Every caption laid out once, as the canvas and the SVG export do
   // (docs/specs/008-canvas/arrow-labels.md); the bounds include the plates.
+  // Shapes something sits on keep a solid fill under Sketch, as on the canvas (sketch-backdrop.ts).
+  const backdrops = sketchBackdropIds(els, tab.finish);
   const labels = arrowLabelPass(tab.elements, {
-    fontFamilyOf: (a) => arrowLabelFontStack(a, tab.font),
+    fontFamilyOf: (a) => arrowLabelFontStack(a, tab.font, tab.finish),
   });
   const bounds = frame ? frame.bounds : contentBounds(els, labels);
   const pad = frame ? 0 : EXPORT_PADDING;
@@ -278,6 +305,19 @@ export async function renderTabToCanvas(
       ctx.drawImage(await svgToImage(svg), 0, 0, w / scale, h / scale);
     } catch {
       // The paper behind it is already down: a failed paint must never abort the export.
+    }
+    // A slide's animated background, still as the slide opens, over its gradient and under all on
+    // it (docs/specs/007-editor/illustrate-pages.md "Animated backgrounds").
+    const pageFill = opts.page?.background?.fill;
+    if (opts.page && pageFill?.kind === 'gradient' && pageFill.motion) {
+      const r = opts.page.rect;
+      paintMotionFrame(
+        ctx,
+        pageFill.motion,
+        pageFill,
+        { x: r.x - x, y: r.y - y, width: r.width, height: r.height },
+        opts.motionFrames,
+      );
     }
   }
   if (bg) {
@@ -328,7 +368,12 @@ export async function renderTabToCanvas(
   // an <img>, which blocks external resources outright — so a marker note
   // would come back in the fallback face unless the font travels INSIDE the
   // markup. Fetched once here and inlined into every fragment below.
-  const fontCss = opts.fontCss ?? (await embeddedFontFaceCss(exportFontIds(els, tab.font)));
+  const fontCss =
+    opts.fontCss ??
+    (await embeddedFontFaceCss([
+      ...exportFontIds(els, tab.font, opts.sheets, tab.finish),
+      ...(opts.tabWindowFontIds ?? []),
+    ]));
   // The canvas drawers paint through the DOM's own font set, so wait for it
   // to settle — rasterising mid-swap bakes the fallback face into the PNG.
   await document.fonts?.ready;
@@ -336,7 +381,8 @@ export async function renderTabToCanvas(
   const rasterImages = new Map<string, { image: HTMLImageElement; pad: number }>();
   for (const el of els) {
     if (el.type === 'arrow' || !isBoxed(el)) continue;
-    if (!boxedNeedsSvgRaster(el, resolveIconArtLoaded, resolveStickerArtLoaded)) continue;
+    if (!boxedNeedsSvgRaster(el, resolveIconArtLoaded, resolveStickerArtLoaded, tab.finish))
+      continue;
     const diag = Math.hypot(el.width, el.height);
     // A shadow sweeps outside the box by its offset + blur (docs/specs/008-canvas/element-shadows.md);
     // grow the raster pad so it isn't clipped, and inline its filter
@@ -354,10 +400,19 @@ export async function renderTabToCanvas(
       `${fontDefs}${svgShadowDefs([el])}${svgBoxed(el, {
         resolveIconArt: resolveIconArtLoaded,
         resolveStickerArt: resolveStickerArtLoaded,
+        // An image drawn this way (a shadow, a turn, an accent edge, a finish) embeds its bytes
+        // like the SVG export, not the empty-image placeholder.
+        resolveImageHref: (id) => opts.images?.get(id)?.href,
         tabFont,
+        tabFinish: tab.finish,
+        sketchBackdrop: backdrops.has(el.id),
         surface,
+        ...chartInk,
         items: opts.items,
         itemTypes: opts.itemTypes,
+        sheets: opts.sheets,
+        resolvePlanArt: opts.resolvePlanArt,
+        resolveTabWindow: opts.resolveTabWindow,
       })}</svg>`;
     try {
       rasterImages.set(el.id, { image: await svgToImage(svg), pad });
@@ -389,7 +444,7 @@ export async function renderTabToCanvas(
     if (el.type === 'arrow') {
       const svg = svgZoneClipped(
         el.id,
-        svgArrow(el, tab.elements, surface, tabFont, labels, undefined, els, paper),
+        svgArrow(el, tab.elements, surface, tabFont, labels, undefined, els, paper, tab.finish),
         clips,
       );
       arrowRun.push(alpha < 1 ? `<g opacity="${r2(alpha)}">${svg}</g>` : svg);
@@ -493,6 +548,19 @@ function svgBoxedExtrusion(el: BoxedElement, surface: CanvasSurface): string {
 // export (docs/specs/010-palette/style-presets.md): same SVG the .svg download produces, and PNG / PDF
 // rasterise the same content, so one SVG preview faithfully represents all
 // three image formats under the current isometric / pattern options.
+// A slide's animated background in the SVG export: a picture of its gradient with the motion as
+// it stands when the slide opens, as the PNG and PDF paint it (docs/specs/007-editor/
+// illustrate-pages.md "Animated backgrounds"). Nothing where no canvas can draw it, leaving the
+// gradient.
+function pageMotionSvg(page: LaidOutPage | undefined): string {
+  const fill = page?.background?.fill;
+  if (!page || fill?.kind !== 'gradient' || !fill.motion) return '';
+  const r = page.rect;
+  const href = motionFrameHref(fill, r.width, r.height);
+  if (!href) return '';
+  return `<image x="${r2(r.x)}" y="${r2(r.y)}" width="${r2(r.width)}" height="${r2(r.height)}" preserveAspectRatio="none" href="${href}"/>`;
+}
+
 export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
   // Same hidden-layer + band-order + band-opacity rules as the canvas
   // renderer above; each band wraps in a <g opacity> when dimmed.
@@ -500,10 +568,13 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
     ? pageExportFrame(opts.page, {
         ruling: pageRulingOf(tab, opts.page),
         transparentPaper: opts.transparentPaper,
+        imageHref: (id) => opts.images?.get(id)?.href,
+        overFill: opts.stillBackground ? undefined : pageMotionSvg(opts.page),
       })
     : null;
   const writing = opts.page ? pageWriting(tab, opts.page) : null;
   const clips = exportZoneClips(tab, opts.page);
+  const chartInk = exportChartInk(tab, opts.page);
   const reaches = (el: Element) =>
     !isArticleNoteMarker(el) && (!frame || frame.reaches(el, tab.elements));
   const els = (
@@ -512,8 +583,10 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
   const bands = layerBands(tab.elements, tab.layers, { includeHidden: opts.hiddenLayers }).map(
     (band) => ({ ...band, elements: band.elements.filter(reaches) }),
   );
+  // Shapes something sits on keep a solid fill under Sketch, as on the canvas (sketch-backdrop.ts).
+  const backdrops = sketchBackdropIds(els, tab.finish);
   const labels = arrowLabelPass(tab.elements, {
-    fontFamilyOf: (a) => arrowLabelFontStack(a, tab.font),
+    fontFamilyOf: (a) => arrowLabelFontStack(a, tab.font, tab.finish),
   });
   const wrapBand = (layerOpacity: number, inner: string[]): string =>
     layerOpacity < 1
@@ -550,7 +623,15 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
   // stylesheet (the live preview, where the page has the faces already).
   const fontDefs = opts.fontCss
     ? `<defs><style type="text/css">${opts.fontCss}</style></defs>`
-    : svgFontDefs(withWritingFonts(exportFontIds(els, tab.font), writing));
+    : svgFontDefs(
+        withWritingFonts(
+          [
+            ...exportFontIds(els, tab.font, opts.sheets, tab.finish),
+            ...(opts.tabWindowFontIds ?? []),
+          ],
+          writing,
+        ),
+      );
   if (fontDefs) parts.push(fontDefs);
   // The writing, over the page and under every element.
   if (writing) parts.push(articleOpsToSvg(writing.ops));
@@ -596,9 +677,15 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
               resolveIconArt: resolveIconArtLoaded,
               resolveStickerArt: resolveStickerArtLoaded,
               tabFont: tab.font,
+              tabFinish: tab.finish,
+              sketchBackdrop: backdrops.has(el.id),
               surface,
+              ...chartInk,
               items: opts.items,
               itemTypes: opts.itemTypes,
+              sheets: opts.sheets,
+              resolvePlanArt: opts.resolvePlanArt,
+              resolveTabWindow: opts.resolveTabWindow,
             }),
             clips,
           ),
@@ -609,7 +696,17 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
         inner.push(
           svgZoneClipped(
             el.id,
-            svgArrow(el, tab.elements, surface, tab.font, labels, undefined, els, paper),
+            svgArrow(
+              el,
+              tab.elements,
+              surface,
+              tab.font,
+              labels,
+              undefined,
+              els,
+              paper,
+              tab.finish,
+            ),
             clips,
           ),
         );
@@ -629,7 +726,15 @@ export async function exportTabAsSvg(tab: Tab, opts: ImageExportOpts = {}): Prom
   const writing = opts.page ? { fonts: pageWritingFonts(tab, opts.page) } : null;
   const fontCss =
     opts.fontCss ??
-    (await embeddedFontFaceCss(withWritingFonts(exportFontIds(els, tab.font), writing)));
+    (await embeddedFontFaceCss(
+      withWritingFonts(
+        [
+          ...exportFontIds(els, tab.font, opts.sheets, tab.finish),
+          ...(opts.tabWindowFontIds ?? []),
+        ],
+        writing,
+      ),
+    ));
   return new Blob([renderTabToSvg(tab, { ...opts, fontCss })], { type: 'image/svg+xml' });
 }
 

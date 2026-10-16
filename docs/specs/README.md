@@ -14,8 +14,8 @@ Specs live in numbered category folders: the reserved `001`–`005` first (visio
 - ./004-interface-design/README.md - when working on the visual language: colour, fonts, motion, accessibility, shared UI mechanics
 - ./005-project-roadmap/README.md - when asking where the product is now and what is still ahead
 - ./006-document/README.md - when working on the document model and its domain language: tabs, tab kinds, layers, storage, snapshots, offline documents, stroke points
-- ./007-editor/README.md - when working on the live editor shell: routes, editor modes, Illustrate pages (infographics and articles), side by side tabs, preferences, power user mode, panels, tours, AI, command palette
-- ./008-canvas/README.md - when working on canvas tools and gestures: drawing, arrows, snapping, sizing, corner radius, tool panels and the Quick Style Panel
+- ./007-editor/README.md - when working on the live editor shell: routes, editor modes, Illustrate pages (infographics and articles), side by side tabs, preferences, power user mode, panels, tours (incl. Show Me), AI, command palette
+- ./008-canvas/README.md - when working on canvas tools and gestures: drawing, arrows, snapping, sizing, corner radius, finishes (Flexible / Professional / Sketch), tool panels and the Quick Style Panel
 - ./009-elements/README.md - when adding or changing an element kind or its content
 - ./010-palette/README.md - when working on the palette: categories, per-mode layouts and Popular, icon and sticker catalogues, presets
 - ./011-theme/README.md - when working on tab themes: built-in, multi-colour and custom themes
@@ -23,7 +23,7 @@ Specs live in numbered category folders: the reserved `001`–`005` first (visio
 - ./013-workspace/README.md - when working on the Explorer, its filters, folders, default folders, teams, favourites, shape libraries, share links, the Trash or the empty document clean-up
 - ./014-identity/README.md - when working on auth, guest access, profiles or account email
 - ./015-api/README.md - when working on the api worker, its OpenAPI document, tokens, the MCP server or the CLI
-- ./016-platform/README.md - when working on routing, deployment or the staging environment, or the new version prompt and stale builds
+- ./016-platform/README.md - when working on routing, deployment or the staging environment, the new version prompt and stale builds, or web performance (what a page loads up front)
 - ./017-telemetry/README.md - when adding or changing anonymous events or the telemetry dashboard
 - ./018-help/README.md - when working on the help centre or contextual help links
 - ./019-marketing/README.md - when working on the marketing site, comparison pages or outbound assets
@@ -37,6 +37,7 @@ Specs live in numbered category folders: the reserved `001`–`005` first (visio
 - ./027-repositories/README.md - when linking a code repository to livediagram: `livediagram.toml`, mirrors, sync and merge, git, diagram-as-code sources
 - ./028-animation/README.md - when working on element animations: the animation set each element takes (Shape, Text, Sticky, Drawing, Media, Table), the per-set menu categories, reveals, loops and the quality bar
 - ./029-sheets/README.md - when working on Sheets: the Sheet element (a spreadsheet tab placed from Plan mode), its formulas, or the sheet store
+- ./030-forms/README.md - when working on Form tabs: building forms, the public form link and its page, responses that become cards on a board
 
 ## Workflow
 

@@ -4,9 +4,12 @@
 
 import {
   ELEMENT_FIELD_NAMES,
+  FLOWCHART_STEP_KIND,
   LIVE_ELEMENT_FIELDS,
   SHAPE_KINDS,
   STICKY_PRESETS,
+  TEXT_PX_MAX,
+  TEXT_PX_MIN,
   THEMES,
   type Element,
 } from '@livediagram/document';
@@ -70,7 +73,7 @@ function aliasValue(el: Element, alias: ReturnType<typeof aliasesOf>[number]): s
     case 'border':
       return BORDER_STYLES.join('|');
     case 'text':
-      return TEXT_SIZES.join('|');
+      return `${TEXT_SIZES.join('|')}|${TEXT_PX_MIN}-${TEXT_PX_MAX}`;
     case 'line':
       return ARROW_STYLES.join('|');
   }
@@ -91,6 +94,7 @@ export const SHAPE_COMMON_FIELDS = [
   'textBold',
   'textItalic',
   'font',
+  'finish',
   'strokeWidth',
   'borderRadius',
   'opacity',
@@ -104,16 +108,54 @@ export const SHAPE_COMMON_FIELDS = [
 export const SHAPE_KIND_FIELDS: Readonly<Record<string, readonly string[]>> = {
   'code-block': ['code', 'codeLanguage', 'codeTheme', 'codeWrap'],
   entity: ['entityFields'],
-  'pie-chart': ['pieSlices', 'chartLegend', 'chartPalette', 'chartSource'],
-  'bar-chart': ['pieSlices', 'chartLegend', 'chartPalette', 'chartSource'],
-  'line-chart': ['lineCategories', 'lineSeries', 'chartLegend', 'chartPalette', 'chartSource'],
+  'pie-chart': [
+    'pieSlices',
+    'chartVariant',
+    'chartLegend',
+    'chartValues',
+    'chartPalette',
+    'chartSource',
+    'sheetAnchor',
+  ],
+  'bar-chart': [
+    'pieSlices',
+    'chartVariant',
+    'chartLegend',
+    'chartValues',
+    'chartAxis',
+    'chartPalette',
+    'chartSource',
+    'sheetAnchor',
+  ],
+  'line-chart': [
+    'lineCategories',
+    'chartVariant',
+    'lineSeries',
+    'chartLegend',
+    'chartValues',
+    'chartAxis',
+    'chartPalette',
+    'chartSource',
+    'sheetAnchor',
+  ],
   checklist: ['checklistItems'],
-  lane: ['headerFill', 'headerSize', 'titleOrientation'],
+  lane: ['headerFill', 'headerSize', 'titleOrientation', 'flowchartId'],
   frame: ['headerFill', 'headerSize'],
   'progress-bar': ['progress'],
   'progress-ring': ['progress'],
   rating: ['rating'],
   legend: ['legendItems'],
+  sankey: [
+    'sankeyFlows',
+    'sankeyNodes',
+    'sankeyLinkColor',
+    'sankeyAlign',
+    'sankeyValueLabel',
+    'sankeyUnit',
+    'sankeyLeftover',
+    'sankeyLeftoverName',
+    'chartPalette',
+  ],
   'timeline-rail': ['railCount', 'railLabels'],
   agenda: ['agendaItems'],
   decision: ['decisionStatus', 'decisionDate', 'decisionDrivers'],
@@ -123,12 +165,26 @@ export const SHAPE_KIND_FIELDS: Readonly<Record<string, readonly string[]>> = {
   process: ['processSteps'],
   'site-header': ['navLinks'],
   page: ['pageTitle', 'pageSubtitle'],
-  'mind-node': ['mindParentId', 'mindFlow'],
+  'mind-node': ['mindParentId', 'mindFlow', 'mindSpacing'],
+  // docs/specs/009-elements/flowchart.md: any of the step-type kinds is a step once it carries a chart (a lane
+  // joins one by `flowchartId` too, above).
+  ...Object.fromEntries(
+    Object.values(FLOWCHART_STEP_KIND).map((k) => [
+      k,
+      ['flowchartId', 'flowDirection', 'flowLaneId'],
+    ]),
+  ),
   icon: ['iconSize', 'iconWeight'],
   sticker: ['stickerId'],
   estimate: ['estimateScale'],
   chair: ['chairFacing'],
+  desk: ['chairFacing'],
+  sofa: ['chairFacing'],
+  // docs/specs/009-elements/office.md: which wall a room's doorway is in.
+  room: ['roomDoor'],
   portal: ['portalTarget'],
+  // docs/specs/009-elements/tab-window.md: which tab the window shows.
+  'tab-window': ['windowTabId'],
   // docs/specs/026-plan/plan-board.md: the board's set-up and the card's item; items change through
   // the item verbs, never through element fields.
   'plan-board': ['planBoard'],

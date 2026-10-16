@@ -135,7 +135,7 @@ export function useWhiteboard(deps: Deps) {
     if (activeTab.elements.length > 0) return;
     armPen(prefs);
     // Runs on a tab change only; the rest is read at that moment.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps
   }, [activeTab.id, whiteboard, editsBlocked]);
 
   const pickSelect = () => {

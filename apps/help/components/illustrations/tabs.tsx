@@ -6,7 +6,8 @@
 // Composed only from the shared primitives so the house style holds.
 
 import type { ReactNode } from 'react';
-import { Scene, Shape, Arrow, Label, Dialog } from './primitives';
+import { Scene, Shape, Arrow, Label, Dialog, Cursor } from './primitives';
+import { Glyph } from './element-indicators';
 
 // --- Tab-bar building blocks -------------------------------------------------
 
@@ -309,11 +310,11 @@ export function TabBarOverview() {
   return (
     <Scene w={420} h={210}>
       {/* The active tab's canvas above the bar */}
-      <Shape x={150} y={40} w={92} h={48} kind="rect" accent label="Overview" />
-      <Shape x={64} y={108} w={80} h={40} kind="rect" />
-      <Shape x={252} y={108} w={80} h={40} kind="rect" />
-      <Arrow from={[196, 88]} to={[104, 108]} tone="muted" />
-      <Arrow from={[196, 88]} to={[292, 108]} tone="muted" />
+      <Shape x={84} y={56} w={92} h={44} kind="rect" accent label="Overview" />
+      <Shape x={256} y={24} w={80} h={40} kind="rect" label="API" />
+      <Shape x={256} y={92} w={80} h={40} kind="rect" label="Web" />
+      <Arrow from={[176, 78]} to={[256, 44]} kind="elbow" tone="muted" />
+      <Arrow from={[176, 78]} to={[256, 112]} kind="elbow" tone="muted" />
       <TabBar y={barY} w={420} />
       <TabPill x={14} y={barY + 8} w={98} label="Overview" active />
       <TabPill x={118} y={barY + 8} w={66} label="Systems" />
@@ -463,8 +464,8 @@ export function TabMenu() {
         className="fill-white stroke-slate-200"
         strokeWidth={1.5}
       />
-      {/* Toolbar: Rename, Duplicate, Paste | Lock Tab, Delete */}
-      {[0, 1, 2].map((i) => (
+      {/* Toolbar: Rename, Duplicate, Paste, Side by Side | Lock Tab, Delete */}
+      {[0, 1, 2, 3].map((i) => (
         <rect
           key={i}
           x={mx + 8 + i * 30}
@@ -521,6 +522,24 @@ export function TabMenu() {
         className="fill-white stroke-slate-500"
         strokeWidth={1.2}
       />
+      {/* Side by Side (two panes) */}
+      <rect
+        x={mx + 103}
+        y={my + 14}
+        width={14}
+        height={12}
+        rx={2}
+        className="fill-none stroke-slate-500"
+        strokeWidth={1.4}
+      />
+      <line
+        x1={mx + 110}
+        y1={my + 14}
+        x2={mx + 110}
+        y2={my + 26}
+        className="stroke-slate-500"
+        strokeWidth={1.4}
+      />
       {/* Lock Tab + Delete at the right edge */}
       <rect
         x={mx + mw - 62}
@@ -559,10 +578,13 @@ export function TabMenu() {
       />
       <MenuRowList x={mx} y={my + 46} w={mw} rows={rows} checked="Diagram" />
       <Label x={14} y={30} size={10} tone="muted">
-        Rename, Duplicate, Paste
+        Rename, Duplicate,
       </Label>
-      <Label x={14} y={46} size={10} tone="muted">
-        Lock Tab, Delete
+      <Label x={14} y={44} size={10} tone="muted">
+        Paste, Side by Side,
+      </Label>
+      <Label x={14} y={58} size={10} tone="muted">
+        then Lock Tab, Delete
       </Label>
     </Scene>
   );
@@ -603,26 +625,29 @@ export function TabFolderStates() {
 /** The Add to Folder dialog: a No Folder tile, a tile per folder, and a New Folder tile. */
 export function AddToFolderMenu() {
   const W = 420;
-  const H = 200;
+  const H = 210;
   const dx = 20;
   const dy = 18;
   return (
     <Scene w={W} h={H}>
-      <Dialog x={dx} y={dy} w={380} h={164} title="Add to Folder" sceneW={W} sceneH={H}>
-        <Label x={dx + 16} y={dy + 52} size={10} tone="muted">
+      <Dialog x={dx} y={dy} w={380} h={174} title="Add to Folder" sceneW={W} sceneH={H}>
+        <Label x={dx + 16} y={dy + 48} size={10} tone="muted">
+          File this tab into a folder on the tab bar.
+        </Label>
+        <Label x={dx + 16} y={dy + 61} size={10} tone="muted">
           Same name means same folder.
         </Label>
-        <PickTile x={dx + 16} y={dy + 70} w={90} label="No Folder" sub="Loose on the bar">
+        <PickTile x={dx + 16} y={dy + 78} w={84} label="No Folder" sub="Loose on the bar">
           <FolderIcon />
           <path d="M-3 -2 l6 6 M3 -2 l-6 6" className="stroke-slate-500" strokeWidth={1.3} />
         </PickTile>
-        <PickTile x={dx + 110} y={dy + 70} w={90} label="Plans" sub="Current" selected>
+        <PickTile x={dx + 104} y={dy + 78} w={84} label="Plans" sub="Current" selected>
           <FolderIcon />
         </PickTile>
-        <PickTile x={dx + 204} y={dy + 70} w={90} label="Back office" sub="Folder">
+        <PickTile x={dx + 192} y={dy + 78} w={84} label="Back office" sub="Folder">
           <FolderIcon />
         </PickTile>
-        <PickTile x={dx + 298} y={dy + 70} w={66} label="New Folder" dashed>
+        <PickTile x={dx + 280} y={dy + 78} w={84} label="New Folder" sub="Create here" dashed>
           <path
             d="M-6 0 h12 M0 -6 v12"
             className="stroke-slate-500"
@@ -641,38 +666,24 @@ export function CrossTabLink() {
   const barY = 158;
   return (
     <Scene w={420} h={210}>
-      {/* Source element with a link badge */}
+      {/* Source element with its link indicator along the top, under the pointer */}
       <Shape x={30} y={58} w={104} h={52} kind="rect" label="Database" />
-      <g transform="translate(126 54)">
-        <circle r={11} className="fill-brand-500 stroke-white" strokeWidth={2.5} />
-        <path
-          d="M-4 0 a3 3 0 0 1 3 -3 h2 M4 0 a3 3 0 0 1 -3 3 h-2"
-          className="stroke-white help-art-as-drawn"
-          strokeWidth={1.8}
-          fill="none"
-          strokeLinecap="round"
-        />
-        <path
-          d="M-2 0 h4"
-          className="stroke-white help-art-as-drawn"
-          strokeWidth={1.8}
-          strokeLinecap="round"
-        />
-      </g>
+      <Glyph kind="link" cx={120} cy={70} strength={1} />
+      <Cursor x={122} y={74} />
       {/* The badge's hover card */}
       <rect
         x={70}
-        y={10}
+        y={8}
         width={170}
         height={34}
         rx={7}
         className="fill-white stroke-slate-200"
         strokeWidth={1.5}
       />
-      <Label x={80} y={21} size={10} weight={700} tone="strong">
+      <Label x={80} y={19} size={10} weight={700} tone="strong">
         Follow link
       </Label>
-      <Label x={80} y={35} size={10} tone="muted">
+      <Label x={80} y={33} size={10} tone="muted">
         Goes to tab &quot;DB internals&quot;
       </Label>
 
@@ -915,8 +926,9 @@ export function CleanupBeforeAfter() {
       <Shape x={108} y={64} w={56} h={30} kind="rect" />
       <Shape x={44} y={104} w={56} h={30} kind="rect" />
       <Shape x={128} y={132} w={56} h={30} kind="rect" />
-      <Arrow from={[76, 55]} to={[108, 79]} tone="muted" />
-      <Arrow from={[72, 79]} to={[72, 104]} tone="muted" />
+      <Arrow from={[76, 55]} to={[108, 75]} tone="muted" />
+      <Arrow from={[60, 70]} to={[60, 104]} tone="muted" />
+      <Arrow from={[142, 94]} to={[152, 132]} tone="muted" />
 
       {/* Divider arrow */}
       <Arrow from={[196, 105]} to={[226, 105]} kind="straight" />

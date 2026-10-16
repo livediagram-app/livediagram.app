@@ -10,10 +10,11 @@ type Room = ReturnType<typeof connectRoom>;
 // (docs/specs/012-collaboration/collab-race-hardening.md), and re-arms on the render that carries it. The
 // count of ops a render includes is state (react-state-and-effects.md), never a ref read during render.
 const apiSaveTab = vi.fn((): Promise<number | null> => Promise.resolve(null));
+const apiSaveDocumentMeta = vi.fn((): Promise<void> => Promise.resolve());
 vi.mock('@/lib/api-client', () => ({
   apiSaveTab: (...a: unknown[]) => apiSaveTab(...(a as [])),
   apiDeleteTab: vi.fn(() => Promise.resolve()),
-  apiSaveDocumentMeta: vi.fn(() => Promise.resolve()),
+  apiSaveDocumentMeta: (...a: unknown[]) => apiSaveDocumentMeta(...(a as [])),
   flushDocumentSavesBeacon: vi.fn(),
   reportSaveFailure: vi.fn(),
   connectRoom: vi.fn(),
@@ -47,6 +48,7 @@ const tab = (label: string): Tab =>
 beforeEach(() => {
   vi.useFakeTimers();
   apiSaveTab.mockClear();
+  apiSaveDocumentMeta.mockClear();
 });
 afterEach(() => vi.useRealTimers());
 
@@ -114,7 +116,9 @@ describe('useAutosave and peer ops', () => {
     renderHook(({ tabs, n }) => useSubject(tabs, n), {
       initialProps: { tabs: [tab('mine')], n: 0 },
     });
-    act(() => vi.advanceTimersByTime(600));
+    act(() => {
+      vi.advanceTimersByTime(600);
+    });
     expect(apiSaveTab).toHaveBeenCalledTimes(1);
   });
 
@@ -125,11 +129,15 @@ describe('useAutosave and peer ops', () => {
     });
     // A peer op lands in the journal; the render carrying it has not happened yet.
     journal.current.next = 1;
-    act(() => vi.advanceTimersByTime(600));
+    act(() => {
+      vi.advanceTimersByTime(600);
+    });
     expect(apiSaveTab).not.toHaveBeenCalled();
     // The render that includes the op re-arms the timer.
     rerender({ tabs: [tab('mine')], n: 1 });
-    act(() => vi.advanceTimersByTime(600));
+    act(() => {
+      vi.advanceTimersByTime(600);
+    });
     expect(apiSaveTab).toHaveBeenCalledTimes(1);
   });
 });
@@ -242,7 +250,9 @@ describe('hasUnsavedChanges', () => {
       initialProps: { tabs: [tab('mine')], n: 0 },
     });
     expect(result.current.hasUnsavedChanges()).toBe(true);
-    act(() => vi.advanceTimersByTime(600));
+    act(() => {
+      vi.advanceTimersByTime(600);
+    });
     expect(apiSaveTab).toHaveBeenCalledTimes(1);
     expect(result.current.hasUnsavedChanges()).toBe(true);
     await act(async () => {
@@ -325,10 +335,12 @@ describe('useAutosave and changesets', () => {
     const { rerender } = renderHook(({ tabs, seen }) => useSubject(tabs, 0, () => {}, seen), {
       initialProps: {
         tabs: [tab('mine')],
-        seen: new Map([['t1', 5]]) as ReadonlyMap<string, number>,
+        seen: new Map([['t1', 5]]),
       },
     });
-    act(() => vi.advanceTimersByTime(600));
+    act(() => {
+      vi.advanceTimersByTime(600);
+    });
     expect(apiSaveTab).toHaveBeenLastCalledWith(
       'me',
       'd1',
@@ -361,7 +373,9 @@ describe('useAutosave ordering', () => {
     const { rerender } = renderHook(({ tabs }) => useSubject(tabs, 0, () => {}), {
       initialProps: { tabs: [tab('first')] },
     });
-    act(() => vi.advanceTimersByTime(600));
+    act(() => {
+      vi.advanceTimersByTime(600);
+    });
     expect(apiSaveTab).toHaveBeenCalledTimes(1);
     rerender({ tabs: [tab('second')] });
     await act(async () => {
@@ -374,6 +388,55 @@ describe('useAutosave ordering', () => {
       await vi.runAllTimersAsync();
     });
     expect(apiSaveTab).toHaveBeenCalledTimes(2);
+  });
+});
+
+// docs/specs/006-document/per-tab-storage.md "New tabs and the tab order": the order only places rows that exist, so a
+// tab added with others (a template's tabs) is saved before the order naming it, or it lands at the end by its id.
+describe('useAutosave and new tabs', () => {
+  it('writes the tab order once the new tabs it names are saved', async () => {
+    const { useSubject, refs } = setup();
+    const added = { ...tab('new'), id: 't2', name: 'Backlog' };
+    refs.loadedTabIdsRef.current.add('t2');
+    let land!: (rev: number | null) => void;
+    apiSaveTab.mockImplementation((...a: unknown[]) =>
+      (a[2] as Tab).id === 't2' ? new Promise((r) => (land = r)) : Promise.resolve(null),
+    );
+    renderHook(({ tabs }) => useSubject(tabs, 0), {
+      initialProps: { tabs: [tab('saved'), added] },
+    });
+    await act(async () => {
+      vi.advanceTimersByTime(600);
+      await Promise.resolve();
+    });
+    expect(apiSaveTab).toHaveBeenCalledTimes(1);
+    expect(apiSaveDocumentMeta).not.toHaveBeenCalled();
+    await act(async () => {
+      land(1);
+      await vi.runAllTimersAsync();
+    });
+    expect(apiSaveDocumentMeta).toHaveBeenCalledTimes(1);
+    expect(apiSaveDocumentMeta.mock.calls[0]).toEqual(
+      expect.arrayContaining([expect.objectContaining({ tabs: [{ id: 't1' }, { id: 't2' }] })]),
+    );
+    apiSaveTab.mockReset();
+    apiSaveTab.mockImplementation(() => Promise.resolve(null));
+  });
+
+  it('still writes the order when a new tab fails to save', async () => {
+    const { useSubject, refs } = setup();
+    const added = { ...tab('new'), id: 't2', name: 'Backlog' };
+    refs.loadedTabIdsRef.current.add('t2');
+    apiSaveTab.mockImplementationOnce(() => Promise.reject(new Error('offline')));
+    renderHook(({ tabs }) => useSubject(tabs, 0), {
+      initialProps: { tabs: [tab('saved'), added] },
+    });
+    await act(async () => {
+      vi.advanceTimersByTime(600);
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    expect(apiSaveDocumentMeta).toHaveBeenCalledTimes(1);
   });
 });
 

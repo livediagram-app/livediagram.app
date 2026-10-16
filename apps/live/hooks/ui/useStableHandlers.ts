@@ -17,7 +17,7 @@
 import { useMemo, useState } from 'react';
 import { useLatest } from './useLatest';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// oxlint-disable-next-line typescript/no-explicit-any
 type AnyFn = (...args: any[]) => unknown;
 
 export function useStableHandlers<T extends Record<string, AnyFn | undefined>>(handlers: T): T {

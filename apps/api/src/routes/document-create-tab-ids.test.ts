@@ -5,7 +5,6 @@ import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import { linkTabToDocument, upsertTab } from '../db/tabs';
 import { makeTestRouteContext } from './test-route-context';
 import { handleDocuments } from './documents';
-import type { Tab } from '@livediagram/document';
 
 // A created document never writes into a tab another document holds
 // (docs/specs/006-document/offline-mode.md, "Shared tabs fork"): a seeded tab
@@ -61,12 +60,12 @@ function tabsOf(sql: DatabaseSync, documentId: string) {
     .map((r) => ({
       id: r.id as string,
       name: r.name as string,
-      data: JSON.parse(r.data as string),
+      data: JSON.parse(r.data as string) as { elements: { link?: { tabId?: string } }[] },
     }));
 }
 
 async function seed(db: SqliteD1, documentId: string, id: string, name = id) {
-  await upsertTab(db.env, documentId, { id, name, elements: [] } as unknown as Tab, 0);
+  await upsertTab(db.env, documentId, { id, name, elements: [] }, 0);
 }
 
 describe('POST /api/documents with a tab id held elsewhere', () => {
@@ -111,9 +110,12 @@ describe('POST /api/documents with a tab id held elsewhere', () => {
     expect(fork!.name).toBe('Glossary, edited offline');
     // The copy's own navigation and deck follow the fork.
     expect(own!.id).toBe('own');
-    expect(own!.data.elements[0].link.tabId).toBe(fork!.id);
+    expect(own!.data.elements[0]?.link?.tabId).toBe(fork!.id);
     const deck = db.sql.prepare("SELECT presentation FROM documents WHERE id = 'A'").get();
-    expect(JSON.parse(deck!.presentation as string).decks[0].slides[0].tabId).toBe(fork!.id);
+    expect(JSON.parse(deck!.presentation as string)).toHaveProperty(
+      ['decks', 0, 'slides', 0, 'tabId'],
+      fork!.id,
+    );
   });
 
   it('never rewrites a tab in someone else’s document', async () => {

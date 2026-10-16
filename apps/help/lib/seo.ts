@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { pageMetadata } from '@livediagram/ui';
+import { helpCardImage } from './help-cards';
 
 // The help centre's name in link previews (the OG siteName); everything else
 // about a page's metadata follows the shared pageMetadata rule (docs/specs/018-help/help-app.md "SEO"):
@@ -25,5 +26,13 @@ interface SeoInput {
  *  root layout's title template adds the suffix, so link previews get the
  *  bare title and the siteName beside it. */
 export function helpMetadata({ title, description, path }: SeoInput): Metadata {
-  return pageMetadata({ title, description, path, siteName: HELP_SITE_NAME });
+  // An article or category landing previews with its own card (lib/help-cards.ts); any other page with
+  // the brand card.
+  return pageMetadata({
+    title,
+    description,
+    path,
+    siteName: HELP_SITE_NAME,
+    image: helpCardImage(path),
+  });
 }

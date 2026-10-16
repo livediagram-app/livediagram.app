@@ -8,8 +8,10 @@
 // standing between that and a public number nobody can reconcile.
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const track = vi.fn();
-vi.mock('@/lib/telemetry', () => ({ track: (...args: unknown[]) => track(...args) }));
+const track = vi.fn<typeof import('@/lib/telemetry').track>();
+vi.mock('@/lib/telemetry', () => ({
+  track: (...args: Parameters<typeof track>) => track(...args),
+}));
 
 import { trackTabFolderTransition } from './tab-folder-reporting';
 import { useTabFolders } from './useTabFolders';

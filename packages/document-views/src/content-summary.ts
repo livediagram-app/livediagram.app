@@ -2,7 +2,7 @@
 // summaries", VW18 to VW21).
 import type { Element } from '@livediagram/document';
 import { ENTITY_FIELDS_SHOWN } from './constants';
-import { arrayField, flagField, isObject, stringField } from './fields';
+import { arrayField, flagField, isObject, listOf, stringField } from './fields';
 import { cellText } from './text';
 import { shapeKindOf } from './view-attribute';
 
@@ -19,7 +19,7 @@ function entitySummary(el: Element): string {
 
 // Columns are the longest row's length (E26); the first row's missing cells print empty.
 function tableSummary(el: Element): string {
-  const rows = arrayField(el, 'cells').map((row) => (Array.isArray(row) ? row : []));
+  const rows = arrayField(el, 'cells').map(listOf);
   const cols = rows.reduce((max, row) => Math.max(max, row.length), 0);
   if (rows.length === 0 || cols === 0) return `${rows.length}x${cols}`;
   const header = Array.from({ length: cols }, (_, i) => {
@@ -48,6 +48,36 @@ function planBoardSummary(el: Element): string {
   return `columns=${columns.map((c) => cellText(stringField(c, 'name') ?? '?')).join('|')}`;
 }
 
+// A Sankey's size (docs/specs/009-elements/sankey.md): its flows, and the distinct node names they join.
+function sankeySummary(el: Element): string {
+  const flows = arrayField(el, 'sankeyFlows').filter(isObject);
+  // Matched as the diagram matches them: spaces trimmed and collapsed.
+  const names = new Set(
+    flows
+      .flatMap((f) => [stringField(f, 'from'), stringField(f, 'to')])
+      .map((n) => (n ?? '').replace(/\s+/g, ' ').trim())
+      .filter((n) => n !== ''),
+  );
+  return `flows=${flows.length} nodes=${names.size}`;
+}
+
+// A concept graphic (docs/specs/009-elements/concept-graphics.md): its rows in order, and a pyramid's variant when set.
+function conceptSummary(el: Element): string {
+  const rows = arrayField(el, 'conceptRows').filter(isObject);
+  const labels = rows.map((r) => cellText(stringField(r, 'label') ?? '?')).join('|');
+  const variant = stringField(el, 'pyramidVariant');
+  return `rows=${labels}${variant ? ` variant=${cellText(variant)}` : ''}`;
+}
+
+// A sequence diagram (docs/specs/009-elements/sequence-diagram.md): its participants in order and its message count.
+function sequenceSummary(el: Element): string {
+  const people = arrayField(el, 'sequenceParticipants')
+    .filter(isObject)
+    .map((p) => cellText(stringField(p, 'label') ?? '?'))
+    .join('|');
+  return `participants=${people} messages=${arrayField(el, 'sequenceMessages').length}`;
+}
+
 export function contentSummaryOf(el: Element): string | null {
   switch (shapeKindOf(el)) {
     case 'entity':
@@ -63,6 +93,19 @@ export function contentSummaryOf(el: Element): string | null {
       return `series=${arrayField(el, 'lineSeries').length} x=${arrayField(el, 'lineCategories').length}`;
     case 'checklist':
       return checklistSummary(el);
+    case 'sankey':
+      return sankeySummary(el);
+    case 'layer-stack':
+    case 'pyramid':
+    case 'cycle':
+    case 'hub':
+    case 'onion':
+    case 'chevrons':
+      return conceptSummary(el);
+    case 'sequence':
+      return sequenceSummary(el);
+    case 'stack':
+      return `direction=${cellText(stringField(el, 'stackDirection') ?? 'row')}`;
     case 'plan-board':
       return planBoardSummary(el);
     case 'plan-card': {

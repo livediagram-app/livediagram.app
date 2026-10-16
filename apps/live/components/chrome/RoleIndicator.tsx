@@ -28,17 +28,20 @@ const TOGGLE_HINT: Record<Role, string> = {
   view: 'Switch to editing',
 };
 
-// The word sits in text-optical-line + text-optical-caps (optical-alignment.md), so the pill carries no case.
-const PILL = 'inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold';
+// The word sits in text-optical-line + text-optical-caps (optical-alignment.md), so the pill carries no case. Pinned to
+// the visibility badge's height with a resting ring like it, so the two pills beside the title read as a pair.
+// h-[19px] is STATE_CHIP_HEIGHT_PX, written out so Tailwind sees the class.
+const PILL = 'inline-flex h-[19px] items-center rounded-full px-2 text-[10px] font-semibold ring-1';
 const PILL_TONE: Record<Role, string> = {
-  edit: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-200',
-  participate: 'bg-teal-100 text-teal-800 dark:bg-teal-500/15 dark:text-teal-200',
-  view: 'bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-200',
+  edit: 'bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-500/30',
+  participate:
+    'bg-teal-50 text-teal-700 ring-teal-200 dark:bg-teal-500/10 dark:text-teal-300 dark:ring-teal-500/30',
+  view: 'bg-amber-50 text-amber-800 ring-amber-200 dark:bg-amber-500/10 dark:text-amber-200 dark:ring-amber-500/30',
 };
 const PILL_TOGGLE_TONE: Record<Role, string> = {
-  edit: 'cursor-pointer ring-emerald-300 transition hover:ring-1 dark:ring-emerald-500/40',
-  participate: 'cursor-pointer ring-teal-300 transition hover:ring-1 dark:ring-teal-500/40',
-  view: 'cursor-pointer ring-amber-300 transition hover:ring-1 dark:ring-amber-500/40',
+  edit: 'cursor-pointer transition hover:ring-emerald-400 dark:hover:ring-emerald-400/60',
+  participate: 'cursor-pointer transition hover:ring-teal-400 dark:hover:ring-teal-400/60',
+  view: 'cursor-pointer transition hover:ring-amber-400 dark:hover:ring-amber-400/60',
 };
 
 export function roleOwnerLabel(ownerName: string | null, isSelf: boolean): string {
@@ -67,7 +70,7 @@ export function RolePill({
       aria-label={owner ? `${word}. ${owner}` : word}
       aria-describedby={hintId}
       data-role-pill={role}
-      className={`${PILL} ${PILL_TONE[role]} ${PILL_TOGGLE_TONE[role]}`}
+      className={`${PILL} ${PILL_TONE[role]} ${PILL_TOGGLE_TONE[role]} relative touch-target-y`}
     >
       <span className="text-optical-line text-optical-caps">{word}</span>
       <span id={hintId} className="sr-only">

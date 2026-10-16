@@ -13,9 +13,48 @@ const MUTED = '#64748b';
 // meaning inside its own exclusive region; each pairwise overlap names what
 // an idea missing the third lens becomes (the classic "Unsustainable /
 // Useless / Unbuildable" reading); the three-way centre is the hero "Sweet
-// spot" pill. A question title above frames it as a tool for testing an idea.
-export function buildVenn(cx: number, cy: number): Element[] {
+// spot" pill. A bold question title and a one-line how-to above frame it as a
+// tool for testing ideas, and an "Ideas we tested" rail on the right shows it
+// in use: four of Plateful's ideas, each with the one line that placed it and
+// a chip naming the region it landed in, tinted like that region.
+type Idea = { name: string; why: string; zone: string; fill?: string; ink?: string };
+
+const IDEAS: Idea[] = [
+  {
+    name: 'Group basket',
+    why: 'Wanted, buildable in a sprint, lifts order size',
+    zone: 'Sweet spot',
+  },
+  {
+    name: 'Drone drop-offs',
+    why: 'Loved and profitable, nowhere near legal yet',
+    zone: 'Unbuildable',
+    fill: '#fef3c7',
+    ink: '#a16207',
+  },
+  {
+    name: 'Free delivery forever',
+    why: 'Loved and easy, but every order loses money',
+    zone: 'Unsustainable',
+    fill: '#ede9fe',
+    ink: '#6d28d9',
+  },
+  {
+    name: 'Paid recipe badges',
+    why: 'Cheap to build, pays on paper, nobody asked',
+    zone: 'Useless',
+    fill: '#ccfbf1',
+    ink: '#0f766e',
+  },
+];
+
+export function buildVenn(cx0: number, cy: number): Element[] {
   const r = 330;
+  // The rail hangs off the right, so the Venn shifts left by half of it to
+  // keep the whole composition centred on (cx0, cy).
+  const railGap = 72;
+  const railW = 400;
+  const cx = cx0 - (railGap + railW) / 2;
   // Each circle centre sits `d` from the centroid (cx, cy), in a triangle:
   // top, bottom-left, bottom-right. 0.6r keeps the pair lenses roomy enough
   // to hold a label while the three-way centre stays a clear lens.
@@ -66,6 +105,21 @@ export function buildVenn(cx: number, cy: number): Element[] {
   ];
 
   const elements: Element[] = [];
+  // A light sheet under the circles: their fills are translucent so the
+  // overlaps blend, and a fixed paper keeps that blend (and the dark ink on
+  // it) the same on a dark canvas as on a light one.
+  const pad = 36;
+  const sheetLeft = cx - d * sin60 - r - pad;
+  const sheetTop = cy - d - r - pad;
+  elements.push({
+    ...createShape('square', sheetLeft, sheetTop),
+    width: 2 * (d * sin60 + r + pad),
+    height: d + r + d / 2 + r + pad * 2,
+    label: '',
+    fillColor: '#ffffff',
+    strokeColor: '#e2e8f0',
+    themeLockFill: true,
+  });
   // Circles first so every label paints above the blended fills. Element
   // opacity (not a translucent fill) is what lets the overlaps mix, so the
   // stroke uses the deep ink to stay crisp at that opacity.
@@ -84,15 +138,31 @@ export function buildVenn(cx: number, cy: number): Element[] {
     });
   }
 
-  const titleW = 760;
-  elements.push({
-    ...createText(cx - titleW / 2, cy - d - r - 96),
-    width: titleW,
-    height: 56,
-    label: 'Is this idea worth building?',
-    textSize: 'lg',
-    textAlignX: 'center',
-  });
+  const vennLeft = cx - d * sin60 - r;
+  const vennRight = cx + d * sin60 + r;
+  const titleTop = cy - d - r - 132;
+  const fullW = vennRight - vennLeft + railGap + railW;
+  elements.push(
+    {
+      ...createText(vennLeft - 36, titleTop),
+      width: fullW,
+      height: 44,
+      label: 'Plateful · is this idea worth building?',
+      textSize: 'lg',
+      textBold: true,
+      textAlignX: 'left',
+    },
+    {
+      ...createText(vennLeft - 36, titleTop + 44),
+      width: fullW,
+      height: 28,
+      label:
+        'Test every idea against all three lenses. Where it lands names the lens it is missing; only the centre earns a sprint.',
+      textSize: 'sm',
+      textColor: MUTED,
+      textAlignX: 'left',
+    },
+  );
 
   // Set headings: pushed out along the lens direction into the region only
   // that circle covers.
@@ -138,6 +208,8 @@ export function buildVenn(cx: number, cy: number): Element[] {
       textSize: 'sm',
       textBold: true,
       textAlignX: 'center',
+      // Sits on a theme-locked tint, so the ink is pinned dark too.
+      textColor: '#0f172a',
     });
     elements.push({
       ...createText(px - pairW / 2, py),
@@ -161,6 +233,83 @@ export function buildVenn(cx: number, cy: number): Element[] {
     textSize: 'md',
     textBold: true,
     colorPreset: 'bold',
+  });
+
+  // The rail: what the lenses said about four real ideas.
+  const railX = vennRight + railGap;
+  const cardH = 92;
+  const cardGap = 18;
+  const railH = 64 + IDEAS.length * (cardH + cardGap) - cardGap;
+  const railTop = cy - railH / 2;
+  elements.push(
+    {
+      ...createText(railX, railTop),
+      width: railW,
+      height: 34,
+      label: 'Ideas we tested',
+      textSize: 'md',
+      textBold: true,
+      textAlignX: 'left',
+    },
+    {
+      ...createText(railX, railTop + 32),
+      width: railW,
+      height: 26,
+      label: 'Where each one landed, and why',
+      textSize: 'sm',
+      textColor: MUTED,
+      textAlignX: 'left',
+    },
+  );
+  const chipW = 132;
+  IDEAS.forEach((idea, i) => {
+    const y = railTop + 64 + i * (cardH + cardGap);
+    elements.push(
+      {
+        ...createShape('square', railX, y),
+        width: railW,
+        height: cardH,
+        label: '',
+        fillColor: '#ffffff',
+        strokeColor: '#e2e8f0',
+      },
+      {
+        ...createText(railX + 16, y + 12),
+        width: railW - 32,
+        height: 30,
+        label: idea.name,
+        textSize: 'md',
+        textBold: true,
+        textAlignX: 'left',
+        textColor: '#0f172a',
+      },
+      {
+        ...createText(railX + 16, y + 44),
+        width: railW - chipW - 44,
+        height: 40,
+        label: idea.why,
+        textSize: 'sm',
+        textAlignX: 'left',
+        textAlignY: 'top',
+        textColor: MUTED,
+      },
+      {
+        ...createShape('stadium', railX + railW - chipW - 16, y + 48),
+        width: chipW,
+        height: 30,
+        label: idea.zone,
+        textSize: 'sm',
+        textBold: true,
+        ...(idea.fill
+          ? {
+              fillColor: idea.fill,
+              strokeColor: idea.ink,
+              textColor: idea.ink,
+              themeLockFill: true,
+            }
+          : { colorPreset: 'bold' }),
+      },
+    );
   });
   return elements;
 }

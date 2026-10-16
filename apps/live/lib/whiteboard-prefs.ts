@@ -23,6 +23,8 @@ export type WhiteboardPenId = 'main' | 'second' | 'third';
 // ("blue") is drawn in its version for the board; a custom `#rrggbb` is the same on both. `width`
 // is in px, derived from a named preset.
 export type WhiteboardPen = { id: WhiteboardPenId; colour: PenColour | null; width: number };
+// A marker width's preset name, stored in place of its px.
+export type PenWidthId = 'fine' | 'medium' | 'bold' | 'thick' | 'heavy' | 'broad';
 export type WhiteboardEraserMode = 'stroke' | 'partial';
 export type WhiteboardPrefs = {
   pens: WhiteboardPen[];
@@ -34,11 +36,16 @@ export type WhiteboardPrefs = {
 };
 
 // Subtle at 100%: a line, not a felt tip. Tuned with the operator: Medium is
-// 1.5 px, a notch either side. The floor is 1 px, the least `penWidth` validates.
-export const WHITEBOARD_PEN_WIDTHS: readonly { id: string; label: string; px: number }[] = [
+// 1.5 px, a notch either side. Thick, Heavy and Broad step up by about half
+// again each, for felt-tip and poster marks. The floor is 1 px, the least
+// `penWidth` validates; Broad sits far below its 100 px ceiling.
+export const WHITEBOARD_PEN_WIDTHS: readonly { id: PenWidthId; label: string; px: number }[] = [
   { id: 'fine', label: 'Fine', px: 1 },
   { id: 'medium', label: 'Medium', px: 1.5 },
   { id: 'bold', label: 'Bold', px: 2.5 },
+  { id: 'thick', label: 'Thick', px: 4 },
+  { id: 'heavy', label: 'Heavy', px: 6 },
+  { id: 'broad', label: 'Broad', px: 9 },
 ];
 const MEDIUM_PX = 1.5;
 

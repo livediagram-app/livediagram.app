@@ -32,7 +32,6 @@ import {
   INK_CHOICE,
   penWidthPx,
   strokesPenStyle,
-  tabCustomColours,
   type PenColourChoice,
   type PenWidthId,
 } from '@/lib/quick-style-pen';
@@ -60,7 +59,7 @@ import {
   type QuickStrokeStyle,
   type QuickStyleView,
   type QuickColourValue,
-  type QuickSwatchValue,
+  type QuickFillValue,
   type QuickWidth,
 } from '@/lib/quick-style';
 import { styleKindOf, type StyleKindKey } from '@/lib/style-memory';
@@ -71,7 +70,7 @@ import type { SwatchOverridesApi } from './useSwatchOverrides';
 export type QuickStyleApi = {
   view: QuickStyleView | null;
   setStroke: (slot: QuickColourValue) => void;
-  setBackground: (slot: QuickSwatchValue) => void;
+  setBackground: (slot: QuickFillValue) => void;
   setTextColour: (slot: QuickColourValue) => void;
   setWidth: (width: QuickWidth) => void;
   setStrokeStyle: (style: QuickStrokeStyle) => void;
@@ -152,15 +151,7 @@ export function useQuickStyle(
   const board = canvasSurface(resolveTabBackdrop(activeTab, appearance).backgroundColor);
   const ink = PEN_INK[board];
   const held = deps.pen?.held ?? null;
-  // The custom colours used on this tab, the Marker colour row's second section.
-  const palette = useMemo(
-    () => ({
-      board,
-      ink,
-      custom: whiteboard ? tabCustomColours(activeTab.elements) : [],
-    }),
-    [board, ink, whiteboard, activeTab.elements],
-  );
+  const palette = useMemo(() => ({ board, ink }), [board, ink]);
   // A tool's choices land in memory, not the document: a version to re-read it.
   const [toolVersion, bumpTool] = useReducer((n: number) => n + 1, 0);
   const intent = deps.toolIntent ?? null;
@@ -170,7 +161,7 @@ export function useQuickStyle(
     return plain ? memory.styleNewElement(plain) : null;
     // toolVersion: memory changed under the same intent. memory.scope: another document's (or
     // tab kind's) memory, whose style must never show as this one's next mark.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps
   }, [whiteboard, editsBlocked, selected.length, intent, theme, toolVersion, memory.scope]);
   // The Highlighter rows: the selected highlights first; with nothing selected, the armed tile.
   const hlColour = deps.highlighter?.colour;
@@ -253,7 +244,7 @@ export function useQuickStyle(
     if (!subject || editsBlocked) return;
     if (subject.kind === 'pen') {
       // Choosing what the pen already has changes (and reports) nothing.
-      const pen = view!.pen!;
+      const pen = view.pen!;
       if (patch.colour !== undefined && patch.colour === pen.colour.value) return;
       if (patch.width !== undefined && patch.width === pen.width.value) return;
       // The pen's own setting, as its dock flyout sets it (and tracks it).

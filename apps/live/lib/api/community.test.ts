@@ -90,7 +90,7 @@ describe('community api client', () => {
 describe('community error wording', () => {
   it('words every known code and falls back for the rest', () => {
     expect(communityCodeMessage('empty_document')).toBe(
-      'Add something to your document before sharing it.',
+      'Add something to your first tab before sharing: it is the picture on your Community card.',
     );
     expect(communityCodeMessage('invalid_title')).toBe('The title needs 3 to 80 characters.');
     expect(communityCodeMessage('something_new')).toBe(

@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const trackMock = vi.fn();
+const trackMock = vi.fn<typeof import('./telemetry').track>();
 vi.mock('./telemetry', () => ({
-  track: (...args: unknown[]) => trackMock(...args),
+  track: (...args: Parameters<typeof trackMock>) => trackMock(...args),
 }));
 
 const { reportHelpSearch, resetHelpSearchReports } = await import('./search-telemetry');

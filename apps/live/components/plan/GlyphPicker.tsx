@@ -7,8 +7,21 @@
 // hands focus back to the button, as do Escape (the editor stays open) and a press outside. One radio group; each
 // tile is named "{Name} glyph".
 import { useEffect, useId, useRef, useState } from 'react';
-import { PLAN_GLYPH_CATEGORIES, glyphMatches, planGlyphLabel } from '@livediagram/items';
-import { ChevronDownIcon, SearchIcon, Select, TextInput, Tooltip } from '@livediagram/ui';
+import {
+  PLAN_GLYPH_CATEGORIES,
+  glyphMatches,
+  planGlyphLabel,
+  type ItemTypeDef,
+  type PlanGlyphId,
+} from '@livediagram/items';
+import {
+  ChevronDownIcon,
+  NoMatches,
+  SearchIcon,
+  Select,
+  TextInput,
+  Tooltip,
+} from '@livediagram/ui';
 import { AnchoredPopover } from '@/components/primitives/AnchoredPopover';
 import { PlanTypeGlyph } from './plan-type-glyph';
 import { ACCENT_TEXT, ACCENT_TINT, accentVars } from './plan-palette';
@@ -29,9 +42,9 @@ export function GlyphPicker({
   onChange,
   inline = false,
 }: {
-  value: string;
+  value: ItemTypeDef['glyph'];
   colour: string;
-  onChange: (glyph: string) => void;
+  onChange: (glyph: PlanGlyphId) => void;
   // Drawn inside another field (the type editor's Name): just the glyph and a chevron, no border and no name.
   inline?: boolean;
 }) {
@@ -100,9 +113,9 @@ export function GlyphGrid({
   colour,
   onPick,
 }: {
-  value: string;
+  value: ItemTypeDef['glyph'];
   colour: string;
-  onPick: (glyph: string) => void;
+  onPick: (glyph: PlanGlyphId) => void;
 }) {
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState(() => categoryOf(value));
@@ -159,9 +172,7 @@ export function GlyphGrid({
         className="grid max-h-[8.5rem] grid-cols-[repeat(auto-fill,2rem)] content-start justify-between gap-0.5 overflow-y-auto overscroll-contain"
       >
         {glyphs.length === 0 ? (
-          <p className="col-span-full px-1 py-3 text-[12px] text-slate-500 dark:text-slate-400">
-            No glyphs match “{query.trim()}”.
-          </p>
+          <NoMatches className="col-span-full" things="glyphs" query={query} />
         ) : (
           glyphs.map((g) => {
             const chosen = value === g;

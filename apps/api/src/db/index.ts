@@ -8,6 +8,8 @@
 // a new module here) rather than growing one file.
 
 export * from './documents';
+export * from './team-recent';
+export * from './tab-save-document';
 export * from './tabs';
 export * from './participants';
 export * from './share';
@@ -39,3 +41,5 @@ export * from './empty-document-sweep';
 export * from './changesets';
 export * from './community';
 export * from './community-engagement';
+export * from './forms';
+export * from './tab-outlines';

@@ -29,10 +29,11 @@ export function HighlighterTile() {
       <path
         d="M290 168 C320 162 360 162 396 166"
         fill="none"
-        className="stroke-amber-300"
-        strokeOpacity={0.55}
+        className="stroke-yellow-300"
+        strokeOpacity={0.45}
         strokeWidth={14}
         strokeLinecap="round"
+        style={{ mixBlendMode: 'multiply' }}
       />
       <Cursor x={396} y={166} colour="brand" />
     </Scene>
@@ -50,10 +51,11 @@ export function HighlighterStroke() {
       <Shape x={240} y={92} w={120} h={52} label="Checkout" />
       {/* The marker swipe: wide, round-capped, translucent so the label shows through */}
       <path
-        d="M226 128 C258 100 342 98 372 124 C344 148 254 152 226 128 Z"
+        d="M232 120 C262 100 342 98 372 124 C344 148 254 152 222 132"
         fill="none"
-        className="stroke-amber-300"
-        strokeOpacity={0.55}
+        className="stroke-yellow-300"
+        strokeOpacity={0.45}
+        style={{ mixBlendMode: 'multiply' }}
         strokeWidth={14}
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -74,16 +76,17 @@ export function PolygonDraw() {
     [268, 62],
     [330, 118],
   ];
-  const cursor: [number, number] = [136, 158];
+  // Inside the 12px snap range that shows the ring (POLYGON_CLOSE_PX).
+  const cursor: [number, number] = [128, 157];
   return (
     <Scene w={420} h={220}>
-      {/* Mode banner */}
-      <Panel x={86} y={14} w={248} h={30}>
-        <circle cx={104} cy={29} r={6} className="fill-brand-500" />
-        <Label x={118} y={30} size={11} weight={600} tone="body">
-          Click to place points
+      {/* Mode banner, with the editor's exact desktop wording (lib/draw-mode.ts) */}
+      <Panel x={8} y={14} w={404} h={30}>
+        <circle cx={22} cy={29} r={5} className="fill-brand-500" />
+        <Label x={33} y={30} size={9.5} weight={600} tone="body">
+          Click to place points, click the start to close, double-click to finish
         </Label>
-        <Label x={296} y={30} size={11} weight={600} tone="muted">
+        <Label x={370} y={30} size={9.5} weight={600} tone="muted">
           Cancel
         </Label>
       </Panel>
@@ -117,7 +120,8 @@ export function PolygonDraw() {
         />
       ))}
       <Cursor x={cursor[0]} y={cursor[1]} colour="brand" />
-      <Label x={120} y={178} anchor="middle" size={11} tone="muted">
+      {/* Below the cursor, clear of the ring and the pointer */}
+      <Label x={120} y={200} anchor="middle" size={11} tone="muted">
         click the start to close
       </Label>
     </Scene>

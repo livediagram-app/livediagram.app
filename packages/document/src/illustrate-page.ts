@@ -7,6 +7,13 @@
 // a single page.
 import { isBoxed, type Element, type Tab } from './index';
 import { parsePageSides, parseRowAt, type PageSides, type RowAt } from './illustrate-page-fit';
+import {
+  parseColourFill,
+  parsePagePattern,
+  type PageColourFill,
+  type PagePattern,
+} from '@livediagram/page-background';
+import { parsePageImageFill, type PageImageFill } from './illustrate-page-image';
 
 export type PageOrientation = 'portrait' | 'landscape';
 
@@ -71,7 +78,7 @@ export const PAGE_SIZES: Readonly<
     portrait: 'Portrait post (4:5)',
     landscape: 'Landscape post (5:4)',
   },
-  wide: { short: 1080, long: 1920, portrait: 'Story (9:16)', landscape: 'Slide (16:9)' },
+  wide: { short: 1080, long: 1920, portrait: 'Story (9:16)', landscape: 'Widescreen (16:9)' },
   slide: {
     short: 1080,
     long: 1920,
@@ -120,13 +127,12 @@ const PAPER_AND_SCREEN_SIZE_IDS: readonly PageSizeId[] = [
 export const LOGO_PAGE_SIZE_IDS: readonly PageSizeId[] = ['logo'];
 
 /** The sizes a page of this kind offers in its panel: a slide page only the slide sizes, a logo
- *  page only the artboard, an article page the paper and screen ones, an infographic page those
- *  and the 16:9 slide. */
+ *  page only the artboard, an infographic or article page the paper and screen ones (a slide size
+ *  is a slide page's alone: a deck is made of slide pages). */
 export function pageSizesFor(kind: PageKind): readonly PageSizeId[] {
   if (kind === 'slide') return SLIDE_PAGE_SIZE_IDS;
   if (kind === 'logo') return LOGO_PAGE_SIZE_IDS;
-  if (kind === 'article') return PAPER_AND_SCREEN_SIZE_IDS;
-  return [...PAPER_AND_SCREEN_SIZE_IDS, 'slide'];
+  return PAPER_AND_SCREEN_SIZE_IDS;
 }
 
 /** The size tiles a page's panel shows: its kind's sizes (pageSizesFor), Fit to Content first on
@@ -137,6 +143,9 @@ export function pageSizeChoices(
 ): readonly PageSizeId[] {
   const current = page.size ?? 'a4';
   let sizes = pageSizesFor(pageKindOf(page));
+  // A page already in a size its kind no longer offers (an infographic made on the Slide size)
+  // keeps that tile until it moves off it.
+  if (current !== 'fit' && !sizes.includes(current)) sizes = [...sizes, current];
   if (page.orientation === 'landscape' && sizes.includes('wide') && sizes.includes('slide')) {
     const drop: PageSizeId = current === 'wide' ? 'slide' : 'wide';
     sizes = sizes.filter((id) => id !== drop);
@@ -149,11 +158,19 @@ export function isPageSizeId(v: unknown): v is PageSizeId {
 }
 
 // What a page is painted with (docs/specs/007-editor/illustrate-pages.md "Backgrounds"): a fill
-// (absent is the paper) and a pattern over it.
-export type PageFill =
-  { kind: 'solid'; color: string } | { kind: 'gradient'; from: string; to: string; angle: number };
-export type PagePattern = 'dots' | 'grid' | 'lines';
-export const PAGE_PATTERNS: readonly PagePattern[] = ['dots', 'grid', 'lines'];
+// (absent is the paper: a colour, a gradient or a picture, "Image backgrounds") and a pattern over it. The colours,
+// patterns and motions live in @livediagram/page-background, which a form's cover shares; re-exported here.
+export {
+  PAGE_MOTIONS,
+  PAGE_MOTION_SPEED_MAX,
+  PAGE_MOTION_SPEED_MIN,
+  PAGE_PATTERNS,
+  isPageMotion,
+  type PageColourFill,
+  type PageMotion,
+  type PagePattern,
+} from '@livediagram/page-background';
+export type PageFill = PageColourFill | PageImageFill;
 export type PageBackground = { fill?: PageFill; pattern?: PagePattern };
 
 // The longest page name kept: a label, not a caption.
@@ -205,32 +222,17 @@ export function isPageOrientation(v: unknown): v is PageOrientation {
   return v === 'portrait' || v === 'landscape';
 }
 
-const HEX = /^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/i;
-const isHex = (v: unknown): v is string => typeof v === 'string' && HEX.test(v);
-
 function parseFill(v: unknown): PageFill | undefined {
   const f = v as Record<string, unknown> | null;
-  if (!f || typeof f !== 'object') return undefined;
-  if (f.kind === 'solid' && isHex(f.color)) return { kind: 'solid', color: f.color };
-  if (f.kind === 'gradient' && isHex(f.from) && isHex(f.to)) {
-    const raw = typeof f.angle === 'number' && Number.isFinite(f.angle) ? f.angle : 180;
-    return {
-      kind: 'gradient',
-      from: f.from,
-      to: f.to,
-      angle: ((Math.round(raw) % 360) + 360) % 360,
-    };
-  }
-  return undefined;
+  if (f && typeof f === 'object' && f.kind === 'image') return parsePageImageFill(f);
+  return parseColourFill(v);
 }
 
 function parseBackground(v: unknown): PageBackground | undefined {
   const b = v as Record<string, unknown> | null;
   if (!b || typeof b !== 'object') return undefined;
   const fill = parseFill(b.fill);
-  const pattern = PAGE_PATTERNS.includes(b.pattern as PagePattern)
-    ? (b.pattern as PagePattern)
-    : undefined;
+  const pattern = parsePagePattern(b.pattern);
   if (!fill && !pattern) return undefined;
   return { ...(fill ? { fill } : {}), ...(pattern ? { pattern } : {}) };
 }
@@ -281,9 +283,9 @@ function parsePageFields(v: unknown): IllustratePage | undefined {
       ...lock,
     };
   }
-  // A logo page is the artboard, never patterned (docs/specs/007-editor/logo-pages.md).
+  // A logo page is the artboard, never patterned nor pictured (docs/specs/007-editor/logo-pages.md).
   if (kindFields.kind === 'logo') {
-    const fill = background?.fill;
+    const fill = background?.fill?.kind === 'image' ? undefined : background?.fill;
     return {
       id: p.id,
       orientation: 'portrait',
@@ -457,7 +459,7 @@ export function pageSizeLabel(page: Pick<IllustratePage, 'orientation' | 'size'>
 }
 
 /** The label above a page: its name, or "Page n" once there are several, then its size, where it
- *  has one its orientation, and its kind ("Page 2 · A4 · Landscape · Infographic",
+ *  has one its orientation, and its kind but for an infographic page ("Page 2 · A4 · Landscape",
  *  "Launch · Square · Article"). */
 export function pageLabel(
   page: Pick<IllustratePage, 'orientation' | 'size' | 'name' | 'kind'>,
@@ -474,7 +476,9 @@ export function pageLabel(
   if (pageHasOrientation(page) && (size === 'a4' || size === 'letter' || size === 'a3')) {
     parts.push(page.orientation === 'portrait' ? 'Portrait' : 'Landscape');
   }
-  parts.push(PAGE_KIND_LABEL[pageKindOf(page)]);
+  // The kind closes it, but for an infographic page, the plain page: its title bar keeps the room.
+  const kind = pageKindOf(page);
+  if (kind !== 'infographic') parts.push(PAGE_KIND_LABEL[kind]);
   return parts.join(' · ');
 }
 
@@ -538,7 +542,7 @@ export function illustratePageAt(
 
 /** The page of a laid-out row (as layOutIllustratePages answers it: left to right, never
  *  overlapping) a point lies on, found by halving: the walk over a tab's elements asks once each. */
-function rowPageAt(
+export function rowPageAt(
   row: readonly LaidOutPage[],
   point: { x: number; y: number },
 ): LaidOutPage | undefined {

@@ -12,14 +12,15 @@ export function BringFocusInvite() {
       <rect x={24} y={28} width={86} height={46} rx={8} className="fill-white stroke-slate-300" />
       <rect x={290} y={130} width={90} height={50} rx={8} className="fill-white stroke-slate-300" />
       <Dialog x={70} y={46} w={260} h={118} sceneW={400} sceneH={210}>
-        <Avatar cx={98} cy={78} r={13} initial="S" colour="violet" />
-        <Label x={120} y={74} size={12} weight={700} tone="strong">
-          Sam wants you to look
+        <Label x={88} y={64} size={9} weight={700} tone="accent">
+          BRING FOCUS
         </Label>
-        <Label x={120} y={90} size={12} weight={700} tone="strong">
-          at something
+        <Label x={88} y={82} size={12} weight={700} tone="strong">
+          Sam wants you to look at something
         </Label>
-        <TextBar x={88} y={110} w={200} tone="faint" />
+        {/* The fixed sentence about moving your view, drawn as text lines. */}
+        <TextBar x={88} y={100} w={220} tone="faint" />
+        <TextBar x={88} y={111} w={150} tone="faint" />
         <Button x={150} y={128} w={72} h={24} label="Not now" variant="ghost" />
         <Button x={230} y={128} w={88} h={24} label="Take me there" variant="primary" />
       </Dialog>
@@ -46,9 +47,6 @@ function Chair({
   const rotate = { down: 0, left: 90, up: 180, right: 270 }[facing];
   return (
     <g>
-      {sitter ? (
-        <circle cx={x} cy={y} r={27} className="fill-none stroke-emerald-500" strokeWidth={3} />
-      ) : null}
       <g transform={`translate(${x} ${y}) rotate(${rotate})`}>
         <ellipse cx={0} cy={14} rx={17} ry={4} className="fill-slate-200" />
         <rect x={-15} y={-16} width={30} height={9} rx={4} className="fill-brand-300" />
@@ -60,6 +58,18 @@ function Chair({
           rx={5}
           className="fill-brand-100 stroke-brand-300"
         />
+        {/* Taken: a soft ring in the sitter's colour on the seat, where their feet land. */}
+        {sitter ? (
+          <ellipse
+            cx={0}
+            cy={3}
+            rx={21}
+            ry={13}
+            className="fill-none stroke-emerald-500"
+            strokeWidth={3}
+            strokeOpacity={0.85}
+          />
+        ) : null}
       </g>
       {sitter ? (
         <g>
@@ -116,19 +126,20 @@ export function BuildRows() {
   const rows: {
     name: string;
     blurb: string;
-    glyph: 'mind' | 'lane' | 'frame' | 'timeline' | 'table';
+    glyph: 'mind' | 'lane' | 'frame' | 'timeline' | 'table' | 'sankey';
   }[] = [
     { name: 'Mind Node', blurb: 'Tab adds a child, Enter a sibling', glyph: 'mind' },
     { name: 'Table', blurb: 'An editable grid of cells', glyph: 'table' },
     { name: 'Lane', blurb: 'A titled band that carries its steps', glyph: 'lane' },
     { name: 'Frame', blurb: 'A labelled box that groups a section', glyph: 'frame' },
     { name: 'Timeline', blurb: 'A track for sequencing events', glyph: 'timeline' },
+    { name: 'Sankey', blurb: 'Flows drawn as wide as the amount they carry', glyph: 'sankey' },
   ];
   const px = 62;
   const py = 12;
   return (
-    <Scene w={420} h={226} bg="plain">
-      <Panel x={px} y={py} w={296} h={204} title="BUILD">
+    <Scene w={420} h={260} bg="plain">
+      <Panel x={px} y={py} w={296} h={238} title="BUILD">
         {rows.map((r, i) => {
           const y = py + 32 + i * 34;
           const gx = px + 26;
@@ -166,6 +177,21 @@ export function BuildRows() {
                   <>
                     <rect x={gx - 8} y={gy - 7} width={16} height={13} />
                     <path d={`M${gx + 1} ${gy - 3} H${gx + 5}`} />
+                  </>
+                ) : r.glyph === 'sankey' ? (
+                  <>
+                    <path
+                      d={`M${gx - 9} ${gy - 6} C${gx - 3} ${gy - 6} ${gx - 3} ${gy - 1} ${gx + 1} ${gy - 1}`}
+                    />
+                    <path
+                      d={`M${gx - 9} ${gy + 5} C${gx - 3} ${gy + 5} ${gx - 3} ${gy + 2} ${gx + 1} ${gy + 2}`}
+                    />
+                    <path
+                      d={`M${gx + 1} ${gy - 1} C${gx + 5} ${gy - 1} ${gx + 5} ${gy - 6} ${gx + 9} ${gy - 6}`}
+                    />
+                    <path
+                      d={`M${gx + 1} ${gy + 2} C${gx + 5} ${gy + 2} ${gx + 5} ${gy + 6} ${gx + 9} ${gy + 6}`}
+                    />
                   </>
                 ) : (
                   <>

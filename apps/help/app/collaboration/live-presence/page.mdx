@@ -2,11 +2,12 @@ import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
 import { LiveCursors, PresenceSelection } from '@/components/illustrations/collaboration';
+import { ReleaseHold } from '@/components/illustrations/release-hold';
 
 export const metadata = helpMetadata({
   title: 'Live Presence',
   description:
-    'See who else is in a document in real time: live cursors with names, what each person has selected, who is on which tab, agents at work, and shared laser pointers.',
+    "See who is in a document with you in real time: live cursors with names, each person's selection, who is on which tab, agents at work and laser pointers.",
   path: '/help/collaboration/live-presence/',
 });
 
@@ -24,13 +25,13 @@ Open a document with other people and it comes alive. Everyone sees each other m
 
 You see everyone else's pointer move around the canvas, each labelled with their name in their own colour. Cursors are tied to a tab, so you only see the cursors of the people looking at the same tab as you. When someone moves to a different tab, their cursor follows them there.
 
-<Figure caption="Live cursors carry each person's name and colour, with a presence avatar stack showing who is in the document.">
+<Figure caption="Live cursors carry each person's name and colour, and each tab shows the initials of who is on it.">
   <LiveCursors />
 </Figure>
 
 ## Moving things together
 
-When someone drags, resizes or reshapes something, you see it move as they do, with any arrows attached to it following along, and it settles where they let go. If they press Escape halfway, it simply goes back. Only people who can edit the document move things; someone on a view-only link can't.
+When someone drags, resizes or reshapes something, you see it move as they do, with any arrows attached to it following along, and it settles where they let go. If they press Escape halfway, it simply goes back. Editors can move anything, Participants only what they added themselves, and Viewers nothing.
 
 ## Who is here, and where
 
@@ -50,11 +51,29 @@ Click any avatar on a tab, or the **+N** badge when a tab is busy, to open **Col
 
 ## Seeing what others have selected
 
-When someone selects an element, a small disc with their initials appears on its top-left corner, so you always know what a teammate is working on. While they have it selected, that element is gently locked for everyone else: hover the disc and it reads "Locked to (name)", so two people can not fight over the same shape at once. It frees up again the moment they click away. When you zoom far out, the discs hide until you zoom back in.
+When someone selects an element, a small disc with their initials appears on its top-left corner, so you always know what a teammate is working on. While an Editor or Participant has it selected, that element is gently locked for everyone else, so two people can't fight over the same shape at once. A Viewer's selection only shows the disc. It frees up again the moment they click away. When you zoom far out, the discs hide until you zoom back in.
 
 <Figure caption="A teammate's selection is badged with their initials and gently locked to them while they edit.">
   <PresenceSelection />
 </Figure>
+
+## Freeing an element someone left selected
+
+The lock clears by itself when the person clicks away, switches tab or leaves. What it can't fix on its own is someone who is still connected but has wandered off with something selected, leaving an element nobody else can touch. When that happens, it can be freed:
+
+<Step n={1}>Right-click the locked element.</Step>
+<Step n={2}>
+  A small **In use** menu opens, with one row per person holding it, such as "Release Jae's Hold".
+</Step>
+<Step n={3}>Choose that row. The element frees up for everyone straight away.</Step>
+
+<Figure caption="Right-clicking an element a teammate is holding opens the In use menu, naming whose hold you would release.">
+  <ReleaseHold />
+</Figure>
+
+**Who can do it.** While someone is the [facilitator](/help/collaboration/facilitator/), only they can. While nobody is facilitating, any Editor can. Participants and Viewers can't free a hold: for them, right-clicking a locked element opens nothing, as it does for an Editor while somebody else is facilitating.
+
+**What the holder sees.** As the menu says: "They keep their work; it just stops being theirs to edit." Their selection is dropped, and if they were typing into the element, that editing ends too, but the element itself is not changed. A short notification tells them "The facilitator freed an element you were holding", so it doesn't look like a glitch. Nobody else in the room is told anything; the element simply stops looking locked.
 
 ## Agents at work
 
@@ -68,7 +87,7 @@ Agents are listed in Collaborators, but they are not counted as people, can't be
 
 ## Shared laser pointer
 
-The [Laser Pointer](/help/selection-modes/laser/) is built for presenting together: when you draw with it, everyone in the document sees your glowing trail in real time, then it fades away. It is perfect for "look over here" without changing anything on the canvas.
+The [Laser Pointer](/help/selection-modes/laser/) is built for presenting together: when you draw with it, everyone on the same tab sees your glowing trail in real time, then it fades away. It is perfect for "look over here" without changing anything on the canvas.
 
 ## Who can see presence
 

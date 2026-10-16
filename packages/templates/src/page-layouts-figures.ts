@@ -112,10 +112,11 @@ function ranking(k: Kit): Element[] {
     ...head.els,
     ...RANKS.flatMap(([name, value], i) => {
       const y = head.top + i * rowH;
-      const disc = k.shape('circle', 0, y, d, d, {
+      // The rank: a Step number (docs/specs/009-elements/step-number.md) in the theme's accent.
+      const disc = k.shape('step', 0, y, d, d, {
         label: `${i + 1}`,
         textBold: true,
-        textSize: 'lg',
+        chipLook: 'solid',
       });
       // Wide: the name beside its bar on one line. Tall: the name over its bar.
       const nameW = k.wide ? W * 0.24 : W - textX;

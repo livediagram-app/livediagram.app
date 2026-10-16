@@ -13,13 +13,15 @@ function Board({
   ids,
   signature,
   skip = null,
+  hold,
 }: {
   ids: string[];
   signature: string;
   skip?: string | null;
+  hold?: () => boolean;
 }) {
   const body = useRef<HTMLDivElement>(null);
-  usePlanCardFlip(body, signature, skip);
+  usePlanCardFlip(body, signature, skip, hold);
   return (
     <div ref={body} data-testid="body">
       {ids.map((id) => (
@@ -49,6 +51,16 @@ function Board({
 const card = (id: string) => document.querySelector<HTMLElement>(`[data-plan-card="${id}"]`)!;
 
 describe('cards moving on a board', () => {
+  it('holds still while a column glides, its cards riding in their cells', () => {
+    places.set('a', { x: 0, y: 0 });
+    const hold = () => true;
+    const { rerender } = render(<Board ids={['a']} signature="1" hold={hold} />);
+    places.set('a', { x: 240, y: 0 });
+    rerender(<Board ids={['a']} signature="2" hold={hold} />);
+    expect(card('a').classList.contains('plan-card-flip')).toBe(false);
+    expect(card('a').style.transform).toBe('');
+  });
+
   it('glides a card that moved, and only that card', () => {
     places.set('a', { x: 0, y: 0 }).set('b', { x: 0, y: 100 });
     const { rerender } = render(<Board ids={['a', 'b']} signature="1" />);

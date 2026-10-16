@@ -7,18 +7,33 @@ import {
   ANIMATION_SET_NAME,
   DEFAULT_ANIMATION_SPEED,
   PIE_LOOPING_ANIMS,
+  PROGRESS_LOOPING_ANIMS,
+  RATING_LOOPING_ANIMS,
+  SANKEY_LOOPING_ANIMS,
   animLoops,
   animationSetsOf,
   isChartShape,
+  isConceptShape,
+  isProgressShape,
+  isRatingShape,
+  isSankeyShape,
+  type ConceptShape,
   type AnimationSetId,
   type Element,
   type ShapeElement,
+  CONTAINER_ANIMATIONS,
 } from '@livediagram/document';
 import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
 import { MenuFlyoutSection } from '@/components/primitives/MenuFlyoutSection';
 import { AnimationMenuGlyph } from '@/components/palette/context-menu-icons';
 import { FlowTiles, IconAnimationTiles } from '@/components/palette/context-menu-tiles';
 import { PieAnimTiles } from '@/components/palette/context-menu-rows';
+import {
+  ProgressAnimTiles,
+  RatingAnimTiles,
+  SankeyAnimTiles,
+} from '@/components/palette/context-menu-data-rows';
+import { ConceptAnimTiles, SequenceAnimTiles } from '@/components/palette/ElementAnimationTiles';
 import { AnimationSetTiles } from '@/components/palette/AnimationSetTiles';
 import { setAnimationState } from '@/lib/animation-set-writes';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
@@ -41,12 +56,22 @@ type Handlers = Pick<
   | 'onSetFlowSpeed'
   | 'onSetFlowRepeat'
   | 'onPreviewArrowFlow'
+  | 'onSetProgressAnim'
+  | 'onSetProgressAnimSpeed'
+  | 'onSetProgressAnimRepeat'
+  | 'onSetRatingAnim'
+  | 'onSetRatingAnimSpeed'
+  | 'onSetRatingAnimRepeat'
+  | 'elementStyle'
+  | 'sankey'
 >;
 
 type SectionProps = { open: boolean; onToggle: () => void; flush?: boolean };
 
 // The categories in menu order. Body sets come before the words they carry; arrows come last.
-type Category = AnimationSetId | 'icon' | 'chart' | 'arrow';
+type OwnCategory =
+  'icon' | 'chart' | 'sankey' | 'progress' | 'rating' | 'concept' | 'sequence' | 'arrow';
+type Category = AnimationSetId | OwnCategory;
 const ORDER: readonly Category[] = [
   'shape',
   'sticky',
@@ -55,14 +80,38 @@ const ORDER: readonly Category[] = [
   'table',
   'icon',
   'chart',
+  'sankey',
+  'progress',
+  'rating',
+  'concept',
+  'sequence',
   'text',
   'arrow',
 ];
-const OWN_NAME: Record<'icon' | 'chart' | 'arrow', string> = {
+const OWN_NAME: Record<OwnCategory, string> = {
   icon: 'Icon',
   chart: 'Chart',
+  sankey: 'Sankey',
+  progress: 'Progress',
+  rating: 'Rating',
+  concept: 'Concept',
+  sequence: 'Sequence',
   arrow: 'Arrow',
 };
+
+// The element-owned category a shape takes, if any (each read and written by its own tiles below).
+function ownCategoryOf(el: Element): OwnCategory | undefined {
+  if (el.type === 'arrow') return 'arrow';
+  if (el.type !== 'shape') return undefined;
+  if (el.shape === 'icon') return 'icon';
+  if (isChartShape(el.shape)) return 'chart';
+  if (isSankeyShape(el.shape)) return 'sankey';
+  if (isProgressShape(el.shape)) return 'progress';
+  if (isRatingShape(el.shape)) return 'rating';
+  if (isConceptShape(el.shape)) return 'concept';
+  if (el.shape === 'sequence') return 'sequence';
+  return undefined;
+}
 
 const nameOf = (c: Category) =>
   c in OWN_NAME ? OWN_NAME[c as keyof typeof OWN_NAME] : ANIMATION_SET_NAME[c as AnimationSetId];
@@ -71,9 +120,8 @@ const nameOf = (c: Category) =>
 export function animationCategoriesOf(elements: readonly Element[]): Category[] {
   const present = new Set<Category>(animationSetsOf(elements));
   for (const el of elements) {
-    if (el.type === 'arrow') present.add('arrow');
-    if (el.type === 'shape' && el.shape === 'icon') present.add('icon');
-    if (el.type === 'shape' && isChartShape(el.shape)) present.add('chart');
+    const own = ownCategoryOf(el);
+    if (own) present.add(own);
   }
   return ORDER.filter((c) => present.has(c));
 }
@@ -96,7 +144,8 @@ export function AnimationSections({
   flyoutProps: (id: string) => SectionProps;
   handlers: Handlers;
 }) {
-  const categories = animationCategoriesOf(elements);
+  // A Sankey's animation is offered only where its edits are (h.sankey: an Editor, one diagram selected).
+  const categories = animationCategoriesOf(elements).filter((c) => c !== 'sankey' || !!h.sankey);
   if (categories.length === 0) return null;
   const sections = categories.map((c) => (
     <MenuAccordionSection
@@ -162,6 +211,55 @@ function CategoryBody({
       />
     );
   }
+  if (category === 'sankey') {
+    const sankey = elements.find(
+      (el): el is ShapeElement => el.type === 'shape' && isSankeyShape(el.shape),
+    );
+    if (!sankey || !h.sankey) return null;
+    const set = h.sankey.onSetOption;
+    return (
+      <SankeyAnimTiles
+        anim={sankey.sankeyAnim ?? null}
+        speed={sankey.sankeyAnimSpeed ?? DEFAULT_ANIMATION_SPEED}
+        repeat={animLoops(sankey.sankeyAnim, sankey.sankeyAnimRepeat, SANKEY_LOOPING_ANIMS)}
+        onSet={(v) => set({ sankeyAnim: v ?? undefined })}
+        onSetSpeed={(v) => set({ sankeyAnimSpeed: v })}
+        onSetRepeat={(v) => set({ sankeyAnimRepeat: v })}
+      />
+    );
+  }
+  if (category === 'progress' || category === 'rating') {
+    const el = elements.find((e): e is ShapeElement => ownCategoryOf(e) === category)!;
+    return category === 'progress' ? (
+      <ProgressAnimTiles
+        anim={el.progressAnim ?? null}
+        speed={el.progressAnimSpeed ?? DEFAULT_ANIMATION_SPEED}
+        repeat={animLoops(el.progressAnim, el.progressAnimRepeat, PROGRESS_LOOPING_ANIMS)}
+        onSet={h.onSetProgressAnim}
+        onSetSpeed={h.onSetProgressAnimSpeed}
+        onSetRepeat={h.onSetProgressAnimRepeat}
+      />
+    ) : (
+      <RatingAnimTiles
+        anim={el.ratingAnim ?? null}
+        speed={el.ratingAnimSpeed ?? DEFAULT_ANIMATION_SPEED}
+        repeat={animLoops(el.ratingAnim, el.ratingAnimRepeat, RATING_LOOPING_ANIMS)}
+        onSet={h.onSetRatingAnim}
+        onSetSpeed={h.onSetRatingAnimSpeed}
+        onSetRepeat={h.onSetRatingAnimRepeat}
+      />
+    );
+  }
+  if (category === 'concept') {
+    const el = elements.find(
+      (e): e is ShapeElement & { shape: ConceptShape } => ownCategoryOf(e) === 'concept',
+    )!;
+    return <ConceptAnimTiles target={el} ops={h.elementStyle} />;
+  }
+  if (category === 'sequence') {
+    const el = elements.find((e): e is ShapeElement => ownCategoryOf(e) === 'sequence')!;
+    return <SequenceAnimTiles target={el} ops={h.elementStyle} />;
+  }
   if (category === 'arrow') {
     const arrow = elements.find((el) => el.type === 'arrow');
     if (arrow?.type !== 'arrow') return null;
@@ -184,6 +282,12 @@ function CategoryBody({
   return (
     <AnimationSetTiles
       set={set}
+      // A boundary is offered only the motions that leave it in place (docs/specs/009-elements/boundary.md).
+      values={
+        set === 'shape' && elements.some((el) => el.type === 'shape' && el.shape === 'boundary')
+          ? CONTAINER_ANIMATIONS
+          : undefined
+      }
       current={state.value}
       legacy={state.legacy}
       speed={state.speed ?? DEFAULT_ANIMATION_SPEED}

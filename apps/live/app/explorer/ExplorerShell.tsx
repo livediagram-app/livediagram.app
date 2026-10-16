@@ -11,8 +11,6 @@ import { LensField } from './lens/LensField';
 import { LensAnnouncer } from './lens/LensStates';
 import { ChromeControls } from '@/components/chrome/ChromeControls';
 import { TeamFormModal } from '@/components/dialogs/TeamFormModal';
-import { MoveToFolderDialog } from '@/components/dialogs/MoveToFolderDialog';
-import { SettingsDialog } from '@/components/dialogs/SettingsDialog';
 import { SignInBanner, SIGNIN_BANNER_DISMISS_KEY } from '@/components/chrome/SignInBanner';
 import { clerkEnabled } from '@/lib/clerk-config';
 import { HELP_SEARCH_ITEMS } from '@/lib/help-search';
@@ -27,7 +25,8 @@ import { AreaErrorBoundary } from '@/components/primitives/AreaErrorBoundary';
 import { ExplorerProvider, useExplorer } from './ExplorerContext';
 import { ExplorerSidebar } from './sidebar/ExplorerSidebar';
 import { useExplorerState } from './useExplorerState';
-import { isLocalOnly } from '@/lib/document-space';
+import { teamFolderPath } from './routes';
+import { searchPanelSources } from '@/components/panels/search-panel-sources';
 
 // Lazy-load SearchPanel — same rationale as the editor route: it's
 // gated on `searchOpen`, never default-rendered, and dropping ~375
@@ -35,6 +34,17 @@ import { isLocalOnly } from '@/lib/document-space';
 // on the first paint of the dashboard.
 const SearchPanel = dynamic(
   () => import('@/components/panels/SearchPanel').then((m) => m.SearchPanel),
+  { ssr: false },
+);
+
+// Settings and the move picker mount only while open, so they load on first open rather than
+// with every Explorer page: Settings alone carries every category's panes.
+const SettingsDialog = dynamic(
+  () => import('@/components/dialogs/SettingsDialog').then((m) => m.SettingsDialog),
+  { ssr: false },
+);
+const MoveToFolderDialog = dynamic(
+  () => import('@/components/dialogs/MoveToFolderDialog').then((m) => m.MoveToFolderDialog),
   { ssr: false },
 );
 
@@ -305,17 +315,8 @@ function ShellChrome({ children }: { children: ReactNode }) {
       />
       {searchOpen ? (
         <SearchPanel
-          documents={liveDocs.map((d) => ({ id: d.id, name: d.name, localOnly: isLocalOnly(d) }))}
-          folders={folders.map((f) => ({ id: f.id, name: f.name }))}
-          shared={shared.map((s) => ({ id: s.id, name: s.name, shareCode: s.shareCode }))}
-          teams={teams.map((t) => ({ id: t.id, name: t.name }))}
+          {...searchPanelSources({ documents: liveDocs, folders, shared, teams, teamDocuments })}
           teamFolders={teamFolders}
-          teamDocuments={teamDocuments.map((d) => ({
-            id: d.id,
-            name: d.name,
-            teamId: d.team.id,
-            teamName: d.team.name,
-          }))}
           onSelectDocument={(id) => {
             window.location.assign(`/document/${id}`);
           }}
@@ -334,9 +335,7 @@ function ShellChrome({ children }: { children: ReactNode }) {
           onSelectTeamFolder={(teamId, folderId) => {
             // Full load rather than go(): the team page reads the
             // folder deep-link param at mount (docs/specs/013-workspace/team-shared-documents.md).
-            window.location.assign(
-              `/explorer/team?id=${encodeURIComponent(teamId)}&folder=${encodeURIComponent(folderId)}`,
-            );
+            window.location.assign(teamFolderPath(teamId, folderId));
           }}
           helpItems={HELP_SEARCH_ITEMS}
           settingItems={SETTINGS_SEARCH_ITEMS}

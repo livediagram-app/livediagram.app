@@ -54,7 +54,7 @@ describe('PickerFace', () => {
   it('replays a peer’s roll as a spin instead of just showing the answer', () => {
     // The bug: everyone but the presser saw the new name appear with no roll,
     // which is the one moment a picker has.
-    const onRoll = vi.fn(() => ({ label: 'Alex' }) as PickerCandidate);
+    const onRoll = vi.fn(() => ({ label: 'Alex' }));
     const props = { label: 'Who demos?', candidates: CANDIDATES, textColor: '#000', shared: true };
     const view = render(<PickerFace {...props} result={undefined} onRoll={onRoll} />);
     expect(spinning()).toBe(false);
@@ -73,7 +73,7 @@ describe('PickerFace', () => {
   });
 
   it('does not replay our own roll a second time', () => {
-    const onRoll = vi.fn(() => ({ label: 'Alex' }) as PickerCandidate);
+    const onRoll = vi.fn(() => ({ label: 'Alex' }));
     const view = render(
       <PickerFace
         label="Who demos?"
@@ -112,7 +112,7 @@ describe('PickerFace', () => {
   it('still spins when a peer later lands on the name we once rolled', () => {
     // The reason the skip holds a VALUE and is spent on the next change: a
     // boolean flag (or one left armed) would swallow this roll silently.
-    const onRoll = vi.fn(() => ({ label: 'Alex' }) as PickerCandidate);
+    const onRoll = vi.fn(() => ({ label: 'Alex' }));
     const props = { label: 'Who demos?', candidates: CANDIDATES, textColor: '#000', shared: true };
     const view = render(<PickerFace {...props} result={undefined} onRoll={onRoll} />);
     act(() => {

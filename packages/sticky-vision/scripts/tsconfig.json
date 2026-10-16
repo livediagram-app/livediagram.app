@@ -1,0 +1,9 @@
+{
+  // The scripts (calibration, probes, the photo truth) run on Node; the detector in src/ does not,
+  // so only they see Node's types.
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "types": ["node"]
+  },
+  "include": ["**/*.ts"]
+}

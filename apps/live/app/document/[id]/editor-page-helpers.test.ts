@@ -1,6 +1,7 @@
 import type { ArrowElement, Element, ShapeElement, Tab } from '@livediagram/document';
 import { describe, expect, it } from 'vitest';
 import {
+  mayShareDocument,
   autosaveReadOnly,
   computeTabSaveDiff,
   createTab,
@@ -114,6 +115,22 @@ describe('computeTabSaveDiff (autosave decision kernel)', () => {
     expect(diff.hasChanges).toBe(false);
   });
 
+  it('compares the rest of the tab key by key: a deep change is caught, an equal copy is not', () => {
+    const a = { ...tab('a'), pages: [{ id: 'p1', title: 'One' }] } as unknown as ReturnType<
+      typeof tab
+    >;
+    const copy = { ...a, pages: [{ id: 'p1', title: 'One' }] } as unknown as typeof a;
+    const edited = { ...a, pages: [{ id: 'p1', title: 'Two' }] } as unknown as typeof a;
+    const added = { ...a, font: 'lora' } as typeof a;
+    expect(computeTabSaveDiff([a], [copy], 'Doc', 'Doc').hasChanges).toBe(false);
+    expect(computeTabSaveDiff([a], [edited], 'Doc', 'Doc').changedTabs.map((t) => t.id)).toEqual([
+      'a',
+    ]);
+    expect(computeTabSaveDiff([a], [added], 'Doc', 'Doc').changedTabs.map((t) => t.id)).toEqual([
+      'a',
+    ]);
+  });
+
   it('flags a document rename via nameChanged', () => {
     const tabs = [tab('a')];
     const diff = computeTabSaveDiff(tabs, tabs, 'Old', 'New');
@@ -203,7 +220,7 @@ describe('computeTabSaveDiff (autosave decision kernel)', () => {
         y: 0,
         width: 1,
         height: 1,
-      } as Tab['elements'][number],
+      },
     ]);
     const peerEdited = { ...peer, name: 'p (edited)' };
     const diff = computeTabSaveDiff([a, peer], [a, peerEdited], 'Doc', 'Doc', new Set(['a']));
@@ -540,5 +557,23 @@ describe('autosaveReadOnly', () => {
     expect(autosaveReadOnly({ canEdit: true, loadError: false, documentNotFound: true })).toBe(
       true,
     );
+  });
+});
+
+// docs/specs/013-workspace/team-shared-documents.md: a team's documents belong to every joined member.
+describe('mayShareDocument', () => {
+  it('lets the owner share, team or not', () => {
+    expect(mayShareDocument({ isOwner: true, teamId: null, sessionShareCode: null })).toBe(true);
+    expect(mayShareDocument({ isOwner: true, teamId: 't1', sessionShareCode: null })).toBe(true);
+  });
+
+  it('lets a teammate who opened a team document without a code share it', () => {
+    expect(mayShareDocument({ isOwner: false, teamId: 't1', sessionShareCode: null })).toBe(true);
+  });
+
+  it('keeps share-link visitors as visitors, team document or not', () => {
+    expect(mayShareDocument({ isOwner: false, teamId: null, sessionShareCode: 'c1' })).toBe(false);
+    expect(mayShareDocument({ isOwner: false, teamId: 't1', sessionShareCode: 'c1' })).toBe(false);
+    expect(mayShareDocument({ isOwner: false, teamId: null, sessionShareCode: null })).toBe(false);
   });
 });

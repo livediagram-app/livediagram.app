@@ -1,13 +1,13 @@
 'use client';
 
-import { useId, useState } from 'react';
+import { useState } from 'react';
 import { editorModeLabel, type EditorMode, type Element } from '@livediagram/document';
-import { HoverCard, SearchIcon } from '@livediagram/ui';
+import { CompactEmptyState, HoverCard, NoMatches, SearchIcon } from '@livediagram/ui';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { track } from '@/lib/telemetry';
-import { ChevronIcon } from '@/components/primitives/ChevronIcon';
 import { SearchInput } from '@/components/primitives/SearchInput';
 import { TOOLBAR_TRIGGER_TONE } from './PaletteDropdown';
+import { ToolbarSearchAccordion } from './ToolbarSearchAccordion';
 import { PaletteTileGrid, tileHandler, type PaletteTileActions } from './PaletteTileGrid';
 import type { PaletteTileDef } from './palette-tile-defs';
 import { mergeByName, searchElementTiles } from './palette-tile-search';
@@ -80,7 +80,7 @@ export function ToolbarSearchPanel({
   // Mounted only while the popover is open, so both reset each time it opens.
   const [query, setQuery] = useState('');
   const [othersOpen, setOthersOpen] = useState(false);
-  const othersId = useId();
+  const [unavailableOpen, setUnavailableOpen] = useState(false);
   // Draw mode's markers as this browser last set them, read once per opening.
   const [pens] = useState(loadWhiteboardPrefs);
   const surface = useCanvasSurface();
@@ -98,6 +98,9 @@ export function ToolbarSearchPanel({
   // One ranking per section across element types and catalogue entries: name matches first.
   const here = mergeByName(query, elements.here, catalogues.here);
   const elsewhere = mergeByName(query, elements.elsewhere, catalogues.elsewhere);
+  // Another mode's own elements: found, greyed out, never added here (and so never Enter's pick).
+  const unavailable = elements.unavailable;
+  const below = elsewhere.length + unavailable.length;
   const browsing = !query.trim();
   const modeName = editorModeLabel(mode);
 
@@ -127,56 +130,52 @@ export function ToolbarSearchPanel({
       ) : null}
       {here.length > 0 ? (
         <PaletteTileGrid tiles={here} actions={actions} pendingDraw={pendingDraw} />
+      ) : // The shared empty state (docs/specs/004-interface-design/empty-states.md).
+      browsing ? (
+        <CompactEmptyState
+          size="small"
+          icon={<SearchIcon />}
+          title={
+            below > 0 ? `No ${modeName} elements on this tab yet` : 'No elements on this tab yet'
+          }
+          description="Type to find any element."
+        />
+      ) : below > 0 ? (
+        <NoMatches
+          things={`${modeName} elements`}
+          query={query}
+          hint={`Other modes have ${below} below.`}
+        />
       ) : (
-        <p className="px-1 py-2 text-center text-[11px] text-slate-500 dark:text-slate-400">
-          {browsing
-            ? elsewhere.length > 0
-              ? `Only elements from other modes are on this tab so far. Type to find any element.`
-              : 'Nothing on this tab yet. Type to find any element.'
-            : elsewhere.length > 0
-              ? `No ${modeName} elements match. Other modes have ${elsewhere.length} below.`
-              : 'No elements match'}
-        </p>
+        <NoMatches things="elements" query={query} onClear={() => setQuery('')} />
       )}
       {elsewhere.length > 0 ? (
-        <div className="flex flex-col border-t border-slate-100 pt-2 dark:border-slate-800">
-          <button
-            type="button"
-            aria-expanded={othersOpen}
-            aria-controls={othersId}
-            onClick={() => {
-              if (!othersOpen) track('UI', 'Opened', 'ToolbarSearchOtherModes');
-              setOthersOpen(!othersOpen);
-            }}
-            className={`flex w-full items-center gap-2 rounded-lg border px-2 py-1.5 text-left transition ${
-              othersOpen
-                ? 'border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-800/60'
-                : 'border-transparent hover:border-slate-200 hover:bg-slate-50 dark:hover:border-slate-700 dark:hover:bg-slate-800/60'
-            }`}
-          >
-            <span className="min-w-0 flex-1">
-              <span className="flex min-w-0 items-center gap-1.5">
-                <span className="truncate text-[11px] font-semibold text-slate-700 dark:text-slate-200">
-                  Not in {modeName} Mode
-                </span>
-                <span className="inline-flex h-[12.6px] shrink-0 items-center rounded-full bg-slate-100 px-1.5 text-[9px] font-semibold text-slate-500 dark:bg-slate-800 dark:text-slate-400">
-                  <span className="text-optical-centre">{elsewhere.length}</span>
-                </span>
-              </span>
-              <span className="line-clamp-2 text-[10px] leading-snug text-slate-500 dark:text-slate-400">
-                Elements other modes offer. Any of them works here too.
-              </span>
-            </span>
-            <span className="shrink-0 text-slate-400">
-              <ChevronIcon open={othersOpen} />
-            </span>
-          </button>
-          {othersOpen ? (
-            <div id={othersId} className="mt-1.5">
-              <PaletteTileGrid tiles={elsewhere} actions={actions} pendingDraw={pendingDraw} />
-            </div>
-          ) : null}
-        </div>
+        <ToolbarSearchAccordion
+          title="Elements From Other Modes"
+          description="Elements other modes offer. Any of them works here too."
+          count={elsewhere.length}
+          open={othersOpen}
+          onToggle={() => {
+            if (!othersOpen) track('UI', 'Opened', 'ToolbarSearchOtherModes');
+            setOthersOpen(!othersOpen);
+          }}
+        >
+          <PaletteTileGrid tiles={elsewhere} actions={actions} pendingDraw={pendingDraw} />
+        </ToolbarSearchAccordion>
+      ) : null}
+      {unavailable.length > 0 ? (
+        <ToolbarSearchAccordion
+          title={`Not Available in ${modeName} Mode`}
+          description="Made for another mode's own tools, so only that mode adds them."
+          count={unavailable.length}
+          open={unavailableOpen}
+          onToggle={() => {
+            if (!unavailableOpen) track('UI', 'Opened', 'ToolbarSearchUnavailable');
+            setUnavailableOpen(!unavailableOpen);
+          }}
+        >
+          <PaletteTileGrid tiles={unavailable} actions={actions} pendingDraw={pendingDraw} />
+        </ToolbarSearchAccordion>
       ) : null}
     </div>
   );

@@ -6,11 +6,12 @@ import { createShape, type ShapeElement } from '@livediagram/document';
 import { ITEM_TYPES, presetSetup } from '@livediagram/items';
 import {
   PlanBoardMenuSections,
+  PlanBoardSectionsPanel,
   PlanSupportedCardsSettings,
   PlanSwimlaneSettings,
 } from './PlanBoardMenuSection';
 
-// docs/specs/026-plan/plan-board.md "The board set-up": four sections, a flyout each.
+// docs/specs/026-plan/plan-board.md "The board set-up": five sections in one Board flyout.
 const plan: Record<string, unknown> = {};
 vi.mock('@/components/plan/PlanContext', () => ({ usePlan: () => plan }));
 vi.mock('@/components/primitives/MenuFlyoutSection', () => ({
@@ -50,21 +51,19 @@ function showBody(
 function show(overrides: Record<string, unknown>) {
   for (const key of Object.keys(plan)) delete plan[key];
   Object.assign(plan, { canEdit: true, updateBoard: vi.fn(), announce: vi.fn() }, overrides);
-  render(<PlanBoardMenuSections element={board} flyoutProps={() => ({}) as never} />);
+  render(<PlanBoardMenuSections element={board} flyoutProps={() => ({})} />);
 }
 
 describe('PlanBoardMenuSections', () => {
-  it('is one Board flyout holding Board Setup, Swimlanes, Supported Cards and Card Layout', () => {
+  // One less click: the sections are rows of the menu itself, not of a Board flyout inside it.
+  it('puts Board Setup, Columns, Swimlanes, Supported Cards and Card Layout in the menu, no Board parent', () => {
     show({ types: ITEM_TYPES });
     expect(
       [...document.querySelectorAll('[data-flyout]')].map((f) => f.getAttribute('data-flyout')),
-    ).toEqual(['Board']);
-    expect(
-      screen
-        .getAllByRole('button', { expanded: true })
-        .concat(screen.getAllByRole('button', { expanded: false }))
-        .map((b) => b.textContent),
-    ).toEqual(['Board Setup', 'Swimlanes', 'Supported Cards', 'Card Layout']);
+    ).toEqual(['Board Setup', 'Columns', 'Swimlanes', 'Supported Cards', 'Card Layout']);
+    expect(document.querySelector('[data-flyout="Board"]')).toBeNull();
+    // Set apart from Style above them.
+    expect(document.querySelector('[role="separator"]')).toBeTruthy();
   });
 
   it('keeps Add to Slides off the title (it is in the board’s own ⋯ menu)', () => {
@@ -76,8 +75,20 @@ describe('PlanBoardMenuSections', () => {
     for (const key of Object.keys(plan)) delete plan[key];
     Object.assign(plan, { canEdit: true, updateBoard: vi.fn(), types: ITEM_TYPES });
     const archive = { ...board, planBoard: presetSetup('archive') } as ShapeElement;
-    render(<PlanBoardMenuSections element={archive} flyoutProps={() => ({}) as never} />);
+    render(<PlanBoardMenuSections element={archive} flyoutProps={() => ({})} />);
     expect(screen.queryByRole('button', { name: 'Supported Cards' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Columns' })).toBeNull();
+  });
+
+  it('leaves Columns out of an All Cards board and one not set up yet', () => {
+    for (const setupOf of [presetSetup('all-cards'), { ...presetSetup('kanban'), columns: [] }]) {
+      for (const key of Object.keys(plan)) delete plan[key];
+      Object.assign(plan, { canEdit: true, updateBoard: vi.fn(), types: ITEM_TYPES });
+      const el = { ...board, planBoard: setupOf } as ShapeElement;
+      render(<PlanBoardMenuSections element={el} flyoutProps={() => ({})} />);
+      expect(screen.queryByRole('button', { name: 'Columns' })).toBeNull();
+      cleanup();
+    }
   });
 });
 
@@ -85,8 +96,8 @@ describe('PlanBoardMenuSections', () => {
 describe('Swimlanes by a field', () => {
   const types = [
     {
-      ...ITEM_TYPES[0]!,
-      fields: [...ITEM_TYPES[0]!.fields, 'f-customer'],
+      ...ITEM_TYPES[0],
+      fields: [...ITEM_TYPES[0].fields, 'f-customer'],
       custom: [{ id: 'f-customer', label: 'Customer', kind: 'text' as const }],
     },
   ];
@@ -110,11 +121,7 @@ describe('Swimlanes by a field', () => {
     cleanup();
     for (const key of Object.keys(plan)) delete plan[key];
     Object.assign(plan, { canEdit: true, updateBoard: vi.fn(), announce: vi.fn(), types });
-    render(
-      <PlanSwimlaneSettings
-        element={{ ...board, planBoard: presetSetup('all-cards') } as ShapeElement}
-      />,
-    );
+    render(<PlanSwimlaneSettings element={{ ...board, planBoard: presetSetup('all-cards') }} />);
     expect(screen.getByRole('radio', { name: 'Status' })).toBeTruthy();
   });
 
@@ -130,8 +137,8 @@ describe('Swimlanes by a field', () => {
     render(<PlanSwimlaneSettings element={laned} />);
     fireEvent.click(screen.getByRole('radio', { name: 'Assignee' }));
     const next = updateBoard.mock.calls[0]![1];
-    expect(next.swimlaneBy).toBe('assignee');
-    expect(next.swimlaneField).toBeUndefined();
+    expect(next).toMatchObject({ swimlaneBy: 'assignee' });
+    expect(next).toEqual(expect.not.objectContaining({ swimlaneField: expect.anything() }));
   });
 });
 
@@ -147,7 +154,10 @@ describe('Card Types', () => {
     // Kanban shows Task, Action and Note: pressing Project shows Projects too.
     // The first Project tile is the type's (the Show on Cards group has a Project field tile too).
     fireEvent.click(screen.getAllByRole('checkbox', { name: 'Project' })[0]!);
-    expect(updateBoard.mock.calls[0]![1].addTypes).toContain('project');
+    expect(updateBoard.mock.calls[0]![1]).toHaveProperty(
+      'addTypes',
+      expect.arrayContaining(['project']),
+    );
   });
 });
 
@@ -168,7 +178,8 @@ describe('Card Types after a type is deleted', () => {
     const tile = (name: string) => screen.getAllByRole('checkbox', { name })[0]!;
     for (const t of ITEM_TYPES) expect(tile(t.label).getAttribute('aria-checked')).toBe('true');
     fireEvent.click(tile('Note'));
-    expect(updateBoard.mock.calls[0]![1].addTypes).toEqual(
+    expect(updateBoard.mock.calls[0]![1]).toHaveProperty(
+      'addTypes',
       ITEM_TYPES.map((t) => t.id).filter((id) => id !== 'note'),
     );
   });
@@ -179,8 +190,8 @@ describe('the board menu’s sections', () => {
   it('stay flyouts, never promoted into the menu', () => {
     for (const k of Object.keys(plan)) delete plan[k];
     Object.assign(plan, { canEdit: true, updateBoard: vi.fn(), announce: vi.fn(), types: [] });
-    render(<PlanBoardMenuSections element={board} flyoutProps={() => ({}) as never} />);
-    for (const title of ['Board'])
+    render(<PlanBoardMenuSections element={board} flyoutProps={() => ({})} />);
+    for (const title of ['Board Setup', 'Columns', 'Swimlanes', 'Card Layout'])
       expect(document.querySelector(`[data-flyout="${title}"]`)?.getAttribute('data-panel')).toBe(
         'yes',
       );
@@ -199,5 +210,36 @@ describe('Setup Board under the title', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Setup Board' }));
     expect(onClose).toHaveBeenCalled();
     expect(openBoardSetup).toHaveBeenCalledWith('board');
+  });
+});
+
+// docs/specs/026-plan/plan-tabs.md "Editing": in a Dashboard slot the board's cog holds the slot's Slot section after
+// the board's own, one section open at a time across both.
+describe('the board panel with a slot’s section', () => {
+  it('adds the section last, opening it closes Board Setup', () => {
+    Object.assign(plan, { canEdit: true, types: ITEM_TYPES, updateBoard: vi.fn() });
+    render(
+      <PlanBoardSectionsPanel
+        element={board}
+        more={(section) => {
+          const { open, onToggle } = section('slot');
+          return (
+            <button type="button" aria-expanded={open} onClick={onToggle}>
+              Slot
+            </button>
+          );
+        }}
+      />,
+    );
+    const slot = screen.getByRole('button', { name: 'Slot' });
+    expect(slot.getAttribute('aria-expanded')).toBe('false');
+    expect(screen.getByRole('button', { name: /Board Setup/ }).getAttribute('aria-expanded')).toBe(
+      'true',
+    );
+    fireEvent.click(slot);
+    expect(slot.getAttribute('aria-expanded')).toBe('true');
+    expect(screen.getByRole('button', { name: /Board Setup/ }).getAttribute('aria-expanded')).toBe(
+      'false',
+    );
   });
 });

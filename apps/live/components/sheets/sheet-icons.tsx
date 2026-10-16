@@ -16,16 +16,32 @@ import {
   lucideTableCellsMerge,
   lucideTableCellsSplit,
   lucideTrash2,
+  lucideEllipsis,
   lucideArrowUpDown,
   lucideBaseline,
-  lucideChartPie,
   lucideMerge,
   lucideRemoveFormatting,
   lucideTextAlignCenter,
   lucideTextAlignEnd,
   lucideTextAlignStart,
   lucideType,
+  lucideCalculator,
+  lucideCalendar,
+  lucideChartNoAxesColumnIncreasing,
+  lucideCoins,
+  lucideGitFork,
+  lucideGrid3x3,
+  lucideInfo,
+  lucideSearch,
+  lucideSquareKanban,
+  lucidePaintRoller,
+  lucideSquareCheck,
+  lucideSquareChevronDown,
+  lucideShieldCheck,
+  lucideHighlighter,
+  lucideHash,
 } from '@livediagram/icons/lucide';
+import type { FunctionFamily } from '@livediagram/sheets';
 
 const SIZE = 16;
 
@@ -175,24 +191,6 @@ export const ChevronIcon = () => (
 );
 
 // Charts (sheet.md "Charts"): Lucide's pie, and a bar and a line drawn to match it.
-export const PieChartIcon = () => (
-  <G>
-    <Prims prims={lucideChartPie} />
-  </G>
-);
-export const BarChartIcon = () => (
-  <G>
-    <path d="M3 3v18h18" />
-    <path d="M8 17v-5M13 17V8M18 17v-8" />
-  </G>
-);
-export const LineChartIcon = () => (
-  <G>
-    <path d="M3 3v18h18" />
-    <path d="m7 15 4-5 3 3 5-6" />
-  </G>
-);
-
 // The cell menu's rows (docs/specs/029-sheets/sheet.md "Cell menu").
 const prims = (p: Parameters<typeof Prims>[0]['prims']) =>
   function CellMenuGlyph() {
@@ -207,6 +205,7 @@ export const InsertRowBelowIcon = prims(lucideBetweenHorizontalEnd);
 export const InsertColumnLeftIcon = prims(lucideBetweenVerticalStart);
 export const InsertColumnRightIcon = prims(lucideBetweenVerticalEnd);
 export const DeleteIcon = prims(lucideTrash2);
+export const MoreIcon = prims(lucideEllipsis);
 export const ClearContentsIcon = prims(lucideEraser);
 export const SortAToZIcon = prims(lucideArrowDownAZ);
 export const SortZToAIcon = prims(lucideArrowUpZA);
@@ -215,3 +214,25 @@ export const UnmergeCellsIcon = prims(lucideTableCellsSplit);
 export const HideIcon = prims(lucideEyeOff);
 export const PasteValuesIcon = prims(lucideClipboardType);
 export const FormattingIcon = prims(lucidePaintbrush);
+
+// Each function family's glyph (docs/specs/029-sheets/sheet.md "Toolbar"), beside its name in the Functions category.
+export const FUNCTION_FAMILY_ICONS: Record<FunctionFamily, () => React.JSX.Element> = {
+  Maths: prims(lucideCalculator),
+  Statistics: prims(lucideChartNoAxesColumnIncreasing),
+  Logic: prims(lucideGitFork),
+  Information: prims(lucideInfo),
+  Lookup: prims(lucideSearch),
+  Text: prims(lucideType),
+  'Date and time': prims(lucideCalendar),
+  Arrays: prims(lucideGrid3x3),
+  Finance: prims(lucideCoins),
+  'Plan cards': prims(lucideSquareKanban),
+};
+export const SearchIcon = prims(lucideSearch);
+// Rules (data-validation.md, conditional-formatting.md, sheet.md "Paint Format", the Custom number format).
+export const PaintFormatIcon = prims(lucidePaintRoller);
+export const CheckboxIcon = prims(lucideSquareCheck);
+export const DropdownIcon = prims(lucideSquareChevronDown);
+export const ValidationIcon = prims(lucideShieldCheck);
+export const ConditionalFormatIcon = prims(lucideHighlighter);
+export const CustomFormatIcon = prims(lucideHash);

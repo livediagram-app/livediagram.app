@@ -22,7 +22,7 @@ Scope, by file:
 | `apps/live/app/document/[id]/useEditorState.ts`          | `fireReaction`: play, broadcast, track                            |
 | `apps/live/hooks/collab/useEditorBroadcast.ts`           | `broadcastReaction` and its gate                                  |
 | `apps/live/app/document/[id]/useRoomConnection.ts`       | Receives the op                                                   |
-| `apps/live/components/canvas/Canvas.tsx`                 | `onWalkIntoReactionPad` runs `onFireReaction`                     |
+| `apps/live/components/canvas/useCanvasAvatar.tsx`        | `onWalkIntoReactionPad` runs `onFireReaction`                     |
 | `apps/live/components/canvas/BoxedElementView.tsx`       | Mounts `ReactionBurst` beside the label stack                     |
 | `apps/live/components/palette/palette-tile-defs.tsx`     | `tools:reaction-<reaction>`, `tileGroup: 'reaction'`              |
 | `apps/live/components/palette/BehaviourMenuSections.tsx` | `ReactionMenuSection`                                             |

@@ -9,6 +9,7 @@ import {
 } from '@/hooks/plan/maximised-plan';
 import { useBoardMaximised } from '@/hooks/plan/useBoardMaximised';
 import { setPlanCover } from '@/hooks/plan/plan-cover-store';
+import { CanvasMenu } from '@/components/canvas/canvas-menu-context';
 import { MaximisableSlot } from './MaximisedPlanLayer';
 
 // docs/specs/026-plan/plan-board.md "Fill Tab" and "Maximised board": a filled or maximised board is drawn over the
@@ -76,7 +77,7 @@ describe('a board filling its tab', () => {
   it('ends a maximise on it, and Escape does not restore it', () => {
     act(() => maximisePlanElement('el'));
     const fill = (id: string | null) =>
-      act(() => setPlanCover({ fillTabId: id, fillTabKind: 'Board', tabElementCount: 1 }));
+      act(() => setPlanCover({ fillTabId: id, fillTabKind: 'Board' }));
     const { result } = renderHook(() => useBoardMaximised('el', true));
     expect(result.current).toEqual({ maximised: true, filled: false });
     fill('el');
@@ -113,5 +114,31 @@ describe('a board filling its tab', () => {
     fireEvent.contextMenu(cover);
     fireEvent.doubleClick(cover);
     expect(onCanvas).not.toHaveBeenCalled();
+  });
+});
+
+describe('a right-click on a filled board', () => {
+  // plan-board.md "Maximised board": its empty space opens the tab's menu, never the browser's.
+  it('opens the canvas’s tab menu at the pointer, and leaves a card’s own menu be', () => {
+    const open = vi.fn();
+    render(
+      <CanvasMenu.Provider value={open}>
+        <Canvas fill />
+      </CanvasMenu.Provider>,
+    );
+    const body = screen.getByRole('button', { name: 'Count 0' });
+    const ev = new MouseEvent('contextmenu', {
+      bubbles: true,
+      cancelable: true,
+      clientX: 30,
+      clientY: 40,
+    });
+    body.dispatchEvent(ev);
+    expect(ev.defaultPrevented).toBe(true);
+    expect(open).toHaveBeenCalledWith(30, 40);
+    const handled = new MouseEvent('contextmenu', { bubbles: true, cancelable: true });
+    handled.preventDefault();
+    body.dispatchEvent(handled);
+    expect(open).toHaveBeenCalledTimes(1);
   });
 });

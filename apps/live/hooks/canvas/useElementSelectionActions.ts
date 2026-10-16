@@ -18,6 +18,8 @@ import {
   duplicateElements,
   sendManyToBack,
   isBoxed,
+  withMindBranches,
+  withSheetCharts,
   type Element,
   type Tab,
 } from '@livediagram/document';
@@ -115,7 +117,14 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
     // Locked elements can't be deleted: drop them from the delete set so
     // only the unlocked part of the selection (and arrows pinned to it)
     // goes. If the whole selection is locked, the delete is a no-op.
-    const targetIds = deletableIds(ids);
+    // A Sheet takes the charts anchored in it (docs/specs/029-sheets/sheet.md "Charts"), in the same undo step; a
+    // floating chart over it stays on the canvas. A mind node takes its branch (docs/specs/009-elements/mind-node.md
+    // "Deleting"); a locked node in it stays, as a root.
+    const targetIds = deletableIds(
+      withSheetCharts(activeTab.elements, withMindBranches(activeTab.elements, ids, isProtected), {
+        anchoredOnly: true,
+      }),
+    );
     if (targetIds.size === 0) return;
     guarded(targetIds, opts, () => removeSelected(targetIds));
   };
@@ -147,6 +156,9 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
     if (deleted.length === 0) return;
     announce(`Deleted ${deleted.length === 1 ? describeOne(deleted[0]!) : describeMany(deleted)}`);
   };
+
+  // A locked element, or one on a locked layer: a delete leaves it, and a mind branch walk stops at it.
+  const isProtected = (el: Element) => el.locked === true || layerLockedIds.has(el.id);
 
   // The deletable subset of a selection: ids whose element isn't locked.
   // Locked elements are protected from deletion (docs/specs/008-canvas/canvas-and-palette.md Locking).
@@ -206,8 +218,10 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
     if (multiSelectedIds.size === 0) return;
     if (activeTab.locked === true) return;
     // Same lock rule as deleteSelected: protect locked members, delete the
-    // rest. A fully-locked marquee is a no-op (selection stays put).
-    const targetIds = deletableIds(multiSelectedIds);
+    // rest. A fully-locked marquee is a no-op (selection stays put). A mind node takes its branch, as above.
+    const targetIds = deletableIds(
+      withMindBranches(activeTab.elements, multiSelectedIds, isProtected),
+    );
     if (targetIds.size === 0) return;
     guarded(targetIds, opts, () => removeMultiSelected(targetIds));
   };
@@ -268,7 +282,13 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
       // Clone only, no connector arrow. Most duplicates don't need an arrow,
       // so adding one was usually noise to delete; draw one with the + menu's
       // Arrow action on the occasions you do want it.
-      const { newElements, idMap } = duplicateElements(activeTab.elements, ids, dx, dy);
+      // A Sheet's copy takes the charts it draws (docs/specs/029-sheets/sheet.md "Charts").
+      const { newElements, idMap } = duplicateElements(
+        activeTab.elements,
+        withSheetCharts(activeTab.elements, ids),
+        dx,
+        dy,
+      );
       const sourceCopyId = idMap.get(source.id);
       if (!sourceCopyId) return;
       commit((els) => [...els, ...newElements]);

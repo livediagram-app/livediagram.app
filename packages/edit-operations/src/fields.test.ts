@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   LIVE_ELEMENT_FIELDS,
   getBuiltInTheme,
+  shapeColorPresets,
   quickSwatchColor,
   type Element,
 } from '@livediagram/document';
@@ -124,12 +125,32 @@ describe('writeFieldsOnto', () => {
     );
   });
 
+  it('dresses a shape in its preset’s colours for the theme, a colour named with it winning', () => {
+    const preset = shapeColorPresets(theme).find((p) => p.id === 'tinted')!;
+    expect(nextOf(write(square, { colorPreset: 'tinted' }))).toMatchObject({
+      colorPreset: 'tinted',
+      fillColor: preset.fill,
+      strokeColor: preset.stroke,
+    });
+    expect(nextOf(write(square, { colorPreset: 'tinted', fillColor: '#ff0000' })).fillColor).toBe(
+      '#ff0000',
+    );
+    expect(refusal(square, { colorPreset: 'sparkly' }).hint).toMatch(/^colorPreset takes .*tinted/);
+  });
+
+  it('keeps a border width and style named with a preset, over the preset’s own', () => {
+    // Outline brings a medium dashed border; the write asks for thick and solid.
+    expect(
+      nextOf(write(square, { colorPreset: 'outline', strokeWidth: 'thick', strokeStyle: 'solid' })),
+    ).toMatchObject({ colorPreset: 'outline', strokeWidth: 'thick', strokeStyle: 'solid' });
+  });
+
   it('takes a known icon id and refuses one that draws a question mark, naming icons like it', () => {
     const icon = { ...square, id: 'ic', iconId: 'clock' } as Element;
     expect(nextOf(write(icon, { iconId: 'moon' })).iconId).toBe('moon');
-    const out = refusal(icon, { iconId: 'flame' });
-    expect(out.details).toEqual(['iconId="flame": is not an icon']);
-    expect(out.hint).toContain('emoji-fire');
+    const out = refusal(icon, { iconId: 'fire' });
+    expect(out.details).toEqual(['iconId="fire": is not an icon']);
+    expect(out.hint).toContain('flame');
     expect(refusal(icon, { iconId: 'qqqqzz' }).hint).toContain('plain words');
   });
 
@@ -183,8 +204,10 @@ describe('writeFieldsOnto', () => {
   it('refuses identity, live and prototype fields, and keys the type lacks', () => {
     expect(refusal(square, { id: 'x' }).details[0]).toBe('id="x": cannot be changed');
     expect(refusal(square, { addedBy: 'x' }).details[0]).toBe('addedBy="x": cannot be changed');
-    expect(refusal(square, { [LIVE_ELEMENT_FIELDS[0]!]: [] }).code).toBe('invalid_value');
-    expect(refusal(square, JSON.parse('{"__proto__":1}')).code).toBe('unknown_field');
+    expect(refusal(square, { [LIVE_ELEMENT_FIELDS[0]]: [] }).code).toBe('invalid_value');
+    // JSON.parse makes `__proto__` an own key, which an object literal cannot.
+    const proto = JSON.parse('{"__proto__":1}') as Fields;
+    expect(refusal(square, proto).code).toBe('unknown_field');
     const unknown = refusal(arrow, { fill: 'red' });
     expect(unknown.details).toEqual([
       'arrow has no field "fill"',
@@ -212,11 +235,22 @@ describe('writeFieldsOnto', () => {
         'fill=chartreuse: a theme colour or a hex',
         'allowed: theme red orange yellow green blue violet',
       ],
-      ['text="huge": one of sm md lg scale'],
+      ['text="huge": one of sm md lg scale or a px from 6 to 48'],
       ['line="wavy": one of straight angled curved'],
     ]);
     expect(nextOf(write(arrow, { line: 'angled' })).arrowStyle).toBe('angled');
     expect(nextOf(write(arrow, { line: null }))).not.toHaveProperty('arrowStyle');
+  });
+
+  it('writes an exact text px from the Text Size slider range, as a number or a numeric string', () => {
+    expect(nextOf(write(square, { text: 18 })).textSize).toBe(18);
+    expect(nextOf(write(square, { text: '6' })).textSize).toBe(6);
+    expect(nextOf(write(square, { text: 48 })).textSize).toBe(48);
+    expect(refusal(square, { text: 5 }).details).toEqual([
+      'text=5: one of sm md lg scale or a px from 6 to 48',
+    ]);
+    expect(refusal(square, { text: 49 }).details).toHaveLength(1);
+    expect(refusal(square, { text: 12.5 }).details).toHaveLength(1);
   });
 
   it("writes a stroke's former point fields", () => {

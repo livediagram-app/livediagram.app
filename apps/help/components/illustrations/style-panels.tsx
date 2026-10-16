@@ -145,45 +145,49 @@ const FILL_SWATCHES = [
   'fill-violet-400',
 ];
 
+/** The More colours target that ends every colour row: four coloured dots. */
+function MoreColours({ x, y }: { x: number; y: number }) {
+  return (
+    <g>
+      <circle cx={x + 4} cy={y + 4} r={2.6} className="fill-rose-400" />
+      <circle cx={x + 10} cy={y + 4} r={2.6} className="fill-amber-400" />
+      <circle cx={x + 4} cy={y + 10} r={2.6} className="fill-emerald-400" />
+      <circle cx={x + 10} cy={y + 10} r={2.6} className="fill-brand-400" />
+    </g>
+  );
+}
+
 /** The Quick style panel on the left edge, styling the selected shape beside it. */
 export function QuickStylePanelScene() {
   const px = 18;
   const py = 14;
   const rowX = px + 12;
   return (
-    <Scene w={420} h={292}>
+    <Scene w={420} h={314}>
+      {/* A compact strip: no panel header, straight into the rows. */}
       <rect
         x={px}
-        y={py}
+        y={py + 22}
         width={196}
-        height={264}
+        height={270}
         rx={10}
         className="fill-white stroke-slate-200"
         strokeWidth={2}
-      />
-      <Label x={rowX} y={py + 16} size={11} weight={700} tone="strong">
-        Quick style
-      </Label>
-      <line
-        x1={px}
-        y1={py + 30}
-        x2={px + 196}
-        y2={py + 30}
-        className="stroke-slate-200"
-        strokeWidth={1}
       />
       <SectionTitle x={rowX} y={py + 44}>
         STROKE
       </SectionTitle>
       {STROKE_SWATCHES.map((cls, i) => (
-        <Swatch key={i} x={rowX + i * 21} y={py + 53} cls={cls} on={i === 5} />
+        <Swatch key={i} x={rowX + i * 19} y={py + 53} cls={cls} on={i === 5} />
       ))}
+      <MoreColours x={rowX + 8 * 19} y={py + 53} />
       <SectionTitle x={rowX} y={py + 84}>
         BACKGROUND
       </SectionTitle>
       {FILL_SWATCHES.map((cls, i) => (
-        <Swatch key={i} x={rowX + i * 21} y={py + 93} cls={cls} on={i === 5} />
+        <Swatch key={i} x={rowX + i * 19} y={py + 93} cls={cls} on={i === 5} />
       ))}
+      <MoreColours x={rowX + 7 * 19} y={py + 93} />
       <SectionTitle x={rowX} y={py + 124}>
         STROKE WIDTH
       </SectionTitle>
@@ -249,7 +253,18 @@ export function QuickStylePanelScene() {
         className="stroke-slate-200"
         strokeWidth={1}
       />
-      <Label x={px + 98} y={py + 256} anchor="middle" size={11} weight={600} tone="body">
+      <SectionTitle x={rowX} y={py + 254}>
+        ACTIONS
+      </SectionTitle>
+      {/* Clear styles, with its eraser glyph */}
+      <path
+        d={`M${rowX + 2} ${py + 276} l6 -6 l5 5 l-6 6 h-3 Z M${rowX + 8} ${py + 270} l4 -4 l5 5 l-4 4`}
+        fill="none"
+        className="stroke-slate-500"
+        strokeWidth={1.3}
+        strokeLinejoin="round"
+      />
+      <Label x={rowX + 24} y={py + 274} size={11} weight={600} tone="body">
         Clear styles
       </Label>
       {/* The selected shape, in the chosen blue. */}
@@ -306,7 +321,7 @@ function SliderRow({
   );
 }
 
-/** The Shadow category: five presets over four sliders, with the Drop shadow on a card. */
+/** The Shadow category: five glyph-only presets (named on hover) over four sliders, with the Drop shadow on a card. */
 export function ShadowCategory() {
   const mx = 18;
   const my = 16;
@@ -320,8 +335,8 @@ export function ShadowCategory() {
     [3, 3, 0.4],
   ];
   return (
-    <Scene w={420} h={248}>
-      <MenuCard x={mx} y={my} w={232} h={216} title="Shadow">
+    <Scene w={420} h={234}>
+      <MenuCard x={mx} y={my} w={232} h={202} title="Shadow">
         <SectionTitle x={mx + 14} y={my + 44}>
           PRESETS
         </SectionTitle>
@@ -353,16 +368,13 @@ export function ShadowCategory() {
                   strokeWidth={1.2}
                 />
               </OptionBox>
-              <Label x={tx + 18} y={my + 102} anchor="middle" size={10} tone="muted">
-                {p}
-              </Label>
             </g>
           );
         })}
-        <SliderRow x={mx + 14} y={my + 128} label="Offset X" t={0.5} value="0px" />
-        <SliderRow x={mx + 14} y={my + 150} label="Offset Y" t={0.58} value="4px" />
-        <SliderRow x={mx + 14} y={my + 172} label="Blur" t={0.25} value="12px" />
-        <SliderRow x={mx + 14} y={my + 194} label="Opacity" t={0.25} value="25%" />
+        <SliderRow x={mx + 14} y={my + 114} label="Offset X" t={0.5} value="0px" />
+        <SliderRow x={mx + 14} y={my + 136} label="Offset Y" t={0.58} value="4px" />
+        <SliderRow x={mx + 14} y={my + 158} label="Blur" t={0.25} value="12px" />
+        <SliderRow x={mx + 14} y={my + 180} label="Opacity" t={0.25} value="25%" />
       </MenuCard>
       {/* The card on the canvas, lifted by the Drop preset. */}
       <g className="help-art-as-drawn">
@@ -423,21 +435,24 @@ export function SizeCategory() {
   const mx = 18;
   const my = 20;
   return (
-    <Scene w={420} h={214}>
-      <MenuCard x={mx} y={my} w={232} h={176} title="Size">
+    <Scene w={420} h={224}>
+      <MenuCard x={mx} y={my} w={232} h={186} title="Size">
         <NumberBox x={mx + 14} y={my + 46} label="WIDTH" value="160" />
         <NumberBox x={mx + 122} y={my + 46} label="HEIGHT" value="90" />
         <Label x={mx + 14} y={my + 104} size={11} weight={600} tone="strong">
           Lock Aspect Ratio
         </Label>
         <Label x={mx + 14} y={my + 119} size={10} tone="muted">
-          Typing one dimension carries the other
+          Typing one dimension
+        </Label>
+        <Label x={mx + 14} y={my + 132} size={10} tone="muted">
+          carries the other
         </Label>
         {/* The toggle, switched on. */}
         <rect x={mx + 188} y={my + 102} width={30} height={16} rx={8} className="fill-brand-500" />
         <circle cx={mx + 210} cy={my + 110} r={6} className="fill-white help-art-as-drawn" />
-        <rect x={mx + 14} y={my + 136} width={204} height={26} rx={6} className="fill-slate-100" />
-        <Label x={mx + 116} y={my + 149.5} anchor="middle" size={11} weight={600} tone="body">
+        <rect x={mx + 14} y={my + 146} width={204} height={26} rx={6} className="fill-slate-100" />
+        <Label x={mx + 116} y={my + 159.5} anchor="middle" size={11} weight={600} tone="body">
           Reset Aspect Ratio
         </Label>
       </MenuCard>

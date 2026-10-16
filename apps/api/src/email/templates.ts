@@ -56,6 +56,8 @@ export type EmailKind =
   | 'CommentNotification'
   | 'ActionAssigned'
   | 'Mentioned'
+  | 'FormResponse'
+  | 'FormSuspended'
   | 'TokenExpiring'
   | 'AccountDeleted';
 
@@ -166,7 +168,7 @@ export function week1Email(env: Env): RenderedEmail {
       points: [
         '<strong>Folders</strong> group related documents; drag to sort, and collapse folders you’re not using.',
         '<strong>Search and Recents</strong> jump you straight back to what you were working on.',
-        '<strong>Share or export</strong> right from the grid: a view-only or editor link, or a PDF / PNG / SVG / Markdown copy.',
+        '<strong>Share</strong> right from the grid with a view-only or editor link, and open a document to export a PDF / PNG / SVG / Markdown copy.',
       ],
       ctaText: 'Open your Explorer',
       ctaHref: `${base}/explorer`,
@@ -202,10 +204,10 @@ export function week2Email(env: Env): RenderedEmail {
 export function teamInviteEmail(env: Env, teamName: string | null): RenderedEmail {
   const base = appBaseUrl(env);
   const named = !!(teamName && teamName.trim());
-  const name = named ? escapeHtml(teamName!.trim()) : 'a team';
+  const name = named ? escapeHtml(teamName.trim()) : 'a team';
   return {
     kind: 'TeamInvite',
-    subject: `You’ve been invited to ${named ? escapeText(teamName!.trim()) : 'a team'} on livediagram`,
+    subject: `You’ve been invited to ${named ? escapeText(teamName.trim()) : 'a team'} on livediagram`,
     html: shell({
       heading: `You’re invited to ${name}`,
       intro: `Someone invited you to join <strong>${name}</strong> on livediagram, a shared space for documents you and your teammates can open and edit together.`,
@@ -521,6 +523,66 @@ export function commentNotificationEmail(
       ),
     }),
     unsubscribeUrl: profilePath(env),
+  };
+}
+
+// A form's new response (docs/specs/030-forms/forms.md "Hearing about responses"): the card's title and a button
+// to its board. `more`: responses that arrived while the last email held the throttle. Opt-out (notifyFormResponses).
+export function formResponseEmail(
+  env: Env,
+  form: { heading: string; documentId: string; documentName: string },
+  cardTitle: string,
+  more: number,
+): RenderedEmail {
+  const base = appBaseUrl(env);
+  const headingText = escapeText(form.heading.trim() || 'your form');
+  const heading = escapeHtml(form.heading.trim() || 'your form');
+  const title = escapeHtml(cardTitle.trim() || 'A new response');
+  const docName = escapeHtml(form.documentName.trim() || 'your document');
+  const since =
+    more > 0
+      ? ` And ${more} more ${more === 1 ? 'response has' : 'responses have'} arrived since the last email.`
+      : '';
+  return {
+    kind: 'FormResponse',
+    subject: `New response to ${headingText}`,
+    html: shell({
+      heading: `New response to ${heading}`,
+      intro: `<strong>${title}</strong> just arrived on your board in <strong>${docName}</strong>.${since}`,
+      ctaText: 'Open the board',
+      ctaHref: `${base}/document/${encodeURIComponent(form.documentId)}`,
+      footer: manageNotificationsFooter(
+        env,
+        'You’re receiving this because someone filled in a form in a document you own.',
+      ),
+    }),
+    unsubscribeUrl: profilePath(env),
+  };
+}
+
+// A form's link suspended after reports (docs/specs/030-forms/forms.md "Report This Form"). Not opt-out: it is about
+// something the owner published, and the link has stopped working.
+export function formSuspendedEmail(
+  env: Env,
+  form: { heading: string; documentId: string; documentName: string },
+): RenderedEmail {
+  const base = appBaseUrl(env);
+  const headingText = escapeText(form.heading.trim() || 'your form');
+  const heading = escapeHtml(form.heading.trim() || 'your form');
+  const docName = escapeHtml(form.documentName.trim() || 'your document');
+  return {
+    kind: 'FormSuspended',
+    subject: `The link to ${headingText} was suspended`,
+    html: shell({
+      heading: 'Your form’s link was suspended',
+      intro: `People who were sent the link to <strong>${heading}</strong> in <strong>${docName}</strong> reported it, so the link has stopped working. Its responses stay on your board. You can publish the form again, which makes a new link.`,
+      ctaText: 'Open the document',
+      ctaHref: `${base}/document/${encodeURIComponent(form.documentId)}`,
+      footer: manageNotificationsFooter(
+        env,
+        'You’re receiving this because a form you published was reported by the people it was sent to.',
+      ),
+    }),
   };
 }
 

@@ -5,7 +5,7 @@ import { Minimap } from '@/components/illustrations/user-interface';
 export const metadata = helpMetadata({
   title: 'Map',
   description:
-    'The bottom-left Map gives a zoomed-out overview of the whole canvas with a box marking your current view. Tap or drag it to jump around, and scroll on it to zoom.',
+    'Navigate the canvas with the Map: a zoomed-out overview in the bottom-left with a box for your view. Tap or drag it to jump around, and scroll it to zoom.',
   path: '/help/user-interface/minimap/',
 });
 
@@ -16,7 +16,7 @@ export const metadata = helpMetadata({
   categorySlug="user-interface"
 >
 
-When the canvas grows past one screenful, the **Map** in the bottom-left corner keeps the whole thing in view. It draws a zoomed-out wireframe of every shape and connector, with a coloured rectangle marking the part of the canvas you're currently looking at, so you always know where you are and what's off-screen.
+When the canvas grows past one screenful, the **Map** in the bottom-left corner keeps the whole thing in view. It draws a zoomed-out miniature of every element and arrow in its real colours (labels left out), with a coloured rectangle marking the part of the canvas you're currently looking at, so you always know where you are and what's off-screen.
 
 <Figure caption="The Map mirrors the canvas; the outlined box is your current view. Tap or drag it to move there.">
   <Minimap />
@@ -32,7 +32,7 @@ The view box updates live as you pan and zoom by any means, so the Map doubles a
 
 ## When it shows, and turning it off
 
-The Map appears once a tab has **four or more elements** to map (or any [Illustrate](/help/canvas/illustrate/) pages), and it sits in the bottom-left corner. It's a desktop convenience, so it stays hidden on phones where the canvas is already edge-to-edge, and it steps aside in [Zen mode](/help/tools/zen-mode/).
+The Map appears once a tab has **four or more elements** to map (or any [Illustrate](/help/canvas/illustrate/) pages), and it sits in the bottom-left corner. It's a desktop convenience, so it stays hidden on phones where the canvas is already edge-to-edge, and it steps aside in [Zen mode](/help/tools/zen-mode/) or while a Plan board, view or Sheet fills the canvas, and on a Dashboard tab.
 
 Like the other corner panels, it can be collapsed from its header or dragged to another corner (see [Panel Layout](/help/user-interface/panel-layout/)).
 

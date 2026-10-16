@@ -13,6 +13,7 @@ import {
   takeColumnSettingsRequest,
 } from './column-settings-request';
 import type { PlanPalette } from './plan-palette';
+import { COLUMN_ATTR } from './column-move-flip';
 
 export function PlanColumnHeader({
   col,
@@ -54,7 +55,9 @@ export function PlanColumnHeader({
   }, [column.id, canEdit]);
   return (
     <div
-      className="group sticky top-0 z-[1] rounded-t-lg px-3 pb-1.5 pt-2"
+      {...{ [COLUMN_ATTR]: column.id }}
+      // snap-start: on a phone the columns snap into view by their heads (phone-board.ts).
+      className="group sticky top-0 z-[1] snap-start rounded-t-lg px-3 pb-1.5 pt-2"
       style={{ backgroundColor: palette.column }}
       onClick={
         onFrame
@@ -95,8 +98,9 @@ export function PlanColumnHeader({
             aria-label={`${column.name} column settings`}
             aria-haspopup="dialog"
             aria-expanded={open}
-            className={`-mr-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-md transition hover:bg-black/5 focus-visible:opacity-100 group-hover:opacity-100 [@media(pointer:coarse)]:opacity-100 ${
-              open ? 'opacity-100' : 'opacity-0'
+            // Always shown, so a column's settings are found without hunting for them.
+            className={`touch-target relative -mr-1 flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center rounded-md transition hover:bg-black/5 dark:hover:bg-white/10 ${
+              open ? 'bg-black/5 dark:bg-white/10' : ''
             }`}
             style={{ color: palette.muted }}
             onPointerDown={(e) => e.stopPropagation()}

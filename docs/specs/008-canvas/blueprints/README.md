@@ -14,5 +14,9 @@ Follow the references below only as needed; never upfront.
 - ./viewport-store.md - when implementing or changing where the pan and zoom live, or who renders for a pan or zoom
 - ./selection-store.md - when implementing or changing where the selection lives, who re-renders on a selection change, or the canvas boundary
 - ./drag-preview.md - when implementing or changing the drag preview store, the commit on release, affected arrows, or live drags
+- ./tidy-up.md - when implementing or changing the Tidy Up button, its popover, its tiles or the hover preview
+- ./finish.md - when implementing or changing finishes: resolution, Professional fallbacks, sketch strokes, hatching, sketched arrowheads, the Finish menu and dialog tab
+- ./accent-edge.md - when implementing or changing the accent edge: kinds, geometry, colour, the Border row or its export
+- ./avatar-speech.md - when implementing or changing speech bubbles, the composer, the Avatar button and popover, the message popover, or the Avatar tour
 - ./DEFAULTS.md - when a canvas blueprint applies a default the spec leaves open
 - ./COMPLETENESS.md - when checking which completeness categories a canvas blueprint covers

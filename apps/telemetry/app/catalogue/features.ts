@@ -3,9 +3,10 @@
 
 import { isHelpArticleType, isSettingsCategory } from '../opened-types';
 import { SELECTION_MODES } from '../palette-types';
-import { CUSTOM_THEME_TYPES, NON_PATTERN_CANVAS_TYPES } from '../look-feel-types';
+import { CUSTOM_THEME_TYPES, NON_PATTERN_CANVAS_TYPES, isNonThemePick } from '../look-feel-types';
 import type { Metric, MetricStack } from '../metric-series';
 import { chart } from './helpers';
+import { elementTourTokens } from '../element-tour-kinds';
 import { LOGO_TOOL_TYPES } from '../logo-types';
 
 export const LAYERS_RENAMED = chart(
@@ -241,13 +242,13 @@ export const WHITEBOARD_RECOGNITION = chart(
   'Shape recognition switched on or off on a whiteboard.',
 );
 
-// Editor modes (docs/specs/007-editor/editor-modes.md): switches between Diagram and Draw.
+// Editor modes (docs/specs/007-editor/editor-modes.md): switches between the editor modes.
 export const EDITOR_MODE_SWITCHES = chart(
   'Editor',
   'Changed',
   'Editor Mode Switches',
-  'A tab switched to Diagram, Draw or Illustrate mode by the person working on it.',
-  { types: ['ModeDiagram', 'ModeDraw', 'ModeIllustrate', 'ModePlan'] },
+  'A tab switched to another editor mode by the person working on it.',
+  { types: ['ModeDiagram', 'ModeDraw', 'ModeIllustrate', 'ModePlan', 'ModeFacilitate'] },
 );
 
 // The mode a tab opens in, set from the tab menu's Opens in (docs/specs/007-editor/editor-modes.md).
@@ -347,17 +348,41 @@ export const ILLUSTRATE_PAGE_SETUP = chart(
   'Tab',
   'Changed',
   'Illustrate Pages Set Up',
-  "An Illustrate page's size, name, background or pattern changed from its panel, or a page locked or unlocked.",
+  "An Illustrate page's size, name, background or pattern changed from its panel (or a background given to every page of its kind, or painted from another page), or a page locked or unlocked.",
   {
     types: [
       'PageSize',
       'PageRenamed',
       'PageBackground',
+      'PageBackgroundImage',
+      'PageBackgroundAnimated',
+      'PageBackgroundAnimatedSpeed',
+      'PageBackgroundAppliedToAll',
+      'PageBackgroundPainted',
       'PagePattern',
       'PageLocked',
       'PageUnlocked',
     ],
   },
+);
+
+// Contents (docs/specs/007-editor/illustrate-pages.md "Contents"): a press on a page in the list,
+// going there, or a page dragged to a new place in it.
+export const PAGE_CONTENTS_JUMPS = chart(
+  'UI',
+  'Used',
+  'Contents Jumps and Reorders',
+  "A page pressed in Illustrate's Contents list (the canvas gliding to it), or dragged to a new place there.",
+  { types: ['PageContentsJump', 'PageContentsReorder'], rising: 'neutral' },
+);
+
+// Tab windows (docs/specs/009-elements/tab-window.md): a window's tab chosen, and the tab opened from it.
+export const TAB_WINDOW_USE = chart(
+  'UI',
+  'Used',
+  'Tab Windows Opened',
+  'A tab opened from a Tab Window showing it, on a slide or page.',
+  { types: ['TabWindowOpen'], rising: 'neutral' },
 );
 
 // Building Illustrate pages: a layout placed, a page duplicated or moved.
@@ -465,6 +490,8 @@ export const WHITEBOARDS: MetricStack = {
     ILLUSTRATE_PAGES,
     ILLUSTRATE_PAGE_SETUP,
     ILLUSTRATE_PAGE_BUILDING,
+    PAGE_CONTENTS_JUMPS,
+    TAB_WINDOW_USE,
     LOGO_TOOLS,
     LOGO_MIRROR_TWINS,
     LOGO_SWITCHES,
@@ -766,7 +793,8 @@ export const PALETTE_GROUPS_OPENED = chart(
       type === 'ToolbarMore' ||
       type === 'ToolbarExplorer' ||
       type === 'ToolbarSearch' ||
-      type === 'ToolbarSearchOtherModes',
+      type === 'ToolbarSearchOtherModes' ||
+      type === 'ToolbarSearchUnavailable',
   },
 );
 
@@ -783,7 +811,7 @@ export const PALETTE_USE: MetricStack = {
   title: 'Palette Use',
   blurb: 'How the palette gets used beyond adding elements: searches, groups, and the toolbar.',
   members: [PALETTE_SEARCHES, PALETTE_GROUPS_OPENED, TOOLBAR_CATEGORY],
-  seeAlso: { view: 'palette', label: 'See Each Element on the Palette Tab' },
+  seeAlso: { section: 'palette', label: 'See Each Element in Features › Palette' },
 };
 
 // The canvas selection modes, one chart per mode, and the options set inside
@@ -807,14 +835,33 @@ export const MODE_METRICS: readonly Metric[] = SELECTION_MODES.map((mode) =>
   ),
 );
 
+// The office's machines (docs/specs/009-elements/office.md "Using it"): a drink taken in Avatar mode.
+export const OFFICE_DRINKS = chart(
+  'Canvas',
+  'Used',
+  'Office Drinks',
+  'A drink taken at a water cooler or a coffee machine in Avatar mode.',
+  { types: ['WaterCooler', 'CoffeeMachine'] },
+);
+
+// Avatar-mode speech bubbles (docs/specs/008-canvas/avatar-mode.md "Speech bubbles"): that somebody spoke, by
+// either door, never what they said.
+export const AVATAR_MESSAGES = chart(
+  'Canvas',
+  'Used',
+  'Avatar Messages',
+  'A message said in a speech bubble in Avatar mode, typed above the character or sent from the Avatar panel.',
+  { types: ['AvatarMessage', 'AvatarMessagePanel'] },
+);
+
 export const CANVAS_MODES: MetricStack = {
   stack: true,
   title: 'Canvas Modes',
   blurb: 'Ways of working on the canvas picked from the palette, and the options set inside them.',
-  members: [...MODE_METRICS, MODE_OPTIONS],
+  members: [...MODE_METRICS, OFFICE_DRINKS, AVATAR_MESSAGES, MODE_OPTIONS],
   // Modes switched into; tweaking an option inside one is not another use.
   headline: [...MODE_METRICS],
-  seeAlso: { view: 'modes', label: 'See Each Mode on the Modes Tab' },
+  seeAlso: { section: 'modes', label: 'See Each Mode in Features › Modes' },
 };
 
 // Editor chrome: layout and navigation.
@@ -907,7 +954,7 @@ export const MIND_OUTLINE_OPENED = opened(
 
 export const TOUR_OFFERED = opened(
   'Tour Offered',
-  'The welcome tour offered.',
+  'The Diagram tour (the welcome tour until October 2026) offered.',
   (t) => t === 'TourOffer',
 );
 
@@ -916,6 +963,50 @@ export const PLAN_TOUR_OFFERED = opened(
   'Plan Tour Offered',
   'The Plan tour offered, the first time someone works in Plan mode.',
   (t) => t === 'PlanTourOffer',
+);
+
+// The Facilitate tour's offer (docs/specs/012-collaboration/facilitate-tour.md); charted in its funnel on
+// the Visitors tab.
+export const FACILITATE_TOUR_OFFERED = opened(
+  'Facilitate Tour Offered',
+  'The Facilitate tour offered, the first time someone works in Facilitate mode.',
+  (t) => t === 'FacilitateTourOffer',
+);
+
+// The Draw tour's offer (docs/specs/023-draw-mode/draw-tour.md); charted in its funnel on the Visitors tab.
+export const DRAW_TOUR_OFFERED = opened(
+  'Draw Tour Offered',
+  'The Draw tour offered, the first time someone works in Draw mode.',
+  (t) => t === 'DrawTourOffer',
+);
+
+// The Forms tour's offer (docs/specs/030-forms/forms.md "The Forms tour"); charted in its funnel on the Visitors tab.
+export const FORM_TOUR_OFFERED = opened(
+  'Forms Tour Offered',
+  'The Forms tour offered, the first time an Editor opens a Form tab.',
+  (t) => t === 'FormTourOffer',
+);
+
+// The Avatar tour's offer (docs/specs/008-canvas/avatar-tour.md); charted in its funnel on the Visitors tab.
+export const AVATAR_TOUR_OFFERED = opened(
+  'Avatar Tour Offered',
+  'The Avatar tour offered, the first time someone walks as an avatar.',
+  (t) => t === 'AvatarTourOffer',
+);
+
+// The Illustrate tour's offer (docs/specs/007-editor/illustrate-tour.md); charted in its funnel on the Visitors tab.
+export const ILLUSTRATE_TOUR_OFFERED = opened(
+  'Illustrate Tour Offered',
+  'The Illustrate tour offered, the first time someone works in Illustrate mode.',
+  (t) => t === 'IllustrateTourOffer',
+);
+
+// The element tours' offers (docs/specs/007-editor/element-tours.md), any `<Kind>TourOffer`; charted in their funnel on
+// the Visitors tab, which names the kinds.
+export const ELEMENT_TOURS_OFFERED = opened(
+  'Element Tours Offered',
+  'An element tour offered beside a selected element, once per kind per visit.',
+  (t) => elementTourTokens('Offer').includes(t ?? ''),
 );
 
 // The power user mode offer (docs/specs/007-editor/power-user-mode.md); charted in its funnel on
@@ -972,6 +1063,14 @@ export const SESSION_POLL_OPENED = opened(
   (t) => t === 'SessionPoll',
 );
 
+// Diagram mode's Tidy Up button (docs/specs/008-canvas/layout-cleanup.md "The Tidy Up button"); what it then
+// laid out counts under Tabs Auto-Arranged.
+export const TIDY_UP_OPENED = opened(
+  'Tidy Up Opened',
+  'The Tidy Up button in the bottom bar opened, to pick a layout for the tab.',
+  (t) => t === 'TidyUp',
+);
+
 export const ACTION_SIGN_IN_NUDGE = opened(
   'Assign Action Nudge',
   'A guest opened Assign Action and was asked to sign in, since actions need an account.',
@@ -1010,7 +1109,7 @@ export const PANELS_OPENED: MetricStack = {
     MIND_OUTLINE_OPENED,
     OTHER_OPENED,
   ],
-  seeAlso: { view: 'editing', label: 'See Each Dialog on the Editing Tab' },
+  seeAlso: { section: 'editing', label: 'See Each Dialog in Features › Editing' },
 };
 
 // Look and feel (Look & Feel tab has the rankings).
@@ -1021,12 +1120,22 @@ export const TEMPLATES_USED = chart(
   'A template picked to start a document or seed a tab.',
 );
 
+// A template a start's search found in another mode (docs/specs/007-editor/start-diagramming.md "Found in other
+// modes"), switching the tab to that mode: how often a search crosses modes. Each is a Template Used too.
+export const TEMPLATES_FROM_OTHER_MODES = chart(
+  'UI',
+  'Used',
+  'Templates From Other Modes',
+  "A template chosen from another mode's matches in a start's search, switching the tab to that mode.",
+  { types: ['StartOtherMode'] },
+);
+
 export const THEMES_CHOSEN = chart(
   'Theme',
   'Changed',
   'Themes Chosen',
   'A built-in theme picked, at creation or later.',
-  { typeIn: (t) => !CUSTOM_THEME_TYPES.has(t ?? '') },
+  { typeIn: (t) => !isNonThemePick(t) },
 );
 
 export const CANVAS_STYLES_PICKED = chart(
@@ -1049,7 +1158,7 @@ export const CUSTOM_THEMES = chart(
   'Theme',
   'Created',
   'Custom Themes',
-  'The custom-theme builder: created, applied, edited, deleted, and elements reset to their theme.',
+  'The custom-theme builder: created, applied, edited and deleted.',
   { actionIn: ['Changed', 'Deleted'], typeIn: (t) => CUSTOM_THEME_TYPES.has(t ?? '') },
 );
 
@@ -1073,20 +1182,32 @@ export const HIGHLIGHTER_SETTINGS = chart(
   { types: ['HighlighterColour', 'HighlighterWidth'], rising: 'neutral' },
 );
 
+// The Tab Style popover's Finish filter beside its Looks carousel (docs/specs/011-theme/
+// canvas-and-theme-dialog.md).
+export const LOOKS_FILTERED = chart(
+  'UI',
+  'Changed',
+  'Looks Filtered',
+  "The Tab Style popover's Looks narrowed to one finish with its Finish filter, or switched to the seasonal looks with its Seasonal toggle.",
+  { types: ['LooksFinishFilter', 'LooksSeasonal'], rising: 'neutral' },
+);
+
 export const LOOK_AND_FEEL: MetricStack = {
   stack: true,
   title: 'Look & Feel',
   blurb:
-    'The visual presets people reach for: templates, themes, canvas styles, and their own themes. Headed by themes and canvas styles picked: a template also applies its theme, so adding templates would count that pick twice.',
+    "The visual presets people reach for: templates (and those found in another mode by a start's search), themes, canvas styles, and their own themes. Headed by themes and canvas styles picked: a template also applies its theme, so adding templates would count that pick twice.",
   members: [
     TEMPLATES_USED,
+    TEMPLATES_FROM_OTHER_MODES,
     THEMES_CHOSEN,
     CANVAS_STYLES_PICKED,
     CANVAS_CONTROLS_TWEAKED,
     CUSTOM_THEMES,
     CUSTOM_SWATCHES,
+    LOOKS_FILTERED,
     HIGHLIGHTER_SETTINGS,
   ],
   headline: [THEMES_CHOSEN, CANVAS_STYLES_PICKED],
-  seeAlso: { view: 'lookfeel', label: 'See Each Preset on the Look & Feel Tab' },
+  seeAlso: { section: 'lookfeel', label: 'See Each Preset in Features › Look & Feel' },
 };

@@ -73,7 +73,7 @@ const MODEL: SheetRenderModel = {
 
 describe('the static render', () => {
   it('draws the header, headers, cells, formats and borders', () => {
-    const svg = svgPlanSheet(sheet, MODEL, 'light' as never);
+    const svg = svgPlanSheet(sheet, MODEL, 'light');
     expect(svg).toContain('Budget &lt;Q3&gt;');
     expect(svg).toContain('font-weight="700"');
     expect(svg).toContain('text-decoration="underline line-through"');
@@ -84,13 +84,33 @@ describe('the static render', () => {
     expect(svg).toContain('font-family="&#39;Lora&#39;');
     expect(svg.match(/font-family="&#39;/g)).toHaveLength(1);
   });
-  it('leaves out the gridlines and the headers when the sheet hides them', () => {
-    const shown = svgPlanSheet(sheet, MODEL, 'light' as never);
-    const hidden = svgPlanSheet(
-      sheet,
-      { ...MODEL, hideGrid: true, hideHeaders: true },
-      'light' as never,
+  it('draws a dropdown chip as a pill in its option’s colour, inked to read, and an arrow dropdown’s chevron', () => {
+    const cells = (extra: SheetRenderModel['cells']) =>
+      svgPlanSheet(sheet, { ...MODEL, cells: extra }, 'light');
+    const dark = cells([
+      { r: 0, c: 0, text: 'Won', align: 'l', valign: 'm', chip: { color: '#166534' } },
+    ]);
+    expect(dark).toMatch(
+      /<rect x="[\d.]+" y="[\d.]+" width="[\d.]+" height="[\d.]+" rx="[\d.]+" fill="#166534"\/>/,
     );
+    expect(dark).toContain('fill="#ffffff"');
+    expect(dark).toContain('stroke-linecap="round"');
+    const light = cells([
+      { r: 0, c: 0, text: 'Lead', align: 'r', valign: 'm', chip: { color: '#fef08a' } },
+    ]);
+    expect(light).toContain('fill="#1f2937"');
+    // A chip's text starts inside its pill, whatever the cell's alignment.
+    expect(/<text[^>]*>Lead</.exec(light)?.[0]).not.toContain('text-anchor');
+    const plain = cells([{ r: 0, c: 0, text: 'Other', align: 'l', valign: 'm', chip: {} }]);
+    expect(plain).toMatch(/rx="[\d.]+" fill="#f1f5f9"/);
+    const arrow = cells([{ r: 0, c: 0, text: 'North', align: 'r', valign: 'm', arrow: true }]);
+    expect(arrow).toContain('stroke-linecap="round"');
+    expect(/<text[^>]*>North</.exec(arrow)?.[0]).toContain('text-anchor="end"');
+  });
+
+  it('leaves out the gridlines and the headers when the sheet hides them', () => {
+    const shown = svgPlanSheet(sheet, MODEL, 'light');
+    const hidden = svgPlanSheet(sheet, { ...MODEL, hideGrid: true, hideHeaders: true }, 'light');
     const lines = (svg: string) => (svg.match(/stroke-width="1"\/>/g) ?? []).length;
     expect(lines(hidden)).toBeLessThan(lines(shown));
     expect(shown).toContain('>A</text>');
@@ -98,7 +118,7 @@ describe('the static render', () => {
     expect(hidden).toContain('Total');
   });
   it('draws a frame and headers without a model', () => {
-    expect(svgPlanSheet(sheet, undefined, 'light' as never)).toContain('>Sheet<');
+    expect(svgPlanSheet(sheet, undefined, 'light')).toContain('>Sheet<');
   });
   it('renders through the tab renderer with the sheets given', () => {
     const svg = renderElementsToSvg({ elements: [sheet] } as never, {
@@ -114,21 +134,21 @@ describe('the static render', () => {
 describe('copies of a Sheet', () => {
   it('frame a new sheet made from the original', async () => {
     const { freshCopyFields } = await import('./duplicate');
-    const copy = freshCopyFields(sheet as never) as {
+    const copy = freshCopyFields(sheet) as {
       planSheet: { sheetId: string; copyOf: string };
     };
     expect(copy.planSheet.copyOf).toBe('sheet0001');
     expect(copy.planSheet.sheetId).not.toBe('sheet0001');
     expect(isPlanSheetRef(copy.planSheet)).toBe(true);
     // A copy of a copy not yet made copies the original.
-    const again = freshCopyFields({ ...sheet, planSheet: copy.planSheet } as never) as typeof copy;
+    const again = freshCopyFields({ ...sheet, planSheet: copy.planSheet }) as typeof copy;
     expect(again.planSheet.copyOf).toBe('sheet0001');
-    expect(freshCopyFields({ ...sheet, planSheet: { sheetId: '' } } as never)).toEqual({});
+    expect(freshCopyFields({ ...sheet, planSheet: { sheetId: '' } })).toEqual({});
     // A copy of a template's Sheet not yet made is made from the same start.
     const started = freshCopyFields({
       ...sheet,
       planSheet: { sheetId: 'sheet0001', start: 'timesheet' },
-    } as never) as typeof copy & { planSheet: { start?: string } };
+    }) as typeof copy & { planSheet: { start?: string } };
     expect(started.planSheet.start).toBe('timesheet');
     expect(started.planSheet.copyOf).toBeUndefined();
     expect(started.planSheet.sheetId).not.toBe('sheet0001');

@@ -21,7 +21,7 @@ Scope, by file:
 | `packages/api-schema/src/ref-errors.ts`                                 | `TARGET_NOT_FOUND_ERROR`, `TARGET_AMBIGUOUS_ERROR`, `RefCandidate`, `RefErrorBody`                                          |
 | `packages/api-schema/src/telemetry-schema.ts`                           | `TELEMETRY_ACTIONS` gains `Viewed`                                                                                          |
 | `packages/api-schema/src/index.ts`                                      | Re-exports both new files                                                                                                   |
-| `packages/document-views/{package.json,tsconfig.json,eslint.config.js}` | The new package `@livediagram/document-views` (depends on `document`, `api-schema`), shaped like `explorer-lens`            |
+| `packages/document-views/{package.json,tsconfig.json,oxlint.config.ts}` | The new package `@livediagram/document-views` (depends on `document`, `api-schema`), shaped like `explorer-lens`            |
 | `packages/document-views/vitest.config.ts`                              | 100% line, branch, function and statement thresholds                                                                        |
 | `packages/document-views/src/index.ts`                                  | The public surface: `renderView`, every view function, the budget                                                           |
 | `packages/document-views/src/constants.ts`                              | The view constants in [Constants and configuration](#constants-and-configuration)                                           |
@@ -32,7 +32,7 @@ Scope, by file:
 | `packages/document-views/src/tree.ts`                                   | `buildViewTree`: `deriveContainers`, then reading order per container                                                       |
 | `packages/document-views/src/reading-order.ts`                          | `readingOrder`, `rowsOf`                                                                                                    |
 | `packages/document-views/src/freehand-runs.ts`                          | `freehandRuns`: consecutive bare strokes folded into one line                                                               |
-| `packages/document-views/src/content-summary.ts`                        | `contentSummaryOf`: entity, table, code block, charts, checklist                                                            |
+| `packages/document-views/src/content-summary.ts`                        | `contentSummaryOf`: entity, table, code block, charts, checklist, Sankey                                                    |
 | `packages/document-views/src/state-attribute.ts`                        | `stateAttributeOf`: the one state attribute of each content kind that has one                                               |
 | `packages/document-views/src/attributes.ts`                             | `attributesOf`: the ordered attribute list of one element                                                                   |
 | `packages/document-views/src/style-attributes.ts`                       | `styleAttributesOf` for `style`                                                                                             |
@@ -278,7 +278,8 @@ Invariants:
 
 ```text
 header      := "tab" SP tabRef SP jsonString(name) " · " total " element" ["s"] [": " buckets]
-               [" · kind=" tabKind] [" · " hidden " hidden"] [" · " unknown " unknown"]
+               [" · kind=" tabKind] [" · mode=" editorMode] [" · finish=" finish]
+               [" · " hidden " hidden"] [" · " unknown " unknown"]
                [" · threads " open " open/" threadTotal] [" · rev " rev]
 buckets     := bucket {", " bucket}                       (non-zero only, in the order boxes, frames, lanes, arrows)
 bucket      := count SP ("box" | "boxes" | "frame" | "frames" | "lane" | "lanes" | "arrow" | "arrows")
@@ -294,7 +295,9 @@ style       := "~" (strokeStyle | "none" | "both" | "from")
 attribute   := key "=" attrValue | flag
 ```
 
-`kind=` prints only for a tab whose `tabKindOf` is not `diagram`; `threads` only when the tab has a thread; `rev`
+`kind=` prints only for a tab whose `tabKindOf` is not `diagram`; `mode=` only for a tab whose `opensInOf` is not
+`diagram` and that is not in Illustrate (whose pages segment already says so); `finish=` only when the tab sets one;
+`threads` only when the tab has a thread; `rev`
 only when the context gives one (`VW8`). A blank label (after trim) prints nothing (`VW17`).
 
 **Buckets** (`VW9`): `frames` and `lanes` are those shapes; `arrows` are arrows; `boxes` is every other printed
@@ -317,45 +320,49 @@ are escaped as `\;` and `\}` too.
 
 **Content summaries** (`contentSummaryOf`), printed after the label:
 
-| Element                  | Summary                                                                                     | Ledger |
-| ------------------------ | ------------------------------------------------------------------------------------------- | ------ |
-| `entity`                 | `{` first `ENTITY_FIELDS_SHOWN` fields as `name[ type]`, joined `; ` (`; +N` when more) `}` | `VW19` |
-| `table`                  | `<rows>x<cols>` then the first row's cells joined `\|`; `0x0` when empty                    | `VW18` |
-| `code-block`             | `lang=<codeLanguage, else plain> lines=<line count, 0 when empty>`                          | `VW20` |
-| `pie-chart`, `bar-chart` | `slices=<pieSlices.length>`                                                                 | `VW21` |
-| `line-chart`             | `series=<lineSeries.length> x=<lineCategories.length>`                                      | `VW21` |
-| `checklist`              | `done=<done>/<total>`                                                                       |        |
-| `plan-board`             | `columns=` then each column's `name` (`?` when it has none) as `cellText`, joined `\|`      |        |
-| `plan-card`              | `item=<planCard.itemId as cellText>`, `item=none` when absent or empty                      |        |
-| `plan-view`              | `view=<planView.view as cellText>`, `view=none` when absent                                 |        |
-| `plan-sheet`             | `sheet=<planSheet.sheetId as cellText>`, `sheet=none` when absent or empty                  |        |
+| Element                           | Summary                                                                                                                      | Ledger |
+| --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | ------ |
+| `entity`                          | `{` first `ENTITY_FIELDS_SHOWN` fields as `name[ type]`, joined `; ` (`; +N` when more) `}`                                  | `VW19` |
+| `table`                           | `<rows>x<cols>` then the first row's cells joined `\|`; `0x0` when empty                                                     | `VW18` |
+| `code-block`                      | `lang=<codeLanguage, else plain> lines=<line count, 0 when empty>`                                                           | `VW20` |
+| `pie-chart`, `bar-chart`          | `slices=<pieSlices.length>`                                                                                                  | `VW21` |
+| `line-chart`                      | `series=<lineSeries.length> x=<lineCategories.length>`                                                                       | `VW21` |
+| `checklist`                       | `done=<done>/<total>`                                                                                                        |        |
+| `sankey`                          | `flows=<sankeyFlows.length> nodes=<distinct from / to names, trimmed and space-collapsed>`                                   |        |
+| `layer-stack`, `pyramid`, `cycle` | `rows=` then each row's `label` (`?` when it has none) as `cellText`, joined `\|`; then ` variant=<pyramidVariant>` when set |        |
+| `plan-board`                      | `columns=` then each column's `name` (`?` when it has none) as `cellText`, joined `\|`                                       |        |
+| `plan-card`                       | `item=<planCard.itemId as cellText>`, `item=none` when absent or empty                                                       |        |
+| `plan-view`                       | `view=<planView.view as cellText>`, `view=none` when absent                                                                  |        |
+| `plan-sheet`                      | `sheet=<planSheet.sheetId as cellText>`, `sheet=none` when absent or empty                                                   |        |
 
 The table line prints its label first when it has one. Every text a summary prints from the document goes through
 `cellText` (JSON escapes, `|` escaped), so a newline in a column name can never forge a line of the view.
 
 **State attributes** (`stateAttributeOf`), one per element of these kinds, printed after the summary (`VW22`):
 
-| Kind                    | State attribute                                                           |
-| ----------------------- | ------------------------------------------------------------------------- |
-| `estimate`              | `votes=<responses.length>`, then `revealed` when `responsesRevealed`      |
-| `temperature`           | `votes=<responses.length>`                                                |
-| `done-check`            | `done=<responses.length>`                                                 |
-| `idea-box`              | `ideas=<ideaCards.length>`, then `revealed` when `ideasRevealed`          |
-| `qa-board`              | `questions=<qaNotes.length>`                                              |
-| `agenda`                | `item=<agendaCurrent + 1>/<n>` once started, else `items=<n>`             |
-| `decision`              | `status=<decisionStatus>` when set                                        |
-| `roll-call`             | `present=<rollCall.length>`                                               |
-| `quiz`                  | `state=revealed`, `state=locked`, `state=open` (started) or `state=ready` |
-| `picker`                | `picked=<attrValue(pickerResult)>` when set                               |
-| `reveal`                | `revealed` when `revealed`                                                |
-| `stat-row`              | `stats=<stats.length>`                                                    |
-| `process`               | `steps=<processSteps.length>`                                             |
-| `site-header`           | `links=<navLinks.length>`                                                 |
-| `legend`                | `items=<legendItems.length>`                                              |
-| `rating`                | `rating=<rating>/5`                                                       |
-| `progress-bar`, `-ring` | `progress=<progress, else 50>`                                            |
-| `timeline-rail`         | `points=<railCount>`                                                      |
-| `page`                  | `title=` the `pageTitle` cut at `NOTE_CUT_CHARS`, when set                |
+| Kind                    | State attribute                                                                       |
+| ----------------------- | ------------------------------------------------------------------------------------- |
+| `estimate`              | `votes=<responses.length>`, then `revealed` when `responsesRevealed`                  |
+| `temperature`           | `votes=<responses.length>`                                                            |
+| `done-check`            | `done=<responses.length>`                                                             |
+| `idea-box`              | `ideas=<ideaCards.length>`, then `revealed` when `ideasRevealed`                      |
+| `qa-board`              | `questions=<qaNotes.length>`                                                          |
+| `agenda`                | `item=<agendaCurrent + 1>/<n>` once started, else `items=<n>`; then `minutes=<total>` |
+| `session-button`        | `session=<tool>`, with `:<minutes>m` (timer), `:<dots>` (vote) or `:<style>` (poll)   |
+| `decision`              | `status=<decisionStatus>` when set                                                    |
+| `roll-call`             | `present=<rollCall.length>`                                                           |
+| `quiz`                  | `state=revealed`, `state=locked`, `state=open` (started) or `state=ready`             |
+| `picker`                | `picked=<attrValue(pickerResult)>` when set                                           |
+| `reveal`                | `revealed` when `revealed`                                                            |
+| `stat-row`              | `stats=<stats.length>`                                                                |
+| `process`               | `steps=<processSteps.length>`                                                         |
+| `site-header`           | `links=<navLinks.length>`                                                             |
+| `legend`                | `items=<legendItems.length>`                                                          |
+| `rating`                | `rating=<rating>/5`                                                                   |
+| `progress-bar`, `-ring` | `progress=<progress, else 50>`                                                        |
+| `timeline-rail`         | `points=<railCount>`                                                                  |
+| `page`, `card`          | `title=` the `pageTitle` cut at `NOTE_CUT_CHARS`, when set                            |
+| `badge`, `step`         | `attached` when `attachedTo` is set                                                   |
 
 Every other kind has no state attribute; `show` has its content.
 
@@ -474,7 +481,7 @@ reserved words of edit operations are (EO10); an element whose id is `selected` 
    (`VW67`). Its JSON is `ShowSelectedView`.
 
 **`find`** (`VW35`): `q` is NFKC-normalised and lower-cased; it matches a printed element's label, note, table
-cells, entity field names and types, checklist item text, code and comment text, and a printed arrow's label, each
+cells, entity field names and types, checklist item text, a Sankey's node names (field `node`), code and comment text, and a printed arrow's label, each
 NFKC-normalised and lower-cased, as a substring. Each match prints its container chain (each ancestor as
 `<kindWord> <ref> <label>`, indented by depth, printed once for siblings) and then its own outline line; a matching
 arrow prints as an own-line arrow under its source's chain. The closing line (kept at any budget, before the

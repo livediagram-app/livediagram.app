@@ -1,4 +1,5 @@
 import { PencilIcon, TrashIcon } from '@/components/primitives/explorer-icons';
+import type { TabDataRows } from './tab-data-rows';
 import { useEffect, useLayoutEffect, useRef, useState, useCallback } from 'react';
 import { useReposition } from '@/hooks/canvas/useReposition';
 import { BottomSheet } from '@/components/primitives/BottomSheet';
@@ -48,6 +49,7 @@ export function PortalMenu({
   locked,
   modeChoice,
   planTab = false,
+  dataRows,
   selfId,
   otherDocuments,
   folderNames,
@@ -57,6 +59,7 @@ export function PortalMenu({
   onDelete,
   canClearContent,
   canDelete,
+  deleteWarning,
 }: {
   // Positioned EITHER above an anchor button (tab ellipsis) OR at a screen
   // point (canvas right-click / footer button). Exactly one is provided.
@@ -79,6 +82,8 @@ export function PortalMenu({
   modeChoice?: TabModeChoice;
   // A Plan tab: Add to Document is off, its cards belong to this document's items.
   planTab?: boolean;
+  // A Board or Sheet tab's own Import, in place of the document's, and its Download CSV after Export (tab-data-rows.ts).
+  dataRows?: TabDataRows;
   // Viewer identity for the Add to Document dialog's thumbnail fetches.
   selfId: string;
   otherDocuments: { id: string; name: string; savedAt?: number }[];
@@ -88,6 +93,8 @@ export function PortalMenu({
   onRemoveFromFolder: () => void;
   onDelete: () => void;
   canDelete: boolean;
+  // Delete's warning (deleteTabWarning): the forms sending their responses to this tab are unpublished.
+  deleteWarning?: string | undefined;
   canClearContent: boolean;
 }) {
   // The menu itself lists the verbs (Rename, Duplicate, Clear…); the two
@@ -99,9 +106,8 @@ export function PortalMenu({
   // the outside-click dismisser below; the modal owns its own dismissal
   // and closes the whole menu with it.
   const [view, setView] = useState<'actions' | 'copyTo' | 'folder'>('actions');
-  // Delete confirmation: an inline popover anchored to the Delete row
-  // (rather than the jarring full-screen modal). Rendered inside this
-  // menu's container so the outside-click handler treats it as "inside".
+  // Delete asks nothing (undo brings a tab back), except for what an undo cannot take back (deleteTabWarning):
+  // then an inline popover anchored to the Delete row, rendered so the outside-click handler treats it as "inside".
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [deleteRow, setDeleteRow] = useState<HTMLDivElement | null>(null);
   const ref = useRef<HTMLDivElement | null>(null);
@@ -337,11 +343,16 @@ export function PortalMenu({
                 icon={<TrashIcon />}
                 label="Delete"
                 description={
-                  locked
-                    ? 'This tab is locked. Unlock it before deleting.'
-                    : "Delete this tab. Its content can't be recovered."
+                  locked ? 'This tab is locked. Unlock it before deleting.' : 'Delete this tab.'
                 }
-                onClick={() => setConfirmingDelete(true)}
+                onClick={() => {
+                  if (deleteWarning) {
+                    setConfirmingDelete(true);
+                    return;
+                  }
+                  onDelete();
+                  onClose();
+                }}
                 disabled={!canDelete || locked}
               />
             </div>
@@ -388,9 +399,9 @@ export function PortalMenu({
           <MenuActionRow
             plain
             icon={<FileImportIcon />}
-            label="Import"
-            onClick={onImport}
-            disabled={locked}
+            label={dataRows?.importLabel ?? 'Import'}
+            onClick={dataRows ? () => (dataRows.onImport?.(), onClose()) : onImport}
+            disabled={locked || (!!dataRows && !dataRows.onImport)}
           />
           <MenuActionRow plain icon={<FileExportIcon />} label="Export" onClick={onExport} />
           <MenuActionRow
@@ -415,7 +426,8 @@ export function PortalMenu({
     confirmingDelete && deleteRow ? (
       <ConfirmPopover
         anchor={deleteRow}
-        message="Delete this tab? Its content can't be recovered."
+        message="Delete this tab?"
+        warning={deleteWarning}
         confirmLabel="Delete"
         onConfirm={() => {
           setConfirmingDelete(false);

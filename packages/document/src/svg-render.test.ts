@@ -1,6 +1,15 @@
 import { svgTags, textTagBefore } from './svg-test-tags';
 import { describe, expect, it } from 'vitest';
-import type { ArrowElement, FreehandElement, ImageElement, ShapeElement, Tab } from './index';
+import type {
+  ArrowElement,
+  FreehandElement,
+  ImageElement,
+  ShapeElement,
+  Tab,
+  TableElement,
+} from './index';
+import { createPinnedArrow, createShape } from './factories';
+import { tableHeaderColours } from './table-header-colours';
 import { freehandPenStroke, penStrokePath } from './pen-stroke';
 import { r2 } from './svg-render-primitives';
 import { contentBounds, renderElementsToSvg } from './svg-render';
@@ -328,8 +337,10 @@ describe('renderElementsToSvg', () => {
 
     it('tints the header band and honours pinned column widths', () => {
       const svg = renderElementsToSvg(tab([table({ headerRow: true, colWidths: [100, null] })]));
-      // Header wash: stroke-coloured rect at 18% over the first row.
-      expect(svg).toContain('opacity="0.18"');
+      // Header band: the opaque tint the canvas paints, over the first row.
+      const band = tableHeaderColours(table({ headerRow: true }) as TableElement).fill;
+      expect(svg).toContain(`fill="${band}"`);
+      expect(svg).not.toContain('opacity="0.18"');
       // Pinned first column: the divider sits at x=100, not the even 150.
       expect(svg).toContain('x1="100"');
     });
@@ -699,20 +710,20 @@ describe('renderElementsToSvg', () => {
       expect(svg).toContain('text-anchor="start"');
     });
 
-    it('keeps a middle-aligned caption above the glyph band (docs/specs/010-palette/technology-icons.md caption band)', () => {
+    it('puts a middle-centre label on the glyph (docs/specs/010-palette/technology-icons.md "Middle-centre puts the label on the glyph")', () => {
       const art = () => ({ markup: '<circle/>', colored: true });
       const svg = renderElementsToSvg(
         tab([icon({ width: 100, height: 100, label: 'EC2', textAlignY: 'middle' })]),
         { resolveIconArt: art },
       );
-      // The mark takes the bottom band (36..94), centred: y = 36 + (58-48)/2.
-      expect(svg).toContain('y="41" width="48" height="48"');
-      // The caption anchors to its band's bottom edge (the 36% line), NOT the
-      // box's vertical centre — y = 36 - 22 (font size), clear of the mark.
-      // It used to render at h/2 = 50, on top of the art.
-      const m = svg.match(/<text[^<>]*y="([0-9.]+)"/);
-      expect(m).not.toBeNull();
-      expect(parseFloat(m![1]!)).toBe(14);
+      // The mark keeps the whole box, as if unlabelled: centred, y = (100 - 48) / 2.
+      expect(svg).toContain('y="26" width="48" height="48"');
+      // The label centres over it, drawn after the art so it sits on top. It used to
+      // sit in the top band at y = 14, clear of the art.
+      const text = textTagBefore(svg, 'EC2');
+      expect(text?.['dominant-baseline']).toBe('central');
+      expect(parseFloat(text!.y!)).toBe(50);
+      expect(svg.indexOf('<text')).toBeGreaterThan(svg.indexOf('<circle/>'));
     });
 
     it('centres a side caption on the glyph row and wraps it at its half (docs/specs/010-palette/technology-icons.md)', () => {
@@ -794,6 +805,21 @@ describe('renderElementsToSvg — element shadows (docs/specs/008-canvas/element
 // label whatever the caption was styled as, so a diagram whose captions had
 // been sized or coloured came out of an export looking like a different
 // diagram. These pin that the styling reaches the file.
+describe('a shared end in an export', () => {
+  it("anchors a dashed bus arrow's pattern at its end, as the canvas does", () => {
+    const a = { ...createShape('square', 0, 0), id: 'a' };
+    const b = { ...createShape('square', 0, 300), id: 'b' };
+    const bus = {
+      ...createPinnedArrow('a', 's', 'b', 'n'),
+      id: 'x',
+      strokeStyle: 'dashed' as const,
+      exactEnd: true,
+    };
+    const svg = renderElementsToSvg({ id: 't', name: 'T', elements: [a, b, bus] });
+    expect(svg).toMatch(/stroke-dasharray="6 5" stroke-dashoffset="[\d.]+"/);
+  });
+});
+
 describe('arrow captions in an export', () => {
   const captioned = (o: Partial<ArrowElement>) =>
     renderElementsToSvg(

@@ -31,9 +31,6 @@ function target(patch: Partial<PlanBoardTarget> = {}): PlanBoardTarget {
     acceptsType: () => true,
     addCard: vi.fn(),
     refuseAt: () => null,
-    canEditWidgets: () => true,
-    widgetHover: vi.fn(),
-    placeWidget: vi.fn(),
     ...patch,
   };
 }

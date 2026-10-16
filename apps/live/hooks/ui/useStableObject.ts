@@ -9,7 +9,7 @@
 import { useState } from 'react';
 import { useLatest } from './useLatest';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// oxlint-disable-next-line typescript/no-explicit-any
 type AnyFn = (...args: any[]) => unknown;
 
 // The hook's render-time memo: the forwarders it has handed out and the object it returned last.

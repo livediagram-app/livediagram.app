@@ -16,9 +16,9 @@ import { item } from './test-items';
 // docs/specs/026-plan/plan-board.md "Swimlanes by a field".
 const map = (items: Item[]) => new Map(items.map((i) => [i.id, i]));
 const project: ItemTypeDef = {
-  ...ITEM_TYPES[0]!,
+  ...ITEM_TYPES[0],
   fields: [
-    ...ITEM_TYPES[0]!.fields,
+    ...ITEM_TYPES[0].fields,
     'f-stage',
     'f-signed',
     'f-seats',
@@ -37,8 +37,8 @@ const project: ItemTypeDef = {
 };
 // A second type sharing an id reads as the same field, named by the first.
 const other: ItemTypeDef = {
-  ...ITEM_TYPES[1]!,
-  fields: [...ITEM_TYPES[1]!.fields, 'f-stage'],
+  ...ITEM_TYPES[1],
+  fields: [...ITEM_TYPES[1].fields, 'f-stage'],
   custom: [{ id: 'f-stage', label: 'Phase', kind: 'text' }],
 };
 const types = [project, other, ...ITEM_TYPES.slice(2)];

@@ -4,6 +4,7 @@
 // its top, a main-column section under its heading, a Details row (label beside its control), and the
 // quiet created and edited lines at the foot of Details. ItemPanel arranges them; the field controls are
 // ItemFieldEditor's.
+import { FROM_FORM_FIELD, readFromForm } from '@livediagram/forms';
 import type { ReactNode } from 'react';
 import { relativeSince } from '@livediagram/ui';
 import type { Item } from '@livediagram/items';
@@ -66,6 +67,7 @@ export function ItemDetailsRow({
 
 // Who made the card and who last changed it, small and quiet at Details' foot.
 export function ItemMeta({ item, now }: { item: Item; now: number }) {
+  const response = readFromForm(item.fields[FROM_FORM_FIELD]);
   return (
     <div className="mt-5 flex flex-col gap-1.5 border-t border-slate-200/80 pt-3 text-[11px] text-slate-400 dark:border-slate-700/80">
       <div className="flex items-center gap-1.5">
@@ -74,6 +76,19 @@ export function ItemMeta({ item, now }: { item: Item; now: number }) {
           {item.createdBy.name}
         </span>
       </div>
+      {response ? (
+        // A form's response (docs/specs/030-forms/forms.md "What a response makes"): its number and when it came.
+        <div>
+          Form response #{response.number},{' '}
+          {new Date(item.createdAt).toLocaleString(undefined, {
+            day: 'numeric',
+            month: 'short',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+          })}
+        </div>
+      ) : null}
       <div className="flex items-center gap-1.5">
         Edited by <PersonDisc person={item.updatedBy} />
         <span>

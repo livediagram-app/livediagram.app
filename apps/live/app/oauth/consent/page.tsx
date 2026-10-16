@@ -6,11 +6,11 @@
 // (Clerk-authed) and hand it to the MCP's /oauth/complete bound to a one-time
 // PKCE code, then bounce the browser to the client's redirect. Signed-in only;
 // absent end-to-end without Clerk.
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, use, useEffect, useState } from 'react';
+import { browser } from 'react-dom';
 import { useSearchParams } from 'next/navigation';
 import { CLI_CLIENT_ID } from '@livediagram/api-schema';
-import { OAUTH_PRIMARY, OauthHelpLink, OauthShell } from '../oauth-shell';
-import { ToggleSwitch } from '@/components/palette/palette-controls';
+import { OAUTH_PRIMARY, OauthHelpLink, OauthShell, ReadOnlyAccessToggle } from '../oauth-shell';
 import { apiExchangeOauthToken, apiRevokeToken } from '@/lib/api-client';
 import { clerkEnabled } from '@/lib/clerk-config';
 import { MCP_ORIGIN } from '@/lib/mcp-config';
@@ -94,8 +94,9 @@ function Consent() {
     // Return here after sign-in. The sign-in page reads `redirect_url` (NOT
     // `redirect`) and validates it as a safe internal path before bouncing
     // back — /oauth/consent?... qualifies, so the user lands back on consent.
-    const back =
-      typeof window !== 'undefined' ? window.location.pathname + window.location.search : '';
+    // The browser's own address: this branch renders in the browser only (`use(browser())`, under the page's Suspense).
+    use(browser());
+    const back = window.location.pathname + window.location.search;
     return (
       <OauthShell>
         <h1 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
@@ -206,24 +207,7 @@ function Consent() {
         access your livediagram documents on your behalf. Approving creates an API token, which you
         can revoke any time from Settings, under Account › API Tokens.
       </p>
-      {/* Whole-row toggle with the shared presentational switch (the same
-          pattern as ProfilePane / SettingsDialog rows) — this was the last
-          native checkbox in the live app. */}
-      <button
-        type="button"
-        onClick={() => setReadOnly(!readOnly)}
-        aria-pressed={readOnly}
-        className="mt-4 flex w-full cursor-pointer items-start justify-between gap-3 rounded-lg border border-slate-200 px-3 py-2.5 text-left text-sm dark:border-slate-700"
-      >
-        <span className="min-w-0 text-slate-600 dark:text-slate-300">
-          <span className="font-medium text-slate-800 dark:text-slate-100">Read-only access</span>:
-          let it find and view your documents, but not create, edit, delete, or share them. Leave
-          off for full read + write.
-        </span>
-        <span className="mt-0.5 shrink-0">
-          <ToggleSwitch presentational checked={readOnly} label="Read-only access" />
-        </span>
-      </button>
+      <ReadOnlyAccessToggle readOnly={readOnly} onChange={setReadOnly} />
       {/* The one fact worth checking before approving, and now the server's
           answer rather than the URL's: the host the authorization code is
           delivered to, read off the redirect URI this client registered. */}

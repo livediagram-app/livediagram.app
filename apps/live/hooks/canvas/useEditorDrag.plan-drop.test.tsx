@@ -21,7 +21,7 @@ const CARD: Element = {
   width: 100,
   height: 60,
   planCard: { itemId: 'i1' },
-} as Element;
+};
 
 // A board's column under the pointer, as the board draws it.
 function boardCell(status: string): HTMLElement {

@@ -3,6 +3,7 @@
 // <marker> builder, the per-arrow path + label emitter, and the
 // head-reference resolution that keeps heads tangent to curved / angled
 // paths. svg-render re-exports everything so importers keep resolving.
+import { arrowDashOffset } from './arrow-dash';
 import {
   angledElbow,
   arrowPathD,
@@ -12,23 +13,27 @@ import {
 } from './arrow-path';
 import {
   ARROWHEAD_SIZE_PX,
+  ARROW_THICKNESS_PX,
   arrowheadShapeOf,
+  arrowheadStartShapeOf,
   arrowheadSizeOf,
   arrowStyleOf,
   type ArrowheadShape,
 } from './arrow-style';
 import { BORDER_DASH_ARRAY } from './border-style';
+import { ER_GLYPHS } from './er-heads';
 import { DARK_CANVAS_BACKGROUND_COLOR, DEFAULT_BACKGROUND_COLOR } from './canvas-colors';
 import { defaultArrowLabelColor, defaultArrowStrokeColor, type CanvasSurface } from './colors';
-import { arrowEndpointSpread } from './arrow-endpoint-spread';
 import { ROUTE_BEHIND_MARGIN, routeBehindHoles, routeBehindQueryRect } from './arrow-behind';
 import { elementGridFor, queryElementGrid } from './element-grid';
-import { endpointPosition } from './geometry';
 import { svgWrappedLabel } from './svg-render-labels';
 import { resolveStockColours } from './stock-colours';
 import { KNOCKOUT_RADIUS_PX, arrowLabelPass, type ArrowLabelPass } from './arrow-label-layout';
 import type { Rect } from './geometry-primitives';
 import { resolveFontStack } from './fonts';
+import { elementFontId, resolveFinish, type Finish } from './finish';
+import { finishArrowEnds } from './mind-connector-route';
+import { sketchArrow } from './sketch-element';
 import { r2, xmlEscape } from './svg-render-primitives';
 import type { ArrowElement, Element } from './index';
 
@@ -121,6 +126,32 @@ export function svgArrowhead(
         ? `<polygon points="${points}" fill="${fill}"/>`
         : `<polygon points="${points}"${hollow}/>`;
     }
+    default: {
+      // An ER end (er-heads.ts): its strokes mapped from the marker's box onto the line, x along it back from the
+      // tip (10 at the table), y across it.
+      const glyph = ER_GLYPHS[shape];
+      // 1.5 heads long, as the canvas marker draws it on a 2px line.
+      const k = (size * 1.5) / 10;
+      const at = (x: number, y: number) =>
+        pt(
+          to.x + (x - 10) * k * ux - (y - 5) * k * uy,
+          to.y + (x - 10) * k * uy + (y - 5) * k * ux,
+        );
+      const stroke = ` stroke="${fill}" stroke-width="1.5" stroke-linecap="round"`;
+      const lines = glyph.lines
+        .map(([x1, y1, x2, y2]) => {
+          const [a, b] = [at(x1, y1), at(x2, y2)];
+          return `<polyline points="${a} ${b}" fill="none"${stroke}/>`;
+        })
+        .join('');
+      const rings = glyph.rings
+        .map(([cx, cy, rr]) => {
+          const [x, y] = at(cx, cy).split(',');
+          return `<circle cx="${x}" cy="${y}" r="${r2(rr * k)}" fill="${xmlEscape(paper)}"${stroke}/>`;
+        })
+        .join('');
+      return lines + rings;
+    }
   }
 }
 
@@ -133,7 +164,7 @@ export function svgArrow(
   tabFont?: string,
   // The tab's label pass (layouts + knockouts), computed once per render by the caller.
   labels: ArrowLabelPass = arrowLabelPass(elements, {
-    fontFamilyOf: (a) => arrowLabelFontStack(a, tabFont),
+    fontFamilyOf: (a) => arrowLabelFontStack(a, tabFont, tabFinish),
   }),
   // Mask ids live in the document once the markup is inlined; a caller that
   // inlines several renders of the same arrow (thumbnails, the minimap) gives
@@ -146,19 +177,19 @@ export function svgArrow(
   // The paper a hollow head is filled with; the surface's default canvas colour unless the caller
   // knows the tab's own background.
   paper: string = surface === 'dark' ? DARK_CANVAS_BACKGROUND_COLOR : DEFAULT_BACKGROUND_COLOR,
+  // The tab's finish (docs/specs/008-canvas/finish.md), for an arrow without its own.
+  tabFinish?: Finish,
 ): string {
   // A stock colour stored by name is drawn in its version for this page.
-  const arrow = resolveStockColours(source, surface);
-  // Same converging-fan offset the live canvas applies (see
-  // arrow-endpoint-spread.ts), so exports match what's on screen.
-  const rawFrom = endpointPosition(arrow.from, elements);
-  const rawTo = endpointPosition(arrow.to, elements);
-  const fromSpread = arrowEndpointSpread(arrow.id, 'from', elements);
-  const toSpread = arrowEndpointSpread(arrow.id, 'to', elements);
-  const from = { x: rawFrom.x + fromSpread.x, y: rawFrom.y + fromSpread.y };
-  const to = { x: rawTo.x + toSpread.x, y: rawTo.y + toSpread.y };
+  const stocked = resolveStockColours(source, surface);
+  // Professional thins an arrow that sets no width and draws a mind map's connectors right-angled; Sketch
+  // draws it by hand (docs/specs/008-canvas/finish.md).
+  const finish = resolveFinish(stocked.finish, tabFinish);
+  // The same ends the live canvas resolves (the converging-fan offset of arrow-endpoint-spread.ts, or a
+  // finish's exact route), so exports match what's on screen.
+  const { arrow, from, to } = finishArrowEnds(stocked, elements, finish);
   const stroke = arrow.strokeColor ?? defaultArrowStrokeColor(surface);
-  const lw = arrow.strokeWidth ?? 2;
+  const lw = arrow.strokeWidth ?? (finish === 'professional' ? ARROW_THICKNESS_PX.thin : 2);
   const op = arrow.opacity ?? 1;
   const opAttr = op !== 1 ? ` opacity="${r2(op)}"` : '';
   const style = arrowStyleOf(arrow);
@@ -174,7 +205,11 @@ export function svgArrow(
     arrow.curvePoints,
   );
   const dash = BORDER_DASH_ARRAY[arrow.strokeStyle ?? 'solid'];
-  const dashAttr = dash ? ` stroke-dasharray="${dash}"` : '';
+  // A shared end's pattern is anchored there, so every arrow into it runs in step (arrow-dash.ts).
+  const dashOffset = arrowDashOffset(arrow, from, to);
+  const dashAttr = dash
+    ? ` stroke-dasharray="${dash}"${dashOffset ? ` stroke-dashoffset="${dashOffset}"` : ''}`
+    : '';
   // The line breaks around unrelated boxes it crosses, as on the canvas
   // (docs/specs/008-canvas/arrow-route-behind.md), and around the label knockouts. Both go in one
   // mask, the same one ArrowView mints, so the export shows the same gaps.
@@ -189,17 +224,36 @@ export function svgArrow(
     holes.length > 0 ? `${maskIdPrefix}${String(arrow.id)}`.replace(/[^a-zA-Z0-9_-]/g, '') : null;
   if (maskId) parts.push(svgArrowMask(maskId, holes));
   const maskAttr = maskId ? ` mask="url(#${xmlEscape(maskId)})"` : '';
-  parts.push(
-    `<path d="${d}" fill="none" stroke="${xmlEscape(stroke)}" stroke-width="${lw}" stroke-linecap="round" stroke-linejoin="round"${dashAttr}${maskAttr}/>`,
-  );
-  const { toRef, fromRef } = arrowHeadRefs(arrow, from, to);
   const ends = arrow.arrowEnds ?? 'to';
   const headShape = arrowheadShapeOf(arrow);
-  const headSize = ARROWHEAD_SIZE_PX[arrowheadSizeOf(arrow)];
-  if (ends === 'to' || ends === 'both')
-    parts.push(svgArrowhead(toRef, to, stroke, headShape, headSize, paper));
-  if (ends === 'from' || ends === 'both')
-    parts.push(svgArrowhead(fromRef, from, stroke, headShape, headSize, paper));
+  const startShape = arrowheadStartShapeOf(arrow);
+  // Two different heads (an ER relationship): the sketch draws one shape for both, so it draws only the line and the
+  // heads are drawn exactly.
+  const mixed = startShape !== headShape;
+  const headPreset = arrowheadSizeOf(arrow);
+  const sketched =
+    finish === 'sketch'
+      ? sketchArrow(arrow.id, d, {
+          strokePx: lw,
+          headSize: headPreset,
+          headShape,
+          startHead: !mixed && (ends === 'from' || ends === 'both'),
+          endHead: !mixed && (ends === 'to' || ends === 'both'),
+          // The export is a still: no flow runs, so both passes.
+          passes: 2,
+        })
+      : null;
+  const lineAttrs = ` fill="none" stroke="${xmlEscape(stroke)}" stroke-width="${lw}" stroke-linecap="round" stroke-linejoin="round"`;
+  parts.push(`<path d="${sketched?.line ?? d}"${lineAttrs}${dashAttr}${maskAttr}/>`);
+  if (sketched?.heads) parts.push(`<path d="${sketched.heads}"${lineAttrs}/>`);
+  if (!sketched?.sketchedHeads || mixed) {
+    const { toRef, fromRef } = arrowHeadRefs(arrow, from, to);
+    const headSize = ARROWHEAD_SIZE_PX[headPreset];
+    if (ends === 'to' || ends === 'both')
+      parts.push(svgArrowhead(toRef, to, stroke, headShape, headSize, paper));
+    if (ends === 'from' || ends === 'both')
+      parts.push(svgArrowhead(fromRef, from, stroke, startShape, headSize, paper));
+  }
   const layout = labels.layouts.get(arrow.id);
   if (layout) {
     // The caption as it is actually styled (docs/specs/008-canvas/arrow-labels.md): laid out by the
@@ -224,7 +278,7 @@ export function svgArrow(
         !!arrow.textBold,
         !!arrow.textItalic,
         'middle',
-        arrowLabelFontStack(arrow, tabFont),
+        arrowLabelFontStack(arrow, tabFont, tabFinish),
       ),
     );
   }
@@ -232,10 +286,18 @@ export function svgArrow(
   return parts.join('');
 }
 
-// The font stack a caption paints in: its own face, else the tab's
-// (docs/specs/004-interface-design/fonts.md). The layout measures with the same stack.
-export function arrowLabelFontStack(arrow: ArrowElement, tabFont?: string): string | undefined {
-  return resolveFontStack(arrow.font) ?? resolveFontStack(tabFont);
+// The font stack a caption paints in: its own face, else the handwriting font under Sketch, else the tab's
+// (docs/specs/004-interface-design/fonts.md, docs/specs/008-canvas/finish.md). The layout measures with the
+// same stack.
+export function arrowLabelFontStack(
+  arrow: ArrowElement,
+  tabFont?: string,
+  tabFinish?: Finish,
+): string | undefined {
+  return (
+    resolveFontStack(arrow.font) ??
+    resolveFontStack(elementFontId({ finish: arrow.finish }, tabFont, tabFinish))
+  );
 }
 
 // A mask that paints the line everywhere except its holes (label knockouts and

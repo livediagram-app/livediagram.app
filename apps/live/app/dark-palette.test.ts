@@ -1,7 +1,19 @@
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import ts from 'typescript';
+import {
+  isIdentifier,
+  isJsxAttribute,
+  isJsxOpeningElement,
+  isJsxSelfClosingElement,
+  isNoSubstitutionTemplateLiteral,
+  isStringLiteral,
+  isTemplateExpression,
+  type JsxAttribute,
+  type Node,
+  type SourceFile,
+} from 'typescript/unstable/ast';
+import { parseSourceFiles } from '@livediagram/source-ast';
 import { describe, expect, it } from 'vitest';
 
 // The dark palette (docs/specs/004-interface-design/color-scheme.md, Dark palette (Steel)) is a set of
@@ -39,7 +51,7 @@ const STEEL: Record<string, string> = {
   '900': '#1d3553',
   '950': '#142538',
 };
-// Light mode's ramp, which the dark palette must not touch (the light half of #74 is not ours).
+// Light mode's ramp, which the dark palette must not touch (light-palette.test.ts guards its fills).
 const SKY: Record<string, string> = {
   '50': '#f0f9ff',
   '100': '#e0f2fe',
@@ -80,8 +92,8 @@ describe('the dark palette tokens', () => {
 describe('the wordmark', () => {
   const brand = readFileSync(`${REPO}packages/ui/src/Brand.tsx`, 'utf8');
 
-  it('lights its "live" half sky in dark mode, and keeps brand-600 in light', () => {
-    expect(brand).toMatch(/'text-brand-600 dark:text-sky-400'/);
+  it('lights its "live" half sky in dark mode, and is brand-700 in light (#74)', () => {
+    expect(brand).toMatch(/'text-brand-700 dark:text-sky-400'/);
   });
 });
 
@@ -105,30 +117,28 @@ const SOURCES = [
 
 // Parsed once, here at collection time, and shared by every rule below: re-parsing ~900 files
 // inside a test spent seconds of its timeout on a busy CI runner.
-const PARSED = SOURCES.map((path) =>
-  ts.createSourceFile(path, readFileSync(path, 'utf8'), ts.ScriptTarget.Latest, true),
-);
+const PARSED = parseSourceFiles(SOURCES);
 
 /**
  * Every class-bearing string in a file: each string literal on its own, and each template
  * literal as a whole (its static chunks joined, with an interpolated identifier kept by name,
  * so `${SOLID_BRAND_DARK}` counts as the pairing it stands for).
  */
-function classStrings(source: ts.SourceFile): { path: string; text: string }[] {
+function classStrings(source: SourceFile): { path: string; text: string }[] {
   const path = source.fileName;
   const out: { path: string; text: string }[] = [];
-  const visit = (node: ts.Node): void => {
-    if (ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node)) {
+  const visit = (node: Node): void => {
+    if (isStringLiteral(node) || isNoSubstitutionTemplateLiteral(node)) {
       out.push({ path, text: node.text });
-    } else if (ts.isTemplateExpression(node)) {
+    } else if (isTemplateExpression(node)) {
       const parts = [node.head.text];
       for (const span of node.templateSpans) {
-        parts.push(ts.isIdentifier(span.expression) ? span.expression.text : '');
+        parts.push(isIdentifier(span.expression) ? span.expression.text : '');
         parts.push(span.literal.text);
       }
       out.push({ path, text: parts.join(' ') });
     }
-    ts.forEachChild(node, visit);
+    node.forEachChild(visit);
   };
   visit(source);
   return out.map((s) => ({ ...s, path: relative(REPO, s.path) }));
@@ -180,11 +190,11 @@ describe('white text on an identity colour', () => {
     );
     for (const sf of candidates) {
       const path = sf.fileName;
-      const visit = (node: ts.Node): void => {
-        if (ts.isJsxOpeningElement(node) || ts.isJsxSelfClosingElement(node)) {
+      const visit = (node: Node): void => {
+        if (isJsxOpeningElement(node) || isJsxSelfClosingElement(node)) {
           const attr = (name: string) =>
             node.attributes.properties.find(
-              (p): p is ts.JsxAttribute => ts.isJsxAttribute(p) && p.name.getText(sf) === name,
+              (p): p is JsxAttribute => isJsxAttribute(p) && p.name.getText(sf) === name,
             );
           const cls = attr('className')?.initializer?.getText(sf) ?? '';
           const style = attr('style')?.initializer?.getText(sf) ?? '';
@@ -195,7 +205,7 @@ describe('white text on an identity colour', () => {
             );
           }
         }
-        ts.forEachChild(node, visit);
+        node.forEachChild(visit);
       };
       visit(sf);
     }

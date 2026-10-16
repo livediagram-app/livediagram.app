@@ -16,7 +16,7 @@ describe('blankHref', () => {
     expect(blankHref('/new?template=blank-plan', 'HeaderPlan')).toBe('/new?template=blank-plan');
   });
 
-  // Every surface whose header shows the Start Blank menu (it has a Header slot) lists all four blanks, so
+  // Every surface whose header shows the Start Blank menu (it has a Header slot) lists all five blanks, so
   // no row ever falls back to an untagged link (docs/specs/019-marketing/landing-funnel.md).
   it('finds every blank in the table for every surface with a header', () => {
     for (const surface of Object.keys(CTA_SOURCES) as CtaSurface[]) {

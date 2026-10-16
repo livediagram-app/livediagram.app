@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { chartFieldsFromTable, isChartSource } from './chart-source';
+import {
+  chartFieldsFromTable,
+  chartsInSheet,
+  isChartSource,
+  isSheetAnchor,
+  isSheetAnchoredChart,
+  SHEET_ANCHOR_MAX,
+  sheetDrawnChartIds,
+} from './chart-source';
 import { withSheetCharts } from './containment';
 import { duplicateElements } from './duplicate';
 import { copiedSheetId, relinkCopiedCharts } from './chart-source';
@@ -37,9 +45,32 @@ describe('a chart drawn from a sheet range', () => {
     expect(
       shapeValidationIssue({ ...chart, chartSource: { sheetId: 'sheet0001', range } }),
     ).toBeNull();
-    expect(
-      shapeValidationIssue({ ...chart, chartSource: { sheetId: 'x' } as never }),
-    ).not.toBeNull();
+    expect(shapeValidationIssue({ ...chart, chartSource: { sheetId: 'x' } })).not.toBeNull();
+  });
+
+  it('takes a scatter chart’s x from a numbered read’s first column (pie-chart.md "Charts drawn from a sheet")', () => {
+    const numbered = {
+      categories: ['1', '2'],
+      series: [
+        { name: 'X', values: [5, 7] },
+        { name: 'Y', values: [1, 2] },
+      ],
+    };
+    const scatter = { shape: 'line-chart', chartVariant: 'scatter' };
+    expect(chartFieldsFromTable(scatter, numbered)).toEqual({
+      lineCategories: ['5', '7'],
+      lineSeries: [{ name: 'Y', values: [1, 2] }],
+    });
+    // Labelled categories, a single series, or a line chart keep the read as it is.
+    const labelled = { ...numbered, categories: ['Jan', 'Feb'] };
+    expect(chartFieldsFromTable(scatter, labelled)).toMatchObject({
+      lineCategories: ['Jan', 'Feb'],
+    });
+    const single = { categories: ['1', '2'], series: [numbered.series[1]!] };
+    expect(chartFieldsFromTable(scatter, single)).toMatchObject({ lineCategories: ['1', '2'] });
+    expect(chartFieldsFromTable({ shape: 'line-chart' }, numbered)).toMatchObject({
+      lineCategories: ['1', '2'],
+    });
   });
 
   it('gives a bar its first series, a pie never below zero, and a line every series, keeping colours', () => {
@@ -123,5 +154,99 @@ describe('a chart drawn from a sheet range', () => {
     expect(relinkCopiedCharts([linked], new Map())).toEqual([linked]);
     expect(copiedSheetId(sheet, sheet)).toBeNull();
     expect(copiedSheetId(linked, sheet)).toBeNull();
+  });
+
+  it('sits in its Sheet at an anchor of px from the corner of its cells', () => {
+    expect(isSheetAnchor({ x: 0, y: 0 })).toBe(true);
+    expect(isSheetAnchor({ x: 120.5, y: SHEET_ANCHOR_MAX })).toBe(true);
+    for (const bad of [
+      null,
+      'x',
+      { x: -1, y: 0 },
+      { x: 0, y: SHEET_ANCHOR_MAX + 1 },
+      { x: Number.NaN, y: 0 },
+      { x: Infinity, y: 0 },
+      { x: '1', y: 0 },
+      { x: 0 },
+      { x: 0, y: 0, z: 0 },
+    ])
+      expect(isSheetAnchor(bad)).toBe(false);
+    const chart = {
+      ...createShape('bar-chart', 0, 0),
+      chartSource: { sheetId: 'sheet0001', range },
+    };
+    expect(shapeValidationIssue({ ...chart, sheetAnchor: { x: 10, y: 20 } })).toBeNull();
+    expect(shapeValidationIssue({ ...chart, sheetAnchor: { x: -5, y: 20 } })?.field).toBe(
+      'sheetAnchor',
+    );
+  });
+
+  it('is drawn by its Sheet only while the Sheet is on its tab', () => {
+    const sheet = {
+      ...createShape('plan-sheet', 0, 0),
+      id: 's',
+      planSheet: { sheetId: 'sheet0001' },
+    };
+    const chart = (id: string, sheetId: string, anchored = true) => ({
+      ...createShape('bar-chart', 0, 0),
+      id,
+      chartSource: { sheetId, range },
+      ...(anchored ? { sheetAnchor: { x: 0, y: 0 } } : {}),
+    });
+    const inSheet = chart('in', 'sheet0001');
+    const floating = chart('floating', 'sheet0001', false);
+    const orphan = chart('orphan', 'sheet0002');
+    const els = [sheet, inSheet, floating, orphan, createShape('square', 0, 0)];
+    expect([...sheetDrawnChartIds(els as never)]).toEqual(['in']);
+    expect(sheetDrawnChartIds([sheet] as never).size).toBe(0);
+    expect(sheetDrawnChartIds([orphan] as never).size).toBe(0);
+    expect(chartsInSheet(els as never, 'sheet0001')).toEqual([inSheet]);
+    expect(isSheetAnchoredChart(floating as never)).toBe(false);
+    expect(isSheetAnchoredChart({ ...inSheet, chartSource: undefined })).toBe(false);
+  });
+
+  it('always moves with its Sheet when anchored in it, wherever its own place is', () => {
+    const sheet = {
+      ...createShape('plan-sheet', 0, 0),
+      id: 's',
+      planSheet: { sheetId: 'sheet0001' },
+    };
+    const far = {
+      ...createShape('bar-chart', 9000, 9000),
+      id: 'far',
+      chartSource: { sheetId: 'sheet0001', range },
+      sheetAnchor: { x: 0, y: 0 },
+    };
+    const otherSheet = { ...far, id: 'other', chartSource: { sheetId: 'sheet0002', range } };
+    expect([...withSheetCharts([sheet, far, otherSheet] as never, new Set(['s']))].sort()).toEqual([
+      'far',
+      's',
+    ]);
+  });
+
+  it('takes only its anchored charts when asked (a delete), leaving a floating chart over it', () => {
+    const sheet = {
+      ...createShape('plan-sheet', 0, 0),
+      id: 's',
+      planSheet: { sheetId: 'sheet0001' },
+    };
+    const anchored = {
+      ...createShape('bar-chart', 9000, 9000),
+      id: 'anchored',
+      chartSource: { sheetId: 'sheet0001', range },
+      sheetAnchor: { x: 0, y: 0 },
+    };
+    const floating = {
+      ...createShape('bar-chart', 20, 10),
+      id: 'floating',
+      chartSource: { sheetId: 'sheet0001', range },
+    };
+    expect(
+      [
+        ...withSheetCharts([sheet, anchored, floating] as never, new Set(['s']), {
+          anchoredOnly: true,
+        }),
+      ].sort(),
+    ).toEqual(['anchored', 's']);
   });
 });

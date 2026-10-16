@@ -1,11 +1,10 @@
-// Setup Sheet (docs/specs/029-sheets/sheet.md "Setup Sheet"): the starts a new sheet can be filled from, the looks
+// Setup Sheet (docs/specs/029-sheets/sheet.md "Setup Sheet"): plain starts (a card table, a test's rows), the looks
 // it can take, and the one write that sets it up (the start, the look, the freeze, the sizes, and setup done).
 // Pure: the editor builds the card rows and hands them in.
 import { appendAxis } from './commands-axis';
 import { cellKey, type Border, type Sheet } from './sheet';
 import { CARD_CONTROLS_COL_PX, CARD_TABLE_ROWS_MAX, SHEET_ROWS_MAX } from './limits';
 import { makeAxisIds, type Rand } from './ids';
-import { serialFromMs } from './dates';
 import { readTypedInput } from './typed-input';
 import type { CellChange, SheetWrite } from './store';
 import type { LayoutChange } from './store-layout';
@@ -30,9 +29,6 @@ export type SheetStarter = {
   cards?: { fields: string[]; ids: string[]; type: string };
 };
 
-export const SHEET_STARTS = ['blank', 'budget', 'tracker', 'timesheet', 'contacts'] as const;
-export type SheetStartId = (typeof SHEET_STARTS)[number];
-
 export const SHEET_LOOKS = ['plain', 'header', 'banded', 'boxed', 'minimal'] as const;
 export type SheetLook = (typeof SHEET_LOOKS)[number];
 
@@ -49,63 +45,6 @@ const CARD_DATE_FIELDS: ReadonlySet<string> = new Set(['Due', 'Start']);
 
 // The most card rows a setup writes (sheet.md "Setup Sheet").
 export const SETUP_CARDS_MAX = 500;
-
-// The built-in starts, dated from `now` (the Tracker's due dates).
-export function sheetStarter(id: SheetStartId, now: number): SheetStarter | null {
-  const day = Math.floor(serialFromMs(now));
-  const due = (weeks: number): StarterCell => ({ n: day + weeks * 7, date: true });
-  switch (id) {
-    case 'blank':
-      return null;
-    case 'budget':
-      return {
-        rows: [
-          ['Item', 'Category', 'Amount'],
-          ['Rent', 'Home', '1200'],
-          ['Groceries', 'Food', '320'],
-          ['Transport', 'Travel', '140'],
-          ['Utilities', 'Home', '180'],
-          ['Total', null, '=SUM(C2:C5)'],
-        ],
-        widths: [180, 140, 120],
-        total: true,
-        formats: [{ col: 2, patch: { nf: 'number', dp: 2 } }],
-      };
-    case 'tracker':
-      return {
-        rows: [
-          ['Task', 'Owner', 'Status', 'Due'],
-          ['Draft the plan', 'Alex', 'In Progress', due(1)],
-          ['Review with the team', 'Sam', 'To Do', due(2)],
-          ['Share the results', 'Alex', 'To Do', due(3)],
-        ],
-        widths: [220, 120, 120, 120],
-      };
-    case 'timesheet':
-      return {
-        rows: [
-          ['Day', 'Project', 'Hours'],
-          ['Monday', 'Website', '7.5'],
-          ['Tuesday', 'Website', '8'],
-          ['Wednesday', 'Research', '6'],
-          ['Thursday', 'Website', '7.5'],
-          ['Friday', 'Research', '5'],
-          ['Total', null, '=SUM(C2:C6)'],
-        ],
-        widths: [140, 160, 100],
-        total: true,
-      };
-    case 'contacts':
-      return {
-        rows: [
-          ['Name', 'Email', 'Phone', 'Company'],
-          ['Jordan Lee', { s: 'jordan@example.com' }, { s: '+44 20 7946 0000' }, 'Northwind'],
-          ['Priya Shah', { s: 'priya@example.com' }, { s: '+44 161 496 0000' }, 'Contoso'],
-        ],
-        widths: [160, 220, 160, 160],
-      };
-  }
-}
 
 // The tints a look uses, for a light or a dark canvas: fixed once set, as any cell colour.
 const TINTS = {
@@ -145,21 +84,8 @@ export function setupWrite(
   if (!sheet) return null;
   const size = SHEET_CELL_SIZES[setup.size];
   const rows = (setup.start?.rows ?? []).slice(0, SHEET_ROWS_MAX);
-  const changes: LayoutChange[] = [];
-  let rowIds = sheet.layout.rows;
-  const short = Math.min(rows.length - rowIds.length, SHEET_ROWS_MAX - rowIds.length);
-  if (short > 0) {
-    const grown = appendAxis(sheet, 'r', short, rand);
-    if (grown?.kind === 'layout') {
-      changes.push(...grown.changes);
-      rowIds = [...rowIds, ...(grown.changes[0] as { ids: string[] }).ids];
-    }
-  }
+  const { changes, rowIds, read } = grownFor(wb, sheet, rows.length, rand);
   const colIds = sheet.layout.cols;
-  const base = wb.ctxFor(sheetId);
-  const ctx = changes.length
-    ? { ...base, own: { ...base.own, layout: { ...base.own.layout, rows: rowIds } } }
-    : base;
   const tint = setup.dark ? TINTS.dark : TINTS.light;
   const width = Math.min(colIds.length, Math.max(0, ...rows.map((r) => r.length)));
   const thin: Border = { w: 1, s: 'solid', c: tint.line };
@@ -174,21 +100,10 @@ export function setupWrite(
       const v = rows[i]![j] ?? null;
       const ch: CellChange = { r, c };
       if (v !== null) {
-        if (typeof v === 'string') {
-          const read = readTypedInput(
-            v,
-            'en-GB',
-            ctx,
-            sheet.cells.get(cellKey(r, c))?.format?.nf === 'text',
-          );
-          if (read.kind === 'invalid') return null;
-          ch.i = read.kind === 'clear' ? null : read.input;
-          if (read.kind === 'value' && read.hint) ch.f = { nf: read.hint.nf };
-        } else if ('s' in v) ch.i = { s: v.s };
-        else {
-          ch.i = { n: v.n };
-          if (v.date) ch.f = { nf: 'date' };
-        }
+        const got = read(v, r, c);
+        if (!got) return null;
+        ch.i = got.i;
+        if (got.f) ch.f = got.f;
       }
       const f: FormatPatch = { ...(ch.f ?? {}) };
       if (!head)
@@ -203,13 +118,7 @@ export function setupWrite(
       if (ch.i !== undefined || ch.f) cells.push(ch);
     }
   }
-  changes.push({
-    k: 'options',
-    setupPending: false,
-    colWidth: size.width === 120 ? null : size.width,
-    rowHeight: size.height === 28 ? null : size.height,
-    ...(setup.look === 'minimal' ? { showGrid: false } : {}),
-  });
+  changes.push(setupOptions(setup.look, setup.size));
   if (setup.freezeHeader && rows.length > 1) changes.push({ k: 'freeze', rows: 1 });
   const cards = setup.start?.cards;
   if (cards && rowIds[0]) {
@@ -248,6 +157,92 @@ export function setupWrite(
   return { kind: 'layout', changes, cells };
 }
 
+// The setup's own options: setup done, the cell size, and Minimal's gridlines off.
+export function setupOptions(look: SheetLook, sizeId: SheetCellSize): LayoutChange {
+  return {
+    k: 'options',
+    setupPending: false,
+    ...cellSizeDefaults(sizeId),
+    ...(look === 'minimal' ? { showGrid: false } : {}),
+  };
+}
+
+// The sheet's default column width and row height for a cell size (Setup Sheet's, Sheet Settings' Cells): the
+// Default size's as none of their own.
+export function cellSizeDefaults(sizeId: SheetCellSize): {
+  colWidth: number | null;
+  rowHeight: number | null;
+} {
+  const size = SHEET_CELL_SIZES[sizeId];
+  return {
+    colWidth: size.width === SHEET_CELL_SIZES.default.width ? null : size.width,
+    rowHeight: size.height === SHEET_CELL_SIZES.default.height ? null : size.height,
+  };
+}
+
+// The cell size a sheet's defaults make, or null when they match none (set by hand).
+export function cellSizeOf(layout: {
+  colWidth?: number;
+  rowHeight?: number;
+}): SheetCellSize | null {
+  const w = layout.colWidth ?? SHEET_CELL_SIZES.default.width;
+  const h = layout.rowHeight ?? SHEET_CELL_SIZES.default.height;
+  const ids = Object.keys(SHEET_CELL_SIZES) as SheetCellSize[];
+  return (
+    ids.find((id) => SHEET_CELL_SIZES[id].width === w && SHEET_CELL_SIZES[id].height === h) ?? null
+  );
+}
+
+// A start's cell read as written into a cell: its input and the format its reading hints (a date, a percent), or
+// null when a formula cannot be read.
+export type StarterRead = (
+  v: Exclude<StarterCell, null>,
+  r: string,
+  c: string,
+) => { i: CellChange['i']; f?: FormatPatch } | null;
+
+// The rows a setup grows the sheet by to hold `need` rows (within the limit), and a reader for its cells that knows
+// those rows (a formula naming a row only the growth makes still reads).
+export function grownFor(
+  wb: Workbook,
+  sheet: Sheet,
+  need: number,
+  rand: Rand,
+): { changes: LayoutChange[]; rowIds: string[]; read: StarterRead } {
+  const changes: LayoutChange[] = [];
+  let rowIds = sheet.layout.rows;
+  const short = Math.min(need - rowIds.length, SHEET_ROWS_MAX - rowIds.length);
+  if (short > 0) {
+    const grown = appendAxis(sheet, 'r', short, rand);
+    if (grown?.kind === 'layout') {
+      changes.push(...grown.changes);
+      rowIds = [...rowIds, ...(grown.changes[0] as { ids: string[] }).ids];
+    }
+  }
+  const base = wb.ctxFor(sheet.id);
+  const ctx = changes.length
+    ? { ...base, own: { ...base.own, layout: { ...base.own.layout, rows: rowIds } } }
+    : base;
+  const read: StarterRead = (v, r, c) => {
+    if (typeof v === 'string') {
+      const got = readTypedInput(
+        v,
+        'en-GB',
+        ctx,
+        sheet.cells.get(cellKey(r, c))?.format?.nf === 'text',
+      );
+      if (got.kind === 'invalid') return null;
+      return {
+        i: got.kind === 'clear' ? null : got.input,
+        ...(got.kind === 'value' && got.hint ? { f: { nf: got.hint.nf } } : {}),
+      };
+    }
+    if ('s' in v) return { i: { s: v.s } };
+    return { i: { n: v.n }, ...(v.date ? { f: { nf: 'date' } } : {}) };
+  };
+  return { changes, rowIds: [...rowIds], read };
+}
+
 // Plan cards as a start: a header of the chosen field names, then a row per card (a date field as a date).
 export function cardsStarter(
   fields: readonly string[],
@@ -272,7 +267,7 @@ export function cardsStarter(
     rows,
     widths: fields.map((f) => (f === 'Title' ? 260 : f === 'Number' ? 90 : 130)),
     ...(type && ids.every((id): id is string => !!id)
-      ? { cards: { fields: [...fields], ids: ids as string[], type } }
+      ? { cards: { fields: [...fields], ids: ids, type } }
       : {}),
   };
 }
@@ -296,6 +291,8 @@ export function resetSheetWrite(sheet: Sheet): SheetWrite {
   if (layout.filter) changes.push({ k: 'filter', filter: null });
   for (const t of layout.cardTables ?? []) changes.push({ k: 'cardTable', id: t.id, table: null });
   for (const x of layout.names ?? []) changes.push({ k: 'name', name: x.name, range: null });
+  for (const x of layout.rules ?? []) changes.push({ k: 'vrule', id: x.id, rule: null });
+  for (const x of layout.formatRules ?? []) changes.push({ k: 'frule', id: x.id, rule: null });
   changes.push({
     k: 'options',
     showGrid: true,

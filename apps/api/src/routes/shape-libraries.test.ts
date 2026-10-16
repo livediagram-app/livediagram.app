@@ -1,4 +1,5 @@
 import { makeTestRouteContext } from './test-route-context';
+import type { ShapeLibrary } from '@livediagram/api-schema';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { MAX_SHAPE_LIBRARIES_PER_OWNER, MAX_TAB_BYTES } from '@livediagram/api-schema';
 
@@ -6,14 +7,15 @@ import { MAX_SHAPE_LIBRARIES_PER_OWNER, MAX_TAB_BYTES } from '@livediagram/api-s
 // contracts"): owner-scoped like custom themes, plus the cap, the size budget, item validation and
 // the name rules.
 
+type Db = typeof import('../db');
 const { db } = vi.hoisted(() => ({
   db: {
-    listShapeLibrariesByOwner: vi.fn(),
-    getShapeLibrary: vi.fn(),
-    shapeLibraryNamesByOwner: vi.fn(),
-    createShapeLibrary: vi.fn(),
-    updateShapeLibrary: vi.fn(),
-    deleteShapeLibrary: vi.fn(),
+    listShapeLibrariesByOwner: vi.fn<Db['listShapeLibrariesByOwner']>(),
+    getShapeLibrary: vi.fn<Db['getShapeLibrary']>(),
+    shapeLibraryNamesByOwner: vi.fn<Db['shapeLibraryNamesByOwner']>(),
+    createShapeLibrary: vi.fn<Db['createShapeLibrary']>(),
+    updateShapeLibrary: vi.fn<Db['updateShapeLibrary']>(),
+    deleteShapeLibrary: vi.fn<Db['deleteShapeLibrary']>(),
   },
 }));
 vi.mock('../db', () => db);
@@ -39,17 +41,19 @@ const ctx = (
     body: opts.body,
     owner: opts.owner === undefined ? 'owner-1' : opts.owner,
   });
-const errorOf = async (res: Response) => ((await res.json()) as { error: string }).error;
-const library = (over: Record<string, unknown> = {}) => ({
-  id: 'lib-1',
-  ownerId: 'owner-1',
-  name: 'Team icons',
-  source: 'drawio',
-  items: [item],
-  createdAt: 1,
-  updatedAt: 1,
-  ...over,
-});
+const errorOf = async (res: Response) => (await res.json<{ error: string }>()).error;
+// A stored library as the db answers it, its element the raw JSON a request carries.
+const library = (over: Record<string, unknown> = {}) =>
+  ({
+    id: 'lib-1',
+    ownerId: 'owner-1',
+    name: 'Team icons',
+    source: 'drawio',
+    items: [item],
+    createdAt: 1,
+    updatedAt: 1,
+    ...over,
+  }) as ShapeLibrary;
 
 beforeEach(() => {
   for (const fn of Object.values(db)) fn.mockReset();
@@ -100,9 +104,7 @@ describe('POST /api/shape-libraries', () => {
   it('suffixes a name the owner already uses', async () => {
     db.shapeLibraryNamesByOwner.mockResolvedValue(['team icons', 'Team icons (2)']);
     const res = await handleShapeLibraries(ctx('POST', '/api/shape-libraries', { body: body() }));
-    expect(((await res.json()) as { library: { name: string } }).library.name).toBe(
-      'Team icons (3)',
-    );
+    expect((await res.json<{ library: { name: string } }>()).library.name).toBe('Team icons (3)');
   });
 
   it.each([

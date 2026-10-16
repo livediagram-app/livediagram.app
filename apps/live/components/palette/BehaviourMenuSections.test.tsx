@@ -25,7 +25,7 @@ function renderSection(element: ShapeElement, onSetPickerOptions = vi.fn()) {
   return { ...result, rerenderWith: (el: ShapeElement) => result.rerender(ui(el)) };
 }
 
-const textarea = () => screen.getByRole('textbox') as HTMLTextAreaElement;
+const textarea = () => screen.getByRole<HTMLTextAreaElement>('textbox');
 
 afterEach(() => cleanup());
 

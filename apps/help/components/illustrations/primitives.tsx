@@ -217,7 +217,8 @@ export function Shape({
 }
 
 /** A connector between two points. `kind` switches straight / curved / elbow,
- *  matching the editor's arrow styles. Renders its own arrowhead marker. */
+ *  matching the editor's arrow styles. Renders its own arrowhead marker.
+ *  `colour` overrides the tone with a stroke + arrowhead class pair. */
 export function Arrow({
   from,
   to,
@@ -226,6 +227,7 @@ export function Arrow({
   dashed = false,
   head = true,
   width = 2.5,
+  colour,
 }: {
   from: [number, number];
   to: [number, number];
@@ -234,12 +236,13 @@ export function Arrow({
   dashed?: boolean;
   head?: boolean;
   width?: number;
+  colour?: { stroke: string; fill: string };
 }) {
   const id = useId().replace(/:/g, '');
   const [x1, y1] = from;
   const [x2, y2] = to;
-  const strokeCls = tone === 'accent' ? 'stroke-brand-400' : 'stroke-slate-300';
-  const fillCls = tone === 'accent' ? 'fill-brand-400' : 'fill-slate-300';
+  const strokeCls = colour?.stroke ?? (tone === 'accent' ? 'stroke-brand-400' : 'stroke-slate-300');
+  const fillCls = colour?.fill ?? (tone === 'accent' ? 'fill-brand-400' : 'fill-slate-300');
   let d: string;
   if (kind === 'curved') {
     const mx = (x1 + x2) / 2;

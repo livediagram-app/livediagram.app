@@ -12,6 +12,7 @@ import {
   ganttNamesWidth,
 } from '@livediagram/items';
 import type { PlanPalette } from '../plan-palette';
+import { followWindowDrag } from '@/lib/window-drag';
 
 export function GanttNamesResizer({
   width,
@@ -49,28 +50,12 @@ export function GanttNamesResizer({
       next = ganttNamesWidth(width + (ev.clientX - startX) * scale, layoutPx);
       onPreview(next);
     };
-    const end = (commit: boolean) => {
-      window.removeEventListener('pointermove', onMove);
-      window.removeEventListener('pointerup', onUp);
-      window.removeEventListener('pointercancel', onCancel);
-      window.removeEventListener('keydown', onKey, true);
+    stop.current = followWindowDrag(onMove, (commit) => {
       stop.current = null;
       setActive(false);
       onPreview(null);
       if (commit && next !== width) onCommit(next);
-    };
-    const onUp = () => end(true);
-    const onCancel = () => end(false);
-    const onKey = (ev: KeyboardEvent) => {
-      if (ev.key !== 'Escape') return;
-      ev.stopPropagation();
-      end(false);
-    };
-    window.addEventListener('pointermove', onMove);
-    window.addEventListener('pointerup', onUp);
-    window.addEventListener('pointercancel', onCancel);
-    window.addEventListener('keydown', onKey, true);
-    stop.current = () => end(false);
+    });
   };
 
   return (

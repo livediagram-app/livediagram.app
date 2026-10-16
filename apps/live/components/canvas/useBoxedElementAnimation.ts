@@ -5,15 +5,21 @@ import {
   bodyAnimationSetOf,
   defaultFillColor,
   defaultStrokeColor,
+  hasOwnBodySet,
+  isOfficeShape,
+  isSeatingShape,
   keptAnimation,
   type BoxedElement,
   type ShapeAnimation,
+  STEP_SEQUENCE_BEAT_S,
+  stepOrdinal,
 } from '@livediagram/document';
 import { drawsShapeSvgOverlay } from '@/components/canvas/ShapeContentRouter';
 import { bodySetClass } from '@/lib/animation-classes';
 import { useElementSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { useCanvasStill } from '@/components/canvas/CanvasStillContext';
 import { useArrivesWithBoard } from '@/components/canvas/CanvasArrivalContext';
+import { COVERING_SHAPES, useCoversCanvas } from '@/hooks/plan/plan-cover-store';
 
 // The looping-animation slice (docs/specs/008-canvas/canvas-and-palette.md), lifted out of BoxedElementView:
 // which surface each animation kind rides (the wrapper box, the rendered
@@ -42,6 +48,9 @@ export function wrapperShapeAnimation(element: BoxedElement): ShapeAnimation | u
       ? undefined
       : (value as ShapeAnimation);
   }
+  // Concept graphics and sequences animate their rows by their own fields: a Shape value from before has nothing to
+  // clear it from, so it does not play.
+  if (hasOwnBodySet(element)) return undefined;
   const set = bodyAnimationSetOf(element);
   // Icons, charts, progress and rating own other fields; an old value here plays as it did.
   if (set === undefined || set === 'shape') return value as ShapeAnimation;
@@ -51,8 +60,21 @@ export function wrapperShapeAnimation(element: BoxedElement): ShapeAnimation | u
   return keptAnimation(set, value);
 }
 
+function stepSequenceDelay(element: BoxedElement): React.CSSProperties {
+  if (element.type !== 'shape' || element.shape !== 'step' || !element.stepSequence) return {};
+  const n = stepOrdinal(element);
+  if (n === null || n <= 1) return {};
+  const speed = ANIMATION_SPEED_FACTOR[element.animationSpeed ?? DEFAULT_ANIMATION_SPEED];
+  return { animationDelay: `${((n - 1) * STEP_SEQUENCE_BEAT_S * speed).toFixed(2)}s` };
+}
+
 export function useBoxedElementAnimation(element: BoxedElement, textColor: string) {
-  const animation = wrapperShapeAnimation(element);
+  // A board, view or Sheet filling the canvas (maximised, or Fill Tab) holds still: its animation plays only in
+  // its place on the canvas (docs/specs/028-animation/element-animations.md).
+  const covering = useCoversCanvas(
+    element.type === 'shape' && COVERING_SHAPES.has(element.shape) ? element.id : null,
+  );
+  const animation = covering ? undefined : wrapperShapeAnimation(element);
   // The gradient animation blends the element's fill, which falls back to the
   // canvas's own ink when the element carries none (docs/specs/007-editor/live-app.md).
   const surface = useElementSurface(element.id);
@@ -87,8 +109,11 @@ export function useBoxedElementAnimation(element: BoxedElement, textColor: strin
     element.type === 'annotation' ||
     (element.type === 'shape' &&
       (element.shape === 'sticker' ||
-        element.shape === 'chair' ||
-        element.shape === 'timeline-rail'));
+        isSeatingShape(element.shape) ||
+        element.shape === 'fence' ||
+        element.shape === 'timeline-rail' ||
+        // An office's furniture, rooms and rugs (docs/specs/009-elements/office.md), drawn as a chair is.
+        isOfficeShape(element.shape)));
   const isTextNativeAnim = (element.type === 'text' || isDrawnArt) && silhouetteAnim;
   // `gradient` is a background clipped to the glyphs, which drawn art has
   // nothing to clip to, so it gets a hue cycle over its own colours instead,
@@ -99,12 +124,17 @@ export function useBoxedElementAnimation(element: BoxedElement, textColor: strin
       ? 'lvd-anim-sticker-gradient'
       : `lvd-anim-text-${animation}`;
   // Text wears it on its glyphs; drawn art wears it on the drawing, which the
-  // art's own view mounts (StickerView, ChairView), not on the label under it.
-  // A sticker and a chair mount it on their art (StickerView, ChairView); an annotation pin and a
+  // art's own view mounts (StickerView, FurnitureView), not on the label under it.
+  // A sticker and a chair mount it on their art (StickerView, FurnitureView); an annotation pin and a
   // timeline rail have no art view to mount it, so it sits on the element itself, where a
   // drop-shadow follows the drawing's silhouette just the same over its transparent box.
   const hasArtView =
-    element.type === 'shape' && (element.shape === 'sticker' || element.shape === 'chair');
+    element.type === 'shape' &&
+    (element.shape === 'sticker' ||
+      isSeatingShape(element.shape) ||
+      element.shape === 'fence' ||
+      // FurnitureView and RoomView mount it on their art.
+      isOfficeShape(element.shape));
   const labelAnimClass = isDrawnArt ? undefined : silhouetteAnimClass;
   const artAnimClass = isDrawnArt && hasArtView ? silhouetteAnimClass : undefined;
   const ownAnimClass = isDrawnArt && !hasArtView ? silhouetteAnimClass : undefined;
@@ -195,6 +225,9 @@ export function useBoxedElementAnimation(element: BoxedElement, textColor: strin
         // toward the accent (the box version blends the fill, which a
         // text element doesn't have); see .lvd-anim-text-gradient.
         ...(isTextNativeAnim && animation === 'gradient' ? { '--lvd-anim-text': textColor } : {}),
+        // Play in Order (docs/specs/009-elements/step-number.md "Animation"): step n starts n - 1 beats after
+        // step 1, the beat scaled like the animation's own duration, so a pulse walks the numbers in turn.
+        ...stepSequenceDelay(element),
       } as React.CSSProperties)
     : {};
 

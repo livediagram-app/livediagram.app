@@ -11,11 +11,8 @@ import {
   boardAddTypes,
   boardShowsType,
   isArchived,
-  placeWidget,
   typeIn,
-  widgetsOf,
   type BoardProjection,
-  type BoardWidgetKind,
   type Item,
   type PlanBoardSetup,
   newItemId,
@@ -24,17 +21,8 @@ import type { PlanContextValue } from '@/components/plan/PlanContext';
 import { boardMoveFor, cellStatus, laneMove } from '@/components/plan/plan-board-moves';
 import { moveStatusRefusal } from './status-refusal';
 import { useLatest } from '@/hooks/ui/useLatest';
-import {
-  registerPlanBoardTarget,
-  sameIncoming,
-  type PlanIncoming,
-  type WidgetPlaced,
-} from './plan-board-targets';
+import { registerPlanBoardTarget, sameIncoming, type PlanIncoming } from './plan-board-targets';
 
-// How long a widget the board already has flashes when it is placed again.
-export const WIDGET_FLASH_MS = 1400;
-import { BOARD_WIDGET_INFO } from '@/components/plan/board-widget-catalogue';
-import { trackSetup } from '@/components/plan/track-board-setup';
 import { track } from '@/lib/telemetry';
 import { usePlanCardDrag, type PlanDropSlot } from './usePlanCardDrag';
 
@@ -74,7 +62,7 @@ export function usePlanBoardDrop(opts: {
     // status kept for when it comes back; its own cards stay in their order.
     if (setup.archive) {
       if (!item || isArchived(item)) return;
-      plan.patchItem(itemId, { set: { archived: true } });
+      void plan.patchItem(itemId, { set: { archived: true } });
       plan.announce('Card archived');
       track('Plan', 'Moved', 'Archive');
       return;
@@ -147,7 +135,7 @@ export function usePlanBoardDrop(opts: {
       const lane = projection.lanes.find((l) => l.key === slot.laneKey);
       const set = projection.swimlanes ? laneMove(lane) : {};
       const id = newItemId();
-      plan.addItem({
+      void plan.addItem({
         id,
         type: def.id,
         fields: { title: def.newTitle, ...(set.set ?? {}) },
@@ -172,34 +160,7 @@ export function usePlanBoardDrop(opts: {
         (s) => setup.columns.find((c) => c.status === s)?.name ?? plan.statusNames.get(s) ?? s,
       );
     },
-    canEditWidgets: () => !!setup && canEdit,
-    // A palette widget placed in the header (docs/specs/026-plan/board-widgets.md): one board edit.
-    placeWidget: (kind: BoardWidgetKind, slot: number, opts?: { tap?: boolean }): WidgetPlaced => {
-      if (!plan || !setup || !canEdit) return 'refused';
-      const label = BOARD_WIDGET_INFO[kind].label;
-      const before = widgetsOf(setup);
-      const had = before.includes(kind);
-      // A board holds each widget once: the one it has flashes, so it is found rather than missed.
-      if (had) setFlashWidget((prev) => ({ kind, at: (prev?.at ?? 0) + 1 }));
-      if (had && opts?.tap) return 'already';
-      const next = placeWidget(before, kind, slot);
-      if (next.join() === before.join()) return 'already';
-      plan.updateBoard(element.id, { ...setup, widgets: next });
-      trackSetup('Widgets');
-      plan.announce(had ? `${label} moved` : `${label} added to the board`);
-      return had ? 'moved' : 'added';
-    },
   });
-  const [widgetSlot, setWidgetSlot] = useState<number | null>(null);
-  // The widget a placement found already there, flashed for a moment.
-  const [flashWidget, setFlashWidget] = useState<{ kind: BoardWidgetKind; at: number } | null>(
-    null,
-  );
-  useEffect(() => {
-    if (!flashWidget) return;
-    const t = window.setTimeout(() => setFlashWidget(null), WIDGET_FLASH_MS);
-    return () => window.clearTimeout(t);
-  }, [flashWidget]);
   useEffect(
     () =>
       registerPlanBoardTarget(element.id, {
@@ -214,12 +175,9 @@ export function usePlanBoardDrop(opts: {
         acceptsType: (type) => target.current.acceptsType(type),
         addCard: (type, slot) => target.current.addCard(type, slot),
         refuseAt: (type, slot) => target.current.refuseAt(type, slot),
-        canEditWidgets: () => target.current.canEditWidgets(),
-        widgetHover: setWidgetSlot,
-        placeWidget: (kind, slot, opts) => target.current.placeWidget(kind, slot, opts),
       }),
     [element.id, target],
   );
 
-  return { drag, incoming, drop, widgetSlot, flashWidget: flashWidget?.kind ?? null };
+  return { drag, incoming, drop };
 }

@@ -4,10 +4,10 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { useFavourites } from './useFavourites';
 
 const apiListFavourites = vi.fn<(ownerId: string) => Promise<string[]>>();
-const apiSetFavourite = vi.fn();
+const apiSetFavourite = vi.fn<typeof import('@/lib/api-client').apiSetFavourite>();
 vi.mock('@/lib/api-client', () => ({
   apiListFavourites: (ownerId: string) => apiListFavourites(ownerId),
-  apiSetFavourite: (...a: unknown[]) => apiSetFavourite(...a),
+  apiSetFavourite: (...a: Parameters<typeof apiSetFavourite>) => apiSetFavourite(...a),
 }));
 
 afterEach(() => vi.clearAllMocks());
@@ -37,8 +37,9 @@ describe('useFavourites', () => {
 
   it('drops every star when the owner goes away', async () => {
     apiListFavourites.mockResolvedValue(['d1']);
+    const initialProps: { owner: string | null } = { owner: 'u1' };
     const { result, rerender } = renderHook(({ owner }) => useFavourites(owner), {
-      initialProps: { owner: 'u1' as string | null },
+      initialProps,
     });
     await waitFor(() => expect(result.current.favouriteIds.size).toBe(1));
     rerender({ owner: null });

@@ -48,7 +48,7 @@ non-owners (the shared document DTO, `redactOwner`; comment author ids on tab
 read, `redactCommentAuthorIds`), but two surfaces still exposed a
 collaborator to the owner's id:
 
-- **Realtime presence**: `broadcastPresence` (`document-room.ts`) sent every
+- **Realtime presence**: `broadcastPresence` (`document-room.ts`, roster in `room-roster.ts`) sent every
   connected participant's `id`, unredacted, to all room peers, and that id was
   the owner id. Any co-present collaborator, including a **view-only** share
   visitor, could read it off a presence frame.

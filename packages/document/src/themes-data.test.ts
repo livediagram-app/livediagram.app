@@ -12,8 +12,9 @@ describe('built-in multi-colour themes', () => {
       'rainbow',
       'pastel',
       'tropical',
-      'autumn',
-      'jewel',
+      'spring',
+      'pumpkin',
+      'yuletide',
     ]);
   });
 

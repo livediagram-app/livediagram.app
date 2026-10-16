@@ -10,6 +10,7 @@ import {
   cleanLine,
   decodeLabel,
   directionOf,
+  framedClusters,
   type MermaidDirection,
   type ParseMermaidResult,
 } from './mermaid-shared';
@@ -69,7 +70,8 @@ export function parseStateDiagram(rawLines: string[]): ParseMermaidResult {
     if (token !== '[*]') return token;
     const id = pseudoId(kind);
     if (!nodes.has(id)) {
-      nodes.set(id, { id, label: '', shape: 'circle' });
+      // The start a solid dot, the end a bullseye (a ring round the dot), as UML draws them.
+      nodes.set(id, { id, label: '', shape: kind === 'end' ? 'final-state' : 'circle' });
       if (currentCluster) currentCluster.members.push(id);
     }
     return id;
@@ -167,22 +169,8 @@ export function parseStateDiagram(rawLines: string[]): ParseMermaidResult {
     // Anything else (history states, unknown decoration) is skipped.
   }
 
-  // A transition may reference a composite's id — the arrow pins to the
-  // frame, so drop the auto-created node (unless a real state claimed it).
-  // Only for clusters that actually BECOME frames: an empty composite
-  // (`state X { }`) is dropped from the cluster list below, so deleting
-  // its node too would silently erase every transition touching X. Its
-  // auto node stays and the arrows keep a target.
-  const surviving = new Set(clusters.filter((c) => c.members.length > 0).map((c) => c.id));
-  for (const c of clusters) {
-    if (surviving.has(c.id) && implicit.has(c.id) && nodes.has(c.id)) {
-      nodes.delete(c.id);
-      for (const other of clusters) {
-        other.members = other.members.filter((m) => m !== c.id);
-      }
-    }
-  }
-  const realClusters = clusters.filter((c) => c.members.length > 0);
+  // A transition to a composite's id pins to its frame.
+  const realClusters = framedClusters(clusters, implicit, nodes);
 
   if (nodes.size === 0) {
     return { ok: false, error: 'No states found in the state diagram.' };

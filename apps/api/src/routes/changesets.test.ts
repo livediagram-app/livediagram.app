@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { sentJson } from '@livediagram/vitest-config/sent-request';
 import { CHANGESET_MAX_OPERATIONS } from '@livediagram/api-schema';
 import { elementFingerprint, type Element } from '@livediagram/document';
 import { createShareLink } from '../db/share';
@@ -11,8 +12,16 @@ import { handleDocuments } from './documents';
 // "Testing"): submit, list, one, revert, with a recording room.
 
 const OWNER = 'user_owner';
-const box = (id: string, label = id, x = 0): Element =>
-  ({ id, type: 'shape', shape: 'square', x, y: 0, width: 120, height: 60, label }) as Element;
+const box = (id: string, label = id, x = 0): Element => ({
+  id,
+  type: 'shape',
+  shape: 'square',
+  x,
+  y: 0,
+  width: 120,
+  height: 60,
+  label,
+});
 
 type Selection = { elementIds: string[]; name: string; color: string; mine: boolean };
 
@@ -22,7 +31,7 @@ function room(selections: Selection[] | 'down' = []) {
     idFromName: (name: string) => name,
     get: () => ({
       fetch: async (input: string, init?: RequestInit) => {
-        calls.push({ url: input, body: init?.body ? JSON.parse(String(init.body)) : null });
+        calls.push({ url: input, body: init?.body ? sentJson(init) : null });
         if (input.includes('/selections')) {
           return selections === 'down'
             ? new Response('no', { status: 500 })
@@ -81,8 +90,11 @@ async function setUp(
 const submit = (db: SqliteD1, body: unknown, who: Who = { token: true }, query = '') =>
   call(db, 'POST', `/api/documents/D/tabs/t1/changesets${query}`, body, who);
 const stored = (db: SqliteD1, tab = 't1') =>
-  (JSON.parse(db.sql.prepare('SELECT data FROM tabs WHERE id = ?').get(tab)!.data as string)
-    .elements ?? []) as Element[];
+  (
+    JSON.parse(db.sql.prepare('SELECT data FROM tabs WHERE id = ?').get(tab)!.data as string) as {
+      elements?: Element[];
+    }
+  ).elements ?? [];
 const records = (db: SqliteD1) =>
   db.sql.prepare('SELECT * FROM agent_changesets ORDER BY rev').all() as Record<string, unknown>[];
 const events = (db: SqliteD1) =>

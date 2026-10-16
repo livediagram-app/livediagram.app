@@ -45,7 +45,7 @@ const stubCoarsePointer = () =>
 // jsdom has no layout, so every element reads offsetParent null; give buttons one so they count as visible.
 Object.defineProperty(HTMLElement.prototype, 'offsetParent', {
   configurable: true,
-  get() {
+  get(this: HTMLElement) {
     return this.parentNode;
   },
 });

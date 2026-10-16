@@ -19,7 +19,7 @@ function setViewport(mobile: boolean) {
     media: query,
     addEventListener: () => {},
     removeEventListener: () => {},
-  })) as unknown as typeof window.matchMedia;
+  }));
 }
 
 function renderDialog(overrides: Partial<UserPreferences> = {}) {
@@ -114,7 +114,7 @@ describe('SettingsDialog', () => {
     setViewport(false);
     render(
       <SettingsDialog
-        settings={{} as UserPreferences}
+        settings={{}}
         onChange={() => {}}
         onClose={() => {}}
         aiCapable
@@ -169,7 +169,7 @@ describe('SettingsDialog', () => {
     expect(onChange).toHaveBeenCalledWith(expect.objectContaining({ quickAddOnHover: true }));
   });
 
-  it('arms the welcome tour it promises when the row is left on', () => {
+  it('arms the Diagram tour it promises when the row is left on', () => {
     // The row reads `tourSeen !== true` and says the tour will be offered
     // next time, but TourHost also needs the per-tab pending flag, which
     // only /new sets. Without arming it here the row sat on, promising a
@@ -204,7 +204,7 @@ describe('SettingsDialog', () => {
       writeSettingsView({ categoryId: 'privacy', anchor: null });
       render(
         <SettingsDialog
-          settings={{} as UserPreferences}
+          settings={{}}
           onChange={() => {}}
           onClose={() => {}}
           aiCapable
@@ -286,6 +286,6 @@ describe('SettingsDialog', () => {
     const sw = screen.getByRole('switch', { name: 'Alignment Guides' });
     const describedBy = sw.getAttribute('aria-describedby');
     expect(describedBy).toBeTruthy();
-    expect(document.getElementById(describedBy!)?.textContent).toContain('snap lines');
+    expect(document.getElementById(describedBy!)?.textContent).toMatch(/snap lines/i);
   });
 });

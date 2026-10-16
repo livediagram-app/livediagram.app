@@ -37,7 +37,8 @@ export function TextImportPanel({
   onImportText: (text: string, onProgress: ProgressListener) => Promise<ImportOutcome>;
   onImportFile: (onProgress: ProgressListener) => Promise<ImportOutcome>;
   onDone: (outcome: DoneOutcome) => void;
-  onBack: () => void;
+  // Absent when the dialog offers this one format: there is no list to go back to.
+  onBack?: () => void;
 }) {
   const [text, setText] = useState('');
   const [busy, setBusy] = useState(false);
@@ -70,7 +71,9 @@ export function TextImportPanel({
           style), the same control the New Document wizard's location step
           uses — not a small text link buried in the footer beside the
           commit button, where the way back sat next to the way forward. */}
-      <BackBar label="All formats" current={formatTitle} onClick={onBack} disabled={busy} />
+      {onBack ? (
+        <BackBar label="All formats" current={formatTitle} onClick={onBack} disabled={busy} />
+      ) : null}
       <textarea
         value={text}
         onChange={(e) => setText(e.target.value)}

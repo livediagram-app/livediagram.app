@@ -1,10 +1,21 @@
 // @vitest-environment jsdom
 import { renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { createShape, type Element, type Tab } from '@livediagram/document';
+import {
+  PADDING_PX,
+  createShape,
+  type Element,
+  type ShapeElement,
+  type Tab,
+} from '@livediagram/document';
 import { useSelectionEditing } from './useSelectionEditing';
 
-vi.mock('@/components/canvas/text-hug-measure', () => ({ measureDrawnText: () => () => 0 }));
+// A mind node's lines measure this tall (jsdom lays nothing out).
+const mindLines = { height: 0 };
+vi.mock('@/components/canvas/text-hug-measure', () => ({
+  measureDrawnText: () => () => 0,
+  measureDrawnMindLabel: () => () => () => ({ width: 1, height: mindLines.height }),
+}));
 
 // docs/specs/008-canvas/canvas-and-palette.md "Rich text labels": a label is saved without
 // whitespace at either end, so neither the display nor the editor shows a dangling line.
@@ -81,6 +92,33 @@ describe('commitLabel', () => {
     expect(s.saved().label).toBe('Yes');
     s.editing.commitLabel('a', '\n ');
     expect('label' in s.saved()).toBe(false);
+  });
+});
+
+// docs/specs/009-elements/mind-node.md "New lines" and "A node grows to fit its label".
+describe('committing a mind node label', () => {
+  const venue = { ...createShape('mind-node', 0, 0), id: 'venue' };
+
+  it('keeps a new line inside the label', () => {
+    mindLines.height = 0;
+    const s = setup(venue);
+    s.editing.commitLabel('venue', 'Venue\nBudget\n');
+    expect(s.saved().label).toBe('Venue\nBudget');
+  });
+
+  it('grows the node to fit its lines, in the same commit', () => {
+    mindLines.height = 120;
+    const s = setup(venue);
+    s.editing.commitLabel('venue', 'One\nTwo\nThree\nFour');
+    expect((s.saved() as ShapeElement).height).toBe(120 + 2 * PADDING_PX.sm);
+    expect((s.saved() as ShapeElement).width).toBe(venue.width);
+  });
+
+  it('leaves a node whose lines fit at its size', () => {
+    mindLines.height = 30;
+    const s = setup(venue);
+    s.editing.commitLabel('venue', 'Venue\nBudget');
+    expect((s.saved() as ShapeElement).height).toBe(venue.height);
   });
 });
 

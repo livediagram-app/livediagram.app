@@ -23,7 +23,7 @@ import { StickerPickerTab } from '@/components/palette/StickerPickerTab';
 import { TechPickerTab } from '@/components/palette/TechPickerTab';
 import {
   DevicePickerTab,
-  PaletteBehaviourTab,
+  PaletteCollaborateTab,
   PaletteDataTab,
   PaletteMediaTab,
   PaletteDrawTab,
@@ -161,8 +161,13 @@ export function paletteCategoryTabs(
         return <PaletteComponentsTab {...tab} tiles={tiles} />;
       case 'data':
         return <PaletteDataTab {...tab} tiles={tiles} />;
-      case 'behaviour':
-        return <PaletteBehaviourTab {...tab} tiles={tiles} />;
+      case 'collab-ask':
+      case 'collab-tools':
+      case 'collab-record':
+      case 'collab-react':
+      case 'collab-mode':
+      case 'collab-navigate':
+        return <PaletteCollaborateTab {...tab} tiles={tiles} />;
       // Plan mode's cards follow the document's item types
       // (docs/specs/026-plan/item-types.md "Where types show").
       case 'plan-cards':

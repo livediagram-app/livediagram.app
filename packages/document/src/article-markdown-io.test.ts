@@ -81,6 +81,35 @@ describe('Markdown into an article', () => {
   });
 });
 
+describe('a written article read back', () => {
+  it('keeps text that is bold and italic at once', () => {
+    const runs = [
+      { text: 'a ' },
+      { text: 'both', b: true as const, i: true as const },
+      { text: ' end' },
+    ];
+    const back = articleFromMarkdown(
+      articleToMarkdown({ blocks: [{ id: 'p', type: 'paragraph', runs }] }),
+    );
+    expect(
+      'blocks' in back && back.blocks.map((b) => (b.type === 'paragraph' ? b.runs : null)),
+    ).toEqual([runs]);
+  });
+
+  it('keeps inline code holding backticks, backslashes and edge spaces', () => {
+    for (const code of ['a`b', '``x', '`', 'x`', 'a ``` b', 'a\\*b \\`', ' padded ', '  ']) {
+      const runs = [{ text: 'see ' }, { text: code, code: true as const }, { text: ' end' }];
+      const back = articleFromMarkdown(
+        articleToMarkdown({ blocks: [{ id: 'p', type: 'paragraph', runs }] }),
+      );
+      expect(
+        'blocks' in back && back.blocks.map((b) => (b.type === 'paragraph' ? b.runs : null)),
+        JSON.stringify(code),
+      ).toEqual([runs]);
+    }
+  });
+});
+
 describe('a Markdown table', () => {
   it('is written as a list, its header in bold, and counted; never inside a code fence', () => {
     const out = articleFromMarkdown(
@@ -225,6 +254,28 @@ describe('worst case', () => {
     expect(blocks.length).toBeGreaterThan(1000);
     // Measured 77 to 346 ms on a loaded machine; held at 1,000 ms for CI under load.
     expect(took).toBeLessThan(1000);
+  });
+
+  it('reads a block of unclosed backtick fences in budget', () => {
+    // Every fence length up to 190, none closed: each fence scans the rest of the line once.
+    const line = Array.from({ length: 190 }, (_, i) => '`'.repeat(i + 1) + 'x').join('');
+    const started = performance.now();
+    parseInline(line);
+    // Measured 3 ms; 250 leaves room for CI under load.
+    expect(performance.now() - started).toBeLessThan(250);
+  });
+
+  it('writes and reads inline code of a long run of spaces in budget', () => {
+    const code = ' ' + '!'.repeat(15_000) + ' !';
+    const started = performance.now();
+    const back = articleFromMarkdown(
+      articleToMarkdown({
+        blocks: [{ id: 'p', type: 'paragraph', runs: [{ text: code, code: true }] }],
+      }),
+    );
+    // CodeQL's case for the edge-space check this replaced: quadratic as a regex.
+    expect(performance.now() - started).toBeLessThan(250);
+    expect('blocks' in back).toBe(true);
   });
 
   it('stays linear on a long run of spaces (no regex backtracking)', () => {

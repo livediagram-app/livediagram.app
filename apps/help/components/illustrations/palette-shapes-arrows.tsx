@@ -53,16 +53,11 @@ export function ShapeMarkers() {
       {/* Checkbox marker */}
       <Shape x={236} y={56} w={140} h={58} kind="rect" label="" />
       <g transform="translate(254 76)">
-        <rect
-          width={18}
-          height={18}
-          rx={4}
-          className="fill-white stroke-brand-500"
-          strokeWidth={2}
-        />
+        {/* Done: a box filled with the text colour and a white tick (ShapeMarker.tsx) */}
+        <rect width={18} height={18} rx={4} className="fill-slate-800 dark:fill-slate-100" />
         <path
           d="M3 9 L7 13 L15 4"
-          className="stroke-brand-500"
+          className="stroke-white dark:stroke-slate-900"
           strokeWidth={2.5}
           fill="none"
           strokeLinecap="round"
@@ -84,9 +79,12 @@ export function ArrowsConnecting() {
       <Shape x={40} y={88} w={88} h={48} kind="rect" label="Start" />
       <Shape x={186} y={40} w={88} h={48} kind="diamond" />
       <Shape x={300} y={140} w={88} h={48} kind="rect" accent label="Done" />
-      <Arrow from={[128, 112]} to={[186, 80]} kind="straight" />
+      {/* Straight, into the diamond's left corner */}
+      <Arrow from={[128, 104]} to={[186, 64]} kind="straight" />
       <Arrow from={[274, 64]} to={[344, 140]} kind="curved" />
-      <Arrow from={[84, 136]} to={[300, 176]} kind="elbow" dashed />
+      {/* Angled: down out of Start's bottom edge, then across into Done, never along a border */}
+      <Arrow from={[84, 136]} to={[84, 168]} dashed head={false} />
+      <Arrow from={[84, 168]} to={[300, 168]} dashed />
     </Scene>
   );
 }
@@ -128,17 +126,18 @@ export function CurveElbowHandles() {
       <Shape x={304} y={120} w={80} h={46} kind="rect" accent label="B" />
       {/* The curved path being shaped */}
       <Arrow from={[116, 143]} to={[304, 143]} kind="curved" />
-      {/* Drag trail to the handle */}
-      <path
-        d="M210 110 q-4 -22 0 -42"
-        className="stroke-slate-300"
+      {/* The curve handle, as the app draws it (arrow-handles.tsx): a small white rounded square
+          at the curve's control point, just off the bow, under the pointer dragging it. */}
+      <rect
+        x={204}
+        y={78}
+        width={12}
+        height={12}
+        rx={3}
+        className="fill-white stroke-brand-600"
         strokeWidth={2}
-        strokeDasharray="4 4"
-        fill="none"
       />
-      {/* The draggable handle on the curve */}
-      <circle cx={210} cy={68} r={8} className="fill-white stroke-brand-500" strokeWidth={2.5} />
-      <Cursor x={216} y={72} colour="brand" />
+      <Cursor x={214} y={88} colour="brand" />
     </Scene>
   );
 }
@@ -155,24 +154,26 @@ export function ArrowToArrow() {
       <Arrow from={[112, 64]} to={[112, 212]} tone="muted" head={false} />
       <Arrow from={[lifelineX, 64]} to={[lifelineX, 212]} tone="muted" head={false} />
       {/* Snap points along the target lifeline */}
-      {[96, 128, 160, 192].map((y) => (
+      {/* About 24px apart, as arrow-snapping.ts spaces them */}
+      {[88, 112, 136, 160, 184, 208].map((y) => (
         <circle key={y} cx={lifelineX} cy={y} r={3} className="fill-brand-300" />
       ))}
-      {/* The message arrow, endpoint snapped onto the lifeline */}
-      <Arrow from={[112, 128]} to={[lifelineX, 128]} kind="straight" />
+      {/* The snapped endpoint, drawn under the arrow so its head stays visible */}
       <circle
         cx={lifelineX}
-        cy={128}
+        cy={136}
         r={5}
         className="fill-brand-500 stroke-white"
         strokeWidth={2}
       />
-      <Label x={150} y={118} size={10} weight={500} tone="muted">
+      {/* The message arrow, endpoint snapped onto the lifeline */}
+      <Arrow from={[112, 136]} to={[lifelineX, 136]} kind="straight" />
+      <Label x={150} y={126} size={10} weight={500} tone="muted">
         request
       </Label>
       {/* The return message */}
-      <Arrow from={[lifelineX, 192]} to={[112, 192]} kind="straight" dashed />
-      <TextBar x={150} y={200} w={48} tone="faint" />
+      <Arrow from={[lifelineX, 184]} to={[112, 184]} kind="straight" dashed />
+      <TextBar x={150} y={192} w={48} tone="faint" />
     </Scene>
   );
 }

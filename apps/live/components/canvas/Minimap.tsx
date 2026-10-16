@@ -11,7 +11,9 @@ import {
   arrowLabelFontStack,
   arrowLabelPass,
   svgArrow,
+  sketchBackdropIds,
   svgBoxed,
+  chartPageGrounds,
   svgShadowDefs,
   elementPageSurfaces,
   type Element,
@@ -25,6 +27,7 @@ import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
 import { MovablePanel, type MovablePanelDockProps } from '@/components/primitives/MovablePanel';
 import type { MapSize } from '@/lib/user-preferences';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
+import { useTabFinish } from '@/components/canvas/CanvasFinishContext';
 import { selectionBoxColors } from '@/lib/selection-box';
 import { useSettledElements } from '@/hooks/canvas/useSettledElements';
 
@@ -109,7 +112,7 @@ function withoutLabel(el: Element): Element {
     richText: _richText,
     ...rest
   } = el as Element & { label?: unknown; richText?: unknown };
-  return rest as Element;
+  return rest;
 }
 // The map's on-screen size in px (the w-64 panel — matching the Palette — and
 // its h-36 svg). The viewBox is expanded to this aspect ratio so the wireframe
@@ -159,6 +162,7 @@ export function Minimap({
   // resolves every unstyled colour against it, so a Behaviour card that is a
   // dark card on a dark canvas is a dark card here too, not the light skin.
   const surface = useCanvasSurface();
+  const tabFinish = useTabFinish();
   const viewColors = selectionBoxColors(accentColor, surface);
   // Re-render once the async icon catalogues land so Technology marks pop in.
   const iconsLoaded = useIconCatalogs();
@@ -193,15 +197,19 @@ export function Minimap({
     }
     // Each element inked for the page it is on, as the canvas inks it.
     const pageSurfaces = pages ? elementPageSurfaces(drawn, pages) : null;
+    // And each chart on a filled page adapted to what it sits on.
+    const chartGrounds = pages ? chartPageGrounds(drawn, pages) : undefined;
     // The resolvers find nothing until the catalogue chunk lands, which
     // re-runs the build with the glyphs.
     const resolveIconArt = iconsLoaded ? resolveIconArtLoaded : NO_ART;
     const resolveStickerArt = iconsLoaded ? resolveStickerArtLoaded : NO_ART;
     const labels = arrowLabelPass(drawn, {
-      fontFamilyOf: (a) => arrowLabelFontStack(a, tabFont),
+      fontFamilyOf: (a) => arrowLabelFontStack(a, tabFont, tabFinish),
     });
     // Boxed first (frames behind their contents), then arrows on top —
     // matching the canvas z-order.
+    // Shapes something sits on keep a solid fill under Sketch, as on the canvas (sketch-backdrop.ts).
+    const backdrops = sketchBackdropIds(drawn, tabFinish);
     for (const el of framesFirst(drawn)) {
       if (el.type === 'arrow') continue;
       if (!isBoxed(el)) continue;
@@ -210,7 +218,10 @@ export function Minimap({
           resolveIconArt,
           resolveStickerArt,
           tabFont,
+          tabFinish,
+          sketchBackdrop: backdrops.has(el.id),
           surface: pageSurfaces?.get(el.id) ?? surface,
+          chartGrounds,
         }),
       );
       corners.push({ x: el.x, y: el.y }, { x: el.x + el.width, y: el.y + el.height });
@@ -225,6 +236,9 @@ export function Minimap({
           tabFont,
           labels,
           'lvd-minimap-ko-',
+          undefined,
+          undefined,
+          tabFinish,
         ),
       );
       corners.push(endpointPosition(el.from, drawn), endpointPosition(el.to, drawn));
@@ -249,8 +263,8 @@ export function Minimap({
       bounds: content,
     };
     // `writing` changes with the documents' text, which the bars read off the editors.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [elements, pages, tabFont, iconsLoaded, surface, writing, laidOut]);
+    // oxlint-disable-next-line react/exhaustive-deps
+  }, [elements, pages, tabFont, tabFinish, iconsLoaded, surface, writing, laidOut]);
 
   const recentreToClient = (clientX: number, clientY: number) => {
     const svg = svgRef.current;

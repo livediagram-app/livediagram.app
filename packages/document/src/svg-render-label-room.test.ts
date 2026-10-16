@@ -96,13 +96,13 @@ describe('describeBoxedExport label on a cylinder', () => {
   const pad = PADDING_PX[cyl.padding ?? defaultPadding(cyl)];
 
   it('centres the label on the body, not the box', () => {
-    const { label } = describeBoxedExport({ ...cyl, textAlignY: 'middle' } as BoxedElement);
+    const { label } = describeBoxedExport({ ...cyl, textAlignY: 'middle' });
     expect(label!.y).toBeCloseTo(20 + (body.top + 200 - body.bottom) / 2, 9);
   });
 
   it('tops the label under the lid and bottoms it over the base', () => {
-    const top = describeBoxedExport({ ...cyl, textAlignY: 'top' } as BoxedElement).label!;
-    const bottom = describeBoxedExport({ ...cyl, textAlignY: 'bottom' } as BoxedElement).label!;
+    const top = describeBoxedExport({ ...cyl, textAlignY: 'top' }).label!;
+    const bottom = describeBoxedExport({ ...cyl, textAlignY: 'bottom' }).label!;
     expect(top.y).toBeCloseTo(20 + body.top + pad + top.size / 2, 9);
     expect(bottom.y).toBeCloseTo(20 + 200 - body.bottom - pad - bottom.size / 2, 9);
   });

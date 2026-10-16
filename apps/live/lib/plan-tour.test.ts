@@ -1,76 +1,16 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
-  EXAMPLE_BOARD_TITLE,
-  EXAMPLE_SHEET_SIZE,
-  EXAMPLE_SHEET_TITLE,
-  exampleSheet,
   PLAN_TOUR_CONTENT_KEY,
   PLAN_TOUR_RELAUNCH_EVENT,
-  exampleBoard,
-  exampleCards,
-  exampleStatus,
   readLeftover,
   requestPlanTourRelaunch,
   writeLeftover,
 } from './plan-tour';
-import { takePlacedSheet } from './sheet-seeds';
 
 // The Plan tour's tour content and relaunch (docs/specs/026-plan/plan-tour.md "Tour content").
 
 afterEach(() => localStorage.clear());
-
-describe('exampleBoard', () => {
-  it('is a Kanban board of its own, titled as an example, centred on the point', () => {
-    const board = exampleBoard({ x: 1000, y: 500 }, () => 0);
-    expect(board.shape).toBe('plan-board');
-    expect(board.planBoard.title).toBe(EXAMPLE_BOARD_TITLE);
-    expect(board.planBoard.columns.map((c) => c.id)).toEqual([
-      'backlog',
-      'todo',
-      'doing',
-      'review',
-      'done',
-    ]);
-    // Statuses of its own, so no existing card lands on it.
-    expect(board.planBoard.columns.every((c) => c.status.includes('~'))).toBe(true);
-    expect(board.x + board.width / 2).toBe(1000);
-    expect(board.y + board.height / 2).toBe(500);
-  });
-});
-
-describe('exampleSheet', () => {
-  it('is a Sheet placed already set up from the Budget start, centred on the point', () => {
-    const sheet = exampleSheet({ x: 1000, y: 500 });
-    expect(sheet.shape).toBe('plan-sheet');
-    expect(sheet.width).toBe(EXAMPLE_SHEET_SIZE.width);
-    expect(sheet.x + sheet.width / 2).toBe(1000);
-    expect(sheet.y + sheet.height / 2).toBe(500);
-    expect(takePlacedSheet(sheet.planSheet.sheetId)).toEqual({
-      title: EXAMPLE_SHEET_TITLE,
-      setUp: 'budget',
-    });
-  });
-});
-
-describe('exampleCards', () => {
-  it('puts two tasks in To do and an action in Backlog, on the example board only', () => {
-    const { planBoard } = exampleBoard({ x: 0, y: 0 });
-    let n = 0;
-    const cards = exampleCards(planBoard, () => `id${n++}`);
-    expect(cards.map((c) => [c.id, c.type, c.fields['title'], c.place?.status])).toEqual([
-      ['id0', 'task', 'Plan the launch', exampleStatus(planBoard, 'todo')],
-      ['id1', 'task', 'Write the release notes', exampleStatus(planBoard, 'todo')],
-      ['id2', 'action', 'Agree the launch date', exampleStatus(planBoard, 'backlog')],
-    ]);
-  });
-
-  it('leaves a card unplaced on a board without the column', () => {
-    const { planBoard } = exampleBoard({ x: 0, y: 0 });
-    const cards = exampleCards({ ...planBoard, columns: [] });
-    expect(cards.every((c) => c.place === undefined)).toBe(true);
-  });
-});
 
 describe('the leftover record', () => {
   it('round-trips, and clears', () => {

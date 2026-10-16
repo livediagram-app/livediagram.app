@@ -62,6 +62,8 @@ vi.mock('./offline-images', () => ({
     imageIds: new Map(),
   })),
   isDataImageId: (id: string) => id.startsWith('data:'),
+  tabImageIds: (t: { elements: { type: string; imageId?: string | null }[] }) =>
+    t.elements.flatMap((el) => (el.type === 'image' && el.imageId ? [el.imageId] : [])),
 }));
 
 // The successive states the record is in when a sync goes to remove it (a write landing during
@@ -339,7 +341,7 @@ describe('takeCloudOffline (cloud -> offline)', () => {
   });
 
   it('refuses a document the server does not have', async () => {
-    vi.mocked(apiClient.apiLoadDocument).mockResolvedValueOnce(null as never);
+    vi.mocked(apiClient.apiLoadDocument).mockResolvedValueOnce(null);
     await expect(takeCloudOffline('nope', 'owner')).rejects.toThrow(/not found/i);
     expect(store.offlinePutRecord).not.toHaveBeenCalled();
   });
@@ -361,7 +363,7 @@ describe('takeCloudOffline (cloud -> offline)', () => {
     // The second null path, and the easier one to hit: `expectOkOrNull` maps a
     // 404 to null rather than an error, so a tab that momentarily isn't there
     // never reaches the `.catch` at all.
-    vi.mocked(apiClient.apiLoadTab).mockResolvedValueOnce(null as never);
+    vi.mocked(apiClient.apiLoadTab).mockResolvedValueOnce(null);
     await expect(takeCloudOffline('d1', 'owner')).rejects.toThrow(/tab load incomplete/i);
     expect(core.apiDelete).not.toHaveBeenCalled();
   });

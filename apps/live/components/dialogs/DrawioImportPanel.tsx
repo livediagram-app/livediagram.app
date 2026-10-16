@@ -119,14 +119,14 @@ function PickStep({ error, onPicked }: { error?: string; onPicked: (files: File[
       <ImportDropZone
         label="Drop draw.io files or a folder here, or choose files"
         onChoose={choose}
-        onDropData={async (data) => onPicked(filesOfPick(await readDrop(data)))}
+        onDropData={(data) => void readDrop(data).then((pick) => onPicked(filesOfPick(pick)))}
         {...(error ? { error } : {})}
       />
       <div className="mt-4 flex justify-end gap-2">
         <Button
           variant="secondary"
           size="md"
-          onClick={async () => onPicked(filesOfPick(await pickExport('folder')))}
+          onClick={() => void pickExport('folder').then((pick) => onPicked(filesOfPick(pick)))}
         >
           Choose a folder
         </Button>

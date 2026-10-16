@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { contrastRatio } from './colors';
-import { accentOn, liftAccent, planPalette } from './plan-palette';
+import { accentOn, liftAccent, planPalette, PLAN_BORDER_ACCENT_SHARE } from './plan-palette';
+import { mixHex } from './svg-render-face-kit';
 
 // docs/specs/026-plan/plan-board.md "Theme and style".
 describe('planPalette', () => {
@@ -13,7 +14,8 @@ describe('planPalette', () => {
   it("takes a board's fill, stroke and text, mixing columns and cards from them", () => {
     const p = planPalette('light', { fill: '#fef3c7', stroke: '#b45309', text: '#451a03' });
     expect(p.surface).toBe('#fef3c7');
-    expect(p.border).toBe('#b45309');
+    // The border is the accent mixed into the paper (quiet lines); focus keeps the full accent.
+    expect(p.border).toBe(mixHex('#b45309', '#fef3c7', PLAN_BORDER_ACCENT_SHARE));
     expect(p.focus).toBe('#b45309');
     expect(p.text).toBe('#451a03');
     expect(p.column).not.toBe(p.surface);

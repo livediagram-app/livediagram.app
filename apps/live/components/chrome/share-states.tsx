@@ -39,7 +39,7 @@ export const SHARE_STATE_META: Record<
     description: 'In a team library: every member of the team can open it.',
     badge:
       'bg-brand-50 px-2 text-[10px] font-semibold text-brand-700 ring-1 ring-brand-200 dark:bg-brand-500/10 dark:text-brand-300 dark:ring-brand-500/30',
-    dot: 'text-brand-500 dark:text-brand-400',
+    dot: 'text-brand-700 dark:text-brand-400',
   },
   community: {
     label: 'Public',

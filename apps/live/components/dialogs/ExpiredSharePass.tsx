@@ -29,7 +29,7 @@ export function ExpiredSharePass({
       expired
       fresh={exit.ticket.returning}
       leaving={exit.ticket.leaving}
-      onLeft={exit.ticket.onLeft}
+      onLeft={() => void exit.ticket.onLeft()}
     >
       <div className="flex items-center gap-2">
         <span className="inline-flex shrink-0 -rotate-3 items-center rounded border-2 border-rose-400 px-1.5 py-0.5 text-[10px] font-bold text-rose-600 dark:border-rose-500/70 dark:text-rose-300">

@@ -26,8 +26,8 @@ const item = (
   updatedBy: person,
 });
 
-const bug: ItemTypeDef = { ...ITEM_TYPES[1]!, id: 'bug', label: 'Bug' };
-const spike: ItemTypeDef = { ...ITEM_TYPES[1]!, id: 'spike', label: 'Spike' };
+const bug: ItemTypeDef = { ...ITEM_TYPES[1], id: 'bug', label: 'Bug' };
+const spike: ItemTypeDef = { ...ITEM_TYPES[1], id: 'spike', label: 'Spike' };
 const catalogue = { version: ITEM_TYPE_CATALOGUE_VERSION, types: [...ITEM_TYPES, bug, spike] };
 
 describe('planTabItemsImport', () => {

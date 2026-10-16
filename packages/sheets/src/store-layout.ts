@@ -3,7 +3,15 @@
 // never needs a position someone else may have moved: ids that are gone are skipped, an `after` that is gone lands
 // at the end.
 import { insertIds, layoutIndex, moveIds } from './layout';
-import type { CardTable, IdRange, SheetFilter, SheetLayout, FilterCondition } from './sheet';
+import type {
+  CardTable,
+  FilterCondition,
+  FormatRule,
+  IdRange,
+  SheetFilter,
+  SheetLayout,
+  ValidationRule,
+} from './sheet';
 import { sameName } from './range-names';
 
 export type Axis = 'r' | 'c';
@@ -34,7 +42,13 @@ export type LayoutChange =
   // A card table set (whole) or removed (null), by id.
   | { k: 'cardTable'; id: string; table: CardTable | null }
   // A named range set (its cells) or removed (null), by name (case aside).
-  | { k: 'name'; name: string; range: IdRange | null };
+  | { k: 'name'; name: string; range: IdRange | null }
+  // A validation rule set (in place, else appended) or removed (null), by id (data-validation.md).
+  | { k: 'vrule'; id: string; rule: ValidationRule | null }
+  // A format rule set (in place, else inserted at `at`, else appended) or removed (null), by id
+  // (conditional-formatting.md); and the format rules put in an order.
+  | { k: 'frule'; id: string; rule: FormatRule | null; at?: number }
+  | { k: 'fruleOrder'; ids: string[] };
 
 function sameRange(a: IdRange, b: IdRange): boolean {
   return a.r1 === b.r1 && a.c1 === b.c1 && a.r2 === b.r2 && a.c2 === b.c2;
@@ -73,7 +87,10 @@ export function shrinkRange(
       if (first === null) first = id;
       last = id;
     }
-    return first === null ? null : ([first, last!] as const);
+    if (first === null) return null;
+    // Each corner keeps its side: a range whose rows a sort turned upside down stays as it was stored, so a
+    // deletion beside it leaves its ids exactly as they were (an unmerge or undo names it by those ids).
+    return ia <= ib ? ([first, last!] as const) : ([last!, first] as const);
   };
   const rows = pick(before.rows, range.r1, range.r2, goneRows);
   const cols = pick(before.cols, range.c1, range.c2, goneCols);
@@ -157,6 +174,25 @@ export function applyLayoutChange(layout: SheetLayout, ch: LayoutChange): SheetL
         });
         next.names = names.length ? names : undefined;
       }
+      // Validation and format rules shrink as named ranges do; a rule whose cells (or a range dropdown's source)
+      // all went is dropped.
+      if (layout.rules?.length) {
+        const rules = layout.rules.flatMap((x): ValidationRule[] => {
+          const range = shrinkRange(x, layout, goneRows, goneCols);
+          if (!range) return [];
+          if (!x.src) return [{ ...x, ...range }];
+          const src = shrinkRange(x.src, layout, goneRows, goneCols);
+          return src ? [{ ...x, ...range, src }] : [];
+        });
+        next.rules = rules.length ? rules : undefined;
+      }
+      if (layout.formatRules?.length) {
+        const rules = layout.formatRules.flatMap((x): FormatRule[] => {
+          const range = shrinkRange(x, layout, goneRows, goneCols);
+          return range ? [{ ...x, ...range }] : [];
+        });
+        next.formatRules = rules.length ? rules : undefined;
+      }
       // Card tables lose the deleted rows' links and drafts; a table whose header row or every column went is gone,
       // and a deleted Controls column is dropped (the next one is found again).
       if (layout.cardTables?.length) {
@@ -220,6 +256,40 @@ export function applyLayoutChange(layout: SheetLayout, ch: LayoutChange): SheetL
       const next = ch.range ? [...rest, { name: ch.name.trim(), ...ch.range }] : rest;
       return clean({ ...layout, names: next.length ? next : undefined });
     }
+    case 'vrule': {
+      const list = layout.rules ?? [];
+      const at = list.findIndex((x) => x.id === ch.id);
+      const next =
+        ch.rule === null
+          ? list.filter((x) => x.id !== ch.id)
+          : at >= 0
+            ? list.map((x, i) => (i === at ? ch.rule! : x))
+            : [...list, ch.rule];
+      return clean({ ...layout, rules: next.length ? next : undefined });
+    }
+    case 'frule': {
+      const list = layout.formatRules ?? [];
+      const at = list.findIndex((x) => x.id === ch.id);
+      let next: FormatRule[];
+      if (ch.rule === null) next = list.filter((x) => x.id !== ch.id);
+      else if (at >= 0) next = list.map((x, i) => (i === at ? ch.rule! : x));
+      else {
+        next = [...list];
+        const place = ch.at === undefined ? next.length : Math.max(0, Math.min(ch.at, next.length));
+        next.splice(place, 0, ch.rule);
+      }
+      return clean({ ...layout, formatRules: next.length ? next : undefined });
+    }
+    case 'fruleOrder': {
+      const list = layout.formatRules ?? [];
+      if (!list.length) return layout;
+      const byId = new Map(list.map((x) => [x.id, x]));
+      const ids = reorderSlots(
+        list.map((x) => x.id),
+        ch.ids,
+      );
+      return { ...layout, formatRules: ids.map((id) => byId.get(id)!) };
+    }
     case 'cardTable': {
       const rest = (layout.cardTables ?? []).filter((t) => t.id !== ch.id);
       const next = ch.table ? [...rest, ch.table] : rest;
@@ -245,6 +315,8 @@ export function applyLayoutChange(layout: SheetLayout, ch: LayoutChange): SheetL
     case 'merge': {
       const ix = layoutIndex(layout);
       const r = ch.range;
+      // One cell is no merge: a deletion drops a merge it shrinks to one cell, so one never starts as one.
+      if (r.r1 === r.r2 && r.c1 === r.c2) return layout;
       if (
         ![r.r1, r.r2].every((id) => ix.rowPos.has(id)) ||
         ![r.c1, r.c2].every((id) => ix.colPos.has(id))

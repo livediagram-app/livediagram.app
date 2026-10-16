@@ -1,17 +1,19 @@
 import { type PointerEvent as ReactPointerEvent, type ReactNode } from 'react';
 import {
   hasRichFormatting,
+  inlineIconGap,
+  inlineIconMetrics,
   type IconPosition,
   type ShapeElement,
   type ShapeMarker,
   type TextAlignX,
   type TextAlignY,
   type TextSize,
+  type TextSizePreset,
 } from '@livediagram/document';
 import {
   ALIGN_ITEMS,
   effectiveRunStyle,
-  FIXED_FONT_PX,
   labelRunPx,
   labelTextStyleCss,
   TEXT_ALIGN,
@@ -50,7 +52,7 @@ export function ShapeInlineIconLayout({
   showIcon?: boolean;
   // Optional status marker (docs/specs/009-elements/shape-markers.md), drawn immediately left of the label.
   marker?: ShapeMarker;
-  markerSize?: TextSize;
+  markerSize?: TextSizePreset;
   position: IconPosition;
   iconStroke: string;
   isEditing: boolean;
@@ -190,7 +192,7 @@ export function ShapeInlineIconLayout({
 
 // Fixed marker sizes (px) for the small / medium / large buckets; 'scale'
 // tracks the label font size instead (see above).
-const MARKER_FIXED_PX: Record<Exclude<TextSize, 'scale'>, number> = {
+const MARKER_FIXED_PX: Record<Exclude<TextSizePreset, 'scale'>, number> = {
   sm: 12,
   md: 18,
   lg: 26,
@@ -204,38 +206,6 @@ const X_ALIGN_FLEX: Record<TextAlignX, 'flex-start' | 'center' | 'flex-end'> = {
   right: 'flex-end',
 };
 
-/**
- * The inline icon layout's sizes, shared with the element indicators' content estimate
- * (docs/specs/008-canvas/element-indicators.md) so the two agree on where the icon is.
- */
-export function inlineIconMetrics(
-  element: { width: number; height: number },
-  label: string,
-  textSize: TextSize,
-): { fontSize: number; iconSize: number; elementIconSize: number } {
-  // Fixed sizes reuse element-labels' FIXED_FONT_PX; 'scale' has no fixed px,
-  // so derive a reasonable size from the box for the inline icon+label case.
-  const fontSize =
-    textSize === 'scale'
-      ? Math.max(12, Math.min(element.height * 0.26, 26))
-      : FIXED_FONT_PX[textSize];
-  // Element-proportional size: a fraction of the shorter side, clamped so
-  // it's neither a speck nor dominant. Used as the ceiling (and as the
-  // size itself for an icon with no label — nothing to scale against).
-  const elementIconSize = Math.max(
-    16,
-    Math.min(Math.min(element.width, element.height) * 0.32, 48),
-  );
-  // With a label, tie the glyph to the label's font size so small text
-  // gets a small icon instead of a 48px glyph dwarfing it; still capped by
-  // the element-proportional size so it can't overflow a small shape.
-  const iconSize = label.trim()
-    ? Math.max(16, Math.min(fontSize * 1.6, elementIconSize))
-    : elementIconSize;
-  return { fontSize, iconSize, elementIconSize };
-}
-
-/** The gap between the inline icon and its label. */
-export function inlineIconGap(iconSize: number, row: boolean): number {
-  return row ? Math.max(8, Math.round(iconSize * 0.32)) : Math.round(iconSize * 0.2);
-}
+// The metrics live with the export's inline icon (packages/document svg-render-inline-icon), so the canvas, the
+// element indicators and every export agree on where the icon is.
+export { inlineIconGap, inlineIconMetrics } from '@livediagram/document';

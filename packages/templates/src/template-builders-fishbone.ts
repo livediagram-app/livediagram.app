@@ -7,7 +7,6 @@
 // "Templates" for the catalogue entry.
 import { createArrow, createShape, createText, type Element } from '@livediagram/document';
 
-const SPINE_INK = '#334155';
 const MUTED = '#64748b';
 
 // A worked example that hangs together: one concrete effect ("Orders ship 2
@@ -15,8 +14,14 @@ const MUTED = '#64748b';
 // Environment in plain words), and two specific sub-causes on each bone.
 // Bones alternate above / below the spine at a consistent 60°, each ending in
 // a tinted category tag; sub-causes sit on short horizontal ribs off the bone,
-// which is how the method is drawn on a whiteboard. A muted prompt under the
-// fish says how to use it: keep asking "why?" along each bone.
+// which is how the method is drawn on a whiteboard. A bold title and a muted
+// how-to sit above the fish (keep asking "why?" along each bone), and the
+// session's conclusion is marked on it: the two sub-causes the team picked as
+// likely root causes sit on a heavier red rib in bold red ink, keyed under the
+// fish, so the template shows where the method lands, not just its shape.
+const ROOT = '#e11d48';
+const ROOT_CAUSES = new Set(['Orders batched daily, not hourly', 'Courier cut-off is 3pm']);
+
 export function buildFishbone(cx: number, cy: number): Element[] {
   type Bone = { label: string; fill: string; ink: string; causes: [string, string] };
   // Columns left to right; the first three bones sit above the spine, the
@@ -91,7 +96,6 @@ export function buildFishbone(cx: number, cy: number): Element[] {
   // Spine, then the tail fins: two short strokes flaring back from its end.
   elements.push({
     ...createArrow(spineLeft, cy, spineRight, cy),
-    strokeColor: SPINE_INK,
     strokeWidth: 4,
     routeBehind: false,
   });
@@ -99,7 +103,6 @@ export function buildFishbone(cx: number, cy: number): Element[] {
     elements.push({
       ...createArrow(spineLeft, cy, spineLeft - tailLen * 0.6, cy + dir * tailLen * 0.6),
       arrowEnds: 'none',
-      strokeColor: SPINE_INK,
       strokeWidth: 4,
       routeBehind: false,
     });
@@ -116,7 +119,6 @@ export function buildFishbone(cx: number, cy: number): Element[] {
     elements.push({
       ...createArrow(endX, endY, jointX, cy),
       arrowEnds: 'none',
-      strokeColor: SPINE_INK,
       strokeWidth: 2,
       routeBehind: false,
     });
@@ -136,13 +138,14 @@ export function buildFishbone(cx: number, cy: number): Element[] {
     // short horizontal stroke to the left with its sub-cause resting on it.
     b.causes.forEach((cause, k) => {
       const t = (k + 1) / 3;
+      const root = ROOT_CAUSES.has(cause);
       const rx = endX + (jointX - endX) * t;
       const ry = endY + (cy - endY) * t;
       elements.push({
         ...createArrow(rx - ribLen, ry, rx, ry),
         arrowEnds: 'none',
-        strokeColor: '#94a3b8',
-        strokeWidth: 2,
+        strokeColor: root ? ROOT : '#94a3b8',
+        strokeWidth: root ? 3 : 2,
         routeBehind: false,
       });
       // Above the spine the bone leans back over the text's top-right
@@ -156,6 +159,7 @@ export function buildFishbone(cx: number, cy: number): Element[] {
         textSize: 'sm',
         textAlignX: 'right',
         textAlignY: 'bottom',
+        ...(root ? { textBold: true, textColor: ROOT } : {}),
       });
     });
   });
@@ -180,15 +184,51 @@ export function buildFishbone(cx: number, cy: number): Element[] {
     textColor: MUTED,
   });
 
-  const promptW = 640;
-  elements.push({
-    ...createText(cx - promptW / 2, cy + boneH + tagH + 40),
-    width: promptW,
-    height: 32,
-    label: 'Ask "why?" along each bone until you reach a cause you can fix',
-    textSize: 'sm',
-    textAlignX: 'center',
-    textColor: MUTED,
-  });
+  // Title and how-to over the fish, left-aligned with its leftmost text.
+  const left = ox + leftMost;
+  const titleTop = cy - boneH - tagH - 120;
+  const fullW = rightMost - leftMost;
+  elements.push(
+    {
+      ...createText(left, titleTop),
+      width: fullW,
+      height: 44,
+      label: 'FreshBox · why do orders ship late?',
+      textSize: 'lg',
+      textBold: true,
+      textAlignX: 'left',
+    },
+    {
+      ...createText(left, titleTop + 44),
+      width: fullW,
+      height: 28,
+      label:
+        'The problem is the head, the six classic cause families are the bones. Ask "why?" along each bone until you reach a cause you can fix.',
+      textSize: 'sm',
+      textColor: MUTED,
+      textAlignX: 'left',
+    },
+  );
+
+  // Key: what the red dots mean.
+  const keyY = cy + boneH + tagH + 36;
+  elements.push(
+    {
+      ...createArrow(left, keyY + 14, left + 40, keyY + 14),
+      arrowEnds: 'none',
+      strokeColor: ROOT,
+      strokeWidth: 3,
+      routeBehind: false,
+    },
+    {
+      ...createText(left + 52, keyY),
+      width: 520,
+      height: 28,
+      label: 'Likely root cause: test these two first',
+      textSize: 'sm',
+      textAlignX: 'left',
+      textColor: MUTED,
+    },
+  );
   return elements;
 }

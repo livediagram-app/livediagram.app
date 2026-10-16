@@ -6,7 +6,11 @@ import Link from 'next/link';
 import { Breadcrumb } from './Breadcrumb';
 import { SectionedContent } from './SectionedContent';
 import { TableOfContents } from './TableOfContents';
-import { articleHref, articles, categoryHref, type Article } from '@/lib/articles';
+// The hrefs alone, not lib/articles: that would bundle the whole article registry (about 300 articles with their
+// descriptions and keywords) into every article's JavaScript.
+import { articleHref, categoryHref } from '@livediagram/help-registry/hrefs';
+import type { Article } from '@/lib/articles';
+import { parentRouteHref, routeHref } from '@/lib/article-route';
 import { articleJsonLd } from '@/lib/structured-data';
 import { track } from '@/lib/telemetry';
 import { helpPathTelemetryId } from '@livediagram/help-registry/telemetry';
@@ -25,16 +29,18 @@ function SidebarCard({ subArticles }: { subArticles?: Article[] }) {
       {hasSubArticles && (
         <>
           <div className="toc-divider my-4 border-t border-slate-200 dark:border-slate-800" />
-          <h3 className="mb-1 text-xs font-semibold uppercase tracking-widest text-slate-400">
+          <h3 className="mb-1 text-xs font-semibold uppercase tracking-widest text-slate-500 dark:text-slate-400">
             Learn More
           </h3>
-          <p className="mb-3 text-[11px] text-slate-400">Related guides on this topic</p>
-          <ul className="space-y-1.5">
-            {subArticles!.map((a, i) => (
+          <p className="mb-3 text-[11px] text-slate-500 dark:text-slate-400">
+            Related guides on this topic
+          </p>
+          <ul className="space-y-1.5 pointer-coarse:space-y-0">
+            {subArticles.map((a, i) => (
               <li key={a.slug}>
                 <Link
                   href={articleHref(a)}
-                  className="flex items-center gap-2.5 py-1 text-sm text-slate-600 transition-colors hover:text-brand-700 dark:text-slate-300 dark:hover:text-brand-200"
+                  className="flex items-center gap-2.5 py-1 text-sm text-slate-600 transition-colors pointer-coarse:min-h-11 hover:text-brand-700 dark:text-slate-300 dark:hover:text-brand-200"
                 >
                   <GlyphDisc
                     size={20}
@@ -101,10 +107,10 @@ export function ArticleLayout({
   // Build breadcrumb. Skip the category when it duplicates the title or
   // the parent title.
   const showCategory = categoryTitle !== title && categoryTitle !== parentArticle?.title;
-  const parentHref =
-    parentArticle && parentArticle.slug !== categorySlug
-      ? articleHref({ categorySlug, slug: parentArticle.slug })
-      : categoryHref(categorySlug);
+  // Both read off the route (lib/article-route.ts): sub-articles nest under
+  // their parent's folder, and the props cannot say where that is.
+  const selfHref = routeHref(pathname ?? '');
+  const parentHref = parentRouteHref(pathname ?? '');
   const breadcrumbItems = parentArticle
     ? [
         ...(showCategory ? [{ label: categoryTitle, href: categoryHref(categorySlug) }] : []),
@@ -116,11 +122,8 @@ export function ArticleLayout({
       : [{ label: title }];
 
   // Article structured data (docs/specs/018-help/help-app.md). The Breadcrumb component already emits
-  // the BreadcrumbList, so this only adds the TechArticle node. Resolve this
-  // page's own URL from the registry ((categorySlug, title) is unique) so the
-  // node ships on every guide without each page.mdx passing its slug.
-  const entry = articles.find((a) => a.categorySlug === categorySlug && a.title === title);
-  const selfHref = entry ? articleHref(entry) : categoryHref(categorySlug);
+  // the BreadcrumbList, so this only adds the TechArticle node, at this
+  // page's own URL (selfHref, above).
 
   return (
     <div>
@@ -137,7 +140,7 @@ export function ArticleLayout({
               {description}
             </p>
           )}
-          <div className="flex items-center gap-4 text-xs text-slate-400">
+          <div className="flex items-center gap-4 text-xs text-slate-500 dark:text-slate-400">
             {readingTime > 0 && (
               <span className="flex items-center gap-1.5">
                 <ClockIcon className="h-3.5 w-3.5" />
@@ -147,7 +150,7 @@ export function ArticleLayout({
           </div>
           <button
             onClick={() => setMobileSidebarOpen(true)}
-            className="mt-5 inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm text-slate-600 transition-colors hover:bg-slate-50 hover:text-slate-900 lg:hidden dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100"
+            className="relative mt-5 inline-flex items-center gap-2 rounded-lg border touch-target-y border-slate-200 bg-white px-4 py-2 text-sm text-slate-600 transition-colors hover:bg-slate-50 hover:text-slate-900 lg:hidden dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100"
           >
             <ContentsIcon className="h-4 w-4" />
             Contents and guides
@@ -219,7 +222,7 @@ export function ArticleLayout({
                   Thanks for your feedback.{' '}
                   <a
                     href="/help/contact/"
-                    className="text-brand-600 underline underline-offset-2 hover:text-brand-700 dark:text-brand-300 dark:hover:text-brand-200"
+                    className="text-brand-700 underline underline-offset-2 hover:text-brand-800 dark:text-brand-300 dark:hover:text-brand-200"
                   >
                     Need more help?
                   </a>

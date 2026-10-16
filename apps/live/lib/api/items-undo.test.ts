@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { sentJson } from '@livediagram/vitest-config/sent-request';
 import { __setOfflineBackend } from '../offline/offline-store';
 import { memBackend } from '../offline/offline-test-utils';
 import { writeItem } from './items';
@@ -19,7 +20,7 @@ describe('writeItem undo', () => {
     const fetch = vi.fn(async () => Response.json({ item: { id: 'i1', rev: 2 }, rev: 2 }));
     vi.stubGlobal('fetch', fetch);
     const body = (n: number) =>
-      JSON.parse(String((fetch.mock.calls[n] as unknown as [string, RequestInit])[1].body));
+      sentJson((fetch.mock.calls[n] as unknown as [string, RequestInit])[1]);
     await writeItem(scope, { kind: 'move', id: 'i1', move: { status: 'done' }, undo: true }, by);
     expect(body(0)).toEqual({ status: 'done', undo: true });
     await writeItem(

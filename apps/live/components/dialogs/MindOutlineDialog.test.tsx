@@ -1,7 +1,8 @@
 // @vitest-environment jsdom
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { afterEach, describe, expect, it, vi, type Mock } from 'vitest';
 import { createShape, type MindOutlineSummary, type ShapeElement } from '@livediagram/document';
+import type { ComponentProps } from 'react';
 import { MindOutlineDialog } from './MindOutlineDialog';
 
 // The Edit Outline dialog (docs/specs/009-elements/mind-node.md "Edit Outline").
@@ -9,8 +10,10 @@ import { MindOutlineDialog } from './MindOutlineDialog';
 const node = (label: string) => ({ ...createShape('mind-node', 0, 0), label }) as ShapeElement;
 const none: MindOutlineSummary = { added: 0, renamed: 0, restyled: 0, moved: 0, removed: [] };
 
+type OnSave = ComponentProps<typeof MindOutlineDialog>['onSave'];
+
 function open(summary: MindOutlineSummary = none, initialText = 'Root\n- A\n- B') {
-  const onSave = vi.fn();
+  const onSave = vi.fn<OnSave>();
   const onClose = vi.fn();
   render(
     <MindOutlineDialog
@@ -35,7 +38,7 @@ const press = (row: HTMLElement, init: Parameters<typeof fireEvent.keyDown>[1]) 
   fireEvent.keyDown(row, init);
 };
 // The outline Save would read, written out by ⌘Enter.
-const saved = (onSave: ReturnType<typeof vi.fn>) => {
+const saved = (onSave: Mock<OnSave>) => {
   press(screen.getByRole('textbox', { name: 'Root' }), { key: 'Enter', metaKey: true });
   return onSave.mock.calls.at(-1)?.[0];
 };
@@ -99,7 +102,7 @@ describe('MindOutlineDialog', () => {
   it('cannot save without a root', () => {
     open(none, '');
     expect(screen.getByText('Write the root first')).toBeTruthy();
-    expect((screen.getByRole('button', { name: 'Save' }) as HTMLButtonElement).disabled).toBe(true);
+    expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Save' }).disabled).toBe(true);
   });
 
   it('asks before removing nodes, naming them, and Keep Editing goes back', () => {
@@ -114,5 +117,34 @@ describe('MindOutlineDialog', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Save' }));
     fireEvent.click(screen.getByRole('button', { name: 'Remove' }));
     expect(onSave).toHaveBeenCalled();
+  });
+});
+
+// An iPad's keyboard: the visual viewport shrinks under the window and iOS pans it down the page.
+describe('MindOutlineDialog above the on-screen keyboard', () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('stays in the visible band, capped to it, while a row is edited', () => {
+    const vv = Object.assign(new EventTarget(), {
+      height: window.innerHeight,
+      width: window.innerWidth,
+      offsetTop: 0,
+      offsetLeft: 0,
+    });
+    vi.stubGlobal('visualViewport', vv);
+    open();
+    const panel = screen.getByRole('dialog', { name: 'Edit Outline' });
+    act(() => {
+      level(1)[0]!.focus();
+      vv.height = 380;
+      vv.offsetTop = 90;
+      vv.dispatchEvent(new Event('resize'));
+    });
+    const layer = panel.parentElement!;
+    expect(layer.style.top).toBe('90px');
+    expect(layer.style.height).toBe('380px');
+    // Its own 90vh cap gives way to the band, and the panel scrolls inside it.
+    expect(panel.style.maxHeight).toBe('calc(100% - 2rem)');
+    expect(panel.style.overflowY).toBe('auto');
   });
 });

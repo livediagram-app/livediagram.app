@@ -68,7 +68,7 @@ export const GUEST_UPGRADE_LOCK_NAME = 'livediagram-guest-upgrade';
 function withGuestUpgradeLock<T>(run: () => Promise<T>): Promise<T> {
   const locks = typeof navigator === 'undefined' ? undefined : navigator.locks;
   if (!locks || typeof locks.request !== 'function') return run();
-  return locks.request(GUEST_UPGRADE_LOCK_NAME, run) as Promise<T>;
+  return locks.request(GUEST_UPGRADE_LOCK_NAME, run);
 }
 
 async function resolveSignedGuestIdentity(): Promise<GuestIdentity> {

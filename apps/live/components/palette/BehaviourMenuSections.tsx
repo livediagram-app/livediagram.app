@@ -129,7 +129,7 @@ export function RevealMenuSection({
   return (
     <MenuAccordionSection title="Reveal" icon={<RevealIcon />} {...sectionProps}>
       <p className="px-3 pt-1 text-[10px] leading-snug text-slate-500 dark:text-slate-400">
-        Anyone can click the cover to peek for themselves. This takes it off for
+        Anyone can double-click the cover to peek for themselves. This takes it off for
         <strong> everyone</strong>.
       </p>
       <MenuTileGrid cols={2}>

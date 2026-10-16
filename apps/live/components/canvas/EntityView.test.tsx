@@ -7,7 +7,7 @@ import { EntityView } from './EntityView';
 describe('EntityView', () => {
   it('caps a long type at half the row so the field name keeps its room', () => {
     const element = {
-      ...(createShape('entity', 0, 0) as ShapeElement),
+      ...createShape('entity', 0, 0),
       entityFields: [{ name: 'created_at_utc', type: 'TIMESTAMP WITH TIME ZONE' }],
     } as ShapeElement;
     render(<EntityView element={element} textColor="#000" fontFamily={undefined} />);

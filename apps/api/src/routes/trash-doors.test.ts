@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
+import { sentJson } from '@livediagram/vitest-config/sent-request';
 import type { DatabaseSync } from 'node:sqlite';
-import type { Tab } from '@livediagram/document';
 import { DOCUMENT_CONVERSION_HEADER } from '@livediagram/api-schema';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import type { Env } from '../types';
@@ -36,7 +36,7 @@ function world(): SqliteD1 & Room {
       get: () => ({
         fetch: async (url: string, init?: RequestInit) => {
           if (String(url).endsWith('/broadcast')) {
-            room.broadcasts.push(JSON.parse(String(init?.body)));
+            room.broadcasts.push(sentJson(init));
           }
           return new Response(null, { status: 204 });
         },
@@ -64,7 +64,7 @@ function world(): SqliteD1 & Room {
 }
 
 async function seedTab(db: SqliteD1) {
-  await upsertTab(db.env, 'A', { id: 't1', name: 't1', elements: [] } as unknown as Tab, 0);
+  await upsertTab(db.env, 'A', { id: 't1', name: 't1', elements: [] }, 0);
 }
 
 function call(
@@ -130,7 +130,7 @@ describe('a trashed document, to someone who could open it', () => {
     expect(await status(call(db, 'GET', '/api/share/code-A', { owner: 'visitor' }))).toEqual(
       TRASHED,
     );
-    expect((await call(db, 'GET', '/api/share/code-A/image.svg'))!.status).toBe(410);
+    expect((await call(db, 'GET', '/api/share/code-A/image.svg')).status).toBe(410);
   });
 
   it('refuses to be re-created over by its owner', async () => {
@@ -147,8 +147,8 @@ describe('a trashed document, to someone who could open it', () => {
 describe('a trashed document, to anyone else', () => {
   it('reads as missing', async () => {
     const db = await trashed();
-    expect((await call(db, 'GET', '/api/documents/A', { owner: 'stranger' }))!.status).toBe(404);
-    expect((await call(db, 'GET', '/api/documents/A/tabs/t1', { owner: 'stranger' }))!.status).toBe(
+    expect((await call(db, 'GET', '/api/documents/A', { owner: 'stranger' })).status).toBe(404);
+    expect((await call(db, 'GET', '/api/documents/A/tabs/t1', { owner: 'stranger' })).status).toBe(
       404,
     );
   });
@@ -159,7 +159,7 @@ describe('a trashed document, to anyone else', () => {
       owner: 'attacker',
       body: { id: 'A', name: 'mine now', tabs: [] },
     });
-    expect((await res)!.status).toBe(403);
+    expect((await res).status).toBe(403);
     expect(db.sql.prepare("SELECT owner_id FROM documents WHERE id = 'A'").get()?.owner_id).toBe(
       'owner',
     );
@@ -170,13 +170,13 @@ describe('a trashed document, to anyone else', () => {
     const res = await call(db, 'GET', '/api/documents/A/ws?s=code-A&o=owner', {
       headers: { Upgrade: 'websocket' },
     });
-    expect(res!.status).toBe(404);
+    expect(res.status).toBe(404);
   });
 
   it('serves no thumbnail', async () => {
     const db = await trashed();
     expect(
-      (await call(db, 'GET', '/api/documents/A/thumbnail', { owner: 'owner' }))!.status,
+      (await call(db, 'GET', '/api/documents/A/thumbnail', { owner: 'owner' })).status,
     ).not.toBe(200);
   });
 });
@@ -184,9 +184,9 @@ describe('a trashed document, to anyone else', () => {
 describe('the lists, while it is in the Trash', () => {
   it('leave it out of the document list, Shared with you and Favourites', async () => {
     const db = await trashed();
-    const list = await (await call(db, 'GET', '/api/documents', { owner: 'owner' }))!.json();
-    const shared = await (await call(db, 'GET', '/api/shared', { owner: 'visitor' }))!.json();
-    const stars = await (await call(db, 'GET', '/api/favourites', { owner: 'owner' }))!.json();
+    const list = await (await call(db, 'GET', '/api/documents', { owner: 'owner' })).json();
+    const shared = await (await call(db, 'GET', '/api/shared', { owner: 'visitor' })).json();
+    const stars = await (await call(db, 'GET', '/api/favourites', { owner: 'owner' })).json();
     expect(list).toEqual({ documents: [] });
     expect(shared).toEqual({ shared: [] });
     expect(stars).toEqual({ ids: [] });
@@ -200,7 +200,7 @@ describe('DELETE /api/documents/:id', () => {
 
     const res = await call(db, 'DELETE', '/api/documents/A', { owner: 'owner' });
 
-    expect(res!.status).toBe(204);
+    expect(res.status).toBe(204);
     expect(
       db.sql.prepare("SELECT trashed_at FROM documents WHERE id = 'A'").get()?.trashed_at,
     ).toEqual(expect.any(Number));
@@ -220,7 +220,7 @@ describe('DELETE /api/documents/:id', () => {
 
     const res = await call(db, 'DELETE', '/api/documents/A?permanent=true', { owner: 'owner' });
 
-    expect(res!.status).toBe(204);
+    expect(res.status).toBe(204);
     expect(db.sql.prepare('SELECT COUNT(*) AS n FROM documents').get()?.n).toBe(0);
     expect(db.sql.prepare('SELECT COUNT(*) AS n FROM tabs').get()?.n).toBe(0);
   });
@@ -228,7 +228,7 @@ describe('DELETE /api/documents/:id', () => {
   it('purges a document already in the Trash with ?permanent=true', async () => {
     const db = await trashed();
     const res = await call(db, 'DELETE', '/api/documents/A?permanent=true', { owner: 'owner' });
-    expect(res!.status).toBe(204);
+    expect(res.status).toBe(204);
     expect(db.sql.prepare('SELECT COUNT(*) AS n FROM documents').get()?.n).toBe(0);
   });
 
@@ -245,7 +245,7 @@ describe('DELETE /api/documents/:id', () => {
       owner: 'owner',
       headers: { [DOCUMENT_CONVERSION_HEADER]: 'offline' },
     });
-    expect(res!.status).toBe(204);
+    expect(res.status).toBe(204);
     expect(db.sql.prepare('SELECT COUNT(*) AS n FROM documents').get()?.n).toBe(0);
   });
 
@@ -271,7 +271,7 @@ describe('DELETE /api/documents/:id', () => {
       headers: { [DOCUMENT_CONVERSION_HEADER]: 'offline' },
     });
 
-    expect(res!.status).toBe(204);
+    expect(res.status).toBe(204);
     expect(
       db.sql.prepare("SELECT trashed_at FROM documents WHERE id = 'A'").get()?.trashed_at,
     ).toEqual(expect.any(Number));
@@ -283,7 +283,7 @@ describe('DELETE /api/documents/:id', () => {
       owner: 'visitor',
       headers: { 'X-Share-Code': 'code-A' },
     });
-    expect(res!.status).toBe(403);
+    expect(res.status).toBe(403);
     expect(
       db.sql.prepare("SELECT trashed_at FROM documents WHERE id = 'A'").get()?.trashed_at,
     ).toBe(null);

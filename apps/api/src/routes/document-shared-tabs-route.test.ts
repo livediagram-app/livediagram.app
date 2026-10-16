@@ -55,7 +55,7 @@ describe('GET /api/documents/:id/shared-tabs', () => {
     const res = await get(db, { owner: 'owner' });
 
     expect(res?.status).toBe(200);
-    expect(await res!.json()).toEqual({ sharedTabs: { tabs: 2, documents: 2 } });
+    expect(await res.json()).toEqual({ sharedTabs: { tabs: 2, documents: 2 } });
   });
 
   it('answers zero for a document that shares nothing', async () => {
@@ -65,7 +65,7 @@ describe('GET /api/documents/:id/shared-tabs', () => {
 
     const res = await get(db, { owner: 'owner' });
 
-    expect(await res!.json()).toEqual({ sharedTabs: { tabs: 0, documents: 0 } });
+    expect(await res.json()).toEqual({ sharedTabs: { tabs: 0, documents: 0 } });
   });
 
   it('answers a joined teammate, who may delete a team document', async () => {

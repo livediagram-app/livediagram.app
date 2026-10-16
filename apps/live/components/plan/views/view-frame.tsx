@@ -3,21 +3,18 @@
 // What every visualisation shares (docs/specs/026-plan/plan-views.md "Visualisations"): the card it sits
 // on in the board's theme colours, a header of its name and count, its loading and empty states, and the
 // press rules for an entry that opens a card.
-import { createContext, useContext, type ReactNode } from 'react';
-import { STATUS_PHASES, STATUS_PHASE_LABELS } from '@livediagram/items';
+import { useSlotSettings } from '@/components/plan/dashboard/slot-menu';
+import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
+import { PLAN_VIEW_TITLE_MAX, STATUS_PHASES, STATUS_PHASE_LABELS } from '@livediagram/items';
 import type { PlanPalette } from '../plan-palette';
 import type { PlanContextValue } from '../PlanContext';
 import { CountBadge, Tooltip } from '@livediagram/ui';
 import { IN_BOX_TITLE_CLASS, InMenuBox } from '../menu-name-slot';
 import { BAND_CONTROLS_CLASS, bandControlsProps } from '../band-controls';
 
-// The phase colours, the same on either surface: they read as status, not as theme.
-export const PHASE_COLOURS = {
-  todo: '#94a3b8',
-  doing: '#3b82f6',
-  done: '#16a34a',
-} as const;
-export const OVERDUE_RED = '#dc2626';
+// The phase colours and the overdue red (phase-colours.ts), shared with the views' still pictures.
+import { OVERDUE_RED, PHASE_COLOURS } from '@livediagram/plan-art';
+export { OVERDUE_RED, PHASE_COLOURS };
 
 const stop = (e: { stopPropagation: () => void }) => e.stopPropagation();
 
@@ -52,6 +49,27 @@ export function viewState(
 // each view needs no wiring.
 export const ViewHeaderEnd = createContext<ReactNode>(null);
 
+// A view's own title and its rename (PlanViewView): the title in place of the view's name, and, where the view fills
+// a Visualisation tab, a double-click on it renaming the view and the tab together (docs/specs/026-plan/plan-tabs.md
+// "Names").
+export const ViewTitle = createContext<{ title?: string; rename?: (title: string) => void } | null>(
+  null,
+);
+
+// The view's name with its own title in its place: "Due Calendar · Oct 2026" becomes "Launch · Oct 2026".
+export function titledView(name: string, own: string | undefined): string {
+  if (!own) return name;
+  const at = name.indexOf(' · ');
+  return at < 0 ? own : `${own}${name.slice(at)}`;
+}
+
+// The view's own name without what it shows at the moment ("Due Calendar · October 2026" is "Due Calendar"): what a
+// rename starts from, so saving it never bakes the month in.
+export function bareViewName(name: string): string {
+  const at = name.indexOf(' · ');
+  return at < 0 ? name : name.slice(0, at);
+}
+
 export function ViewFrame({
   title,
   count,
@@ -77,6 +95,12 @@ export function ViewFrame({
   children?: ReactNode;
 }) {
   const end = useContext(ViewHeaderEnd);
+  const own = useContext(ViewTitle);
+  const shown = titledView(title, own?.title);
+  const [renaming, setRenaming] = useState(false);
+  // In a Dashboard slot with no controls of the view's own (PlanViewView puts the cog in `end`), the slot's cog.
+  const slot = useSlotSettings();
+  const slotCog = end ? null : (slot?.cog ?? null);
   return (
     <div
       className="absolute inset-0 flex flex-col overflow-hidden rounded-xl border"
@@ -96,15 +120,30 @@ export function ViewFrame({
         <span className="flex min-w-0 max-w-[var(--plan-band-mid,none)] items-center gap-2">
           {/* In a header band the title rides in the menu box (menu-name-slot). */}
           <InMenuBox
-            render={(inBox) => (
-              <span
-                className={
-                  inBox ? IN_BOX_TITLE_CLASS : 'min-w-0 truncate text-[13px] font-semibold'
-                }
-              >
-                {title}
-              </span>
-            )}
+            render={(inBox) =>
+              renaming && own?.rename ? (
+                <TitleField
+                  value={own.title ?? bareViewName(title)}
+                  inBox={inBox}
+                  onDone={(next) => {
+                    setRenaming(false);
+                    if (next) own.rename?.(next);
+                  }}
+                />
+              ) : (
+                <span
+                  className={`${inBox ? IN_BOX_TITLE_CLASS : 'min-w-0 truncate text-[13px] font-semibold'} ${own?.rename ? 'cursor-text' : ''}`}
+                  // In the menu box a click renames; in its own header a double-click (a click there moves the element).
+                  {...(own?.rename
+                    ? inBox
+                      ? { onClick: () => setRenaming(true) }
+                      : { onDoubleClick: () => setRenaming(true) }
+                    : {})}
+                >
+                  {shown}
+                </span>
+              )
+            }
           />
           {count !== undefined && state === 'ready' ? (
             <CountBadge
@@ -117,14 +156,23 @@ export function ViewFrame({
             </CountBadge>
           ) : null}
         </span>
-        {aside || end ? (
+        {aside || end || slotCog ? (
           // In a header band, a card like the menu box (band-controls.ts).
+          // A view's own controls give way first in a narrow slot (a phone): they scroll sideways, while Maximise and
+          // the cog always stay in reach.
           <span
             {...bandControlsProps(palette)}
-            className={`ml-auto flex shrink-0 items-center gap-1 ${BAND_CONTROLS_CLASS}`}
+            className={`ml-auto flex min-w-0 items-center gap-1 ${BAND_CONTROLS_CLASS}`}
           >
-            {aside}
-            {end}
+            {aside ? (
+              <span className="flex min-w-0 items-center gap-1 overflow-x-auto [scrollbar-width:none]">
+                {aside}
+              </span>
+            ) : null}
+            <span className="flex shrink-0 items-center gap-1">
+              {end}
+              {slotCog}
+            </span>
           </span>
         ) : null}
       </div>
@@ -199,5 +247,47 @@ export function ViewStepButton({
         {children}
       </button>
     </Tooltip>
+  );
+}
+
+// The view's title being renamed: Enter or leaving saves the trimmed name, Escape puts it back.
+function TitleField({
+  value,
+  inBox,
+  onDone,
+}: {
+  value: string;
+  inBox: boolean;
+  onDone: (next: string | null) => void;
+}) {
+  const [draft, setDraft] = useState(value);
+  const closed = useRef(false);
+  const input = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    input.current?.focus();
+    input.current?.select();
+  }, []);
+  const finish = (save: boolean) => {
+    if (closed.current) return;
+    closed.current = true;
+    const next = draft.trim();
+    onDone(save && next && next !== value ? next : null);
+  };
+  return (
+    <input
+      ref={input}
+      aria-label="Chart name"
+      value={draft}
+      maxLength={PLAN_VIEW_TITLE_MAX}
+      onChange={(e) => setDraft(e.target.value)}
+      onKeyDown={(e) => {
+        e.stopPropagation();
+        if (e.key === 'Enter') finish(true);
+        else if (e.key === 'Escape') finish(false);
+      }}
+      onBlur={() => finish(true)}
+      onPointerDown={(e) => e.stopPropagation()}
+      className={`${inBox ? IN_BOX_TITLE_CLASS : 'min-w-0 text-[13px] font-semibold'} w-48 rounded-md border border-brand-400 bg-transparent px-1.5 py-0.5 outline-none`}
+    />
   );
 }

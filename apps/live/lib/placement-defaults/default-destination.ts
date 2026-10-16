@@ -34,6 +34,9 @@ type PlainFolder = { id: string; name: string; parentId: string | null };
 export type TeamFolderLists =
   readonly (PlainFolder & { teamId: string })[] | Readonly<Record<string, readonly PlainFolder[]>>;
 
+const isFolderList = (t: TeamFolderLists): t is readonly (PlainFolder & { teamId: string })[] =>
+  Array.isArray(t);
+
 export function buildDefaultFolderIndex(
   personal: readonly PlainFolder[],
   teamFolders: TeamFolderLists,
@@ -42,9 +45,8 @@ export function buildDefaultFolderIndex(
   const folders = new Map<string, IndexedFolder>();
   const plain = ({ id, name, parentId }: PlainFolder) => ({ id, name, parentId });
   for (const f of personal) folders.set(f.id, { ...plain(f), teamId: null });
-  if (Array.isArray(teamFolders)) {
-    for (const f of teamFolders as readonly (PlainFolder & { teamId: string })[])
-      folders.set(f.id, { ...plain(f), teamId: f.teamId });
+  if (isFolderList(teamFolders)) {
+    for (const f of teamFolders) folders.set(f.id, { ...plain(f), teamId: f.teamId });
   } else {
     for (const [teamId, list] of Object.entries(teamFolders))
       for (const f of list) folders.set(f.id, { ...plain(f), teamId });

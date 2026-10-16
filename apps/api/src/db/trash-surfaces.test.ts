@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import type { DatabaseSync } from 'node:sqlite';
-import type { Tab } from '@livediagram/document';
 import { sqliteD1 } from '../test-sqlite-d1';
 import { runTimelineExpirySweep } from '../timeline/expiry-sweep';
 import { readActivity } from './collab-index';
@@ -87,7 +86,7 @@ describe('Activity, while a document is in the Trash', () => {
   it('leaves out its open actions', async () => {
     const db = sqliteD1();
     liveDoc(db.sql, 'A');
-    await upsertTab(db.env, 'A', { id: 't1', name: 't1', elements: [] } as unknown as Tab, 0);
+    await upsertTab(db.env, 'A', { id: 't1', name: 't1', elements: [] }, 0);
     insert(db.sql, 'collab_actions', {
       tab_id: 't1',
       element_id: 'e1',
@@ -112,7 +111,7 @@ describe('linking a tab, while its only owned document is in the Trash', () => {
   it('is refused', async () => {
     const db = sqliteD1();
     liveDoc(db.sql, 'A');
-    await upsertTab(db.env, 'A', { id: 't1', name: 't1', elements: [] } as unknown as Tab, 0);
+    await upsertTab(db.env, 'A', { id: 't1', name: 't1', elements: [] }, 0);
     expect(await tabLinkedToOwnedDocument(db.env, 't1', 'owner')).toBe(true);
 
     await trashDocument(db.env, 'A', T0);

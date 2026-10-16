@@ -1,9 +1,10 @@
 'use client';
 
 // A layout's preview tile art (docs/specs/007-editor/illustrate-pages.md "Layouts"): the layout
-// built for THIS page's size and orientation, drawn small as a wireframe, so the tile shows what
-// will land rather than a stock picture. Text is drawn as bars (a title thicker), images as a
-// shaded block, icons as dots, everything else as an outlined box.
+// built for THIS page's size and orientation and drawn by the export renderer in the tab's theme
+// and font on the page's own background, so the tile is exactly what pressing it puts on the page.
+// Outside the editor (no tab to paint with) it falls back to a wireframe: text as bars (a title
+// thicker), images as a shaded block, icons as dots, everything else as an outlined box.
 import { useContext, useMemo } from 'react';
 import {
   arcGeometry,
@@ -15,7 +16,7 @@ import {
 import type { PageLayoutId } from '@livediagram/templates';
 import { buildPageLayout } from '@livediagram/templates';
 import { EditorContext } from '@/app/document/[id]/EditorContext';
-import { LogoLayoutThumb } from './logo-layout-thumb';
+import { LayoutRenderThumb } from './layout-render-thumb';
 
 // Wide enough to read a layout's parts: two tiles to a row in the panel and the in-page card.
 const THUMB_W = 120;
@@ -137,15 +138,14 @@ export function LayoutThumb({
   // The tile's width in px (a category card's fan draws them smaller).
   width?: number;
 }) {
-  // A logo page's tile is the layout itself, rendered (LogoLayoutThumb).
-  if (page.kind === 'logo') return <LogoOrWireframe layout={layout} page={page} width={width} />;
-  return <Wireframe layout={layout} page={page} width={width} />;
-}
-
-// Rendered with the editor's tab (its theme and font); a wireframe where there is none.
-function LogoOrWireframe(props: { layout: PageLayoutId; page: LaidOutPage; width: number }) {
+  // Rendered with the editor's tab (its theme and font, LayoutRenderThumb); a wireframe where there
+  // is none.
   const tab = useContext(EditorContext)?.activeTab;
-  return tab ? <LogoLayoutThumb {...props} tab={tab} /> : <Wireframe {...props} />;
+  return tab ? (
+    <LayoutRenderThumb layout={layout} page={page} width={width} tab={tab} />
+  ) : (
+    <Wireframe layout={layout} page={page} width={width} />
+  );
 }
 
 function Wireframe({
@@ -161,7 +161,7 @@ function Wireframe({
   const els = useMemo(
     () => buildPageLayout(layout, page),
     // Rebuilt only when the page's shape changes (it mints fresh ids each time).
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps
     [layout, rect.x, rect.y, rect.width, rect.height],
   );
   const h = (width * rect.height) / rect.width;

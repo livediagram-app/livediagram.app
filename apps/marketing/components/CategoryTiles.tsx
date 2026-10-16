@@ -3,7 +3,7 @@ import { BAND_CARD, BAND_CONTROL_HOVER, BAND_LABEL } from '@/components/band-cla
 import type { GalleryShelf, ShelfId } from '@/lib/template-gallery';
 
 // The template gallery's folded shelves (docs/specs/019-marketing/marketing-site.md): one card
-// per shelf not open (Popular among them once another is), so they read as part of the gallery rather than a row of tags under
+// per shelf not open (Blank Slate among them once another is), so they read as part of the gallery rather than a row of tags under
 // it. Each shows a fanned stack of its first three templates' previews (PreviewFan, shared with
 // the editor's template picker), its name and how many templates it holds. Hovering or
 // focusing a card fans the stack wider. Clicking opens the
@@ -16,16 +16,13 @@ export function CategoryTiles({
   groups: GalleryShelf[];
   onOpen: (id: ShelfId) => void;
 }) {
-  // Popular only repeats templates the categories already hold, so it is left out of the
-  // "more templates" sum, as the editor's template step does (TemplatePickerShelf).
-  const total = groups
-    .filter((g) => g.id !== 'popular')
-    .reduce((n, g) => n + g.templates.length, 0);
+  // Blank Slate's blanks are on no category, so every folded shelf counts toward the "more templates" sum.
+  const total = groups.reduce((n, g) => n + g.templates.length, 0);
   return (
     <div>
       <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
         <h3 className={BAND_LABEL}>Explore More Categories</h3>
-        <p className="text-sm text-slate-500 dark:text-slate-400">
+        <p className="text-sm text-slate-600 dark:text-slate-400">
           {groups.length} more {groups.length === 1 ? 'category' : 'categories'}, {total} more{' '}
           {total === 1 ? 'template' : 'templates'}
         </p>
@@ -36,12 +33,14 @@ export function CategoryTiles({
             <button
               type="button"
               onClick={() => onOpen(group.id)}
-              aria-label={`Show ${group.label} templates`}
               className={`group flex h-full w-full cursor-pointer flex-col p-3 text-left ${BAND_CARD} ${BAND_CONTROL_HOVER}`}
             >
               <PreviewFan kinds={group.templates.map((t) => t.kind)} />
               <span className="mt-3 flex flex-col items-start gap-1 sm:flex-row sm:items-center sm:justify-between sm:gap-2">
                 <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+                  {/* The tile's name is its own text, "Show Brainstorm 5 templates", so what it shows is
+                      part of what a screen reader announces (WCAG 2.5.3). */}
+                  <span className="sr-only">Show </span>
                   {group.label}
                 </span>
                 <span className="shrink-0 rounded-full bg-brand-50 px-2 py-0.5 text-xs font-medium text-brand-700 dark:bg-brand-500/15 dark:text-brand-200">

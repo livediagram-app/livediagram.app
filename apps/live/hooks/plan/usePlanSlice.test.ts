@@ -2,7 +2,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { act, renderHook } from '@testing-library/react';
 import { ITEM_TYPES } from '@livediagram/items';
-import type { Element } from '@livediagram/document';
+import type { Element, Tab } from '@livediagram/document';
 import { usePlanSlice } from './usePlanSlice';
 import { registerPlanBoardTarget, type PlanBoardTarget } from './plan-board-targets';
 
@@ -95,34 +95,6 @@ describe('usePlanSlice', () => {
     expect(applied).toEqual([{ ...card, planCard: { itemId: 'a', size: 'minimal' } }, other]);
   });
 
-  it('hands a board to the latest slide callback, and offers none without a deck', () => {
-    const added: string[] = [];
-    const base = {
-      planItems,
-      itemTypes,
-      editorMode: 'plan' as const,
-      canEdit: true,
-      canVote: true,
-      teamPeople: participants,
-      presence,
-      statusNames,
-      commit: () => {},
-      select: () => {},
-      announce: () => {},
-    };
-    const { result } = renderHook(() =>
-      usePlanSlice({
-        ...base,
-        addItemSlide: () => {},
-        addBoardSlide: (id) => added.push(id),
-      }),
-    );
-    result.current.context.addBoardSlide?.('board');
-    expect(added).toEqual(['board']);
-    const bare = renderHook(() => usePlanSlice(base));
-    expect(bare.result.current.context.addBoardSlide).toBeUndefined();
-  });
-
   // docs/specs/026-plan/items.md "Comments": a card's comment change goes to the item store.
   it('hands a comment change and the owner id to the item store', () => {
     const comment = vi.fn(async () => true);
@@ -148,7 +120,7 @@ describe('usePlanSlice', () => {
 
   // docs/specs/026-plan/plan-board.md "Column settings": Delete Status takes the state off every other board.
   it('takes a deleted state’s columns off every other board, in every tab', () => {
-    const commitTabs = vi.fn();
+    const commitTabs = vi.fn<NonNullable<Parameters<typeof usePlanSlice>[0]['commitTabs']>>();
     const { result } = renderHook(() =>
       usePlanSlice({
         planItems,
@@ -171,12 +143,13 @@ describe('usePlanSlice', () => {
       shape: 'plan-board',
       planBoard: { title: id, columns: statuses.map((s) => ({ id: s, status: s, name: s })) },
     });
+    // Tabs as stored, partial: the slice reads their Plan boards only.
     const tabs = [
       { id: 't1', elements: [board('here', ['todo', 'done']), board('other', ['todo', 'done'])] },
       { id: 't2', elements: [board('far', ['done'])] },
-    ];
+    ] as unknown as Tab[];
     result.current.context.removeStatusColumns('todo', 'here');
-    const next = commitTabs.mock.calls[0]![0](tabs) as typeof tabs;
+    const next = commitTabs.mock.calls[0]![0](tabs);
     const cols = (t: number, i: number) =>
       (
         next[t]!.elements[i] as { planBoard: { columns: { status: string }[] } }
@@ -229,6 +202,38 @@ describe('usePlanSlice', () => {
     });
     write.mockClear();
     expect(result.current.context.trashItems(['c', 'gone'])).toBe(0);
+    expect(write).not.toHaveBeenCalled();
+  });
+
+  // docs/specs/026-plan/plan-templates.md "Example cards": Keep Them changes many cards as one write.
+  it('changes many cards as one write, one card as its own patch, and none as no write', () => {
+    const write = vi.fn(async () => true);
+    const { result } = renderHook(() =>
+      usePlanSlice({
+        planItems: { ...(planItems as object), write } as never,
+        itemTypes,
+        editorMode: 'plan',
+        canEdit: true,
+        canVote: true,
+        teamPeople: participants,
+        presence,
+        statusNames,
+        commit: () => {},
+        select: () => {},
+        announce: () => {},
+      }),
+    );
+    const keep = (id: string) => ({ id, patch: { clear: ['example'] } });
+    act(() => result.current.context.patchItems?.([keep('a'), keep('b')]));
+    expect(write).toHaveBeenLastCalledWith({ kind: 'patches', patches: [keep('a'), keep('b')] });
+    act(() => result.current.context.patchItems?.([keep('a')]));
+    expect(write).toHaveBeenLastCalledWith({
+      kind: 'patch',
+      id: 'a',
+      patch: { clear: ['example'] },
+    });
+    write.mockClear();
+    act(() => result.current.context.patchItems?.([]));
     expect(write).not.toHaveBeenCalled();
   });
 

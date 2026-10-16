@@ -202,7 +202,7 @@ export function mapElement<T extends BoxedElement>(el: T, m: SymmetryMap): T {
     x: c.x - el.width / 2,
     y: c.y - el.height / 2,
     ...(turned === 0 ? { rotation: undefined } : { rotation: turned }),
-  } as T;
+  };
 }
 
 /** The lines a page's mirror is drawn as: a centre line per reflection, and for a radial mirror a

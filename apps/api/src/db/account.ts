@@ -8,6 +8,7 @@ import { deleteDocumentOpensForOwner, migrateDocumentOpens } from './document-op
 import { COPY_COUNT_SQL } from './community-engagement';
 import { snapshotKeys } from './documents';
 import { documentRemovalStatements } from './document-removal';
+import { purgeRooms } from '../room-purge-client';
 import { detachUserFromTeams } from './teams';
 import { imageGrantOwnerChangeStatement } from './image-grants';
 import { disconnectDrive } from '../drive/disconnect';
@@ -69,11 +70,12 @@ export async function deleteAccount(
   // the images above — the cascade can't reach them. Enumerate the
   // owner's document ids while the rows still exist, then bulk-delete
   // their snapshot objects before the documents DELETE drops the ids.
+  const documentRows = await env.DB.prepare('SELECT id FROM documents WHERE owner_id = ?')
+    .bind(ownerId)
+    .all<{ id: string }>();
+  const documentIds = (documentRows.results ?? []).map((r) => r.id);
   if (env.IMAGES) {
-    const documentRows = await env.DB.prepare('SELECT id FROM documents WHERE owner_id = ?')
-      .bind(ownerId)
-      .all<{ id: string }>();
-    const thumbKeys = (documentRows.results ?? []).flatMap((r) => snapshotKeys(r.id));
+    const thumbKeys = documentIds.flatMap(snapshotKeys);
     for (let i = 0; i < thumbKeys.length; i += R2_DELETE_CHUNK) {
       await env.IMAGES.delete(thumbKeys.slice(i, i + R2_DELETE_CHUNK));
     }
@@ -84,6 +86,8 @@ export async function deleteAccount(
     documentRemovalStatements(env, { column: 'owner_id', value: ownerId }),
   );
   const documentsRes = removal[removal.length - 1]!;
+  // Their rooms' storage goes with them (the ledger keeps comment and idea text). Best effort.
+  await purgeRooms(env, documentIds);
   // Personal folders only. A team folder carries its creator's owner_id but
   // belongs to the team (access is by membership), and teammates' documents
   // sit in it: deleting it dropped them out of the team library behind a
@@ -137,6 +141,9 @@ export async function deleteAccount(
   // shared_with. Stars on this owner's documents cascade; the stars they put on
   // teammates' and other people's documents are theirs and go here.
   await env.DB.prepare('DELETE FROM favourites WHERE owner_id = ?').bind(ownerId).run();
+  // form_reads (docs/specs/030-forms/forms.md "Hearing about responses"): what they had seen of other people's forms;
+  // reads of forms on their own documents cascade with the documents.
+  await env.DB.prepare('DELETE FROM form_reads WHERE owner_id = ?').bind(ownerId).run();
   // placement_defaults (docs/specs/013-workspace/default-folders.md): no foreign key reaches them.
   await env.DB.prepare('DELETE FROM placement_defaults WHERE owner_id = ?').bind(ownerId).run();
   // agent_changesets (docs/specs/024-agents/agent-changesets.md, CS27): the ones they wrote on other
@@ -224,115 +231,155 @@ export async function migrateOwnerId(
   fromOwnerId: string,
   toOwnerId: string,
 ): Promise<{ documents: number; folders: number; shared: number; images: number }> {
-  // The grant first, while the guest still owns the documents: an image left on the guest id by the
-  // dedupe below keeps serving in them.
-  const [, documentsRes] = await env.DB.batch([
-    imageGrantOwnerChangeStatement(env, 'd.owner_id = ?2', [fromOwnerId], Date.now()),
-    env.DB.prepare('UPDATE documents SET owner_id = ? WHERE owner_id = ?').bind(
+  // One batch: one round trip, and all or nothing, where it was a round trip per statement and a failure
+  // part-way left a half-moved account. No foreign key reads an owner column, so only each table's own order
+  // matters, and the batch keeps it: the grant before the documents move (it joins the guest's documents),
+  // each INSERT OR IGNORE copy before its DELETE, and the copy counts recounted after the copies move.
+  const now = Date.now();
+  const move = (sql: string, ...binds: unknown[]) => env.DB.prepare(sql).bind(...binds);
+  const statements = {
+    // The grant first, while the guest still owns the documents: an image left on the guest id by the
+    // dedupe below keeps serving in them.
+    grant: imageGrantOwnerChangeStatement(env, 'd.owner_id = ?2', [fromOwnerId], now),
+    documents: move('UPDATE documents SET owner_id = ? WHERE owner_id = ?', toOwnerId, fromOwnerId),
+    folders: move('UPDATE folders SET owner_id = ? WHERE owner_id = ?', toOwnerId, fromOwnerId),
+    // tab_id carried too: a tab-scoped visit (docs/specs/013-workspace/tab-scoped-share-links.md) stays
+    // scoped to its tab once its visitor signs up; a NULL would read as an All-tabs visit.
+    shared: move(
+      `INSERT OR IGNORE INTO shared_with (owner_id, document_id, role, level, last_seen, tab_id, share_code)
+       SELECT ?, document_id, role, level, last_seen, tab_id, share_code
+       FROM shared_with
+       WHERE owner_id = ?`,
       toOwnerId,
       fromOwnerId,
     ),
-  ]);
-  const foldersRes = await env.DB.prepare('UPDATE folders SET owner_id = ? WHERE owner_id = ?')
-    .bind(toOwnerId, fromOwnerId)
-    .run();
-  const sharedInsertRes = await env.DB.prepare(
-    // tab_id carried too: a tab-scoped visit (docs/specs/013-workspace/tab-scoped-share-links.md) stays
-    // scoped to its tab once its visitor signs up; a NULL would read as an All-tabs visit.
-    `INSERT OR IGNORE INTO shared_with (owner_id, document_id, role, level, last_seen, tab_id, share_code)
-     SELECT ?, document_id, role, level, last_seen, tab_id, share_code
-     FROM shared_with
-     WHERE owner_id = ?`,
-  )
-    .bind(toOwnerId, fromOwnerId)
-    .run();
-  await env.DB.prepare('DELETE FROM shared_with WHERE owner_id = ?').bind(fromOwnerId).run();
-  // A visit is to someone else's document. The guest may have visited one the account owns, and
-  // the account may have visited one the guest owned (now the account's): either way the visit
-  // would list the account's own document under its "Shared with you", so drop it.
-  await env.DB.prepare(
-    `DELETE FROM shared_with WHERE owner_id = ?1
-       AND document_id IN (SELECT id FROM documents WHERE owner_id = ?1)`,
-  )
-    .bind(toOwnerId)
-    .run();
-  // user_preferences (docs/specs/007-editor/user-preferences.md): same INSERT OR IGNORE pattern as
-  // shared_with so a Clerk userId who somehow already had a row (an
-  // earlier sign-in on a different device) keeps that authoritative
-  // copy and the guest row gets dropped. Guest-only is the common
-  // path; the existing-row case just stops the migration clobbering
-  // intentional preferences with stale ones.
-  await env.DB.prepare(
-    `INSERT OR IGNORE INTO user_preferences (owner_id, prefs, updated_at)
-     SELECT ?, prefs, updated_at
-     FROM user_preferences
-     WHERE owner_id = ?`,
-  )
-    .bind(toOwnerId, fromOwnerId)
-    .run();
-  await env.DB.prepare('DELETE FROM user_preferences WHERE owner_id = ?').bind(fromOwnerId).run();
-  // favourites (docs/specs/013-workspace/favourites.md): the primary key is
-  // (owner_id, document_id), and both identities may have starred the same
-  // document, so INSERT OR IGNORE then DELETE like shared_with. A collision
-  // keeps the account's star and its original created_at.
-  await env.DB.prepare(
-    `INSERT OR IGNORE INTO favourites (owner_id, document_id, created_at)
-     SELECT ?, document_id, created_at
-     FROM favourites
-     WHERE owner_id = ?`,
-  )
-    .bind(toOwnerId, fromOwnerId)
-    .run();
-  await env.DB.prepare('DELETE FROM favourites WHERE owner_id = ?').bind(fromOwnerId).run();
-  // placement_defaults (docs/specs/013-workspace/default-folders.md): the primary key is
-  // (owner_id, default_key), so INSERT OR IGNORE then DELETE: where both identities set a default
-  // for one key, the account's stays. The guest's folders move above, so its defaults stay valid.
-  await env.DB.prepare(
-    `INSERT OR IGNORE INTO placement_defaults (owner_id, default_key, folder_id, updated_at)
-     SELECT ?, default_key, folder_id, updated_at
-     FROM placement_defaults
-     WHERE owner_id = ?`,
-  )
-    .bind(toOwnerId, fromOwnerId)
-    .run();
-  await env.DB.prepare('DELETE FROM placement_defaults WHERE owner_id = ?').bind(fromOwnerId).run();
-  // community_copies (docs/specs/025-community/community.md "Likes"): a post counts each copier
-  // once, so the guest's copies become the account's. The primary key is (post_id, copier_id), so
-  // INSERT OR IGNORE then DELETE: where both identities copied one post it is one copier, and those
-  // posts' counts are recounted to match. (Likes are keyed by the browser's community key, never an
-  // owner id, and a post's author is always signed in, so neither needs moving.)
-  await env.DB.prepare(
-    `INSERT OR IGNORE INTO community_copies (post_id, copier_id, created_at, network_hash)
-     SELECT post_id, ?, created_at, network_hash
-     FROM community_copies
-     WHERE copier_id = ?`,
-  )
-    .bind(toOwnerId, fromOwnerId)
-    .run();
-  await env.DB.prepare('DELETE FROM community_copies WHERE copier_id = ?').bind(fromOwnerId).run();
-  await env.DB.prepare(
-    `UPDATE community_posts
-     SET copy_count = ${COPY_COUNT_SQL('community_posts.id')}
-     WHERE id IN (SELECT post_id FROM community_copies WHERE copier_id = ?)`,
-  )
-    .bind(toOwnerId)
-    .run();
-  // participants: the guest's name and colour. The id IS the owner id, so an
-  // account that already has a row keeps it (a signed-in name comes from Clerk
-  // anyway). The copy is stamped NOW, never with the source's created_at: a row
-  // older than GUEST_SIGNING_LIVE_AT marks a legacy id that may upgrade unsigned
-  // (auth/guest-rest.ts isLegacyGuestEra), and the new id is a signed one, so
-  // carrying the old date over would let anyone holding the new id move its data
-  // without the signature. The guest row goes, since nothing reads a retired guest id.
-  await env.DB.prepare(
-    `INSERT OR IGNORE INTO participants (id, name, color, created_at)
-     SELECT ?, name, color, ?
-     FROM participants
-     WHERE id = ?`,
-  )
-    .bind(toOwnerId, Date.now(), fromOwnerId)
-    .run();
-  await env.DB.prepare('DELETE FROM participants WHERE id = ?').bind(fromOwnerId).run();
+    sharedDrop: move('DELETE FROM shared_with WHERE owner_id = ?', fromOwnerId),
+    // A visit is to someone else's document. The guest may have visited one the account owns, and
+    // the account may have visited one the guest owned (now the account's): either way the visit
+    // would list the account's own document under its "Shared with you", so drop it.
+    sharedOwn: move(
+      `DELETE FROM shared_with WHERE owner_id = ?1
+         AND document_id IN (SELECT id FROM documents WHERE owner_id = ?1)`,
+      toOwnerId,
+    ),
+    // user_preferences (docs/specs/007-editor/user-preferences.md): same INSERT OR IGNORE pattern as
+    // shared_with so a Clerk userId who somehow already had a row (an
+    // earlier sign-in on a different device) keeps that authoritative
+    // copy and the guest row gets dropped. Guest-only is the common
+    // path; the existing-row case just stops the migration clobbering
+    // intentional preferences with stale ones.
+    prefs: move(
+      `INSERT OR IGNORE INTO user_preferences (owner_id, prefs, updated_at)
+       SELECT ?, prefs, updated_at
+       FROM user_preferences
+       WHERE owner_id = ?`,
+      toOwnerId,
+      fromOwnerId,
+    ),
+    prefsDrop: move('DELETE FROM user_preferences WHERE owner_id = ?', fromOwnerId),
+    // favourites (docs/specs/013-workspace/favourites.md): the primary key is
+    // (owner_id, document_id), and both identities may have starred the same
+    // document, so INSERT OR IGNORE then DELETE like shared_with. A collision
+    // keeps the account's star and its original created_at.
+    favourites: move(
+      `INSERT OR IGNORE INTO favourites (owner_id, document_id, created_at)
+       SELECT ?, document_id, created_at
+       FROM favourites
+       WHERE owner_id = ?`,
+      toOwnerId,
+      fromOwnerId,
+    ),
+    favouritesDrop: move('DELETE FROM favourites WHERE owner_id = ?', fromOwnerId),
+    // form_reads (docs/specs/030-forms/forms.md): the primary key is (code, owner_id); where both identities read
+    // one form, the account's row stays.
+    formReads: move(
+      `INSERT OR IGNORE INTO form_reads (code, owner_id, seen_number)
+       SELECT code, ?, seen_number
+       FROM form_reads
+       WHERE owner_id = ?`,
+      toOwnerId,
+      fromOwnerId,
+    ),
+    formReadsDrop: move('DELETE FROM form_reads WHERE owner_id = ?', fromOwnerId),
+    // placement_defaults (docs/specs/013-workspace/default-folders.md): the primary key is
+    // (owner_id, default_key), so INSERT OR IGNORE then DELETE: where both identities set a default
+    // for one key, the account's stays. The guest's folders move above, so its defaults stay valid.
+    placement: move(
+      `INSERT OR IGNORE INTO placement_defaults (owner_id, default_key, folder_id, updated_at)
+       SELECT ?, default_key, folder_id, updated_at
+       FROM placement_defaults
+       WHERE owner_id = ?`,
+      toOwnerId,
+      fromOwnerId,
+    ),
+    placementDrop: move('DELETE FROM placement_defaults WHERE owner_id = ?', fromOwnerId),
+    // community_copies (docs/specs/025-community/community.md "Likes"): a post counts each copier
+    // once, so the guest's copies become the account's. The primary key is (post_id, copier_id), so
+    // INSERT OR IGNORE then DELETE: where both identities copied one post it is one copier, and those
+    // posts' counts are recounted to match. (Likes are keyed by the browser's community key, never an
+    // owner id, and a post's author is always signed in, so neither needs moving.)
+    copies: move(
+      `INSERT OR IGNORE INTO community_copies (post_id, copier_id, created_at, network_hash)
+       SELECT post_id, ?, created_at, network_hash
+       FROM community_copies
+       WHERE copier_id = ?`,
+      toOwnerId,
+      fromOwnerId,
+    ),
+    copiesDrop: move('DELETE FROM community_copies WHERE copier_id = ?', fromOwnerId),
+    copyCounts: move(
+      `UPDATE community_posts
+       SET copy_count = ${COPY_COUNT_SQL('community_posts.id')}
+       WHERE id IN (SELECT post_id FROM community_copies WHERE copier_id = ?)`,
+      toOwnerId,
+    ),
+    // participants: the guest's name and colour. The id IS the owner id, so an
+    // account that already has a row keeps it (a signed-in name comes from Clerk
+    // anyway). The copy is stamped NOW, never with the source's created_at: a row
+    // older than GUEST_SIGNING_LIVE_AT marks a legacy id that may upgrade unsigned
+    // (auth/guest-rest.ts isLegacyGuestEra), and the new id is a signed one, so
+    // carrying the old date over would let anyone holding the new id move its data
+    // without the signature. The guest row goes, since nothing reads a retired guest id.
+    participant: move(
+      `INSERT OR IGNORE INTO participants (id, name, color, created_at)
+       SELECT ?, name, color, ?
+       FROM participants
+       WHERE id = ?`,
+      toOwnerId,
+      now,
+      fromOwnerId,
+    ),
+    participantDrop: move('DELETE FROM participants WHERE id = ?', fromOwnerId),
+    // images (docs/specs/009-elements/images.md). UPDATE OR IGNORE walks the unique (owner_id,
+    // sha256) collision case (same bytes on both identities) and
+    // leaves those guest rows in place; the grants written with the
+    // documents move above keep them served by every formerly-guest
+    // document that places them.
+    images: move(
+      'UPDATE OR IGNORE images SET owner_id = ? WHERE owner_id = ?',
+      toOwnerId,
+      fromOwnerId,
+    ),
+    // custom_themes (docs/specs/011-theme/custom-themes.md): move the guest's saved themes onto the
+    // authed identity so the documents that reference them keep their look
+    // after sign-up. Plain UPDATE — the id is the PK (no per-owner unique
+    // constraint to collide on), so no OR IGNORE needed.
+    themes: move(
+      'UPDATE custom_themes SET owner_id = ? WHERE owner_id = ?',
+      toOwnerId,
+      fromOwnerId,
+    ),
+    // agent_changesets (docs/specs/024-agents/agent-changesets.md, CS27): what they wrote and reverted
+    // as a guest stays theirs.
+    changesets: move(
+      'UPDATE agent_changesets SET author_id = ? WHERE author_id = ?',
+      toOwnerId,
+      fromOwnerId,
+    ),
+  };
+  const keys = Object.keys(statements) as (keyof typeof statements)[];
+  const results = await env.DB.batch(keys.map((key) => statements[key]));
+  const changes = (key: keyof typeof statements) => results[keys.indexOf(key)]?.meta.changes ?? 0;
   // timeline (docs/specs/013-workspace/timeline.md §9): a week of drawing as a guest is history
   // worth keeping, so the feed, the authored events, and the
   // scope-state row all follow the user to their new account. The
@@ -349,34 +396,12 @@ export async function migrateOwnerId(
   // them, and a document opened under both identities keeps both histories.
   const opens = await migrateDocumentOpens(env, fromOwnerId, toOwnerId);
   console.info(`home: opens-migrated moved=${opens.moved} merged=${opens.merged}`);
-  // images (docs/specs/009-elements/images.md). UPDATE OR IGNORE walks the unique (owner_id,
-  // sha256) collision case (same bytes on both identities) and
-  // leaves those guest rows in place; the grants written with the
-  // documents move above keep them served by every formerly-guest
-  // document that places them.
-  const imagesRes = await env.DB.prepare(
-    'UPDATE OR IGNORE images SET owner_id = ? WHERE owner_id = ?',
-  )
-    .bind(toOwnerId, fromOwnerId)
-    .run();
-  // custom_themes (docs/specs/011-theme/custom-themes.md): move the guest's saved themes onto the
-  // authed identity so the documents that reference them keep their look
-  // after sign-up. Plain UPDATE — the id is the PK (no per-owner unique
-  // constraint to collide on), so no OR IGNORE needed.
-  await env.DB.prepare('UPDATE custom_themes SET owner_id = ? WHERE owner_id = ?')
-    .bind(toOwnerId, fromOwnerId)
-    .run();
   await migrateShapeLibraries(env, fromOwnerId, toOwnerId);
-  // agent_changesets (docs/specs/024-agents/agent-changesets.md, CS27): what they wrote and reverted
-  // as a guest stays theirs.
-  await env.DB.prepare('UPDATE agent_changesets SET author_id = ? WHERE author_id = ?')
-    .bind(toOwnerId, fromOwnerId)
-    .run();
   return {
-    documents: documentsRes?.meta.changes ?? 0,
-    folders: foldersRes.meta.changes ?? 0,
-    shared: sharedInsertRes.meta.changes ?? 0,
-    images: imagesRes.meta.changes ?? 0,
+    documents: changes('documents'),
+    folders: changes('folders'),
+    shared: changes('shared'),
+    images: changes('images'),
   };
 }
 

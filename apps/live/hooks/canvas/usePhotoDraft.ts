@@ -24,12 +24,8 @@ import type { ProcessorReason, ReaderBackend } from '@/lib/reading/reader-protoc
 import type { ReaderFallback } from '@/lib/reading/types';
 import { buildEventStormingNote } from '@/lib/draw-commit';
 import { setPhotoDraftView } from '@/lib/photo-draft-preview';
-import {
-  detectAndCrop,
-  photoTypeError,
-  PhotoDetectFailed,
-  type PhotoDetection,
-} from '@/lib/photo-detect';
+import type { PhotoDetection } from '@/lib/photo-detect';
+import { photoTypeError } from '@/lib/photo-accept';
 import { detectorTelemetryType } from '@/lib/photo-model/telemetry';
 import { track } from '@/lib/telemetry';
 import { useLatest } from '@/hooks/ui/useLatest';
@@ -460,13 +456,19 @@ export function usePhotoDraft(deps: PhotoDraftDeps): PhotoDraftApi {
       // Finding the stickies happens HERE, in the browser: the photograph
       // never leaves the machine, only the crops do.
       let detection: PhotoDetection;
+      // The detection pipeline (and the sticky detector in it) loads only now, once a photo is
+      // picked: most documents never import one (docs/specs/016-platform/web-performance.md).
+      let pipeline: typeof import('@/lib/photo-detect') | null = null;
       try {
-        detection = await detectAndCrop(file, { signal: controller.signal });
+        pipeline = await import('@/lib/photo-detect');
+        detection = await pipeline.detectAndCrop(file, { signal: controller.signal });
       } catch (err) {
         abortRef.current = null;
         if (!current()) return;
         closeReview();
-        fail(err instanceof PhotoDetectFailed ? err.reason : 'photo_unreadable');
+        fail(
+          pipeline && err instanceof pipeline.PhotoDetectFailed ? err.reason : 'photo_unreadable',
+        );
         return;
       }
       if (!current()) return;

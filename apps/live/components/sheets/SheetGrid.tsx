@@ -7,6 +7,10 @@
 import { usePlan } from '@/components/plan/PlanContext';
 import { cardFieldChoice } from './card-field-options';
 import { SheetCardRows } from './SheetCardRows';
+import { SheetRuleLayer } from './rules/SheetRuleLayer';
+import { invalidWhy } from './rules/sheet-rule-hover';
+import { previewFormatRules } from './rules/useSheetRulesState';
+import { SheetCellComments } from './SheetCellComments';
 import { useEffect, useLayoutEffect, useMemo, useRef, useSyncExternalStore } from 'react';
 import {
   cycleInRange,
@@ -29,6 +33,7 @@ import { SheetCells } from './SheetCells';
 import { SheetHeaders } from './SheetHeaders';
 import { SheetSelectionLayer, type Outline } from './SheetSelectionLayer';
 import { SheetCellEditor } from './SheetCellEditor';
+import { SheetChartsLayer } from './SheetChartsLayer';
 import { useSheetsBridgeContext } from '@/hooks/sheets/useSheetsBridge';
 import { ADD_ROWS_PX, SheetAddRows } from './SheetAddRows';
 import { cellBox, pageRows, scrollToReveal, totalSize, visibleWindow } from './sheet-geometry';
@@ -40,6 +45,8 @@ import { sheetPresenceFor } from './sheet-presence-store';
 import type { SheetActions } from './useSheetActions';
 import type { FormulaInput } from './useFormulaInput';
 import type { SheetPeer } from '@/hooks/sheets/useSheetsBridge';
+import { useCoarsePointer } from '@/hooks/ui/useCoarsePointer';
+import { LongPressRing } from '@/components/primitives/LongPressRing';
 
 type Props = {
   elementId: string;
@@ -68,6 +75,8 @@ export function SheetGrid({
   const c = useSheetController();
   const viewportRef = useRef<HTMLDivElement | null>(null);
   const pointer = useSheetPointer(viewportRef, actions, pointRef);
+  // Under a finger the selection's corner is a grip anyone who can select may drag (useSheetTouch).
+  const coarse = useCoarsePointer();
   const clipboard = useSheetClipboard();
   const total = totalSize(c.geometry);
   // Room under the last row for Add Rows, for someone who may edit.
@@ -93,7 +102,7 @@ export function SheetGrid({
     const ro = new ResizeObserver(measure);
     ro.observe(el);
     return () => ro.disconnect();
-  }, [c.gridEl, c.setView]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [c.gridEl, c.setView]); // oxlint-disable-line react/exhaustive-deps
 
   // The wheel scrolls the grid, not the canvas, while the grid can scroll that way (as a board's body).
   useEffect(() => {
@@ -120,7 +129,7 @@ export function SheetGrid({
       height: c.view.height - c.geometry.headH,
     });
     if (next) el.scrollTo({ top: next.top, left: next.left });
-  }, [ar, ac]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [ar, ac]); // oxlint-disable-line react/exhaustive-deps
 
   // This person's selection, said to the room (useSheetPresence's store throttles it).
   useEffect(() => {
@@ -200,7 +209,7 @@ export function SheetGrid({
         });
     return out;
     // `presence` is the store itself (stable); `presenceVersion` says when it moved.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps
   }, [
     c.editing?.draft,
     peers,
@@ -222,6 +231,12 @@ export function SheetGrid({
       for (const col of t.cols) if (cardFieldChoice(col.field, plan)) out.add(col.c);
     return out;
   }, [tables, plan, c.interactive, c.canEdit]);
+
+  // The format rules as drawn: with the one being edited in its place, for its editor alone.
+  const formatRules = useMemo(
+    () => previewFormatRules(c.sheet.layout.formatRules, c.rules.formatPreview),
+    [c.sheet.layout.formatRules, c.rules.formatPreview],
+  );
 
   const filter = useMemo(() => {
     const f = c.sheet.layout.filter;
@@ -314,7 +329,12 @@ export function SheetGrid({
           });
         return;
       }
+      case 'dropdown':
+        actions.openDropdown();
+        return;
       case 'escape':
+        // Paint Format lets go first (sheet.md "Paint Format").
+        if (c.rules.paint) return actions.paintStop();
         if (c.marquee) return c.setMarquee(null);
         if (c.findOpen) return c.setFindOpen(null);
         if (c.maximised) return restorePlanElement();
@@ -325,11 +345,16 @@ export function SheetGrid({
     }
   };
 
-  // The error under the pointer says why (sheet.md "The grid").
+  // The error under the pointer says why (sheet.md "The grid"); so does a value its validation rule does not allow
+  // (data-validation.md "Drawing").
   const hovered = pointer.hover;
   const hoverValue = hovered ? c.workbook.value(c.sheet.id, hovered.r, hovered.c) : null;
   const hoverError =
-    hovered && isError(hoverValue) ? displayValue(hoverValue, undefined, c.locale).error : null;
+    hovered && isError(hoverValue)
+      ? displayValue(hoverValue, undefined, c.locale).error
+      : hovered
+        ? invalidWhy(c, hovered.r, hovered.c)
+        : null;
   const hoverBox =
     hovered && hoverError ? cellBox(c.geometry, hovered.r, hovered.c, c.scroll) : null;
 
@@ -354,7 +379,7 @@ export function SheetGrid({
               }
         }
         // Escape first ends an edit, the copied range's marquee or Find; only then does it restore a maximised sheet.
-        data-keeps-escape={c.editing || c.marquee || c.findOpen ? '' : undefined}
+        data-keeps-escape={c.editing || c.marquee || c.findOpen || c.rules.paint ? '' : undefined}
         role="grid"
         tabIndex={c.interactive ? 0 : -1}
         aria-label={`${c.sheet.title} grid`}
@@ -371,7 +396,10 @@ export function SheetGrid({
         onBlur={() => pointer.pan.releaseSpace()}
         onKeyUp={(e) => {
           if (!c.editing && e.target === e.currentTarget)
-            pointer.pan.onKeyUp(e, () => actions.startEdit('type', ' '));
+            // Space on checkbox cells toggles them (data-validation.md "Using a checkbox"); else it types a space.
+            pointer.pan.onKeyUp(e, () => {
+              if (!actions.toggleCheckboxes()) actions.startEdit('type', ' ');
+            });
         }}
         onCopy={clipboard.onCopy}
         onCut={clipboard.onCut}
@@ -386,7 +414,8 @@ export function SheetGrid({
         >
           <div
             ref={viewportRef}
-            className="sticky left-0 top-0 overflow-hidden"
+            // A held finger selects cells, so it never starts the browser's own text selection or callout.
+            className="sticky left-0 top-0 overflow-hidden [-webkit-touch-callout:none] pointer-coarse:select-none"
             style={{ width: c.view.width, height: c.view.height, cursor: pointer.cursor }}
             onPointerDown={pointer.onPointerDown}
             onPointerMove={pointer.onPointerMove}
@@ -400,6 +429,7 @@ export function SheetGrid({
             >
               <SheetCells
                 padEnd={dropdownCols}
+                formatRules={formatRules}
                 sheet={c.sheet}
                 workbook={c.workbook}
                 version={c.version}
@@ -416,7 +446,7 @@ export function SheetGrid({
                   scroll={c.scroll}
                   palette={c.palette}
                   selection={c.selection}
-                  showHandle={c.canEdit && !c.editing && c.focused}
+                  showHandle={(c.canEdit || coarse) && !c.editing && c.focused}
                   marquee={c.marquee}
                   outlines={outlines}
                   filter={filter}
@@ -427,6 +457,11 @@ export function SheetGrid({
                 />
               ) : null}
               <SheetCardRows />
+              {/* Dropdowns, checkboxes and the rule panels (data-validation.md, conditional-formatting.md). */}
+              <SheetRuleLayer actions={actions} />
+              <SheetCellComments hover={pointer.hover} />
+              {/* The charts that sit in this Sheet, over its cells (sheet.md "Charts"). */}
+              <SheetChartsLayer fontFamily={fontFamily} />
               {pointer.preview?.kind === 'fill' ? (
                 <SheetSelectionLayer
                   geometry={c.geometry}
@@ -451,9 +486,14 @@ export function SheetGrid({
                 }
               </span>
             </div>
-            <div className="absolute" style={{ left: c.geometry.headW, top: c.geometry.headH }}>
+            <div
+              className="absolute select-text"
+              style={{ left: c.geometry.headW, top: c.geometry.headH }}
+            >
               <SheetCellEditor input={input} fontFamily={fontFamily} />
             </div>
+            {/* A finger held on the cells (useSheetTouch): the hold ring, portalled to the finger. */}
+            <LongPressRing point={pointer.ring} />
             <SheetHeaders
               geometry={c.geometry}
               window={window}

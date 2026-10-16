@@ -8,7 +8,7 @@ import { useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode }
 import { useCanvasZoom } from './CanvasZoomContext';
 
 // How large such a screen may draw, as a multiple of its own size.
-export const SCREEN_SCALE_MAX = 1.25;
+export const SCREEN_SCALE_MAX = 1;
 
 export function ScaleCapped({
   className,

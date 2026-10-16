@@ -1,6 +1,7 @@
 // A Sheet's working parts over a real store with a fake api, for the component tests of the toolbar, menus,
 // header, find bar, formula bar and cell editor: the controller is the real one, the actions are the real ones,
 // and every write lands in the store's view at once (and in `writes` once the queue has sent it).
+import type { ItemUndoStep } from '@/hooks/plan/item-undo-journal';
 import { act, render, type RenderResult } from '@testing-library/react';
 import { useSyncExternalStore, type ReactNode } from 'react';
 import { vi, type Mock } from 'vitest';
@@ -51,7 +52,9 @@ export type SheetHarness = {
   store: SheetStore;
   writes: SheetWrite[];
   toast: Mock<(m: string) => void>;
-  placeChart: Mock<(kind: string, range: unknown) => void>;
+  placeChart: Mock<(kind: string, range: unknown, anchor?: unknown) => void>;
+  // The charts Clear Sheet takes (none unless a test sets them).
+  chartsRemoval: Mock<() => ItemUndoStep | null>;
   // What the controller hands each local write to (a card table's push sets it).
   push: { current: ((before: Sheet, write: SheetWrite) => void) | null };
   setPush: (push: ((before: Sheet, write: SheetWrite) => void) | null) => void;
@@ -125,6 +128,7 @@ export async function makeSheet(
     writes,
     toast,
     placeChart: vi.fn(),
+    chartsRemoval: vi.fn(() => null),
     push: { current: null },
     setPush: (push) => {
       h.push.current = push;
@@ -165,12 +169,14 @@ function Root({
   h,
   ui,
   canEdit,
+  canShape,
   interactive,
   maximised,
 }: {
   h: SheetHarness;
   ui: (p: SheetParts) => ReactNode;
   canEdit: boolean;
+  canShape?: boolean | undefined;
   interactive: boolean;
   maximised: boolean;
 }) {
@@ -183,11 +189,13 @@ function Root({
     palette: planPalette('light'),
     interactive,
     canEdit,
+    ...(canShape === undefined ? {} : { canShape }),
     maximised,
     locale: 'en-GB',
     announce: h.announce,
     toast: h.toast,
     placeChart: h.placeChart,
+    chartsRemoval: h.chartsRemoval,
     notify: h.notify,
     onWrote: (before, write) => h.push.current?.(before, write),
   });
@@ -202,13 +210,20 @@ function Root({
 export function renderSheet(
   h: SheetHarness,
   ui: (p: SheetParts) => ReactNode,
-  opts: { canEdit?: boolean; interactive?: boolean; maximised?: boolean; at?: string } = {},
+  opts: {
+    canEdit?: boolean;
+    canShape?: boolean;
+    interactive?: boolean;
+    maximised?: boolean;
+    at?: string;
+  } = {},
 ): RenderResult {
   const view = render(
     <Root
       h={h}
       ui={ui}
       canEdit={opts.canEdit ?? true}
+      canShape={opts.canShape}
       interactive={opts.interactive ?? true}
       maximised={opts.maximised ?? false}
     />,

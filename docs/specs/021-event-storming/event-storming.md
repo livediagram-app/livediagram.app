@@ -135,7 +135,7 @@ semantic colour:
   than a diagram, and capitals are its home register. The auto-fit measures
   IN that face (`labelMeasure`'s `fontFamily`), because a marker is far
   wider than the UI sans at the same px — and the canvas re-renders once the
-  webfont lands (`useFontsReady`), or a board nobody has touched keeps a size
+  webfont lands (`useFontEpoch`), or a board nobody has touched keeps a size
   measured against the swap fallback.
 - **Notes are WRITTEN IN CAPITALS.** A marker on paper produces caps, and a
   wall of them reads as one hand: capitals stay legible from across the
@@ -1509,6 +1509,22 @@ Decisions from the operator:
   run and a stall is blamed on the right engine. The review never calls the
   notes read while a retry is still going.
 
+### Show Me
+
+**Show Me** ([Show Me](../007-editor/show-me.md)) runs a guided tour of checking what was found, there and then, on
+the review itself; it is never offered or started on its own. It sits with **Help** (the labelled Help link, to the
+Event Storming Boards article) in a small card on the photo's top-left corner (the zoom has the other), shown once the
+detector has answered; a press on the card never draws a box. The box steps point at the first box on the photo when
+the tour starts, and every control stays usable, so the author can untick, retype or redraw while a step is up. The
+steps: **Each Box Is a Note** (that box), **Tick What to Keep** (its tick; a selected box is let go of first, since its tick then sits in its toolbar), **Fix the Words** (its words),
+**Correct a Box** (that box selected, its correcting toolbar ringed; let go again on leaving the step), **Draw One It
+Missed** (the count pill, which says to drag the photo), **Add Them to the Board** (Add N notes), then a closing card,
+**That Is the Review**, with a link to the Event Storming Boards article. When nothing was found the four box steps
+are left out. Which box, and so which steps, is fixed when it starts. While it runs, Escape belongs to the tour (it
+neither lets go of a box nor leaves the review). Whoever reaches the review (edit access on the board) sees Show Me.
+Telemetry: `UI` · `Started` · `PhotoReviewTour`, and `UI` · `Ended` · `PhotoReviewTourCompleted` or
+`PhotoReviewTourSkipped`.
+
 The plans live in `plans/0010-event-storming-photo-review.md`,
 `plans/0011-event-storming-photo-surface-and-shade.md` and
 `plans/0009-event-storming-photo-precision.md`.
@@ -1540,6 +1556,35 @@ hundred small notes.
 - **A CLI is the same tool without an agent**: `livediagram import-wall
 <photo>` with the author's own key (a flash-class vision model) or a local
   one, tiled for small notes, writing the same draft through the API.
+
+## Agents
+
+An agent builds a board through the MCP's graph input with `style: "storm"` ([MCP server](../015-api/mcp-server.md)
+§4.7), saying only what the wall holds and what leads to what; the server leaves it as a facilitator would.
+
+- **Nodes are notes.** Each node is a workshop note of its `esKind` (one of the eight kinds above; default
+  `domain-event`), real stationery: the kind's fill and silhouette, fixed size, text fitted and kept whole (a
+  sticky's label is its content, so the 40-character heading cap does not apply), a slight hand-placed tilt
+  within `ES_MAX_TILT_DEG`, on the board's one layer.
+- **A note added later is the same note.** An edit `add sticky label="Courier" esKind=actor` (or a raw sticky given
+  `esKind`) is that kind's note, its fill, silhouette, fixed size and centred, scaled text set as a storm board's are
+  (`eventStormingNoteFields`), and it lands on its kind's lane; a field the call names itself (`text=`, `fill=`)
+  keeps its value.
+- **Edges place, they do not draw.** An edge says one note leads to another (an actor issues a command, a command
+  makes an event, an event triggers a policy, a policy issues the next command). The board carries no arrows:
+  adjacency is the notation.
+- **Time runs left to right**, one column per domain event in the order the edges imply (a topological order, cycles
+  cut where they close). A command, actor, read model, aggregate or external system joins the column of the event
+  it leads to; a policy or hotspot the column of the event it follows; a note no event touches takes its own column.
+  Notes sharing a lane and column sit side by side, a gutter apart; columns stand three gutters apart.
+- **One lane per kind used**, top to bottom in the method's reading order: actor, read model, command, aggregate,
+  external system, domain event, policy, hotspot. Every note sits on its lane's centre line, so the board is settled.
+  Each lane is named to the left of the wall ("Domain events", muted text, right aligned): plain text, not a workshop
+  note, so the lanes neither hold nor move it, and a reader new to the notation can still read the board.
+- **A title and subtitle**, when given, head the wall as on every graph (graph-header.ts).
+- **A new tab is a board.** `create_document` and `add_tab` with a storm graph make an event-storming tab (`kind`
+  `event-storming`, born settled, the board layer), the same as the template. A `replace` onto an existing board
+  lands the notes on its lanes as any arrival does; onto an ordinary tab the notes arrive but the tab stays ordinary.
 
 ## Domain learnings (session log)
 
@@ -1589,7 +1634,7 @@ kind, kept current every session. Each should stay true on its own.
   dropdowns are hidden, because a chooser you never need is a distraction.
 - Removing chrome is safe only when another path survives: hidden tool
   pickers still leave keyboard shortcuts and the command palette.
-- Hiding chrome has a second audience: the editor tour ([Interactive editor tour ("Show me around")](../007-editor/editor-tour.md))
+- Hiding chrome has a second audience: the Diagram tour ([Diagram tour ("Getting started with Diagrams?")](../007-editor/editor-tour.md))
   pointed at the hidden header until it learned to drop those steps on a
   board — anything that teaches the UI has to be told when the UI shrinks.
 - Next App Router hydrates React on `document`, so React handlers are
@@ -1761,7 +1806,7 @@ truth for what the type IS at any moment.
 
 ## Counts
 
-The catalogue is pinned at **95 templates (11 default + 84 extra)**:
+The catalogue is pinned at **132 templates (11 default + 121 extra)**:
 `templates.test.ts`, [Canvas and palette](../008-canvas/canvas-and-palette.md), [Marketing site](../019-marketing/marketing-site.md), [Marketing assets](../019-marketing/marketing-assets.md), the marketing FAQ +
 landing copy, and the help centre's templates article all moved
 together with this addition.

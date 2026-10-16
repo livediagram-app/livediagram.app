@@ -7,16 +7,35 @@
 // tidied. Input is untrusted JSON: anything not shaped like the field it claims
 // to be is left for isValidTab to judge.
 
+import { anchorPrimarySide } from './anchors';
+import { orthogonalBends } from './arrow-orthogonal';
+import { LOOK_MD_MAX_NODES } from './look-size';
 import { CODE_LANGUAGES } from './data-shapes';
 import { isCodeThemeId } from './code-themes';
+import { variantFitsKind } from './chart-types';
 import { entityHeight } from './entity-geometry';
+import { settleChips } from './attachment';
 import { createShape } from './shape-factory';
 import { createSticky, createTable, createText } from './factories';
-import { migrateIncomingElements } from './stored-tab';
+import { migrateStoredElementsUnsettled } from './stored-elements';
 import { normalizeTable } from './table';
 import { coerceShapeKind } from './validate';
-import type { TableElement, TextSize } from './index';
+import type { Element as DocElement, TableElement, TextSize } from './index';
 import { isRecord } from './is-record';
+import {
+  cleanSankeyName,
+  SANKEY_ALIGNS,
+  SANKEY_LEFTOVERS,
+  SANKEY_ANIMS,
+  SANKEY_LINK_COLORS,
+  SANKEY_MAX_FLOWS,
+  SANKEY_MAX_NODES,
+  SANKEY_UNIT_MAX,
+  SANKEY_VALUE_LABELS,
+  SANKEY_VALUE_MAX,
+} from './sankey-model';
+import { readSankeyNumber } from './sankey-text';
+import { CONCEPT_ROWS, isConceptShape, type ConceptShape } from './concept';
 
 type Raw = Record<string, unknown>;
 
@@ -24,13 +43,19 @@ const num = (v: unknown) => {
   const n = typeof v === 'number' ? v : Number(v);
   return Number.isFinite(n) ? n : 0;
 };
-const str = (v: unknown) => (typeof v === 'string' ? v : v == null ? '' : String(v));
+// Text as given, a number or a flag as written; anything else (an object, a list) is no text.
+const str = (v: unknown) =>
+  typeof v === 'string'
+    ? v
+    : typeof v === 'number' || typeof v === 'boolean' || typeof v === 'bigint'
+      ? String(v)
+      : '';
 
 function normaliseTable(el: Raw): Raw {
   const cells = el.cells;
   if (!Array.isArray(cells) || !cells.every(Array.isArray)) return el;
   const stringCells = (cells as unknown[][]).map((row) => row.map(str));
-  return normalizeTable({ ...el, cells: stringCells } as unknown as TableElement) as unknown as Raw;
+  return normalizeTable({ ...el, cells: stringCells } as unknown as TableElement);
 }
 
 function normaliseCodeBlock(el: Raw): Raw {
@@ -54,6 +79,10 @@ function normaliseEntity(el: Raw): Raw {
 
 function normaliseChart(el: Raw): Raw {
   const out = { ...el };
+  // A variant its kind does not take (docs/specs/009-elements/pie-chart.md "Chart types") draws as the kind's first
+  // type anyway; dropped, so what is stored says what is drawn.
+  if (out.chartVariant !== undefined && !variantFitsKind(String(el.shape), out.chartVariant))
+    delete out.chartVariant;
   if (Array.isArray(el.pieSlices))
     out.pieSlices = el.pieSlices.filter(isRecord).map((s) => ({
       ...s,
@@ -67,8 +96,62 @@ function normaliseChart(el: Raw): Raw {
       const values = Array.isArray(s.values) ? s.values.map(num) : [];
       const fitted =
         count === undefined ? values : Array.from({ length: count }, (_, i) => values[i] ?? 0);
-      return { ...s, name: str(s.name), values: fitted };
+      // A second axis is `right` or nothing.
+      const { axis, ...rest } = s;
+      return { ...rest, name: str(s.name), values: fitted, ...(axis === 'right' ? { axis } : {}) };
     });
+  }
+  return out;
+}
+
+// A Sankey's flows as a model writes them (docs/specs/009-elements/sankey.md): `source` / `target` (the
+// d3-sankey spelling) read as `from` / `to`, an amount given as text ("3,200") is read as a number, names are
+// cleaned as the editor cleans them, and the lists are capped. An option the diagram does not know is dropped,
+// so it draws its default rather than failing the call.
+function normaliseSankey(el: Raw): Raw {
+  const out = { ...el };
+  if (Array.isArray(el.sankeyFlows))
+    out.sankeyFlows = el.sankeyFlows
+      .filter(isRecord)
+      .slice(0, SANKEY_MAX_FLOWS)
+      .map((f) => {
+        const raw = f.value ?? f.amount;
+        const value = typeof raw === 'number' ? raw : readSankeyNumber(str(raw));
+        return {
+          from: cleanSankeyName(str(f.from ?? f.source)),
+          to: cleanSankeyName(str(f.to ?? f.target)),
+          value: Number.isFinite(value)
+            ? Math.max(-SANKEY_VALUE_MAX, Math.min(SANKEY_VALUE_MAX, value))
+            : 0,
+        };
+      });
+  if (Array.isArray(el.sankeyNodes))
+    out.sankeyNodes = el.sankeyNodes
+      .filter(isRecord)
+      .slice(0, SANKEY_MAX_NODES)
+      .map((n) => ({
+        name: cleanSankeyName(str(n.name)),
+        ...(typeof n.color === 'string' && n.color ? { color: n.color.slice(0, 64) } : {}),
+        ...(n.leftover === false ? { leftover: false } : {}),
+      }));
+  const options: [string, readonly string[]][] = [
+    ['sankeyLinkColor', SANKEY_LINK_COLORS],
+    ['sankeyAlign', SANKEY_ALIGNS],
+    ['sankeyValueLabel', SANKEY_VALUE_LABELS],
+    ['sankeyAnim', SANKEY_ANIMS],
+    ['sankeyLeftover', SANKEY_LEFTOVERS],
+  ];
+  for (const [field, values] of options)
+    if (out[field] !== undefined && !values.includes(out[field] as string)) delete out[field];
+  if (out.sankeyUnit !== undefined) {
+    const unit = str(out.sankeyUnit).trim().slice(0, SANKEY_UNIT_MAX);
+    if (unit) out.sankeyUnit = unit;
+    else delete out.sankeyUnit;
+  }
+  if (out.sankeyLeftoverName !== undefined) {
+    const name = cleanSankeyName(str(out.sankeyLeftoverName));
+    if (name) out.sankeyLeftoverName = name;
+    else delete out.sankeyLeftoverName;
   }
   return out;
 }
@@ -86,8 +169,21 @@ function normaliseSticky(el: Raw): Raw {
 export function normaliseElement(el: unknown): unknown {
   if (!isRecord(el)) return el;
   // A stroke in a former stored shape (docs/specs/006-document/stroke-points.md) is packed first.
-  const [current] = migrateIncomingElements([el]) as unknown as Raw[];
-  return normaliseContent(withFactoryDefaults(current!));
+  // Unsettled: a lone element's host is not beside it, so settling it here would detach it; normaliseElements settles
+  // the whole list.
+  const [current] = migrateStoredElementsUnsettled([
+    el,
+  ] as unknown as DocElement[]) as unknown as Raw[];
+  return normaliseContent(withFactoryDefaults(withTextLabel(current!)));
+}
+
+// A label is text. An agent's number or yes/no (a step labelled 5) is written as its text; anything else is left for
+// validation to refuse.
+function withTextLabel(el: Raw): Raw {
+  const label = el.label;
+  return typeof label === 'number' || typeof label === 'boolean'
+    ? { ...el, label: String(label) }
+    : el;
 }
 
 // A new element of this kind, as the editor's own factory makes it, one per
@@ -138,9 +234,23 @@ function normaliseContent(el: Raw): unknown {
     case 'pie-chart':
     case 'line-chart':
       return normaliseChart(el);
+    case 'sankey':
+      return normaliseSankey(el);
     default:
-      return el;
+      return typeof el.shape === 'string' && isConceptShape(el.shape) ? normaliseConcept(el) : el;
   }
+}
+
+// A concept graphic's rows within its own kind's range (docs/specs/009-elements/concept-graphics.md): validation
+// takes any 0 to 8, but every edit keeps a kind to its range and drops one outside it, so an agent's pyramid of 8
+// would lose two tiers at its first edit, and a cycle of 2 could never be edited. Past the most, the rest are dropped;
+// short of the fewest, rows named as the menu's Add names them ("Step 3") fill the gap.
+function normaliseConcept(el: Raw): Raw {
+  if (!Array.isArray(el.conceptRows)) return el;
+  const { min, max, noun } = CONCEPT_ROWS[el.shape as ConceptShape];
+  const rows = el.conceptRows.slice(0, max);
+  while (rows.length < min) rows.push({ label: `${noun} ${rows.length + 1}` });
+  return rows.length === el.conceptRows.length ? el : { ...el, conceptRows: rows };
 }
 
 const isLane = (el: unknown) => isRecord(el) && el.type === 'shape' && el.shape === 'lane';
@@ -167,7 +277,73 @@ export function mergeElementUpdate(prev: unknown, patch: unknown): Raw {
   return { ...unpacked, ...patch };
 }
 
-export function normaliseElements<T>(elements: T): T {
+// Raw boxes take the graph look's text size by count (look-size.ts): past LOOK_MD_MAX_NODES labelled boxes, one that
+// gives no `textSize` takes `sm` before the factory's `md` fills in, so twenty hand-placed boxes do not wrap their
+// names mid-word.
+const PLAIN_BOX_EXCLUDED = new Set([
+  'frame',
+  'lane',
+  'boundary',
+  'entity',
+  'code-block',
+  'bar-chart',
+  'pie-chart',
+  'line-chart',
+  'sankey',
+  'legend',
+]);
+const isPlainBox = (el: unknown): el is Raw =>
+  isRecord(el) &&
+  el.type === 'shape' &&
+  typeof el.label === 'string' &&
+  el.label.trim() !== '' &&
+  !PLAIN_BOX_EXCLUDED.has(String(el.shape));
+function withLookTextSize(elements: unknown[], kept: ReadonlySet<string>): unknown[] {
+  if (elements.filter(isPlainBox).length <= LOOK_MD_MAX_NODES) return elements;
+  return elements.map((el) =>
+    isPlainBox(el) && el.textSize === undefined && !kept.has(String(el.id))
+      ? { ...el, textSize: 'sm' }
+      : el,
+  );
+}
+
+// A raw arrow pinned at both ends draws as graph input's lines do (docs/specs/015-api/mcp-server.md): angled when it
+// names no style, and an angled one with no bends given its two, along the axis its start leaves by, so it meets
+// both ends square; ends that line up run straight.
+function withRawElbows(elements: DocElement[], kept: ReadonlySet<string>): DocElement[] {
+  return elements.map((el) => {
+    if (el.type !== 'arrow' || el.from.kind !== 'pinned' || el.to.kind !== 'pinned') return el;
+    if (kept.has(el.id)) return el;
+    const styled = el.arrowStyle ?? 'angled';
+    if (styled !== 'angled' || (el.curvePoints?.length ?? 0) > 0)
+      return el.arrowStyle ? el : { ...el, arrowStyle: styled };
+    const side = anchorPrimarySide(el.from.anchor);
+    const bends = orthogonalBends(el, elements, side === 'n' || side === 's' ? 'TB' : 'LR');
+    return bends
+      ? { ...el, arrowStyle: 'angled' as const, curvePoints: bends }
+      : { ...el, arrowStyle: 'straight' as const };
+  });
+}
+
+// `kept` names elements that already exist (a replace that sends a tab's own elements back): the look defaults a new
+// raw element takes (`sm` text past 12 boxes, angled lines) are for content arriving fresh, never a restyle of what
+// the person made.
+export function normaliseElements<T>(
+  elements: T,
+  { kept = new Set<string>() }: { kept?: ReadonlySet<string> } = {},
+): T {
   if (!Array.isArray(elements)) return elements;
-  return lanesToFront(elements.map(normaliseElement)) as T;
+  const sized = withLookTextSize(elements, kept);
+  // An agent's badges and step numbers land fitted, numbered and on their hosts' points, as the editor's commits
+  // keep them (docs/specs/009-elements/badge.md "Agents").
+  const normalised = lanesToFront(sized.map(normaliseElement));
+  // Only a list of element records is settled; anything else is left for validation to refuse. The records are not
+  // validated yet (an agent's step with a label of 5), so one that settling (or bending) cannot read is left as it
+  // came, for validation to refuse by name rather than the request failing whole.
+  if (!normalised.every(isRecord)) return normalised as T;
+  try {
+    return withRawElbows(settleChips([], normalised as DocElement[]), kept) as T;
+  } catch {
+    return normalised as T;
+  }
 }

@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
+import { runInlineScript } from '@livediagram/vitest-config/inline-script';
 
 import { VIEW_TRANSITION_GUARD_SCRIPT } from './view-transition-guard';
 
@@ -11,11 +12,12 @@ function swapTo(url: string, withTransition = true) {
     if (type === 'pageswap') listener = fn;
   };
   const debug = vi.fn();
-  new Function('addEventListener', 'location', 'console', VIEW_TRANSITION_GUARD_SCRIPT)(
+  runInlineScript(VIEW_TRANSITION_GUARD_SCRIPT, {
     addEventListener,
-    { origin: ORIGIN },
-    { debug },
-  );
+    location: { origin: ORIGIN },
+    URL,
+    console: { debug },
+  });
   const skipTransition = vi.fn();
   listener!({
     viewTransition: withTransition ? { skipTransition } : null,

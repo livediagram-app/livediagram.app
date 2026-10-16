@@ -19,7 +19,7 @@ Scope, by file:
 | `apps/live/components/canvas/BoxedElementView.tsx`      | Resolves `textColor` through `ownColours` and `defaultTextColor`    |
 | `apps/live/hooks/ui/usePressWithoutDrag.ts`             | Click presses, drag stays silent                                    |
 | `apps/live/lib/press-gestures.ts`                       | `isDragTravel`, `PRESS_DRAG_SLOP_PX`                                |
-| `apps/live/components/canvas/Canvas.tsx`                | `pressModeButton`: records the Avatar spawn point                   |
+| `apps/live/components/canvas/useCanvasAvatar.tsx`       | `pressModeButton`: records the Avatar spawn point                   |
 | `apps/live/app/document/[id]/useEditorState.ts`         | `pressModeButton`: Leave, else `pickCanvasTool`                     |
 | `apps/live/hooks/canvas/useCanvasTool.ts`               | `selectCanvasTool` telemetry, `toolBeforeCurrent`                   |
 | `apps/live/components/canvas/EditorCanvasHost.tsx`      | Threads the press; `mode ?? DEFAULT_BUTTON_MODE`                    |

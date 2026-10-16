@@ -1,3 +1,4 @@
+import { requestPaletteCategory } from '@/lib/palette-category-request';
 import type {
   ComponentKind,
   EstimateScale,
@@ -11,7 +12,6 @@ import type { PendingDraw } from '@/lib/draw-mode';
 import { IconButton } from '@/components/palette/palette-controls';
 import type { PaletteTileDef } from './palette-tile-defs';
 import { tileDragStart } from './palette-tile-drag';
-import { addPlanWidgetToBoard } from '@/hooks/plan/plan-widget-drop';
 import { usePlanCardTileDisabled } from '@/hooks/plan/card-types-taken';
 import type { WhiteboardPenId } from '@/lib/whiteboard-prefs';
 import { MarkerPaletteTile } from './MarkerPaletteTile';
@@ -32,6 +32,7 @@ export type PaletteTileActions = {
       mode?: SelectionMode;
       estimateScale?: EstimateScale;
       plan?: string;
+      variant?: string;
     },
   ) => void;
   addText: () => void;
@@ -88,6 +89,7 @@ export function tileHandler(
           mode: a.mode,
           estimateScale: a.estimateScale,
           plan: a.plan,
+          variant: a.variant,
         });
     case 'text':
       return actions.addText;
@@ -126,10 +128,11 @@ export function tileHandler(
       return () => actions.addIcon(a.iconId);
     case 'tech-icon':
       return () => actions.addTechIcon(a.iconId);
-    case 'plan-widget':
-      return () => addPlanWidgetToBoard(a.widget);
     case 'marker':
       return () => (a.once ? actions.beginMarker(a.penId, true) : actions.beginMarker(a.penId));
+    case 'open':
+      // Off the strip (which opens its popover itself) an opener moves the palette to its category.
+      return () => requestPaletteCategory(a.category);
   }
 }
 
@@ -153,7 +156,8 @@ export function tileActive(
         pendingDraw.reaction === a.reaction &&
         pendingDraw.mode === a.mode &&
         pendingDraw.estimateScale === a.estimateScale &&
-        pendingDraw.plan === a.plan
+        pendingDraw.plan === a.plan &&
+        pendingDraw.variant === a.variant
       );
     case 'component':
       return pendingDraw.type === 'component' && pendingDraw.kind === a.kind;
@@ -187,7 +191,6 @@ export function tileActive(
     case 'sticker':
     case 'icon':
     case 'tech-icon':
-    case 'plan-widget':
       return false;
     // A marker in hand: the whiteboard pen intent in this pen's colour and width.
     case 'marker':
@@ -272,7 +275,7 @@ function TileButton({
       dragKind={a.type === 'shape' ? a.kind : undefined}
       dragChoice={
         a.type === 'shape'
-          ? (a.session ?? a.reaction ?? a.mode ?? a.estimateScale ?? a.plan)
+          ? (a.session ?? a.reaction ?? a.mode ?? a.estimateScale ?? a.plan ?? a.variant)
           : undefined
       }
       draggable={otherDrag !== undefined || undefined}
@@ -282,7 +285,9 @@ function TileButton({
       active={tileActive(def, pendingDraw)}
       shortcut={def.shortcut}
       hideCaption={compact}
+      stripTile={compact}
       shortcutAlwaysVisible={compact}
+      finishAction={a}
     >
       {def.icon}
     </IconButton>

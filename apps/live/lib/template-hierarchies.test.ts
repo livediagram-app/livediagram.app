@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { layoutMindTree, type Element } from '@livediagram/document';
+import { isDefaultMindConnectorLook, layoutMindTree, type Element } from '@livediagram/document';
 import { buildTemplate } from './template-builders';
 
 // Structure pins for the hierarchy starters redesigned together
@@ -178,7 +178,7 @@ describe('flowchart template', () => {
     expect(node('Email receipt').shape).toBe('document');
   });
 
-  it('runs the happy path straight down one column', () => {
+  it('runs the happy path down the page, one rank per step', () => {
     const spine = [
       'Checkout',
       'Enter card details',
@@ -188,11 +188,10 @@ describe('flowchart template', () => {
       'Email receipt',
       'Order placed',
     ].map(node);
-    const cx = spine[0]!.x + spine[0]!.width / 2;
-    for (let i = 0; i < spine.length; i++) {
-      expect(spine[i]!.x + spine[i]!.width / 2).toBe(cx);
-      if (i > 0) expect(spine[i]!.y).toBeGreaterThan(spine[i - 1]!.y + spine[i - 1]!.height);
-    }
+    // The flowchart layout ranks the steps; a Yes sits left of its No, so the column steps aside at each
+    // decision (docs/specs/009-elements/flowchart.md "The layout").
+    for (let i = 1; i < spine.length; i++)
+      expect(spine[i]!.y).toBeGreaterThan(spine[i - 1]!.y + spine[i - 1]!.height);
   });
 
   it('labels both exits of every decision Yes / No', () => {
@@ -246,12 +245,30 @@ describe('decision tree template', () => {
     expect(diamonds.map((d) => d.colorPreset)).toEqual(['bold', 'soft', 'soft']);
   });
 
-  it('sends No out of the left corner and Yes out of the right, as elbows', () => {
+  it('branches No to the left and Yes to the right, as elbows out of a corner or the bottom', () => {
     const branches = arrows(els);
     expect(branches).toHaveLength(6);
+    const centreX = (id: string | undefined) => {
+      const s = els.find((el) => el.id === id) as Shape;
+      return s.x + s.width / 2;
+    };
     for (const a of branches) {
       expect(a.arrowStyle).toBe('angled');
-      expect(a.from.kind === 'pinned' && a.from.anchor).toBe(a.label === 'Yes' ? 'e' : 'w');
+      // A Decision's exit leaves by the side corner its step lies beyond, else by the bottom.
+      expect(['s', a.label === 'Yes' ? 'e' : 'w']).toContain(
+        a.from.kind === 'pinned' && a.from.anchor,
+      );
+    }
+    for (const d of diamonds) {
+      const out = branches.filter((a) => pinnedTo(a, 'from') === d.id);
+      const target = (label: string) =>
+        centreX(
+          pinnedTo(
+            out.find((a) => a.label === label)!,
+            'to',
+          ),
+        );
+      expect(target('No')).toBeLessThan(target('Yes'));
     }
   });
 
@@ -321,42 +338,68 @@ describe('sitemap template', () => {
   const els = buildTemplate('sitemap', 0, 0);
   const lines = arrows(els);
   const home = byLabel(els, 'Home');
+  const nodes = shapes(els, 'mind-node');
+
+  it('is a live mind map: every card a mind node, Home its downward root', () => {
+    expect(shapes(els).every((s) => s.shape === 'mind-node')).toBe(true);
+    expect(home.mindParentId).toBeUndefined();
+    expect(home.mindFlow).toBe('downward');
+    expect(nodes.filter((n) => !n.mindParentId)).toHaveLength(1);
+    // Every node but Home hangs off a parent through one connector.
+    expect(lines).toHaveLength(nodes.length - 1);
+  });
 
   it('puts a bold Home over three hued nav sections, each with a glyph', () => {
     expect(home.colorPreset).toBe('bold');
     expect(home.iconId).toBe('home');
     const sections = ['Product', 'Pricing', 'Resources'].map((l) => byLabel(els, l));
+    expect(sections.every((s) => s.mindParentId === home.id)).toBe(true);
     expect(new Set(sections.map((s) => s.fillColor)).size).toBe(3);
     expect(sections.every((s) => s.iconId)).toBe(true);
   });
 
-  it('gives every page a type glyph and its route in muted grey beneath', () => {
-    for (const route of ['/product/features', '/pricing/faq', '/changelog', '/about', '/signup'])
-      expect(texts(els)).toContain(route);
-    for (const page of ['Features', 'Plans', 'Blog', 'About us', 'Log in'])
-      expect(byLabel(els, page).iconId).toBeTruthy();
+  it('gives every page a type glyph and its route on its own second line', () => {
+    for (const [page, route] of [
+      ['Features', '/product/features'],
+      ['FAQ', '/pricing/faq'],
+      ['Changelog', '/changelog'],
+      ['About us', '/about'],
+      ['Sign up', '/signup'],
+    ] as const) {
+      const node = byLabel(els, page);
+      expect(node.iconId).toBeTruthy();
+      expect(node.label).toBe(`${page}\n${route}`);
+    }
   });
 
-  it('flanks Home with footer and utility pages on dashed lines', () => {
+  it('hangs the footer pages far left and the utility pages far right, on dashed lines', () => {
+    const footer = byLabel(els, 'Footer');
+    const utility = byLabel(els, 'Utility');
+    const xs = nodes.filter((n) => n.mindParentId === home.id).map((n) => n.x);
+    expect(footer.x).toBe(Math.min(...xs));
+    expect(utility.x).toBe(Math.max(...xs));
     const dashed = lines.filter((a) => a.strokeStyle === 'dashed');
-    expect(dashed).toHaveLength(4);
-    expect(dashed.every((a) => pinnedTo(a, 'from') === home.id)).toBe(true);
-    expect(texts(els)).toContain('Footer');
-    expect(texts(els)).toContain('Utility');
+    expect(dashed).toHaveLength(6);
   });
 
-  it('rakes the nav from three separate points on Home, with no arrowheads', () => {
-    const nav = lines.filter((a) => a.strokeStyle !== 'dashed' && pinnedTo(a, 'from') === home.id);
-    expect(nav.map((a) => (a.from as { anchor: string }).anchor)).toEqual(['ssw', 's', 'sse']);
-    const solid = lines.filter((a) => a.strokeStyle !== 'dashed');
-    expect(solid).toHaveLength(9);
-    expect(solid.every((a) => a.curvePoints?.every((p) => p.dy === 0))).toBe(true);
-    expect(lines.every((a) => a.arrowEnds === 'none')).toBe(true);
+  it('draws square buses with no arrowheads, whatever the tab finish', () => {
+    expect(lines.every((a) => a.arrowEnds === 'none' && a.finish === 'professional')).toBe(true);
+    // In the mind map's default look, so the Professional finish routes them as one bus per parent.
+    expect(lines.every((a) => isDefaultMindConnectorLook(a))).toBe(true);
+  });
+
+  it('is exactly the tidy layout, so it grows tidily', () => {
+    const layout = layoutMindTree(nodes, home.id, 'downward');
+    const dx = home.x - layout.get(home.id)!.x;
+    const dy = home.y - layout.get(home.id)!.y;
+    for (const n of nodes) {
+      expect(n.x).toBe(layout.get(n.id)!.x + dx);
+      expect(n.y).toBe(layout.get(n.id)!.y + dy);
+    }
   });
 
   it('keeps every card clear of every other', () => {
-    const cards = shapes(els, 'square');
-    for (let i = 0; i < cards.length; i++)
-      for (let j = i + 1; j < cards.length; j++) expect(overlaps(cards[i]!, cards[j]!)).toBe(false);
+    for (let i = 0; i < nodes.length; i++)
+      for (let j = i + 1; j < nodes.length; j++) expect(overlaps(nodes[i]!, nodes[j]!)).toBe(false);
   });
 });

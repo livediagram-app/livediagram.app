@@ -30,14 +30,18 @@ describe('DocumentLoading', () => {
   it('offers Refresh after 10 seconds and reports the slow load', () => {
     render(<DocumentLoading stage="opening" />);
     expect(screen.queryByText(/longer than usual/)).toBeNull();
-    act(() => vi.advanceTimersByTime(10_000));
+    act(() => {
+      vi.advanceTimersByTime(10_000);
+    });
     expect(screen.getByText(/longer than usual/)).toBeTruthy();
     expect(track).toHaveBeenCalledWith('Error', 'Warning', 'DocumentLoad.Slow');
   });
 
   it('does not report the creating stage as a slow load', () => {
     render(<DocumentLoading stage="creating" />);
-    act(() => vi.advanceTimersByTime(10_000));
+    act(() => {
+      vi.advanceTimersByTime(10_000);
+    });
     expect(track).not.toHaveBeenCalled();
   });
 
@@ -55,7 +59,9 @@ describe('DocumentLoading', () => {
   it('says it is offline instead of offering a Refresh', () => {
     setNavigatorOnline(false);
     render(<DocumentLoading stage="opening" />);
-    act(() => vi.advanceTimersByTime(10_000));
+    act(() => {
+      vi.advanceTimersByTime(10_000);
+    });
     expect(screen.getByText(/You’re offline. Waiting for the connection/)).toBeTruthy();
     expect(screen.queryByRole('button', { name: /refresh/i })).toBeNull();
     act(() => {

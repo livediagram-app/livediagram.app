@@ -17,14 +17,18 @@ describe('editorModeShortcut', () => {
 
   it.each([
     ['diagram', 'draw', 'Draw mode'],
-    ['draw', 'illustrate', 'Illustrate mode'],
-    ['illustrate', 'plan', 'Plan mode'],
-    ['plan', 'diagram', 'Diagram mode'],
+    ['draw', 'facilitate', 'Facilitate mode'],
+    ['facilitate', 'illustrate', 'Illustrate mode'],
+    ['illustrate', 'diagram', 'Diagram mode'],
   ] as const)('from %s switches to %s and announces "%s"', (from, to, message) => {
     const s = state(from);
     const announce = vi.fn();
     editorModeShortcut(s, announce)!();
     expect(s.setMode).toHaveBeenCalledWith(to);
     expect(announce).toHaveBeenCalledWith(message);
+  });
+
+  it('never steps into or out of Plan: a Plan tab has no next mode', () => {
+    expect(editorModeShortcut(state('plan'), vi.fn())).toBeNull();
   });
 });

@@ -2,10 +2,11 @@
 // canvas and the SVG export both draw from here, so a board looks the same in both. With no colours of
 // its own a board takes the surface's neutral set; with them (a tab theme stamps them, Quick Style and
 // the colour pickers set them, a theme switch rewrites them) its fill is the board, its stroke the
-// border and focus, its text the ink, and the columns, cards and muted ink are mixed from those. Ink
+// focus and (mixed into the fill) the border, its text the ink, and the columns, cards and muted ink are mixed from those. Ink
 // that would not read on the fill is swapped for a readable one.
 import { contrastRatio, hexToRgb, isLightColor, type CanvasSurface } from './colors';
 import { mixHex } from './svg-render-face-kit';
+import { planPresetColours } from './plan-presets';
 
 // A card's priority dot and tint, the same on the canvas and in the export: they read as urgency, not
 // as theme.
@@ -32,12 +33,27 @@ export type PlanPalette = {
   focus: string;
 };
 
-// What the element itself says: its fill, stroke and text colours, each absent when unset.
+// What the element itself says: its fill, stroke and text colours, each absent when unset, and its style preset
+// (`colorPreset`): a board or sheet preset (plan-presets.ts) is drawn for the surface, over the colours it wrote.
 export type PlanOwnColours = {
   fill?: string | null;
   stroke?: string | null;
   text?: string | null;
+  preset?: string | null;
 };
+
+// A board's, view's, card's or sheet's own colours, as planPalette reads them.
+export const planOwnColoursOf = (el: {
+  fillColor?: string;
+  strokeColor?: string;
+  textColor?: string;
+  colorPreset?: string;
+}): PlanOwnColours => ({
+  fill: el.fillColor,
+  stroke: el.strokeColor,
+  text: el.textColor,
+  preset: el.colorPreset,
+});
 
 const DARK: PlanPalette = {
   surface: '#111827',
@@ -71,18 +87,28 @@ const INK_CONTRAST = 4.5;
 const hex = (v: string | null | undefined): string | undefined =>
   v && hexToRgb(v) ? v : undefined;
 
+/** How much of an accent a board's, sheet's or start panel's border keeps, mixed into its paper. */
+export const PLAN_BORDER_ACCENT_SHARE = 0.35;
+
 export function planPalette(surface: CanvasSurface, own: PlanOwnColours = {}): PlanPalette {
   const base = surface === 'dark' ? DARK : LIGHT;
-  const fill = hex(own.fill);
-  const stroke = hex(own.stroke);
-  const ink = hex(own.text);
+  const preset = planPresetColours(own.preset, surface);
+  const fill = preset?.fill ?? hex(own.fill);
+  const stroke = preset?.stroke ?? hex(own.stroke);
+  const ink = preset?.text ?? hex(own.text);
   if (!fill && !stroke && !ink) return base;
   const paper = fill ?? base.surface;
   const light = isLightColor(paper);
   const wanted = ink ?? base.text;
   const text =
     contrastRatio(wanted, paper) >= INK_CONTRAST ? wanted : light ? LIGHT.text : DARK.text;
-  const border = stroke ?? (fill ? mixHex(text, paper, 0.16) : base.border);
+  // An accent border is mixed into the paper (PLAN_BORDER_ACCENT_SHARE): at a board's or sheet's size the full accent
+  // reads heavy, so the lines stay quiet and the full accent is kept for focus.
+  const border = stroke
+    ? mixHex(stroke, paper, PLAN_BORDER_ACCENT_SHARE)
+    : fill
+      ? mixHex(text, paper, 0.16)
+      : base.border;
   return {
     surface: paper,
     border,

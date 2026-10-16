@@ -7,6 +7,7 @@ import { RELATIVE_TICK_MS } from '@/lib/relative-time';
 // What presence statuses render from: each peer's last-seen instant and the clock they are read at.
 export type PresenceClock = { now: number; lastSeen: ReadonlyMap<string, number> };
 import type { LaserPoint } from '@/lib/laser-buffer';
+import type { RemoteViewport } from '@/hooks/collab/useFollowMe';
 
 // Realtime presence state for the document room: who's connected, each
 // peer's last-seen timestamp, and their tab focus / selection / cursor /
@@ -21,6 +22,11 @@ export function usePresenceState() {
   // Agents present in the room (docs/specs/024-agents/agent-presence.md), apart from the sessions: they are
   // folded into the tab rows, never counted as people.
   const [liveAgents, setLiveAgents] = useState<AgentPresence[]>([]);
+  // Read by the idle tick (below), which runs for agents as it does for people.
+  const agentsPresentRef = useRef(false);
+  useEffect(() => {
+    agentsPresentRef.current = liveAgents.length > 0;
+  }, [liveAgents]);
   // Wall-clock timestamp of each peer's last observed interaction: seeded on presence arrival, bumped on
   // every incoming op (cursor / selection / tab). The bump lands in a ref, because re-rendering the tree
   // on every cursor packet just to move an idle timestamp would be wasteful. Render never reads the ref:
@@ -37,9 +43,24 @@ export function usePresenceState() {
     () => setPresenceClock({ now: Date.now(), lastSeen: new Map(lastSeenRef.current) }),
     [],
   );
+  // The tick re-renders the whole editor, so it runs only when it can change what shows: never
+  // while the page is hidden (it catches up as the page comes back), and never on a document
+  // nobody else has been seen on, which is most of them.
   useEffect(() => {
-    const id = window.setInterval(publish, RELATIVE_TICK_MS);
-    return () => window.clearInterval(id);
+    const tick = () => {
+      if (document.visibilityState === 'hidden') return;
+      if (lastSeenRef.current.size === 0 && !agentsPresentRef.current) return;
+      publish();
+    };
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible') tick();
+    };
+    const id = window.setInterval(tick, RELATIVE_TICK_MS);
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => {
+      window.clearInterval(id);
+      document.removeEventListener('visibilitychange', onVisibility);
+    };
   }, [publish]);
   const markSeen = useCallback(
     (participantId: string) => {
@@ -85,12 +106,13 @@ export function usePresenceState() {
   // the op itself, like cursors.
   // Follow-me (docs/specs/012-collaboration/follow-me-viewport.md): where each peer is looking. Unsolicited, so it is
   // collected for everyone and read only while somebody is being followed.
-  const [remoteViewports, setRemoteViewports] = useState<
-    Map<string, { tabId: string; pan: { x: number; y: number }; zoom: number }>
-  >(new Map());
+  const [remoteViewports, setRemoteViewports] = useState<Map<string, RemoteViewport>>(new Map());
   const [remoteAvatars, setRemoteAvatars] = useState<
     Map<string, { tabId: string; avatar: AvatarPresence }>
   >(new Map());
+  // Who follows us (docs/specs/012-collaboration/follow-me-viewport.md "Who follows whom"), by presence id, as the
+  // room tells this socket alone.
+  const [followerIds, setFollowerIds] = useState<readonly string[]>([]);
 
   return {
     livePresence,
@@ -112,5 +134,7 @@ export function usePresenceState() {
     remoteViewports,
     setRemoteViewports,
     setRemoteAvatars,
+    followerIds,
+    setFollowerIds,
   };
 }

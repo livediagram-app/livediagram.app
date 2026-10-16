@@ -4,7 +4,12 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { TourStepOf } from './tour-step';
 import type { TourEngine } from './useTourEngine';
 import { TourStage } from './TourStage';
-import { PlanTourArt } from './PlanTourArt';
+import { BoardsTourArt } from './art/plan-tour-art';
+// The tour wears the active tab's colours (tour-colours.ts); outside an editor, a plain light palette.
+vi.mock('@/components/start/useStartPalette', async () => {
+  const { planPalette } = await import('@livediagram/document');
+  return { useStartPalette: () => planPalette('light') };
+});
 
 // What a running tour draws (docs/specs/007-editor/editor-tour.md "The steps"), with a second tour's own
 // card words (docs/specs/026-plan/plan-tour.md).
@@ -41,10 +46,10 @@ describe('TourStage', () => {
   it("wears the welcome tour's words by default", () => {
     const e = engine({ id: 'welcome', card: 'welcome', title: 'Welcome', body: 'Hi' });
     render(<TourStage engine={e} />);
-    expect(screen.getByText('Quick tour')).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: 'Show me around' }));
+    expect(screen.getByText('Diagram tour')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Yes' }));
     expect(e.next).toHaveBeenCalled();
-    fireEvent.click(screen.getByRole('button', { name: 'No thanks' }));
+    fireEvent.click(screen.getByRole('button', { name: 'No' }));
     expect(e.skip).toHaveBeenCalled();
   });
 
@@ -54,7 +59,7 @@ describe('TourStage', () => {
       <TourStage
         engine={welcome}
         copy={{ welcomeEyebrow: 'Plan tour', finish: 'Start planning', helpHref: '/help/x/' }}
-        welcomeArt={<PlanTourArt />}
+        welcomeArt={<BoardsTourArt />}
       />,
     );
     expect(screen.getByText('Plan tour')).toBeTruthy();
@@ -84,13 +89,13 @@ describe('TourStage', () => {
         ]}
       />,
     );
-    expect(screen.queryByRole('button', { name: 'Show me around' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Yes' })).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Spreadsheets' }));
     expect(sheets).toHaveBeenCalled();
     fireEvent.click(screen.getByRole('button', { name: 'Boards' }));
     expect(boards).toHaveBeenCalled();
     expect(e.next).not.toHaveBeenCalled();
-    fireEvent.click(screen.getByRole('button', { name: 'No thanks' }));
+    fireEvent.click(screen.getByRole('button', { name: 'No' }));
     expect(e.skip).toHaveBeenCalled();
   });
 
@@ -107,6 +112,22 @@ describe('TourStage', () => {
     expect(e.skip).toHaveBeenCalled();
   });
 
+  // docs/specs/007-editor/editor-tour.md "Look": the ring and the card wear the active tab's colours.
+  it("rings the target and paints the card in the tab's accent", async () => {
+    const { planPalette } = await import('@livediagram/document');
+    const accent = planPalette('light').focus;
+    const e = engine(
+      { id: 'one', title: 'One', body: 'Copy' },
+      { targetRect: { left: 10, top: 10, width: 50, height: 20 } },
+    );
+    render(<TourStage engine={e} ariaPrefix="Plan tour" />);
+    const ring = document.querySelector<HTMLElement>('[aria-hidden].rounded-xl.border-2')!;
+    expect(ring.style.borderColor).not.toBe('');
+    const card = document.querySelector<HTMLElement>('[data-tour-popover]')!;
+    expect(card.style.getPropertyValue('--tour-accent')).toBe(accent);
+    expect(card.style.getPropertyValue('--tour-on-accent')).toMatch(/^#/);
+  });
+
   // Show Me (the card type editor) has no welcome card: its first step is "1 of N", with no Back.
   it('counts a tour without a welcome card from its first step, ringed over a dialog', () => {
     const e = engine(
@@ -121,7 +142,7 @@ describe('TourStage', () => {
     render(<TourStage engine={e} ariaPrefix="Show Me" layer="modal" pad={14} />);
     expect(screen.getByRole('dialog', { name: 'Show Me step 1 of 5: General' })).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'Back' })).toBeNull();
-    const ring = document.querySelector<HTMLElement>('.border-brand-400');
+    const ring = document.querySelector<HTMLElement>('[aria-hidden].rounded-xl.border-2');
     expect(ring?.className).toContain('z-[calc(var(--z-modal)+1)]');
     expect(ring?.style.left).toBe('6px');
     expect(ring?.style.width).toBe('128px');

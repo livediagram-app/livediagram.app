@@ -3,7 +3,7 @@ import { CARD_SIZES, PLAN_BOARD_EMPTY_HEIGHT_PX, presetSetup, type Item } from '
 import { PLAN_CARD_SIZES } from './validate-shape';
 import { createShape, SHAPE_DEFAULT_SIZE } from './shape-factory';
 import { elementKindLabel } from './element-kind-label';
-import { isPlanShape, isSelfDrawingShape } from './data-shapes';
+import { isPlanShape, isSelfDrawingShape, takesAttachments } from './data-shapes';
 import { SELF_PAINTING_SHAPES } from './colors';
 import { elementValidationIssue } from './validate';
 import { takesTypedLabel } from './element-types';
@@ -117,10 +117,11 @@ describe('plan shapes in exports', () => {
     expect(svg).toContain('To Do');
     expect(svg).toContain('In Progress');
     expect(svg).toContain('Fix &lt;login&gt;');
-    expect(svg).toContain('#7 · Task');
-    expect(svg).toContain('#8 · Note');
+    // Each card from its type's Display: the type and number in the header, the assignee at the bottom right.
+    expect(svg).toContain('>Task</text>');
+    expect(svg).toContain('>#7</text>');
+    expect(svg).toContain('>Note</text>');
     expect(svg).toContain('AR');
-    expect(svg).toContain('▲ 2');
     expect(svg).toContain('2 items');
     expect(svg).not.toContain('NaN');
   });
@@ -134,12 +135,12 @@ describe('plan shapes in exports', () => {
   it('counts an open comment thread on a card (docs/specs/026-plan/items.md "Comments")', () => {
     const thread = { comments: [{ id: 'c1' }, { id: 'c2' }] };
     const talked = new Map([['item0001', item('item0001', { title: 'Hot', comments: thread })]]);
-    const tall = { ...card, height: 80 } as BoxedElement;
-    expect(svgBoxed(tall, { items: talked })).toContain('>2</text>');
+    const tall = { ...card, height: 80 };
+    expect(svgBoxed(tall, { items: talked })).toContain('💬 2');
     const resolved = new Map([
       ['item0001', item('item0001', { title: 'Hot', comments: { ...thread, resolved: true } })],
     ]);
-    expect(svgBoxed(tall, { items: resolved })).not.toContain('>2</text>');
+    expect(svgBoxed(tall, { items: resolved })).not.toContain('💬 2');
   });
 
   it("follows a board's card fields for the comment count", () => {
@@ -153,8 +154,8 @@ describe('plan shapes in exports', () => {
       ...board,
       planBoard: { ...setup, cardFields: setup.cardFields.filter((f) => f !== 'comments') },
     };
-    expect(svgBoxed(on as BoxedElement, { items: talked })).toContain('>3</text>');
-    expect(svgBoxed(off as BoxedElement, { items: talked })).not.toContain('>3</text>');
+    expect(svgBoxed(on as BoxedElement, { items: talked })).toContain('💬 3');
+    expect(svgBoxed(off as BoxedElement, { items: talked })).not.toContain('💬 3');
   });
 
   it('draws empty columns without items, and a card placeholder', () => {
@@ -234,5 +235,30 @@ describe('plan view shape', () => {
       planView: { view: 'metric:count' },
     } as BoxedElement;
     expect(svgBoxed(widget)).toContain('Metric');
+  });
+
+  // docs/specs/026-plan/plan-tabs.md "Export": the editor hands its own picture of the chart.
+  it('exports the caller’s picture of its chart when it has one', () => {
+    const gantt = {
+      ...createShape('plan-view', 0, 0),
+      planView: { view: 'gantt' },
+    } as BoxedElement;
+    const art = svgBoxed(gantt, { resolvePlanArt: (el) => `<g id="art-${el.width}"/>` });
+    expect(art).toContain('<g id="art-720"/>');
+    expect(art).not.toContain('Gantt Chart');
+    expect(svgBoxed(gantt, { resolvePlanArt: () => undefined })).toContain('Gantt Chart');
+  });
+});
+
+// docs/specs/026-plan/plan-mode.md "Nothing attached to Plan items".
+describe('takesAttachments', () => {
+  it('refuses every Plan item, whoever asks', () => {
+    for (const kind of ['plan-board', 'plan-card', 'plan-view', 'plan-sheet'] as const)
+      expect(takesAttachments(createShape(kind, 0, 0))).toBe(false);
+  });
+
+  it('takes any other element', () => {
+    expect(takesAttachments(createShape('square', 0, 0))).toBe(true);
+    expect(takesAttachments({ type: 'sticky' })).toBe(true);
   });
 });

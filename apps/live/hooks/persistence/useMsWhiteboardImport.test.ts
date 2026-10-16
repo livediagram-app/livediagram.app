@@ -45,7 +45,7 @@ const asFiles = (...maps: Map<string, Uint8Array>[]): PickedExport => ({
 
 function setup(outcome: ImportOutcome = { status: 'done' }) {
   const importScenes = vi.fn(async () => outcome);
-  const onDone = vi.fn();
+  const onDone = vi.fn<Parameters<typeof useMsWhiteboardImport>[0]['onDone']>();
   const hook = renderHook(() => useMsWhiteboardImport({ importScenes, onDone }));
   return { hook, importScenes, onDone };
 }
@@ -135,10 +135,7 @@ describe('useMsWhiteboardImport', () => {
     );
     await act(() => ok.hook.result.current.importChecked());
     await waitFor(() => expect(ok.onDone).toHaveBeenCalled());
-    expect(ok.onDone.mock.calls[0]![0].failures.map((f: { title: string }) => f.title)).toEqual([
-      'broken',
-      'Big',
-    ]);
+    expect(ok.onDone.mock.calls[0]![0].failures?.map((f) => f.title)).toEqual(['broken', 'Big']);
   });
 
   it('never leaves the panel stuck when something throws', async () => {

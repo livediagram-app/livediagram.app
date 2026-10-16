@@ -133,6 +133,16 @@ renders immediately rather than showing a spinner over real content.
 - A tab's writes land in the order made: a save or delete of a tab waits for that tab's previous one to settle
   ([Collaboration race hardening](../012-collaboration/collab-race-hardening.md#saves)); other tabs never wait.
 
+### New tabs and the tab order
+
+The document's tab order (`PUT /api/documents/<id>`) only places tab rows that exist; a new tab's row is made by its
+own tab save, which places it after the tabs the document had when that save read it. So a save that adds tabs (a
+template's several tabs, an import, a duplicate) writes the order only once those new tabs' saves have settled. Sent
+beside them, the order could land first and the new tabs, each taking the same place, came back after a reload
+sorted by id rather than as made (Project Planner's Overview before its Daily Standup). A new tab whose save failed
+does not hold the order back: the retried save writes the order again. The unload flush cannot wait and sends both
+at once, as before.
+
 ### A refused save stops; a failed save doesn't
 
 The autosave used to treat every rejection as one thing: set the status to
@@ -169,6 +179,13 @@ would otherwise wait for an edit that may never come. The retry waits 5 seconds,
 20, 40) up to a minute between attempts, and resets after a save succeeds. Each attempt re-sends
 whatever still differs from the last saved state, so nothing is sent twice
 (`apps/live/app/document/[id]/useAutosave.ts`, `saveRetryDelayMs`).
+
+A save that never answers counts as failed too. Each tab's saves run one after another, so a request
+left hanging on a stalled connection (a laptop switching networks can hold one open for minutes)
+used to hold back every later save of that tab. A tab save and a document meta save now give up
+after 20 seconds plus the time to upload their body at 16 KB/s (`saveTimeoutMs` in
+`apps/live/lib/api/core.ts`: just over two and a half minutes for the largest tab), and the retry
+above sends the newest content on a fresh connection.
 
 ### An unauthenticated save names the sign-in
 
@@ -215,6 +232,31 @@ Reorders and renames still flow through the document-level meta `PUT`
 (which never touches tab bodies), so organising background tabs stays
 safe. The guard lives in `computeTabSaveDiff`, the one autosave decision
 kernel both the debounced save and the `beforeunload` flush share.
+
+A tab joins the loaded set only **once its content is in place**, never when
+its fetch starts. A fetch in flight (the visit-time load, the background
+sweep that search and Plan run over every tab) is held in a separate
+fetching set, which de-duplicates fetches but grants no write. Claiming the
+loaded set up front once let any commit during a Plan sweep save the empty
+placeholders of every tab still loading, with `X-Allow-Empty`, past both
+guards (tabs found wiped on reload). For the same reason the commit choke
+point stamps a tab's `kind` only on tabs that commit changed or added: an
+untouched placeholder keeps its object.
+
+A fetched tab's content replaces what is on screen unless that already holds
+elements (the user drew on it first). An empty placeholder never keeps the
+fetched content out, whatever else it carries (a dismissed Quick Start's
+`templateChosen` once did, and the tab then counted as loaded while still the
+empty placeholder, so the autosave saved it over the stored tab). A fetch whose
+content did not land does not make its tab loaded.
+
+Landing fetched content never clears the undo history: it goes into the present
+and into every undo and redo snapshot, under the same rule (a snapshot whose copy
+of the tab is still the empty placeholder takes the content), the way a peer's
+change does. Opening a tab for the first time, or the search and Plan sweeps
+loading the rest, once reset the history, so an undo after them had nothing to
+undo; and a snapshot left holding the placeholder would let an undo put it back
+over the loaded tab.
 
 ### Server backstop: refuse to blank a tab that has content
 

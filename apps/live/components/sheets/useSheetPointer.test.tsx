@@ -74,9 +74,7 @@ describe('selecting cells', () => {
     const h = await mountGrid();
     down(h, cellPoint(1, 1));
     act(() => {
-      window.dispatchEvent(
-        new MouseEvent('pointermove', { ...cellPoint(3, 2), bubbles: true }) as PointerEvent,
-      );
+      window.dispatchEvent(new MouseEvent('pointermove', { ...cellPoint(3, 2), bubbles: true }));
       // The key arrives before the move's render.
       fireEvent.keyDown(h.grid, { key: 'b', ctrlKey: true });
     });
@@ -494,26 +492,42 @@ describe('touch', () => {
     expect(sel(h).active).toEqual({ r: 3, c: 3 });
   });
 
-  it('a tap saves an edit first, and a tap off the cells does nothing', async () => {
+  it('a tap saves an edit first; a header tap selects its column or row, the corner the sheet', async () => {
     const h = await mountGrid();
     act(() => h.c().setEditing({ r: 0, c: 0, draft: 'x', origin: 'type' }));
     tap(h, cellPoint(2, 2));
     expect(h.called('commitEdit')).toEqual([['none']]);
     tap(h, colHead(1));
-    expect(sel(h).active).toEqual({ r: 2, c: 2 });
+    expect(sel(h).ranges).toEqual([{ r1: 0, c1: 1, r2: h.c().grid.rows - 1, c2: 1 }]);
+    tap(h, rowHead(3));
+    expect(sel(h).ranges).toEqual([{ r1: 3, c1: 0, r2: 3, c2: h.c().grid.cols - 1 }]);
+    tap(h, { clientX: 5, clientY: 5 });
+    expect(sel(h).ranges).toEqual([
+      { r1: 0, c1: 0, r2: h.c().grid.rows - 1, c2: h.c().grid.cols - 1 },
+    ]);
   });
 
-  it('a mouse click, or a tap on a maximised sheet, is left to the pointer press', async () => {
+  it('a mouse click is left to the pointer press; maximised, a finger scrolls and a tap selects', async () => {
     const h = await mountGrid();
     fireEvent.click(h.viewport, cellPoint(3, 3));
     expect(sel(h).active).toEqual({ r: 0, c: 0 });
     const big = await mountGrid({ maximised: true });
-    tap(big, cellPoint(3, 3));
-    expect(sel(big).active).toEqual({ r: 0, c: 0 });
-    // Maximised, a finger selects (and scrolls) rather than panning the canvas.
-    fireEvent.pointerDown(big.viewport, { ...cellPoint(2, 2), pointerType: 'touch', button: 0 });
+    // A finger's press selects nothing (the browser scrolls under it), and is not the canvas's either.
+    let throughToCanvas = false;
+    const listen = () => (throughToCanvas = true);
+    document.addEventListener('pointerdown', listen);
+    fireEvent.pointerDown(big.viewport, {
+      ...cellPoint(2, 2),
+      pointerType: 'touch',
+      isPrimary: true,
+      button: 0,
+    });
+    document.removeEventListener('pointerdown', listen);
+    expect(throughToCanvas).toBe(false);
     up(cellPoint(2, 2));
-    expect(sel(big).active).toEqual({ r: 2, c: 2 });
+    expect(sel(big).active).toEqual({ r: 0, c: 0 });
+    tap(big, cellPoint(3, 3));
+    expect(sel(big).active).toEqual({ r: 3, c: 3 });
   });
 
   it('takes a middle-button press to pan, selecting nothing', async () => {

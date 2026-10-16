@@ -21,7 +21,7 @@ function event(id: string): TimelineEvent {
     occurredAt: 1,
     actorId: 'me',
     snapshot: { documentId: id, documentName: id },
-  } as TimelineEvent;
+  };
 }
 
 const stack: TimelineStack = {

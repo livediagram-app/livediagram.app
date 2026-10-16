@@ -3,9 +3,9 @@ import { helpMetadata } from '@/lib/seo';
 import { TabBarOverview, RenamingTab, TabMenu } from '@/components/illustrations/tabs';
 
 export const metadata = helpMetadata({
-  title: 'Tabs',
+  title: 'Using Tabs',
   description:
-    'A document in livediagram holds many tabs, each its own independent canvas. Add, name, reorder, delete and switch between them along the tab bar, and find every tab action in the tab menu.',
+    'Split a livediagram document into tabs, each its own canvas: add, name, reorder, delete and switch tabs on the tab bar, with every action in the tab menu.',
   path: '/help/tabs/using-tabs/',
 });
 
@@ -38,8 +38,8 @@ Press the **+** button at the end of the tab bar, or run **Create New Tab** from
 
 - is named `Tab 2`, `Tab 3` and so on, after the number of tabs in the document;
 - takes the theme, background and font of the tab you were on, so it matches the work around it;
-- opens in Diagram mode;
-- opens the **Quick Start** picker, so you can start it from a template. Close the picker to keep it blank.
+- opens in the same mode as the tab you were on: made from an Illustrate tab it is an Illustrate tab, from a Draw tab a Draw tab, and from a Plan tab a Plan tab;
+- starts on that mode's own start, such as **Start Illustrating** or **Start Planning**, so you can begin from a template or close it to keep the tab blank.
 
 **Duplicate** in the tab menu makes a copy instead: it is named after the original with "copy" on the end, sits right after it, and is a separate tab with its own elements from then on.
 
@@ -63,13 +63,13 @@ Drag a tab up off the bar to the **right edge** of the screen instead, and it op
 
 ## The tab menu
 
-Click the **⋯** button on the active tab, or right-click any tab (which switches to it first), to open its menu. Right-clicking an empty spot on the canvas opens the same menu. On a phone it opens as a sheet from the bottom of the screen.
+Click the **⋯** button on the active tab, or right-click any tab (which switches to it first), to open its menu. Right-clicking an empty spot on the canvas opens the same menu, with **Paste** moved to a row of its own at the top. On a phone it opens as a sheet from the bottom of the screen.
 
-Along the top sits a row of quick actions: **Rename**, **Duplicate**, **Paste** (greyed out until you have copied something), **Side by Side**, **Lock Tab** and **Delete**. Below them, everything else is a full-width row, in groups split by a line:
+Along the top sits a row of quick actions: **Rename**, **Duplicate**, **Paste** (greyed out until you have copied something), **Side by Side** (on a large enough window; **Close Side by Side** while two tabs are open), **Lock Tab** and **Delete**. Below them, everything else is a full-width row, in groups split by a line:
 
 - **Add to Folder** and **Add to Document**.
 - **Import**, **Export**, and **Clear**, which removes every element from the tab after a confirmation (undo brings them back).
-- The modes, **Diagram**, **Draw**, **Illustrate** and **Plan**, each with a line on what it is for and a dot on the tab's current one. The mode is the tab's, for everyone; choosing one switches the tab.
+- The modes, **Diagram**, **Draw**, **Illustrate** and **Plan**, each with a line on what it is for and a dot on the tab's current one. The mode is the tab's, for everyone; choosing one switches the tab. The modes are left out on a locked tab and on a tab that can't switch, such as an event-storming board.
 
 To tidy a tab's layout, search for **Auto Layout** or **Auto-align** in the [command palette](/help/search-panel/the-search-panel/command-palette/). See [Cleaning Up a Tab](/help/tabs/tab-cleanup/).
 
@@ -81,16 +81,18 @@ The [session tools](/help/collaboration/session-tools/) (timer, vote and poll) a
 
 ## Deleting a tab
 
-Choose **Delete** in the tab menu and confirm. The confirmation warns that the tab's content can't be recovered, so export or duplicate anything you might want back. A few things to know:
+Choose **Delete** in the tab menu. The tab goes straight away, and **Undo** brings it back. Once you reload or leave the document it is gone, unless another document also holds it ([Add to Document](/help/tabs/add-to-document/)), so export or duplicate anything you might want later. A few things to know:
+
+- Delete asks first only when it does something Undo can't take back: a [form](/help/canvas/plan-mode/forms/)'s tab deletes the form's link with it, and a board or sheet that forms send their responses to stops them taking responses.
 
 - A document always keeps at least one tab, so Delete is greyed out on the last one.
 - A [locked tab](/help/tabs/locking-tabs/) can't be deleted until you unlock it.
 - Links on other tabs that pointed at the deleted tab are removed with it.
 - If the tab is also in [another document](/help/tabs/add-to-document/), it is only removed from this one.
 
-## View-only access
+## Share links
 
-On a view-only share link you can still click between tabs, but the **+** button, the tab menu, renaming and drag-to-reorder are all hidden.
+On a share link for a Viewer or a Participant, and on any link scoped to one tab, you can still click between tabs, but the **+** button, the tab menu, renaming and drag-to-reorder are all hidden. Only an Editor with a link to the whole document changes its tabs.
 
 ## More with tabs
 

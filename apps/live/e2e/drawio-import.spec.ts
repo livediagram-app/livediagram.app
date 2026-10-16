@@ -1,4 +1,5 @@
 import { deflateRawSync } from 'node:zlib';
+import type { StoredDocument, StoredTab } from './stored';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { Page } from '@playwright/test';
@@ -40,12 +41,16 @@ async function storedTabs(page: Page) {
   const headers = await pageOwnerHeaders(page);
   return page.evaluate(async (headers) => {
     const id = location.pathname.split('/').filter(Boolean).pop()!;
-    const stored = await (await fetch(`/api/documents/${id}`, { headers })).json();
+    const stored = (await (
+      await fetch(`/api/documents/${id}`, { headers })
+    ).json()) as StoredDocument;
     const summaries: { id: string; name: string }[] = stored.document?.tabs ?? [];
     return Promise.all(
       summaries.map(async (t) => {
-        const got = await (await fetch(`/api/documents/${id}/tabs/${t.id}`, { headers })).json();
-        return { name: t.name, elements: (got.tab?.elements ?? []).length as number };
+        const got = (await (
+          await fetch(`/api/documents/${id}/tabs/${t.id}`, { headers })
+        ).json()) as StoredTab;
+        return { name: t.name, elements: (got.tab?.elements ?? []).length };
       }),
     );
   }, headers);
@@ -56,12 +61,16 @@ async function storedElements(page: Page) {
   const headers = await pageOwnerHeaders(page);
   return page.evaluate(async (headers) => {
     const id = location.pathname.split('/').filter(Boolean).pop()!;
-    const stored = await (await fetch(`/api/documents/${id}`, { headers })).json();
+    const stored = (await (
+      await fetch(`/api/documents/${id}`, { headers })
+    ).json()) as StoredDocument;
     const summaries: { id: string; name: string }[] = stored.document?.tabs ?? [];
     return Promise.all(
       summaries.map(async (t) => {
-        const got = await (await fetch(`/api/documents/${id}/tabs/${t.id}`, { headers })).json();
-        return { name: t.name, elements: (got.tab?.elements ?? []) as unknown[] };
+        const got = (await (
+          await fetch(`/api/documents/${id}/tabs/${t.id}`, { headers })
+        ).json()) as StoredTab;
+        return { name: t.name, elements: got.tab?.elements ?? [] };
       }),
     );
   }, headers);

@@ -601,11 +601,26 @@ describe('arrows', () => {
           [0, 0],
           [5, 0],
         ],
-        { endArrowhead: 'crowfoot_many' },
+        { endArrowhead: 'spiral' },
       ),
     ]);
     expect((scene.items[0] as SceneConnector).heads).toEqual({ end: 'arrow' });
     expect(scene.notes).toEqual([{ rule: EXCALIDRAW_NOTE.unmatchedHeads, count: 1 }]);
+  });
+
+  it("reads an ER relationship's crow's feet at both ends", () => {
+    const b = excalidrawBuilder();
+    const scene = sceneOf([
+      b.arrow(
+        [
+          [0, 0],
+          [5, 0],
+        ],
+        { startArrowhead: 'crowfoot_one', endArrowhead: 'crowfoot_many' },
+      ),
+    ]);
+    expect((scene.items[0] as SceneConnector).heads).toEqual({ start: 'one', end: 'many' });
+    expect(scene.notes).toEqual([]);
   });
 });
 
@@ -762,13 +777,15 @@ describe('colours and unknown types', () => {
       b.rectangle({ type: 'embeddable' }),
       b.rectangle({ type: 'iframe' }),
       b.rectangle({ type: undefined }),
+      // A type that is not text (a malformed file): unknown too, never thrown on naming it.
+      b.rectangle({ type: 7 as unknown as 'rectangle' }),
       b.rectangle(),
     ]);
     expect(scene.items).toHaveLength(1);
     expect(scene.notes).toEqual([
       { rule: skippedTypeRule('embeddable'), count: 2, kind: 'skipped' },
       { rule: skippedTypeRule('iframe'), count: 1, kind: 'skipped' },
-      { rule: skippedTypeRule('unknown'), count: 1, kind: 'skipped' },
+      { rule: skippedTypeRule('unknown'), count: 2, kind: 'skipped' },
     ]);
   });
 });

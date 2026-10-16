@@ -121,7 +121,7 @@ export function cycleAbsolute(
     const m = /^(\$?)([A-Za-z]{1,4})(\$?)(\d+)$/.exec(part);
     if (!m) return part;
     const state = (m[1] ? 2 : 0) + (m[3] ? 1 : 0); // 0 A1, 3 $A$1, 1 A$1, 2 $A1
-    const next = { 0: 3, 3: 1, 1: 2, 2: 0 }[state as 0 | 1 | 2 | 3]!;
+    const next = { 0: 3, 3: 1, 1: 2, 2: 0 }[state as 0 | 1 | 2 | 3];
     return `${next & 2 ? '$' : ''}${m[2]}${next & 1 ? '$' : ''}${m[4]}`;
   });
   const text = parts.join(':');

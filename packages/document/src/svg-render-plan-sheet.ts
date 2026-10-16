@@ -3,9 +3,9 @@
 // window with their formats, from a render model the caller worked out with the sheets engine. The document
 // package never imports the engine: the model's shape is restated here, structurally.
 import type { BoxedElement } from './index';
-import type { CanvasSurface } from './colors';
+import { isLightColor, type CanvasSurface } from './colors';
 import { resolveFontStack } from './fonts';
-import { planPalette } from './plan-palette';
+import { planOwnColoursOf, planPalette } from './plan-palette';
 import { r2, xmlEscape } from './svg-render-primitives';
 import { wrapLines } from './svg-render-face-kit';
 
@@ -41,6 +41,8 @@ export type SheetRenderModel = {
     rowSpan?: number;
     colSpan?: number;
     borders?: { t?: RenderBorder; r?: RenderBorder; b?: RenderBorder; l?: RenderBorder };
+    chip?: { color?: string };
+    arrow?: true;
   }[];
   // The sheet's look (Sheet Settings): gridlines and headers left out.
   hideGrid?: true;
@@ -54,6 +56,18 @@ export const SHEET_ROW_HEAD_W = 46;
 const PAD = 12;
 const CELL_PAD = 4;
 const ERROR_INK = '#dc2626';
+// A dropdown chip as the editor draws it (sheet-rule-draw.tsx): inset from the cell's left, its text's room and its
+// arrow's, a little shorter than the row.
+const CHIP_INSET = 6;
+const CHIP_TEXT_ROOM = 24;
+const CHIP_ARROW = 16;
+// An average glyph's advance, as a share of the font size, to size a chip to its text without measuring.
+const GLYPH_EM = 0.56;
+
+// A dropdown's chevron, pointing down, centred at (cx, cy).
+function chevron(cx: number, cy: number, ink: string): string {
+  return `<path d="M${r2(cx - 3.5)} ${r2(cy - 1.5)} L${r2(cx)} ${r2(cy + 2)} L${r2(cx + 3.5)} ${r2(cy - 1.5)}" fill="none" stroke="${ink}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.8"/>`;
+}
 
 function dash(s: RenderBorder['s'], w: number): string {
   return s === 'dashed'
@@ -72,11 +86,7 @@ export function svgPlanSheet(
   model: SheetRenderModel | undefined,
   surface: CanvasSurface,
 ): string {
-  const p = planPalette(surface, {
-    fill: el.fillColor,
-    stroke: el.strokeColor,
-    text: el.textColor,
-  });
+  const p = planPalette(surface, planOwnColoursOf(el));
   const { x, y, width: w, height: h } = el;
   const id = `ps-${el.id.replace(/[^A-Za-z0-9_-]/g, '')}`;
   let out = `<clipPath id="${id}"><rect x="${r2(x)}" y="${r2(y)}" width="${r2(w)}" height="${r2(h)}" rx="12"/></clipPath>`;
@@ -131,10 +141,36 @@ export function svgPlanSheet(
     const ch = (ys[Math.min(cell.r + (cell.rowSpan ?? 1), ys.length - 1)] ?? cy) - cy;
     if (cell.fill || cell.colSpan || cell.rowSpan)
       out += `<rect x="${r2(cx + 0.5)}" y="${r2(cy + 0.5)}" width="${r2(Math.max(0, cw - 1))}" height="${r2(Math.max(0, ch - 1))}" fill="${cell.fill ?? p.surface}"/>`;
+    let ink = cell.error ? ERROR_INK : (cell.color ?? p.text);
+    let textX: number | null = null;
+    if (cell.chip && cell.text) {
+      // The value on a pill in its option's colour (the sheet's column tint without one), its ink black or white.
+      const size = cell.size ? Math.round((cell.size * 4) / 3) : 13;
+      const chipH = Math.min(ch - 4, Math.round(size * 1.3) + 6);
+      const chipW = Math.min(
+        cw - CHIP_INSET * 2,
+        Math.max(
+          CHIP_ARROW + 8,
+          cell.text.length * size * GLYPH_EM * 1.1 + CHIP_TEXT_ROOM + CHIP_ARROW,
+        ),
+      );
+      const fill = cell.chip.color ?? p.column;
+      if (cell.chip.color) ink = isLightColor(fill) ? '#1f2937' : '#ffffff';
+      const top = cy + (ch - chipH) / 2;
+      out += `<rect x="${r2(cx + CHIP_INSET)}" y="${r2(top)}" width="${r2(chipW)}" height="${r2(chipH)}" rx="${r2(chipH / 2)}" fill="${fill}"/>`;
+      out += chevron(cx + CHIP_INSET + chipW - 10, top + chipH / 2, ink);
+      textX = cx + CHIP_INSET + 8;
+    }
+    if (cell.arrow) out += chevron(cx + cw - 10, cy + ch / 2, p.muted);
     if (cell.text) {
       const size = cell.size ? Math.round((cell.size * 4) / 3) : 13;
       const tx =
-        cell.align === 'r' ? cx + cw - CELL_PAD : cell.align === 'c' ? cx + cw / 2 : cx + CELL_PAD;
+        textX ??
+        (cell.align === 'r'
+          ? cx + cw - CELL_PAD - (cell.arrow ? CHIP_ARROW : 0)
+          : cell.align === 'c'
+            ? cx + cw / 2
+            : cx + CELL_PAD);
       const ty =
         cell.valign === 't'
           ? cy + size + 2
@@ -142,11 +178,13 @@ export function svgPlanSheet(
             ? cy + ch / 2 + size / 3
             : cy + ch - 6;
       const anchor =
-        cell.align === 'r'
-          ? ' text-anchor="end"'
-          : cell.align === 'c'
-            ? ' text-anchor="middle"'
-            : '';
+        textX !== null
+          ? ''
+          : cell.align === 'r'
+            ? ' text-anchor="end"'
+            : cell.align === 'c'
+              ? ' text-anchor="middle"'
+              : '';
       const deco = [cell.underline ? 'underline' : '', cell.strike ? 'line-through' : '']
         .filter(Boolean)
         .join(' ');
@@ -157,7 +195,7 @@ export function svgPlanSheet(
       out += `<clipPath id="${clip}"><rect x="${r2(cx)}" y="${r2(cy)}" width="${r2(cell.wrap === 'o' || !cell.wrap ? Math.max(cw, right - cx) : cw)}" height="${r2(ch)}"/></clipPath>`;
       out += `<text clip-path="url(#${clip})" x="${r2(tx)}" y="${r2(ty)}" font-size="${size}"${face}${cell.bold ? ' font-weight="700"' : ''}${
         cell.italic ? ' font-style="italic"' : ''
-      }${deco ? ` text-decoration="${deco}"` : ''} fill="${cell.error ? ERROR_INK : (cell.color ?? p.text)}"${anchor}>${xmlEscape(cell.text.split('\n')[0]!)}</text>`;
+      }${deco ? ` text-decoration="${deco}"` : ''} fill="${ink}"${anchor}>${xmlEscape(cell.text.split('\n')[0]!)}</text>`;
     }
     const b = cell.borders;
     if (b?.t) out += line(cx, cy, cx + cw, cy, b.t);

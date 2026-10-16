@@ -5,6 +5,7 @@
 import {
   canvasSurface,
   planBoardLayout,
+  planOwnColoursOf,
   planPalette,
   type BoxedElement,
   type TabPlanData,
@@ -45,11 +46,7 @@ export function planBoardParts(
 ): PlanPart[] {
   const layout = planBoardLayout(el, plan?.items, plan?.types);
   if (!layout) return [];
-  const p = planPalette(canvasSurface(backgroundColor), {
-    fill: el.fillColor,
-    stroke: el.strokeColor,
-    text: el.textColor,
-  });
+  const p = planPalette(canvasSurface(backgroundColor), planOwnColoursOf(el));
   const parts: PlanPart[] = [
     {
       id: `${el.id}-title`,

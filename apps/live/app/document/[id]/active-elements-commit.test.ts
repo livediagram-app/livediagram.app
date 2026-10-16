@@ -11,7 +11,7 @@ const arrow = (id: string, x: number): ArrowElement => ({
   from: { kind: 'pinned', elementId: 'src', anchor: 'e' },
   to: { kind: 'free', x, y: 50 },
 });
-const tabs = (els: Element[]): Tab[] => [{ id: 't', name: 'T', elements: els } as Tab];
+const tabs = (els: Element[]): Tab[] => [{ id: 't', name: 'T', elements: els }];
 const toX = (ts: Tab[], id: string) =>
   ((ts[0]!.elements.find((e) => e.id === id) as ArrowElement).to as { x: number }).x;
 

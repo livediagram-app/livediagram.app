@@ -80,7 +80,7 @@ test('a deck presents slide by slide and leaves the view as it was', async ({
 
   await page.getByRole('button', { name: 'Selection mode' }).click();
   await page.getByText('Slide Deck', { exact: true }).first().click();
-  await page.getByRole('button', { name: /^Present(\s*\d+)?$/ }).click();
+  await page.getByRole('button', { name: /^Present \d+$/ }).click();
   await expect.poll(camera).not.toBe(before);
   const slideOne = await camera();
 

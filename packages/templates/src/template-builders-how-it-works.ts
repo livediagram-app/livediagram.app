@@ -124,13 +124,17 @@ function steps(k: Kit): Element[] {
     els.push(
       disc,
       glyph(k, s.iconId, discX + d * 0.27, y + u * 1 + d * 0.27, d * 0.46, PAPER),
-      k.shape('circle', discX + d - badge * 0.8, y - u * 0.5, badge, badge, {
+      // The step's number: a Step number (docs/specs/009-elements/step-number.md) attached to the disc's top-right
+      // point, so it travels with the disc. Its Ink look draws a navy disc with a white number.
+      k.shape('step', discX + d - badge / 2, y + u * 1 - badge / 2, badge, badge, {
         label: String(i + 1),
         textBold: true,
-        textSize: 'lg',
-        textColor: PAPER,
-        strokeWidth: 'thick',
-        ...lockedFill(NAVY, PAPER),
+        chipLook: 'ink',
+        attachedTo: disc.id,
+        attachAt: 'top-right',
+        textColor: NAVY,
+        fillColor: PAPER,
+        themeLockFill: true,
       }),
       k.text(textX, y + u * 1.5, textW, u * 6, s.name, {
         textBold: true,
@@ -181,17 +185,10 @@ function callToAction(k: Kit): Element[] {
       textScale: 1.8,
       textColor: PAPER,
     }),
-    k.text(
-      pad,
-      top + u * 9.5,
-      W - pad * 2 - btnW,
-      u * 5,
-      'Free on iOS and Android · borrowbox.app',
-      {
-        textScale: 1.2,
-        textColor: '#c7d2fe',
-      },
-    ),
+    k.text(pad, top + u * 9.5, W - pad * 2 - btnW, u * 5, 'Free on iOS and Android', {
+      textScale: 1.2,
+      textColor: '#c7d2fe',
+    }),
     k.shape('stadium', W - pad - btnW, top + (u * CTA_H - u * 8) / 2, btnW, u * 8, {
       label: 'Get the app',
       textBold: true,

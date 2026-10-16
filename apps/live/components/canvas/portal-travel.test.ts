@@ -16,7 +16,7 @@ const portal = (id: string, over: Partial<ShapeElement> = {}): ShapeElement => (
   ...over,
 });
 
-const tabOf = (id: string, elements: ShapeElement[]): Tab => ({ id, name: id, elements }) as Tab;
+const tabOf = (id: string, elements: ShapeElement[]): Tab => ({ id, name: id, elements });
 
 // A viewport that measures 800x600, which is all enterPortal reads off it.
 const viewport = { current: { getBoundingClientRect: () => ({ width: 800, height: 600 }) } };

@@ -5,7 +5,10 @@
 // top (apps/live/lib/template-builders.ts), and the MCP worker
 // materialises these directly (docs/specs/015-api/mcp-server.md §4.5).
 
-import type { Element } from '@livediagram/document';
+import { isFormTemplateKind } from './form-templates';
+import { buildVirtualOffice } from './template-builders-office';
+import { buildAllHandsHall, buildCoworkingSpace, buildTeamPod } from './template-builders-spaces';
+import { settleChips, type Element, type Tab } from '@livediagram/document';
 import type { TemplateKind } from './templates';
 import {
   buildBrowserWireframe,
@@ -32,7 +35,9 @@ import { buildDataStory } from './template-builders-data-story';
 import { buildHowItWorks } from './template-builders-how-it-works';
 import { buildVersus } from './template-builders-versus';
 import { buildSocialCarousel } from './template-builders-social-carousel';
+import { buildLayoutDeck } from './template-builders-layout-decks';
 import { buildStoryboard } from './template-builders-storyboard';
+import { buildOnDesignPage } from './template-design-pages';
 import {
   buildPrioritizationMatrix,
   buildRetrospective,
@@ -49,8 +54,16 @@ import { buildEventStorming } from './template-builders-eventstorming';
 import { buildBusinessModelCanvas, buildEmpathyMap } from './template-builders-canvases';
 import { buildAffinityMap, buildUserStoryMap } from './template-builders-workshops';
 import { buildLeanCoffee, buildTownHall } from './template-builders-sessions';
+import { buildIcebreakerQuestions, buildPubQuiz } from './template-builders-quiz-games';
+import {
+  buildPeopleBingo,
+  buildTwoTruthsAndALie,
+  buildWouldYouRather,
+} from './template-builders-party-games';
+import { buildBrainstorm, buildWorkshopBoard } from './template-builders-workshop-boards';
 import { buildOkrTree, buildSitemap } from './template-builders-hierarchies';
 import { buildFunnel } from './template-builders-funnel';
+import { buildSankey } from './template-builders-sankey';
 import { buildRoadmap } from './template-builders-roadmap';
 import { buildLogoDesign } from './template-builders-logo';
 import { buildGanttChart } from './template-builders-gantt';
@@ -92,7 +105,16 @@ import { buildObjectivesPlanner } from './template-builders-objectives';
 
 // Build the elements for a given template, centred on the supplied canvas
 // point. Each template is intentionally small and editable; users grow them.
+// The output lands settled (docs/specs/009-elements/blueprints/badge.md "Settling"): a builder sizes a step
+// after making it, so its number is set to half the disc here, as a stored board reads back, and a
+// preview or an agent's create shows what the editor will.
 export function buildTemplate(kind: TemplateKind, cx: number, cy: number): Element[] {
+  return settleChips([], buildUnsettled(kind, cx, cy), { attachLoose: false });
+}
+
+function buildUnsettled(kind: TemplateKind, cx: number, cy: number): Element[] {
+  // A form template's tab starts empty: the editor starts the form on it (form-templates.ts).
+  if (isFormTemplateKind(kind)) return [];
   switch (kind) {
     case 'blank':
       return buildBlank();
@@ -120,6 +142,7 @@ export function buildTemplate(kind: TemplateKind, cx: number, cy: number): Eleme
     // gives them all.
     case 'kanban':
     case 'blank-plan':
+    case 'blank-spreadsheet':
     case 'project-planner':
     case 'bug-triage':
     case 'team-retro':
@@ -133,6 +156,14 @@ export function buildTemplate(kind: TemplateKind, cx: number, cy: number): Eleme
     case 'timesheet':
     case 'contact-list':
     case 'task-tracker':
+    case 'invoice':
+    case 'expense-report':
+    case 'loan-calculator':
+    case 'sales-pipeline':
+    case 'inventory':
+    case 'guest-list':
+    case 'grade-book':
+    case 'habit-tracker':
       return buildPlanTemplate(kind, cx, cy);
     case 'swot':
       return buildSwot(cx, cy);
@@ -151,9 +182,9 @@ export function buildTemplate(kind: TemplateKind, cx: number, cy: number): Eleme
     case 'pyramid':
       return buildPyramid(cx, cy);
     case 'mobile-wireframe':
-      return buildMobileWireframe(cx, cy);
+      return buildOnDesignPage('mobile-wireframe', buildMobileWireframe);
     case 'laptop-wireframe':
-      return buildLaptopWireframe(cx, cy);
+      return buildOnDesignPage('laptop-wireframe', buildLaptopWireframe);
     case 'slide-deck':
       return buildSlideDeck(cx, cy);
     case 'flywheel':
@@ -208,22 +239,46 @@ export function buildTemplate(kind: TemplateKind, cx: number, cy: number): Eleme
       return buildAffinityMap(cx, cy);
     case 'lean-coffee':
       return buildLeanCoffee(cx, cy);
+    case 'brainstorm':
+      return buildBrainstorm(cx, cy);
+    case 'workshop-board':
+      return buildWorkshopBoard(cx, cy);
     case 'town-hall':
       return buildTownHall(cx, cy);
+    case 'pub-quiz':
+      return buildPubQuiz(cx, cy);
+    case 'icebreaker-questions':
+      return buildIcebreakerQuestions(cx, cy);
+    case 'virtual-office':
+      return buildVirtualOffice(cx, cy);
+    case 'coworking-space':
+      return buildCoworkingSpace(cx, cy);
+    case 'team-pod':
+      return buildTeamPod(cx, cy);
+    case 'all-hands-hall':
+      return buildAllHandsHall(cx, cy);
+    case 'two-truths-and-a-lie':
+      return buildTwoTruthsAndALie(cx, cy);
+    case 'would-you-rather':
+      return buildWouldYouRather(cx, cy);
+    case 'people-bingo':
+      return buildPeopleBingo(cx, cy);
     case 'business-model-canvas':
       return buildBusinessModelCanvas(cx, cy);
     case 'empathy-map':
       return buildEmpathyMap(cx, cy);
     case 'funnel':
       return buildFunnel(cx, cy);
+    case 'sankey':
+      return buildSankey(cx, cy);
     case 'okr-tree':
       return buildOkrTree(cx, cy);
     case 'sitemap':
       return buildSitemap(cx, cy);
     case 'browser-wireframe':
-      return buildBrowserWireframe(cx, cy);
+      return buildOnDesignPage('browser-wireframe', buildBrowserWireframe);
     case 'storyboard':
-      return buildStoryboard(cx, cy);
+      return buildOnDesignPage('storyboard', buildStoryboard);
     case 'cloud-architecture':
       return buildCloudArchitecture(cx, cy);
     case 'uml-class':
@@ -231,17 +286,24 @@ export function buildTemplate(kind: TemplateKind, cx: number, cy: number): Eleme
     case 'state-machine':
       return buildStateMachine(cx, cy);
     case 'floor-plan':
-      return buildFloorPlan(cx, cy);
+      return buildOnDesignPage('floor-plan', buildFloorPlan);
     case 'event-storming':
       return buildEventStorming(cx, cy);
     // A whiteboard is a clean board (docs/specs/023-draw-mode/draw-mode.md): what makes it one is its
-    // kind, which templateCanvasOverrides sets, not any seeded element.
+    // kind, which templateCanvasOverrides sets, not any seeded element. Facilitate's blank is an empty
+    // tab too, opened in Facilitate the same way.
     case 'whiteboard':
+    case 'blank-session':
       return [];
     // An article's writing and page are tab data (templateCanvasOverrides), not elements; a blank
-    // illustration is its one empty page, which asks what it is for.
+    // illustration is its one empty page, which asks what it is for, and a blank of a page kind its one
+    // empty page of that kind (blank-page-templates.ts).
     case 'article':
     case 'blank-illustration':
+    case 'blank-slide-deck':
+    case 'blank-article':
+    case 'blank-infographic':
+    case 'blank-logo':
       return [];
     case 'sketchnote':
       return buildSketchnote(cx, cy);
@@ -276,6 +338,11 @@ export function buildTemplate(kind: TemplateKind, cx: number, cy: number): Eleme
       return buildVersus();
     case 'social-carousel':
       return buildSocialCarousel();
+    case 'launch-keynote':
+    case 'quarterly-review':
+    case 'team-welcome':
+    case 'workshop-kickoff':
+      return buildLayoutDeck(kind);
   }
 }
 
@@ -289,6 +356,9 @@ export function buildTemplate(kind: TemplateKind, cx: number, cy: number): Eleme
 export type TemplateTabDef = {
   name: string | null;
   build: (cx: number, cy: number) => Element[];
+  // The tab's own fields, given every tab's id in order: a Plan template's kind and Dashboard
+  // (docs/specs/026-plan/plan-tabs.md "Templates").
+  tab?: (ids: readonly string[]) => Partial<Tab>;
 };
 
 export function templateTabs(kind: TemplateKind): TemplateTabDef[] {

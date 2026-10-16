@@ -11,9 +11,7 @@ vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
 const sheet = (id: string, sheetId: string) =>
   ({ id, type: 'shape', shape: 'plan-sheet', planSheet: { sheetId } }) as unknown as Element;
-const tabs: Tab[] = [
-  { id: 't1', name: 'One', elements: [sheet('e1', 'A'), sheet('e2', 'B')] } as Tab,
-];
+const tabs: Tab[] = [{ id: 't1', name: 'One', elements: [sheet('e1', 'A'), sheet('e2', 'B')] }];
 
 function guard(over: Partial<Parameters<typeof useSheetDeleteGuard>[0]> = {}) {
   const deps = {

@@ -19,7 +19,7 @@
 // commit lifecycle) lives in useRichTextSession; this file keeps the
 // JSX and its event handlers.
 
-import type { RunBoolKey } from '@livediagram/document';
+import { formatShortcut } from '@/components/rich-text/rich-text-format';
 import { useMindLabelKeys } from '@/components/canvas/useMindLabelKeys';
 import {
   ALIGN_ITEMS,
@@ -75,6 +75,7 @@ export function RichTextEditor({
     onPatch,
     applyList,
     applyHeading,
+    applyTitleCaptionPreset,
     liveText,
   } = useRichTextSession({
     element,
@@ -139,7 +140,7 @@ export function RichTextEditor({
           if (
             toolbarWrapRef.current &&
             e.relatedTarget &&
-            toolbarWrapRef.current.contains(e.relatedTarget as Node)
+            toolbarWrapRef.current.contains(e.relatedTarget)
           ) {
             return;
           }
@@ -173,23 +174,12 @@ export function RichTextEditor({
             handleCancel();
             return;
           }
-          // Cmd/Ctrl+B/I/U must drive the SAME run-based toggle as the toolbar
-          // buttons. Left to the browser, contentEditable runs its native
-          // execCommand('bold'…), which wraps the DOM in <b>/<i>/<u> tags the
-          // run model never sees — so the formatting vanished on commit. We
-          // intercept and preventDefault so the native command never fires.
-          if ((e.metaKey || e.ctrlKey) && !e.altKey) {
-            const shortcut: Record<string, RunBoolKey> = {
-              b: 'bold',
-              i: 'italic',
-              u: 'underline',
-            };
-            const key = shortcut[e.key.toLowerCase()];
-            if (key) {
-              e.preventDefault();
-              onToggle(key);
-              return;
-            }
+          // Cmd/Ctrl+B/I/U drive the toolbar's run toggle, never the browser's execCommand.
+          const format = formatShortcut(e);
+          if (format) {
+            e.preventDefault();
+            onToggle(format);
+            return;
           }
           if (e.key === 'Enter') {
             // Insert a newline as a real '\n' text node (never <br>/<div>)
@@ -258,6 +248,8 @@ export function RichTextEditor({
           size despite the canvas world transform; flip below near the top. */}
       <div
         ref={toolbarWrapRef}
+        // The edit-mode element menu opens clear of this (useEditModeContextMenu).
+        data-rich-text-toolbar
         // Stop pointer events reaching the canvas — otherwise a click on a
         // toolbar button reads as a click-off the editing element and the
         // canvas commits + exits edit mode (the same guard the editable div
@@ -293,6 +285,7 @@ export function RichTextEditor({
           onToggle={onToggle}
           onApplyList={applyList}
           onApplyHeading={applyHeading}
+          onApplyTitleCaption={applyTitleCaptionPreset}
           listStyle={listStyleOfText(liveText)}
           onColor={(color) => onPatch({ color })}
           onSetAlign={(x, y) => onSetAlign?.(x, y)}

@@ -3,6 +3,7 @@
 // content is sniffed, never the file name: an mxfile, a bare mxGraphModel,
 // an SVG carrying one in `content`, or a PNG carrying one in a text chunk.
 
+import { parseInert } from '@livediagram/ui/trusted-types';
 import { BudgetExceeded, base64Bytes, decompressDiagram, type ByteBudget } from './inflate';
 import { extractPngDiagram, isPng } from './png';
 import { DrawioRefused } from './refusals';
@@ -24,7 +25,7 @@ export type DrawioPageSource = {
 function parseXml(text: string): Element {
   const trimmed = text.replace(/^\uFEFF/, '').trim();
   if (!trimmed.startsWith('<')) throw new DrawioRefused('not-xml');
-  const doc = new DOMParser().parseFromString(trimmed, 'application/xml');
+  const doc = parseInert(trimmed, 'application/xml');
   if (doc.getElementsByTagName('parsererror').length > 0) throw new DrawioRefused('not-xml');
   return doc.documentElement;
 }

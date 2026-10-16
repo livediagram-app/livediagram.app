@@ -15,13 +15,27 @@ describe('remapTabDataLinks', () => {
       ],
       background: 'dots',
     });
-    const out = JSON.parse(remapTabDataLinks(data, map));
+    const out = JSON.parse(remapTabDataLinks(data, map)) as {
+      background: string;
+      elements: { link: unknown }[];
+    };
     expect(out.background).toBe('dots');
-    expect(out.elements.map((e: { link: unknown }) => e.link)).toEqual([
+    expect(out.elements.map((e) => e.link)).toEqual([
       { kind: 'tab', tabId: 'T1' },
       { kind: 'element', tabId: 'T1', elementId: 'a' },
       { kind: 'document', documentId: 'd', name: 'D' },
     ]);
+  });
+
+  // docs/specs/009-elements/tab-window.md: a copy's windows show the copy's tabs.
+  it("re-points a Tab Window's tab, with no link anywhere on the tab", () => {
+    const data = JSON.stringify({
+      elements: [{ id: 'w', type: 'shape', shape: 'tab-window', windowTabId: 't1' }],
+    });
+    expect(JSON.parse(remapTabDataLinks(data, map))).toHaveProperty(
+      ['elements', 0, 'windowTabId'],
+      'T1',
+    );
   });
 
   it('copies link-free and unparseable data byte for byte', () => {

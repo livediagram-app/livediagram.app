@@ -16,104 +16,6 @@ import {
   TextBar,
 } from './primitives';
 
-// The category picker in Diagram mode, the default: Popular across the top,
-// then each band with the categories Diagram offers, in PALETTE_CATEGORIES
-// order (apps/live/components/palette/palette-layouts.ts). My shapes joins
-// Common once you have imported a shape library, and Event Storming joins
-// Structure on an event-storming board; Illustrate and Plan offer their own
-// sets, which the article lists.
-const CATEGORY_BANDS: [string, string[]][] = [
-  ['COMMON', ['Shapes', 'Write', 'Draw']],
-  ['STRUCTURE', ['Build']],
-  ['DECORATE', ['Icons', 'Stickers', 'Tech', 'Media']],
-  ['DYNAMIC', ['Collaborate']],
-];
-
-/** One category chip: the picker's tile, reduced to its label. The real tile
- *  carries an icon above the label, but invented glyphs would say less about
- *  the picker than its shape does. */
-function CategoryChip({
-  x,
-  y,
-  label,
-  active = false,
-}: {
-  x: number;
-  y: number;
-  label: string;
-  active?: boolean;
-}) {
-  return (
-    <g>
-      <rect
-        x={x}
-        y={y}
-        width={72}
-        height={24}
-        rx={6}
-        className={active ? 'fill-brand-500 stroke-brand-600' : 'fill-slate-50 stroke-slate-200'}
-        strokeWidth={1.4}
-      />
-      <Label
-        x={x + 36}
-        y={y + 13}
-        anchor="middle"
-        size={10}
-        weight={600}
-        tone={active ? 'onAccent' : 'body'}
-      >
-        {label}
-      </Label>
-    </g>
-  );
-}
-
-/** The palette's category picker in Diagram mode: Popular across the top,
- *  then the four bands its categories fall into. */
-export function CategoryPicker() {
-  const px = 52;
-  let y = 84;
-  const rows: React.ReactNode[] = [];
-  for (const [band, categories] of CATEGORY_BANDS) {
-    rows.push(
-      <Label key={band} x={px} y={y} size={10} weight={700} tone="muted">
-        {band}
-      </Label>,
-    );
-    categories.forEach((label, i) => {
-      rows.push(
-        <CategoryChip
-          key={label}
-          x={px + (i % 3) * 78}
-          y={y + 10 + Math.floor(i / 3) * 30}
-          label={label}
-          active={label === 'Draw'}
-        />,
-      );
-    });
-    y += 10 + Math.ceil(categories.length / 3) * 30 + 14;
-  }
-  return (
-    <Scene w={340} h={340} bg="plain">
-      <Panel x={36} y={20} w={268} h={304} title="PALETTE">
-        <rect
-          x={px}
-          y={52}
-          width={228}
-          height={22}
-          rx={6}
-          className="fill-brand-50 stroke-brand-200"
-          strokeWidth={1.4}
-        />
-        <Label x={px + 114} y={64} anchor="middle" size={10} weight={600} tone="accent">
-          Popular
-        </Label>
-        {rows}
-      </Panel>
-    </Scene>
-  );
-}
-
 /** A freehand pencil stroke mid-draw: a smooth hand-drawn curve on the canvas
  *  with the "Drag to draw" mode banner and a pencil cursor. */
 export function PencilStroke() {
@@ -259,27 +161,20 @@ export function ImagePicker() {
 
 /** A small wall of coloured sticky notes with text, the way a brainstorm looks. */
 export function StickyNotes() {
-  const notes: [number, number, string, string, string][] = [
-    [48, 50, 'fill-amber-100', 'stroke-amber-300', 'fill-amber-300'],
-    [186, 38, 'fill-emerald-100', 'stroke-emerald-300', 'fill-emerald-300'],
-    [300, 70, 'fill-rose-100', 'stroke-rose-300', 'fill-rose-300'],
-    [120, 132, 'fill-violet-100', 'stroke-violet-300', 'fill-violet-300'],
-    [256, 140, 'fill-brand-100', 'stroke-brand-300', 'fill-brand-300'],
+  const notes: [number, number, string, string][] = [
+    [48, 50, 'fill-amber-100', 'fill-amber-300'],
+    [186, 38, 'fill-emerald-100', 'fill-emerald-300'],
+    [300, 70, 'fill-rose-100', 'fill-rose-300'],
+    [120, 132, 'fill-violet-100', 'fill-violet-300'],
+    [256, 140, 'fill-brand-100', 'fill-brand-300'],
   ];
   return (
     <Scene w={420} h={220}>
-      {notes.map(([x, y, fill, stroke, bar], i) => (
+      {notes.map(([x, y, fill, bar], i) => (
         <g key={i}>
-          <rect
-            x={x}
-            y={y}
-            width={84}
-            height={68}
-            rx={4}
-            className={`${fill} ${stroke}`}
-            strokeWidth={1.5}
-          />
-          <rect x={x} y={y} width={84} height={68} rx={4} className="fill-slate-900/5" />
+          {/* Square corners and no border, as a sticky draws by default */}
+          <rect x={x} y={y} width={84} height={68} className={fill} />
+          <rect x={x} y={y} width={84} height={68} className="fill-slate-900/5" />
           <TextBar x={x + 12} y={y + 18} w={56} />
           <TextBar x={x + 12} y={y + 32} w={44} tone="faint" />
           <rect x={x + 12} y={y + 48} width={20} height={8} rx={2} className={bar} />
@@ -417,7 +312,14 @@ export function PageSheet() {
 
       {/* Masthead: heading, subtitle, hairline rule. Always present, so the
           page has the same shape before and after anyone writes in it. */}
-      <rect x={x + 16} y={y + 18} width={72} height={9} rx={2} className="fill-brand-500" />
+      <rect
+        x={x + 16}
+        y={y + 18}
+        width={72}
+        height={9}
+        rx={2}
+        className="fill-slate-800 dark:fill-slate-200"
+      />
       <TextBar x={x + 16} y={y + 34} w={54} tone="faint" />
       <line
         x1={x + 16}

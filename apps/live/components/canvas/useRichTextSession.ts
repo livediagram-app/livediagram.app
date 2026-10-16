@@ -88,6 +88,7 @@ export function useRichTextSession({
     onPatch,
     applyList,
     applyHeading,
+    applyTitleCaptionPreset,
   } = doc;
 
   // Auto-fit (docs/specs/021-event-storming/event-storming.md): a multi-line label on 'scale' measures its LIVE
@@ -254,6 +255,7 @@ export function useRichTextSession({
     onPatch,
     applyList,
     applyHeading,
+    applyTitleCaptionPreset,
     liveText,
   };
 }

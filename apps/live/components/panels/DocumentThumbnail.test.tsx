@@ -103,7 +103,9 @@ describe('DocumentThumbnail', () => {
       fireEvent.load(img()!);
       expect(img()?.className).toContain('opacity-100');
       expect(loader()).not.toBeNull();
-      act(() => vi.advanceTimersByTime(250));
+      act(() => {
+        vi.advanceTimersByTime(250);
+      });
       expect(loader()).toBeNull();
     } finally {
       vi.useRealTimers();

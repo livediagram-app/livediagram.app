@@ -3,8 +3,10 @@
 import { act, renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const trackMock = vi.fn();
-vi.mock('@/lib/telemetry', () => ({ track: (...a: unknown[]) => trackMock(...a) }));
+const trackMock = vi.fn<typeof import('@/lib/telemetry').track>();
+vi.mock('@/lib/telemetry', () => ({
+  track: (...a: Parameters<typeof trackMock>) => trackMock(...a),
+}));
 
 const { useDockPopovers } = await import('./useDockPopovers');
 
@@ -23,6 +25,12 @@ describe('useDockPopovers panel-open telemetry', () => {
       ['Layer', 'Opened', 'Panel'],
       ['UI', 'Opened', 'Collaborate'],
     ]);
+  });
+
+  it('counts a Tidy Up open (docs/specs/008-canvas/layout-cleanup.md "Telemetry")', () => {
+    const { result } = renderHook(() => useDockPopovers({ current: null }));
+    act(() => result.current.handleDockButtonClick('tidy-up', button(), true));
+    expect(trackMock.mock.calls).toEqual([['UI', 'Opened', 'TidyUp']]);
   });
 
   it('does not count a close', () => {

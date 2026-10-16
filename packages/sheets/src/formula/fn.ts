@@ -196,7 +196,7 @@ export function numbersOf(args: EvalValue[], f: Frame): number[] | SheetError {
   const out: number[] = [];
   for (const a of args) {
     if (a === null || a === undefined) continue;
-    const fromRange = isRef(a) || isArray(a as Value);
+    const fromRange = isRef(a) || isArray(a);
     const v = deref(a, f);
     if (isArray(v)) {
       for (const row of v.rows)

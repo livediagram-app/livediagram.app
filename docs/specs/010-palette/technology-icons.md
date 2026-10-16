@@ -86,11 +86,13 @@ type TechIconDef = {
   signpost beside CloudFront's globe; Workers is braces around a bolt), which
   `tech-icon-catalog.test.ts` enforces. Glyph markup never sets its own stroke width.
 
-### Coverage (curated common set, 70 across five providers)
+### Coverage (curated common set, 77 across five providers)
 
 - **AWS:** S3, EC2, Lambda, RDS, DynamoDB, API Gateway, CloudFront, Route 53,
   VPC, SQS, SNS, ECS, EKS, CloudWatch, IAM, Lake Formation (data lakes) and MSK, the last two
-  added for diagrams imported from draw.io ([draw.io import](../020-import-export/drawio-import.md)).
+  added for diagrams imported from draw.io ([draw.io import](../020-import-export/drawio-import.md)), and Elastic Load
+  Balancing, ElastiCache, Fargate, Cognito, Kinesis, Step Functions and Secrets Manager, the services an agent's
+  architecture diagrams reached for and found missing ([MCP server](../015-api/mcp-server.md) §4.5a).
 - **Azure:** Virtual Machine, Blob Storage, App Service, Functions, SQL
   Database, Cosmos DB, AKS, Virtual Network, Load Balancer, Service Bus, Key
   Vault, Monitor.
@@ -158,8 +160,9 @@ on the element (`IconSize = 'sm' | 'md' | 'lg' | 'xl'` → 32 / 48 / 64 / 96 px,
 preset. Layout: with a label the mark centres inside the band **opposite the
 caption's alignment**, so moving the text never stacks it over the mark. A
 horizontally-centred caption flips the mark vertically: a bottom-aligned
-caption (the icon default) puts it in the top ~64% of the box, a top- or
-middle-aligned caption sends it to the bottom band. A **left- or
+caption (the icon default) puts it in the top ~64% of the box, a top-aligned
+caption sends it to the bottom band, and a middle-centre label leaves it the
+whole box (the label sits on the art, below). A **left- or
 right-aligned caption flips it horizontally instead** — left caption → mark
 in the right half, right caption → left half — and the mark stays on the
 caption's row (top / middle / bottom) so the pair reads as one line. Without
@@ -169,8 +172,9 @@ the editor overlay's CSS bands (`iconBandClass`) mirror their numbers.
 **Line-art icons share the same inverse band**: the glyph keeps scaling with
 its box (no fixed pixel preset), but a captioned glyph scales into the band
 opposite the caption's alignment exactly like a mark — bottom caption → top
-band, top/middle caption → bottom band, left/right caption → the other half
-on the caption's row — so moving the text never stacks it over the art.
+band, top caption → bottom band, left/right caption → the other half
+on the caption's row — so moving the text never stacks it over the art (the
+one exception, middle-centre, is a label deliberately put on the art).
 The exports / headless renders (`svgIconShape` in the shared renderer) apply
 the same band geometry so a captioned icon exports exactly as drawn.
 
@@ -186,9 +190,7 @@ of the glyph band and aligns within it so every combo reads cleanly:
 
 - **Centre captions** keep the full width and take the vertical band the
   glyph doesn't: top → the top 36%, top-anchored; bottom → the bottom 36%,
-  bottom-anchored; **middle → the top 36%, bottom-anchored**, so the text
-  sits directly above the glyph band's edge (a compact pair) instead of
-  overlapping the art.
+  bottom-anchored. Middle-centre is not a caption: see below.
 - **Left/right captions** are confined to their half of the box (text wraps
   at the half, never under the glyph) and are **vertically centred on the
   glyph's row** (the same 6–64% / full-height / 36–94% row the band uses for
@@ -196,6 +198,27 @@ of the glyph band and aligns within it so every combo reads cleanly:
 
 The editor display + inline editor, the export renderer, and the CSS bands
 all read this one geometry, so a captioned icon exports exactly as drawn.
+
+**Middle-centre puts the label on the glyph** (issue #489). The centre of
+the 3 × 3 alignment grid is the one choice with no side to sit on, so it means
+_on the art_: the glyph keeps the whole box, as if unlabelled, and the label is
+centred over it, drawn above the art. That is how a skull goes in a flag or a
+number in a circle. It used to mean "the top band, hugging the glyph", which
+looked almost the same as Top-centre and left no way to label the art itself.
+`isOnGlyphLabel` (`icon-size.ts`) names the rule; `iconBandBounds` and
+`iconCaptionBand` both return the whole box for it, and the editor's
+`iconBandClass` / `captionBandClass` mirror them, so exports match.
+
+**A caption never disappears into its band.** The band is a fraction of the
+box, so on a small icon (a 40px zone glyph has a ~14px bottom band) a fixed
+text size plus the padding preset is taller than the band. The caption then
+draws past its band, over the art, rather than being clipped to a sliver: an
+icon's caption does not clip, and it paints after the glyph, so it sits on top.
+
+**While a label is typed, the glyph already holds its band.** The glyph moves
+aside for a caption from the moment editing starts, not once the first
+character commits, so the inline editor sits exactly where the text will land
+instead of over a full-size glyph.
 
 **Connectors attach to the mark, not the element box.** Because the box can
 be much larger than the visible chip, arrow anchors on a Technology icon are

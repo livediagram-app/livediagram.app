@@ -13,7 +13,7 @@ export function migrateLegacyTextSizing(elements: Element[]): Element[] {
   return elements.map((el) => {
     if (!carriesAutoWidth(el)) return el;
     const { autoWidth, ...rest } = el as Element & LegacyText;
-    if (rest.sizing !== undefined || autoWidth !== true) return rest as Element;
+    if (rest.sizing !== undefined || autoWidth !== true) return rest;
     return { ...rest, sizing: 'fit' } as Element;
   });
 }

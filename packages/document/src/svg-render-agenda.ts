@@ -5,7 +5,8 @@
 // large and a drain bar; the rest a hollow ring. Geometry is the canvas's, in
 // the card's design units (CollabPanel's 16/14 padding, 32.5px steps).
 
-import { agendaTotalMinutes, clampAgendaMinutes } from './collab-shapes';
+import { agendaTotalMinutes, clampAgendaMinutes, type AgendaItem } from './collab-shapes';
+import { SHAPE_DEFAULT_SIZE } from './shape-factory';
 import { r2, xmlEscape } from './svg-render-primitives';
 import {
   checkMark,
@@ -24,6 +25,48 @@ const NAME_LINE_PX = 14;
 const STEP_H = 32.5;
 // The current step's extra: the drain bar and its margin.
 const CURRENT_EXTRA = 10.5;
+
+// Under the header row, which on the canvas is as tall as its 24px settings button rather than the
+// title alone; the first step sits under the progress bar.
+const BAR_Y = PAD_Y + TITLE_PX + 14;
+const FIRST_STEP_Y = BAR_Y + 14;
+// The room a fitted card leaves below its last step: the card's own padding.
+const LAST_ROW_SLACK = PAD_Y;
+
+type StepState = 'done' | 'current' | 'ahead';
+
+// One step's state, its wrapped name and its row height, in a card `w` design units wide.
+function stepOf(item: AgendaItem, i: number, current: number | undefined, w: number) {
+  const state: StepState =
+    current === undefined ? 'ahead' : i === current ? 'current' : i < current ? 'done' : 'ahead';
+  // A name wraps (two lines, as the canvas wraps it, the second ending in an ellipsis only when it
+  // runs on), and its row grows by the line.
+  const names = wrapLines(item.label || `Segment ${i + 1}`, w - PAD_X * 2 - 46 - 40, 12, 2);
+  const extra = (names.length - 1) * NAME_LINE_PX;
+  const rowH = (state === 'current' ? STEP_H + CURRENT_EXTRA : STEP_H) + extra;
+  return { state, names, extra, rowH };
+}
+
+// The height an agenda needs to draw every one of its segments at its width (docs/specs/012-collaboration/agenda.md
+// "The face"), never less than it has: the card scales with its width, so the steps' design height
+// is scaled by it. An agenda with no segments keeps its height.
+export function agendaFitHeight(el: {
+  width: number;
+  height: number;
+  agendaItems?: readonly AgendaItem[];
+  agendaCurrent?: number;
+}): number {
+  const items = el.agendaItems ?? [];
+  if (items.length === 0) return el.height;
+  const design = SHAPE_DEFAULT_SIZE.agenda;
+  // Room for whichever segment becomes the current one (its taller row), not only the one that is now: the card is
+  // fitted when its segments are written, and a session that starts later must not push the last one off again.
+  const steps =
+    items.reduce((sum, item, i) => sum + stepOf(item, i, undefined, design.width).rowH, 0) +
+    CURRENT_EXTRA;
+  const needed = Math.ceil(((FIRST_STEP_Y + steps + LAST_ROW_SLACK) * el.width) / design.width);
+  return Math.max(el.height, needed);
+}
 
 // "1h 5m" / "45m", the canvas's formatMinutes.
 function formatMinutes(total: number): string {
@@ -73,7 +116,7 @@ export function svgAgenda(el: Face, title: string, color: string, a: CollabAccen
       const share = total > 0 ? Math.min(1, elapsed / total) : 0;
       // Under the header row, which on the canvas is as tall as its 24px
       // settings button rather than the title alone.
-      const barY = PAD_Y + TITLE_PX + 14;
+      const barY = BAR_Y;
       const barW = w - PAD_X * 2;
       let out =
         rect(PAD_X, barY, barW, 4, 2, color, 0.08) +
@@ -82,21 +125,9 @@ export function svgAgenda(el: Face, title: string, color: string, a: CollabAccen
       const markerX = PAD_X + 8;
       const nameX = PAD_X + 36;
       const rightX = w - PAD_X - 10;
-      let y = barY + 14;
+      let y = FIRST_STEP_Y;
       items.forEach((item, i) => {
-        const state =
-          current === undefined
-            ? 'ahead'
-            : i === current
-              ? 'current'
-              : i < current
-                ? 'done'
-                : 'ahead';
-        // A name wraps (two lines, as the canvas wraps it, the second ending in an ellipsis only when it
-        // runs on), and its row grows by the line.
-        const names = wrapLines(item.label || `Segment ${i + 1}`, rightX - nameX - 40, 12, 2);
-        const extra = (names.length - 1) * NAME_LINE_PX;
-        const rowH = (state === 'current' ? STEP_H + CURRENT_EXTRA : STEP_H) + extra;
+        const { state, names, extra, rowH } = stepOf(item, i, current, w);
         if (y + rowH - 4 > h - PAD_Y + 4) return;
         const minutes = clampAgendaMinutes(item.minutes);
         const cy = y + 16;

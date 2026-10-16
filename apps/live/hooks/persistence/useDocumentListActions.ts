@@ -8,6 +8,7 @@
 // the pages were missing the Moved / Duplicated telemetry, and /new
 // dismissed Shared rows without the confirm.)
 
+import { EXPLORER_LANDING_PATH } from '@/lib/explorer-landing';
 import { truncateName } from '@livediagram/document';
 import type { Dispatch, SetStateAction } from 'react';
 import {
@@ -20,8 +21,8 @@ import {
 } from '@/lib/api-client';
 import { duplicateDocument as duplicate } from '@/lib/duplicate-document';
 import { markDocumentDeleted, unmarkDocumentDeleted } from '@/lib/document-tombstones';
-import { fetchSharedTabsNotice } from '@/lib/shared-tabs-notice';
-import { deleteConfirmation, lookUpShareLinks } from '@/lib/delete-confirmation';
+import { handOffDeleteUndo, offerDeleteUndo, type DeletedTrash } from '@/lib/document-delete-undo';
+import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
 import { folderDeleteConfirmation } from '@/lib/folder-delete-confirmation';
 import { folderDefaultKeys } from '@/lib/placement-defaults/default-destination';
 import { placementDefaultsSnapshot } from '@/lib/placement-defaults/placement-defaults-store';
@@ -127,40 +128,28 @@ export function useDocumentListActions(deps: DocumentListActionsDeps) {
       });
   };
 
-  // Delete a document by id. When the target is the currently-open one
-  // (editor only), redirect to /live/explorer so the user lands on
-  // their library rather than a dead row. Deleting any other document
-  // removes the row optimistically: a fire-and-forget DELETE followed
-  // by an immediate list refetch used to race, repainting the row the
-  // API hadn't yet committed. The delete is awaited: a failure puts the
-  // row back and says so, and only a landed delete is confirmed. It goes to the Trash (docs/specs/013-workspace/trash.md),
-  // which the confirmation mentions once; there is no undo toast.
+  // Delete a document by id (docs/specs/013-workspace/trash.md "Deleting"): no question first, it only goes to the
+  // Trash, and "Document deleted" carries an Undo that restores it. When the target is the currently-open one (editor
+  // only), redirect to the Explorer, which offers the Undo on arrival. Deleting any other document removes the row
+  // optimistically: a fire-and-forget DELETE followed by an immediate list refetch used to race, repainting the row the
+  // API hadn't yet committed. The delete is awaited: a failure puts the row back and says so.
   //
-  // `beforeRemove` runs after the delete is CONFIRMED and before the
-  // row is pulled, so the caller can play a row exit animation (the
-  // panel slides it out ~220ms). `skipConfirm` is passed by callers
-  // that already confirmed inline (the panel's ConfirmPopover; the
-  // modal would double-prompt).
+  // `beforeRemove` runs before the row is pulled, so the caller can play a row exit animation (the panel slides it out
+  // ~220ms). `onRestored` runs after an Undo, for a row this list does not hold (the panel's team rows).
   const deleteDocument = async (
     id: string,
     beforeRemove?: () => Promise<void> | void,
-    opts?: { skipConfirm?: boolean },
+    opts?: { onRestored?: () => void },
   ) => {
     if (typeof window === 'undefined' || !ownerId) return;
-    if (!opts?.skipConfirm) {
-      const listed = documentList.find((d) => d.id === id);
-      const name = id === currentDocument?.id ? currentDocument.name : listed?.name;
-      // Tabs also in other documents stay there, and share links stop working:
-      // said only when they apply (lib/delete-confirmation.ts).
-      const [notice, hasShareLinks] = await Promise.all([
-        fetchSharedTabsNotice(ownerId, id, 'delete'),
-        listed ? Promise.resolve(listed.shareCode !== null) : lookUpShareLinks(ownerId, id),
-      ]);
-      const ok = await confirm(
-        deleteConfirmation({ name, hasShareLinks, sharedTabsNotice: notice }),
-      );
-      if (!ok) return;
-    }
+    const listed = documentList.find((d) => d.id === id);
+    // Which Trash it goes to: this browser's for an offline document, the team's for one the person's list does not
+    // hold (a team document, open or in the panel's team rows), else the person's own.
+    const trash: DeletedTrash = !listed
+      ? 'Team'
+      : listed.ownerId === OFFLINE_OWNER_ID
+        ? 'Local'
+        : 'Personal';
     // Tombstone first, ALWAYS: the open editor's autosave (debounce + the
     // beforeunload keepalive beacon) must not write this document back. For
     // the open document that's the bug fix; for others it's harmless (their
@@ -177,9 +166,14 @@ export function useDocumentListActions(deps: DocumentListActionsDeps) {
       // despite the navigation below, because the client flushes its buffer
       // through sendBeacon on pagehide (@livediagram/telemetry-client).
       await apiDeleteDocument(ownerId, id)
-        .then(() => track('Document', 'Deleted'))
+        .then(() => {
+          track('Document', 'Deleted');
+          handOffDeleteUndo(id, trash);
+        })
         .catch(() => {});
-      window.location.assign(`${window.location.origin}/explorer`);
+      // Straight to the landing section: `/explorer` is only an index that redirects, one more page
+      // between the delete and the Explorer for something to flash on.
+      window.location.assign(`${window.location.origin}${EXPLORER_LANDING_PATH}`);
       return;
     }
     await beforeRemove?.();
@@ -203,9 +197,21 @@ export function useDocumentListActions(deps: DocumentListActionsDeps) {
       return;
     }
     track('Document', 'Deleted');
-    // The row is gone but on a long / scrolled list its disappearance
-    // can be easy to miss, and the action is destructive — confirm it.
-    toast.success('Document deleted');
+    // The row is gone but on a long / scrolled list its disappearance can be easy to miss: say so, and offer it back.
+    offerDeleteUndo(toast, {
+      ownerId,
+      id,
+      trash,
+      // Restored exactly as it was (trash.md "Restoring"), so the row it had goes back where it was.
+      onRestored: () => {
+        if (row) {
+          setDocumentList((prev) =>
+            prev.some((d) => d.id === id) ? prev : [...prev.slice(0, at), row, ...prev.slice(at)],
+          );
+        }
+        opts?.onRestored?.();
+      },
+    });
   };
 
   // Delete a folder (docs/specs/013-workspace/folders.md "Deleting a folder"): confirm (naming

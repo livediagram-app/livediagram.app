@@ -40,7 +40,7 @@ function setup(initial: Props) {
         liveElements: () => tab.elements,
         commit: vi.fn(),
         memory,
-        swatchOverrides: { overrides: {}, setOverride: vi.fn(), clearOverride: vi.fn() } as never,
+        swatchOverrides: { overrides: {}, setOverride: vi.fn(), clearOverride: vi.fn() },
         toolIntent: intent,
       });
       return { memory, quick };

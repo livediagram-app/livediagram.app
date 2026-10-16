@@ -7,19 +7,18 @@ import { useSnapColours } from './useSnapColours';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
-const stroke = (id: string, strokeColor?: string): Element =>
-  ({
-    id,
-    type: 'freehand',
-    x: 0,
-    y: 0,
-    width: 10,
-    height: 10,
-    packedPoints: 'AQA=',
-    closed: false,
-    penWidth: 1.5,
-    ...(strokeColor ? { strokeColor } : {}),
-  }) as Element;
+const stroke = (id: string, strokeColor?: string): Element => ({
+  id,
+  type: 'freehand',
+  x: 0,
+  y: 0,
+  width: 10,
+  height: 10,
+  packedPoints: 'AQA=',
+  closed: false,
+  penWidth: 1.5,
+  ...(strokeColor ? { strokeColor } : {}),
+});
 
 function setup(elements: Element[], over: { inertIds?: Set<string>; editsBlocked?: boolean } = {}) {
   let live = elements;
@@ -55,6 +54,22 @@ describe('useSnapColours', () => {
     expect(commit).toHaveBeenCalledTimes(1);
     expect(live()).toEqual([{ ...stroke('a'), penColour: 'red' }, stroke('b')]);
     expect(track).toHaveBeenCalledExactlyOnceWith('Draw', 'Changed', 'SnapColours');
+  });
+
+  it('returns the count and reports it even when the commit runs later', () => {
+    const elements = [stroke('a', '#e03131'), stroke('b', '#868e96')];
+    const later: ((els: Element[]) => Element[])[] = [];
+    const hook = renderHook(() =>
+      useSnapColours({
+        elements,
+        inertIds: new Set(),
+        editsBlocked: false,
+        commit: (map) => void later.push(map),
+      }),
+    );
+    expect(hook.result.current.snap()).toBe(2);
+    expect(track).toHaveBeenCalledExactlyOnceWith('Draw', 'Changed', 'SnapColours');
+    expect(later[0]!(elements)).toEqual([{ ...stroke('a'), penColour: 'red' }, stroke('b')]);
   });
 
   it('does nothing while edits are blocked or with nothing to snap', () => {

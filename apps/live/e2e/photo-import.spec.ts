@@ -281,7 +281,7 @@ test('the photo import needs no model key', async ({ page, pageErrors }) => {
   await page.route('**/api/capabilities', (route) =>
     route.fulfill({ json: { aiEnabled: false, emailEnabled: false } }),
   );
-  await startTemplateDocument(page, /Browse Technical templates/, /^Event storming/i);
+  await startTemplateDocument(page, 'Technical', /^Event storming/i);
   await page.locator('[data-canvas-a11y-root]').waitFor();
   await dismissQuickTour(page);
   await expect(page.getByRole('button', { name: /add from photo/i })).toBeVisible();
@@ -777,7 +777,9 @@ test('a moved box is read again, 8 seconds after the move', async ({ page, pageE
   await openPhotoBoard(page, { boundaryModel: false });
   const asked: number[][] = [];
   await page.route('**/api/ai/read-notes', async (route) => {
-    const crops = (JSON.parse(route.request().postData() ?? '{}').crops ?? []) as { id: number }[];
+    const { crops = [] } = JSON.parse(route.request().postData() ?? '{}') as {
+      crops?: { id: number }[];
+    };
     asked.push(crops.map((c) => c.id));
     const again = asked.length > 1;
     await route.fulfill({

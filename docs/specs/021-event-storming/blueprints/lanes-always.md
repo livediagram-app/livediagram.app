@@ -16,8 +16,8 @@ Scope, by file:
 | `packages/document/src/event-storming-photo.ts`                  | `reconcilePhoto` hands each addition its detector row                     |
 | `packages/document/src/index.ts`                                 | `Tab.esLanesSettled`                                                      |
 | `packages/document/src/comments.ts` (`graftLiveTabState`)        | The mark survives undo / redo / cancel                                    |
-| `packages/sticky-vision/src/detect.ts`                           | `toNormalised`: both axes in fractions of the photo's width               |
-| `packages/templates/src/templates.ts`                            | `templateCanvasOverrides('event-storming')` marks the board settled       |
+| `packages/sticky-vision/src/normalised.ts`                       | `toNormalised`: both axes in fractions of the photo's width               |
+| `packages/templates/src/template-canvas-overrides.ts`            | `templateCanvasOverrides('event-storming')` marks the board settled       |
 | `apps/live/hooks/canvas/boxed-drag-resolve.ts`                   | `laneHeld` switches the y threshold                                       |
 | `apps/live/hooks/canvas/useEditorDrag.ts`                        | Picks the lane anchor of a selection; passes `laneHeld`                   |
 | `apps/live/hooks/canvas/lane-drag.ts`                            | `lanesHoldDrag`, `laneAnchorOf`: which drags meet the lanes, and by what  |

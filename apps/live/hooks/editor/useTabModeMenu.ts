@@ -14,8 +14,10 @@ export function useTabModeMenu(deps: {
   activeId: string;
   // The editor's own switch for the active tab (useEditorMode, with useLeaveIllustrate's questions).
   switchActive: (mode: EditorMode) => void;
+  // A new tab in a mode, for a mode across Plan's line; absent where the session cannot add tabs.
+  newTabIn?: ((mode: EditorMode) => void) | undefined;
 }) {
-  const { canEdit, commitTabs, activeId, switchActive } = deps;
+  const { canEdit, commitTabs, activeId, switchActive, newTabIn } = deps;
 
   const switchTab = (tab: Tab, mode: EditorMode) => {
     if (opensInOf(tab) === mode) return;
@@ -31,7 +33,7 @@ export function useTabModeMenu(deps: {
   // The menu's choice for a tab, or nothing where it is not offered.
   const choiceFor = (tab: Tab): TabModeChoice | undefined =>
     canEdit && editorModeSwitchable(tab) && tab.locked !== true
-      ? { mode: opensInOf(tab), onChange: (mode) => switchTab(tab, mode) }
+      ? { mode: opensInOf(tab), onChange: (mode) => switchTab(tab, mode), newTabIn }
       : undefined;
 
   return { choiceFor };

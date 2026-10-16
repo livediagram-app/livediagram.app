@@ -38,6 +38,7 @@ export function TeamPane({
   moveDests,
   onMoveDocumentTo,
   lens,
+  onLibraryChange,
 }: {
   ownerId: string;
   teamId: string;
@@ -60,6 +61,8 @@ export function TeamPane({
   onMoveDocumentTo?: ComponentProps<typeof TeamSharedDocuments>['onMoveDocumentTo'];
   // The Explorer's lens (docs/specs/013-workspace/explorer-filters.md), passed straight through.
   lens?: ComponentProps<typeof TeamSharedDocuments>['lens'];
+  // Passed straight through: a library this page changed, for the Explorer's own lists.
+  onLibraryChange?: ComponentProps<typeof TeamSharedDocuments>['onLibraryChange'];
 }) {
   const [detail, setDetail] = useState<TeamDetailResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -206,7 +209,7 @@ export function TeamPane({
                 type="button"
                 onClick={() => setLinkOpen(true)}
                 aria-label="Invite by link"
-                className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium text-brand-600 transition hover:bg-brand-50 dark:text-brand-300 dark:hover:bg-brand-500/10"
+                className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium text-brand-700 transition hover:bg-brand-50 dark:text-brand-300 dark:hover:bg-brand-500/10"
               >
                 <LinkIcon />
                 <span className="hidden sm:inline">Invite by link</span>
@@ -342,6 +345,7 @@ export function TeamPane({
         moveDests={moveDests}
         onMoveDocumentTo={onMoveDocumentTo}
         lens={lens}
+        onLibraryChange={onLibraryChange}
       />
 
       <TeamFormModal

@@ -50,13 +50,18 @@ describe('useCanvasA11y announcements', () => {
       selection.setSelectedId(c.id);
       selection.view.rerender({ els: [a, b, c] });
     });
-    act(() => vi.runAllTimers());
+    act(() => {
+      vi.runAllTimers();
+    });
     expect(announce).toHaveBeenCalledWith(expect.stringMatching(/^Selected .*Checkout/));
   });
 
   it('announces a single selection, a multi-selection and a clear', () => {
     const selection = setup();
-    const frame = () => act(() => vi.runAllTimers());
+    const frame = () =>
+      act(() => {
+        vi.runAllTimers();
+      });
     act(() => selection.setSelectedId(a.id));
     frame();
     act(() =>
@@ -66,7 +71,7 @@ describe('useCanvasA11y announcements', () => {
     act(() => selection.setSelection({ selectedId: null, multiSelectedIds: new Set() }));
     frame();
 
-    expect(announce.mock.calls.map(([m]) => m)).toEqual([
+    expect(announce.mock.calls.map(([m]): unknown => m)).toEqual([
       expect.stringMatching(/^Selected .*Login/),
       expect.stringMatching(/^Selected /),
       'Selection cleared',
@@ -79,16 +84,22 @@ describe('useCanvasA11y announcements', () => {
       selection.setSelectedId(a.id);
       selection.setSelectedId(b.id);
     });
-    act(() => vi.runAllTimers());
-    expect(announce.mock.calls.map(([m]) => m)).toEqual([expect.stringMatching(/Home/)]);
+    act(() => {
+      vi.runAllTimers();
+    });
+    expect(announce.mock.calls.map(([m]): unknown => m)).toEqual([expect.stringMatching(/Home/)]);
   });
 
   it('does not re-announce the same multi-selection in another order', () => {
     const selection = setup();
     act(() => selection.setMultiSelectedIds(new Set([a.id, b.id])));
-    act(() => vi.runAllTimers());
+    act(() => {
+      vi.runAllTimers();
+    });
     act(() => selection.setMultiSelectedIds(new Set([b.id, a.id, b.id])));
-    act(() => vi.runAllTimers());
+    act(() => {
+      vi.runAllTimers();
+    });
     expect(announce).toHaveBeenCalledTimes(1);
   });
 

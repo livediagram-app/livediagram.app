@@ -22,7 +22,7 @@ describe('sceneBounds', () => {
   });
 
   it('reads a rotated box by its turned corners', () => {
-    const b = sceneBounds([{ ...box, rotationDeg: 90 } as SceneItem])!;
+    const b = sceneBounds([{ ...box, rotationDeg: 90 }])!;
     expect(b.x).toBeCloseTo(30);
     expect(b.width).toBeCloseTo(40);
     expect(b.height).toBeCloseTo(100);

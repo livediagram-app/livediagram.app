@@ -7,7 +7,7 @@ import {
   defaultPadding,
   defaultStrokeColor,
   isBoxed,
-  isChartShape,
+  takesChartPalette,
   isSelfDrawingShape,
   supportsMarkers,
   supportsTextAlign,
@@ -17,7 +17,6 @@ import {
   supportsShadow,
   type BorderStroke,
   type BorderStyle,
-  type BoxedElement,
   type ElementShadow,
   type Padding,
   type ShapeElement,
@@ -51,12 +50,18 @@ import {
   MarkersMenuGlyph,
   MarkerTiles,
   MenuToggleRow,
-  TextSizeTiles,
   TextToggle,
 } from '@/components/palette/context-menu-rows';
+import { presetPxFor, TextSizeControl } from '@/components/palette/TextSizeControl';
 import { TypographySections } from './TypographySections';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
-import { ArrowPresetsSection, ShapePresetsSection, shapeSupportsPresets } from './PresetSections';
+import {
+  ArrowPresetsSection,
+  isPlanPresetShape,
+  PlanPresetsSection,
+  ShapePresetsSection,
+  shapeSupportsPresets,
+} from './PresetSections';
 import { MultiPlacementSections } from './MultiPlacementSections';
 import { MultiStyleSections } from './MultiStyleSections';
 import { useContextMenuScaffold } from './useContextMenuScaffold';
@@ -114,7 +119,7 @@ export function MultiSelectionContextMenu({
         // colour per-slice via their Data category). Arrows colour their
         // label via the content Text section, matching the single menu.
         const colourSrcs = boxedSel.filter(
-          (el) => supportsColours(el) && !(el.type === 'shape' && isChartShape(el.shape)),
+          (el) => supportsColours(el) && !(el.type === 'shape' && takesChartPalette(el.shape)),
         );
         // An arrow-only selection still gets Colours (the Line swatch) —
         // matching the single-arrow menu. Mixed selections don't need a
@@ -203,7 +208,20 @@ export function MultiSelectionContextMenu({
                   "Style" flyout row, matching the single-element menu. ── */}
             {showStyleFlyout ? (
               <MenuFlyoutSection title="Style" icon={<StyleMenuGlyph />} {...flyoutProps('style')}>
-                {presetShapeSrc ? (
+                {presetShapeSrc &&
+                sel.every(
+                  (el) =>
+                    el.type !== 'shape' || !shapeSupportsPresets(el) || isPlanPresetShape(el.shape),
+                ) ? (
+                  // Only boards and sheets: their calm presets (docs/specs/010-palette/style-presets.md).
+                  <PlanPresetsSection
+                    target={presetShapeSrc}
+                    props={props}
+                    accordion={sectionProps('m-shape-presets')}
+                    onClose={onClose}
+                    title={arrowSrc ? 'Shape Presets' : 'Presets'}
+                  />
+                ) : presetShapeSrc ? (
                   <ShapePresetsSection
                     shape={presetShapeSrc.shape}
                     current={{
@@ -280,9 +298,9 @@ export function MultiSelectionContextMenu({
                   <TypographySections
                     currentFont={(alignSrc as { font?: string }).font ?? null}
                     currentSize={(alignSrc as { textSize?: TextSize }).textSize ?? 'sm'}
+                    presetPx={presetPxFor(alignSrc.type)}
                     padding={
-                      (alignSrc as { padding?: Padding }).padding ??
-                      defaultPadding(alignSrc as BoxedElement)
+                      (alignSrc as { padding?: Padding }).padding ?? defaultPadding(alignSrc)
                     }
                     onSetFont={props.onSetFont}
                     onSetSize={props.onSetTextSize}
@@ -420,11 +438,9 @@ export function MultiSelectionContextMenu({
                     <StrikethroughIcon />
                   </TextToggle>
                 </div>
-                <p className="px-3 pb-1 text-[10px] font-medium text-slate-500 dark:text-slate-400">
-                  Size
-                </p>
-                <TextSizeTiles
+                <TextSizeControl
                   current={contentTextSrc.textSize ?? 'sm'}
+                  presetPx={presetPxFor(contentTextSrc.type)}
                   onSet={props.onSetTextSize}
                   onPreview={props.onPreviewTextSize}
                   onPreviewEnd={props.onPreviewStyleEnd}

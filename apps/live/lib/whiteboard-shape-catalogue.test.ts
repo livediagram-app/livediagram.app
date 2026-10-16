@@ -22,10 +22,18 @@ describe('the whiteboard shape catalogue', () => {
     expect(draw).toEqual(['line', 'arrow']);
   });
 
-  it('offers every palette shape tile except the Components and Plan categories', () => {
+  it('offers every palette shape tile except the Components, Plan and Dashboard categories and the Tab Window', () => {
     const keys = new Set(WHITEBOARD_SHAPE_CATALOGUE.map((e) => e.key));
+    expect([...keys].some((k) => k.startsWith('tab-window'))).toBe(false);
     for (const tile of SHAPE_TILES) {
-      if (tile.section === 'components' || tile.section.startsWith('plan-')) continue;
+      if (
+        tile.id === 'media:tab-window' ||
+        tile.section === 'components' ||
+        tile.section.startsWith('plan-') ||
+        tile.section === 'dashboard-layout' ||
+        tile.section === 'dashboard-cards'
+      )
+        continue;
       const kind = (tile.action as { kind: string }).kind;
       const found = [...keys].some((k) => k === kind || k.startsWith(`${kind}:`));
       const docked = kind === 'square' || kind === 'circle';
@@ -58,7 +66,21 @@ describe('the whiteboard shape catalogue', () => {
 
   it('orders its groups as the palette orders its categories', () => {
     const groups = [...new Set(WHITEBOARD_SHAPE_CATALOGUE.map((x) => x.group))];
-    expect(groups).toEqual(['shapes', 'write', 'draw', 'build', 'devices', 'data', 'behaviour']);
+    expect(groups).toEqual([
+      'shapes',
+      'write',
+      'draw',
+      'build',
+      'concepts',
+      'devices',
+      'data',
+      'collab-ask',
+      'collab-tools',
+      'collab-record',
+      'collab-react',
+      'collab-mode',
+      'collab-navigate',
+    ]);
   });
 
   it('arms every shape entry plain, as a board shape', () => {

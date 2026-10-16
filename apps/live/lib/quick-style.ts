@@ -4,7 +4,7 @@
 import {
   ARROW_THICKNESS_PX,
   DEFAULT_ANIMATION_SPEED,
-  acceptsInlineIcon,
+  positionsInlineIcon,
   arrowThicknessOf,
   canvasSurface,
   defaultArrowStrokeColor,
@@ -14,6 +14,7 @@ import {
   quickSwatches,
   supportsBorderControls,
   supportsColours,
+  takesChartPalette,
   supportsFillColor,
   type ArrowElement,
   type Element,
@@ -28,11 +29,10 @@ import {
 import { applySwatchOverrides, type ShownSwatch, type SwatchOverrides } from './swatch-overrides';
 import type { PenColourChoice, PenColourOption, QuickPenStyle } from './quick-style-pen';
 
-// The whiteboard's colours as a row: the choice the targets share, the stock options, the tab's own.
+// The whiteboard's colours as a row: the choice the targets share and the stock options.
 export type BoardColourSection = {
   value: PenColourChoice | null;
   options: PenColourOption[];
-  custom: PenColourOption[];
 };
 
 export type QuickStyleTarget = ShapeElement | ArrowElement | TextElement | PathElement;
@@ -43,6 +43,10 @@ export type QuickSwatchValue = 0 | QuickSwatchSlot;
 // "One look"): stored by name, drawn in its version for the canvas.
 export const QUICK_INK = INK_PEN_COLOUR;
 export type QuickColourValue = QuickSwatchValue | typeof QUICK_INK;
+// The Background row's Transparent (docs/specs/008-canvas/quick-style-panel.md "Background"): no
+// fill at all, so what is behind the shape shows through.
+export const QUICK_TRANSPARENT = 'transparent';
+export type QuickFillValue = QuickSwatchValue | typeof QUICK_TRANSPARENT;
 export type QuickWidth = 'thin' | 'medium' | 'thick';
 export type QuickStrokeStyle = 'solid' | 'dashed' | 'dotted' | 'flowing';
 export type QuickIconAlign = 'left' | 'above' | 'right';
@@ -61,7 +65,7 @@ export type QuickStyleView = {
   sections: {
     // `ink`: the Ink swatch's colour for the canvas, after the theme's.
     stroke?: { value: QuickColourValue | null; swatches: ShownSwatch[]; ink: string };
-    background?: { value: QuickSwatchValue | null; swatches: ShownSwatch[] };
+    background?: { value: QuickFillValue | null; swatches: ShownSwatch[] };
     textColour?: { value: QuickColourValue | null; swatches: ShownSwatch[]; ink: string };
     width?: { value: QuickWidth | null };
     style?: { value: QuickStrokeStyle | null; options: readonly QuickStrokeStyle[] };
@@ -94,14 +98,18 @@ export function isQuickStyleTarget(el: Element): el is QuickStyleTarget {
 
 export function supportsQuickSection(el: QuickStyleTarget, section: QuickSectionId): boolean {
   switch (section) {
+    // A chart or a Sankey paints from its palette per datum or node (docs/specs/009-elements/pie-chart.md,
+    // docs/specs/009-elements/sankey.md): a stroke or fill swatch would write a colour nothing draws.
     case 'stroke':
       return (
-        el.type === 'arrow' || el.type === 'path' || (el.type === 'shape' && supportsColours(el))
+        el.type === 'arrow' ||
+        el.type === 'path' ||
+        (el.type === 'shape' && supportsColours(el) && !takesChartPalette(el.shape))
       );
     case 'background':
       // A path fills only when closed.
       if (el.type === 'path') return el.closed;
-      return el.type === 'shape' && supportsFillColor(el);
+      return el.type === 'shape' && supportsFillColor(el) && !takesChartPalette(el.shape);
     case 'textColour':
       return el.type === 'text';
     case 'width':
@@ -115,7 +123,8 @@ export function supportsQuickSection(el: QuickStyleTarget, section: QuickSection
       // Only once the shape has words to align: an empty label has nothing to move.
       return el.type === 'shape' && supportsTextAlign(el.shape) && !!el.label?.trim();
     case 'iconAlign':
-      return el.type === 'shape' && acceptsInlineIcon(el) && !!el.iconId;
+      // Not on a card, callout, header or boundary: they place their icon themselves.
+      return el.type === 'shape' && positionsInlineIcon(el) && !!el.iconId;
   }
 }
 
@@ -235,7 +244,9 @@ export function quickStyleView(
       swatches,
       // A fill stores no name, so it is never Ink.
       value: shared(
-        background.map((el) => {
+        background.map((el): QuickFillValue | null => {
+          if ((el as { fillColor?: string }).fillColor === QUICK_TRANSPARENT)
+            return QUICK_TRANSPARENT;
           const v = swatchValue(el, theme, 'fill', swatches);
           return v === QUICK_INK ? null : v;
         }),
@@ -303,8 +314,8 @@ export function applyQuickStroke(
   const { penColour: _named, strokeColor: _c, strokeSwatch: _s, ...rest } = el;
   const pick = strokePick(theme, slot, overrides);
   return rest.type === 'shape'
-    ? ({ ...rest, ...pick, colorPreset: undefined } as Element)
-    : ({ ...rest, ...pick } as Element);
+    ? { ...rest, ...pick, colorPreset: undefined }
+    : { ...rest, ...pick };
 }
 
 // What a Stroke row choice writes: Ink by name, or a swatch's colour with its binding.
@@ -321,7 +332,7 @@ function strokePick(
 export function applyQuickFill(
   el: Element,
   theme: ThemeDefinition,
-  slot: QuickSwatchValue,
+  slot: QuickFillValue,
   overrides: SwatchOverrides = {},
 ): Element {
   if (
@@ -330,6 +341,12 @@ export function applyQuickFill(
     !supportsQuickSection(el, 'background')
   )
     return el;
+  if (slot === QUICK_TRANSPARENT) {
+    const { fillSwatch: _bound, ...rest } = el;
+    return el.type === 'path'
+      ? { ...rest, fillColor: QUICK_TRANSPARENT }
+      : ({ ...rest, fillColor: QUICK_TRANSPARENT, colorPreset: undefined } as Element);
+  }
   const { colour, bind } = pickFor(theme, 'fill', slot, overrides);
   return el.type === 'path'
     ? { ...el, fillColor: colour, fillSwatch: bind }

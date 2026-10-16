@@ -177,7 +177,7 @@ export function CommunitySection({
               >
                 Keep It
               </Button>
-              <Button variant="primary" size="xs" onClick={remove} disabled={removing}>
+              <Button variant="primary" size="xs" onClick={() => void remove()} disabled={removing}>
                 {removing ? 'Removing' : 'Remove'}
               </Button>
             </div>

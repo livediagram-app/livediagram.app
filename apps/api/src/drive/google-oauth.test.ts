@@ -1,6 +1,13 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { sentForm } from '@livediagram/vitest-config/sent-request';
 import type { Env } from '../types';
-import { exchangeCode, GoogleOAuthError, refreshAccessToken, revokeToken } from './google-oauth';
+import {
+  exchangeCode,
+  GOOGLE_CALL_TIMEOUT_MS,
+  GoogleOAuthError,
+  refreshAccessToken,
+  revokeToken,
+} from './google-oauth';
 
 // The three calls the broker makes to Google's OAuth endpoint
 // (docs/specs/022-drive-mirror/blueprints/drive-mirror.md, "Google OAuth").
@@ -16,7 +23,7 @@ function stubFetch(status: number, body: unknown) {
   vi.stubGlobal(
     'fetch',
     vi.fn(async (url: string, init: RequestInit) => {
-      calls.push({ url, form: new URLSearchParams(String(init.body)) });
+      calls.push({ url, form: sentForm(init) });
       return new Response(JSON.stringify(body), { status });
     }),
   );
@@ -95,5 +102,27 @@ describe('revokeToken', () => {
     expect(await revokeToken(env, 'rt')).toBe(false);
     stubFetch(400, { error: 'invalid_token' });
     expect(await revokeToken(env, 'rt')).toBe(false);
+  });
+});
+
+// A Google endpoint that never answers fails the call as a network failure would, instead of holding a
+// consent or a sync open.
+describe('Google call timeout', () => {
+  it('throws failed once GOOGLE_CALL_TIMEOUT_MS passes with no answer', async () => {
+    // The bound itself is the platform's (AbortSignal.timeout); stand in an already-expired one.
+    const timeout = vi
+      .spyOn(AbortSignal, 'timeout')
+      .mockImplementation(() => AbortSignal.abort(new DOMException('timed out', 'TimeoutError')));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (_url: string, init: RequestInit) => {
+        if (init.signal?.aborted) throw init.signal.reason;
+        return new Response('{}', { status: 200 });
+      }),
+    );
+    const call = refreshAccessToken(env, 'rt', 0);
+    const settled = expect(call).rejects.toMatchObject({ kind: 'failed' });
+    await settled;
+    expect(timeout).toHaveBeenCalledWith(GOOGLE_CALL_TIMEOUT_MS);
   });
 });

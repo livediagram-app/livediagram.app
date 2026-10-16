@@ -1,3 +1,5 @@
+import { Suspense } from 'react';
+import { OpeningScreen } from '@/components/chrome/OpeningScreen';
 import EditorPage from './editor-page';
 
 // Static export + dynamic route: `output: 'export'` requires every
@@ -8,6 +10,12 @@ import EditorPage from './editor-page';
 // the real id from `window.location.pathname`. See docs/specs/007-editor/new-document-route.md.
 export const generateStaticParams = async () => [{ id: 'placeholder' }];
 
+// The editor renders in the browser only (docs/specs/003-system-architecture/react-state-and-effects.md "Rendering in
+// the browser only"): the prerender holds the opening screen it always showed first, so the swap moves nothing.
 export default function Page() {
-  return <EditorPage />;
+  return (
+    <Suspense fallback={<OpeningScreen />}>
+      <EditorPage />
+    </Suspense>
+  );
 }

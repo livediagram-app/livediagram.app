@@ -4,7 +4,7 @@
 import { COMMAND_ALIASES, RESOURCES, verbsOf, type Verb } from '@livediagram/agent-verbs';
 import { fieldsOf, flagOf, keyOf, restName } from '../dispatch/fields';
 
-export const HELP_TOP_MAX_TOKENS = 500;
+export const HELP_TOP_MAX_TOKENS = 520;
 export const HELP_RESOURCE_MAX_TOKENS = 250;
 export const HELP_VERB_MAX_TOKENS = 400;
 
@@ -34,9 +34,11 @@ export const NAMED_ONLY = [
   'sheet',
   'page',
   'article',
+  'form',
   'type',
   'template',
   'icon',
+  'image',
   'schema',
   'guide',
   'skill',

@@ -15,6 +15,7 @@ export const CTA_SOURCES = {
     'HeaderWhiteboard',
     'HeaderIllustration',
     'HeaderPlan',
+    'HeaderSession',
     // Retired with the hero's old buttons and launch window: nothing links them now, but they stay
     // so a page a browser still has cached reports, and the dashboard labels the rows they left.
     'Hero',
@@ -22,7 +23,17 @@ export const CTA_SOURCES = {
     'HeroBrainstorm',
     'HeroCanvas',
     'HeroBuild',
+    // The intent-led hero (docs/specs/019-marketing/marketing-site.md "Hero"): its search, the five
+    // blanks of the Start Blank menu in its bar, and its card fan.
+    'HeroSearch',
+    'HeroBlankDraw',
+    'HeroBlankWhiteboard',
+    'HeroBlankSession',
+    'HeroBlankIllustration',
+    'HeroBlankPlan',
+    'HeroFan',
     'Gallery',
+    // Retired when the gallery's search moved to the hero (October 2026): its no-match blank link.
     'GalleryDraw',
     'Closing',
   ],
@@ -32,17 +43,72 @@ export const CTA_SOURCES = {
     'HeaderWhiteboard',
     'HeaderIllustration',
     'HeaderPlan',
+    'HeaderSession',
     'Hero',
     'Closing',
   ],
-  Compare: ['Header', 'HeaderDraw', 'HeaderWhiteboard', 'HeaderIllustration', 'HeaderPlan', 'Card'],
-  Faq: ['Header', 'HeaderDraw', 'HeaderWhiteboard', 'HeaderIllustration', 'HeaderPlan', 'Card'],
-  Status: ['Header', 'HeaderDraw', 'HeaderWhiteboard', 'HeaderIllustration', 'HeaderPlan'],
-  Dashboard: ['Header', 'HeaderDraw', 'HeaderWhiteboard', 'HeaderIllustration', 'HeaderPlan'],
-  Help: ['Header', 'HeaderDraw', 'HeaderWhiteboard', 'HeaderIllustration', 'HeaderPlan'],
+  Compare: [
+    'Header',
+    'HeaderDraw',
+    'HeaderWhiteboard',
+    'HeaderIllustration',
+    'HeaderPlan',
+    'HeaderSession',
+    'Card',
+  ],
+  Faq: [
+    'Header',
+    'HeaderDraw',
+    'HeaderWhiteboard',
+    'HeaderIllustration',
+    'HeaderPlan',
+    'HeaderSession',
+    'Card',
+  ],
+  // The Build with AI page (docs/specs/019-marketing/build-with-ai.md): its header only. Its own buttons open
+  // a third-party tool or sign-up, never /new, so they are not funnel sources.
+  Ai: [
+    'Header',
+    'HeaderDraw',
+    'HeaderWhiteboard',
+    'HeaderIllustration',
+    'HeaderPlan',
+    'HeaderSession',
+  ],
+  Status: [
+    'Header',
+    'HeaderDraw',
+    'HeaderWhiteboard',
+    'HeaderIllustration',
+    'HeaderPlan',
+    'HeaderSession',
+  ],
+  Dashboard: [
+    'Header',
+    'HeaderDraw',
+    'HeaderWhiteboard',
+    'HeaderIllustration',
+    'HeaderPlan',
+    'HeaderSession',
+  ],
+  Help: [
+    'Header',
+    'HeaderDraw',
+    'HeaderWhiteboard',
+    'HeaderIllustration',
+    'HeaderPlan',
+    'HeaderSession',
+  ],
   // The Community app (docs/specs/025-community/community.md): its header. Its Share Your Own buttons open
   // Explorer Home, not /new, so they are not funnel sources.
-  Community: ['Header', 'HeaderDraw', 'HeaderWhiteboard', 'HeaderIllustration', 'HeaderPlan'],
+  Community: [
+    'Header',
+    'HeaderDraw',
+    'HeaderWhiteboard',
+    'HeaderIllustration',
+    'HeaderPlan',
+    'HeaderSession',
+  ],
 } as const satisfies Record<string, readonly string[]>;
 
 export type CtaSurface = keyof typeof CTA_SOURCES;
@@ -108,6 +174,8 @@ export function ctaSurfaceOfPath(path: string): CtaSurface | null {
       return 'Compare';
     case 'faq':
       return 'Faq';
+    case 'ai':
+      return 'Ai';
     case 'status':
       return 'Status';
     case 'telemetry':

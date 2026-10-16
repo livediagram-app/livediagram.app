@@ -17,14 +17,26 @@ import {
   sortSheet,
   validFormatPatch,
   writeRows,
+  formatA1,
+  layoutIndex,
+  rangeOptions,
+  splitCellKey,
+  validateWrite,
+  writeForRules,
   type AgentValue,
+  type CellChange,
   type FormatPatch,
+  type Sheet,
   type GridRange,
   type Rand,
   type SheetWrite,
   type Workbook,
 } from '@livediagram/sheets';
 import type { SheetRefusal } from './sheet-state';
+import { buildRuleChange, type SheetRuleChange } from './sheet-rule-change';
+import { buildShapeChange, type SheetShapeChange } from './sheet-shape-change';
+import { buildDesign, type SheetDesignInput } from './sheet-design';
+import { buildChartChange, type SheetChartChange, type SheetChartOut } from './sheet-charts';
 import { plural } from '@livediagram/document';
 
 // How a cell looks, in words; null clears that part (false clears a flag).
@@ -56,10 +68,31 @@ export type SheetChange =
   | { op: 'delete_cols'; cols: string }
   | { op: 'rename'; title: string }
   | { op: 'sort'; by: string; range?: string; descending?: boolean; header?: boolean }
-  | { op: 'freeze'; rows?: number; cols?: number };
+  | { op: 'freeze'; rows?: number; cols?: number }
+  // Validation and format rules (sheet-rule-change.ts).
+  | SheetRuleChange
+  // Sizes, merges, borders and the filter (sheet-shape-change.ts).
+  | SheetShapeChange
+  // A sheet laid out as a template is (sheet-design.ts), and a chart over cells (sheet-charts.ts).
+  | { op: 'design'; design: SheetDesignInput }
+  | SheetChartChange
+  | { op: 'clear_charts'; range?: string };
 
-// What one change sends, and the line that says what it did.
-export type BuiltChange = { ok: true; writes: SheetWrite[]; line: string } | SheetRefusal;
+// What one change sends, the line that says what it did, and the charts it puts over the cells (for the caller to add
+// to the tab).
+export type BuiltChange =
+  | {
+      ok: true;
+      writes: SheetWrite[];
+      line: string;
+      charts?: SheetChartOut[];
+      // The charts to take off the tab: those reading a range's cells, or (null) every one of the sheet's.
+      clearCharts?: GridRange | null;
+    }
+  | SheetRefusal;
+
+// What a change needs of where its sheet is drawn: whether its tab's canvas is dark (a design's tints follow it).
+export type SheetChangeContext = { dark?: boolean };
 
 const refuse = (code: string, message: string): SheetRefusal => ({ ok: false, code, message });
 
@@ -95,6 +128,30 @@ export function formatPatchOf(input: SheetFormatInput): FormatPatch | null {
   return Object.keys(patch).length && validFormatPatch(patch) ? patch : null;
 }
 
+// Each format of the row (or column) at `source`, onto the rows (columns) `ids` made beside it.
+function formatsCopied(
+  sheet: Sheet,
+  axis: 'r' | 'c',
+  source: number,
+  ids: readonly string[],
+): CellChange[] {
+  // The insert was checked against the sheet, so its neighbour is one of its rows (columns).
+  const id = (axis === 'r' ? sheet.layout.rows : sheet.layout.cols)[source]!;
+  const out: CellChange[] = [];
+  for (const [key, cell] of sheet.cells) {
+    if (!cell.format) continue;
+    const { r, c } = splitCellKey(key);
+    if ((axis === 'r' ? r : c) !== id) continue;
+    // A new column takes its neighbour's look but not its number format: a column of amounts beside dates is not
+    // dates. A new row is the same columns, so it takes all of it.
+    const { nf: _nf, dp: _dp, cur: _cur, nc: _nc, ...look } = cell.format;
+    const f = axis === 'r' ? cell.format : look;
+    if (Object.keys(f).length === 0) continue;
+    for (const made of ids) out.push(axis === 'r' ? { r: made, c, f } : { r, c: made, f });
+  }
+  return out;
+}
+
 // "3" or "3:5" (rows, 1-based) and "C" or "C:E" (columns) as positions.
 function span(text: string, axis: 'r' | 'c'): { from: number; to: number } | null {
   const parts = text.trim().split(':');
@@ -112,6 +169,7 @@ export function buildSheetChange(
   change: SheetChange,
   takenTitles: readonly string[],
   rand: Rand = Math.random,
+  context: SheetChangeContext = {},
 ): BuiltChange {
   const sheet = wb.sheet(sheetId)!;
   const rowCount = sheet.layout.rows.length;
@@ -123,8 +181,24 @@ export function buildSheetChange(
         return made.error === 'formula_invalid'
           ? refuse('formula_invalid', `The formula in ${made.at} cannot be read: ${made.why}.`)
           : badRange(change.at);
+      // A value a Reject rule refuses is refused here, naming the cell and what its rule allows (data-validation.md
+      // "Agents"); the api would refuse it too.
+      const check = validateWrite(sheet, writeForRules(sheet.layout, made.write), {
+        rangeValues: (rule) => rangeOptions(wb, sheetId, rule),
+      });
+      if (!check.ok && check.error === 'value_invalid') {
+        const ix = layoutIndex(sheet.layout);
+        // A refused value always names its cell, on this sheet.
+        const { r, c } = splitCellKey(check.at!);
+        const where = formatA1(ix.rowPos.get(r)!, ix.colPos.get(c)!);
+        return refuse('value_invalid', `${where} cannot take that value: ${check.line}.`);
+      }
       const cut = made.truncated ? ' (cut at the sheet’s 10,000 rows or 200 columns)' : '';
-      return { ok: true, writes: [made.write], line: `set ${made.range}${cut}` };
+      return {
+        ok: true,
+        writes: [writeForRules(sheet.layout, made.write)],
+        line: `set ${made.range}${cut}`,
+      };
     }
     case 'clear': {
       const range = parseRangeText(change.range);
@@ -153,7 +227,7 @@ export function buildSheetChange(
     case 'insert_rows':
     case 'insert_cols': {
       const rows = change.op === 'insert_rows';
-      const at = rows ? (change.at as number) - 1 : columnIndex(String(change.at));
+      const at = rows ? change.at - 1 : columnIndex(String(change.at));
       const count = change.count ?? 1;
       const side = change.side ?? 'before';
       const size = rows ? rowCount : colCount;
@@ -172,11 +246,20 @@ export function buildSheetChange(
         );
       // insertAxis answers one layout insert, its ids the rows or columns made.
       const { changes } = write as Extract<SheetWrite, { kind: 'layout' }>;
-      const made = (changes[0] as { ids: string[] }).ids.length;
+      const ids = (changes[0] as { ids: string[] }).ids;
+      const made = ids.length;
       const where = rows ? `row ${at + 1}` : `column ${columnLetters(at)}`;
+      // The new rows (columns) take the formats of the one before them, or after them at the very top (left), as a
+      // spreadsheet's do: rows inserted above a total row look like the body row over them, not the total. Columns
+      // take the look only (formatsCopied).
+      const before = side === 'before' ? at - 1 : at;
+      const source = before >= 0 ? before : at;
+      const cells = formatsCopied(sheet, rows ? 'r' : 'c', source, ids);
       return {
         ok: true,
-        writes: [write],
+        writes: [
+          cells.length ? { ...(write as Extract<SheetWrite, { kind: 'layout' }>), cells } : write,
+        ],
         line: `inserted ${plural(made, rows ? 'row' : 'column')} ${side} ${where}`,
       };
     }
@@ -230,6 +313,7 @@ export function buildSheetChange(
       const order = ascending ? 'A to Z' : 'Z to A';
       if (!change.range) {
         const write = sortSheet(wb, sheetId, col, ascending);
+        if (write && 'refused' in write) return refuse('merge_split', write.refused);
         return {
           ok: true,
           writes: write ? [write] : [],
@@ -244,10 +328,38 @@ export function buildSheetChange(
           `Column ${change.by.toUpperCase()} is outside ${formatRange(range)}.`,
         );
       const write = sortRange(wb, sheetId, range, [{ col, ascending }], change.header ?? false);
+      if (write && 'refused' in write) return refuse('merge_split', write.refused);
       return {
         ok: true,
         writes: write ? [write] : [],
         line: `sorted ${formatRange(range)} by column ${change.by.toUpperCase()}, ${order}`,
+      };
+    }
+    case 'validate':
+    case 'clear_validation':
+    case 'conditional_format':
+    case 'clear_conditional_formats':
+      return buildRuleChange(wb, sheetId, change, rand);
+    case 'resize':
+    case 'merge':
+    case 'unmerge':
+    case 'border':
+    case 'filter':
+      return buildShapeChange(wb, sheetId, change);
+    case 'design':
+      return buildDesign(wb, sheetId, change.design, { dark: !!context.dark }, rand);
+    case 'chart':
+      return buildChartChange(wb, sheetId, change);
+    case 'clear_charts': {
+      if (change.range === undefined)
+        return { ok: true, writes: [], line: 'cleared the sheet’s charts', clearCharts: null };
+      const range = parseRangeText(change.range);
+      if (!range) return badRange(change.range);
+      return {
+        ok: true,
+        writes: [],
+        line: `cleared the charts reading ${formatRange(range)}`,
+        clearCharts: range,
       };
     }
     case 'freeze': {

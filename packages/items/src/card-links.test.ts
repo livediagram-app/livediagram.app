@@ -44,7 +44,7 @@ describe('card links', () => {
     expect(linkFieldsOfType(objective)).toEqual([
       { id: 'f-owner', label: 'Owner', linkType: 'person' },
     ]);
-    expect(linkFieldsOfType(ITEM_TYPES[1]!).map((f) => f.id)).toContain('parent');
+    expect(linkFieldsOfType(ITEM_TYPES[1]).map((f) => f.id)).toContain('parent');
   });
 
   it('offers live cards of the linked type, never the card itself', () => {

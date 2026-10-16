@@ -2,11 +2,12 @@
 // Part of the metric catalogue: import from ../metric-catalogue.
 
 import { PALETTE_TELEMETRY_TYPES, SHEET_CHANGE_KINDS } from '@livediagram/api-schema';
+import { FORM_STARTERS, QUESTION_TYPE_TELEMETRY } from '@livediagram/forms';
 import { canonicalElementType, PALETTE_KINDS, type PaletteTab } from '../palette-types';
 import type { Metric, MetricStack } from '../metric-series';
 import { chart } from './helpers';
 import { LOGO_TOOL_TYPES } from '../logo-types';
-import { LOCAL_MOVE_OFFERED } from './features';
+import { LOCAL_MOVE_OFFERED, TIDY_UP_OPENED } from './features';
 
 // The Element types that are a table's rows and columns, not elements, and
 // the table's own switches (docs/specs/017-telemetry/telemetry.md).
@@ -33,34 +34,6 @@ export const NEW_DOCUMENT_BACKED_OUT = chart(
   { types: ['NewDocument'] },
 );
 
-// The template step's expand toggle (docs/specs/008-canvas/canvas-and-palette.md "Templates section"):
-// whether people want a whole category at once over the carousel.
-export const TEMPLATE_SHELF_EXPANDED = chart(
-  'UI',
-  'Toggled',
-  'Template Shelf Expanded',
-  'The expand toggle in the New Document wizard flipped: every template in the open category at once (Expanded), or back to the carousel (Collapsed).',
-  { types: ['TemplateShelfExpanded', 'TemplateShelfCollapsed'] },
-);
-
-// The template step's mode filter (docs/specs/007-editor/templates-by-mode.md): which modes people
-// narrow the catalogue to.
-export const TEMPLATE_MODE_FILTER = chart(
-  'UI',
-  'Toggled',
-  'Template Mode Filter',
-  'The mode filter in the New Document wizard changed: every template (Everything), or only the Diagram, Draw or Illustrate ones.',
-  {
-    types: [
-      'TemplateModeAll',
-      'TemplateModeDiagram',
-      'TemplateModeDraw',
-      'TemplateModeIllustrate',
-      'TemplateModePlan',
-    ],
-  },
-);
-
 export const TEMPLATE_LINKS = chart(
   'UI',
   'Used',
@@ -77,11 +50,27 @@ export const TAB_TEXT_DEFAULTS = chart(
   { types: ['Font', 'DefaultTextSize'] },
 );
 
+export const TAB_FINISH = chart(
+  'Tab',
+  'Changed',
+  'Tab Finish',
+  'A tab’s finish changed (Flexible, Professional or Sketch).',
+  { types: ['Finish'] },
+);
+
+export const TAB_LOOKS_PICKED = chart(
+  'Tab',
+  'Changed',
+  'Tab Looks',
+  'A look picked in Tab Style: theme, finish, font and canvas pattern set at once, a random Mashup rolled, or a seasonal look picked.',
+  { types: ['Look', 'Mashup', 'SeasonalLook'] },
+);
+
 export const TABS_ARRANGED = chart(
   'Tab',
   'Aligned',
   'Tabs Auto-Arranged',
-  'A tab laid out automatically: tree, flowchart or mindmap.',
+  'A tab laid out automatically (tree, flowchart or mindmap), or an infographic page tidied.',
 );
 
 export const TABS_REORDERED = chart(
@@ -293,7 +282,7 @@ export const DOCUMENT_ACTIONS: MetricStack = {
   stack: true,
   title: 'Document Actions',
   blurb:
-    'Documents opened, made, renamed, deleted and duplicated, and how new ones were started: Start Blank, a template link, or offline (those three are part of Documents Created), how often the wizard was backed out of with Escape, and how often its template shelf was expanded.',
+    'Documents opened, made, renamed, deleted and duplicated, and how new ones were started: Start Blank, a template link, or offline (those three are part of Documents Created), and how often the wizard was backed out of with Escape.',
   members: [
     DOCUMENTS_LOADED,
     DOCUMENTS_CREATED,
@@ -304,8 +293,6 @@ export const DOCUMENT_ACTIONS: MetricStack = {
     TEMPLATE_LINKS,
     CREATED_OFFLINE,
     NEW_DOCUMENT_BACKED_OUT,
-    TEMPLATE_SHELF_EXPANDED,
-    TEMPLATE_MODE_FILTER,
   ],
   headline: [DOCUMENTS_CREATED, DOCUMENTS_RENAMED, DOCUMENTS_DELETED, DOCUMENTS_DUPLICATED],
 };
@@ -359,6 +346,8 @@ const TAB_CHANGES = [
   TABS_DELETED,
   TABS_DUPLICATED,
   TAB_TEXT_DEFAULTS,
+  TAB_FINISH,
+  TAB_LOOKS_PICKED,
   TABS_ARRANGED,
   TABS_REORDERED,
   TABS_LINKED,
@@ -379,6 +368,9 @@ export const TAB_ACTIONS: MetricStack = {
     TABS_DELETED,
     TABS_DUPLICATED,
     TAB_TEXT_DEFAULTS,
+    TAB_FINISH,
+    TAB_LOOKS_PICKED,
+    TIDY_UP_OPENED,
     TABS_ARRANGED,
     TABS_REORDERED,
     TABS_LINKED,
@@ -458,7 +450,13 @@ export const COLLABORATE_ADDED = addedFrom(
 export const COMPONENTS_ADDED = addedFrom(
   'components',
   'Components Added',
-  'Web components that lay themselves out: banners, callouts, stat rows, heroes.',
+  'Blocks that lay themselves out: cards, badges, step numbers, banners, callouts, stat rows, heroes.',
+);
+
+export const CONCEPTS_ADDED = addedFrom(
+  'concepts',
+  'Concepts Added',
+  'Concept graphics that lay out their own rows: layer stacks, pyramids, funnels and cycles.',
 );
 
 export const DEVICES_ADDED = addedFrom('devices', 'Devices Added', 'Device frames and mockups.');
@@ -488,11 +486,12 @@ export const ELEMENTS_ADDED: MetricStack = {
     TOOLS_ADDED,
     COLLABORATE_ADDED,
     COMPONENTS_ADDED,
+    CONCEPTS_ADDED,
     DEVICES_ADDED,
     ICONS_ADDED,
     OTHER_ELEMENTS_ADDED,
   ],
-  seeAlso: { view: 'palette', label: 'See Each Element on the Palette Tab' },
+  seeAlso: { section: 'palette', label: 'See Each Element in Features › Palette' },
 };
 
 // ---- Every other event, so nothing lands only in Search (docs/specs/017-telemetry/telemetry.md) ----------
@@ -654,7 +653,7 @@ export const ELEMENT_EDITING: MetricStack = {
     LINKS_ADDED,
     LINKS_REMOVED,
   ],
-  seeAlso: { view: 'editing', label: 'See Each Formatting Control on the Editing Tab' },
+  seeAlso: { section: 'editing', label: 'See Each Formatting Control in Features › Editing' },
 };
 
 // Tables: the row and column edits inside a table element. They are sent as
@@ -747,7 +746,7 @@ export const EXPORT_AND_IMPORT: MetricStack = {
   blurb:
     'Diagrams leaving livediagram as files and text, and tabs and drawings coming in from other tools.',
   members: [EXPORTS, EXPORT_OPTIONS, TAB_IMPORTS, PASTES_FROM_EXCALIDRAW],
-  seeAlso: { view: 'editing', label: 'See Each Export Format on the Editing Tab' },
+  seeAlso: { section: 'editing', label: 'See Each Export Format in Features › Editing' },
 };
 
 // Plan mode (docs/specs/026-plan/plan-mode.md "Telemetry"): items made, moved, opened, voted on and
@@ -854,11 +853,59 @@ export const PLAN_SETUP_CHANGED = chart(
   "A Plan board's set-up changed: columns, WIP limits, rows, scope, card fields, voting or hide writing.",
 );
 
+export const PLAN_CALENDAR_MOVES = chart(
+  'Plan',
+  'Changed',
+  'Cards Moved on a Calendar',
+  "A card's date moved on a Due Calendar or a Start Calendar, dragged to another day or moved with Alt and the arrow keys.",
+  { types: ['CalendarDue', 'CalendarStart'] },
+);
+
+export const PLAN_TABS_CREATED = chart(
+  'Plan',
+  'Created',
+  'Plan Tabs Started',
+  'A Board, Sheet, Dashboard or Visualisation tab started from Start Planning, or a dashboard it suggested.',
+  { types: ['BoardTab', 'SheetTab', 'DashboardTab', 'VisualisationTab', 'SuggestedDashboard'] },
+);
+
 export const PLAN_REVEALED = chart(
   'Plan',
   'Revealed',
   'Boards Revealed',
   'Reveal pressed on a board hiding writing, turning every card face up.',
+);
+
+export const PLAN_CSV_IMPORTED = chart(
+  'Plan',
+  'Imported',
+  'Boards From CSV',
+  "A CSV file read into a board's cards from a Board tab's Import CSV (each row a new card).",
+  { types: ['Csv'] },
+);
+
+export const PLAN_CSV_EXPORTED = chart(
+  'Plan',
+  'Exported',
+  'Boards Downloaded as CSV',
+  "A board's cards downloaded as a CSV file from a Board tab's Download CSV.",
+  { types: ['Csv'] },
+);
+
+export const PLAN_VIEW_STATUSES = chart(
+  'Plan',
+  'Changed',
+  'Chart Statuses Chosen',
+  'The statuses a chart of the cards counts were chosen from its settings cog (Cards by Field, Priority by Status).',
+  { types: ['ViewStatuses'] },
+);
+
+export const PLAN_CARD_STYLES = chart(
+  'Plan',
+  'Changed',
+  'Dashboard Cards Styled',
+  "A card on a Dashboard tab styled from its Slot Options' Style row: a preset, a colour, its border or its shadow. One per change.",
+  { types: ['DashboardCardStyle'] },
 );
 
 export const SHEET_CHANGES = chart(
@@ -876,6 +923,14 @@ export const SHEET_FUNCTIONS = chart(
   'A function used in a Sheet formula for the first time in that formula, by name.',
 );
 
+export const SHEET_FUNCTIONS_SEARCHED = chart(
+  'Sheet',
+  'Searched',
+  'Sheet Function Searches',
+  "A search of the functions a Sheet formula can use, from the toolbar's function picker. Never what was typed.",
+  { types: ['Function'] },
+);
+
 export const SHEET_FIND = chart(
   'Sheet',
   'Opened',
@@ -888,8 +943,27 @@ export const SHEET_CREATED = chart(
   'Sheet',
   'Created',
   'Sheets Set Up and Charts Made',
-  'A Sheet set up from Setup Sheet (by how it started), or a chart made from its cells.',
-  { types: ['Blank', 'Budget', 'Tracker', 'Timesheet', 'Contacts', 'Cards', 'Csv', 'Chart'] },
+  'A Sheet set up from Setup Sheet (by how it started: blank, a template, cards or a CSV), or a chart made from its cells.',
+  {
+    types: [
+      'Blank',
+      'Budget',
+      'Tracker',
+      'Timesheet',
+      'Contacts',
+      'Invoice',
+      'ExpenseReport',
+      'SalesPipeline',
+      'Inventory',
+      'GuestList',
+      'GradeBook',
+      'HabitTracker',
+      'LoanCalculator',
+      'Cards',
+      'Csv',
+      'Chart',
+    ],
+  },
 );
 
 export const SHEET_CSV_IMPORTED = chart(
@@ -925,6 +999,7 @@ export const SHEETS: MetricStack = {
     SHEET_CREATED,
     SHEET_CHANGES,
     SHEET_FUNCTIONS,
+    SHEET_FUNCTIONS_SEARCHED,
     SHEET_FIND,
     SHEET_CSV_IMPORTED,
     SHEET_CSV_EXPORTED,
@@ -932,23 +1007,110 @@ export const SHEETS: MetricStack = {
   ],
 };
 
+// Forms (docs/specs/030-forms/forms.md "Telemetry"): forms started and built, published, opened and closed, and the
+// responses and reports their links take. Never a form's words.
+export const FORMS_CREATED = chart(
+  'Form',
+  'Created',
+  'Forms Started',
+  "A Form tab started from Start Planning, by its starter, or made from a board's cog.",
+  { types: [...FORM_STARTERS.map((s) => s.telemetry), 'FromBoard'] },
+);
+
+export const FORM_QUESTIONS_ADDED = chart(
+  'Form',
+  'Added',
+  'Form Questions Added',
+  'A question added to a form, by its type.',
+  { types: Object.values(QUESTION_TYPE_TELEMETRY) },
+);
+
+export const FORMS_CONNECTED = chart(
+  'Form',
+  'Linked',
+  'Forms Connected',
+  'A form connected from the box above its title while its responses went nowhere: to a new board, to a new sheet, or Responses Go To opened to choose one.',
+  { types: ['ConnectNewBoard', 'ConnectNewSheet', 'ConnectChoose'] },
+);
+
+export const FORMS_PUBLISHED = chart(
+  'Form',
+  'Shared',
+  'Forms Published',
+  "A form published: its public link made from Share Form, or copied from the form's pill on a board.",
+  { types: ['Link', 'BoardCopy'] },
+);
+
+export const FORMS_OPENED_CLOSED = chart(
+  'Form',
+  'Toggled',
+  'Forms Opened and Closed',
+  'Accepting Responses switched on or off for a published form.',
+  { types: ['Open', 'Closed'] },
+);
+
+export const FORM_RESPONSES = chart(
+  'Form',
+  'Sent',
+  'Form Responses',
+  "A response sent through a form link and made into a card (Response), or dropped because it filled the form's hidden field (Dropped), counted by the api; or a card made by trying the form in the builder's Preview (Preview).",
+  { types: ['Response', 'Dropped', 'Preview'] },
+);
+
+export const FORM_REPORTS = chart(
+  'Form',
+  'Reported',
+  'Forms Reported',
+  'A form reported by someone it was sent to, by the reason given. Three networks reporting one link suspend it.',
+  { types: ['Spam', 'Phishing', 'Offensive', 'Other'] },
+);
+
+export const FORMS: MetricStack = {
+  stack: true,
+  title: 'Forms',
+  blurb:
+    'Form tabs: forms started and built, published, opened and closed, and the responses and reports their links take.',
+  members: [
+    FORMS_CREATED,
+    FORM_QUESTIONS_ADDED,
+    FORMS_CONNECTED,
+    FORMS_PUBLISHED,
+    FORMS_OPENED_CLOSED,
+    FORM_RESPONSES,
+    FORM_REPORTS,
+  ],
+};
+
+const PLAN_BOARDS_MEMBERS = [
+  PLAN_TABS_CREATED,
+  PLAN_ITEMS_ADDED,
+  PLAN_ITEMS_MOVED,
+  PLAN_ITEMS_OPENED,
+  PLAN_ITEMS_DELETED,
+  PLAN_ITEMS_RESTORED,
+  PLAN_REMOVED,
+  PLAN_FLAGS,
+  PLAN_MAXIMISED,
+  PLAN_FOCUSED,
+  PLAN_FILL_TAB,
+  PLAN_SETUP_CHANGED,
+  PLAN_CALENDAR_MOVES,
+  PLAN_VIEW_STATUSES,
+  PLAN_CARD_STYLES,
+  PLAN_CARD_TYPES_DUPLICATED,
+  PLAN_REVEALED,
+  PLAN_CSV_IMPORTED,
+  PLAN_CSV_EXPORTED,
+];
+
 export const PLAN_BOARDS: MetricStack = {
   stack: true,
   title: 'Plan boards',
   blurb: 'Work on Plan boards: items made, moved, opened, voted on and deleted, and boards set up.',
-  members: [
-    PLAN_ITEMS_ADDED,
-    PLAN_ITEMS_MOVED,
-    PLAN_ITEMS_OPENED,
-    PLAN_ITEMS_DELETED,
-    PLAN_ITEMS_RESTORED,
-    PLAN_REMOVED,
-    PLAN_FLAGS,
-    PLAN_MAXIMISED,
-    PLAN_FOCUSED,
-    PLAN_FILL_TAB,
-    PLAN_SETUP_CHANGED,
-    PLAN_CARD_TYPES_DUPLICATED,
-    PLAN_REVEALED,
-  ],
+  members: PLAN_BOARDS_MEMBERS,
+  // Calendar moves, chart statuses and card styles are slices of Boards Set Up (every Plan·Changed), so the head
+  // counts them once.
+  headline: PLAN_BOARDS_MEMBERS.filter(
+    (m) => m !== PLAN_CALENDAR_MOVES && m !== PLAN_VIEW_STATUSES && m !== PLAN_CARD_STYLES,
+  ),
 };

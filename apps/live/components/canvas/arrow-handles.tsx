@@ -1,4 +1,5 @@
 import type { MouseEvent as ReactMouseEvent, PointerEvent as ReactPointerEvent } from 'react';
+import { useMediaQuery } from '@livediagram/ui';
 
 import { BRAND_600 } from './arrow-handle-style';
 
@@ -6,13 +7,9 @@ import { BRAND_600 } from './arrow-handle-style';
 // SVG shapes a few px across — fine for a mouse, fiddly for a fingertip. On
 // coarse-pointer (touch) devices we lay an invisible larger hit circle over
 // each one so there's a ~44px-diameter tap target (iOS HIG), without making
-// the visible grip clunky on desktop. Evaluated once in the browser; guarded
-// for the static-export build where `window` is absent. Mirrors the
-// `pointer-coarse` hit pad the box resize handles use (element-parts.tsx).
-const COARSE_POINTER =
-  typeof window !== 'undefined' &&
-  typeof window.matchMedia === 'function' &&
-  window.matchMedia('(pointer: coarse)').matches;
+// the visible grip clunky on desktop. Read through the shared media-query store, so the prerender reads no
+// window. Mirrors the `pointer-coarse` hit pad the box resize handles use (element-parts.tsx).
+const COARSE_POINTER = '(pointer: coarse)';
 const HANDLE_HIT_R = 22;
 
 // The draggable SVG widgets on a selected arrow: endpoint grips, the
@@ -27,11 +24,12 @@ type EndpointHandleProps = {
 };
 
 export function EndpointHandle({ cx, cy, pinned, disabled, onPointerDown }: EndpointHandleProps) {
+  const coarse = useMediaQuery(COARSE_POINTER);
   const fill = pinned ? BRAND_600 : 'white';
   const grab = { pointerEvents: 'all', cursor: disabled ? 'default' : 'grab' } as const;
   return (
     <>
-      {COARSE_POINTER ? (
+      {coarse ? (
         <circle
           cx={cx}
           cy={cy}
@@ -73,11 +71,12 @@ export function CurveHandle({
   // Right-click handler (used by curve control points: right-click to delete).
   onContextMenu?: (e: ReactMouseEvent) => void;
 }) {
+  const coarse = useMediaQuery(COARSE_POINTER);
   const size = 10;
   const grab = { pointerEvents: 'all', cursor: disabled ? 'default' : 'grab' } as const;
   return (
     <>
-      {COARSE_POINTER ? (
+      {coarse ? (
         <circle
           cx={cx}
           cy={cy}

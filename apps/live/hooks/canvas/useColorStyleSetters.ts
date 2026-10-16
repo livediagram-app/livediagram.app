@@ -127,6 +127,8 @@ export function useColorStyleSetters(deps: {
   };
 
   return {
+    // The debounced write itself, for controls that map a field of their own (lib/element-style-ops.ts).
+    burstSelectedStyle: commitSelectedStyle,
     setFillColorSelected,
     setStrokeColorSelected,
     setTextColorSelected,

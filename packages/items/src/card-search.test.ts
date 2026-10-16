@@ -101,7 +101,7 @@ describe('card search', () => {
       fields: [...task.fields, 'c-size'],
       custom: [{ id: 'c-size', label: 'Size', kind: 'choice' as const, options: ['S', 'M'] }],
     };
-    const withSize = [item({ title: 'X', 'c-size': 'M' } as never)];
+    const withSize = [item({ title: 'X', 'c-size': 'M' })];
     expect(
       searchFilterLabel({ by: 'field', field: 'c-size', key: 'gone' }, withSize, [sized]),
     ).toEqual({ field: 'Size', value: 'gone' });

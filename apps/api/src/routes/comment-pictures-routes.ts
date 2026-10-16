@@ -6,7 +6,7 @@
 // up, and hands back only comment id -> picture URL. Only a signed-in caller gets any: an anonymous
 // share-link visitor reads an empty map, so the URL never reaches them.
 
-import type { Comment, Element } from '@livediagram/document';
+import { elementThreads, type Element } from '@livediagram/document';
 import { getDocument, getParticipant, getTab } from '../db';
 import { forbidden, json } from '../responses';
 import { gateRead, missingDocument, requireOwner, type RouteContext } from './context';
@@ -41,9 +41,9 @@ async function commentPictures(
   elements: Element[],
 ): Promise<Record<string, string>> {
   const byAuthor = new Map<string, string[]>();
-  for (const el of elements) {
-    const thread = (el as { commentThread?: { comments?: Comment[] } }).commentThread;
-    for (const c of thread?.comments ?? []) {
+  // Every thread: each element's own and a Sheet's cells' (docs/specs/029-sheets/sheet.md "Cell comments").
+  for (const { thread } of elements.flatMap(elementThreads)) {
+    for (const c of thread.comments ?? []) {
       if (!c.authorId) continue;
       const ids = byAuthor.get(c.authorId);
       if (ids) ids.push(c.id);

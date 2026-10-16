@@ -27,6 +27,15 @@ describe('upgradeLegacyPreferences', () => {
     ).toEqual({ theme: 'dark' });
   });
 
+  // docs/specs/007-editor/user-preferences.md "Retired keys": the New Document wizard has no Location step to skip.
+  it('drops the retired skip-the-Location-step place, set or cleared', () => {
+    const place = { saveLocation: 'livediagram', placement: 'unsorted', placeName: 'My documents' };
+    expect(upgradeLegacyPreferences({ skipLocationStep: place, theme: 'dark' })).toEqual({
+      theme: 'dark',
+    });
+    expect(upgradeLegacyPreferences({ skipLocationStep: null })).toEqual({});
+  });
+
   it('returns the same object when there is nothing to upgrade', () => {
     const prefs = { notifyDocumentJoin: false };
     expect(upgradeLegacyPreferences(prefs)).toBe(prefs);

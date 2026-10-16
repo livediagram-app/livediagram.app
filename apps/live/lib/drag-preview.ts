@@ -141,7 +141,7 @@ function mergedFor(tabId: string, elements: readonly Element[]): DragOverlay | n
     for (const p of theirs)
       for (const patch of p.patches) {
         const base = byId.get(patch.id);
-        if (base) changed.set(patch.id, { ...base, ...patch } as Element);
+        if (base) changed.set(patch.id, { ...base, ...patch });
       }
     if (ours) for (const [id, el] of ours.changed) changed.set(id, el);
     overlay =
@@ -159,6 +159,12 @@ export function subscribeDragPreview(cb: () => void): () => void {
   return () => {
     listeners.delete(cb);
   };
+}
+
+// The tab's merged preview for drawing `elements`, read outside React (a store deriving from it on each
+// change); null when nobody is dragging there. The same object until something changes.
+export function dragPreviewFor(tabId: string, elements: readonly Element[]): DragOverlay | null {
+  return mergedFor(tabId, elements);
 }
 
 // The tab's merged preview, for drawing `elements`; null when nobody is dragging there.

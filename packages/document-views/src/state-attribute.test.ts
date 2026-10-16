@@ -1,10 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import type { Element } from '@livediagram/document';
 import { shapeAt } from './__fixtures__/build';
 import { stateAttributeOf } from './state-attribute';
 
 const state = (kind: Parameters<typeof shapeAt>[0], extra: Record<string, unknown> = {}) =>
-  stateAttributeOf({ ...shapeAt(kind, 'x', 0, 0), ...extra } as Element)
+  stateAttributeOf({ ...shapeAt(kind, 'x', 0, 0), ...extra })
     .map((a) => a.text)
     .join(' ');
 
@@ -23,8 +22,13 @@ describe('stateAttributeOf (R14, VW22)', () => {
   });
 
   it('places an agenda and a quiz', () => {
-    expect(state('agenda', { agendaItems: [{}, {}, {}], agendaCurrent: 1 })).toBe('item=2/3');
-    expect(state('agenda', { agendaItems: [{}, {}], agendaCurrent: undefined })).toBe('items=2');
+    const segment = { label: 'A', minutes: 10 };
+    expect(state('agenda', { agendaItems: [segment, segment, segment], agendaCurrent: 1 })).toBe(
+      'item=2/3 minutes=30',
+    );
+    expect(state('agenda', { agendaItems: [segment, segment], agendaCurrent: undefined })).toBe(
+      'items=2 minutes=20',
+    );
     expect(state('quiz', { quizRevealed: true })).toBe('state=revealed');
     expect(state('quiz', { quizLockedAt: 5 })).toBe('state=locked');
     expect(state('quiz', { quizStartedAt: 5 })).toBe('state=open');
@@ -67,7 +71,30 @@ describe('stateAttributeOf (R14, VW22)', () => {
     expect(state('page', { pageTitle: ' ' })).toBe('');
   });
 
+  it('titles a card, and flags a badge or step that is attached to a node', () => {
+    expect(state('card', { pageTitle: 'Orders service' })).toBe('title="Orders service"');
+    expect(state('card', { pageTitle: undefined })).toBe('');
+    expect(state('step', { attachedTo: 'host' })).toBe('attached');
+    expect(state('badge', { attachedTo: 'host' })).toBe('attached');
+    expect(state('badge')).toBe('');
+  });
+
   it('gives every other kind none', () => {
     expect(state('square')).toBe('');
+  });
+
+  it('says what a session button starts', () => {
+    expect(state('session-button', { session: { tool: 'timer', minutes: 10 } })).toBe(
+      'session=timer:10m',
+    );
+    expect(state('session-button', { session: { tool: 'vote', dots: 3 } })).toBe('session=vote:3');
+    expect(
+      state('session-button', { session: { tool: 'poll', style: 'yesNo', question: 'Go?' } }),
+    ).toBe('session=poll:yesNo');
+    // A poll not set up yet (one answer) reads as unset, never failing the whole view.
+    expect(
+      state('session-button', { session: { tool: 'poll', question: 'Go?', options: ['A'] } }),
+    ).toBe('session=poll:unset');
+    expect(state('session-button', { session: { tool: 'stopwatch' } })).toBe('session=stopwatch');
   });
 });

@@ -3,7 +3,13 @@
 //
 // Pure: takes a centre (cx, cy), returns a fresh Element[].
 
-import { createShape, createSticky, createText, type Element } from '@livediagram/document';
+import {
+  createShape,
+  createSticky,
+  createText,
+  type Element,
+  createCalloutCard,
+} from '@livediagram/document';
 import { TEMPLATE_CONTENT_LAYER_ID, TEMPLATE_SCAFFOLD_LAYER_ID } from './template-layers';
 import { HEAD_GAP, SUBTITLE_H, TITLE_H, heading } from './template-session-parts';
 import {
@@ -162,7 +168,7 @@ export function buildMeetingAgenda(cx: number, cy: number): Element[] {
   // BEFORE: the purpose, the outcomes to tick off, and the room.
   const purposeH = 108;
   content.push({
-    ...createShape('callout', beforeX, top),
+    ...createCalloutCard(beforeX, top),
     width: beforeW,
     height: purposeH,
     pageTitle: 'Purpose',
@@ -332,7 +338,7 @@ export function buildMeetingAgenda(cx: number, cy: number): Element[] {
   });
   // Next week's sync closes the board, so the same canvas runs again.
   content.push({
-    ...createShape('callout', afterX, top + bodyH - nextH),
+    ...createCalloutCard(afterX, top + bodyH - nextH),
     width: afterW,
     height: nextH,
     pageTitle: 'Next sync · Tue 6 Oct, 10:00',

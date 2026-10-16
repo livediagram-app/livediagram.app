@@ -29,6 +29,8 @@ type ModePanelExtras = {
   headerActions?: ReactNode;
   /** The article explaining this mode (docs/specs/018-help/contextual-help-links.md), shown as `?` in the header. */
   helpArticle?: HelpArticleKey;
+  /** A tour's anchor on the panel (the Slide Deck, docs/specs/007-editor/illustrate-tour.md). */
+  dataTourId?: string;
 };
 
 export function ModePanel({
@@ -40,12 +42,20 @@ export function ModePanel({
   dock,
   headerActions,
   helpArticle,
+  dataTourId,
   popoverOpen,
   popoverAnchor,
   asPopover,
   dismissOnOutside,
   onPopoverClose,
-}: ModePanelProps & ModePanelExtras & { title: string; children: ReactNode }) {
+  popoverWidth,
+}: ModePanelProps &
+  ModePanelExtras & {
+    title: string;
+    children: ReactNode;
+    // The popover's width, where its content wants more room than the corner panel's.
+    popoverWidth?: string;
+  }) {
   return (
     <MovablePanel
       title={title}
@@ -58,6 +68,7 @@ export function ModePanel({
       onReset={onReset}
       headerActions={headerActions}
       helpArticle={helpArticle}
+      {...(dataTourId ? { dataTourId } : {})}
       {...dock}
       // As a popover over a cluster button (the Slide Deck in Illustrate mode).
       popoverOpen={popoverOpen}
@@ -65,6 +76,7 @@ export function ModePanel({
       asPopover={asPopover}
       dismissOnOutside={dismissOnOutside}
       onPopoverClose={onPopoverClose}
+      {...(popoverWidth ? { popoverWidth } : {})}
       collapsible
     >
       {children}

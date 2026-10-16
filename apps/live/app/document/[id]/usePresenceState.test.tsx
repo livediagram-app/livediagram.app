@@ -39,7 +39,9 @@ describe('usePresenceState presence clock', () => {
     });
     expect(renders).toBe(after);
     expect(result.current.presenceClock.lastSeen.get('p1')).toBe(T0);
-    act(() => vi.advanceTimersByTime(RELATIVE_TICK_MS));
+    act(() => {
+      vi.advanceTimersByTime(RELATIVE_TICK_MS);
+    });
     expect(result.current.presenceClock.lastSeen.get('p1')).toBe(T0 + 2000);
     // The tick keeps its own schedule, from mount.
     expect(result.current.presenceClock.now).toBe(T0 + RELATIVE_TICK_MS);
@@ -48,9 +50,40 @@ describe('usePresenceState presence clock', () => {
   it('publishes a peer back from idle at once', () => {
     const { result } = renderHook(() => usePresenceState());
     act(() => result.current.markSeen('p1'));
-    act(() => vi.advanceTimersByTime(AWAY_AFTER_MS + 1000));
+    act(() => {
+      vi.advanceTimersByTime(AWAY_AFTER_MS + 1000);
+    });
     act(() => result.current.markSeen('p1'));
     expect(result.current.presenceClock.lastSeen.get('p1')).toBe(T0 + AWAY_AFTER_MS + 1000);
     expect(result.current.presenceClock.now).toBe(T0 + AWAY_AFTER_MS + 1000);
+  });
+
+  it('leaves the editor alone on a document nobody else has been seen on', () => {
+    let renders = 0;
+    renderHook(() => {
+      renders++;
+      return usePresenceState();
+    });
+    const after = renders;
+    act(() => {
+      vi.advanceTimersByTime(RELATIVE_TICK_MS * 4);
+    });
+    expect(renders).toBe(after);
+  });
+
+  it('pauses the tick while the page is hidden, and catches up as it comes back', () => {
+    const { result } = renderHook(() => usePresenceState());
+    act(() => result.current.markSeen('p1'));
+    const visibility = vi.spyOn(document, 'visibilityState', 'get').mockReturnValue('hidden');
+    act(() => {
+      vi.advanceTimersByTime(RELATIVE_TICK_MS * 2);
+    });
+    expect(result.current.presenceClock.now).toBe(T0);
+    visibility.mockReturnValue('visible');
+    act(() => {
+      document.dispatchEvent(new Event('visibilitychange'));
+    });
+    expect(result.current.presenceClock.now).toBe(T0 + RELATIVE_TICK_MS * 2);
+    visibility.mockRestore();
   });
 });

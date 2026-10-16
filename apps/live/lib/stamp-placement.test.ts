@@ -59,7 +59,7 @@ describe('stampPlacement', () => {
       width: 200,
       height: 200,
     } as Element;
-    const board = { ...esBoard, elements: [neighbour] } as Tab;
+    const board = { ...esBoard, elements: [neighbour] };
     const out = stampPlacement(216 + 100 + 8, laneCentre(0, ES_LANES), size, board);
     expect(out.bounds.x).toBe(216);
   });

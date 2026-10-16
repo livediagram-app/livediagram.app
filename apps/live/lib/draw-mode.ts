@@ -48,6 +48,8 @@ export type PendingDraw =
       estimateScale?: EstimateScale;
       // A Plan board's preset, or a Plan card's item type (docs/specs/026-plan/plan-mode.md).
       plan?: string;
+      // A creation-time variant of the kind (packages/document shape-variants.ts): the Callout card, a Funnel.
+      variant?: string;
       // A whiteboard shape (docs/specs/023-draw-mode/draw-mode.md "Shapes"): drawn in the board's ink,
       // unfilled, at the default width. Pens never colour it.
       board?: true;
@@ -158,6 +160,7 @@ const COMPONENT_LABELS: Record<ComponentKind, string> = {
   stat: 'Stat row',
   process: 'Process steps',
   avatar: 'Avatar',
+  flowchart: 'Flowchart',
 };
 
 // Banner copy per draw intent. Shape intents include the kind name

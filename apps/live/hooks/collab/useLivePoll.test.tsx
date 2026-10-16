@@ -1,14 +1,14 @@
 // @vitest-environment jsdom
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, renderHook } from '@testing-library/react';
-import type { LivePoll } from '@livediagram/api-schema';
+import type { LivePoll, RoomOutgoing } from '@livediagram/api-schema';
 
-const trackMock = vi.fn();
+const trackMock = vi.fn<typeof import('@/lib/telemetry').track>();
 vi.mock('@/lib/telemetry', () => ({
-  track: (...args: unknown[]) => trackMock(...args),
+  track: (...args: Parameters<typeof trackMock>) => trackMock(...args),
 }));
 
-const { useLivePoll } = await import('./useLivePoll');
+const { pollHostFor, useLivePoll } = await import('./useLivePoll');
 
 const poll = (id: string): LivePoll => ({
   id,
@@ -17,6 +17,10 @@ const poll = (id: string): LivePoll => ({
   options: [],
   startedAt: 1,
 });
+
+// The ops a hook sent its room, in order.
+const sentOps = (send: { mock: { calls: [RoomOutgoing][] } }) =>
+  send.mock.calls.map(([msg]) => (msg.kind === 'op' ? msg.op : undefined));
 
 function setup() {
   const send = vi.fn();
@@ -58,7 +62,7 @@ describe('starting a collaborators poll (docs/specs/012-collaboration/live-poll.
     style: 'collaborators' | 'choice' = 'collaborators',
     options: string[] = [],
   ) {
-    const send = vi.fn();
+    const send = vi.fn<(msg: RoomOutgoing) => void>();
     const { result } = renderHook(() =>
       useLivePoll({
         roomRef: { current: { send } },
@@ -66,7 +70,7 @@ describe('starting a collaborators poll (docs/specs/012-collaboration/live-poll.
       }),
     );
     act(() => result.current.startPoll({ question: 'Who chose this?', style, options }));
-    const op = send.mock.calls[0]?.[0]?.op;
+    const op = sentOps(send)[0];
     return { op, send, result };
   }
 
@@ -75,8 +79,7 @@ describe('starting a collaborators poll (docs/specs/012-collaboration/live-poll.
       { id: '1', name: 'Ariel' },
       { id: '2', name: 'Pete' },
     ]);
-    expect(op.poll.style).toBe('collaborators');
-    expect(op.poll.options).toEqual(['Ariel', 'Pete']);
+    expect(op).toMatchObject({ poll: { style: 'collaborators', options: ['Ariel', 'Pete'] } });
   });
 
   it('numbers shared names, so two Guests cannot share a bar', () => {
@@ -84,13 +87,13 @@ describe('starting a collaborators poll (docs/specs/012-collaboration/live-poll.
       { id: '1', name: 'Guest' },
       { id: '2', name: 'Guest' },
     ]);
-    expect(op.poll.options).toEqual(['Guest', 'Guest (2)']);
+    expect(op).toMatchObject({ poll: { options: ['Guest', 'Guest (2)'] } });
   });
 
   it('reads the roster at the press, not when the composer rendered', () => {
     // The whole reason the roster arrives as a ref: someone joining between
     // opening the Studio and pressing Ask should be on the ballot.
-    const send = vi.fn();
+    const send = vi.fn<(msg: RoomOutgoing) => void>();
     const roster = { current: [{ id: '1', name: 'Ariel' }] };
     const { result } = renderHook(() =>
       useLivePoll({ roomRef: { current: { send } }, collaboratorsRef: roster }),
@@ -100,7 +103,7 @@ describe('starting a collaborators poll (docs/specs/012-collaboration/live-poll.
       { id: '2', name: 'Pete' },
     ];
     act(() => result.current.startPoll({ question: 'Who?', style: 'collaborators', options: [] }));
-    expect(send.mock.calls[0]![0].op.poll.options).toEqual(['Ariel', 'Pete']);
+    expect(sentOps(send)[0]).toMatchObject({ poll: { options: ['Ariel', 'Pete'] } });
   });
 
   it('refuses a room too small to vote on, sending nothing', () => {
@@ -111,13 +114,13 @@ describe('starting a collaborators poll (docs/specs/012-collaboration/live-poll.
 
   it('leaves a choice poll’s own answers alone', () => {
     const { op } = startWith([{ id: '1', name: 'Ariel' }], 'choice', ['Tea', 'Coffee']);
-    expect(op.poll.options).toEqual(['Tea', 'Coffee']);
+    expect(op).toMatchObject({ poll: { options: ['Tea', 'Coffee'] } });
   });
 });
 
 describe('surviving reconnects and refreshes (docs/specs/012-collaboration/collab-race-hardening.md)', () => {
   function withKey(key: string) {
-    const send = vi.fn();
+    const send = vi.fn<(msg: RoomOutgoing) => void>();
     const hook = renderHook(() =>
       useLivePoll({ roomRef: { current: { send } }, selfKeyRef: { current: key } }),
     );
@@ -152,8 +155,8 @@ describe('surviving reconnects and refreshes (docs/specs/012-collaboration/colla
     const { result, send } = withKey('me');
     act(() => result.current.startPoll({ question: 'Lunch?', style: 'text', options: [] }));
     act(() => result.current.answerPoll('pizza'));
-    const ops = send.mock.calls.map((c) => c[0].op);
-    expect(ops[0].poll.hostKey).toBe('me');
+    const ops = sentOps(send);
+    expect(ops[0]).toMatchObject({ poll: { hostKey: 'me' } });
     expect(ops[1]).toMatchObject({ kind: 'poll-answer', value: 'pizza', key: 'me' });
   });
 
@@ -164,12 +167,13 @@ describe('surviving reconnects and refreshes (docs/specs/012-collaboration/colla
     act(() => result.current.receivePoll(poll('p1')));
     act(() => result.current.answerPoll('pizza'));
     act(() => result.current.answerPoll('sushi'));
-    const [first, second] = send.mock.calls.map((c) => c[0].op);
-    expect(typeof first.proof).toBe('string');
-    expect(first.proof.length).toBeGreaterThan(20);
-    expect(second.proof).toBe(first.proof);
-    expect(first.proof).not.toBe('me');
-    expect(localStorage.getItem('livediagram:v2:collab-secret')).toBe(first.proof);
+    const [first, second] = sentOps(send).map((op) =>
+      op?.kind === 'poll-answer' ? op.proof : undefined,
+    );
+    expect(first?.length).toBeGreaterThan(20);
+    expect(second).toBe(first);
+    expect(first).not.toBe('me');
+    expect(localStorage.getItem('livediagram:v2:collab-secret')).toBe(first);
   });
 
   it('hosts the poll it starts, until it ends or a peer poll replaces it', () => {
@@ -189,5 +193,24 @@ describe('surviving reconnects and refreshes (docs/specs/012-collaboration/colla
     act(() => result.current.receivePoll({ ...poll('late'), startedAt: 9 }));
     act(() => result.current.receivePoll({ ...poll('early'), startedAt: 3 }));
     expect(result.current.poll?.id).toBe('late');
+  });
+});
+
+// docs/specs/012-collaboration/facilitator.md "Poll: start, end"
+describe('pollHostFor', () => {
+  const base = { started: false, open: true, sessionToolsBlocked: false, facilitating: false };
+
+  it('is the starter while nobody else holds the baton', () => {
+    expect(pollHostFor({ ...base, started: true })).toBe(true);
+    expect(pollHostFor(base)).toBe(false);
+  });
+
+  it('passes to the facilitator when the baton is taken mid-poll', () => {
+    expect(pollHostFor({ ...base, started: true, sessionToolsBlocked: true })).toBe(false);
+    expect(pollHostFor({ ...base, facilitating: true })).toBe(true);
+  });
+
+  it('is nobody once the poll has closed', () => {
+    expect(pollHostFor({ ...base, open: false, facilitating: true })).toBe(false);
   });
 });

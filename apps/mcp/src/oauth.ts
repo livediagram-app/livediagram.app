@@ -5,10 +5,17 @@
 // All transient state lives in OAUTH_KV with short TTLs; no parallel credential
 // model — the heavy lifting (verify, revoke, caps, expiry) is the token's.
 import { appBase } from './tool-helpers';
-import { DEVICE_CODE_GRANT, isLoopbackHostname, pkceChallenge } from '@livediagram/api-schema';
+import {
+  DEVICE_CODE_GRANT,
+  isLoopbackHostname,
+  objectOrEmpty,
+  oauthRedirectUrl,
+  pkceChallenge,
+} from '@livediagram/api-schema';
 import type { Hono } from 'hono';
 import type { Env } from './env';
 import { lookupClient, type ClientReg } from './oauth-clients';
+import { formText } from './oauth-form';
 import { handleDeviceToken, registerDeviceRoutes } from './oauth-device';
 
 // ---- KV record shapes (all short-lived) ----
@@ -58,18 +65,9 @@ function randomId(): string {
   return crypto.randomUUID().replace(/-/g, '');
 }
 
-// A redirect target is https anywhere, or plain http on a loopback host (a
-// local CLI client). The scheme is checked on its own: a loopback host must
-// never let another scheme through, or `javascript://localhost/...` would
-// register and run as script on the consent page when it navigates there.
+// A redirect target a client may register (oauthRedirectUrl: https, or http on loopback, no fragment).
 export function isAllowedRedirectUri(uri: string): boolean {
-  try {
-    const u = new URL(uri);
-    if (u.protocol === 'https:') return true;
-    return u.protocol === 'http:' && isLoopbackHostname(u.hostname);
-  } catch {
-    return false;
-  }
+  return oauthRedirectUrl(uri) !== null;
 }
 
 // The MCP's own public origin, derived from the request so it's host-agnostic
@@ -114,7 +112,7 @@ export function registerOauthRoutes(app: Hono<{ Bindings: Env }>): void {
     if (count >= 20) return c.json({ error: 'rate_limited' }, 429);
     await c.env.OAUTH_KV.put(rateKey, String(count + 1), { expirationTtl: 3600 });
 
-    const body = (await c.req.json().catch(() => ({}))) as {
+    const body = objectOrEmpty(await c.req.json().catch(() => null)) as {
       redirect_uris?: unknown;
       client_name?: unknown;
     };
@@ -133,7 +131,7 @@ export function registerOauthRoutes(app: Hono<{ Bindings: Env }>): void {
     const clientId = randomId();
     const clientName =
       typeof body.client_name === 'string' ? body.client_name.slice(0, 120) : 'MCP client';
-    const reg: ClientReg = { redirectUris: uris as string[], clientName };
+    const reg: ClientReg = { redirectUris: uris, clientName };
     await c.env.OAUTH_KV.put(`client:${clientId}`, JSON.stringify(reg), {
       expirationTtl: CLIENT_TTL,
     });
@@ -247,7 +245,7 @@ export function registerOauthRoutes(app: Hono<{ Bindings: Env }>): void {
   // --- Complete: the Clerk-authed consent page posts the minted token here,
   // bound to a fresh authorization code (one-time, PKCE-gated at /oauth/token).
   app.post('/oauth/complete', async (c) => {
-    const body = (await c.req.json().catch(() => ({}))) as {
+    const body = objectOrEmpty(await c.req.json().catch(() => null)) as {
       session?: string;
       token?: string;
       expiresAt?: number;
@@ -273,13 +271,13 @@ export function registerOauthRoutes(app: Hono<{ Bindings: Env }>): void {
 
   // --- Token: redeem code + PKCE verifier for the lvd_ access token ---
   app.post('/oauth/token', async (c) => {
-    const form = await c.req.parseBody().catch(() => ({}) as Record<string, unknown>);
-    const grantType = String(form.grant_type ?? '');
+    const form: Record<string, unknown> = await c.req.parseBody().catch(() => ({}));
+    const grantType = formText(form, 'grant_type');
     if (grantType === DEVICE_CODE_GRANT) return handleDeviceToken(c, form);
-    const code = String(form.code ?? '');
-    const verifier = String(form.code_verifier ?? '');
-    const redirectUri = String(form.redirect_uri ?? '');
-    const clientId = String(form.client_id ?? '');
+    const code = formText(form, 'code');
+    const verifier = formText(form, 'code_verifier');
+    const redirectUri = formText(form, 'redirect_uri');
+    const clientId = formText(form, 'client_id');
     if (grantType !== 'authorization_code' || !code || !verifier) {
       return c.json({ error: 'invalid_request' }, 400);
     }

@@ -8,7 +8,7 @@ import {
 } from './fixtures';
 
 // The Trash (docs/specs/013-workspace/trash.md), end to end against the real
-// build and api worker: a delete confirms with the one quiet line, the
+// build and api worker: a delete asks nothing and offers an Undo, the
 // document leaves the lists for Settings › Trash, its share link reads as
 // deleted, an open editor is told, and Restore / Delete permanently / Empty
 // Trash do what they say.
@@ -49,13 +49,11 @@ test('delete, find it in Settings › Trash, restore it', async ({ page, baseURL
   await page.goto('/explorer/all');
   await page.getByRole('button', { name: 'Menu for Quarterly plan' }).click();
   await page.getByRole('menu').last().getByText('Delete', { exact: true }).click();
-  const confirm = page.getByRole('dialog');
-  await expect(confirm.getByRole('heading')).toHaveText('Confirm');
-  // No share links, no shared tabs: just the question.
-  await expect(confirm).toContainText('Delete "Quarterly plan"?');
-  await expect(confirm).not.toContainText('share links');
-  await confirm.getByRole('button', { name: 'Delete', exact: true }).click();
+  // Nothing is asked: the row leaves, and the toast offers it back.
+  await expect(page.getByRole('dialog')).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'Menu for Quarterly plan' })).toHaveCount(0);
+  await expect(page.getByText('Document deleted')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Undo: restore the document' })).toBeVisible();
 
   // The share of lists: gone from the api's list too. The row leaves at once and the delete follows in
   // the background, so the api is asked until it has landed.
@@ -80,6 +78,25 @@ test('delete, find it in Settings › Trash, restore it', async ({ page, baseURL
 
   await group.getByRole('button', { name: 'Restore Quarterly plan' }).click();
   await expect(page.getByText('Nothing in the Trash right now')).toBeVisible();
+  const back = await page.request.get(`${apiBase}/documents/${id}`, {
+    headers: ownerHeaders(owner),
+  });
+  expect(back.status()).toBe(200);
+  expectNoPageErrors(pageErrors);
+});
+
+test('Undo on the delete toast puts the document back', async ({ page, baseURL, pageErrors }) => {
+  const owner = await mintSignedGuest(page.request);
+  const id = await seed(page, baseURL!, owner, 'Roadmap');
+  await asOwner(page, owner);
+
+  await page.goto('/explorer/all');
+  await page.getByRole('button', { name: 'Menu for Roadmap' }).click();
+  await page.getByRole('menu').last().getByText('Delete', { exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Menu for Roadmap' })).toHaveCount(0);
+  await page.getByRole('button', { name: 'Undo: restore the document' }).click();
+  await expect(page.getByText('Document restored')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Menu for Roadmap' })).toBeVisible();
   const back = await page.request.get(`${apiBase}/documents/${id}`, {
     headers: ownerHeaders(owner),
   });

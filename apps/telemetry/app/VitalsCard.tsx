@@ -53,7 +53,7 @@ export function VitalsCard({
                 <p className="text-sm text-slate-800 dark:text-slate-200">
                   {chart.title.split(' · ')[0]}
                 </p>
-                <p className="text-xs text-slate-400">
+                <p className="text-xs text-slate-500 dark:text-slate-400">
                   {chart.vital ? `${VITAL_HINT[chart.vital]} · ` : ''}
                   {histogram.total.toLocaleString()} {histogram.total === 1 ? 'page' : 'pages'}
                 </p>

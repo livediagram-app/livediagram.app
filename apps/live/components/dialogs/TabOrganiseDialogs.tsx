@@ -17,7 +17,14 @@ import {
   PlacementCard,
 } from '@/components/placement/PlacementCard';
 import { DocumentThumbnail } from '@/components/panels/DocumentThumbnail';
-import { lucideGlyph, useEscape, DialogCloseButton } from '@livediagram/ui';
+import {
+  CompactEmptyState,
+  DialogCloseButton,
+  NoMatches,
+  lucideGlyph,
+  useEscape,
+} from '@livediagram/ui';
+import { DocumentIcon } from '@/components/primitives/explorer-icons';
 import { matches } from '@livediagram/icons';
 
 // Shared modal frame: header (title + sub + close) over a scrollable body.
@@ -190,9 +197,22 @@ export function AddTabToDocumentDialog({
         className="mb-3 w-full rounded-md border border-slate-200 bg-white px-2.5 py-1.5 text-sm text-slate-800 outline-none placeholder:text-slate-400 focus:border-brand-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-400"
       />
       {visible.length === 0 ? (
-        <p className="px-1 py-8 text-center text-xs text-slate-400 dark:text-slate-400">
-          No document matches.
-        </p>
+        query.trim() ? (
+          <NoMatches
+            size="regular"
+            className="py-8"
+            things="documents"
+            query={query}
+            onClear={() => setQuery('')}
+          />
+        ) : (
+          <CompactEmptyState
+            className="py-8"
+            icon={<DocumentIcon />}
+            title="No other documents yet"
+            description="Make another document to add this tab to it."
+          />
+        )
       ) : (
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
           {visible.map((d) => (

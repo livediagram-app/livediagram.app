@@ -1,16 +1,23 @@
 // @vitest-environment jsdom
 import { renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import type { Element, StickyElement, Tab } from '@livediagram/document';
+import { createArrow, type Element, type StickyElement, type Tab } from '@livediagram/document';
 import { DEFAULT_FORMAT_CONFIG, type FormatMode } from '@/lib/format-config';
 import type { InsertionSlot } from '@/lib/insert-between';
 import { useElementHelpers } from './useElementHelpers';
 
-vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
+const telemetry = vi.hoisted(() => ({ track: vi.fn() }));
+vi.mock('@/lib/telemetry', () => telemetry);
 
 // A row of three 200x200 notes with 72 gaps.
-const note = (id: string, x: number): StickyElement =>
-  ({ id, type: 'sticky', x, y: 0, width: 200, height: 200 }) as StickyElement;
+const note = (id: string, x: number): StickyElement => ({
+  id,
+  type: 'sticky',
+  x,
+  y: 0,
+  width: 200,
+  height: 200,
+});
 const ROW: Element[] = [note('a', 0), note('b', 272), note('c', 544)];
 
 const SLOT: InsertionSlot = {
@@ -25,7 +32,7 @@ const SLOT: InsertionSlot = {
 };
 
 function harness(elements: Element[] = ROW) {
-  const tab: Tab = { id: 't1', name: 'Tab 1', elements } as Tab;
+  const tab: Tab = { id: 't1', name: 'Tab 1', elements };
   const commitTabs = vi.fn();
   const { result } = renderHook(() =>
     useElementHelpers({
@@ -49,14 +56,14 @@ function harness(elements: Element[] = ROW) {
 // The x of every element on the tab the single commit produced.
 function committedXs(commitTabs: ReturnType<typeof vi.fn>, against: Element[]): number[] {
   const updater = commitTabs.mock.calls[0]![0] as (tabs: Tab[]) => Tab[];
-  const next = updater([{ id: 't1', name: 'Tab 1', elements: against } as Tab]);
+  const next = updater([{ id: 't1', name: 'Tab 1', elements: against }]);
   return next[0]!.elements.map((el) => (el as StickyElement).x);
 }
 
 describe('addBoxedAt with an insertion slot (docs/specs/021-event-storming/event-storming.md)', () => {
   it('commits the ripple and the new note as ONE change', () => {
     const { helpers, commitTabs } = harness();
-    helpers.addBoxedAt(372, 100, (x) => note('new', x) as StickyElement, {
+    helpers.addBoxedAt(372, 100, (x) => note('new', x), {
       edit: true,
       insertion: SLOT,
     });
@@ -67,7 +74,7 @@ describe('addBoxedAt with an insertion slot (docs/specs/021-event-storming/event
 
   it('ripples the LIVE board, not the snapshot the drag started from', () => {
     const { helpers, commitTabs } = harness();
-    helpers.addBoxedAt(372, 100, (x) => note('new', x) as StickyElement, { insertion: SLOT });
+    helpers.addBoxedAt(372, 100, (x) => note('new', x), { insertion: SLOT });
     // A peer moved 'c' further out while the drag was in flight. The commit
     // runs against what the tab holds NOW, so their move survives (shifted),
     // instead of being reverted to the position the drag remembered.
@@ -79,7 +86,7 @@ describe('addBoxedAt with an insertion slot (docs/specs/021-event-storming/event
     const { helpers, commitTabs } = harness();
     // The drop point is the slot's centre (the preview publishes it through
     // the drag's snap channel), and placeBoxed centres the element on it.
-    helpers.addBoxedAt(372, 100, (x, y) => ({ ...note('new', x), y }) as StickyElement, {
+    helpers.addBoxedAt(372, 100, (x, y) => ({ ...note('new', x), y }), {
       insertion: SLOT,
     });
     expect(committedXs(commitTabs, ROW).at(-1)).toBe(SLOT.atX);
@@ -87,12 +94,12 @@ describe('addBoxedAt with an insertion slot (docs/specs/021-event-storming/event
 
   it('leaves an ordinary drop alone', () => {
     const { helpers, commitTabs } = harness();
-    helpers.addBoxedAt(372, 100, (x) => note('new', x) as StickyElement, { edit: true });
+    helpers.addBoxedAt(372, 100, (x) => note('new', x), { edit: true });
     expect(committedXs(commitTabs, ROW)).toEqual([0, 272, 544, 272]);
   });
 
   it('refuses to touch the board when edits are blocked', () => {
-    const tab: Tab = { id: 't1', name: 'Tab 1', elements: ROW } as Tab;
+    const tab: Tab = { id: 't1', name: 'Tab 1', elements: ROW };
     const commitTabs = vi.fn();
     const { result } = renderHook(() =>
       useElementHelpers({
@@ -110,7 +117,7 @@ describe('addBoxedAt with an insertion slot (docs/specs/021-event-storming/event
         setFormatSourceId: vi.fn(),
       }),
     );
-    result.current.addBoxedAt(372, 100, (x) => note('new', x) as StickyElement, {
+    result.current.addBoxedAt(372, 100, (x) => note('new', x), {
       insertion: SLOT,
     });
     expect(commitTabs).not.toHaveBeenCalled();
@@ -120,8 +127,9 @@ describe('addBoxedAt with an insertion slot (docs/specs/021-event-storming/event
 // The Format tool is the only painter (docs/specs/008-canvas/format-panel.md): its
 // Mode alone decides whether the brush stays loaded after a paint.
 describe('applyFormatFromSource', () => {
-  function paintHarness(mode: FormatMode) {
-    const tab: Tab = { id: 't1', name: 'Tab 1', elements: ROW } as Tab;
+  function paintHarness(mode: FormatMode, source = 'a') {
+    const line: Element = { ...createArrow(0, 0, 10, 0), id: 'line' };
+    const tab: Tab = { id: 't1', name: 'Tab 1', elements: [...ROW, line] };
     const commit = vi.fn();
     const setFormatSourceId = vi.fn();
     const { result } = renderHook(() =>
@@ -130,7 +138,7 @@ describe('applyFormatFromSource', () => {
         activeId: 't1',
         activeTab: tab,
         editsBlocked: false,
-        formatSourceId: 'a',
+        formatSourceId: source,
         formatConfig: { ...DEFAULT_FORMAT_CONFIG, mode },
         getViewportCenter: () => ({ x: 0, y: 0 }),
         commit,
@@ -154,6 +162,23 @@ describe('applyFormatFromSource', () => {
     const { paint, commit, setFormatSourceId } = paintHarness('once');
     paint('b');
     expect(commit).toHaveBeenCalledTimes(1);
+    expect(setFormatSourceId).toHaveBeenCalledWith(null);
+  });
+
+  it('keeps a Paint once brush loaded on a tap that paints nothing', () => {
+    const { paint, commit, setFormatSourceId } = paintHarness('once');
+    telemetry.track.mockClear();
+    paint('a'); // the source itself
+    paint('line'); // the other kind: a note's look onto an arrow
+    expect(commit).not.toHaveBeenCalled();
+    expect(setFormatSourceId).not.toHaveBeenCalled();
+    expect(telemetry.track).not.toHaveBeenCalled();
+  });
+
+  it('empties the brush once its source is gone', () => {
+    const { paint, commit, setFormatSourceId } = paintHarness('keep', 'deleted');
+    paint('b');
+    expect(commit).not.toHaveBeenCalled();
     expect(setFormatSourceId).toHaveBeenCalledWith(null);
   });
 });

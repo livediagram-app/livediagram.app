@@ -3,7 +3,7 @@
 import { act, fireEvent, screen, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { SHEET_ID, makeSheet, renderSheet } from './sheet-ui-test-utils';
-import { NO_NAMES, SheetNamedRanges } from './SheetNamedRanges';
+import { NO_NAMES, NO_NAMES_READ, SheetNamedRanges } from './SheetNamedRanges';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
@@ -19,7 +19,7 @@ describe('the named ranges list', () => {
     const onClose = vi.fn();
     renderSheet(h, ({ actions }) => <SheetNamedRanges actions={actions} onClose={onClose} />);
     const { rows, cols } = h.ctl().sheet.layout;
-    act(() =>
+    act(() => {
       h.ctl().write(
         {
           kind: 'layout',
@@ -32,8 +32,8 @@ describe('the named ranges list', () => {
           ],
         },
         'Name',
-      ),
-    );
+      );
+    });
     const list = screen.getByRole('list', { name: 'Named ranges' });
     expect(within(list).getByText('Rate')).toBeTruthy();
     expect(within(list).getByText('A2')).toBeTruthy();
@@ -56,6 +56,31 @@ describe('the named ranges list', () => {
     });
     renderSheet(h, ({ actions }) => <SheetNamedRanges actions={actions} onClose={vi.fn()} />, {
       canEdit: false,
+    });
+    expect(screen.getByText('X')).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Remove X' })).toBeNull();
+  });
+
+  // docs/specs/013-workspace/share-roles.md: a Participant writes cells, never the layout a name is part of.
+  it('offers a Participant no Remove, and no way to make a name it cannot make', async () => {
+    const h = await makeSheet();
+    const { rows, cols } = h.store.sheet(SHEET_ID)!.layout;
+    renderSheet(h, ({ actions }) => <SheetNamedRanges actions={actions} onClose={vi.fn()} />, {
+      canEdit: true,
+      canShape: false,
+    });
+    expect(screen.getByText(NO_NAMES_READ)).toBeTruthy();
+    act(() => {
+      h.store.write(SHEET_ID, {
+        kind: 'layout',
+        changes: [
+          {
+            k: 'name',
+            name: 'X',
+            range: { r1: rows[0]!, c1: cols[0]!, r2: rows[0]!, c2: cols[0]! },
+          },
+        ],
+      });
     });
     expect(screen.getByText('X')).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'Remove X' })).toBeNull();

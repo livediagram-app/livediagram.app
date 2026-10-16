@@ -62,7 +62,7 @@ async function copy(id: string): Promise<string> {
   );
   expect(res.status).toBe(201);
   await settle();
-  return ((await res.json()) as { document: { id: string } }).document.id;
+  return (await res.json<{ document: { id: string } }>()).document.id;
 }
 
 /** The editor opening the document at `at`; the clock moves on to it when it is later. */

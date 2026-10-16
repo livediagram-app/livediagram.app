@@ -133,3 +133,23 @@ describe('POST /api/migrate flow 1 (sign-up claim)', () => {
     expect(migrateOwnerId).toHaveBeenCalledWith(expect.anything(), LEGACY, 'user_me');
   });
 });
+
+// A body whose ids are not strings, or that is not an object at all, read `.trim()` off it and threw: a 500.
+describe('POST /api/migrate with a malformed body', () => {
+  const send = (body: unknown) =>
+    handleMigrate(
+      makeTestRouteContext('POST', '/api/migrate', {
+        owner: LEGACY,
+        env: { GUEST_ID_HMAC_SECRET: SECRET } as Env,
+        body,
+      }),
+    );
+
+  it('refuses rather than throwing', async () => {
+    for (const body of [null, 'x', { toOwnerId: 42, toSignature: 7 }]) {
+      const res = await send(body);
+      expect(res.status, JSON.stringify(body)).toBeLessThan(500);
+    }
+    expect(migrateOwnerId).not.toHaveBeenCalled();
+  });
+});

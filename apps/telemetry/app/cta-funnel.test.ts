@@ -42,7 +42,7 @@ describe('landingFunnel', () => {
 
   it('orders surfaces busiest first and lists the quiet ones apart', () => {
     expect(funnel.surfaces.map((s) => s.surface)).toEqual(['Home', 'Feature', 'Compare']);
-    expect(funnel.quiet).toEqual(['Faq', 'Status', 'Dashboard', 'Help', 'Community']);
+    expect(funnel.quiet).toEqual(['Faq', 'Ai', 'Status', 'Dashboard', 'Help', 'Community']);
   });
 
   it('keeps every slot, most arrivals first, unused ones in table order', () => {
@@ -55,10 +55,18 @@ describe('landingFunnel', () => {
       'Home.HeaderWhiteboard',
       'Home.HeaderIllustration',
       'Home.HeaderPlan',
+      'Home.HeaderSession',
       'Home.HeroDraw',
       'Home.HeroBrainstorm',
       'Home.HeroCanvas',
       'Home.HeroBuild',
+      'Home.HeroSearch',
+      'Home.HeroBlankDraw',
+      'Home.HeroBlankWhiteboard',
+      'Home.HeroBlankSession',
+      'Home.HeroBlankIllustration',
+      'Home.HeroBlankPlan',
+      'Home.HeroFan',
       'Home.GalleryDraw',
       'Home.Closing',
     ]);
@@ -69,7 +77,7 @@ describe('landingFunnel', () => {
     const empty = landingFunnel([]);
     expect(empty.surfaces).toEqual([]);
     expect(empty.total).toEqual({ views: 0, arrived: 0, created: 0 });
-    expect(empty.quiet).toHaveLength(8);
+    expect(empty.quiet).toHaveLength(9);
   });
 });
 

@@ -9,9 +9,14 @@ import {
   parseRangeText,
   posRangeOf,
   readRange,
+  ruleMessage,
+  validationRuleAt,
+  valueInvalid,
+  rangeOptions,
   type SheetLayout,
 } from '@livediagram/sheets';
 import { readSheets, resolveSheet, workbookFor, type SheetRefusal } from './sheet-state';
+import { rulesRead } from './sheet-rule-change';
 
 // The most characters of cells one read answers with (blueprint sheet-store.md, Defaults): about 25,000 tokens, so
 // a read fits beside the rest of a conversation.
@@ -26,6 +31,8 @@ export interface ReadCell {
   value: string | number | boolean | null;
   // What the cell shows, in its number format.
   display: string;
+  // A value its validation rule does not allow (a Warn rule, a formula, a value from before the rule): why.
+  invalid?: string;
 }
 
 export interface SheetRead {
@@ -43,6 +50,9 @@ export interface SheetRead {
   frozen: { rows: number; cols: number };
   merges: string[];
   filter: string | null;
+  // Validation and format rules, in words (data-validation.md, conditional-formatting.md "Agents").
+  validation: ReturnType<typeof rulesRead>['validation'];
+  conditionalFormats: ReturnType<typeof rulesRead>['conditionalFormats'];
 }
 
 function layoutFacts(layout: SheetLayout) {
@@ -75,13 +85,13 @@ export async function readSheet(
       message: `"${input.range}" is not a cell or range in A1 form ("B4", "A1:D20").`,
     };
   const start = parseRangeText(read.range)!;
+  const layout = wb.sheet(id)!.layout;
   const cells: ReadCell[] = [];
   let chars = 0;
   let cut: string | null = null;
-  read.rows.forEach((row, i) => {
-    if (cut) return;
-    row.forEach((cell, j) => {
-      if (cut || (cell.input === '' && (cell.value === null || cell.value === ''))) return;
+  rows: for (const [i, row] of read.rows.entries()) {
+    for (const [j, cell] of row.entries()) {
+      if (cell.input === '' && (cell.value === null || cell.value === '')) continue;
       const at = formatA1(start.r1 + i, start.c1 + j);
       const out: ReadCell = {
         at,
@@ -90,11 +100,22 @@ export async function readSheet(
         value: cell.value as ReadCell['value'],
         display: cell.display,
       };
+      const rule = layout.rules?.length
+        ? validationRuleAt(layout, start.r1 + i, start.c1 + j)
+        : null;
+      if (rule) {
+        const ctx = { locale: 'en-GB', layout, rangeValues: () => rangeOptions(wb, id, rule) };
+        if (valueInvalid(rule, wb.value(id, start.r1 + i, start.c1 + j), cell.display, ctx))
+          out.invalid = ruleMessage(rule, ctx);
+      }
       chars += JSON.stringify(out).length;
-      if (chars > SHEET_READ_CHARS_MAX) cut = at;
-      else cells.push(out);
-    });
-  });
+      if (chars > SHEET_READ_CHARS_MAX) {
+        cut = at;
+        break rows;
+      }
+      cells.push(out);
+    }
+  }
   const extent = wb.extent(id);
   const lastRow = start.r1 + read.rows.length;
   const note = cut
@@ -114,5 +135,6 @@ export async function readSheet(
     truncated: cut !== null || read.truncated,
     ...(note ? { note } : {}),
     ...layoutFacts(wb.sheet(id)!.layout),
+    ...rulesRead(wb, id),
   };
 }

@@ -16,6 +16,7 @@ import {
   sheetStoreFor,
   forgetSheetStores,
   SHEET_REFETCH_DEBOUNCE_MS,
+  writeRefusalMessage,
 } from './sheet-store-client';
 
 const by = { id: 'me', name: 'Me', color: '#000000' };
@@ -117,9 +118,9 @@ function store(
     scope: { documentId: 'd1', ownerId: 'o', shareCode: null, tabId: null },
     self: () => by,
     locale: 'en-GB',
-    pushUndo: (extra.pushUndo ?? (() => {})) as never,
+    pushUndo: extra.pushUndo ?? (() => {}),
     toast: extra.toast ?? (() => {}),
-    api: api as never,
+    api: api,
     ...(extra.wait ? { wait: extra.wait } : {}),
   });
 }
@@ -256,6 +257,21 @@ describe('the sheet store client', () => {
     await s.settle();
     expect(steps).toHaveLength(1);
   });
+  it('undoes and redoes a change made alongside a write in the same step', async () => {
+    const steps: { undo: () => void; redo: () => void }[] = [];
+    s = store(srv.api, { pushUndo: (st) => steps.push(st as never) });
+    await s.loadTab('t1');
+    const alongside = { undo: vi.fn(), redo: vi.fn() };
+    s.write('sheet0001', set(0, 0, 3), { alongside });
+    expect(steps).toHaveLength(1);
+    expect(alongside.redo).not.toHaveBeenCalled();
+    steps[0]!.undo();
+    expect(value(0, 0)).toBeNull();
+    expect(alongside.undo).toHaveBeenCalledTimes(1);
+    steps[0]!.redo();
+    expect(value(0, 0)).toBe(3);
+    expect(alongside.redo).toHaveBeenCalledTimes(1);
+  });
   it("undoes a row deletion into the sheet as it is then, keeping a card table's later links", async () => {
     const steps: { undo: () => void; redo: () => void }[] = [];
     s = store(srv.api, { pushUndo: (st) => steps.push(st as never) });
@@ -332,6 +348,21 @@ describe('the sheet store client', () => {
     await s.settle();
     expect(s.sheet('sheet0003')).toBeUndefined();
   });
+  it('waits for a new tab to be saved: a create refused as tab_not_found is tried again', async () => {
+    vi.useFakeTimers();
+    try {
+      srv.api.createSheet.mockRejectedValueOnce(new ApiError('sheet create', 404, 'tab_not_found'));
+      s.create({ id: 'sheet0004', tabId: 't9', title: 'New', layout: emptyLayout(rand, 2, 2) });
+      await vi.advanceTimersByTimeAsync(0);
+      expect(s.sheet('sheet0004')).toBeTruthy();
+      await vi.advanceTimersByTimeAsync(1000);
+      await s.settle();
+      expect(srv.api.createSheet).toHaveBeenCalledTimes(2);
+      expect(s.sheet('sheet0004')).toBeTruthy();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
   it('deletes a sheet with its element, and Undo makes it again as it was', async () => {
     s.write('sheet0001', set(0, 0, 7));
     await s.settle();
@@ -369,13 +400,28 @@ describe('the sheet store client', () => {
     expect(toast).not.toHaveBeenCalled();
     expect(own.sheet('sheet0004')).toBeUndefined();
   });
+  it('makes a second load while one is in flight wait for it, never settling on the empty tab', async () => {
+    let answer!: (sheets: SheetJson[]) => void;
+    const slow = store({
+      ...srv.api,
+      fetchSheets: vi.fn(() => new Promise<SheetJson[]>((resolve) => (answer = resolve))),
+    });
+    const first = slow.loadTab('t1');
+    let secondDone = false;
+    const second = slow.loadTab('t1').then(() => (secondDone = true));
+    await flush();
+    expect(secondDone).toBe(false);
+    answer([sheetToJson(srv.sheet)]);
+    await Promise.all([first, second]);
+    expect(slow.sheet('sheet0001')).toBeDefined();
+  });
   it('fails a tab load quietly and resyncs', async () => {
     const bad = store({
       ...srv.api,
       fetchSheets: vi.fn(async () => {
         throw new ApiError('sheets', 500, null);
       }),
-    } as never);
+    });
     await bad.loadTab('t1');
     expect(bad.status('t1')).toBe('error');
     s.resync();
@@ -487,7 +533,7 @@ describe('the sheet store client, edges', () => {
           i: { f: { t: 'CARDCOUNT()', r: [] } },
         },
       ],
-    } as SheetWrite);
+    });
     expect(s.usesCards()).toBe(true);
   });
 
@@ -604,5 +650,75 @@ describe('the sheet store client, edges', () => {
     s.release(['sheet0001']);
     await s.settle();
     expect(toast).not.toHaveBeenCalled();
+  });
+});
+
+describe('validation rules in the store (docs/specs/029-sheets/data-validation.md)', () => {
+  const ruled = (): SheetJson => {
+    const json = initial();
+    const { rows, cols } = json.layout;
+    return {
+      ...json,
+      layout: {
+        ...json.layout,
+        rules: [
+          {
+            id: 'rule01',
+            r1: rows[0]!,
+            c1: cols[0]!,
+            r2: rows[4]!,
+            c2: cols[0]!,
+            is: 'list',
+            opts: [{ v: 'Done' }],
+          },
+        ],
+      },
+    };
+  };
+  it('refuses a value a Reject rule does not allow, naming the cell; saves an option in its spelling', async () => {
+    const srv = server(ruled());
+    const toasts: string[] = [];
+    const s = store(srv.api, { toast: (m) => toasts.push(m) });
+    await s.loadTab('t1');
+    const { rows, cols } = s.sheet('sheet0001')!.layout;
+    expect(
+      s.write('sheet0001', {
+        kind: 'cells',
+        cells: [{ r: rows[1]!, c: cols[0]!, i: { s: 'Nope' } }],
+      }),
+    ).toBe('value_invalid');
+    expect(toasts).toEqual(["A2: Choose one of the dropdown's options: Done"]);
+    expect(
+      s.write('sheet0001', {
+        kind: 'cells',
+        cells: [{ r: rows[1]!, c: cols[0]!, i: { s: 'done' } }],
+      }),
+    ).toBeNull();
+    await flush();
+    expect(srv.sheet.cells.get(`${rows[1]}:${cols[0]}`)?.input).toEqual({ s: 'Done' });
+  });
+  it('stores an import or a quiet write as it is, telling the api it is unchecked', async () => {
+    const srv = server(ruled());
+    const s = store(srv.api);
+    await s.loadTab('t1');
+    const { rows, cols } = s.sheet('sheet0001')!.layout;
+    const cell = (v: string): SheetWrite => ({
+      kind: 'cells',
+      cells: [{ r: rows[2]!, c: cols[0]!, i: { s: v } }],
+    });
+    expect(s.write('sheet0001', cell('Imported'), { unchecked: true })).toBeNull();
+    expect(s.write('sheet0001', cell('Synced'), { undoable: false })).toBeNull();
+    await flush();
+    await flush();
+    const sent = srv.api.writeSheet.mock.calls.map((c) => c[2] as { unchecked?: boolean });
+    expect(sent.map((r) => r.unchecked)).toEqual([true, true]);
+  });
+  it('words a refusal without a line as the store does', () => {
+    expect(writeRefusalMessage({ error: 'rules_full' })).toBe(
+      'This sheet holds the most rules it can',
+    );
+    expect(writeRefusalMessage({ error: 'value_invalid', line: 'Enter a date' })).toBe(
+      'Enter a date',
+    );
   });
 });

@@ -12,6 +12,7 @@
 
 import { isAnimatedPattern, type BackgroundPattern } from '@livediagram/document';
 import { useShowMoreList } from '@/hooks/ui/useShowMoreList';
+import { PatternCarousel } from './PatternCarousel';
 import {
   ColorSwatch,
   PATTERNS,
@@ -68,8 +69,8 @@ export function CanvasStyleControls({
   onSetBackgroundOpacity,
   onSetBackgroundPatternScale,
   onSetBackgroundAnimationSpeed,
-  patternColumns = 4,
   showAllPatterns = false,
+  previewTiles = false,
 }: {
   backgroundPattern: BackgroundPattern;
   backgroundColor: string;
@@ -85,14 +86,13 @@ export function CanvasStyleControls({
   onSetBackgroundOpacity: (opacity: number) => void;
   onSetBackgroundPatternScale: (scale: number) => void;
   onSetBackgroundAnimationSpeed: (speed: number) => void;
-  // Pattern-grid density. The narrow palette accordion uses 4; the wide
-  // dialog passes 7 so the tiles aren't marooned with empty gutters.
-  // Discrete values keep the class names static for Tailwind.
-  patternColumns?: 4 | 7;
   // Render every pattern at once with no "Show more" toggle. The narrow
   // accordion keeps the toggle (compact for first-time users); the wide
   // dialog has the room to show them all.
   showAllPatterns?: boolean;
+  // Each pattern drawn for real in this tab's colours, in carousels (the dialog's Canvas panel), instead of the
+  // compact icon grid the narrow accordion uses.
+  previewTiles?: boolean;
 }) {
   // The "Show more" toggle applies to the STATIC patterns only; the
   // animated set is small and shown in full so it stays discoverable.
@@ -101,32 +101,54 @@ export function CanvasStyleControls({
   // (hooks rule) even when showAllPatterns bypasses its visible list.
   const staticList = useShowMoreList(STATIC_PATTERNS, (p) => p.id === backgroundPattern);
   const visibleStatic = showAllPatterns ? STATIC_PATTERNS : staticList.visible;
-  const patternGridClass =
-    patternColumns === 7
-      ? 'mt-1 grid grid-cols-4 gap-1 sm:grid-cols-7'
-      : 'mt-1 grid grid-cols-4 gap-1';
+  const patternGridClass = 'mt-1 grid grid-cols-4 gap-1';
 
   return (
     <>
-      <p className="text-[10px] font-medium text-slate-500 dark:text-slate-300">Pattern</p>
-      <PatternGrid
-        patterns={visibleStatic}
-        gridClass={patternGridClass}
-        active={backgroundPattern}
-        onPick={onSetBackgroundPattern}
-      />
-      {!showAllPatterns && staticList.hasMore && !staticList.showAll ? (
-        <ShowMoreButton label="Show more patterns" onClick={staticList.reveal} />
-      ) : null}
-      <p className="mt-3 border-t border-slate-100 pt-3 text-[10px] font-medium text-slate-500 dark:border-slate-800 dark:text-slate-400">
-        Animated
-      </p>
-      <PatternGrid
-        patterns={ANIMATED_PATTERNS}
-        gridClass={patternGridClass}
-        active={backgroundPattern}
-        onPick={onSetBackgroundPattern}
-      />
+      {previewTiles ? (
+        // The Tab Style Canvas panel: each pattern drawn for real, static and animated in carousels of their own.
+        <div className="flex flex-col gap-4">
+          <PatternCarousel
+            heading="Static"
+            patterns={STATIC_PATTERNS}
+            active={backgroundPattern}
+            onPick={onSetBackgroundPattern}
+            backgroundColor={backgroundColor}
+            patternColor={patternColor}
+          />
+          <PatternCarousel
+            heading="Animated"
+            patterns={ANIMATED_PATTERNS}
+            animated
+            active={backgroundPattern}
+            onPick={onSetBackgroundPattern}
+            backgroundColor={backgroundColor}
+            patternColor={patternColor}
+          />
+        </div>
+      ) : (
+        <>
+          <p className="text-[10px] font-medium text-slate-500 dark:text-slate-300">Pattern</p>
+          <PatternGrid
+            patterns={visibleStatic}
+            gridClass={patternGridClass}
+            active={backgroundPattern}
+            onPick={onSetBackgroundPattern}
+          />
+          {!showAllPatterns && staticList.hasMore && !staticList.showAll ? (
+            <ShowMoreButton label="Show more patterns" onClick={staticList.reveal} />
+          ) : null}
+          <p className="mt-3 border-t border-slate-100 pt-3 text-[10px] font-medium text-slate-500 dark:border-slate-800 dark:text-slate-400">
+            Animated
+          </p>
+          <PatternGrid
+            patterns={ANIMATED_PATTERNS}
+            gridClass={patternGridClass}
+            active={backgroundPattern}
+            onPick={onSetBackgroundPattern}
+          />
+        </>
+      )}
       <p className="mt-3 border-t border-slate-100 pt-3 text-[10px] font-medium text-slate-500 dark:border-slate-800 dark:text-slate-400">
         Colours
       </p>

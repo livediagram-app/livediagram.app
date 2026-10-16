@@ -1,25 +1,17 @@
-import { SHAPE_DEFAULT_SIZE, createShape, type ShapeElement } from '@livediagram/document';
-import { placeNewSheet } from './sheet-seeds';
-import {
-  freshBoardSetup,
-  newItemId,
-  planBoardHeightFor,
-  planBoardWidthFor,
-  type ItemCreate,
-  type PlanBoardSetup,
-} from '@livediagram/items';
 import {
   readLocalStorageSafe,
   removeLocalStorageSafe,
   safeJson,
   writeLocalStorageSafe,
 } from './local-storage-safe';
+import { tourTrackSeen, withTracksAnswered } from './tour-tracks';
+import type { UserPreferences } from './user-preferences';
 
 // The Plan tour's pure parts (docs/specs/026-plan/plan-tour.md, blueprint plan-tour.md): its relaunch
-// signal, its tracks, the example board, cards and sheet it shows Plan working on, and the leftover record
-// that lets a later visit tidy tour content a reload cut short.
+// signal, its tracks, and the leftover record an older tour wrote, so a later visit tidies the example content
+// a reload cut short (usePlanTourLeftovers).
 
-// Settings → Plan tour: the "Show Plan Tour" row, turned on from off and closed, reruns the tour. A
+// Settings → Plan tour: the Tours › "Plan Tour" row, turned on from off and closed, reruns the tour. A
 // window event keeps the dialog decoupled from PlanTourHost, as the welcome tour's relaunch does.
 export const PLAN_TOUR_RELAUNCH_EVENT = 'livediagram:plan-tour-relaunch';
 
@@ -32,76 +24,26 @@ export function requestPlanTourRelaunch(): void {
 export const PLAN_TOUR_TRACKS = ['boards', 'sheets'] as const;
 export type PlanTourTrack = (typeof PLAN_TOUR_TRACKS)[number];
 
-export const EXAMPLE_BOARD_TITLE = 'Example Board';
-export const EXAMPLE_SHEET_TITLE = 'Example Sheet';
-
-// The example sheet's frame: room for the Budget start's three columns and six rows under the header, toolbar and
-// formula bar, smaller than a placed Sheet's 960 x 560 so it sits in the view with the tour's card beside it.
-export const EXAMPLE_SHEET_SIZE = { width: 600, height: 400 } as const;
-
-// The cell the Formulas step selects: the Budget start's Total amount, C6.
-export const EXAMPLE_TOTAL_CELL = { r: 5, c: 2 } as const;
-
-// The example board: a Kanban board with statuses of its own (freshBoardSetup), so no card the document
-// has lands on it and no example card lands on another board, centred on a canvas point.
-export function exampleBoard(
-  centre: { x: number; y: number },
-  random: () => number = Math.random,
-): ShapeElement & { planBoard: PlanBoardSetup } {
-  const planBoard = { ...freshBoardSetup('kanban', random), title: EXAMPLE_BOARD_TITLE };
-  const base = createShape('plan-board', 0, 0);
-  const width = Math.max(SHAPE_DEFAULT_SIZE['plan-board'].width, planBoardWidthFor(planBoard));
-  const height = planBoardHeightFor(planBoard);
-  return {
-    ...base,
-    planBoard,
-    width,
-    height,
-    x: centre.x - width / 2,
-    y: centre.y - height / 2,
-  };
+// Each track offers itself once (docs/specs/026-plan/plan-tour.md "Where it appears"): `planTourTracks` lists the
+// tracks answered; `planTourSeen` counts both only for a power user (tourTrackSeen).
+export function planTrackSeen(
+  prefs: UserPreferences | null | undefined,
+  track: PlanTourTrack,
+): boolean {
+  return tourTrackSeen(prefs, prefs?.planTourTracks, prefs?.planTourSeen, track);
 }
 
-// The status a Kanban column was given on the example board: `todo` → `todo~k3f9`.
-export function exampleStatus(setup: PlanBoardSetup, column: string): string | undefined {
-  return setup.columns.find((c) => c.id === column)?.status;
+/** Whether any track is still owed: what the Settings row's switch shows. */
+export function planTourOwed(prefs: UserPreferences | null | undefined): boolean {
+  return PLAN_TOUR_TRACKS.some((t) => !planTrackSeen(prefs, t));
 }
 
-// The column "Move work along" moves the first card to.
-export const EXAMPLE_MOVE_TO = 'doing';
-
-// The example cards (spec "Tour content"), first the one the tour moves and opens. Fresh ids, so the
-// tour knows exactly what it made.
-export function exampleCards(setup: PlanBoardSetup, newId: () => string = newItemId): ItemCreate[] {
-  const todo = exampleStatus(setup, 'todo');
-  const backlog = exampleStatus(setup, 'backlog');
-  const card = (type: string, title: string, status: string | undefined): ItemCreate => ({
-    id: newId(),
-    type,
-    fields: { title },
-    ...(status ? { place: { status } } : {}),
-  });
-  return [
-    card('task', 'Plan the launch', todo),
-    card('task', 'Write the release notes', todo),
-    card('action', 'Agree the launch date', backlog),
-  ];
-}
-
-// The example sheet (spec "Tour content"): a Sheet placed already set up from the Budget start, centred on a canvas
-// point. Its sheet is made when it first draws, as any placed Sheet's.
-export function exampleSheet(centre: { x: number; y: number }): ShapeElement & {
-  planSheet: { sheetId: string };
-} {
-  const { width, height } = EXAMPLE_SHEET_SIZE;
-  return {
-    ...createShape('plan-sheet', 0, 0),
-    planSheet: placeNewSheet({ title: EXAMPLE_SHEET_TITLE, setUp: 'budget' }),
-    width,
-    height,
-    x: centre.x - width / 2,
-    y: centre.y - height / 2,
-  };
+/** The preferences with `tracks` answered. */
+export function markPlanTracksSeen(
+  prefs: UserPreferences,
+  tracks: readonly PlanTourTrack[],
+): UserPreferences {
+  return { ...prefs, planTourTracks: withTracksAnswered(prefs.planTourTracks, tracks) };
 }
 
 // What the tour made, kept until it is taken away: the element it placed (the example board or sheet), the
@@ -133,7 +75,7 @@ function asContent(value: unknown): PlanTourContent | null {
     documentId: v['documentId'],
     elementId,
     ...(sheetId ? { sheetId } : {}),
-    itemIds: v['itemIds'] as string[],
+    itemIds: v['itemIds'],
   };
 }
 

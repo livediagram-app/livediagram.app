@@ -39,7 +39,10 @@ export function EntityView({
         className="shrink-0"
         style={{ height: entityHeaderHeight(element.textSize), borderBottom: `1px solid ${rule}` }}
       />
-      <div className="flex min-h-0 flex-1 flex-col gap-[3px] overflow-hidden px-2 py-1.5">
+      <div
+        data-entity-fields=""
+        className="flex min-h-0 flex-1 flex-col gap-[3px] overflow-hidden px-2 py-1.5"
+      >
         {fields.length === 0 ? (
           <span className="text-[10px] italic opacity-40" style={{ color: textColor }}>
             No fields yet

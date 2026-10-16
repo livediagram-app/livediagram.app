@@ -1,7 +1,7 @@
 // Feature illustration: a Sheet on a Plan tab (the Plans & boards category's spreadsheet card).
 // A small grid with lettered columns and numbered rows, a formula typing into the total cell and
 // its answer landing. Motion reuses the canvas card timeline (fa-a-* in
-// app/feature-art-animations.css), which settles to the finished frame under reduced motion.
+// app/feature-art/canvas.css), which settles to the finished frame under reduced motion.
 import { Panel, RULE, Scene, TEXT, MUTED, at } from './canvas-parts';
 
 const COLS = ['A', 'B', 'C'];

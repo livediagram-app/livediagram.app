@@ -4,7 +4,7 @@
 // selection bounds, and every "should this chrome show?" predicate the
 // Canvas render reads. Lifted out of Canvas.tsx so this decision logic
 // is unit-testable in isolation (the component itself has no tests).
-import { isFixedSizeElement } from '@livediagram/document';
+import { isFixedSizeElement, sheetDrawnChartIds, isChipShape } from '@livediagram/document';
 import {
   elementBounds,
   isBoxed,
@@ -74,7 +74,9 @@ export function elementGrips(
     !ctx.tabLocked &&
     (!ctx.readOnly || ctx.resizable === true) &&
     !isFixedSizeElement(el);
-  return { handles, anchors: handles && !ctx.readOnly && el.type !== 'table' };
+  // A badge or step number takes no connectors (docs/specs/009-elements/badge.md "Connectors").
+  const chip = el.type === 'shape' && isChipShape(el.shape);
+  return { handles, anchors: handles && !ctx.readOnly && el.type !== 'table' && !chip };
 }
 
 export function deriveCanvasSelection(input: {
@@ -120,7 +122,7 @@ export function deriveCanvasSelection(input: {
     elementMenuOpen,
     labelRectOf,
     plusBlocked,
-    canvasCovered = false,
+    canvasCovered: covered = false,
   } = input;
 
   // An element's selection extent (docs/specs/008-canvas/arrow-labels.md): an arrow spans
@@ -143,6 +145,9 @@ export function deriveCanvasSelection(input: {
   const selectedIsBoxed = selected ? isBoxed(selected) : false;
   const selectionBounds: Bounds | null = selected ? selectionExtent(selected) : null;
 
+  // A chart that sits in a Sheet is drawn and worked in its Sheet (docs/specs/029-sheets/sheet.md "Charts"): selected
+  // there to open its element menu, it has no box on the canvas to float chrome over.
+  const canvasCovered = covered || (!!selected && sheetDrawnChartIds(elements).has(selected.id));
   const selectedLocked = selected ? selected.locked === true : false;
   const showPopover = !!(
     selected &&
@@ -173,6 +178,8 @@ export function deriveCanvasSelection(input: {
     // arbitrary rather than considered: both are containers you chain from
     // exactly as often as you chain from a box.
     selected.type !== 'annotation' &&
+    // Nor is a badge or step number: it is a mark on a node (docs/specs/009-elements/badge.md).
+    !(selected.type === 'shape' && isChipShape(selected.shape)) &&
     // A Plan board or Plan card is not a node to chain from: its cards are its content
     // (docs/specs/026-plan/plan-board.md).
     !(

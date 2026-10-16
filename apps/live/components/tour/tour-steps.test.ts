@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { TELEMETRY_TYPE_PATTERN } from '@livediagram/api-schema';
 import { TOUR_STEPS, tourStepsFor, tourStepTelemetryType } from './tour-steps';
 
-// The tour's stage-view telemetry (docs/specs/007-editor/editor-tour.md + docs/specs/017-telemetry/telemetry.md): every step id must
+// The Diagram tour's stage-view telemetry (docs/specs/007-editor/editor-tour.md + docs/specs/017-telemetry/telemetry.md): every step id must
 // derive a valid preset `type` token, and the funnel only reads cleanly if
 // ids stay unique and the bookends stay at the ends.
 
@@ -34,14 +34,11 @@ describe('tourStepsFor', () => {
     expect(ids({ mobile: false, esBoard: false })).toEqual(TOUR_STEPS.map((s) => s.id));
   });
 
-  // docs/specs/007-editor/editor-tour.md "The steps": Diagram & Draw follows Shape categories.
-  it('shows the Diagram & Draw step after Shape categories, opening the switch menu', () => {
+  // docs/specs/007-editor/editor-tour.md "The steps": no Tab Mode step; Element Menu follows Palette Categories.
+  it('has no Tab Mode step, the Element Menu following Palette Categories', () => {
     const desktop = ids({ mobile: false, esBoard: false });
-    expect(desktop.indexOf('editor-mode')).toBe(desktop.indexOf('categories') + 1);
-    const step = TOUR_STEPS.find((s) => s.id === 'editor-mode')!;
-    expect(step).toMatchObject({ target: 'editor-mode-menu', alsoHighlight: 'editor-mode' });
-    // A phone shows no switch (docs/specs/007-editor/editor-modes.md "The mode switch").
-    expect(ids({ mobile: true, esBoard: false })).not.toContain('editor-mode');
+    expect(desktop).not.toContain('editor-mode');
+    expect(desktop.indexOf('context-menu')).toBe(desktop.indexOf('categories') + 1);
   });
 
   it('drops the desktop-only step on mobile', () => {
@@ -54,24 +51,17 @@ describe('tourStepsFor', () => {
     const board = ids({ mobile: false, esBoard: true });
     expect(board).not.toContain('selection-modes');
     expect(board).not.toContain('categories');
-    // Nor a mode switch: a board is always Diagram.
-    expect(board).not.toContain('editor-mode');
-    // The rest of the tour still applies: the board has a palette, an
-    // explorer, elements, tabs, and a paintbrush.
-    expect(board).toContain('palette');
-    expect(board).toContain('explorer');
-    expect(board).toContain('theme-canvas');
+    // The rest of the tour still applies: the board has a palette, elements,
+    // tabs, and a paintbrush.
+    expect(board).toEqual(['welcome', 'palette', 'context-menu', 'tabs', 'theme-canvas', 'outro']);
   });
 
-  // The Explorer lives behind the top-left menu button (docs/specs/007-editor/toolbar-layout.md), so its
-  // step opens it there and rings the button too.
-  it('points the Explorer step at the menu button', () => {
-    const explorer = tourStepsFor({ mobile: false, esBoard: false }).find(
-      (s) => s.id === 'explorer',
-    )!;
-    expect(explorer.target).toBe('explorer');
-    expect(explorer.alsoHighlight).toBe('dock-explorer');
-    expect(explorer.body).toMatch(/menu button/);
+  it('counts six steps on a desktop diagram, five on a phone and three on a phone board', () => {
+    const count = (opts: { mobile: boolean; esBoard: boolean }) =>
+      tourStepsFor(opts).filter((s) => !s.card).length;
+    expect(count({ mobile: false, esBoard: false })).toBe(6);
+    expect(count({ mobile: true, esBoard: false })).toBe(5);
+    expect(count({ mobile: true, esBoard: true })).toBe(3);
   });
 
   it('keeps the bookend cards on every surface', () => {
@@ -85,5 +75,27 @@ describe('tourStepsFor', () => {
       expect(steps[0]!.card).toBe('welcome');
       expect(steps[steps.length - 1]!.card).toBe('outro');
     }
+  });
+});
+
+// docs/specs/007-editor/editor-tour.md: the tour is about diagramming, named for Diagram mode, and leaves the
+// app-wide Explorer to its own help article.
+describe('the Diagram tour copy', () => {
+  it('offers a tour of diagramming and sends them off to diagram', () => {
+    const welcome = TOUR_STEPS[0]!;
+    const outro = TOUR_STEPS[TOUR_STEPS.length - 1]!;
+    expect(welcome.title).toBe('Getting started with Diagrams?');
+    expect(welcome.body).toMatch(/diagrams in minutes/);
+    expect(outro.title).toBe("You're ready to diagram");
+  });
+
+  it('has no Explorer step', () => {
+    expect(TOUR_STEPS.map((s) => s.id)).not.toContain('explorer');
+  });
+
+  it('titles every step in Title Case', () => {
+    for (const step of TOUR_STEPS.filter((s) => !s.card))
+      for (const word of step.title.split(' ').filter((w) => w !== '&' && w !== 'the'))
+        expect(word.charAt(0)).toBe(word.charAt(0).toUpperCase());
   });
 });

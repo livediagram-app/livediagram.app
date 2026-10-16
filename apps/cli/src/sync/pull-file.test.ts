@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { ShapeElement, Tab } from '@livediagram/document';
+import { canonicalJson, type ShapeElement, type Tab } from '@livediagram/document';
 import {
-  canonicalJson,
   fileSlug,
   idSlug,
   parsePullFile,

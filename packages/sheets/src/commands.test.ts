@@ -23,11 +23,13 @@ import {
   moveAxis,
   resizeAxis,
   setFilterCondition,
+  sortFilter,
   sortRange,
   sortSheet,
   toggleFilter,
 } from './commands-axis';
 import { applySheetWrite, type SheetWrite } from './store';
+import type { MergeRefusal } from './merge-guards';
 import { cellKey, type Sheet } from './sheet';
 import { renderFormula } from './formula/stored';
 import type { Grid } from './selection';
@@ -39,8 +41,9 @@ const seeded = () => {
 };
 
 // Apply a write to the book's first sheet and keep the workbook in step; returns the new sheet.
-function run(b: ReturnType<typeof book>, w: SheetWrite | null, i = 0): Sheet {
+function run(b: ReturnType<typeof book>, w: SheetWrite | MergeRefusal | null, i = 0): Sheet {
   if (!w) throw new Error('no write');
+  if ('refused' in w) throw new Error(w.refused);
   const r = applySheetWrite(b.sheets[i]!, w, ctx);
   b.sheets[i] = r.sheet;
   b.wb.updateSheet(r.sheet, w.kind === 'cells' ? r.touched : undefined);
@@ -296,6 +299,52 @@ describe('rows and columns', () => {
     expect(b.v('A2')).toBe('c');
     expect(sortSheet(b.wb, 'nope', 0, true)).toBeNull();
     expect(sortSheet(book({ A1: 'x' }).wb, 'sheet0xx', 0, true)).toBeNull();
+  });
+  // sheet.md "Filter": a filter column's Sort sorts the filter's rows by THAT column, its header kept on top.
+  it("sorts a filter's rows by its column, the header and the rows outside kept", () => {
+    const b = book(
+      {
+        A1: 'top',
+        A2: 'Name',
+        B2: 'Team',
+        A3: 'Cy',
+        B3: 'Red',
+        A4: 'Ann',
+        B4: 'Blue',
+        A5: 'Bob',
+        B5: 'Green',
+        A6: 'after',
+      },
+      { rows: 8, cols: 3 },
+    );
+    const s = b.sheets[0]!;
+    const g: Grid = {
+      rows: 8,
+      cols: 3,
+      hiddenRow: () => false,
+      hiddenCol: () => false,
+      filled: () => false,
+      mergeAt: () => null,
+    };
+    run(b, toggleFilter(b.wb, s.id, { r1: 1, c1: 0, r2: 4, c2: 1 }, g));
+    run(b, sortFilter(b.wb, s.id, s.layout.cols[1]!, true));
+    expect([b.v('A1'), b.v('A2'), b.v('B3'), b.v('B4'), b.v('B5'), b.v('A6')]).toEqual([
+      'top',
+      'Name',
+      'Blue',
+      'Green',
+      'Red',
+      'after',
+    ]);
+    // The filter still starts at its header and ends on the same row on screen, though its last row moved.
+    const after = b.sheets[0]!.layout;
+    expect(after.filter).toMatchObject({ r1: after.rows[1], r2: after.rows[4] });
+    expect(after.filter!.r2).not.toBe(s.layout.rows[4]);
+    run(b, sortFilter(b.wb, s.id, s.layout.cols[0]!, false));
+    expect([b.v('A2'), b.v('A3'), b.v('A4'), b.v('A5')]).toEqual(['Name', 'Cy', 'Bob', 'Ann']);
+    expect(sortFilter(b.wb, s.id, 'nope', true)).toBeNull();
+    expect(sortFilter(b.wb, 'nope', s.layout.cols[0]!, true)).toBeNull();
+    expect(sortFilter(book({ A1: 'x' }).wb, 'sheet0xx', 'c', true)).toBeNull();
   });
   it('sorts a range, formulas moving with their rows', () => {
     const b = book({

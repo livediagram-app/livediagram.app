@@ -16,7 +16,7 @@ import {
 } from './article-flow';
 import { withArticleFlow, withArticlePageCount } from './article-pages';
 import { withElementsMoved, zoneAnchorOf, zoneCanvasRect, zoneMemberIds } from './article-zones';
-import { isBoxed, type BoxedElement, type Element, type Tab } from './index';
+import { isBoxed, type Element, type Tab } from './index';
 import {
   illustratePagesOf,
   layOutIllustratePages,
@@ -40,6 +40,7 @@ const DRAWING_SHAPES: ReadonlySet<ShapeKind> = new Set<ShapeKind>([
   'entity',
   'stadium',
   'actor',
+  'final-state',
   'cloud',
   'triangle',
   'trapezoid',
@@ -146,7 +147,7 @@ export function withElementsIntoZone(
         y: at.y,
         width: el.width * scale,
         height: el.height * scale,
-      } as BoxedElement;
+      };
     }
     const end = (ep: typeof el.from) => (ep.kind === 'free' ? { ...ep, ...map(ep) } : ep);
     return { ...el, from: end(el.from), to: end(el.to) };
@@ -178,7 +179,7 @@ export function looseOnArticles(
   for (const id of ids) {
     const el = byId.get(id);
     if (!el) continue;
-    const at = zoneAnchorOf(el, elements as Element[]);
+    const at = zoneAnchorOf(el, elements);
     const page = pages.find(
       (p) =>
         at.x >= p.rect.x &&
@@ -211,7 +212,7 @@ export function withZonesFitted<T extends ArticlesTab>(tab: T, flow: string, tex
   const doc = articlesOf(tab)[flow];
   if (!doc) return tab;
   const pages = layOutIllustratePages(illustratePagesOf(tab)).filter((p) => p.flow === flow);
-  let elements = tab.elements as Element[];
+  let elements = tab.elements;
   let changed = false;
   const blocks: ArticleBlock[] = [];
   for (const b of doc.blocks) {
@@ -280,7 +281,7 @@ export function withZoneContentsRemoved<T extends ArticlesTab>(
   gone: readonly ArticleZoneBlock[],
 ): T {
   const pages = layOutIllustratePages(illustratePagesOf(tab)).filter((p) => p.flow === flow);
-  const els = tab.elements as Element[];
+  const els = tab.elements;
   const ids = new Set<string>();
   for (const z of gone) {
     const rect = zoneCanvasRect(pages, z);
@@ -376,7 +377,7 @@ export function withZoneWrap<T extends ArticlesTab>(
   if (wrap === (zone.wrap ?? 'inline') && align === (zone.align ?? 'center')) return tab;
   const max = wrap === 'inline' ? textWidth : textWidth * ARTICLE_WRAP_MAX_SHARE;
   const scale = Math.min(1, max / zone.width);
-  let elements = tab.elements as Element[];
+  let elements = tab.elements;
   if (scale < 1) {
     const pages = layOutIllustratePages(illustratePagesOf(tab)).filter((p) => p.flow === flow);
     const rect = zoneCanvasRect(pages, zone);
@@ -445,7 +446,7 @@ export function withZoneSize<T extends ArticlesTab>(
   let leastH = ARTICLE_ZONE_MIN;
   let leastW = ARTICLE_ZONE_MIN;
   if (rect) {
-    const els = tab.elements as Element[];
+    const els = tab.elements;
     const members = els.filter((el) => zoneMemberIds(els, rect).has(el.id));
     if (members.length) {
       const box = boundsOf(members, els);
@@ -484,8 +485,8 @@ export function objectsDraggedOut(before: ArticlesTab, now: ArticlesTab): Object
   const docsNow = articlesOf(now);
   const pagesBefore = layOutIllustratePages(illustratePagesOf(before));
   const pagesNow = layOutIllustratePages(illustratePagesOf(now));
-  const elsBefore = before.elements as Element[];
-  const elsNow = now.elements as Element[];
+  const elsBefore = before.elements;
+  const elsNow = now.elements;
   for (const [flow, doc] of Object.entries(docsBefore)) {
     const stillThere = new Set((docsNow[flow]?.blocks ?? []).map((b) => b.id));
     const ownBefore = pagesBefore.filter((p) => p.flow === flow);
@@ -528,11 +529,11 @@ export function withZoneMoved<T extends ArticlesTab>(
   const from = before ? zoneCanvasRect(pagesOf(t), before) : null;
   const landed = withZoneLanded(t, flow, res);
   if (!from || !landed.rect) return landed.tab;
-  const ids = zoneMemberIds(t.elements as Element[], from);
+  const ids = zoneMemberIds(t.elements, from);
   return {
     ...landed.tab,
     elements: withElementsMoved(
-      landed.tab.elements as Element[],
+      landed.tab.elements,
       ids,
       landed.rect.x - from.x,
       landed.rect.y - from.y,

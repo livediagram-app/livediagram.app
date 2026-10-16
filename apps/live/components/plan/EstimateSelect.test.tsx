@@ -23,7 +23,7 @@ describe('the Estimate dropdown', () => {
   it('keeps an odd value a card already holds, in its place among the sizes', () => {
     render(<EstimateSelect id="e" value={4} disabled={false} onSave={vi.fn()} />);
     expect(options()).toEqual(['None', '1', '2', '3', '4', '5', '8', '13', '21']);
-    expect((screen.getByRole('combobox') as HTMLSelectElement).value).toBe('4');
+    expect(screen.getByRole<HTMLSelectElement>('combobox').value).toBe('4');
     cleanup();
     render(<EstimateSelect id="e" value={40} disabled={false} onSave={vi.fn()} />);
     expect(options().at(-1)).toBe('40');

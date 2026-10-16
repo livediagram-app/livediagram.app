@@ -1,6 +1,8 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { Button, clampIntoRange, Portal } from '@livediagram/ui';
+import { useLayoutEffect, useRef, useState } from 'react';
+import { Button, clampIntoRange, lucideGlyph, Portal } from '@livediagram/ui';
+import { lucideTriangleAlert } from '@livediagram/icons/lucide';
 import { VIEWPORT_EDGE_MARGIN as EDGE } from '@/lib/clamp-to-viewport';
+import { usePopoverLayer } from './popover-stack';
 
 // A small confirmation popover anchored beside a trigger element, with an
 // arrow pointing back at it. The lightweight alternative to the full-
@@ -14,13 +16,47 @@ import { VIEWPORT_EDGE_MARGIN as EDGE } from '@/lib/clamp-to-viewport';
 // `--z-overlay` context menus that spawn it) so the "are you sure?" prompt
 // is never hidden behind the menu it was opened from.
 
-const WIDTH = 224;
+const WIDTH = 240;
+const WarningIcon = lucideGlyph(lucideTriangleAlert, 13);
+
+/** A confirmation's question and the rest: split after its first question mark, the whole as the title without one. */
+export function splitConfirmMessage(message: string): { title: string; detail: string } {
+  const at = message.indexOf('? ');
+  if (at < 0) return { title: message, detail: '' };
+  return { title: message.slice(0, at + 1), detail: message.slice(at + 2).trim() };
+}
+
+function ConfirmText({ message, warning }: { message: string; warning?: string | undefined }) {
+  const { title, detail } = splitConfirmMessage(message);
+  return (
+    <div className="flex flex-col gap-1.5">
+      <p className="text-[13px] font-semibold leading-snug text-slate-900 dark:text-slate-50">
+        {title}
+      </p>
+      {warning ? (
+        <p className="flex items-start gap-1.5 rounded-md bg-amber-50 px-2 py-1.5 text-xs leading-snug text-amber-900 dark:bg-amber-500/10 dark:text-amber-100">
+          <WarningIcon aria-hidden className="mt-px shrink-0" />
+          {warning}
+        </p>
+      ) : null}
+      {detail ? (
+        <p className="whitespace-pre-line text-xs leading-snug text-slate-500 dark:text-slate-400">
+          {detail}
+        </p>
+      ) : null}
+    </div>
+  );
+}
 const GAP = 10; // space between the anchor and the popover
 const ARROW = 7; // half the arrow's visual size
 
 type ConfirmPopoverProps = {
   anchor: HTMLElement;
+  // The question, then what follows from it: "Delete this tab? It can't be recovered." The question reads as the
+  // popover's title and the rest as its quieter detail (splitConfirmMessage), so no popover is one block of text.
   message: string;
+  // A consequence to see before confirming (a form unpublished), on its own line with a warning mark.
+  warning?: string;
   confirmLabel: string;
   cancelLabel?: string;
   onConfirm: () => void;
@@ -30,6 +66,7 @@ type ConfirmPopoverProps = {
 export function ConfirmPopover({
   anchor,
   message,
+  warning,
   confirmLabel,
   cancelLabel = 'Cancel',
   onConfirm,
@@ -69,25 +106,25 @@ export function ConfirmPopover({
     };
   }, [anchor]);
 
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        e.stopPropagation();
-        onCancel();
-      } else if (e.key === 'Enter') {
-        e.preventDefault();
-        onConfirm();
-      }
-    };
-    document.addEventListener('keydown', onKey, true);
-    return () => document.removeEventListener('keydown', onKey, true);
-  }, [onCancel, onConfirm]);
+  // It is the top popover while it is up (popover-stack.ts), so Escape cancels it alone, never the popover or menu
+  // it was opened from.
+  usePopoverLayer(ref, (e) => {
+    if (e.key === 'Escape') {
+      e.stopPropagation();
+      onCancel();
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      onConfirm();
+    }
+  });
 
   return (
     <Portal>
       <div
         ref={ref}
         role="dialog"
+        // Named by its whole message, as the title and detail split it.
+        aria-label={message}
         data-confirm-popover
         onPointerDown={(e) => e.stopPropagation()}
         className="fixed z-[var(--z-modal)] flex animate-fade-in flex-col gap-2 rounded-lg border border-slate-200 bg-white p-3 shadow-xl shadow-slate-900/15 dark:border-slate-700 dark:bg-slate-900"
@@ -106,7 +143,7 @@ export function ConfirmPopover({
             }}
           />
         ) : null}
-        <p className="whitespace-pre-line text-xs text-slate-700 dark:text-slate-200">{message}</p>
+        <ConfirmText message={message} warning={warning} />
         <div className="flex justify-end gap-2">
           {/* py-1 keeps the popover's tighter rhythm; the classes append
               after the size scale, so they win. */}

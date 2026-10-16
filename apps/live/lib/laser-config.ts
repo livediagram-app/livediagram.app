@@ -27,7 +27,7 @@ export type LaserEffect = 'beam' | 'glow' | 'comet' | 'spark';
 // Otherwise a standard colour by name (drawn in its version for the canvas,
 // docs/specs/004-interface-design/colour-picker.md) or a custom `#rrggbb`.
 export const LASER_PRESENCE = 'presence';
-export type LaserColour = typeof LASER_PRESENCE | StandardColourName | string;
+export type LaserColour = string;
 
 export type LaserConfig = {
   width: LaserWidth;
@@ -83,6 +83,8 @@ const WIDTH_PX: Record<LaserWidth, number> = { fine: 2, medium: 3.5, bold: 6 };
 // How long one sample lives before it has fully faded. 'normal' is the
 // original 1s, so nothing changes for anyone who leaves it alone.
 const TRAIL_MS: Record<LaserTrail, number> = { quick: 400, normal: 1000, long: 2500 };
+// The longest a sample lives in any trail: the trail buffer (laser-buffer.ts) keeps points at least this long.
+export const LASER_LONGEST_TRAIL_MS = Math.max(...Object.values(TRAIL_MS));
 
 export function laserStrokeWidth(config: LaserConfig): number {
   return WIDTH_PX[config.width];

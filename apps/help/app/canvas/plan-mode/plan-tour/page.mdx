@@ -4,66 +4,65 @@ import { helpMetadata } from '@/lib/seo';
 export const metadata = helpMetadata({
   title: 'The Plan Tour',
   description:
-    'Take the Plan tour: a guided walkthrough of boards and cards, or of spreadsheets, offered the first time you work in Plan mode and replayable from Settings.',
+    'The Plan tour is a guided walkthrough of your own board and cards, or your own sheet, offered on first use in Plan mode and replayable from Settings.',
   path: '/help/canvas/plan-mode/plan-tour/',
 });
 
 <ArticleLayout
   title="The Plan Tour"
-  description="A short interactive walkthrough of Plan mode, offered the first time you work in Plan and replayable from Settings."
+  description="A short interactive walkthrough of Plan mode on your own board or sheet, offered the first time you have one open in Plan and replayable from Settings."
   categoryTitle="Canvas"
   categorySlug="canvas/plan-mode"
 >
 
-The Plan tour shows you how to run work on a board, or how to work in a spreadsheet: you pick which. Like the [Welcome Tour](/help/getting-started/welcome-tour/), it works on the real editor rather than screenshots: it puts an example board or sheet on your canvas, works on it in front of you, and spotlights each part with a highlight ring and a short explanation. It takes about a minute, and you can leave at any point.
+The Plan tour shows you around your own board, or your own spreadsheet. Like the [Diagram Tour](/help/getting-started/diagram-tour/), it works on the real editor rather than screenshots: it spotlights each part of your board or sheet with a highlight ring and a short explanation, without changing anything on it. It takes about a minute, and you can leave at any point.
 
 ## When It's Offered
 
-The first time you work in [Plan mode](/help/canvas/plan-mode/) on a tab you can edit (switching a tab to Plan, opening a document whose tab opens in Plan, or making one from a Plan template), a centred **Welcome to Plan** card asks which you'd like a look at: **Boards** or **Spreadsheets** starts that tour, **No thanks** dismisses it. If the Welcome Tour is still running, or still to be offered, the Plan tour waits until it has finished. It isn't offered on a locked tab, in an embed, or to someone who can only view.
+The tour needs something to show, so it waits until you're in [Plan mode](/help/canvas/plan-mode/) on a tab you can edit **with a board or a sheet open**: a Board tab, a Sheet tab, or a Plan tab holding a board or sheet. On an empty Plan tab, pick a board or a spreadsheet from **Start Planning** first; a Dashboard waits until you open one of its boards or sheets in their own tab.
 
-The offer appears **once ever**. However you answer (decline, skip midway, or finish either tour), it won't come back on its own, and if you're signed in the answer follows you to every device. Turning on **Power User Mode** in Settings marks it as seen too.
+Then a centred card offers a look around your board (**Getting started with boards?**) or your sheet (**Getting started with sheets?**): **Yes** starts it, **No** dismisses it. If the tab has both a board and a sheet, the card asks which: **Boards** or **Spreadsheets**. It isn't offered on a locked tab, in an embed, or to a Participant or a Viewer.
+
+The boards tour and the sheets tour are each offered **once ever**. However you answer one (decline, skip midway, or finish), it won't come back on its own, but the other is still offered the first time you have that kind open: take the boards tour, and the sheets tour is offered when you open a sheet. Saying **No** when the card asks which declines both. If you're signed in, your answers follow you to every device. Turning on **Power User Mode** in Settings marks them both as seen.
 
 ## What It Covers
 
 ### Boards
 
-1. **Your board**: the example board, a Kanban board, and where the other boards come from. See [Boards](/help/canvas/plan-mode/boards/).
-2. **Add cards**: the **Add card** button at the foot of each column, and dropping a card from the palette.
-3. **Move work along**: dragging a card to the next column, or **Shift** and an arrow key.
-4. **The card panel**: everything about one piece of work, saved as you type. See [Cards](/help/canvas/plan-mode/cards/).
-5. **The board header**: the widgets that count and filter the board, and a column's cog.
+1. **Your Board**: a card on its own, about your board's columns, the stages work moves through. See [Boards](/help/canvas/plan-mode/boards/).
+2. **Add Cards**: the first column's **Add card** button; every column ends in one.
+3. **Move Work Along**: dragging a card to the next column, or **Shift** and an arrow key. Shown on your first card; left out when the board has no cards yet.
+4. **The Card Panel**: everything about one piece of work, saved as you type. The tour opens your first card's panel and closes it again. See [Cards](/help/canvas/plan-mode/cards/).
+5. **The Board Header**: the widgets that count and filter the board, and a column's cog.
 6. **Card Types**: the colours and fields of each kind of card. See [Card Types](/help/canvas/plan-mode/card-types/).
-7. **The Plan palette**: cards, boards, widgets, metrics and visualisations.
 
 ### Spreadsheets
 
-1. **Your sheet**: the example sheet, a small budget, and where sheets come from. See [Sheets](/help/canvas/plan-mode/sheets/).
-2. **Type into cells**: selecting a cell and typing, with **Enter** and **Tab** to move on.
-3. **Formulas**: the total's `=SUM(C2:C5)` in the formula bar, and pointing at cells as you write one. See [Sheet Functions](/help/canvas/plan-mode/sheet-functions/).
-4. **The toolbar**: its category switcher and the tools each category shows.
+1. **Your Sheet**: a card on its own, about your sheet, a spreadsheet in your document. See [Sheets](/help/canvas/plan-mode/sheets/).
+2. **Type Into Cells**: cell **A1**, selecting a cell and typing, with **Enter** and **Tab** to move on.
+3. **Formulas**: the formula bar, which shows the selected cell's value or formula, and pointing at cells as you write one. See [Sheet Functions](/help/canvas/plan-mode/sheet-functions/).
+4. **The Toolbar**: its category switcher and the tools each category shows.
 5. **Sheet Settings**: the cog with the sheet's title, CSV, gridlines, sizes, freeze and named ranges.
-6. **The Plan palette**: the **Sheet** category, beside boards and cards.
 
-Each step has **Next**, **Back** and **Skip tour**. The last card, **You're ready to plan**, links to the [Plan mode](/help/canvas/plan-mode/) article (or [Sheets](/help/canvas/plan-mode/sheets/) after the Spreadsheets tour) and ends the tour with **Start planning**. The steps are the same on a phone.
+Each step has **Next**, **Back** and **Skip tour**. The last card, **You're ready to plan**, links to the [Plan mode](/help/canvas/plan-mode/) article (or [Sheets](/help/canvas/plan-mode/sheets/) after the Spreadsheets tour) and ends the tour with **Start Planning**. The steps are the same on a phone.
 
 ## Your Work Is Left Alone
 
-- The tour's example board, cards and sheet are its own. It never adds cards to your boards, or touches your sheets.
-- Everything it made is **taken away** when the tour ends, however it ends. If you close the window mid-tour, it's tidied up the next time you open the document.
-- None of it goes into your undo history, so **Undo** afterwards never brings it back.
-- Anyone else in the document at the time sees the example board or sheet, titled **Example Board** or **Example Sheet**, come and go.
-- The example cards take the next card numbers, so your next card's number skips past them.
-- If you leave Plan mode or switch tab mid-tour, it ends as skipped and tidies up.
+- The tour only points things out. It adds no cards, moves nothing, selects no cells and types nothing, so your board or sheet is exactly as you left it.
+- Nothing goes into your undo history, and nobody else in the document sees the tour.
+- It shows the board or sheet you're looking at: the one filling a Board or Sheet tab, or a maximised one. On a busy canvas it moves the view to the board or sheet first, if it's out of sight.
+- The one thing it opens is your first card's panel, which it closes again.
+- If you leave Plan mode, switch tab, or the board or sheet is deleted mid-tour, it ends as skipped.
 
 ## Replaying the Tour
 
-<Step n={1}>Open **Settings** from the editor and go to **Accessibility**.</Step>
+<Step n={1}>Open **Settings** from the editor and go to **Tours**.</Step>
 
-<Step n={2}>Switch **Show Plan Tour** back on.</Step>
+<Step n={2}>Switch **Plan Tour** back on.</Step>
 
 <Step n={3}>
-  Close Settings. If you're in Plan mode the tour's welcome card shows straight away, so you can
-  pick the other tour; otherwise it's offered the next time you work in Plan.
+  Close Settings. If you're in Plan mode with a board or sheet open, the tour's welcome card shows
+  straight away; otherwise it's offered the next time you are.
 </Step>
 
 </ArticleLayout>

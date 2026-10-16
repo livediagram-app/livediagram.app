@@ -15,7 +15,7 @@ function show(value = 5, onCommit = vi.fn()) {
       onCommit={onCommit}
     />,
   );
-  return { onCommit, field: screen.getByLabelText('Width') as HTMLInputElement };
+  return { onCommit, field: screen.getByLabelText<HTMLInputElement>('Width') };
 }
 
 describe('the number stepper', () => {
@@ -38,9 +38,9 @@ describe('the number stepper', () => {
 
   it('turns its buttons off at the ends', () => {
     show(9);
-    expect(
-      (screen.getByRole('button', { name: 'Increase Width' }) as HTMLButtonElement).disabled,
-    ).toBe(true);
+    expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Increase Width' }).disabled).toBe(
+      true,
+    );
   });
 
   it('applies typing on Enter or blur, clamped, and drops an empty or escaped draft', () => {
@@ -59,5 +59,32 @@ describe('the number stepper', () => {
     fireEvent.blur(field);
     fireEvent.focus(field);
     expect(onCommit.mock.calls).toEqual([[8], [9]]);
+  });
+
+  it('wears a tone it is given, bordered, rather than the slate track', () => {
+    const { container } = render(
+      <NumberStepper
+        label="Font Size"
+        value={10}
+        min={6}
+        max={72}
+        tone={{
+          line: 'rgb(1, 2, 3)',
+          field: 'rgb(4, 5, 6)',
+          text: 'rgb(7, 8, 9)',
+          muted: 'rgb(10, 11, 12)',
+        }}
+        onCommit={vi.fn()}
+      />,
+    );
+    const track = container.firstElementChild as HTMLElement;
+    expect(track.style.borderColor).toBe('rgb(1, 2, 3)');
+    expect(track.className).not.toContain('bg-slate-100');
+    const field = screen.getByLabelText('Font Size') as HTMLInputElement;
+    expect(field.style.color).toBe('rgb(7, 8, 9)');
+    expect(field.parentElement!.style.backgroundColor).toBe('rgb(4, 5, 6)');
+    expect(screen.getByRole('button', { name: 'Increase Font Size' }).style.color).toBe(
+      'rgb(10, 11, 12)',
+    );
   });
 });

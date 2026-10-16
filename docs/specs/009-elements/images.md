@@ -107,11 +107,22 @@ Extends the routes in [API app](../015-api/api.md). All JSON except where noted.
 
 ### Palette
 
-The **Image** entry (`tools:image`) in the Palette's **Media** section (see [Canvas and palette](../008-canvas/canvas-and-palette.md)). Like the other draw-capable tools, picking it arms the draw-to-size gesture: a tap drops a default-size `ImageElement` (`imageId: null`) and a drag sizes it, then the image picker opens to attach a file.
+The **Image** entry (`tools:image`) in the Palette's **Media** section (see [Canvas and palette](../008-canvas/canvas-and-palette.md)). Like the other draw-capable tools, picking it arms the draw-to-size gesture: a tap drops a default-size `ImageElement` (`imageId: null`) and a drag sizes it. The new image lands selected as its empty placeholder; no picker opens on its own. Its **Select Image** button, or a double-click, opens the picker when the person is ready (below).
 
 ### Placeholder rendering
 
-When `imageId === null`, `<ImageElementView>` (`apps/live/components/canvas/ImageElementView.tsx`) renders a dashed-border box with a centred "image" SVG icon and the text "Click to upload". Clicking opens the image picker modal (below). The placeholder is interactive only for the document owner / edit-role share visitor; view-role visitors see the placeholder grayed out and read-only.
+When `imageId === null`, `<ImageElementView>` (`apps/live/components/canvas/ImageElementView.tsx`) renders the app's [empty state](../004-interface-design/empty-states.md) on the canvas (`ImageEmptyFace`): a dashed-border box holding the image glyph in a badge with two soft rings, the heading **No image yet**, the line **Upload one, or pick from your gallery.** and a **Select Image** button. The button opens the image picker modal (below), as a double-click anywhere on the box does; a single click on the box selects it, so it can still be moved and resized, while a press on the button never starts a drag or a selection. A hover lifts the badge and tints the outline (held still under reduced motion).
+
+- **Share roles.** An Editor (the document owner, an edit-role visitor) gets the button, the double-click and the hover tint. A Participant or a Viewer, who cannot change the element, sees the badge and **No image yet** only, with no button, no line and no hover tint.
+- **Trimmed to the box.** The face is drawn at its regular empty-state size (a 40 px badge, a 13 px heading, a 12 px line, a 28 px button) and grows with the box up to three times that, filling no more than about three fifths of it so the box still reads as a frame. A box too small for the whole face drops the line, then the heading; one too small for the button shows the badge alone, and for an Editor the badge is then the button (named **Select Image**). A round box (`borderRadius: 'full'`, an avatar) fits its face inside the circle's inscribed square (`imageEmptyLayout`).
+
+- **Inked for its paper, never the chrome.** The placeholder, the broken-image state (**Image unavailable**, rose) and the loading skeleton take the surface of the paper the element sits on: its Illustrate page's where the page has a fill of its own ([Illustrate pages](../007-editor/illustrate-pages.md) "A dark page has light ink"), else the canvas's (`useElementSurface`). The app's light or dark appearance plays no part, so a cream or pastel-gradient page in dark chrome keeps a light box with dark ink, and a Midnight page in light chrome a dark box with light ink.
+- **Dressed in the tab's theme.** On a tab whose theme has colours of its own (an element stroke, or a palette for a multi-colour theme), the empty placeholder looks like part of it: the body is the theme's element fill where that fill's lightness matches the paper, else the theme's accent (its element stroke, else its first palette colour) washed toward the paper (a pale tint on light paper, a deep shade on dark); the dashed outline, the badge and the button are the accent; the heading is the theme's element text (else the accent) and the line a softer shade of it; a hover deepens the outline toward the accent. The Default theme, and any theme without colours, leaves elements uncoloured and so keeps the neutral slate placeholder. The broken state stays rose: it is a warning, not content.
+- **Opaque body, AA ink, whatever the theme.** Each state's body is opaque, so the ink's contrast is against the body alone and holds over any page fill, gradient or pattern. Where a theme colour falls short, it is pushed toward contrast keeping its hue, as the page re-inking does (`legibleOn`): lightened on a dark body, darkened on a light one, until the heading, the line and the hover outline reach 4.5:1 and the dashed outline and the accent 3:1; the button's label and the badge's glyph are white, the app's near-black or black, whichever reads best on the accent (always at least 4.5:1). The neutral tones are fixed values per surface (`IMAGE_PLACEHOLDER_TONE`, `IMAGE_BROKEN_TONE`, `IMAGE_SKELETON_BODY`), the themed ones derived by `imagePlaceholderTone` (both in `apps/live/components/canvas/image-placeholder-look.ts`), never Tailwind theme tokens, which the chrome's `.dark` class redefines.
+- **Only where the picker opens.** The Select Image button (and the badge as a button) shows only for someone who can pick a picture right now: an Editor, or a Participant who may add content, on a tab that is not locked and outside an embed. Everyone else, a Viewer or anyone on a locked tab, sees the same face with no button, never one that does nothing.
+- **In the tab's font.** The face's words are set in the element's font, else the tab's theme font, as its page's text is (the app's sans where neither is set).
+- **The broken state is sized to the box.** Its label is a tenth of the box's shorter side, between 10 and 40 canvas px, and the icon twice the label (at least 16 px, at most 40% of the shorter side) (`imagePlaceholderMetrics`). A box too small to hold the label under the icon shows the icon alone and carries the label as its accessible name.
+- **Telemetry.** Pressing Select Image tracks `Element / Used / ImagePlaceholder`.
 
 ### Image picker modal
 
@@ -176,7 +187,7 @@ CREATE TABLE image_refs (
 CREATE INDEX image_refs_image_idx ON image_refs (image_id);
 ```
 
-- **What is a reference.** An element in the tab's top-level `elements` array with `type: 'image'` whose `imageId` is a gallery id: a string of 1 to 128 characters that is not a `data:` URI. A placeholder (`imageId: null`) references nothing, and neither does a data URI (an [Offline Mode](../006-document/offline-mode.md) document embeds its bytes that way; it names no gallery row). Undo history and offline copies are not references.
+- **What is a reference.** An element in the tab's top-level `elements` array with `type: 'image'` whose `imageId` is a gallery id: a string of 1 to 128 characters that is not a `data:` URI. So is an Illustrate page's picture: a page in the tab's top-level `pages` array whose `background.fill` has `kind: 'image'` and a gallery `imageId` ([Illustrate pages](../007-editor/illustrate-pages.md) "Image backgrounds"). A placeholder (`imageId: null`) references nothing, and neither does a data URI (an [Offline Mode](../006-document/offline-mode.md) document embeds its bytes that way; it names no gallery row). Undo history and offline copies are not references.
 - **Keyed by tab, not document.** A tab can sit in several documents ([Tab ↔ document many-to-many](../006-document/tab-document-many-to-many.md)), so the document is resolved at read time through `document_tabs`, like the [collaboration index](../013-workspace/inbox.md).
 - **No foreign keys.** Not to `tabs`: a cascade would empty the index whenever a migration rebuilds `tabs` with `DROP TABLE` (as 0049 did to its children), and an empty index reads as "nothing is referenced". Not to `images` either: a reference may name another owner's image or one deleted from its gallery. Without the cascade a row whose tab is gone dangles, and a dangling row is harmless because every reader joins `tabs` or `document_tabs` and so never counts it. The delete paths prune them. Every gap in the index therefore fails towards an extra reference (bytes kept), never a missing one.
 - **Maintained in the body's own batch.** Every write of `tabs.data` carries its index statements in the same D1 batch, one transaction, so the index can't drift from the body:
@@ -240,6 +251,31 @@ Image uploads / deletes don't go through the realtime room. The element's `image
 ## Undo
 
 Setting or clearing an image is one undoable step. Undo restores the prior `imageId` (which may resolve to a still-live image, a deleted one rendering broken, or `null`). Clearing the image doesn't delete the gallery row — gallery management is a separate gesture in the picker modal.
+
+## Agents
+
+An assistant places the user's own pictures through the MCP and the CLI; it never uploads them.
+
+- **Finding a picture.** `list_images` (MCP, [MCP server §4.5b](../015-api/mcp-server.md#45b-list_images)) and
+  `image ls` (CLI, [CLI](../015-api/cli.md)) list the caller's gallery (`GET /api/images`): each image's id, name,
+  width, height, size and upload time, newest first, filtered by name. The MCP's `image: true` adds a contact sheet
+  of the listed images, so an assistant can tell which screenshot is which without names that say so.
+- **Placing it.** An `image` element takes the id as `imageId`, with optional `alt` and `objectFit`, on any write
+  that takes elements (`create_document`, `add_tab`, `update_document`, a changeset). Before writing, the MCP checks
+  every `imageId` the elements carry against the caller's gallery, in one gallery read for the whole call, and
+  refuses one that is not there, naming the element and `list_images` (`imageId "…" on element "hero" is not in
+your image gallery: list_images lists the pictures you can place`). That keeps the [placement
+  grant](#placement-grants) rule honest: an id read from someone else's document would only draw a placeholder for
+  everyone, so it is refused where it was typed rather than discovered later as a dashed box.
+- **A placeholder on purpose.** An `image` element without `imageId` is the empty "pick an image" placeholder, which
+  the user fills in the editor. An assistant laying out a page before the user has uploaded anything places
+  captioned placeholders and says so.
+- **Seeing it.** The MCP's preview embeds placed images ([Preview / live
+  image](#preview--live-image-server-rendered-svg)), so the assistant's own picture of the page shows the
+  screenshot, not a box.
+- **Why no upload.** A chat assistant cannot hand an attachment's bytes to a tool, and a fetch from a URL would bring
+  server-side requests to arbitrary hosts and pictures the user never chose. Pictures reach the gallery through the
+  editor (upload, paste, drop or Image search), where the user chooses them.
 
 ## Out of scope
 

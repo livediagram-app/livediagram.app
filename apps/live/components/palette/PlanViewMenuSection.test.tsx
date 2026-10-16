@@ -24,11 +24,11 @@ const chart = (planView: PlanViewRef) =>
 function show(planView: PlanViewRef, overrides: Record<string, unknown> = {}, open = true) {
   for (const key of Object.keys(plan)) delete plan[key];
   Object.assign(plan, { canEdit: true, types: ITEM_TYPES, updateView: vi.fn() }, overrides);
-  const onToggle = vi.fn();
+  const onToggle = vi.fn<(id: string) => void>();
   render(
     <PlanViewMenuSection
       element={chart(planView)}
-      flyoutProps={{} as never}
+      flyoutProps={{}}
       sectionProps={(id) => ({ open, onToggle: () => onToggle(id) })}
     />,
   );
@@ -73,7 +73,7 @@ describe('PlanViewMenuSection', () => {
     );
   });
 
-  it('accepts more card types, keeping its other settings, and tracks it', () => {
+  it('draws every type with dates to start with, narrows to fewer, keeping its other settings, and tracks it', () => {
     const dated = ITEM_TYPES.map((t) =>
       t.id === 'task' ? { ...t, fields: [...t.fields, 'start'] } : t,
     );
@@ -82,16 +82,16 @@ describe('PlanViewMenuSection', () => {
     expect(plan['updateView']).toHaveBeenLastCalledWith('chart', {
       view: 'gantt',
       namesWidth: 300,
-      types: ['project', 'task'],
+      types: ['project'],
     });
     expect(track).toHaveBeenCalledWith('Plan', 'Changed', 'GanttTypes');
   });
 
-  it('drops the setting back to Project alone, and never lets the last type go', () => {
+  it('drops the setting once every type with dates is back, and never lets the last type go', () => {
     const dated = ITEM_TYPES.map((t) =>
       t.id === 'task' ? { ...t, fields: [...t.fields, 'start'] } : t,
     );
-    show({ view: 'gantt', types: ['project', 'task'] }, { types: dated });
+    show({ view: 'gantt', types: ['project'] }, { types: dated });
     fireEvent.click(screen.getByRole('checkbox', { name: 'Task' }));
     expect(plan['updateView']).toHaveBeenLastCalledWith('chart', { view: 'gantt' });
     cleanup();

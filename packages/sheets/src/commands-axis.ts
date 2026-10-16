@@ -2,15 +2,22 @@
 // "Sort", "Freeze", "Filter"), as pure builders to a layout write. New rows and columns get ids made here.
 import type { GridRange } from './address';
 import { makeAxisIds, type Rand } from './ids';
-import { idRangeOf } from './layout';
+import { idRangeOf, layoutIndex, posRangeOf } from './layout';
 import { SHEET_COLS_MAX, SHEET_ROWS_MAX } from './limits';
 import { cellKey, type FilterCondition, type Sheet } from './sheet';
 import { sortedOrder, type SortKey } from './sort';
 import { shiftForCopy } from './formula/stored';
 import { scalarOf } from './formula/values';
-import type { CellChange, SheetWrite } from './store';
+import type { CellChange, LayoutChange, SheetWrite } from './store';
 import type { Workbook } from './engine/workbook';
 import { currentRegion, type Grid } from './selection';
+import {
+  MERGE_SORT_REFUSAL,
+  mergeMoveRefusal,
+  moveSplitsMerge,
+  sortSplitsMerge,
+  type MergeRefusal,
+} from './merge-guards';
 
 export type Side = 'before' | 'after';
 
@@ -91,9 +98,11 @@ export function moveAxis(
   from: number,
   to: number,
   before: number,
-): SheetWrite | null {
+): SheetWrite | MergeRefusal | null {
   const list = axis === 'r' ? sheet.layout.rows : sheet.layout.cols;
   if (before >= from && before <= to + 1) return null;
+  if (moveSplitsMerge(sheet.layout, axis, from, to, before))
+    return { refused: mergeMoveRefusal(axis) };
   const ids = list.slice(from, to + 1);
   const after = before <= 0 ? null : list[before - 1]!;
   return { kind: 'layout', changes: [{ k: axis === 'r' ? 'moveRows' : 'moveCols', ids, after }] };
@@ -119,7 +128,7 @@ export function sortSheet(
   sheetId: string,
   col: number,
   ascending: boolean,
-): SheetWrite | null {
+): SheetWrite | MergeRefusal | null {
   const sheet = wb.sheet(sheetId);
   if (!sheet) return null;
   const start = sheet.layout.frozenRows ?? 0;
@@ -127,10 +136,41 @@ export function sortSheet(
   const end = Math.max(start, extent.rows);
   const rows = sheet.layout.rows.slice(start, end);
   if (rows.length < 2) return null;
+  if (sortSplitsMerge(sheet.layout, start, end - 1)) return { refused: MERGE_SORT_REFUSAL };
   const order = sortedOrder(rows.length, (i) => scalarOf(wb.value(sheetId, start + i, col)), [
     { col, ascending },
   ]);
   return { kind: 'layout', changes: [{ k: 'orderRows', ids: order.map((i) => rows[i]!) }] };
+}
+
+// A filter column's Sort A to Z / Z to A (sheet.md "Filter"): the filter's rows under its header, whole, by that
+// column, whichever cell is active. The header row stays on top. The filter is held by its corner rows' ids, so when
+// its last row moves, the filter's end goes to the row now in that place: it covers the same rows on screen.
+export function sortFilter(
+  wb: Workbook,
+  sheetId: string,
+  colId: string,
+  ascending: boolean,
+): SheetWrite | MergeRefusal | null {
+  const sheet = wb.sheet(sheetId);
+  const filter = sheet?.layout.filter;
+  if (!sheet || !filter) return null;
+  const box = posRangeOf(sheet.layout, filter);
+  const col = layoutIndex(sheet.layout).colPos.get(colId);
+  if (!box || col === undefined) return null;
+  const start = box.r1 + 1;
+  const rows = sheet.layout.rows.slice(start, box.r2 + 1);
+  if (rows.length < 2) return null;
+  // The filter's rows move whole, so a merge anywhere across them is pulled apart.
+  if (sortSplitsMerge(sheet.layout, start, box.r2)) return { refused: MERGE_SORT_REFUSAL };
+  const order = sortedOrder(rows.length, (i) => scalarOf(wb.value(sheetId, start + i, col)), [
+    { col, ascending },
+  ]);
+  const ids = order.map((i) => rows[i]!);
+  const changes: LayoutChange[] = [{ k: 'orderRows', ids }];
+  const last = ids[ids.length - 1]!;
+  if (last !== filter.r2) changes.push({ k: 'filter', filter: { ...filter, r2: last } });
+  return { kind: 'layout', changes };
 }
 
 // Sort Range: only the selection's cells move (inputs and formats), each formula shifted with its row.
@@ -140,12 +180,15 @@ export function sortRange(
   range: GridRange,
   keys: readonly SortKey[],
   hasHeader: boolean,
-): SheetWrite | null {
+): SheetWrite | MergeRefusal | null {
   const sheet = wb.sheet(sheetId);
   if (!sheet) return null;
   const r1 = range.r1 + (hasHeader ? 1 : 0);
   const count = range.r2 - r1 + 1;
   if (count < 2) return null;
+  // Only the range's cells move, but a merge across its rows would take the wrong row's value.
+  if (sortSplitsMerge(sheet.layout, r1, range.r2, range.c1, range.c2))
+    return { refused: MERGE_SORT_REFUSAL };
   const order = sortedOrder(count, (i, c) => scalarOf(wb.value(sheetId, r1 + i, c)), keys);
   const ctx = wb.ctxFor(sheetId);
   const cells: CellChange[] = [];

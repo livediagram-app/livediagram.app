@@ -18,20 +18,30 @@ describe('arrow-behind-box', () => {
         severity: 'warning',
         refs: ['x', 'm', 'n'],
         message: 'a→b passes behind m, n',
-        fix: 'set a->b line=angled',
+        // No style clears two boxes in line with both ends: move the first off the line, the shorter way.
+        fix: 'move m by=0,46',
       },
     ]);
     expect(report.measures.behind).toBe(1);
   });
 
-  it('suggests curved for an angled arrow, the arrow ref when two join the same ends, and a graph change', () => {
+  it('suggests a style only when its route clears every box, else a move, per arrow, and a graph change', () => {
+    // A diagonal through m: angled goes round it.
+    const diagonal = arrow('x', 'a', 'b', ['s', 'w']);
+    expect(
+      of(
+        lint(tabOf(box('a', 0, 0), box('m', 200, 100), box('b', 500, 300), diagonal)),
+        'arrow-behind-box',
+      )[0]!.fix,
+    ).toBe('set a->b line=angled');
+    // Angled and level, nothing clears m: a move, never curved and back again.
     const angled = arrow('x', 'a', 'b', ['e', 'w'], { arrowStyle: 'angled' });
     expect(
       of(
         lint(tabOf(box('a', 0, 0), box('m', 200, 0), box('b', 400, 0), angled)),
         'arrow-behind-box',
       )[0]!.fix,
-    ).toBe('set a->b line=curved');
+    ).toBe('move m by=0,46');
     const twice = lint(
       tabOf(
         box('a', 0, 0),
@@ -41,9 +51,10 @@ describe('arrow-behind-box', () => {
         arrow('y', 'a', 'b'),
       ),
     );
+    // Two arrows on one anchor are drawn fanned apart, so each clears m its own way.
     expect(of(twice, 'arrow-behind-box').map((f) => f.fix)).toEqual([
-      'set x line=angled',
-      'set y line=angled',
+      'move m by=0,39',
+      'move m by=0,-39',
     ]);
     expect(
       of(

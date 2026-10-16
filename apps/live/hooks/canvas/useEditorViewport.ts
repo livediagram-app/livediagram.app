@@ -12,9 +12,16 @@ import { isFocusedOnAdd } from '@/hooks/plan/useFocusNewPlanElement';
 import { prefersReducedMotion } from '@/lib/motion-preference';
 import { createViewportStore, type ViewportStore } from '@/lib/viewport-store';
 import type { Selection } from '@/lib/selection-store';
-import { useCallback, useEffect, useEffectEvent, useRef, useState } from 'react';
+import { use, useCallback, useEffect, useEffectEvent, useRef, useState } from 'react';
+import { browser } from 'react-dom';
 import { isBoxed, unionBoxedBounds, type Tab } from '@livediagram/document';
-import { computeFitToScreen, computeViewportCenter } from '@/lib/viewport';
+import {
+  computeFitToScreen,
+  FIT_TO_SCREEN_PADDING,
+  computeViewportCanvasRect,
+  computeViewportCenter,
+  topChromeInset,
+} from '@/lib/viewport';
 import { viewIsCentredOn } from '@/lib/focus-audience';
 import { useLatest } from '@/hooks/ui/useLatest';
 import { glideViewport } from '@/lib/viewport-glide';
@@ -72,6 +79,9 @@ type EditorViewportApi = {
   // Canvas-coord position of the viewport centre, used as the drop
   // point for "add a shape from the palette".
   getViewportCenter: () => { x: number; y: number };
+  // Canvas-coord rectangle on screen now; null before the canvas mounts. A paste
+  // whose usual spot is off-screen lands in the middle of it.
+  getViewportCanvasRect: () => { x: number; y: number; width: number; height: number } | null;
   // Re-fit every boxed element on the active tab into the
   // viewport. Idempotent (the lastFittedTabRef gate in
   // editor-page.tsx still controls WHEN this runs).
@@ -102,21 +112,22 @@ type EditorViewportApi = {
     // canvas so a narrow window still has a band to reveal into.
     opts?: { center?: boolean; sideMargin?: number },
   ) => void;
-  // Centre a canvas point at somebody else's zoom (docs/specs/012-collaboration/bring-focus.md).
-  centreOn: (at: { x: number; y: number }, zoom: number) => void;
-  // Is that point already what this view is showing, at about that zoom?
-  isCentredOn: (at: { x: number; y: number }, zoom: number) => boolean;
+  // Centre a canvas point, keeping our own zoom (docs/specs/012-collaboration/bring-focus.md).
+  centreOn: (at: { x: number; y: number }) => void;
+  // Is that point already in the middle of this view?
+  isCentredOn: (at: { x: number; y: number }) => boolean;
 };
 
 // How long a Focus glide takes (docs/specs/026-plan/plan-board.md "Focus").
 export const FIT_GLIDE_MS = 420;
 
 export function useEditorViewport(deps: EditorViewportDeps): EditorViewportApi {
+  // In the browser only (docs/specs/003-system-architecture/react-state-and-effects.md "Rendering in the browser
+  // only"): the editor never renders at build time, and this says so where the address is read.
+  use(browser());
   const [viewport] = useState(() =>
     createViewportStore(
-      typeof window !== 'undefined' && window.innerWidth <= OVERVIEW_ZOOM_BREAKPOINT_PX
-        ? MOBILE_DEFAULT_ZOOM
-        : DESKTOP_DEFAULT_ZOOM,
+      window.innerWidth <= OVERVIEW_ZOOM_BREAKPOINT_PX ? MOBILE_DEFAULT_ZOOM : DESKTOP_DEFAULT_ZOOM,
     ),
   );
   const { setZoom: setViewportZoom, setOffset: setViewportOffset } = viewport;
@@ -145,6 +156,13 @@ export function useEditorViewport(deps: EditorViewportDeps): EditorViewportApi {
     const rect = canvasMainRef.current?.getBoundingClientRect();
     if (!rect) return { x: 0, y: 0 };
     return computeViewportCenter(rect, viewport.get().offset);
+  }, [viewport]);
+
+  const getViewportCanvasRect = useCallback(() => {
+    const rect = canvasMainRef.current?.getBoundingClientRect();
+    if (!rect || rect.width === 0 || rect.height === 0) return null;
+    const { offset, zoom } = viewport.get();
+    return computeViewportCanvasRect(rect, offset, zoom);
   }, [viewport]);
 
   // Smoothly bring an element (plus toolbar room) fully on-screen. If it
@@ -254,7 +272,7 @@ export function useEditorViewport(deps: EditorViewportDeps): EditorViewportApi {
       offFirstRunRef.current = false;
       return;
     }
-    if (typeof window === 'undefined' || window.innerWidth > OVERVIEW_ZOOM_BREAKPOINT_PX) return;
+    if (window.innerWidth > OVERVIEW_ZOOM_BREAKPOINT_PX) return;
     const sel = deps.readSelection().selectedId;
     if (!sel || prev.has(sel) || !ids.has(sel)) return;
     const el = els.find((e) => e.id === sel);
@@ -264,8 +282,11 @@ export function useEditorViewport(deps: EditorViewportDeps): EditorViewportApi {
   }, [deps.activeTab.elements, deps]);
 
   const fitToScreen = useCallback(() => {
-    const rect = canvasMainRef.current?.getBoundingClientRect();
-    if (!rect) return;
+    const box = canvasMainRef.current?.getBoundingClientRect();
+    if (!box) return;
+    // Plain numbers: a DOMRect's fields are prototype getters, so spreading one (computeFitBelow does) loses them
+    // and the zoom comes out NaN.
+    const rect = { width: box.width, height: box.height, top: box.top, bottom: box.bottom };
     const { activeTab } = depsRef.current;
     const boxedIds = new Set(activeTab.elements.filter(isBoxed).map((el) => el.id));
     if (boxedIds.size === 0) {
@@ -275,30 +296,41 @@ export function useEditorViewport(deps: EditorViewportDeps): EditorViewportApi {
     }
     const bbox = unionBoxedBounds(activeTab.elements, boxedIds);
     if (!bbox) return;
-    const { zoom, offset } = computeFitToScreen(rect, bbox);
+    // Fit clear of the Palette strip laid over the canvas's top, so nothing lands under it.
+    const strip = document
+      .querySelector<HTMLElement>('[data-toolbar-palette]:not(.hidden) [data-tour-id="palette"]')
+      ?.getBoundingClientRect();
+    const inset = topChromeInset(rect, strip && strip.width > 0 ? strip : null);
+    // Padded by the strip's depth on every side, not centred below it: the content stays centred (as before the
+    // strip was considered) and clears both the strip and the bottom chrome of the same depth.
+    const { zoom, offset } = computeFitToScreen(
+      rect,
+      bbox,
+      undefined,
+      Math.max(FIT_TO_SCREEN_PADDING, inset),
+    );
     setViewportZoom(zoom);
     setViewportOffset(offset);
   }, [depsRef, setViewportOffset, setViewportZoom]);
 
-  // Centre a canvas point at a given zoom (docs/specs/012-collaboration/bring-focus.md). The zoom is somebody
-  // else's, so this cannot go through fitToBounds, which derives one; the
-  // point of Bring Focus is that everyone ends up seeing the same amount of
-  // canvas as the person who pressed.
+  // Centre a canvas point at the zoom we already have (docs/specs/012-collaboration/bring-focus.md). Only
+  // the pan moves: the presser's zoom on somebody else's screen size shows a
+  // different amount of canvas, so copying it left the element too big or too
+  // small to read, and the zoom somebody chose for their own screen is theirs.
   const centreOn = useCallback(
-    (at: { x: number; y: number }, zoom: number) => {
+    (at: { x: number; y: number }) => {
       const node = canvasMainRef.current;
       if (!node) return;
       // offsetWidth/Height rather than the transformed rect, for the reason
       // fitToBounds gives below.
       const rect = { width: node.offsetWidth, height: node.offsetHeight };
-      setViewportZoom(zoom);
       // The offset is in CANVAS units, not screen ones: the zoom is applied
       // separately about the viewport's own centre, which is why
       // computeFitToScreen's offset has no zoom factor in it either. Multiplying
       // by the zoom here put everyone in the top-left corner of the canvas.
       setViewportOffset({ x: rect.width / 2 - at.x, y: rect.height / 2 - at.y });
     },
-    [setViewportOffset, setViewportZoom],
+    [setViewportOffset],
   );
 
   // The inverse question: is this view ALREADY the one centreOn would give?
@@ -308,7 +340,7 @@ export function useEditorViewport(deps: EditorViewportDeps): EditorViewportApi {
   // The rule itself is shared with the presser's side of the press, which asks
   // the same thing of everyone else's published viewport.
   const isCentredOn = useCallback(
-    (at: { x: number; y: number }, zoom: number) => {
+    (at: { x: number; y: number }) => {
       const node = canvasMainRef.current;
       if (!node) return false;
       return viewIsCentredOn(
@@ -318,7 +350,6 @@ export function useEditorViewport(deps: EditorViewportDeps): EditorViewportApi {
           zoom: zoomRef.current,
         },
         at,
-        zoom,
       );
     },
     [viewportOffsetRef, zoomRef],
@@ -436,6 +467,7 @@ export function useEditorViewport(deps: EditorViewportDeps): EditorViewportApi {
     viewportOffsetRef,
     canvasMainRef,
     getViewportCenter,
+    getViewportCanvasRect,
     fitToScreen,
     fitToBounds,
     centreOn,

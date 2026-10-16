@@ -6,7 +6,13 @@
 import type { Tab } from '@livediagram/document';
 import { newTabSeed } from '@/lib/new-tab-seed';
 
-export type TemplateTabContent = { id: string; name: string; elements: Tab['elements'] };
+export type TemplateTabContent = {
+  id: string;
+  name: string;
+  elements: Tab['elements'];
+  // The template's own fields for the tab (a Plan template's kind and Dashboard), over the overrides.
+  fields?: Partial<Tab>;
+};
 
 // The template's later tabs, each looking like `landed` (the tab the first template tab landed on).
 export function templateFollowerTabs(
@@ -14,13 +20,14 @@ export function templateFollowerTabs(
   contents: readonly TemplateTabContent[],
   overrides: Partial<Tab>,
 ): Tab[] {
-  return contents.map(({ id, name, elements }) => ({
+  return contents.map(({ id, name, elements, fields }) => ({
     ...newTabSeed(landed),
     id,
     name,
     elements,
     templateChosen: true,
     ...overrides,
+    ...fields,
   }));
 }
 

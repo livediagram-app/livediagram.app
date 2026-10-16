@@ -18,7 +18,7 @@
 // ALTERNATIVES array so revising a competitor row + bumping the date
 // lands in one diff. Bump this when adding a competitor or revising
 // any row / claim / lede.
-export const ALTERNATIVES_LAST_UPDATED = new Date('2026-10-07');
+export const ALTERNATIVES_LAST_UPDATED = new Date('2026-10-11');
 
 type ComparisonRow = {
   label: string;
@@ -74,9 +74,9 @@ export const ALTERNATIVES: Alternative[] = [
     name: 'Microsoft Whiteboard',
     title: 'Microsoft Whiteboard alternative · livediagram',
     description:
-      'A free, open-source Microsoft Whiteboard alternative: a real-time whiteboard with pressure-sensitive ink, no Microsoft account needed, and an import that brings your boards across with the ink still editable.',
+      'A free, open-source Microsoft Whiteboard alternative: pressure-sensitive ink, no Microsoft account, and an import that keeps your boards editable.',
     h1: 'The open-source Microsoft Whiteboard alternative',
-    lede: 'Microsoft is retiring Whiteboard for personal accounts: boards became read-only in September 2026, and the standalone apps and remaining legacy boards go on 16 October 2026. livediagram is a free, open-source home for that work: a real-time whiteboard with pressure-sensitive ink, no Microsoft account needed, and an import that brings your boards across with every stroke still editable.',
+    lede: 'Microsoft is retiring Whiteboard for personal accounts: boards became read-only in September 2026, and on 16 October 2026 the remaining legacy boards are deleted and the standalone apps retire. livediagram is a free, open-source home for that work: a real-time whiteboard with pressure-sensitive ink, no Microsoft account needed, and an import that brings your boards across with every stroke still editable.',
     rows: [
       {
         label: 'Price',
@@ -117,15 +117,19 @@ export const ALTERNATIVES: Alternative[] = [
       'No Microsoft account, no sign-up, no install: open a link and start drawing.',
       'Draw mode is a plain whiteboard: three pressure-sensitive markers, text, an eraser and shapes on a plain, dotted or grid board, light or dark.',
       'Real-time multiplayer with live cursors, comments and a laser pointer, for anyone with the link.',
+      'Three kinds of link: Editor, Participant (add stickies, write and vote without reshaping the board, handy for a class) or view-only.',
+      'For a class: quizzes with a countdown and a reveal of who got it right, live polls, an anonymous idea box and a shared timer.',
+      'Run the lesson on the board: an agenda that starts the timer for each segment, a roll call, and a picker that chooses someone at random so nobody has to volunteer.',
+      'Around 190 emoji stickers and 32 word badges like APPROVED and WIP, for reacting to work and marking it.',
       'Switch the same tab to Diagram mode when a sketch needs to become a tidy flowchart, org chart or plan.',
-      '95 templates, including retrospectives, Lean Coffee, town hall Q&A and event storming boards.',
+      '132 templates, including retrospectives, Lean Coffee, town hall Q&A and event storming boards.',
       'Free and MIT-licensed, so no future retirement can take your boards away: you can always run your own copy.',
     ],
     sections: [
       {
         heading: 'What the retirement means',
         paragraphs: [
-          'Microsoft Whiteboard is not going away for everyone. Work and school accounts keep it inside Teams and on the web. What is ending is Whiteboard for personal Microsoft accounts and the standalone apps: personal boards became read-only on 25 September 2026, and on 16 October 2026 the standalone Windows, iOS and Android apps retire and the remaining legacy boards are deleted for good.',
+          'Microsoft Whiteboard is not going away for everyone. Work and school accounts keep it inside Teams and on the web. What is ending is Whiteboard for personal Microsoft accounts and the standalone apps: personal boards became read-only on 25 September 2026, and on 16 October 2026 the remaining legacy boards are deleted for good and the standalone Windows, iOS and Android apps retire, for every kind of account.',
           'If you used Whiteboard on a personal account, for teaching, family planning, tutoring or your own thinking, you need a new home for those boards and for the next ones. Check Microsoft’s own retirement notice for the details that apply to your account.',
         ],
       },
@@ -133,14 +137,14 @@ export const ALTERNATIVES: Alternative[] = [
         heading: 'Bring your boards across, ink and all',
         paragraphs: [
           'Whiteboard’s own exports are a flat picture: nothing in them stays editable. livediagram imports a board export instead, the folder of the board’s own edit history, and replays it, so every stroke comes back as data. Each board becomes its own document with one whiteboard tab, named after the board and dated as the board, so your library keeps its history.',
-          'Pen strokes keep their pressure, so thick and thin stay as you drew them. Black ink on a light board, or white ink on a dark one, becomes the whiteboard’s own ink, so it reads in light and dark. Highlighter stays highlighter, and sticky notes, text, shapes and images keep their place. The import runs entirely in your browser: nothing is sent to a server, and it needs no Microsoft account. When it finishes, it says what changed on the way, such as rainbow ink drawn in pink.',
+          'Pen strokes keep their pressure, so thick and thin stay as you drew them. Black ink on a light board, or white ink on a dark one, becomes the whiteboard’s own ink, so it reads in light and dark. Highlighter stays highlighter, and sticky notes, text, shapes and images keep their place. The board is read in your browser, and the import needs no Microsoft account. When it finishes, it says what changed on the way, such as rainbow ink drawn in pink.',
         ],
       },
       {
         heading: 'A whiteboard that grows into more',
         paragraphs: [
           'Draw mode is a plain whiteboard, close to what Whiteboard users are used to: pick a marker, draw, erase, add text and shapes. But the same tab can switch to Diagram mode when a sketch needs structure, with shapes and arrows that stay attached as you move things. A document holds as many tabs as you need, grouped into folders, and Presentation mode turns elements from any tab into a slide deck.',
-          'For sessions, there are templates for retrospectives, Lean Coffee and town hall Q&A, and a facilitator can run a shared timer, votes and polls for the room.',
+          'For sessions, switch a tab to Facilitate, the mode for running a room: there are templates for retrospectives, Lean Coffee and town hall Q&A, and a facilitator can run a shared timer, votes, polls and quizzes for the room, with the right answer revealed when the time is up.',
         ],
       },
       {
@@ -154,7 +158,7 @@ export const ALTERNATIVES: Alternative[] = [
     faqs: [
       {
         q: 'Is Microsoft Whiteboard being discontinued?',
-        a: 'For personal Microsoft accounts, yes: boards became read-only on 25 September 2026, and the standalone apps retire and remaining legacy boards are deleted on 16 October 2026. Work and school accounts keep Whiteboard in Teams and on the web. Microsoft’s retirement notice has the details for your account.',
+        a: 'For personal Microsoft accounts, yes: boards became read-only on 25 September 2026, and on 16 October 2026 the remaining legacy boards are deleted and the standalone Windows, iOS and Android apps retire. Work and school accounts keep Whiteboard in Teams and on the web. Microsoft’s retirement notice has the details for your account.',
       },
       {
         q: 'Can I import my Microsoft Whiteboard boards?',
@@ -194,7 +198,7 @@ export const ALTERNATIVES: Alternative[] = [
       { label: 'Real-time multiplayer', us: 'Yes', them: 'Yes' },
       {
         label: 'Import + export',
-        us: 'Excalidraw, draw.io, Microsoft Whiteboard, Mermaid + Markdown in; PNG, SVG, PDF, JSON, Mermaid + Excalidraw out',
+        us: 'Excalidraw, draw.io, Microsoft Whiteboard, Mermaid + Markdown in; PNG, SVG, PDF, JSON, Mermaid + Excalidraw out; CSV both ways for Sheets',
         them: 'Broad import + export options',
       },
       {
@@ -204,34 +208,35 @@ export const ALTERNATIVES: Alternative[] = [
       },
       {
         label: 'Focus',
-        us: 'Structured diagrams first, plus whiteboards, Plan boards and workshop tools',
+        us: 'One document, five modes: diagrams, whiteboards, Facilitate sessions, designed pages and slides, and Plan boards and Sheets',
         them: 'All-in-one visual workspace',
       },
     ],
     themBest: [
       'Facilitating very large workshops: breakout-scale sessions and a marketplace of meeting apps around the board.',
       'A deep template and integration marketplace (Jira, Slack, and more).',
-      'AI woven through the whole workspace, well beyond a single assistant panel.',
+      'AI across the canvas: assistants, flows and generators, well beyond a single panel.',
       'Enterprise admin, SSO, and compliance at large scale.',
     ],
     usBest: [
       "It's free and MIT-licensed, so you can self-host it instead of paying per seat.",
       'Open a link and draw, with no sign-up wall in front of the canvas, even to create a document.',
       'Real-time multiplayer, live cursors and comments come standard, not gated behind a plan.',
-      'Four ways to work one tab: Diagram for structure, Draw for freehand whiteboarding, Illustrate for designed pages, and Plan for boards of cards.',
+      'Five ways to work one tab: Diagram for structure, Draw for freehand whiteboarding, Facilitate for running a session with your team, Illustrate for designed pages, and Plan for boards of cards, spreadsheets and dashboards.',
+      'Participant links let a workshop add stickies, write and vote without being able to reshape the board.',
       'Assign action items to teammates on the canvas itself, tracked beside comments in the Collaborate panel.',
-      'Workshop tools built in: a facilitator role, a shared timer, dot-voting, live polls, a Q&A board and hidden-then-revealed responses.',
-      '95 templates and 26 one-click whole-canvas themes turn a blank canvas into a polished diagram fast.',
+      'Workshop tools built in: Facilitate mode, a facilitator role, a shared timer, dot-voting, live polls, planning-poker estimate cards, temperature checks, quizzes, an anonymous idea box and a Q&A board.',
+      'Run the meeting itself on the board: an agenda that starts the timer for each segment, a roll call, a random picker, reveal zones that cover work until the room is ready, and decision records that keep what was agreed.',
+      '132 templates and 24 one-click whole-canvas themes turn a blank canvas into a polished diagram fast.',
       'Present a document as a slide deck built from its own elements, with a laser pointer and spotlight, no export needed.',
       'Bring boards across from Excalidraw, draw.io and Microsoft Whiteboard; export PNG, SVG, PDF, Mermaid or Excalidraw.',
     ],
     sections: [
       {
-        heading: 'Diagrams first, with the workshop built in',
+        heading: 'One workspace, five ways to work',
         paragraphs: [
-          'Miro grew into a workspace: boards, workshops, docs, video walkthroughs, and a marketplace of apps. That breadth is genuinely useful for facilitation-heavy teams, but if what you mostly make is diagrams (architecture sketches, flowcharts, org charts, plans) much of it is surface area you scroll past. livediagram starts from the diagram: shapes, arrows, and structure are the core of the product.',
-          'That focus shows up in the details. Arrows stay attached to shapes and re-route themselves as you move things, with collision avoidance so lines stop overlapping. Alignment guides and snapping keep layouts tidy without manual nudging. A format painter copies a style across elements, and style presets keep a diagram consistent. Bigger work splits across tabs inside one document, tabs group into folders, and each tab has Photoshop-style layers for separating annotation from content.',
-          'When the session needs more than a diagram, the same tab switches mode: Draw for freehand whiteboarding with pressure-sensitive markers, and Plan mode for boards of cards with WIP limits and quick add. A facilitator can run the room with a shared timer, dot-voting, live polls and a Q&A board, and event storming boards come with their own notation, including turning a photo of a sticky-note wall into notes.',
+          'Miro grew into a broad workspace: boards, workshops, docs, tables, video walkthroughs and a marketplace of apps. livediagram covers the same ground in one document with tabs, and each tab works in one of five modes. Diagram for structure, with arrows that stay attached and re-route as you move things. Draw for freehand whiteboarding with pressure-sensitive markers. Facilitate for running the workshop itself: timers, dot votes, polls and reveals. Illustrate for designed pages: infographics, written documents and slide decks. Plan for boards of cards with WIP limits and swimlanes, beside Sheets with real formulas that can read the cards, and dashboards that bring them together.',
+          'Workshops are built in rather than bolted on. A facilitator can run the room with a shared timer, dot-voting, live polls, planning-poker estimate cards, quizzes, a Q&A board and responses kept hidden until the reveal, and templates cover retrospectives, Lean Coffee, town hall Q&A and event storming, including turning a photo of a sticky-note wall into notes. When the session ends, the actions it produced are assigned on the board and the plan picks up on the next tab.',
         ],
       },
       {
@@ -244,14 +249,14 @@ export const ALTERNATIVES: Alternative[] = [
       {
         heading: 'Collaboration without the onboarding',
         paragraphs: [
-          'In Miro, creating a board starts with an account, and anonymous guest editing depends on the plan you are on. In livediagram, collaborating is a URL. Anyone can create a document without signing up, share a link, and whoever opens it is on the canvas with you, live cursors and all. Share links can carry a password or an expiry date when you need them locked down.',
+          'In Miro, creating a board starts with an account, and anonymous guest editing depends on the plan you are on. In livediagram, collaborating is a URL. Anyone can create a document without signing up; a guest’s new document is kept in their browser until they press Share, which syncs it in one step. Whoever opens the link is on the canvas with you, live cursors and all. A link is an Editor, Participant or view-only link (a Participant adds stickies, writes and votes but cannot reshape the board), and it can carry a password or an expiry date when you need it locked down.',
           'The collaboration tools go beyond cursors: leave comments on elements and assign action items to teammates directly on the canvas, tracked together in the Collaborate panel, with optional email notifications. A selection lock shows when someone is editing an element, so two people rarely end up changing the same thing at once.',
         ],
       },
       {
         heading: 'Connected to the rest of your workflow',
         paragraphs: [
-          'Diagrams rarely live alone. livediagram imports Mermaid (flowcharts, state and ER diagrams, the diagram-as-code format that lives in READMEs and AI output), Markdown outlines, Excalidraw scenes, draw.io files and Microsoft Whiteboard boards, and exports PNG, SVG, PDF, Mermaid, Markdown, Excalidraw or a portable JSON file. Any share link can be embedded as a read-only, live-updating iframe in a wiki or doc.',
+          'Diagrams rarely live alone. livediagram imports Mermaid (flowcharts, state and ER diagrams, the diagram-as-code format that lives in READMEs and AI output), Markdown outlines, Excalidraw scenes, draw.io files and Microsoft Whiteboard boards, and exports PNG, SVG, PDF, Mermaid, Markdown, Excalidraw or a portable JSON file. Any share link embeds as a live-updating iframe in a wiki or doc: an editor link embeds an editable canvas, and a participant or view-only link a read-only one.',
           'For programmatic use there is a free REST API with personal tokens and an MCP server at mcp.livediagram.app that lets AI assistants read and edit your documents directly; their edits arrive live, outlined, and undoable as one unit. None of it sits behind a plan.',
         ],
       },
@@ -263,7 +268,7 @@ export const ALTERNATIVES: Alternative[] = [
       },
       {
         q: 'Do my teammates need an account to edit with me?',
-        a: 'No. Share a link and anyone who opens it can edit in real time, with live cursors and comments, without signing up. You do not need an account to create a document either. Accounts are optional and mainly useful for syncing your documents across devices and using teams.',
+        a: 'No. Share a link and anyone who opens it can edit in real time, with live cursors and comments, without signing up. You do not need an account to create a document either: a guest’s document is kept in their browser until they press Share, which syncs it in one step. Accounts are optional and mainly useful for syncing your documents across devices and using teams.',
       },
       {
         q: 'Can I import my existing Miro boards?',
@@ -271,7 +276,7 @@ export const ALTERNATIVES: Alternative[] = [
       },
       {
         q: 'Can livediagram run workshops the way Miro does?',
-        a: 'Sessions like retros, brainstorms, estimation and planning work well: a facilitator can run a shared timer, dot-voting, live polls, a Q&A board and hidden responses that are revealed together, everyone can follow the facilitator’s view, and the document keeps the comments and assigned actions that came out of it. What livediagram does not have is Miro’s large-scale facilitation ecosystem (breakout-style sessions, a meeting-app marketplace), so for big multi-team workshops Miro is still the deeper toolkit.',
+        a: 'Sessions like retros, brainstorms, estimation and planning work well: switch a tab to Facilitate and a facilitator can run a shared timer, dot-voting, live polls, a Q&A board and hidden responses that are revealed together, estimate cards run planning poker on the board, everyone can follow the facilitator’s view, and the document keeps the comments and assigned actions that came out of it. What livediagram does not have is Miro’s large-scale facilitation ecosystem (breakout-style sessions, a meeting-app marketplace), so for big multi-team workshops Miro is still the deeper toolkit.',
       },
       {
         q: 'Can I self-host livediagram?',
@@ -296,7 +301,7 @@ export const ALTERNATIVES: Alternative[] = [
       {
         label: 'Real-time multiplayer',
         us: 'Yes, share a link, no account needed',
-        them: 'Yes, for maps stored in its cloud',
+        them: 'Yes, for maps in its cloud; how many depends on the plan',
       },
       {
         label: 'Price',
@@ -304,6 +309,11 @@ export const ALTERNATIVES: Alternative[] = [
         them: 'Free tier, subscription for full features',
       },
       { label: 'Open source', us: 'Yes, MIT-licensed', them: 'No' },
+      {
+        label: 'Mind-map editing',
+        us: 'Tab for a child, Enter for a sibling, four layouts, an editable outline',
+        them: 'Keyboard-first, with many map structures',
+      },
       {
         label: 'Import your maps',
         us: "Yes, via XMind's Markdown export",
@@ -316,37 +326,39 @@ export const ALTERNATIVES: Alternative[] = [
       },
       {
         label: 'Beyond mind maps',
-        us: 'Flowcharts, whiteboards, Plan boards, timelines, wireframes…',
+        us: 'Flowcharts, whiteboards, Plan boards, spreadsheets, timelines, wireframes…',
         them: 'Mind-map focused',
       },
     ],
     themBest: [
-      'Deep, keyboard-fast mind-map outlining and dedicated brainstorming modes.',
+      'The deepest mind-map toolkit: many map structures, branch folding and a distraction-free ZEN mode.',
       'A refined native desktop experience with dedicated mobile apps.',
       "Pitch mode turns a map's branches into presentation slides.",
     ],
     usBest: [
       'Brainstorm together in real time, with live cursors and comments, by sharing one link: nobody needs an account.',
+      'Map from the keyboard: Tab adds a child and Enter a sibling, four layouts (Tree, Balanced, Downward and Bubble) and Tidy Map keep it neat.',
+      'Edit Outline opens the whole map as an indented list: rename, nest and reorder there, then save it back to the map in one step.',
       'More than mind maps: flowcharts, freehand whiteboards, Plan boards of cards, timelines, wireframes and charts in the same document.',
       'Nothing to install: open a link in any browser and start.',
       'Bring existing maps across: export Markdown from XMind and import it as a themed diagram.',
       'Sketch with the Freehand pen, or the Shape Pen to have a rough shape tidied into a clean one.',
-      '95 templates (three mind-map styles among them) and 26 one-click themes make a map look polished instantly.',
+      '132 templates (three mind-map styles among them) and 24 one-click themes make a map look polished instantly.',
       'Free, open source, and self-hostable.',
     ],
     sections: [
       {
         heading: 'No install, no account, no subscription',
         paragraphs: [
-          'XMind has grown well beyond the desktop: it now has a web version and real-time co-editing for maps kept in its cloud. Where livediagram still differs is the friction before the first idea. It opens on any machine with a browser, including locked-down work laptops where you cannot install anything, and you can start a map without creating an account at all.',
+          'XMind has grown well beyond the desktop: it now has a web version and real-time co-editing for maps kept in its cloud, with the number of shared maps set by your plan. Where livediagram still differs is the friction before the first idea. It opens on any machine with a browser, including locked-down work laptops where you cannot install anything, and you can start a map without creating an account at all.',
           'Collaboration works the same way: send the link to a teammate and you are both on the map at the same time, with live cursors showing who is where, whether or not they have signed up. Comments and assigned actions live on the elements themselves, so feedback lands where the idea is, not in a separate chat thread.',
         ],
       },
       {
         heading: 'Bring your existing maps with you',
         paragraphs: [
-          "You don't have to start over. XMind exports maps as Markdown outlines, and livediagram imports Markdown directly: the outline becomes a real, themed node-and-link diagram on a new tab, laid out for you. Mermaid text imports the same way.",
-          'Going the other direction is just as open: export any tab as PNG, SVG, or PDF for documents, or as Mermaid or Markdown text to keep the structure portable. Nothing about export sits behind a subscription.',
+          "You don't have to start over. XMind exports maps as Markdown outlines, and livediagram imports Markdown directly: the outline becomes a real, themed node-and-link diagram, laid out for you, in place of the tab's contents (add a new tab first to keep what is there). Or paste the outline into a mind map's Edit Outline and every line becomes a mind node you can keep growing. Mermaid text imports too.",
+          'Going the other direction is just as open: export a map as PNG, SVG, or PDF for documents, or as Mermaid or Markdown text to keep the structure portable. Nothing about export sits behind a subscription.',
         ],
       },
       {
@@ -366,11 +378,11 @@ export const ALTERNATIVES: Alternative[] = [
     faqs: [
       {
         q: 'Can I import my XMind files?',
-        a: "Not the .xmind file directly, but there is a clean path: export the map from XMind as Markdown, then use livediagram's Markdown import. The outline becomes a themed, laid-out node-and-link diagram on a new tab.",
+        a: "Not the .xmind file directly, but there is a clean path: export the map from XMind as Markdown, then use livediagram's Markdown import. The outline becomes a themed, laid-out node-and-link diagram on the current tab, replacing what is there, so add a new tab first. To keep growing it as a mind map, paste the outline into a mind map's Edit Outline instead.",
       },
       {
         q: 'Does livediagram work offline like the XMind desktop app?',
-        a: "livediagram is a browser app, and its opt-in Offline Mode can keep a document stored only in your browser, never sent to a server. But if fully offline desktop work is your main requirement, XMind's native apps are the stronger fit.",
+        a: "livediagram is a browser app, and its Offline Mode keeps a document stored only in your browser, never sent to a server. A guest’s new documents start that way, and anyone can choose it when creating a document. But if fully offline desktop work is your main requirement, XMind's native apps are the stronger fit.",
       },
       {
         q: 'Is there a desktop or mobile app?',
@@ -406,25 +418,27 @@ export const ALTERNATIVES: Alternative[] = [
       },
       {
         label: 'Structure',
-        us: 'Templates, tabs, folders, layers, themes, four editor modes',
-        them: 'A freeform canvas (Excalidraw+ adds workspaces)',
+        us: 'Templates, tabs, folders, layers, themes, five editor modes',
+        them: 'A freeform canvas (Excalidraw+ adds workspaces and presentations)',
       },
       {
         label: 'Import + export',
         us: 'Excalidraw, draw.io, Mermaid + Markdown in; PNG, SVG, PDF, Mermaid + .excalidraw out',
-        them: '.excalidraw, PNG + SVG; Mermaid in',
+        them: '.excalidraw, PNG + SVG; Mermaid flowcharts in',
       },
     ],
     themBest: [
       'The signature hand-drawn aesthetic that made it famous.',
       'A huge community, shared shape libraries, and integrations that embed it in other tools.',
       'Dead-simple, single-canvas freeform sketching.',
+      'Excalidraw+ adds presentations with a presenter view, and AI features that can run on your own model keys, on top of the free editor.',
     ],
     usBest: [
-      'Start from a real template (flowchart, kanban, retro, org chart…) instead of a blank page: 95 of them.',
+      'Start from a real template (flowchart, kanban, retro, org chart…) instead of a blank page: 110 of them.',
       'Keep a whole project together: several tabs in one document, organised in folders, with per-tab layers.',
-      '26 themes recolour the whole canvas, shapes and arrows, in one click.',
+      '24 themes recolour the whole canvas, shapes and arrows, in one click.',
       'Draw mode is a plain whiteboard: pressure-sensitive markers, an eraser and shapes on a plain, dotted or grid board, light or dark.',
+      'Sketching tools beyond the marker: a Path tool for clean curves, optional shape recognition, an eraser that takes a whole stroke or just part of one, and Draw templates such as Sketchnote, Rich Picture and Comic Strip.',
       'Paste an Excalidraw copy straight onto a tab, or import .excalidraw files as documents of their own.',
       'Built-in charts, an icon library, comments, assigned actions and a slide-deck Presentation mode, without add-ons.',
       'Smart alignment guides and snapping line everything up as you drag.',
@@ -449,13 +463,13 @@ export const ALTERNATIVES: Alternative[] = [
         heading: 'Bring your Excalidraw boards along',
         paragraphs: [
           'An Excalidraw copy pasted onto a tab, or a file dropped on it, lands as whiteboard-native content in Draw mode. A .excalidraw file (or a PNG or SVG exported with the scene embedded) imports with shapes, arrows, text and connections intact, and the Explorer can import Excalidraw files as documents of their own. Each import ends with a report of anything that changed on the way in.',
-          'Export goes the other way too: any tab saves back out as a .excalidraw file. Excalidraw has fewer element types, so richer livediagram elements simplify on the way out.',
+          'Export goes the other way too: any diagram or whiteboard tab saves back out as a .excalidraw file. Excalidraw has fewer element types, so richer livediagram elements simplify on the way out.',
         ],
       },
       {
         heading: 'A workspace, not just a canvas',
         paragraphs: [
-          'The free Excalidraw editor deliberately stays a single board, and its paid Excalidraw+ plan adds the workspace around it. livediagram ships that workspace to everyone for free: an explorer with folders and thumbnail previews, teams with shared libraries any member can manage, a 30-day Trash, and share links that can carry a password or an expiry date.',
+          'The free Excalidraw editor deliberately stays a single board, and its paid Excalidraw+ plan adds the workspace around it. livediagram ships that workspace to everyone for free: an explorer with folders, thumbnail previews and a details list, teams with shared libraries any member can manage, a 30-day Trash, and share links that can carry a password or an expiry date.',
           'Collaboration is more than co-drawing, too: comments attach to elements, action items can be assigned to teammates and tracked in the Collaborate panel, and the Timeline gathers what happened across your documents into one day-by-day feed.',
         ],
       },
@@ -498,7 +512,7 @@ export const ALTERNATIVES: Alternative[] = [
       {
         label: 'Real-time multiplayer',
         us: 'Yes, on every document, live cursors + presence',
-        them: 'Yes, when the file lives in Google Drive, OneDrive or Confluence',
+        them: 'Yes, when the file lives in Google Drive, OneDrive, Confluence or Nextcloud',
       },
       { label: 'Start without an account', us: 'Yes', them: 'Yes' },
       {
@@ -513,7 +527,7 @@ export const ALTERNATIVES: Alternative[] = [
       },
       {
         label: 'Embed in docs and wikis',
-        us: 'Read-only iframe embed for any share link, live-updating',
+        us: 'A live-updating iframe for any share link, editable from an editor link',
         them: 'Native Confluence / Jira apps',
       },
       {
@@ -531,9 +545,10 @@ export const ALTERNATIVES: Alternative[] = [
     usBest: [
       'Real-time co-editing with live cursors and presence on every document, wherever it is stored.',
       'A modern, fast canvas with nothing to set up: open a link and go.',
-      '95 templates and 26 themes for good-looking diagrams in minutes, not blank-canvas fiddling.',
+      '132 templates and 24 themes for good-looking diagrams in minutes, not blank-canvas fiddling.',
       'Diagrams stay tidy on their own: arrows re-route as shapes move, with collision avoidance, alignment guides and snapping.',
       'Full-colour technology icons (AWS, Azure, Kubernetes, databases…) for architecture diagrams.',
+      'Tidy Up lays out a tangle of shapes and arrows as a flowchart, tree or mind map, and the UML theme colours each shape by its meaning.',
       'Bring your diagrams with you: .drawio files import page by page, whole folders import as documents, and draw.io libraries become shape libraries.',
       'Charts, icons, freehand sketching, comments and a slide-deck Presentation mode, all built in.',
       'Free, MIT-licensed, and self-hostable on your own Cloudflare account.',
@@ -542,7 +557,7 @@ export const ALTERNATIVES: Alternative[] = [
       {
         heading: 'Real-time by default',
         paragraphs: [
-          'draw.io is built around a diagram file. It does support real-time co-editing, with shared cursors, when that file lives in Google Drive, OneDrive or Confluence Cloud; otherwise working together means passing the file around. livediagram is multiplayer on every document from the ground up: share a link and everyone is on the same canvas at once, with live cursors, presence, and a selection lock that shows when someone is already editing an element.',
+          'draw.io is built around a diagram file. It does support real-time co-editing, with shared cursors, when that file lives in Google Drive, OneDrive, Confluence Cloud or Nextcloud; otherwise working together means passing the file around. livediagram is multiplayer on every document from the ground up: share a link and everyone is on the same canvas at once, with live cursors, presence, and a selection lock that shows when someone is already editing an element.',
           'The collaboration layer goes further than co-editing: comments attach to elements, action items can be assigned to a teammate (tracked in the Collaborate panel, with optional email notification), and a facilitator can run a shared timer, dot-voting and live polls when a diagram review turns into a workshop.',
         ],
       },
@@ -556,7 +571,7 @@ export const ALTERNATIVES: Alternative[] = [
       {
         heading: 'Sharing that fits the web',
         paragraphs: [
-          'A livediagram document is a URL, not a file. Share links open instantly for anyone, need no account, and can be protected with a password or an expiry date. Any share link also embeds as a read-only iframe that live-updates in your wiki or docs as the diagram changes, so embedded copies never go stale.',
+          'A livediagram document is a URL, not a file. Share links open instantly for anyone, need no account, and can be protected with a password or an expiry date. Any share link also embeds as an iframe that live-updates in your wiki or docs as the diagram changes, so embedded copies never go stale: an editor link embeds an editable canvas, and a participant or view-only link a read-only one.',
           'When you do need a file, any tab exports as PNG, SVG, PDF or a portable JSON file, the explorer shows thumbnail previews so you can find the right document at a glance, and signed-in users can mirror their documents to their own Google Drive.',
         ],
       },
@@ -589,79 +604,103 @@ export const ALTERNATIVES: Alternative[] = [
   {
     slug: 'google-slides',
     name: 'Google Slides',
-    title: 'A Google Slides alternative for diagrams · livediagram',
+    title: 'Google Slides alternative · livediagram',
     description:
-      "Diagrams in Google Slides get fiddly fast: connectors don't route around anything and the canvas is a fixed slide. livediagram is a canvas built for diagrams.",
-    h1: 'A canvas built for diagrams, not slides',
-    lede: "Plenty of people draw diagrams in Google Slides because it's already open. But Slides is a presentation tool: its connectors stay attached but never route around anything, its diagram layouts are few and simple, and the canvas is a fixed slide. livediagram is purpose-built for diagrams.",
+      'A free, open-source Google Slides alternative: slide pages from ready-made layouts, decks built from your canvas, notes, timing and transitions.',
+    h1: 'A free, open-source Google Slides alternative',
+    lede: 'Google Slides is the presentation tool most people already have open. livediagram makes decks differently: start a slide page from a ready-made layout, or build slides straight from the work on your canvas, so the deck, the write-up and the plan behind it live in one document that your team edits together.',
     rows: [
-      { label: 'Built for diagrams', us: 'Yes', them: 'No, it is for presentations' },
+      { label: 'Price', us: 'Free, every feature', them: 'Free with a Google account' },
+      { label: 'Open source', us: 'Yes, MIT-licensed', them: 'No, proprietary' },
       {
-        label: 'Arrows track shapes',
-        us: 'Yes, and they re-route around obstacles',
-        them: 'Connectors attach, but do not route around shapes',
+        label: 'Start without an account',
+        us: 'Yes, create and edit as a guest',
+        them: 'A Google account to create decks',
+      },
+      { label: 'Real-time multiplayer', us: 'Yes, live cursors and comments', them: 'Yes' },
+      {
+        label: 'Designed slides',
+        us: '16:9 or 4:3 slide pages from 46 layouts',
+        them: 'Themes, layouts and a large template gallery',
       },
       {
-        label: 'Diagram templates',
-        us: '95 templates: flowchart, mind map, kanban…',
-        them: 'A few simple diagram layouts',
+        label: 'Slides from your work',
+        us: 'Pick elements or a Plan board on any tab and it becomes a slide that stays in step',
+        them: 'Paste or link charts and images in',
       },
-      { label: 'Canvas', us: 'Infinite and pannable', them: 'Fixed slide size' },
-      { label: 'Real-time multiplayer', us: 'Yes', them: 'Yes' },
       {
-        label: 'Get it into a deck',
-        us: 'Export PNG, SVG or PDF, or present it as a slide deck',
-        them: 'Already a slide',
+        label: 'Presenting',
+        us: 'Presenter notes, per-slide time budgets, transitions, auto-advance and loop, laser and spotlight',
+        them: 'Speaker notes, presenter view, audience Q&A, animations and transitions',
       },
-      { label: 'Price', us: 'Free, open source', them: 'Free with a Google account' },
+      {
+        label: 'Beyond the deck',
+        us: 'Diagrams, whiteboards, written pages, Plan boards and spreadsheets in the same document',
+        them: 'One of several Google Workspace apps',
+      },
+      { label: 'Self-hostable', us: 'Yes, on your own Cloudflare account', them: 'No' },
     ],
     themBest: [
-      "You're already building a slide deck and just need a quick diagram inside it.",
-      'Everyone in your org already lives in Google Workspace.',
-      'You want the diagram living on a slide inside a polished, standalone deck (livediagram embeds target wikis and docs, not slide decks).',
+      'Everyone in your organisation already lives in Google Workspace, with Drive, Meet and Docs around the deck.',
+      'A full presentation suite: click-by-click builds within a slide, a presenter view, audience Q&A and a large template gallery.',
+      'PowerPoint import and export, for decks that travel between organisations.',
+      'Gemini in Slides drafts a whole, editable deck from a prompt, styled from your files, on eligible Workspace and Google AI plans.',
     ],
     usBest: [
-      'Arrows that stay connected to shapes and re-route around obstacles as you move them.',
-      'Start from one of 95 templates (flowchart, mind map, kanban…) instead of an empty slide.',
-      'An infinite, pannable canvas instead of a fixed slide, with a minimap to navigate big ones.',
-      'Diagram-native tools: smart snapping, a format painter, quick-connect arrows, charts and icons.',
-      'Real-time multiplayer with live cursors and comments, plus a Presentation mode that turns the diagram into a slide deck.',
-      'Free and open source, with no Google account required to start.',
+      'Slides straight from the work: select elements or a Plan board on any tab and present it, and editing a shape updates every slide it is on.',
+      'Slide pages when you want a designed deck: 16:9 or 4:3, started from 46 layouts (title, agenda, big numbers, roadmap and more).',
+      'One document for the whole story: the write-up as pages, the diagram, the plan and the spreadsheet beside the deck that presents them.',
+      'Present with presenter notes, a time budget per slide, Slide or Fade transitions, a laser pointer and a spotlight; your screen moves, nobody else’s.',
+      'Leave a deck running on a screen: auto-advance every 5 to 60 seconds and loop back to the start.',
+      'Animate any element: a title that types itself in, words that cascade, a drawing that draws itself, or a reveal that plays once and stays.',
+      'Real-time editing with live cursors, comments and assigned actions, for anyone with the link, no account needed.',
+      'An AI assistant connected over MCP can build the deck for you from slide layouts.',
+      'Free, MIT-licensed and self-hostable.',
     ],
     sections: [
       {
-        heading: 'Connectors that actually route',
+        heading: 'Two ways to make a deck',
         paragraphs: [
-          "Slides does have connector lines that stick to a shape's connection points, but past a few boxes they betray you: they cut straight across other shapes, they cross each other, and every layout tweak means re-bending lines by hand. In livediagram, arrows are attached to the shapes they connect and route themselves. Move a box and its arrows follow, re-routing around obstacles and avoiding collisions with other lines. Curved and elbowed arrows have draggable handles when you want manual control, and alignment guides plus snapping keep the whole layout square.",
+          'In Google Slides a deck is its own file, built slide by slide. livediagram gives you two ways in. Switch a tab to Illustrate and add slide pages, 16:9 or 4:3, each started from one of 46 layouts (a title, an agenda, two columns, image and text, a timeline and more) and painted from your theme. Or build slides from what is already on your canvas: select a cluster of elements, or a Plan board, and make it a slide.',
+          'Slides made from the canvas point at the real elements rather than copying them, so the deck can never drift from the work: change a shape, a card or a label and every slide it is on changes with it. Both kinds of slide sit in one deck, ordered in the Slide Deck panel, saved with the document.',
         ],
       },
       {
-        heading: 'Start from a diagram, not a blank slide',
+        heading: 'Presenting, built for the room',
         paragraphs: [
-          'Slides offers a handful of simple diagram layouts (grids, processes, timelines and the like) sized to a slide. livediagram starts you from 95 real diagram templates (flowcharts, mind maps, kanban boards, org charts, timelines, architecture diagrams and more) and themes the whole canvas in one click, so the result looks deliberate without manual styling.',
-          'The palette is diagram-native too: an icon library, full-colour technology icons for architecture diagrams, charts, freehand sketching with a Shape Pen that tidies rough shapes, and device frames for wireframes. And the canvas is infinite and pannable, with a minimap for navigating big diagrams, instead of a fixed 16:9 rectangle.',
+          'Presenting runs full screen on your screen alone: nobody is dragged into your slide, and collaborators with the document open carry on working. Each slide carries its own presenter notes behind a button, and an optional time budget the HUD tracks as you talk. Transitions are Slide, Fade or None, at the speed you pick, and a laser pointer and spotlight guide the room.',
+          'Nothing on a slide can be changed by a stray click, but everything can be read: click an element mid-talk to show its note, comments and assigned action, for the question you did not plan for.',
         ],
       },
       {
-        heading: 'Sharing and presenting stay easy',
+        heading: 'The deck and everything behind it',
         paragraphs: [
-          "The reason people reach for Slides is that sharing is effortless, and livediagram keeps that: share a link and anyone can view or edit in real time, no account needed, not even a Google one. Comments and live cursors work like you'd expect.",
-          'When it is time to present, Presentation mode builds a slide deck out of the document itself: each slide is a set of elements you pick, from any tab, with presenter notes, and editing a shape updates every slide it is on. A laser pointer and spotlight work while you present. And if the diagram ultimately belongs in a Slides deck, export it as PNG, SVG, or PDF and drop it onto the slide; for wikis and docs, a share link embeds as a live-updating read-only iframe instead.',
+          'A deck is usually the last step of something: a write-up, a plan, an architecture, a retro. In Workspace those live in Docs, Sheets and Slides as separate files. In livediagram they are tabs of one document: write the doc as Illustrate pages, keep the plan on a Plan board with a Sheet beside it, sketch on a whiteboard, and present from all of it. Everyone edits live, with comments and assigned actions on the elements themselves.',
+        ],
+      },
+      {
+        heading: 'Free, open and no account needed',
+        paragraphs: [
+          'Slides is free with a Google account. livediagram needs no account at all: open the editor and start, and a guest’s document stays in their browser until they press Share, which syncs it in one step. The whole product is MIT-licensed with no paid tier, and you can run your own copy on your own Cloudflare account. Export any page as a PNG, SVG or a print-ready PDF when a deck has to travel.',
         ],
       },
     ],
     faqs: [
       {
-        q: 'Do collaborators need a Google account?',
+        q: 'Can livediagram replace Google Slides?',
+        a: 'For many decks, yes: slide pages from ready-made layouts, slides built from your canvas, presenter notes, time budgets, transitions, a laser pointer and a spotlight, all edited live with your team. If you need click-by-click builds within a slide, PowerPoint files or audience Q&A, Google Slides is still the deeper presentation suite.',
+      },
+      {
+        q: 'Can I import or export PowerPoint files?',
+        a: 'No. livediagram does not read or write .pptx. You can export each page as a PNG or SVG, or every page as one PDF, and drop those into another deck.',
+      },
+      {
+        q: 'Do my audience or co-editors need an account?',
         a: 'No account of any kind. Share a link and anyone who opens it can view or edit in real time. Signing in (email code or Google) is optional and mainly adds cross-device sync and teams.',
       },
       {
-        q: 'Can I put a livediagram diagram into my slide deck?',
-        a: 'Yes. Export the tab as a PNG, SVG, or PDF and place it on the slide. For living documents like wikis and docs, embedding the share link as an iframe is better: it updates automatically as the diagram changes.',
-      },
-      {
-        q: 'Can livediagram replace Slides for presentations?',
-        a: 'For presenting a diagram, often yes: Presentation mode turns elements from any tab into a full-screen slide deck, with presenter notes, a laser pointer and a spotlight, and the slides stay in step with the canvas. For a polished, text-heavy standalone deck with transitions and the rest of a presentation suite, build it in Slides and export your diagrams into it.',
+        q: 'Can I keep my slides in step with a diagram or a plan?',
+        a: 'Yes. A slide made from the canvas references the elements, or the Plan board, it shows, so editing them updates every slide they appear on. The deck can never drift from the work it presents.',
       },
       {
         q: 'Is livediagram free?',
@@ -674,7 +713,7 @@ export const ALTERNATIVES: Alternative[] = [
     name: 'FigJam',
     title: 'FigJam alternative · livediagram',
     description:
-      'A free, open-source FigJam alternative: a real-time whiteboard and diagram canvas with no account needed, 95 templates, Mermaid, an API and an MCP server for AI tools.',
+      'A free, open-source FigJam alternative: a real-time whiteboard with workshop tools, no account needed, 132 templates, Mermaid, an API and an MCP server.',
     h1: 'The free, open-source FigJam alternative',
     lede: 'FigJam is a polished, playful whiteboard that lives inside Figma. livediagram covers the same ground, brainstorms, workshops and diagrams with your team in real time, as free, open-source software that anyone can open from a link, no account or Figma seat needed.',
     rows: [
@@ -693,7 +732,7 @@ export const ALTERNATIVES: Alternative[] = [
       { label: 'Real-time multiplayer', us: 'Yes', them: 'Yes' },
       {
         label: 'Focus',
-        us: 'Diagrams first, plus whiteboards and workshop tools',
+        us: 'Whiteboards and workshops, plus diagrams, designed pages, Plan boards and Sheets',
         them: 'Whiteboarding for teams that design in Figma',
       },
       {
@@ -711,14 +750,16 @@ export const ALTERNATIVES: Alternative[] = [
       'Your team designs in Figma, and you want boards that sit beside your design files and copy across into them.',
       'A playful, polished feel: stamps, stickers, emotes, cursor chat and widgets.',
       'A large community of plugins, widgets and templates.',
-      'AI features built into the board for generating and summarising content.',
+      'FigJam AI, for generating boards, sorting and summarising sticky notes.',
     ],
     usBest: [
       'Free with no file limits and no seats: every feature, for everyone.',
       'Open a link and start, no account needed, even to create a document.',
-      'Structured diagrams that stay tidy: shapes and arrows that stay attached, alignment guides, 26 one-click themes and 95 templates.',
-      'Four ways to work one tab: Diagram for structure, Draw for freehand whiteboarding, Illustrate for designed pages, and Plan for boards of cards.',
-      'Workshop tools built in: a facilitator role, a shared timer, dot-voting, live polls, a Q&A board and hidden-then-revealed responses.',
+      'Structured diagrams that stay tidy: shapes and arrows that stay attached, alignment guides, 24 one-click themes and 132 templates.',
+      'Five ways to work one tab: Diagram for structure, Draw for freehand whiteboarding, Facilitate for running a session with your team, Illustrate for designed pages, and Plan for boards of cards.',
+      'Workshop tools built in: Facilitate mode, a facilitator role, a shared timer, dot-voting, live polls, planning-poker estimate cards, temperature checks, quizzes, an anonymous idea box and a Q&A board.',
+      'Participant links: the room adds stickies, writes and votes, and nobody can reshape the board by accident.',
+      'Run the meeting on the board: an agenda that starts the timer for each segment, a roll call, a random picker and decision records, plus around 190 emoji stickers and 32 word badges.',
       'Diagrams as code: Mermaid flowcharts import as editable diagrams and export back out.',
       'A free REST API and an MCP server, so scripts and AI assistants can read and edit your documents.',
       'MIT-licensed and self-hostable, so your boards never depend on one vendor.',
@@ -727,26 +768,26 @@ export const ALTERNATIVES: Alternative[] = [
       {
         heading: 'A whiteboard without the seat',
         paragraphs: [
-          'FigJam is part of Figma, and that is its great strength for design teams: boards and design files share one home. For everyone else, it means accounts, a free plan with limits on shared files, and paid seats as the team grows. livediagram has none of that. Anyone can open the editor and create a document without signing up, share a link, and work together in real time. There is no paid tier and no plan to introduce one.',
+          'FigJam is part of Figma, and that is its great strength for design teams: boards and design files share one home. For everyone else, it means accounts, a free plan with limits on shared files, and paid seats as the team grows. livediagram has none of that. Anyone can open the editor and create a document without signing up, share a link, and work together in real time; a guest’s document stays in their browser until they press Share, which syncs it in one step. There is no paid tier and no plan to introduce one.',
         ],
       },
       {
-        heading: 'Diagrams that stay tidy',
+        heading: 'A whiteboard that keeps going',
         paragraphs: [
-          'FigJam is excellent for loose, freeform boards. livediagram starts from the diagram: shapes and arrows that stay attached and re-route as you move things, alignment guides and snapping, a format painter, and themes that restyle the whole canvas in one click. Start from one of 95 templates, from flowcharts and org charts to retrospectives and system architecture, and split larger work across tabs, folders and layers.',
-          'When a session needs freehand, the same tab switches to Draw mode, a plain whiteboard with pressure-sensitive markers.',
+          'FigJam is excellent for loose, freeform boards. livediagram’s Draw mode is a plain whiteboard too, with pressure-sensitive markers, sticky notes, text and shapes, but the same document carries on after the brainstorm. Switch a tab to Diagram when a sketch needs structure, with arrows that stay attached and themes that restyle the whole canvas in one click; to Plan when the ideas become cards on a board, with a Sheet beside it; or to Illustrate for the write-up and the slides.',
+          'Start from one of 132 templates, from retrospectives and story maps to flowcharts and system architecture, and split larger work across tabs, folders and layers.',
         ],
       },
       {
         heading: 'Workshops built in',
         paragraphs: [
-          'Running a session needs more than sticky notes. livediagram gives one person the facilitator role, and with it a shared timer, dot-voting, live polls, a Q&A board and responses kept hidden until the reveal. There are templates for retrospectives in five formats, Lean Coffee, town hall Q&A and event storming, and comments and assigned actions keep the follow-ups with the board.',
+          'Running a session needs more than sticky notes. livediagram gives sessions a mode of their own, Facilitate, and one person the facilitator role, and with it a shared timer, dot-voting, live polls, a Q&A board and responses kept hidden until the reveal. Estimate cards run planning poker, a temperature check shows how the room feels, a quiz asks what it knows, and an idea box collects anonymous ideas until the reveal. There are templates for retrospectives in five formats, Lean Coffee, town hall Q&A and event storming, and comments and assigned actions keep the follow-ups with the board.',
         ],
       },
       {
         heading: 'Open at the edges',
         paragraphs: [
-          'livediagram imports Mermaid, Markdown, Excalidraw, draw.io and Microsoft Whiteboard boards, and exports PNG, SVG, PDF, Mermaid, Markdown, Excalidraw or portable JSON. Any share link embeds as a read-only, live-updating iframe in a wiki or doc.',
+          'livediagram imports Mermaid, Markdown, Excalidraw, draw.io and Microsoft Whiteboard boards, and exports PNG, SVG, PDF, Mermaid, Markdown, Excalidraw or portable JSON. Any share link embeds as a live-updating iframe in a wiki or doc: an editor link embeds an editable canvas, and a participant or view-only link a read-only one.',
           'For automation there is a free REST API with personal tokens and an MCP server that lets AI assistants read and edit your documents directly, with their changes shown live and undoable as one unit.',
         ],
       },
@@ -758,15 +799,15 @@ export const ALTERNATIVES: Alternative[] = [
       },
       {
         q: 'Can I import my FigJam boards?',
-        a: 'Not directly: there is no FigJam importer. You can bring a board across as a picture by exporting it from FigJam as a PNG and adding it to a tab as an image. For new work, start from one of the 95 templates.',
+        a: 'Not directly: there is no FigJam importer. You can bring a board across as a picture by exporting it from FigJam as a PNG and adding it to a tab as an image. For new work, start from one of the 132 templates.',
       },
       {
         q: 'Does livediagram work with Figma?',
-        a: 'No, there is no Figma integration. If your boards need to live beside your Figma design files, FigJam is the better pick. livediagram exports SVG and PNG if you want to bring a diagram into a design.',
+        a: 'Partly. A Figma file, prototype or board link sits on the canvas as a live embed, but nothing syncs or imports between the two. If your boards need to live beside your Figma design files, FigJam is the better pick. livediagram exports SVG and PNG if you want to bring a diagram into a design.',
       },
       {
         q: 'Can my team join without accounts?',
-        a: 'Yes. Share an editor link and anyone who opens it is on the canvas with you, live cursors and all, without signing up. You can add a password or an expiry date to a link, and revoke it at any time.',
+        a: 'Yes. Share an editor link and anyone who opens it is on the canvas with you, live cursors and all, without signing up. A Participant link lets people add stickies, write and vote without reshaping the board, and a view-only link just watches. You can add a password or an expiry date to a link, and revoke it at any time.',
       },
     ],
   },
@@ -775,8 +816,8 @@ export const ALTERNATIVES: Alternative[] = [
     name: 'Lucidchart',
     title: 'Lucidchart alternative · livediagram',
     description:
-      'A free, open-source Lucidchart alternative: real-time diagrams with no document or shape limits, no account needed, 95 templates, Mermaid, an API and an MCP server for AI tools.',
-    h1: 'The free Lucidchart alternative, with no limits',
+      'A free, open-source Lucidchart alternative: real-time diagrams with no document or shape limits, no account needed, Mermaid, an API and MCP.',
+    h1: 'The free Lucidchart alternative, with no plan limits',
     lede: 'Lucidchart is a mature, professional diagramming tool, with a free plan that limits how many documents and shapes you can make. livediagram is free and open source with no such limits: real-time flowcharts, org charts and architecture diagrams that anyone can open from a link, no account needed.',
     rows: [
       {
@@ -800,7 +841,7 @@ export const ALTERNATIVES: Alternative[] = [
       {
         label: 'Import + export',
         us: 'draw.io, Excalidraw, Microsoft Whiteboard, Mermaid + Markdown in; PNG, SVG, PDF, JSON, Mermaid + Excalidraw out',
-        them: 'Visio and other formats in; image, PDF and Visio out',
+        them: 'Visio, draw.io, Gliffy and Mermaid in; image, PDF and Visio out',
       },
       {
         label: 'Programmatic access',
@@ -815,12 +856,13 @@ export const ALTERNATIVES: Alternative[] = [
       'Enterprise admin, security and compliance controls.',
     ],
     usBest: [
-      'Free with no limits on documents or shapes, and no paid tier.',
+      'Free with no plan limits on documents or shapes, and no paid tier.',
       'Open a link and start, no account needed, even to create a document.',
-      '95 templates, from flowcharts, org charts and swimlanes to system and cloud architecture, database schemas and sequence, class and state diagrams.',
+      '132 templates, from flowcharts, org charts and swimlanes to system and cloud architecture, database schemas and sequence, class and state diagrams.',
       'Real-time multiplayer with live cursors, comments, assigned actions and a laser pointer for presenting.',
-      '26 one-click themes restyle the whole canvas, shapes and arrows.',
+      '24 one-click themes restyle the whole canvas, shapes and arrows.',
       'Mermaid in and out: flowcharts import as editable diagrams and export back to text.',
+      'Diagrams that tidy themselves: a new arrow curves around shapes in its way, Tidy Up lays a graph out as a flowchart or tree, and the UML theme colours each shape by its meaning.',
       'A free REST API and an MCP server, so scripts and AI assistants can read and edit your documents.',
       'MIT-licensed and self-hostable, so your diagrams never depend on one vendor.',
     ],
@@ -828,26 +870,26 @@ export const ALTERNATIVES: Alternative[] = [
       {
         heading: 'Free without the limits',
         paragraphs: [
-          'Lucidchart’s free plan is a real way to try it, but it caps how many documents you can edit and how many shapes each one holds, so a growing diagram soon meets a paywall. livediagram has no caps and no paid tier: every document can be as large as it needs to be, and every feature is free for everyone. You do not even need an account to start.',
+          'Lucidchart’s free plan is a real way to try it, but it caps how many documents you can edit and how many shapes each one holds, so a growing diagram soon meets a paywall. livediagram has no plan caps and no paid tier: there is no document or shape count to ration, and every feature is free for everyone. You do not even need an account to start.',
         ],
       },
       {
         heading: 'The diagrams you need, ready to go',
         paragraphs: [
-          'livediagram ships 95 templates, including flowcharts in four styles, swimlanes, org charts, mind maps, data-flow diagrams, system and cloud architecture, database schemas, and sequence, class and state diagrams. Shapes and arrows stay attached and re-route as you move things, alignment guides and snapping keep layouts tidy, and themes restyle the whole canvas in one click.',
+          'livediagram ships 132 templates, including flowcharts in four styles, swimlanes, org charts, mind maps, data-flow diagrams, system and cloud architecture, database schemas, and sequence, class and state diagrams. Shapes and arrows stay attached and re-route as you move things, alignment guides and snapping keep layouts tidy, and themes restyle the whole canvas in one click.',
           'Bigger work splits across tabs inside one document, grouped into folders, with Photoshop-style layers on each tab. Presentation mode turns elements from any tab into a slide deck, so you can walk a room through a diagram without exporting it.',
         ],
       },
       {
         heading: 'Where Lucidchart goes further',
         paragraphs: [
-          'Lucidchart has spent years on formal notation, and it shows: its libraries for BPMN, network diagrams and cloud providers are far broader than ours, it can generate diagrams from data, and it reads and writes Visio files. If your work depends on those, Lucidchart is the better tool. livediagram aims at the everyday diagrams most teams draw, and makes them free, fast and collaborative.',
+          'Lucidchart has spent years on formal notation, and it shows: its libraries for BPMN, network diagrams and cloud providers are far broader than ours, it can generate diagrams from data, it reads and writes Visio files, and it imports draw.io, Gliffy and Mermaid too. If your work depends on those, Lucidchart is the better tool. livediagram aims at the everyday diagrams most teams draw, and makes them free, fast and collaborative.',
         ],
       },
       {
         heading: 'Open at the edges',
         paragraphs: [
-          'livediagram imports draw.io, Excalidraw, Microsoft Whiteboard, Mermaid and Markdown, and exports PNG, SVG, PDF, Mermaid, Markdown, Excalidraw or portable JSON. Any share link embeds as a read-only, live-updating iframe in Confluence, Notion or any page that allows iframes.',
+          'livediagram imports draw.io, Excalidraw, Microsoft Whiteboard, Mermaid and Markdown, and exports PNG, SVG, PDF, Mermaid, Markdown, Excalidraw or portable JSON. Any share link embeds as a live-updating iframe in Confluence, Notion or any page that allows iframes: an editor link embeds an editable canvas, and a participant or view-only link a read-only one.',
           'For automation there is a free REST API with personal tokens and an MCP server that lets AI assistants read and edit your documents directly, with their changes shown live and undoable as one unit.',
         ],
       },
@@ -855,11 +897,11 @@ export const ALTERNATIVES: Alternative[] = [
     faqs: [
       {
         q: 'Is livediagram a free alternative to Lucidchart?',
-        a: 'Yes. Every feature is free for everyone, with no limits on documents or shapes, no seats and no paid tier. The code is MIT-licensed, so you can also run your own copy.',
+        a: 'Yes. Every feature is free for everyone, with no plan limits on documents or shapes, no seats and no paid tier. The code is MIT-licensed, so you can also run your own copy.',
       },
       {
         q: 'Can I import my Lucidchart diagrams?',
-        a: 'Not directly: there is no Lucidchart importer. draw.io can open Lucidchart and Visio files, though, and livediagram imports draw.io files with shapes, connections and labels intact, so you can bring a diagram across through draw.io. The import report says what changed on the way.',
+        a: 'Not directly: there is no Lucidchart importer. draw.io can bring in a Lucidchart diagram (pasted from the Lucidchart editor) and open Visio files, though, and livediagram imports draw.io files with shapes, connections and labels intact, so you can bring a diagram across through draw.io. The import report says what changed on the way.',
       },
       {
         q: 'Does livediagram support UML and architecture diagrams?',

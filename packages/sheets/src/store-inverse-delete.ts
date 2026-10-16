@@ -157,6 +157,26 @@ function restoreCardTables(
   return out;
 }
 
+// Each validation and format rule the deletion shrank or dropped, back as it was (a format rule at its old place),
+// unless it has been changed since.
+function restoreRules(before: SheetLayout, after: SheetLayout, now: SheetLayout): LayoutChange[] {
+  const out: LayoutChange[] = [];
+  const same = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
+  for (const x of before.rules ?? []) {
+    const left = after.rules?.find((r) => r.id === x.id);
+    if (left && same(left, x)) continue;
+    const cur = now.rules?.find((r) => r.id === x.id);
+    if (left ? cur && same(cur, left) : !cur) out.push({ k: 'vrule', id: x.id, rule: x });
+  }
+  (before.formatRules ?? []).forEach((x, at) => {
+    const left = after.formatRules?.find((r) => r.id === x.id);
+    if (left && same(left, x)) return;
+    const cur = now.formatRules?.find((r) => r.id === x.id);
+    if (left ? cur && same(cur, left) : !cur) out.push({ k: 'frule', id: x.id, rule: x, at });
+  });
+  return out;
+}
+
 // The changes that undo `ch` (a deletion applied to `before`), landing on `now`.
 export function inverseDelete(
   before: SheetLayout,
@@ -195,6 +215,7 @@ export function inverseDelete(
     ...restoreFilter(before, after, now, gone),
     ...restoreCardTables(before, after, now, gone),
     ...restoreNames(before, now, gone),
+    ...restoreRules(before, after, now),
   );
   return out;
 }

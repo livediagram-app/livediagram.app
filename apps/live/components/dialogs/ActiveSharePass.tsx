@@ -100,7 +100,7 @@ export function ActiveSharePass({
       fresh={fresh || exit.ticket.returning}
       highlight={highlight}
       leaving={exit.ticket.leaving}
-      onLeft={exit.ticket.onLeft}
+      onLeft={() => void exit.ticket.onLeft()}
     >
       {/* Line 1: the link, with its copy button inside the field's right
           edge: the field IS the thing being copied, so the action lives in it. */}
@@ -120,7 +120,7 @@ export function ActiveSharePass({
             className={`absolute top-1/2 right-1 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-md transition ${
               copied
                 ? 'text-emerald-600 dark:text-emerald-400'
-                : 'text-slate-400 hover:bg-slate-200/70 hover:text-brand-600 dark:hover:bg-slate-700 dark:hover:text-brand-300'
+                : 'text-slate-400 hover:bg-slate-200/70 hover:text-brand-700 dark:hover:bg-slate-700 dark:hover:text-brand-300'
             }`}
           >
             {copied ? <CheckIcon size={14} /> : <CopyIcon />}

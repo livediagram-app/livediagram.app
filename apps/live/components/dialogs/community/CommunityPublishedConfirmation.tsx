@@ -1,5 +1,7 @@
 'use client';
 
+import { use } from 'react';
+import { browser } from 'react-dom';
 import { communityPostPath } from '@livediagram/api-schema';
 import { buttonClassName, Button, lucideGlyph, useCopiedFlash } from '@livediagram/ui';
 import { lucideExternalLink, lucideLink, lucideSparkles } from '@livediagram/icons/lucide';
@@ -27,7 +29,9 @@ export function CommunityPublishedConfirmation({
   const toast = useToast();
   const { copied, flash } = useCopiedFlash<true>(1500);
   const path = communityPostPath(postId);
-  const absolute = typeof window === 'undefined' ? path : `${window.location.origin}${path}`;
+  // In the browser only (docs/specs/003-system-architecture/react-state-and-effects.md "Rendering in the browser only").
+  use(browser());
+  const absolute = `${window.location.origin}${path}`;
 
   const copyLink = async () => {
     try {
@@ -42,7 +46,7 @@ export function CommunityPublishedConfirmation({
     <>
       {/* It replaces the form the person just submitted: announced as it appears, with focus on Done. */}
       <div role="status" className="flex flex-col items-center gap-3 px-6 pt-8 pb-6 text-center">
-        <span className="flex h-16 w-16 animate-fade-in items-center justify-center rounded-full bg-brand-50 text-brand-500 dark:bg-brand-500/15 dark:text-brand-300">
+        <span className="flex h-16 w-16 animate-fade-in items-center justify-center rounded-full bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-300">
           <SparklesIcon />
         </span>
         <h2 id={titleId} className="text-lg font-semibold text-slate-900 dark:text-slate-50">
@@ -54,7 +58,7 @@ export function CommunityPublishedConfirmation({
         </p>
       </div>
       <DialogFooter>
-        <Button variant="secondary" size="xs" onClick={copyLink}>
+        <Button variant="secondary" size="xs" onClick={() => void copyLink()}>
           <LinkIcon />
           {copied ? 'Copied' : 'Copy Link'}
         </Button>

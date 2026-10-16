@@ -1,7 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { useExplorer } from './ExplorerContext';
 import type { HelpArticleKey } from '@/lib/help-articles';
 import { ListView, PaneHeader, SharedList, SkeletonRows, type PaneDocument } from './views';
@@ -144,7 +144,14 @@ export function ExplorerPane() {
     moveTeamDests,
     moveDocumentTo,
     timelineUnread,
+    refreshAfterTeamPage,
   } = useExplorer();
+  // The shared rows the pane's documents still show, by id: a scan of the documents per shared row was
+  // quadratic, rerun on every keystroke in the lens (63 ms at 1,000 rows).
+  const shownIds = useMemo(
+    () => new Set(paneContent.documents.map((d) => d.id)),
+    [paneContent.documents],
+  );
 
   // A team you're not a member of 404s in TeamPane (it doesn't leak the
   // name). When that happens, drop the title/breadcrumb above it — there
@@ -237,7 +244,7 @@ export function ExplorerPane() {
         onCreateDocument={newDocument}
         onCreateFolder={
           offers.newFolder
-            ? () => createFolder(selected.kind === 'folder' ? selected.id : null)
+            ? () => void createFolder(selected.kind === 'folder' ? selected.id : null)
             : undefined
         }
         folderLabel={selected.kind === 'folder' ? 'New Subfolder' : 'New Folder'}
@@ -307,6 +314,8 @@ export function ExplorerPane() {
             // cross-scope pick from the document's current placement.
             moveDests={{ personalFolders: movePersonalFolders, teams: moveTeamDests }}
             onMoveDocumentTo={moveDocumentTo}
+            // What the team page changes, the sidebar, search and every move picker show at once.
+            onLibraryChange={refreshAfterTeamPage}
             // The team library reads its own rows, so it narrows them itself.
             lens={{
               active: lensResult.active,
@@ -336,9 +345,9 @@ export function ExplorerPane() {
         <FilteredEmpty issues={lens.parsed.issues} onClear={() => lens.setInput('')} />
       ) : selected.kind === 'shared' ? (
         <SharedList
-          shared={shared.filter((s) => paneContent.documents.some((d) => d.id === s.id))}
+          shared={shared.filter((s) => shownIds.has(s.id))}
           ownerId={ownerId}
-          onDismiss={dismissShared}
+          onDismiss={(id) => void dismissShared(id)}
         />
       ) : (
         (() => {
@@ -361,9 +370,9 @@ export function ExplorerPane() {
               folderActions={folderActions}
               onStartRenameDocument={(id) => setRenamingDocumentId(id)}
               onDuplicateDocument={(id) => void duplicateDocument(id)}
-              onDeleteDocument={deleteDocument}
+              onDeleteDocument={(id) => void deleteDocument(id)}
               onMoveDocument={openMovePickerForDocument}
-              onDismissShared={dismissShared}
+              onDismissShared={(id) => void dismissShared(id)}
               recentExcludedIds={prefs.recentExcludedIds ?? []}
               onToggleRecentExclusion={toggleRecentExclusion}
               onShowHistory={(id) => {

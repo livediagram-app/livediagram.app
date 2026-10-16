@@ -4,7 +4,6 @@
 // from the editor's Plan slice: the document's boards give the status picker its names.
 import { useMemo } from 'react';
 import {
-  ITEM_TYPES_MAX,
   duplicateItemType,
   isArchived,
   isTrashed,
@@ -14,6 +13,7 @@ import {
   typeIn,
 } from '@livediagram/items';
 import { duplicateItem } from './duplicate-item';
+import { mayCreateCardType } from './may-create-card-type';
 import { newCardStatus } from './new-card-status';
 import { newTypeForBoard } from '@/hooks/plan/useTypeForBoard';
 import { liveTrail } from './item-trail';
@@ -45,10 +45,10 @@ export function PlanSheetsHost({ plan }: { plan: PlanSlice }) {
     return open ? linkedCardsOf(open, ctx.items, ctx.types) : [];
   }, [openId, ctx.items, ctx.types]);
   // The type editor (docs/specs/026-plan/item-types.md "Editing a type").
-  if (plan.editingTypeId && ctx.canEdit) {
-    const editing =
-      plan.editingTypeId === 'new' ? null : ctx.types.find((t) => t.id === plan.editingTypeId);
-    if (plan.editingTypeId === 'new' || editing) {
+  const target = plan.editingType;
+  if (target && ctx.canEdit) {
+    const editing = target === 'new' ? null : ctx.types.find((t) => t.id === target.id);
+    if (target === 'new' || editing) {
       // The type's cards out of the Trash: a delete moves them there with it.
       const ofType = editing
         ? [...ctx.items.values()].filter((i) => i.type === editing.id && !isTrashed(i))
@@ -67,16 +67,17 @@ export function PlanSheetsHost({ plan }: { plan: PlanSlice }) {
             : undefined;
       return (
         <ItemTypeEditor
-          key={`${plan.editingTypeId}:${plan.typeTemplateId ?? ''}:${forBoard?.boardId ?? ''}`}
+          key={`${editing?.id ?? 'new'}:${plan.typeTemplateId ?? ''}:${forBoard?.boardId ?? ''}`}
           type={editing ?? null}
           {...(template ? { template } : {})}
           types={ctx.types}
           itemCount={ofType.length}
-          canDelete={ctx.types.length > 1}
           onSave={(next) => {
             ctx.itemTypes.saveType(next);
             // Made from a board's Add a Card menu: that board takes it.
-            if (forBoard) plan.addTypeToBoard(forBoard.boardId, next.id);
+            if (forBoard?.boardId) plan.addTypeToBoard(forBoard.boardId, next.id);
+            // Made from a Gantt chart's: the chart takes it, where it names its own types.
+            if (forBoard?.viewId) plan.addTypeToView(forBoard.viewId, next.id);
             track('Plan', editing ? 'Changed' : from ? 'Duplicated' : 'Added', 'CardType');
             plan.closeTypeEditor();
           }}
@@ -89,7 +90,7 @@ export function PlanSheetsHost({ plan }: { plan: PlanSlice }) {
             plan.closeTypeEditor();
           }}
           onClose={plan.closeTypeEditor}
-          {...(editing && ctx.types.length < ITEM_TYPES_MAX
+          {...(editing && mayCreateCardType(ctx)
             ? { onDuplicate: () => ctx.editType('new', editing.id) }
             : {})}
         />
@@ -114,8 +115,8 @@ export function PlanSheetsHost({ plan }: { plan: PlanSlice }) {
             value === undefined ? { clear: [field] } : { set: { [field]: value } },
           )
         }
-        onPatch={(patch) => ctx.patchItem(item.id, patch)}
-        onType={(type) => ctx.patchItem(item.id, { type })}
+        onPatch={(patch) => void ctx.patchItem(item.id, patch)}
+        onType={(type) => void ctx.patchItem(item.id, { type })}
         onOpenItem={(id, via) => ctx.openItem(id, via)}
         fresh={plan.freshItemId === item.id}
         trail={trail}
@@ -126,7 +127,7 @@ export function PlanSheetsHost({ plan }: { plan: PlanSlice }) {
           const type = typeIn(ctx.types, typeId);
           const status = newCardStatus(type, ctx.statusNames);
           const id = newItemId();
-          ctx.addItem({
+          void ctx.addItem({
             type: typeId,
             fields: { title: type.newTitle, [group.fieldId]: item.id },
             status,
@@ -145,7 +146,7 @@ export function PlanSheetsHost({ plan }: { plan: PlanSlice }) {
         onFlag={() => toggleFlag(ctx, item)}
         onArchive={() => {
           const was = isArchived(item);
-          ctx.patchItem(item.id, was ? { clear: ['archived'] } : { set: { archived: true } });
+          void ctx.patchItem(item.id, was ? { clear: ['archived'] } : { set: { archived: true } });
           ctx.announce(was ? 'Card restored' : 'Card archived');
           if (was) track('Plan', 'Restored', 'Card');
           else track('Plan', 'Moved', 'Archive');
@@ -153,7 +154,7 @@ export function PlanSheetsHost({ plan }: { plan: PlanSlice }) {
         onClose={plan.closeItem}
         onEditType={() => {
           plan.closeItem();
-          ctx.editType(item.type);
+          ctx.editType({ id: item.type });
         }}
         comments={{
           canComment: ctx.canVote,

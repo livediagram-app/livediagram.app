@@ -159,10 +159,11 @@ export function CustomColourEditor({
             <button
               type="button"
               aria-label="Pick a colour from the screen"
-              onClick={async () => {
-                const picked = await eyeDropper.pick();
-                if (picked) setHex(picked);
-              }}
+              onClick={() =>
+                void eyeDropper.pick().then((picked) => {
+                  if (picked) setHex(picked);
+                })
+              }
               className="flex h-7 w-7 items-center justify-center rounded-md border border-slate-300 text-slate-700 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-800"
             >
               <PipetteIcon />
@@ -172,7 +173,7 @@ export function CustomColourEditor({
         <button
           type="button"
           onClick={() => onUse(hex)}
-          className={`ml-auto h-7 rounded-md bg-brand-600 px-3 text-xs font-medium text-white hover:bg-brand-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-1 dark:focus-visible:ring-offset-slate-900 ${SOLID_BRAND_DARK_CONTROL}`}
+          className={`ml-auto h-7 rounded-md bg-brand-700 px-3 text-xs font-medium text-white hover:bg-brand-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-1 dark:focus-visible:ring-offset-slate-900 ${SOLID_BRAND_DARK_CONTROL}`}
         >
           Use
         </button>

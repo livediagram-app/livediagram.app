@@ -102,7 +102,7 @@ export function TimelineCard({
         )}
         {isNew && (
           <span
-            className={`inline-flex items-center absolute left-2 top-2 rounded bg-brand-600 px-1.5 py-0.5 text-[9px] font-semibold text-white shadow-sm ${SOLID_BRAND_DARK}`}
+            className={`inline-flex items-center absolute left-2 top-2 rounded bg-brand-700 px-1.5 py-0.5 text-[9px] font-semibold text-white shadow-sm ${SOLID_BRAND_DARK}`}
           >
             <span className="text-optical-line text-optical-caps">New</span>
           </span>
@@ -144,7 +144,7 @@ export function TimelineCard({
             renderer's own meta trails it as running text, so a long one
             ("Rotate it before it lapses…") wraps word by word rather
             than being clipped or dropping whole onto its own line. */}
-        <p className="break-words text-[10px] leading-snug text-slate-400">
+        <p className="break-words text-[10px] leading-snug text-slate-500 dark:text-slate-400">
           <time dateTime={new Date(event.occurredAt).toISOString()}>
             {timeLabel(event.occurredAt)}
           </time>

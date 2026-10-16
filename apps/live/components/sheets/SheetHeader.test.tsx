@@ -14,6 +14,7 @@ import { SheetHeader } from './SheetHeader';
 import { downloadSheetCsv } from './sheet-csv';
 import { statusPick } from './sheet-status-pick';
 import { ROW_HEIGHT_MIN } from '@livediagram/sheets';
+import { setPlanCover } from '@/hooks/plan/plan-cover-store';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 vi.mock('./sheet-csv', () => ({ downloadSheetCsv: vi.fn() }));
@@ -32,7 +33,7 @@ function show(
   );
 }
 const title = (h: SheetHarness) => h.store.sheet(SHEET_ID)!.title;
-const field = () => screen.getByLabelText('Sheet title') as HTMLInputElement;
+const field = () => screen.getByLabelText<HTMLInputElement>('Sheet title');
 const cog = () => screen.getByRole('button', { name: 'Sheet Settings' });
 const openSettings = () => fireEvent.click(cog());
 const section = (name: string) => fireEvent.click(screen.getByRole('button', { name }));
@@ -165,6 +166,26 @@ describe('the sheet header', () => {
     expect(layout(h).colWidth).toBeUndefined();
   });
 
+  it('picks a cell size, chosen while the defaults match it and none once set by hand', () => {
+    show(h);
+    openSettings();
+    section('Cells');
+    const radio = (name: RegExp) => screen.getByRole('radio', { name });
+    expect(radio(/^Default/).getAttribute('aria-checked')).toBe('true');
+    fireEvent.click(radio(/^Roomy/));
+    expect([layout(h).colWidth, layout(h).rowHeight]).toEqual([160, 36]);
+    expect(radio(/^Roomy/).getAttribute('aria-checked')).toBe('true');
+    fireEvent.click(radio(/^Compact/));
+    expect([layout(h).colWidth, layout(h).rowHeight]).toEqual([100, 24]);
+    const width = screen.getByLabelText('Column Width') as HTMLInputElement;
+    fireEvent.change(width, { target: { value: '130' } });
+    fireEvent.blur(width);
+    for (const n of [/^Compact/, /^Default/, /^Roomy/])
+      expect(radio(n).getAttribute('aria-checked')).toBe('false');
+    fireEvent.click(radio(/^Default/));
+    expect([layout(h).colWidth, layout(h).rowHeight]).toEqual([undefined, undefined]);
+  });
+
   it('freezes, and picks the totals under Calculations', () => {
     show(h);
     openSettings();
@@ -188,10 +209,15 @@ describe('the sheet header', () => {
     show(h);
     openSettings();
     fireEvent.click(screen.getByRole('button', { name: 'Clear Sheet' }));
-    const ask = screen.getByRole('alertdialog', { name: 'Clear Sheet' });
-    expect(ask.textContent).toContain('Start Sheet 1 over?');
+    // A popover beside the tile (ConfirmPopover); Escape cancels it and leaves Sheet Settings open.
+    const ask = () => document.querySelector('[data-confirm-popover]');
+    expect(ask()!.textContent).toContain('Start Sheet 1 over?');
+    fireEvent.keyDown(document.body, { key: 'Escape' });
+    expect(ask()).toBeNull();
+    expect(screen.getByLabelText('Title')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Clear Sheet' }));
     fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
-    expect(screen.queryByRole('alertdialog')).toBeNull();
+    expect(ask()).toBeNull();
     expect(h.value('A1')).toBe(1);
     fireEvent.click(screen.getByRole('button', { name: 'Clear Sheet' }));
     fireEvent.click(screen.getByRole('button', { name: 'Clear' }));
@@ -200,12 +226,40 @@ describe('the sheet header', () => {
     expect(h.store.sheet(SHEET_ID)!.cells.size).toBe(0);
   });
 
+  // sheet.md "Sheet Settings": Clear Sheet takes the charts anchored in the Sheet with it, in its one undo step.
+  it('takes its charts when it clears the sheet, and only once the sheet is cleared', () => {
+    const step = { undo: vi.fn(), redo: vi.fn() };
+    h.chartsRemoval.mockReturnValue(step);
+    show(h);
+    openSettings();
+    fireEvent.click(screen.getByRole('button', { name: 'Clear Sheet' }));
+    expect(document.querySelector('[data-confirm-popover]')!.textContent).toContain(
+      'Every cell, chart, format and setting goes',
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Clear' }));
+    expect(h.store.sheet(SHEET_ID)!.cells.size).toBe(0);
+    expect(step.redo).toHaveBeenCalledTimes(1);
+    expect(step.undo).not.toHaveBeenCalled();
+  });
+
+  it('leaves Import CSV and Download CSV to the tab menu on a Sheet tab', () => {
+    setPlanCover({ fillTabId: 'el1', fillTabKind: 'Sheet', planKind: 'sheet' });
+    try {
+      show(h);
+      openSettings();
+      expect(screen.queryByRole('button', { name: 'Download CSV' })).toBeNull();
+      expect(screen.queryByRole('button', { name: 'Import CSV…' })).toBeNull();
+    } finally {
+      setPlanCover({ fillTabId: null, fillTabKind: null, planKind: null });
+    }
+  });
+
   it('offers someone who may not edit only Download CSV and the totals, and no rename', () => {
     show(h, { canEdit: false });
     fireEvent.doubleClick(screen.getByText('Sheet 1'));
     expect(screen.queryByLabelText('Sheet title')).toBeNull();
     openSettings();
-    expect((screen.getByLabelText('Title') as HTMLInputElement).disabled).toBe(true);
+    expect(screen.getByLabelText<HTMLInputElement>('Title').disabled).toBe(true);
     expect(screen.queryByRole('button', { name: 'Import CSV…' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Clear Sheet' })).toBeNull();
     expect(screen.queryByRole('button', { name: /Sheet Options/ })).toBeNull();
@@ -230,5 +284,21 @@ describe('the sheet header', () => {
     expect(screen.getByText('Sheet 1')).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'Sheet Settings' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Maximise Sheet' })).toBeNull();
+  });
+});
+
+describe('the controls in a header band', () => {
+  it('end the toolbar, after Search, when the header carries the toolbar', async () => {
+    const { SheetToolbarEnd, useSheetToolbarEnd } = await import('./sheet-toolbar-end');
+    const { render: r, screen: s } = await import('@testing-library/react');
+    function Probe() {
+      return <div data-testid="end">{useSheetToolbarEnd()}</div>;
+    }
+    r(
+      <SheetToolbarEnd.Provider value={<button type="button">Sheet Settings</button>}>
+        <Probe />
+      </SheetToolbarEnd.Provider>,
+    );
+    expect(s.getByTestId('end').textContent).toBe('Sheet Settings');
   });
 });

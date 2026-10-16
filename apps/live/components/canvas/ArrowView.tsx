@@ -2,6 +2,7 @@ import { memo, useRef, useState, type PointerEvent as ReactPointerEvent } from '
 import { useZoneClip } from '@/lib/article/zone-clip-store';
 import {
   arrowheadShapeOf,
+  arrowheadStartShapeOf,
   arrowheadSizeOf,
   BORDER_DASH_ARRAY,
   DEFAULT_BORDER_STYLE,
@@ -19,11 +20,12 @@ import { sameArrowViewFrame, sameRects, type ArrowViewFrame } from './arrow-view
 import { useRightClickRelease } from '@/hooks/canvas/useRightClickRelease';
 import { elementMenuAnchor } from '@/lib/context-menu-anchor';
 import { elementAriaLabel } from '@/lib/element-names';
-import { ArrowHeadMarker, arrowheadMarkerId } from './arrow-defs';
+import { ArrowHeadMarker, arrowheadMarkerId, markersTakeLineColour } from './arrow-defs';
 import { ArrowLabel } from './ArrowLabel';
 import { SelectedArrowHandles } from './SelectedArrowHandles';
 import { ArrowGripsPortal } from './SelectionGripsLayer';
 import { ArrowFlowOverlays, useArrowFlow } from './arrow-flow';
+import { useArrowFinish } from './arrow-finish';
 import { BRAND_600 } from './arrow-handle-style';
 import { useLongPress } from '@/hooks/ui/useLongPress';
 import { useElementSurface } from '@/components/canvas/CanvasSurfaceContext';
@@ -155,18 +157,9 @@ function ArrowViewImpl({
   // Touch long-press opens the arrow's context menu (touch has no
   // right-click); a press that moves becomes a select / drag instead.
   const longPress = useLongPress(contextSelectBeside);
-  // An arrow whose heads are a different colour from its line carries its
-  // OWN marker, because the shared ones paint with `context-stroke`, which is
-  // by definition the line's colour. Unset (the usual case) keeps using the
-  // shared defs, so nothing changes for arrows that never asked.
-  const headShape = arrowheadShapeOf(arrow);
-  const headSize = arrowheadSizeOf(arrow);
-  const ownHeadColor = arrow.arrowheadColor;
-  const ownMarkerId = ownHeadColor ? `arrowhead-${arrow.id}` : null;
-  const markerUrl = `url(#${ownMarkerId ?? arrowheadMarkerId(headShape, headSize)})`;
   // Endpoints / path / midpoint / handle points / label placement — the
   // pure per-render frame, resolved in arrow-view-frame.ts.
-  const { from, to, pathD, curveAnchors, curveControl, elbowPoint } = frame;
+  const { from, to, pathD, dashOffset, curveAnchors, curveControl, elbowPoint } = frame;
   // While editing, the label follows the draft text: laid out live so the
   // editor, its wrap and the knockout move as you type.
   const [draft, setDraft] = useState<string | null>(null);
@@ -214,9 +207,32 @@ function ArrowViewImpl({
   // on top in brand-600 regardless so the user can still tell what's
   // selected on a coloured arrow.
   const baseStroke = arrow.strokeColor ?? defaultArrowStrokeColor(surface);
+  // An arrow whose heads are a different colour from its line carries its
+  // OWN marker, because the shared ones paint with `context-stroke`, which is
+  // by definition the line's colour. So does every arrow where the browser
+  // cannot paint `context-stroke` (WebKit: markersTakeLineColour), in its
+  // line's colour. Otherwise the shared defs serve it.
+  const headShape = arrowheadShapeOf(arrow);
+  const headSize = arrowheadSizeOf(arrow);
+  const ownHeadColor = arrow.arrowheadColor ?? (markersTakeLineColour() ? undefined : baseStroke);
+  const ownMarkerId = ownHeadColor ? `arrowhead-${arrow.id}` : null;
+  const markerUrl = `url(#${ownMarkerId ?? arrowheadMarkerId(headShape, headSize)})`;
+  // A start with its own head (an ER relationship's other cardinality) takes its own marker; the sketch, which draws
+  // one shape for both ends, then leaves the heads to the markers.
+  const startShape = arrowheadStartShapeOf(arrow);
+  const mixedHeads = startShape !== headShape;
+  const ownStartMarkerId = ownHeadColor && mixedHeads ? `arrowhead-${arrow.id}-start` : null;
+  const startMarkerUrl = mixedHeads
+    ? `url(#${ownStartMarkerId ?? arrowheadMarkerId(startShape, headSize)})`
+    : markerUrl;
   // Per-arrow thickness with a small selected-state bump so the user
-  // can tell the difference between "selected" and "thicker stroke".
-  const baseStrokeWidth = arrow.strokeWidth ?? 2;
+  // can tell the difference between "selected" and "thicker stroke". The finish thins an unset width
+  // under Professional and draws the line by hand under Sketch (docs/specs/008-canvas/finish.md).
+  const { baseStrokeWidth, sketch } = useArrowFinish(arrow, pathD);
+  // Sketched heads replace the markers; circles and diamonds keep theirs.
+  const sketchedHeads = !!sketch?.sketchedHeads && !mixedHeads;
+  const headMarker = sketchedHeads ? undefined : markerUrl;
+  const startMarker = sketchedHeads ? undefined : startMarkerUrl;
   const strokeWidth = isSelected ? baseStrokeWidth + 0.5 : baseStrokeWidth;
   const hitCursor = isPaintMode ? 'copy' : 'pointer';
   // The line bends where it is grabbed, so an editable line says so.
@@ -283,6 +299,14 @@ function ArrowViewImpl({
       {ownMarkerId && ownHeadColor ? (
         <ArrowHeadMarker id={ownMarkerId} shape={headShape} size={headSize} color={ownHeadColor} />
       ) : null}
+      {ownStartMarkerId && ownHeadColor ? (
+        <ArrowHeadMarker
+          id={ownStartMarkerId}
+          shape={startShape}
+          size={headSize}
+          color={ownHeadColor}
+        />
+      ) : null}
       {behindMaskId ? (
         // White paints, black cuts. The backdrop is deliberately vast
         // rather than the arrow's bbox: a curve can bow well outside the
@@ -338,7 +362,8 @@ function ArrowViewImpl({
       ) : null}
       <path
         ref={flowPathRef}
-        d={pathD}
+        // The selection halo above and the hit band below keep the true path; only the ink is sketched.
+        d={sketch?.line ?? pathD}
         // The break itself. The hit band below is deliberately NOT masked:
         // the arrow stays clickable across the gap, so selecting one that
         // runs behind a box doesn't require finding a visible stub.
@@ -360,35 +385,47 @@ function ArrowViewImpl({
         strokeDasharray={
           flowPathDash ?? BORDER_DASH_ARRAY[arrow.strokeStyle ?? DEFAULT_BORDER_STYLE] ?? undefined
         }
+        // A shared end's pattern anchored there (arrow-dash.ts); a flowing arrow marches its own.
+        strokeDashoffset={flowPathDash ? undefined : dashOffset}
         markerStart={
-          arrow.arrowEnds === 'from' || arrow.arrowEnds === 'both' ? markerUrl : undefined
+          arrow.arrowEnds === 'from' || arrow.arrowEnds === 'both' ? startMarker : undefined
         }
         markerEnd={
           arrow.arrowEnds === 'to' || arrow.arrowEnds === 'both' || arrow.arrowEnds === undefined
-            ? markerUrl
+            ? headMarker
             : undefined
         }
-        style={
-          {
-            pointerEvents: 'none',
-            // Flow speed scales each path animation's duration; phase-sync
-            // across arrows is pinned via the Web Animations API in the effect
-            // below, not animation-delay. The width-breathing flows (grow /
-            // heartbeat / breathe) need the base stroke width to swell relative
-            // to it; the halo flows (glow / shimmer) need the stroke colour to
-            // tint it.
-            ...(flowPathClass ? { '--lvd-flow-speed': flowFactor } : {}),
-            ...(arrow.flow === 'grow' || arrow.flow === 'heartbeat' || arrow.flow === 'breathe'
-              ? { '--lvd-flow-w': `${strokeWidth}px` }
-              : {}),
-            ...(arrow.flow === 'glow' || arrow.flow === 'shimmer'
-              ? { '--lvd-flow-color': baseStroke }
-              : {}),
-            // Repeat off = the flow plays once and holds (docs/specs/008-canvas/canvas-and-palette.md).
-            ...(arrow.flowRepeat === false ? { '--lvd-flow-iter': 1 } : {}),
-          } as React.CSSProperties
-        }
+        style={{
+          pointerEvents: 'none',
+          // Flow speed scales each path animation's duration; phase-sync
+          // across arrows is pinned via the Web Animations API in the effect
+          // below, not animation-delay. The width-breathing flows (grow /
+          // heartbeat / breathe) need the base stroke width to swell relative
+          // to it; the halo flows (glow / shimmer) need the stroke colour to
+          // tint it.
+          ...(flowPathClass ? { '--lvd-flow-speed': flowFactor } : {}),
+          ...(arrow.flow === 'grow' || arrow.flow === 'heartbeat' || arrow.flow === 'breathe'
+            ? { '--lvd-flow-w': `${strokeWidth}px` }
+            : {}),
+          ...(arrow.flow === 'glow' || arrow.flow === 'shimmer'
+            ? { '--lvd-flow-color': baseStroke }
+            : {}),
+          // Repeat off = the flow plays once and holds (docs/specs/008-canvas/canvas-and-palette.md).
+          ...(arrow.flowRepeat === false ? { '--lvd-flow-iter': 1 } : {}),
+        }}
       />
+      {sketch?.heads && sketchedHeads ? (
+        <path
+          d={sketch.heads}
+          mask={behindMask}
+          fill="none"
+          stroke={ownHeadColor ?? baseStroke}
+          strokeWidth={strokeWidth}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          style={{ pointerEvents: 'none' }}
+        />
+      ) : null}
 
       <path
         // The wide transparent hit band. Carries data-element-id so DOM

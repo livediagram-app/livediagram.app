@@ -14,17 +14,26 @@
 // handlers; this component only decides which items to show.
 
 import dynamic from 'next/dynamic';
+import { CardMenuSection } from '@/components/palette/CardMenuSection';
+import { ChipMenuSection } from '@/components/palette/ChipMenuSection';
+import { PointerNoteMenuSection } from '@/components/palette/PointerNoteMenuSection';
+import { TagColoursBlock } from '@/components/palette/TagColoursBlock';
+import { StackMenuSection } from '@/components/palette/StackMenuSection';
+import { BoundaryMenuSection } from '@/components/palette/BoundaryMenuSection';
+import { TabWindowMenuSection } from '@/components/palette/TabWindowMenuSection';
+import { ConceptMenuSection } from '@/components/palette/ConceptMenuSection';
+import { SequenceMenuSection } from '@/components/palette/SequenceMenuSection';
 import {
-  animLoops,
-  DEFAULT_ANIMATION_SPEED,
+  isChipShape,
+  isConceptShape,
+  type ConceptShape,
+  type ShapeElement,
   LINE_DEFAULT_SERIES,
-  chartPaletteColors,
+  chartRamp,
+  chartTypeOf,
   PIE_DEFAULT_SLICES,
-  PIE_PALETTE,
-  PROGRESS_LOOPING_ANIMS,
   RAIL_DEFAULT_POINTS,
   RATING_DEFAULT,
-  RATING_LOOPING_ANIMS,
   DEFAULT_BUTTON_MODE,
   SELECTION_MODES,
   type ChecklistItem,
@@ -45,7 +54,10 @@ import {
 import { MODE_LABEL } from '@/components/canvas/ModeButtonFace';
 import { ProgressMenuGlyph, ToolsMenuGlyph } from '@/components/palette/context-menu-icons';
 import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
+import { MindMapMenuSections } from './MindMapMenuSections';
+import { FlowchartMenuSections } from '@/components/flowchart/FlowchartMenuSections';
 import { AnimationSections } from '@/components/palette/AnimationSections';
+import { useCoversCanvas } from '@/hooks/plan/plan-cover-store';
 import { MenuTile, MenuTileGrid } from '@/components/primitives/MenuTiles';
 import { MenuFlyoutSection } from '@/components/primitives/MenuFlyoutSection';
 import { LegendTextSize } from '@/components/palette/TypographySections';
@@ -53,6 +65,7 @@ import { PortalMenuSection } from '@/components/palette/PortalMenuSection';
 import {
   AgendaMenuSection,
   ChairMenuSection,
+  RoomMenuSection,
   DecisionMenuSection,
   EstimateMenuSection,
 } from '@/components/palette/CollabMenuSections';
@@ -64,6 +77,10 @@ import {
 } from '@/components/palette/BehaviourMenuSections';
 
 import { LegendPositionTiles } from '@/components/palette/context-menu-tiles';
+import { ChartAxisRows } from '@/components/palette/ChartAxisRows';
+import { MenuToggleRow } from '@/components/palette/context-menu-input-rows';
+
+import { ChartTypeTiles } from '@/components/palette/ChartTypeTiles';
 import {
   hasWebRowsSection,
   WebRowsMenuSection,
@@ -75,22 +92,25 @@ import {
   CodeSummary,
   DataMenuGlyph,
   LegendDataEditor,
-  MindFlowTiles,
   LineDataSummary,
   LinkedChartData,
   PieDataEditor,
-  ProgressAnimTiles,
   ProgressRow,
   RailPointsRow,
-  RatingAnimTiles,
   RatingMenuGlyph,
   RatingPickerRow,
 } from '@/components/palette/context-menu-rows';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
 import { useContextMenuScaffold } from './useContextMenuScaffold';
+import { ChartPalettePresets } from './StylePresets';
 
 // Plan's UI loads only when it is drawn (docs/specs/026-plan/plan-mode.md "Cost"), so a document without
 // Plan pays nothing for it.
+// A Sankey's sections (docs/specs/009-elements/sankey.md "The menu") load only when a Sankey's menu opens.
+const SankeyMenuSections = dynamic(
+  () => import('./SankeyMenuSection').then((m) => m.SankeyMenuSections),
+  { ssr: false },
+);
 const PlanBoardMenuSections = dynamic(
   () => import('./PlanBoardMenuSection').then((m) => m.PlanBoardMenuSections),
   { ssr: false },
@@ -130,6 +150,8 @@ type ElementDataSectionsProps = {
   isCodeBlock: boolean;
   isChecklist: boolean;
   isLegend: boolean;
+  // Sankey diagram (docs/specs/009-elements/sankey.md): its Sankey and Display sections.
+  isSankey: boolean;
   isMindNode: boolean;
   isEntity: boolean;
   isModeButton: boolean;
@@ -180,6 +202,7 @@ export function ElementDataSections({
   isCodeBlock,
   isChecklist,
   isLegend,
+  isSankey,
   isMindNode,
   isEntity,
   isModeButton,
@@ -196,18 +219,25 @@ export function ElementDataSections({
   flyoutProps,
 }: ElementDataSectionsProps) {
   const shapeTarget = target.type === 'shape' ? target : null;
+  const covering = useCoversCanvas(target.id);
   // What an uncoloured slice / series shows as, so the swatches in the data
-  // rows match the chart. The chart's own palette when it has one (docs/specs/009-elements/pie-chart.md);
-  // otherwise the built-in ramp, which is what these rows have always used.
-  const chartFallbackPalette = chartPaletteColors(shapeTarget?.chartPalette) ?? PIE_PALETTE;
+  // rows match the chart: the ladder the canvas draws with (chartRamp, docs/specs/009-elements/pie-chart.md).
+  const chartFallbackPalette = chartRamp(shapeTarget?.chartPalette, props.chartThemeRamp);
   // The Tools flyout (docs/specs/008-canvas/canvas-and-palette.md): the data-shape-specific controls —
   // Progress (bar / ring), Timeline rail, Rating, and the chart Data +
   // Chart sections — fold behind one "Tools" row, the same side-flyout
   // pattern as Style and Text, so a data element's menu doesn't grow a
   // band of bespoke rows. Animation stays top-level (every boxed
   // element has it).
+  const isChip = shapeTarget ? isChipShape(shapeTarget.shape) : false;
   const showTools =
     hasWebRowsSection(target) ||
+    isChip ||
+    shapeTarget?.shape === 'boundary' ||
+    shapeTarget?.shape === 'pointer-note' ||
+    shapeTarget?.shape === 'stack' ||
+    shapeTarget?.shape === 'sequence' ||
+    (shapeTarget ? isConceptShape(shapeTarget.shape) : false) ||
     isProgress ||
     isRail ||
     isRating ||
@@ -215,6 +245,7 @@ export function ElementDataSections({
     isCodeBlock ||
     isChecklist ||
     isLegend ||
+    isSankey ||
     isMindNode ||
     isEntity ||
     isModeButton ||
@@ -226,7 +257,9 @@ export function ElementDataSections({
     isEstimate ||
     isAgenda ||
     isDecision ||
-    isChair;
+    isChair ||
+    shapeTarget?.shape === 'room' ||
+    !!props.flowchart;
   return (
     <>
       {/* A Plan board's own settings (docs/specs/026-plan/plan-board.md "The board set-up"): its own
@@ -242,11 +275,7 @@ export function ElementDataSections({
       ) : null}
       {/* A Sheet's settings: the cog's sections, as a board's Board flyout. */}
       {shapeTarget?.shape === 'plan-sheet' ? (
-        <SheetMenuSection
-          element={shapeTarget}
-          flyoutProps={flyoutProps('plan-sheet')}
-          onClose={props.onClose}
-        />
+        <SheetMenuSection element={shapeTarget} flyoutProps={flyoutProps} onClose={props.onClose} />
       ) : null}
       {shapeTarget?.shape === 'plan-card' && shapeTarget.planCard ? (
         <PlanCardMenuSection
@@ -264,8 +293,8 @@ export function ElementDataSections({
       ) : null}
       {showTools ? (
         <MenuFlyoutSection title="Tools" icon={<ToolsMenuGlyph />} {...flyoutProps('tools')}>
-          {/* Progress (docs/specs/009-elements/progress.md) — the percentage + how the fill animates. Only
-            for progress bars / rings. */}
+          {/* Progress (docs/specs/009-elements/progress.md) — the percentage; how the fill animates is the
+            Animation row's Progress category. Only for progress bars / rings. */}
           {isProgress ? (
             <MenuAccordionSection
               title="Progress"
@@ -273,18 +302,6 @@ export function ElementDataSections({
               {...sectionProps('progress')}
             >
               <ProgressRow value={shapeTarget?.progress ?? 50} onChange={props.onSetProgress} />
-              <ProgressAnimTiles
-                anim={shapeTarget?.progressAnim ?? null}
-                speed={shapeTarget?.progressAnimSpeed ?? DEFAULT_ANIMATION_SPEED}
-                repeat={animLoops(
-                  shapeTarget?.progressAnim,
-                  shapeTarget?.progressAnimRepeat,
-                  PROGRESS_LOOPING_ANIMS,
-                )}
-                onSet={props.onSetProgressAnim}
-                onSetSpeed={props.onSetProgressAnimSpeed}
-                onSetRepeat={props.onSetProgressAnimRepeat}
-              />
             </MenuAccordionSection>
           ) : null}
           {/* Timeline (docs/specs/009-elements/timeline-rail.md) — how many points sit on the rail. The right-end
@@ -301,7 +318,8 @@ export function ElementDataSections({
               />
             </MenuAccordionSection>
           ) : null}
-          {/* Rating (docs/specs/009-elements/rating.md) — the star score + a star-specific animation. */}
+          {/* Rating (docs/specs/009-elements/rating.md) — the star score; its animation is the Animation row's Rating
+            category. */}
           {isRating ? (
             <MenuAccordionSection
               title="Rating"
@@ -312,17 +330,19 @@ export function ElementDataSections({
                 value={shapeTarget?.rating ?? RATING_DEFAULT}
                 onChange={props.onSetRating}
               />
-              <RatingAnimTiles
-                anim={shapeTarget?.ratingAnim ?? null}
-                speed={shapeTarget?.ratingAnimSpeed ?? DEFAULT_ANIMATION_SPEED}
-                repeat={animLoops(
-                  shapeTarget?.ratingAnim,
-                  shapeTarget?.ratingAnimRepeat,
-                  RATING_LOOPING_ANIMS,
-                )}
-                onSet={props.onSetRatingAnim}
-                onSetSpeed={props.onSetRatingAnimSpeed}
-                onSetRepeat={props.onSetRatingAnimRepeat}
+            </MenuAccordionSection>
+          ) : null}
+          {/* Chart Type (docs/specs/009-elements/pie-chart.md "Chart types"): first, as how the chart draws comes
+              before what it draws. */}
+          {isChart ? (
+            <MenuAccordionSection
+              title="Chart Type"
+              icon={<ChartMenuGlyph />}
+              {...sectionProps('chart-type')}
+            >
+              <ChartTypeTiles
+                current={shapeTarget ? chartTypeOf(shapeTarget) : null}
+                onSet={props.onSetChartType}
               />
             </MenuAccordionSection>
           ) : null}
@@ -393,6 +413,13 @@ export function ElementDataSections({
               onSetDrivers={props.onSetDecisionDrivers}
             />
           ) : null}
+          {shapeTarget?.shape === 'room' ? (
+            <RoomMenuSection
+              target={shapeTarget}
+              sectionProps={sectionProps}
+              onSetDoor={props.onSetRoomDoor}
+            />
+          ) : null}
           {isChair ? (
             <ChairMenuSection
               target={shapeTarget ?? undefined}
@@ -402,6 +429,85 @@ export function ElementDataSections({
           ) : null}
           {/* Web components (docs/specs/009-elements/web-components-and-no-groups.md) — a stat row's cards, a process's
             steps, a header's links: add / remove / reorder. */}
+          {/* A concept graphic's variant; its animation is in the Animation row (docs/specs/009-elements/concept-graphics.md). */}
+          {shapeTarget && isConceptShape(shapeTarget.shape) ? (
+            <ConceptMenuSection
+              target={shapeTarget as ShapeElement & { shape: ConceptShape }}
+              ops={props.elementStyle}
+              sectionProps={sectionProps}
+            />
+          ) : null}
+          {/* A tab window's tab, and opening it (docs/specs/009-elements/tab-window.md). */}
+          {shapeTarget?.shape === 'tab-window' ? (
+            <TabWindowMenuSection
+              target={shapeTarget}
+              ops={props.elementStyle}
+              sectionProps={sectionProps}
+            />
+          ) : null}
+          {/* A boundary's style (docs/specs/009-elements/boundary.md). */}
+          {shapeTarget?.shape === 'boundary' ? (
+            <BoundaryMenuSection
+              target={shapeTarget}
+              ops={props.elementStyle}
+              sectionProps={sectionProps}
+            />
+          ) : null}
+          {/* A badge's or step number's look, Detach, Renumber, Play in Order (docs/specs/009-elements/badge.md). */}
+          {shapeTarget && isChip ? (
+            <ChipMenuSection
+              target={shapeTarget}
+              ops={props.elementStyle}
+              stepsInOrder={props.elements.some(
+                (el) => el.type === 'shape' && el.shape === 'step' && el.stepSequence === true,
+              )}
+              sectionProps={sectionProps}
+            />
+          ) : null}
+          {/* A stack's arrangement (docs/specs/009-elements/stack.md). */}
+          {shapeTarget?.shape === 'stack' ? (
+            <StackMenuSection
+              target={shapeTarget}
+              ops={props.elementStyle}
+              sectionProps={sectionProps}
+            />
+          ) : null}
+          {/* A sequence diagram's summary, Edit Sequence and Numbered; Play is in the Animation row
+              (docs/specs/009-elements/sequence-diagram.md "The menu"). */}
+          {shapeTarget?.shape === 'sequence' ? (
+            <SequenceMenuSection
+              target={shapeTarget}
+              ops={props.elementStyle}
+              sectionProps={sectionProps}
+              onEdit={props.onEditSequence}
+            />
+          ) : null}
+          {/* A pointer note's Detach (docs/specs/009-elements/pointer-note.md). */}
+          {shapeTarget?.shape === 'pointer-note' ? (
+            <PointerNoteMenuSection
+              target={shapeTarget}
+              ops={props.elementStyle}
+              sectionProps={sectionProps}
+            />
+          ) : null}
+          {/* The card's slots (docs/specs/009-elements/card.md): band, title, meta line, media. */}
+          {shapeTarget?.shape === 'card' ? (
+            <CardMenuSection
+              target={shapeTarget}
+              ops={props.elementStyle}
+              sectionProps={sectionProps}
+              tagColours={
+                props.onSetTagColour ? (
+                  <TagColoursBlock
+                    target={shapeTarget}
+                    tagColours={props.tagColours}
+                    colourPalette={props.colourPalette}
+                    onSetTagColour={props.onSetTagColour}
+                  />
+                ) : null
+              }
+            />
+          ) : null}
           {shapeTarget && hasWebRowsSection(shapeTarget) ? (
             <WebRowsMenuSection
               target={shapeTarget}
@@ -458,24 +564,56 @@ export function ElementDataSections({
                 onPreview={props.onPreviewTextSize}
                 onPreviewEnd={props.onPreviewStyleEnd}
               />
-            </MenuAccordionSection>
-          ) : null}
-          {/* Mind map (docs/specs/009-elements/mind-node.md): the shape the whole map grows in. It sets
-            the ROOT's flow, so one pick re-shapes every branch that follows
-            rather than leaving half a map in one arrangement. */}
-          {isMindNode ? (
-            <MenuAccordionSection
-              title="Mind Map"
-              icon={<DataMenuGlyph />}
-              {...sectionProps('mind-flow')}
-            >
-              <MindFlowTiles
-                current={props.mindFlow}
-                onSet={props.onSetMindFlow}
-                onTidy={props.onTidyMindMap}
-                onEditOutline={props.onEditMindOutline}
+              {/* Its own palette (docs/specs/009-elements/pie-chart.md "Legend"): re-colours every uncoloured row,
+                  so a legend set to a chart's palette stays in step with it. */}
+              <p className="px-3 pt-2 text-[10px] font-medium text-slate-500 dark:text-slate-400">
+                Palette
+              </p>
+              <ChartPalettePresets
+                current={shapeTarget?.chartPalette}
+                onApply={props.onApplyChartPalette}
+                onPreview={props.onPreviewChartPalette}
+                onPreviewEnd={props.onPreviewStyleEnd}
+                onReset={() => props.onApplyChartPalette(null)}
               />
             </MenuAccordionSection>
+          ) : null}
+          {/* Sankey (docs/specs/009-elements/sankey.md): its flows and node colours, then how it draws. Only
+            for someone who may edit it (an Editor, on an unlocked diagram). */}
+          {isSankey && shapeTarget && props.sankey ? (
+            <SankeyMenuSections
+              target={shapeTarget}
+              handlers={props.sankey}
+              sectionProps={sectionProps}
+              flyoutProps={flyoutProps('sankey')}
+              onPreviewTextSize={props.onPreviewTextSize}
+              onPreviewEnd={props.onPreviewStyleEnd}
+            />
+          ) : null}
+          {/* Mind map (docs/specs/009-elements/mind-node.md "The Mind Map menu"): a flyout of Outline, Branching and Spacing.
+            Branching and Spacing set the ROOT's, so one pick re-shapes the whole map rather than half of it. */}
+          {isMindNode ? (
+            <MindMapMenuSections
+              flow={props.mindFlow}
+              spacing={props.mindSpacing}
+              onSetFlow={props.onSetMindFlow}
+              onSetSpacing={props.onSetMindSpacing}
+              onTidy={props.onTidyMindMap}
+              onEditOutline={props.onEditMindOutline}
+              onSelectBranch={props.onSelectMindBranch}
+              onSelectMap={props.onSelectMindMap}
+              sectionProps={sectionProps}
+              flyoutProps={flyoutProps('mind-map')}
+            />
+          ) : null}
+          {/* Flowchart (docs/specs/009-elements/flowchart.md "The Flowchart menu"): a flyout of Chart (lanes and
+            tidy), the step's Step Type and the chart's Direction. */}
+          {props.flowchart ? (
+            <FlowchartMenuSections
+              {...props.flowchart}
+              sectionProps={sectionProps}
+              flyoutProps={flyoutProps('flowchart')}
+            />
           ) : null}
           {/* Mode button (docs/specs/009-elements/mode-button.md) — which selection mode pressing it hands
             whoever clicked. Tiles rather than a list so the icons match the
@@ -517,7 +655,7 @@ export function ElementDataSections({
           ) : null}
           {/* Session button (docs/specs/012-collaboration/session-button.md) — which tool a press starts, and its
             one setting. See BehaviourMenuSections. */}
-          {isSessionButton && shapeTarget ? (
+          {isSessionButton && shapeTarget && props.onSetSession ? (
             <SessionMenuSection
               element={shapeTarget}
               onSetSession={props.onSetSession}
@@ -525,7 +663,7 @@ export function ElementDataSections({
             />
           ) : null}
           {/* Reveal zone (docs/specs/009-elements/reveal-zone.md) — off for everyone, or back on. */}
-          {isReveal && shapeTarget ? (
+          {isReveal && shapeTarget && props.onSetRevealed ? (
             <RevealMenuSection
               element={shapeTarget}
               onSetRevealed={props.onSetRevealed}
@@ -573,19 +711,38 @@ export function ElementDataSections({
                   onPreviewEnd={props.onPreviewStyleEnd}
                 />
               ) : null}
+              <MenuToggleRow
+                label="Show Values"
+                description="Each mark's number on the chart"
+                checked={shapeTarget?.chartValues === true}
+                onToggle={() => props.onSetChartValues(shapeTarget?.chartValues !== true)}
+              />
+              {/* A pie has no value axis. */}
+              {shapeTarget?.shape !== 'pie-chart' ? (
+                <ChartAxisRows
+                  axis={shapeTarget?.chartAxis === true}
+                  series={isLine ? (shapeTarget?.lineSeries ?? LINE_DEFAULT_SERIES) : null}
+                  palette={chartFallbackPalette}
+                  onSetAxis={props.onSetChartAxis}
+                  onSetRightAxis={props.onSetChartRightAxis}
+                />
+              ) : null}
             </MenuAccordionSection>
           ) : null}
         </MenuFlyoutSection>
       ) : null}
       {/* Animation (docs/specs/028-animation/element-animations.md): one category per animation set the
-            element takes, such as Shape Animation and Text Animation for a labelled shape. */}
-      <AnimationSections
-        elements={[target]}
-        keyPrefix=""
-        sectionProps={sectionProps}
-        flyoutProps={flyoutProps}
-        handlers={props}
-      />
+            element takes, such as Shape Animation and Text Animation for a labelled shape. None while it covers
+            the canvas (maximised, or Fill Tab): it does not animate there. */}
+      {covering ? null : (
+        <AnimationSections
+          elements={[target]}
+          keyPrefix=""
+          sectionProps={sectionProps}
+          flyoutProps={flyoutProps}
+          handlers={props}
+        />
+      )}
       {/* Colours — text / background / border swatches. Boxed elements that
             support colours (excludes images). Icons included: Text tints a
             line-art glyph, Background / Border paint the icon's box. Pie charts

@@ -3,6 +3,7 @@ import { communityPostFixture } from '@livediagram/api-schema/testing';
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { sentJson } from '@livediagram/vitest-config/sent-request';
 
 // The post page (docs/specs/025-community/community.md "Post"): it loads the post named in the address, says when
 // it is gone or failed, offers Make a Copy, Open Document, the heart and Report, and its report dialog sends a
@@ -155,7 +156,7 @@ describe('reporting', () => {
     expect(await within(dialog).findByText(/When enough people report a document/)).toBeTruthy();
     const sent = calls.find((c) => c.url.endsWith('/report'))!;
     expect(sent.url).toBe('/api/community/posts/post1/report');
-    expect(JSON.parse(String(sent.init?.body))).toEqual({ reason: 'spam', note: 'buy now' });
+    expect(sentJson(sent.init)).toEqual({ reason: 'spam', note: 'buy now' });
     expect(h.telemetry.reported).toHaveBeenCalledWith('Spam');
   });
 

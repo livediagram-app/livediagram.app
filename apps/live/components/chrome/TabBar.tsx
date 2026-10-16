@@ -1,4 +1,6 @@
+import { useButtonLabelsSetting } from '@/hooks/ui/useDockNames';
 import dynamic from 'next/dynamic';
+import { tabDataRows } from './tab-data-rows';
 import { hasPlanContent } from '@/hooks/plan/usePlanNeeded';
 import { MenuErrorBoundary } from '@/components/primitives/MenuErrorBoundary';
 import { useState, type ReactNode } from 'react';
@@ -24,6 +26,7 @@ const PortalMenu = dynamic(() => import('./TabPortalMenu').then((m) => m.PortalM
 import { TabPill, type TabPillCtx } from './TabPill';
 import type { TabModeChoice } from './TabModeMenuRows';
 import type { AccessLevel } from '@livediagram/api-schema';
+import { deleteTabWarning } from '@/hooks/forms/forms-feeding';
 
 // Canvas-scoped actions folded into the unified tab / canvas menu. (Add-element actions and the
 // Cleanup category used to live here too but were removed: the palette and quick-connect cover
@@ -139,6 +142,8 @@ type TabBarProps = {
   // Optional: a surface with no room behind it leaves the avatars as plain
   // presence indicators.
   followingId?: string | null;
+  // How many people follow us (docs/specs/012-collaboration/follow-me-viewport.md "Who follows whom"), on our own avatar.
+  followerCount?: number;
   onOpenCollaborators?: (participantId: string | null) => void;
 };
 
@@ -169,6 +174,7 @@ export function TabBar({
   selfId,
   selfRole,
   followingId,
+  followerCount,
   onOpenCollaborators,
   onOpenSettings,
   onOpenSearch,
@@ -180,6 +186,9 @@ export function TabBar({
   workbenchLink,
 }: TabBarProps) {
   const minimalChrome = useMinimalChrome();
+  // Settings > Appearance > Button Labels: the footer's names beside its icons (a phone never shows them).
+  const buttonLabels = useButtonLabelsSetting();
+  const labelled = !minimalChrome && buttonLabels;
   const [menuFor, setMenuFor] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   // The command palette requests an active-tab rename by bumping
@@ -211,12 +220,15 @@ export function TabBar({
   // onCloseCanvasMenu — so each caller passes its own.
   const tabMenuProps = (tab: Tab, close: () => void) => ({
     canDelete: tabs.length > 1,
+    // Deleting a board or sheet a form sends to unpublishes the form: its confirmation says so first.
+    deleteWarning: deleteTabWarning(tabs, tab.id),
     canClearContent: activeTabHasContent && !tab.locked,
     locked: tab.locked === true,
     modeChoice: modeChoiceFor?.(tab),
     // A Plan tab's cards are its document's items: it is not added to another document
     // (docs/specs/026-plan/plan-mode.md "Switching modes keeps the tab").
     planTab: hasPlanContent(tab.elements, null),
+    dataRows: tabDataRows(tab),
     selfId,
     otherDocuments,
     folderNames,
@@ -283,6 +295,7 @@ export function TabBar({
     selfId,
     selfRole,
     followingId,
+    followerCount,
     onOpenCollaborators,
     canvasActions,
     tabMenuProps,
@@ -339,6 +352,7 @@ export function TabBar({
                 selfId={selfId}
                 selfRole={selfRole}
                 followingId={followingId}
+                followerCount={followerCount}
                 onOpenCollaborators={onOpenCollaborators}
               />
             ),
@@ -364,13 +378,14 @@ export function TabBar({
           onOpenSettings={onOpenSettings}
           settingsLabel="Application settings"
           settingsDescription="Your editor preferences. They follow your account, not this document."
-          // Icons only under Minimal chrome; each keeps its hover card, titled with its name.
-          labelled={!minimalChrome}
+          // Icons only under Minimal chrome or with Button Labels off; each keeps its hover card,
+          // titled with its name.
+          labelled={labelled}
           github={false}
           powerUser={powerUser}
           appearance={!workbenchLink}
         />
-        {workbenchLink?.(!minimalChrome)}
+        {workbenchLink?.(labelled)}
       </div>
       {canvasMenu && !readOnly && activeTab && onCloseCanvasMenu && canvasActions ? (
         // A fault inside the menu closes the menu, not the editor.

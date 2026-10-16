@@ -276,6 +276,20 @@ describe('paintableArrowFields', () => {
     expect(out).not.toHaveProperty('locked');
   });
 
+  it('carries an ER relationship’s own start head, and a plain arrow’s lack of one', () => {
+    const er = {
+      ...fullyStyledArrow,
+      arrowheadShape: 'many',
+      arrowheadStartShape: 'one',
+    } as ArrowElement;
+    expect(paintableArrowFields(er)).toMatchObject({
+      arrowheadShape: 'many',
+      arrowheadStartShape: 'one',
+    });
+    const onto = applyPaint(er, paintableArrowFields(fullyStyledArrow));
+    expect(onto.arrowheadStartShape).toBeUndefined();
+  });
+
   it('carries the arrowhead colour and the label plate', () => {
     const out = paintableArrowFields({
       ...fullyStyledArrow,
@@ -381,7 +395,7 @@ describe('applyPaint', () => {
         strokeColor: '#2',
         textColor: '#3',
         colorPreset: 'soft',
-      } as Partial<BoxedElement>) as { colorPreset?: string };
+      }) as { colorPreset?: string };
       expect(out.colorPreset).toBe('soft');
     });
 
@@ -412,9 +426,9 @@ describe('quick-swatch bindings (docs/specs/008-canvas/quick-style-panel.md)', (
 
   it('travel in the projection beside their colours', () => {
     expect(paintableBoxedFields(source)).toMatchObject({ strokeSwatch: 2, fillSwatch: 4 });
-    expect(
-      paintableArrowFields({ ...fullyStyledArrow, strokeSwatch: 3 } as ArrowElement),
-    ).toMatchObject({ strokeSwatch: 3 });
+    expect(paintableArrowFields({ ...fullyStyledArrow, strokeSwatch: 3 })).toMatchObject({
+      strokeSwatch: 3,
+    });
   });
 
   it('land only with the colour they bind', () => {

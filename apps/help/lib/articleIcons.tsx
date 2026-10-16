@@ -366,6 +366,68 @@ export const SUPPORT_ARTICLE_ICONS: Record<string, ReactNode> = {
       <path d="M12 8v4.5l3 1.8" />
     </Glyph>
   ),
+  'agent-changes': (
+    <Glyph>
+      <rect x="3" y="5" width="18" height="14" rx="2" />
+      <path d="M10 8l-3 3 3 3" />
+      <path d="M7 11h6.5a3 3 0 010 6H12" />
+    </Glyph>
+  ),
+  'ai-clients': (
+    <Glyph>
+      <circle cx="12" cy="11" r="2.5" />
+      <rect x="2.5" y="2.5" width="6" height="6" rx="1.5" />
+      <rect x="15.5" y="2.5" width="6" height="6" rx="1.5" />
+      <rect x="9" y="16" width="6" height="5.5" rx="1.5" />
+      <path d="M8.5 7.5l1.6 1.8M15.5 7.5l-1.6 1.8M12 13.5V16" />
+    </Glyph>
+  ),
+  'edit-operations': (
+    <Glyph>
+      <path d="M3.5 6h3M5 4.5v3" />
+      <path d="M3.5 12.5c.8-1 1.7-1 2.5 0" />
+      <path d="M3.5 18h3" />
+      <path d="M10 6h10.5M10 12h10.5M10 18h10.5" />
+    </Glyph>
+  ),
+  'agent-comments-presence': (
+    <Glyph>
+      <path d="M4 5.5h11a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5H9l-4 3.5V15.5H4A1.5 1.5 0 0 1 2.5 14V7A1.5 1.5 0 0 1 4 5.5z" />
+      <circle cx="19" cy="5" r="2.5" />
+      <path d="M6.5 9.5h6M6.5 12h4" />
+    </Glyph>
+  ),
+  'plan-sheets-images': (
+    <Glyph>
+      <rect x="2.5" y="3.5" width="19" height="17" rx="2" />
+      <path d="M2.5 9.5h19M12 3.5v17M2.5 15h9.5" />
+      <path d="M13.5 18.5l2.5-3 2 2 1.5-1.5 1.5 2.5" />
+    </Glyph>
+  ),
+  'building-a-workbench': (
+    <Glyph>
+      <rect x="2.5" y="4" width="19" height="16" rx="2" />
+      <path d="M2.5 8h19" />
+      <path d="M7 12.5h9M14 10.5l2 2-2 2" />
+      <path d="M17 16.5H8M10 14.5l-2 2 2 2" />
+    </Glyph>
+  ),
+  'telemetry-dashboard': (
+    <Glyph>
+      <path d="M4 4v16h16" />
+      <path d="M7.5 15l3.5-4 3 2.5 5-6" />
+      <circle cx="19" cy="7.5" r="1.2" />
+    </Glyph>
+  ),
+  'drive-and-mcp': (
+    <Glyph>
+      <path d="M3 6.5A1.5 1.5 0 0 1 4.5 5H8l2 2h5.5A1.5 1.5 0 0 1 17 8.5V11" />
+      <path d="M3 6.5V17a1.5 1.5 0 0 0 1.5 1.5H11" />
+      <path d="M15.5 13v2.5M19.5 13v2.5" />
+      <path d="M14 15.5h7v1.5a3.5 3.5 0 0 1-7 0z" />
+      <path d="M17.5 20.5v1.5" />
+    </Glyph>
+  ),
 };
 
 /** Document glyph: the fallback for any support article without a bespoke icon

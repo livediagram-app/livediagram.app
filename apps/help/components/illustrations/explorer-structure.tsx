@@ -183,14 +183,15 @@ function TreeRow({
   );
 }
 
-/** The List / Card toggle: two square buttons, the card side pressed. */
+/** The List / Card / Details toggle: three square buttons, as in the app
+ *  (ViewToggle.tsx), with Card pressed. */
 function ViewToggle({ x, y }: { x: number; y: number }) {
   return (
     <g>
       <rect
         x={x}
         y={y}
-        width={42}
+        width={62}
         height={22}
         rx={6}
         className="fill-slate-100 stroke-slate-200"
@@ -219,6 +220,21 @@ function ViewToggle({ x, y }: { x: number; y: number }) {
         <rect x={x + 26} y={y + 12} width={4} height={4} rx={1} />
         <rect x={x + 32} y={y + 12} width={4} height={4} rx={1} />
       </g>
+      {/* Details view: a small table */}
+      <rect
+        x={x + 45}
+        y={y + 6}
+        width={12}
+        height={10}
+        rx={1.5}
+        className="fill-none stroke-slate-400"
+        strokeWidth={1.3}
+      />
+      <path
+        d={`M${x + 45} ${y + 9.5} h12 M${x + 49} ${y + 9.5} v6.5`}
+        className="stroke-slate-400"
+        strokeWidth={1.1}
+      />
     </g>
   );
 }
@@ -589,11 +605,11 @@ export function ExplorerPageLayout() {
         className="fill-white stroke-slate-200"
         strokeWidth={1.5}
       />
-      <Label x={184} y={36} size={13} weight={700} tone="strong">
+      <Label x={184} y={36} size={12} weight={700} tone="strong">
         My documents
       </Label>
-      <Button x={300} y={25} w={52} h={22} label="Create" />
-      <ViewToggle x={356} y={25} />
+      <Button x={278} y={25} w={46} h={22} label="Create" />
+      <ViewToggle x={328} y={25} />
       <FolderCard x={184} y={58} w={102} h={88} title="Projects" meta="7 items" more={4} />
       <DocCard x={292} y={58} w={102} h={88} title="Roadmap" meta="2h ago" thumb={1} star />
       <DocCard x={184} y={152} w={102} h={88} title="Onboarding" meta="Yesterday" />
@@ -605,39 +621,24 @@ export function ExplorerPageLayout() {
 /** The editor's Explorer, open under the menu button in the top-left card: the Current Document
  *  card, then Overview, Spaces and More, with My documents opened in place to a folder and a
  *  document. */
-export function ExplorerPanelTree() {
-  const px = 24;
-  const pw = 200;
+/** The editor's Explorer panel open under the menu button: the Current Document card (its name to rename, its
+ *  visibility badge at the right), the rail of sections beside the pane showing the picked one (My documents), and
+ *  the product's links along the foot. */
+export function ExplorerPanelLayout() {
+  const px = 16;
+  const pw = 448;
+  const railW = 128;
+  const paneX = px + railW;
+  const paneW = pw - railW;
   return (
-    <Scene w={420} h={368}>
+    <Scene w={480} h={404}>
       <MenuCard x={px} y={8} />
       <g transform="translate(0 40)">
-        {/* The canvas behind the panel */}
-        <rect
-          x={262}
-          y={50}
-          width={76}
-          height={38}
-          rx={6}
-          className="fill-white stroke-brand-200"
-          strokeWidth={2}
-        />
-        <rect
-          x={300}
-          y={150}
-          width={76}
-          height={38}
-          rx={6}
-          className="fill-white stroke-brand-200"
-          strokeWidth={2}
-        />
-        <path d="M300 88 L330 150" className="stroke-brand-200" strokeWidth={2} fill="none" />
-
         <rect
           x={px}
           y={14}
           width={pw}
-          height={302}
+          height={346}
           rx={10}
           className="fill-white stroke-slate-300"
           strokeWidth={2}
@@ -645,7 +646,6 @@ export function ExplorerPanelTree() {
         <Label x={px + 14} y={32} size={11} weight={700} tone="strong">
           Explorer
         </Label>
-        {/* Help and the ⋯ menu */}
         <circle
           cx={px + pw - 38}
           cy={31}
@@ -661,47 +661,144 @@ export function ExplorerPanelTree() {
           <circle cx={px + pw - 15} cy={31} r={1.5} />
           <circle cx={px + pw - 10} cy={31} r={1.5} />
         </g>
-        <line x1={px} y1={46} x2={px + pw} y2={46} className="stroke-slate-200" strokeWidth={1.5} />
 
-        {/* Current Document */}
-        <rect x={px + 8} y={52} width={pw - 16} height={46} rx={8} className="fill-slate-50" />
-        <GroupTitle x={px + 16} y={64}>
+        {/* Current Document: thumbnail, label, the name (click to rename), the badge at the right. */}
+        <rect x={px + 10} y={48} width={pw - 20} height={58} rx={9} className="fill-slate-50" />
+        <rect
+          x={px + 18}
+          y={56}
+          width={62}
+          height={42}
+          rx={6}
+          className="fill-white stroke-slate-200"
+          strokeWidth={1.2}
+        />
+        <Thumb x={px + 18} y={56} w={62} h={42} kind={1} />
+        <GroupTitle x={px + 92} y={66}>
           CURRENT DOCUMENT
         </GroupTitle>
-        <TreeRow x={px + 8} y={74} w={pw - 16} label="Roadmap" glyph="doc" active />
+        <rect
+          x={px + 88}
+          y={72}
+          width={70}
+          height={16}
+          rx={4}
+          className="fill-none stroke-brand-300"
+          strokeWidth={1.2}
+          strokeDasharray="3 2"
+        />
+        <Label x={px + 92} y={81} size={11} weight={700} tone="strong">
+          Roadmap
+        </Label>
+        <Label x={px + 92} y={96} size={10} tone="muted">
+          Updated 4 mins ago
+        </Label>
+        <rect
+          x={px + pw - 80}
+          y={56}
+          width={60}
+          height={16}
+          rx={8}
+          className="fill-slate-100 stroke-slate-300"
+          strokeWidth={1}
+        />
+        <Label x={px + pw - 50} y={65} anchor="middle" size={9} weight={700} tone="muted">
+          PRIVATE
+        </Label>
 
-        <GroupTitle x={px + 14} y={112}>
+        <line
+          x1={px}
+          y1={116}
+          x2={px + pw}
+          y2={116}
+          className="stroke-slate-200"
+          strokeWidth={1.5}
+        />
+        <line
+          x1={paneX}
+          y1={116}
+          x2={paneX}
+          y2={326}
+          className="stroke-slate-200"
+          strokeWidth={1.5}
+        />
+
+        {/* The rail: every section, the picked one marked. */}
+        <GroupTitle x={px + 14} y={132}>
           OVERVIEW
         </GroupTitle>
-        <TreeRow x={px + 4} y={120} w={pw - 8} label="Home" glyph="home" />
-        <TreeRow x={px + 4} y={138} w={pw - 8} label="Inbox" glyph="inbox" />
-        <TreeRow x={px + 4} y={156} w={pw - 8} label="Timeline" glyph="timeline" />
-        <TreeRow
-          x={px + 4}
-          y={174}
-          w={pw - 8}
-          label="Shared with me"
-          glyph="shared"
-          chevron="closed"
-        />
-        <GroupTitle x={px + 14} y={204}>
+        <TreeRow x={px + 2} y={138} w={railW - 6} label="Home" glyph="home" />
+        <TreeRow x={px + 2} y={156} w={railW - 6} label="Inbox" glyph="inbox" />
+        <TreeRow x={px + 2} y={174} w={railW - 6} label="Timeline" glyph="timeline" />
+        <TreeRow x={px + 2} y={192} w={railW - 6} label="Shared" glyph="shared" />
+        <GroupTitle x={px + 14} y={224}>
           SPACES
         </GroupTitle>
-        <TreeRow x={px + 4} y={212} w={pw - 8} label="My documents" glyph="folder" chevron="open" />
-        <TreeRow
-          x={px + 4}
-          y={230}
-          w={pw - 8}
-          label="Projects"
-          glyph="folder"
-          level={1}
-          chevron="closed"
-        />
-        <TreeRow x={px + 4} y={248} w={pw - 8} label="Quick sketch" glyph="doc" level={1} />
-        <GroupTitle x={px + 14} y={280}>
+        <TreeRow x={px + 2} y={230} w={railW - 6} label="My documents" glyph="folder" active />
+        <GroupTitle x={px + 14} y={262}>
           MORE
         </GroupTitle>
-        <TreeRow x={px + 4} y={288} w={pw - 8} label="Library" glyph="library" chevron="closed" />
+        <TreeRow x={px + 2} y={268} w={railW - 6} label="Library" glyph="library" />
+        <TreeRow x={px + 2} y={286} w={railW - 6} label="Trash" glyph="trash" />
+
+        {/* The pane: the picked section, its Open Page, its rows. */}
+        <Label x={paneX + 14} y={134} size={12} weight={700} tone="strong">
+          My documents
+        </Label>
+        <rect
+          x={paneX + paneW - 80}
+          y={124}
+          width={68}
+          height={18}
+          rx={5}
+          className="fill-white stroke-slate-300"
+          strokeWidth={1}
+        />
+        <Label x={paneX + paneW - 46} y={134} anchor="middle" size={9} weight={600} tone="body">
+          Open Page
+        </Label>
+        <TreeRow
+          x={paneX + 6}
+          y={152}
+          w={paneW - 12}
+          label="Projects"
+          glyph="folder"
+          chevron="open"
+        />
+        <TreeRow x={paneX + 6} y={170} w={paneW - 12} label="Launch plan" glyph="doc" level={1} />
+        <TreeRow
+          x={paneX + 6}
+          y={188}
+          w={paneW - 12}
+          label="Roadmap"
+          glyph="doc"
+          level={1}
+          active
+        />
+        <TreeRow
+          x={paneX + 6}
+          y={206}
+          w={paneW - 12}
+          label="Archive"
+          glyph="folder"
+          chevron="closed"
+        />
+        <TreeRow x={paneX + 6} y={224} w={paneW - 12} label="Quick sketch" glyph="doc" />
+
+        {/* The product's links along the foot. */}
+        <line
+          x1={px}
+          y1={326}
+          x2={px + pw}
+          y2={326}
+          className="stroke-slate-200"
+          strokeWidth={1.5}
+        />
+        {['Welcome', 'Explorer', 'Community', 'Help', 'Telemetry'].map((l, i) => (
+          <Label key={l} x={px + 18 + i * 78} y={344} size={10} weight={500} tone="body">
+            {l}
+          </Label>
+        ))}
       </g>
     </Scene>
   );
@@ -777,7 +874,7 @@ export function FilterSearchResults() {
   );
 }
 
-/** The card view inside a folder: the List / Card toggle set to cards, a subfolder's preview mosaic
+/** The card view inside a folder: the List / Card / Details toggle set to cards, a subfolder's preview mosaic
  *  with its +N tile, and document cards with a favourite star. */
 export function CardViewGrid() {
   return (
@@ -788,8 +885,8 @@ export function CardViewGrid() {
       <Label x={16} y={46} size={10} tone="muted">
         My documents › Projects
       </Label>
-      <Button x={298} y={15} w={66} h={22} label="Create" />
-      <ViewToggle x={370} y={15} />
+      <Button x={268} y={15} w={66} h={22} label="Create" />
+      <ViewToggle x={340} y={15} />
       <FolderCard x={16} y={62} w={122} h={124} title="Sprint notes" meta="6 items" more={3} />
       <DocCard x={148} y={62} w={122} h={124} title="Roadmap" meta="2h ago" thumb={1} star />
       <DocCard x={280} y={62} w={122} h={124} title="Data model" meta="Yesterday" thumb={2} />

@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { ITEM_TYPES, type ItemTypeDef } from './item-types';
 import {
   assignedPeople,
+  choiceOption,
+  fieldKeyOf,
   personNamed,
   resolveFields,
   resolveItem,
@@ -107,9 +109,31 @@ describe('resolveFields', () => {
     });
   });
 
-  it('keeps a person object and an unknown priority as given (the api checks them)', () => {
-    const r = resolveFields({ assignee: ALI, priority: 'whenever' }, ITEM_TYPES[1], naming);
-    expect(r).toEqual({ ok: true, fields: { assignee: ALI, priority: 'whenever' } });
+  it('keeps a person object as given', () => {
+    const r = resolveFields({ assignee: ALI }, ITEM_TYPES[1], naming);
+    expect(r).toEqual({ ok: true, fields: { assignee: ALI } });
+  });
+
+  // The api refused these with a bare field_value_invalid (production Error·Api·Http400.ItemChange); they are
+  // refused here, saying what the field takes.
+  it('refuses a built-in value the api would, naming what the field takes', () => {
+    const refusal = (fields: Record<string, unknown>) => {
+      const r = resolveFields(fields, ITEM_TYPES[1], naming);
+      return r.ok ? null : r;
+    };
+    expect(refusal({ priority: 'whenever' })).toMatchObject({
+      code: 'value_invalid',
+      message: '"whenever" is not a Priority: give one of Urgent, High, Medium, Low.',
+    });
+    expect(refusal({ estimate: 1000 })?.message).toBe(
+      '1000 is not an Estimate: give a number from 0 to 999.',
+    );
+    expect(refusal({ due: 'tomorrow' })?.message).toContain('give a date');
+    // A number written as text is read as the number.
+    expect(resolveFields({ estimate: '5' }, ITEM_TYPES[1], naming)).toEqual({
+      ok: true,
+      fields: { estimate: 5 },
+    });
   });
 
   it('resolves custom fields by name, Choice options and Card links', () => {
@@ -142,8 +166,66 @@ describe('resolveFields', () => {
     expect(resolveFields({ parent: '#99' }, bug, naming)).toMatchObject({ code: 'field_unknown' });
   });
 
+  it('reads "#12 Title", as list_items shows a card link, by its number', () => {
+    const items = [item({ title: 'Login' }, { id: 'abc1', key: 12 })];
+    expect(resolveItem('#12 Login', items)).toMatchObject({ ok: true, item: { id: 'abc1' } });
+    expect(resolveItem('#12 Anything else', items)).toMatchObject({ ok: true });
+  });
+
+  it('gives a new person a colour no one on the document has, while colours remain', () => {
+    const first = personNamed('Sam', []);
+    const people = [first];
+    for (const name of ['Alex', 'Priya', 'Jo', 'Kim', 'Lee'])
+      people.push(personNamed(name, people));
+    expect(new Set(people.map((p) => p.color)).size).toBe(people.length);
+    // The same name, with no one else around, is the same person and colour.
+    expect(personNamed('Sam', [])).toEqual(first);
+  });
+
+  it('matches a Choice option exactly before loosely, never by symbols alone', () => {
+    const stars = ['★', '★★', '★★★'];
+    expect(choiceOption(stars, '★★')).toBe('★★');
+    expect(choiceOption(stars, '★★★★')).toBeUndefined();
+    expect(choiceOption(['In Progress', 'Done'], 'in progress')).toBe('In Progress');
+    expect(choiceOption(['In Progress', 'Done'], 'in-progress')).toBe('In Progress');
+    // Two options one key apart are told apart only exactly.
+    expect(choiceOption(['A-1', 'A 1'], 'a1')).toBeUndefined();
+    expect(choiceOption(['A-1', 'A 1'], 'A 1')).toBe('A 1');
+  });
+
   it('names an ambiguous item', () => {
     const items = [item({ title: 'a' }, { id: 'abc1' }), item({ title: 'b' }, { id: 'abc2' })];
     expect(resolveItem('abc', items)).toMatchObject({ ok: false, code: 'item_unknown' });
+  });
+});
+
+// docs/specs/026-plan/plan-agents.md "Naming things as people do": a type's own field name wins over a built-in's
+// other name.
+describe('fieldKeyOf', () => {
+  const post: ItemTypeDef = {
+    ...ITEM_TYPES[1],
+    id: 'post',
+    label: 'Post',
+    fields: ['title', 'status', 'assignee', 'f-owner'],
+    custom: [{ id: 'f-owner', label: 'Owner', kind: 'text' }],
+  };
+
+  it('reads "Owner" as the type’s own Owner field where it has one, else the Assignee', () => {
+    expect(fieldKeyOf('Owner', post)).toEqual({ ok: true, key: 'f-owner' });
+    expect(fieldKeyOf('owner', post)).toEqual({ ok: true, key: 'f-owner' });
+    expect(fieldKeyOf('Owner', bug)).toEqual({ ok: true, key: 'assignee' });
+    expect(fieldKeyOf('Assigned To', post)).toEqual({ ok: true, key: 'assignee' });
+  });
+
+  it('always reads a built-in’s id as the built-in', () => {
+    expect(fieldKeyOf('assignee', post)).toEqual({ ok: true, key: 'assignee' });
+    expect(fieldKeyOf('Due', post)).toEqual({ ok: true, key: 'due' });
+  });
+
+  it('writes a value named "Owner" to the custom field', () => {
+    expect(resolveFields({ Owner: 'Ana' }, post, { statuses, items: [] })).toEqual({
+      ok: true,
+      fields: { 'f-owner': 'Ana' },
+    });
   });
 });

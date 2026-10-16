@@ -19,6 +19,8 @@ export type QuickOption<V> = {
   content: ReactNode;
   // A swatch paints its own colour; every other option is a glyph button.
   swatch?: string;
+  // A swatch for no colour at all (the Background row's Transparent): the shared no-colour chip.
+  none?: boolean;
   // A custom colour in place of the theme's: drawn with a corner marker.
   overridden?: boolean;
 };
@@ -183,7 +185,12 @@ export function QuickRadioRow<V extends string | number>({
                 }
               >
                 {swatch ? (
-                  <SwatchChip colour={o.swatch!} picked={checked} marked={o.overridden === true} />
+                  <SwatchChip
+                    colour={o.swatch!}
+                    none={o.none === true}
+                    picked={checked}
+                    marked={o.overridden === true}
+                  />
                 ) : (
                   o.content
                 )}

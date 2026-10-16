@@ -27,6 +27,7 @@ function rendererFor(io: CliIo) {
     renderer = createPngRenderer({
       wasm: () => read('resvg.wasm'),
       font: () => read('Inter-Regular.ttf'),
+      bold: () => read('Inter-Bold.otf'),
     });
     renderers.set(io, renderer);
   }

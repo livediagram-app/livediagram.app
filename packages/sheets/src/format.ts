@@ -2,6 +2,7 @@
 // so two people setting different keys of one cell never overwrite each other.
 import type { Border, BorderStyle, CellFormat, FontSize, NumberFormatKind } from './sheet';
 import { DECIMALS_MAX } from './limits';
+import { formatCodeReads } from './format-codes';
 import { CURRENCY_SYMBOLS } from './input';
 
 export const NUMBER_FORMATS: readonly NumberFormatKind[] = [
@@ -16,6 +17,7 @@ export const NUMBER_FORMATS: readonly NumberFormatKind[] = [
   'datetime',
   'duration',
   'text',
+  'custom',
 ];
 export const FONT_SIZES: readonly FontSize[] = [
   8, 9, 10, 11, 12, 13, 14, 16, 18, 20, 24, 28, 36, 48, 72,
@@ -56,6 +58,7 @@ export const FORMAT_KEYS = [
   'br',
   'bb',
   'bl',
+  'nc',
 ] as const;
 export type FormatKey = (typeof FORMAT_KEYS)[number];
 
@@ -102,6 +105,8 @@ export function validFormatValue(key: string, v: unknown): boolean {
       return v === 't' || v === 'm' || v === 'b';
     case 'wr':
       return v === 'o' || v === 'w' || v === 'c';
+    case 'nc':
+      return typeof v === 'string' && formatCodeReads(v);
     default:
       if (FLAG_KEYS.has(key)) return v === true;
       if (BORDER_KEYS.has(key)) return isBorder(v);
@@ -137,7 +142,7 @@ export function mergeFormat(
     if (v === null || v === undefined) delete out[k];
     else out[k] = v;
   }
-  return Object.keys(out).length === 0 ? undefined : (out as CellFormat);
+  return Object.keys(out).length === 0 ? undefined : out;
 }
 
 export function formatEquals(a: CellFormat | undefined, b: CellFormat | undefined): boolean {

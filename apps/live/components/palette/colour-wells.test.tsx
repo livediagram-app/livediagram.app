@@ -149,7 +149,7 @@ describe('the rich-text toolbar', () => {
         onToggle={vi.fn()}
         onApplyList={vi.fn()}
         onApplyHeading={vi.fn()}
-        listStyle={'none' as never}
+        listStyle={'none'}
         onColor={onColor}
         onSetAlign={vi.fn()}
       />,

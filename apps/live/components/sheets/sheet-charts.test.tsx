@@ -8,7 +8,19 @@ import type { Element, ShapeElement } from '@livediagram/document';
 import * as api from '@/lib/api/sheets';
 import { SheetsBridgeContext, type SheetsBridge } from '@/hooks/sheets/useSheetsBridge';
 import { forgetSheetStores, sheetStoreFor } from './sheet-store-client';
-import { chartRangeOf, placeSheetChart } from './sheet-charts';
+import {
+  CHART_MIN_HEIGHT,
+  CHART_MIN_WIDTH,
+  chartRangeOf,
+  chartSizeOf,
+  movedAnchor,
+  newChartAnchor,
+  placeSheetChart,
+  resizedChart,
+  sheetChartsRemoval,
+  takePlacedChart,
+} from './sheet-charts';
+import { geometryOf } from './sheet-geometry';
 import { SheetLinkedChart } from './SheetLinkedChart';
 
 vi.mock('@/lib/api/sheets', () => ({
@@ -18,6 +30,7 @@ vi.mock('@/lib/api/sheets', () => ({
   deleteSheet: vi.fn(),
 }));
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
+import { track } from '@/lib/telemetry';
 
 const by = { id: 'me', name: 'Me', color: '#000000' };
 let seq = 7;
@@ -67,6 +80,7 @@ function bridge(over: Partial<SheetsBridge> = {}): SheetsBridge & { elements: El
     commitElements: vi.fn(),
     switchToPlan: vi.fn(),
     selectElement: vi.fn(),
+    sheetRetitled: vi.fn(),
     attach: vi.fn(() => () => {}),
     elements: [] as Element[],
     ...over,
@@ -74,19 +88,18 @@ function bridge(over: Partial<SheetsBridge> = {}): SheetsBridge & { elements: El
   return b;
 }
 
-const chart = (over: Partial<ShapeElement> = {}): ShapeElement =>
-  ({
-    id: 'chart1',
-    type: 'shape',
-    shape: 'bar-chart',
-    x: 0,
-    y: 0,
-    width: 260,
-    height: 220,
-    pieSlices: [{ label: 'A', value: 1, color: '#ff0000' }],
-    chartSource: { sheetId: 'sheetAAAA', range },
-    ...over,
-  }) as ShapeElement;
+const chart = (over: Partial<ShapeElement> = {}): ShapeElement => ({
+  id: 'chart1',
+  type: 'shape',
+  shape: 'bar-chart',
+  x: 0,
+  y: 0,
+  width: 260,
+  height: 220,
+  pieSlices: [{ label: 'A', value: 1, color: '#ff0000' }],
+  chartSource: { sheetId: 'sheetAAAA', range },
+  ...over,
+});
 
 const shown = (el: ShapeElement) => (
   <span data-testid="chart">
@@ -160,23 +173,100 @@ describe('the range a chart reads', () => {
 });
 
 describe('placing a chart', () => {
-  it('centres it over the Sheet top right, linked to the range', () => {
+  const anchor = { x: 300, y: 40 };
+  it('puts it in the Sheet at its anchor, over the Sheet top right on the canvas, linked to the range', () => {
     const b = bridge();
     const sheetEl = { x: 100, y: 50, width: 900, height: 500 } as ShapeElement;
-    placeSheetChart(b, sheetEl, 'sheetAAAA', 'line-chart', { range });
-    const [at, make] = vi.mocked(b.placeElement).mock.calls[0]!;
+    placeSheetChart(b, sheetEl, 'sheetAAAA', 'line', { range }, anchor);
+    const [at, make, opts] = vi.mocked(b.placeElement).mock.calls[0]!;
     expect(at).toEqual({ x: 100 + 900 - 24 - 150, y: 50 + 120 + 120 });
-    expect(make(0, 0)).toMatchObject({
+    // Selected in its Sheet, not on the canvas.
+    expect(opts).toEqual({ select: false });
+    const made = make(0, 0) as ShapeElement;
+    expect(made).toMatchObject({
       shape: 'line-chart',
       chartSource: { sheetId: 'sheetAAAA', range },
+      sheetAnchor: anchor,
     });
+    expect(made).not.toHaveProperty('chartVariant');
+    // The Sheet selects the chart this person placed, once.
+    expect(takePlacedChart(made.id)).toBe(true);
+    expect(takePlacedChart(made.id)).toBe(false);
     // A Sheet narrower than the chart takes it at its left edge.
-    placeSheetChart(b, { ...sheetEl, width: 100 }, 'sheetAAAA', 'pie-chart', { range });
+    placeSheetChart(b, { ...sheetEl, width: 100 }, 'sheetAAAA', 'pie', { range }, anchor);
     expect(vi.mocked(b.placeElement).mock.calls[1]![0].x).toBe(100 + 130);
     // Only some columns picked: the source names them.
-    placeSheetChart(b, sheetEl, 'sheetAAAA', 'bar-chart', { range, cols: [C[0]!, C[2]!] });
+    placeSheetChart(b, sheetEl, 'sheetAAAA', 'column', { range, cols: [C[0]!, C[2]!] }, anchor);
     expect(vi.mocked(b.placeElement).mock.calls[2]![1](0, 0)).toMatchObject({
       chartSource: { sheetId: 'sheetAAAA', range, cols: [C[0], C[2]] },
+    });
+    // A template's chart: its own size and palette, never selected, never counted as Insert Chart.
+    vi.mocked(track).mockClear();
+    placeSheetChart(b, sheetEl, 'sheetAAAA', 'pie', { range }, anchor, {
+      size: { width: 420, height: 240 },
+      palette: 'forest',
+      template: true,
+    });
+    const tpl = vi.mocked(b.placeElement).mock.calls[3]![1](0, 0) as ShapeElement;
+    expect(tpl).toMatchObject({ width: 420, height: 240, chartPalette: 'forest' });
+    expect(takePlacedChart(tpl.id)).toBe(false);
+    expect(track).not.toHaveBeenCalled();
+    // A variant type is its kind and its variant (docs/specs/009-elements/pie-chart.md "Chart types").
+    placeSheetChart(b, sheetEl, 'sheetAAAA', 'bar', { range }, anchor);
+    expect(vi.mocked(b.placeElement).mock.calls[4]![1](0, 0)).toMatchObject({
+      shape: 'bar-chart',
+      chartVariant: 'horizontal',
+    });
+  });
+
+  it('anchors it right of the range, level with its top row, inside the cells in view', async () => {
+    const store = sheetStoreFor({
+      scope: { documentId: 'anchor', ownerId: 'o', shareCode: null, tabId: null },
+      self: () => by,
+      locale: 'en-GB',
+      pushUndo: vi.fn(),
+      toast: vi.fn(),
+    });
+    await store.loadTab('t1');
+    const s = store.sheet('sheetAAAA')!;
+    const g = geometryOf(s.layout, new Set());
+    const size = { width: 260, height: 220 };
+    const big = { width: 2000, height: 2000 };
+    const none = { top: 0, left: 0 };
+    // Columns A and B (to x = cols[2]), rows 1 to 3.
+    expect(newChartAnchor(g, s, { range }, size, none, big)).toEqual({
+      x: g.cols[2]! + 24,
+      y: 24,
+    });
+    // A view too narrow for it there: pulled back in, 24 px from its right edge.
+    expect(newChartAnchor(g, s, { range }, size, none, { width: 400, height: 2000 }).x).toBe(
+      400 - 260 - 24,
+    );
+    // Scrolled past the range: brought into view.
+    expect(newChartAnchor(g, s, { range }, size, { top: 900, left: 700 }, big)).toEqual({
+      x: 724,
+      y: 924,
+    });
+    // A view smaller than the chart: at its top-left, 24 px in.
+    expect(newChartAnchor(g, s, { range }, size, none, { width: 100, height: 100 })).toEqual({
+      x: 24,
+      y: 24,
+    });
+    // A range no longer in the sheet: the view's corner.
+    const gone = { r1: 'zzzz', c1: 'zzzz', r2: 'zzzz', c2: 'zzzz' };
+    expect(newChartAnchor(g, s, { range: gone }, size, none, big)).toEqual({ x: 24, y: 24 });
+    expect(chartSizeOf('column')).toEqual({ width: 260, height: 220 });
+    expect(chartSizeOf('scatter')).toEqual(chartSizeOf('line'));
+  });
+
+  it('moves within the sheet and resizes no smaller than the least chart', () => {
+    expect(movedAnchor({ x: 50, y: 50 }, 10.4, -20.6)).toEqual({ x: 60, y: 29 });
+    expect(movedAnchor({ x: 50, y: 50 }, -100, -100)).toEqual({ x: 0, y: 0 });
+    expect(movedAnchor({ x: 999_990, y: 0 }, 100, 0).x).toBe(1_000_000);
+    expect(resizedChart({ width: 260, height: 220 }, 40, -10)).toEqual({ width: 300, height: 210 });
+    expect(resizedChart({ width: 260, height: 220 }, -500, -500)).toEqual({
+      width: CHART_MIN_WIDTH,
+      height: CHART_MIN_HEIGHT,
     });
   });
 });
@@ -242,5 +332,30 @@ describe('a chart drawn from a sheet', () => {
     await waitFor(() => expect(screen.getByTestId('chart').textContent).toContain('Jan=12'));
     expect(screen.getByTestId('gone').textContent).toBe('A');
     expect(b.tickElements).not.toHaveBeenCalled();
+  });
+});
+
+// sheet.md "Sheet Settings": Clear Sheet takes the charts anchored in its Sheet, and its undo puts them back.
+describe('the charts Clear Sheet takes', () => {
+  it('takes only the anchored charts of its sheet, quietly, and puts them back', () => {
+    const anchored = chart({ id: 'in', sheetAnchor: { x: 0, y: 0 } });
+    const floating = chart({ id: 'float' });
+    const other = chart({
+      id: 'other',
+      sheetAnchor: { x: 0, y: 0 },
+      chartSource: { sheetId: 'sheetBBBB', range },
+    });
+    const b = bridge();
+    b.elements = [anchored, floating, other];
+    expect(sheetChartsRemoval(b, [floating, other], 'sheetAAAA')).toBeNull();
+    const step = sheetChartsRemoval(b, b.elements, 'sheetAAAA')!;
+    step.redo();
+    expect(b.elements.map((el) => el.id)).toEqual(['float', 'other']);
+    step.undo();
+    expect(b.elements.map((el) => el.id).sort()).toEqual(['float', 'in', 'other']);
+    // Already back: nothing added twice.
+    step.undo();
+    expect(b.elements).toHaveLength(3);
+    expect(b.commitElements).not.toHaveBeenCalled();
   });
 });

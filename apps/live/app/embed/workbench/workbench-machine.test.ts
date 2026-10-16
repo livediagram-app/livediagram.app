@@ -61,10 +61,13 @@ describe('workbenchTransition', () => {
       cause: 'mismatch',
     });
     expect(
-      run({ ...redeeming, documentId: null } as WorkbenchPhase, {
-        type: 'redeemed',
-        session: SESSION,
-      }),
+      run(
+        { ...redeeming, documentId: null },
+        {
+          type: 'redeemed',
+          session: SESSION,
+        },
+      ),
     ).toEqual({ phase: 'refused', cause: 'mismatch' });
   });
 

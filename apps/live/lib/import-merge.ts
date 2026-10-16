@@ -36,6 +36,11 @@ function mergeFields(receiving: Tab, imported: Tab): Tab {
     ...receiving,
     elements: imported.elements,
     kind: imported.kind ?? receiving.kind,
+    // A Dashboard's rows and slots travel with its elements (docs/specs/026-plan/plan-tabs.md "Import and Export of a
+    // Dashboard"); any other import leaves the receiving tab's layout alone.
+    ...(imported.kind === 'dashboard' && imported.dashboard
+      ? { dashboard: imported.dashboard }
+      : {}),
     // The mode the tab opens in travels with it (docs/specs/007-editor/editor-modes.md).
     opensIn: imported.opensIn ?? receiving.opensIn,
     layers: imported.layers ?? receiving.layers,

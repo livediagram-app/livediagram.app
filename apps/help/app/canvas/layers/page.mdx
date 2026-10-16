@@ -6,7 +6,7 @@ import { LayersPanelScene } from '@/components/illustrations/layers';
 export const metadata = helpMetadata({
   title: 'Layers',
   description:
-    'Organise a tab into Photoshop-style layers: a dockable Layers panel with per-layer previews, an active layer that receives new elements, stacking bands, hiding, locking, opacity, merging, and smart naming.',
+    'Organise a tab into Photoshop-style layers from the Layers panel: previews, an active layer for new elements, hiding, locking, opacity and merging.',
   path: '/help/canvas/layers/',
 });
 
@@ -18,26 +18,28 @@ Every tab starts with a single layer, and for many diagrams that's all you need.
 
 Open the panel with the **Layers button next to the zoom controls** (bottom-right). It opens as a popover above the button, on a computer and a phone alike; press the button again, or tap the canvas, to close it. See [Panel Layout](/help/user-interface/panel-layout/) for where everything else sits.
 
-The panel is for people who can edit the tab: view-only visitors get no panel or button, though hidden and locked layers still apply to what they see. It is not offered in [Illustrate mode](/help/canvas/illustrate/), where the **Slides** button takes its place, nor in Zen mode.
+The panel is for Editors: Viewers and Participants get no panel or button, though hidden and locked layers still apply to what they see. It is not offered in [Illustrate mode](/help/canvas/illustrate/), where the **Slides** button takes its place, in [Plan mode](/help/canvas/plan-mode/), where a board is worked by its columns, nor in Zen mode.
 
 Its settings live in [Settings](/help/user-interface/settings/) under **Panels**, then **Layers**: **Layer Thumbnails** (the row previews), **Layer Element Counts** (how many elements each layer holds, beside its name) and **Preview Layer on Hover**. **Enable Layers Panel** turns the panel, its button and the menu's **Move to layer** tiles off altogether; layers keep working underneath, with their order, visibility and lock still applied.
 
 ## Reading the Panel
 
-Each row is one layer, top of the stack first, and shows:
+The top of the panel counts your layers and holds the **New Layer** button; a new layer lands directly above the active one and becomes active itself. Below it, each row is one layer, top of the stack first, and shows:
 
-- an **eye** to hide or show the layer,
-- a **mini preview** of just that layer's elements, framed against the whole tab so you can see where its content sits,
-- the layer's **name** (double-click to rename it inline), with how many elements it holds, a padlock mark when the layer is locked, and an **Empty** tag when nothing lives on it,
+- a **preview** of just that layer's elements, framed against the whole tab so you can see where its content sits (an empty layer shows a dashed frame, so stale ones are easy to spot),
+- the layer's **name** (double-click to rename it inline) over a short line saying how many elements it holds, or **Empty**, plus its opacity, **Locked** or **Hidden** when they apply,
+- a **padlock** to lock or unlock the layer and an **eye** to hide or show it,
 - an **ellipsis** opening the layer's menu.
 
-<Figure caption="The Layers panel: the active layer highlighted, a locked background, an empty layer tagged, and the footer's merge, add and delete buttons.">
+The padlock and ellipsis appear when you point at a row (and always on the active row, and on touch screens); a locked layer keeps its padlock showing.
+
+<Figure caption="The Layers panel: New Layer at the top, the active layer highlighted, a locked background, an empty layer's dashed preview, and the footer's merge and delete buttons.">
   <LayersPanelScene />
 </Figure>
 
-Click a row to make that layer **active**, and rest the pointer on one for a moment to temporarily see only that layer on the canvas ([more on the hover preview](/help/canvas/layers-visibility-and-locking/)). The footer holds **Merge Up** and **Merge Down** on the left, **Add Layer** and **Delete Layer** on the right; a new layer lands directly above the active one and becomes active itself.
+Click a row to make that layer **active**, and rest the pointer on one for a moment to temporarily see only that layer on the canvas ([more on the hover preview](/help/canvas/layers-visibility-and-locking/)). The footer acts on the active layer: **Merge Up** and **Merge Down** on the left, **Delete** on the right.
 
-**Right-click a row (or click its ellipsis)** for the full menu, which opens beside the panel: rename and delete up top, then Layer (an opacity slider, Bring to Top, Send to Back, and Hide Others), Content (lock and clear), and Merge.
+**Right-click a row (or click its ellipsis)** for the full menu, which opens beside the panel with every action a click away: an opacity slider, then Hide or Show Layer, Lock or Unlock Layer, Hide Others, Bring to Top, Send to Bottom, Merge With Layer Above or Below, Rename, Clear Layer and Delete Layer.
 
 ## The Active Layer
 
@@ -57,7 +59,7 @@ The eye hides a layer everywhere, including exports and embeds; the lock makes a
 
 ## Layers and Exports
 
-Exports match what you see: hidden layers are left out of PNG, SVG, PDF, and Mermaid [exports](/help/account-and-data/exporting-diagrams/), and out of shared thumbnails, while layer opacity carries through. If you want hidden layers included in an image export anyway, the export options screen offers a **Hidden layers** toggle whenever at least one layer is hidden.
+Exports match what you see: hidden layers are left out of PNG, SVG, PDF, and Mermaid [exports](/help/account-and-data/exporting-diagrams/), and out of shared thumbnails, while layer opacity carries through. If you want hidden layers included in an image export anyway, the export options screen offers a **Hidden layers** toggle whenever at least one layer is hidden and the Layers panel is switched on (it is never offered in Illustrate).
 
 <Note>
   You never have to manage layers to use livediagram: a tab with one layer behaves exactly as it

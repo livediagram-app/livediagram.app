@@ -260,7 +260,8 @@ export function PaletteDropdown({
     variant === 'flush'
       ? 'rounded-none border-0 px-3.5 py-3'
       : variant === 'toolbar'
-        ? 'h-9 rounded-md border-0 px-2'
+        ? // A phone's strip tucks the caret in a little closer.
+          'h-9 rounded-md border-0 px-2 phone:gap-1'
         : 'h-[26px] rounded-md border px-2';
   const trigger = (
     <button
@@ -392,6 +393,9 @@ export function PaletteDropdown({
                         // say it started.
                         <div
                           role="presentation"
+                          // A tour can ring one band: its heading through its last tile (the
+                          // Facilitate tour's Collaborate step).
+                          data-tour-id={`band-${heading.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}
                           className={`col-span-full px-1.5 pb-0.5 text-[10px] font-semibold uppercase tracking-wider text-slate-400 ${bandTint(opt.group)} ${
                             i === 0
                               ? 'pt-0.5'
@@ -406,6 +410,7 @@ export function PaletteDropdown({
                         role="option"
                         aria-selected={opt.id === value}
                         data-option-id={opt.id}
+                        data-tour-id={`option-${opt.id}`}
                         disabled={opt.disabled}
                         onClick={() => {
                           if (opt.disabled) return;
@@ -456,7 +461,7 @@ export function PaletteDropdown({
                               worth discovering and worth nothing at the cost of
                               the label's line. */}
                         {opt.shortcut ? (
-                          <kbd className="inline-flex items-center absolute right-0.5 top-0.5 rounded-[3px] px-0.5 text-[8px] font-semibold leading-[1.4] text-slate-400 dark:text-slate-400">
+                          <kbd className="inline-flex items-center absolute right-0.5 top-0.5 rounded-[3px] px-0.5 text-[8px] font-semibold leading-[1.4] text-slate-400 pointer-coarse:hidden dark:text-slate-400">
                             <span className="text-optical-line text-optical-caps [--optical-tracking:0em]">
                               {opt.shortcut}
                             </span>
@@ -510,7 +515,7 @@ export function PaletteDropdown({
                         {opt.icon ? <span className={ICON_WRAP}>{opt.icon}</span> : null}
                         <span className="flex-1 truncate">{opt.label}</span>
                         {opt.shortcut ? (
-                          <kbd className="inline-flex items-center rounded-[3px] border border-slate-300 bg-white px-1 text-[8px] font-semibold leading-[1.4] text-slate-500 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-400">
+                          <kbd className="inline-flex items-center rounded-[3px] border border-slate-300 bg-white px-1 text-[8px] font-semibold leading-[1.4] text-slate-500 pointer-coarse:hidden dark:border-slate-600 dark:bg-slate-900 dark:text-slate-400">
                             <span className="text-optical-line text-optical-caps [--optical-tracking:0em]">
                               {opt.shortcut}
                             </span>

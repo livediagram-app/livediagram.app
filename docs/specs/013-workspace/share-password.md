@@ -55,12 +55,14 @@ identity, share-code path) and [11-api](../015-api/api.md) (share links).
 
 ## API (apps/api)
 
-- `GET /api/documents/:id/share` (owner-only, existing): response carries
+- `GET /api/documents/:id/share` (owner, or a joined team member on a team document; existing): response carries
   `passwordSet: boolean` alongside `links`. This is how the Share dialog knows
   whether a password is in force.
-- `PUT /api/documents/:id/share-password` (owner-only). Body
+- `PUT /api/documents/:id/share-password` (owner, or a joined team member on a team document). Body
   `{ password: string | null }`. A null / empty / whitespace-only value clears
-  the password; anything else is hashed and stored. Returns
+  the password; anything else is trimmed, then hashed and stored. The visitor's
+  gate trims what is typed too, so a password saved with a stray leading or
+  trailing space is still the one a visitor can enter. Returns
   `{ passwordSet: boolean }`.
 - `GET /api/share/:code` (viewer resolve): if the document has a password, return
   **401 `{ error: 'password_required' }`** when the request carries no

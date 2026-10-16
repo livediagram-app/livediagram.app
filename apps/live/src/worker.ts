@@ -4,6 +4,8 @@
 // the real document id from `window.location.pathname`. See docs/specs/007-editor/new-document-route.md
 // for why we can't enumerate user-minted ids at build time.
 
+import { TRUSTED_TYPES_CSP } from '@livediagram/ui/trusted-types';
+
 type AssetsBinding = { fetch: (request: Request) => Promise<Response> };
 type Env = { ASSETS: AssetsBinding };
 
@@ -29,10 +31,12 @@ type Env = { ASSETS: AssetsBinding };
 //     level toggle covers the same ground but this code-side header
 //     is the source of truth so self-host deployments inherit it.
 //
-// CSP itself is left for a dedicated cycle: it needs explicit allow-
-// listing for Clerk's external script + the api / R2 origins, and
-// getting that wrong silently breaks auth.
+//   - Content-Security-Policy: Trusted Types alone, enforced
+//     (docs/specs/016-platform/trusted-types.md). The rest of a CSP
+//     (script-src for Clerk's external script, the api / R2 origins)
+//     is out of that spec's scope.
 const SECURITY_HEADERS: Record<string, string> = {
+  'Content-Security-Policy': TRUSTED_TYPES_CSP,
   'X-Frame-Options': 'DENY',
   'X-Content-Type-Options': 'nosniff',
   'Referrer-Policy': 'strict-origin-when-cross-origin',
@@ -89,8 +93,18 @@ export default {
         );
       }
     }
+    // A form link's page (docs/specs/030-forms/forms.md): one placeholder file backs every /form/<code>, as
+    // /document/<id> is backed above.
+    if (isFormPath(url.pathname) && url.pathname !== FORM_PLACEHOLDER_PATH) {
+      const rewritten = new URL(request.url);
+      rewritten.pathname = FORM_PLACEHOLDER_PATH;
+      return withSecurityHeaders(
+        await env.ASSETS.fetch(new Request(rewritten.toString(), request)),
+      );
+    }
     return withSecurityHeaders(await env.ASSETS.fetch(request), { frameable });
   },
 };
 import { isEditorPath } from '../lib/legacy-editor-path';
+import { FORM_PLACEHOLDER_PATH, isFormPath } from '../lib/form-path';
 import { EXPLORER_LANDING_PATH } from '../lib/explorer-landing';

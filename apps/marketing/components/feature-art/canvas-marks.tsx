@@ -1,9 +1,10 @@
 // Shared marks for the richer feature-card scenes (content.tsx, structure.tsx, motion.tsx): the
 // scene's SVG surface, the editor's chrome surfaces, a teammate's cursor and a text caret. Each
-// scene reads finished at rest and moves only an accent (fa-d-* in app/feature-art-animations.css),
+// scene reads finished at rest and moves only an accent (fa-d-* in app/feature-art/content.css),
 // so any moment of the loop is a good picture, in light and in dark.
 
 import type { CSSProperties, ReactNode } from 'react';
+import { Cursor as TeammateCursor } from './shared';
 
 // Every scene is drawn in this box: the card's art strip is about three times wider than tall.
 const VIEWBOX = '0 0 300 96';
@@ -106,17 +107,7 @@ export function Cursor({
       }
     >
       <g transform={`translate(${x} ${y})`}>
-        <path
-          d="M0 0 L0 9.5 L2.7 7 L4.6 10.9 L6.1 10.2 L4.2 6.4 L7.8 6.4 Z"
-          fill={color}
-          stroke="#fff"
-          strokeWidth="0.8"
-          strokeLinejoin="round"
-        />
-        <rect x="6.5" y="10" width={name.length * 3.6 + 6} height="8" rx="2" fill={color} />
-        <text x="9.5" y="15.9" fontSize="5.6" fontWeight="600" fill="#fff">
-          {name}
-        </text>
+        <TeammateCursor color={color} name={name} size={9.5} />
       </g>
     </g>
   );

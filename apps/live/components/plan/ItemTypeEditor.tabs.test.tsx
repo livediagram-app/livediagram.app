@@ -10,7 +10,7 @@ vi.mock('./PlanContext', () => ({ usePlan: () => plan }));
 
 afterEach(cleanup);
 
-function editor(type: ItemTypeDef = ITEM_TYPES[1]!) {
+function editor(type: ItemTypeDef = ITEM_TYPES[1]) {
   for (const key of Object.keys(plan)) delete plan[key];
   Object.assign(plan, { types: ITEM_TYPES, items: new Map(), statusNames: new Map() });
   render(
@@ -18,7 +18,6 @@ function editor(type: ItemTypeDef = ITEM_TYPES[1]!) {
       type={type}
       types={ITEM_TYPES}
       itemCount={0}
-      canDelete
       onSave={vi.fn()}
       onDelete={() => {}}
       onClose={() => {}}
@@ -47,7 +46,6 @@ describe('the type editor’s tabs', () => {
         type={null}
         types={ITEM_TYPES}
         itemCount={0}
-        canDelete={false}
         onSave={vi.fn()}
         onDelete={() => {}}
         onClose={() => {}}
@@ -100,7 +98,7 @@ describe('the type editor’s tabs', () => {
       .map((t) => t.getAttribute('aria-label'))
       .filter((l) => /name$/.test(l ?? ''));
     expect(names).toEqual(['Details name', 'Tab 1 name']);
-    expect((screen.getByLabelText('Tab 1 name') as HTMLInputElement).value).toBe('Overview');
+    expect(screen.getByLabelText<HTMLInputElement>('Tab 1 name').value).toBe('Overview');
   });
 
   it('moves between tabs with the arrow keys', () => {
@@ -130,7 +128,7 @@ describe('the type editor’s tabs', () => {
         .querySelector('[aria-label="Needs attention"]');
     fireEvent.change(screen.getByLabelText('Name'), { target: { value: '' } });
     expect(configuration()).toBeNull();
-    fireEvent.change(screen.getByLabelText('Name'), { target: { value: ITEM_TYPES[0]!.label } });
+    fireEvent.change(screen.getByLabelText('Name'), { target: { value: ITEM_TYPES[0].label } });
     expect(configuration()).not.toBeNull();
     expect(
       screen.getByRole('tab', { name: /States/ }).querySelector('[aria-label="Needs attention"]'),
@@ -153,7 +151,7 @@ describe('the type editor’s tabs', () => {
       { length: ITEM_TYPE_EXCLUDED_STATUSES_MAX + 1 },
       (_, i) => `s${i}`,
     );
-    editor({ ...ITEM_TYPES[1]!, excludedStatuses });
+    editor({ ...ITEM_TYPES[1], excludedStatuses });
     expect(screen.getByText(/Too many states turned off/)).toBeTruthy();
     expect(screen.queryByText(/A custom field needs a name/)).toBeNull();
     expect(
@@ -184,10 +182,9 @@ describe('deleting a type', () => {
     Object.assign(plan, { types: ITEM_TYPES, items: new Map(), statusNames: new Map() });
     render(
       <ItemTypeEditor
-        type={ITEM_TYPES[1]!}
+        type={ITEM_TYPES[1]}
         types={ITEM_TYPES}
         itemCount={2}
-        canDelete
         onSave={vi.fn()}
         onDelete={onDelete}
         onClose={() => {}}
@@ -195,7 +192,9 @@ describe('deleting a type', () => {
     );
     fireEvent.click(screen.getByRole('button', { name: 'Delete' }));
     expect(
-      screen.getByText('Delete the Task type? Its 2 cards will be moved to the Trash too.'),
+      screen.getByRole('dialog', {
+        name: 'Delete the Task type? Its 2 cards will be moved to the Trash too.',
+      }),
     ).toBeTruthy();
     const pop = () => document.querySelector<HTMLElement>('[data-confirm-popover]')!;
     fireEvent.click(within(pop()).getByRole('button', { name: 'Cancel' }));
@@ -214,10 +213,9 @@ describe('the Display tab', () => {
     Object.assign(plan, { types: ITEM_TYPES, items: new Map(), statusNames: new Map() });
     render(
       <ItemTypeEditor
-        type={ITEM_TYPES[1]!}
+        type={ITEM_TYPES[1]}
         types={ITEM_TYPES}
         itemCount={0}
-        canDelete
         onSave={onSave}
         onDelete={() => {}}
         onClose={() => {}}
@@ -235,6 +233,6 @@ describe('the Display tab', () => {
       key: 'ArrowUp',
     });
     fireEvent.click(screen.getByRole('button', { name: 'Save' }));
-    expect(onSave.mock.lastCall![0].display).toEqual({ minimal: { lead: ['due'] } });
+    expect(onSave.mock.lastCall![0]).toHaveProperty('display', { minimal: { lead: ['due'] } });
   });
 });

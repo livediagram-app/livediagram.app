@@ -14,7 +14,7 @@ export const metadata = helpMetadata({
 
 Every team has a shared library: a folder tree plus documents that all joined members can see and manage. It works just like your personal folder tree, only shared. It appears as a **Team documents** card on the team page in the Explorer.
 
-<Figure caption="A per-team folder tree of documents, each carrying a Team badge that any joined member can manage.">
+<Figure caption="A team's library shows one folder level at a time, under the Team documents breadcrumb, with the view toggle and Create.">
   <TeamSharedTree />
 </Figure>
 
@@ -27,7 +27,7 @@ A team document belongs to the whole team, not just to the person who made it. A
 - rename, duplicate, and delete a document,
 - re-folder a document within the team, or move it to another team they belong to.
 
-Deleting a team document moves it to the team's Trash, which every joined member can see in Settings › Trash and restore from. See [Trash](/help/account-and-data/trash/).
+Deleting a team document moves it to the team's Trash, which every joined member can see in the Trash (the **More** group of the Explorer sidebar, or **Open Trash** in Settings) and restore from. See [Trash](/help/account-and-data/trash/).
 
 Joined membership grants edit access to every document in the library. There are no per-folder or per-member permissions inside a team: everyone who has joined can manage everything. People with a pending, un-accepted invite get nothing until they accept.
 
@@ -39,9 +39,10 @@ A document lives in exactly one place: your personal tree, or one team's library
 
 - **Moving a document into a team** files it in that team's library and removes it from your personal lists. Only the document's owner can move a personal document into a team.
 - **Moving a document out of a team** into your own personal library transfers ownership to you, the mover, since personal folders are tied to their owner. (If the owner is the one moving it out, ownership stays with them.)
+- **Moving a document to another team** whose members don't include its owner also transfers ownership to you, so the document never stays owned by someone outside the team that holds it.
 - **Re-foldering within the team** can be done by any joined member.
 
-The unified **Move to folder** picker is the same browser as the new-document **Save in** step: pick a space first (**My documents**, or one of your teams), then browse into the folder you want, so you can file a document anywhere you have access from one place. A document already in a folder opens the picker where it is, that folder selected. On a team's own page the picker opens on that team, with My documents and your other teams one **Back** away, so a team document can always be moved back to your personal tree.
+**Change Folder** opens a browser of every place you can file a document: pick a space first (**My documents**, or one of your teams), then browse into the folder you want, so you can file a document anywhere you have access from one place. A document already in a folder opens the picker where it is, that folder selected. On a team's own page the picker opens on that team, with My documents and your other teams one step back, under **All spaces**, so a team document can always be moved back to your personal tree.
 
 ## When someone leaves
 

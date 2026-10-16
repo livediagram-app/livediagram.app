@@ -77,3 +77,18 @@ export function pairsFrom(args: EvalValue[], start: number): [EvalValue, EvalVal
   for (let i = 0; i < rest.length; i += 2) out.push([rest[i]!, rest[i + 1]!]);
   return out;
 }
+
+// The *IFS functions' numbers: the first argument's numbers where every (range, criterion) pair after it matches.
+// `usage` is the #N/A message for missing pairs.
+export function ifsNumbers(args: EvalValue[], f: Frame, usage: string): number[] | SheetError {
+  const pairs = pairsFrom(args, 1);
+  if (!pairs) return err('#N/A', usage);
+  const m = criteriaMask(pairs, f);
+  if (isError(m)) return m;
+  const values = arrayArg(args[0]!, f);
+  const a = dims(values);
+  const b = dims(m.shape);
+  if (a.rows !== b.rows || a.cols !== b.cols)
+    return err('#VALUE!', 'The ranges must be the same size');
+  return maskedNumbers(values, m.mask);
+}

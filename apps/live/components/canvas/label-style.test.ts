@@ -35,18 +35,17 @@ describe('labelTextStyleCss', () => {
 });
 
 describe('effectiveRunStyle', () => {
-  const run = (over: Partial<TextRun> = {}): TextRun => ({ text: 'x', ...over }) as TextRun;
-  const el = (over: Record<string, unknown> = {}): BoxedElement =>
-    ({
-      id: 'e',
-      type: 'shape',
-      shape: 'square',
-      x: 0,
-      y: 0,
-      width: 10,
-      height: 10,
-      ...over,
-    }) as BoxedElement;
+  const run = (over: Partial<TextRun> = {}): TextRun => ({ text: 'x', ...over });
+  const el = (over: Record<string, unknown> = {}): BoxedElement => ({
+    id: 'e',
+    type: 'shape',
+    shape: 'square',
+    x: 0,
+    y: 0,
+    width: 10,
+    height: 10,
+    ...over,
+  });
 
   it('lets a run override the element default', () => {
     expect(effectiveRunStyle(run({ bold: true }), el({ textBold: false }), RUN_PX).fontWeight).toBe(

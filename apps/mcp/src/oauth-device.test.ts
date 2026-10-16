@@ -17,7 +17,7 @@ let afterGet: ((key: string) => Promise<void>) | null = null;
 function mockKV(): KVNamespace {
   const m = new Map<string, string>();
   return {
-    get: async (k: string, type?: string) => {
+    get: async (k: string, type?: string): Promise<unknown> => {
       const v = m.get(k);
       if (afterGet) await afterGet(k);
       if (v == null) return null;
@@ -82,7 +82,7 @@ const poll = async (deviceCode: string, clientId = CLI_CLIENT_ID) => {
     form({ grant_type: DEVICE_CODE_GRANT, device_code: deviceCode, client_id: clientId }),
     env,
   );
-  return { status: res.status, body: (await res.json()) as Record<string, unknown> };
+  return { status: res.status, body: await res.json<Record<string, unknown>>() };
 };
 
 describe('starting', () => {

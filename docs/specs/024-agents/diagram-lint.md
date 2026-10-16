@@ -13,22 +13,25 @@ reveal (`docs/research/agent-cli/authoring-from-scratch.md`).
 
 Each **lint finding** has a code, a severity, the refs involved and a fix phrased as a command or operation.
 
-| Code                | Severity | Finding                                                                                                                             |
-| ------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| `box-overlap`       | error    | Two boxes that arrows connect partly overlap; one wholly inside another does not count                                              |
-| `arrow-dangling`    | error    | An arrow pinned to a missing element                                                                                                |
-| `arrow-behind-box`  | warning  | An arrow passes through a box it does not connect                                                                                   |
-| `edge-crossings`    | warning  | More crossing arrow pairs than `LINT_CROSSINGS_PER_ARROW` × arrows                                                                  |
-| `label-collision`   | warning  | An arrow label overlaps a box                                                                                                       |
-| `label-overflow`    | warning  | A label needs more lines than its box holds                                                                                         |
-| `node-isolated`     | warning  | A shape with no arrows on a tab that is otherwise a graph                                                                           |
-| `group-escape`      | warning  | A member lies outside its frame                                                                                                     |
-| `group-split-edges` | info     | Most of a frame's arrows cross its border                                                                                           |
-| `duplicate-label`   | info     | Two boxes share a label                                                                                                             |
-| `flow-backwards`    | info     | Arrows point against the flow direction                                                                                             |
-| `aspect-extreme`    | info     | The drawing is more than `LINT_MAX_ASPECT` times wider than tall, or the reverse                                                    |
-| `colour-on-themed`  | info     | A fill or stroke the tab's theme would not paint, on an element the theme colours, bound to no preset or swatch (stickies excepted) |
+| Code                | Severity | Finding                                                                                                                                                                                                                                                                                                                                                                                                       |
+| ------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `box-overlap`       | error    | Two boxes that arrows connect partly overlap; one wholly inside another does not count                                                                                                                                                                                                                                                                                                                        |
+| `arrow-dangling`    | error    | An arrow pinned to a missing element                                                                                                                                                                                                                                                                                                                                                                          |
+| `arrow-behind-box`  | warning  | An arrow passes through a box it does not connect (not one drawn over boxes by choice, `routeBehind: false`)                                                                                                                                                                                                                                                                                                  |
+| `edge-crossings`    | warning  | More crossing arrow pairs than `LINT_CROSSINGS_PER_ARROW` × arrows (a line drawn over by choice, `routeBehind: false`, crosses by design and is not counted)                                                                                                                                                                                                                                                  |
+| `label-collision`   | warning  | An arrow label overlaps a box or another arrow's label, or another arrow's line strikes it through (a run along its own track aside); its fix says how many characters fit on the edge's longest run, or, with no box in the way (another label or a line), where along its own line it sits clear                                                                                                            |
+| `label-overflow`    | warning  | A label needs more lines than its box holds, or a card's title or subtitle is cut short with an ellipsis                                                                                                                                                                                                                                                                                                      |
+| `node-isolated`     | warning  | A labelled shape with no arrows on a tab that is otherwise a graph (an unlabelled one is decoration: a key's sample, a card)                                                                                                                                                                                                                                                                                  |
+| `group-escape`      | warning  | A member lies outside its frame                                                                                                                                                                                                                                                                                                                                                                               |
+| `group-split-edges` | info     | Most of a frame's arrows cross its border, when some run inside it (a frame none of whose arrows run inside is a role group, a services tier, split by design) and the flow does not pass through it (a pipeline stage: every arrow in from wholly before it and every arrow out to wholly after it, down or across)                                                                                          |
+| `duplicate-label`   | info     | Two boxes share a label (a card's title and subtitle count too, so mirrored cards differ; event-storming notes other than domain events repeat by design and never count)                                                                                                                                                                                                                                     |
+| `flow-backwards`    | info     | Arrows point against the flow direction (not one that closes a loop: a retry runs back by design)                                                                                                                                                                                                                                                                                                             |
+| `aspect-extreme`    | info     | The drawing is more than `LINT_MAX_ASPECT` times wider than tall, or the reverse, on a graph, or on a tab with no frames or lanes whose boxes some line joins (a board of columns and stickies is shaped by its design)                                                                                                                                                                                       |
+| `colour-on-themed`  | info     | A fill or stroke the tab's theme would not paint, on an element the theme colours, bound to no preset or swatch (stickies, and a mind map's branch hues, excepted). A changeset's lint names only the colours that write set, never a template's own (a replace landing a template, or a template's tabs at `create_document`, name none); a template's scaffold layer and an Illustrate tab are never judged |
+| `text-overflow`     | warning  | Two texts print over each other, on any tab (a board's column heading wrapped onto its subtitle); and on an Illustrate tab, a page's text needs more lines than its box holds (text on a page is its content, not a caption). Turned text and text on a curve are left out                                                                                                                                    |
 
+- A fix never lays out shapes alone on a tab with frames or lanes: `layout` would leave the groups behind, so there a
+  crossing fix reroutes an arrow, and the drawing's shape is the groups' to set.
 - The error codes judge the diagram's graph. Boxes no arrow connects are decoration (an icon on a card, a sticker,
   a Venn circle) and may overlap by design; a line with both ends free is a drawing, not a broken arrow. The
   editor's templates use both and lint without errors.
@@ -54,7 +57,9 @@ I group-split-edges  core: 12 of 13 arrows cross its border  fix: group by owner
 ## Where it runs
 
 - One pure package, `@livediagram/diagram-lint`, using the geometry `@livediagram/document` already has
-  (`arrowPolyline`, `pathsCross`, `pathPassesThrough`, the element grid, refs and containment).
+  (`arrowRoutePoints`, `pathsCross`, `pathPassesThrough`, the element grid, refs and containment). It reads each line
+  as drawn: ends sharing an anchor fanned apart as the renderers and the label pass place them, so a label sitting
+  between two fanned lines is never called struck, and a spot it names for a struck label is clear on the drawing.
 - Every changeset result's last line carries the lint verdict, `lint clean` or `lint 2 warnings, 1 info`
   ([Edit operations](edit-operations.md#results)); `tab lint` shows the findings. A changeset lints its whole result
   tab, not only what it touched.
@@ -62,7 +67,8 @@ I group-split-edges  core: 12 of 13 arrows cross its border  fix: group by owner
   ([Document views](document-views.md)); the CLI's `tab lint` reads it.
 - The CLI lints a graph or Mermaid file locally, before anything is written (`graph lint`).
 - The MCP appends the summary line to the result of every tool that writes a tab's elements: `create_document`,
-  `add_tab` and `update_document`.
+  `add_tab` and `update_document`. An `update_document` whose edit changed nothing records no changeset and so has
+  no changeset lint: it reads the tab's lint view instead, so the answer still lists what is wrong with the tab.
 
 ## Properties
 

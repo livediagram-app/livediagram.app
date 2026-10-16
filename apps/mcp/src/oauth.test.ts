@@ -7,7 +7,7 @@ import { isAllowedRedirectUri, registerOauthRoutes } from './oauth';
 function mockKV(): KVNamespace {
   const m = new Map<string, string>();
   return {
-    get: async (k: string, type?: string) => {
+    get: async (k: string, type?: string): Promise<unknown> => {
       const v = m.get(k);
       if (v == null) return null;
       return type === 'json' ? JSON.parse(v) : v;
@@ -43,7 +43,7 @@ async function register(): Promise<string> {
     env,
   );
   expect(res.status).toBe(201);
-  return ((await res.json()) as { client_id: string }).client_id;
+  return (await res.json<{ client_id: string }>()).client_id;
 }
 
 describe('discovery', () => {
@@ -57,6 +57,15 @@ describe('discovery', () => {
 });
 
 describe('dynamic client registration', () => {
+  // A body of `null` parses as JSON; reading a field off it threw, a 500 for a malformed client's request.
+  it('refuses a null body with a 400, not a crash', async () => {
+    const res = await app.request(
+      '/oauth/register',
+      { method: 'POST', body: 'null', headers: { 'Content-Type': 'application/json' } },
+      env,
+    );
+    expect(res.status).toBe(400);
+  });
   it('rejects a non-https redirect uri', async () => {
     const res = await app.request(
       '/oauth/register',
@@ -296,9 +305,8 @@ describe('full authorize -> complete -> token flow', () => {
       },
       env,
     );
-    const code = new URL(
-      ((await comp.json()) as { redirectTo: string }).redirectTo,
-    ).searchParams.get('code')!;
+    const { redirectTo } = (await comp.json()) as { redirectTo: string };
+    const code = new URL(redirectTo).searchParams.get('code')!;
 
     const bad = await app.request(
       '/oauth/token',
@@ -313,7 +321,7 @@ describe('full authorize -> complete -> token flow', () => {
       },
       env,
     );
-    expect(((await bad.json()) as { error: string }).error).toBe('invalid_grant');
+    expect((await bad.json<{ error: string }>()).error).toBe('invalid_grant');
 
     // The code was burned even on the failed attempt — a correct retry now fails.
     const retry = await app.request(
@@ -329,7 +337,7 @@ describe('full authorize -> complete -> token flow', () => {
       },
       env,
     );
-    expect(((await retry.json()) as { error: string }).error).toBe('invalid_grant');
+    expect((await retry.json<{ error: string }>()).error).toBe('invalid_grant');
   });
 
   it('refuses to redeem a code for a different client_id', async () => {
@@ -351,9 +359,8 @@ describe('full authorize -> complete -> token flow', () => {
       },
       env,
     );
-    const code = new URL(
-      ((await comp.json()) as { redirectTo: string }).redirectTo,
-    ).searchParams.get('code')!;
+    const { redirectTo } = (await comp.json()) as { redirectTo: string };
+    const code = new URL(redirectTo).searchParams.get('code')!;
     const res = await app.request(
       '/oauth/token',
       {
@@ -368,7 +375,7 @@ describe('full authorize -> complete -> token flow', () => {
       },
       env,
     );
-    expect(((await res.json()) as { error: string }).error).toBe('invalid_grant');
+    expect((await res.json<{ error: string }>()).error).toBe('invalid_grant');
   });
 
   it('rejects authorize for an unregistered redirect uri', async () => {
@@ -409,9 +416,8 @@ describe('full authorize -> complete -> token flow', () => {
       },
       env,
     );
-    const code = new URL(
-      ((await comp.json()) as { redirectTo: string }).redirectTo,
-    ).searchParams.get('code')!;
+    const { redirectTo } = (await comp.json()) as { redirectTo: string };
+    const code = new URL(redirectTo).searchParams.get('code')!;
     const tok = await app.request(
       '/oauth/token',
       {
@@ -425,7 +431,7 @@ describe('full authorize -> complete -> token flow', () => {
       },
       env,
     );
-    expect(((await tok.json()) as { error: string }).error).toBe('invalid_request');
+    expect((await tok.json<{ error: string }>()).error).toBe('invalid_request');
   });
 });
 
@@ -437,6 +443,11 @@ describe('isAllowedRedirectUri', () => {
     expect(isAllowedRedirectUri('http://example.com/cb')).toBe(false);
     expect(isAllowedRedirectUri('javascript://localhost/%0Aalert(1)//')).toBe(false);
     expect(isAllowedRedirectUri('not a url')).toBe(false);
+  });
+  // RFC 6749 §3.1.2: a redirection endpoint URI must not include a fragment (the api's Drive check already refused one).
+  it('refuses a fragment, even an empty one', () => {
+    expect(isAllowedRedirectUri('https://claude.ai/cb#x')).toBe(false);
+    expect(isAllowedRedirectUri('https://claude.ai/cb#')).toBe(false);
   });
 });
 

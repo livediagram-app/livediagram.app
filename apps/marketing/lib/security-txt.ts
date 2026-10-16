@@ -11,8 +11,8 @@ export const SECURITY_TXT_VALIDITY_DAYS = 365;
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
-export const SECURITY_ADVISORY_URL = `${REPO_URL}/security/advisories/new`;
-export const SECURITY_POLICY_URL = `${SITE_URL}/help/policies/report-a-vulnerability/`;
+const SECURITY_ADVISORY_URL = `${REPO_URL}/security/advisories/new`;
+const SECURITY_POLICY_URL = `${SITE_URL}/help/policies/report-a-vulnerability/`;
 
 export function securityTxt(now: Date): string {
   const expires = new Date(now.getTime() + SECURITY_TXT_VALIDITY_DAYS * DAY_MS);

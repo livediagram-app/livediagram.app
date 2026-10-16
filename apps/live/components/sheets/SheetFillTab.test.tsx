@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
-// A Sheet filling its tab (docs/specs/029-sheets/sheet.md "Fill Tab"): set from Sheet Settings' View, asked first when
-// the rest of the canvas would be deleted, and put back on the canvas.
+// A Sheet filling its tab (docs/specs/029-sheets/sheet.md "Fill Tab"): a Sheet tab's always does, so Sheet Settings has
+// no switch for it, and a filling Sheet has no Maximise.
 import { act, fireEvent, screen } from '@testing-library/react';
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { setPlanCover } from '@/hooks/plan/plan-cover-store';
@@ -13,9 +13,7 @@ import {
 import { SheetHeader } from './SheetHeader';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
-const confirm = vi.fn(async () => true);
-vi.mock('@/hooks/ui/useConfirm', () => ({ useConfirm: () => confirm }));
-const plan = { tabOthers: vi.fn(() => ({ count: 2, locked: 0 })), fillTabSheet: vi.fn() };
+const plan = {};
 vi.mock('@/components/plan/PlanContext', () => ({ usePlan: () => plan }));
 
 beforeAll(stubResizeObserver);
@@ -24,7 +22,7 @@ describe('Fill Tab on a Sheet', () => {
   let h: SheetHarness;
   beforeEach(async () => {
     vi.clearAllMocks();
-    setPlanCover({ fillTabId: null, fillTabKind: null, tabElementCount: 0 });
+    setPlanCover({ fillTabId: null, fillTabKind: null });
     h = await makeSheet({ cells: { A1: '1' } });
   });
   const show = () =>
@@ -41,47 +39,17 @@ describe('Fill Tab on a Sheet', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Sheet Options' }));
   };
 
-  it('fills the tab after asking, when the rest of the canvas would go', async () => {
+  it('offers no Fill Tab: a Sheet tab always fills it (docs/specs/026-plan/plan-tabs.md)', () => {
     show();
     openView();
-    expect(screen.getByRole('radio', { name: 'On Canvas' }).getAttribute('aria-checked')).toBe(
-      'true',
-    );
-    await act(async () => {
-      fireEvent.click(screen.getByRole('radio', { name: 'Fill Tab' }));
-    });
-    expect(confirm).toHaveBeenCalledWith(
-      expect.objectContaining({ confirmLabel: 'Delete and Fill Tab' }),
-    );
-    expect(plan.fillTabSheet).toHaveBeenCalledWith('el1', true);
+    expect(screen.queryByRole('radio', { name: 'Fill Tab' })).toBeNull();
+    expect(screen.queryByRole('radio', { name: 'On Canvas' })).toBeNull();
   });
 
-  it('keeps the canvas when the confirm is cancelled, and fills an empty tab at once', async () => {
-    confirm.mockResolvedValueOnce(false);
-    show();
-    openView();
-    await act(async () => {
-      fireEvent.click(screen.getByRole('radio', { name: 'Fill Tab' }));
-    });
-    expect(plan.fillTabSheet).not.toHaveBeenCalled();
-    plan.tabOthers.mockReturnValueOnce({ count: 0, locked: 0 });
-    openView();
-    await act(async () => {
-      fireEvent.click(screen.getByRole('radio', { name: 'Fill Tab' }));
-    });
-    expect(plan.fillTabSheet).toHaveBeenCalledWith('el1', true);
-  });
-
-  it('while filling the tab, hides Maximise and Focus and offers On Canvas', () => {
-    setPlanCover({ fillTabId: 'el1', fillTabKind: 'Sheet', tabElementCount: 1 });
+  it('while filling the tab, hides Maximise', () => {
+    setPlanCover({ fillTabId: 'el1', fillTabKind: 'Sheet' });
     show();
     expect(screen.queryByRole('button', { name: 'Maximise Sheet' })).toBeNull();
-    openView();
-    expect(screen.getByRole('radio', { name: 'Fill Tab' }).getAttribute('aria-checked')).toBe(
-      'true',
-    );
-    fireEvent.click(screen.getByRole('radio', { name: 'On Canvas' }));
-    expect(plan.fillTabSheet).toHaveBeenCalledWith('el1', false);
-    act(() => setPlanCover({ fillTabId: null, fillTabKind: null, tabElementCount: 0 }));
+    act(() => setPlanCover({ fillTabId: null, fillTabKind: null }));
   });
 });

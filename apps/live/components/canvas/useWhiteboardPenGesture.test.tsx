@@ -30,14 +30,20 @@ function pointer(type: string, { x, y, id = 1, pressure, shift = false }: Init):
   return e;
 }
 
+// The ink the first committed stroke carried.
+const inkOf = (s: ReturnType<typeof setup>) => s.onCommitFreehand.mock.calls[0]?.[2] ?? {};
+
 function setup(zoom = 1) {
   const wrapper = document.createElement('div');
   wrapper.getBoundingClientRect = () => ({ left: 10, top: 20 }) as DOMRect;
   const isPinchingRef = { current: false };
-  const onCommitFreehand = vi.fn();
+  const onCommitFreehand =
+    vi.fn<Parameters<typeof useWhiteboardPenGesture>[0]['onCommitFreehand']>();
   let renders = 0;
+  type Props = { pendingDraw: PendingDraw | null; whiteboard?: boolean };
+  const initialProps: Props = { pendingDraw: PEN };
   const hook = renderHook(
-    (p: { pendingDraw: PendingDraw | null; whiteboard?: boolean }) => {
+    (p: Props) => {
       renders++;
       return useWhiteboardPenGesture({
         pendingDraw: p.pendingDraw,
@@ -48,12 +54,7 @@ function setup(zoom = 1) {
         whiteboard: p.whiteboard ?? true,
       });
     },
-    {
-      initialProps: { pendingDraw: PEN } as {
-        pendingDraw: PendingDraw | null;
-        whiteboard?: boolean;
-      },
-    },
+    { initialProps },
   );
   const press = (x: number, y: number, pointerType = 'mouse', pressure = 0.5) =>
     act(() => {
@@ -99,7 +100,8 @@ describe('useWhiteboardPenGesture', () => {
     s.send(pointer('pointermove', { x: 30, y: 20, pressure: 0.9 }));
     // A lifted pen reports no pressure: the lift point keeps the last one.
     s.send(pointer('pointerup', { x: 40, y: 20, pressure: 0 }));
-    const [points, , ink] = s.onCommitFreehand.mock.calls[0]!;
+    const [points] = s.onCommitFreehand.mock.calls[0]!;
+    const ink = inkOf(s);
     expect(points).toHaveLength(4);
     expect(ink).toEqual({ pressures: [0.3, 0.6, 0.9, 0.9], streamline: 0.2 });
   });
@@ -129,7 +131,8 @@ describe('useWhiteboardPenGesture', () => {
     s.press(40, 60, 'pen', 0.7);
     s.send(pointer('pointerup', { x: 40, y: 60 }));
     expect(s.onCommitFreehand).toHaveBeenCalledTimes(1);
-    const [points, , ink] = s.onCommitFreehand.mock.calls[0]!;
+    const [points] = s.onCommitFreehand.mock.calls[0]!;
+    const ink = inkOf(s);
     expect(points).toEqual([{ x: 30, y: 40 }]);
     expect(ink.pressures).toHaveLength(1);
   });
@@ -239,7 +242,7 @@ describe('useWhiteboardPenGesture', () => {
       const shown = s.stroke.shaped();
       expect(shown!.bbox).toEqual({ x: 0, y: 0, width: 150, height: 150 });
       s.send(pointer('pointerup', { x: 160, y: 90, shift: true }));
-      expect(s.onCommitFreehand.mock.calls[0]![2].snapped).toEqual(shown);
+      expect(inkOf(s).snapped).toEqual(shown);
     });
 
     it('lets it free again on the next move once Shift is released', () => {
@@ -247,7 +250,7 @@ describe('useWhiteboardPenGesture', () => {
       s.send(pointer('pointermove', { x: 160, y: 90, shift: true }));
       s.send(pointer('pointermove', { x: 161, y: 90 }));
       s.send(pointer('pointerup', { x: 161, y: 90 }));
-      expect(s.onCommitFreehand.mock.calls[0]![2].snapped.bbox).toEqual({
+      expect(inkOf(s).snapped?.bbox).toEqual({
         x: 0,
         y: 0,
         width: 151,
@@ -272,7 +275,7 @@ describe('useWhiteboardPenGesture', () => {
       s.send(pointer('pointermove', { x: 160, y: 90 }));
       const shown = s.stroke.shaped();
       s.send(pointer('pointerup', { x: 160, y: 90, shift: true }));
-      expect(s.onCommitFreehand.mock.calls[0]![2].snapped).toEqual(shown);
+      expect(inkOf(s).snapped).toEqual(shown);
     });
 
     it('commits a drawn rectangle as a clean 5:3, measured as Shift is pressed', () => {
@@ -280,10 +283,10 @@ describe('useWhiteboardPenGesture', () => {
       s.stroke.snapTo({ ...circle, kind: 'square' });
       s.send(pointer('pointermove', { x: 160, y: 90, shift: true }));
       s.send(pointer('pointerup', { x: 160, y: 90, shift: true }));
-      const landed = s.onCommitFreehand.mock.calls[0]![2].snapped;
-      expect(landed.kind).toBe('square');
-      expect(landed.bbox.width).toBe(150);
-      expect(landed.bbox.height).toBeCloseTo(90, 9);
+      const landed = inkOf(s).snapped;
+      expect(landed?.kind).toBe('square');
+      expect(landed?.bbox.width).toBe(150);
+      expect(landed?.bbox.height).toBeCloseTo(90, 9);
     });
 
     it('takes Shift held on the press as held from the start', () => {
@@ -296,7 +299,7 @@ describe('useWhiteboardPenGesture', () => {
             pointerId: 1,
             pressure: 0.5,
             shiftKey: true,
-          } as ReactPointerEvent,
+          },
           { x: 100, y: 60 },
         );
       });
@@ -342,8 +345,8 @@ describe('useWhiteboardPenGesture, with Alt', () => {
     // Releasing Alt changes nothing.
     expect(stroke.shaped()?.kind).toBe('square');
     s.send(pointer('pointerup', { x: 10, y: 30 }));
-    const [, , ink] = s.onCommitFreehand.mock.calls[0]!;
-    expect(ink.snapped.kind).toBe('square');
+    const ink = inkOf(s);
+    expect(ink.snapped?.kind).toBe('square');
     expect(ink.keepInk).toBeUndefined();
   });
 
@@ -359,7 +362,7 @@ describe('useWhiteboardPenGesture, with Alt', () => {
     s.send(key('keyup'));
     expect(stroke.inkHeld()).toBe(false);
     s.send(pointer('pointerup', { x: 10, y: 30 }));
-    const [, , ink] = s.onCommitFreehand.mock.calls[0]!;
+    const ink = inkOf(s);
     expect(ink.snapped).toBeUndefined();
     expect(ink.keepInk).toBe(true);
   });

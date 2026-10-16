@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cpuMsOf } from '@livediagram/vitest-config/cpu-time';
+import { cpuBudgetMs, cpuMsOf } from '@livediagram/vitest-config/cpu-time';
 import { createShape } from './factories';
 import {
   mindMarkdownToMarks,
@@ -15,7 +15,7 @@ import type { Element, ShapeElement } from './index';
 // Bold, italic and underline in an outline (docs/specs/009-elements/mind-node.md "Edit Outline").
 
 const node = (extra: Partial<ShapeElement>) =>
-  ({ ...(createShape('mind-node', 0, 0) as ShapeElement), id: 'n', ...extra }) as ShapeElement;
+  ({ ...createShape('mind-node', 0, 0), id: 'n', ...extra }) as ShapeElement;
 
 describe('mindMarkdownToMarks', () => {
   it('reads bold, italic and underline', () => {
@@ -70,6 +70,23 @@ describe('mindMarksToMarkdown', () => {
       { text: 'both', italic: true, underline: true },
       { text: ' _edge' },
     ]);
+  });
+});
+
+// Bold and italic on one run are written `***x***`: the reader split that into ** and *, closed the outer ** first and
+// dropped the open *, so a node renamed in the outline came back bold only, with a star either side of its words.
+describe('bold and italic at once', () => {
+  it('reads back as written, underlined too', () => {
+    const marks = [
+      { text: 'a ' },
+      { text: 'both', bold: true, italic: true },
+      { text: ' and ' },
+      { text: 'all', bold: true, italic: true, underline: true },
+    ];
+    const md = mindMarksToMarkdown(marks);
+    expect(md).toBe('a ***both*** and <u>***all***</u>');
+    expect(mindMarkdownToMarks(md)).toEqual(marks);
+    expect(mindMarkdownToMarks('___x___')).toEqual([{ text: 'x', bold: true, italic: true }]);
   });
 });
 
@@ -145,6 +162,6 @@ describe('reading stays linear (CodeQL js/polynomial-redos)', () => {
       mindMarkdownToMarks('*_'.repeat(25_000));
     });
     expect(read).toEqual([{ text: '['.repeat(50_000) }]);
-    expect(spent).toBeLessThan(200);
+    expect(spent).toBeLessThan(cpuBudgetMs(200));
   });
 });

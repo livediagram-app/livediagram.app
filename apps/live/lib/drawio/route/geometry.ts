@@ -4,6 +4,8 @@
 // (mxgraph/src/util/mxUtils.js, mxConstants.js; Apache-2.0). Each function names its source.
 // Units are draw.io's own: the view at scale 1, translate 0.
 
+import { boundsOfPoints } from '@livediagram/document';
+
 export type Pt = { x: number; y: number };
 export type Box = { x: number; y: number; width: number; height: number };
 
@@ -44,11 +46,7 @@ export function rotatedBounds(rect: Box, rotation: number): Box {
     { x: rect.x + rect.width, y: rect.y + rect.height },
     { x: rect.x, y: rect.y + rect.height },
   ].map((p) => rotatedPoint(p, cos, sin, c));
-  const xs = corners.map((p) => p.x);
-  const ys = corners.map((p) => p.y);
-  const x = Math.min(...xs);
-  const y = Math.min(...ys);
-  return { x, y, width: Math.max(...xs) - x, height: Math.max(...ys) - y };
+  return boundsOfPoints(corners)!;
 }
 
 /** mxUtils.intersection: where segment 0-1 meets segment 2-3, or null. */
@@ -85,57 +83,6 @@ export function polygonPerimeterPoint(pts: Pt[], center: Pt, point: Pt): Pt | nu
     }
   }
   return min ? min.p : null;
-}
-
-/** mxUtils.ptSegDistSq */
-export function ptSegDistSq(
-  x1: number,
-  y1: number,
-  x2: number,
-  y2: number,
-  px: number,
-  py: number,
-): number {
-  x2 -= x1;
-  y2 -= y1;
-  px -= x1;
-  py -= y1;
-  let dotprod = px * x2 + py * y2;
-  let projlenSq: number;
-  if (dotprod <= 0) {
-    projlenSq = 0;
-  } else {
-    px = x2 - px;
-    py = y2 - py;
-    dotprod = px * x2 + py * y2;
-    projlenSq = dotprod <= 0 ? 0 : (dotprod * dotprod) / (x2 * x2 + y2 * y2);
-  }
-  return Math.max(0, px * px + py * py - projlenSq);
-}
-
-/** mxUtils.relativeCcw */
-export function relativeCcw(
-  x1: number,
-  y1: number,
-  x2: number,
-  y2: number,
-  px: number,
-  py: number,
-): -1 | 0 | 1 {
-  x2 -= x1;
-  y2 -= y1;
-  px -= x1;
-  py -= y1;
-  let ccw = px * y2 - py * x2;
-  if (ccw === 0) {
-    ccw = px * x2 + py * y2;
-    if (ccw > 0) {
-      px -= x2;
-      py -= y2;
-      ccw = Math.max(0, px * x2 + py * y2);
-    }
-  }
-  return ccw < 0 ? -1 : ccw > 0 ? 1 : 0;
 }
 
 /** mxUtils.reversePortConstraints */

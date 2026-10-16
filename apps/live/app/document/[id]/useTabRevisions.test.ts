@@ -15,7 +15,7 @@ describe('useTabRevisions', () => {
 
   it('reads the revision a load or a relayed changeset noted', () => {
     const { result, rerender } = renderHook(({ seen }) => useTabRevisions(seen), {
-      initialProps: { seen: new Map([['t1', 4]]) as ReadonlyMap<string, number> },
+      initialProps: { seen: new Map([['t1', 4]]) },
     });
     expect(result.current.revOf('t1')).toBe(4);
 
@@ -34,7 +34,7 @@ describe('useTabRevisions', () => {
 
   it('never moves back', () => {
     const { result, rerender } = renderHook(({ seen }) => useTabRevisions(seen), {
-      initialProps: { seen: new Map([['t1', 4]]) as ReadonlyMap<string, number> },
+      initialProps: { seen: new Map([['t1', 4]]) },
     });
     act(() => result.current.noteSaved('t1', 9));
     act(() => result.current.noteSaved('t1', 7));

@@ -44,7 +44,7 @@ export function TrashDropTarget() {
       aria-live="polite"
       className={`pointer-events-auto flex h-12 items-center gap-2 rounded-xl border-2 px-4 text-[13px] font-semibold shadow-lg transition-all duration-200 ease-out animate-fade-in motion-reduce:transition-none ${
         over
-          ? 'scale-105 border-brand-500 bg-brand-500 text-white shadow-brand-500/30 motion-reduce:scale-100 dark:border-brand-600 dark:bg-brand-600'
+          ? 'scale-105 border-brand-700 bg-brand-700 text-white shadow-brand-500/30 motion-reduce:scale-100 dark:border-brand-600 dark:bg-brand-600'
           : 'border-dashed border-slate-300 bg-white text-slate-600 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-300'
       }`}
     >
@@ -61,7 +61,7 @@ export function TrashDropTarget() {
   );
 }
 
-// The strip's Trash button, its count tucked into its corner (the strip clips anything outside it).
+// The strip's Trash button, with its count (ClusterPopoverSegment's badge).
 export function TrashSegment(props: {
   popoverOpen: boolean;
   onTogglePopover: (button: HTMLElement) => void;
@@ -70,7 +70,7 @@ export function TrashSegment(props: {
   let count = 0;
   for (const it of plan?.items.values() ?? []) if (isTrashed(it)) count += 1;
   return (
-    <span data-plan-trash className="relative flex">
+    <span data-plan-trash className="flex">
       <ClusterPopoverSegment
         label={
           count ? `Open the Trash, ${count} ${count === 1 ? 'card' : 'cards'}` : 'Open the Trash'
@@ -78,16 +78,17 @@ export function TrashSegment(props: {
         hoverTitle="Trash"
         hoverDescription="Drag a card here to put it out of the way; open it to restore cards or delete them for good."
         icon={<TrashIcon size={18} />}
+        name="Trash"
+        badge={
+          count > 0 ? (
+            // Grey, not red: the Trash holds nothing urgent.
+            <CountBadge size="sm" background="#64748b" color="#ffffff">
+              {count}
+            </CountBadge>
+          ) : undefined
+        }
         {...props}
       />
-      {count > 0 ? (
-        <span aria-hidden className="pointer-events-none absolute right-0.5 top-0.5">
-          {/* Grey, not red: the Trash holds nothing urgent. */}
-          <CountBadge size="sm" background="#64748b" color="#ffffff">
-            {count}
-          </CountBadge>
-        </span>
-      ) : null}
     </span>
   );
 }

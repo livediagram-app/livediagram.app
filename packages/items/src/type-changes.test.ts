@@ -1,12 +1,19 @@
 import { describe, expect, it } from 'vitest';
 import { ITEM_TYPES } from './item-types';
-import { NEW_ITEM_TYPE, applyCardTypeChanges } from './type-changes';
-import { ITEM_TYPE_CATALOGUE_VERSION, validateItemTypeCatalogue } from './type-catalogue';
+import { DEFAULT_STATUS_PENDING, NEW_ITEM_TYPE, applyCardTypeChanges } from './type-changes';
+import {
+  ITEM_TYPE_CATALOGUE_VERSION,
+  defaultCatalogue,
+  validateItemTypeCatalogue,
+} from './type-catalogue';
 
 const statuses = [
   { status: 'todo~a1', name: 'To Do' },
   { status: 'done~a1', name: 'Done' },
 ];
+
+// A document with the default types, as one made before card types started empty reads.
+const DEFAULTS = defaultCatalogue();
 
 const ok = (r: ReturnType<typeof applyCardTypeChanges>) => {
   if (!r.ok) throw new Error(r.message);
@@ -17,7 +24,7 @@ describe('applyCardTypeChanges: add', () => {
   it('adds a type as Add Type starts one, with custom fields by name', () => {
     const r = ok(
       applyCardTypeChanges(
-        null,
+        DEFAULTS,
         [
           {
             op: 'add',
@@ -58,10 +65,32 @@ describe('applyCardTypeChanges: add', () => {
     expect(validateItemTypeCatalogue(r.catalogue).ok).toBe(true);
   });
 
+  it('places a field ticked Show on Card on the Display a new type is given', () => {
+    const r = ok(
+      applyCardTypeChanges(
+        DEFAULTS,
+        [
+          {
+            op: 'add',
+            name: 'Lead',
+            custom: [
+              { name: 'Value', kind: 'number', onCard: true },
+              { name: 'Notes', kind: 'long text' },
+            ],
+            display: { detailed: { head: ['Number'] } },
+          },
+        ],
+        statuses,
+      ),
+    );
+    const lead = r.catalogue!.types.find((t) => t.label === 'Lead')!;
+    expect(lead.display!.detailed).toEqual({ head: ['key'], body: ['f-value'] });
+  });
+
   it('takes built-in fields, a colour and a glyph', () => {
     const r = ok(
       applyCardTypeChanges(
-        null,
+        DEFAULTS,
         [
           {
             op: 'add',
@@ -83,7 +112,7 @@ describe('applyCardTypeChanges: add', () => {
 
   it('refuses a taken name, a bad colour, glyph, kind, status or link', () => {
     const refusal = (change: Parameters<typeof applyCardTypeChanges>[1][number]) =>
-      applyCardTypeChanges(null, [change], statuses);
+      applyCardTypeChanges(DEFAULTS, [change], statuses);
     expect(refusal({ op: 'add', name: 'task' })).toMatchObject({
       ok: false,
       code: 'type_change_invalid',
@@ -98,9 +127,6 @@ describe('applyCardTypeChanges: add', () => {
       refusal({ op: 'add', name: 'X', custom: [{ name: 'A', kind: 'person' }] }),
     ).toMatchObject({
       code: 'type_change_invalid',
-    });
-    expect(refusal({ op: 'add', name: 'X', defaultStatus: 'Doing' })).toMatchObject({
-      code: 'status_unknown',
     });
     expect(refusal({ op: 'add', name: 'X', custom: [{ name: 'L', kind: 'card' }] })).toMatchObject({
       code: 'type_change_invalid',
@@ -122,7 +148,7 @@ describe('applyCardTypeChanges: add', () => {
 describe('applyCardTypeChanges: set, delete, restore', () => {
   const withBug = ok(
     applyCardTypeChanges(
-      null,
+      DEFAULTS,
       [{ op: 'add', name: 'Bug', custom: [{ name: 'Severity', kind: 'text' }] }],
       statuses,
     ),
@@ -162,28 +188,108 @@ describe('applyCardTypeChanges: set, delete, restore', () => {
     expect(cleared.catalogue!.types.find((x) => x.id === 'bug')!.defaultStatus).toBeUndefined();
   });
 
+  // docs/specs/026-plan/plan-agents.md "Changing card types": a type is made before the board that shows it.
+  it('makes a type whose Default State names a column no board has yet, without one, and says so', () => {
+    const r = ok(
+      applyCardTypeChanges(
+        DEFAULTS,
+        [
+          {
+            op: 'add',
+            name: 'Candidate',
+            defaultStatus: 'Applied',
+            custom: [{ name: 'Role', kind: 'text' }],
+          },
+        ],
+        statuses,
+      ),
+    );
+    const made = r.catalogue!.types.find((t) => t.label === 'Candidate')!;
+    expect(made.defaultStatus).toBeUndefined();
+    expect(made.custom).toEqual([{ id: 'f-role', label: 'Role', kind: 'text' }]);
+    expect(r.applied).toEqual([
+      `+ Candidate (candidate): Role (f-role); ${DEFAULT_STATUS_PENDING('Applied')}`,
+    ]);
+    expect(DEFAULT_STATUS_PENDING('Applied')).toBe(
+      'no Default State, no board has a column "Applied" yet; set it once one does',
+    );
+    // With no board at all, the same.
+    expect(
+      ok(applyCardTypeChanges(DEFAULTS, [{ op: 'add', name: 'Y', defaultStatus: 'Doing' }], []))
+        .applied,
+    ).toEqual([`+ Y (y); ${DEFAULT_STATUS_PENDING('Doing')}`]);
+  });
+
+  // The benchmark's P4: "A compact Post card cannot show "Owner". It can show: … Owner".
+  it('shows a custom field named Owner on the card, not the Assignee', () => {
+    const r = ok(
+      applyCardTypeChanges(
+        DEFAULTS,
+        [
+          {
+            op: 'add',
+            name: 'Post',
+            custom: [{ name: 'Owner', kind: 'text', onCard: true }],
+            display: { compact: { besideTitle: ['Type'], belowTitle: ['Owner'] } },
+          },
+        ],
+        statuses,
+      ),
+    );
+    const post = r.catalogue!.types.find((t) => t.label === 'Post')!;
+    expect(JSON.stringify(post.display)).toContain('f-owner');
+    expect(JSON.stringify(post.display)).not.toContain('assignee');
+  });
+
+  it('keeps a type’s Default State when a set names a column no board has', () => {
+    const before = ok(
+      applyCardTypeChanges(
+        DEFAULTS,
+        [{ op: 'set', type: 'task', defaultStatus: 'Done' }],
+        statuses,
+      ),
+    );
+    const r = ok(
+      applyCardTypeChanges(
+        before.catalogue,
+        [{ op: 'set', type: 'task', defaultStatus: 'Shipped' }],
+        statuses,
+      ),
+    );
+    expect(r.catalogue!.types.find((t) => t.id === 'task')!.defaultStatus).toBe('done~a1');
+    expect(r.applied[0]).toMatch(/; no Default State, no board has a column "Shipped" yet/);
+  });
+
   it('never removes a field a type must keep', () => {
     expect(
-      applyCardTypeChanges(null, [{ op: 'set', type: 'project', removeFields: ['due'] }], statuses),
+      applyCardTypeChanges(
+        DEFAULTS,
+        [{ op: 'set', type: 'project', removeFields: ['due'] }],
+        statuses,
+      ),
     ).toMatchObject({
       ok: false,
       message: expect.stringContaining('cannot be removed'),
     });
     expect(
-      applyCardTypeChanges(null, [{ op: 'set', type: 'task', removeFields: ['title'] }], statuses),
+      applyCardTypeChanges(
+        DEFAULTS,
+        [{ op: 'set', type: 'task', removeFields: ['title'] }],
+        statuses,
+      ),
     ).toMatchObject({
       ok: false,
     });
   });
 
-  it('deletes a type, naming it for its cards to go to the Trash, but never the last', () => {
+  it('deletes a type, naming it for its cards to go to the Trash, the last one too', () => {
     const r = ok(applyCardTypeChanges(withBug, [{ op: 'delete', type: 'Bug' }], statuses));
     expect(r.deleted).toEqual(['bug']);
     expect(r.catalogue!.types.some((t) => t.id === 'bug')).toBe(false);
     const one = { version: ITEM_TYPE_CATALOGUE_VERSION, types: [ITEM_TYPES[1]] };
-    expect(applyCardTypeChanges(one, [{ op: 'delete', type: 'task' }], statuses)).toMatchObject({
-      ok: false,
-    });
+    expect(
+      ok(applyCardTypeChanges(one, [{ op: 'delete', type: 'task' }], statuses)).catalogue?.types,
+    ).toEqual([]);
   });
 
   // docs/specs/026-plan/plan-agents.md "Changing card types": Add Default Types adds what is missing, changes nothing.
@@ -215,23 +321,25 @@ describe('applyCardTypeChanges: set, delete, restore', () => {
     );
   });
 
-  it('stores nothing for a document whose card types are not chosen, unless something else changes', () => {
-    expect(
-      ok(applyCardTypeChanges(null, [{ op: 'add_default_types' }], statuses)).catalogue,
-    ).toBeNull();
-    const after = ok(
+  it('stores the default types for a document whose card types are not chosen, nothing when none are left', () => {
+    const added = ok(applyCardTypeChanges(null, [{ op: 'add_default_types' }], statuses));
+    expect(added.catalogue?.types.map((t) => t.id)).toEqual(ITEM_TYPES.map((t) => t.id));
+    const none = ok(
       applyCardTypeChanges(
         null,
-        [{ op: 'add_default_types' }, { op: 'add', name: 'Risk' }],
+        [
+          { op: 'add', name: 'Risk' },
+          { op: 'delete', type: 'Risk' },
+        ],
         statuses,
       ),
     );
-    expect(after.catalogue).not.toBeNull();
+    expect(none.catalogue).toBeNull();
   });
 
   it('reports what applied before a refusal, saving nothing', () => {
     const r = applyCardTypeChanges(
-      null,
+      DEFAULTS,
       [
         { op: 'add', name: 'Risk' },
         { op: 'delete', type: 'Epic' },
@@ -258,6 +366,70 @@ describe('applyCardTypeChanges: every edit path', () => {
       },
     ],
   };
+
+  it('places a field ticked Show on Card on a Display of the type’s own, and takes it off when unticked', () => {
+    const displayed = {
+      ...tabbed,
+      types: tabbed.types.map((t) =>
+        t.id === 'bug' ? { ...t, display: { detailed: { head: ['key' as const] } } } : t,
+      ),
+    };
+    const shown = ok(
+      applyCardTypeChanges(
+        displayed,
+        [
+          {
+            op: 'set',
+            type: 'Bug',
+            addCustom: [
+              { name: 'Customer reported', kind: 'checkbox', onCard: true },
+              { name: 'Scratch', kind: 'text', onCard: true },
+            ],
+            editCustom: [{ field: 'Severity', onCard: true }],
+            removeCustom: ['Scratch'],
+          },
+        ],
+        statuses,
+      ),
+    );
+    const bug = shown.catalogue!.types.find((t) => t.id === 'bug')!;
+    expect(bug.display!.detailed).toEqual({
+      head: ['key'],
+      body: ['f-customer-reported', 'f-sev'],
+    });
+    // Ticked again, it is not placed twice; unticked, it leaves the Display.
+    const again = ok(
+      applyCardTypeChanges(
+        shown.catalogue,
+        [{ op: 'set', type: 'Bug', editCustom: [{ field: 'Severity', onCard: true }] }],
+        statuses,
+      ),
+    );
+    expect(again.catalogue!.types.find((t) => t.id === 'bug')!.display!.detailed!.body).toEqual([
+      'f-customer-reported',
+      'f-sev',
+    ]);
+    const off = ok(
+      applyCardTypeChanges(
+        shown.catalogue,
+        [{ op: 'set', type: 'Bug', editCustom: [{ field: 'Severity', onCard: false }] }],
+        statuses,
+      ),
+    );
+    expect(off.catalogue!.types.find((t) => t.id === 'bug')!.display!.detailed).toEqual({
+      head: ['key'],
+      body: ['f-customer-reported'],
+    });
+    // A type without a Display of its own keeps none: its default layout shows the field.
+    const plain = ok(
+      applyCardTypeChanges(
+        tabbed,
+        [{ op: 'set', type: 'Bug', editCustom: [{ field: 'Severity', onCard: false }] }],
+        statuses,
+      ),
+    );
+    expect(plain.catalogue!.types.find((t) => t.id === 'bug')!.display).toBeUndefined();
+  });
 
   it('sets a colour and glyph, keeps a field it already has, and drops a removed field from tabs', () => {
     const r = ok(
@@ -320,7 +492,11 @@ describe('applyCardTypeChanges: every edit path', () => {
 
   it('lets a mistake that is not a refusal throw', () => {
     expect(() =>
-      applyCardTypeChanges(null, [{ op: 'add', name: undefined as unknown as string }], statuses),
+      applyCardTypeChanges(
+        DEFAULTS,
+        [{ op: 'add', name: undefined as unknown as string }],
+        statuses,
+      ),
     ).toThrow(TypeError);
   });
 });

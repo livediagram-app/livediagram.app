@@ -83,9 +83,7 @@ export async function openPairingRequest(
 }
 
 function effectiveStatus(row: { status: RequestRow['status']; expires_at: number }, now: number) {
-  return (
-    row.status === 'pending' && row.expires_at <= now ? 'expired' : row.status
-  ) as PairingRequestStatus;
+  return row.status === 'pending' && row.expires_at <= now ? 'expired' : row.status;
 }
 
 export type PairingRequestRead = {

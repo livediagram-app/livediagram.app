@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CHANGESET_MAX_OPERATIONS } from '@livediagram/api-schema';
+import { CHANGESET_MAX_OPERATIONS, CHANGESET_SUMMARY_MAX } from '@livediagram/api-schema';
 import { parseChangesetRequest, rejectionStatus } from './request';
 
 // docs/specs/024-agents/blueprints/agent-changesets.md "Interfaces and contracts", CS8 to CS10.
@@ -14,6 +14,17 @@ describe('parseChangesetRequest', () => {
     expect(value('  add\u0007 payment\tservice  ')).toBe('add paymentservice');
     expect(value('   ')).toBeNull();
     expect(value(undefined)).toBeNull();
+  });
+
+  it('keeps a summary that reads like a refusal, and refuses only what is one', () => {
+    const value = (summary: unknown) => {
+      const out = parseChangesetRequest({ operations: ops, summary });
+      return out.ok ? out.value.summary : out.refusal.body.error;
+    };
+    expect(value('invalid')).toBe('invalid');
+    expect(value('too_long')).toBe('too_long');
+    expect(value(42)).toBe('invalid_body');
+    expect(value('x'.repeat(CHANGESET_SUMMARY_MAX + 1))).toBe('invalid_value');
   });
 
   it('takes a base of a revision and 16-hex fingerprints, and nothing else', () => {
@@ -51,6 +62,12 @@ describe('parseChangesetRequest', () => {
     expect(replace({ mermaid: 'x', template: 'kanban' })).toBe('invalid_body');
     expect(replace({ elements: {} })).toBe('invalid_body');
     expect(replace({ elements: [], layout: 'sideways' })).toBe('invalid_body');
+    expect(replace({ elements: [], finish: 'sketch' })).toEqual({
+      kind: 'replace',
+      replace: { elements: [] },
+      finish: 'sketch',
+    });
+    expect(replace({ elements: [], finish: 'glossy' })).toBe('invalid_body');
   });
 
   it('reads the line form from a string, logging the parse', () => {

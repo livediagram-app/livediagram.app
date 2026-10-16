@@ -23,7 +23,7 @@ const put = (who: Who, key: string, body: unknown) =>
 async function list(who: Who) {
   const res = await call(who, 'GET', '/api/placement-defaults');
   expect(res.status).toBe(200);
-  return ((await res.json()) as { defaults: unknown[] }).defaults;
+  return (await res.json<{ defaults: unknown[] }>()).defaults;
 }
 
 beforeEach(() => {

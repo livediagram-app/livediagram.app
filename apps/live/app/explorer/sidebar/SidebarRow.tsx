@@ -9,7 +9,8 @@ import { DROP_TARGET_RING } from '@/components/panels/useDocumentDropTarget';
 // is [indent][chevron gutter][icon][label][badge][trailing], with its child
 // rows in a `group` beneath while expanded. The gutter is reserved on every
 // row, so every icon at a level sits on one column whether or not its row
-// can expand. Keyboard handling lives on the sidebar's `nav`
+// can expand. On a touch screen the chevron moves to the row's end instead
+// and no row reserves a gutter, so the icons sit under the group's title. Keyboard handling lives on the sidebar's `nav`
 // (useTreeNavigation), which finds the parts by their data attributes.
 
 // Indent per tree level.
@@ -89,6 +90,9 @@ export function SidebarRow({
           {description}
         </span>
       ) : null}
+      {/* On a touch screen the row is 44px tall (touch-targets.md) and its chevron is a 44px disclosure
+          at the row's end, the row's full height, so a thumb lands on the row it means and no empty gutter
+          pushes the icons in; its words and icon read at a phone list's size (15px, 17px). */}
       <div
         data-tree-row
         {...rowProps}
@@ -108,8 +112,10 @@ export function SidebarRow({
             e.stopPropagation();
             if (expandable) onToggleExpand?.();
           }}
-          className={`flex h-5 w-5 shrink-0 items-center justify-center text-slate-400 transition ${
-            expandable ? 'cursor-pointer hover:text-slate-700 dark:hover:text-slate-200' : ''
+          className={`flex h-5 w-5 shrink-0 items-center justify-center text-slate-400 transition pointer-coarse:order-last pointer-coarse:-mr-1 pointer-coarse:h-auto pointer-coarse:w-11 pointer-coarse:self-stretch ${
+            expandable
+              ? 'cursor-pointer hover:text-slate-700 dark:hover:text-slate-200'
+              : 'pointer-coarse:hidden'
           }`}
         >
           {expandable ? <TreeChevronIcon open={expanded} /> : null}
@@ -117,7 +123,7 @@ export function SidebarRow({
         <span
           data-tree-activate
           onClick={renaming ? undefined : onActivate}
-          className={`flex min-w-0 flex-1 items-center gap-1.5 py-1 text-left text-xs ${
+          className={`flex min-w-0 flex-1 items-center gap-1.5 py-1 text-left text-xs pointer-coarse:gap-2.5 pointer-coarse:py-3 pointer-coarse:text-[15px] pointer-coarse:leading-5 ${
             renaming ? '' : 'cursor-pointer'
           } ${
             selected
@@ -125,7 +131,7 @@ export function SidebarRow({
               : 'text-slate-700 dark:text-slate-200'
           }`}
         >
-          <span className="shrink-0 text-slate-400">{icon}</span>
+          <span className="shrink-0 text-slate-400 pointer-coarse:[&_svg]:size-[17px]">{icon}</span>
           <span className="min-w-0 flex-1 truncate">{label}</span>
           {badge !== undefined ? <CountBadge count={badge} className="ml-1" /> : null}
         </span>

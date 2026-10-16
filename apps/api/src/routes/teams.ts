@@ -13,7 +13,6 @@
 // deletion) additionally requires the interactive session: a leaked
 // token must not be able to manage membership.
 
-import type { TeamRole } from '@livediagram/api-schema';
 import {
   acceptTeamMember,
   addTeamMember,
@@ -104,7 +103,10 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
     const team = await getTeamByInviteToken(env, segments[3]!);
     if (!team) return notFound();
     const memberCount = await countJoinedMembers(env, team.id);
-    const alreadyMember = userId ? (await getMembership(env, team.id, userId)) !== null : false;
+    // Joined only: someone whose email invite is still pending must be offered Join, which accepts it.
+    const alreadyMember = userId
+      ? (await getMembership(env, team.id, userId))?.status === 'joined'
+      : false;
     return json({ team, memberCount, alreadyMember });
   }
 
@@ -390,7 +392,7 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
         if ((await countTeamAdmins(env, teamId)) <= 1) return conflict('last_admin');
       }
       if (role !== member.role) {
-        if (!(await updateTeamMemberRoleKeepingAdmin(env, member.id, role as TeamRole)))
+        if (!(await updateTeamMemberRoleKeepingAdmin(env, member.id, role)))
           return conflict('last_admin');
         ctx.waitUntil?.(
           recordRoleChanged(

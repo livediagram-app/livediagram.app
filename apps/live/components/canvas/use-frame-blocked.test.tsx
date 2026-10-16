@@ -30,7 +30,7 @@ describe('useFrameBlocked', () => {
 
   it('forgets the verdict when the URL changes, and asks again', () => {
     const { result, rerender } = renderHook(({ src }) => useFrameBlocked(src), {
-      initialProps: { src: 'https://a.example' as string | undefined },
+      initialProps: { src: 'https://a.example' },
     });
     wait(8000);
     rerender({ src: 'https://b.example' });

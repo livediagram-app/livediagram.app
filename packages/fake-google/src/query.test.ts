@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cpuMsOf } from '@livediagram/vitest-config/cpu-time';
+import { cpuBudgetMs, cpuMsOf } from '@livediagram/vitest-config/cpu-time';
 import { compileQuery, type QueryFile } from './query';
 
 const file = (over: Partial<QueryFile> = {}): QueryFile => ({
@@ -20,7 +20,7 @@ describe('compileQuery', () => {
       );
     });
     expect(compiled).toBeTypeOf('function');
-    expect(spent).toBeLessThan(100);
+    expect(spent).toBeLessThan(cpuBudgetMs(100));
   });
 
   it('matches every supported clause, joined by and', () => {

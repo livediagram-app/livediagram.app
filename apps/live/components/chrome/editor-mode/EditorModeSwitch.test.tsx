@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 // The mode switch (docs/specs/007-editor/editor-modes.md "The mode switch"): an icon-only dropdown
-// chip, the same for everyone, reading the editor's resolved mode from EditorModeProvider;
+// chip opening the mode menu (its preview is covered in ModeMenu.test.tsx), the same for everyone, reading the editor's resolved mode from EditorModeProvider;
 // nothing where no switch is offered.
 
 import { useState } from 'react';
@@ -10,6 +10,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   EDITOR_MODES,
   ES_BOARD_LAYER_ID,
+  editorModeDescription,
   editorModeLabel,
   type EditorMode,
   type Tab,
@@ -19,6 +20,8 @@ import { EditorModeProvider } from './editor-mode-context';
 import { EditorModeSwitch } from './EditorModeSwitch';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
+const confirm = vi.hoisted(() => vi.fn(async () => true));
+vi.mock('@/hooks/ui/useConfirm', () => ({ useConfirm: () => confirm }));
 
 beforeEach(() => {
   localStorage.clear();
@@ -69,6 +72,7 @@ describe('EditorModeSwitch chip', () => {
     expect(rows.map((row) => row.textContent)).toEqual([
       expect.stringMatching(/^Diagram/),
       expect.stringMatching(/^Draw/),
+      expect.stringMatching(/^Facilitate/),
       expect.stringMatching(/^Illustrate/),
       expect.stringMatching(/^Plan/),
     ]);
@@ -77,28 +81,31 @@ describe('EditorModeSwitch chip', () => {
       'true',
       'false',
       'false',
+      'false',
     ]);
     expect(document.activeElement).toBe(rows[1]);
   });
 
-  it('keeps each row to its icon and name, no description', () => {
+  it('names each row by its mode alone, its description read as its description', () => {
     renderSwitch('diagram');
     fireEvent.click(chip());
-    expect(screen.queryByText('Shapes, arrows, the palette and snapping.')).toBeNull();
-    expect(screen.getAllByRole('menuitemradio').map((row) => row.textContent)).toEqual([
-      'Diagram',
-      'Draw⇧D',
-      'Illustrate',
-      'Plan',
-    ]);
+    const rows = screen.getAllByRole('menuitemradio');
+    expect(rows.map((row) => row.getAttribute('data-mode-row'))).toEqual([...EDITOR_MODES]);
+    for (const [i, row] of rows.entries()) {
+      const mode = EDITOR_MODES[i]!;
+      expect(row).toHaveProperty('textContent', expect.stringMatching(`^${editorModeLabel(mode)}`));
+      const description = document.getElementById(row.getAttribute('aria-describedby')!);
+      expect(description?.textContent).toContain(editorModeDescription(mode));
+    }
   });
 
-  it('shows Shift+D on the row it leads to', () => {
+  it('shows Shift+D in the preview of the mode it leads to', () => {
     renderSwitch('diagram');
     fireEvent.click(chip());
-    const [diagram, draw] = screen.getAllByRole('menuitemradio');
-    expect(diagram!.textContent).not.toContain('⇧D');
-    expect(draw!.textContent).toContain('⇧D');
+    const preview = () => document.querySelector('[data-mode-preview]')!;
+    expect(preview().textContent).not.toContain('⇧D');
+    fireEvent.pointerEnter(screen.getByRole('menuitemradio', { name: /^Draw/ }));
+    expect(preview().textContent).toContain('⇧D');
   });
 
   it.each(['ArrowDown', 'ArrowUp'])('opens from the keyboard with %s', (key) => {
@@ -111,7 +118,7 @@ describe('EditorModeSwitch chip', () => {
     renderSwitch('diagram');
     fireEvent.click(chip());
     const menu = screen.getByRole('menu');
-    const [diagram, draw, illustrate, plan] = screen.getAllByRole('menuitemradio');
+    const [diagram, draw, illustrate, plan, facilitate] = screen.getAllByRole('menuitemradio');
     fireEvent.keyDown(menu, { key: 'ArrowDown' });
     expect(document.activeElement).toBe(draw);
     fireEvent.keyDown(menu, { key: 'ArrowDown' });
@@ -119,13 +126,15 @@ describe('EditorModeSwitch chip', () => {
     fireEvent.keyDown(menu, { key: 'ArrowDown' });
     expect(document.activeElement).toBe(plan);
     fireEvent.keyDown(menu, { key: 'ArrowDown' });
+    expect(document.activeElement).toBe(facilitate);
+    fireEvent.keyDown(menu, { key: 'ArrowDown' });
     expect(document.activeElement).toBe(diagram);
     fireEvent.keyDown(menu, { key: 'ArrowUp' });
-    expect(document.activeElement).toBe(plan);
+    expect(document.activeElement).toBe(facilitate);
     fireEvent.keyDown(menu, { key: 'Home' });
     expect(document.activeElement).toBe(diagram);
     fireEvent.keyDown(menu, { key: 'End' });
-    expect(document.activeElement).toBe(plan);
+    expect(document.activeElement).toBe(facilitate);
   });
 
   it.each([
@@ -188,7 +197,8 @@ describe('EditorModeSwitch chip', () => {
   it('opens downward, from the left edge', () => {
     renderSwitch('diagram');
     fireEvent.click(chip());
-    expect(screen.getByRole('menu').className).toMatch(/left-0 top-full/);
+    expect(screen.getByRole('menu').className).toMatch(/left-0/);
+    expect(screen.getByRole('menu').className).toMatch(/top-full/);
   });
 });
 
@@ -251,5 +261,80 @@ describe('EditorModeSwitch in the editor', () => {
     const layers = [{ id: ES_BOARD_LAYER_ID, name: 'Board', visible: true }];
     const legacy = render(<Host tab={freshTab({ layers })} />);
     expect(slot(legacy.container)).toBeNull();
+  });
+});
+
+// docs/specs/026-plan/plan-tabs.md "The kinds": a Board, Sheet or Dashboard tab keeps Plan; the switch shows, and another
+// mode asks to open a new tab in it.
+describe('EditorModeSwitch on a tab that keeps its mode', () => {
+  it('offers a new tab in another mode, never switching this one', async () => {
+    const newTabIn = vi.fn();
+    const { onChange } = renderSwitch('plan', {
+      canSwitch: false,
+      lockedReason: 'A Dashboard is always in Plan.',
+      newTabIn,
+    });
+    fireEvent.click(chip());
+    // No line under the modes: the confirm says why when another mode is picked.
+    expect(screen.queryByText('A Dashboard is always in Plan.')).toBeNull();
+    fireEvent.click(screen.getByRole('menuitemradio', { name: /Diagram/ }));
+    await vi.waitFor(() => expect(newTabIn).toHaveBeenCalledWith('diagram'));
+    expect(confirm).toHaveBeenCalledWith(
+      expect.objectContaining({ confirmLabel: 'New Diagram Tab' }),
+    );
+    expect(onChange).not.toHaveBeenCalled();
+  });
+});
+
+// docs/specs/007-editor/editor-modes.md "Plan stands apart": no tab switches into Plan, nor out of it.
+describe('EditorModeSwitch and Plan', () => {
+  it('offers a new Plan tab rather than switching a Diagram tab into Plan', async () => {
+    const newTabIn = vi.fn();
+    const { onChange } = renderSwitch('diagram', { newTabIn });
+    fireEvent.click(chip());
+    fireEvent.click(screen.getByRole('menuitemradio', { name: /Plan/ }));
+    await vi.waitFor(() => expect(newTabIn).toHaveBeenCalledWith('plan'));
+    expect(confirm).toHaveBeenCalledWith(
+      expect.objectContaining({
+        confirmLabel: 'New Plan Tab',
+        message: expect.stringContaining('Plan works in tabs of its own.'),
+      }),
+    );
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
+  it('still switches between the other modes', () => {
+    const { onChange } = renderSwitch('diagram', { newTabIn: vi.fn() });
+    fireEvent.click(chip());
+    fireEvent.click(screen.getByRole('menuitemradio', { name: /Draw/ }));
+    expect(onChange).toHaveBeenCalledWith('draw');
+  });
+});
+
+// docs/specs/013-workspace/tab-scoped-share-links.md: a tab-scoped edit link edits its one tab and adds none,
+// so its session is offered no new tab: the rows that would open one are inert.
+describe('EditorModeSwitch for a session that cannot add tabs', () => {
+  it('leaves the locked rows inert and asks nothing', () => {
+    confirm.mockClear();
+    const { onChange } = renderSwitch('plan', {
+      canSwitch: false,
+      lockedReason: 'A Dashboard is always in Plan.',
+    });
+    fireEvent.click(chip());
+    const row = screen.getByRole('menuitemradio', { name: /Diagram/ });
+    expect(row.getAttribute('aria-disabled')).toBe('true');
+    fireEvent.click(row);
+    expect(confirm).not.toHaveBeenCalled();
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
+  it('keeps the rows that switch this tab live', () => {
+    const { onChange } = renderSwitch('diagram');
+    fireEvent.click(chip());
+    expect(screen.getByRole('menuitemradio', { name: /Plan/ }).getAttribute('aria-disabled')).toBe(
+      'true',
+    );
+    fireEvent.click(screen.getByRole('menuitemradio', { name: /Draw/ }));
+    expect(onChange).toHaveBeenCalledWith('draw');
   });
 });

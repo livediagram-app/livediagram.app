@@ -532,6 +532,7 @@ export {
 // telemetry action / type enums). One definition so the live editor and
 // the telemetry dashboard can't drift (see ./title-case.ts).
 export { headlineCase, titleCase } from './title-case';
+export { objectOrEmpty } from './request-body';
 // The document format number an editor compares (docs/specs/016-platform/new-version-prompt.md).
 export { DOCUMENT_FORMAT, DOCUMENT_FORMAT_HEADER, parseDocumentFormat } from './document-format';
 // The live build id a running editor compares (docs/specs/016-platform/stale-builds.md).
@@ -539,11 +540,21 @@ export { BUILD_ID_HEADER, parseBuildId } from './build-id';
 
 // Bearer-token and loopback-host reading, shared by the api and mcp workers
 // so the two can't disagree on what a request presented (see ./request-auth.ts).
-export { bearerTokenOf, isClerkIdShape, isLoopbackHostname } from './request-auth';
+export {
+  bearerTokenOf,
+  isClerkIdShape,
+  isLoopbackHostname,
+  oauthRedirectUrl,
+} from './request-auth';
 
 export type AiMode = 'clean' | 'ask';
 
 export type AiConversationTurn = { role: 'user' | 'assistant'; content: string };
+
+// The bounds POST /api/ai holds a request to (docs/specs/007-editor/ai-assistance.md), shared so the panel can
+// keep within them rather than meet a bare 400.
+export const AI_MAX_PROMPT_CHARS = 1000;
+export const AI_MAX_ELEMENTS = 200;
 
 // Request body for POST /api/ai.
 export type AiRequest = {
@@ -647,6 +658,7 @@ export * from './placement-defaults';
 export * from './home';
 export * from './drag-preview';
 export * from './article-caret';
+export * from './avatar-say';
 // Within reach: N most used plus N recent (docs/specs/004-interface-design/within-reach.md).
 export * from './within-reach';
 // Making a document is a use, a bulk import is not (docs/specs/013-workspace/explorer-home.md).
@@ -687,3 +699,6 @@ export * from './workbench-messages';
 export * from './illustrate';
 export * from './article-frames';
 export * from './illustrate-summary';
+export * from './mcp-origin';
+// Forms (docs/specs/030-forms/forms.md).
+export * from './forms';

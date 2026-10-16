@@ -23,7 +23,7 @@ function setup(opts: { planMode?: boolean; blocked?: boolean } = {}) {
     useSheetCsvDrop({
       planMode: opts.planMode ?? true,
       blocked: opts.blocked ?? false,
-      addBoxedAt: addBoxedAt as never,
+      addBoxedAt: addBoxedAt,
       dropOther,
       toast,
     }),

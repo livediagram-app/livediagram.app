@@ -6,18 +6,26 @@
 
 import { renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import type { Element, ShapeElement, Tab } from '@livediagram/document';
+import type { Element, ShapeElement } from '@livediagram/document';
 import { useElementDuplication } from './useElementDuplication';
 
-const shape = (id: string, extra: Partial<ShapeElement> = {}): Element =>
-  ({ id, type: 'shape', shape: 'square', x: 0, y: 0, width: 50, height: 50, ...extra }) as Element;
+const shape = (id: string, extra: Partial<ShapeElement> = {}): Element => ({
+  id,
+  type: 'shape',
+  shape: 'square',
+  x: 0,
+  y: 0,
+  width: 50,
+  height: 50,
+  ...extra,
+});
 
 function duplicate(elements: Element[], selected: string[]): Element[] {
   let committed: Element[] = elements;
   const { result } = renderHook(() =>
     useElementDuplication({
       readSelection: () => ({ selectedId: null, multiSelectedIds: new Set(selected) }),
-      activeTab: { id: 't', name: 'T', elements } as Tab,
+      activeTab: { id: 't', name: 'T', elements },
       commit: (m) => {
         committed = m(committed);
       },
@@ -56,18 +64,17 @@ describe('duplicateMultiSelected', () => {
 // docs/specs/021-event-storming/event-storming.md "Always on a lane": on an event-storming board a duplicate
 // holding a workshop note staggers along its lane (24px right, same lane).
 describe('duplicate on an event-storming board', () => {
-  const note = (id: string, x: number, y: number): Element =>
-    ({
-      id,
-      type: 'sticky',
-      x,
-      y,
-      width: 200,
-      height: 200,
-      esKind: 'domain-event',
-      fillColor: '#fdba74',
-      fixedSize: true,
-    }) as Element;
+  const note = (id: string, x: number, y: number): Element => ({
+    id,
+    type: 'sticky',
+    x,
+    y,
+    width: 200,
+    height: 200,
+    esKind: 'domain-event',
+    fillColor: '#fdba74',
+    fixedSize: true,
+  });
 
   function run(elements: Element[], selected: string[]): Element[] {
     let committed: Element[] = elements;
@@ -77,7 +84,7 @@ describe('duplicate on an event-storming board', () => {
           selectedId: selected.length === 1 ? selected[0]! : null,
           multiSelectedIds: new Set(selected.length > 1 ? selected : []),
         }),
-        activeTab: { id: 't', name: 'T', kind: 'event-storming', elements } as Tab,
+        activeTab: { id: 't', name: 'T', kind: 'event-storming', elements },
         commit: (m) => {
           committed = m(committed);
         },
@@ -110,5 +117,33 @@ describe('duplicate on an event-storming board', () => {
       [240, 240],
       [74, 500],
     ]);
+  });
+});
+
+describe('duplicateSelected', () => {
+  it('lets a lone copy of an attached badge go of its host, offset beside the original', () => {
+    const host = shape('h', { width: 200, height: 100 });
+    const badge = {
+      ...shape('b', { shape: 'badge', x: -12, y: -12, width: 24, height: 24, label: '1' }),
+      attachedTo: 'h',
+      attachAt: 'top-left',
+    } as Element;
+    let committed: Element[] = [host, badge];
+    const { result } = renderHook(() =>
+      useElementDuplication({
+        readSelection: () => ({ selectedId: 'b', multiSelectedIds: new Set() }),
+        activeTab: { id: 't', name: 'T', elements: committed },
+        commit: (m) => {
+          committed = m(committed);
+        },
+        setSelectedId: vi.fn(),
+        setMultiSelectedIds: vi.fn(),
+      }),
+    );
+    result.current.duplicateSelected();
+    const copy = committed[2] as ShapeElement;
+    expect(copy.attachedTo).toBeUndefined();
+    expect(copy.attachAt).toBeUndefined();
+    expect(copy.x).not.toBe(-12);
   });
 });

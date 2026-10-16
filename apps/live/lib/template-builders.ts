@@ -12,12 +12,19 @@ import { type Tab } from '@livediagram/document';
 import {
   templateCanvasOverrides,
   templateTabs,
+  withBlankPageThemed,
   type TemplateKind,
   type TemplateTabDef,
 } from '@livediagram/templates';
 import { getTheme, recolourElementsForTheme } from './themes';
 
-export { buildTemplate, templateTabs } from '@livediagram/templates';
+export {
+  buildTemplate,
+  isDefaultDocumentName,
+  templateCanvasOverrides,
+  templateTabs,
+  untitledNameForTemplate,
+} from '@livediagram/templates';
 
 export function buildTemplatedTab(
   kind: TemplateKind,
@@ -27,7 +34,7 @@ export function buildTemplatedTab(
   tabId: string,
   tabName: string,
 ): Tab {
-  return themedTab(templateTabs(kind)[0]!, kind, themeId, tabId, tabName);
+  return themedTab(templateTabs(kind)[0]!, kind, themeId, tabId, tabName, [tabId]);
 }
 
 // Every tab a template makes (docs/specs/026-plan/plan-templates.md "How a template with tabs is made"):
@@ -40,9 +47,9 @@ export function buildTemplatedTabs(
   tabName: string,
   newId: () => string = () => crypto.randomUUID(),
 ): Tab[] {
-  return templateTabs(kind).map((def, i) =>
-    themedTab(def, kind, themeId, i === 0 ? tabId : newId(), def.name ?? tabName),
-  );
+  const defs = templateTabs(kind);
+  const ids = defs.map((_, i) => (i === 0 ? tabId : newId()));
+  return defs.map((def, i) => themedTab(def, kind, themeId, ids[i]!, def.name ?? tabName, ids));
 }
 
 function themedTab(
@@ -51,22 +58,29 @@ function themedTab(
   themeId: string,
   tabId: string,
   tabName: string,
+  // Every tab's id in order, for a template whose tabs name each other (a Plan Dashboard's slots).
+  ids: readonly string[],
 ): Tab {
   const theme = getTheme(themeId);
   // Graph-aware recolour so multi-colour themes (docs/specs/011-theme/multicolour-themes.md) can tint each
   // branch of the scaffold a distinct hue; single-colour themes fall
   // straight through to the per-element transform.
   const elements = recolourElementsForTheme(def.build(0, 0), theme);
-  return {
-    id: tabId,
-    name: tabName,
-    elements,
-    theme: themeId,
-    backgroundColor: theme.backgroundColor,
-    backgroundPattern: theme.backgroundPattern,
-    patternColor: theme.patternColor,
-    ...(theme.backgroundOpacity != null ? { backgroundOpacity: theme.backgroundOpacity } : {}),
-    templateChosen: true,
-    ...templateCanvasOverrides(kind),
-  };
+  return withBlankPageThemed(
+    {
+      id: tabId,
+      name: tabName,
+      elements,
+      theme: themeId,
+      backgroundColor: theme.backgroundColor,
+      backgroundPattern: theme.backgroundPattern,
+      patternColor: theme.patternColor,
+      ...(theme.backgroundOpacity != null ? { backgroundOpacity: theme.backgroundOpacity } : {}),
+      templateChosen: true,
+      ...templateCanvasOverrides(kind),
+      ...def.tab?.(ids),
+    },
+    kind,
+    theme,
+  );
 }

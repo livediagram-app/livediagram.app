@@ -123,7 +123,7 @@ export function SplitDropZone({
           <div className="relative min-h-0 flex-1 opacity-90">
             <SplitTabPreview tab={dragged} loaded={loadedTabIds.has(dragged.id)} />
             <div className="absolute inset-0 flex items-end justify-center pb-6">
-              <span className="rounded-full bg-brand-600 px-3 py-1 text-xs font-semibold text-white shadow-lg dark:bg-brand-600">
+              <span className="rounded-full bg-brand-700 px-3 py-1 text-xs font-semibold text-white shadow-lg dark:bg-brand-600">
                 Release to Open
               </span>
             </div>

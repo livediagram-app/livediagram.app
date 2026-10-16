@@ -111,7 +111,7 @@ function sampleCard(type: ItemTypeDef): Item {
     updatedAt: 0,
     createdBy: SAMPLE_PERSON,
     updatedBy: SAMPLE_PERSON,
-  } as unknown as Item;
+  };
 }
 
 // A custom field's sample value, by its kind (none for a Link to Card: the chip then reads its name).
@@ -125,6 +125,10 @@ function sampleCustom(c: CustomFieldDef): [string, unknown][] {
       return [[c.id, true]];
     case 'link':
       return [[c.id, 'https://example.com']];
+    case 'currency':
+      return [[c.id, 12500]];
+    case 'email':
+      return [[c.id, 'sam@example.com']];
     case 'choice':
       return c.options?.[0] ? [[c.id, c.options[0]]] : [];
     case 'card':

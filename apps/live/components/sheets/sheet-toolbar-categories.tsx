@@ -23,8 +23,12 @@ import {
 import type { SheetController } from './sheet-controller';
 import type { SheetActions } from './useSheetActions';
 import {
-  BarChartIcon,
   BordersIcon,
+  CheckboxIcon,
+  ConditionalFormatIcon,
+  DropdownIcon,
+  PaintFormatIcon,
+  ValidationIcon,
   ClearFormatIcon,
   DecimalsIcon,
   FillColourIcon,
@@ -33,17 +37,17 @@ import {
   FontSizeIcon,
   FreezeIcon,
   HAlignIcon,
-  LineChartIcon,
   MergeIcon,
   NumberFormatIcon,
-  PieChartIcon,
   SigmaIcon,
+  FUNCTION_FAMILY_ICONS,
   SortIcon,
   TextColourIcon,
   VAlignIcon,
   WrapIcon,
 } from './sheet-icons';
 import { type ToolbarMenuKind } from './SheetToolbarMenus';
+import { ChartTypeIcon } from '@/components/primitives/ChartTypeIcon';
 import { FUNCTION_FAMILY_LABELS } from './SheetFunctionMenu';
 
 export type ToolbarButton = {
@@ -54,7 +58,8 @@ export type ToolbarButton = {
   text?: string;
   pressed?: boolean;
   menu?: ToolbarMenuKind;
-  run?: () => void;
+  // `anchor`: the button pressed (a panel opens against it; absent when run from More); `clicks`: a double-click's 2.
+  run?: (anchor?: HTMLElement, clicks?: number) => void;
   // Drawn in place of a button while it fits (Font Size's − 12 +), `controlPx` wide; folded into More, the `menu`.
   // Given a way to open the button's menu (Text Colour's +).
   control?: (openMenu: (anchor: HTMLElement) => void) => React.ReactNode;
@@ -141,7 +146,13 @@ export function toolbarCategories(
           menu: 'font',
           separatorBefore: true,
           controlPx: FONT_BUTTON_PX,
-          control: (openMenu) => <SheetFontButton font={f?.ff} onOpen={openMenu} />,
+          control: (openMenu) => (
+            <SheetFontButton
+              font={f?.ff}
+              tone={{ line: c.palette.cardBorder, text: c.palette.text }}
+              onOpen={openMenu}
+            />
+          ),
         },
         {
           id: 'fs',
@@ -156,6 +167,13 @@ export function toolbarCategories(
               min={FONT_SIZE_MIN}
               max={FONT_SIZE_MAX}
               stepBy={stepFontSize}
+              // The Sheet's own colours, as the toolbar around it wears (docs/specs/029-sheets/sheet.md "Toolbar").
+              tone={{
+                line: c.palette.cardBorder,
+                field: c.palette.column,
+                text: c.palette.text,
+                muted: c.palette.muted,
+              }}
               onCommit={(fs) => actions.format({ fs: fs === FONT_SIZE_DEFAULT ? null : fs })}
             />
           ),
@@ -170,8 +188,24 @@ export function toolbarCategories(
       icon: <FillColourIcon />,
       buttons: [
         {
+          // Paint Format (sheet.md "Paint Format"): a press holds the selection's formats for the next selection; a
+          // double-click keeps it on; pressed again, it lets go.
+          id: 'paint',
+          label: 'Paint Format',
+          icon: <PaintFormatIcon />,
+          glyphOnly: true,
+          pressed: !!c.rules.paint,
+          run: (_anchor, clicks) =>
+            clicks === 2
+              ? actions.paintStart(true)
+              : c.rules.paint
+                ? actions.paintStop()
+                : actions.paintStart(false),
+        },
+        {
           // As Text Colour: the theme's first colours on the toolbar, + for the full picker (folded, the menu).
           id: 'bg',
+          separatorBefore: true,
           label: 'Fill Colour',
           icon: <FillColourIcon />,
           menu: 'fill-colour',
@@ -219,6 +253,7 @@ export function toolbarCategories(
           separatorBefore: true,
         },
         { id: 'wr', label: 'Wrap Text', icon: <WrapIcon />, menu: 'wrap' },
+        { id: 'freeze', label: 'Freeze', icon: <FreezeIcon />, menu: 'freeze' },
         {
           id: 'clear',
           label: 'Clear Formatting',
@@ -262,37 +297,40 @@ export function toolbarCategories(
           pressed: !!c.sheet.layout.filter,
           run: () => actions.toggleFilter(),
         },
+        // Validation rules (data-validation.md "Making and changing rules").
         {
-          id: 'freeze',
-          label: 'Freeze',
-          icon: <FreezeIcon />,
-          menu: 'freeze',
+          id: 'dropdown',
+          label: 'Dropdown',
+          icon: <DropdownIcon />,
           separatorBefore: true,
-        },
-      ],
-    },
-    {
-      id: 'charts',
-      label: 'Charts',
-      icon: <BarChartIcon />,
-      buttons: [
-        {
-          id: 'bar-chart',
-          label: 'Bar Chart',
-          icon: <BarChartIcon />,
-          run: () => actions.insertChart('bar-chart'),
+          run: (anchor) => actions.openValidation(anchor ?? 'cell', { start: 'list' }),
         },
         {
-          id: 'line-chart',
-          label: 'Line Chart',
-          icon: <LineChartIcon />,
-          run: () => actions.insertChart('line-chart'),
+          id: 'checkbox',
+          label: 'Checkbox',
+          icon: <CheckboxIcon />,
+          run: () => actions.addCheckbox(),
         },
         {
-          id: 'pie-chart',
-          label: 'Pie Chart',
-          icon: <PieChartIcon />,
-          run: () => actions.insertChart('pie-chart'),
+          id: 'validation',
+          label: 'Data Validation',
+          icon: <ValidationIcon />,
+          run: (anchor) => actions.openValidation(anchor ?? 'cell'),
+        },
+        {
+          id: 'conditional',
+          label: 'Conditional Formatting',
+          icon: <ConditionalFormatIcon />,
+          run: (anchor) => actions.openFormatRules(anchor ?? 'cell'),
+        },
+        // Charts read the data, so they sit with it (docs/specs/029-sheets/sheet.md "Charts"): one menu of the seven
+        // chart types.
+        {
+          id: 'chart',
+          label: 'Insert Chart',
+          icon: <ChartTypeIcon type="column" />,
+          separatorBefore: true,
+          menu: 'chart',
         },
       ],
     },
@@ -302,13 +340,16 @@ export function toolbarCategories(
       icon: <SigmaIcon />,
       buttons: [
         // Every function, family by family: a menu each (SheetFunctionMenu); those that do not fit fold into More.
-        ...FUNCTION_FAMILIES.map(([family]): ToolbarButton => ({
-          id: `fam-${family}`,
-          label: `${FUNCTION_FAMILY_LABELS[family]} Functions`,
-          icon: <SigmaIcon />,
-          text: FUNCTION_FAMILY_LABELS[family],
-          menu: `fn:${family}`,
-        })),
+        ...FUNCTION_FAMILIES.map(([family]): ToolbarButton => {
+          const Icon = FUNCTION_FAMILY_ICONS[family];
+          return {
+            id: `fam-${family}`,
+            label: `${FUNCTION_FAMILY_LABELS[family]} Functions`,
+            icon: <Icon />,
+            text: FUNCTION_FAMILY_LABELS[family],
+            menu: `fn:${family}`,
+          };
+        }),
         {
           id: 'fn-all',
           label: 'All Functions',

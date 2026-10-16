@@ -79,7 +79,7 @@ describe('runLifecycleSweep', () => {
     await runLifecycleSweep(env);
     const calls = vi.mocked(dueForStage).mock.calls;
     expect(calls.map((c) => c[1])).toEqual(['welcome', 'week1', 'week2']);
-    const cutoffs = calls.map((c) => c[2] as number);
+    const cutoffs = calls.map((c) => c[2]);
     expect(cutoffs[0]).toBeGreaterThan(cutoffs[1]!); // welcome=now > week1=now-7d
     expect(cutoffs[1]!).toBeGreaterThan(cutoffs[2]!); // week1 > week2=now-14d
   });

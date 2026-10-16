@@ -1,5 +1,5 @@
 import type { PointerEvent as ReactPointerEvent } from 'react';
-import { canAppendWebRow, isRailShape, type Element } from '@livediagram/document';
+import { canAppendWebRow, isFlowchartStep, isRailShape, type Element } from '@livediagram/document';
 import type { QuickConnectDirection, QuickConnectKind } from '@/lib/canvas';
 import { QuickConnectRing } from '@/components/canvas/QuickConnectRing';
 import { useMindGrow } from '@/components/canvas/MindGrowContext';
@@ -11,6 +11,17 @@ const WEB_ROW_ACTION: Partial<Record<string, { label: string; description: strin
   'stat-row': { label: 'Add Stat', description: 'Add another KPI card to the row.' },
   process: { label: 'Add Step', description: 'Add another step to the end of the process.' },
   'site-header': { label: 'Add Link', description: 'Add another link to the header.' },
+  card: { label: 'Add Tag', description: 'Add a tag chip along the bottom of the card.' },
+  // Concept graphics (docs/specs/009-elements/concept-graphics.md).
+  'layer-stack': {
+    label: 'Add Layer',
+    description: 'Add another layer to the bottom of the stack.',
+  },
+  pyramid: { label: 'Add Tier', description: 'Add another tier to the pyramid.' },
+  cycle: { label: 'Add Step', description: 'Add another step to the cycle.' },
+  hub: { label: 'Add Satellite', description: 'Add another satellite round the hub.' },
+  onion: { label: 'Add Ring', description: 'Add another ring round the outside.' },
+  chevrons: { label: 'Add Stage', description: 'Add another stage to the end.' },
 };
 
 // The four quick-connect "+" buttons around a single selected element (docs/specs/008-canvas/canvas-and-palette.md),
@@ -50,6 +61,7 @@ export function QuickConnectPluses({
   const selectedIsRail = selectedElement?.type === 'shape' && isRailShape(selectedElement.shape);
   const selectedIsTable = selectedElement?.type === 'table';
   const selectedIsMind = selectedElement?.type === 'shape' && selectedElement.shape === 'mind-node';
+  const selectedIsStep = !!selectedElement && isFlowchartStep(selectedElement);
   // Web components (docs/specs/009-elements/web-components-and-no-groups.md): the ring's "Add stat / step / link", while
   // there is room for one more.
   const webRow =
@@ -91,11 +103,13 @@ export function QuickConnectPluses({
           // Mind map (docs/specs/009-elements/mind-node.md): Add child / Add sibling, each naming its
           // shortcut in the hover card. Only on a mind node, and only where there is a grower (not
           // the share view, embed, or exports).
+          // A flowchart step grows the same way (docs/specs/009-elements/flowchart.md): Add Step / Add Branch.
           onGrowMind={
-            selectedIsMind && growMind
+            (selectedIsMind || selectedIsStep) && growMind
               ? (relation) => growMind.grow(selectedElement.id, relation)
               : undefined
           }
+          growing={selectedIsStep ? 'flowchart' : 'mind'}
         />
       ))}
     </>

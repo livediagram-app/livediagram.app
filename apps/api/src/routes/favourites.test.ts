@@ -48,9 +48,18 @@ describe('handleFavourites', () => {
   });
 
   it('PUT stars the document for THIS owner', async () => {
+    db.addFavourite.mockResolvedValue(true);
     const res = await handleFavourites(makeCtx('PUT', '/api/favourites/d1'));
     expect(res.status).toBe(204);
     expect(db.addFavourite).toHaveBeenCalledWith({}, 'owner-1', 'd1');
+  });
+
+  // A star on a document that is not there (deleted meanwhile, or an offline id) is refused by the table's foreign
+  // key: a 404, not the 500 the raw constraint error made.
+  it('404s a star on a document that does not exist', async () => {
+    db.addFavourite.mockResolvedValue(false);
+    const res = await handleFavourites(makeCtx('PUT', '/api/favourites/gone'));
+    expect(res.status).toBe(404);
   });
 
   it('DELETE un-stars it', async () => {
@@ -60,6 +69,7 @@ describe('handleFavourites', () => {
   });
 
   it('the owner always comes from resolveOwner, never the path', async () => {
+    db.addFavourite.mockResolvedValue(true);
     // The owner is always the RESOLVED one, never anything from the path.
     await handleFavourites(makeCtx('PUT', '/api/favourites/d1', { owner: 'owner-2' }));
     expect(db.addFavourite).toHaveBeenCalledWith({}, 'owner-2', 'd1');

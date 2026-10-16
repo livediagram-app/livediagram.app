@@ -4,8 +4,16 @@ import { checkBase } from './base-check';
 
 // docs/specs/024-agents/agent-changesets.md "Conflicts", one case per row of the blueprint's table.
 
-const box = (id: string, label = id): Element =>
-  ({ id, type: 'shape', shape: 'square', x: 0, y: 0, width: 10, height: 10, label }) as Element;
+const box = (id: string, label = id): Element => ({
+  id,
+  type: 'shape',
+  shape: 'square',
+  x: 0,
+  y: 0,
+  width: 10,
+  height: 10,
+  label,
+});
 const stored = (rev: number, elements: Element[]): Tab & { rev: number } => ({
   id: 't1',
   name: 'T',

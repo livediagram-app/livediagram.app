@@ -1,8 +1,10 @@
 import {
   ARROWHEAD_SHAPES,
   ARROWHEAD_SIZE_PX,
+  ER_GLYPHS,
   type ArrowheadShape,
   type ArrowheadSize,
+  type ErShape,
 } from '@livediagram/document';
 
 // The arrowhead marker system (docs/specs/008-canvas/canvas-and-palette.md arrow styles), lifted out of
@@ -12,6 +14,25 @@ import {
 
 export function arrowheadMarkerId(shape: ArrowheadShape, size: ArrowheadSize): string {
   return `arrowhead-${shape}-${size}`;
+}
+
+// Whether this browser paints a shared marker in the line's colour through `context-stroke`. Chromium and Firefox do;
+// WebKit (Safari, and so every browser on an iPhone or iPad) does not, and paints the head its default black, which
+// vanishes on a dark canvas. There every arrow carries its own marker in its line's colour (ArrowView). Read once;
+// where it cannot be asked (a test's DOM, no CSS.supports) the shared markers are assumed to work.
+let contextStroke: boolean | null = null;
+export function markersTakeLineColour(): boolean {
+  if (contextStroke === null)
+    contextStroke =
+      typeof CSS === 'undefined' || typeof CSS.supports !== 'function'
+        ? true
+        : CSS.supports('fill', 'context-stroke');
+  return contextStroke;
+}
+
+/** Forgets the answer, so a test can ask again under a different CSS.supports. */
+export function resetMarkersTakeLineColourForTests(): void {
+  contextStroke = null;
 }
 
 // Inner geometry for one arrowhead shape, drawn in the marker's
@@ -57,7 +78,35 @@ function arrowheadMarkerShape(shape: ArrowheadShape, paint = 'context-stroke') {
           strokeWidth={1}
         />
       );
+    default:
+      return <ErGlyphMarks shape={shape} paint={paint} ringFill={HOLLOW_FILL} />;
   }
+}
+
+// An ER end's strokes (er-heads.ts, docs/specs/008-canvas/canvas-and-palette.md), in the marker's 0..10 box: the one
+// geometry the export draws too. Its ring is hollow on the paper.
+export function ErGlyphMarks({
+  shape,
+  paint,
+  ringFill,
+  strokeWidth = 1.1,
+}: {
+  shape: ErShape;
+  paint: string;
+  ringFill: { fill: string };
+  strokeWidth?: number;
+}) {
+  const glyph = ER_GLYPHS[shape];
+  return (
+    <g stroke={paint} strokeWidth={strokeWidth} strokeLinecap="round" fill="none">
+      {glyph.lines.map(([x1, y1, x2, y2], i) => (
+        <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} />
+      ))}
+      {glyph.rings.map(([cx, cy, r], i) => (
+        <circle key={`r${i}`} cx={cx} cy={cy} r={r} style={ringFill} />
+      ))}
+    </g>
+  );
 }
 
 // One arrow's own arrowhead marker, for when its heads are a different colour

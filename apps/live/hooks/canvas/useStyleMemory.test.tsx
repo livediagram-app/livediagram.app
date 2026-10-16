@@ -38,7 +38,9 @@ describe('useStyleMemory', () => {
       first.result.current.recordEdit([circle('a')], [circle('a', { strokeWidth: 'thin' })]),
     );
     expect(localStorage.getItem(styleMemoryKey('d1'))).toBeNull();
-    act(() => vi.advanceTimersByTime(STYLE_MEMORY_WRITE_DEBOUNCE_MS));
+    act(() => {
+      vi.advanceTimersByTime(STYLE_MEMORY_WRITE_DEBOUNCE_MS);
+    });
     expect(JSON.parse(localStorage.getItem(styleMemoryKey('d1'))!)).toEqual({
       'shape:circle': { strokeWidth: 'thin' },
     });
@@ -72,7 +74,9 @@ describe('useStyleMemory', () => {
     act(() => result.current.recordEdit([circle('a')], [circle('a', { strokeWidth: 'thin' })]));
     const plain = circle('b');
     expect(result.current.styleNewElement(plain)).toBe(plain);
-    act(() => vi.advanceTimersByTime(STYLE_MEMORY_WRITE_DEBOUNCE_MS));
+    act(() => {
+      vi.advanceTimersByTime(STYLE_MEMORY_WRITE_DEBOUNCE_MS);
+    });
     expect(localStorage.length).toBe(0);
   });
 });

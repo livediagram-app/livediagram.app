@@ -16,6 +16,7 @@ import type { TemplateStartId } from '@livediagram/sheets';
 
 export const PLAN_TEMPLATE_KINDS = [
   'blank-plan',
+  'blank-spreadsheet',
   'project-planner',
   'kanban',
   'bug-triage',
@@ -30,6 +31,14 @@ export const PLAN_TEMPLATE_KINDS = [
   'timesheet',
   'contact-list',
   'task-tracker',
+  'invoice',
+  'expense-report',
+  'loan-calculator',
+  'sales-pipeline',
+  'inventory',
+  'guest-list',
+  'grade-book',
+  'habit-tracker',
 ] as const;
 export type PlanTemplateKind = (typeof PLAN_TEMPLATE_KINDS)[number];
 
@@ -124,6 +133,13 @@ export const PLAN_TEMPLATE_TABS: Readonly<Record<PlanTemplateKind, readonly Plan
   // One tab, so it keeps the name the caller gives a new tab, and empty: the tab shows Plan's own Start with a
   // Board picker (docs/specs/026-plan/plan-mode.md "Starting a board").
   'blank-plan': [{ name: 'Board' }],
+  // An empty Sheet filling its tab: the blank start makes an empty grid, ready to type into.
+  'blank-spreadsheet': [
+    {
+      name: 'Sheet',
+      sheet: { start: 'blank-spreadsheet', width: 880, height: 560, fillTab: true },
+    },
+  ],
 
   'project-planner': [
     {
@@ -784,4 +800,65 @@ export const PLAN_TEMPLATE_TABS: Readonly<Record<PlanTemplateKind, readonly Plan
       ],
     },
   ],
+  // Added with the catalogue's job-based categories: each the sheet template of its name, the whole job, so it fills
+  // its tab.
+  invoice: [
+    { name: 'Invoice', sheet: { start: 'invoice', width: 880, height: 600, fillTab: true } },
+  ],
+  'expense-report': [
+    {
+      name: 'Expense Report',
+      sheet: { start: 'expense-report', width: 960, height: 520, fillTab: true },
+    },
+  ],
+  'loan-calculator': [
+    {
+      name: 'Loan Calculator',
+      sheet: { start: 'loan-calculator', width: 980, height: 560, fillTab: true },
+    },
+  ],
+  'sales-pipeline': [
+    {
+      name: 'Sales Pipeline',
+      sheet: { start: 'sales-pipeline', width: 1000, height: 560, fillTab: true },
+    },
+  ],
+  inventory: [
+    { name: 'Inventory', sheet: { start: 'inventory', width: 1000, height: 560, fillTab: true } },
+  ],
+  'guest-list': [
+    { name: 'Guest List', sheet: { start: 'guest-list', width: 1000, height: 520, fillTab: true } },
+  ],
+  'grade-book': [
+    { name: 'Grade Book', sheet: { start: 'grade-book', width: 960, height: 520, fillTab: true } },
+  ],
+  'habit-tracker': [
+    {
+      name: 'Habit Tracker',
+      sheet: { start: 'habit-tracker', width: 1000, height: 480, fillTab: true },
+    },
+  ],
 };
+
+// How many tabs a Plan template makes (template-builders-plan planTemplateTabs, counted without building them): one
+// per tab spec, and an Overview Dashboard after them when some tab brings metrics, charts or rail notes and none of
+// them is a Dashboard already. Start Planning's Inspiration shows it on each template.
+export function planTemplateTabCount(kind: PlanTemplateKind): number {
+  const specs = PLAN_TEMPLATE_TABS[kind];
+  const dashSpec = specs.some(
+    (s) => !s.board && !s.sheet && (s.metrics?.length || s.charts?.length),
+  );
+  const gathers = specs.some(
+    (s) =>
+      !!s.metrics?.length || !!s.charts?.length || (s.rail ?? []).some((r) => r.kind === 'sticky'),
+  );
+  return specs.length + (gathers && !dashSpec ? 1 : 0);
+}
+
+// A spreadsheet template (plan-templates.md "Spreadsheet templates"): every tab a Sheet and no board. Start Planning's
+// Inspiration leaves out the ones that make a single tab, since its Spreadsheets already offers each such sheet
+// (plan-mode.md "Starting a board").
+export function isSpreadsheetPlanTemplate(kind: PlanTemplateKind): boolean {
+  const specs = PLAN_TEMPLATE_TABS[kind];
+  return specs.length > 0 && specs.every((s) => !!s.sheet && !s.board);
+}

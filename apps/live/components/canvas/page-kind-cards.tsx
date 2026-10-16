@@ -5,6 +5,7 @@
 // popover and the first page's own choice.
 import type { PageKind } from '@livediagram/document';
 import type { KeyboardEvent, Ref } from 'react';
+import { SOLID_BRAND_DARK_CONTROL } from '@livediagram/ui';
 
 export type PageKindChoice = { kind: PageKind; name: string; line: string };
 
@@ -52,13 +53,24 @@ export const PAGE_KINDS: readonly PageKindChoice[] = [
   },
 ];
 
+/** The kinds in their order, the suggested one (the kind of the last page) first: the next page is
+ *  most often another of the same. */
+export function kindsWithSuggestedFirst(suggested?: PageKind): readonly PageKindChoice[] {
+  if (!suggested) return PAGE_KINDS;
+  const first = PAGE_KINDS.find((k) => k.kind === suggested);
+  return first ? [first, ...PAGE_KINDS.filter((k) => k !== first)] : PAGE_KINDS;
+}
+
 export function PageKindCard({
   choice,
   onChoose,
+  suggested = false,
   ref,
 }: {
   choice: PageKindChoice;
   onChoose: () => void;
+  // The kind of the last page, offered first: ringed in the accent and tagged.
+  suggested?: boolean;
   ref?: Ref<HTMLButtonElement>;
 }) {
   return (
@@ -66,8 +78,19 @@ export function PageKindCard({
       ref={ref}
       type="button"
       onClick={onChoose}
-      className="group flex flex-col items-stretch gap-2 rounded-lg border border-slate-200 bg-white p-2 text-left transition hover:border-brand-400 hover:bg-brand-50/40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 dark:border-slate-700 dark:bg-slate-900 dark:hover:border-brand-400 dark:hover:bg-brand-500/10"
+      className={`group relative flex flex-col items-stretch gap-2 rounded-lg border p-2 text-left transition hover:border-brand-400 hover:bg-brand-50/40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 dark:hover:border-brand-400 dark:hover:bg-brand-500/10 ${
+        suggested
+          ? 'border-brand-400 bg-brand-50/60 ring-2 ring-brand-400/40 dark:border-brand-400 dark:bg-brand-500/15'
+          : 'border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900'
+      }`}
     >
+      {suggested ? (
+        <span
+          className={`absolute right-2 top-2 z-10 rounded-full bg-brand-700 px-2 py-0.5 text-[10px] font-semibold text-white ${SOLID_BRAND_DARK_CONTROL}`}
+        >
+          Same as last page
+        </span>
+      ) : null}
       <span className="flex h-24 items-center justify-center rounded-md bg-slate-50 dark:bg-slate-800/70">
         {choice.kind === 'article' ? (
           <ArticleMiniature />

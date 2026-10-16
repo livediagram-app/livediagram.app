@@ -24,7 +24,7 @@ src/item-types.ts    ITEM_TYPES, itemTypeOf(id) (unknown -> fallback def), ItemT
 src/fields.ts        KNOWN_FIELDS (field -> kind), PRIORITIES, validateFields, validateFieldKey
 src/limits.ts        named constants (Constants table)
 src/rank.ts          rankBetween(a, b), rankAfter(a), rankBefore(b), compareRank
-src/apply.ts         makeItem, applyPatch, applyMove, applyVote (shared by api and offline store), rankInColumn,
+src/apply.ts         makeItem, applyPatch, applyMove, applyTally (shared by api and offline store), rankInColumn,
                      itemPlacer (ranks a batch of creates: one sort per column, not one per create)
 src/write-checks.ts  readItemPlace, readItemCreate, readItemPatch, readItemMove, statusExcluded, readItemWrite,
                      writtenItemsRefusal: the api's body checks, run by an offline document on its own writes
@@ -136,7 +136,8 @@ never end in `0`, so a key between always exists. Ties (equal ranks after concur
 - `applyPatch(item, patch, ctx)` merges `set`, deletes `clear`, `rev + 1`, stamps `updatedBy/At`.
 - `applyMove(item, move, items, ctx)` sets status, computes rank against the target neighbours (`after` wins
   over `before`; a missing neighbour id falls back to the column end), merges `set`.
-- `applyVote(item, personId, delta)` clamps the person's count at 0, drops zero entries.
+- `applyTally(item, tally, ctx)` adds each voter's dots to what they had, caps a voter's count at
+  `ITEM_VOTES_PER_PERSON_MAX`, admits no new voter past `ITEM_VOTERS_MAX`, `rev + 1`.
 
 ### Board projection (`projectBoard(setup, items, quick?)`)
 
@@ -151,7 +152,8 @@ cardFields: CardField[]; hideWriting: boolean }` (a stored `voting` is read past
   <types> cards".
 - Output: `{ columns: { column, count, overLimit, lanes: { laneKey, items[] }[] }[], lanes: LaneHead[],
 unplaced: Item[], doneCount, total }`. Items sorted by `compareRank`, then `key`. Lanes ordered: assignee by
-  name, type by catalogue order, priority by `PRIORITIES`, parent by key; the empty group last.
+  name, type by catalogue order, priority by `PRIORITIES`, a Card field (Parent among them) by the linked card's key,
+  any other field by `fieldLaneOrder`; the empty group last.
 - `quick = { text?: string; mine?: string }` narrows (title/key/labels substring; `mine` = assignee id).
 
 ### Tab items (`itemIdsShownOnTab`)
@@ -224,8 +226,8 @@ ALTER TABLE documents ADD COLUMN items_next_key INTEGER NOT NULL DEFAULT 1;
 - Writes: one D1 `batch` per write: `UPDATE documents SET items_rev = items_rev + 1 [, items_next_key = ...]
 WHERE id = ? RETURNING items_rev, items_next_key`, then the row write guarded by `rev = ?` (update) or
   `INSERT` (create). A lost `rev` race retries up to `ITEM_WRITE_RETRIES` from a fresh read, then `409 item_busy`.
-- `apps/api/src/db/items.ts`: `listItems`, `readItem`, `insertItem`, `updateItem`, `deleteItem`, `copyItems`,
-  `insertItemsBulk`; `item-row.ts`: row ↔ `Item`.
+- `apps/api/src/db/items.ts`: `getItemStoreHead`, `listItems`, `readItem`, `readItems`, `insertItems`,
+  `updateItemAtRev`, `updateItemsAtRev`, `deleteItemRow`, `copyItemsStatements`; `itemFromRow`: row ↔ `Item`.
 
 ## Interfaces and contracts: REST
 
@@ -262,7 +264,8 @@ Comment writes (below, "Comments") add four more under `/items/:itemId/comments`
   is read again and retried (`ITEM_WRITE_RETRIES`), the rest kept. One room op relays every changed item. Logs
   `[items] patched` with the count. Every attempt checks all its items before writing its batch; a retry that then
   fails (an item refused as read again, or `item_busy` after the retries) answers its refusal with the items that
-  already landed added (`items`, `rev`, as `ItemsResponse`), logging `[items] items.patches.partial`. The editor's
+  already landed added (`items`, `rev`, as `ItemsResponse`), logging `[items] items.write.partial`. `/items/tally` shares
+  the same loop (`routes/item-write-loop.ts`), so a busy tally names the cards already tallied and they are never resent. The editor's
   client (`lib/api/items.ts`) throws `ItemWritePartlyLanded { landed, code }` for that, or for a later request of
   a many-item write failing after earlier ones landed; `usePlanItems` keeps what landed and pushes one undo step for
   it alone (`writeLimitedTo`).
@@ -357,7 +360,7 @@ refetches. Presence on cards is a separate ephemeral op, `plan-presence` (`{ tab
   - Optimistic: a write applies `applyItemWrite` locally (creates carry client-made ids, `withCreateIds`), sends,
     then merges the answer. A failed write refetches the store and toasts "Couldn't save that change".
   - Room op `items`: `mergeItemChanges` keeps the higher `rev` per item; `removed` deletes; a rev past
-    `serverRev + 1`, or an op with no items (a tab-scoped session), refetches (`ITEM_REFETCH_DEBOUNCE_MS`). Room
+    `serverRevRef + 1`, or an op with no items (a tab-scoped session), refetches (`ITEM_REFETCH_DEBOUNCE_MS`). Room
     resync and reconnect (`onRoomJoined`) refetch.
 - `apps/live/hooks/plan/usePlanSlice.ts` composes the board actions into `PlanContext`; `usePlanPresence` sends
   and hears `plan-presence`.
@@ -441,7 +444,7 @@ replays the write with the keys the first write was given. Votes push nothing.
 ## Observability
 
 Log fingerprints (console, `[items]`): `items.write.retry`, `items.write.busy`, `items.rejected <error>`,
-`items.refetch.gap`, `items.offline.write`, `items.offline.rejected`, `items.offline.comment`, `items.comment.failed` (editor), `items.patches.partial` (api),
+`items.refetch.gap`, `items.offline.write`, `items.offline.rejected`, `items.offline.comment`, `items.comment.failed` (editor), `items.write.partial` (api),
 `comment added`, `comment deleted`, `comments resolved|reopened|unchanged`, `comments.full` (api). Api logs never
 include `fields` or comment text.
 
@@ -457,7 +460,7 @@ include `fields` or comment text.
 | Archive drag-off is one move                   | `apps/live/hooks/plan/usePlanBoardDrop.restore.test.ts`, `apps/api/src/routes/item-routes.test.ts`                                                                                    |
 | apply functions                                | `apply.test.ts`                                                                                                                                                                       |
 | Projection: columns, lanes, unplaced, quick    | `board.test.ts`                                                                                                                                                                       |
-| Tab-scoped set                                 | `tab-items.test.ts`                                                                                                                                                                   |
+| Tab-scoped set                                 | `board.test.ts` (`itemIdsShownOnTab`)                                                                                                                                                 |
 | Routes: gates, rejections, keys, cascade, copy | `apps/api/src/routes/item-routes.test.ts`                                                                                                                                             |
 | Room op redacted for a tab-scoped session      | `apps/api/src/room-scope.test.ts`                                                                                                                                                     |
 | Store transitions, inverses, sync order        | `packages/items/src/store.test.ts`                                                                                                                                                    |

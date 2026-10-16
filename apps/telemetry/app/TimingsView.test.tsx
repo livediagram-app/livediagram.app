@@ -84,7 +84,7 @@ describe('TimingsView', () => {
 
   it("rates each app's vitals, the word always beside the colour", () => {
     const marketing = card(render(summary()), 'Marketing');
-    const text = marketing.textContent!;
+    const text = marketing.textContent;
     expect(text).toMatch(/LCP.*2.3 s.*Good/);
     expect(text).toMatch(/INP.*450 ms.*Needs Work/);
     expect(text).toMatch(/CLS.*over 0.50.*Poor/);

@@ -84,6 +84,6 @@ export function migrateLegacyGroups(elements: Element[]): Element[] {
     }
     if (legacyGroupIdOf(el) === undefined) return el;
     const { groupId: _drop, ...rest } = el as Element & { groupId?: string };
-    return rest as Element;
+    return rest;
   });
 }

@@ -92,7 +92,9 @@ This implements the OAuth flow Manager Toolkit uses:
 2. **Dynamic client registration** — `POST /oauth/register` issues a `client_id`
    (validates redirect URIs: `https:` anywhere, or `http:` on a loopback host for
    local clients; the scheme is checked on its own, so a loopback host never
-   admits another scheme such as `javascript:`), stored in KV with a TTL.
+   admits another scheme such as `javascript:`, and never with a fragment, per RFC 6749
+   §3.1.2; one rule shared with the api's Drive redirect, `oauthRedirectUrl` in
+   `@livediagram/api-schema`), stored in KV with a TTL.
    Rate-limited per IP. Authorize re-checks the scheme of the requested
    redirect URI, and the consent page only ever navigates to an http(s) URL.
    The token endpoint refuses a code presented with another `client_id`.
@@ -173,10 +175,12 @@ browser. A token minted for the CLI is named "livediagram CLI".
 
 ## 4. Tools
 
-Twenty-two tools: eleven for documents, five for Plan boards ([§4.9b](#49b-the-plan-tools)), four for sheets
-([§4.9c](#49c-the-sheet-tools)) and two for Illustrate pages and articles ([§4.9d](#49d-the-illustrate-tools)). The search/view capability is two tools (find, then read); create,
+Twenty-eight tools: thirteen for documents, five for Plan boards ([§4.9b](#49b-the-plan-tools)), four for sheets
+([§4.9c](#49c-the-sheet-tools)), two for Illustrate pages and articles ([§4.9d](#49d-the-illustrate-tools)) and four
+for forms ([§4.9e](#49e-the-form-tools)), besides the deprecated names ([§4.18](#418-deprecated-tool-names)). The search/view capability is two tools (find, then read); create,
 add_tab, and update are separate because their inputs and intent differ;
-list_templates exposes the template catalogue ([§4.5](#45-list_templates));
+list_templates exposes the template catalogue ([§4.5](#45-list_templates)), search_icons the icon catalogue
+([§4.5a](#45a-search_icons)) and list_images the user's image gallery ([§4.5b](#45b-list_images));
 share, rename, and delete complete the CRUD verbs, with list_trash and
 restore_document as the way back from a delete
 ([§4.8](#48-share_document), [§4.9](#49-rename_document-and-delete_document), [§4.9a](#49a-list_trash-and-restore_document)).
@@ -315,10 +319,36 @@ refused as held. Both return the changeset's result lines, its [lint](../024-age
 the rendered PNG of the result. The model picks the mode: rebuild → `replace`;
 tweak → `ops`.
 
+**Edits.** `ops` mode takes `edits` instead of `ops` (`mode: "edits"` names the same mode, as agents read it): [edit operations](../024-agents/edit-operations.md) in the line
+form, one a line, sent as the changeset's operations text for the api to parse and apply all or nothing. They reach
+what JSON ops cannot say in one step (`insert … between a b` making room, `wrap … in frame`, `connect a -> b`, `layout`
+of a selection, placement beside another element), and they are the language each [lint](../024-agents/diagram-lint.md)
+finding's fix is written in, so a finding in a write's result can be applied as printed. The base is the revision the
+model read (else the tab as loaded) and every element's fingerprint as loaded, since the text may name any of them.
+Coordinates in edits are relative to the content origin, as views print them. `ops` and `edits` together are refused.
+The tool's `edits` description carries the vocabulary, selectors, placements and keys in brief.
+
+**Arrow ends by ref.** A pinned arrow end the model writes (on `create_document`, `add_tab` and both modes here)
+may name its element by id or by the ref `read_document` prints, as an op's `elementId` may. Each end is resolved
+among the ids the result will hold: in `ops` mode the tab's elements and every element the call adds; in `replace`
+mode and on a new tab only the elements sent. An end that names nothing there, or more than one element, refuses
+the call, naming the arrow and its side (`arrow "a1": "to" is pinned to "4aeb", which is no element on the tab or
+in this call`); an arrow to nowhere is never stored.
+
+**Values checked.** A whole element the model sends (on `create_document`, `add_tab`, `replace` and an ops `add`)
+is checked as an edit operation's `set` checks a field: a field its type does not have is refused with the fields
+like it (`"icon" is not a field of a shape; fields like it: iconId, iconPosition`), a value off a closed vocabulary
+(`textSize` `sm`, `md`, `lg`, `scale` or a pixel number; the alignments, arrow styles, ends and heads, border styles
+and radii, and the diagram-building kinds' looks, media, attach points, boundary styles and pyramid variants: the
+same list edit operations check, [Edit operations](../024-agents/edit-operations.md)) is refused naming the values,
+and an `iconId` that names no icon is refused with the icons like it and a
+pointer to `search_icons`. Each of these was once stored and drawn wrong in silence. The check passes every element
+of every template, so a tab read back as JSON writes again unchanged.
+
 ### 4.5 `list_templates`
 
 Browse the template library — the same hand-tuned catalogue the editor's
-Quick Start picker ships ([Canvas and palette](../008-canvas/canvas-and-palette.md)), served from the shared
+template starts ship ([Canvas and palette](../008-canvas/canvas-and-palette.md)), served from the shared
 `@livediagram/templates` package so the worker and the editor can't drift.
 No input. Returns the categories plus one row per template:
 `{ kind, title, description, category }` — enough for the model to pick a
@@ -329,6 +359,32 @@ metadata-only (no elements): the scaffold materialises server-side on create,
 so the model never has to re-emit — or accidentally mangle — a curated layout.
 The recommended flow for "make me a kanban board"-style asks: `list_templates`
 → create with `template` → `update_document` (`ops`) to fill in real content.
+
+### 4.5a `search_icons`
+
+Finds icons by what they show, best match first, across the line-art set and the Technology set (brand, cloud and
+database marks): `{ query, limit? }` (20 by default, at most 50) answers `{ icons: [{ id, label, set }], more }`. An
+id is what an element's `iconId` takes. The catalogue is bundled with the worker (`@livediagram/icons`'s
+`searchIcons`, the api's `/icons` route and the CLI's `icon search` use the same ranking), so the search makes no
+api call. Read-only.
+
+### 4.5b `list_images`
+
+The user's image gallery ([Image element](../009-elements/images.md#agents)), so an element can show a picture the
+user uploaded, such as a screenshot: `{ query?, limit?, image? }` answers `{ images: [{ id, name, width, height,
+size, uploadedAt }], more }`, newest first, `query` matching the name, `limit` 20 by default and at most 50, `size`
+in bytes. An id is what an `image` element's `imageId` takes. Names are often a camera's or a screenshot tool's
+("Screenshot 2026-10-12 at 14.03.png"), so `image: true` adds a **contact sheet**: one PNG of the listed images (the
+first 12), each drawn to fit a cell above its place in the list and its name, through the same image embedding as
+the preview ([§5](#5-visualise--inline-image-render)). The renderer decodes each picture at full size, about 0.65 s a
+megapixel (a 2880x1800 screenshot took 3.4 s, twelve of them 14.9 s), so the sheet draws pictures in order only
+while they stay within 16 megapixels (`CONTACT_SHEET_MAX_PIXELS`: three full-screen retina screenshots); each one past
+that keeps a placeholder captioned "too large to draw here", and its bytes are not fetched. The gallery is the caller's own (`GET /api/images`, owner
+only): a teammate's uploads are not in it. Read-only, so a read-only token may call it. A deployment without image
+storage answers that images are not available here.
+
+There is no upload tool: a chat assistant cannot pass an attachment's bytes to a tool, so pictures reach the gallery
+through the editor (upload, paste or drop) and the assistant places them from there.
 
 ### 4.6 Schema resource (not a tool)
 
@@ -357,11 +413,12 @@ or the same thing written as **`mermaid`**:
 
 ```
 graph: {
-  nodes:  [{ id, label?, shape?, note?, group? }],
-  edges:  [{ from, to, label? }],
+  title?: string, subtitle?: string, key?: boolean,
+  nodes:  [{ id, label?, shape?, note?, group?, icon?, tone? }],
+  edges:  [{ from, to, label?, line? }],
   groups?: [{ id, label?, members?: [nodeId, ...] }],
   direction?: 'down' | 'right',
-  style?:  'flow' | 'tree' | 'mindmap',
+  style?:  'flow' | 'tree' | 'mindmap' | 'lanes' | 'cycle',
   lines?:  'straight' | 'angled' | 'curved',
 }
 mermaid: "flowchart LR\n  A[Idea] --> B{Worth it?} ..."
@@ -384,7 +441,8 @@ a layout no one could read.
 **A label is a heading; detail goes in the note.** A node's `label` is the text
 in the box and is capped at **40 characters** (`GRAPH_LABEL_MAX`). The cap is a
 plain fact in the tool's description, not an instruction (§4.15), and the server
-enforces it rather than rejecting the call. A longer label becomes a heading:
+enforces it rather than rejecting the call. A label that fits keeps the line breaks written into it
+("App tasks\nECS Fargate" is two lines, measured line by line), other runs of space made one. A longer label becomes a heading:
 bracketed asides go first ("Web client (React SPA served from the CDN)" becomes
 "Web client"); then the noun phrase before its first clause word when there is
 one ("Orders service which creates orders" becomes "Orders service", "Message
@@ -403,22 +461,161 @@ every box ("CTO" drawn as wide as "Platform and site reliability"). An
 unlabelled circle is a small solid dot ([Mermaid](../020-import-export/mermaid.md)
 "Node boxes and text").
 
+**The graph look** (what makes graph input read like a template, the flowchart template being the yardstick):
+
+- **Boxes are template-sized.** A box is at least 180×64 (a diamond 180×104, wider than tall; a circle stays round),
+  wider for a longer label, never the 120×120 square the editor's palette starts a square at. The labelled boxes of
+  one kind share one size, the largest any of them needs, so a wrapped step does not stand taller than its
+  neighbours. Every node's text is
+  one size: `md` for a graph of up to 12 nodes (the template's size), `sm` beyond, so a large system still fits.
+- **Roles by notation.** In a flowchart (a graph with a diamond or a stadium) the first stadium a flow starts from is
+  `bold` and a stadium it ends on `soft`; a diamond is `soft`. A node's `tone` overrides: `strong` (bold), `soft`,
+  `muted` (outlined and dashed, the exception idiom) or `plain`. `icon` puts an icon (an id from `search_icons`) on
+  the box; an id that names none is refused.
+- **Flow lines are elbows.** `lines` defaults to `angled` for flow, lanes and tree; every edge to a later rank bends
+  twice along the flow. Unlabelled arrows out of one node share one trunk and arrows into one node one bus, as long as
+  they are drawn alike (an unset line is solid): where solid and dashed lines meet at one end of a node, the lines of
+  the style most of the ones that could merge have share it (a labelled arrow saying something of its own does not
+  count) and the rest keep their own ends, leaving from that side's quarter toward their other end, beside the
+  trunk rather than on it, so a dashed event line never rides a solid call's trunk, nor its run across the gap
+  between ranks (each line's runs take their own channel there); a labelled
+  arrow keeps its own ends, unless arrows into one node (or out of one) say the same thing in the same line: those
+  join one bus too (several services that each "publish" to one event bus), and so does the one labelled arrow
+  among unlabelled ones into one node in its line (an agent that names the bus once, on one of its arrows), the bus
+  saying it once, on the stretch
+  into that node they all share (four "publish" plates, one a leg, read as four different things; a trunk out of one
+  node keeps one on each leg, where each says where it goes), never a
+  decision's exits, whose label names that decision's branch (two decisions' "no" on one bus could not say which was
+  which), and its label
+  sits on a run no other labelled arrow shares (the drop into its target,
+  else the leg out of its source, else its longest run), one line wide. Runs are read as drawn, those on one line
+  as one, and a run takes the label only when its plate there touches no box: long enough along it, clear beside it,
+  and off every frame's and lane's border and heading, and, where any run allows, off every other line too (a
+  neighbour's drop struck a label through); where the middle of a run is not clear, a point a quarter or a
+  third of the way along it is tried before the next run. Where no run holds the label on its line, it sits beside
+  one, just off the line on either side, where it touches no box, border, heading or line (a wide label on a drop
+  beside a neighbour's drop), before it is ever laid over another line. Each label keeps off the labels placed
+  before it (two "publish" labels off one bus stood over each other).
+  The gap between two ranks fits the widest label crossing it, as Tidy Up's does (its width left to right, its line
+  height either side of the jog top to bottom), so a caption is never longer than its edge; between a group and a
+  node outside it too.
+- **Side steps sit level with their decision.** A decision (diamond) with two or more exits keeps its main exit on
+  the spine (the one labelled yes / ok / true / pass, else the one leading furthest) and lays each other exit whose
+  target nothing else enters on the decision's own rank, beside it, as the template's "No → Show card error" does.
+- **Loops go round the outside.** An edge back to an earlier rank (a retry, a loop) leaves its source by the side
+  away from the spine, runs outside every box between, and enters its target from that side: an elbow that never
+  crosses the spine. Several loops take separate tracks. On a drawing of up to 120 boxes a loop or a detour is first
+  searched for (the orthogonal router: the cheapest clean path over every pair of sides); the search shares one
+  budget per layout (`ROUTER_BUDGET`, grid crossings laid out plus steps taken), and once it is spent the rest take
+  their outside tracks, so a dense graph lays out in well under a second (60 boxes and 140 edges in about 0.2 s).
+  The search prices a run along a line already drawn (`ROUTER_SHARE_COST`), counting one within `ROUTER_SHARE_NEAR`
+  (8 px) beside it, or on its line stopping that short of its end, as sharing it: a "No" running up to the very point
+  a "Yes" turns into a step read as going into that step. It also prices each line already ending on a side the
+  route leaves or enters (`ROUTER_SIDE_LOAD_COST`, about two bends' worth), so a third line into one side of a shared
+  end takes a free side instead of squeezing in beside the other two.
+- **Groups keep their lines clear.** A node outside a group that a member links to sits by that member, not by the
+  middle of the group (a database under the service that owns it), its rank kept in order and its gaps kept. An edge
+  to or from the group itself leaves the frame facing the other end: from the side level with it when it lies under
+  the frame, else from the frame's near side, so it never sweeps along the frame past its members' own drops (the
+  D2 "publish events" bus). An edge between two nodes outside a group is routed round the frame, never through the
+  gaps between its members. A line into a group's first members lands clear of its heading: down the page, a frame
+  whose first member would take a line through the heading's text is widened on the left until it does not, on the
+  heading's side only: the far side hugs the members (a long heading framed two boxes in twice their room), unless
+  an edge meets the group itself, whose frame then stays centred on its members so that edge stays on their line.
+  A row of members with no lines among them sits by its links to the group most of the row links to (each store
+  under its own service, a service's link to a third party pulling it off none), never by a hub's. A hub (a member
+  linked to more outside nodes than half its row, at least three, in a row holding at least three one-link members:
+  a Kafka bus every service publishes to) goes to the end of its row rather than mid-row between a service and its
+  store. Two members wanting one spot split the difference, unless that spreads along a tight row: then the first
+  takes the spot and the next packs beside it, so the rest stay straight.
+  A label's plate keeps 6 px off every frame's and lane's border, inside or out, never sitting on the edge. The
+  reverse holds too: a group in one row whose members have no lines among them (a row of data stores) seats each
+  member by the outside nodes it links to, a database under its service, its order and gaps kept, and its frame
+  refits round them; skipped when the refitted frame would cover another node or frame. A member left within a
+  notch (6 px) of its spot sits on it, its gap shrinking by no more than that, so its line drops straight rather
+  than as a slant.
+- **Stacked groups line up.** Groups that follow one another down the flow, no two side by side (a pipeline's
+  stages), keep the spine straight: a group with one entry (the one member a line from outside reaches) moves,
+  frame and members together, until that entry sits on the line of what feeds it, so the spine runs straight
+  through every stage rather than jogging where a stage's own branch pulled its members aside. Each frame keeps
+  its own width, hugging what it holds: stretched to one width, frames of two boxes stood mostly empty. Skipped
+  for a group whose moved frame would cover another node or frame.
+- **Lanes stay compact and their decisions branch.** In a `lanes` graph a hand-off to the next lane up or down that is
+  its step's only way out and its next step's only way in drops straight into that lane, in the same column, rather
+  than taking a column of its own, so a chain of hand-offs climbs or descends a staircase instead of stretching across
+  the page; never two drops in a row, so the staircase steps right as it goes and the flow still reads left to right
+  (four drops in a row stood the first four steps in one column). Next steps one step of the same lane feeds, stacked in one column, spread until each clears that step's
+  points, so its exits can branch. A step with two or more exits (a decision, or any step that branches) keeps the one whose next step sits
+  most nearly level with it on its point toward the flow; each other exit leaves from its top or bottom, toward its
+  next step's lane, and bends once into that step's side, so no two exits leave as parallel stubs. A flow down the
+  page does the same across: of a step's exits leaving its bottom on their own ends (labelled, or drawn unlike the
+  trunk), one whose next step lies clearly to its left or right leaves that side instead. A step with exactly two
+  exits whose next steps lie clearly either side of it, neither ahead, sends both out of their sides (accept up,
+  decline down; yes left, no right): kept on the point, one left by a corner and the other by the tip, lopsided.
+  Steps stacked in one column of a lane read top to bottom as their feeders do (a step fed from its own lane and from
+  below sits over one fed only from below), so the lines into the stack do not cross on their way in. A stack one of
+  whose steps a step of the same lane feeds from an earlier column, with nothing of that lane on the line between
+  them, moves so the two sit level and the hand-off runs straight along the lane (a first decision's "No" straight
+  into a shared rejection); that line keeps the middle of its next step's side and another line into the same side
+  comes in beside it on a quarter. A decision's own branches stacked beside it are not lined up: they stay spread so
+  each leaves by its own side. The lane grows to hold a stack that moved. A labelled line running level across one
+  gap between columns (a decision's "Accept" on its point) widens that gap to hold its label, and every later column
+  moves along with it, so the label is never cut short ("Accep").
+- **Title, subtitle and key.** `title` and `subtitle` set a heading and a muted caption above the diagram, left
+  aligned, as every template has. `key` adds a key beside it, a frame titled "Key" so it moves, in the editor or by
+  an edit, as one: one miniature per shape kind the graph uses, with
+  what that shape means, in the tone the diagram gives that kind most, its muted exceptions aside unless every one is muted;
+  those exceptions then get a row of their own, "Exception or optional" (`{"muted": "Error path"}` renames it), so a
+  dashed step never goes unexplained. `true` names them by default: in a flowchart by ISO 5807
+  (stadium "Start or end", square "Step", diamond "Decision", parallelogram "Input or output", document "Document",
+  hexagon "Preparation"), otherwise as a diagram of systems reads them (stadium "Entry point", square "Component",
+  hexagon "Hub or bus", circle "Node"; cylinder "Data store", cloud "External system", actor "Person" in both). An
+  object names them by shape (`{"hexagon": "Event bus"}`), the rest by default.
+
 **Layout choices** (defaults in brackets):
 
-- `direction` (auto): `down` (ranks top to bottom) or `right` (left to right).
+- `direction` (auto): `down` (ranks top to bottom) or `right` (left to right). Auto is `down` for a flowchart (it
+  reads down the page, as the template does) and for a graph of more than 150 nodes; any other flow is laid out
+  both ways and keeps the one whose aspect is nearer a landscape page (3:2).
 - `style` (`flow`): `flow` is the layered layout, `tree` the tidy tree (an org
-  chart, a hierarchy), `mindmap` the radial layout around the first node.
+  chart, a hierarchy; a parent below the root whose two or more children are all leaves stacks them in a column
+  under it, indented, joined by a bus down its lower-left quarter, the compact org chart; its lines carry no
+  arrowheads, as the org-chart template's do, since a tree shows belonging, unless an edge asks with `ends`; a node
+  with a `role` draws as the template's person card, its name in bold over the role with a person icon unless it
+  names another, in any style), `mindmap` a real mind map as the mind-map template draws one (mind nodes, so it grows with Tab
+  and Enter, laid out balanced: the root is the first node nothing enters, a bold round centre; each first-level
+  branch tinted in its own hue with its icon; leaves white and edged in their branch's hue, one height for every leaf of the map (the tallest any label needs); a root
+  whose label would grow the circle past 260 px takes the next text size down, so the centre stays near the template's; curved connectors in
+  the branch hue with no arrowheads; an edge the tree leaves out drawn dashed), `lanes` a swimlane diagram (each group
+  a lane, one under another, its label in the lane's header strip (a heading, a size up from the steps, the strip as
+  wide as the longest title needs up to the swimlane template's, the columns 48 px apart); the flow runs left to right across the lanes and
+  a node outside every group gets an unnamed lane), `sequence` a sequence diagram (the nodes the participants, a
+  node shaped `actor` a stick figure; the edges the messages in order, a dashed edge a reply; Mermaid says more), `storm` an event-storming board ([Event storming](../021-event-storming/event-storming.md#agents)), `cycle` a ring (the nodes in order clockwise from the top, each
+  edge a curved arrow following the ring's arc, leaving and entering its stops along the ring's tangent so every arc bows
+  out alike, a node with no edge at all at the ring's centre, sized on its own so a longer centre label never grows
+  the stops, a node given no shape a circle).
 - `groups`: named clusters drawn as frames around their members and laid out as
   one block each (the clustered layout the editor's Mermaid import uses); an edge
   may point at a group id. With groups, `style` is flow. A node may name its
   group itself (`group`), the shape a model reaches for first; it joins that
   group's members, and a group id nothing declares is created with the id as its
-  label. `members` is then optional.
-- `lines` (`straight` for flow, `angled` for tree, `curved` for mindmap): the
+  label. `members` is then optional. Nodes and groups share one set of ids: an id naming both is refused, naming
+  it, since each becomes an element of that id, and so is a node id or a group id given twice. Groups do not nest: a group listed as another's member is refused,
+  naming both, rather than dropped; and a `lanes` graph refuses a node in no group, which would otherwise land in an
+  unlabelled lane of its own, and a node in two lanes, which each lane would draw (`graphShapeError`). The api's `replace` with a `graph` refuses the same, so every
+  caller of graph input is held to it (`graphBodyIssue`).
+- `lines` (`angled` for flow, lanes and tree, `curved` for mindmap and cycle): the
   arrows' routing, from the editor's own arrow styles. Angled lines **bend
   twice** along the flow (down, across at half height, down into the child's
   top), the org-chart shape; one whose ends already line up runs straight
-  ([Layout cleanup](../008-canvas/layout-cleanup.md) "Angled lines bend twice").
+  ([Layout cleanup](../008-canvas/layout-cleanup.md) "Angled lines bend twice"). **No notch in a straight line:** an
+  elbow whose ends sit within `NOTCH_MAX` (6 px) of one line, across a middle run shorter than `KINK_RUN` (12 px),
+  is drawn straight, as a step that short reads as a notch (two boxes of different widths centred a pixel or two
+  apart). Where one end's box meets no other line, that box moves across by the step so the line runs true, unless that would
+  take it onto a neighbour or over the border of a frame or lane that holds it; only
+  when both ends meet other lines is it drawn as a slight slant (a store's 5 px slant over 250 was seen). An elbow
+  whose straight line would cross a box it was routed round keeps its bends, and lines are straightened before their
+  labels are placed, so a label sits on the line as it is drawn.
 
 The flow layout reduces crossings: after ranking, a few up-and-down barycentre
 passes reorder each rank, and a new order is kept only when it crosses fewer
@@ -431,9 +628,12 @@ unrelated box passes behind it with a gap, on the canvas and in the preview
 ([Arrows pass behind intervening boxes](../008-canvas/arrow-route-behind.md)).
 
 **`mermaid`** is parsed by the editor's own importer (`parseMermaid`:
-flowcharts with subgraphs, state diagrams and ER diagrams, [Mermaid](../020-import-export/mermaid.md)) into the same
+flowcharts with subgraphs, state diagrams and ER diagrams, [Mermaid](../020-import-export/mermaid.md)), or for a
+`sequenceDiagram` by the agents' sequence reader ([Sequence diagrams](../020-import-export/mermaid.md#sequence-diagrams-agents),
+drawn with lifelines, activation bars, notes and fragments as `style: "sequence"`), into the same
 graph, its direction and subgraphs becoming `direction` and `groups`, and then
-takes the same path, label cap included. A dialect it cannot read comes back as
+takes the same path, label cap included. Mermaid's front matter title (`---` / `title: Checkout` / `---`) heads the
+diagram as `title` does on a graph, in every dialect. A dialect it cannot read comes back as
 an error naming what is supported.
 
 The translation (`graphToElements`, the sizing, the clustered layout) is pure
@@ -446,27 +646,44 @@ person typed.
 The **prompts** (§4.10) are messages the user sends, not tool descriptions, so
 they do ask for it outright: short headings, detail in the note, related nodes
 grouped, a direction and style that fit the subject. Nodes are set in one fixed
-text size (`sm`, what the sizing measures against), not the shape default that
+text size (`md` up to 12 nodes, else `sm`; what the sizing measures against), not the shape default that
 scales text to fill each box.
 
 ### 4.7a Content-carrying element kinds
 
-Six kinds hold content of their own, and the element format documents their
+These kinds hold content of their own, and the element format documents their
 fields so a model can fill them rather than guess: **sticky**, **table**,
-**code block**, **entity**, **lane**, and the three **charts** (bar, line, pie).
+**code block**, **entity**, **lane**, the three **charts** (bar, line, pie), the
+**Sankey**, and the diagram-building kinds: **card**, **badge**, **step**,
+**boundary**, the concept graphics (**layer stack**, **pyramid**, **cycle**, **hub**, **onion**, **chevrons**),
+**pointer note**, **diagram key**, **stack**, the org chart's **person node**, the **sequence diagram** and the
+**image**.
 Every other kind stays listed by name only. The field notes are facts about what
 each field does (§4.15), carried on the tools' element argument and in the
 schema resource (§4.6), short enough not to bloat every tool definition.
 
-| Kind                              | Content fields                                                     | Facts the notes state                                                                                                                                                                                                               |
-| --------------------------------- | ------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `sticky` (type)                   | `label`; optional `fillColor` + `textColor`                        | The theme never recolours a sticky, so its own colours are kept; the notes list the palette's sticky pairs (classic, lemon, peach, rose, lilac, sky, mint, teal, slate, paper, charcoal, ink). Unset, it is the classic amber note. |
-| `table` (type)                    | `cells` (rows of strings), `headerRow`, `headerColumn`, `zebra`    | The first row is the header when `headerRow` is set.                                                                                                                                                                                |
-| `code-block` (shape)              | `code` (up to 4000 chars), `codeLanguage`, `codeTheme`, `codeWrap` | The languages and themes are listed; the block draws itself, so `label` is not shown.                                                                                                                                               |
-| `entity` (shape)                  | `label` (the title), `entityFields` `[{ name, type? }]` (up to 40) | Keys go in the type text (`uuid PK`).                                                                                                                                                                                               |
-| `lane` (shape)                    | `label` (the title), `headerFill`                                  | Contents sit inside the lane's box; lanes are placed one under another.                                                                                                                                                             |
-| `bar-chart` / `pie-chart` (shape) | `pieSlices` `[{ label, value }]`                                   | A chart draws no title: a caption is a separate `text` element. Categories show in the legend.                                                                                                                                      |
-| `line-chart` (shape)              | `lineCategories` (x labels), `lineSeries` `[{ name, values }]`     | The same, with one value per category.                                                                                                                                                                                              |
+| Kind                                        | Content fields                                                                                                                              | Facts the notes state                                                                                                                                                                                                                                                                                                                                                                                                 |
+| ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `sticky` (type)                             | `label`; optional `fillColor` + `textColor`                                                                                                 | The theme never recolours a sticky, so its own colours are kept; the notes list the palette's sticky pairs (classic, lemon, peach, rose, lilac, sky, mint, teal, slate, paper, charcoal, ink). Unset, it is the classic amber note.                                                                                                                                                                                   |
+| `image` (type)                              | `imageId`, `alt`, `objectFit`                                                                                                               | `imageId` is an id from `list_images`; one not in the caller's gallery is refused, naming `list_images`. Without `imageId` the element is a placeholder the user fills in the editor. `objectFit` `contain` (the default) shows the whole picture, `cover` fills the box and crops; `alt` describes the picture. A box of the picture's own proportions (`width` and `height` from `list_images`) shows it uncropped. |
+| `table` (type)                              | `cells` (rows of strings), `headerRow`, `headerColumn`, `zebra`                                                                             | The first row is the header when `headerRow` is set.                                                                                                                                                                                                                                                                                                                                                                  |
+| `code-block` (shape)                        | `code` (up to 4000 chars), `codeLanguage`, `codeTheme`, `codeWrap`                                                                          | The languages and themes are listed; the block draws itself, so `label` is not shown.                                                                                                                                                                                                                                                                                                                                 |
+| `entity` (shape)                            | `label` (the title), `entityFields` `[{ name, type? }]` (up to 40)                                                                          | Keys go in the type text (`uuid PK`).                                                                                                                                                                                                                                                                                                                                                                                 |
+| `lane` (shape)                              | `label` (the title), `headerFill`                                                                                                           | Contents sit inside the lane's box; lanes are placed one under another.                                                                                                                                                                                                                                                                                                                                               |
+| `bar-chart` / `pie-chart` (shape)           | `pieSlices` `[{ label, value }]`                                                                                                            | A chart draws no title: a caption is a separate `text` element. Categories show in the legend.                                                                                                                                                                                                                                                                                                                        |
+| `line-chart` (shape)                        | `lineCategories` (x labels), `lineSeries` `[{ name, values }]`                                                                              | The same, with one value per category.                                                                                                                                                                                                                                                                                                                                                                                |
+| `sankey` (shape)                            | `sankeyFlows` `[{ from, to, value }]` (up to 200), options                                                                                  | Nodes are the names; `source` / `target` and text amounts (`"1,200"`) are read too. A flow back to an earlier node is hidden. Options: `sankeyLinkColor`, `sankeyAlign`, `sankeyValueLabel`, `sankeyUnit`, `sankeyNodes`, `sankeyLeftover` (`show` by default: an unbalanced middle node draws its difference to a Leftover node), `sankeyLeftoverName`. No title.                                                    |
+| `card` (shape)                              | `pageTitle`, `pageSubtitle` (meta), `label` (body), `cardMedia`, `iconId`, `cardHeader`, `tags` (up to 6)                                   | Use cards for service and component nodes: title the thing, meta the product or runtime, tags the facts. `callout` is accepted and becomes a card with `cardMedia: 'badge'`.                                                                                                                                                                                                                                          |
+| `badge` (shape)                             | `label` (up to 24), `chipLook`, `attachedTo`, `attachAt`                                                                                    | A badge attached to a node sits on one of its eight points and is placed there by the server; no x / y needed.                                                                                                                                                                                                                                                                                                        |
+| `step` (shape)                              | `label` (the number, up to 3), `chipLook`, `attachedTo`, `attachAt`                                                                         | Number the steps of a walkthrough 1, 2, 3; place them on or beside the arrows they mark.                                                                                                                                                                                                                                                                                                                              |
+| `boundary` (shape)                          | `label` (the title), `pageSubtitle`, `iconId`, `boundaryStyle`                                                                              | A container: elements whose centre is inside it belong to it. Nest boundaries for edge, region, VPC, subnet; Inset suits a nested one, C4 a C4 diagram.                                                                                                                                                                                                                                                               |
+| `layer-stack` / `pyramid` / `cycle` (shape) | `conceptRows` `[{ label, note? }]`, `pyramidVariant`, `label` (a cycle's centre)                                                            | Rows: stack 2 to 8 (note = side note), pyramid 2 to 6 (first row the apex; note = a funnel's value), cycle 3 to 8 (clockwise from the top).                                                                                                                                                                                                                                                                           |
+| `hub` / `onion` / `chevrons` (shape)        | `conceptRows` `[{ label }]`, `hubSpokes`, `label` (a hub's centre)                                                                          | Hub 3 to 8 satellites, onion 2 to 6 rings from the core out, chevrons 2 to 8 stages left to right.                                                                                                                                                                                                                                                                                                                    |
+| `pointer-note` (shape)                      | `label`, `pointerTip` `{ x, y }`, `attachedTo`, `attachAt`                                                                                  | The tip is relative to the note's top-left, or pinned to a point of a node.                                                                                                                                                                                                                                                                                                                                           |
+| `diagram-key` (shape)                       | `label` (the title), `keyMeanings`                                                                                                          | Its rows fill in from the tab's line styles and tag colours; meanings are keyed by row id (`line:dashed`).                                                                                                                                                                                                                                                                                                            |
+| `stack` (shape)                             | `stackDirection`, `stackColumns`, `stackGap`, `stackPadding`, `stackAlign`                                                                  | Children are the elements whose centre is inside; the editor lays them out.                                                                                                                                                                                                                                                                                                                                           |
+| `mind-node` with `mindLook: person`         | `label` (the name), `pageSubtitle` (the role), `mindParentId`                                                                               | An org chart: the root takes `mindFlow: downward`.                                                                                                                                                                                                                                                                                                                                                                    |
+| `sequence` (shape)                          | `sequenceParticipants` `[{ id, label, actor? }]` (2 to 12), `sequenceMessages` `[{ from, to, label, kind }]` (up to 60), `sequenceNumbered` | It lays itself out; prefer it over loose shapes for a sequence diagram that will be edited.                                                                                                                                                                                                                                                                                                                           |
 
 **The sticky exception to "the theme owns colours".** The design rule that a
 model leaves colours to the theme (§4.6) holds for every themed element; a
@@ -486,7 +703,14 @@ wrongly:
   fill its box, so a lane or entity title came out as one giant word across
   its contents and a sticky's note filled it edge to edge; a box drawn in the
   editor never arrives that way. This applies to every element on these paths,
-  not only the six.
+  not only the six. As graph input sizes its text by count, so do raw boxes: on a list of more than 12 labelled
+  boxes, a box that gives no `textSize` takes `sm` rather than `md`, so a hand-placed architecture of twenty boxes
+  does not wrap its names mid-word ("ElastiCa / che"). A raw arrow pinned at both ends that gives no `arrowStyle` is
+  angled, as graph input draws its lines, and an angled one that gives no bends takes graph input's two (out of its
+  start, across, into its end), so it meets both ends square rather than as the editor's lone L, sideways into a top;
+  one whose ends line up runs straight. `"arrowStyle": "straight"` keeps a diagonal. Both defaults are for content
+  arriving fresh: a `replace` that sends back elements the tab already holds (by id) leaves their text size and lines
+  as they are, so reading a tab and writing it back never restyles what the person made.
 - A **table**'s ragged rows are padded to the widest (`normalizeTable`, the same
   pass the editor runs on load), so every row renders.
 - An unknown **codeLanguage** becomes `plain` and an unknown **codeTheme** is
@@ -508,6 +732,39 @@ wrongly:
   carries its points as one `packedPoints` block, and a model that writes
   `points` instead gets them packed, as the api's own writes would. In an
   update, sent `points` replace the stroke's block (`mergeElementUpdate`).
+
+**Style fields.** The element format names the style fields a box or arrow takes beyond its geometry, as facts:
+every closed vocabulary from `ELEMENT_FIELD_VALUES` (text size and alignment, icon position, arrow style, ends and
+heads, border style and radius, font) with its values, bold and italic, `colorPreset` with the theme's preset looks,
+`iconId` (from `search_icons`) and `note`. Before, these were discoverable only by reading a template's JSON, and
+an agent hand-placing a dashboard guessed `textAlign` and `textSize: "xl"`.
+
+**Facilitation kinds.** The format also names what the session kinds hold: a `session-button`'s `session` (a timer
+with `minutes`, a stopwatch, a vote with `dots`, a poll with `question` and `options`), an agenda's `agendaItems`,
+a checklist's `checklistItems`, a stat row's `stats`, a callout's `pageTitle` over its `label` body, a banner's
+`pageTitle` and `pageSubtitle`, and a sticker's `stickerId`. A bare `text` is centred in its box unless it sets
+`textAlignX`. The entries of a Q&A board, an idea box and a temperature check are the people's, never an edit's,
+so starter questions go on stickies beside them. An agenda written with segments grows to draw every one
+([Agenda](../012-collaboration/agenda.md) "The face").
+
+**Hand-drawn strokes.** A `freehand` element is written with `points` as canvas coordinates, `[[x, y], ...]` in
+drawing order, `closed` to close and fill it, and a `penColour` (ink, grey or a hued pen). The stored form is a box
+with the points packed inside it ([Stroke points](../006-document/stroke-points.md)), which no model can write, so
+the MCP takes the box from the points and packs them through the stored-tab migration, before the element is
+checked, on every element path (`freehand-points.ts`), and an ops update giving a stroke new `points` sets its new box and block together, where a bare `points` field would have emptied the stroke. Points it cannot draw (none, more than
+`MAX_FREEHAND_POINTS`, or not number pairs) are refused naming the element. The format says a hand-drawn board
+starts from the `whiteboard` template, a tab in Draw mode, and that any box may carry a small `rotation`.
+
+**Found by search.** A client that searches tools by text finds a tool by its name, description and schema, and
+ranks long ones down or leaves the largest out. So `create_document` leads with what it makes (a slide deck among
+them, and how to start one), `change_pages` and `write_article` say which is for slides, and the single-`tab` alias
+is checked against the tab shape by the tool rather than repeating that shape (the whole element format) in the
+schema: the definition halved, from about 41 KB to 21 KB, the size of `update_document` and `add_tab`.
+
+**No CLI hints.** An edit's result text is the api's, less its footer's revert line: that line names the
+`livediagram changeset revert` command, which no MCP tool runs. Its `@x,y` positions are from the content's top-left as it was read, while an element's `x` and `y` are canvas
+coordinates; when the content does not start at 0,0, a closing line gives the offset (`x, y = @x + ox, @y + oy`),
+so a position read from a result is not sent back off by it.
 
 ### 4.8 `share_document`
 
@@ -591,20 +848,36 @@ document's Plan cards when a formula reads them.
 - **`list_sheets`** (read): the document's sheets (or one tab's), each with its title, tab, the rows and columns in
   use and that range in A1, and the id of the Sheet element framing it (null when none does).
 - **`read_sheet`** (read): a range's non-empty cells (the range in use by default) as `{ at, input, value, display }`,
-  plus the frozen rows and columns, merges and filter. A read covers at most `AGENT_READ_CELLS_MAX` (5,000) cells
+  plus the frozen rows and columns, merges and filter, the validation rules (`validation`) and format rules
+  (`conditionalFormats`) in words, and `invalid` on a cell whose value its rule does not allow. A read covers at most `AGENT_READ_CELLS_MAX` (5,000) cells
   of the range and answers at most `SHEET_READ_CHARS_MAX` (100,000) characters of cells; past either it stops,
   sets `truncated` and says in `note` where to read on.
 - **`change_sheet`** (destructive, as it clears and deletes): up to 50 changes in order, each built against the
   sheet as the ones before it left it: `set` `{ at, rows }`, `clear` `{ range, what }`, `format` `{ range, format }`
   (bold, italic, underline, strikethrough, colours, font size, alignment, wrap, number format, decimals,
   currency), `insert_rows` / `insert_cols` `{ at, count, side }`, `delete_rows` `{ rows }`, `delete_cols`
-  `{ cols }`, `rename` `{ title }`, `sort` `{ by, range?, descending, header }` and `freeze` `{ rows, cols }`. Each
+  `{ cols }`, `rename` `{ title }`, `sort` `{ by, range?, descending, header }`, `freeze` `{ rows, cols }`, `validate`
+  `{ range, rule, reject?, help? }`, `clear_validation` `{ range }`, `conditional_format` `{ range, when + style |
+scale, first? }` and `clear_conditional_formats` `{ range? }` ([Data validation](../029-sheets/data-validation.md#agents),
+  [Conditional formatting](../029-sheets/conditional-formatting.md#agents)); `resize` `{ cols | rows, px | fit }`,
+  `merge` `{ range, across? }`, `unmerge` `{ range }`, `border` `{ range, sides, color, width, style }`, `filter`
+  `{ range | null }`, `chart` `{ type, range, columns?, at?, width?, height?, palette? }`, `clear_charts`
+  `{ range? }` and `design` `{ design }`
+  ([Shaping a sheet, A design](../029-sheets/sheet-store.md#agents); `sheet-shape-change.ts`, `sheet-design.ts`,
+  `sheet-charts.ts`, `sheet-chart-follow.ts`). Inserted rows take their neighbour's formats, columns its look. After the
+  writes, one changeset on the sheet's tab removes the charts `clear_charts` took, moves those a change left over
+  other cells back onto their cells, and adds the charts the changes made over the Sheet element, each with its
+  first read. Each
   is sent through the sheet write route as the editor sends it (one write a call, split past 5,000 cells, each with
-  its own write id). A formula that cannot be read is refused naming the cell (`formula_invalid`); a refusal
+  its own write id). A formula that cannot be read is refused naming the cell (`formula_invalid`), as is a value a Reject
+  validation rule does not allow (`value_invalid`, with what the rule allows); a refusal
   answers what was applied before it.
 - **`add_sheet`** (write): a new sheet on a tab (the tab named, else the first with a sheet, else the first), titled
-  uniquely on the tab, blank or filled from A1 with `rows` or `csv` (not both), then a Sheet element (960 x 560)
-  framing it placed beside what the tab holds, as `add_board` places a board, in one changeset.
+  uniquely on the tab, blank or filled from A1 with `rows`, `csv` or a `design` (one of them), then a Sheet element
+  framing it placed beside what the tab holds, as `add_board` places a board, in one changeset with a design's charts.
+  The element is 960 x 560, grown to show every filled cell (up to 1,800 x 1,400).
+- **Previews**: a Sheet tab's image grows its Sheet to its filled cells and charts (`sheetContentSize`); a chart linked
+  to a sheet draws what its cells hold now (`chartsReadLive`); a dropdown draws as the editor's chip, or its arrow.
 
 ### 4.9d The Illustrate tools
 
@@ -617,7 +890,8 @@ not, and reach open editors at once.
 - **`change_pages`** (destructive, as it deletes and replaces page content): up to 50 page changes in order,
   `add` `{ kind, size, orientation, name, background, layout, at }` (infographic, slide or logo), `set`
   `{ page, name, size, orientation, background, locked }`, `layout` `{ page, layout }`, `move` `{ page, to }`,
-  `duplicate` `{ page }` and `delete` `{ page }`, written as one edit; a refusal writes nothing and names the
+  `duplicate` `{ page }`, `delete` `{ page }` and `apply_background_to_all` `{ page }` (every other page of its kind
+  takes its background), written as one edit; a refusal writes nothing and names the
   change. The answer lists each page with its rectangle on the canvas, where `update_document` puts elements.
 - **`write_article`** (destructive, as a replace drops the old text): an article's text from Markdown (front
   matter `title:` / `subtitle:`, headings, lists, to-dos, quotes, code, dividers, `\pagebreak`), `replace` or
@@ -625,6 +899,29 @@ not, and reach open editors at once.
   onto as many pages as it needs.
 - **Reading**: `read_document` with `view: "pages"` lists the pages, the elements on each, the layouts on offer
   and each article as Markdown in the form `write_article` takes.
+
+### 4.9e The form tools
+
+A Form tab's form ([Forms](../030-forms/forms.md#agents)): its questions, sections, where its responses go and its
+form link. Everything is named as the builder names it (a question by id or prompt, a section by id, title or place,
+a board, card type, column, sheet and card field by name); the server (`apps/mcp/src/form-tools.ts` over
+`packages/agent-verbs/src/forms/`) resolves them and refuses an unknown name with the ones there are. The form is
+built with the editor's own edits (`@livediagram/forms`) and started as Start Planning starts one
+(`@livediagram/templates` `planFormStart`).
+
+- **`read_form`** (read): the form in words (sections, questions with their settings, each answer's destination by
+  field name, section rules by prompt), where responses go, the settings, state, response count, the form link (an
+  Editor's only) and its problems; `image` adds a picture of the form on its tab's look.
+- **`add_form`** (write): a Form tab from a starter or questions, its responses to a new or named board or sheet,
+  the fields its mappings name added to the card type; a new document when no `documentId` is given. Answers as
+  `read_form` does, with the tabs it made.
+- **`change_form`** (destructive): up to 50 question, section, form, settings and destination changes, checked whole
+  and written as one changeset; a refusal writes nothing and names the change. While the form takes responses only
+  `settings` changes go through.
+- **`share_form`** (write): `publish`, `close` or `delete_link`, through the form link routes as Share Form calls
+  them; a form not ready answers every problem.
+- `read_document` lists a Form tab as `kind=form` with a line naming `read_form`; its `image` draws the form as
+  `read_form` does.
 
 ### 4.10 Prompts (discoverability)
 
@@ -711,11 +1008,11 @@ which is how the gap was found.
 Three behaviours cover the twenty tools, and each is a preset in
 `apps/mcp/src/tool-annotations.ts`:
 
-| Behaviour       | `readOnlyHint` | `destructiveHint` | Tools                                                                                                                           |
-| --------------- | -------------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| **read**        | `true`         | (not applicable)  | `find_documents`, `read_document`, `list_templates`, `list_trash`, `list_items`, `list_sheets`, `read_sheet`                    |
-| **write**       | `false`        | `false`           | `create_document`, `add_tab`, `share_document`, `rename_document`, `restore_document`, `add_board`, `change_board`, `add_sheet` |
-| **destructive** | `false`        | `true`            | `update_document`, `delete_document`, `change_items`, `change_card_types`, `change_sheet`                                       |
+| Behaviour       | `readOnlyHint` | `destructiveHint` | Tools                                                                                                                                                     |
+| --------------- | -------------- | ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **read**        | `true`         | (not applicable)  | `find_documents`, `read_document`, `list_templates`, `search_icons`, `list_trash`, `list_items`, `list_sheets`, `read_sheet`, `read_form`                 |
+| **write**       | `false`        | `false`           | `create_document`, `add_tab`, `share_document`, `rename_document`, `restore_document`, `add_board`, `change_board`, `add_sheet`, `add_form`, `share_form` |
+| **destructive** | `false`        | `true`            | `update_document`, `delete_document`, `change_items`, `change_card_types`, `change_sheet`, `change_pages`, `write_article`, `change_form`                 |
 
 The split mirrors §4.11's read-only-token boundary exactly (what a
 `read_only = 1` token can still reach is what `read` annotates), so the hint a
@@ -861,6 +1158,21 @@ The tools named for the container were `*_diagram` / `find_diagrams` before it b
 The output literals that named the container changed with it: `renamed`, `deleted` and `restored` report `document` where they reported `diagram`.
 <!-- /legacy-names -->
 
+- **Previews**: `read_document` with `image` draws an Illustrate tab as its pages, each as the editor exports it
+  (`svg-render-pages.ts` over `illustrate-page-frame.ts`): its background, gradient, pattern or picture, the elements
+  reaching onto it cut at its edges, in rows (two slides or three tall pages to a row) with each page's place and name
+  under it; `page` (an id, place or name) draws one page alone at its own size. An article page draws its writing as
+  estimated without a browser (`article-layout-estimate.ts`: each block set as the editor's stylesheet sets it,
+  wrapped at an estimated width, flowed down the article's pages), with the pages the editor would add after its last
+  shown and labelled as such. An emoji icon, sticker or reaction pad, which needs a colour-emoji font a Worker lacks,
+  draws from its Twemoji SVG (release 15.1.0 on jsDelivr, CC-BY 4.0, in `THIRD_PARTY_NOTICES.md`), fetched by its
+  code points when the preview is made (`preview-emoji.ts`: at most `PREVIEW_EMOJI_MAX` (40) a preview, within
+  `PREVIEW_EMOJI_TIMEOUT_MS` (2.5 s), each file at most 64 kB and kept in the Cache API, alongside the fonts). One
+  that cannot be fetched in time draws as a disc labelled emoji (`previewResolvers` in `@livediagram/icons/resolve`).
+- Article summaries (`write_article`, `change_pages`, the `pages` view) carry `estimatedPages`, the pages the writing
+  reaches once laid out, from the same estimate; `write_article`'s last line says it in words ("It takes about 2 pages
+  once laid out"), so an agent asked for one page sees at once that it ran over.
+
 ## 5. Visualise — inline image render
 
 `create_document`, `add_tab` and `update_document` return, and `read_document` with `image: true` returns, an **inline
@@ -879,16 +1191,30 @@ Worker (no DOM, no React).
   consumed by **both** the existing in-app export (dedup — the editor stops
   carrying its own copy) and the MCP worker. This is the reuse rule applied: one
   renderer, two callers.
+- **A Plan tab as the editor exports it.** A Board, Sheet or Dashboard tab previews as the editor's image export draws
+  it ([Plan tabs](../026-plan/plan-tabs.md) "Export", `@livediagram/plan-art` `planImageOf`): a Board tab its board
+  alone, a Dashboard its page laid out row by row, each metric, chart and card drawn from the document's cards
+  (`resolvePlanArt`), each tab slot that tab's board or Sheet. A Dashboard's preview reads the document's other tabs
+  (up to `PLAN_PREVIEW_TABS_MAX`, 20) and its plan's column names; any read that fails draws as the editor draws it
+  missing.
 - **Rasterise in the worker.** Convert the SVG to PNG with
   [`@resvg/resvg-wasm`](https://github.com/yisibl/resvg-js) (runs in the Workers
   runtime), return it as base64 MCP image content (`image/png`) — broadest client
   support vs. raw SVG.
 - **Embedded font.** Workers have no system fonts, so the worker bundles one
-  (Inter, OFL — `packages/render-png/fonts/`, wired as a `Data` module + passed to resvg as
-  a `fontBuffer`) and renders every label in it. Without an embedded font resvg
+  (Inter, OFL — `packages/render-png/fonts/`, Regular and Bold, wired as `Data` modules + passed to resvg as
+  `fontBuffers`) and renders every label in it; a weight past 500 (a title, a sheet's header row and totals) draws
+  in Bold. Without an embedded font resvg
   draws shapes/arrows/colours but no text, so the calling model gets a text-less
   preview it can't self-check against. A diagram's own font choice falls back to
   Inter in the preview; the structured elements still carry the true font.
+- **Fonts.** The faces a tab uses beyond Inter (its elements', its own, a sheet's cells', its articles' heading and
+  body faces) are read from the Google Fonts stylesheet the editor loads (`fonts.ts`' `google` specs), whose answer
+  to a client that is not a browser names TrueType files, and handed to resvg for that render (`preview-fonts.ts`):
+  at most `PREVIEW_FONTS_MAX` (4) families, whatever arrives within `PREVIEW_FONTS_TIMEOUT_MS` (2.5 s), each kept in
+  the isolate and the Cache API. A face that cannot be fetched draws in Inter, as before; nothing is sent but the
+  family names. The embedded Inter is upright only, so a tab with any text in italic (an element's, a run's, a
+  cell's) fetches Inter's italics the same way (`INTER_ITALIC`); resvg drew italic it had no face for upright.
 - **No scaled strokes.** resvg ignores `vector-effect="non-scaling-stroke"`, so
   the renderer never relies on it: stretched silhouettes (frames, cylinders,
   device frames) are mapped into the element box point by point

@@ -217,7 +217,8 @@ export function LaneGutter({
   return (
     <>
       <div
-        // Inert: the label sits on top of this and the canvas owns the rest.
+        // Inert: the label sits on top of this and the canvas owns the rest. Named for the Lane tour to ring.
+        data-lane-gutter=""
         className={`pointer-events-none absolute ${band ? 'inset-x-0' : 'inset-y-0'} ${radius}`}
         style={{
           ...(band ? { height: size } : { width: size }),
@@ -238,6 +239,7 @@ export function LaneGutter({
       {onCommitSize ? (
         <div
           role="separator"
+          data-lane-seam=""
           aria-orientation={band ? 'horizontal' : 'vertical'}
           aria-label="Resize the lane's title area"
           onPointerDown={startDrag}

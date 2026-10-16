@@ -64,6 +64,7 @@ import type { RouteContext, WorkbenchContext } from './routes/context';
 import { handleDocuments } from './routes/documents';
 import { handleEvents } from './routes/events';
 import { handleFolders } from './routes/folders';
+import { handleForms } from './routes/forms';
 import { handleImages } from './routes/images';
 import { handleMigrate } from './routes/migrate';
 import { handleGuestId } from './routes/guest-id';
@@ -342,6 +343,15 @@ async function routeApiRequest(
   // Community likes and reports (docs/specs/025-community/blueprints/community.md §7) are limited per
   // network instead: their callers are anonymous, so the owner key would be 'anonymous' for everyone.
   const isCommunityWrite = isWrite && segments[1] === 'community';
+  // A form link's doors (docs/specs/030-forms/forms.md "Abuse and limits"): respondents are anonymous, so reads and
+  // responses are limited per network, each on its own key, apart from everyone's document writes.
+  const isFormRequest = segments[1] === 'forms';
+  if (isFormRequest && env.FORM_RATE_LIMITER) {
+    const ok = await env.FORM_RATE_LIMITER.limit({
+      key: `${isWrite ? 'form' : 'form-read'}:${communityNetwork(clientIp(request))}`,
+    });
+    if (!ok.success) return rateLimited();
+  }
   if (isCommunityWrite && env.COMMUNITY_RATE_LIMITER) {
     // Keyed by address range, not address: rotating addresses inside one range buys no extra writes.
     const ok = await env.COMMUNITY_RATE_LIMITER.limit({
@@ -349,7 +359,13 @@ async function routeApiRequest(
     });
     if (!ok.success) return rateLimited();
   }
-  if (isWrite && url.pathname !== '/api/events' && !isRoomTicketMint && !isCommunityWrite) {
+  if (
+    isWrite &&
+    url.pathname !== '/api/events' &&
+    !isRoomTicketMint &&
+    !isCommunityWrite &&
+    !isFormRequest
+  ) {
     // A token request rate-limits on the TOKEN id (docs/specs/015-api/public-api-and-tokens.md §3.5), so a
     // runaway integration is throttled independently of the owner's
     // interactive app use; everything else keys on the resolved owner.
@@ -441,6 +457,9 @@ async function routeApiRequest(
         return await handleDocuments(ctx);
       case 'folders':
         return await handleFolders(ctx);
+      // A form link's public doors (docs/specs/030-forms/forms.md "Filling in a form").
+      case 'forms':
+        return await handleForms(ctx);
       case 'custom-themes':
         return await handleCustomThemes(ctx);
       case 'shape-libraries':

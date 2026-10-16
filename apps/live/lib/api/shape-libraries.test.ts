@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { sentJson } from '@livediagram/vitest-config/sent-request';
 import { ApiError } from './core';
 import {
   apiCreateShapeLibrary,
@@ -23,7 +24,7 @@ beforeEach(() => {
       calls.push({
         url: String(url),
         method: init?.method ?? 'GET',
-        body: init?.body ? JSON.parse(String(init.body)) : undefined,
+        body: init?.body ? sentJson(init) : undefined,
       });
       return reply.clone();
     }),
@@ -68,7 +69,7 @@ describe('shape library calls', () => {
       name: 'x',
       source: 'drawio',
       items: [],
-    }).catch((e) => e);
+    }).catch((e: unknown) => e);
     expect(error).toBeInstanceOf(ApiError);
     expect(shapeLibraryErrorCopy(error)).toBe(
       'You have 100 shape libraries already. Delete one to add another.',

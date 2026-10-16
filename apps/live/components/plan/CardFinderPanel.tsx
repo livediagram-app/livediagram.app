@@ -17,7 +17,15 @@ import {
   type CardFinderShow,
   type Item,
 } from '@livediagram/items';
-import { CountBadge, EmptyState, PlanCardsIcon, Tooltip, TrashIcon } from '@livediagram/ui';
+import {
+  CountBadge,
+  EmptyState,
+  PlanCardsIcon,
+  Tooltip,
+  TrashIcon,
+  noMatchTitle,
+  useMediaQuery,
+} from '@livediagram/ui';
 import type { DockAnchor } from '@/lib/canvas-chrome';
 import { MovablePanel } from '@/components/primitives/MovablePanel';
 import { usePlan, type PlanContextValue } from './PlanContext';
@@ -54,9 +62,7 @@ export function CardFinderPanel({
   const palette = planPalette(useCanvasSurface());
   const [show, setShow] = useState<CardFinderShow>('all');
   // Focused on open with a mouse; on a phone the keyboard waits until the field is tapped.
-  const [finePointer] = useState(
-    () => typeof window !== 'undefined' && window.matchMedia?.('(pointer: fine)').matches,
-  );
+  const finePointer = useMediaQuery('(pointer: fine)');
   const boardStatuses = plan?.statusTypes ?? NO_STATUS_TYPES;
   const live = useMemo(
     () => findCards(plan?.items.values() ?? [], { query: '', show: 'all', boardStatuses }),
@@ -191,7 +197,7 @@ function CardFinderBody({
                           plan.trashItem(it.id);
                           plan.announce(`#${it.key} moved to the Trash`);
                         }}
-                        className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 focus-visible:text-slate-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200 sm:opacity-0 sm:focus-visible:opacity-100 sm:group-hover/row:opacity-100"
+                        className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 focus-visible:text-slate-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200 sm:opacity-0 sm:focus-visible:opacity-100 sm:group-hover/row:opacity-100 sm:[@media(hover:none)]:opacity-100"
                       >
                         <TrashIcon size={14} />
                       </button>
@@ -229,11 +235,14 @@ export function emptyCopy(
         : 'Cards added to this document will show here.',
     };
   if (query.trim())
-    return { title: 'No cards match', description: 'Try another word, a number or a card type.' };
+    return {
+      title: noMatchTitle('cards', query),
+      description: 'Try another word, a number or a card type.',
+    };
   if (filters > 0)
     return {
-      title: 'No cards match these filters',
+      title: noMatchTitle('cards', '', filters),
       description: 'Remove a filter, or clear the search, to see more.',
     };
-  return { title: 'Every card is on a board', description: 'None of them sits off a board here.' };
+  return { title: 'No cards off a board', description: 'Every card here is on a board.' };
 }

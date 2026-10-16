@@ -144,10 +144,10 @@ Deploy order matters: the router's service bindings reference six other workers,
 
 Or just push to `main` and use the bundled GitHub Actions workflows:
 
-- `.github/workflows/ci.yml` runs lint / format / typecheck / test / build on every PR and push.
+- `.github/workflows/ci.yml` runs lint / format / typecheck / test / build on every PR and every push to `main`.
 - `.github/workflows/codeql.yml` runs CodeQL security scanning in one job; a fork needs CodeQL default setup off.
 - `.github/workflows/canvas-perf.yml` runs the canvas performance probe nightly and reports through one issue; optional, disable it in a fork that does not want it.
-- `.github/workflows/deploy-reusable.yml` holds the deploy itself — build, then all eight workers (marketing, live, telemetry, help, community, api, mcp, router) in the right order. It is a reusable workflow, not directly triggerable.
+- `.github/workflows/deploy-reusable.yml` holds the deploy itself — build, then all eight workers (marketing, live, telemetry, help, community, api, mcp, router) in the right order. The `deploy-mcp` job always runs, so a fork without the MCP server removes it or provisions its KV namespace first. It is a reusable workflow, not directly triggerable.
 - `.github/workflows/deploy.yml` calls it for **production**, **manually** from the Actions tab.
 - `.github/workflows/deploy-staging.yml` calls it for **staging**, automatically, whenever CI goes green on `main`.
 
@@ -175,8 +175,9 @@ nothing. To run it:
    custom domain) — the same way every other worker here gets its hostname, since
    the deploy token only uploads scripts, not zone routes. Then set
    `CONSENT_BASE_URL` (in `apps/mcp/wrangler.toml`) to your live app's origin and
-   `NEXT_PUBLIC_MCP_ORIGIN` (live build env) to the MCP origin, so the consent
-   page posts the minted token only to your trusted host.
+   `NEXT_PUBLIC_MCP_ORIGIN` (live and marketing build env) to the MCP origin, so the
+   consent page posts the minted token only to your trusted host and the Build
+   with AI page (`/ai`) gives AI tools your address, not the hosted one.
 
 3. **Deploy after the api worker** (it reaches api over a service binding). The
    deploy workflow already orders `mcp` after `api`. Tokens minted via the MCP
@@ -230,10 +231,10 @@ reader prefers Google, each falling back to whichever key exists, and
   `gemini-2.5-flash-lite` rather than the assistant's model — it reads
   handwriting better AND costs less (docs/research/vision/handwriting-readers.md). On a
   single provider, setting `AI_MODEL` moves the reader too unless you set this.
-- `AI_ALLOWED_ORIGINS`: comma-separated `Origin` allow-list for `POST /api/ai` (e.g. `https://your-host,http://localhost:3002`). Unset = no origin check. Matched verbatim, case-sensitive.
+- `AI_ALLOWED_ORIGINS`: comma-separated `Origin` allow-list for `POST /api/ai` (e.g. `https://your-host,http://localhost:3002`). Unset = no origin check. Matched verbatim, case-sensitive. `apps/api/wrangler.toml` commits livediagram.app's origins here, so a fork sets its own or deletes the line, or every AI request answers 403.
 - `AI_REQUIRE_CLERK`: set to `"true"` to reject the guest (`X-Owner-Id`) path on `/api/ai` only, requiring a verified Clerk JWT. Unset = guests can use AI (so a Clerk-less fork still works).
 
-The last two are the spend-DoS defence: on a public deployment they stop a third-party site from minting fresh owner ids to drain your model budget. The hosted livediagram.app sets both; a private or Clerk-less fork can leave them unset. Two further defences live alongside them: the `AI_RATE_LIMITER` binding (declared in `apps/api/wrangler.toml` as a Cloudflare rate-limit binding, 20 requests / 60 s per IP) caps how fast one client can drive the endpoint; absent binding falls through to "allow" so a self-host without the paid Cloudflare feature still works. AI is also per-user opt-in via the Settings dialog even once the key is present.
+The last two are the spend-DoS defence: on a public deployment they stop a third-party site from minting fresh owner ids to drain your model budget. The hosted livediagram.app sets `AI_ALLOWED_ORIGINS` and deliberately leaves `AI_REQUIRE_CLERK` unset so guests keep AI; a private or Clerk-less fork can leave both unset. Two further defences live alongside them: the `AI_RATE_LIMITER` binding (declared in `apps/api/wrangler.toml` as a Cloudflare rate-limit binding, 20 requests / 60 s per IP) caps how fast one client can drive the endpoint; absent binding falls through to "allow" so a self-host without the paid Cloudflare feature still works. AI is also per-user opt-in via the Settings dialog even once the key is present.
 
 ## Email (optional, Resend)
 
@@ -251,6 +252,15 @@ Optional knobs (plain `[vars]`):
 - `APP_BASE_URL`: public origin for links in emails, defaults to `https://livediagram.app`.
 
 If you enable this on a deployment that already has signed-in users, run the one-time backfill in [Transactional & lifecycle email (Resend) §4](../specs/014-identity/transactional-email.md) first, so existing users aren't "welcomed" on their next sign-in.
+
+## Forms
+
+Form tabs ([Forms](../specs/030-forms/forms.md)) need nothing extra: migration `0092_forms.sql` creates their tables
+with the others, and a form link is served by the live worker (`/form/<code>`) and the api (`/api/forms/...`).
+
+- `FORM_RATE_LIMITER` (optional binding, declared in `apps/api/wrangler.toml`): 60 reads and 60 responses a minute
+  per network. Without the binding every request is allowed; the per-form cap of 500 responses an hour still holds.
+- The new-response and suspension emails go only where email is configured (`RESEND_API_KEY`).
 
 ## Workbenches (optional, needs Clerk)
 

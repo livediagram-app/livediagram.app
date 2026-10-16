@@ -36,6 +36,32 @@ export type ShapeKind =
   | 'banner'
   // Callout: a card with an accent badge, a heading line and a body (label).
   | 'callout'
+  // Card (docs/specs/009-elements/card.md): a diagram node with slots (header band, media, title, meta line,
+  // body, tags). The Callout is its preset; a stored `callout` migrates to one on read.
+  | 'card'
+  // Badge and Step number (docs/specs/009-elements/badge.md, step-number.md): small marks that may attach to a
+  // point on a host element (`attachedTo` / `attachAt`) and travel with it.
+  | 'badge'
+  | 'step'
+  // Pointer note (docs/specs/009-elements/pointer-note.md): a note with a leader to a tip that may attach to a point.
+  | 'pointer-note'
+  // Diagram key (docs/specs/009-elements/diagram-key.md): a legend of the tab's line patterns and tag colours.
+  | 'diagram-key'
+  // Stack (docs/specs/009-elements/stack.md): a container that lays out what it holds in a row, column or grid.
+  | 'stack'
+  // Sequence diagram (docs/specs/009-elements/sequence-diagram.md): participants and messages laid out as UML.
+  | 'sequence'
+  // Boundary (docs/specs/009-elements/boundary.md): a titled, tinted container (a region, a VPC, a C4 system).
+  | 'boundary'
+  // Concept graphics (docs/specs/009-elements/concept-graphics.md): one element laying out its own rows
+  // (`conceptRows`): a stack of layers, a pyramid (or inverted, or a funnel), a cycle of steps.
+  | 'layer-stack'
+  | 'pyramid'
+  | 'cycle'
+  // Round 2: satellites round a hub, concentric rings, chevron stages in a row.
+  | 'hub'
+  | 'onion'
+  | 'chevrons'
   // Stat row: KPI cards, a big value over a caption each, in `stats`.
   | 'stat-row'
   // Process steps: numbered circles joined by arrows, captions in
@@ -51,6 +77,9 @@ export type ShapeKind =
   // character into it — takes you to the portal it is paired with, in
   // `portalTarget`.
   | 'portal'
+  // Tab window (docs/specs/009-elements/tab-window.md): another tab of the document drawn live inside it, fitted;
+  // which tab lives in `windowTabId`.
+  | 'tab-window'
   // Session button (docs/specs/012-collaboration/session-button.md): pressing it starts a session tool for the room
   // — a timer, a dot vote, or a live poll. Which one lives in `session`.
   | 'session-button'
@@ -80,6 +109,23 @@ export type ShapeKind =
   // Chair (docs/specs/009-elements/chair.md): furniture an Avatar-mode character sits down in when it
   // walks into one. Which way the seat points lives in `chairFacing`.
   | 'chair'
+  // Fence (docs/specs/009-elements/fence.md): one straight run of posts and rails an Avatar-mode
+  // character cannot walk through. The run lies along the longer side; no fields of its own.
+  | 'fence'
+  // Desk and sofa (docs/specs/009-elements/chair.md "Desk and sofa"): seating like the chair, with
+  // the chair's `chairFacing`. A desk seats one at a computer; a sofa seats two side by side.
+  | 'desk'
+  | 'sofa'
+  // The virtual office (docs/specs/009-elements/office.md): a room (walls, a doorway, `roomDoor`), a meeting table
+  // with six seats, scenery that blocks (plant, bookshelf), machines that give a character a drink (water
+  // cooler, coffee machine), and a rug on the floor.
+  | 'room'
+  | 'meeting-table'
+  | 'plant'
+  | 'bookshelf'
+  | 'water-cooler'
+  | 'coffee-machine'
+  | 'rug'
   // The collaboration family — elements that record what the ROOM thinks
   // rather than what one author drew.
   //
@@ -109,6 +155,9 @@ export type ShapeKind =
   | 'quiz'
   | 'stadium'
   | 'actor'
+  // UML final state (docs/specs/008-canvas/canvas-and-palette.md "UML"): a ring around a solid dot, one element, so the
+  // bullseye moves, pins and lints as one stop.
+  | 'final-state'
   | 'cloud'
   | 'triangle'
   | 'trapezoid'
@@ -156,8 +205,11 @@ export type ShapeKind =
   // Legend (docs/specs/009-elements/pie-chart.md): a card of colour-coded rows (a swatch + a label), the
   // key you put beside a chart or a colour-coded board.
   | 'legend'
+  // Sankey diagram (docs/specs/009-elements/sankey.md): flows between named nodes, each band as wide as
+  // the amount it carries. Carries `sankeyFlows` (below); lays itself out in columns.
+  | 'sankey'
   // Bring Focus (docs/specs/012-collaboration/bring-focus.md): press it and everyone else in the room is offered
-  // a jump to it, at your zoom, on your tab.
+  // a jump to it, on your tab.
   | 'focus-button'
   // Curated single-colour glyph from the icon catalogue. Which glyph
   // is carried by `iconId` (a registry key resolved in the live app's

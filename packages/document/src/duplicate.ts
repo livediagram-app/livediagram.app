@@ -29,24 +29,48 @@ import {
 // A copy is also nobody's addition (docs/specs/013-workspace/share-roles.md): `addedBy` never rides along, so an
 // Editor's copy of a Participant's sticky is not that Participant's to delete. A Participant's own copy is stamped
 // afresh by the room.
+// What belongs to the original rather than to the shape, so no copy carries it: a comment thread is a conversation
+// about that element, `responses` were cast in a session (docs/specs/012-collaboration/participant-responses.md),
+// and an assigned action is work handed to a person under its own id (docs/specs/012-collaboration/assigned-actions.md
+// "A copy doesn't carry the action"): a duplicate under the same id is a second action nobody assigned, which the
+// timeline never sees added. A Sheet's cell threads go the same way (docs/specs/029-sheets/sheet.md "Cell comments").
+// The clipboard strips the same list on the way out (stripIdentity in apps/live).
+export const ORIGINAL_ONLY_FIELDS = [
+  'commentThread',
+  'cellComments',
+  'responses',
+  'action',
+  'actions',
+] as const;
+
 export function freshCopyFields(el: Element): {
   rotation?: number;
   planSheet?: PlanSheetRef;
   addedBy?: undefined;
+  commentThread?: undefined;
+  cellComments?: undefined;
+  responses?: undefined;
+  action?: undefined;
+  actions?: undefined;
 } {
-  const unowned = 'addedBy' in el ? { addedBy: undefined } : {};
-  if (el.type === 'sticky' && el.fixedSize) return { ...unowned, rotation: eventStormingTilt() };
+  const fresh: { addedBy?: undefined } & {
+    [K in (typeof ORIGINAL_ONLY_FIELDS)[number]]?: undefined;
+  } = {};
+  if ('addedBy' in el) fresh.addedBy = undefined;
+  for (const field of ORIGINAL_ONLY_FIELDS) if (field in el) fresh[field] = undefined;
+  if (el.type === 'sticky' && el.fixedSize) return { ...fresh, rotation: eventStormingTilt() };
   // A copied Sheet frames a new sheet, made from the original's when it is first drawn
   // (docs/specs/029-sheets/sheet.md "Copying a Sheet element"). A copy of a copy not yet made copies the original.
   // A template's Sheet not yet made (sheet-store.md "Template starts") has nothing to copy yet: the copy is made from
   // the same start.
   if (el.type === 'shape' && el.shape === 'plan-sheet' && el.planSheet?.start)
-    return { planSheet: { sheetId: newPlanSheetId(), start: el.planSheet.start } };
+    return { ...fresh, planSheet: { sheetId: newPlanSheetId(), start: el.planSheet.start } };
   if (el.type === 'shape' && el.shape === 'plan-sheet' && el.planSheet?.sheetId)
     return {
+      ...fresh,
       planSheet: { sheetId: newPlanSheetId(), copyOf: el.planSheet.copyOf ?? el.planSheet.sheetId },
     };
-  return unowned;
+  return fresh;
 }
 
 // Duplicate every element whose id is in `ids`:
@@ -71,9 +95,9 @@ export function duplicateElements(
     const newId = crypto.randomUUID();
     idMap.set(el.id, newId);
     const copy = { ...el, id: newId, x: el.x + dx, y: el.y + dy, ...freshCopyFields(el) };
-    const sheet = copiedSheetId(el, copy as { planSheet?: { sheetId: string } });
+    const sheet = copiedSheetId(el, copy);
     if (sheet) sheetIds.set(sheet[0], sheet[1]);
-    newBoxed.push(copy as BoxedElement);
+    newBoxed.push(copy);
   }
   // A chart copied with its Sheet reads the Sheet's copy (docs/specs/029-sheets/sheet.md "Charts").
   newBoxed = relinkCopiedCharts(newBoxed, sheetIds);
@@ -178,6 +202,16 @@ export function duplicateElements(
   // A reference to something OUTSIDE the copied set is left alone: copying one
   // child of a mind map and pasting it back should still hang off that parent.
   // Only references whose target was itself copied follow the copy.
+  // A copied chart is a new chart (docs/specs/009-elements/flowchart.md, blueprint D172): each source
+  // chart maps to ONE fresh id, the copy of its first step when that was copied, else the first copy's
+  // id. Leaving the old id would graft the copies onto the original, unconnected, and its next layout
+  // would rake them into a column beside it.
+  const chartIds = new Map<string, string>();
+  for (const el of newBoxed) {
+    if (el.type !== 'shape' || el.flowchartId === undefined || chartIds.has(el.flowchartId))
+      continue;
+    chartIds.set(el.flowchartId, idMap.get(el.flowchartId) ?? el.id);
+  }
   const rewired = newBoxed.map((el) => {
     let next = { ...el };
     // mindParentId (docs/specs/009-elements/mind-node.md) and portalTarget (docs/specs/009-elements/portal-element.md) live on the shape
@@ -191,6 +225,24 @@ export function duplicateElements(
       if (shape.portalTarget !== undefined) {
         const mapped = idMap.get(shape.portalTarget);
         if (mapped !== undefined) shape.portalTarget = mapped;
+      }
+      if (shape.flowchartId !== undefined) shape.flowchartId = chartIds.get(shape.flowchartId)!;
+      // An attached badge or step (docs/specs/009-elements/badge.md) follows its host's copy; copied alone it lands
+      // detached.
+      if (shape.attachedTo !== undefined) {
+        const host = idMap.get(shape.attachedTo);
+        if (host !== undefined) shape.attachedTo = host;
+        else {
+          delete shape.attachedTo;
+          delete shape.attachAt;
+        }
+      }
+      // The lane follows the copy when it was copied too; otherwise the copy is in no lane of its
+      // new chart.
+      if (shape.flowLaneId !== undefined) {
+        const lane = idMap.get(shape.flowLaneId);
+        if (lane !== undefined) shape.flowLaneId = lane;
+        else delete shape.flowLaneId;
       }
       next = shape;
     }
@@ -244,18 +296,25 @@ export function remapElementRefs<E extends Element>(
     if (el.type !== 'shape') return el;
     const parent = el.mindParentId !== undefined ? idMap.get(el.mindParentId) : undefined;
     const portal = el.portalTarget !== undefined ? idMap.get(el.portalTarget) : undefined;
-    if (!parent && !portal) return el;
+    // A flowchart's id is its first step's, so it renames with it; so does a step's lane.
+    const chart = el.flowchartId !== undefined ? idMap.get(el.flowchartId) : undefined;
+    const lane = el.flowLaneId !== undefined ? idMap.get(el.flowLaneId) : undefined;
+    if (!parent && !portal && !chart && !lane) return el;
     return {
       ...el,
       ...(parent ? { mindParentId: parent } : {}),
       ...(portal ? { portalTarget: portal } : {}),
+      ...(chart ? { flowchartId: chart } : {}),
+      ...(lane ? { flowLaneId: lane } : {}),
     };
   });
 }
 
 // Re-point tab and element links after a whole document is copied with fresh
 // tab ids (old → new in `tabIdMap`), so the copy's internal navigation lands
-// on its own tabs instead of the source document's. Document and url links
+// on its own tabs instead of the source document's. A Tab Window's tab
+// (`windowTabId`, docs/specs/009-elements/tab-window.md) is re-pointed the same way, so the copy's windows show the
+// copy's tabs rather than "This tab isn't available". Document and url links
 // leave the document, so they survive unchanged. Shared by the editor's
 // Explorer duplicate and the api's copy route, which drifted apart when each
 // owned a copy of this walk: the api's copies kept pointing at the source.
@@ -265,8 +324,17 @@ export function remapTabLinks<E extends Element>(
 ): E[] {
   return elements.map((el) => {
     const link = el.link;
-    if (!link || (link.kind !== 'tab' && link.kind !== 'element')) return el;
-    const next = tabIdMap.get(link.tabId);
-    return next ? { ...el, link: { ...link, tabId: next } } : el;
+    const linked =
+      link && (link.kind === 'tab' || link.kind === 'element')
+        ? tabIdMap.get(link.tabId)
+        : undefined;
+    const windowTabId = (el as { windowTabId?: string }).windowTabId;
+    const shown = windowTabId ? tabIdMap.get(windowTabId) : undefined;
+    if (!linked && !shown) return el;
+    return {
+      ...el,
+      ...(linked ? { link: { ...link!, tabId: linked } } : {}),
+      ...(shown ? { windowTabId: shown } : {}),
+    };
   });
 }

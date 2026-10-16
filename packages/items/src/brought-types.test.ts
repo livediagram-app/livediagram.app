@@ -7,7 +7,6 @@ import {
   boardTypesToAdd,
   broughtTypesToAdd,
   catalogueWithBoardTypes,
-  hasBlankBoard,
   defaultTypesToAdd,
 } from './brought-types';
 import { typeCardDisplay } from './card-display';
@@ -28,7 +27,6 @@ const preset = (id: PlanBoardPresetId) => ({
   planBoard: presetSetup(id),
 });
 const ids = (types: readonly { id: string }[] | undefined) => types?.map((t) => t.id);
-const DEFAULT_IDS = ITEM_TYPES.map((t) => t.id);
 
 // docs/specs/026-plan/plan-templates.md "Ready-made card types", item-types.md "The type catalogue".
 describe('ready-made card types', () => {
@@ -87,7 +85,7 @@ describe('ready-made card types', () => {
 });
 
 describe('what boards bring', () => {
-  it('names a board’s own types, the defaults for a Blank board, nothing for Archive or All Cards', () => {
+  it('names a board’s own types, nothing for a Blank, Archive or All Cards board', () => {
     const els = [
       { type: 'sticky' },
       board(['candidate']),
@@ -96,7 +94,17 @@ describe('what boards bring', () => {
       preset('all-cards'),
       board(),
     ];
-    expect(boardTypeIdsOf(els)).toEqual(['candidate', ...DEFAULT_IDS]);
+    expect(boardTypeIdsOf(els)).toEqual(['candidate']);
+  });
+
+  it('names a Gantt chart’s types, else Project, and nothing for any other view', () => {
+    const view = (planView: unknown) => ({ type: 'shape', shape: 'plan-view', planView });
+    expect(boardTypeIdsOf([view({ view: 'gantt' })])).toEqual(['project']);
+    expect(boardTypeIdsOf([view({ view: 'gantt', types: ['task', 7] })])).toEqual(['task']);
+    expect(boardTypeIdsOf([view({ view: 'calendar' }), view(undefined)])).toEqual([]);
+    expect(
+      catalogueWithBoardTypes(null, [view({ view: 'gantt' })])?.types.map((t) => t.id),
+    ).toEqual(['project']);
   });
 
   it('adds only those the document lacks, once each, in the boards’ order', () => {
@@ -121,12 +129,12 @@ describe('what boards bring', () => {
   });
 
   it('leaves out a type whose name the document already has, and adds no more than fit', () => {
-    const renamed = [{ ...ITEM_TYPES[0]!, id: 'chore', label: 'task' }];
+    const renamed = [{ ...ITEM_TYPES[0], id: 'chore', label: 'task' }];
     expect(ids(defaultTypesToAdd(renamed))).toEqual(['project', 'note', 'idea', 'action']);
-    const story = { ...ITEM_TYPES[1]!, id: 'defect', label: 'Bug' };
+    const story = { ...ITEM_TYPES[1], id: 'defect', label: 'Bug' };
     expect(boardTypesToAdd([preset('bug-triage')], [story])).toEqual([]);
     const many = Array.from({ length: ITEM_TYPES_MAX - 2 }, (_, i) => ({
-      ...ITEM_TYPES[0]!,
+      ...ITEM_TYPES[0],
       id: `t${i}`,
       label: `T${i}`,
     }));
@@ -145,31 +153,16 @@ describe('the catalogue boards leave', () => {
     ).toEqual(['role', 'candidate']);
   });
 
-  it('leaves a fresh document reading as the defaults for a Blank board, or no board', () => {
+  it('leaves a fresh document with no card types for a Blank board, or no board', () => {
     expect(catalogueWithBoardTypes(null, [board()])).toBeNull();
     expect(catalogueWithBoardTypes(null, [preset('archive')])).toBeNull();
     expect(catalogueWithBoardTypes(null, [])).toBeNull();
-  });
-
-  it('treats a Blank board already there as the first board: a later one adds what is missing', () => {
-    expect(hasBlankBoard([board()])).toBe(true);
-    expect(hasBlankBoard([board(['bug']), preset('archive')])).toBe(false);
-    expect(ids(catalogueWithBoardTypes(null, [preset('bug-triage')], false, true)?.types)).toEqual([
-      ...DEFAULT_IDS,
+    expect(ids(catalogueWithBoardTypes(null, [board(), preset('bug-triage')])?.types)).toEqual([
       'bug',
     ]);
-    expect(catalogueWithBoardTypes(null, [preset('kanban')], false, true)).toBeNull();
   });
 
-  it('adds what is missing to a document with cards, after the default types', () => {
-    expect(ids(catalogueWithBoardTypes(null, [preset('bug-triage')], true)?.types)).toEqual([
-      ...DEFAULT_IDS,
-      'bug',
-    ]);
-    expect(catalogueWithBoardTypes(null, [preset('kanban')], true)).toBeNull();
-  });
-
-  it('adds what is missing once the card types are chosen, a Blank board the default types', () => {
+  it('adds what is missing once the card types are chosen, a Blank board nothing', () => {
     const hiring = { version: 1, types: READY_MADE_CARD_TYPES.filter((t) => t.id === 'role') };
     expect(ids(catalogueWithBoardTypes(hiring, [preset('sprint')])?.types)).toEqual([
       'role',
@@ -177,17 +170,14 @@ describe('the catalogue boards leave', () => {
       'task',
       'bug',
     ]);
-    expect(ids(catalogueWithBoardTypes(hiring, [board()])?.types)).toEqual([
-      'role',
-      ...DEFAULT_IDS,
-    ]);
+    expect(catalogueWithBoardTypes(hiring, [board()])).toBeNull();
     expect(catalogueWithBoardTypes(hiring, [board(['role'])])).toBeNull();
   });
 
   it('never grows a catalogue past its cap', () => {
     const full = {
       version: 1,
-      types: Array.from({ length: ITEM_TYPES_MAX }, (_, i) => ({ ...ITEM_TYPES[1]!, id: `t${i}` })),
+      types: Array.from({ length: ITEM_TYPES_MAX }, (_, i) => ({ ...ITEM_TYPES[1], id: `t${i}` })),
     };
     expect(catalogueWithBoardTypes(full, [board(['bug'])])).toBeNull();
     const nearly = { version: 1, types: full.types.slice(1) };

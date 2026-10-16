@@ -7,6 +7,7 @@ import type { BoardWidgetKind } from './board-widgets';
 import {
   isArchived,
   isTrashed,
+  laneFieldOf,
   normaliseBoardSetup,
   projectBoard,
   SWIMLANE_BY,
@@ -19,6 +20,7 @@ import { isGanttRowOrder } from './gantt-row-order';
 import { ITEM_TYPE_PATTERN } from './limits';
 import { ITEM_TYPES, LEGACY_PARENT_GROUPING, type ItemTypeDef } from './item-types';
 import { isCardSearchFilters } from './card-search';
+import { isPlanViewStatuses } from './plan-view-statuses';
 
 // The board widget kinds that read out rather than narrow a board or need its set-up
 // (docs/specs/026-plan/plan-views.md "Metrics"), in the palette's order.
@@ -39,6 +41,7 @@ export type MetricKind = (typeof METRIC_KINDS)[number];
 export const PLAN_VISUALISATIONS = [
   'gantt',
   'calendar',
+  'start-calendar',
   'workload',
   'status-mix',
   'priority-matrix',
@@ -57,17 +60,8 @@ export function isPlanViewId(value: unknown): value is PlanViewId {
   return typeof value === 'string' && (PLAN_VIEW_IDS as readonly string[]).includes(value);
 }
 
-// The card types a Gantt chart draws when it names none (docs/specs/026-plan/plan-views.md "Gantt Chart").
-export const GANTT_DEFAULT_TYPES: readonly string[] = ['project'];
 // The most card types a chart can name: the catalogue's own limit (ITEM_TYPES_MAX in type-catalogue.ts).
 export const GANTT_TYPES_MAX = 32;
-
-// The card types a Gantt chart's settings accept: its own list, else Project.
-export function ganttTypesOf(
-  settings: { types?: readonly string[] } | undefined,
-): readonly string[] {
-  return settings?.types && settings.types.length > 0 ? settings.types : GANTT_DEFAULT_TYPES;
-}
 
 // The card types a Gantt chart can show (docs/specs/026-plan/plan-views.md "Card types"): those that offer both a
 // Start and a Due field, so every card of them can have a bar. A Project always can.
@@ -77,16 +71,20 @@ export function ganttEligibleTypes(types: readonly ItemTypeDef[]): ItemTypeDef[]
 
 // What a chart draws: the types it accepts that can be drawn. A type that loses Start or Due drops out until
 // it has them again; the setting keeps naming it.
+// A chart naming none draws every type that can have a bar: any card with a start and a due date.
 export function ganttShownTypes(
   settings: { types?: readonly string[] } | undefined,
   types: readonly ItemTypeDef[],
 ): string[] {
-  const eligible = new Set(ganttEligibleTypes(types).map((t) => t.id));
-  return ganttTypesOf(settings).filter((id) => eligible.has(id));
+  const eligible = ganttEligibleTypes(types).map((t) => t.id);
+  if (!settings?.types || settings.types.length === 0) return eligible;
+  const ok = new Set(eligible);
+  return settings.types.filter((id) => ok.has(id));
 }
 
 // A plan view element's settings (docs/specs/026-plan/plan-views.md): its view, and for the Gantt chart its
-// card types, swimlanes, names column width and row order. What validation accepts; anything else is refused.
+// card types, swimlanes, names column width and row order, and a chart's statuses. What validation accepts;
+// anything else is refused.
 export function isPlanViewSettings(value: unknown): boolean {
   if (typeof value !== 'object' || value === null) return false;
   const v = value as Record<string, unknown>;
@@ -116,6 +114,7 @@ export function isPlanViewSettings(value: unknown): boolean {
     return false;
   if (v['rowOrder'] !== undefined && !isGanttRowOrder(v['rowOrder'])) return false;
   if (v['filters'] !== undefined && !isCardSearchFilters(v['filters'])) return false;
+  if (v['statuses'] !== undefined && !isPlanViewStatuses(v['statuses'])) return false;
   const w = v['namesWidth'];
   if (
     w !== undefined &&
@@ -125,15 +124,25 @@ export function isPlanViewSettings(value: unknown): boolean {
       w > GANTT_NAMES_MAX_PX)
   )
     return false;
+  // Its own title (a Visualisation tab's chart named with its tab), up to PLAN_VIEW_TITLE_MAX characters.
+  const title = v['title'];
+  if (
+    title !== undefined &&
+    (typeof title !== 'string' || !title.trim() || title.length > PLAN_VIEW_TITLE_MAX)
+  )
+    return false;
   return true;
 }
 
+export const PLAN_VIEW_TITLE_MAX = 80;
+
 // The fields a card type must offer to feed a view (docs/specs/026-plan/plan-views.md "Card types"): a Gantt
-// chart draws Start to Due, a Due Calendar places by Due, Priority by Status counts by Priority, and a metric reads
+// chart draws Start to Due, a Due Calendar places by Due and a Start Calendar by Start, Priority by Status counts by Priority, and a metric reads
 // its own field. A view not listed takes every type.
 const VIEW_NEEDS: Partial<Record<PlanViewId, readonly string[]>> = {
   gantt: ['start', 'due'],
   calendar: ['due'],
+  'start-calendar': ['start'],
   'priority-matrix': ['priority'],
   'metric:people': ['assignee'],
   'metric:unassigned': ['assignee'],
@@ -154,14 +163,15 @@ export function viewEligibleTypes(view: PlanViewId, types: readonly ItemTypeDef[
   return types.filter((t) => needs.every((f) => t.fields.includes(f)));
 }
 
-// The card types a view's settings name: a Gantt chart's own list (else Project); any other view's list, else
-// every type.
+// The card types a view's settings name: its own list, else every type (a Gantt chart then draws every type with a
+// start and a due date, docs/specs/026-plan/plan-views.md "Gantt Chart").
 export function viewChosenTypes(
   view: PlanViewId,
   settings: { types?: readonly string[] } | undefined,
   types: readonly ItemTypeDef[],
 ): readonly string[] {
-  if (view === 'gantt') return ganttTypesOf(settings);
+  if (view === 'gantt' && !(settings?.types && settings.types.length > 0))
+    return ganttEligibleTypes(types).map((t) => t.id);
   return settings?.types && settings.types.length > 0 ? settings.types : types.map((t) => t.id);
 }
 
@@ -185,6 +195,25 @@ export function breakdownGroupingOf(settings: {
   const by =
     settings.swimlaneBy && settings.swimlaneBy !== 'none' ? settings.swimlaneBy : 'assignee';
   return { by, field: by === 'field' ? settings.swimlaneField : undefined };
+}
+
+// Cards by Field's heading, naming what it groups by ("Cards by Assignee", "Cards by Severity"), so a view never reads
+// as the generic "Cards by Field" (docs/specs/026-plan/plan-views.md "Cards by Field").
+const GROUPING_NAMES: Partial<Record<SwimlaneBy, string>> = {
+  assignee: 'Assignee',
+  type: 'Type',
+  priority: 'Priority',
+  status: 'Status',
+};
+export function breakdownTitle(
+  grouping: { by: SwimlaneBy; field: string | undefined },
+  types: readonly ItemTypeDef[] = ITEM_TYPES,
+): string {
+  const name =
+    grouping.by === 'field'
+      ? (laneFieldOf(grouping.field, types)?.label ?? 'Field')
+      : (GROUPING_NAMES[grouping.by] ?? 'Field');
+  return `Cards by ${name}`;
 }
 
 // The metric a view is, or null for a visualisation.
@@ -213,6 +242,7 @@ export const PLAN_PALETTE_VISUALISATIONS: readonly PlanVisualisation[] = PLAN_VI
 export const PLAN_VISUALISATION_LABELS: Readonly<Record<PlanVisualisation, string>> = {
   gantt: 'Gantt Chart',
   calendar: 'Due Calendar',
+  'start-calendar': 'Start Calendar',
   workload: 'Cards by Field',
   'status-mix': 'Status Breakdown',
   'priority-matrix': 'Priority by Status',

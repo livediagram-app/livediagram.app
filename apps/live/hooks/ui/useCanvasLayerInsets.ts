@@ -31,7 +31,7 @@ export function touchesChrome(
 }
 
 // The element's insets, and its header band when the top row leaves room (lib/canvas-layer-insets.ts headerBand).
-export function useCanvasLayerInsets(canvas: HTMLElement | null): CanvasLayout {
+export function useCanvasLayerInsets(canvas: HTMLElement | null, withBand = true): CanvasLayout {
   const [layout, setLayout] = useState<CanvasLayout>(NO_LAYOUT);
   useEffect(() => {
     if (!canvas || canvas === document.body) return;
@@ -69,7 +69,7 @@ export function useCanvasLayerInsets(canvas: HTMLElement | null): CanvasLayout {
           }
         }
       }
-      const next = measureCanvasChrome(canvas);
+      const next = measureCanvasChrome(canvas, withBand);
       setLayout((prev) => (sameLayout(prev, next) ? prev : next));
     };
     function schedule() {
@@ -91,6 +91,6 @@ export function useCanvasLayerInsets(canvas: HTMLElement | null): CanvasLayout {
       window.removeEventListener('resize', schedule);
       window.removeEventListener('transitionend', onTransitionEnd, true);
     };
-  }, [canvas]);
+  }, [canvas, withBand]);
   return layout;
 }

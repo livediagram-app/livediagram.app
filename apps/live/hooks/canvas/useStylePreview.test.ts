@@ -46,14 +46,14 @@ function harness() {
       editsBlocked: false,
       activeId: 'tab1',
       currentSelectionIds: () => new Set([a.id]),
-      tabsRef: tabsRef as React.MutableRefObject<Tab[]>,
+      tabsRef: tabsRef,
       tickTabs: (map) => {
         committed = map(committed);
       },
       commitTabs: (map) => {
         committed = map(committed);
       },
-      previewingRef: { current: false } as React.MutableRefObject<boolean>,
+      previewingRef: { current: false },
     }),
   ).result.current;
   return {

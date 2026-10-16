@@ -86,12 +86,14 @@ async function list(ctx: RouteContext, documentId: string): Promise<Response> {
 // once per attempt: its keys answer whether a named key is free (a key taken by a racing write fails the insert,
 // which retries), and one placer ranks every create (itemPlacer), so a seed of n cards costs no per-card query and
 // no per-card sort.
-async function createMany(
+// `by` names who made them when that is not the caller: a form's response (docs/specs/030-forms/forms.md).
+export async function createMany(
   ctx: RouteContext,
-  caller: ItemCaller,
+  caller: Pick<ItemCaller, 'documentId' | 'owner'>,
   creates: ItemCreate[],
+  opts?: { by: ItemPerson },
 ): Promise<{ items: Item[]; rev: number } | Response> {
-  const by = await writer(ctx, caller.owner);
+  const by = opts?.by ?? (await writer(ctx, caller.owner));
   for (let attempt = 1; attempt <= ITEM_WRITE_RETRIES; attempt += 1) {
     const head = await getItemStoreHead(ctx.env, caller.documentId);
     if (head.count + creates.length > ITEMS_MAX) {

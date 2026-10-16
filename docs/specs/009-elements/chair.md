@@ -24,7 +24,8 @@ A **shape kind**, `chair`, in the palette's **Collaborate** category under
 **Navigate**, beside the portal, the bring focus button and the link card.
 
 - Drawn as a chair seen from above-front: a seat, a back, and a shadow, so it
-  reads as furniture rather than as a box with a label.
+  reads as furniture rather than as a box with a label. It is drawn **upright at every facing**
+  (see [Facing](#facing)).
 - **`ShapeElement.chairFacing`** — `'n' | 'e' | 's' | 'w'`, which way the seat
   points. Absent = `'n'` (back at the top, sitter facing down the canvas, toward
   the reader). Set from the element's context menu.
@@ -36,17 +37,40 @@ A **shape kind**, `chair`, in the palette's **Collaborate** category under
   "Alex" — a chair that is somebody's chair.
 - Otherwise a completely ordinary element: move, resize, rotate, theme, group,
   lock, copy, export.
-- **One drawing, on the canvas and in an export.** `ChairView` and the
-  headless render (`svg-render-faces.ts`) both draw from `CHAIR_GEOMETRY` in
-  `packages/document/src/shape-geometry.ts`, and share its facing rotation and
-  seat rule (`chairSeatFill`: the element's fill, or with the default
-  `transparent` a wash of its stroke).
+- **One drawing, on the canvas and in an export.** The chair is a piece of the shared furniture table
+  (`FURNITURE_ART` in `@livediagram/document`) with the desk and the sofa: `FurnitureView` and the
+  headless render (`svg-render-faces.ts`) both paint it, with one seat rule (`chairSeatFill`: the
+  element's fill, or with the default `transparent` a wash of its stroke).
 - **Animations ([Canvas and palette](../008-canvas/canvas-and-palette.md)) run on the drawing, not the box.** The element box is
   transparent, so the box versions of glow / pulse / trace / gradient would
   ring and fill a rectangle around nothing. Those four ride the chair's own
   silhouette instead (a drop-shadow, and a hue cycle for gradient), the same
   way a sticker's do ([Stickers](../010-palette/stickers.md)). The motion animations (bounce, float, swing,
   ...) move the whole element as they do on any other.
+
+## Facing
+
+Every piece of furniture (chair, desk, sofa) is drawn from **one camera**: the room's, looking down
+at the canvas from the front at about forty-five degrees, the same camera the Avatar-mode characters
+are drawn from. From it you see the tops of seats, desks and cushions, and the front face of anything
+that faces you; **gravity always points down the screen**, so legs stand on the ground below the
+piece and its shadow falls under it. Turning a piece **never rotates its drawing**: each facing has a
+drawing of its own.
+
+| Facing        | The sitter faces | What the room sees                                                 |
+| ------------- | ---------------- | ------------------------------------------------------------------ |
+| Down (`'n'`)  | down the canvas  | the **front**: the seat and the backrest's face behind it          |
+| Up (`'s'`)    | up the canvas    | the **back**: the backrest's back nearest you, the seat beyond it  |
+| Left (`'e'`)  | left             | the **side**: the seat from above, the backrest a bar on its right |
+| Right (`'w'`) | right            | the side, mirrored                                                 |
+
+- A side view keeps the piece's footprint: a sofa turned to face left is **tall**, its two cushions
+  one above the other, its arms at the top and bottom ends and its legs only under its lower end.
+  This is why a quarter turn swaps a desk's or sofa's box (below).
+- The seat points and the occupied ring move with the drawing: a sitter lands on the seat in every
+  view, never on a backrest.
+- A desk's monitor turns with it: from the front you see its back, from the back its screen, from the
+  side its edge on its stand.
 
 ## Sitting
 
@@ -88,6 +112,33 @@ reaches D1 or undo.
   room resolves socially in about a second, and a stuck chair is not.
 - A peer who leaves the mode, changes tab or disconnects vacates every chair
   for free, because their presence went away.
+
+## Desk and sofa
+
+Two more pieces of furniture seat a character exactly as a chair does, beside it in **Navigate**:
+
+- **Desk** (shape kind `desk`): a chair pulled up to a desk with a computer on it, the monitor's
+  screen toward the room. Whoever sits at it **faces the computer**, so a new desk is placed with
+  the desk at the back and the chair in front: `chairFacing` `'s'`, the sitter facing up the canvas
+  with their back to the room.
+- **Sofa** (shape kind `sofa`): a two-seater, a long back, two arms and two cushions. It has **two
+  seat points**, and a character walking in sits on the one **nearest where it arrived**: walk in
+  from the left, take the left cushion. A new sofa faces the reader (`'n'`).
+
+Both share the chair's rules unchanged: the same `chairFacing` field and **Desk** / **Sofa**
+menu section (the Chair section, titled for the furniture it is on), arrival seating through the
+same walk hook, the same seated guards and ways of standing, and occupancy as presence (one ring in
+the first sitter's colour, names above). Two people may share a cushion, as they may a chair.
+
+Where they differ from the chair:
+
+- **Turned, not stretched.** Neither is square, so turning one a quarter (Down to Left, say)
+  **swaps its box about its centre** and shows its side view ([Facing](#facing)), so a sofa against
+  a side wall is a tall sofa rather than a squashed one. A chair is square enough to turn in place.
+- **Aspect locked** to their drawings, like the chair.
+- **One drawing, on the canvas and in an export**: the chair, the desk and the sofa are a shared
+  table of parts in `@livediagram/document` (`FURNITURE_ART`), one drawing per view, that both
+  renderers paint.
 
 ## Not in scope
 

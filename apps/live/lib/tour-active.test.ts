@@ -8,6 +8,7 @@ import { activeTour, setActiveTour, useActiveTour } from './tour-active';
 afterEach(() => {
   setActiveTour('welcome', false);
   setActiveTour('plan', false);
+  setActiveTour('facilitate', false);
 });
 
 describe('tour-active', () => {
@@ -23,6 +24,12 @@ describe('tour-active', () => {
     expect(activeTour()).toBe('welcome');
     setActiveTour('welcome', false);
     expect(activeTour()).toBeNull();
+  });
+
+  it('holds the Facilitate tour like the others', () => {
+    setActiveTour('facilitate', true);
+    setActiveTour('welcome', false);
+    expect(activeTour()).toBe('facilitate');
   });
 
   it('re-renders a reader when it changes', () => {

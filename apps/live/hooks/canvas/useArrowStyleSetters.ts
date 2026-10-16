@@ -62,8 +62,13 @@ export function useArrowStyleSetters({ currentSelectionIds, commit }: ArrowStyle
     track('Element', 'Changed', 'ArrowStyle');
   };
 
+  // The menu picks one head for both ends: an ER relationship's own start head (crow's foot, bars) goes with it, as no
+  // control reaches the start alone and a mixed pair could otherwise never be made even again.
   const setArrowheadShapeSelected = (shape: ArrowheadShape) =>
-    setArrowFieldSelected({ arrowheadShape: shape }, 'ArrowheadShape');
+    setArrowFieldSelected(
+      { arrowheadShape: shape, arrowheadStartShape: undefined },
+      'ArrowheadShape',
+    );
 
   // Line pattern (solid / dashed / dotted) on the selected arrow.
   // Reuses the BorderStyle union shapes already carry so future
@@ -106,7 +111,7 @@ export function useArrowStyleSetters({ currentSelectionIds, commit }: ArrowStyle
       els.map((el) => {
         if (!ids.has(el.id) || el.type !== 'arrow') return el;
         const { strokeWidth: _w, strokeStyle: _s, flow: _f, flowSpeed: _fs, ...rest } = el;
-        return rest as typeof el;
+        return rest;
       }),
     );
     track('Element', 'Changed', 'StyleReset');

@@ -1,10 +1,20 @@
 export { Brand, BrandMark } from './Brand';
 export { brandMarkSvg, BRAND_MARK_VIEWBOX, type BrandMarkVariant } from './brand-mark-geometry';
+export {
+  CARD_SUBTITLE_MAX,
+  cardSubtitle,
+  renderSocialCard,
+  type SocialCardOptions,
+} from './social-card';
 export { brandLogoSvg } from './brand-logo-svg';
 export { PRISM_PALETTES, prismPalette, type PrismPalette, type PrismScheme } from './brand-prism';
-export { ProductNav, type ProductNavKey } from './ProductNav';
+export { ProductNav, ProductNavLinks, type ProductNavKey } from './ProductNav';
 export { SiteHeader } from './SiteHeader';
+export { RAIL_CLEAR_PADDING } from './share-rail-clearance';
 export { StartBlankMenu } from './StartBlankMenu';
+export { START_BLANKS } from './start-blanks';
+export { EXPLORER_HOME_HREF } from './HeaderPrimaryCta';
+export { BuildWithAiLink } from './BuildWithAiLink';
 export { ModeFilterMenu, type ModeFilterOption } from './ModeFilterMenu';
 export { CountBadge } from './CountBadge';
 export { SiteFooter } from './SiteFooter';
@@ -43,6 +53,7 @@ export { DiagramBuildAnimation } from './DiagramBuildAnimation';
 export { SheetBuildAnimation } from './SheetBuildAnimation';
 export { LoadingSweep } from './LoadingSweep';
 export { EmptyState } from './EmptyState';
+export { CompactEmptyState, NoMatches, noMatchHint, noMatchTitle } from './CompactEmptyState';
 export { BreadcrumbTrail, type BreadcrumbItem } from './Breadcrumb';
 export { JsonLd } from './JsonLd';
 export { PageViewTracker } from './PageViewTracker';
@@ -83,11 +94,20 @@ export {
   useCommunityEnabled,
 } from './community/useCommunityEnabled';
 export { clerkPublishableKeyOrNull } from './clerk-key';
+export {
+  TRUSTED_TYPES_CSP,
+  isAllowedScriptUrl,
+  parseInert,
+  trustedHtml,
+  trustedScriptOrigins,
+  trustedTypesBootScript,
+} from './trusted-types';
 export { IDENTITY_FILL, identityDeep, identityVars } from './identity-fill';
 export {
   SITE_URL,
   SITE_NAME,
   REPO_URL,
+  CONTACT_FORM_URL,
   SITE_DESCRIPTION,
   SITE_PITCH,
   SITE_TITLE,
@@ -99,6 +119,8 @@ export {
 export {
   pageMetadata,
   breadcrumbJsonLd,
+  BRAND_OG_IMAGE,
+  BRAND_TWITTER_IMAGE,
   type PageMetadataInput,
   type BreadcrumbCrumb,
 } from './seo';
@@ -117,5 +139,10 @@ export {
   SHEET_FULL_HEIGHT,
   type SheetDrag,
 } from './useSheetDrag';
+export { SheetHandle, SHEET_HANDLE_PX } from './SheetHandle';
 export { safeInset, atLeastInset, safeInlinePadding } from './safe-area';
 export * from './browser-repair';
+// The palette's category glyphs (palette-icons/): drawn to the palette's own sizes, so outside the chrome
+// icons' contract (icons/), shared by the editor's palette and the marketing site's mock of it.
+export * from './palette-icons/palette-tab-icons';
+export * from './palette-icons/palette-group-icons';

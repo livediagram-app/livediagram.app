@@ -41,6 +41,7 @@ import {
   lucideType,
   lucideWandSparkles,
   lucideWrench,
+  lucidePencil,
 } from '@livediagram/icons/lucide';
 
 /** Size step of every menu row and section icon. */
@@ -127,6 +128,9 @@ export const BorderGlyph = lucideGlyph(lucideSquare, MENU_ICON_PX);
 
 // The "Shadow" category glyph (docs/specs/008-canvas/element-shadows.md): a box with an offset
 // shade behind.
+// The Finish category (docs/specs/008-canvas/finish.md): how an element is drawn.
+export const FinishMenuGlyph = lucideGlyph(lucidePencil, MENU_ICON_PX);
+
 export function ShadowMenuGlyph() {
   return (
     <Glyph size={MENU_ICON_PX} units={24}>

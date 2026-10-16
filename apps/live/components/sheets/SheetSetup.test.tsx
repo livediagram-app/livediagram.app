@@ -49,7 +49,7 @@ describe('Setup Sheet', () => {
   beforeEach(async () => {
     vi.clearAllMocks();
     plan = undefined;
-    h = await makeSheet({ cells: {} });
+    h = await makeSheet({ cells: {}, cols: 26 });
     act(() => {
       h.store.write(
         SHEET_ID,
@@ -64,16 +64,29 @@ describe('Setup Sheet', () => {
     expect(screen.getByRole('heading', { name: 'Setup Sheet' })).toBeTruthy();
     // Without cards, Plan Cards is not offered.
     expect(screen.queryByRole('radio', { name: /Plan Cards/ })).toBeNull();
-    fireEvent.click(radio(/Tracker/));
+    // The templates sit under their headings.
+    for (const group of ['Money Templates', 'Work Templates', 'People and Life Templates'])
+      expect(screen.getByRole('radiogroup', { name: group })).toBeTruthy();
+    fireEvent.click(radio(/^Tracker/));
     fireEvent.click(btn('Next: Style'));
-    fireEvent.click(radio(/Banded/));
+    // A template starts on its own Banded look.
+    expect(radio(/^Banded/).getAttribute('aria-checked')).toBe('true');
+    fireEvent.click(radio(/^Header/));
     fireEvent.click(radio(/^Roomy/));
     fireEvent.click(btn(/Create Sheet/));
     await h.store.settle();
-    expect(h.cell('A1')).toMatchObject({ input: { s: 'Task' }, format: { b: true } });
-    expect(sheet(h).layout).toMatchObject({ frozenRows: 1, rowHeight: 36, colWidth: 160 });
+    expect(h.cell('A1')).toMatchObject({ input: { s: 'Project Tracker' }, format: { b: true } });
+    expect(h.cell('A4')).toMatchObject({ input: { s: 'Task' }, format: { b: true } });
+    expect(sheet(h).layout).toMatchObject({ frozenRows: 4, rowHeight: 36, colWidth: 160 });
     expect(sheet(h).layout.setupPending).toBeUndefined();
     expect(track).toHaveBeenCalledWith('Sheet', 'Created', 'Tracker');
+    // Its chart, over its cells, in its accent's palette, not counted as Insert Chart.
+    expect(h.placeChart).toHaveBeenCalledWith(
+      'column',
+      expect.objectContaining({ range: expect.any(Object) }),
+      expect.objectContaining({ x: expect.any(Number), y: expect.any(Number) }),
+      expect.objectContaining({ palette: 'berry', template: true }),
+    );
     expect(h.ctl().selection.active).toEqual({ r: 0, c: 0 });
   });
 
@@ -98,8 +111,10 @@ describe('Setup Sheet', () => {
     show(h);
     // Straight to Style, the start chosen: one press makes the Budget.
     expect(screen.getByRole('button', { name: /Create Sheet/ })).toBeTruthy();
+    expect(radio(/^Banded/).getAttribute('aria-checked')).toBe('true');
     fireEvent.click(screen.getByRole('button', { name: /Create Sheet/ }));
-    expect(h.value('A1')).toBe('Item');
+    expect(h.value('A1')).toBe('Monthly Budget');
+    expect(h.value('E13')).toBe(21);
   });
 
   it('ends setup with Start Blank, and with Import CSV opening the file picker', async () => {
@@ -218,7 +233,14 @@ describe('Setup Sheet', () => {
     fireEvent.change(screen.getByLabelText('Search cards'), {
       target: { value: 'zzz' },
     });
-    expect(screen.getByRole('status').textContent).toBe('No cards match');
+    expect(screen.getByRole('status').textContent).toContain('No cards match “zzz”');
+    // Its clear takes the words and the filters (named so when both are in force), and the cards come back.
+    const empty = screen
+      .getByText('No cards match “zzz”')
+      .closest<HTMLElement>('[data-empty-state]')!;
+    fireEvent.click(within(empty).getByRole('button', { name: 'Clear Search' }));
+    expect(screen.getByRole('status').textContent).toMatch(/cards?$/);
+    fireEvent.change(screen.getByLabelText('Search cards'), { target: { value: 'zzz' } });
     expect((btn('Next: Columns') as HTMLButtonElement).disabled).toBe(true);
     // Back keeps the choice.
     fireEvent.click(btn(/Back/));
@@ -235,12 +257,12 @@ describe('Setup Sheet', () => {
     const { columnsForCards } = await import('./SheetSetupStart');
     const types = [
       {
-        ...ITEM_TYPES[1]!,
+        ...ITEM_TYPES[1],
         id: 'a',
         fields: ['title', 'status', 'due', 'f-size'],
         custom: [{ id: 'f-size', label: 'Size', kind: 'text' as const }],
       },
-      { ...ITEM_TYPES[1]!, id: 'b', fields: ['title', 'assignee'] },
+      { ...ITEM_TYPES[1], id: 'b', fields: ['title', 'assignee'] },
     ];
     expect(columnsForCards([{ type: 'a' }], types)).toEqual([
       'Number',

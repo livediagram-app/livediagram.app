@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { sentForm } from '@livediagram/vitest-config/sent-request';
 import {
   bytesToBase64,
   DRIVE_ACCOUNT_SWITCH_TTL_MS,
@@ -45,7 +46,7 @@ beforeEach(() => {
         aboutCalls.push({ url, auth: new Headers(init.headers).get('Authorization') });
         return new Response(JSON.stringify(googleAccount.body), { status: googleAccount.status });
       }
-      googleCalls.push({ url, form: new URLSearchParams(String(init.body)) });
+      googleCalls.push({ url, form: sentForm(init) });
       const reply = googleReplies.shift() ?? { status: 500, body: {} };
       return new Response(JSON.stringify(reply.body), { status: reply.status });
     }),

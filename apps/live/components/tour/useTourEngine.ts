@@ -3,13 +3,15 @@
 import { useEffect, useRef, useState, type RefObject } from 'react';
 import { useAssignRef } from '@/hooks/ui/useLatest';
 import { findTour, waitForSelector } from './tour-dom';
+import { revealInScrollers } from './tour-reveal';
 import { hasAnchor, type TourStepOf } from './tour-step';
 
 // The step runner every guided tour shares (docs/specs/007-editor/editor-tour.md "Mechanics",
-// docs/specs/026-plan/blueprints/plan-tour.md "Engine"): the welcome tour and the Plan tour each own
+// docs/specs/026-plan/blueprints/plan-tour.md "Engine"): the Diagram, Plan and Facilitate tours each own
 // their offer, their steps and what ending means, and hand this the rest. Each step runs prepare
 // (opening the real panel / dropdown / menu it explains), waits for its target node, then reports a
-// rect for the dimming highlight ring. A watcher re-measures the target every 150ms so the highlight
+// rect for the dimming highlight ring, scrolling the target into view first when it sits below a panel's fold
+// (tour-reveal.ts). A watcher re-measures the target every 150ms so the highlight
 // tracks layout changes, and re-runs prepare if the target is dismissed mid-step (an outside click
 // closing a menu). The last rect is kept while the next step prepares, so the ring GLIDES between
 // targets (transition-all) instead of blinking out and back.
@@ -92,6 +94,9 @@ export function useTourEngine<Api>({
   // Direction of the last step change, for the popover content's
   // directional slide (the TemplatePicker wizard's tip-next / tip-prev).
   const [stepDir, setStepDir] = useState<'forward' | 'backward'>('forward');
+  // Read by the step-run effect: a step whose target is missing is skipped the way the person was going.
+  const stepDirRef = useRef(stepDir);
+  useAssignRef(stepDirRef, stepDir);
   const [targetRect, setTargetRect] = useState<TourTargetRect | null>(null);
   const targetElRef = useRef<HTMLElement | null>(null);
   // Monotonic token: bumping it invalidates any in-flight async step run
@@ -144,13 +149,20 @@ export function useTourEngine<Api>({
       const el = await waitForAnchor(step, apiRef.current);
       if (cancelled || token !== runTokenRef.current) return;
       if (!el) {
-        // Target never appeared: skip forward (or finish from the last step).
+        // Target never appeared: skip on the way the person was going. Going back, past it to the step before
+        // (never onto the welcome card, which would start the tour over); else forward, finishing from the last.
         step.cleanup?.(apiRef.current);
-        if (stepIndex < steps.length - 1) setStepIndex(stepIndex + 1);
-        else finishRef.current('completed');
+        const before = steps[stepIndex - 1];
+        if (stepDirRef.current === 'backward' && before && before.card !== 'welcome') {
+          setStepIndex(stepIndex - 1);
+        } else if (stepIndex < steps.length - 1) {
+          setStepDir('forward');
+          setStepIndex(stepIndex + 1);
+        } else finishRef.current('completed');
         return;
       }
       targetElRef.current = el;
+      revealInScrollers(el, step.revealAt);
       setTargetRect(measureStep(el, step.alsoHighlight));
     })();
     return () => {
@@ -176,9 +188,11 @@ export function useTourEngine<Api>({
           try {
             await step.prepare?.(apiRef.current);
             const next = await waitForAnchor(step, apiRef.current);
-            if (token === runTokenRef.current && next) {
+            if (token === runTokenRef.current) {
               targetElRef.current = next;
-              setTargetRect(measureStep(next, step.alsoHighlight));
+              if (next) revealInScrollers(next, step.revealAt);
+              // Gone for good (a box deleted while its step is up): the ring lets go rather than framing nothing.
+              setTargetRect(next ? measureStep(next, step.alsoHighlight) : null);
             }
           } finally {
             healingRef.current = false;

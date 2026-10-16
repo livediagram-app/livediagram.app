@@ -8,6 +8,10 @@ import {
   resetCanvasGesturesForTests,
 } from '@/lib/canvas-gesture';
 import { useCanvasPinchZoom } from './useCanvasPinchZoom';
+import { maximisePlanElement, releasePlanElement } from '@/hooks/plan/maximised-plan';
+import { getSheetZoom, setSheetZoom } from '@/hooks/sheets/sheet-zoom';
+
+vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
 // docs/specs/008-canvas/canvas-performance.md: a wheel pan or zoom is a canvas gesture that ends
 // WHEEL_SETTLE_MS after the last wheel event; a touch pinch is a zoom from start to end.
@@ -42,11 +46,17 @@ describe('useCanvasPinchZoom gestures', () => {
     setup();
     wheel({ deltaY: 10 });
     expect(canvasGestureNow()).toBe('pan');
-    act(() => vi.advanceTimersByTime(WHEEL_SETTLE_MS - 1));
+    act(() => {
+      vi.advanceTimersByTime(WHEEL_SETTLE_MS - 1);
+    });
     wheel({ deltaY: 10 });
-    act(() => vi.advanceTimersByTime(WHEEL_SETTLE_MS - 1));
+    act(() => {
+      vi.advanceTimersByTime(WHEEL_SETTLE_MS - 1);
+    });
     expect(canvasGestureNow()).toBe('pan');
-    act(() => vi.advanceTimersByTime(1));
+    act(() => {
+      vi.advanceTimersByTime(1);
+    });
     expect(canvasGestureNow()).toBe('idle');
   });
 
@@ -55,7 +65,9 @@ describe('useCanvasPinchZoom gestures', () => {
     wheel({ deltaY: 10 });
     wheel({ deltaY: -10, ctrlKey: true });
     expect(canvasGestureNow()).toBe('zoom');
-    act(() => vi.advanceTimersByTime(WHEEL_SETTLE_MS));
+    act(() => {
+      vi.advanceTimersByTime(WHEEL_SETTLE_MS);
+    });
     expect(canvasGestureNow()).toBe('idle');
   });
 
@@ -84,7 +96,9 @@ describe('useCanvasPinchZoom view', () => {
     act(() => viewport.setZoom(2));
     wheel({ deltaX: 20, deltaY: 40 });
     wheel({ deltaX: 20, deltaY: 0 });
-    act(() => vi.advanceTimersByTime(20));
+    act(() => {
+      vi.advanceTimersByTime(20);
+    });
     expect(viewport.get().offset).toEqual({ x: -20, y: -20 });
   });
 });
@@ -104,10 +118,14 @@ describe('useCanvasPinchZoom and a sideways scroller', () => {
       });
     on({ deltaX: 30, deltaY: 0 });
     on({ deltaY: 30, shiftKey: true });
-    act(() => vi.advanceTimersByTime(20));
+    act(() => {
+      vi.advanceTimersByTime(20);
+    });
     expect(viewport.get().offset).toEqual({ x: 0, y: 0 });
     on({ deltaX: 0, deltaY: 30 });
-    act(() => vi.advanceTimersByTime(20));
+    act(() => {
+      vi.advanceTimersByTime(20);
+    });
     expect(viewport.get().offset).toEqual({ x: 0, y: -30 });
   });
 });
@@ -127,12 +145,46 @@ describe('useCanvasPinchZoom over an element that scrolls', () => {
         grid.dispatchEvent(new WheelEvent('wheel', { bubbles: true, cancelable: true, ...init }));
       });
     on({ deltaY: 30 });
-    act(() => vi.advanceTimersByTime(20));
+    act(() => {
+      vi.advanceTimersByTime(20);
+    });
     expect(viewport.get().offset).toEqual({ x: 0, y: 0 });
     on({ deltaY: -40, ctrlKey: true });
     expect(viewport.get().zoom).toBeGreaterThan(1);
     const z = viewport.get().zoom;
     on({ deltaY: -40, metaKey: true });
     expect(viewport.get().zoom).toBeGreaterThan(z);
+  });
+});
+
+// docs/specs/026-plan/plan-board.md "Nothing under it moves", docs/specs/029-sheets/sheet.md "Zoom": while a board,
+// view or Sheet covers the canvas, no wheel moves the canvas behind it; a Ctrl wheel zooms a covering Sheet's cells.
+describe('useCanvasPinchZoom under a covering element', () => {
+  afterEach(() => {
+    act(() => {
+      releasePlanElement('s1');
+      setSheetZoom(1);
+    });
+  });
+
+  it('zooms a maximised Sheet’s cells, never the canvas, and never pans it', () => {
+    setup();
+    act(() => maximisePlanElement('s1', 'Sheet'));
+    wheel({ deltaY: -100, ctrlKey: true, clientX: 0, clientY: 0 });
+    expect(viewport.get().zoom).toBe(1);
+    expect(getSheetZoom()).toBeGreaterThan(1);
+    wheel({ deltaX: 20, deltaY: 40 });
+    act(() => {
+      vi.advanceTimersByTime(20);
+    });
+    expect(viewport.get().offset).toEqual({ x: 0, y: 0 });
+  });
+
+  it('leaves the canvas still under a maximised board', () => {
+    setup();
+    act(() => maximisePlanElement('s1', 'Board'));
+    wheel({ deltaY: -100, ctrlKey: true, clientX: 0, clientY: 0 });
+    expect(viewport.get().zoom).toBe(1);
+    expect(getSheetZoom()).toBe(1);
   });
 });

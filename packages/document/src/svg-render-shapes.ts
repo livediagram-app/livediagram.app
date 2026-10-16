@@ -7,6 +7,7 @@
 // without a scaled stroke. A silhouette changes in the table, never here.
 import { BORDER_DASH_ARRAY, BORDER_STROKE_PX } from './border-style';
 import { actorFigureRect } from './actor-figure';
+import { finishBorderStroke, type Finish } from './finish';
 import type { BoxedElement, FreehandElement, PathElement, ShapeKind } from './index';
 import { isCompoundPath, pathElementD } from './path-element';
 import { r2, xmlEscape } from './svg-render-primitives';
@@ -15,9 +16,8 @@ import { catmullRomToBezierPath } from './polyline';
 import { freehandPenStroke, isPenStroke, penStrokePath } from './pen-stroke';
 import { freehandCanvasPoints, freehandStrokePoints } from './freehand-points';
 import { codeTheme } from './code-themes';
-import { chartPaletteColors } from './chart-palettes';
+import { chartRamp } from './chart-palettes';
 import { isLaneBand, laneEdgeOfElement, laneSizeOfElement } from './lane-gutter';
-import { PIE_PALETTE } from './data-shapes';
 import { legendFontPx } from './label-font';
 import {
   BROWSER_CHROME,
@@ -116,11 +116,12 @@ export function svgShapeSilhouette(
   el: BoxedElement & { type: 'shape' },
   fill: string,
   stroke: string,
+  finish: Finish = 'flexible',
 ): string | null {
   if (!hasShapeSilhouette(el.shape)) return null;
   const geometry = shapeGeometry(el.shape, el.height > 0 ? el.width / el.height : 1);
   if (!geometry) return null;
-  const strokeWidth = BORDER_STROKE_PX[el.strokeWidth ?? 'medium'] || 2;
+  const strokeWidth = BORDER_STROKE_PX[finishBorderStroke(el.strokeWidth, finish)] || 2;
   const dash = BORDER_DASH_ARRAY[el.strokeStyle ?? 'solid'] ?? undefined;
   // Mapped into the box rather than nested in a stretched <svg>, so no
   // renderer scales the stroke (svg-shape-fit.ts).
@@ -267,6 +268,9 @@ export function svgCodeBlockShape(el: BoxedElement & { type: 'shape' }): string 
   return card + lineStr + badge;
 }
 
+// The face an element's words take in an export when nothing picks one.
+const UI_SANS = 'system-ui, sans-serif';
+
 // Checklist (docs/specs/009-elements/checklist.md): the themed card + one square-and-text row per item,
 // done rows ticked, struck through, and muted, plus the done-count footer.
 const CHECK_ROW_HEIGHT = 26;
@@ -278,7 +282,10 @@ export function svgChecklistShape(
   fill: string,
   stroke: string,
   textColor: string,
+  // The element's resolved face (its own, the tab's, its finish's), as on the canvas; else the UI sans.
+  fontFamily = UI_SANS,
 ): string {
+  const face = xmlEscape(fontFamily);
   const card =
     `<rect x="${r2(el.x)}" y="${r2(el.y)}" width="${r2(el.width)}" height="${r2(el.height)}"` +
     ` rx="8" fill="${xmlEscape(fill)}" stroke="${xmlEscape(stroke)}" stroke-width="1.5"/>`;
@@ -299,7 +306,7 @@ export function svgChecklistShape(
           ` rx="3" fill="none" stroke="${xmlEscape(stroke)}" stroke-width="1.5"/>`;
       const text =
         `<text x="${r2(el.x + CHECK_PAD * 2 + CHECK_BOX_SIZE)}" y="${r2(boxY + CHECK_BOX_SIZE - 3)}"` +
-        ` font-family="system-ui, sans-serif" font-size="13" fill="${xmlEscape(textColor)}"` +
+        ` font-family="${face}" font-size="13" fill="${xmlEscape(textColor)}"` +
         `${item.done ? ' text-decoration="line-through" opacity="0.55"' : ''}>` +
         `${xmlEscape(item.text.slice(0, maxChars))}</text>`;
       return box + text;
@@ -309,7 +316,7 @@ export function svgChecklistShape(
   const footer =
     doneCount > 0
       ? `<text x="${r2(el.x + el.width - CHECK_PAD)}" y="${r2(el.y + el.height - 8)}"` +
-        ` font-family="system-ui, sans-serif" font-size="10" fill="${xmlEscape(textColor)}"` +
+        ` font-family="${face}" font-size="10" fill="${xmlEscape(textColor)}"` +
         ` opacity="0.6" text-anchor="end">${doneCount}/${items.length}</text>`
       : '';
   return card + rows + footer;
@@ -325,12 +332,17 @@ export function svgLegendShape(
   fill: string,
   stroke: string,
   textColor: string,
+  // The tab theme's chart ramp, the rung a chart beside it uses (chartRamp).
+  themeRamp?: readonly string[],
+  // The element's resolved face, as on the canvas; else the UI sans.
+  fontFamily = UI_SANS,
 ): string {
+  const face = xmlEscape(fontFamily);
   const card =
     `<rect x="${r2(el.x)}" y="${r2(el.y)}" width="${r2(el.width)}" height="${r2(el.height)}"` +
     ` rx="8" fill="${xmlEscape(fill)}" stroke="${xmlEscape(stroke)}" stroke-width="1.5"/>`;
   const items = el.legendItems ?? [];
-  const colors = chartPaletteColors(el.chartPalette) ?? PIE_PALETTE;
+  const colors = chartRamp(el.chartPalette, themeRamp);
   // Text Size (docs/specs/009-elements/pie-chart.md): the row pitch and the dot scale with the words, the
   // way LegendView's do.
   const fontPx = legendFontPx(el.textSize);
@@ -348,7 +360,7 @@ export function svgLegendShape(
         ` r="${dotPx / 2}" fill="${xmlEscape(item.color ?? colors[i % colors.length]!)}"/>`;
       const text =
         `<text x="${r2(el.x + LEGEND_PAD * 2 + dotPx)}" y="${r2(midY + fontPx * 0.35)}"` +
-        ` font-family="system-ui, sans-serif" font-size="${fontPx}" fill="${xmlEscape(textColor)}">` +
+        ` font-family="${face}" font-size="${fontPx}" fill="${xmlEscape(textColor)}">` +
         `${xmlEscape(item.label.slice(0, maxChars))}</text>`;
       return dot + text;
     })

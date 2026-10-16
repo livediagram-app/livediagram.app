@@ -84,6 +84,21 @@ describe('formatResultLines', () => {
     ]);
   });
 
+  it('prints a structured value where a point or an order is expected as changed', () => {
+    expect(
+      formatResultLines([
+        {
+          mark: '~',
+          ref: 'a3',
+          changes: [
+            { key: 'from', from: { id: 'n7', side: 'left' }, to: [12, -40] },
+            { key: 'order', to: { above: 'n5' } },
+          ],
+        },
+      ]),
+    ).toEqual(['~ a3  from (changed)→@12,-40 · order (changed)']);
+  });
+
   it('prints removed lines with their reason, moves without a delta and warnings', () => {
     expect(
       formatResultLines([

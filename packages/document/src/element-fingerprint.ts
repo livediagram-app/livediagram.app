@@ -35,14 +35,17 @@ export function elementFingerprint(element: Element): string {
 
 function withoutTicks(items: unknown): unknown {
   if (!Array.isArray(items)) return items;
-  return items.map((item) => {
+  const list: readonly unknown[] = items;
+  return list.map((item) => {
     if (!item || typeof item !== 'object' || !('done' in item)) return item;
     const { done: _tick, ...rest } = item as Record<string, unknown>;
     return rest;
   });
 }
 
-function canonicalJson(value: unknown): string {
+// JSON with every object's keys sorted at every depth and undefined members left out, so equal content prints (and
+// hashes) equally whatever order it was written in. Shared with the CLI's pull and mirror files.
+export function canonicalJson(value: unknown): string {
   if (value === null || typeof value !== 'object') return JSON.stringify(value) ?? 'null';
   if (Array.isArray(value)) {
     return `[${value.map((item) => (item === undefined ? 'null' : canonicalJson(item))).join(',')}]`;

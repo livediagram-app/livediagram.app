@@ -9,11 +9,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ShapeLibrary } from '@livediagram/api-schema';
 import { ShapeLibraryProvider, useShapeLibraries } from './ShapeLibraryProvider';
 
+type ShapeLibraryApi = typeof import('@/lib/api/shape-libraries');
 const api = vi.hoisted(() => ({
-  apiListShapeLibraries: vi.fn(),
-  apiCreateShapeLibrary: vi.fn(),
-  apiUpdateShapeLibrary: vi.fn(),
-  apiDeleteShapeLibrary: vi.fn(),
+  apiListShapeLibraries: vi.fn<ShapeLibraryApi['apiListShapeLibraries']>(),
+  apiCreateShapeLibrary: vi.fn<ShapeLibraryApi['apiCreateShapeLibrary']>(),
+  apiUpdateShapeLibrary: vi.fn<ShapeLibraryApi['apiUpdateShapeLibrary']>(),
+  apiDeleteShapeLibrary: vi.fn<ShapeLibraryApi['apiDeleteShapeLibrary']>(),
 }));
 vi.mock('@/lib/api/shape-libraries', async (actual) => ({
   ...(await actual<typeof import('@/lib/api/shape-libraries')>()),

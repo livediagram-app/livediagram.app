@@ -14,7 +14,11 @@ export const metadata: Metadata = helpMetadata({
 export default function TroubleshootingPage() {
   const articles = getArticlesByCategory('troubleshooting');
   return (
-    <BrowsePage title="Troubleshooting" lede="Something not working? Start here.">
+    <BrowsePage
+      listing={{ appPath: '/troubleshooting/', articles: articles }}
+      title="Troubleshooting"
+      lede="Something not working? Start here."
+    >
       {articles.map((article) => (
         <ArticleCard key={article.slug} article={article} />
       ))}

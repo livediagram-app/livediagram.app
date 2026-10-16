@@ -27,7 +27,7 @@ export function registerFastGradients(): void {
     kernelName: 'Relu',
     inputsToSave: ['x'],
     gradFunc: (dy, saved) => {
-      const [x] = saved as Tensor[];
+      const [x] = saved;
       return { x: () => tf.mul(dy as Tensor, tf.cast(tf.greater(x!, 0), 'float32')) };
     },
   });
@@ -35,7 +35,7 @@ export function registerFastGradients(): void {
     kernelName: 'Sum',
     inputsToSave: ['x'],
     gradFunc: (dy, saved, attrs) => {
-      const [x] = saved as Tensor[];
+      const [x] = saved;
       return { x: () => broadcastBack(dy as Tensor, x!, attrs) };
     },
   });
@@ -43,7 +43,7 @@ export function registerFastGradients(): void {
     kernelName: 'Mean',
     inputsToSave: ['x'],
     gradFunc: (dy, saved, attrs) => {
-      const [x] = saved as Tensor[];
+      const [x] = saved;
       const axes = axesOf(attrs, x!.rank);
       const count = axes.reduce((n, a) => n * x!.shape[a]!, 1);
       return { x: () => tf.div(broadcastBack(dy as Tensor, x!, attrs), count) };

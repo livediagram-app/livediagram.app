@@ -4,6 +4,9 @@
 // element -> shape + label descriptor both the per-element emitters and
 // the in-app canvas drawer consume. The emitters stay in svg-render.ts.
 
+import type { ResolveTabWindow } from './tab-window';
+import type { TagColour } from './tag-colours';
+import { isPersonNode } from './person-node';
 import type { SheetRenderModel } from './svg-render-plan-sheet';
 import type { Item, ItemTypeDef } from '@livediagram/items';
 import { IMAGE_DEFAULT_RADIUS_PX, cornerRadiusPx } from './border-style';
@@ -18,17 +21,20 @@ import {
 } from './colors';
 import { eventStormingLabelText, eventStormingNoteFont } from './event-storming';
 import { fontIdsUsed, resolveFontStack } from './fonts';
+import { elementFontId, isFinish, type Finish } from './finish';
 import { hasRichFormatting } from './rich-text';
 import { iconCaptionBand } from './icon-size';
 import { fontSizeFor, labelMaxWidth } from './svg-render-primitives';
 import { BEHAVIOUR_FACE_SHAPES } from './svg-render-faces';
 import { isCollabPanelShape } from './collab-shapes';
+import { isSeatingShape } from './seating';
 import { isSelfDrawingShape } from './data-shapes';
 import { isWebComponentShape } from './web-components';
 import type { ExportLabel, ExportRun } from './svg-render-labels';
 import { PADDING_PX } from './index';
 import { pageBodyTop } from './svg-render-page';
 import { borderOf } from './svg-render-border';
+import { chipColours, chipLookOf, isChipShape } from './chip';
 import { isUprightTitle, uprightTitleStrip } from './lane-gutter';
 import type { BoxedElement, TextRun } from './index';
 import { runFontPx } from './label-font';
@@ -92,6 +98,10 @@ export type ResolveIconArt = (iconId: string) => ExportIconArt | undefined;
 export type ExportStickerArt = { viewBox: string; markup: string };
 export type ResolveStickerArt = (stickerId: string) => ExportStickerArt | undefined;
 
+// An emoji's own drawing, by its glyph, for a render with no emoji font (a Worker's preview): a face that writes an
+// emoji (a reaction pad's) draws it from this instead of as text. Absent, or answering nothing, the glyph is text.
+export type ResolveEmojiArt = (glyph: string) => { viewBox: string; markup: string } | undefined;
+
 export type BoxedExport = { opacity: number; shape: ExportShape; label: ExportLabel | null };
 
 // What an export needs from its caller beyond the element itself: the three
@@ -100,9 +110,16 @@ export type BoxedExport = { opacity: number; shape: ExportShape; label: ExportLa
 // the wrong typeface for the whole canvas.
 export type BoxedExportOptions = {
   resolveImageHref?: ResolveImageHref;
+  // The tab's tag colours (docs/specs/009-elements/tag-colours.md): a mapped card's accent edge and tinted chips.
+  tagColours?: readonly TagColour[];
   resolveIconArt?: ResolveIconArt;
   resolveStickerArt?: ResolveStickerArt;
+  resolveEmojiArt?: ResolveEmojiArt;
   tabFont?: string;
+  // The tab's finish (docs/specs/008-canvas/finish.md), for elements without their own.
+  tabFinish?: Finish;
+  // Something sits on this shape (sketch-backdrop.ts): under Sketch it keeps a solid fill.
+  sketchBackdrop?: boolean;
   // The paper the export is being drawn on, for elements that carry no
   // colours of their own (docs/specs/007-editor/live-app.md). Defaults to light, so a caller that
   // doesn't say gets exactly the output it always got.
@@ -113,6 +130,10 @@ export type BoxedExportOptions = {
   // canvas hands its charts the same list; without it they fall back to the
   // built-in one, which is what a caller with no theme in hand wants.
   chartPalette?: readonly string[];
+  // What each chart on a filled page sits on, by element id (chartPageGrounds): its series and text
+  // are drawn adapted to it, as the canvas draws them (docs/specs/007-editor/illustrate-pages.md
+  // "Charts adapt as they are drawn"). Absent, a chart is drawn in its colours as they are.
+  chartGrounds?: ReadonlyMap<string, readonly string[]>;
   // The document's items, for the Plan board and Plan card (docs/specs/026-plan/plan-board.md). Without
   // them a board draws its columns empty and a card a neutral placeholder.
   items?: ReadonlyMap<string, Item>;
@@ -120,14 +141,38 @@ export type BoxedExportOptions = {
   itemTypes?: readonly ItemTypeDef[];
   // Sheet windows by sheet id (docs/specs/029-sheets/sheet.md "Exports and images").
   sheets?: ReadonlyMap<string, SheetRenderModel>;
+  // A plan view's picture at its box (docs/specs/026-plan/plan-tabs.md "Export"), from a caller that has the charts'
+  // models (the editor); undefined, or no resolver, draws the labelled box.
+  resolvePlanArt?: ResolvePlanArt;
+  // A tab window's tab (docs/specs/009-elements/tab-window.md "Exports"): its drawing to fit inside, from a caller
+  // that has the document's tabs (the editor's export); without one a window draws its frame named for its tab.
+  resolveTabWindow?: ResolveTabWindow;
 };
+
+// The markup of a plan view drawn at its own box, or undefined to fall back to the labelled box.
+export type ResolvePlanArt = (el: BoxedElement & { type: 'shape' }) => string | undefined;
 
 // The face a label paints in: the author's own choice, else the notation's
 // (a workshop note writes in marker, docs/specs/021-event-storming/event-storming.md), else the tab default. The
 // same ladder the canvas walks — an export that resolved it differently
 // would hand out a picture of a canvas nobody has.
-export function exportFontFamily(el: BoxedElement, tabFont?: string): string | undefined {
-  return resolveFontStack(el.font ?? eventStormingNoteFont(el)) ?? resolveFontStack(tabFont);
+// Under the Sketch finish an element without a face of its own writes in the handwriting font, whatever
+// the tab's (docs/specs/008-canvas/finish.md).
+export function exportFontFamily(
+  el: BoxedElement,
+  tabFont?: string,
+  tabFinish?: Finish,
+): string | undefined {
+  return (
+    resolveFontStack(el.font ?? eventStormingNoteFont(el)) ??
+    resolveFontStack(elementFontId({ finish: finishOf(el) }, tabFont, tabFinish))
+  );
+}
+
+/** An element's own finish, on the kinds that carry one. */
+export function finishOf(el: object): Finish | undefined {
+  const own = (el as { finish?: unknown }).finish;
+  return isFinish(own) ? own : undefined;
 }
 
 // Every font id an export of these elements will paint with — what they
@@ -135,14 +180,29 @@ export function exportFontFamily(el: BoxedElement, tabFont?: string): string | u
 // workshop note. The list a file's embedded (or declared) webfaces come
 // from, so an export ships exactly the faces it uses.
 export function exportFontIds(
-  elements: readonly { type: string; font?: string; esKind?: unknown; fillColor?: string }[],
+  elements: readonly {
+    type: string;
+    font?: string;
+    finish?: unknown;
+    esKind?: unknown;
+    fillColor?: string;
+  }[],
   tabFont?: string,
   // The Sheet windows drawn (docs/specs/029-sheets/sheet.md "Formatting"): a cell's own font is painted too.
   sheets?: ReadonlyMap<string, { cells: readonly { font?: string }[] }>,
+  tabFinish?: Finish,
 ): string[] {
   const boxed = elements.filter((el) => el.type !== 'arrow') as BoxedElement[];
   const cellFonts = [...(sheets?.values() ?? [])].flatMap((m) => m.cells.map((c) => c.font));
-  return fontIdsUsed(boxed, tabFont, [...boxed.map(eventStormingNoteFont), ...cellFonts]);
+  // What each element letters in when it has no face of its own: the handwriting font under Sketch.
+  const finishFonts = elements.map((el) =>
+    el.font ? undefined : elementFontId(el, undefined, tabFinish),
+  );
+  return fontIdsUsed(boxed, tabFont, [
+    ...boxed.map(eventStormingNoteFont),
+    ...cellFonts,
+    ...finishFonts,
+  ]);
 }
 
 export function describeBoxedExport(
@@ -153,7 +213,7 @@ export function describeBoxedExport(
   // A stock colour stored by name is drawn in its version for this page.
   const el = resolveStockColours(source, surface);
   const { resolveImageHref, resolveIconArt, resolveStickerArt } = opts;
-  const fontFamily = exportFontFamily(el, opts.tabFont);
+  const fontFamily = exportFontFamily(el, opts.tabFont, opts.tabFinish);
   const opacity = el.opacity ?? 1;
   if (el.type === 'image') {
     // Mirror ImageElementView: borderRadius drives the corner clip (avatar
@@ -264,7 +324,13 @@ export function describeBoxedExport(
         : el.type === 'text'
           ? { kind: 'none' }
           : { kind: 'rect', fill, stroke };
-  const baseColor = own.text ?? defaultTextColor(el, surface);
+  // A badge or step number (docs/specs/009-elements/badge.md) writes in its look's text colour: the look decides
+  // what the pill is filled with, so it decides what reads on it.
+  const inkColor = own.text ?? defaultTextColor(el, surface);
+  const baseColor =
+    el.type === 'shape' && isChipShape(el.shape)
+      ? chipColours(chipLookOf(el), { accent: stroke, surface: fill, ink: inkColor }).text
+      : inkColor;
   // A sticky's label is a block of writing rather than a name, and runs
   // smaller at every preset. The canvas decides that the same way (its
   // `multiline` flag is `type === 'sticky'`).
@@ -280,6 +346,7 @@ export function describeBoxedExport(
         size: run.size ? runFontPx(run.size, multiline) * textScale : baseSize,
         bold: run.bold ?? !!el.textBold,
         italic: run.italic ?? !!el.textItalic,
+        ...(run.muted ? { muted: true } : {}),
       }))
     : undefined;
   // Mirror the editor's label layout: alignment defaults per element type
@@ -374,8 +441,19 @@ export function selfLabelled(el: BoxedElement): boolean {
   return (
     (isSelfDrawingShape(el.shape) && el.shape !== 'legend') ||
     isCollabPanelShape(el.shape) ||
-    (BEHAVIOUR_FACE_SHAPES.has(el.shape) && el.shape !== 'chair') ||
-    isWebComponentShape(el.shape)
+    (BEHAVIOUR_FACE_SHAPES.has(el.shape) && !isSeatingShape(el.shape) && el.shape !== 'room') ||
+    isWebComponentShape(el.shape) ||
+    // A boundary writes its own title in its tab or corner (docs/specs/009-elements/boundary.md).
+    el.shape === 'boundary' ||
+    // A cycle and a hub write their centre label themselves (docs/specs/009-elements/concept-graphics.md).
+    el.shape === 'cycle' ||
+    el.shape === 'hub' ||
+    // A diagram key writes its title above its rows (docs/specs/009-elements/diagram-key.md).
+    el.shape === 'diagram-key' ||
+    // A sequence diagram's names are in its picture (docs/specs/009-elements/sequence-diagram.md).
+    el.shape === 'sequence' ||
+    // A person node writes its name beside its initials (docs/specs/009-elements/org-chart.md).
+    isPersonNode(el)
   );
 }
 
@@ -391,7 +469,8 @@ export function drawsStandardLabel(el: BoxedElement): boolean {
       el.shape === 'plan-board' ||
       el.shape === 'plan-card' ||
       el.shape === 'plan-view' ||
-      el.shape === 'plan-sheet')
+      el.shape === 'plan-sheet' ||
+      el.shape === 'tab-window')
   )
     return false;
   return !selfLabelled(el);

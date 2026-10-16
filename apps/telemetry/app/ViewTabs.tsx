@@ -8,7 +8,8 @@ import { Glyph } from '@livediagram/ui';
 // one metric. Every other view is a closer look at one area, so those sit
 // together in a bar titled "Detail".
 // Both halves are one tablist, so keyboard and screen-reader users still get a
-// single set of tabs. Always one row: the Detail bar takes the rest of the
+// single set of tabs: a tablist owns only tabs, so nothing between it and them
+// carries a role, and the chevrons below stay out of the accessibility tree. Always one row: the Detail bar takes the rest of the
 // width and becomes a carousel when its tabs outgrow it (a second row read as
 // a separate control).
 //
@@ -88,16 +89,18 @@ export function ViewTabs<K extends string>({
     });
   };
 
+  // Taller on a touch screen (touch-targets.md): padding, not a ::before pad, since the tabs sit in a
+  // horizontal scroller that would clip one. The icon-only Dashboard tab gets a min-height to match.
   const arrowClass = (enabled: boolean) =>
-    'flex h-8 w-7 shrink-0 items-center justify-center rounded-lg text-slate-500 transition dark:text-slate-400 ' +
+    'flex h-8 w-7 shrink-0 pointer-coarse:h-10 pointer-coarse:w-8 items-center justify-center rounded-lg text-slate-500 transition dark:text-slate-400 ' +
     (enabled
       ? 'cursor-pointer hover:bg-slate-100 hover:text-slate-900 dark:hover:bg-slate-800 dark:hover:text-slate-100'
       : 'cursor-default opacity-30');
 
   const tabClass = (selected: boolean) =>
-    'flex shrink-0 cursor-pointer items-center justify-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-1.5 text-sm font-medium transition ' +
+    'flex shrink-0 cursor-pointer items-center justify-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-1.5 text-sm font-medium transition pointer-coarse:min-h-10 ' +
     (selected
-      ? 'bg-brand-500 text-white shadow-sm dark:bg-brand-600'
+      ? 'bg-brand-700 text-white shadow-sm dark:bg-brand-600'
       : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100');
   const bar =
     'flex items-center gap-1 rounded-xl border border-slate-200 bg-white p-1.5 shadow-sm dark:border-slate-700 dark:bg-slate-900';
@@ -129,14 +132,17 @@ export function ViewTabs<K extends string>({
       <div className={`${bar} min-w-0 flex-1`}>
         <span
           aria-hidden
-          className="hidden shrink-0 pl-2 pr-1 text-[11px] font-semibold uppercase tracking-wide text-slate-400 sm:inline"
+          className="hidden shrink-0 pl-2 pr-1 text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400 sm:inline"
         >
           Detail
         </span>
         {overflow ? (
+          // A pointer's way along the carousel. Keyboard and screen-reader users never need it (a
+          // focused tab scrolls itself into view), and a tablist may own nothing but tabs.
           <button
             type="button"
-            aria-label="Scroll views left"
+            aria-hidden
+            tabIndex={-1}
             disabled={!canLeft}
             onClick={() => nudge('left')}
             className={arrowClass(canLeft)}
@@ -147,8 +153,6 @@ export function ViewTabs<K extends string>({
 
         <div
           ref={scrollerRef}
-          role="group"
-          aria-label="Detail"
           onScroll={measure}
           className="flex min-w-0 gap-1 overflow-x-auto scroll-smooth [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         >
@@ -172,7 +176,8 @@ export function ViewTabs<K extends string>({
         {overflow ? (
           <button
             type="button"
-            aria-label="Scroll views right"
+            aria-hidden
+            tabIndex={-1}
             disabled={!canRight}
             onClick={() => nudge('right')}
             className={arrowClass(canRight)}

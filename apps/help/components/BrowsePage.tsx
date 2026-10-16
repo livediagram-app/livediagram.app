@@ -1,5 +1,8 @@
 import type { ReactNode } from 'react';
+import { JsonLd } from '@livediagram/ui';
 import { Breadcrumb } from '@/components/Breadcrumb';
+import { articleHref, type Article } from '@/lib/articles';
+import { collectionJsonLd } from '@/lib/structured-data';
 
 // The chrome every top-level browse page in the help centre wears: a
 // breadcrumb, a title, a lede, and a responsive grid of cards. Eleven pages
@@ -19,14 +22,28 @@ import { Breadcrumb } from '@/components/Breadcrumb';
 export function BrowsePage({
   title,
   lede,
+  listing,
   children,
 }: {
   title: string;
   lede: string;
+  // A category landing's own path and the registry articles it lists, for its CollectionPage
+  // structured data (docs/specs/018-help/help-app.md "SEO"). Pages that list something else leave it out.
+  listing?: { appPath: string; articles: Article[] };
   children: ReactNode;
 }) {
   return (
     <div>
+      {listing && (
+        <JsonLd
+          data={collectionJsonLd({
+            title,
+            description: lede,
+            appPath: listing.appPath,
+            items: listing.articles.map((a) => ({ name: a.title, appPath: articleHref(a) })),
+          })}
+        />
+      )}
       <Breadcrumb items={[{ label: title }]} />
       <div className="mx-auto max-w-7xl px-4 py-8 md:px-8">
         <h1 className="mb-2 text-3xl font-bold text-slate-900 md:text-4xl dark:text-slate-100">
@@ -35,6 +52,9 @@ export function BrowsePage({
         <p className="mb-8 text-base leading-relaxed text-slate-500 md:text-lg dark:text-slate-400">
           {lede}
         </p>
+        {/* The cards title themselves with h3, so the grid gets the h2 between them and the page's h1
+            that a screen reader's heading list (and Lighthouse's heading-order audit) expects. */}
+        <h2 className="sr-only">Guides</h2>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">{children}</div>
       </div>
     </div>

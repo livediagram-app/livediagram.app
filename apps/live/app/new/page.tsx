@@ -1,6 +1,7 @@
 'use client';
 
-import { truncateName } from '@livediagram/document';
+import { trustedHtml } from '@livediagram/ui';
+
 import dynamic from 'next/dynamic';
 import {
   useEffect,
@@ -12,18 +13,14 @@ import {
 } from 'react';
 import { EditorHeader } from '@/components/chrome/EditorHeader';
 import { ApiErrorPage } from '@/components/chrome/ApiErrorPage';
-import { TemplatePicker, type NewDocumentSettings } from '@/components/palette/TemplatePicker';
+import { NewDocumentWizard } from '@/components/palette/NewDocumentWizard';
+import type { NewDocumentSettings } from './new-document-settings';
 import { DocumentLoading } from '@/components/chrome/DocumentLoading';
 import { OpeningScreen } from '@/components/chrome/OpeningScreen';
 import { RecentDocumentsCard } from './RecentDocumentsCard';
-import { CustomThemeProvider } from '@/components/primitives/CustomThemeProvider';
 import { AnimatedLinesBackdrop } from '@/components/canvas/AnimatedLinesBackdrop';
 import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
 import { useCtaAttribution } from './useCtaAttribution';
-import { usePlacementOptions } from '@/hooks/persistence/usePlacementOptions';
-import { applyAlwaysSave, useWizardDefaults } from './useWizardDefaults';
-import { useSkipLocationStep } from './useSkipLocationStep';
-import { saveSkipLocationStep } from '@/lib/skip-location-step';
 import { apiCreateDocument, apiLoadSelf, apiSaveSelf } from '@/lib/api-client';
 import {
   createFailureCopy,
@@ -32,6 +29,8 @@ import {
   type CreateIds,
 } from './create-failure';
 import { offlineCreateDocument } from '@/lib/offline/offline-store';
+import { offlineWriteItem } from '@/lib/offline/offline-items';
+import { seedAuthor } from '@/lib/seed-author';
 import { withTemplateSheets } from '@/lib/template-sheets';
 import { isOfflineLocation } from '@/lib/save-locations';
 import { useNewDocumentLocation } from './useNewDocumentLocation';
@@ -42,6 +41,7 @@ import { trackDailyReturn } from '@/lib/daily-return';
 import { markNameConfirmed } from '@/lib/local-identity';
 import { ensureSignedGuestIdentity, retrySignedGuestIdentity } from '@/lib/guest-identity';
 import { useSignedGuestId } from '@/hooks/persistence/useSignedGuestId';
+import { templateTabName } from '@/lib/template-tab-name';
 import { buildTemplatedTabs } from '@/lib/template-builders';
 import { catalogueWithBoardTypes } from '@livediagram/items';
 import {
@@ -53,6 +53,7 @@ import { creationIntentOf } from '@livediagram/api-schema';
 import {
   WIZARD_BYPASS_PARAMS,
   choosePlacementAgainUrl,
+  placementParamsFromSearch,
   wizardBypassKind,
   wizardPresetMode,
   wizardPresetQuery,
@@ -62,6 +63,16 @@ import { getTheme } from '@/lib/themes';
 import { themeTelemetryLabel } from '@/lib/custom-theme-registry';
 import { useLatest } from '@/hooks/ui/useLatest';
 import { debugLog } from '@/lib/debug-log';
+import { handStartQuery } from '@/components/start/start-query';
+import { closeStartForBlank } from '@/components/start/close-start-for-blank';
+import { handTemplatePick } from '@/lib/placement-defaults/template-pick-handoff';
+import {
+  formTemplateStarter,
+  isBlankTemplate,
+  isFormTemplateKind,
+  isPlanTemplateKind,
+} from '@livediagram/templates';
+import { markPendingFormStart } from '@/lib/pending-form-start';
 
 // In-place handoff (docs/specs/007-editor/new-document-route.md): once a document is created, this page
 // renders the editor itself under the rewritten /document/<id> URL instead of paying for a second page
@@ -82,11 +93,8 @@ const presetModeFromUrl = () => wizardPresetMode(window.location.search);
 const presetQueryFromUrl = () => wizardPresetQuery(window.location.search);
 const noPreset = () => null;
 const noBypass = () => null;
-const isBypassUrl = () => bypassKindFromUrl() !== null;
-
-// Folder shape the Settings step's placement browser consumes.
 // Dedicated welcome / create-new flow, see docs/specs/007-editor/new-document-route.md.
-// Owns identity bootstrap, template + theme choice (a two-step wizard),
+// Owns identity bootstrap, the mode choice (a one-step wizard),
 // and the actual "commit a new document" handoff. Once the user picks (or
 // skips), we POST the seeded document and navigate to /document/<id> where
 // the editor route picks it up cleanly. The Explorer is NOT rendered here:
@@ -136,13 +144,13 @@ export default function NewDocumentPage() {
   // navigating to the editor for a document that was never persisted (which would 404). The ref
   // keeps the last attempt's args so Retry can re-run the exact same create.
   const [createError, setCreateError] = useState<CreateFailure | null>(null);
+  // Set by Skip and the bypass links: the new tab opens with its start closed (closeStartForBlank).
+  const explicitBlank = useRef(false);
   const lastCreateArgs = useRef<{
     kind: TemplateKind | null;
-    name: string;
     // string, not ThemeId: the picker can hand back a custom `custom:<uuid>`
     // theme id (docs/specs/011-theme/custom-themes.md) as well as a built-in one.
-    themeId: string;
-    // The Settings step's choices (docs/specs/006-document/offline-mode.md): document name, placement, offline.
+    // Where it goes (new-document-settings.ts): store and placement, decided at commit.
     settings: NewDocumentSettings;
     // The ids it wrote under, reused by its Retry (createIdsFor).
     ids: CreateIds;
@@ -152,29 +160,11 @@ export default function NewDocumentPage() {
   // here, if any. Counts the arrival now and the document once it's committed.
   const cta = useCtaAttribution();
 
-  // Placement context from the URL: /new?folder=<id> (Explorer's "new document
-  // in this folder") and /new?team=<id>(&folder=<id>) (team library, docs/specs/013-workspace/team-shared-documents.md)
-  // pre-select the Save In picker, so what the Settings step highlights IS
-  // what Create files into. The picker is the single source of truth from
-  // here on; there is no separate commit-time fallback (it used to override
-  // an explicit root choice silently).
-  // No context is no placement: the Location step then pre-selects the reader's default folder
-  // (docs/specs/013-workspace/default-folders.md "The New Document wizard"), else the root.
-  const [initialPlacement] = useState<string | undefined>(() => {
-    if (typeof window === 'undefined') return undefined;
-    const params = new URLSearchParams(window.location.search);
-    const folderId = params.get('folder');
-    const teamId = params.get('team');
-    if (teamId) return folderId ? `team:${teamId}:folder:${folderId}` : `team:${teamId}`;
-    if (folderId) return `folder:${folderId}`;
-    return undefined;
-  });
-
   // Wizard bypass (docs/specs/007-editor/new-document-route.md): /new?blank=1 ("Start Blank") and
   // /new?template=<kind> (the marketing template gallery) skip the wizard
   // entirely — the page commits that template (Default theme, the template's
   // default name) the moment it mounts and lands on the editor. The ?folder /
-  // ?team placement context above still applies.
+  // ?team placement context still applies (placementParams).
   //
   // Read from the URL as an external store whose server snapshot is "no
   // bypass", NOT a window-reading state initializer: the static export
@@ -185,42 +175,9 @@ export default function NewDocumentPage() {
   // query names one we don't know, the layout effect lifts it before the
   // first post-hydration paint and the wizard shows as normal.
   const bypassKind = useSyncExternalStore(subscribeNever, bypassKindFromUrl, noBypass);
-  // Where a document nobody placed is saved: Local only for a guest (docs/specs/006-document/save-locations.md).
-  const { defaultLocation, resolveBypassLocation } = useNewDocumentLocation({
-    authLoaded,
-    clerkUserId,
-    hasPlacementContext: initialPlacement !== undefined,
-  });
-
-  // Where this document can be filed, and the inline New Folder the Settings
-  // step offers — see usePlacementOptions.
-  const {
-    folders,
-    teams,
-    teamFolders,
-    createPickerFolder,
-    createPickerTeam,
-    ready: placesReady,
-  } = usePlacementOptions({
-    selfId: self.id,
-    clerkUserId,
-    // A bypass commits straight away and never shows the Settings step.
-    skip: isBypassUrl,
-  });
-  // The reader's default folders, per template, for the Location step.
-  const wizardDefaults = useWizardDefaults(self.id === 'pending' ? null : self.id, {
-    folders,
-    teams,
-    teamFolders,
-  });
-  // Where to save without the Location step, when the reader asked for that
-  // (docs/specs/013-workspace/default-folders.md "Skipping the Location step").
-  const skipLocation = useSkipLocationStep({
-    ownerId: self.id === 'pending' ? null : self.id,
-    context: initialPlacement,
-    lists: { folders, teams, teamFolders },
-    ready: placesReady,
-  });
+  // Where a new document is stored: Local only for a guest (docs/specs/006-document/save-locations.md), decided at
+  // commit.
+  const { resolveSaveLocation } = useNewDocumentLocation({ authLoaded, clerkUserId });
   useLayoutEffect(() => {
     if (!bypassKindFromUrl()) document.documentElement.removeAttribute('data-just-draw');
   }, []);
@@ -237,7 +194,7 @@ export default function NewDocumentPage() {
   }, [presetMode, presetQuery]);
 
   const backOut = () => {
-    if (submitting) return;
+    if (submitting || preparing) return;
     const target = backOutTarget({
       referrer: document.referrer,
       origin: window.location.origin,
@@ -330,51 +287,38 @@ export default function NewDocumentPage() {
     return fallback;
   };
 
-  // Single commit point, shared by the Create Document and Skip paths.
-  // Submit passes a template + theme; Skip passes 'blank' + 'brand'. Either
-  // way we persist the document so the editor route lands on a real row.
+  // Single commit point, shared by a mode chosen, Create, Skip and the bypass links. Every new document starts on the
+  // Default theme; either way we persist the document so the editor route lands on a real row.
+  const themeId = 'brand';
   const commitNewDocument = async (
     templateKind: TemplateKind | null,
-    name: string,
-    themeId: string,
     settings: NewDocumentSettings,
     // Set by Retry: the failed attempt's ids, so a create that did land is not made twice.
     retrying: CreateIds | null = null,
   ) => {
     if (submitting) return;
     setSubmitting(true);
+    // A `?q=` preset becomes the search in the new document's start panel (start-query.ts).
+    handStartQuery(presetQuery);
     // Save location (docs/specs/006-document/save-locations.md): only Local Browser takes the offline branch.
     const offline = isOfflineLocation(settings.saveLocation);
     const { documentId, tabId } = createIdsFor(retrying);
+    // An explicit blank (Skip, Start Blank, a blank's link) opens with its start closed (close-start-for-blank.ts).
+    if (explicitBlank.current) closeStartForBlank(tabId, templateKind);
+    // A mode's blank in the cloud: the template picked later on its start screen may move it to that template's
+    // default folder (docs/specs/013-workspace/default-folders.md "A template picked after creation").
+    handTemplatePick(
+      !offline && templateKind && isBlankTemplate(templateKind)
+        ? { documentId, tabId, placementChosen: settings.placementChosen === true }
+        : null,
+    );
     // A Retry re-runs the create, not the preference write below.
-    lastCreateArgs.current = {
-      kind: templateKind,
-      name,
-      themeId,
-      settings: { ...settings, skipLocationStep: undefined },
-      ids: { documentId, tabId },
-    };
-    // The Settings step's name field wins; fall back to the per-template
-    // default when it's left blank (docs/specs/006-document/offline-mode.md).
-    // docs/specs/006-document/name-length.md: the wizard's name field goes through the same cap.
-    const documentName =
-      truncateName(settings.documentName ?? '') || untitledNameForTemplate(templateKind);
+    lastCreateArgs.current = { kind: templateKind, settings, ids: { documentId, tabId } };
+    // Named after its template ("Untitled Diagram"); renamed in the editor.
+    const documentName = untitledNameForTemplate(templateKind);
     markNameConfirmed();
     // Never create as the 'pending' placeholder — see resolveSelf above.
-    const settleIdentity = async () => {
-      const who = await resolveSelf();
-      // Identity persistence first so any subsequent room broadcasts
-      // carry the chosen name + colour.
-      const trimmed = name.trim() || who.name;
-      if (trimmed !== who.name) {
-        const updated: Participant = { ...who, name: trimmed };
-        setSelf(updated);
-        await apiSaveSelf(updated).catch(() => {});
-      }
-      // "Always save new documents in <place> and skip this step" (docs/specs/013-workspace/default-folders.md).
-      if (settings.skipLocationStep) saveSkipLocationStep(settings.skipLocationStep, who.id);
-      return who;
-    };
+    const settleIdentity = resolveSelf;
     // A Local only document has no owner on the server to wait for (docs/specs/006-document/offline-mode.md
     // "Instant open"): identity settles in the background while it opens. A cloud create needs the owner.
     const cloudOwner = offline ? null : await settleIdentity();
@@ -385,7 +329,18 @@ export default function NewDocumentPage() {
     }
 
     // A template may make several tabs (docs/specs/026-plan/plan-templates.md); the first opens.
-    const tabs = templateKind ? buildTemplatedTabs(templateKind, themeId, tabId, 'Tab 1') : null;
+    const built = templateKind ? buildTemplatedTabs(templateKind, themeId, tabId, 'Tab 1') : null;
+    // A form template: the editor starts its form on the tab once it opens (lib/pending-form-start.ts).
+    if (templateKind && isFormTemplateKind(templateKind))
+      markPendingFormStart(tabId, formTemplateStarter(templateKind));
+    // The first tab is named after its template unless the template names it (template-tab-name.ts).
+    const tabs =
+      built && templateKind && built[0]!.name === 'Tab 1'
+        ? [
+            { ...built[0]!, name: templateTabName(templateKind, built[0]!) ?? 'Tab 1' },
+            ...built.slice(1),
+          ]
+        : built;
     // A Plan template's boards bring their card types (docs/specs/026-plan/plan-templates.md "Card types a template
     // uses"): the document is made with them. Null (the default types) for every other template.
     const itemTypes = tabs
@@ -395,6 +350,16 @@ export default function NewDocumentPage() {
         )
       : null;
     if (itemTypes) debugLog('[item-types] brought', { types: itemTypes.types.length, via: 'new' });
+    // Its worked example cards, dated from today (docs/specs/026-plan/plan-templates.md "Example cards"): none for
+    // any template but a Plan template with boards.
+    // Loaded only for a Plan template: the example cards' data stays out of /new's first load.
+    const seedItems =
+      templateKind && isPlanTemplateKind(templateKind)
+        ? await import('@livediagram/templates/plan-template-seeds').then((m) =>
+            m.planTemplateSeedItems(templateKind, m.seedToday()),
+          )
+        : [];
+    if (seedItems.length) debugLog('[plan] seed cards', { cards: seedItems.length, via: 'new' });
     const tab = tabs
       ? tabs[0]!
       : {
@@ -429,18 +394,24 @@ export default function NewDocumentPage() {
           },
           Date.now(),
         );
+        // Its example cards, through the same checks the api's create puts them through (offline-items.ts).
+        if (seedItems.length) {
+          await offlineWriteItem(
+            documentId,
+            { kind: 'create', creates: seedItems },
+            await seedAuthor(selfRef.current),
+          );
+        }
       } else {
-        // "Always save <these> here" first (docs/specs/013-workspace/default-folders.md).
-        await applyAlwaysSave(settings.alwaysSave);
-        // Placement rides the create (docs/specs/007-editor/new-document-route.md): the Settings
-        // step's picker, pre-seeded from /new?folder= / ?team=, is filed by the same write, or the
-        // create is refused by name and nothing is written.
+        // Placement rides the create (docs/specs/007-editor/new-document-route.md): a /new?folder= / ?team=
+        // context is filed by the same write, or the create is refused by name and nothing is written.
         const owner = cloudOwner ?? (await settleIdentity());
         await apiCreateDocument(owner.id, {
           id: documentId,
           name: documentName,
           tabs: tabs ?? [tab],
           ...(itemTypes ? { itemTypes } : {}),
+          ...(seedItems.length ? { items: seedItems } : {}),
           // Passed through as given: absent is no choice (a default folder may answer), a null
           // folder the root chosen on purpose (docs/specs/013-workspace/default-folders.md).
           teamId: settings.teamId,
@@ -490,6 +461,29 @@ export default function NewDocumentPage() {
     setOpenedId(documentId);
   };
 
+  // Every create from /new goes where new documents go by default (docs/specs/007-editor/new-document-route.md
+  // "One-step wizard"): the store for who is creating, decided now (a guest at once, a signed-in browser once identity
+  // settles), and the /new?folder= / ?team= context when there is one; without one it carries no placement, so a
+  // default folder may answer (docs/specs/013-workspace/default-folders.md "Precedence"). `blank` opens it with its
+  // start closed (Skip, Start Blank, a blank's link). The ref holds a second choice off while the store resolves.
+  const [preparing, setPreparing] = useState(false);
+  const creating = useRef(false);
+  const createByDefault = async (kind: TemplateKind, blank: boolean) => {
+    if (creating.current || submitting) return;
+    creating.current = true;
+    setPreparing(true);
+    const placement = placementParamsFromSearch(window.location.search);
+    const placed = !!(placement.folderId || placement.teamId);
+    try {
+      const saveLocation = await resolveSaveLocation(placed, resolveSelf);
+      explicitBlank.current = blank;
+      await commitNewDocument(kind, { saveLocation, ...placement, placementChosen: placed });
+    } finally {
+      creating.current = false;
+      setPreparing(false);
+    }
+  };
+
   // Start Blank fast path (docs/specs/007-editor/new-document-route.md): fire the Skip-defaults create on mount.
   // commitNewDocument waits out the identity bootstrap itself (resolveSelf),
   // so firing immediately is safe. The ref makes it once-only under Strict
@@ -502,20 +496,7 @@ export default function NewDocumentPage() {
     // point, never user content. (The template itself is reported by the
     // usual Document / Created event the commit fires.)
     track('UI', 'Used', kind === 'blank' ? 'JustDraw' : 'TemplateLink');
-    const params = new URLSearchParams(window.location.search);
-    const folderId = params.get('folder') ?? undefined;
-    const teamId = params.get('team') ?? undefined;
-    void (async () => {
-      // A guest's link makes a Local only document straight away (docs/specs/007-editor/new-document-route.md).
-      const saveLocation = await resolveBypassLocation(!!(folderId || teamId), resolveSelf);
-      await commitNewDocument(kind, '', 'brand', {
-        saveLocation,
-        // A missing param is no choice, not the root: a bypass link without context leaves room for a
-        // default folder (docs/specs/013-workspace/default-folders.md "Precedence").
-        folderId,
-        teamId,
-      });
-    })();
+    void createByDefault(kind, true);
   });
   useEffect(() => {
     if (!bypassKind || bypassFired.current) return;
@@ -561,7 +542,7 @@ export default function NewDocumentPage() {
                   selfRef.current = next;
                   setSelf(next);
                 }
-                void commitNewDocument(a.kind, a.name, a.themeId, a.settings, a.ids);
+                void commitNewDocument(a.kind, a.settings, a.ids);
               })();
             }}
           />
@@ -587,8 +568,9 @@ export default function NewDocumentPage() {
           swaps in the opening screen. */}
       <script
         dangerouslySetInnerHTML={{
-          __html:
+          __html: trustedHtml(
             "try{var p=new URLSearchParams(location.search);if(p.has('blank')||p.has('template'))document.documentElement.setAttribute('data-just-draw','');if(p.has('mode')||p.has('q'))document.documentElement.setAttribute('data-wizard-preset','')}catch(e){}",
+          ),
         }}
       />
       <style>{`html[data-just-draw] [data-wizard-only],html[data-wizard-preset] [data-wizard-only]{visibility:hidden}`}</style>
@@ -604,51 +586,21 @@ export default function NewDocumentPage() {
         {/* Soft animated lines give the otherwise-empty backdrop life
             behind the wizard card. Decorative + reduced-motion aware. */}
         <AnimatedLinesBackdrop />
-        {/* No identity spinner: the wizard's first step is static template
-            data, so it renders immediately. Identity resolves in the
-            background; the picker follows the resolved participant name on
-            its own (it no longer remounts on id change, which used to flash
-            the card once the real id landed). Mounting CustomThemeProvider
-            with a null owner until then just defers the Custom theme list
-            (docs/specs/011-theme/custom-themes.md). */}
+        {/* No identity spinner: the wizard is static mode data, so it renders immediately; identity resolves in the
+            background, and a create waits for it only when it must (resolveSelf). */}
         {/* display:contents so the guard wrapper adds no box of its own;
             visibility inherits to the wizard card. */}
         <div data-wizard-only className="contents">
-          <CustomThemeProvider ownerId={self.id === 'pending' ? null : self.id}>
-            <TemplatePicker
-              mode="welcome"
-              participant={self}
-              currentThemeId="brand"
-              busy={submitting}
-              folders={folders}
-              teams={teams}
-              teamFolders={teamFolders}
-              initialPlacement={initialPlacement}
-              defaultSaveLocation={defaultLocation}
-              initialModeChoice={presetMode}
-              initialQuery={presetQuery}
-              defaults={wizardDefaults}
-              skipLocation={skipLocation}
-              onCreateFolder={createPickerFolder}
-              // Teams are Clerk-only (docs/specs/013-workspace/teams.md): a guest gets no New Team tile.
-              onCreateTeam={clerkUserId ? createPickerTeam : undefined}
-              onOpenExisting={() => window.location.assign('/explorer/recent')}
-              onPick={(kind, name, themeId, settings) =>
-                void commitNewDocument(kind, name, themeId, settings)
-              }
-              // Empty name = "keep the resolved participant name" (commit falls
-              // back to it); passing self.name here could freeze the
-              // pre-bootstrap 'Guest' placeholder into the account.
-              onSkip={() =>
-                void commitNewDocument('blank', '', 'brand', {
-                  saveLocation: defaultLocation,
-                })
-              }
-              // Escape backs out to the page that opened /new, creating nothing
-              // (docs/specs/007-editor/new-document-route.md "Escape backs out").
-              onBackOut={backOut}
-            />
-          </CustomThemeProvider>
+          <NewDocumentWizard
+            busy={submitting || preparing}
+            initialMode={presetMode}
+            onCreate={(kind) => void createByDefault(kind, false)}
+            onSkip={() => void createByDefault('blank', true)}
+            onOpenExisting={() => window.location.assign('/explorer/recent')}
+            // Escape backs out to the page that opened /new, creating nothing
+            // (docs/specs/007-editor/new-document-route.md "Escape backs out").
+            onBackOut={backOut}
+          />
         </div>
         {/* The right rail beside the centred wizard (desktop-only, xl+):
             returning users get "Jump back in" (docs/specs/007-editor/new-document-route.md, hidden with no

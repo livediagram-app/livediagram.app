@@ -1,4 +1,4 @@
-// Tidy Up (docs/specs/007-editor/logo-pages.md "Tidy Up"): hand-drawn lines made clean. A pencil or
+// Tidy Up (docs/specs/007-editor/logo-pages.md "Tidy"): hand-drawn lines made clean. A pencil or
 // marker stroke, or an open path of corners (a merged mirrored stroke), becomes a path of straight
 // segments: its samples cut to the corners that shape it, then each segment within a few degrees
 // of level or upright made exactly so. A stroke whose ends meet closes. The result keeps the

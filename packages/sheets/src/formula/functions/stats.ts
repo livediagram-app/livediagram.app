@@ -11,8 +11,8 @@ import {
   opt,
   type FnDef,
 } from '../fn';
-import { dims, err, isError, type SheetError, type Value } from '../values';
-import { criteriaMask, maskedNumbers, pairsFrom, sameSizeAs } from './conditional';
+import { err, isError, type SheetError, type Value } from '../values';
+import { criteriaMask, ifsNumbers, maskedNumbers, sameSizeAs } from './conditional';
 
 function mean(ns: number[]): number {
   let s = 0;
@@ -63,16 +63,7 @@ function nth(largest: boolean): FnDef {
 
 function ifs(kind: 'avg' | 'min' | 'max') {
   return fn(3, MANY, (args, f) => {
-    const pairs = pairsFrom(args, 1);
-    if (!pairs) return err('#N/A', 'Pairs of range and criterion are needed');
-    const m = criteriaMask(pairs, f);
-    if (isError(m)) return m;
-    const values = arrayArg(args[0]!, f);
-    const a = dims(values);
-    const b = dims(m.shape);
-    if (a.rows !== b.rows || a.cols !== b.cols)
-      return err('#VALUE!', 'The ranges must be the same size');
-    const ns = maskedNumbers(values, m.mask);
+    const ns = ifsNumbers(args, f, 'Pairs of range and criterion are needed');
     if (isError(ns)) return ns;
     if (kind === 'avg') return ns.length === 0 ? err('#DIV/0!') : mean(ns);
     if (ns.length === 0) return 0;
@@ -103,7 +94,7 @@ export const STATS_FUNCTIONS: Record<string, FnDef> = {
   AVERAGEIFS: ifs('avg'),
   MINIFS: ifs('min'),
   MAXIFS: ifs('max'),
-  MEDIAN: aggregate((ns) => (ns.length === 0 ? err('#NUM!') : (percentile(ns, 0.5) as number))),
+  MEDIAN: aggregate((ns) => (ns.length === 0 ? err('#NUM!') : percentile(ns, 0.5))),
   MODE: aggregate((ns) => {
     const counts = new Map<number, number>();
     let best: number | null = null;

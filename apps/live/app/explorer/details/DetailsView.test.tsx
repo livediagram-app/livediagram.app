@@ -239,7 +239,9 @@ describe('DetailsView preview', () => {
     const sizeCell = within(screen.getAllByRole('row')[1]!).getAllByRole('cell')[4]!;
     fireEvent.pointerEnter(sizeCell, { pointerType: 'mouse' });
     expect(previewHint()).toBeNull();
-    act(() => vi.advanceTimersByTime(600));
+    act(() => {
+      vi.advanceTimersByTime(600);
+    });
     expect(previewHint()?.textContent).toContain('Roadmap');
   });
 

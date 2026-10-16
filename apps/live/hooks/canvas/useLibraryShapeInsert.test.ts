@@ -39,16 +39,16 @@ const pair: ShapeLibraryItem = {
       type: 'arrow',
       from: { kind: 'pinned', elementId: 'a', anchor: 'e' },
       to: { kind: 'pinned', elementId: 'b', anchor: 'w' },
-    } as ArrowElement,
+    },
   ],
 };
 
 function setup(over: Partial<LibraryShapeInsertDeps> = {}) {
   let elements: Element[] = [];
   const deps: LibraryShapeInsertDeps = {
-    activeTab: { id: 't', name: 'T', elements: [] } as Tab,
+    activeTab: { id: 't', name: 'T', elements: [] },
     editsBlocked: false,
-    commit: vi.fn((map) => {
+    commit: vi.fn<LibraryShapeInsertDeps['commit']>((map) => {
       elements = map(elements);
     }),
     setSelectedId: vi.fn(),
@@ -152,7 +152,7 @@ describe('useLibraryShapeInsert, consecutive clicks', () => {
         tab = { ...tab, elements: map(tab.elements) };
       },
       switchTab: (id: string) => {
-        tab = { id, name: id, elements: [] } as Tab;
+        tab = { id, name: id, elements: [] };
       },
       commit,
     };

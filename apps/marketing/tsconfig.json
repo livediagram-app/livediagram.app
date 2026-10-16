@@ -15,6 +15,8 @@
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
+    // `**` skips dot folders, so the folder of the security.txt route is named.
+    "app/.well-known/**/*.ts",
     ".next/types/**/*.ts",
     ".next-dev/types/**/*.ts"
   ],

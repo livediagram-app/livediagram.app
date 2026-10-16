@@ -26,6 +26,12 @@ const OG_IMAGE = {
 };
 const TWITTER_IMAGE = `${SITE_URL}/twitter-image`;
 
+// The brand card alone, for a page whose og:url cannot be known at build time
+// (the Community post shell serves every post), so it still previews with an
+// image rather than none.
+export const BRAND_OG_IMAGE = OG_IMAGE;
+export const BRAND_TWITTER_IMAGE = TWITTER_IMAGE;
+
 export type PageMetadataInput = {
   title: string;
   description: string;
@@ -43,6 +49,13 @@ export type PageMetadataInput = {
   // twitter-image (marketing's /features/<id> cards): the shared brand card
   // is then left off so it doesn't override the page's own.
   ownOgImage?: boolean;
+  // A card of the page's own at a known absolute URL, used for both Open Graph and Twitter in place
+  // of the brand card (the help centre's per-article cards, docs/specs/018-help/help-app.md "SEO").
+  image?: { url: string; alt: string };
+  // The OG type. `article` suits a content page; a hub or dashboard that is
+  // the app's own front page (the Community gallery, the Telemetry
+  // dashboard) is a `website`.
+  type?: 'article' | 'website';
 };
 
 export function pageMetadata({
@@ -52,26 +65,30 @@ export function pageMetadata({
   siteName = SITE_NAME,
   modifiedTime,
   ownOgImage = false,
+  image,
+  type = 'article',
 }: PageMetadataInput): Metadata {
   return {
     title,
     description,
     alternates: { canonical: path },
     openGraph: {
-      type: 'article',
+      type,
       url: path,
       siteName,
       title,
       description,
       locale: LOCALE,
-      ...(ownOgImage ? {} : { images: [OG_IMAGE] }),
+      ...(ownOgImage
+        ? {}
+        : { images: [image ? { ...image, width: 1200, height: 630 } : OG_IMAGE] }),
       ...(modifiedTime ? { modifiedTime: modifiedTime.toISOString() } : {}),
     },
     twitter: {
       card: 'summary_large_image',
       title,
       description,
-      ...(ownOgImage ? {} : { images: [TWITTER_IMAGE] }),
+      ...(ownOgImage ? {} : { images: [image ? image.url : TWITTER_IMAGE] }),
     },
   };
 }

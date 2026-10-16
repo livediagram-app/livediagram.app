@@ -26,6 +26,7 @@ import {
   detailsLabelOf,
   DETAILS_LABEL_DEFAULT,
   ITEM_TYPE_CUSTOM_MAX,
+  legacyCatalogue,
 } from './type-catalogue';
 
 // docs/specs/026-plan/item-types.md.
@@ -43,8 +44,9 @@ const call = {
 const withCall = (types: unknown[] = [...ITEM_TYPES, call]) => ({ version: 1, types });
 
 describe('the type catalogue', () => {
-  it('is the built-ins until a document stores its own', () => {
-    expect(typesOf(null)).toBe(ITEM_TYPES);
+  it('is empty until a document stores its own', () => {
+    expect(typesOf(null)).toEqual([]);
+    expect(typesOf(undefined)).toEqual([]);
     expect(typesOf(defaultCatalogue())).toEqual(ITEM_TYPES);
     expect(typeIn(ITEM_TYPES, 'project').label).toBe('Project');
     expect(typeIn(ITEM_TYPES, 'gone')).toBe(FALLBACK_ITEM_TYPE);
@@ -86,7 +88,9 @@ describe('the type catalogue', () => {
       ok: false,
       reason: 'version',
     });
-    expect(validateItemTypeCatalogue(withCall([]))).toMatchObject({ ok: false, reason: 'types' });
+    expect(validateItemTypeCatalogue({ version: 1, types: 'x' })).toMatchObject({
+      reason: 'types',
+    });
     expect(bad({ id: 'Has Caps' })).toMatchObject({ reason: 'types[0].id' });
     expect(bad({ id: 'item' })).toMatchObject({ reason: 'types[0].id' });
     expect(bad({ label: ' ' })).toMatchObject({ reason: 'types[0].label' });
@@ -135,6 +139,23 @@ describe('the type catalogue', () => {
       expect(planGlyphPath(id)).not.toBe(PLAN_GLYPH_FALLBACK);
     expect(planGlyphPath('item')).toBe(PLAN_GLYPH_FALLBACK);
     expect(planGlyphPath(undefined)).toBe(PLAN_GLYPH_FALLBACK);
+  });
+});
+
+describe('a catalogue with no types', () => {
+  it('is kept: deleting every type leaves a document with none', () => {
+    const none = validateItemTypeCatalogue({ version: 1, types: [] });
+    expect(none).toEqual({ ok: true, catalogue: { version: 1, types: [] } });
+    expect(typesOf(readItemTypeCatalogue({ version: 1, types: [] }))).toEqual([]);
+  });
+});
+
+describe('a document made before card types started empty', () => {
+  it('reads as the default types when it has cards and never chose any', () => {
+    expect(typesOf(legacyCatalogue(null, true))).toEqual(ITEM_TYPES);
+    expect(legacyCatalogue(null, false)).toBeNull();
+    const chosen = { version: 1, types: [] };
+    expect(legacyCatalogue(chosen, true)).toBe(chosen);
   });
 });
 

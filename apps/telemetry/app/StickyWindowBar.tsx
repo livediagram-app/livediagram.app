@@ -83,13 +83,17 @@ export function StickyWindowBar({
 
   return (
     <div
-      aria-hidden={!stuck}
+      // Hidden and out of the tab order until it fades in: aria-hidden alone left its buttons focusable.
+      inert={!stuck}
       className={
-        'fixed inset-x-0 top-24 z-30 flex justify-center px-4 transition-all duration-short ' +
+        'fixed inset-x-0 top-24 z-30 flex justify-center px-2 transition-all duration-short sm:px-4 ' +
         (stuck ? 'translate-y-0 opacity-100' : 'pointer-events-none -translate-y-3 opacity-0')
       }
     >
-      <div className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white p-1.5 shadow-xl ring-1 ring-black/5 backdrop-blur dark:border-slate-700 dark:bg-slate-900 dark:ring-white/10">
+      {/* Below `sm` the pills drop to 10px side padding and their short names, so the bar fits a 320px
+          phone (in full it ran 8px past a 390px screen); on a touch screen each is 44px tall to tap
+          (touch-targets.md). */}
+      <div className="inline-flex items-center gap-1 rounded-full border sm:gap-1.5 border-slate-200 bg-white p-1.5 shadow-xl ring-1 ring-black/5 backdrop-blur dark:border-slate-700 dark:bg-slate-900 dark:ring-white/10">
         {WINDOW_META.map((w) => {
           const isActive = active === w.key;
           return (
@@ -98,14 +102,16 @@ export function StickyWindowBar({
               type="button"
               onClick={() => onSelect(w.key)}
               aria-pressed={isActive}
+              aria-label={w.label}
               className={
-                'cursor-pointer rounded-full px-4 py-1.5 text-sm font-semibold transition ' +
+                'relative cursor-pointer whitespace-nowrap rounded-full px-2.5 py-1.5 text-sm font-semibold transition touch-target-y sm:px-4 ' +
                 (isActive
-                  ? 'bg-brand-500 text-white shadow-sm dark:bg-brand-600'
+                  ? 'bg-brand-700 text-white shadow-sm dark:bg-brand-600'
                   : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800')
               }
             >
-              {w.label}
+              <span className="sm:hidden">{w.short}</span>
+              <span className="max-sm:hidden">{w.label}</span>
             </button>
           );
         })}
@@ -124,7 +130,7 @@ export function StickyWindowBar({
               aria-expanded={menuOpen}
               aria-label={viewPickerLabel}
               className={
-                'flex cursor-pointer items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-semibold transition ' +
+                'relative flex cursor-pointer items-center gap-1.5 rounded-full px-2.5 py-1.5 text-sm font-semibold transition touch-target-y sm:px-3 ' +
                 (menuOpen
                   ? 'bg-slate-100 text-slate-900 dark:bg-slate-800 dark:text-slate-100'
                   : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800')

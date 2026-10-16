@@ -44,7 +44,7 @@ const SHOTS: Shot[] = [
   {
     shot: 'Close-up · 0:04',
     action: 'She opens Pedal: a bike 90 m away.',
-    sound: 'VO: “Next bus, 20 minutes. Your bike, 90 metres.”',
+    sound: 'VO: “Bus in 20 minutes. Bike, 90 metres.”',
     marks: [
       { icon: 'smartphone', x: 125, y: 52, size: 110 },
       { icon: 'map-pin', x: 162, y: 88, size: 36 },
@@ -151,13 +151,15 @@ export function buildStoryboard(cx: number, cy: number): Element[] {
     const fy = top + Math.floor(i / cols) * rowPitch;
     const at = uiAt(fx, fy);
 
-    elements.push({
+    const panel = {
       ...createShape('square', fx, fy),
       width: frameW,
       height: frameH,
-      borderRadius: 'sm',
+      borderRadius: 'sm' as const,
       ...scaffold,
-    });
+    };
+    const panelId = panel.id;
+    elements.push(panel);
 
     // The shot chip, top-right inside the panel.
     const chipW = 188;
@@ -211,16 +213,18 @@ export function buildStoryboard(cx: number, cy: number): Element[] {
       );
     }
 
-    // Number chip overlapping the panel's top-left corner.
+    // The panel's number: a Step number (docs/specs/009-elements/step-number.md) attached to its top-left corner,
+    // so it travels with the panel.
     const chip = 40;
     elements.push({
-      ...createShape('circle', fx - chip / 2 + 6, fy - chip / 2 + 6),
+      ...createShape('step', fx - chip / 2, fy - chip / 2),
       width: chip,
       height: chip,
       label: `${i + 1}`,
-      textSize: 'sm',
       textBold: true,
-      colorPreset: 'bold',
+      chipLook: 'solid',
+      attachedTo: panelId,
+      attachAt: 'top-left',
       ...scaffold,
     });
 

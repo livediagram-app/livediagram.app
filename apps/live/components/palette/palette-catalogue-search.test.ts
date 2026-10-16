@@ -23,7 +23,17 @@ describe('searchCatalogueTiles', () => {
     const { here, elsewhere } = searchCatalogueTiles({ query: 'database', mode: 'diagram' });
     expect(from(here, 'icon:').length).toBeGreaterThan(0);
     expect(from(here, 'tech:').length).toBeGreaterThan(0);
-    expect(elsewhere).toEqual([]);
+    // Stickers are Facilitate's (docs/specs/012-collaboration/facilitate-mode.md), so only they sit elsewhere.
+    expect(elsewhere.filter((t) => !t.id.startsWith('sticker:'))).toEqual([]);
+  });
+
+  it("still finds stickers from Diagram, in the other modes' section", () => {
+    const sticker = getStickerCatalog()[0]!;
+    const diagram = searchCatalogueTiles({ query: sticker.label, mode: 'diagram' });
+    expect(from(diagram.here, 'sticker:')).toEqual([]);
+    expect(ids(diagram.elsewhere)).toContain(`sticker:${sticker.id}`);
+    const facilitate = searchCatalogueTiles({ query: sticker.label, mode: 'facilitate' });
+    expect(ids(facilitate.here)).toContain(`sticker:${sticker.id}`);
   });
 
   it("puts a catalogue the mode does not offer in the other modes' section", () => {
@@ -50,7 +60,7 @@ describe('searchCatalogueTiles', () => {
   it('lists the entries on the tab before anything is typed', () => {
     const icon = getLineArtIconCatalog()[0]!;
     const sticker = getStickerCatalog()[0]!;
-    const { here } = searchCatalogueTiles({
+    const { here, elsewhere } = searchCatalogueTiles({
       query: '',
       mode: 'diagram',
       tabElements: [
@@ -60,9 +70,8 @@ describe('searchCatalogueTiles', () => {
         el({ shape: 'square' }),
       ],
     });
-    expect(ids(here).sort()).toEqual(
-      [`icon:${icon.id}`, 'tech:aws-s3', `sticker:${sticker.id}`].sort(),
-    );
+    expect(ids(here).sort()).toEqual([`icon:${icon.id}`, 'tech:aws-s3'].sort());
+    expect(ids(elsewhere)).toEqual([`sticker:${sticker.id}`]);
   });
 
   it('lists nothing before typing on a tab with no catalogue entries', () => {

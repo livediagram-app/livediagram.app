@@ -7,13 +7,13 @@ import { CodeDialog } from '@/components/illustrations/tools-menus';
 export const metadata = helpMetadata({
   title: 'Code Blocks',
   description:
-    'Drop a monospace code card on the canvas, double-click to edit the snippet in the Code dialog, pick from ten languages with syntax highlighting, and choose from eight colour schemes.',
+    'Add a code block to the canvas: edit the snippet in the Code dialog, choose from ten languages (nine highlighted) and switch between eight colour schemes.',
   path: '/help/palette/tools/code-blocks/',
 });
 
 <ArticleLayout
   title="Code Blocks"
-  description="A monospace card for code snippets, with syntax highlighting in ten languages and eight colour schemes."
+  description="A monospace card for code snippets, with syntax highlighting in nine languages and eight colour schemes."
   categoryTitle="Palette"
   categorySlug="palette"
   parentArticle={{ title: 'Tools', slug: 'tools' }}
@@ -29,8 +29,9 @@ A code block is an editor-style card for the snippets that belong in a technical
 ## Adding one
 
 <Step n={1}>
-  In Diagram mode, open the **Popular** category on the palette strip. In
-  [Illustrate](/help/canvas/illustrate/), it is in the **Components** category.
+  In [Illustrate](/help/canvas/illustrate/), open the **Components** category on the palette strip.
+  In any mode you can also add it by name from the [Search
+  panel](/help/search-panel/the-search-panel/search-add-to-canvas/).
 </Step>
 <Step n={2}>Pick **Code**, then tap the canvas to drop a block, or drag to draw it at a size.</Step>
 <Step n={3}>**Double-click the block** to add your code.</Step>
@@ -49,7 +50,7 @@ The same dialog is one right-click away: open **Tools**, then **Code**, and choo
 
 ## Languages and highlighting
 
-Ten languages get syntax highlighting: **plain text, TypeScript, JavaScript, Python, JSON, Bash, SQL, HTML, CSS, and YAML** (the dropdown lists them by their short names, such as `ts`, `js` and `sql`). The chosen language shows as a small badge in the block's top-right corner (hidden for plain text), so a reader can tell a SQL query from a YAML manifest at a glance.
+Pick from ten languages: **plain text**, plus nine with syntax highlighting: **TypeScript, JavaScript, Python, JSON, Bash, SQL, HTML, CSS, and YAML** (the dropdown lists them by their short names, such as `ts`, `js` and `sql`). The chosen language shows as a small badge in the block's top-right corner (hidden for plain text), so a reader can tell a SQL query from a YAML manifest at a glance.
 
 ## Colour schemes
 

@@ -1,27 +1,8 @@
-// Where a new document is stored (docs/specs/006-document/save-locations.md). The New Document wizard's Settings
-// step renders one tile per entry; `/new` branches its create on the id.
-//
-// This used to be a boolean ("Save Offline, This Browser Only"), which could
-// only ever answer yes or no. A catalogue is what a third store (Google Drive,
-// GitHub) can be added to: one id in the union, one entry here, one glyph in
-// the picker's icon map (typed on the id, so a missing glyph fails to compile),
-// and one create branch in /new. Only shipped locations belong here: no
-// "coming soon" entries.
+// Where a new document is stored (docs/specs/006-document/save-locations.md): on the server or in this browser only.
+// Nobody is asked: `defaultSaveLocationFor` decides, and `/new` branches its create on the id. A third store (GitHub,
+// say) is one id in the union, a rule here for who gets it, and one create branch in /new.
 
 export type SaveLocationId = 'livediagram' | 'browser';
-
-export type SaveLocation = {
-  id: SaveLocationId;
-  label: string;
-  // The one-line caption under the tile label.
-  description: string;
-};
-
-// Display order: the server first, then this browser.
-export const SAVE_LOCATIONS: readonly SaveLocation[] = [
-  { id: 'livediagram', label: 'livediagram', description: 'Your account' },
-  { id: 'browser', label: 'Local Browser', description: 'This device only' },
-];
 
 // Where a new document goes when nobody picked (docs/specs/006-document/save-locations.md "The default
 // depends on who is creating"): a guest starts Local only, so a visitor trying things out never
@@ -34,12 +15,8 @@ export function defaultSaveLocationFor(who: {
   return who.clerkEnabled && !who.signedIn ? 'browser' : 'livediagram';
 }
 
-export function saveLocationLabel(id: SaveLocationId): string {
-  return SAVE_LOCATIONS.find((l) => l.id === id)?.label ?? id;
-}
-
 // Whether an id resolves to the browser-only IndexedDB store (Offline Mode,
-// docs/specs/006-document/offline-mode.md). The only place the wizard's model touches that notion.
+// docs/specs/006-document/offline-mode.md). The only place /new touches that notion.
 export function isOfflineLocation(id: SaveLocationId): boolean {
   return id === 'browser';
 }

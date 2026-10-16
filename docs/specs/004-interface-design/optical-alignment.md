@@ -22,6 +22,12 @@ label) drifts a third way: when one action's icon is taller, its label drops.
 Each offset is one or two pixels. Together they make the chrome look careless, which is the
 opposite of what a diagramming tool has to look like.
 
+One drift is the browser's own and stays out of reach: Chromium paints every text baseline on a
+whole CSS pixel, at any pixel density, and no CSS opts out. A shape at a fractional position shows
+its text up to half a pixel off, and that position is inherited from everything above the shape (a
+dialog centred in the window, a row of text 19.5px tall), not set by the shape's own markup. A
+transform moves text after the snap, so the snap follows the layout, not the transformed position.
+
 ## Terms
 
 - **Shape**: an element with visible paint (a fill, a border or a ring), at most 44px tall, framing
@@ -86,7 +92,12 @@ Existing ad-hoc shapes move onto these primitives. A new shape that frames a gly
 - **An ink audit** (end-to-end, dark mode, at 4x device pixels) opens the editor, its dialogs, the
   wizard, the Explorer, the help centre, the marketing site and the telemetry dashboard, and fails
   on any shape or stack row outside the tolerance. It measures the rendered pixels, so it holds for
-  whatever face the browser picks.
+  whatever face the browser picks. It judges each shape as if it sat on a whole pixel: the part of
+  the baseline snap a shape inherits from its position is taken out of the reading, so a verdict
+  never turns on unrelated content above the shape. The part that comes from the shape's own size
+  and type still counts.
+- **A snap guard** holds the browser to that whole-pixel baseline, so the audit's correction fails
+  loudly if the browser ever paints text differently.
 - **A static guard** fails when a circle or chip framing text bypasses the primitives or the
   utility, naming the file and line.
 - **The icon geometry check** belongs to [Iconography](iconography.md): catalogue icons off-centre

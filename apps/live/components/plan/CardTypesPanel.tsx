@@ -12,7 +12,14 @@ import { MovablePanel } from '@/components/primitives/MovablePanel';
 import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
 import { usePlan } from './PlanContext';
 import { ITEM_TYPES_MAX, defaultTypesToAdd } from '@livediagram/items';
-import { Button, DuplicateIcon, PencilIcon, Tooltip } from '@livediagram/ui';
+import {
+  Button,
+  DuplicateIcon,
+  EmptyState,
+  PencilIcon,
+  PlanCardsIcon,
+  Tooltip,
+} from '@livediagram/ui';
 import { PlanTypeGlyph } from './plan-type-glyph';
 import { ACCENT_BG, ACCENT_TEXT, ACCENT_TINT, accentVars } from './plan-palette';
 
@@ -87,7 +94,7 @@ export function CardTypesPanel({
           <button
             type="button"
             aria-label={`${t.label}, ${label}. Edit`}
-            onClick={() => plan.editType(t.id)}
+            onClick={() => plan.editType({ id: t.id })}
             className="flex min-w-0 flex-1 cursor-pointer items-center gap-2.5 text-left outline-none after:absolute after:inset-0 after:content-['']"
           >
             {face}
@@ -154,13 +161,25 @@ export function CardTypesPanel({
     >
       <div className="flex flex-col gap-2 px-3 pb-3">
         {/* One to a row in a bordered box, as Plan's option lists are (docs/specs/026-plan/plan-board.md "Option
-            lists"); a catalogue always holds at least one type. */}
-        <ul
-          aria-label="Card Types"
-          className="flex flex-col divide-y divide-slate-100 overflow-hidden rounded-lg border border-slate-200 dark:divide-slate-800 dark:border-slate-700"
-        >
-          {types.map(row)}
-        </ul>
+            lists"). A document starts with none: the default types arrive only through Add Default Types. */}
+        {types.length === 0 ? (
+          <EmptyState
+            icon={<PlanCardsIcon size={18} />}
+            title="No Card Types Yet"
+            description={
+              canEdit
+                ? 'Add a card type of your own, or add the default types: Project, Task, Note, Idea and Action.'
+                : 'This document has no card types yet.'
+            }
+          />
+        ) : (
+          <ul
+            aria-label="Card Types"
+            className="flex flex-col divide-y divide-slate-100 overflow-hidden rounded-lg border border-slate-200 dark:divide-slate-800 dark:border-slate-700"
+          >
+            {types.map(row)}
+          </ul>
+        )}
         {canEdit ? (
           <>
             <AddCardTypeButton onClick={() => plan.editType('new')} />

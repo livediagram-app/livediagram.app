@@ -99,7 +99,7 @@ function draw(
   );
 }
 
-const textBox = (text: string) => screen.getByText(text) as HTMLElement;
+const textBox = (text: string) => screen.getByText<HTMLElement>(text);
 
 describe('the helpers', () => {
   it('sizes fonts from the point size, else the base', () => {
@@ -158,7 +158,8 @@ describe('the cells', () => {
     expect(s.fontWeight).toBe('700');
     expect(s.fontStyle).toBe('italic');
     expect(s.textDecoration).toBe('underline line-through');
-    expect(s.color).toBe('rgb(255, 0, 0)');
+    // Red falls short on lime: drawn deepened until it reads at AA (sheet.md "Readable cells").
+    expect(s.color).toBe('rgb(179, 0, 0)');
     expect(s.fontSize).toBe('16px');
     expect(s.justifyContent).toBe('center');
     const bg = [...document.querySelectorAll<HTMLElement>('div')].find(

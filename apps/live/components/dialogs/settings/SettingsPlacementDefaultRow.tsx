@@ -16,18 +16,15 @@ import {
   clearPlacementDefault,
   setPlacementDefault,
 } from '@/lib/placement-defaults/placement-defaults-store';
-import { SettingsRowShell } from './SettingsRowShell';
+import { SETTINGS_ROW_BUTTON, SettingsRowShell } from './SettingsRowShell';
 import type { SettingsPlacementDefaultRowSpec } from './settings-catalogue';
 
-// One row of Settings > Documents > Where New Documents Go
+// One row of Settings > Documents > Default Folders
 // (docs/specs/013-workspace/default-folders.md "Settings"): an entry, where its new documents go
-// (a folder, My documents, or a dangling default and where they go instead), Change (the default
-// folder picker) and Clear. Not a preference: it reads and writes the page's default-folders store.
+// (a folder, My documents, or a dangling default and where they go instead), Clear and Change (the
+// default folder picker). Not a preference: it reads and writes the page's default-folders store.
 
 export type SettingsPlacementLists = ReturnType<typeof usePlacementOptions>;
-
-export const PLACEMENT_ROW_BUTTON =
-  'shrink-0 rounded-lg border border-slate-200 px-2.5 py-1 text-xs font-semibold text-slate-700 transition hover:border-brand-300 hover:bg-brand-50/40 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-600 dark:text-slate-200 dark:hover:border-brand-500/60';
 
 /** Where new documents of this entry go, in words. */
 export function destinationText(destination: DefaultDestination): string {
@@ -86,66 +83,76 @@ export function SettingsPlacementDefaultRow({
   return (
     <SettingsRowShell
       row={row}
-      // The label over where its documents go (a dangling default's line can be long), the
-      // buttons beside them.
-      wrapper={() => (
-        <div className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-3.5 py-3 dark:border-slate-700 dark:bg-slate-800">
-          <div className="flex min-w-0 flex-col gap-0.5">
-            <span className="text-sm font-medium text-slate-800 dark:text-slate-100">
-              {row.label}
-            </span>
-            <span
-              className={`text-xs ${
-                dangling
-                  ? 'text-amber-700 dark:text-amber-300'
-                  : 'text-slate-600 dark:text-slate-300'
-              }`}
-            >
-              {text}
-            </span>
-          </div>
-          <div className="flex shrink-0 items-center gap-2">
-            {destination ? (
-              <>
-                <button
-                  type="button"
-                  className={PLACEMENT_ROW_BUTTON}
-                  aria-label={`Change default folder for ${entry.noun}`}
-                  onClick={() => setChanging(true)}
-                >
-                  Change
-                </button>
-                {destination.kind !== 'root' ? (
-                  <button
-                    type="button"
-                    className={PLACEMENT_ROW_BUTTON}
-                    aria-label={`Clear default folder for ${entry.noun}`}
-                    onClick={() => void clearPlacementDefault(key, 'settings')}
-                  >
-                    Clear
-                  </button>
-                ) : null}
-              </>
-            ) : null}
-          </div>
-          {changing ? (
-            <DefaultFolderPickerDialog
-              entryKey={key}
-              current={current}
-              folders={lists.folders}
-              teams={lists.teams}
-              teamFolders={lists.teamFolders}
-              onCreateFolder={lists.createPickerFolder}
-              onPick={(folderId) =>
-                void (folderId
-                  ? setPlacementDefault(key, folderId, 'settings')
-                  : clearPlacementDefault(key, 'settings'))
-              }
-              onClose={() => setChanging(false)}
-            />
+      // Where its documents go IS the row's description: the shared explanation sits once, under
+      // the section's heading.
+      descriptionContent={
+        <span
+          data-default-destination
+          className={dangling ? 'text-amber-700 dark:text-amber-300' : undefined}
+        >
+          {destination?.kind === 'folder' || destination?.kind === 'dangling' ? (
+            <FolderMark />
           ) : null}
-        </div>
-      )}
-    />
+          {text}
+        </span>
+      }
+      control={
+        destination ? (
+          <>
+            {destination.kind !== 'root' ? (
+              <button
+                type="button"
+                className={SETTINGS_ROW_BUTTON}
+                aria-label={`Clear default folder for ${entry.noun}`}
+                onClick={() => void clearPlacementDefault(key, 'settings')}
+              >
+                Clear
+              </button>
+            ) : null}
+            <button
+              type="button"
+              className={SETTINGS_ROW_BUTTON}
+              aria-label={`Change default folder for ${entry.noun}`}
+              onClick={() => setChanging(true)}
+            >
+              Change
+            </button>
+          </>
+        ) : null
+      }
+    >
+      {changing ? (
+        <DefaultFolderPickerDialog
+          entryKey={key}
+          current={current}
+          folders={lists.folders}
+          teams={lists.teams}
+          teamFolders={lists.teamFolders}
+          onCreateFolder={lists.createPickerFolder}
+          onPick={(folderId) =>
+            void (folderId
+              ? setPlacementDefault(key, folderId, 'settings')
+              : clearPlacementDefault(key, 'settings'))
+          }
+          onClose={() => setChanging(false)}
+        />
+      ) : null}
+    </SettingsRowShell>
+  );
+}
+
+// A small folder before a chosen folder's name, so a default that is set reads apart from one
+// that is not (My documents) at a glance.
+function FolderMark() {
+  return (
+    <svg
+      aria-hidden
+      viewBox="0 0 16 16"
+      className="mr-1 inline-block h-3 w-3 -translate-y-px fill-none stroke-current"
+      strokeWidth={1.5}
+      strokeLinejoin="round"
+    >
+      <path d="M2 4.5A1.5 1.5 0 0 1 3.5 3h2.6l1.3 1.5h5.1A1.5 1.5 0 0 1 14 6v5.5a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 2 11.5Z" />
+    </svg>
   );
 }

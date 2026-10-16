@@ -24,7 +24,12 @@ import {
   CARD_TABLE_ROWS_MAX,
   COLUMN_WIDTH_MIN,
   ROW_HEIGHT_MIN,
+  FORMAT_RULES_MAX,
+  VALIDATION_RULES_MAX,
 } from './limits';
+import { isFormatRule, isValidationRule } from './rules/rule-shape';
+import { inputAllowed, ruleMessage, validationRuleAt, type RangeValues } from './rules/validation';
+import { layoutIndex } from './layout';
 import { posRangeOf } from './layout';
 import { applySheetWrite, type CellChange, type SheetWrite } from './store';
 import { applyLayoutChange, type LayoutChange } from './store-layout';
@@ -51,9 +56,13 @@ export type SheetRejection =
   | 'merge_invalid'
   | 'filter_invalid'
   | 'write_too_large'
-  | 'write_invalid';
+  | 'write_invalid'
+  // A value a Reject validation rule refuses (data-validation.md), and a sheet past its rules' limit.
+  | 'value_invalid'
+  | 'rules_full';
 
-export type Validation = { ok: true } | { ok: false; error: SheetRejection; at?: string };
+export type Validation =
+  { ok: true } | { ok: false; error: SheetRejection; at?: string; line?: string };
 
 const no = (error: SheetRejection, at?: string): Validation => ({
   ok: false,
@@ -301,6 +310,23 @@ function layoutChangeProblem(ch: LayoutChange, layout: SheetLayout): Validation 
       return isAxisId(ch.col) && (ch.cond === null || isFilterCondition(ch.cond))
         ? OK
         : no('filter_invalid');
+    case 'vrule':
+      return typeof ch.id === 'string' &&
+        isAxisId(ch.id) &&
+        (ch.rule === null || isValidationRule(ch.rule, ch.id, layout))
+        ? OK
+        : no('write_invalid');
+    case 'frule':
+      return typeof ch.id === 'string' &&
+        isAxisId(ch.id) &&
+        (ch.at === undefined || (Number.isInteger(ch.at) && ch.at >= 0)) &&
+        (ch.rule === null || isFormatRule(ch.rule, ch.id, layout, refsOk))
+        ? OK
+        : no('write_invalid');
+    case 'fruleOrder':
+      return Array.isArray(ch.ids) && ch.ids.length <= FORMAT_RULES_MAX && ch.ids.every(isAxisId)
+        ? OK
+        : no('write_invalid');
     default:
       return no('write_invalid');
   }
@@ -320,6 +346,16 @@ export function sheetProblem(sheet: Sheet): Validation {
     return no('sheet_full');
   const sized = Object.keys(layout.rowSize ?? {}).length + Object.keys(layout.colSize ?? {}).length;
   if (sized > SHEET_SIZED_AXES_MAX) return no('sheet_full');
+  if (
+    (layout.rules?.length ?? 0) > VALIDATION_RULES_MAX ||
+    (layout.formatRules?.length ?? 0) > FORMAT_RULES_MAX
+  )
+    return no('rules_full');
+  return mergeProblem(layout);
+}
+
+// The merges are within their cap and none overlaps another.
+function mergeProblem(layout: SheetLayout): Validation {
   const merges = layout.merges ?? [];
   if (merges.length > SHEET_MERGES_MAX) return no('merge_invalid');
   const boxes = merges.map((m) => posRangeOf(layout, m));
@@ -329,8 +365,44 @@ export function sheetProblem(sheet: Sheet): Validation {
   return OK;
 }
 
+// The sheet's shape after a write is within the limits, its merges aside (mergeProblem).
+function limitsProblem(sheet: Sheet): Validation {
+  return sheetProblem({ ...sheet, layout: { ...sheet.layout, merges: undefined } });
+}
+
+const refsOk = (refs: unknown[]) => refs.every(isStoredRef);
+
+// Options for checking a write against the sheet's validation rules (data-validation.md "Where values are checked"):
+// `checkRules` false for an undo, a redo and the writes stored as they are; `rangeValues` from the editor, which can
+// work a Dropdown from a Range's options out (the api cannot, so it skips those rules).
+export type WriteCheck = { checkRules?: boolean; locale?: string; rangeValues?: RangeValues };
+
+// The first written value a Reject rule refuses, on the sheet as the write leaves it.
+function rulesProblem(after: Sheet, write: SheetWrite, opts: WriteCheck): Validation {
+  if (write.kind === 'title' || !after.layout.rules?.length) return OK;
+  const layout = after.layout;
+  const ix = layoutIndex(layout);
+  const ctx = { locale: opts.locale ?? 'en-GB', layout, rangeValues: opts.rangeValues };
+  for (const ch of write.cells ?? []) {
+    if (!ch.i) continue;
+    const r = ix.rowPos.get(ch.r);
+    const c = ix.colPos.get(ch.c);
+    if (r === undefined || c === undefined) continue;
+    const rule = validationRuleAt(layout, r, c);
+    if (!rule || rule.warn) continue;
+    if (!inputAllowed(rule, ch.i, ctx))
+      return {
+        ok: false,
+        error: 'value_invalid',
+        at: `${ch.r}:${ch.c}`,
+        line: ruleMessage(rule, ctx),
+      };
+  }
+  return OK;
+}
+
 // A write as sent: its own shape, then the sheet it would make.
-export function validateWrite(sheet: Sheet, write: SheetWrite): Validation {
+export function validateWrite(sheet: Sheet, write: SheetWrite, opts: WriteCheck = {}): Validation {
   if (typeof write !== 'object' || write === null) return no('write_invalid');
   if (write.kind === 'title') {
     const t = typeof write.title === 'string' ? write.title.trim() : '';
@@ -368,7 +440,30 @@ export function validateWrite(sheet: Sheet, write: SheetWrite): Validation {
   // A sheet always has a cell: a write that deletes every row or column (two people each deleting
   // half) is refused whether or not it grew anything.
   if (after.layout.rows.length === 0 || after.layout.cols.length === 0) return no('write_invalid');
-  return grew ? sheetProblem(after) : OK;
+  if (opts.checkRules !== false) {
+    const v = rulesProblem(after, write, opts);
+    if (!v.ok) return v;
+  }
+  const more =
+    (after.layout.rules?.length ?? 0) > (sheet.layout.rules?.length ?? 0) ||
+    (after.layout.formatRules?.length ?? 0) > (sheet.layout.formatRules?.length ?? 0);
+  if (grew || more) {
+    const v = limitsProblem(after);
+    if (!v.ok) return v;
+  }
+  // Merges are judged by what the write did to them, grown or not: a reorder can pull a merge over another without
+  // adding anything, and a sheet a sort once broke so (before sorts refused it) must still take its cells' edits.
+  // Checked only when the merges or the lines they sit on changed.
+  const moved =
+    after.layout.merges !== sheet.layout.merges ||
+    after.layout.rows !== sheet.layout.rows ||
+    after.layout.cols !== sheet.layout.cols;
+  if (moved) {
+    const v = mergeProblem(after.layout);
+    if (!v.ok && mergeProblem(sheet.layout).ok) return v;
+    if (!v.ok && (after.layout.merges?.length ?? 0) > (sheet.layout.merges?.length ?? 0)) return v;
+  }
+  return OK;
 }
 
 // A whole new sheet (a create, a copy, a restore).
@@ -400,6 +495,20 @@ export function validateSheetCreate(sheet: Sheet): Validation {
           [x.r1, x.r2].every((id) => layout.rows.includes(id)) &&
           [x.c1, x.c2].every((id) => layout.cols.includes(id)),
       ))
+  )
+    return no('write_invalid');
+  // Rules a seed carries (a copied sheet's), held to what a write may set.
+  if (
+    (layout.rules !== undefined &&
+      (!Array.isArray(layout.rules) ||
+        !layout.rules.every((x) =>
+          isValidationRule(x, (x as { id?: string })?.id ?? '', layout),
+        ))) ||
+    (layout.formatRules !== undefined &&
+      (!Array.isArray(layout.formatRules) ||
+        !layout.formatRules.every((x) =>
+          isFormatRule(x, (x as { id?: string })?.id ?? '', layout, refsOk),
+        )))
   )
     return no('write_invalid');
   // The look a seed carries (Sheet Settings), held to what a write may set.

@@ -12,6 +12,21 @@ import { breadcrumbJsonLd, pageMetadata } from './seo';
 // social cards on every subpage at once.
 
 describe('pageMetadata', () => {
+  it("uses a page's own card for both Open Graph and Twitter when it has one", () => {
+    const image = { url: 'https://livediagram.app/help/og/canvas/themes.png', alt: 'Themes' };
+    const md = pageMetadata({ title: 't', description: 'd', path: '/help/canvas/themes/', image });
+    expect(md.openGraph?.images).toEqual([{ ...image, width: 1200, height: 630 }]);
+    expect(md.twitter?.images).toEqual([image.url]);
+  });
+
+  it('takes a `website` OG type for an app front page, defaulting to `article`', () => {
+    const md = pageMetadata({ title: 't', description: 'd', path: '/community/', type: 'website' });
+    expect(md.openGraph).toMatchObject({ type: 'website', url: '/community/' });
+    expect(pageMetadata({ title: 't', description: 'd', path: '/x' }).openGraph).toMatchObject({
+      type: 'article',
+    });
+  });
+
   it('passes title + description through to the top-level fields', () => {
     const md = pageMetadata({
       title: 'FAQ | livediagram',

@@ -7,8 +7,9 @@
 // layout is what lets the two draw the same chart rather than two charts that
 // happen to agree.
 
-import { chartPaletteColors } from './chart-palettes';
-import { PIE_DEFAULT_SLICES, PIE_PALETTE, type PieSlice } from './data-shapes';
+import { chartMarkInk } from './chart-ink';
+import { chartRamp } from './chart-palettes';
+import { PIE_DEFAULT_SLICES, type PieSlice } from './data-shapes';
 import type { ShapeElement } from './index';
 
 export type ChartRect = { x: number; y: number; w: number; h: number };
@@ -17,18 +18,24 @@ export type ChartLegendRect = ChartRect & {
   pos: 'top' | 'right' | 'bottom' | 'left';
 };
 
-export function chartFrame(element: ShapeElement, palette?: readonly string[]) {
+export function chartFrame(
+  element: ShapeElement,
+  palette?: readonly string[],
+  // The tones the chart sits on, where a page's fill makes them matter (chartPageGrounds): each
+  // series colour is drawn adapted to them (chart-ink.ts). Absent, colours are drawn as they are.
+  ground?: readonly string[],
+) {
   // Three rungs, narrowest first (docs/specs/009-elements/pie-chart.md): the chart's own palette if it has
   // been given one, then the tab theme's, then the built-in ramp. A per-datum
   // colour beats all three, in `colorAt` below.
-  const chosen = chartPaletteColors(element.chartPalette);
-  const colors = chosen ?? (palette && palette.length > 0 ? palette : PIE_PALETTE);
+  const colors = chartRamp(element.chartPalette, palette);
   const w = Math.max(1, element.width);
   const h = Math.max(1, element.height);
   const data: readonly PieSlice[] =
     element.pieSlices && element.pieSlices.length > 0 ? element.pieSlices : PIE_DEFAULT_SLICES;
   const showLegend = element.chartLegend !== false;
-  const colorAt = (i: number, d: { color?: string }) => d.color ?? colors[i % colors.length]!;
+  const colorAt = (i: number, d: { color?: string }) =>
+    chartMarkInk(d.color ?? colors[i % colors.length]!, ground);
   // Legend placement (docs/specs/009-elements/pie-chart.md). A left/right legend takes a vertical strip; a
   // top/bottom legend a horizontal band. `area` is the rect left for the chart
   // body (each renderer draws inside it); `legend` is the strip the key goes

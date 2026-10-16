@@ -10,7 +10,7 @@ import type { SelectedNode } from '../views';
 
 const { track, explorer } = vi.hoisted(() => ({
   track: vi.fn(),
-  explorer: { current: {} as Record<string, unknown> },
+  explorer: { current: {} },
 }));
 vi.mock('@/lib/telemetry', () => ({ track }));
 vi.mock('../ExplorerContext', () => ({ useExplorer: () => explorer.current }));

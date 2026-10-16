@@ -120,7 +120,10 @@ export function SharePasswordSection({
   const canSave = !busy && pw.trim().length > 0;
 
   return (
-    <div className="flex flex-col gap-2 border-t border-slate-100 pt-4 dark:border-slate-800">
+    <div
+      data-tour-id="share-password"
+      className="flex flex-col gap-2 border-t border-slate-100 pt-4 dark:border-slate-800"
+    >
       {/* The Settings dialog's own toggle row, so the switch looks and
           behaves like every other setting in the app. */}
       <SettingsRow
@@ -149,7 +152,12 @@ export function SharePasswordSection({
           <Button variant="secondary" size="xs" onClick={startReplace} disabled={busy}>
             Replace
           </Button>
-          <Button variant="secondary" size="xs" onClick={removePassword} disabled={busy}>
+          <Button
+            variant="secondary"
+            size="xs"
+            onClick={() => void removePassword()}
+            disabled={busy}
+          >
             Remove
           </Button>
         </div>
@@ -181,7 +189,12 @@ export function SharePasswordSection({
               className="w-full rounded-lg border border-slate-200 bg-white py-1.5 pr-2 pl-8 font-mono text-sm text-slate-800 outline-none transition placeholder:font-sans placeholder:text-slate-400 focus:border-brand-400 focus:ring-2 focus:ring-brand-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
             />
           </div>
-          <Button size="xs" onClick={savePassword} disabled={!canSave} className="shadow-sm">
+          <Button
+            size="xs"
+            onClick={() => void savePassword()}
+            disabled={!canSave}
+            className="shadow-sm"
+          >
             Save
           </Button>
           {replacing ? (

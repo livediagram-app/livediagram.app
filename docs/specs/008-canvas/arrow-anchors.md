@@ -102,7 +102,9 @@ ends out along that anchor's edge:
 - a middle's fan is centred on it and has the whole edge as its room;
 - a quarter's fan is centred on it and has half the edge as its room;
 - a corner's fan marches inward along its horizontal edge;
-- slots are ordered by where each arrow comes from, so neighbouring lines do not cross at the fan;
+- slots are ordered by where each arrow comes from, so neighbouring lines do not cross at the fan; arrows coming
+  from one place along the edge (two steps in one column) are ordered by how near they come from, the nearer on
+  the side they arrive from, so its run stops short of the farther one's;
 - the offsets rotate with a rotated element.
 
 The fan is purely visual: stored anchors, snapping and the auto-rebind use the true anchor point.
@@ -118,6 +120,11 @@ the draw.io import sets it, with `exactStart`, on every end it pins, since draw.
 meeting at one point and running along one trunk ([draw.io import](../020-import-export/drawio-import.md)
 "Shared ends stay shared"). A user who re-pins that end clears it, so a hand-drawn connection fans
 as usual.
+
+A dashed or dotted arrow with an exact end starts its pattern from its **end**, not its start (`arrowDashOffset`,
+in both renderers): arrows sharing an end (graph input's bus of services that each "publish" to one queue) run in
+step along the stretch they share and draw it as one dashed line, where each starting its pattern at its own start
+drew a blur of dashes out of phase.
 
 ## Auto-rebind
 

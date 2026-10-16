@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest';
-import { cpuMsOf } from '@livediagram/vitest-config/cpu-time';
 import type { Tab } from '@livediagram/document';
 import {
   HISTORY_LIMIT,
@@ -242,37 +241,25 @@ describe('historyApplyRemoteOp', () => {
 });
 
 // A peer op costs one pass per snapshot (measured 12 ms for 500 steps on a 2,000-element tab): linear in the
-// history, never worse. Timed as growth in CPU time, not as a ceiling.
+// history, never worse. Counted, not timed: the op runs once on the present and once on every undo and redo
+// snapshot, each exactly once. (A CPU-time ratio here swung with garbage collection on CI and turned main red.)
 describe('historyApplyRemoteOp cost', () => {
-  it('grows about linearly with the history', { timeout: 30_000 }, () => {
-    const board = (n: number): Tab => ({
-      id: 'a',
-      name: 'a',
-      elements: Array.from({ length: 500 }, (_, i) => ({
-        id: `e${i}`,
-        type: 'text' as const,
-        x: i,
-        y: 0,
-        width: 10,
-        height: 10,
-        label: `${n}`,
-      })),
-    });
-    const history = (steps: number): History => {
-      let h: History = { past: [], present: [board(0)], future: [] };
-      for (let i = 1; i <= steps; i++) h = historyCommit(h, () => [board(i)]);
-      return h;
+  it('runs the op once per snapshot, so it grows linearly with the history', () => {
+    const board = (n: number): Tab[] => [{ id: 'a', name: `${n}`, elements: [] }];
+    const h: History = {
+      past: Array.from({ length: 300 }, (_, i) => board(i)),
+      present: board(300),
+      future: Array.from({ length: 100 }, (_, i) => board(301 + i)),
     };
-    const op = (ts: Tab[]) =>
-      ts.map((t) => ({
-        ...t,
-        elements: t.elements.map((e) => (e.id === 'e1' ? { ...e, x: -1 } : e)),
-      }));
-    const fastest = (h: History) =>
-      Math.min(...[0, 1, 2].map(() => cpuMsOf(() => void historyApplyRemoteOp(h, op))));
-    const small = history(100);
-    const large = history(400);
-    fastest(small);
-    expect(fastest(large)).toBeLessThan(fastest(small) * 8 + 5);
+    const seen: Tab[][] = [];
+    const next = historyApplyRemoteOp(h, (ts) => {
+      seen.push(ts);
+      return ts.map((t) => ({ ...t, name: `${t.name}!` }));
+    });
+    expect(seen).toHaveLength(401);
+    expect(new Set(seen).size).toBe(401);
+    expect(next.past).toHaveLength(300);
+    expect(next.future).toHaveLength(100);
+    expect(next.present[0]!.name).toBe('300!');
   });
 });

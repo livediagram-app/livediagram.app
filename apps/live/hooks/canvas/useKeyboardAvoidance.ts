@@ -8,6 +8,7 @@ import {
   type SetStateAction,
 } from 'react';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
+import { useCoarsePointer } from '@/hooks/ui/useCoarsePointer';
 
 // Keep the caret above a phone's on-screen keyboard (docs/specs/007-editor/live-app.md "Mobile
 // chrome"). The keyboard shrinks the VISUAL viewport, not the page, and the canvas never scrolls,
@@ -46,7 +47,10 @@ export function useKeyboardAvoidance({
   zoomRef: RefObject<number>;
   setViewportOffset: Dispatch<SetStateAction<{ x: number; y: number }>>;
 }): void {
+  // A phone, or a tablet: any touch screen raises a keyboard over the canvas.
   const phone = useIsMobileViewport();
+  const touch = useCoarsePointer();
+  const keyboard = phone || touch;
   // Reads the latest zoom without re-subscribing on every zoom step.
   const check = useEffectEvent(() => {
     const vv = window.visualViewport;
@@ -66,7 +70,7 @@ export function useKeyboardAvoidance({
 
   useEffect(() => {
     const vv = window.visualViewport;
-    if (!phone || !vv) return;
+    if (!keyboard || !vv) return;
     const onChange = () => check();
     vv.addEventListener('resize', onChange);
     vv.addEventListener('scroll', onChange);
@@ -77,5 +81,5 @@ export function useKeyboardAvoidance({
       vv.removeEventListener('scroll', onChange);
       document.removeEventListener('focusin', onChange);
     };
-  }, [phone]);
+  }, [keyboard]);
 }

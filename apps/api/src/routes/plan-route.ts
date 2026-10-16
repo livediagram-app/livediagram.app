@@ -1,11 +1,11 @@
 // A document's plan for agents (docs/specs/026-plan/plan-agents.md "Reading the plan"): GET
 // /api/documents/:id/plan answers its Plan boards, the statuses they name and the card types, built by
-// @livediagram/items' planOutline. Read access as the items' list: a grant confined to one tab names it and sees
+// @livediagram/items' planOutline, and its tabs (id, name, kind, a Sheet tab's sheets). Read access as the items' list: a grant confined to one tab names it and sees
 // that tab's boards only. Only tabs holding a board are read, a batch at a time, and reduced to board set-ups.
 
 import type { PlanResponse } from '@livediagram/api-schema';
 import { planOutline, type PlanTabInput } from '@livediagram/items';
-import { getTab, tabBodiesWithBoards } from '../db';
+import { getTab, tabBodiesWithBoards, tabOutlines } from '../db';
 import { json, methodNotAllowed } from '../responses';
 import type { RouteContext } from './context';
 import { itemCaller } from './item-route-kit';
@@ -40,8 +40,12 @@ export async function handlePlanRoute(ctx: RouteContext): Promise<Response | nul
   const caller = await itemCaller(ctx, documentId, 'read');
   if (caller instanceof Response) return caller;
   const scopedTab = caller.scope ? ctx.url.searchParams.get('tabId') : null;
-  const plan = planOutline(await planTabs(ctx, documentId, scopedTab), caller.doc?.itemTypes);
+  const [boardTabs, tabs] = await Promise.all([
+    planTabs(ctx, documentId, scopedTab),
+    tabOutlines(ctx.env, documentId, scopedTab),
+  ]);
+  const plan = planOutline(boardTabs, caller.doc?.itemTypes);
   console.info('[plan] read', { boards: plan.boards.length, scoped: scopedTab !== null });
-  const answer: PlanResponse = { ...plan, itemTypesRev: caller.doc?.itemTypesRev ?? 0 };
+  const answer: PlanResponse = { ...plan, tabs, itemTypesRev: caller.doc?.itemTypesRev ?? 0 };
   return json(answer);
 }

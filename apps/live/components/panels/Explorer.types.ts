@@ -65,14 +65,12 @@ export type ExplorerProps = {
   // Optional row-level actions. When provided, each row renders an
   // ellipsis menu that delegates to these handlers.
   onRenameCurrent?: (name: string) => void;
-  // `beforeRemove` runs after the delete is confirmed and before the row is
-  // pulled from the list, so the caller (Explorer) can slide it out first.
-  // `opts.skipConfirm` is passed by the panel because it confirms inline
-  // via ConfirmPopover (the modal would double-prompt).
+  // `beforeRemove` runs before the row is pulled from the list, so the caller (Explorer) can slide it out first;
+  // `opts.onRestored` after an Undo, for a row the list does not hold (a team row the panel hid).
   onDeleteDocument?: (
     id: string,
     beforeRemove?: () => Promise<void> | void,
-    opts?: { skipConfirm?: boolean },
+    opts?: { onRestored?: () => void },
   ) => void;
   onDuplicateDocument?: (id: string) => void;
   // Folder mutations. Optional so read-only surfaces can omit them.
@@ -84,6 +82,8 @@ export type ExplorerProps = {
   // = the team tree is browse-only.
   onTeamFolders?: TeamFolderHandlers;
   onMoveDocumentToFolder?: (documentId: string, folderId: string | null) => void;
+  // The panel's Trash restored or deleted a document: the host refetches its lists.
+  onLibraryChanged?: () => void;
   // Scope-aware move (docs/specs/013-workspace/team-shared-documents.md): routes a pick that involves a team on
   // either side (re-folder within a team, personal -> team, team ->
   // personal). When wired, the move picker offers every space.

@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import type { DatabaseSync } from 'node:sqlite';
-import type { Tab } from '@livediagram/document';
 import { DOCUMENT_CONVERSION_HEADER } from '@livediagram/api-schema';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import { makeTestRouteContext } from '../routes/test-route-context';
@@ -38,7 +37,7 @@ function liveDoc(sql: DatabaseSync, id: string, ownerId = 'owner', teamId: strin
 // A tab created in `documentId` through the real autosave path, with one
 // collaboration-index row hanging off it.
 async function tab(db: SqliteD1, documentId: string, id: string): Promise<void> {
-  await upsertTab(db.env, documentId, { id, name: id, elements: [] } as unknown as Tab, 0);
+  await upsertTab(db.env, documentId, { id, name: id, elements: [] }, 0);
   insert(db.sql, 'collab_actions', {
     tab_id: id,
     element_id: `el-${id}`,

@@ -184,7 +184,7 @@ describe('a long quiz answer', () => {
       quizCorrect: 1,
       quizRevealed: true,
     };
-    const svg = svgCollabFace(el as never, 'Which planet is closest to the sun?', '#1e3a5f')!;
+    const svg = svgCollabFace(el, 'Which planet is closest to the sun?', '#1e3a5f')!;
     for (const word of long.split(/\s+/)) expect(svg).toContain(word.replace(/,$/, ''));
     expect(svg).not.toContain('…');
   });

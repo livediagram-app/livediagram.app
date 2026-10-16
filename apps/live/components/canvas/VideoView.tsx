@@ -325,7 +325,7 @@ function ControlButton({
         aria-pressed={active}
         className={`pointer-events-auto flex h-6 w-6 items-center justify-center rounded-md backdrop-blur transition ${
           active
-            ? `bg-brand-500 text-white ${SOLID_BRAND_DARK_CONTROL}`
+            ? `bg-brand-700 text-white ${SOLID_BRAND_DARK_CONTROL}`
             : 'bg-black/60 text-white hover:bg-black/80'
         }`}
       >

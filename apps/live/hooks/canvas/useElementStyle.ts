@@ -17,6 +17,8 @@
 // burst through `checkpointBurst`.
 // Keeping that policy in one file makes it auditable.
 
+import { useSankeySetters } from '@/hooks/canvas/useSankeySetters';
+import { useSequenceSetters } from '@/hooks/canvas/useSequenceSetters';
 import type { Selection } from '@/lib/selection-store';
 import {
   bringElementsToFrontLayer,
@@ -123,6 +125,7 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
     setCodeWrapSelected,
     setLegendItemsSelected,
     setMindFlowSelected,
+    setMindSpacingSelected,
     tidyMindMapSelected,
     tidyMindMap,
     setPageHeading,
@@ -139,6 +142,7 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
     setDecisionDateSelected,
     setDecisionDriversSelected,
     setChairFacingSelected,
+    setRoomDoorSelected,
     setButtonModeSelected,
     setRatingSelected,
     setRatingAnimSelected,
@@ -149,7 +153,11 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
     setPieAnimSpeedSelected,
     setPieAnimRepeatSelected,
     setChartLegendSelected,
+    setChartValuesSelected,
+    setChartAxisSelected,
+    setChartRightAxisSelected,
     setChartLegendPositionSelected,
+    setChartTypeSelected,
     unlinkChartSelected,
     setLineDataSelected,
   } = useDataShapeSetters({
@@ -173,6 +181,11 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
     resetShapeStyleSelected,
   } = useShapeStyleSetters({ currentSelectionIds, commit, activeTab, readSelection });
 
+  // The Sankey diagram's writes (docs/specs/009-elements/sankey.md), kept together as one object.
+  const sankey = useSankeySetters({ currentSelectionIds, commit });
+  // The sequence diagram dialog's writes (docs/specs/009-elements/sequence-diagram.md).
+  const sequence = useSequenceSetters({ commit });
+
   const {
     setTextSizeSelected,
     setFontSelected,
@@ -188,6 +201,7 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
     setStrokeColorSelected,
     setTextColorSelected,
     setHeaderFillSelected,
+    burstSelectedStyle,
     setArrowheadColorSelected,
     setLabelFillSelected,
     setTableHeaderTextColorSelected,
@@ -353,6 +367,8 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
     setArrowFieldSelected({ flowRepeat: value ? undefined : false }, 'FlowRepeat');
 
   return {
+    sankey,
+    sequence,
     toggleLockSelected,
     toggleAspectLockSelected,
     bringSelectedToFront,
@@ -377,6 +393,7 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
     setTableHeaderColumnSelected,
     setTableZebraSelected,
     setHeaderFillSelected,
+    burstSelectedStyle,
     setArrowheadColorSelected,
     setLabelFillSelected,
     setTableHeaderTextColorSelected,
@@ -402,6 +419,7 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
     setCodeWrapSelected,
     setLegendItemsSelected,
     setMindFlowSelected,
+    setMindSpacingSelected,
     tidyMindMapSelected,
     tidyMindMap,
     setPageHeading,
@@ -418,6 +436,7 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
     setDecisionDateSelected,
     setDecisionDriversSelected,
     setChairFacingSelected,
+    setRoomDoorSelected,
     setButtonModeSelected,
     setRatingSelected,
     setRatingAnimSelected,
@@ -428,7 +447,11 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
     setPieAnimSpeedSelected,
     setPieAnimRepeatSelected,
     setChartLegendSelected,
+    setChartValuesSelected,
+    setChartAxisSelected,
+    setChartRightAxisSelected,
     setChartLegendPositionSelected,
+    setChartTypeSelected,
     unlinkChartSelected,
     setLineDataSelected,
     applyShapeColorPresetSelected,

@@ -18,7 +18,7 @@ Scope, by file:
 | `packages/ui/src/Tooltip.tsx`                        | `Tooltip`: the name, 1 s, on a `display: contents` wrapper                     |
 | `packages/ui/src/HoverCard.tsx`                      | `HoverCard`: title + description, instant, on the layout wrapper it always had |
 | `packages/ui/src/index.ts`                           | Exports `Tooltip`, `HoverCard` and their prop types                            |
-| `packages/eslint-config/index.js`                    | `no-restricted-syntax`: native `title` outside the exceptions                  |
+| `packages/oxlint-config/native-title.ts`             | `livediagram/no-native-title`: native `title` outside the exceptions           |
 | `apps/live/components/palette/PaletteIconButton.tsx` | Which hint a palette tile carries (`tileHint`)                                 |
 | `apps/live/components/palette/palette-controls.tsx`  | `SizeButton` names its swatch with a Tooltip                                   |
 
@@ -252,7 +252,7 @@ surface.
 | Touch gate on visible text                  | `trigger-text.test.ts`, `useHint.test.tsx`                         |
 | Placement fits and flips, arrow tracks      | `place-hint.test.ts`                                               |
 | Name check warns                            | `Tooltip.test.tsx`                                                 |
-| Native `title` rejected, exceptions allowed | `packages/eslint-config/native-title.test.ts`                      |
+| Native `title` rejected, exceptions allowed | `packages/oxlint-config/native-title.test.ts`                      |
 | Palette tile carries the right hint         | `PaletteIconButton.test.tsx`                                       |
 | Dark look: Steel surface, border, 4.5:1     | e2e `hints.spec.ts`, Hints in dark mode                            |
 

@@ -25,9 +25,9 @@ import { notifyNewComment } from '../email/notifications';
 import { MAX_TAB_BYTES, bodyExceedsCap, storeTab } from '../limits';
 import { capStoredName } from '../names';
 import { badRequest, conflict, json, payloadTooLarge } from '../responses';
-import { mergeRoomLedger } from '../room-client';
+import { applyRoomLedger, fetchRoomLedger } from '../room-client';
 import { recordTabSave } from '../timeline';
-import type { DocumentDTO } from '../types';
+import type { TabSaveDocument } from '../db/tab-save-document';
 import { readBody, type RouteContext } from './context';
 
 // Fields of the stored record, not of the tab body; a client echoing them back never stores them
@@ -54,7 +54,7 @@ export function refuseTokenTabPut(
 // The caller has passed the edit gate for this tab.
 export async function handleTabPut(
   ctx: RouteContext,
-  existing: DocumentDTO,
+  existing: TabSaveDocument,
   tabId: string,
   owner: string,
 ): Promise<Response> {
@@ -81,9 +81,11 @@ export async function handleTabPut(
   for (let attempt = 1; attempt <= TAB_SAVE_CAS_ATTEMPTS; attempt += 1) {
     // The stored tab and the changesets this editor had not seen, read together. Changesets merge
     // first, so their before-image compare sees the save as sent; then the room's ledger.
-    const [existingTab, merge] = await Promise.all([
+    // The room's ledger is fetched alongside them (it needs only the tab's id), and merged after.
+    const [existingTab, merge, fetchedLedger] = await Promise.all([
       getTab(env, id, tabId),
       mergeUnseenChangesets(ctx, incoming, seen),
+      fetchRoomLedger(env, id, tabId, request.headers.get('X-Room-Cursor')),
     ]);
     // A new tab id must be new: an id that already names another document's tab is refused, never overwritten
     // (docs/specs/006-document/per-tab-storage.md). Checked only when this document has no such tab, so the
@@ -92,7 +94,7 @@ export async function handleTabPut(
       console.warn("[tabs] refused a save onto another document's tab", { documentId: id, tabId });
       return conflict('tab_id_taken');
     }
-    const ledger = await mergeRoomLedger(env, id, merge.tab, request.headers.get('X-Room-Cursor'));
+    const ledger = applyRoomLedger(merge.tab, fetchedLedger);
     const commentAuthors = ledger.commentAuthors;
     // A copy: each attempt starts again from the save as sent.
     const body: Tab = { ...ledger.tab };
@@ -113,7 +115,7 @@ export async function handleTabPut(
     // A Q&A board's notes are owned by the qa endpoint (docs/specs/012-collaboration/qa-board.md):
     // keep whichever copy has the higher `qaRev`.
     if (existingTab) body.elements = preferNewerQaAll(existingTab.elements, body.elements);
-    const orderIndex = existingTab?.orderIndex ?? existing.tabs.length;
+    const orderIndex = existingTab?.orderIndex ?? existing.tabCount;
     // Newly added comments carry the resolved owner's participant record, never the client's claim
     // (docs/specs/014-identity/auth-and-guest-access.md). getDocument already joined the owner's
     // row: reused when the writer IS the owner, the common autosave case.

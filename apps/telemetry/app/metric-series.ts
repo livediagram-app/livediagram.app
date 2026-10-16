@@ -1,5 +1,5 @@
 import type { TelemetryDaily, TelemetrySummary, TelemetryWindowKey } from '@livediagram/api-schema';
-import type { ViewKey } from './view-keys';
+import type { SectionKey } from './view-keys';
 
 // The curated-metric model shared by every MetricGroups view (docs/specs/017-telemetry/telemetry.md), plus
 // the pure maths that turn one into a window count and a 30-day series.
@@ -44,9 +44,9 @@ export type MetricStack = {
   // Clean split; Exceptions' failed requests + client exceptions, not the
   // server crashes that double them), so the head never double counts.
   headline?: Metric | readonly Metric[];
-  // A tab that goes deeper than the stack can (Page Views by App -> Pages),
+  // A section that goes deeper than the stack can (Page Views by App -> Pages),
   // linked from a full-width footer in the stack's modal.
-  seeAlso?: { view: ViewKey; label: string };
+  seeAlso?: { section: SectionKey; label: string };
   // How the head's number going up reads. Unset means good; a stack that
   // mixes good and bad members (sign-ups beside deletions) says neutral.
   rising?: Rising;
@@ -137,11 +137,11 @@ export function windowCount(
 
 // Element-wise sum of the 30-day series for every event in the metric.
 export function dailySeries(daily: TelemetryDaily, m: Metric): number[] {
-  const out = new Array(daily.days.length).fill(0);
+  const out = new Array<number>(daily.days.length).fill(0);
   for (const [key, series] of Object.entries(daily.byMetric)) {
     const [category = '', action = '', rawType = ''] = key.split('|');
     if (!matches(m, category, action, rawType === '' ? null : rawType)) continue;
-    for (let i = 0; i < out.length; i++) out[i] += series[i] ?? 0;
+    for (const [i, sum] of out.entries()) out[i] = sum + (series[i] ?? 0);
   }
   return out;
 }

@@ -11,7 +11,7 @@ async function capabilities(env: Partial<Env>) {
   const res = handleCapabilities(
     makeTestRouteContext('GET', '/api/capabilities', { env: env as Env }),
   );
-  return (await res.json()) as Record<string, unknown>;
+  return await res.json<Record<string, unknown>>();
 }
 
 describe('driveMode (docs/specs/022-drive-mirror/drive-mirror.md)', () => {

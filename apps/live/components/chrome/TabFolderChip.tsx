@@ -39,6 +39,7 @@ type TabFolderChipProps = {
   selfRole: AccessLevel;
   // Same as the pill's stack: follow ring + the Collaborators modal (docs/specs/012-collaboration/collaborator-enhancements.md).
   followingId?: string | null;
+  followerCount?: number;
   onOpenCollaborators?: (participantId: string | null) => void;
 };
 
@@ -54,6 +55,7 @@ export function TabFolderChip({
   selfId,
   selfRole,
   followingId,
+  followerCount,
   onOpenCollaborators,
 }: TabFolderChipProps) {
   const [open, setOpen] = useState(false);
@@ -84,7 +86,7 @@ export function TabFolderChip({
     if (!open) return;
     const onDown = (e: PointerEvent) => {
       const t = e.target as HTMLElement | null;
-      if (t?.closest('[data-tab-folder-fan]') || chipRef.current?.contains(t as Node)) return;
+      if (t?.closest('[data-tab-folder-fan]') || chipRef.current?.contains(t)) return;
       setOpen(false);
     };
     document.addEventListener('pointerdown', onDown);
@@ -189,6 +191,7 @@ export function TabFolderChip({
           selfId={selfId}
           selfRole={selfRole}
           followingId={followingId}
+          followerCount={followerCount}
           onOpenCollaborators={onOpenCollaborators}
         />
       ) : null}

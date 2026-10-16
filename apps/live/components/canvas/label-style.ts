@@ -4,7 +4,13 @@
 // tables + per-run style resolution without an import cycle through
 // element-labels.tsx (which imports the editor).
 
-import { LABEL_FONT_PX, NOTE_FONT_PX, RUN_XS_PX } from '@livediagram/document';
+import {
+  LABEL_FONT_PX,
+  NOTE_FONT_PX,
+  RUN_XS_PX,
+  labelFontPx,
+  MUTED_RUN_OPACITY,
+} from '@livediagram/document';
 import type {
   BoxedElement,
   RunSize,
@@ -46,11 +52,12 @@ export const TEXT_ALIGN: Record<TextAlignX, 'left' | 'center' | 'right'> = {
 // drawn at. Re-exported here so the canvas's label renderers keep importing
 // them from the module they always have.
 export const FIXED_FONT_PX: Record<
-  Exclude<import('@livediagram/document').TextSize, 'scale'>,
+  Exclude<import('@livediagram/document').TextSizePreset, 'scale'>,
   number
 > = LABEL_FONT_PX;
 
-export const MULTI_FONT_PX: Record<import('@livediagram/document').TextSize, number> = NOTE_FONT_PX;
+export const MULTI_FONT_PX: Record<import('@livediagram/document').TextSizePreset, number> =
+  NOTE_FONT_PX;
 
 // Per-run sm/md/lg map to the same px table the element's base size uses,
 // so a run's size override reads consistently against its neighbours; xs is RUN_XS_PX on every
@@ -65,8 +72,9 @@ export const MULTI_RUN_PX: Record<RunSize, number> = {
 // The base px a label is drawn at: a note's scale for a multi-line label, else the single-line
 // scale, where 'scale' is a middling fixed size (only a note fits its text to its box). A
 // Shift-resized text box multiplies it by its own scale (docs/specs/023-draw-mode/draw-mode.md).
+// An exact size from the Size slider is its own px on either scale.
 export function labelBasePx(multiline: boolean, textSize: TextSize): number {
-  return multiline ? MULTI_FONT_PX[textSize] : LABEL_FONT_PX[textSize];
+  return labelFontPx(textSize, multiline);
 }
 
 // The px a run's own size override draws at, scaled with the label.
@@ -173,6 +181,8 @@ export function effectiveRunStyle(
   });
   if (run.color) css.color = run.color;
   if (run.size) css.fontSize = `${runSizePx[run.size]}px`;
+  // A caption (docs/specs/009-elements/block-type-picker.md "Title and Caption"): the run's own colour, quieter.
+  if (run.muted) css.opacity = MUTED_RUN_OPACITY;
   // Headings (docs/specs/009-elements/block-type-picker.md). Expressed as `em` rather than px so a heading scales
   // with whatever base size the element carries — a label, a sticky and a
   // page all have different bases, and pinning heading px like the note

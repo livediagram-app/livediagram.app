@@ -40,7 +40,7 @@ export function NewCardPanel({
           types={plan.types}
           onAdd={({ type, fields }) => {
             const id = newItemId();
-            plan.addItem({
+            void plan.addItem({
               id,
               type,
               fields,

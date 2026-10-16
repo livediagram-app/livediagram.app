@@ -13,6 +13,8 @@ import {
   animLoops,
   clampPercent,
   PROGRESS_LOOPING_ANIMS,
+  progressLabelInks,
+  type ProgressLabelInks,
   type ShapeElement,
 } from '@livediagram/document';
 import { animSpeedVars } from '@/lib/icons';
@@ -55,10 +57,11 @@ export function ProgressView({
   const anim = element.progressAnim;
   const animStyle = progressAnimStyle(element);
 
-  const label = (
+  const labelLayer: LabelLayer = (colour, clip, className, hidden) => (
     <div
-      className="pointer-events-none absolute inset-0 flex items-center justify-center"
-      style={{ color: textColor }}
+      className={`pointer-events-none absolute inset-0 flex items-center justify-center ${className ?? ''}`}
+      style={{ color: colour, ...clip }}
+      aria-hidden={hidden || undefined}
     >
       {/* Centred on its cap band, as the export draws it (optical-alignment.md). */}
       <span className="text-optical-centre text-sm font-semibold tabular-nums">{pct}%</span>
@@ -77,10 +80,18 @@ export function ProgressView({
             style={{ width: `${pct}%`, backgroundColor: accent, ...animStyle }}
           />
         </div>
-        {label}
+        <BarLabel
+          pct={pct}
+          inks={progressLabelInks(textColor, accent, track)}
+          grows={anim === 'fill'}
+          animStyle={animStyle}
+          layer={labelLayer}
+        />
       </>
     );
   }
+
+  const label = labelLayer(textColor);
 
   return (
     <ProgressRing
@@ -91,6 +102,53 @@ export function ProgressView({
       labelNode={label}
       animStyle={animStyle}
     />
+  );
+}
+
+// One percentage label layer: its ink, an optional clip (plus the animation's custom properties), an
+// optional animation class, and whether assistive tech skips it (the second copy of a split label).
+type LabelLayer = (
+  colour: string,
+  clip?: React.CSSProperties,
+  className?: string,
+  hidden?: boolean,
+) => React.ReactNode;
+
+// The bar's percentage, inked per part (docs/specs/009-elements/progress.md "The percentage stays
+// legible"): one label when the filled portion and the track want the same ink, else two, each
+// clipped to its part. Under the Fill animation the clips grow with the fill (the lvd-prog-ink-*
+// keyframes run from an empty / full clip to the resting inline one, on the fill's timing), so the
+// ink split follows the edge as it moves. The track copy is the one screen readers hear.
+function BarLabel({
+  pct,
+  inks,
+  grows,
+  animStyle,
+  layer,
+}: {
+  pct: number;
+  inks: ProgressLabelInks;
+  grows: boolean;
+  animStyle?: React.CSSProperties;
+  layer: LabelLayer;
+}) {
+  if (inks.onFill === inks.onTrack || pct <= 0 || pct >= 100) {
+    return layer(pct > 0 ? inks.onFill : inks.onTrack);
+  }
+  return (
+    <>
+      {layer(
+        inks.onTrack,
+        { clipPath: `inset(0 0 0 ${pct}%)`, ...animStyle },
+        grows ? 'lvd-prog-ink-track' : undefined,
+      )}
+      {layer(
+        inks.onFill,
+        { clipPath: `inset(0 ${100 - pct}% 0 0)`, ...animStyle },
+        grows ? 'lvd-prog-ink-fill' : undefined,
+        true,
+      )}
+    </>
   );
 }
 

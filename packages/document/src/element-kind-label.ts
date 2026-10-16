@@ -1,3 +1,4 @@
+import { FLOWCHART_STEP_LABEL, flowchartStepTypeOf, isFlowchartStep } from './flowchart';
 import type { Element, ShapeKind } from './index';
 import { eventStormingKindOf } from './event-storming';
 
@@ -18,6 +19,8 @@ const SHAPE_LABELS: Partial<Record<ShapeKind, string>> = {
   // docs/specs/012-collaboration/decision-record.md).
   decision: 'Decision Record',
   temperature: 'Temperature Check',
+  // 'Sankey' alone names a person, not a picture (docs/specs/009-elements/sankey.md).
+  sankey: 'Sankey Diagram',
 };
 
 function titleCase(s: string): string {
@@ -32,8 +35,13 @@ function titleCase(s: string): string {
 // uppercase (e.g. a selection caption) read naturally.
 export function elementKindLabel(el: Element): string {
   switch (el.type) {
-    case 'shape':
+    case 'shape': {
+      // A flowchart step IS its step type (docs/specs/009-elements/flowchart.md): "Selected Decision",
+      // never "Selected Diamond".
+      const step = isFlowchartStep(el) ? flowchartStepTypeOf(el.shape) : undefined;
+      if (step) return FLOWCHART_STEP_LABEL[step];
       return SHAPE_LABELS[el.shape] ?? titleCase(el.shape);
+    }
     case 'text':
       return 'Text';
     case 'table':

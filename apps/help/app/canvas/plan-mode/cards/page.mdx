@@ -5,7 +5,7 @@ import { PlanCardMenuScene, PlanCardPanelScene } from '@/components/illustration
 export const metadata = helpMetadata({
   title: 'Cards',
   description:
-    'Plan cards in livediagram: adding cards, the card panel with its tabs and Details, linked cards and the breadcrumb, comments, flags, finding any card, the Trash, Archive, and presenting a card as a slide.',
+    'Work with Plan cards: add them, fill in Details, link cards, comment, flag, find any card, archive or trash it, and present a card as a slide.',
   path: '/help/canvas/plan-mode/cards/',
 });
 
@@ -21,10 +21,12 @@ A **card** shows one [item](/help/canvas/plan-mode/items/) on a [board](/help/ca
 ## Add a Card
 
 - **+ Add card** at the foot of a column (or of a row, on a board with swimlanes) opens **Add a Card**: press a type (Project, Task, Note, Idea, Action or [your own](/help/canvas/plan-mode/card-types/)) and a card of it lands at the end of the column and opens straight away with its title selected, ready to name.
-- **From the palette:** drag a card from the **Cards** category into a column; the column opens a gap where it will land. Or press it, then click the column.
 - **With the keyboard:** focus a card and press **N** to open **Add a Card** for its column.
+- **Off any board:** the **New Card** (+) button in the bottom-right strip makes a card of any type without placing it on a board.
 
-A board shows and offers only the card types set in its menu's **Card Types**; cards of other types are hidden on it, not deleted. A card dropped into a row takes that row's assignee, priority or field.
+On an empty board, the first column's button reads **Add your first card**.
+
+A board shows and offers only the card types set in its menu's **Supported Cards**; cards of other types are hidden on it, not deleted. A card dropped into a row takes that row's assignee, priority or field.
 
 ## Open a Card
 
@@ -42,7 +44,7 @@ Click a card (in Plan mode), or double-click it in the other modes, to open its 
 - **Find your way back:** as you move from a card to its parent or a child, the top of the panel keeps a breadcrumb of where you have been. Click a card in it to go straight back. It shows the nearest three (one on a phone), with earlier ones folded into **…**. Opening a card from a board starts a new trail.
 - **The ⋯ menu** holds **Duplicate**, **Flag** (or **Remove Flag**), **Archive** (or **Restore**) and **Trash**.
 
-On a phone the panel rises from the bottom, with **Details** as its first tab and the breadcrumb on a row of its own. You can assign a card to yourself or to the members of your teams; a guest can assign only themselves. Someone who can only view the document opens cards to read them, with no **⋯** menu.
+On a phone the panel rises from the bottom, with **Details** as its first tab and the breadcrumb on a row of its own. You can assign a card to yourself or to the members of your teams; a guest can assign only themselves. A Participant's **⋯** menu offers **Duplicate** and **Flag** but not Archive, Trash or Edit Card Type; a Viewer opens cards to read them, with only **Help** in the **⋯** menu.
 
 ## Flag a Card
 
@@ -55,18 +57,18 @@ Every card has a conversation at the end of its **Overview** tab, the same [comm
 - **Add a comment** in the box and press **Comment** (or **Cmd+Enter**, **Ctrl+Enter** on Windows); a plain **Enter** starts a new line. Type **@** to mention a teammate on a team document: they get an email whose button opens the card, and the card's thread shows on their **Inbox**.
 - **Resolve** closes the thread once it is settled; it then shows **Resolved**, and **Reopen** opens it again, as does a new comment.
 - Delete your own comments from their bin. Someone who can edit the document can delete any comment.
-- Anyone who can comment on the document can comment on a card, including people on a view link.
-- A card shows how many comments its open thread has, beside its votes. Turn the count off in the board's menu under **Cards**.
+- Editors and Participants can comment on a card; a Viewer reads the comments but can't add one.
+- A card shows how many comments its open thread has, beside its votes. Whether the count shows is part of the card type's **Display** ([Card Types](/help/canvas/plan-mode/card-types/)).
 
 Trashing or archiving a card keeps its comments; deleting it for good from the Trash deletes them. Comments are not undone with **Undo**, as on the canvas. A card holds up to 200 comments.
 
 ## Right-Click a Card
 
-<Figure caption="A card's right-click menu: Open, Duplicate, Add to Slides, a Move to row per column, Flag, Archive and Trash.">
+<Figure caption="A card's right-click menu: Open, Duplicate, Add to Slides, Edit Card Type, a Move to row per column, Flag, Archive and Trash.">
   <PlanCardMenuScene />
 </Figure>
 
-**Open**, **Duplicate** (a copy right after it, without its votes), **Add to Slides**, **Move to** each of the board's other columns, **Flag**, **Archive**, and **Trash**. Someone who can only view gets **Open** alone. A face-down card on a board that hides writing has no menu.
+**Open**, **Duplicate** (a copy right after it, without its votes), **Add to Slides**, **Edit Card Type**, **Move to** each of the board's other columns that the card's type allows, **Flag**, **Archive**, and **Trash**. A Participant or a Viewer gets **Open** alone. A face-down card on a board that hides writing has no menu.
 
 ## A Card on the Canvas
 
@@ -79,19 +81,19 @@ Its element menu has a **Card** section with **Card Size**: **Minimal**, **Compa
 The **Cards** button in Plan mode's bottom-right corner (beside **Card Types**) lists every card in the document that isn't archived or in the Trash, of every card type, your own included, newest change first:
 
 - **Search** by number (`12` or `#12`), title, description or a type's name (**Person** finds every Person card).
-- **Add Filter**, at the right of the search box, narrows the list by any field, **Card Type** included: pick a field, then one of its values (each says how many cards have it), such as **State: Done** or **Assignee: No assignee**. Each filter shows inside the search box; add as many as you like. A filter's cross takes it off (so does Backspace in an empty box), and the box's clear takes off the words and every filter.
+- **Add Filter**, at the right of the search box, narrows the list by any field, **Card Type** included: pick a field, then one of its values (each says how many cards have it), such as **State: Done** or **Assignee: No assignee**. Each filter shows inside the search box; add up to eight. A filter's cross takes it off (so does Backspace in an empty box), and the box's clear takes off the words and every filter.
 - **All Cards** and **Not on a Board** switch between every card and the ones no board shows, on any tab: the strays a renamed or removed column left behind, or cards of a type every board with their status leaves out.
 - Click a card to open it. Someone who can edit can move a card to the Trash from its bin without leaving the list.
 
 ## The Trash
 
-Every way of deleting a card moves it to the Trash: **Trash** in its menus, **Delete** on a focused card, or dragging it onto the **Trash** button beside **Cards** (it opens out into a drop target as you drag). The button's badge counts the cards in it. On a phone there is no Trash button, so use **Trash** in a card's menu (hold your finger on the card).
+Every way of deleting a card moves it to the Trash: **Trash** in its menus, **Delete** on a focused card, or dragging it onto the **Trash** button at the start of the bottom-right strip (it opens out into a drop target as you drag). The button's badge counts the cards in it. On a phone there is no Trash button, so use **Trash** in a card's menu (hold your finger on the card).
 
-Open the Trash to **Restore** a card to the column it came from, **Delete** one for good (it asks first), or **Empty Trash**. Deleting for good can't be undone. The Trash button isn't shown to people who can only view.
+Open the Trash to **Restore** a card to the column it came from, **Delete** one for good (it asks first), or **Empty Trash** (which empties it at once, without asking). Deleting for good can't be undone. The Trash button is only shown to Editors.
 
 ## Archive a Card
 
-**Archive** takes a card off every board without deleting it, keeping its status for when it comes back. An **Archive** board (in the palette's **Boards**) shows every archived card; **Restore**, or dragging it onto another board, brings it back.
+**Archive** takes a card off every board without deleting it, keeping its status for when it comes back. An **Archive** board shows every archived card; **Restore**, or dragging it onto another board, brings it back.
 
 ## Present a Card
 

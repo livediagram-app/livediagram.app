@@ -74,6 +74,23 @@ describe('useElementStyle selection-wide setters on a multi-selection', () => {
   });
 });
 
+describe('useElementStyle Reset Aspect Ratio', () => {
+  it('resets every unlocked shape of a multi-selection, keeping a locked one', () => {
+    const a = { ...createShape('square', 0, 0), width: 300, height: 100 };
+    const b = { ...createShape('square', 400, 0), width: 100, height: 300 };
+    const locked = { ...createShape('square', 800, 0), width: 300, height: 100, locked: true };
+    const { style, result } = harness([a, b, locked], new Set([a.id, b.id, locked.id]));
+
+    style.resetAspectRatioSelected();
+
+    const [ra, rb, rl] = result() as (typeof a)[];
+    expect(ra!.width).not.toBe(300);
+    expect(rb!.height).not.toBe(300);
+    expect(ra!.width / ra!.height).toBeCloseTo(rb!.width / rb!.height, 1);
+    expect([rl!.width, rl!.height]).toEqual([300, 100]);
+  });
+});
+
 describe('useElementStyle shape markers (docs/specs/009-elements/shape-markers.md)', () => {
   it('sets and clears a marker on the selected shape', () => {
     const a = createShape('square', 0, 0);

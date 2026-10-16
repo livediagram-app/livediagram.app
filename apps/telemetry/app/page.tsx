@@ -1,39 +1,23 @@
 'use client';
 
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useCallback, useDeferredValue, useEffect, useRef, useState, type ReactNode } from 'react';
 import { EmptyState, SiteFooter, SiteHeader } from '@livediagram/ui';
 import type { TelemetrySummary, TelemetryWindowKey } from '@livediagram/api-schema';
 import {
   ActivityGlyph,
   AlertGlyph,
-  BrushGlyph,
-  FileGlyph,
   HeartGlyph,
-  SettingsGlyph,
   LayersGlyph,
-  PaletteGlyph,
-  PointerGlyph,
   SearchGlyph,
   SparkGlyph,
-  TimerGlyph,
   WindowGlyph,
 } from './glyphs';
 import { WindowPanel } from './WindowPanel';
 import { StickyWindowBar } from './StickyWindowBar';
 import { ViewTabs } from './ViewTabs';
-import { DashboardView } from './DashboardView';
-import type { ViewKey } from './view-keys';
-import { ModesView } from './ModesView';
-import { PagesView } from './PagesView';
-import { SettingsView } from './SettingsView';
-import { LookAndFeelView } from './LookAndFeelView';
-import { PaletteView } from './PaletteView';
-import { HelpView } from './HelpView';
-import { CommunityView } from './CommunityView';
-import { EditingView } from './EditingView';
-import { ExceptionsView } from './ExceptionsView';
-import { TimingsView } from './TimingsView';
-import { MetricSearch } from './MetricSearch';
+import { ActiveView, prefetchViews } from './ActiveView';
+import { SECTION_TAB, type SectionKey, type ViewKey } from './view-keys';
+import type { SectionFocus } from './SectionedView';
 import { dropRetiredEvents } from './retired-events';
 
 // Same origin as the editor + api under the router (livediagram.app).
@@ -41,27 +25,20 @@ import { dropRetiredEvents } from './retired-events';
 // under '/telemetry' (basePath doesn't rewrite absolute fetch paths).
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? '/api';
 
-// Three ways to read the same summary payload (docs/specs/017-telemetry/telemetry.md). The timeframe
+// Ways to read the same summary payload (docs/specs/017-telemetry/telemetry.md). The timeframe
 // window is global (the WindowPanel above the tabs), so it lives here
 // alongside the active tab and is passed into whichever view renders.
-// Tab order follows the product funnel: who arrives, signs up, opens and
-// makes things (Dashboard), which pages they read (Pages), what they build
-// (Palette / Look & Feel), how they organise it (Editing), how they get
-// unstuck (Help), what they share with everyone (Community), error health (Exceptions), how fast it all is
-// (Timings), then the power-user lens
-// (Search).
+// The key metrics first, then the four Detail tabs (each gathering what were
+// separate tabs until October 2026 as sections): what people build with
+// (Features), how they find their way (Pages & Help), what they share with
+// everyone (Community), and whether it all works and is fast (Health). Search
+// is the power-user lens.
 const VIEWS: { key: ViewKey; label: string; icon: ReactNode }[] = [
   { key: 'dashboard', label: 'Dashboard', icon: <SparkGlyph /> },
-  { key: 'pages', label: 'Pages', icon: <WindowGlyph /> },
-  { key: 'palette', label: 'Palette', icon: <PaletteGlyph /> },
-  { key: 'modes', label: 'Modes', icon: <PointerGlyph /> },
-  { key: 'lookfeel', label: 'Look & Feel', icon: <BrushGlyph /> },
-  { key: 'editing', label: 'Editing', icon: <LayersGlyph /> },
-  { key: 'help', label: 'Help', icon: <FileGlyph /> },
+  { key: 'features', label: 'Features', icon: <LayersGlyph /> },
+  { key: 'pages', label: 'Pages & Help', icon: <WindowGlyph /> },
   { key: 'community', label: 'Community', icon: <HeartGlyph /> },
-  { key: 'settings', label: 'Settings', icon: <SettingsGlyph /> },
-  { key: 'exceptions', label: 'Exceptions', icon: <AlertGlyph /> },
-  { key: 'timings', label: 'Timings', icon: <TimerGlyph /> },
+  { key: 'health', label: 'Health', icon: <AlertGlyph /> },
   { key: 'search', label: 'Search', icon: <SearchGlyph /> },
 ];
 
@@ -69,17 +46,22 @@ export default function TelemetryDashboard() {
   const [summary, setSummary] = useState<TelemetrySummary | null>(null);
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading');
   const [view, setView] = useState<ViewKey>('dashboard');
-  // A link into another view (a stack's See also): switch, then bring the tab
-  // row back into sight so the reader sees where they landed.
-  const openView = (next: ViewKey) => {
+  // A link into a section of another tab (a stack's See also): switch to its
+  // tab, and the tab scrolls the section in once it renders (SectionedView).
+  const [focus, setFocus] = useState<SectionFocus | null>(null);
+  const openSection = useCallback((section: SectionKey) => {
+    setView(SECTION_TAB[section]);
+    setFocus((prev) => ({ section, n: (prev?.n ?? 0) + 1 }));
+  }, []);
+  // Picking a tab by hand starts at its top, never at a section asked for earlier.
+  const selectView = (next: ViewKey) => {
+    setFocus(null);
     setView(next);
-    requestAnimationFrame(() =>
-      document
-        .querySelector('[role="tablist"]')
-        ?.scrollIntoView({ block: 'start', behavior: 'smooth' }),
-    );
   };
   const [active, setActive] = useState<TelemetryWindowKey>('last7');
+  // The tab redraws for a new window in the background (see ActiveView), so the
+  // click paints the selector straight away; the tab dims until it catches up.
+  const shownWindow = useDeferredValue(active);
   // Watched by the StickyWindowBar: once this panel scrolls under the header,
   // the condensed timeframe selector fades in.
   const panelRef = useRef<HTMLDivElement>(null);
@@ -101,6 +83,8 @@ export default function TelemetryDashboard() {
       cancelled = true;
     };
   }, []);
+
+  useEffect(() => (status === 'ready' ? prefetchViews() : undefined), [status]);
 
   return (
     <>
@@ -160,7 +144,7 @@ export default function TelemetryDashboard() {
               onSelect={setActive}
               views={VIEWS}
               view={view}
-              onSelectView={(k) => setView(k as ViewKey)}
+              onSelectView={(k) => selectView(k as ViewKey)}
             />
 
             {/* View tabs — a single-line carousel; chevrons appear when the
@@ -169,43 +153,26 @@ export default function TelemetryDashboard() {
               views={VIEWS}
               leads={['dashboard', 'search']}
               view={view}
-              onSelect={setView}
+              onSelect={selectView}
             />
 
-            {view === 'dashboard' ? (
-              <DashboardView summary={summary} active={active} onOpenView={openView} />
-            ) : view === 'pages' ? (
-              <PagesView summary={summary} active={active} />
-            ) : view === 'palette' ? (
-              <PaletteView summary={summary} active={active} />
-            ) : view === 'lookfeel' ? (
-              <LookAndFeelView summary={summary} active={active} />
-            ) : view === 'editing' ? (
-              <EditingView summary={summary} active={active} />
-            ) : view === 'help' ? (
-              <HelpView summary={summary} active={active} />
-            ) : view === 'community' ? (
-              <CommunityView summary={summary} active={active} />
-            ) : view === 'modes' ? (
-              <ModesView summary={summary} active={active} />
-            ) : view === 'settings' ? (
-              <SettingsView summary={summary} active={active} />
-            ) : view === 'exceptions' ? (
-              <ExceptionsView summary={summary} active={active} />
-            ) : view === 'timings' ? (
-              <TimingsView summary={summary} active={active} />
-            ) : summary.daily ? (
-              <div className="mt-8">
-                <MetricSearch windows={summary.windows} daily={summary.daily} active={active} />
-              </div>
-            ) : (
-              <p className="mt-8 text-slate-500 dark:text-slate-400">
-                Per-metric trends aren&rsquo;t available from this API version.
-              </p>
-            )}
+            <div
+              aria-busy={shownWindow !== active}
+              className={
+                'transition-opacity duration-short ' + (shownWindow !== active ? 'opacity-60' : '')
+              }
+            >
+              <ActiveView
+                view={view}
+                summary={summary}
+                active={shownWindow}
+                focus={focus}
+                onOpenSection={openSection}
+              />
+            </div>
 
             {summary.generatedAt ? (
-              <p className="mt-10 text-xs text-slate-400">
+              <p className="mt-10 text-xs text-slate-500 dark:text-slate-400">
                 Anonymous, first-party, no vendors. Updated a few minutes at a time.
               </p>
             ) : null}

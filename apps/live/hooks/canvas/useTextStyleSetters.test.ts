@@ -2,14 +2,17 @@
 
 import { describe, expect, it, vi } from 'vitest';
 import { renderHook } from '@testing-library/react';
-import { createText, type Element, type Tab, type TextElement } from '@livediagram/document';
+import { createText, type Element, type TextElement } from '@livediagram/document';
 import { useTextStyleSetters } from './useTextStyleSetters';
 
 // Stands in for the DOM measure: the text block is 10 px a character at 14 px, scaled with the
 // label px, one line of 1.25 leading.
 vi.mock('@/components/canvas/text-hug-measure', () => ({
   measureDrawnText: () => (el: TextElement) => () => {
-    const px = { sm: 14, md: 22, lg: 32, scale: 16 }[el.textSize ?? 'scale'] * (el.textScale ?? 1);
+    const size = el.textSize ?? 'scale';
+    const px =
+      (typeof size === 'number' ? size : { sm: 14, md: 22, lg: 32, scale: 16 }[size]) *
+      (el.textScale ?? 1);
     const bold = el.textBold ? 1.2 : 1;
     return { width: (((el.label ?? '').length * 10 * px) / 14) * bold, height: px * 1.25 };
   },
@@ -27,7 +30,7 @@ function setup(el: TextElement) {
       currentSelectionIds: () => new Set([el.id]),
       selectionPrimary: () => els[0]!,
       commit,
-      activeTab: { font: undefined } as unknown as Tab,
+      activeTab: { font: undefined },
     }),
   );
   return { setters: result.current, current: () => els[0] as TextElement };

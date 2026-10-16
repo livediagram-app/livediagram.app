@@ -23,42 +23,50 @@ changes.
 | contour              | `PathElement.nodes` (the first) and each of `PathElement.subpaths`; `pathContours(el)`                   |
 | logo kit             | `exportLogoKit`; `LOGO_KIT_PNG_SIZES`; `encodeIco`; Export dialog format `'logo-kit'` (`LogoKitPanel`)   |
 | guide preferences    | `UserPreferences.logoGuides` (absent is on), `.logoGuidesHidden`, `.logoGuideStrength`                   |
+| Show Me (logo)       | `usePageTour`, `PageShowMeButton`, `PageTourStage`; `logoTourSteps`; `PageTourApi`                       |
 
 No synonyms: the UI says **Logo**, **Guides**, **Mirror**, **Combine** (Unite, Subtract, Intersect,
 Exclude), **Wordmark**, **Logo Kit**.
 
 ## Constants and configuration
 
-| Constant                        | Value                                         | Where                                                      | Provenance / safe range                                         |
-| ------------------------------- | --------------------------------------------- | ---------------------------------------------------------- | --------------------------------------------------------------- |
-| `LOGO_SIDE`                     | 1024                                          | `packages/document/src/illustrate-page.ts`                 | The largest common app-icon master; 512 to 2048                 |
-| `LOGO_SAFE_FRACTION`            | 0.1                                           | `packages/document/src/illustrate-page.ts`                 | Spec; 0.05 to 0.15                                              |
-| `LOGO_KEYLINE_CIRCLE`           | 0.8 (diameter / side)                         | `packages/document/src/logo-page.ts`                       | Inscribed in the safe area                                      |
-| `LOGO_INNER_CIRCLE`             | 0.5                                           | `packages/document/src/logo-page.ts`                       | Spec                                                            |
-| `LOGO_KEYLINE_SQUARE`           | 0.64                                          | `packages/document/src/logo-page.ts`                       | Spec (Material's 18/24 of the 20/24 live area, rounded)         |
-| `LOGO_GRID_DIVISIONS`           | 8                                             | `packages/document/src/logo-page.ts`                       | Spec                                                            |
-| `LOGO_GUIDE_ALPHA`              | faint .2/.08, medium .35/.15, strong .6/.3    | `apps/live/lib/logo-guide-prefs.ts`                        | Guides / grid opacity per strength                              |
-| `MIRROR_AXIS_TOLERANCE`         | 0.01 (of the artboard's width)                | `packages/document/src/element-mirror.ts`                  | Spec; 0.005 to 0.03                                             |
-| `LETTER_SPACING_MIN` / `_MAX`   | -0.2 / 1 (em)                                 | `packages/document/src/wordmark.ts`                        | Spec                                                            |
-| `TEXT_ARC_MAX`                  | 360 (degrees, either sign)                    | `packages/document/src/wordmark.ts`                        | Spec                                                            |
-| `FONT_WEIGHTS`                  | 400, 500, 700                                 | `packages/document/src/wordmark.ts`                        | The weights `fonts.ts` loads for every catalogue font           |
-| `ARC_ASCENT` / `ARC_DESCENT`    | 0.8 / 0.25 (em)                               | `packages/document/src/wordmark.ts`                        | Room kept for glyphs above / below the arc's baseline           |
-| `COMBINE_TOLERANCE_PX`          | 0.25                                          | `apps/live/lib/combine/outline.ts`                         | Spec ("a quarter of a pixel")                                   |
-| `COMBINE_MERGE_PX`              | 0.05                                          | `apps/live/lib/combine/simplify.ts`                        | Collinear merge distance; well under a device pixel             |
-| `COMBINE_MAX_INPUT_POINTS`      | 50,000                                        | `apps/live/lib/combine/combine.ts`                         | Refused above as Too detailed; measured runs stay under 4 ms    |
-| `MAX_PATH_NODES`                | 5,000 (existing; now across all contours)     | `packages/document/src/validate.ts`                        | Existing                                                        |
-| `LOGO_KIT_PNG_SIZES`            | 16, 32, 48, 64, 128, 180, 192, 256, 512, 1024 | `apps/live/lib/export-logo-kit.ts`                         | Spec                                                            |
-| `LOGO_ICO_SIZES`                | 16, 32, 48                                    | `apps/live/lib/export-logo-kit.ts`                         | Spec                                                            |
-| `BUTTON_ROOM` / `LABELLED_ROOM` | 28 px / 72 px                                 | `apps/live/components/canvas/LogoTitleBar.tsx`             | Title-bar room a control takes, icon-only / named               |
-| `SNAP_POINTS_NEAR_PX`           | 64 px                                         | `apps/live/components/canvas/GuideSnapPoints.tsx`          | Screen px round the pointer within which a guide crossing shows |
-| `RADIAL_COPIES`                 | 3, 4, 5, 6, 8                                 | `packages/document/src/element-symmetry.ts`                | A radial mirror's choices of copies                             |
-| `DEFAULT_MIRROR`                | Vertical, 6 copies, merge on                  | `packages/document/src/element-symmetry.ts`                | Mirror settings before any are chosen                           |
-| `THUMB_W`                       | 120 px                                        | `apps/live/components/canvas/infographic-layout-thumb.tsx` | Two layout tiles to a row (user request, every kind)            |
+| Constant                                   | Value                                         | Where                                                      | Provenance / safe range                                          |
+| ------------------------------------------ | --------------------------------------------- | ---------------------------------------------------------- | ---------------------------------------------------------------- |
+| `LOGO_SIDE`                                | 1024                                          | `packages/document/src/illustrate-page.ts`                 | The largest common app-icon master; 512 to 2048                  |
+| `LOGO_SAFE_FRACTION`                       | 0.1                                           | `packages/document/src/illustrate-page.ts`                 | Spec; 0.05 to 0.15                                               |
+| `LOGO_KEYLINE_CIRCLE`                      | 0.8 (diameter / side)                         | `packages/document/src/logo-page.ts`                       | Inscribed in the safe area                                       |
+| `LOGO_INNER_CIRCLE`                        | 0.5                                           | `packages/document/src/logo-page.ts`                       | Spec                                                             |
+| `LOGO_KEYLINE_SQUARE`                      | 0.64                                          | `packages/document/src/logo-page.ts`                       | Spec (Material's 18/24 of the 20/24 live area, rounded)          |
+| `LOGO_GRID_DIVISIONS`                      | 8                                             | `packages/document/src/logo-page.ts`                       | Spec                                                             |
+| `LOGO_GUIDE_ALPHA`                         | faint .2/.08, medium .35/.15, strong .6/.3    | `apps/live/lib/logo-guide-prefs.ts`                        | Guides / grid opacity per strength                               |
+| `MIRROR_AXIS_TOLERANCE`                    | 0.01 (of the artboard's width)                | `packages/document/src/element-mirror.ts`                  | Spec; 0.005 to 0.03                                              |
+| `LETTER_SPACING_MIN` / `_MAX`              | -0.2 / 1 (em)                                 | `packages/document/src/wordmark.ts`                        | Spec                                                             |
+| `TEXT_ARC_MAX`                             | 360 (degrees, either sign)                    | `packages/document/src/wordmark.ts`                        | Spec                                                             |
+| `FONT_WEIGHTS`                             | 400, 500, 700                                 | `packages/document/src/wordmark.ts`                        | The weights `fonts.ts` loads for every catalogue font            |
+| `ARC_ASCENT` / `ARC_DESCENT`               | 0.8 / 0.25 (em)                               | `packages/document/src/wordmark.ts`                        | Room kept for glyphs above / below the arc's baseline            |
+| `COMBINE_TOLERANCE_PX`                     | 0.25                                          | `apps/live/lib/combine/outline.ts`                         | Spec ("a quarter of a pixel")                                    |
+| `COMBINE_MERGE_PX`                         | 0.05                                          | `apps/live/lib/combine/simplify.ts`                        | Collinear merge distance; well under a device pixel              |
+| `COMBINE_MAX_INPUT_POINTS`                 | 50,000                                        | `apps/live/lib/combine/combine.ts`                         | Refused above as Too detailed; measured runs stay under 4 ms     |
+| `MAX_PATH_NODES`                           | 5,000 (existing; now across all contours)     | `packages/document/src/validate.ts`                        | Existing                                                         |
+| `LOGO_KIT_PNG_SIZES`                       | 16, 32, 48, 64, 128, 180, 192, 256, 512, 1024 | `apps/live/lib/export-logo-kit.ts`                         | Spec                                                             |
+| `LOGO_ICO_SIZES`                           | 16, 32, 48                                    | `apps/live/lib/export-logo-kit.ts`                         | Spec                                                             |
+| `BUTTON_ROOM` / `LABELLED_ROOM`            | 28 px / 72 px                                 | `apps/live/components/canvas/LogoTitleBar.tsx`             | Title-bar room a control takes, icon-only / named                |
+| `SNAP_POINTS_NEAR_PX`                      | 64 px                                         | `apps/live/components/canvas/GuideSnapPoints.tsx`          | Screen px round the pointer within which a guide crossing shows  |
+| `LOGO_GUIDE_SNAP_PX`                       | 8 px                                          | `apps/live/lib/logo-guide-snapping.ts`                     | Spec ("within 8 screen px")                                      |
+| `TIDY_GUIDE_PX`                            | 16 px                                         | `apps/live/lib/logo-guide-snapping.ts`                     | Spec ("within 16 screen px")                                     |
+| `TIDY_TOLERANCE` / `TIDY_MIN_TOLERANCE_PX` | 0.05 (of the diagonal) / 2 px                 | `apps/live/lib/stroke-tidy.ts`                             | Spec ("5% of the element's size, 2 px at least")                 |
+| `TIDY_SQUARE_DEGREES`                      | 12                                            | `apps/live/lib/stroke-tidy.ts`                             | Spec ("within 12 degrees of level or upright")                   |
+| `LOGO_PAGE_GUIDES_MAX`                     | 200                                           | `apps/live/lib/logo-page-guides.ts`                        | Spec ("the latest 200 pages"); about 10 KB of local storage      |
+| `LOGO_PALETTE_OPEN_RETRY_MS`               | 400 ms                                        | `apps/live/hooks/canvas/useLogoPaletteSwitch.ts`           | Second ask on opening, for a palette that mounts after the pages |
+| `RADIAL_COPIES`                            | 3, 4, 5, 6, 8                                 | `packages/document/src/element-symmetry.ts`                | A radial mirror's choices of copies                              |
+| `DEFAULT_MIRROR`                           | Vertical, 6 copies, merge on                  | `packages/document/src/element-symmetry.ts`                | Mirror settings before any are chosen                            |
+| `THUMB_W`                                  | 120 px                                        | `apps/live/components/canvas/infographic-layout-thumb.tsx` | Two layout tiles to a row (user request, every kind)             |
 
 ## Data and persistence
 
 - `IllustratePage.kind: 'logo'`, stored. `parsePage` reads a logo page as `{ id, orientation:
-'portrait', size: 'logo', background (fill only), name, kind: 'logo' }`: any other stored size, a
+'portrait', size: 'logo', background (fill only), name, kind: 'logo' }` and the lock fields
+  (`locked`, `startedBlank`): any other stored size, a
   pattern and a flow are dropped. A non-logo page stored with `size: 'logo'` is read as A4
   (`PAGE_SIZES.logo.logoOnly`).
 - `PageSizeId` gains `'logo'` (1024 x 1024, labelled `1024 x 1024`, `logoOnly`);
@@ -68,16 +76,16 @@ Exclude), **Wordmark**, **Logo Kit**.
   -360..360). Listed in `element-fields.ts`; validated in `validate.ts` (`TEXT_FIELD_CHECKS`), an out
   of range value refused with its rule. The controls clamp before writing (`clampLetterSpacing`,
   `clampTextArc`) and store 0 as absent.
-- `PathElement` gains `subpaths?: PathNode[][]`: further closed contours, only with `closed: true`,
-  3 or more nodes each, all contours within `MAX_PATH_NODES`; refused as `subpaths` otherwise.
-  Present means even-odd fill (no stored rule).
+- `PathElement` gains `subpaths?: PathNode[][]`: further contours, 3 or more nodes each on a closed
+  path (`closed: true`) or 2 or more on an open one, all contours within `MAX_PATH_NODES`; refused
+  as `subpaths` otherwise. Present on a closed path means even-odd fill (no stored rule).
 - `UserPreferences.logoGuides?: boolean` (absent on), `logoGuidesHidden?: string[]` (parts hidden;
   none is absent; unknown ids ignored), `logoGuideStrength?: 'faint' | 'medium' | 'strong'` (absent
   is medium). Synced like every preference.
 - Session only, never stored: the mirrored pages (none at open).
 - Per page, in this browser (`lib/logo-page-guides.ts`, local storage key
-  `livediagram:v2:logo-page-guides`, `{ [pageId]: boolean }`, the latest `LOGO_PAGE_GUIDES_MAX`
-  = 200): a page's own Show Guides; absent follows `logoGuides`. Not a synced preference: the
+  `livediagram:v2:logo-page-guides`, `{ [logoPageGuidesKey(tabId, pageId)]: boolean }`, the key
+  `<tabId>:<pageId>` since page ids repeat across tabs, the latest `LOGO_PAGE_GUIDES_MAX` = 200): a page's own Show Guides; absent follows `logoGuides`. Not a synced preference: the
   api caps preferences at 4 KB.
 - Migration: none. Older readers see `kind: 'logo'` as infographic and the artboard as A4; they
   ignore `subpaths` (first contour drawn) and the wordmark fields (flat text).
@@ -104,6 +112,8 @@ Exclude), **Wordmark**, **Logo Kit**.
 - `removePage` (every kind, user request): before the commit, `onGoTo` the page before the deleted
   one (its unit's last page), or the next unit's first page when the first goes; `useIllustratePages`
   frames it with a glide once it is in the row (`frame(page, false, true)`).
+- No quick-connect pluses: `LayerSelectionChrome` skips `QuickConnectPluses` while
+  `onLogoPage(pages, selectionBounds)` (the selection's centre on a logo page, `logoPageAt`).
 
 ### Kind UI
 
@@ -112,7 +122,8 @@ Exclude), **Wordmark**, **Logo Kit**.
   in-page layout card are solid (`bg-white`, `dark:bg-slate-900`); the layout card's list scrolls
   past 380 px.
 - `IllustratePagePanel.tsx`: a logo page has the Background and Layouts tabs (`pagePanelTabs`
-  drops Page: one size, no orientation); Pattern is hidden for logo.
+  drops Page: one size, no orientation); Pattern is hidden for logo. The cog asks for `'page'`,
+  which a logo page lacks, so the panel opens on its first tab, Background (`tabs[0]`).
 - `IllustratePages.tsx`: a logo page's title bar holds, before the cog, `LogoTitleBar pageId`
   (Beside the cog, below), its room reserved by `logoTitleBarRoom`; an
   empty logo page draws its guides first in the page's own box (under its cards); the layout card
@@ -127,9 +138,8 @@ Exclude), **Wordmark**, **Logo Kit**.
   lists it after Popular with `tiles: ['logo:pen', 'tools:pencil', 'tools:text', 'shapes:square', 'shapes:circle',
 'shapes:diamond']` and `logoOnly: true`.
   `paletteCategoriesFor(mode, { esBoard, logoPages })` drops a `logoOnly` entry unless
-  `logoPages`. `CommandPaletteProps.logoPages` (and the Toolbar strip's) is
-  `illustratePages.pages.some(kind === 'logo')`, passed by `useCanvasChromePanels` and
-  `CanvasChrome`.
+  `logoPages`. `PaletteProps.logoPages` (picked by `ToolbarPalette`) is
+  `illustratePages.pages.some(kind === 'logo')`, passed by `CanvasChrome`.
 - `logo:pen` (section `logo`, `ShapePenIcon`): action `{ type: 'path' }`, handled by
   `PaletteTileActions.beginPath`, threaded from `useShapeDrawing.beginPath` (`beginDraw({ type:
 'path' })`) through `useEditorState`, `EditorCanvasHost`, `onBeginPath` and
@@ -159,17 +169,19 @@ Exclude), **Wordmark**, **Logo Kit**.
   someone was last on (a press off every page keeps it) and, when that changes, asks
   (`requestPaletteCategory`, in a zero timeout, after React renders; a timeout so a background
   tab answers) for `'logo'` on a logo page, else `'popular'`: on `pageShown` and a capture-phase
-  `pointerdown` on a sheet. A logo page id not seen before asks for `'logo'`. On the first render
+  window `pointerdown` on a sheet (`[data-illustrate-page-id]`), counted only when its target is
+  the canvas itself (inside `[data-canvas-content]`, or `[data-canvas-a11y-root]`), never chrome
+  floating over a page. A logo page id not seen before asks for `'logo'`. On the first render
   with pages, the page under the canvas centre (`[data-canvas-a11y-root]`), else the first, asks
   for `'logo'` only (again after `LOGO_PALETTE_OPEN_RETRY_MS`, 400, for a palette that mounts
   later); any other page asks nothing.
 
 ### Beside the cog (`apps/live/components/canvas/LogoTitleBar.tsx`)
 
-- Before the cog, cog-sized (`h-6 w-6`) `Tooltip` buttons: Tidy Up (`lucideWandSparkles`; a
+- Before the cog, cog-sized (`h-6 w-6`) `Tooltip` buttons: Tidy (`lucideWandSparkles`; a
   `TidyUpButton` re-rendered by `useSelectionOf`, mounted only with the editor context and a
   selection store, `useHasSelectionStore`), Mirror (`MirrorAxisGlyph` of the page's axis) and
-  Guides (`lucideGrid3x3`), each `aria-pressed` while on. Both are `TitlePopoverButton`s
+  Guides (`lucideGrid3x3`), the last two `aria-pressed` while on. Both are `TitlePopoverButton`s
   (`components/canvas/TitlePopoverButton.tsx`: the button, then an `AnchoredPopover` of 248 px
   named after it). Guides is `LogoGuidesButton` (`components/canvas/LogoGuidesPopover.tsx`)
   holding `LogoGuidesSettings`: the Show Guides `SwitchRow` for the page, then the part tiles and
@@ -178,11 +190,11 @@ Exclude), **Wordmark**, **Logo Kit**.
   `LogoMirrorSettings`: the Mirror While Drawing `SwitchRow` (`setMirror`), the Axis radio tiles
   (`MIRROR_AXES`, each with its `MirrorAxisGlyph`), the Copies `SegmentedRadio` (`RADIAL_COPIES`)
   while Radial, and the Merge Into One `SwitchRow` with its line, all via `setMirrorSettings`,
-  dimmed while off. Mirror and Guides show their names beside the icon unless
-  `useIsMobileViewport()`. `logoTitleBarRoom(true, !mobile)` (28 px for Tidy Up, 72 px each
-  named or 28 px each icon-only) is reserved from the label.
-- Layout tiles: `LayoutThumb` hands a logo page's tile to `LogoLayoutThumb`
-  (`components/canvas/logo-layout-thumb.tsx`) when `EditorContext` has an `activeTab` (else the
+  dimmed while off. All three show their names beside the icon unless
+  `useIsMobileViewport()`. `logoTitleBarRoom(true, !mobile)` (room for Tidy Up always kept: 72 px
+  each named, or 28 px each icon-only, three times) is reserved from the label.
+- Layout tiles: `LayoutThumb` hands a logo page's tile to `LayoutRenderThumb`
+  (`components/canvas/layout-render-thumb.tsx`) when `EditorContext` has an `activeTab` (else the
   wireframe): `logoLayoutSvg(tab, page, layout)` = `renderTabToSvg({ ...tab, elements:
 buildPageLayout(layout, page) }, { page })`, memoised on the layout, the page's rect and
   background, the tab's theme and font, and `useIconCatalogs()`; set as the markup of a div of the
@@ -195,6 +207,21 @@ DashedAddButton.tsx`, shared with `AddCardTypeButton`) labelled **Start From Scr
   calling `onBlank`: `IllustratePages` tracks `UI · Closed · EmptyPageLayoutsBlank` and calls
   `edit.startBlank(pageId)`, which sets `IllustratePage.startedBlank: true` (refused on a locked
   page); `showsLayoutCard` skips a page with it. Hide stays the session-only `layoutsHidden`.
+
+### Show Me (`apps/live/components/tour/PageTour.tsx`, `logo-tour-steps.ts`)
+
+- A logo page's Show Me is one of the page Show Mes ([Illustrate tour](../illustrate-tour.md)):
+  `IllustratePages` calls `usePageTour(editable)` and hands every page's panel
+  `showMe={{ button: <PageShowMeButton tour kind onStart={() => freeze(pageId, kind)} />, article }}`, which
+  `IllustratePagePanel` heads beside the labelled `HelpArticleLink` (`PAGE_TOUR_HELP.logo`: `logoPages`, "Logo Pages
+  Help"); `PageTourStage` (overlay layer) is mounted once.
+- `freeze(pageId, 'logo')` imports `page-tour-steps` at the press and fixes `logoTourSteps(combineShowing)`
+  (`combineShowing`: `[aria-label="Combine shapes"]` is in the DOM): `layouts` (rings `[data-page-panel]`, `requires`
+  the page's cog, `prepare` opens the panel on Layouts through `requestPagePanel`, `cleanup` closes it), `guides` and
+  `mirror` (the page's `[data-logo-title-bar]` buttons by name), `combine` (the Combine button, else an unanchored
+  card), `outro`. The same steps follow `LOGO_WELCOME` as the Illustrate tour's Logo track.
+- `UI · Started · LogoTour` on the press; `UI · Ended · LogoTourCompleted` / `LogoTourSkipped` on
+  finish.
 
 ### Guide snapping
 
@@ -229,7 +256,7 @@ DashedAddButton.tsx`, shared with `AddCardTypeButton`) labelled **Start From Scr
 
 ### Tidy Up
 
-- `tidyUpStroke(el, snap?)` (`apps/live/lib/stroke-tidy.ts`): freehand (not highlighter, unrotated,
+- `tidyUpStroke(el, guides?)` (`apps/live/lib/stroke-tidy.ts`): freehand (not highlighter, unrotated,
   3+ points) or an open path whose nodes are all handle-less corners; each line through
   `simplifyLine` (`lib/simplify-line.ts`, shared with `mirror-merge`) at `max(2, 0.05 * diagonal)`;
   a single line whose ends meet within twice that closes (its last corner dropped); each corner
@@ -240,7 +267,8 @@ DashedAddButton.tsx`, shared with `AddCardTypeButton`) labelled **Start From Scr
   each group settling to a pinned member's value, else the mean moved onto `guides.x`/`guides.y`
   when within reach; a closed result is `fillColor: 'transparent'` unless the source was a filled
   closed pencil stroke; `lineStyle` names Ink for a marker with no colour; `dropInline`; `pathOfContours` with `lineStyle` (marker `penWidth` to the
-  nearest `BORDER_STROKE_PX`).
+  nearest `BORDER_STROKE_PX`) and the source's `KEPT_FIELDS` (`commentThread`, `note`, `noteRich`,
+  `link`, `action`, the `animation` fields, `aspectLocked`).
 - `useTidyUpStrokes` (`hooks/canvas/useTidyUpStrokes.ts`): `canTidyUp` and `tidyUpSelected`
   (one commit, ids kept, locked skipped), `Element · Changed · StrokesTidiedUp`; composed by
   `useLogoEditor` and returned by `useEditorState`.
@@ -280,8 +308,9 @@ on)` (which also calls `preloadCombineEngine()` when turned on), `mirrorPages`
   their settings (`withMirrorSettings`; null for none), what `LogoCanvasOverlays` and `CanvasChrome` hand the live twins; `useLogoEditor` keeps the
   guided pages (`guidesOn`) for the snapper and `logoPageSnapBoxes`.
   The panel's part tiles and Strength send the same telemetry as the Settings rows.
-- `mirrorRef` (a `ReadonlySet<string>`) is assigned (`useAssignRef`) the mirrored pages, empty
-  when read-only. Switches track before changing.
+- `mirrorRef` (a `ReadonlyMap<pageId, MirrorSettings>`) is assigned (`useAssignRef`) the mirrored
+  pages, empty when read-only. Moving to another tab lets go of every page's mirror and settings
+  (page ids repeat across tabs). Switches track before changing.
 - `mirrorCopies(elements, ids, pages)`: `duplicateElements` of the eligible selected elements (fresh
   ids, no comments or actions), each reflected by `twinFor(copy, pages, 'copy')`; `mirrorCopy`
   appends them in one commit and selects them.
@@ -291,12 +320,15 @@ on)` (which also calls `preloadCombineEngine()` when turned on), `mirrorPages`
 ### Guides and snapping
 
 - `LogoGuidesSvg({ page, tools })`: one SVG at the canvas origin, overflowing to the page, drawing
-  the shown parts at `LOGO_GUIDE_ALPHA[strength]` in `#06b6d4` with a non-scaling 1 px stroke; the
-  vertical centre line solid at 1.5 px while mirror is on.
-- `LogoPageGuides({ view, bare })` (mounted after the elements in `Canvas.tsx`) draws the guides of
-  logo pages **with content**; `IllustratePages` draws an empty logo page's inside its own box.
-  `showsLogoGuides(view, bare)`: not bare (zen, presenting, isometric), an editor, Show Guides on.
-- `useLogoEditor` appends `logoPageSnapBoxes(pages)` to the page snap boxes while Show Guides is on.
+  the shown parts at `LOGO_GUIDE_ALPHA[strength]` in `#06b6d4` with a non-scaling 1 px stroke;
+  while mirror is on, `mirrorAxisLines(page.rect, mirror)` solid at full opacity, 1.5 px, a faint
+  centre line under a solid one skipped.
+- `LogoPageGuides({ view, bare })` (mounted by `LogoCanvasOverlays`, after the elements) draws the
+  guides of logo pages **with content**; `IllustratePages` draws an empty logo page's inside its
+  own box. `showsLogoGuides(view, bare, pageId)`: not bare (zen, presenting, isometric), an editor,
+  Show Guides on for that page.
+- `useLogoEditor` appends `logoPageSnapBoxes(guidedPages)` (the logo pages with Show Guides on) to
+  the page snap boxes; `logoGuideSnapper` and `logoTidyGuides` take the same guided pages.
 
 ### Mirror (`packages/document/src/element-symmetry.ts`, `element-mirror.ts`, `apps/live/lib/mirror-commit.ts`)
 
@@ -384,6 +416,8 @@ ARC_DESCENT) × fontPx` (floored at fontPx), centred on the top (up) or the bott
   embed; one raster at 1024 px; each PNG by `downscale`, halving then one high-quality draw;
   `favicon.ico` by `encodeIco`; zipped by `writeZip`); `logoKitFileNames`; `logoKitFileName(document,
 page, count)`.
+- `ExportTabDialog`: a page's PNG and SVG preview (`seeThrough`) renders with `transparentPaper`,
+  and over a `checkerboard` on a logo page.
 - `ExportTabDialog`: the `'logo-kit'` card while the tab has a logo page; `LogoKitPanel` owns the rest (a page picker when several, a checkerboard preview, Download .zip,
   busy and error) from the images the dialog loaded; `Document · Exported · LogoKit`.
 
@@ -450,9 +484,11 @@ Measured (vitest on this branch):
 
 ## Presentation and UX
 
-- Copy: card **Logo** "A square artboard for a logo, with guides and drawing tools."; tabs **Page**,
-  **Layouts**, **Logo**; sections **Guides** (Show Guides, the six part tiles, **Strength**) and
-  **Drawing** (Mirror Copy, "Reflects the selection across the centre line."); Mirror popover:
+- Copy: card **Logo** "A square artboard for a logo, with guides and drawing tools."; panel tabs
+  **Background**, **Layouts**; in-page card **Start From a Layout** with **Start From Scratch**;
+  title bar **Tidy** (tooltip "Tidy: straighten the selected drawing"), **Mirror**,
+  **Guides** (tooltip "<name>: on" while on); Guides popover: **Show Guides**, the six part tiles,
+  **Strength**; menu item **Mirror Copy**; Mirror popover:
   **Mirror While Drawing**, **Axis** (Vertical, Horizontal, Both, Radial), **Copies**, **Merge Into
   One** ("Each drawing and its copies become one element." / "Each copy is its own element."); Wordmark: **Tracking**, **Weight** (Regular, Medium, Bold),
   **Case** (As Typed, Capitals, Lower Case), **Arc** with **Flat**; Combine: **Unite**, **Subtract**,
@@ -460,17 +496,21 @@ Measured (vitest on this branch):
   `Exclude Shapes`, `Mirror Copy`; Export card **Logo Kit** ("An SVG, PNGs from 16 to 1024 px and a
   favicon.ico, in one .zip."), subtitle "Download a logo page as an SVG, PNGs and a favicon.",
   button **Download .zip**.
-- Settings: Editor, then **Illustrate**: Logo Guides, Guide Strength, and Logo Centre Lines,
-  Diagonals, Safe Area, Circles, Square and Grid, each "Also in a logo page's panel".
+- Settings: Editor, then **Illustrate**, one **Logo Pages** section: the Logo Guides switch (with
+  `alsoIn` "a logo page's Guides button": the guides live in the Guides popover beside the cog, not
+  the page panel), and nested under it while it is on, Logo Guide Strength and **Guides Shown**, a
+  `toggleGroup` of one chip per guide (Centre Lines, Diagonals, Safe Area, Circles, Square, Grid), each
+  its own preference and telemetry pair.
 
 ## Accessibility
 
-- Switches are `role="switch"`; part tiles `aria-pressed`; Strength and the kind grid are radio
-  groups; sliders are labelled with value text ("90 degrees").
-- The toolbar, Combine and Mirror controls are named buttons with shared tooltips; the two
-  toolbars are `role="toolbar"` with names; the page options' visible labels are `aria-hidden`
-  beside their `aria-label`. Hidden toolbars take no pointer.
-- Guides are `aria-hidden`. Only the toolbars' opacity fades, never under reduced motion.
+- Switches are `role="switch"` (`SwitchRow`); part tiles `aria-pressed`; Strength, Copies and the
+  Axis tiles are radio groups; the kind grid is a named `role="group"` of buttons that the arrow keys
+  move between (`moveBetweenKindCards`); sliders are labelled with value text ("90 degrees").
+- The title-bar controls and Combine are named buttons with shared tooltips; Mirror and Guides are
+  `aria-haspopup="dialog"` with `aria-expanded`, their popovers named after them; a visible name
+  beside an icon is `aria-hidden` beside the button's `aria-label`.
+- Guides and the snap points are `aria-hidden` and take no pointer; nothing new animates.
 
 ## Web Experience
 
@@ -483,29 +523,41 @@ Measured (vitest on this branch):
 - `[combine]` warnings: `load failed`, `op failed` (op, element and point counts), `too detailed`.
 - `[logo-kit]` warnings on a failed raster or export; `[illustrate-page]` debug logs on refusals.
 - Telemetry as the spec lists; dashboard charts Logo Tools Used, Mirrored Drawings, Logo Mirror
-  Switched, Logo Mirror Set Up, the Settings rows, and the existing Other Panels Opened and Exports.
+  Switched, Logo Mirror Set Up, Logo Tours Started (with Show Me Tours Started), the Settings rows,
+  and the existing Other Panels Opened and Exports.
 
 ## Testing
 
-| Spec rule                                         | Test                                                                                                              |
-| ------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| Logo page parsed, artboard, no pattern, label     | `packages/document/src/illustrate-page-logo.test.ts`                                                              |
-| Guide geometry, snap boxes, page under a point    | `packages/document/src/logo-page.test.ts`                                                                         |
-| Mirror rules                                      | `packages/document/src/element-mirror.test.ts`, `element-symmetry.test.ts`, `apps/live/lib/mirror-commit.test.ts` |
-| Mirror popover and per-page settings              | `apps/live/components/canvas/LogoMirrorPopover.test.tsx`, `apps/live/hooks/editor/useLogoTools.pages.test.tsx`    |
-| Mirror Copy                                       | `apps/live/hooks/editor/useLogoTools.test.ts`                                                                     |
-| Wordmark fields, clamps, arc geometry, validation | `packages/document/src/wordmark.test.ts`                                                                          |
-| Wordmark in export                                | `packages/document/src/svg-render-wordmark.test.ts`                                                               |
-| Combined paths: draw, hit, validate               | `packages/document/src/path-contours.test.ts`                                                                     |
-| Page edits, the delete glide                      | `apps/live/hooks/editor/illustrate-page-edits.test.ts`                                                            |
-| Logo layouts fit the safe area                    | `apps/live/lib/logo-layouts.test.ts`                                                                              |
-| Combine ops, style, empty, too detailed, budget   | `apps/live/lib/combine/combine.test.ts`, `apps/live/hooks/canvas/useCombineShapes.test.ts`                        |
-| Wordmark controls and patch                       | `apps/live/components/palette/WordmarkSection.test.tsx`, `apps/live/lib/style-presets-wordmark.test.ts`           |
-| Bold clears the weight                            | `apps/live/hooks/canvas/useTextStyleSetters-bold.test.ts`                                                         |
-| Guides popover                                    | `apps/live/components/canvas/LogoGuidesPopover.test.tsx`                                                          |
-| Guide preferences                                 | `apps/live/lib/logo-guide-prefs.test.ts`                                                                          |
-| Transparency, kit names, ICO                      | `apps/live/lib/export-logo.test.ts`, `apps/live/lib/ico-writer.test.ts`                                           |
-| Commands                                          | `apps/live/lib/editor-commands.test.ts`                                                                           |
+| Spec rule                                         | Test                                                                                                                           |
+| ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| Logo page parsed, artboard, no pattern, label     | `packages/document/src/illustrate-page-logo.test.ts`                                                                           |
+| Guide geometry, snap boxes, page under a point    | `packages/document/src/logo-page.test.ts`                                                                                      |
+| Mirror rules                                      | `packages/document/src/element-mirror.test.ts`, `element-symmetry.test.ts`, `apps/live/lib/mirror-commit.test.ts`              |
+| Mirror popover and per-page settings              | `apps/live/components/canvas/LogoMirrorPopover.test.tsx`, `apps/live/hooks/editor/useLogoTools.pages.test.tsx`                 |
+| Mirror Copy                                       | `apps/live/hooks/editor/useLogoTools.test.ts`                                                                                  |
+| Wordmark fields, clamps, arc geometry, validation | `packages/document/src/wordmark.test.ts`                                                                                       |
+| Wordmark in export                                | `packages/document/src/svg-render-wordmark.test.ts`                                                                            |
+| Combined paths: draw, hit, validate               | `packages/document/src/path-contours.test.ts`                                                                                  |
+| Page edits, the delete glide                      | `apps/live/hooks/editor/illustrate-page-edits.test.ts`                                                                         |
+| Logo layouts fit the safe area                    | `apps/live/lib/logo-layouts.test.ts`                                                                                           |
+| Combine ops, style, empty, too detailed, budget   | `apps/live/lib/combine/combine.test.ts`, `apps/live/hooks/canvas/useCombineShapes.test.ts`                                     |
+| Wordmark controls and patch                       | `apps/live/components/palette/WordmarkSection.test.tsx`, `apps/live/lib/style-presets-wordmark.test.ts`                        |
+| Bold clears the weight                            | `apps/live/hooks/canvas/useTextStyleSetters-bold.test.ts`                                                                      |
+| Guides popover                                    | `apps/live/components/canvas/LogoGuidesPopover.test.tsx`                                                                       |
+| Guide preferences                                 | `apps/live/lib/logo-guide-prefs.test.ts`                                                                                       |
+| Transparency, kit names, ICO                      | `apps/live/lib/export-logo.test.ts`, `apps/live/lib/ico-writer.test.ts`                                                        |
+| Commands                                          | `apps/live/lib/editor-commands.test.ts`                                                                                        |
+| Guide snapping and its budget                     | `packages/document/src/logo-guide-snap.test.ts`, `apps/live/lib/logo-guide-snapping.test.ts`                                   |
+| Where a drawing can start                         | `apps/live/components/canvas/GuideSnapPoints.test.tsx`                                                                         |
+| Per-page Show Guides                              | `apps/live/lib/logo-page-guides.test.ts`                                                                                       |
+| Title bar controls and room                       | `apps/live/components/canvas/LogoTitleBar.test.tsx`                                                                            |
+| Tidy Up                                           | `apps/live/lib/stroke-tidy.test.ts`, `apps/live/lib/simplify-line.test.ts`, `apps/live/hooks/canvas/useTidyUpStrokes.test.tsx` |
+| Mirror merge                                      | `apps/live/lib/mirror-merge.test.ts`                                                                                           |
+| The Logo palette and its markers                  | `apps/live/components/palette/PaletteLogoTab.test.tsx`, `apps/live/components/palette/MarkerPaletteTile.test.tsx`              |
+| The palette follows the page                      | `apps/live/hooks/canvas/useLogoPaletteSwitch.test.tsx`                                                                         |
+| Layout tiles rendered                             | `apps/live/components/canvas/layout-render-thumb.test.tsx`                                                                     |
+| No quick-connect pluses                           | `apps/live/components/canvas/LayerSelectionChrome.test.ts`                                                                     |
+| Show Me                                           | `apps/live/components/tour/PageTour.test.tsx`                                                                                  |
 
 ## Assets and external resources
 

@@ -4,8 +4,19 @@
 // a template's sheet exists the moment its document does. The tabs come back with the mark dropped from each Sheet
 // whose sheet was made, and the sheets to create beside them.
 import type { SheetCreateRequest } from '@livediagram/api-schema';
-import { isLightColor, type Element, type Tab } from '@livediagram/document';
-import { isTemplateStart, templateSheet, type TemplateStartId } from '@livediagram/sheets';
+import {
+  chartFieldsFromTable,
+  createShape,
+  isLightColor,
+  type Element,
+  type ShapeElement,
+  type Tab,
+} from '@livediagram/document';
+import {
+  isTemplateStart,
+  templateSheetWithCharts,
+  type TemplateStartId,
+} from '@livediagram/sheets';
 
 type Rand = () => number;
 
@@ -18,8 +29,39 @@ function startOf(el: Element): TemplateStartId | null {
   return isTemplateStart(start) && el.planSheet?.sheetId ? start : null;
 }
 
-// Each tab's template Sheets made into sheets (on their tab, tinted for its canvas), and the tabs with the mark
-// dropped from every Sheet whose sheet was made. A Sheet whose start would not build keeps its mark, so the editor
+// Where a template's chart sits on the canvas, for what does not draw the grid (exports, agents): over its Sheet's
+// top right, as Insert Chart places one (sheet.md "Charts"); the Sheet draws it at its anchor.
+const CHART_INSET_PX = 24;
+const CHART_TOP_PX = 120;
+
+// The chart elements a template's charts make beside its Sheet `sheetEl` (sheet.md "Charts"): each anchored in the
+// Sheet, carrying its first read and its accent's palette, its canvas place over the Sheet's top right.
+export function templateChartElements(
+  sheetEl: { x: number; y: number; width: number; height: number },
+  sheetId: string,
+  charts: NonNullable<ReturnType<typeof templateSheetWithCharts>>['charts'],
+): ShapeElement[] {
+  return charts.map((ch) => {
+    const base: ShapeElement = {
+      ...createShape(ch.kind, 0, 0),
+      width: ch.width,
+      height: ch.height,
+      chartSource: { sheetId, range: ch.range, ...(ch.cols ? { cols: ch.cols } : {}) },
+      sheetAnchor: ch.anchor,
+      chartPalette: ch.palette,
+    };
+    return {
+      ...base,
+      ...chartFieldsFromTable(base, ch.table),
+      x: Math.max(sheetEl.x, sheetEl.x + sheetEl.width - CHART_INSET_PX - ch.width),
+      y: sheetEl.y + Math.min(CHART_TOP_PX, Math.max(0, sheetEl.height - ch.height)),
+    };
+  });
+}
+
+// Each tab's template Sheets made into sheets (on their tab, tinted for its canvas), the charts their templates place
+// added beside them (anchored in the Sheet, carrying their first read), and the tabs with the mark dropped from every
+// Sheet whose sheet was made. A Sheet whose start would not build keeps its mark, so the editor
 // tries it when it is drawn.
 export function materialiseTemplateSheets<
   T extends Pick<Tab, 'id' | 'elements'> & { backgroundColor?: string },
@@ -32,23 +74,19 @@ export function materialiseTemplateSheets<
   const out = tabs.map((tab) => {
     if (!tab.elements.some((el) => startOf(el) !== null)) return tab;
     const dark = !!tab.backgroundColor && !isLightColor(tab.backgroundColor);
+    const charts: Element[] = [];
     const elements = tab.elements.map((el): Element => {
       const start = startOf(el);
       if (!start || el.type !== 'shape' || !el.planSheet) return el;
-      const made = templateSheet({
-        id: el.planSheet.sheetId,
-        tabId: tab.id,
-        start,
-        now,
-        dark,
-        rand,
-      });
+      const sheetId = el.planSheet.sheetId;
+      const made = templateSheetWithCharts({ id: sheetId, tabId: tab.id, start, now, dark, rand });
       if (!made) return el;
-      sheets.push(made);
+      sheets.push(made.sheet);
+      charts.push(...templateChartElements(el, sheetId, made.charts));
       const { start: _made, ...ref } = el.planSheet;
       return { ...el, planSheet: ref };
     });
-    return { ...tab, elements };
+    return { ...tab, elements: charts.length ? [...elements, ...charts] : elements };
   });
   return { tabs: out, sheets };
 }

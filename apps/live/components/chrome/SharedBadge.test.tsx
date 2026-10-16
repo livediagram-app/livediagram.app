@@ -87,6 +87,21 @@ describe('SharedBadge legend', () => {
     expect(hero().textContent).toContain('Who Can See This');
   });
 
+  it('keeps the hero one size: every audience’s words in one cell, only the shown one exposed', () => {
+    render(<SharedBadge shareable={false} />);
+    fireEvent.focus(screen.getByText('Private').closest('[tabindex]')!);
+    const hero = document.querySelector('[data-legend-hero]')!;
+    const blocks = [...hero.querySelectorAll('[class*="grid-area"]')];
+    expect(blocks).toHaveLength(5);
+    const shown = blocks.filter((b) => !b.hasAttribute('aria-hidden'));
+    expect(shown).toHaveLength(1);
+    expect(shown[0]!.className).not.toContain('invisible');
+    fireEvent.mouseEnter(screen.getByText('Everyone').closest('li')!);
+    expect(blocks.filter((b) => !b.hasAttribute('aria-hidden'))[0]!.textContent).toContain(
+      'If It Were',
+    );
+  });
+
   it('opens Share from the pill and from the legend when the reader may share', () => {
     const onManage = vi.fn();
     render(<SharedBadge shareable={false} onManage={onManage} />);
@@ -105,5 +120,12 @@ describe('SharedBadge legend', () => {
     expect(screen.queryByRole('button', { name: 'Private' })).toBeNull();
     fireEvent.focus(screen.getByText('Private').closest('[tabindex]')!);
     expect(screen.queryByText('Change Who Can See This')).toBeNull();
+  });
+
+  it('lays its manage button out as a box, so the chip sits level with the role pill', () => {
+    render(<SharedBadge shareable={false} onManage={vi.fn()} />);
+    const button = screen.getByRole('button', { name: 'Private' });
+    // An inline button's line box stood it 24 px tall around the 19 px chip, which then sat low.
+    expect(button.className.split(' ')).toContain('flex');
   });
 });

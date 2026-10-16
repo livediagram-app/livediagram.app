@@ -1,9 +1,12 @@
-import { useState } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 import { Button, CloseIcon, DialogHeader } from '@livediagram/ui';
 import type { LineSeries } from '@livediagram/document';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
+import { useLatest } from '@/hooks/ui/useLatest';
+import { registerChartDataDialog } from '@/lib/chart-data-dialog-handle';
 import { parseCsvLineData } from '@/lib/csv';
+import { useActiveTour } from '@/lib/tour-active';
 
 // Line-chart data editor in a modal (docs/specs/009-elements/pie-chart.md). The context menu's Data category
 // only summarises the series + offers "Edit Data", which opens this — the 2-D
@@ -28,11 +31,31 @@ export function LineDataDialog({
   // every external commit would fight the user's typing).
   const [cats, setCats] = useState<string[]>(categories);
   const [rows, setRows] = useState<LineSeries[]>(series);
+  // What was last committed: a commit that would change nothing is skipped, so tabbing through cells
+  // (or closing after a blur already stored) leaves no empty undo steps.
+  const lastCommitted = useRef(JSON.stringify([categories, series]));
+  const store = (c: string[], s: LineSeries[]) => {
+    const key = JSON.stringify([c, s]);
+    if (key === lastCommitted.current) return;
+    lastCommitted.current = key;
+    onCommit(c, s);
+  };
   const commit = (c: string[], s: LineSeries[]) => {
     setCats(c);
     setRows(s);
-    onCommit(c, s);
+    store(c, s);
   };
+  // Escape unmounts the dialog without blurring the focused cell, so its commit-on-blur never runs:
+  // closing commits whatever is still being typed.
+  const close = () => {
+    store(cats, rows);
+    onClose();
+  };
+  // The Chart element tour runs steps inside this dialog (docs/specs/007-editor/element-tours.md "The Chart tour"): it
+  // closes it at its end through this handle, and while it runs Escape is its own.
+  const closeRef = useLatest(close);
+  useLayoutEffect(() => registerChartDataDialog({ close: () => closeRef.current() }), [closeRef]);
+  const elementTourRunning = useActiveTour() === 'element';
   const cell =
     'min-w-0 rounded border border-slate-200 bg-white px-1.5 py-1 text-sm text-slate-700 outline-none focus:border-brand-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200';
   const xBtn =
@@ -48,7 +71,14 @@ export function LineDataDialog({
   };
 
   return (
-    <Dialog open onClose={onClose} ariaLabel="Edit chart data" size="xl" className="max-h-[90vh]">
+    <Dialog
+      open
+      onClose={close}
+      closeOnEscape={!elementTourRunning}
+      ariaLabel="Edit chart data"
+      size="xl"
+      className="max-h-[90vh]"
+    >
       <DialogHeader
         title="Chart data"
         subtitle="A row per category, a column per series. Or import a CSV (header = series names, first column = categories)."
@@ -56,7 +86,7 @@ export function LineDataDialog({
         <HelpArticleLink article="dataElements" size="md" />
         <button
           type="button"
-          onClick={onClose}
+          onClick={close}
           aria-label="Close"
           className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-200"
         >
@@ -65,7 +95,7 @@ export function LineDataDialog({
       </DialogHeader>
 
       <div className="flex items-center gap-2 px-6 pt-4">
-        <label className={`${addBtn} cursor-pointer`}>
+        <label data-tour-id="chart-data-import" className={`${addBtn} cursor-pointer`}>
           Import CSV
           <input
             type="file"
@@ -81,9 +111,9 @@ export function LineDataDialog({
       </div>
 
       <div className="min-h-0 flex-1 overflow-auto px-6 py-4">
-        <table className="border-separate border-spacing-1">
+        <table data-tour-id="chart-data-table" className="border-separate border-spacing-1">
           <thead>
-            <tr>
+            <tr data-tour-id="chart-data-series">
               <th className="w-28" />
               {rows.map((s, si) => (
                 <th key={si} className="min-w-[7rem]">
@@ -97,7 +127,7 @@ export function LineDataDialog({
                           r.map((x, j) => (j === si ? { ...x, name: e.target.value } : x)),
                         )
                       }
-                      onBlur={() => onCommit(cats, rows)}
+                      onBlur={() => store(cats, rows)}
                     />
                     <button
                       type="button"
@@ -144,7 +174,7 @@ export function LineDataDialog({
                     onChange={(e) =>
                       setCats((cc) => cc.map((v, j) => (j === i ? e.target.value : v)))
                     }
-                    onBlur={() => onCommit(cats, rows)}
+                    onBlur={() => store(cats, rows)}
                   />
                 </td>
                 {rows.map((s, si) => (
@@ -169,7 +199,7 @@ export function LineDataDialog({
                           ),
                         );
                       }}
-                      onBlur={() => onCommit(cats, rows)}
+                      onBlur={() => store(cats, rows)}
                     />
                   </td>
                 ))}
@@ -198,6 +228,7 @@ export function LineDataDialog({
       <div className="flex items-center justify-between gap-3 border-t border-slate-100 px-6 py-4 dark:border-slate-800">
         <button
           type="button"
+          data-tour-id="chart-data-add-row"
           onClick={() =>
             commit(
               [...cats, `#${cats.length + 1}`],
@@ -208,7 +239,7 @@ export function LineDataDialog({
         >
           + Add row
         </button>
-        <Button variant="primary" size="md" onClick={onClose}>
+        <Button variant="primary" size="md" onClick={close}>
           Done
         </Button>
       </div>

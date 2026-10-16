@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const siteTrack = vi.fn();
+const siteTrack = vi.fn<typeof import('@livediagram/telemetry-client').siteTrack>();
 vi.mock('@livediagram/telemetry-client', () => ({
-  siteTrack: (...a: unknown[]) => siteTrack(...a),
+  siteTrack: (...a: Parameters<typeof siteTrack>) => siteTrack(...a),
 }));
 
 import { TELEMETRY_ACTIONS, TELEMETRY_CATEGORIES } from '@livediagram/api-schema';

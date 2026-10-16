@@ -36,7 +36,7 @@ let nextId = 1;
 const newWorker = (): ReaderWorker =>
   new Worker(new URL('./reader.worker.ts', import.meta.url), {
     type: 'module',
-  }) as unknown as ReaderWorker;
+  });
 
 // A model download that sits still this long has stalled (a blocked or
 // throttled CDN, a full disk): better told than waited on for ever.

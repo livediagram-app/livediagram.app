@@ -18,11 +18,9 @@ import { NOTIFY_EMAIL_DEDUPE_MS } from './email/notifications';
 async function runCron(env: Parameters<typeof worker.scheduled>[1], now: number) {
   vi.useFakeTimers({ toFake: ['Date'], now });
   const pending: Promise<unknown>[] = [];
-  await worker.scheduled(
-    { cron: '0 3 * * *', scheduledTime: now, noRetry() {} } as ScheduledController,
-    env,
-    { waitUntil: (p: Promise<unknown>) => pending.push(p) } as unknown as ExecutionContext,
-  );
+  await worker.scheduled({ cron: '0 3 * * *', scheduledTime: now, noRetry() {} }, env, {
+    waitUntil: (p: Promise<unknown>) => pending.push(p),
+  } as unknown as ExecutionContext);
   await Promise.all(pending);
 }
 
@@ -138,11 +136,9 @@ describe('the 03:00 cron and agent changesets', () => {
     }
     const pending: Promise<unknown>[] = [];
     const log = vi.spyOn(console, 'log').mockImplementation(() => {});
-    await worker.scheduled(
-      { cron: '0 3 * * *', scheduledTime: now, noRetry() {} } as ScheduledController,
-      env,
-      { waitUntil: (p: Promise<unknown>) => pending.push(p) } as unknown as ExecutionContext,
-    );
+    await worker.scheduled({ cron: '0 3 * * *', scheduledTime: now, noRetry() {} }, env, {
+      waitUntil: (p: Promise<unknown>) => pending.push(p),
+    } as unknown as ExecutionContext);
     await Promise.all(pending);
     expect(
       sql

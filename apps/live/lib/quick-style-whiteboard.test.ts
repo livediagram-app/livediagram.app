@@ -23,7 +23,7 @@ import { INK_CHOICE, type PenPalette } from './quick-style-pen';
 // so its Stroke and Text colour rows offer the whiteboard's colours (Ink, the seven stock colours,
 // the tab's custom colours), as Marker colour does; Background keeps its fills, "no fill" first.
 const INK = '#1c1917';
-const palette: PenPalette = { board: 'light', ink: INK, custom: [] };
+const palette: PenPalette = { board: 'light', ink: INK };
 const shape = { ...createShape('square', 0, 0), fillColor: 'transparent' } as ShapeElement;
 const text = { id: 't', type: 'text', x: 0, y: 0, width: 9, height: 9, label: 'Hi' } as TextElement;
 const arrow = {
@@ -46,7 +46,6 @@ describe('onWhiteboard', () => {
     expect(v.sections.boardText!.options.map((o) => o.name)).toEqual(STOCK);
     expect(v.sections.boardStroke!.options[0]!.swatch).toBe(INK);
     expect(v.sections.boardStroke!.options[6]!.swatch).toBe(penColourHex('blue', 'light'));
-    expect(v.sections.boardStroke!.custom).toEqual([]);
   });
 
   it('marks the ink, a stock name and a custom colour, and nothing when they disagree', () => {
@@ -54,10 +53,7 @@ describe('onWhiteboard', () => {
     expect(view([text]).sections.boardText!.value).toBe(INK_CHOICE);
     expect(view([{ ...shape, penColour: 'blue' }]).sections.boardStroke!.value).toBe('blue');
     const custom = { ...arrow, strokeColor: '#868E96' };
-    const p = { ...palette, custom: ['#868e96'] };
-    const v = view([custom], p);
-    expect(v.sections.boardStroke!.value).toBe('#868e96');
-    expect(v.sections.boardStroke!.custom.map((o) => o.value)).toEqual(['#868e96']);
+    expect(view([custom]).sections.boardStroke!.value).toBe('#868e96');
     expect(view([shape, { ...arrow, penColour: 'red' }]).sections.boardStroke!.value).toBeNull();
     // An unpainted line wears its theme default, not the ink (docs/specs/007-editor/editor-modes.md
     // "One look"), so no choice is marked.

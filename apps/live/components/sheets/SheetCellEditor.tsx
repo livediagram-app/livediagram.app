@@ -9,7 +9,7 @@ import { FUNCTION_DOCS, formatA1 } from '@livediagram/sheets';
 import { argumentAt, argumentSlot, refSpans } from './formula-assist';
 import { useSheetController } from './sheet-controller';
 import { cellBox, mergeAt } from './sheet-geometry';
-import { resolveFontStack } from '@livediagram/document';
+import { cellColours, isLightColor, resolveFontStack } from '@livediagram/document';
 import { fontPx } from './SheetCells';
 import type { FormulaInput } from './useFormulaInput';
 
@@ -48,6 +48,37 @@ export function FunctionAssist({
 }) {
   const c = useSheetController();
   const arg = argumentAt(draft, input.caret);
+  // A dropdown cell's options matching the typing (data-validation.md "Using a dropdown").
+  if (input.options)
+    return (
+      <ul
+        role="listbox"
+        aria-label="Options"
+        className="absolute left-0 top-full z-20 mt-1 max-h-64 w-56 overflow-auto rounded-lg border py-1 text-[12px] shadow-lg"
+        style={{
+          backgroundColor: c.palette.surface,
+          borderColor: c.palette.border,
+          color: c.palette.text,
+        }}
+      >
+        {input.options.map((value, i) => (
+          <li
+            key={value}
+            role="option"
+            aria-selected={i === input.pick}
+            className="cursor-pointer px-2.5 py-1.5"
+            style={i === input.pick ? { backgroundColor: c.palette.column } : undefined}
+            onPointerDown={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              input.pickOption(value);
+            }}
+          >
+            {value}
+          </li>
+        ))}
+      </ul>
+    );
   if (input.matches)
     return (
       <ul
@@ -134,7 +165,7 @@ export function SheetCellEditor({
     el.setSelectionRange(end, end);
     input.setCaret(end);
     // Only when an edit starts (its cell), not as the draft changes.
-  }, [e?.r, e?.c, e?.origin]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [e?.r, e?.c, e?.origin]); // oxlint-disable-line react/exhaustive-deps
   if (!e || e.origin === 'bar') return null;
   const m = mergeAt(c.geometry, e.r, e.c);
   const box = cellBox(c.geometry, e.r, e.c, c.scroll, m);
@@ -157,6 +188,12 @@ export function SheetCellEditor({
     fontWeight: f?.b ? 700 : undefined,
     fontStyle: f?.i ? ('italic' as const) : undefined,
   };
+  // Drawn as the cell is (sheet.md "Readable cells"): its fill for this surface, its ink readable on it.
+  const colours = cellColours(f, {
+    fill: c.palette.surface,
+    ink: c.palette.text,
+    dark: !isLightColor(c.palette.surface),
+  });
   return (
     <div
       className="absolute z-[9]"
@@ -168,14 +205,14 @@ export function SheetCellEditor({
         style={{
           width: width + 2,
           height: height + 2,
-          backgroundColor: f?.bg ?? c.palette.surface,
+          backgroundColor: colours.fill ?? c.palette.surface,
           boxShadow: `0 0 0 2px ${c.palette.focus}, 0 4px 12px rgba(0,0,0,0.15)`,
         }}
       >
         <div
           aria-hidden
           className="pointer-events-none absolute inset-0 whitespace-pre-wrap break-words px-1.5 py-1"
-          style={{ ...text, color: f?.fc ?? c.palette.text }}
+          style={{ ...text, color: colours.ink }}
         >
           {input.error ? (
             <>
@@ -199,7 +236,7 @@ export function SheetCellEditor({
           onKeyDown={input.onKeyDown}
           onSelect={(ev) => input.setCaret(ev.currentTarget.selectionStart ?? 0)}
           className="absolute inset-0 resize-none overflow-hidden whitespace-pre-wrap break-words border-0 bg-transparent px-1.5 py-1 outline-none"
-          style={{ ...text, color: 'transparent', caretColor: f?.fc ?? c.palette.text }}
+          style={{ ...text, color: 'transparent', caretColor: colours.ink }}
         />
         <FunctionAssist
           input={input}

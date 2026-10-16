@@ -11,7 +11,6 @@ Derived from [Board widgets](../board-widgets.md).
 | default set   | `DEFAULT_BOARD_WIDGETS` (+ `votes` when `voting.on`)              |
 | widget zone   | `BoardWidgetZone` (`data-widget-zone`), in `[data-board-header]`  |
 | widget        | `BoardWidgetView` inside a `[data-widget=<kind>]` wrapper         |
-| Widgets tile  | `PaletteTileDef` with `action: { type: 'plan-widget', widget }`   |
 
 ## Files
 
@@ -19,21 +18,15 @@ Derived from [Board widgets](../board-widgets.md).
 packages/items/src/board-widgets.ts      kinds, default set, readBoardWidgets, widgetsOf, placeWidget,
                                          nudgeWidget, removeWidget (pure)
 packages/items/src/board.ts              PlanBoardSetup.widgets; normaliseBoardSetup keeps it via readBoardWidgets
-apps/live/components/plan/board-widget-catalogue.ts   BOARD_WIDGET_INFO (label, description), PLAN_WIDGET_MIME
+packages/plan-art/src/board-widget-info.ts            BOARD_WIDGET_INFO (label, description)
 apps/live/components/plan/plan-tile-art.tsx           BoardWidgetArt (one Glyph per kind)
-apps/live/components/plan/widgets/widget-stats.ts     boardItems, boardPeople, boardTypeCounts, overWipColumns,
+packages/plan-art/src/widget-stats.ts                 boardItems, boardPeople, boardTypeCounts, overWipColumns,
                                                       dueCounts (pure)
 apps/live/components/plan/widgets/BoardWidgetView.tsx one pill per kind (WIDGET_PILL, 28 px)
-apps/live/components/plan/widgets/BoardWidgetZone.tsx the zone: order, reorder drag, keys, ×, drop bar
+apps/live/components/plan/widgets/BoardWidgetZone.tsx the zone: order, reorder drag, keys, ×, the + and its picker
 apps/live/components/plan/PlanBoardHeader.tsx         title, zone, Reveal / Retry, the unplaced list
-apps/live/hooks/plan/plan-widget-drop.ts              widgetSlotAt, planWidgetDragOver, dropPlanWidgetAt,
-                                                      dropPlanWidgetFromPalette, addPlanWidgetToBoard,
-                                                      setPlanWidgetEditor
-apps/live/hooks/plan/plan-board-targets.ts            target fields canEditWidgets, widgetHover, placeWidget;
-                                                      planBoardIds
-apps/live/hooks/plan/usePlanBoardDrop.ts              registers them; returns widgetSlot
-apps/live/hooks/canvas/usePaletteDrop.ts              routes PLAN_WIDGET_MIME drags and drops
-apps/live/components/palette/palette-plan-tiles.tsx   a tile per kind, section `plan-widgets`
+apps/live/hooks/plan/widget-slot.ts                   widgetSlotAt (the reorder's landmark)
+apps/live/components/plan/widgets/BoardWidgetPicker.tsx  the + popover: the widgets the board lacks, a row each
 ```
 
 ## Behaviour and state
@@ -45,12 +38,8 @@ apps/live/components/palette/palette-plan-tiles.tsx   a tile per kind, section `
   `widgetSlotAt(zone, x, kind)` gives the slot; pointerup commits `placeWidget` when the order changed, and the
   click that follows is swallowed. Pointercancel drops it.
 - Keys on a focused wrapper: Alt+←/→ `nudgeWidget`; Delete/Backspace `removeWidget`.
-- Palette drag: `usePaletteDrop` calls `planWidgetDragOver` (the board under the point via
-  `otherPlanBoardAt`, inside its header's vertical span, editable) which sets that board's `widgetSlot`;
-  `dropEffect` is `copy` there and `none` elsewhere. Drop calls `dropPlanWidgetFromPalette`. Any `dragend` clears
-  the marker.
-- Tap: `addPlanWidgetToBoard(kind)`: the selected element when it is a registered board, else the only
-  registered board, else the notice; places at the end.
+- Add: widgets are not in the palette; the zone's + opens `BoardWidgetPicker` and a pick places at the end (see
+  below).
 - Taking Filter off clears `quick.text`; taking Only Mine off clears `quick.mine`.
 
 ## Narrowing and feedback
@@ -63,9 +52,8 @@ apps/live/components/palette/palette-plan-tiles.tsx   a tile per kind, section `
 - Completion with no `doneColumnId` and `canEdit`: "Set Done Column" sets the last column's id (`DoneColumn`).
 - Reorder captures the pointer only once a press passes `REORDER_THRESHOLD_PX`, so a still press is a click on
   the widget's control.
-- `placeWidget(kind, slot, { tap })` returns `added | moved | already | refused`; a kind the board has sets
-  `flashWidget` for `WIDGET_FLASH_MS` (1400 ms): a 2 px `palette.focus` ring, pulsing (none with reduced motion).
-  A tap on one it has returns `already`, said as "<Label> is already on this board".
+- The + toggles `BoardWidgetPicker` (a `PortalMenu`, `below-start`, wide) offering `BOARD_WIDGET_KINDS` minus the
+  board's; a pick calls `onChange(placeWidget(widgets, kind, widgets.length))` and closes it.
 - New kinds and their stats (`widget-stats.ts`): `points` (`boardPoints`), `priorities` (`priorityCounts`),
   `unassigned` (`unassignedCount`), `top-voted` (`topVoted`), `stale` (`staleCount`, `STALE_DAYS` 14). Presets
   carry their own `widgets` (presets.ts), Blank included, per board-widgets.md "Defaults"; a guard test keeps
@@ -77,27 +65,24 @@ apps/live/components/palette/palette-plan-tiles.tsx   a tile per kind, section `
 
 - Stored shape: `widgets` is an array of kind strings. `readBoardWidgets` drops unknown kinds and repeats; a
   non-array is absent. No new D1 column: it rides in the element's `planBoard`.
-- `PlanBoardTarget` gains `canEditWidgets(): boolean`, `widgetHover(slot | null)`, `placeWidget(kind, slot)`.
 
 ## Errors and edge cases
 
-| Case                               | Handling                                                    |
-| ---------------------------------- | ----------------------------------------------------------- |
-| Dropped off any header             | Nothing placed; toast "Drop a widget into a board’s header" |
-| Tapped with no board to choose     | Toast "Select a board to add the widget to"                 |
-| A viewer who may not edit          | Zone has no ×, no drag, no keys; drops are refused          |
-| Kind the board already has         | Moves to the drop place (tap: to the end)                   |
-| Completion with no done column     | "No done column"                                            |
-| Items of a type the catalogue lost | Counted under the type they read as (`typeIn`)              |
-| More widgets than fit              | The zone scrolls sideways                                   |
+| Case                               | Handling                                       |
+| ---------------------------------- | ---------------------------------------------- |
+| A viewer who may not edit          | Zone has no +, no ×, no drag, no keys          |
+| Kind the board already has         | Left out of the + picker                       |
+| Completion with no done column     | "No done column"                               |
+| Items of a type the catalogue lost | Counted under the type they read as (`typeIn`) |
+| More widgets than fit              | The zone scrolls sideways                      |
 
 ## Presentation and UX
 
 - Pill: `h-7 rounded-md border px-2 text-[12px] font-medium`, border `palette.border`, text `palette.muted`,
   figures `palette.text`; WIP over: `palette.warning` on `palette.warningBg`.
-- Drop / reorder bar: 2 × 24 px, `palette.focus`. A zone under a palette drag: 1.5 px dashed `palette.focus`.
-- Empty zone copy for an editor, only while the board is selected (`BoardWidgetZone` `selected`): "Drag Widgets
-  here from the palette" and its **+**; unselected, the empty zone draws nothing but the palette drag's drop bar.
+- Reorder bar: 2 × 24 px, `palette.focus`.
+- Empty zone copy for an editor, only while the board is selected (`BoardWidgetZone` `selected`): "Add widgets to
+  this board" and its **+**; unselected, the empty zone draws nothing.
 - × : 16 px disc at the wrapper's top right, shown only while the board is selected (`selected`, from `PlanBoardHeader`), on any pointer; otherwise `display: none`, so it is out of the tab order too (Delete still removes a focused widget).
 
 ## Accessibility
@@ -109,7 +94,6 @@ apps/live/components/palette/palette-plan-tiles.tsx   a tile per kind, section `
 ## Observability
 
 - Every place, move and removal sends `track('Plan', 'Changed', 'Widgets')` through `trackSetup`.
-- A palette placement announces "<Label> added to the board" through `plan.announce`.
 
 ## Performance and limits
 
@@ -119,12 +103,11 @@ apps/live/components/palette/palette-plan-tiles.tsx   a tile per kind, section `
 
 ## Testing
 
-| Rule                                              | Test                                                   |
-| ------------------------------------------------- | ------------------------------------------------------ |
-| Known kinds once, default set, place/nudge/remove | packages/items/src/board-widgets.test.ts               |
-| Counts behind People, Types, WIP, Due             | apps/live/components/plan/widgets/widget-stats.test.ts |
-| Slot math, drag-over marker, drop, misses         | apps/live/hooks/plan/plan-widget-drop.test.ts          |
-| Widgets category and its ten tiles                | apps/live/components/palette/palette-*.test.ts         |
+| Rule                                              | Test                                                       |
+| ------------------------------------------------- | ---------------------------------------------------------- |
+| Known kinds once, default set, place/nudge/remove | packages/items/src/board-widgets.test.ts                   |
+| Counts behind People, Types, WIP, Due             | packages/plan-art/src/widget-stats.test.ts                 |
+| Slot math, the + picker offering only the missing | apps/live/components/plan/widgets/BoardWidgetZone.test.tsx |
 
 ## Constants and configuration
 

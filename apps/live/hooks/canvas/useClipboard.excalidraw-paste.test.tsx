@@ -24,7 +24,7 @@ const own: StickyElement = {
   width: 200,
   height: 200,
   label: 'ours',
-} as StickyElement;
+};
 
 function harness(
   options: {
@@ -46,7 +46,7 @@ function harness(
       readSelection: () => ({ selectedId: null, multiSelectedIds: new Set<string>() }),
       editingId: options.editingId ?? null,
       setEditingId,
-      activeTab: { id: 't', name: 'Board', opensIn: options.opensIn, elements } as Tab,
+      activeTab: { id: 't', name: 'Board', opensIn: options.opensIn, elements },
       commit: (m) => {
         elements = m(elements);
       },

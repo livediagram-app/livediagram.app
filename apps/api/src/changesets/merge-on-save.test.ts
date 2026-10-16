@@ -72,7 +72,7 @@ describe('mergeChangesetsIntoSave', () => {
       resolved: false,
       comments: [{ id: 'c', text: 'hi', createdAt: 1, authorName: 'B', authorColor: '#f00' }],
     };
-    const saved = box('a', 'old', { commentThread: thread } as Partial<Element>);
+    const saved = box('a', 'old', { commentThread: thread });
     const out = mergeChangesetsIntoSave(tab([saved]), [
       entry([{ kind: 'update', element: box('a', 'new') }], {
         before: { a: fp(box('a', 'old')) },

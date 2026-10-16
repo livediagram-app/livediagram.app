@@ -2,6 +2,7 @@
 // Plan board projection (docs/specs/026-plan/). Pure: no DOM, no dependencies.
 
 export * from './item';
+export * from './card-text';
 export * from './item-types';
 export * from './glyphs';
 export * from './type-catalogue';
@@ -23,6 +24,8 @@ export * from './plan-view-dates';
 export * from './plan-view-gantt';
 export * from './gantt-row-order';
 export * from './plan-view-charts';
+export * from './plan-view-statuses';
+export * from './calendar-move';
 export * from './presets';
 export * from './brought-types';
 export * from './card-search';
@@ -31,7 +34,9 @@ export * from './status-names';
 export * from './plan-outline';
 export * from './plan-names';
 export * from './type-changes';
+export * from './type-change-face';
 export * from './board-place';
+export * from './board-csv';
 export * from './status-title-case';
 export * from './tab-items';
 export * from './tab-import';

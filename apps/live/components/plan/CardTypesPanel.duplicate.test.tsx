@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import type { ReactNode } from 'react';
+import type { ComponentProps, ReactNode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ITEM_TYPES, ITEM_TYPES_MAX, duplicateItemType } from '@livediagram/items';
 import { CardTypesPanel } from './CardTypesPanel';
@@ -43,7 +43,7 @@ describe('duplicating a card type', () => {
 
   it('is disabled with its reason when the catalogue is full, and hidden from a viewer', () => {
     const many = Array.from({ length: ITEM_TYPES_MAX }, (_, i) => ({
-      ...ITEM_TYPES[1]!,
+      ...ITEM_TYPES[1],
       id: `t${i}`,
       label: `T${i}`,
     }));
@@ -60,21 +60,20 @@ describe('duplicating a card type', () => {
 
   it('fills a new type in the editor, saved as a new type', () => {
     const task = ITEM_TYPES.find((t) => t.id === 'task')!;
-    const onSave = vi.fn();
+    const onSave = vi.fn<ComponentProps<typeof ItemTypeEditor>['onSave']>();
     render(
       <ItemTypeEditor
         type={null}
         template={duplicateItemType(task, ITEM_TYPES)}
         types={ITEM_TYPES}
         itemCount={0}
-        canDelete
         onSave={onSave}
         onDelete={() => {}}
         onClose={() => {}}
       />,
     );
     expect(screen.getByText('New Card Type')).toBeTruthy();
-    expect((screen.getByLabelText('Name') as HTMLInputElement).value).toBe('Task copy');
+    expect(screen.getByLabelText<HTMLInputElement>('Name').value).toBe('Task copy');
     expect(screen.queryByRole('button', { name: 'Duplicate' })).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Save' }));
     const saved = onSave.mock.calls[0]![0];
@@ -87,10 +86,9 @@ describe('duplicating a card type', () => {
     const onDuplicate = vi.fn();
     render(
       <ItemTypeEditor
-        type={ITEM_TYPES[1]!}
+        type={ITEM_TYPES[1]}
         types={ITEM_TYPES}
         itemCount={0}
-        canDelete
         onSave={() => {}}
         onDelete={() => {}}
         onClose={() => {}}

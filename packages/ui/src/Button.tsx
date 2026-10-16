@@ -24,7 +24,7 @@ const BASE =
   'optical-edges inline-flex items-center justify-center gap-2 rounded-md font-medium transition focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-50 aria-disabled:cursor-not-allowed aria-disabled:opacity-50';
 
 const VARIANTS: Record<ButtonVariant, string> = {
-  primary: `bg-brand-500 text-white hover:bg-brand-600 focus-visible:outline-brand-500 ${SOLID_BRAND_DARK_CONTROL}`,
+  primary: `bg-brand-700 text-white hover:bg-brand-800 focus-visible:outline-brand-700 ${SOLID_BRAND_DARK_CONTROL}`,
   secondary:
     'border border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50 focus-visible:outline-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-slate-600 dark:hover:bg-slate-800',
   ghost:

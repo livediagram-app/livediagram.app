@@ -8,6 +8,7 @@
 // SHAPE_DEFAULT_SIZE reads RAIL_* at module-init time, and a runtime read
 // through the index cycle TDZ-crashes plain-Node ESM consumers. Only TYPES
 // come from './index', and those are erased at build.
+import { DEFAULT_ROOM_DOOR, isOfficeShape } from './office';
 import { presetSetup } from '@livediagram/items';
 import {
   DEFAULT_BUTTON_MODE,
@@ -32,6 +33,9 @@ import {
   DEFAULT_DECISION_STATUS,
 } from './collab-shapes';
 import { QUIZ_DEFAULT_SECONDS } from './quiz';
+import { DEFAULT_SEATING_FACING } from './seating';
+import { FENCE_DEFAULT_SIZE } from './fence';
+import { SANKEY_DEFAULT_FLOWS } from './sankey-model';
 import { NAV_DEFAULT_LINKS, PROCESS_DEFAULT_STEPS, STAT_DEFAULTS } from './web-components';
 import type { ShapeElement, ShapeKind } from './index';
 
@@ -89,6 +93,7 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   // (unlabelled) stickmen. 90×130 keeps room for a short label
   // (y 112..130) without dominating the box.
   actor: { width: 90, height: 130 },
+  'final-state': { width: 32, height: 32 },
   // Cloud: a container shape (networking / architecture). Stretches to
   // fit its label like the other flowchart shapes.
   cloud: { width: 180, height: 140 },
@@ -160,6 +165,9 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   // Legend (docs/specs/009-elements/pie-chart.md): narrower than a checklist, because a key is a swatch and
   // a word, and short enough to sit in a corner beside the thing it explains.
   legend: { width: 180, height: 132 },
+  // Sankey (docs/specs/009-elements/sankey.md): wide, because a Sankey reads left to right across its
+  // columns, and the starter budget has four of them, each with a label beside its bar.
+  sankey: { width: 560, height: 300 },
   // Mode button (docs/specs/009-elements/mode-button.md): a square-ish tile, sized for an icon ABOVE its
   // label — the shape a toolbar button has, rather than a wide pill that read
   // as just another labelled box.
@@ -169,6 +177,8 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   'focus-button': { width: 120, height: 96 },
   // Portal (docs/specs/009-elements/portal-element.md): portal-shaped — taller than it is wide, like a portal.
   portal: { width: 72, height: 112 },
+  // Tab window (docs/specs/009-elements/tab-window.md): 16:9, TAB_WINDOW_SIZE.
+  'tab-window': { width: 640, height: 360 },
   // Session button (docs/specs/012-collaboration/session-button.md): the Selection Mode button's tile, so a row of
   // Behaviour controls lines up.
   'session-button': { width: 104, height: 96 },
@@ -181,6 +191,21 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   // character — a seat the sprite fits into rather than a throne it rattles
   // around in.
   chair: { width: 76, height: 84 },
+  // Fence (docs/specs/009-elements/fence.md): a short run across, thin enough to read as a barrier.
+  fence: { ...FENCE_DEFAULT_SIZE },
+  // Desk and sofa (docs/specs/009-elements/chair.md "Desk and sofa"): their drawings' grids, at the
+  // chair's scale, so a character fits the seat.
+  desk: { width: 120, height: 112 },
+  sofa: { width: 152, height: 85 },
+  // The virtual office (docs/specs/009-elements/office.md): each at its drawing's grid, at the chair's scale; a
+  // room is a floor big enough to furnish.
+  room: { width: 480, height: 320 },
+  'meeting-table': { width: 232, height: 168 },
+  plant: { width: 56, height: 88 },
+  bookshelf: { width: 120, height: 132 },
+  'water-cooler': { width: 56, height: 112 },
+  'coffee-machine': { width: 72, height: 96 },
+  rug: { width: 200, height: 120 },
   // Estimate card (docs/specs/012-collaboration/estimate-card.md): the eight fibonacci chips wrap to two rows, and
   // the card has to hold them PLUS the answered avatars PLUS the two footer
   // buttons without clipping — a card that arrives already cut off is the
@@ -212,6 +237,29 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   // replace arrived at, so a canvas built from either reads the same.
   banner: { width: 440, height: 104 },
   callout: { width: 380, height: 116 },
+  // Card (docs/specs/009-elements/card.md): room for a title, a meta line, two body lines and a tag row.
+  card: { width: 300, height: 150 },
+  // Badge (docs/specs/009-elements/badge.md): fitted to its text on every commit (badgeSize); this is "New" (BADGE_NEW_LABEL).
+  badge: { width: 40, height: 24 },
+  // Step number (docs/specs/009-elements/step-number.md): a small disc.
+  step: { width: 28, height: 28 },
+  // Pointer note (docs/specs/009-elements/pointer-note.md): a short note; its tip hangs below it (D190).
+  'pointer-note': { width: 180, height: 64 },
+  // Diagram key (docs/specs/009-elements/diagram-key.md): one row's height until it settles (D191).
+  'diagram-key': { width: 260, height: 68 },
+  // Stack (docs/specs/009-elements/stack.md): an empty row to drop into (D192).
+  stack: { width: 360, height: 160 },
+  // Sequence diagram (docs/specs/009-elements/sequence-diagram.md): three lifelines and five messages (D194).
+  sequence: { width: 560, height: 340 },
+  // Boundary (docs/specs/009-elements/boundary.md): room for a few nodes inside.
+  boundary: { width: 480, height: 300 },
+  // Concept graphics (docs/specs/009-elements/concept-graphics.md).
+  'layer-stack': { width: 360, height: 260 },
+  pyramid: { width: 320, height: 260 },
+  cycle: { width: 300, height: 300 },
+  hub: { width: 340, height: 320 },
+  onion: { width: 320, height: 320 },
+  chevrons: { width: 600, height: 150 },
   // Three 150px cards and two 16px gaps.
   'stat-row': { width: 482, height: 96 },
   process: { width: 420, height: 110 },
@@ -330,6 +378,38 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
       textAlignY: 'bottom',
       // A chair stretched wide stops reading as a chair, the same reason the
       // portal locks its aspect. Unlockable from the menu like any element.
+      aspectLocked: true,
+    };
+  }
+  // Desk and sofa (docs/specs/009-elements/chair.md "Desk and sofa"): furniture like the chair, each
+  // with the facing it is drawn at, its label under it, and its proportions held.
+  if (kind === 'desk' || kind === 'sofa') {
+    return {
+      ...base,
+      chairFacing: DEFAULT_SEATING_FACING[kind],
+      textSize: 'sm',
+      textAlignY: 'bottom',
+      aspectLocked: true,
+    };
+  }
+  // The virtual office (docs/specs/009-elements/office.md). A room is any rectangle, its name on a plate at the
+  // top left of its back wall; everything else keeps its drawing's proportions, a table's label under it.
+  if (kind === 'room') {
+    return {
+      ...base,
+      label: 'Room',
+      roomDoor: DEFAULT_ROOM_DOOR,
+      textSize: 'sm',
+      textAlignX: 'left',
+      textAlignY: 'top',
+    };
+  }
+  if (isOfficeShape(kind)) {
+    return {
+      ...base,
+      ...(kind === 'meeting-table'
+        ? { textSize: 'sm' as const, textAlignY: 'bottom' as const }
+        : {}),
       aspectLocked: true,
     };
   }
@@ -568,7 +648,7 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
   // (docs/specs/026-plan/plan-mode.md). Plan card: its caller names the item.
   if (kind === 'plan-board') return { ...base, planBoard: presetSetup('blank') };
   if (kind === 'plan-card') return { ...base, planCard: { itemId: '' } };
-  // Plan view: Status Breakdown unless its caller names the view.
+  // Plan view: Cards by Field unless its caller names the view.
   if (kind === 'plan-view') return { ...base, planView: { view: 'workload' } };
   // Sheet: its caller makes the sheet in the store and names it.
   if (kind === 'plan-sheet') return { ...base, planSheet: { sheetId: '' } };
@@ -586,6 +666,162 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
       textAlignX: 'center',
       textAlignY: 'middle',
       borderRadius: 'lg',
+    };
+  }
+  // Concept graphics (docs/specs/009-elements/concept-graphics.md): rows to start from, so the first one reads as
+  // what it is.
+  if (kind === 'layer-stack')
+    return {
+      ...base,
+      conceptRows: [
+        { label: 'Presentation', note: 'Next.js' },
+        { label: 'API', note: 'Workers' },
+        { label: 'Domain', note: 'packages/document' },
+        { label: 'Storage', note: 'D1' },
+      ],
+    };
+  if (kind === 'pyramid')
+    return {
+      ...base,
+      conceptRows: [
+        { label: 'Vision' },
+        { label: 'Strategy' },
+        { label: 'Objectives' },
+        { label: 'Daily work' },
+      ],
+    };
+  if (kind === 'cycle')
+    return {
+      ...base,
+      label: 'Weekly loop',
+      textSize: 'sm',
+      aspectLocked: true,
+      conceptRows: [{ label: 'Plan' }, { label: 'Do' }, { label: 'Check' }, { label: 'Act' }],
+    };
+  if (kind === 'hub')
+    return {
+      ...base,
+      label: 'Orders',
+      textSize: 'sm',
+      textBold: true,
+      conceptRows: ['Payments', 'Stock', 'Email', 'Search', 'Analytics', 'Support'].map(
+        (label) => ({
+          label,
+        }),
+      ),
+    };
+  if (kind === 'onion')
+    return {
+      ...base,
+      aspectLocked: true,
+      conceptRows: [
+        { label: 'Domain' },
+        { label: 'Application' },
+        { label: 'Adapters' },
+        { label: 'Infrastructure' },
+      ],
+    };
+  if (kind === 'chevrons')
+    return {
+      ...base,
+      conceptRows: [
+        { label: 'Commit', note: 'push to main' },
+        { label: 'Build', note: '2 min' },
+        { label: 'Test', note: '8,400 tests' },
+        { label: 'Release', note: 'manual gate' },
+      ],
+    };
+  // Boundary (docs/specs/009-elements/boundary.md): a titled, dashed container.
+  if (kind === 'boundary')
+    return {
+      ...base,
+      label: 'Region',
+      strokeStyle: 'dashed',
+      borderRadius: 'md',
+      textSize: 'sm',
+      textBold: true,
+      // The title sits in its tab or corner (boundaryLayout), so the label takes the region whole.
+      textAlignX: 'left',
+      textAlignY: 'middle',
+      padding: 'none',
+    };
+  // Badge (docs/specs/009-elements/badge.md): a word to start from; a step takes its number when it lands
+  // (settleChips), so it starts with none.
+  // Their text is centred with no padding: the face is the pill, the label its word.
+  if (kind === 'badge')
+    return { ...base, label: 'New', textSize: 'sm', textBold: true, padding: 'none' };
+  if (kind === 'stack')
+    return {
+      ...base,
+      label: '',
+      strokeStyle: 'dashed',
+      strokeWidth: 'thin',
+      borderRadius: 'md',
+      textSize: 'sm',
+      textAlignX: 'left',
+      textAlignY: 'top',
+    };
+  if (kind === 'sequence')
+    return {
+      ...base,
+      label: '',
+      strokeWidth: 'thin',
+      sequenceParticipants: [
+        { id: 'browser', label: 'Browser' },
+        { id: 'api', label: 'API' },
+        { id: 'db', label: 'Database' },
+      ],
+      sequenceMessages: [
+        { from: 'browser', to: 'api', label: 'Place order', kind: 'call' },
+        { from: 'api', to: 'api', label: 'Validate', kind: 'call' },
+        { from: 'api', to: 'db', label: 'Insert order', kind: 'call' },
+        { from: 'db', to: 'api', label: 'Order id', kind: 'reply' },
+        { from: 'api', to: 'browser', label: '201 Created', kind: 'reply' },
+      ],
+    };
+  if (kind === 'diagram-key')
+    return {
+      ...base,
+      label: 'Key',
+      textSize: 'sm',
+      textBold: true,
+      textAlignX: 'left',
+      textAlignY: 'top',
+      // The title sits in its own 20 px band (diagramKeyLayout); padding there clipped its descenders.
+      padding: 'none',
+      borderRadius: 'md',
+      strokeWidth: 'thin',
+    };
+  if (kind === 'pointer-note')
+    return {
+      ...base,
+      label: 'Stale for 60 s after a price change',
+      textSize: 'sm',
+      textAlignX: 'left',
+      textAlignY: 'top',
+      borderRadius: 'md',
+      strokeColor: '#d97706',
+      fillColor: '#fffbeb',
+      textColor: '#78350f',
+      pointerTip: { x: -24, y: 120 },
+    };
+  if (kind === 'step')
+    return { ...base, aspectLocked: true, textSize: 14, textBold: true, padding: 'none' };
+  // Card (docs/specs/009-elements/card.md): every slot but the band on, so the first one shows what a card is made of.
+  if (kind === 'card') {
+    return {
+      ...base,
+      cardMedia: 'tile',
+      iconId: 'credit-card',
+      pageTitle: 'Payments',
+      pageSubtitle: 'Stripe, EU region',
+      label: 'Takes card payments and issues refunds.',
+      tags: ['PCI', 'v2'],
+      textSize: 'sm',
+      textAlignX: 'left',
+      textAlignY: 'top',
+      strokeWidth: 'thin',
+      borderRadius: 'md',
     };
   }
   if (kind === 'callout') {
@@ -623,6 +859,11 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
   // legend beside a chart matches it without being told to. See docs/specs/009-elements/pie-chart.md.
   if (kind === 'legend') {
     return { ...base, legendItems: LEGEND_DEFAULT_ITEMS.map((i) => ({ ...i })) };
+  }
+  // Sankey: the starter household budget (docs/specs/009-elements/sankey.md), so it drops as a real
+  // diagram to edit rather than an empty box to fill. Copied, so no two diagrams share the array.
+  if (kind === 'sankey') {
+    return { ...base, sankeyFlows: SANKEY_DEFAULT_FLOWS.map((f) => ({ ...f })) };
   }
   return base;
 }

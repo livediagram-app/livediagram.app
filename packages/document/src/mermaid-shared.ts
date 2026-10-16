@@ -4,12 +4,14 @@
 // read id tokens, and decode labels the same way. Internal module, not
 // re-exported from the package index — the public surface is parseMermaid.
 
-import type { DiagramGraph } from './graph-authoring';
+import type { DiagramGraph, GraphCluster } from './graph-authoring';
 
 export type MermaidDirection = 'TB' | 'LR';
 
 export type ParseMermaidResult =
-  { ok: true; graph: DiagramGraph; direction: MermaidDirection } | { ok: false; error: string };
+  // `folded`: subgraphs nested in another, folded into their outer one.
+  | { ok: true; graph: DiagramGraph; direction: MermaidDirection; folded?: number }
+  | { ok: false; error: string };
 
 // TD/TB (and BT, folded) → TB; LR/RL → LR. Anything else → TB.
 export function directionOf(token: string | undefined): MermaidDirection {
@@ -75,4 +77,23 @@ export function decodeLabel(s: string): string {
 export function readId(s: string): { id: string; rest: string } | null {
   const m = /^\s*([A-Za-z0-9_]+)/.exec(s);
   return m ? { id: m[1]!, rest: s.slice(m[0].length) } : null;
+}
+
+// The clusters that become frames. An arrow may reference a cluster's id (it pins to the frame), and that mention
+// auto-created a node with the id: drop it (unless a real node claimed it) so the id resolves to the frame. Only
+// for a cluster that BECOMES a frame: an empty one (`subgraph X … end`, `state X { }`) is dropped, so deleting its
+// node too would silently erase every arrow touching X. Its auto node stays and the arrows keep a target.
+export function framedClusters(
+  clusters: GraphCluster[],
+  implicit: ReadonlySet<string>,
+  nodes: Map<string, unknown>,
+): GraphCluster[] {
+  const surviving = new Set(clusters.filter((c) => c.members.length > 0).map((c) => c.id));
+  for (const c of clusters) {
+    if (surviving.has(c.id) && implicit.has(c.id) && nodes.has(c.id)) {
+      nodes.delete(c.id);
+      for (const other of clusters) other.members = other.members.filter((m) => m !== c.id);
+    }
+  }
+  return clusters.filter((c) => c.members.length > 0);
 }

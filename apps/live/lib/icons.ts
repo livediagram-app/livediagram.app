@@ -41,16 +41,6 @@ export const ICON_DND_MIME = 'application/x-livediagram-icon';
 // element at that point. Value carried = the ShapeKind (shapes + devices).
 export const PALETTE_DND_MIME = 'application/x-livediagram-palette';
 
-// The full catalogue (part 1 then part 2, so index 0 is still the default
-// icon — the registry preserves that order when it assembles the parts).
-// Empty until the async catalogue chunk loads; callers that render the list
-// (the Icons picker, palette search) subscribe via useIconCatalogs so they
-// re-run once the data lands. A function rather than an exported const so
-// there is no stale module-level snapshot of the pre-load empty array.
-export function getIconCatalog(): IconDef[] {
-  return getLoadedIconCatalog();
-}
-
 // The globals.css class for an `lvd-{prefix}-{anim}` keyframe set (undefined
 // anim = static, no class). The shared shape behind the per-element animation
 // classes — icon glyphs, rating stars, pie slices — so the `lvd-` naming
@@ -82,7 +72,7 @@ export function iconAnimationStyle(
   const style: Record<string, number> = {};
   if (resolved !== 'normal') style['--lvd-icon-anim-speed'] = ANIMATION_SPEED_FACTOR[resolved];
   if (repeat === false) style['--lvd-icon-anim-iter'] = 1;
-  return Object.keys(style).length > 0 ? (style as CSSProperties) : undefined;
+  return Object.keys(style).length > 0 ? style : undefined;
 }
 
 // The `--lvd-{prefix}-speed` / `-iter` custom properties the per-element
@@ -98,7 +88,7 @@ export function animSpeedVars(
   return {
     [`--lvd-${prefix}-speed`]: ANIMATION_SPEED_FACTOR[speed ?? DEFAULT_ANIMATION_SPEED],
     [`--lvd-${prefix}-iter`]: loops ? 'infinite' : 1,
-  } as CSSProperties;
+  };
 }
 
 // Fallback when an iconId isn't in the catalogue (e.g. a document saved
@@ -165,6 +155,8 @@ export const ICON_CATEGORIES: IconCategory[] = [
       'wifi',
       'monitor',
       'smartphone',
+      'browser',
+      'router',
       'globe',
       'layers',
       'box',
@@ -176,6 +168,9 @@ export const ICON_CATEGORIES: IconCategory[] = [
       'cast',
       'command',
       'share-2',
+      'pull-request',
+      'merge',
+      'bug-fixed',
     ],
   },
   {
@@ -217,6 +212,7 @@ export const ICON_CATEGORIES: IconCategory[] = [
       'save',
       'archive',
       'paperclip',
+      'shield-check',
     ],
   },
   {
@@ -262,6 +258,144 @@ export const ICON_CATEGORIES: IconCategory[] = [
       'plant',
       'door',
       'stairs',
+    ],
+  },
+  {
+    id: 'food',
+    label: 'Food & Drink',
+    iconIds: [
+      'coffee',
+      'croissant',
+      'wheat',
+      'cake-slice',
+      'cookie',
+      'pizza',
+      'utensils',
+      'chef-hat',
+      'wine',
+      'beer',
+      'apple',
+      'sandwich',
+      'cup-soda',
+      'ice-cream-cone',
+      'salad',
+      'egg',
+      'milk',
+      'carrot',
+      'bean',
+    ],
+  },
+  {
+    id: 'shopping',
+    label: 'Shopping & Money',
+    iconIds: [
+      'store',
+      'shopping-bag',
+      'receipt',
+      'wallet',
+      'piggy-bank',
+      'coins',
+      'banknote',
+      'badge-percent',
+      'gift',
+      'ticket',
+    ],
+  },
+  {
+    id: 'business',
+    label: 'Business',
+    iconIds: [
+      'rocket',
+      'lightbulb',
+      'handshake',
+      'megaphone',
+      'presentation',
+      'chart-line',
+      'chart-column',
+      'goal',
+      'trophy',
+      'crown',
+      'scale',
+      'factory',
+      'warehouse',
+      'recycle',
+      'chat',
+      'feedback',
+      'celebrate',
+      'sparkles',
+      'thumbs-down',
+      'timer',
+      'hourglass',
+      'calendar-check',
+    ],
+  },
+  {
+    id: 'travel',
+    label: 'Travel',
+    iconIds: [
+      'plane',
+      'truck',
+      'ship',
+      'train-front',
+      'car',
+      'bike',
+      'bus',
+      'fuel',
+      'map',
+      'compass',
+      'luggage',
+    ],
+  },
+  {
+    id: 'nature',
+    label: 'Nature & Weather',
+    iconIds: [
+      'leaf',
+      'sprout',
+      'tree-pine',
+      'flower',
+      'mountain',
+      'droplet',
+      'flame',
+      'snowflake',
+      'cloud-rain',
+      'umbrella',
+      'waves',
+    ],
+  },
+  {
+    id: 'life',
+    label: 'Life & Health',
+    iconIds: [
+      'house',
+      'building',
+      'hammer',
+      'baby',
+      'dog',
+      'cat',
+      'paw-print',
+      'stethoscope',
+      'pill',
+      'hospital',
+      'dumbbell',
+    ],
+  },
+  {
+    id: 'learning',
+    label: 'Learning & Media',
+    iconIds: [
+      'graduation-cap',
+      'school',
+      'book-open',
+      'pencil',
+      'palette',
+      'brush',
+      'music',
+      'headphones',
+      'mic',
+      'film',
+      'gamepad',
+      'newspaper',
     ],
   },
   {

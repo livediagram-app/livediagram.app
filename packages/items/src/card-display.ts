@@ -13,6 +13,7 @@ import {
   isCustomCardField,
   type CardField,
   type CardSize,
+  type CustomCardField,
 } from './board';
 import type { ItemTypeDef } from './item-types';
 
@@ -25,6 +26,22 @@ export const CARD_SLOTS: Readonly<Record<CardSize, readonly CardSlot[]>> = {
   minimal: ['lead', 'trail'],
   compact: ['lead', 'row', 'trail'],
   detailed: ['head', 'headEnd', 'body', 'foot', 'footEnd'],
+};
+
+// The built-in card fields' names, as the editor shows them; a custom field (Parent among them) is named by its type.
+export const CARD_FIELD_LABELS: Readonly<Record<Exclude<CardField, CustomCardField>, string>> = {
+  key: 'Number',
+  type: 'Type',
+  assignee: 'Assignee',
+  priority: 'Priority',
+  labels: 'Labels',
+  estimate: 'Estimate',
+  start: 'Start Date',
+  due: 'Due Date',
+  votes: 'Votes',
+  checklist: 'Checklist',
+  comments: 'Comments',
+  description: 'Description',
 };
 
 export const CARD_SLOT_LABELS: Readonly<Record<CardSize, Partial<Record<CardSlot, string>>>> = {

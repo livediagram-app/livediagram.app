@@ -6,7 +6,12 @@
 import { creationIntentOf, type CreationIntent } from '@livediagram/api-schema';
 import type { Tab } from '@livediagram/document';
 import { applyReplace, type ReplaceBody } from '@livediagram/edit-operations';
-import { buildTemplateTabs, isTemplateKind, templateFamilyOf } from '@livediagram/templates';
+import {
+  buildTemplateTabs,
+  isTemplateKind,
+  templateFamilyOf,
+  templateTabName,
+} from '@livediagram/templates';
 import { engineLog } from '../changesets/log';
 import { engineRefusal } from '../changesets/request';
 import { isRecord } from '@livediagram/document';
@@ -29,6 +34,13 @@ function sourceOf(tab: Record<string, unknown>): ReplaceBody | null {
   return { [key]: tab[key] } as ReplaceBody;
 }
 
+// The first tab's name, by the templates' own rule (templateTabName); any other tab takes the name given.
+export function seededTabName(given: string, template: unknown): string {
+  return typeof template === 'string' && isTemplateKind(template)
+    ? templateTabName(given, template)
+    : given;
+}
+
 export function compileSeededTabs(tabs: readonly unknown[], documentId: string): CompiledSeed {
   const out: unknown[] = [];
   let first: { tab: Tab; template: string | null } | null = null;
@@ -43,7 +55,7 @@ export function compileSeededTabs(tabs: readonly unknown[], documentId: string):
     const { graph: _g, mermaid: _m, template, ...rest } = raw;
     const compiled = applyReplace(null, body, {
       tabId,
-      name: typeof raw.name === 'string' ? raw.name : 'Tab',
+      name: seededTabName(typeof raw.name === 'string' ? raw.name : 'Tab', template),
       ...(typeof raw.theme === 'string' ? { themeId: raw.theme } : {}),
       log: engineLog({ documentId, tabId }),
     });

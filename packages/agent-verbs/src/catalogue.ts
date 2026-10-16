@@ -31,6 +31,7 @@ import {
   watch,
 } from './verbs/local';
 import { iconSearch, schemaView, templateLs, templateView } from './verbs/catalogues';
+import { imageLs } from './verbs/image';
 import { changesetApply, elementVerbs, tabDiff } from './verbs/edit';
 import { graphLintVerb } from './verbs/graph';
 import {
@@ -49,6 +50,7 @@ import { boardVerbs } from './verbs/board';
 import { cardTypeVerbs } from './verbs/card-type';
 import { sheetVerbs } from './verbs/sheet';
 import { illustrateVerbs } from './verbs/illustrate';
+import { formVerbs } from './verbs/form';
 import { linkInit, linkLs, linkStatus, sync } from './verbs/link';
 import { workbenchOpen, workbenchPair } from './verbs/workbench';
 
@@ -74,6 +76,7 @@ export const VERBS: readonly Verb[] = [
   ...cardTypeVerbs,
   ...sheetVerbs,
   ...illustrateVerbs,
+  ...formVerbs,
   changesetApply,
   changesetLs,
   changesetShow,
@@ -90,6 +93,7 @@ export const VERBS: readonly Verb[] = [
   templateLs,
   templateView,
   iconSearch,
+  imageLs,
   schemaView,
   guide,
   skillPrint,
@@ -127,6 +131,7 @@ export const RESOURCES: readonly { name: string; alias?: string; summary: string
   { name: 'sheet', summary: 'Sheets: their cells by A1, rows and columns' },
   { name: 'page', summary: 'Illustrate pages: slides, logos, infographics' },
   { name: 'article', summary: 'Articles as Markdown' },
+  { name: 'form', summary: 'Forms: build, read and publish one' },
   { name: 'changeset', summary: 'Changesets: what changed, by whom, and undoing one' },
   { name: 'comment', summary: 'Comment threads' },
   { name: 'presence', summary: 'What the agent is doing, shown on a tab' },
@@ -138,6 +143,7 @@ export const RESOURCES: readonly { name: string; alias?: string; summary: string
   },
   { name: 'template', summary: 'Templates: the library, and one as an outline' },
   { name: 'icon', summary: 'Icons: find one for iconId=' },
+  { name: 'image', summary: 'Images: the gallery imageId= takes' },
   { name: 'skill', summary: 'The agent skill file' },
   { name: 'auth', summary: 'Credentials' },
   { name: 'telemetry', summary: 'The usage count: on or off' },

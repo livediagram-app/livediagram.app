@@ -190,6 +190,10 @@ type UserPreferences = {
   uiScalePanels?: number;
   uiScaleToolbar?: number;
   uiScaleCornerButtons?: number;
+  // Button Labels (Settings › Appearance): the names beside the editor's bottom buttons' icons, the
+  // footer bar's and, on a wide desktop, the bottom-right cluster's (live-app.md "Named on a wide
+  // desktop"). Missing / true === shown; a phone never shows them. Read through useDockNames.
+  dockButtonNames?: boolean;
 
   // Panel switches (the Panels sub-categories, see "Settings dialog"
   // below). Each defaults ON via `!== false`, so an existing user's editor
@@ -247,16 +251,46 @@ type UserPreferences = {
   // sent" email (sent to the team's admins). Defaults to true (notify).
   notifyInviteResponse?: boolean;
 
-  // The interactive editor tour's seen-guard (docs/specs/007-editor/editor-tour.md). True once the
+  // The Diagram tour's seen-guard (docs/specs/007-editor/editor-tour.md; named for the welcome tour it
+  // was until October 2026, so earlier answers still hold). True once the
   // tour's welcome offer has been answered (taken, skipped, or declined),
   // so the offer never re-appears for this user on any device. Surfaced
-  // in Settings as "Welcome Tour Completed"; unchecking it and closing
+  // in Settings as Tours › "Diagram Tour" (inverted); turning it on and closing
   // Settings replays the tour. Missing / undefined === not seen.
   tourSeen?: boolean;
-  // The Plan tour's seen-guard (docs/specs/026-plan/plan-tour.md), as `tourSeen` is the welcome
-  // tour's. Surfaced in Settings as "Show Plan Tour" (inverted); turning it on from off and closing
-  // Settings reruns the tour in Plan. Missing / undefined === not seen.
+  // The Plan tour's seen-guard (docs/specs/026-plan/plan-tour.md): true counts both tracks as seen while Power user
+  // mode is on (lib/tour-tracks.ts); set with every track by Settings' Tours › "Plan Tour" switched off.
   planTourSeen?: boolean;
+  // The Plan tour tracks (Boards, Sheets) whose offer has been answered (taken, skipped or declined), so each offers
+  // itself once ever. Cleared with `planTourSeen` when the Settings switch is turned on.
+  planTourTracks?: PlanTourTrack[];
+  // The Facilitate tour's seen-guard (docs/specs/012-collaboration/facilitate-tour.md), as `planTourSeen`.
+  // Surfaced in Settings as Tours › "Facilitate Tour" (inverted). Missing / undefined === not seen.
+  facilitateTourSeen?: boolean;
+  // The Draw tour's seen-guard (docs/specs/023-draw-mode/draw-tour.md), as `facilitateTourSeen`.
+  // Surfaced in Settings as Tours › "Draw Tour" (inverted). Missing / undefined === not seen.
+  drawTourSeen?: boolean;
+  // The Forms tour's seen-guard (docs/specs/030-forms/forms.md "The Forms tour"), as `drawTourSeen`; Show Me Around
+  // in the form's cog panel reruns it. Missing / undefined === not seen.
+  formTourSeen?: boolean;
+  // The Avatar tour's seen-guard (docs/specs/008-canvas/avatar-tour.md), as `drawTourSeen`.
+  // Surfaced in Settings as Tours › "Avatar Tour" (inverted). Missing / undefined === not seen.
+  avatarTourSeen?: boolean;
+  // The Illustrate tour's seen-guard (docs/specs/007-editor/illustrate-tour.md), as `planTourSeen`: true counts every
+  // page kind's track as seen while Power user mode is on. Set with every kind by Settings' Tours › "Illustrate Tour".
+  illustrateTourSeen?: boolean;
+  // The page kinds whose Illustrate tour track has been offered and answered (taken, skipped or declined), so each
+  // kind offers its own once ever. Cleared with `illustrateTourSeen` when the Settings switch is turned on.
+  illustrateTourKinds?: PageKind[];
+  // Element tours (docs/specs/007-editor/element-tours.md): the toured element kinds whose offer has been answered
+  // (Play or Cancel). Surfaced in Settings as Tours › Element Tours, one switch per kind (inverted).
+  elementTourKinds?: ElementTourKind[];
+  // Counts every element tour as answered while Power user mode is on; written by its preset.
+  elementToursSeen?: boolean;
+  // The presenter settings (docs/specs/012-collaboration/presentation-mode.md "Presenter settings"), as one object,
+  // read through lib/presentation-config. Surfaced in Settings as Editor › Presenting. Missing === what this
+  // browser kept before they followed the account, else the defaults.
+  presentation?: Record<string, unknown>;
   // DEAD (../004-interface-design/colour-picker.md "Custom colours"): Custom colours are kept with the document's tabs, not per user.
   // Nothing reads or writes this; it stays because it is already stored.
   customSwatches?: string[];
@@ -295,19 +329,10 @@ type UserPreferences = {
   // or Grid, as last chosen from the dock's Settings; never stored on a tab. Unset, or
   // anything else, is Grid (lib/whiteboard-dock-prefs).
   drawPattern?: 'blank' | 'grid' | 'graph';
-  // Skip the New Document wizard's Location step
-  // (../013-workspace/default-folders.md#skipping-the-location-step): where every
-  // new document is saved, as the Location step's whole selection, plus the
-  // place's name for the "Saving in" line and the Settings row. `null` (written
-  // on Turn Off, so it wins the merge over another device's cache) or missing
-  // is off. Junk reads as off (lib/skip-location-step).
-  skipLocationStep?: {
-    saveLocation: 'livediagram' | 'browser';
-    // 'unsorted' | 'folder:<id>' | 'team:<id>' | 'team:<id>:folder:<id>';
-    // always 'unsorted' for 'browser'.
-    placement: string;
-    placeName: string;
-  } | null;
+  // Where Illustrate's Contents sits on a desktop (./illustrate-pages.md "Contents"):
+  // docked as a sidebar down the canvas's left, or minimised to its cluster button.
+  // Unset, or anything but 'button', is the sidebar (lib/contents-placement).
+  contentsPlacement?: 'sidebar' | 'button';
 
   // Power user mode (docs/specs/007-editor/power-user-mode.md). True while the mode is on.
   // Switching it on applies the preset once; see powerUserBaseline.
@@ -359,17 +384,24 @@ Missing key === undefined === default behaviour. Concretely:
   ignored: there is one panel layout ([Toolbar layout](toolbar-layout.md#one-layout)).
 - `whiteboardDockPosition` undefined → a whiteboard's dock at the top (the
   default). Only `'bottom'` moves it to the bottom.
+- `contentsPlacement` undefined → Illustrate's Contents docked as a sidebar down
+  the canvas's left on a desktop (the default). `'button'` minimises it to its
+  cluster button; a phone always has the button
+  ([Illustrate pages](illustrate-pages.md#contents)). Written by the sidebar's
+  Minimise, the popover's Dock as Sidebar and Settings › Editor › Illustrate ›
+  Contents; emits `UI`/`Changed`/`ContentsPlacementSidebar` or
+  `ContentsPlacementButton`.
 - `elementIndicatorStyle` undefined → Top: an element's link, note, action
   and comment glyphs sit inside it along its top, top-right on a box and centred
   on a round or pointed shape (the default). `'footer'` moves them to a labelled
   row along its bottom edge; `'off'` hides them
   ([Element indicators](../008-canvas/element-indicators.md)). Emits `UI`/`Changed`/
   `ElementIndicatorsTop`, `ElementIndicatorsFooter` or `ElementIndicatorsOff`.
-- `skipLocationStep` undefined / `null` → the New Document wizard has its
-  Location step (the default). Set from that step's "Always save new documents
-  in <place> and skip this step" checkbox (`UI`/`Toggled`/`SkipLocationStepOn`),
-  cleared by Settings › Documents › Skip the Location Step's Turn Off
-  (`UI`/`Toggled`/`SkipLocationStepOff`).
+- `dockButtonNames` undefined / true → the editor's bottom buttons named
+  beside their icons on a desktop (the default). `false` leaves them icons
+  alone, each still named in its hover card. A phone shows icons alone
+  whatever it says, so its Settings row is desktop only. Emits
+  `UI`/`Toggled`/`DockButtonNames{On,Off}`.
 - `drawPattern` undefined → Grid (`graph`) behind every tab the person works
   on in Draw mode. The dock's Background row writes it; it emits the same
   Background events as before and changes nothing on the tab.
@@ -380,8 +412,13 @@ Missing key === undefined === default behaviour. Concretely:
   default). A value below 1 makes every panel translucent at rest
   (snapping back to opaque on hover / focus) via the
   `--lvd-panel-opacity` custom property, on every surface: docked,
-  popover (the Explorer and cluster popovers), the Map, Quick style
-  and the Toolbar strip. Buttons stay opaque. Emits
+  popover (the cluster popovers), the Map, Quick style and the Toolbar
+  strip. Buttons stay opaque. The **Explorer** is always fully opaque,
+  docked or as a popover: it is where documents are read and managed,
+  and its menus open outside the panel, so a fade would set in just as
+  one of them is in use. A touch screen (no
+  hover) keeps every panel opaque, since nothing there would bring a
+  faded panel back while it is in use. Emits
   `UI`/`Changed`/`PanelOpacity` on release ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)).
 - `uiScale` undefined / 1 → the chrome at its design size (the default).
   Any other value in 0.8..1.2 draws the panels, the toolbar and the
@@ -405,6 +442,10 @@ Missing key === undefined === default behaviour. Concretely:
   `planModeEnabled` went with the Settings › Experimental category (removed
   2026-10-06, [Editor modes](editor-modes.md#every-mode-always-offered)):
   every mode is always offered, and a stored `false` is dropped the same way.
+  `skipLocationStep` ("Always save new documents in <place> and skip this step") went with the New
+  Document wizard's Location step ([New document route](new-document-route.md#one-step-wizard)): the wizard
+  never asks where a document goes, so a stored place is dropped the same way and new documents follow the
+  [default folders](../013-workspace/default-folders.md).
 - `quickAddOnHover` undefined / false → click to open an element's quick-add
   `+` menu (the default; hover-open can feel twitchy, so it's opt-in). `true`
   opens it on hover instead, closing a beat after the pointer leaves both the
@@ -559,23 +600,29 @@ and the dialog stays as the one complete, browsable index of them.
     you flip things whose effect is on the canvas behind it.
 
   **It is the central place to find every preference.** Categories:
-  **Editor** (quick-add on hover, alignment guides, auto-attach arrows,
-  middle-mouse pan, then a **Power User** section: power user mode, and
-  Minimal chrome while the mode is on; with the sub-category **Draw**: dock
-  position, Top or Bottom), **Appearance** (theme, UI scale with a slider per part), **Keyboard**
+  **Editor** (a **Canvas** section: alignment guides, auto-attach arrows,
+  element indicators; a **Mouse** section: quick-add on hover, middle-mouse
+  pan; then **Power User**: power user mode, with Minimal chrome and the preset
+  readout nested under it while the mode is on; with the sub-categories
+  **Draw** (dock position, Top or Bottom) and **Illustrate** (a **Pages**
+  section: Contents, Sidebar or Button; then a **Logo Pages** section: Logo Guides, with Logo Guide Strength and the Guides Shown chips
+  nested under it) and **Presenting** (the presenter settings: Slides, Playback and While Presenting,
+  [Presentation mode](../012-collaboration/presentation-mode.md) "Presenter settings")), **Appearance** (theme, then an **Interface** section:
+  Button Labels, and UI scale with a slider per part nested under it), **Keyboard**
   (the Keyboard Shortcuts on/off switch, then the full shortcut catalogue as
   collapsible groups), **Panels** (panel opacity; with the
   sub-categories **Layers**, **Map**, **Collaborate** and
   **Quick Style**, one per panel),
-  **Accessibility** (reduce motion, show welcome tour), **AI Tools** (assistant,
-  suggested prompts, and a **Manage API Tokens** link row that opens the API
-  Tokens sub-category), **Documents** (a **Where New Documents Go** section: first **Skip the Location Step**,
-  the `skipLocationStep` preference with a Turn Off button, then one row per
+  **Accessibility** (reduce motion, and a **UI Scale** link row that opens
+  Appearance), **Tours** (one switch per guided tour, see **Tours** below),
+  **AI Tools** (assistant, with suggested prompts nested under it, and a
+  **Manage API Tokens** link row that opens the API
+  Tokens sub-category), **Documents** (a **Default Folders** section with one row per
   [default folder](../013-workspace/default-folders.md#settings) entry, with Change and Clear; those are not a
   preference, they read and write `/api/placement-defaults`), **Account** (identity, Trash, **Cloud Sync** (the cloud providers the
   deployment offers, [Google Drive mirror](../022-drive-mirror/drive-mirror.md)), delete account, see
   [Account settings & email notifications](../014-identity/profile-and-email-notifications.md); with the
-  sub-categories **Notifications** (in-editor, plus the six email preferences) and **API Tokens** (create, view and
+  sub-categories **Notifications** (in-editor, plus the seven email preferences) and **API Tokens** (create, view and
   revoke API tokens, see [Public API and tokens §3.6](../015-api/public-api-and-tokens.md#36-management--the-settings-dialogs-api-tokens-category);
   only when sign-in is enabled on the deployment)), **Privacy** (telemetry).
   Editor leads because it is what most
@@ -598,7 +645,8 @@ and the dialog stays as the one complete, browsable index of them.
   A category can hold **sub-categories** (`parent` on the sub-category's
   spec). **Editor** holds one per editor mode whose settings apply only to
   that mode ([Editor modes](editor-modes.md)): **Draw** holds Dock Position,
-  since only Draw mode has a dock. A setting that applies in both modes
+  since only Draw mode has a dock; **Illustrate** holds Contents and the logo
+  guides. A setting that applies in both modes
   stays on Editor itself; quick-add on hover, alignment guides, auto-attach
   arrows, middle-mouse pan and power user mode all act in both. There is no
   **Diagram** sub-category while no setting applies only to Diagram mode: a
@@ -656,18 +704,33 @@ and the dialog stays as the one complete, browsable index of them.
   the thing the eye navigates by once the labels blur together. Colour is a
   second channel, never the only one: every category has its own glyph too.
 
-  A setting renders as a **one-line row** (label + control), with its
-  long-form explanation as a **grey footnote below the row**. Labels are
-  **Title Case**. Row kinds: `toggle`, `choice` (a segmented control, e.g.
+  **Grouped rows.** Each section of a category is **one card** (`SettingsGroup`),
+  iOS grouped-list style: its rows are cells inside it, split by hairlines,
+  rather than a card per row. A cell holds the **label** with a **short
+  description** under it (one or two lines; the long paragraphs that used to
+  sit as a footnote under each row's own card made the dialog impossible to
+  skim) and the **control** beside them; a **Learn more** link and an
+  **"Also in ..."** line close the description. Labels are **Title Case**.
+  A row nested under a parent row (`parent`) renders inside the same card,
+  indented and faintly tinted, beneath it. What every row of a section shares
+  is said **once**, in a **section note** under its heading (`sectionNotes` on
+  the category: Documents' Default Folders, the Tours' "offer again"), not
+  repeated under each row. A row reused outside a group (a Plan panel's
+  `SettingsRow`) draws the same cell inside a card of its own.
+
+  Row kinds: `toggle`, `choice` (a segmented control, e.g.
   the theme and the minimap size), `slider` (panel opacity, UI scale, committing on
-  release so one drag is not one PUT per pixel), `appearance` (the one row
-  backed by the device-local store, not `UserPreferences`), and `tokens` (a
-  read-only listing of the account's API tokens plus a link to the Explorer's
-  page; minting and revoking stay there, where they have room to confirm).
-  A row is one `role="switch"` button described by its footnote; the
-  `ToggleSwitch` inside is wrapped `aria-hidden`, because `presentational`
-  still exposes `role="switch"` and would otherwise offer a screen reader two
-  nested switches of the same name.
+  release so one drag is not one PUT per pixel), `toggleGroup` (several
+  switches as one row of chips, see **Toggle groups** below), `appearance` (the one row
+  backed by the device-local store, not `UserPreferences`), and `tokens` (the
+  API token manager).
+  A toggle row's control is one `role="switch"` button, named by the label
+  (`aria-labelledby`) and described by the description; its `::after`
+  stretches over the whole cell so a click anywhere on the row flips it, while
+  the help link and the illustration sit above that layer and keep their own
+  clicks. The `ToggleSwitch` inside is wrapped `aria-hidden`, because
+  `presentational` still exposes `role="switch"` and would otherwise offer a
+  screen reader two nested switches of the same name.
 
   Settings whose effect is **visual** carry a small **before/after
   illustration** drawn from the real editor, which **rings the state
@@ -699,17 +762,56 @@ and the dialog stays as the one complete, browsable index of them.
   ([Minimap](../008-canvas/minimap.md)), so flipping them there did nothing
   and read as broken.
 
-  **Show Welcome Tour** is inverted against the stored `tourSeen`: the row
-  asks "show me the tour?", the preference records "already seen". Because
-  `tourSeen !== true` is necessary but NOT sufficient for the offer (TourHost
-  also needs the per-tab pending flag, which only `/new` sets), closing the
-  dialog with the row on **marks that flag**, so the row's promise is true
-  for a reader who had simply never taken the tour. Turning it on from off
-  additionally relaunches in place. Its telemetry tokens still describe the
-  PREFERENCE, so the dashboard series keeps its meaning. **Show Plan Tour**, beneath it, is inverted
-  against `planTourSeen` the same way; it needs no handoff flag (the Plan tour offers itself on
-  entering Plan), so closing the dialog only reruns it, when it was turned on from off
-  ([Plan tour](../026-plan/plan-tour.md)).
+  **Tours** is a category of its own: one switch per guided tour, **Diagram
+  Tour**, **Plan Tour**, **Facilitate Tour**, **Draw Tour**, **Avatar Tour** and
+  **Illustrate Tour**, each with a line saying where it offers itself and a **Learn more**
+  to its article, under one **Offer Again** section note: each tour offers
+  itself once; switch one back on and close Settings to take it again, straight
+  away if you are in its mode, otherwise the next time you are. (The tours used
+  to be an Onboarding Tutorials grid of five switches inside
+  Accessibility, where nobody looked for them: a tour is not an accessibility
+  setting.) Every switch is inverted: on means "offer me this tour", the
+  preference records "already seen", and its telemetry tokens still describe the
+  PREFERENCE (switching on is `...SeenOff`), so each dashboard series keeps its
+  meaning.
+
+  **Diagram Tour** (the [Diagram tour](editor-tour.md), labelled **Welcome** until October 2026) is inverted
+  against the stored `tourSeen`. Because `tourSeen !== true` is necessary but NOT sufficient for the offer
+  (TourHost also needs the per-tab pending flag, which only `/new` sets), closing the dialog with the switch
+  on **marks that flag**, so its promise is true for a reader who had simply never taken the tour. Turning it
+  on from off additionally relaunches in place on a Diagram tab; on a tab in another mode the offer waits
+  for a Diagram tab. **Plan Tour** is a
+  tour of several tracks (`apps/live/lib/tour-tracks.ts`): on while a track is still owed, off answering every
+  track (`planTourTracks`), on forgetting them; it needs no handoff flag (the Plan tour offers itself in
+  Plan once a board or Sheet is open), so closing the dialog only reruns it, when it was turned on from off
+  ([Plan tour](../026-plan/plan-tour.md)). **Facilitate Tour** works the same way against
+  `facilitateTourSeen` ([Facilitate tour](../012-collaboration/facilitate-tour.md)), **Draw Tour** against
+  `drawTourSeen` ([Draw tour](../023-draw-mode/draw-tour.md)), **Forms Tour** against `formTourSeen` ([Forms](../030-forms/forms.md) "The Forms tour"), **Avatar Tour** against `avatarTourSeen`
+  ([Avatar tour](../008-canvas/avatar-tour.md)), and **Illustrate Tour** is built as Plan Tour is
+  ([Illustrate tour](illustrate-tour.md)), one track per page kind: `illustrateTourKinds` lists the kinds answered.
+  A multi-track tour's old single flag (`planTourSeen`, `illustrateTourSeen`) counts every track only while Power
+  user mode is on, so an answer given before the tour split offers each track once more.
+
+  Below the mode tours, **Element Tours** is its own section, a closed accordion naming how many are on
+  ([Element tours](element-tours.md#settings)): **Element Tours**, built as Plan Tour is against `elementToursSeen`
+  and `elementTourKinds`, with one switch per toured kind nested under it (**Sankey Diagram Tour**). Element tours
+  need no relaunch: the offer shows the next time such an element is selected. A category may mark any section
+  closed this way (`collapsedSections`); Settings opened on one of its rows opens it.
+
+  **Toggle groups.** Several related switches that share one description are
+  one `toggleGroup` row: the label and description over a row of **chips**, one
+  per switch, ticked and tinted while on, each its own preference with its own
+  telemetry. Chips rather than a grid of switches, so short names fit without
+  truncating. Illustrate's **Guides Shown** (one chip per logo guide) is the one
+  today; six near-identical rows each saying "Shows the X among a logo page's
+  construction guides" read as clutter.
+
+  **Button Labels** (Appearance › Interface, `dockButtonNames`, on by default)
+  names the editor's bottom buttons beside their icons: the footer bar's Search,
+  Settings and theme, and the bottom-right cluster's (Layers, Style, Tidy Up and
+  the rest) on a desktop wide enough for them ([Live app](live-app.md)). Off,
+  they are icons alone, each still named in its hover card. A phone always shows
+  icons alone, so the row is desktop only there.
 
   The dialog is **data-driven**: `settings-catalogue.ts` declares the
   categories and, per row, its label, description, help article, section,

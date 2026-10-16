@@ -27,6 +27,7 @@ import {
   placementDefaultTelemetryType,
 } from '@livediagram/api-schema';
 import { countedVerbs, SYNC_WATCH_TYPE } from '@livediagram/agent-verbs';
+import { FORM_STARTERS, QUESTION_TYPE_TELEMETRY } from '@livediagram/forms';
 import { MCP_TOOL_VERBS } from '@livediagram/agent-verbs/mcp';
 import { CANVAS_CONTROLS } from './event-vocab';
 
@@ -109,6 +110,34 @@ const PRESENTATION_FIELDS = (() => {
   return [...block.matchAll(/^ {2}([a-zA-Z]+)\??:/gm)].map((m) => `Presentation-${m[1]}`);
 })();
 
+// The Settings dialog's presenter rows (settings-catalogue.ts presentingToggle / presentingChoice): a toggle sends
+// `Presentation-<field>On|Off` for each boolean field, a choice `Presentation-<field><Option>` (choiceTelemetryType).
+const PRESENTATION_SETTINGS = (() => {
+  const source = read('live/lib/presentation-config.ts');
+  const start = source.indexOf('export type PresentationConfig = {');
+  const block = source.slice(start, source.indexOf('\n};', start));
+  const fields = [...block.matchAll(/^ {2}([a-zA-Z]+)\??: ([A-Za-z]+);/gm)].map(
+    (m) => [m[1]!, m[2]!] as const,
+  );
+  const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+  const unionOf = (type: string) => {
+    const m = new RegExp(`export type ${type} = ([^;]+);`).exec(source);
+    return m ? [...m[1]!.matchAll(/'([^']+)'/g)].map((x) => x[1]!) : [];
+  };
+  const seconds = [...source.matchAll(/\{ seconds: (\d+),/g)].map((m) => m[1]!);
+  return {
+    toggled: fields
+      .filter(([, type]) => type === 'boolean')
+      .flatMap(([f]) => [`Presentation-${f}On`, `Presentation-${f}Off`]),
+    changed: [
+      ...fields
+        .filter(([, type]) => type !== 'boolean' && type !== 'number')
+        .flatMap(([f, type]) => unionOf(type).map((o) => `Presentation-${f}${cap(o)}`)),
+      ...seconds.map((n) => `Presentation-autoAdvanceSeconds${n}`),
+    ],
+  };
+})();
+
 // The photo import's detector tokens (apps/live photo-model/telemetry.ts):
 // PhotoDetectHybrid<Backend> or PhotoDetectClassical<Reason>.
 const PHOTO_DETECTORS = (() => {
@@ -164,6 +193,143 @@ export const PLAN_TOUR_STEP_SOURCE: string[] = [
         .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
         .join('')}`,
   );
+
+// The Facilitate tour's steps, as facilitateTourStepTelemetryType makes them (apps/live
+// facilitate-tour-steps.ts, docs/specs/012-collaboration/facilitate-tour.md). The welcome card sends no step view.
+export const FACILITATE_TOUR_STEP_SOURCE: string[] = [
+  ...read('live/components/tour/facilitate-tour-steps.ts').matchAll(/^ {4}id: '([a-z-]+)',/gm),
+]
+  .map((m) => m[1]!)
+  .filter((id) => id !== 'welcome')
+  .map(
+    (id) =>
+      `FacilitateTourStep${id
+        .split('-')
+        .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+        .join('')}`,
+  );
+
+// The Draw tour's steps, as drawTourStepTelemetryType makes them (apps/live draw-tour-steps.ts,
+// docs/specs/023-draw-mode/draw-tour.md). The welcome card sends no step view.
+// The Sankey tour (docs/specs/007-editor/element-tours.md): its canvas steps, then the Flows dialog's Show Me steps
+// it runs inside the dialog (each `flows-` prefixed), then its closing card.
+const pascal = (id: string) =>
+  id
+    .split('-')
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join('');
+export const SANKEY_TOUR_STEP_SOURCE: string[] = [
+  ...[
+    ...read('live/components/tour/sankey-element-tour-steps.ts').matchAll(
+      /canvasStep\(\s*'([a-z-]+)'/g,
+    ),
+  ].map((m) => m[1]!),
+  ...[
+    ...read('live/components/tour/sankey-flows-tour-steps.ts').matchAll(/step\(\s*'([a-z-]+)'/g),
+  ].map((m) => `flows-${m[1]!}`),
+  'outro',
+].map((id) => `SankeyTourStep${pascal(id)}`);
+
+// A concept graphic's tour (docs/specs/007-editor/element-tours.md): its steps file's builders and any step of its own
+// (`id: '…'`), then its closing card.
+const conceptTourSteps = (token: string, file: string): string[] =>
+  [
+    ...[
+      ...read(`live/components/tour/${file}`).matchAll(
+        /(?:(?:onGraphic|addRowStep|inTheMenu|onCanvas|inDialog)\(\s*|menuStep\(\s*\w+,\s*|\bid: )'([a-z-]+)'/g,
+      ),
+    ].map((m) => m[1]!),
+    'outro',
+  ].map((id) => `${token}Step${pascal(id)}`);
+
+// Every element tour (ElementTourHost runs them all): its token, from the registry, and its steps.
+export const ELEMENT_TOUR_TOKENS: string[] = [
+  ...read('live/components/tour/element-tour-defs.ts').matchAll(/token: '(\w+)'/g),
+].map((m) => m[1]!);
+
+export const ELEMENT_TOUR_STEP_SOURCE: string[] = [
+  ...SANKEY_TOUR_STEP_SOURCE,
+  ...conceptTourSteps('LayerStackTour', 'layer-stack-tour-steps.ts'),
+  ...conceptTourSteps('PyramidTour', 'pyramid-tour-steps.ts'),
+  ...conceptTourSteps('FunnelTour', 'funnel-tour-steps.ts'),
+  ...conceptTourSteps('CycleTour', 'cycle-tour-steps.ts'),
+  ...conceptTourSteps('HubTour', 'hub-tour-steps.ts'),
+  ...conceptTourSteps('OnionTour', 'onion-tour-steps.ts'),
+  ...conceptTourSteps('ChevronsTour', 'chevrons-tour-steps.ts'),
+  ...conceptTourSteps('MindMapTour', 'mind-node-tour-steps.ts'),
+  ...conceptTourSteps('FlowchartTour', 'flowchart-tour-steps.ts'),
+  ...conceptTourSteps('OrgChartTour', 'org-chart-tour-steps.ts'),
+  ...conceptTourSteps('SequenceTour', 'sequence-tour-steps.ts'),
+  ...conceptTourSteps('ChartTour', 'chart-tour-steps.ts'),
+  ...conceptTourSteps('StackTour', 'stack-tour-steps.ts'),
+  ...conceptTourSteps('EntityTour', 'entity-tour-steps.ts'),
+  ...conceptTourSteps('TabWindowTour', 'tab-window-tour-steps.ts'),
+  ...conceptTourSteps('LaneTour', 'lane-tour-steps.ts'),
+  ...conceptTourSteps('BoundaryTour', 'boundary-tour-steps.ts'),
+  ...conceptTourSteps('DiagramKeyTour', 'diagram-key-tour-steps.ts'),
+  ...conceptTourSteps('PortalTour', 'portal-tour-steps.ts'),
+];
+
+export const DRAW_TOUR_STEP_SOURCE: string[] = [
+  ...read('live/components/tour/draw-tour-steps.ts').matchAll(/^ {4}id: '([a-z-]+)',/gm),
+]
+  .map((m) => m[1]!)
+  .filter((id) => id !== 'welcome')
+  .map(
+    (id) =>
+      `DrawTourStep${id
+        .split('-')
+        .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+        .join('')}`,
+  );
+
+// The Forms tour's steps, as formTourStepTelemetryType makes them (apps/live form-tour-steps.ts,
+// docs/specs/030-forms/forms.md "The Forms tour"). Its steps are top-level consts, so their ids sit two spaces in.
+// The welcome card sends no step view.
+export const FORM_TOUR_STEP_SOURCE: string[] = [
+  ...read('live/components/tour/form-tour-steps.ts').matchAll(/^ {2}id: '([a-z-]+)',/gm),
+]
+  .map((m) => m[1]!)
+  .filter((id) => id !== 'welcome')
+  .map(
+    (id) =>
+      `FormTourStep${id
+        .split('-')
+        .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+        .join('')}`,
+  );
+
+// The Avatar tour's steps, as avatarTourStepTelemetryType makes them (apps/live avatar-tour-steps.ts,
+// docs/specs/008-canvas/avatar-tour.md). The welcome card sends no step view.
+export const AVATAR_TOUR_STEP_SOURCE: string[] = [
+  ...read('live/components/tour/avatar-tour-steps.ts').matchAll(/^ {4}id: '([a-z-]+)',/gm),
+]
+  .map((m) => m[1]!)
+  .filter((id) => id !== 'welcome')
+  .map(
+    (id) =>
+      `AvatarTourStep${id
+        .split('-')
+        .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+        .join('')}`,
+  );
+
+// The Illustrate tour's steps, as illustrateTourStepTelemetryType makes them (apps/live IllustrateTourHost.tsx,
+// docs/specs/007-editor/illustrate-tour.md): each page kind's track names its kind before the step. The welcome card
+// sends no step view.
+const camel = (id: string) =>
+  id
+    .split('-')
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join('');
+export const ILLUSTRATE_TOUR_STEP_SOURCE: string[] = (
+  ['slide', 'infographic', 'article', 'logo'] as const
+).flatMap((kind) =>
+  [...read(`live/components/tour/${kind}-tour-steps.ts`).matchAll(/^ +id: '([a-z-]+)',/gm)]
+    .map((m) => m[1]!)
+    .filter((id, i, ids) => id !== 'welcome' && ids.indexOf(id) === i)
+    .map((id) => `IllustrateTourStep${camel(`${kind}-${id}`)}`),
+);
 
 // Plan items name their type (titleCaseType of an item type id); set-up changes name the part.
 const PLAN_ITEM_TYPES = ['Task', 'Story', 'Bug', 'Epic', 'Note', 'Idea', 'Action', 'Risk'];
@@ -294,6 +460,12 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     open: ELEMENT_WHY,
   },
   'apps/live/app/document/[id]/useSlideDeck.ts UI·Changed': { values: PRESENTATION_FIELDS },
+  'apps/live/components/dialogs/settings/settings-catalogue.ts UI·Toggled': {
+    values: PRESENTATION_SETTINGS.toggled,
+  },
+  'apps/live/components/dialogs/settings/settings-catalogue.ts UI·Changed': {
+    values: PRESENTATION_SETTINGS.changed,
+  },
   // ARTICLE_BLOCK_INSERT_EVENT (apps/live/lib/article/article-telemetry.ts): a block put into an
   // article from the page toolbar's Insert or the slash menu.
   'apps/live/components/canvas/article/PageToolbar.tsx Element·Added': {
@@ -305,10 +477,6 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   'apps/live/app/document/[id]/useTemplateFlow.ts Template·Used': {
     values: TEMPLATES,
     open: TEMPLATE_WHY,
-  },
-  'apps/live/app/document/[id]/useTemplateFlow.ts Theme·Changed': {
-    values: THEMES,
-    open: THEME_WHY,
   },
   'apps/live/app/explorer/useTimelineFeed.ts Timeline·Selected': {
     values: [
@@ -326,11 +494,13 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     ],
   },
   // Which Trash (docs/specs/013-workspace/trash.md): lib/trash-groups.ts's
-  // telemetryType, the one closed set both sites send.
+  // telemetryType, the one closed set every site sends.
   'apps/live/hooks/persistence/useTrash.ts Trash·Restored': { values: TRASH_TYPES },
   'apps/live/hooks/persistence/useTrash.ts Trash·Deleted': { values: TRASH_TYPES },
   'apps/live/hooks/persistence/useTrash.ts Trash·Cleared': { values: TRASH_TYPES },
   'apps/live/app/document/[id]/useDocumentTrashed.ts Trash·Restored': { values: TRASH_TYPES },
+  // A delete toast's Undo (lib/document-delete-undo.ts DeletedTrash, the same three).
+  'apps/live/lib/document-delete-undo.ts Trash·Restored': { values: TRASH_TYPES },
   'apps/live/app/explorer/sidebar/sidebar-telemetry.ts UI·Selected': { values: SIDEBAR_ROWS },
   // Plan mode (docs/specs/026-plan/plan-mode.md "Telemetry"): an item type, or a set-up part.
   'apps/live/hooks/plan/usePlanSlice.ts Plan·Added': {
@@ -342,6 +512,16 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     open: PLAN_TYPE_WHY,
   },
   'apps/live/components/plan/track-board-setup.ts Plan·Changed': { values: PLAN_SETUP_PARTS },
+  // A Dashboard tab's layout change names its kind (usePlanTabActions.ts DashboardChange).
+  'apps/live/hooks/plan/usePlanTabActions.ts Plan·Changed': {
+    values: [
+      'DashboardRow',
+      'DashboardSlot',
+      'DashboardContent',
+      'DashboardLook',
+      'DashboardCardStyle',
+    ],
+  },
   // A board or a view maximised from its header, or restored (maximised-plan.ts MaximisedKind).
   'apps/live/hooks/plan/maximised-plan.ts Plan·Toggled': {
     values: [
@@ -353,13 +533,36 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
       'SheetRestored',
     ],
   },
+  // A form started names its starter, a question added its type (docs/specs/030-forms/forms.md "Telemetry").
+  'apps/live/hooks/forms/useFormActions.ts Form·Created': {
+    values: FORM_STARTERS.map((s) => s.telemetry),
+  },
+  'apps/live/components/forms/builder/FormAddBar.tsx Form·Added': {
+    values: Object.values(QUESTION_TYPE_TELEMETRY),
+  },
   // A Sheet change names its kind (api-schema SHEET_CHANGE_KINDS); a formula's first use of a function, its name.
   'apps/live/components/sheets/sheet-controller.tsx Sheet·Changed': {
     values: [...SHEET_CHANGE_KINDS],
   },
   // A Sheet set up from Setup Sheet names how it started (SheetSetup.tsx TELEMETRY).
   'apps/live/components/sheets/SheetSetup.tsx Sheet·Created': {
-    values: ['Blank', 'Budget', 'Tracker', 'Timesheet', 'Contacts', 'Cards', 'Csv'],
+    values: [
+      'Blank',
+      'Budget',
+      'Tracker',
+      'Timesheet',
+      'Contacts',
+      'Invoice',
+      'ExpenseReport',
+      'SalesPipeline',
+      'Inventory',
+      'GuestList',
+      'GradeBook',
+      'HabitTracker',
+      'LoanCalculator',
+      'Cards',
+      'Csv',
+    ],
   },
   'apps/live/components/sheets/useSheetActions.ts Sheet·Used': {
     values: ['SUM', 'AVERAGE', 'IF', 'VLOOKUP', 'CARDCOUNT'],
@@ -405,10 +608,10 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     open: 'the rich-text command a note applied',
   },
   'apps/live/components/palette/PaletteCategoryBrowser.tsx UI·Searched': {
-    values: ['BehaviourSearch', 'IconSearch', 'TechSearch', 'StickerSearch'],
+    values: ['IconSearch', 'TechSearch', 'StickerSearch'],
   },
   'apps/live/components/palette/PaletteCategoryBrowser.tsx UI·Opened': {
-    values: ['BehaviourGroup', 'IconGroup', 'TechGroup', 'StickerGroup'],
+    values: ['IconGroup', 'TechGroup', 'StickerGroup'],
   },
   'apps/live/components/panels/SearchPanel.tsx UI·Opened': { values: SLUGS, open: SLUG_WHY },
   'apps/live/components/panels/SearchPanel.tsx Search·Selected': {
@@ -453,6 +656,26 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     open: API_ERROR_WHY,
   },
   'apps/live/components/tour/PlanTourHost.tsx UI·View': { values: PLAN_TOUR_STEP_SOURCE },
+  'apps/live/components/tour/FacilitateTourHost.tsx UI·View': {
+    values: FACILITATE_TOUR_STEP_SOURCE,
+  },
+  'apps/live/components/tour/DrawTourHost.tsx UI·View': { values: DRAW_TOUR_STEP_SOURCE },
+  'apps/live/components/tour/FormTourHost.tsx UI·View': { values: FORM_TOUR_STEP_SOURCE },
+  'apps/live/components/tour/ElementTourHost.tsx UI·View': { values: ELEMENT_TOUR_STEP_SOURCE },
+  'apps/live/components/tour/ElementTourHost.tsx UI·Started': { values: ELEMENT_TOUR_TOKENS },
+  'apps/live/components/tour/ElementTourHost.tsx UI·Ended': {
+    values: ELEMENT_TOUR_TOKENS.flatMap((t) => [`${t}Completed`, `${t}Skipped`]),
+  },
+  'apps/live/components/tour/ElementTourHost.tsx UI·Opened': {
+    values: ELEMENT_TOUR_TOKENS.map((t) => `${t}Offer`),
+  },
+  'apps/live/components/tour/ElementTourHost.tsx UI·Closed': {
+    values: ELEMENT_TOUR_TOKENS.map((t) => `${t}Offer`),
+  },
+  'apps/live/components/tour/AvatarTourHost.tsx UI·View': { values: AVATAR_TOUR_STEP_SOURCE },
+  'apps/live/components/tour/IllustrateTourHost.tsx UI·View': {
+    values: ILLUSTRATE_TOUR_STEP_SOURCE,
+  },
   'apps/live/components/tour/TourHost.tsx UI·View': { values: TOUR_STEP_SOURCE },
   'apps/live/hooks/canvas/commit-freehand.ts Element·Added': {
     values: ['Square', 'Circle', 'Diamond', 'Triangle'],
@@ -490,7 +713,39 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     values: ['LogoGuideStrengthFaint', 'LogoGuideStrengthMedium', 'LogoGuideStrengthStrong'],
   },
   'apps/live/hooks/canvas/useStylePreview.ts Element·Changed': {
-    values: ['TextTracking', 'TextWeight', 'TextCase', 'TextArc'],
+    // The wordmark fields, and the types the element menu's generic style ops pass through it
+    // (apps/live/lib/element-style-ops.ts): the accent edge, card slots and chip looks.
+    values: [
+      'TextTracking',
+      'TextWeight',
+      'TextCase',
+      'TextArc',
+      'AccentEdge',
+      'CardSlots',
+      'ChipLook',
+      'ChipDetach',
+      'BoundaryStyle',
+      'BoundaryMeta',
+      'PyramidVariant',
+      'HubSpokes',
+      'PointerDetach',
+      'StackDirection',
+      'StackColumns',
+      'StackGap',
+      'StackPadding',
+      'StackAlign',
+      'SequenceNumbered',
+      'SequenceAnim',
+      'ConceptAnim',
+    ],
+  },
+  // The Sequence dialog's writes (apps/live/hooks/canvas/useSequenceSetters.ts): which part of it changed.
+  'apps/live/hooks/canvas/useSequenceSetters.ts Element·Changed': {
+    values: ['SequenceParticipants', 'SequenceMessages', 'SequenceText'],
+  },
+  // The element menu's whole-tab writes (apps/live/lib/element-style-ops.ts `commitTab`).
+  'apps/live/components/palette/EditorContextMenuHost.tsx Element·Changed': {
+    values: ['RenumberSteps', 'StepSequence'],
   },
   'apps/live/hooks/canvas/useTextStyleSetters.ts Element·Toggled': {
     values: ['Bold', 'Italic', 'Underline', 'Strikethrough'],

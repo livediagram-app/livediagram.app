@@ -12,7 +12,6 @@ import {
   type Item,
   type ItemPerson,
   type ItemRejection,
-  type TabItemElement,
 } from '@livediagram/items';
 import { getDocument, getParticipant, getTab, listItems } from '../db';
 import { forbidden, json, notFound } from '../responses';
@@ -119,7 +118,7 @@ export async function itemCaller(
     documentId,
     owner,
     doc,
-    scope: itemIdsShownOnTab(tab.elements as unknown as TabItemElement[], items),
+    scope: itemIdsShownOnTab(tab.elements, items),
     items,
   };
 }

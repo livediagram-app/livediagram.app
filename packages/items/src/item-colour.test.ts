@@ -41,12 +41,10 @@ describe('an item colour', () => {
 
   it('is a default field of a Project, before Start, and a built-in any type can add', () => {
     const project = ITEM_TYPES.find((t) => t.id === 'project')!;
-    const f = project.fields as readonly string[];
+    const f = project.fields;
     expect(f).toContain('color');
     expect(f.indexOf('color')).toBeLessThan(f.indexOf('start'));
-    expect(
-      ITEM_TYPES.filter((t) => (t.fields as readonly string[]).includes('color')),
-    ).toHaveLength(1);
+    expect(ITEM_TYPES.filter((t) => t.fields.includes('color'))).toHaveLength(1);
     expect(BUILT_IN_FIELD_IDS).toContain('color');
   });
 });

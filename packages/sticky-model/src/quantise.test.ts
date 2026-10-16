@@ -25,7 +25,7 @@ describe('quantiseWeights', () => {
     const back = dequantise(out.specs, out.data);
     const q = out.specs[0]!.quantization!;
     for (let i = 0; i < kernel.length; i += 1) {
-      expect(Math.abs(back[0]![i]! - kernel[i]!)).toBeLessThanOrEqual(q.scale! / 2 + 1e-7);
+      expect(Math.abs(back[0]![i]! - kernel[i]!)).toBeLessThanOrEqual(q.scale / 2 + 1e-7);
     }
     expect([...back[1]!]).toEqual([...gamma]);
   });

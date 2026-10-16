@@ -38,6 +38,9 @@ export async function handleDocumentPlacement(ctx: RouteContext): Promise<Respon
   //     another team, the caller must be a joined member of that team
   //     too.
   //   - WITHIN the current team: any joined member may re-folder it.
+  //   - BETWEEN teams: a joined member of both may move it; when its owner
+  //     is not a joined member of the destination, ownership transfers to
+  //     the mover, so the document never stays owned from outside its team.
   //   - OUT of a team to personal: any joined member may move it into
   //     THEIR OWN personal library; ownership transfers to the mover
   //     (folders are owner-scoped, so the row follows). The owner
@@ -99,7 +102,17 @@ export async function handleDocumentPlacement(ctx: RouteContext): Promise<Respon
       // A non-owner moving a team document out to personal takes
       // ownership (docs/specs/013-workspace/team-shared-documents.md): the document lands in the mover's library.
       const movingOutToPersonal = teamId === null && existing.teamId !== null;
-      const newOwnerId = movingOutToPersonal && !isOwner ? caller! : undefined;
+      // Between teams, the same rule keeps the document inside the team that holds it: when its owner is
+      // not a joined member of the destination, the mover takes ownership, so nobody outside the team
+      // keeps owner access to it (owner access is checked before membership).
+      const movingBetweenTeams =
+        teamId !== null && existing.teamId !== null && teamId !== existing.teamId;
+      const ownerOutsideDestination =
+        movingBetweenTeams &&
+        !isOwner &&
+        (await getMembership(env, teamId, existing.ownerId))?.status !== 'joined';
+      const newOwnerId =
+        (movingOutToPersonal && !isOwner) || ownerOutsideDestination ? caller! : undefined;
       // Whose personal folder a personal placement must belong to.
       const personalOwner = newOwnerId ?? existing.ownerId;
 

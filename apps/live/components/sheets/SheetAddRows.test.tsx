@@ -29,7 +29,7 @@ function draw(rows: number, canEdit = true) {
   return { ...view, onAdd, focusGrid, outside };
 }
 
-const field = () => screen.getByRole('textbox', { name: 'Rows to add' }) as HTMLInputElement;
+const field = () => screen.getByRole<HTMLInputElement>('textbox', { name: 'Rows to add' });
 
 describe('Add Rows', () => {
   it('adds 100 rows by default and hands the keys back to the grid', () => {

@@ -11,7 +11,7 @@ export const metadata = helpMetadata({
 
 <ArticleLayout title="Linking Across Tabs" description="Turn any element into a jump point: link it to another tab, another document, or an external address." categoryTitle="Tabs" categorySlug="tabs">
 
-A document spread across many tabs is far more useful when you can move between them from the canvas itself. Any shape, sticky, text box or other boxed element can carry a **link**, and that link can point at another tab in the same document. Follow it, and the editor jumps you there. It turns a multi-tab document into something you navigate like a small site.
+A document spread across many tabs is far more useful when you can move between them from the canvas itself. Any shape, sticky, text box or other boxed element (except a video or embed, whose link is its address) can carry a **link**, and that link can point at another tab in the same document. Follow it, and the editor jumps you there. It turns a multi-tab document into something you navigate like a small site.
 
 ## What an element can link to
 
@@ -21,9 +21,9 @@ A single link on an element can target any one of these:
 - **Another document.** Following it opens that document.
 - **An external URL.** Following it opens the address in a new browser tab.
 
-A linked element carries a small link badge. Hover it and its card reads **Follow link** and names the target (for example `Goes to tab "DB internals"`), so you can tell where a link leads before you click it. Click the badge to follow the link.
+A linked element carries a small link badge (unless your [element indicators](/help/canvas/element-indicators/) are set to Off). Hover it and its card reads **Follow link** and names the target (for example `Goes to tab "DB internals"`), so you can tell where a link leads before you click it. Click the badge to follow the link.
 
-<Figure caption="A linked element carries a badge whose hover card names the target tab; clicking the badge jumps there.">
+<Figure caption="A linked element shows a link indicator along its top; hovering it brings up a card naming the target tab, and a click jumps there.">
   <CrossTabLink />
 </Figure>
 

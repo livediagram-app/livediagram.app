@@ -3,7 +3,19 @@ import { createShape } from './factories';
 import { SHAPE_DEFAULT_SIZE } from './shape-factory';
 import type { Element, ShapeElement } from './index';
 import { growMindChild, mindFlowOf } from './mind-map';
-import { DEFAULT_MIND_FLOW, MIND_FLOWS, MIND_FLOW_LABEL, type MindFlow } from './mind-flow';
+import {
+  DEFAULT_MIND_FLOW,
+  isMindSpacing,
+  MIND_CHILD_GAP_X,
+  MIND_CHILD_GAP_Y,
+  MIND_FLOWS,
+  MIND_FLOW_LABEL,
+  MIND_SIBLING_GAP_Y,
+  MIND_SPACINGS,
+  mindGaps,
+  placeMindChild,
+  type MindFlow,
+} from './mind-flow';
 
 // The flow is the SHAPE a map grows in (docs/specs/009-elements/mind-node.md). The keystrokes are the
 // same in all of them, so each test here asks only one thing: did the child
@@ -16,7 +28,7 @@ import { DEFAULT_MIND_FLOW, MIND_FLOWS, MIND_FLOW_LABEL, type MindFlow } from '.
 const SIZE = SHAPE_DEFAULT_SIZE['mind-node'];
 
 const node = (id: string, x: number, y: number, parent?: string): ShapeElement => ({
-  ...(createShape('mind-node', x, y) as ShapeElement),
+  ...createShape('mind-node', x, y),
   id,
   ...(parent ? { mindParentId: parent } : {}),
 });
@@ -137,5 +149,32 @@ describe('mind flows', () => {
       const gap = Math.hypot(centre(child).x - centre(r).x, centre(child).y - centre(r).y);
       expect(gap).toBeGreaterThan(SIZE.width / 2);
     });
+  });
+});
+
+describe('mind spacing', () => {
+  it('has whole-pixel gaps for every spacing, comfortable being the original', () => {
+    expect(mindGaps('comfortable')).toEqual({
+      child: MIND_CHILD_GAP_X,
+      sibling: MIND_SIBLING_GAP_Y,
+      level: MIND_CHILD_GAP_Y,
+    });
+    for (const s of MIND_SPACINGS)
+      for (const v of Object.values(mindGaps(s))) expect(Number.isInteger(v)).toBe(true);
+  });
+
+  it('accepts only the four spacings', () => {
+    expect(MIND_SPACINGS.every((s) => isMindSpacing(s))).toBe(true);
+    expect(isMindSpacing('roomy')).toBe(false);
+    expect(isMindSpacing(undefined)).toBe(false);
+  });
+
+  it('places a free child at the chosen gap, mirrored for leftward', () => {
+    const parent = { x: 0, y: 0, width: 100, height: 40 } as never;
+    const size = { width: 80, height: 40 };
+    const wide = mindGaps('wide');
+    expect(placeMindChild('tree', parent, size, [], [], 0, wide).x).toBe(100 + wide.child);
+    expect(placeMindChild('leftward', parent, size, [], [], 0, wide).x).toBe(-wide.child - 80);
+    expect(placeMindChild('upward', parent, size, [], [], 0, wide).y).toBe(-wide.level - 40);
   });
 });

@@ -125,9 +125,41 @@ export function headerBand(
   };
 }
 
-// Where a maximised or tab-filling element sits: its insets, and its header band when there is room for one (the
-// top inset is then 0: the header holds the top row).
-export type CanvasLayout = { insets: LayerInsets; band: HeaderBand | null };
+// The top row shared on a phone (docs/specs/026-plan/plan-board.md "The header holds the top row"): below
+// BAND_CANVAS_MIN_PX there is no band, yet the element still starts at the canvas's top rather than leaving a strip of
+// canvas beside the menu button. Its header grows to the menu's height and starts after it; its name stays in the
+// header (the menu box has no room for it) and its controls stay as they are. In px from the element's box.
+export type PhoneRow = { height: number; left: number };
+
+// The cover's padding around the element on a phone (CanvasCover's p-2).
+export const PHONE_COVER_PAD_PX = 8;
+// The least room a phone's header needs after the menu: a short title and the header's controls (Restore, the cog).
+export const PHONE_ROW_MIN_PX = 160;
+
+// The phone's shared row for `canvas` with the menu where it is, given the element's side insets; null on a wider
+// canvas (a band's), with no menu, a menu that is not in the top row or not inside the element, or too little room
+// after it.
+export function phoneRow(
+  canvas: Box,
+  insets: Pick<LayerInsets, 'left' | 'right'>,
+  menu: Box | null,
+): PhoneRow | null {
+  if (!menu || canvas.right - canvas.left >= BAND_CANVAS_MIN_PX) return null;
+  if (menu.top > canvas.top + (canvas.bottom - canvas.top) / 2) return null;
+  const left = canvas.left + insets.left + PHONE_COVER_PAD_PX;
+  const right = canvas.right - insets.right - PHONE_COVER_PAD_PX;
+  const top = canvas.top + PHONE_COVER_PAD_PX;
+  if (menu.left < left || menu.bottom <= top) return null;
+  if (right - menu.right - BAND_GAP_PX < PHONE_ROW_MIN_PX) return null;
+  return {
+    height: Math.round(menu.bottom - top),
+    left: Math.round(menu.right - left + BAND_GAP_PX),
+  };
+}
+
+// Where a maximised or tab-filling element sits: its insets, and its header band when there is room for one, or the
+// row it shares with the menu on a phone (either way the top inset is then 0: the header holds the top row).
+export type CanvasLayout = { insets: LayerInsets; band: HeaderBand | null; row?: PhoneRow | null };
 export const NO_LAYOUT: CanvasLayout = { insets: NO_INSETS, band: null };
 
 const STRIP_SELECTOR = '[data-toolbar-palette]:not(.hidden)';
@@ -155,7 +187,8 @@ function unionOfChildren(el: HTMLElement): Box | null {
 }
 
 // The chrome over `canvas` now, read off the screen.
-export function measureCanvasChrome(canvas: HTMLElement): CanvasLayout {
+// `withBand` false: never a header band (a Dashboard's page starts below the top row, docs/specs/026-plan/plan-tabs.md).
+export function measureCanvasChrome(canvas: HTMLElement, withBand = true): CanvasLayout {
   const boxes: ChromeBox[] = [];
   const read = (selector: string, kind: ChromeBox['kind']) => {
     for (const el of document.querySelectorAll<HTMLElement>(selector)) {
@@ -180,13 +213,18 @@ export function measureCanvasChrome(canvas: HTMLElement): CanvasLayout {
   const strip = shown(STRIP_SELECTOR);
   // The covering element's controls card (BAND_CONTROLS_SELECTOR) and its header's right padding: what the strip stops
   // short of. offsetWidth, so a maximise's grow (a transform) does not shrink it.
-  const controls = canvas.querySelector<HTMLElement>(BAND_CONTROLS_SELECTOR);
+  // A Dashboard's slots carry their own boards' controls cards (docs/specs/026-plan/plan-tabs.md): never theirs.
+  const controls =
+    [...canvas.querySelectorAll<HTMLElement>(BAND_CONTROLS_SELECTOR)].find(
+      (el) => !el.closest('[data-dashboard]'),
+    ) ?? null;
   const endWidth = controls
     ? controls.offsetWidth +
       (controls.parentElement
         ? parseFloat(getComputedStyle(controls.parentElement).paddingRight) || 0
         : 0)
     : BAND_RIGHT_MIN_PX;
+  if (!withBand) return { insets, band: null };
   const band = headerBand(
     area,
     insets,
@@ -195,10 +233,14 @@ export function measureCanvasChrome(canvas: HTMLElement): CanvasLayout {
     nameWidth,
     endWidth,
   );
-  return { insets: band ? { ...insets, top: 0 } : insets, band };
+  if (band) return { insets: { ...insets, top: 0 }, band };
+  const row = phoneRow(area, insets, menu);
+  return row ? { insets: { ...insets, top: 0 }, band: null, row } : { insets, band: null };
 }
 
 export function sameLayout(a: CanvasLayout, b: CanvasLayout): boolean {
+  const ra = a.row ?? null;
+  const rb = b.row ?? null;
   return (
     sameInsets(a.insets, b.insets) &&
     (a.band === b.band ||
@@ -207,7 +249,8 @@ export function sameLayout(a: CanvasLayout, b: CanvasLayout): boolean {
         a.band.height === b.band.height &&
         a.band.left === b.band.left &&
         a.band.mid === b.band.mid &&
-        a.band.stripEnd === b.band.stripEnd))
+        a.band.stripEnd === b.band.stripEnd)) &&
+    (ra === rb || (!!ra && !!rb && ra.height === rb.height && ra.left === rb.left))
   );
 }
 

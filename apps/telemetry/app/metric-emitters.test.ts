@@ -5,11 +5,14 @@ import { SETTINGS_CHANGED, SETTINGS_STACKS } from './metric-catalogue';
 import { GROUPS as SETTINGS } from './SettingsView';
 import { COMPUTED_EMITTERS, TOUR_STEP_SOURCE } from './computed-emitters';
 import { COMPUTED, scanEmitters, type Emit } from './emitter-scan';
-import { GROUPS as EXCEPTIONS, RECOVERY_TYPES } from './ExceptionsView';
+import { GROUPS as EXCEPTIONS, RECOVERY_GROUPS, RECOVERY_TYPES } from './ExceptionsView';
 import { GROUPS as HELP } from './HelpView';
 import { GROUPS as COMMUNITY } from './CommunityView';
 import { GROUPS as DASHBOARD } from './DashboardView';
 import { GROUPS as TIMINGS } from './TimingsView';
+import { GROUPS as PAGES } from './PagesView';
+import { CONNECTIONS_GROUPS, FACILITATION_GROUPS } from './FeaturesView';
+import { TOURS_GROUPS } from './PagesHelpView';
 import {
   CUSTOM_THEME_METRICS,
   CUSTOM_THEME_TYPES,
@@ -88,7 +91,12 @@ const ALL: MetricGroup[] = [
   ...EDITING,
   ...SETTINGS,
   ...EXCEPTIONS,
+  ...RECOVERY_GROUPS,
+  ...PAGES,
   ...HELP,
+  ...TOURS_GROUPS,
+  ...FACILITATION_GROUPS,
+  ...CONNECTIONS_GROUPS,
   ...COMMUNITY,
   ...TIMINGS,
 ];

@@ -6,10 +6,12 @@
 // an old copy of the board back: a permitted field lands, a forbidden field stays as stored, a forbidden add or
 // remove is refused with the op that puts the sender's screen back.
 
+import { isFlowchartLane, isFlowchartStep } from './flowchart';
 import { isBehaviourShape } from './behaviour-shapes';
 import { LIVE_ELEMENT_FIELDS } from './comments';
 import { diffToElementOps, type ElementOp, type RoomElementOp } from './element-ops';
-import type { Element, Tab } from './index';
+import type { Element, ShapeElement, Tab } from './index';
+import { TEXT_PX_MAX } from './label-font';
 import { isLayerLocked, resolveLayerId, tabLayers } from './layers';
 import { isMindNode } from './mind-map';
 import { isValidElement } from './validate';
@@ -30,8 +32,18 @@ export const PARTICIPANT_STICKY_FIELDS = [
 // text box is not one: it often labels the board's structure, so it stays where its author put it.
 export const PARTICIPANT_PLACE_TYPES = ['sticky', 'image'] as const;
 export const PARTICIPANT_PLACE_FIELDS = ['x', 'y', 'width', 'height'] as const;
+// The most a Participant's writing may grow anyone's mind node, per character of its label: a line of the
+// largest label there is (TEXT_PX_MAX) at double line height, as if every character wrapped alone. Generous for
+// any real label, and a bound, so one changed letter cannot stretch a node to ten million pixels that only an
+// Editor could put back (it never shrinks on its own).
+export const MIND_GROW_PX_PER_CHAR = TEXT_PX_MAX * 2;
 // What a Participant may change on anyone's mind node: where it sits, so growing a map re-lays it tidily.
 export const PARTICIPANT_MIND_FIELDS = ['x', 'y'] as const;
+// What a Participant may change on anyone's flowchart step: where it sits, so growing a chart lays it out
+// (docs/specs/009-elements/flowchart.md "Share roles").
+export const PARTICIPANT_STEP_FIELDS = ['x', 'y'] as const;
+// What a Participant may change on anyone's flowchart lane: its band, which the chart's layout fits to its steps.
+export const PARTICIPANT_LANE_FIELDS = ['x', 'y', 'width', 'height'] as const;
 // What a Participant may change on anyone's image: the picture it shows.
 export const PARTICIPANT_IMAGE_FIELDS = [
   'imageId',
@@ -85,6 +97,24 @@ function mindNodeOn(tab: Tab, id: unknown): boolean {
   return tab.elements.some((e) => e.id === id && isMindNode(e));
 }
 
+function stepOfChartOn(tab: Tab, id: unknown, chart: unknown): boolean {
+  return tab.elements.some(
+    (e) => e.id === id && isFlowchartStep(e) && (chart === undefined || e.flowchartId === chart),
+  );
+}
+
+// A connector pinned at both ends to steps of one flowchart on the tab: how a chart's steps are joined.
+function isFlowchartConnectorOn(tab: Tab, el: Element): boolean {
+  if (el.type !== 'arrow') return false;
+  const from = (el as { from: Endpoint }).from;
+  const to = (el as { to: Endpoint }).to;
+  if (from.kind !== 'pinned' || to.kind !== 'pinned') return false;
+  const source = tab.elements.find((e) => e.id === from.elementId);
+  return (
+    !!source && isFlowchartStep(source) && stepOfChartOn(tab, to.elementId, source.flowchartId)
+  );
+}
+
 // A connector pinned at both ends to mind nodes on the tab: how a mind map's branches are drawn.
 function isMindConnectorOn(tab: Tab, el: Element): boolean {
   if (el.type !== 'arrow') return false;
@@ -113,11 +143,22 @@ export function removableByAnyone(tab: Tab, el: Element): boolean {
 }
 
 // Whether a Participant may add this element to the tab, or hold it there as its own after a change: a sticky,
-// text or image anywhere; a mind node only as a branch of one already on the tab; an arrow only between two.
+// text or image anywhere; a mind node only as a branch of one already on the tab, a flowchart step only in a chart
+// already on it; an arrow only between two mind nodes or two steps of one chart.
 export function addableOn(tab: Tab, el: Element): boolean {
   if (!isParticipantAddable(el.type)) return false;
-  if (el.type === 'shape') return isMindNode(el) && mindNodeOn(tab, (el as Bag).mindParentId);
-  if (el.type === 'arrow') return isMindConnectorOn(tab, el);
+  if (el.type === 'shape') {
+    if (isMindNode(el)) return mindNodeOn(tab, (el as Bag).mindParentId);
+    // Read as a plain element: isMindNode's guard leaves nothing for TypeScript to narrow here.
+    const step = el as Element as ShapeElement;
+    return (
+      isFlowchartStep(step) &&
+      tab.elements.some(
+        (e) => e.id !== step.id && isFlowchartStep(e) && e.flowchartId === step.flowchartId,
+      )
+    );
+  }
+  if (el.type === 'arrow') return isMindConnectorOn(tab, el) || isFlowchartConnectorOn(tab, el);
   return true;
 }
 
@@ -201,12 +242,38 @@ function mergeOthers(tab: Tab, stored: Element, incoming: Element): Element {
     for (const field of PARTICIPANT_MIND_FIELDS) {
       if (typeof inc[field] === 'number' && Number.isFinite(inc[field])) next[field] = inc[field];
     }
+    // A node grows to fit its label (docs/specs/009-elements/mind-node.md), so writing on it may make it taller in
+    // the same change, as a text box that sizes to its words follows them; never shorter.
+    const wrote = PARTICIPANT_TEXT_FIELDS.some((f) => !sameValue(s[f], inc[f]));
+    const label = typeof inc.label === 'string' ? inc.label : '';
+    const ceiling = (s.height as number) + Math.max(1, label.length) * MIND_GROW_PX_PER_CHAR;
+    if (wrote && isPositive(inc.height) && inc.height > (s.height as number)) {
+      next.height = Math.min(inc.height, ceiling);
+    }
+  }
+  if (isFlowchartStep(stored)) {
+    for (const field of PARTICIPANT_STEP_FIELDS) {
+      if (typeof inc[field] === 'number' && Number.isFinite(inc[field])) next[field] = inc[field];
+    }
+  }
+  if (isFlowchartLane(stored)) {
+    for (const field of PARTICIPANT_LANE_FIELDS) {
+      const v = inc[field];
+      const ok = field === 'x' || field === 'y' ? Number.isFinite(v) : isPositive(v);
+      if (ok && typeof v === 'number') next[field] = v;
+    }
   }
   if (stored.type === 'image') {
     for (const field of PARTICIPANT_IMAGE_FIELDS) copyField(next, inc, field);
   }
-  // A re-laid map turns its connectors to face the way it now grows: the faces move, never the ends.
-  if (isMindConnectorOn(tab, stored)) {
+  // A laid-out chart routes its straight and angled connectors: their bends, never their ends or look.
+  if (isFlowchartConnectorOn(tab, stored) && s.arrowStyle !== 'curved') {
+    if (inc.arrowStyle === 'straight' || inc.arrowStyle === 'angled')
+      next.arrowStyle = inc.arrowStyle;
+    copyField(next, inc, 'curvePoints');
+  }
+  // A re-laid map or chart turns its connectors to face the way it now flows: the faces move, never the ends.
+  if (isMindConnectorOn(tab, stored) || isFlowchartConnectorOn(tab, stored)) {
     for (const end of ['from', 'to'] as const) {
       const was = s[end] as Endpoint;
       const now = inc[end] as Endpoint | undefined;
@@ -225,8 +292,8 @@ function mergeOwn(stored: Element, incoming: Element): Element {
   next.id = stored.id;
   next.type = stored.type;
   next.addedBy = (stored as Bag).addedBy;
-  copyField(next, stored as Bag, 'locked');
-  keepLiveFields(next, stored as Bag);
+  copyField(next, stored, 'locked');
+  keepLiveFields(next, stored);
   return next as Element;
 }
 

@@ -45,8 +45,7 @@ function props(over: Partial<Props> = {}): Props {
   };
 }
 
-const nameInput = () =>
-  screen.getByPlaceholderText(/confirm the retry budget/i) as HTMLInputElement;
+const nameInput = () => screen.getByPlaceholderText<HTMLInputElement>(/confirm the retry budget/i);
 const myself = () => screen.getByRole('button', { name: /myself/i });
 
 afterEach(() => cleanup());

@@ -4,12 +4,16 @@ import {
   FIT_TO_SCREEN_MAX_AT_FIT,
   FIT_TO_SCREEN_MIN,
   FIT_TO_SCREEN_PADDING,
+  besideLeftInset,
   computeFitBelow,
   computeFitToScreen,
   computeReadingFrame,
   READING_TOP_ROOM,
+  computeViewportCanvasRect,
   computeViewportCenter,
   isContentOffScreen,
+  FIT_TOOLBAR_GAP,
+  topChromeInset,
 } from './viewport';
 
 describe('computeFitToScreen', () => {
@@ -152,6 +156,31 @@ describe('isContentOffScreen', () => {
 
 // Illustrate mode centres its page below the Toolbar layout's strip
 // (docs/specs/007-editor/editor-modes.md "The pages").
+describe('besideLeftInset', () => {
+  // A canvas x on screen, with the centred transform (lib/viewport.ts).
+  const screenX = (x: number, w: number, f: { zoom: number; offset: { x: number } }) =>
+    w / 2 + f.zoom * (x + f.offset.x - w / 2);
+
+  it('centres the box in the band beside a docked sidebar, not under it', () => {
+    const w = 1200;
+    const inset = 260;
+    const box = { x: 3000, y: -400, width: 1123, height: 794 };
+    const fitted = besideLeftInset(
+      computeFitBelow({ width: w - inset, height: 800 }, box, 64),
+      inset,
+    );
+    const left = screenX(box.x, w, fitted);
+    const right = screenX(box.x + box.width, w, fitted);
+    expect((left + right) / 2).toBeCloseTo(inset + (w - inset) / 2, 6);
+    expect(left).toBeGreaterThan(inset);
+  });
+
+  it('leaves a frame alone with no sidebar', () => {
+    const frame = { zoom: 0.5, offset: { x: 10, y: 20 } };
+    expect(besideLeftInset(frame, 0)).toBe(frame);
+  });
+});
+
 describe('computeFitBelow', () => {
   const rect = { width: 1200, height: 800 };
   const box = { x: -500, y: -500, width: 1000, height: 1000 };
@@ -189,5 +218,51 @@ describe('computeReadingFrame', () => {
     expect(zoom).toBeCloseTo(0.468);
     const screenTop = rect.height / 2 + (page.y + offset.y - rect.height / 2) * zoom;
     expect(screenTop).toBeGreaterThan(READING_TOP_ROOM);
+  });
+});
+
+describe('topChromeInset (fit below the Palette strip)', () => {
+  it('leaves the strip’s reach into the canvas plus a gap clear', () => {
+    expect(topChromeInset({ top: 50, bottom: 900 }, { top: 60, bottom: 110 })).toBe(
+      60 + FIT_TOOLBAR_GAP,
+    );
+  });
+
+  it('is a whole even number, so a fit at 100% lands on whole pixels', () => {
+    const inset = topChromeInset({ top: 56, bottom: 720 }, { top: 60, bottom: 116.578 });
+    expect(inset % 2).toBe(0);
+    expect(inset).toBeGreaterThanOrEqual(116.578 - 56 + FIT_TOOLBAR_GAP);
+  });
+
+  it('is 0 with no strip, or a strip outside the canvas', () => {
+    expect(topChromeInset({ top: 50, bottom: 900 }, null)).toBe(0);
+    expect(topChromeInset({ top: 50, bottom: 900 }, { top: 0, bottom: 40 })).toBe(0);
+  });
+});
+
+describe('computeFitBelow with a DOMRect-like rect', () => {
+  it('reads getter fields (a spread drops them and the zoom went NaN)', () => {
+    const rect = Object.create({
+      get width() {
+        return 1000;
+      },
+      get height() {
+        return 800;
+      },
+    }) as { width: number; height: number };
+    const { zoom, offset } = computeFitBelow(rect, { x: 0, y: 0, width: 400, height: 300 }, 60);
+    expect(Number.isFinite(zoom)).toBe(true);
+    expect(Number.isFinite(offset.x) && Number.isFinite(offset.y)).toBe(true);
+  });
+});
+
+describe('computeViewportCanvasRect', () => {
+  it('spreads the screen around the view centre, divided by the zoom', () => {
+    expect(computeViewportCanvasRect({ width: 1000, height: 600 }, { x: -100, y: 50 }, 2)).toEqual({
+      x: 350,
+      y: 100,
+      width: 500,
+      height: 300,
+    });
   });
 });

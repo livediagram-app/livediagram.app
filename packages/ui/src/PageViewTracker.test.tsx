@@ -29,7 +29,7 @@ describe('reportPageView', () => {
     reportPageView(track, '/faq/');
     reportPageView(track, '/help');
     reportPageView(track, '/faq');
-    expect(track.mock.calls.map((c) => c[2])).toEqual(['/faq', '/help', '/faq']);
+    expect(track.mock.calls.map((c): unknown => c[2])).toEqual(['/faq', '/help', '/faq']);
   });
 
   it('sends nothing for a path it cannot express', () => {
@@ -55,6 +55,9 @@ describe('PageViewTracker', () => {
     rerender(<PageViewTracker track={track} />);
     navigate('/help/tabs');
     rerender(<PageViewTracker track={track} />);
-    expect(track.mock.calls.map((c) => c[2])).toEqual(['/help/canvas/the-canvas', '/help/tabs']);
+    expect(track.mock.calls.map((c): unknown => c[2])).toEqual([
+      '/help/canvas/the-canvas',
+      '/help/tabs',
+    ]);
   });
 });

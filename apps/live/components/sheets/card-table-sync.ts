@@ -25,6 +25,7 @@ import {
   type FormatPatch,
   type Sheet,
   type SheetWrite,
+  type Value,
   type Workbook,
 } from '@livediagram/sheets';
 
@@ -74,7 +75,7 @@ export function pullChanges(sheet: Sheet, plan: CardPlan): CellChange[] {
       if (!ix.rowPos.has(r) || !live(item) || t.drafts?.includes(r)) continue;
       for (const col of t.cols) {
         if (!ix.colPos.has(col.c)) continue;
-        const want = cardCell(source.fieldOf(item, col.field) as never, col.field);
+        const want = cardCell(source.fieldOf(item, col.field), col.field);
         if (sameInput(sheet.cells.get(cellKey(r, col.c))?.input, want.i)) continue;
         out.push({ r, c: col.c, i: want.i, ...(want.f ? { f: want.f } : {}) });
       }
@@ -104,10 +105,11 @@ export type RowSave =
   | { kind: 'none' }
   | { kind: 'refused'; message: string };
 
-// A cell's value as a card field takes it: a date serial as an ISO date for a date field.
-function fieldValue(v: unknown, field: string): unknown {
+// A cell's value as a card field takes it: a date serial as an ISO date for a date field; an error or an
+// array writes nothing.
+function fieldValue(v: Value, field: string): string | number | boolean | null | undefined {
   if (typeof v === 'number' && isCardDateField(field)) return isoFromSerial(v);
-  if (typeof v === 'object' && v !== null) return undefined; // an error or an array: nothing to write
+  if (typeof v === 'object' && v !== null) return undefined;
   return v;
 }
 
@@ -203,7 +205,7 @@ export function rowSave(
     for (const col of table.cols) {
       const field = norm(col.field);
       if (field === NUMBER || !ix.colPos.has(col.c)) continue;
-      const want = cardCell(source.fieldOf(item, col.field) as never, col.field);
+      const want = cardCell(source.fieldOf(item, col.field), col.field);
       if (sameInput(sheet.cells.get(cellKey(r, col.c))?.input, want.i)) continue;
       const v = fieldValue(valueAt(col.c), col.field);
       if (field === TYPE) {
@@ -253,7 +255,7 @@ export function rowSave(
     .find(live);
   const status =
     typeof f['status'] === 'string'
-      ? (f['status'] as string)
+      ? f['status']
       : ((firstLinked?.fields['status'] as string | undefined) ?? '');
   delete f['status'];
   if (blank(f['title'])) f['title'] = typeDef.newTitle;

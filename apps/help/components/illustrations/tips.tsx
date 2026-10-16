@@ -29,7 +29,7 @@ function KeyCap({ x, y, w = 24, label }: { x: number; y: number; w?: number; lab
 }
 
 /** The shortcut reference in Settings › Keyboard: the All Shortcuts list,
- *  its Tools group open, each key cap beside its label as the editor words it. */
+ *  its Tools group open, each label as the editor words it with its key cap at the right. */
 export function KeyboardShortcuts() {
   const rows: [string, string][] = [
     ['V', 'Select Tool (or 1)'],
@@ -41,17 +41,17 @@ export function KeyboardShortcuts() {
   return (
     <Scene w={420} h={236} bg="plain">
       <Panel x={80} y={14} w={260} h={208} title="ALL SHORTCUTS">
-        <Label x={96} y={50} size={10} weight={700} tone="strong">
-          Tools
+        <Label x={96} y={50} size={9} weight={700} tone="muted">
+          TOOLS
         </Label>
         {rows.map(([key, action], i) => {
           const ry = 62 + i * 30;
           return (
             <g key={key}>
-              <KeyCap x={96} y={ry} label={key} />
-              <Label x={134} y={ry + 12} size={10} tone="body">
+              <Label x={96} y={ry + 12} size={10} tone="body">
                 {action}
               </Label>
+              <KeyCap x={300} y={ry} label={key} />
             </g>
           );
         })}
@@ -83,13 +83,13 @@ export function ShortcutsToggle() {
   );
 }
 
-/** The palette strip across the top of the canvas, open on Popular, with the menu button and
+/** The palette strip across the top of the canvas, Diagram's category bar, with the menu button and
  *  the Diagram mode switch in their card to its left. */
 export function CommandPalette() {
   return (
     <Scene w={420} h={190}>
       <MenuCard x={8} y={16} />
-      <Strip x={78} y={16} category="Popular" />
+      <Strip x={78} y={16} />
       <Shape x={60} y={104} w={84} h={46} kind="rect" label="Start" />
       <Shape x={268} y={104} w={84} h={46} kind="rect" accent label="Ship" />
       <Arrow from={[144, 127]} to={[268, 127]} />
@@ -106,31 +106,30 @@ export function ZenMode() {
       <Shape x={184} y={44} w={84} h={48} kind="diamond" />
       <Shape x={184} y={140} w={84} h={48} kind="rect" accent label="Ship" />
       <Shape x={314} y={84} w={84} h={48} kind="circle" label="Done" />
-      <Arrow from={[140, 108]} to={[184, 80]} kind="elbow" />
+      <Arrow from={[140, 108]} to={[184, 68]} kind="elbow" />
       <Arrow from={[226, 92]} to={[226, 140]} />
-      <Arrow from={[268, 164]} to={[330, 120]} kind="curved" />
-      {/* Zoom controls, bottom-right, the one chrome Zen mode keeps, with the
-          Exit zen mode button beside them. */}
-      <Panel x={270} y={194} w={30} h={30}>
+      <Arrow from={[268, 164]} to={[314, 108]} kind="curved" />
+      {/* Zoom controls, bottom-right, the one chrome Zen mode keeps, with Exit zen mode at the
+          right end of the same pill, behind a divider (ZoomControls). */}
+      <Panel x={276} y={194} w={128} h={30}>
+        <Label x={292} y={210} size={13} weight={700} tone="muted">
+          −
+        </Label>
+        <Label x={324} y={210} size={10} weight={600} tone="body" anchor="middle">
+          100%
+        </Label>
+        <Label x={354} y={210} size={13} weight={700} tone="muted">
+          +
+        </Label>
+        <line x1={370} y1={200} x2={370} y2={218} className="stroke-slate-200" strokeWidth={1} />
         <path
-          d="M279 203 l4 4 M279 207 h4 v-4 M291 215 l-4 -4 M291 211 h-4 v4"
+          d="M378 203 l4 4 M378 207 h4 v-4 M394 215 l-4 -4 M394 211 h-4 v4"
           className="stroke-brand-500"
           strokeWidth={1.6}
           fill="none"
           strokeLinecap="round"
           strokeLinejoin="round"
         />
-      </Panel>
-      <Panel x={306} y={194} w={96} h={30}>
-        <Label x={322} y={210} size={13} weight={700} tone="muted">
-          −
-        </Label>
-        <Label x={354} y={210} size={10} weight={600} tone="body" anchor="middle">
-          100%
-        </Label>
-        <Label x={388} y={210} size={13} weight={700} tone="muted">
-          +
-        </Label>
       </Panel>
     </Scene>
   );
@@ -144,9 +143,10 @@ export function LaserPointer() {
       <Shape x={48} y={56} w={84} h={46} kind="rect" label="Step 1" />
       <Shape x={170} y={120} w={84} h={46} kind="rect" label="Step 2" />
       <Shape x={296} y={56} w={84} h={46} kind="rect" accent label="Step 3" />
-      {/* Fading laser trail: thick faint to thin bright toward the cursor */}
+      {/* Fading laser trail, swept under Step 2 (clear of its label): thick faint to thin bright
+          toward the cursor at Step 3 */}
       <path
-        d="M90 100 Q150 170 212 143 Q300 110 332 90"
+        d="M90 108 Q132 192 212 184 Q292 176 330 108"
         fill="none"
         className="stroke-rose-300"
         strokeWidth={9}
@@ -154,15 +154,15 @@ export function LaserPointer() {
         opacity={0.35}
       />
       <path
-        d="M250 130 Q300 110 332 90"
+        d="M262 180 Q304 168 330 108"
         fill="none"
         className="stroke-rose-500"
         strokeWidth={5}
         strokeLinecap="round"
       />
       {/* Glowing pointer dot */}
-      <circle cx={336} cy={88} r={9} className="fill-rose-500/30" />
-      <circle cx={336} cy={88} r={4.5} className="fill-rose-500" />
+      <circle cx={331} cy={106} r={9} className="fill-rose-500/30" />
+      <circle cx={331} cy={106} r={4.5} className="fill-rose-500" />
     </Scene>
   );
 }

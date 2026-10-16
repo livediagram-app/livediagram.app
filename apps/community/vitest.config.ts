@@ -8,6 +8,6 @@ export default defineProject({
   esbuild: { jsx: 'automatic' },
   resolve: { alias: { '@': fileURLToPath(new URL('.', import.meta.url)) } },
   test: {
-    coverage: { include: ['{app,components,lib}/**/*.{ts,tsx}'] },
+    coverage: { include: ['{app,components,lib,worker}/**/*.{ts,tsx}'] },
   },
 });

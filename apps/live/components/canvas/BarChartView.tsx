@@ -1,14 +1,23 @@
 'use client';
 
-// Bar chart (docs/specs/009-elements/pie-chart.md): vertical bars sized by value, in the theme-derived
+// Column and Bar charts (docs/specs/009-elements/pie-chart.md "Chart types"): upright or horizontal bars sized by value, in the theme-derived
 // palette (or per-datum colour), with an optional legend — the bar sibling of
 // PieChartView, sharing the same data (`pieSlices`), animation (`pieAnim`), and
 // legend toggle (`chartLegend`). Rendered inside its boxed element; the data is
 // edited from the context menu's Data category. The slice group carries the
 // `lvd-pie-*` animation (grow / pop / spin / pulse), reduced-motion-safe.
 
-import { legendFontPx, type ShapeElement } from '@livediagram/document';
-import { chartAnim, chartFrame } from '@/lib/chart';
+import {
+  barMarks,
+  barValueLabels,
+  chartTypeOf,
+  chartValueFontPx,
+  legendFontPx,
+  type ShapeElement,
+} from '@livediagram/document';
+import { ChartValues } from '@/components/primitives/ChartValues';
+import { BarChartAxis } from './ChartAxis';
+import { useChartAnim, chartFrame } from '@/lib/chart';
 import { useChartHover } from '@/hooks/canvas/useChartHover';
 import { ChartReadout } from '@/components/primitives/ChartReadout';
 import { ChartSurface } from '@/components/primitives/ChartSurface';
@@ -18,29 +27,23 @@ export function BarChartView({
   fontFamily,
   textColor,
   palette,
+  ground,
 }: {
   element: ShapeElement;
   fontFamily?: string;
   textColor: string;
   palette?: readonly string[];
+  // What the chart sits on (chartPageGrounds): its series drawn adapted to it.
+  ground?: readonly string[];
 }) {
-  const { w, h, data, colorAt, area, legend } = chartFrame(element, palette);
+  const { w, h, data, colorAt, area, legend } = chartFrame(element, palette, ground);
   const { hover, markProps } = useChartHover<number>();
-  const maxVal = data.reduce((m, d) => Math.max(m, Math.max(0, d.value)), 0) || 1;
-
-  // Bars across the chart area chartFrame leaves after the legend strip,
-  // baseline near the bottom (room for a value / label gutter). Evenly spaced
-  // with a gap, capped bar width so a 2-bar chart doesn't look like two slabs.
-  const padX = Math.min(20, area.w * 0.08);
-  const topPad = area.y + area.h * 0.1;
-  const baseY = area.y + area.h * 0.88;
-  const innerW = Math.max(1, area.w - padX * 2);
-  const slot = innerW / data.length;
-  const barW = Math.min(slot * 0.7, 48);
-  const fullH = Math.max(1, baseY - topPad);
-  const x0 = area.x + padX;
-
-  const group = chartAnim(element, `${area.x + area.w / 2}px ${baseY}px`);
+  // Upright columns, or (the Bar chart type) bars to the right; laid out by the marks the export draws too.
+  const horizontal = chartTypeOf(element) === 'bar';
+  const marks = barMarks(area, data, horizontal, 0, 0, element.chartAxis === true);
+  const { baseline, bars, origin } = marks;
+  const valuePx = chartValueFontPx(element.textSize);
+  const group = useChartAnim(element, `${origin.x}px ${origin.y}px`);
 
   return (
     <ChartSurface
@@ -53,36 +56,54 @@ export function BarChartView({
       fontFamily={fontFamily}
       fontPx={legendFontPx(element.textSize)}
       readout={
-        hover !== null && data[hover] ? (
+        hover !== null && data[hover] && bars[hover] ? (
           <ChartReadout
-            leftPct={((x0 + slot * (hover + 0.5)) / w) * 100}
-            topPct={((baseY - (Math.max(0, data[hover]!.value) / maxVal) * fullH) / h) * 100}
-            label={data[hover]!.label}
-            value={data[hover]!.value}
+            leftPct={(bars[hover].tip.x / w) * 100}
+            topPct={(bars[hover].tip.y / h) * 100}
+            label={data[hover].label}
+            value={data[hover].value}
           />
         ) : null
       }
     >
       {/* Baseline. */}
-      <line x1={x0} y1={baseY} x2={x0 + innerW} y2={baseY} stroke="#cbd5e1" strokeWidth={1} />
+      <BarChartAxis
+        marks={marks}
+        horizontal={horizontal}
+        textColor={textColor}
+        fontFamily={fontFamily}
+      />
+      <line
+        x1={baseline.x1}
+        y1={baseline.y1}
+        x2={baseline.x2}
+        y2={baseline.y2}
+        stroke="#cbd5e1"
+        strokeWidth={1}
+      />
       <g className={group.className} style={group.style}>
-        {data.map((d, i) => {
-          const barH = (Math.max(0, d.value) / maxVal) * fullH;
-          const cx = x0 + slot * (i + 0.5);
-          return (
-            <rect
-              key={i}
-              x={cx - barW / 2}
-              y={baseY - barH}
-              width={barW}
-              height={barH}
-              rx={Math.min(3, barW / 4)}
-              fill={colorAt(i, d)}
-              {...markProps(i)}
-            />
-          );
-        })}
+        {bars.map((bar, i) => (
+          <rect
+            key={i}
+            x={bar.x}
+            y={bar.y}
+            width={bar.w}
+            height={bar.h}
+            rx={bar.rx}
+            fill={colorAt(i, data[i]!)}
+            {...markProps(i)}
+          />
+        ))}
       </g>
+      {element.chartValues ? (
+        <ChartValues
+          labels={barValueLabels(marks, data, horizontal, valuePx)}
+          textColor={textColor}
+          fillOf={(i) => colorAt(i, data[i]!)}
+          fontPx={valuePx}
+          fontFamily={fontFamily}
+        />
+      ) : null}
     </ChartSurface>
   );
 }

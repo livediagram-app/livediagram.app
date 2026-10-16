@@ -90,9 +90,11 @@ hands it over from the Collaborators modal, or simply lets the person who is
 running the session take it. "The document can always take back control" falls
 out of one row.
 
-**View-role visitors cannot hold it.** The tools it governs write to the
-document, so a baton a view-only person cannot use would be a trap. The action
-is shown greyed with the reason rather than hidden, so the rule is learnable.
+**Participants and Viewers cannot hold it.** The tools it governs write to the
+document, so a baton a read-only person cannot use would be a trap. The action
+is shown greyed with the reason ("Only Editors can run a session") rather than
+hidden, so the rule is learnable. Nor can they hand a free baton to somebody
+else: on another person's row they see no verb, since the room would refuse it.
 
 ### What happens when they leave
 
@@ -179,7 +181,12 @@ Enforcement is therefore uneven, and deliberately so:
 - **Room-side for the ops that are already distinct.** `poll-start` /
   `poll-end` are their own mutation kinds, so refusing them from a non-holder
   costs a few lines and closes the one case where a second client could end
-  somebody's poll.
+  somebody's poll. The facilitator may end a poll they did not start, so a
+  baton taken mid-poll hands them its End control (`pollHostFor`) rather than
+  leaving the poll with none; the starter's falls away, as the room would
+  refuse it. A vote's starter likewise loses its host controls while somebody
+  else holds the baton, and ending a vote tallies its Plan cards only when the
+  end was not refused.
 - **Not room-side for the timer and the vote.** They are plain tab state riding
   the same `tab` / `tab-meta` ops that carry every shape move, so the room
   cannot tell "started a timer" from "dragged a box" without inspecting
@@ -292,7 +299,7 @@ On this tab — Board
 | Row                          | Button                            | When                                                                                                        |
 | ---------------------------- | --------------------------------- | ----------------------------------------------------------------------------------------------------------- |
 | Somebody else                | **Make Facilitator**              | I may grant: the baton is free and I have edit rights, or I am the owner, or I hold it and am passing it on |
-| Somebody else, a viewer      | **Make Facilitator**, disabled    | Always. The hover card says why, rather than hiding the button and leaving the rule unlearnable             |
+| Somebody else, not an Editor | **Make Facilitator**, disabled    | Always. The hover card says why, rather than hiding the button and leaving the rule unlearnable             |
 | Somebody else, holding it    | no button, **Facilitating** badge | Taking it back is done from my own row, so the baton has one home per person                                |
 | Mine, baton free             | **Take Facilitation**             | I have edit rights. This is also how a solo facilitator starts                                              |
 | Mine, somebody else holds it | **Take Over**                     | Owner only — the one row that makes "the document can always take back control" true                        |
@@ -335,6 +342,14 @@ vote or a poll.") and wrap their pane in a disabled `fieldset`, which disables
 every control inside it natively, including ones added later. Hiding the panel
 would teach a different editor to every participant, and somebody who had never
 seen the timer would not know there was one.
+
+A **session button** on the canvas has no popover, so its face carries the reason: while somebody else
+facilitates, an Editor's Vote or Poll button is drawn disabled and reads "{name} is facilitating this session;
+ask them to start it.", and a Timer element shows its clock without its controls and reads "{name} is
+facilitating this session; ask them to run the timer." (screen-reader text, as the button's label is). The
+name is the roster's, else the holder's as last seen, so the 90 seconds an absent holder keeps the baton
+still name them rather than "Someone else". A Participant or a Viewer, who could never start one, is told
+"Only people with edit access can start this." instead.
 
 The **card-level** verbs — an idea box's Reveal, an estimate's Clear, a done
 check's Reset Everyone, the roll call, the picker's spin, a reveal zone's cover

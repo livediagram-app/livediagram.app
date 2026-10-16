@@ -33,6 +33,45 @@ const recording = () => {
   return { calls, log };
 };
 
+describe('applyReplace: elements sent back', () => {
+  // Fourteen labelled boxes in a column, the first two joined by an arrow with no style: past twelve boxes a new raw
+  // box takes `sm` text and a new raw arrow takes angled lines, but these are the tab's own.
+  const boxes = Array.from({ length: 14 }, (_, i) => ({
+    id: `n${i}`,
+    type: 'shape',
+    shape: 'square',
+    label: `Step ${i}`,
+    x: 0,
+    y: i * 120,
+    width: 140,
+    height: 60,
+  }));
+  const tab = {
+    id: 't',
+    name: 'T',
+    elements: [...boxes, arrowBetween('a1', 'n0', 'n1')],
+  } as unknown as Tab;
+
+  it('keeps the look of the elements the tab already holds', () => {
+    const { tab: next } = applied(
+      applyReplace(tab, { elements: tab.elements, layout: 'preserve' }, options),
+    );
+    const arrow = next.elements.find((e) => e.id === 'a1')!;
+    expect(arrow).not.toHaveProperty('arrowStyle');
+    expect(arrow).not.toHaveProperty('curvePoints');
+    // Not shrunk to the small size a fresh list of this many boxes takes.
+    expect(next.elements.find((e) => e.id === 'n3')).not.toHaveProperty('textSize', 'sm');
+  });
+
+  it('gives an element new to the tab the raw defaults', () => {
+    const fresh = arrowBetween('a2', 'n2', 'n3');
+    const { tab: next } = applied(
+      applyReplace(tab, { elements: [...tab.elements, fresh], layout: 'preserve' }, options),
+    );
+    expect(next.elements.find((e) => e.id === 'a2')).toHaveProperty('arrowStyle');
+  });
+});
+
 describe('applyReplace on an existing tab', () => {
   it('swaps the elements for a laid-out graph, keeping every tab field', () => {
     const tab = themed('ocean');
@@ -50,6 +89,21 @@ describe('applyReplace on an existing tab', () => {
     expect(results.filter((line) => line.mark === '+')).toHaveLength(next.elements.length);
     expect(formatResultLines(results)).toContain('- n3  square "Login"');
     expect(results.filter((line) => line.mark === '-')).toHaveLength(tab.elements.length);
+  });
+
+  it("keeps a graph's tones: the presets resolve with the tab's theme, as on a new tab", () => {
+    const toned = {
+      nodes: [
+        { id: 'go', label: 'Go', shape: 'stadium', tone: 'strong' as const },
+        { id: 'end', label: 'Stop', shape: 'stadium' },
+      ],
+      edges: [{ from: 'go', to: 'end' }],
+    };
+    const { tab: next } = applied(applyReplace(themed('ocean'), { graph: toned }, options));
+    const go = next.elements.find((el) => el.id === 'go') as { fillColor?: string };
+    const end = next.elements.find((el) => el.id === 'end') as { fillColor?: string };
+    expect(go.fillColor).toBeDefined();
+    expect(go.fillColor).not.toBe(end.fillColor);
   });
 
   it('round trips through its element ops and their inverse', () => {
@@ -115,6 +169,13 @@ describe('applyReplace on an existing tab', () => {
 });
 
 describe('applyReplace for a new tab', () => {
+  it('gives the new tab the finish asked for (docs/specs/008-canvas/finish.md)', () => {
+    expect(
+      applied(applyReplace(null, { graph }, { ...options, finish: 'sketch' })).tab.finish,
+    ).toBe('sketch');
+    expect(applied(applyReplace(null, { graph }, options)).tab.finish).toBeUndefined();
+  });
+
   it('builds a graph tab with the given id, name and theme', () => {
     const { tab, createdIds } = applied(
       applyReplace(null, { graph }, { ...options, theme: getBuiltInTheme('ocean') }),
@@ -135,8 +196,9 @@ describe('applyReplace for a new tab', () => {
   });
 
   it('builds a template tab whole, with its canvas and kind', () => {
+    // Kanban's first tab is a Board tab (docs/specs/026-plan/plan-tabs.md "Templates").
     const { tab } = applied(applyReplace(null, { template: 'kanban' }, options));
-    expect(tab).toMatchObject({ id: 'new-tab', templateChosen: true, kind: 'diagram' });
+    expect(tab).toMatchObject({ id: 'new-tab', templateChosen: true, kind: 'board' });
   });
 
   it('builds an elements tab as add_tab does, themed', () => {
@@ -170,13 +232,23 @@ describe('applyReplace refusals', () => {
 
   it('needs exactly one source', () => {
     expect(refusal({}).details).toEqual([
-      'replace takes exactly one of graph, mermaid, template, elements',
+      'replace takes exactly one of graph, mermaid, template, dashboard, form, elements',
     ]);
     expect(refusal({ graph, mermaid: 'x' }).code).toBe('invalid_value');
   });
 
   it('names a malformed graph member', () => {
     expect(refusal({ graph: { nodes: 'a', edges: [] } }).details[0]).toMatch(/^graph.nodes/);
+  });
+
+  it('refuses a graph it cannot draw as asked, as the MCP does', () => {
+    const graph = {
+      style: 'lanes',
+      nodes: [{ id: 'a' }, { id: 'b' }],
+      edges: [],
+      groups: [{ id: 'g', label: 'Lane', members: ['a'] }],
+    };
+    expect(refusal({ graph }).details[0]).toMatch(/every node in a lane: "b"/);
   });
 
   it('refuses Mermaid it cannot read as parse_error, and Mermaid that is not text', () => {

@@ -21,15 +21,20 @@ import {
   CommentsArt,
   ComponentsArt,
   CustomThemesArt,
+  DashboardArt,
   DragDuplicateArt,
   EmbedArt,
   EntityArt,
   ErasersArt,
   ExpiryArt,
   ExportArt,
+  FacilitateModeArt,
   FacilitatorArt,
   FlowingArrowsArt,
   FontsArt,
+  FormBuilderArt,
+  FormResponsesArt,
+  FormShareArt,
   FormatPainterArt,
   FullScreenSlideArt,
   HiddenVotesArt,
@@ -47,6 +52,7 @@ import {
   LinkCardArt,
   LivingBackgroundArt,
   LockArt,
+  LogoPageArt,
   MarginCommentsArt,
   MarkdownImportArt,
   MarkersArt,
@@ -106,6 +112,8 @@ export type LandingSection = {
   /** The headline: the beat's title on the landing page and the category page's h1. */
   title: string;
   description: string;
+  /** The category page's meta description: 50 to 160 characters, so a search result shows it whole. */
+  metaDescription: string;
   /**
    * The label for the beat's link into its category page. Hand written rather
    * than derived from the title, which read awkwardly ("Explore work on it
@@ -121,8 +129,8 @@ export type LandingSection = {
 
 /**
  * The feature categories, in the order the landing page tells them: collaborate,
- * then each way of working on a tab (Diagram, Draw, Illustrate's infographics and
- * its documents and slides, Plan). `page.tsx` renders one beat per entry and
+ * then each way of working on a tab (Diagram, Draw, Illustrate's infographics, its
+ * slide decks and its documents, Plan's boards, then its sheets and forms). `page.tsx` renders one beat per entry and
  * alternates its background by index; `/features/<id>` renders each one's cards.
  */
 export const LANDING_SECTIONS: LandingSection[] = [
@@ -133,7 +141,9 @@ export const LANDING_SECTIONS: LandingSection[] = [
     cta: 'Explore collaboration',
     title: 'Work on it together, live',
     description:
-      'Share a link and your team is on the canvas with you: live cursors, comments on any element, actions handed to teammates, and the tools to run a workshop, from timers and votes to a spotlight on the thing you mean.',
+      'Share a link and your team is on the canvas with you: live cursors, comments on any element, actions handed to teammates, and Facilitate, a mode for running a workshop, with timers, votes and a spotlight on the thing you mean.',
+    metaDescription:
+      'Share a link and your team is on the canvas with you: live cursors, comments, assigned actions and workshop tools, from timers and votes to polls.',
     highlights: [
       'Live presence',
       'Comments on any element',
@@ -195,7 +205,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Work together live',
         title: 'See what happened while you were away',
         description:
-          'The Explorer opens on Home: the documents you return to most, and what your teammates commented, edited and assigned you while you were away. The Timeline holds the full feed, and the sidebar carries a count so you can tell without looking.',
+          'The Explorer opens on Home: the documents you return to most, and what your teammates commented, edited and assigned you while you were away. The Timeline holds the full feed, and the Inbox gathers the actions and threads still waiting on you, with a count in the sidebar so you can tell without looking.',
       },
       {
         art: <UndoRedoArt />,
@@ -203,7 +213,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Work together live',
         title: 'Undo and redo',
         description:
-          "Back out a recent edit with Cmd-Z, or bring it back with Cmd-Shift-Z. A whole drag is one step, and your undo never reaches into anyone else's work.",
+          "Back out a recent edit with Cmd-Z, or bring it back with Cmd-Shift-Z. A whole drag is one step, and your undo rewinds your own edits, not a teammate's.",
       },
       {
         art: <SessionToolsArt />,
@@ -211,7 +221,15 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Present & facilitate',
         title: 'Run the session: timer + voting',
         description:
-          'Facilitate live from the canvas. Drop a timer straight onto it (the real one, with start, pause, restart and a bar that drains as the time goes), or start a countdown or stopwatch the whole room sees, then open dot-voting to surface the group’s priorities. Everyone votes with a budget of dots; results tally in real time, and revealing them starts a guided walkthrough: each top pick lights up and centres on screen while you step through with Next and Previous. Perfect for retros, workshops, and timeboxed planning.',
+          'Facilitate live from the canvas. In Facilitate, Timer, Vote and Poll sit in the Session strip at the foot of the canvas: start a countdown or stopwatch the whole room sees, its time on the button, or drop a timer onto the canvas as a session button so a template carries its own running order. Then open dot-voting to surface the group’s priorities. Everyone votes with a budget of dots; results tally in real time, and revealing them starts a guided walkthrough: each top pick lights up and centres on screen while you step through with Next and Previous. Perfect for retros, workshops, and timeboxed planning.',
+      },
+      {
+        art: <FacilitateModeArt />,
+        href: '/help/canvas/facilitate-mode/',
+        group: 'Present & facilitate',
+        title: 'A mode for running the room',
+        description:
+          'Switch a tab to Facilitate and it brings the session to hand: stickies, timers, votes, polls, reveals, quizzes and the Q&A board on its palette, and the Session strip at the foot of the canvas. Retrospectives, Lean Coffee and town halls open there, and Diagram stays about diagrams.',
       },
       {
         art: <FacilitatorArt />,
@@ -235,7 +253,15 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Present & facilitate',
         title: 'Ask the room to look here',
         description:
-          'Drop a Bring Focus element, press it, and everyone else is offered a jump to it: your tab, your zoom, the thing you mean. It asks rather than drags, so nobody loses the place they were working in.',
+          'Drop a Bring Focus element, press it, and everyone else is offered a jump to it: your tab, the thing you mean, centred on their screen. It asks rather than drags, so nobody loses the place they were working in.',
+      },
+      {
+        art: <FacilitatorArt />,
+        href: '/help/palette/collaborate/agendas/',
+        group: 'Present & facilitate',
+        title: 'Keep the record of the meeting',
+        description:
+          'An agenda holds the run of the session, and pressing a segment starts the timer for it. A roll call freezes who was in the room, a picker chooses someone at random so nobody has to volunteer, and a decision record keeps what was decided, why and when, beside the thing it decided.',
       },
       {
         art: <SpotlightArt />,
@@ -267,7 +293,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Present & facilitate',
         title: 'Celebrate on the canvas',
         description:
-          'Reaction pads throw confetti, sparkles, hearts, applause or fireworks over the canvas for everyone in the room. Press one, or walk an Avatar-mode character onto it. Nothing is saved: a reaction is a moment, not a mark on the canvas.',
+          'Reaction pads throw confetti, sparkles, hearts, applause or fireworks over the canvas for everyone in the room. Press one, or walk an Avatar-mode character onto it. Nothing is saved: a reaction is a moment, not a mark on the canvas. For a mark that stays, drop one of around 190 emoji stickers or 32 word badges like APPROVED and BLOCKED.',
       },
       {
         art: <ShareLinksArt />,
@@ -275,7 +301,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Share & access',
         title: 'Editor, participant or view-only links',
         description:
-          'Create an editor link for collaborators, a participant link for a team who should add stickies, write and vote without reshaping the board, or a view-only link for stakeholders who should watch, not touch. Run as many links as you like, side by side. Any link also embeds in your wiki, Notion, or docs: copy the iframe snippet from the Share dialog.',
+          'Create an editor link for collaborators, a participant link for a team who should add stickies, write and vote without reshaping the board, or a view-only link for stakeholders who should watch, not touch. Run as many links as you like, side by side, and point one at a single tab to keep the rest of the document private. Any link also embeds in your wiki, Notion, or docs: copy the iframe snippet from the Share dialog. Where iframes are blocked, like a GitHub README, a live image shows the latest version as a plain picture.',
       },
       {
         art: <TeamsArt />,
@@ -311,6 +337,8 @@ export const LANDING_SECTIONS: LandingSection[] = [
     title: 'Diagrams that look designed, not dragged',
     description:
       'Shapes that snap into line, arrows that follow them, and icons, tables and components when boxes are not enough. Start from a template, recolour it with a theme, or describe it to your AI and let it build the diagram for you.',
+    metaDescription:
+      'Shapes that snap into line, arrows that follow them, templates and one-click themes, and an AI that can build the diagram from a description.',
     highlights: [
       'Arrows that bend your way',
       'Guides that line things up',
@@ -324,7 +352,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Shapes & connectors',
         title: 'A shape for everything',
         description:
-          'Fourteen core shapes (flowchart blocks plus an actor, cloud, triangle, star, and speech bubble), a section frame that carries whatever you draw inside it, and seven device frames (browser, monitor, laptop, phone, tablet, foldable, smartwatch). Click to drop one, or drag to draw it at the exact size you want, snapped to line up with its neighbours. A flowchart one minute, a screen the next.',
+          'Fourteen core shapes (flowchart blocks plus an actor, cloud, triangle, star, and speech bubble), a section frame that carries whatever you draw inside it, and seven device frames (browser, monitor, laptop, phone, tablet, foldable, smartwatch). Click to drop one, or drag to draw it at the exact size you want, snapped to line up with its neighbours. A flowchart one minute, a screen the next. Import a draw.io library and its shapes join the palette as a shape library of your own, under My shapes.',
       },
       {
         art: <ArrowsArt />,
@@ -364,7 +392,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'More than boxes and arrows',
         title: 'Mind maps from the keyboard',
         description:
-          'Type a thought, press Tab for a child or Enter for a sibling, and keep typing. Every node arrives already connected, already selected, and ready for the next word, so a whole branch goes down at the speed you can say it. Nothing re-flows underneath you; tidy it with Auto Layout when you are done.',
+          'Type a thought, press Tab for a child or Enter for a sibling, and keep typing. Every node arrives already connected, already selected, and ready for the next word, so a whole branch goes down at the speed you can say it. Nothing re-flows underneath you; tidy it with Auto Layout when you are done, or open Edit Outline to rename, nest and reorder the whole map as an indented list and save it back in one step.',
       },
       {
         art: <LanesArt />,
@@ -442,9 +470,9 @@ export const LANDING_SECTIONS: LandingSection[] = [
         art: <TemplatesArt />,
         href: '/help/canvas/templates/',
         group: 'Templates & themes',
-        title: 'Ninety-five starter templates',
+        title: 'A hundred and thirty-two starter templates',
         description:
-          'Start from a board that already makes sense: flowcharts and mind maps, retrospectives and Kanban, roadmaps and org charts, meeting agendas and risk matrices, wireframes, architecture and UML, even a to-scale floor plan. Browse them by category in the picker, edit one, or start blank.',
+          'Start from a board that already makes sense: flowcharts and mind maps, retrospectives and Kanban, roadmaps and org charts, meeting agendas and risk matrices, pub quizzes and icebreakers, budgets and invoices, wireframes, architecture and UML, even a to-scale floor plan. Browse them by the job to be done in the picker, edit one, or start blank.',
       },
       {
         art: <ThemesArt />,
@@ -452,7 +480,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Templates & themes',
         title: 'Twenty-six preset themes',
         description:
-          'Default, Forest, Ocean, Sunset, Rose, Midnight, Mono and a dozen more, plus multi-colour Rainbow, Pastel, Tropical, Autumn, and Jewel schemes that tint each branch a different hue. One click recolours the canvas, every shape, and every arrow. Default has a light and a dark half, and follows your own appearance.',
+          'Default, Forest, Ocean, Sunset, Rose, Midnight, Mono and a dozen more, plus multi-colour Rainbow, Pastel and Tropical schemes that tint each branch a different hue. One click recolours the canvas, every shape, and every arrow. Every theme has a light and a dark half, and follows your own appearance.',
       },
       {
         art: <CustomThemesArt />,
@@ -548,7 +576,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Neat without trying',
         title: 'Keyboard shortcuts',
         description:
-          'The moves you repeat have keys: undo and redo, delete, switch tools, and drop a shape, arrow, sticky, or text without reaching for the palette. Hold Cmd and the palette shows each key. A built-in cheat sheet lists them all, and you can switch them off per device.',
+          'The moves you repeat have keys: undo and redo, delete, switch tools, and drop a shape, arrow, sticky, or text without reaching for the palette. Hold Cmd and the palette shows each key. A built-in cheat sheet lists them all, and you can switch them off per device. The canvas itself is a stop in the Tab order: move through its elements from the keyboard, with the selection announced to screen readers.',
       },
       {
         art: <UnlimitedTabsArt />,
@@ -652,7 +680,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'AI & your tools',
         title: 'Works with Mermaid',
         description:
-          'Paste or open a Mermaid flowchart and livediagram lays it out on the canvas, keeping every connection, not just the outline. Export any tab back to Mermaid to copy or download. It is the diagram-as-code format your READMEs, issues, and AI tools already use, so your diagrams travel.',
+          'Paste or open a Mermaid flowchart and livediagram lays it out on the canvas, keeping every connection, not just the outline. Export a diagram tab back to Mermaid to copy or download. It is the diagram-as-code format your READMEs, issues, and AI tools already use, so your diagrams travel.',
       },
       {
         art: <MarkdownImportArt />,
@@ -660,7 +688,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'AI & your tools',
         title: 'Import a Markdown outline',
         description:
-          'Bring an outline in from XMind, Obsidian, or any notes: headings and nested bullets become a tidy, themed node-link tree. Pick Markdown in the import dialog: it builds onto the current tab, and one undo takes it back.',
+          'Bring an outline in from XMind, Obsidian, or any notes: headings and nested bullets become a tidy, themed node-link tree. Pick Markdown in the import dialog: it replaces the current tab’s contents, and one undo puts them back.',
       },
       {
         art: <BoardImportArt />,
@@ -676,7 +704,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'AI & your tools',
         title: 'Export as PNG, SVG, or PDF',
         description:
-          'Take any tab out as an image for a doc, a PDF to print, or JSON, Markdown and Excalidraw to move it elsewhere. What you exported is what you drew: same sizes, same colours, same marks, in the same places.',
+          'Take any tab out as an image for a doc, a PDF to print, or JSON to move it elsewhere. A diagram or whiteboard tab also goes out as Markdown or Excalidraw. What you exported is what you drew: same sizes, same colours, same marks, in the same places.',
       },
       {
         art: <ApiArt />,
@@ -684,7 +712,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'AI & your tools',
         title: 'Write your own integrations',
         description:
-          'Create an API token and call the same REST API the editor uses, under your account, from your own scripts and integrations, or install the livediagram command-line tool from npm to read, edit, share and export documents from your terminal. Signed in, revocable, six-month tokens, no lock-in.',
+          'Create an API token and call the same REST API the editor uses, under your account, from your own scripts and integrations, or install the livediagram command-line tool from npm to read, edit, share and export documents from your terminal. Signed in, revocable, six-month tokens, no lock-in. Link a repository to your documents and coding agents find your diagrams by name, or keep the editor open beside your agent in a workbench.',
       },
     ],
   },
@@ -696,6 +724,8 @@ export const LANDING_SECTIONS: LandingSection[] = [
     title: 'A whiteboard that feels like paper',
     description:
       'Switch a tab to Draw and the canvas becomes a whiteboard: three markers in hand, a pen that answers to pressure, and erasers that take a whole stroke or just a smudge. Sketch it rough, and let it snap to shape when you want it neat.',
+    metaDescription:
+      'Switch a tab to Draw for a whiteboard that feels like paper: three pressure-sensitive markers, smart erasers, and rough shapes that snap neat.',
     highlights: [
       'Three markers in hand',
       'Pressure-sensitive pens',
@@ -708,7 +738,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         href: '/help/canvas/draw-mode/',
         title: 'Three markers in hand',
         description:
-          'Keys 1, 2 and 3 pick up three markers, each Fine, Medium or Bold. Marker 1 is ink; the other two take any of nine stock colours or a colour of your own.',
+          'Keys 1, 2 and 3 pick up three markers, each in six widths from Fine to Broad. Marker 1 is ink; the other two take any of nine stock colours or a colour of your own.',
       },
       {
         art: <PressureArt />,
@@ -759,13 +789,15 @@ export const LANDING_SECTIONS: LandingSection[] = [
     label: 'Infographics',
     scene: 'infographic',
     cta: 'Explore infographics',
-    title: 'Posters, one-pagers and social posts',
+    title: 'Posters, social posts and logos',
     description:
-      'Switch a tab to Illustrate and lay out pages: start from a ready-made layout, paint it from your theme, fill it with stats, charts and quotes, then export it print-ready or post it.',
+      'Switch a tab to Illustrate and lay out pages: start from a ready-made layout, paint it from your theme, fill it with stats, charts and quotes, then export it print-ready or post it. Or design a logo on an artboard of its own.',
+    metaDescription:
+      'Lay out posters, one-pagers and social posts from ready-made layouts, design a logo on its own artboard, then export them print-ready.',
     highlights: [
       'Pages for print and social',
       'Start a page from a layout',
-      'Turn any diagram into pages',
+      'Design a logo',
       'Every page, print-ready',
     ],
     items: [
@@ -774,14 +806,14 @@ export const LANDING_SECTIONS: LandingSection[] = [
         href: '/help/canvas/illustrate/',
         title: 'Pages for print and social',
         description:
-          'A4, US Letter and A3 for print; square, portrait post and story or slide for social. Each page has its own size and orientation, and everything on it moves with it.',
+          'A4, US Letter and A3 for print; square, portrait post and story or slide for social; a square artboard for a logo. Each page has its own size and orientation, and everything on it moves with it.',
       },
       {
         art: <InfographicLayoutArt />,
         href: '/help/canvas/illustrate/infographic-layouts/',
         title: 'Start a page from a layout',
         description:
-          'Thirty-one ready-made pages in six categories, from a title page and key stats to a feature matrix, a funnel and a save-the-date. Hover one to preview it on your page, press it to place it, then make it yours.',
+          'Ninety-two ready-made pages in eight categories, from a magazine cover and a gig poster to a KPI dashboard, a SWOT and a cheat sheet. Hover one to preview it on your page, press it to place it, then make it yours.',
       },
       {
         art: <IllustrateBackgroundsArt />,
@@ -798,6 +830,13 @@ export const LANDING_SECTIONS: LandingSection[] = [
           'Switch a diagram, mind map or sketch to Illustrate mode and it lands on a page made around it, nothing moved or shrunk. Split it into a page for each part whenever you like.',
       },
       {
+        art: <LogoPageArt />,
+        href: '/help/canvas/illustrate/logo-pages/',
+        title: 'Design a logo',
+        description:
+          'A logo page is a square artboard with construction guides to build on. Start from twenty-five logo layouts or a blank board, draw with Mirror for a symmetrical mark, combine shapes into one, set the name in wordmark type, then download a logo kit: SVG, PNGs from 16 to 1024 pixels and a favicon.',
+      },
+      {
         art: <IllustrateExportArt />,
         href: '/help/canvas/illustrate/exporting-pages/',
         title: 'Every page, print-ready',
@@ -807,18 +846,81 @@ export const LANDING_SECTIONS: LandingSection[] = [
     ],
   },
   {
-    id: 'documents',
-    label: 'Documents & slides',
-    scene: 'article',
-    cta: 'Explore documents and slides',
-    title: 'Write it up, then present it',
+    id: 'slides',
+    label: 'Slide decks',
+    scene: 'slides',
+    cta: 'Explore slide decks',
+    title: 'Build the deck, then present it',
     description:
-      'Write on pages like a doc, with the diagram right there in the text. Then turn pages into slides and present them full screen, your notes beside you. The write-up, the deck and the diagram stay one document.',
+      'Start a slide from one of 46 ready-made layouts, or make one from what you drew, then present the deck full screen on your screen alone, your notes behind a button. Slides reference your diagram, so they never drift from it.',
+    metaDescription:
+      'Slide decks from 46 ready-made layouts or from what you drew, presented full screen with private notes. Slides stay in step with your diagram.',
+    highlights: [
+      'Slide pages, ready-made layouts',
+      'Slides made from what you drew',
+      'Notes only you open',
+      'Your screen, not everyone else’s',
+    ],
+    items: [
+      {
+        art: <SlideLayoutsArt />,
+        href: '/help/canvas/illustrate/exporting-pages/#turning-pages-into-slides',
+        title: 'Slide pages, ready-made layouts',
+        description:
+          'Add a 16:9 or classic 4:3 slide page and start it from one of 46 layouts: a keynote title, an agenda, three big numbers, a roadmap, a call to action and more. One press puts it in the deck, and it presents edge to edge.',
+      },
+      {
+        art: <SlideDeckArt />,
+        href: '/help/selection-modes/slide-deck/',
+        title: 'Slides made from what you drew',
+        description:
+          'A slide is simply the elements you picked, from one tab. Select a cluster on the canvas and make it a slide; the arrows between them come along on their own. Slides reference your elements rather than copying them, so editing a shape updates every slide it appears on and the deck can never drift from the diagram.',
+      },
+      {
+        art: <FullScreenSlideArt />,
+        href: '/help/selection-modes/slide-deck/',
+        title: 'One deck across every tab',
+        description:
+          'Slide one can come from your architecture tab and slide two from the roadmap. Order them however you like in the Slide Deck panel: drag to rearrange, rename, duplicate, or hide a slide you might want next week without deleting it. The deck is saved with the document, so a teammate opens it and sees the same talk.',
+      },
+      {
+        art: <PresenterNotesArt />,
+        href: '/help/selection-modes/slide-deck/',
+        title: 'Notes only you open',
+        description:
+          'Write what you mean to say over each slide. During the presentation they sit behind a button in the corner, so nothing about your script is on screen until you ask for it. Clicking any element shows its note, comments and assigned action too, for the question you did not plan for.',
+      },
+      {
+        art: <PresentLocallyArt />,
+        href: '/help/selection-modes/slide-deck/',
+        title: 'Your screen, not everyone else’s',
+        description:
+          'Presenting shows the deck on your screen and nowhere else. Nobody is dragged into your slide, nobody’s view moves, and collaborators with the document open carry on working. You share your screen the way you already do. Nothing on a slide can be changed by a stray click, so a projector is safe. To leave a deck running on a screen, set it to advance every 5 to 60 seconds and loop back to the start.',
+      },
+      {
+        art: <ZenModeArt />,
+        href: '/help/tools/zen-mode/',
+        title: 'Zen mode for focus',
+        description:
+          'Hit Z, or the zen button by the laser pointer, and every toolbar, panel, and tab bar drops away, leaving just your canvas. Only the zoom controls stay, with an exit button right beside them. Press Z or Esc to bring it all back.',
+      },
+    ],
+  },
+  {
+    id: 'documents',
+    label: 'Documents',
+    scene: 'article',
+    cta: 'Explore documents',
+    title: 'Write it up, diagram and all',
+    description:
+      'Write on pages like a doc, with the diagram right there in the text: pictures that wrap, comments in the margin, and five looks to match your house style. The write-up and the diagram stay one document.',
+    metaDescription:
+      'Write on pages like a doc, with the diagram in the text: pictures that wrap, margin comments and five looks. The write-up and diagram stay one document.',
     highlights: [
       'Write like a doc',
       'Pages that grow',
-      'Slide pages, ready-made layouts',
-      'Notes only you open',
+      'Pictures and drawings in the text',
+      'Comments in the margin',
     ],
     items: [
       {
@@ -861,54 +963,6 @@ export const LANDING_SECTIONS: LandingSection[] = [
         description:
           'Clean, Classic, Report, Notebook or Bold, then set the accent colour, margins, fonts and page numbers to match your house style.',
       },
-      {
-        art: <SlideLayoutsArt />,
-        href: '/help/canvas/illustrate/exporting-pages/#turning-pages-into-slides',
-        group: 'Present',
-        title: 'Slide pages, ready-made layouts',
-        description:
-          'Add a 16:9 or classic 4:3 slide page and start it from one of seventeen layouts: a title, an agenda, two columns, image and text, a timeline and more. One press puts it in the deck, and it presents edge to edge.',
-      },
-      {
-        art: <SlideDeckArt />,
-        href: '/help/selection-modes/slide-deck/',
-        group: 'Present',
-        title: 'Slides made from what you drew',
-        description:
-          'A slide is simply the elements you picked, from one tab. Select a cluster on the canvas and make it a slide; the arrows between them come along on their own. Slides reference your elements rather than copying them, so editing a shape updates every slide it appears on and the deck can never drift from the diagram.',
-      },
-      {
-        art: <FullScreenSlideArt />,
-        href: '/help/selection-modes/slide-deck/',
-        group: 'Present',
-        title: 'One deck across every tab',
-        description:
-          'Slide one can come from your architecture tab and slide two from the roadmap. Order them however you like in the Slide Deck panel: drag to rearrange, rename, duplicate, or hide a slide you might want next week without deleting it. The deck is saved with the document, so a teammate opens it and sees the same talk.',
-      },
-      {
-        art: <PresenterNotesArt />,
-        href: '/help/selection-modes/slide-deck/',
-        group: 'Present',
-        title: 'Notes only you open',
-        description:
-          'Write what you mean to say over each slide. During the presentation they sit behind a button in the corner, so nothing about your script is on screen until you ask for it. Clicking any element shows its note, comments and assigned action too, for the question you did not plan for.',
-      },
-      {
-        art: <PresentLocallyArt />,
-        href: '/help/selection-modes/slide-deck/',
-        group: 'Present',
-        title: 'Your screen, not everyone else’s',
-        description:
-          'Presenting shows the deck on your screen and nowhere else. Nobody is dragged into your slide, nobody’s view moves, and collaborators with the document open carry on working. You share your screen the way you already do. Nothing on a slide can be changed by a stray click, so a projector is safe.',
-      },
-      {
-        art: <ZenModeArt />,
-        href: '/help/tools/zen-mode/',
-        group: 'Present',
-        title: 'Zen mode for focus',
-        description:
-          'Hit Z, or the zen button by the laser pointer, and every toolbar, panel, and tab bar drops away, leaving just your canvas. Only the zoom controls stay, with an exit button right beside them. Press Z or Esc to bring it all back.',
-      },
     ],
   },
   {
@@ -918,12 +972,14 @@ export const LANDING_SECTIONS: LandingSection[] = [
     cta: 'Explore plans and boards',
     title: 'Plan the work, then watch it move',
     description:
-      'Switch a tab to Plan and the work moves onto boards of cards: columns with WIP limits, swimlanes, card types with fields of your own, and live charts of every card, right beside the diagram that explains it.',
+      'Switch a tab to Plan and the work moves onto boards of cards: columns with WIP limits, swimlanes, card types with fields of your own, live charts of every card, and dashboards that bring it all onto one page, right beside the diagram that explains it.',
+    metaDescription:
+      'Plan mode puts the work on boards of cards: WIP limits, swimlanes, your own card types, live charts, Sheets with real formulas and dashboards.',
     highlights: [
       'Boards with WIP limits',
       'One card, every board',
       'Card types and fields of your own',
-      'Live charts of every card',
+      'Dashboards on one page',
     ],
     items: [
       {
@@ -952,14 +1008,21 @@ export const LANDING_SECTIONS: LandingSection[] = [
         href: '/help/canvas/plan-mode/#metrics-and-visualisations',
         title: 'Live charts of every card',
         description:
-          'A Gantt chart, a due-date calendar, cards by any field and priority by status, all drawn from the cards themselves, so a chart is never out of date.',
+          'A Gantt chart, due and start calendars you can drag cards across, cards by any field and priority by status, all drawn from the cards themselves, so a chart is never out of date. Give one a tab of its own and it fills the page, with a Chart Settings cog for which cards it shows and how it groups them.',
+      },
+      {
+        art: <DashboardArt />,
+        href: '/help/canvas/plan-mode/dashboards/',
+        title: 'Dashboards on one page',
+        description:
+          'Lay a tab out as rows of slots and put one thing in each, live: a board you can work on, a Sheet you can edit, a chart, a figure like Completion or a column total, a diagram from another tab, or a note, a checklist or a key date. Start from a layout such as Overview or Report, then add, move and resize slots as you go.',
       },
       {
         art: <SheetsArt />,
         href: '/help/canvas/plan-mode/sheets/',
         title: 'Sheets with real formulas',
         description:
-          'Put a spreadsheet on a Plan tab: cells, over 150 functions, number formats, sort, filter and freeze, live for everyone. Formulas can read the cards on the board, and copy and paste works with Google Sheets and Excel.',
+          'Put a spreadsheet on a Plan tab: cells, over 150 functions, number formats, sort, filter and freeze, live for everyone. Formulas can read the cards on the board, or list the cards as rows that stay linked both ways. Select some cells and chart them as bars, lines or a pie that sits in the Sheet over its cells. Copy and paste works with Google Sheets and Excel, CSV files come in and go out, and cells come Compact, Default or Roomy and zoom from 50% to 200%.',
       },
       {
         art: <BoardWidgetsArt />,
@@ -978,9 +1041,9 @@ export const LANDING_SECTIONS: LandingSection[] = [
       {
         art: <TemplatesArt />,
         href: '/help/canvas/plan-mode/#plan-templates',
-        title: 'Ten plans, ready to go',
+        title: 'Ten plans, twelve spreadsheets',
         description:
-          'Project Planner, Kanban Board, Bug Tracker, Team Retro, Weekly Planner, Content Calendar, Hiring Pipeline, OKRs, Product Launch and Feedback Board, each set up with its boards; a Budget Planner, Timesheet, Contact List or Task Tracker spreadsheet; or start from a blank plan.',
+          'Project Planner, Kanban Board, Bug Tracker, Team Retro, Weekly Planner, Content Calendar, Hiring Pipeline, OKRs, Product Launch and Feedback Board, each set up with its boards; twelve spreadsheets, from a Budget Planner and an Invoice to a Sales Pipeline, a Grade Book and a Loan Calculator, many with charts already in; or a blank plan. Start Planning lays them out by kind, with search.',
       },
       {
         art: <McpArt />,
@@ -988,6 +1051,107 @@ export const LANDING_SECTIONS: LandingSection[] = [
         title: 'Agents that move the cards',
         description:
           'Your AI tools can read the plan and add, edit and move cards over MCP, the API or the CLI, naming columns and fields the way the board shows them.',
+      },
+    ],
+  },
+  {
+    id: 'sheets',
+    label: 'Sheets',
+    scene: 'sheet',
+    cta: 'Explore sheets',
+    title: 'Spreadsheets that sit beside the work',
+    description:
+      'Put a spreadsheet on a Plan tab: real formulas, number formats, sort and filter, live for everyone. Read the cards on the board, or list them as rows that stay linked both ways, and chart any cells in a click.',
+    metaDescription:
+      'Spreadsheets on a Plan tab: real formulas, live for everyone, reading the board’s cards or listing them as linked rows, with charts from any cells.',
+    highlights: [
+      'Sheets with real formulas',
+      'Cards as rows, linked both ways',
+      'Charts from your cells',
+      'Twelve ready-made spreadsheets',
+    ],
+    items: [
+      {
+        art: <SheetsArt />,
+        href: '/help/canvas/plan-mode/sheets/',
+        title: 'Sheets with real formulas',
+        description:
+          'Cells, over 150 functions, number formats, sort, filter and freeze, live for everyone on the document. Formulas fill down, and a cell can read a card on the board.',
+      },
+      {
+        art: <SharedItemsArt />,
+        href: '/help/canvas/plan-mode/sheets/',
+        title: 'Cards as rows, linked both ways',
+        description:
+          'List the board’s cards as rows: change a cell and the card changes, move the card and its row follows. The sheet and the board are one set of work.',
+      },
+      {
+        art: <PlanViewsArt />,
+        href: '/help/canvas/plan-mode/sheets/',
+        title: 'Charts from your cells',
+        description:
+          'Select some cells and chart them as bars, lines or a pie that sits in the Sheet over its cells, redrawn the moment a number changes.',
+      },
+      {
+        art: <TemplatesArt />,
+        href: '/help/canvas/plan-mode/#plan-templates',
+        title: 'Twelve ready-made spreadsheets',
+        description:
+          'A Budget Planner, an Invoice, a Sales Pipeline, a Grade Book, a Loan Calculator and more, many with charts already in, or a blank spreadsheet to type into.',
+      },
+      {
+        art: <BoardImportArt />,
+        href: '/help/canvas/plan-mode/sheets/',
+        title: 'Paste from Sheets and Excel, CSV in and out',
+        description:
+          'Copy and paste works with Google Sheets and Excel, CSV files come in and go out, and cells come Compact, Default or Roomy and zoom from 50% to 200%.',
+      },
+    ],
+  },
+  {
+    id: 'forms',
+    label: 'Forms',
+    scene: 'form',
+    cta: 'Explore forms',
+    title: 'Collect answers straight into your board or sheet',
+    description:
+      'Build a form where it sits, share one link, and each response lands the moment it is sent: a row in a sheet, or a card on a board ready to work through. No account needed to answer, and nothing else of yours to see.',
+    metaDescription:
+      'Build a form, share one link, and each response lands as a row in a sheet or a card on a board. No account needed to answer.',
+    highlights: [
+      'Build it where it sits',
+      'One link to share',
+      'Every answer lands',
+      'Seven forms to start from',
+    ],
+    items: [
+      {
+        art: <FormBuilderArt />,
+        href: '/help/canvas/plan-mode/forms/',
+        title: 'Build it where it sits',
+        description:
+          'Click a question to word it, pick its type (short answer, paragraph, number, email, link, date, choices, rating or a checkbox) and mark it required, right in the form. Sections can show only on an earlier answer.',
+      },
+      {
+        art: <FormShareArt />,
+        href: '/help/canvas/plan-mode/forms/',
+        title: 'One link to share',
+        description:
+          'Publish the form to get a link anyone can fill in, with no sign-in. They see the form and nothing else of yours, and you can close it, set a closing date or a response limit at any time.',
+      },
+      {
+        art: <FormResponsesArt />,
+        href: '/help/canvas/plan-mode/forms/',
+        title: 'Every answer lands',
+        description:
+          'Each response becomes a row in a sheet, a column per question, or a card on a board with its answers in the card’s fields, ready to move along. The count on the form says how many are new.',
+      },
+      {
+        art: <TemplatesArt />,
+        href: '/help/canvas/plan-mode/forms/',
+        title: 'Seven forms to start from',
+        description:
+          'A Bug Report, Feedback, a Feature Request, an Event RSVP, a Job Application, a Contact form, or a blank one, each sending its answers to the board or sheet that suits it.',
       },
     ],
   },
@@ -1006,7 +1170,7 @@ export function getLandingSection(id: string): LandingSection | undefined {
   return LANDING_SECTIONS.find((section) => section.id === id);
 }
 
-export type FeatureGroup = { title: string; items: FeatureProps[] };
+type FeatureGroup = { title: string; items: FeatureProps[] };
 
 /**
  * Split a section's features into ordered, captioned sub-groups for the

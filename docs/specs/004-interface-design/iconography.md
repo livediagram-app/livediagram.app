@@ -36,6 +36,7 @@ Every icon livediagram draws follows one grammar, so a glyph looks the same weig
 - The insets are computed from the glyph's geometry during render (no DOM measurement), so static pages carry them and nothing shifts after paint.
 - A glyph whose geometry can't be read (a transform, an opaque child component) carries no insets.
 - Containers use them to measure padding to the ink (optical alignment).
+- The marketing hero's scene chrome (`hero-glyph-ink`) also centres each glyph vertically by them, moving it half the difference of its top and bottom insets: drawn at 11px in 24px chips, a glyph whose ink sits off its box's middle would otherwise read past the 0.5px optical tolerance.
 
 ## One home, one icon per meaning
 
@@ -49,6 +50,13 @@ Every icon livediagram draws follows one grammar, so a glyph looks the same weig
 - Palette thumbnails render at the chrome weight.
 - A placed canvas icon has an **icon weight**: `thin`, `regular` or `bold`, picked in the icon's context menu. `regular` is the default and matches the chrome weight. The stroke is non-scaling, so the weight holds at any element size and zoom.
 - Floor-plan furniture is drawn top-down, and no two pieces share a silhouette.
+
+- The Icons catalogue holds, besides the editor's general glyphs (people, devices, files, actions, furniture),
+  subjects: food and drink, shops and money, travel, nature and weather, people and pets, learning, health, media and
+  work (`icon-catalog-3.ts`), each Lucide's glyph vendored through the manifest, so a page or diagram about a bakery, a
+  startup or a trip has an icon of its subject in the line-art set rather than an emoji. The palette's Icons tab browses them in their
+  own categories: Food & Drink, Shopping & Money, Business, Travel, Nature & Weather, Life & Health, Learning &
+  Media (the code-review glyphs in Tech, the verified shield in Security).
 
 ## Technology tiles
 

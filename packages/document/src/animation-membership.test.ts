@@ -32,7 +32,7 @@ describe('bodyAnimationSetOf', () => {
     [of('video'), 'media'],
     [of('table'), 'table'],
   ] as const)('%s.type takes %s', (el, set) => {
-    expect(bodyAnimationSetOf(el as Element)).toBe(set);
+    expect(bodyAnimationSetOf(el)).toBe(set);
   });
 
   it('gives a text element no body set: its words are the whole element', () => {

@@ -5,6 +5,7 @@
 // connect-an-AI-tool article.
 import { Brand, Glyph, SOLID_BRAND_DARK_CONTROL } from '@livediagram/ui';
 import { AnimatedLinesBackdrop } from '@/components/canvas/AnimatedLinesBackdrop';
+import { ToggleSwitch } from '@/components/palette/palette-controls';
 
 // The primary action of every page in the shell (Allow, Approve, Continue). White on brand-700 in light
 // (about 5.9:1; brand-600 was 4.1:1, under WCAG 2.2 AA), darker still on hover; the shared solid brand
@@ -35,7 +36,7 @@ export function OauthHelpLink() {
       href="/help/account-and-data/connect-ai-mcp/"
       target="_blank"
       rel="noopener noreferrer"
-      className="mt-5 inline-flex items-center gap-1.5 text-xs font-medium text-slate-400 transition hover:text-brand-600 dark:hover:text-brand-400"
+      className="mt-5 inline-flex items-center gap-1.5 text-xs font-medium text-slate-400 transition hover:text-brand-700 dark:hover:text-brand-400"
     >
       <Glyph size={13} units={16} strokeLinecap="butt" strokeLinejoin="miter">
         <circle cx="8" cy="8" r="6.5" />
@@ -44,5 +45,33 @@ export function OauthHelpLink() {
       </Glyph>
       Learn about connecting AI tools
     </a>
+  );
+}
+
+// The read-only choice both approval pages offer (an MCP client's consent, a CLI's device sign-in): a whole-row
+// toggle with the shared presentational switch, as ProfilePane and SettingsDialog rows are.
+export function ReadOnlyAccessToggle({
+  readOnly,
+  onChange,
+}: {
+  readOnly: boolean;
+  onChange: (readOnly: boolean) => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={() => onChange(!readOnly)}
+      aria-pressed={readOnly}
+      className="mt-4 flex w-full cursor-pointer items-start justify-between gap-3 rounded-lg border border-slate-200 px-3 py-2.5 text-left text-sm dark:border-slate-700"
+    >
+      <span className="min-w-0 text-slate-600 dark:text-slate-300">
+        <span className="font-medium text-slate-800 dark:text-slate-100">Read-only access</span>:
+        let it find and view your documents, but not create, edit, delete, or share them. Leave off
+        for full read + write.
+      </span>
+      <span className="mt-0.5 shrink-0">
+        <ToggleSwitch presentational checked={readOnly} label="Read-only access" />
+      </span>
+    </button>
   );
 }

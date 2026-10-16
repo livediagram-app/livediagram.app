@@ -11,7 +11,7 @@ import {
   type IllustrateRequest,
   type RoomOp,
 } from '@livediagram/api-schema';
-import { diffToElementOps, type Tab } from '@livediagram/document';
+import { diffToElementOps, plural, type Tab } from '@livediagram/document';
 import {
   applyArticleWrite,
   applyPageChanges,
@@ -64,8 +64,8 @@ export function illustrateRoomOps(before: Tab, after: Tab): RoomOp[] {
     ops.push({
       kind: 'tab-meta',
       tabId: after.id,
-      patch: patch as Partial<Tab>,
-      ...(clear.length ? { clear: clear as (keyof Tab)[] } : {}),
+      patch: patch,
+      ...(clear.length ? { clear: clear } : {}),
     });
   ops.push(...tabArticleOps(before, after, { agent: true }));
   return ops;
@@ -156,7 +156,12 @@ export async function submitIllustrate(args: IllustrateArgs): Promise<Illustrate
       body: {
         tab: { id: tabId, rev },
         switched: out.switched,
-        lines: out.lines,
+        lines: article
+          ? [
+              ...out.lines,
+              `It takes about ${plural(article.estimatedPages, 'page', 'pages')} once laid out (estimated: the editor adds pages to hold the writing and drops any it leaves empty).`,
+            ]
+          : out.lines,
         pages: pageSummaries(next),
         articles,
         ...(article && wrote ? { article: { ...article, created: wrote.created } } : {}),

@@ -6,13 +6,13 @@ import { BringFocusInvite } from '@/components/illustrations/palette-build-chair
 export const metadata = helpMetadata({
   title: 'Bring Focus',
   description:
-    'Drop a Bring Focus button on the canvas and press it to offer everyone else in the room a jump to that spot, at your zoom level and on your tab.',
+    'Drop a Bring Focus button on the canvas and press it to offer everyone else in the room a jump to that spot, on your tab.',
   path: '/help/palette/behaviour/bring-focus/',
 });
 
 <ArticleLayout
   title="Bring Focus"
-  description="Press it and everyone else in the room is offered a jump to it, at your zoom, on your tab."
+  description="Press it and everyone else in the room is offered a jump to it, on your tab."
   categoryTitle="Palette"
   categorySlug="palette"
   parentArticle={{ title: 'Collaborate', slug: 'behaviour' }}
@@ -23,12 +23,9 @@ On a big canvas, "look at the thing in the bottom right" doesn't work: everybody
 
 ## Adding one
 
-<Step n={1}>Open the **Collaborate** category on the palette strip.</Step>
+<Step n={1}>In Facilitate mode, open the **Navigate** category on the palette strip.</Step>
 
-<Step n={2}>
-  Open the **Navigate** group and pick **Bring Focus**, beside the Portal, the Chair and the Link
-  card.
-</Step>
+<Step n={2}>Pick **Bring Focus**, beside the Portal, the Chair and the Link card.</Step>
 
 <Step n={3}>
   Drop it where you want people looking, and give it a label (it reads "Bring Focus" until you do).
@@ -45,13 +42,13 @@ Everyone else in the room gets a dialog, **Sam wants you to look at something**,
   <BringFocusInvite />
 </Figure>
 
-Nothing on their screen moves until they press it. When they do, they land on that spot at **your** zoom level, so they see the same amount of the canvas you do. If the button is on a different tab, it takes them there first.
+Nothing on their screen moves until they press it. When they do, their view moves so that spot is in the middle of their screen. Their zoom stays as they had it, so it suits their own screen size, whether that's a phone or a big monitor. If the button is on a different tab, it takes them there first.
 
 Your own view doesn't move: you're already looking at it. You get a one-line note telling you what the press did: "Asked everyone else to look here", "Everyone else is already looking at it", or "Nobody else is on this canvas right now".
 
 ## Press it as often as you like
 
-Anyone already looking at the spot, at roughly your zoom, doesn't get the dialog at all. So a second press catches the people who arrived late or said **Not now** the first time, without interrupting the people who came. If somebody took it and has since panned away, they're offered it again, because they're no longer looking at it.
+Anyone already looking at the spot, at any zoom, doesn't get the dialog at all. So a second press catches the people who arrived late or said **Not now** the first time, without interrupting the people who came. If somebody took it and has since panned away, they're offered it again, because they're no longer looking at it.
 
 ## Why it asks instead of dragging everyone
 

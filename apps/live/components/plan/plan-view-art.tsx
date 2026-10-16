@@ -20,6 +20,13 @@ const VIEW_ART: Record<PlanVisualisation, React.ReactNode> = {
       <path d="M2.5 8.5h17M7 2.5v3M15 2.5v3M7 12h1M11 12h1M15 12h1M7 15.5h1M11 15.5h1" />
     </>
   ),
+  // A month page with a start flag: a pole and a pennant in its grid.
+  'start-calendar': (
+    <>
+      <rect x="2.5" y="4" width="17" height="15" rx="2" />
+      <path d="M2.5 8.5h17M7 2.5v3M15 2.5v3M8 16.5v-5.5l5 1.6-5 1.6" />
+    </>
+  ),
   // A person beside a long bar and a short one.
   workload: (
     <>

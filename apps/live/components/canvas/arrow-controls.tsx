@@ -53,6 +53,11 @@ const ARROWHEAD_SHAPE_LABEL: Record<ArrowheadShape, string> = {
   'circle-hollow': 'Hollow dot',
   diamond: 'Filled diamond',
   'diamond-hollow': 'Hollow diamond',
+  one: 'One',
+  'zero-or-one': 'Zero or one',
+  many: 'Many',
+  'zero-or-many': 'Zero or many',
+  'one-or-many': 'One or many',
 };
 
 const ARROWHEAD_SHAPE_DESC: Record<ArrowheadShape, string> = {
@@ -63,6 +68,11 @@ const ARROWHEAD_SHAPE_DESC: Record<ArrowheadShape, string> = {
   'circle-hollow': 'A hollow dot terminator.',
   diamond: 'A filled diamond: UML composition.',
   'diamond-hollow': 'A hollow diamond: UML aggregation.',
+  one: 'ER: exactly one (two bars).',
+  'zero-or-one': 'ER: zero or one (a ring and a bar).',
+  many: "ER: many (a crow's foot).",
+  'zero-or-many': "ER: zero or many (a ring and a crow's foot).",
+  'one-or-many': "ER: one or many (a bar and a crow's foot).",
 };
 
 const subLabel = 'text-[10px] font-medium text-slate-500 dark:text-slate-400';

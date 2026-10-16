@@ -2,9 +2,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, renderHook } from '@testing-library/react';
 
-const trackMock = vi.fn();
+const trackMock = vi.fn<typeof import('@/lib/telemetry').track>();
 vi.mock('@/lib/telemetry', () => ({
-  track: (...args: unknown[]) => trackMock(...args),
+  track: (...args: Parameters<typeof trackMock>) => trackMock(...args),
 }));
 
 const { useEditorComments } = await import('./useEditorComments');
@@ -41,13 +41,12 @@ describe('useEditorComments telemetry', () => {
       result.current.resolveThread('el');
       result.current.replaceCommentId('el', 'a', 'b');
     });
-    expect(applyElementDelta.mock.calls.map((c) => [c[0], c[1].kind])).toEqual([
-      ['el', 'comment-add'],
-      ['el', 'comment-remove'],
-      ['el', 'comment-resolve'],
-      ['el', 'comment-rekey'],
+    expect(applyElementDelta.mock.calls).toMatchObject([
+      ['el', { kind: 'comment-add', comment: { id, text: 'hi' } }],
+      ['el', { kind: 'comment-remove' }],
+      ['el', { kind: 'comment-resolve' }],
+      ['el', { kind: 'comment-rekey' }],
     ]);
-    expect(applyElementDelta.mock.calls[0]![1].comment).toMatchObject({ id, text: 'hi' });
   });
 
   it('counts a local add, delete, resolve and unresolve once each', () => {
@@ -104,7 +103,11 @@ describe('useEditorComments telemetry', () => {
     expect(trackMock).not.toHaveBeenCalled();
     await act(flush);
     expect(trackMock.mock.calls).toEqual([['Comment', 'Resolved']]);
-    expect(applyElementDelta.mock.calls.map((c) => c[1].resolved)).toEqual([true, false, true]);
+    expect(applyElementDelta.mock.calls).toMatchObject([
+      ['el', { resolved: true }],
+      ['el', { resolved: false }],
+      ['el', { resolved: true }],
+    ]);
     expect(warn).toHaveBeenCalledWith('[comments] thread state not saved', {
       resolved: false,
       error: 'Error: 403',
@@ -137,5 +140,46 @@ describe('useEditorComments with comments off', () => {
     expect(applyElementDelta).not.toHaveBeenCalled();
     expect(persist).not.toHaveBeenCalled();
     expect(trackMock).not.toHaveBeenCalled();
+  });
+});
+
+// A Sheet cell's thread (docs/specs/029-sheets/sheet.md "Cell comments"): every change names the cell, and opening
+// one is its own toggle beside the element's.
+describe('useEditorComments on a Sheet cell', () => {
+  beforeEach(() => {
+    trackMock.mockReset();
+    applyElementDelta.mockReset();
+  });
+
+  it('opens and toggles a cell thread apart from the element thread', () => {
+    const { result } = setup();
+    act(() => result.current.openComments('sheet', 'r1:c1'));
+    expect([result.current.commentThreadOpenId, result.current.commentThreadOpenCell]).toEqual([
+      'sheet',
+      'r1:c1',
+    ]);
+    act(() => result.current.openComments('sheet'));
+    expect(result.current.commentThreadOpenCell).toBeNull();
+    act(() => result.current.openComments('sheet'));
+    expect(result.current.commentThreadOpenId).toBeNull();
+    expect(trackMock.mock.calls.filter((c) => c[1] === 'Opened')).toHaveLength(2);
+  });
+
+  it('names the cell on an add and a resolve, and on the revert of a refused resolve', async () => {
+    const { result } = setup();
+    act(() => {
+      result.current.addComment('sheet', 'hi', undefined, undefined, 'r1:c1');
+      result.current.resolveThread('sheet', () => Promise.reject(new Error('no')), 'r1:c1');
+    });
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    await act(flush);
+    expect(applyElementDelta.mock.calls).toMatchObject([
+      ['sheet', { kind: 'comment-add', cell: 'r1:c1' }],
+      ['sheet', { kind: 'comment-resolve', cell: 'r1:c1', resolved: true }],
+      ['sheet', { kind: 'comment-resolve', cell: 'r1:c1', resolved: false }],
+    ]);
+    expect(applyElementDelta.mock.calls[0]![1]).toEqual(
+      expect.not.objectContaining({ resolved: expect.anything() }),
+    );
   });
 });

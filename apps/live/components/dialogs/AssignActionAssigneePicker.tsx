@@ -78,7 +78,7 @@ export function AssigneePicker({
         <GlyphDisc
           size={24}
           aria-hidden
-          className={`bg-brand-500 text-[10px] font-semibold text-white ${SOLID_BRAND_DARK}`}
+          className={`bg-brand-700 text-[10px] font-semibold text-white ${SOLID_BRAND_DARK}`}
         >
           {initialsOf(m.name)}
         </GlyphDisc>
@@ -97,7 +97,7 @@ export function AssigneePicker({
           ) : null}
         </span>
         {selected ? (
-          <span className="shrink-0 text-xs font-medium text-brand-600 dark:text-brand-400">
+          <span className="shrink-0 text-xs font-medium text-brand-700 dark:text-brand-400">
             Selected
           </span>
         ) : null}
@@ -128,7 +128,7 @@ export function AssigneePicker({
           with none), or invite (teams with no other joined member). */}
       {!signedIn && clerkEnabled ? (
         <p className="rounded-lg border border-dashed border-slate-300 px-3 py-2.5 text-xs text-slate-500 dark:border-slate-700 dark:text-slate-400">
-          <a href={signInHref} className="font-medium text-brand-600 underline dark:text-brand-400">
+          <a href={signInHref} className="font-medium text-brand-700 underline dark:text-brand-400">
             Sign in
           </a>{' '}
           and join a team to assign actions to teammates.
@@ -166,7 +166,7 @@ export function AssigneePicker({
               Actions assign to the document&apos;s team.{' '}
               <a
                 href="/explorer/team"
-                className="font-medium text-brand-600 underline dark:text-brand-400"
+                className="font-medium text-brand-700 underline dark:text-brand-400"
               >
                 Create or join a team
               </a>{' '}

@@ -37,8 +37,9 @@ describe('useIsOfflineDocument', () => {
 
   it('is false the moment there is no document', async () => {
     offline.add('c');
+    const initialProps: { id: string | null } = { id: 'c' };
     const { result, rerender } = renderHook(({ id }) => useIsOfflineDocument(id), {
-      initialProps: { id: 'c' as string | null },
+      initialProps,
     });
     await waitFor(() => expect(result.current).toBe(true));
     rerender({ id: null });

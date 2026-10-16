@@ -2,7 +2,12 @@
 // the request URL, a defensive parse of the answer, and the credit a picked
 // picture leaves on its element. Pure, so it runs under Node in tests.
 
-import { IMAGE_CREDIT_TEXT_MAX, isCreditUrl, type ImageCredit } from '@livediagram/document';
+import {
+  IMAGE_CREDIT_TEXT_MAX,
+  isCreditUrl,
+  isRecord,
+  type ImageCredit,
+} from '@livediagram/document';
 
 export const OPENVERSE_API_BASE = 'https://api.openverse.org/v1';
 // Openverse's anonymous maximum.
@@ -46,7 +51,18 @@ export class OpenverseSearchError extends Error {
   }
 }
 
-export function openverseSearchUrl(query: string, page: number): string {
+// Openverse's own shape and size filters. The picker never passes them; a page's Image background
+// asks for pictures of the page's shape, large (docs/specs/007-editor/illustrate-pages.md "Image
+// backgrounds").
+export type OpenverseAspectRatio = 'tall' | 'wide' | 'square';
+export type OpenverseSize = 'small' | 'medium' | 'large';
+export type OpenverseFilters = { aspectRatio?: OpenverseAspectRatio; size?: OpenverseSize };
+
+export function openverseSearchUrl(
+  query: string,
+  page: number,
+  filters: OpenverseFilters = {},
+): string {
   const params = new URLSearchParams({
     q: query,
     page: String(page),
@@ -54,11 +70,11 @@ export function openverseSearchUrl(query: string, page: number): string {
     license_type: OPENVERSE_LICENSE_TYPE,
     mature: 'false',
   });
+  if (filters.aspectRatio) params.set('aspect_ratio', filters.aspectRatio);
+  if (filters.size) params.set('size', filters.size);
   return `${OPENVERSE_API_BASE}/images/?${params.toString()}`;
 }
 
-const isObj = (v: unknown): v is Record<string, unknown> =>
-  typeof v === 'object' && v !== null && !Array.isArray(v);
 const optStr = (v: unknown): string | undefined =>
   typeof v === 'string' && v.trim() ? v.trim() : undefined;
 const httpsUrl = (v: unknown): string | null =>
@@ -67,7 +83,7 @@ const positive = (v: unknown): number | null =>
   typeof v === 'number' && Number.isFinite(v) && v > 0 ? v : null;
 
 function parseResult(raw: unknown): OpenverseImage | null {
-  if (!isObj(raw)) return null;
+  if (!isRecord(raw)) return null;
   const id = optStr(raw.id);
   const url = httpsUrl(raw.url);
   const thumbnail = httpsUrl(raw.thumbnail);
@@ -90,7 +106,7 @@ function parseResult(raw: unknown): OpenverseImage | null {
 // Answers are untrusted: only the fields above survive, and a broken result
 // is dropped rather than failing the page.
 export function parseOpenverseSearch(json: unknown, page: number): OpenverseSearchPage {
-  if (!isObj(json) || !Array.isArray(json.results)) throw new OpenverseSearchError('failed');
+  if (!isRecord(json) || !Array.isArray(json.results)) throw new OpenverseSearchError('failed');
   const results = json.results.map(parseResult).filter((r): r is OpenverseImage => r !== null);
   const pageCount = positive(json.page_count) ?? 0;
   return { results, page, pageCount: Math.floor(pageCount) };

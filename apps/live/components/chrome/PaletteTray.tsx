@@ -11,41 +11,63 @@ import { createPortal } from 'react-dom';
 // The strip's card: the Palette in the Toolbar layout (ToolbarPalette's `data-tour-id="palette"` card).
 const STRIP_CARD = '[data-toolbar-palette] [data-tour-id="palette"]';
 
-export type StripBox = { left: number; width: number; bottom: number };
+export type StripBox = { left: number; width: number; bottom: number; top: number };
 
-function measure(): StripBox | null {
-  const card = document.querySelector<HTMLElement>(STRIP_CARD);
+function measure(selector: string): StripBox | null {
+  const card = document.querySelector<HTMLElement>(selector);
   // The strip hides (zen, the welcome flow) with `hidden` rather than unmounting.
   if (!card || card.closest('[data-toolbar-palette].hidden')) return null;
   const r = card.getBoundingClientRect();
   if (r.width <= 0) return null;
-  return { left: r.left, width: r.width, bottom: r.bottom };
+  return { left: r.left, width: r.width, bottom: r.bottom, top: r.top };
 }
 
 const same = (a: StripBox | null, b: StripBox | null) =>
-  a === b || (!!a && !!b && a.left === b.left && a.width === b.width && a.bottom === b.bottom);
+  a === b ||
+  (!!a &&
+    !!b &&
+    a.left === b.left &&
+    a.width === b.width &&
+    a.bottom === b.bottom &&
+    a.top === b.top);
 
 // Where the Toolbar layout's strip card is on screen, kept current as it resizes or the window does; null
 // while there is no strip (the floating palette, zen, read-only).
 // `active` is whether a message is showing: each time one shows the strip is found afresh (it mounts late, or
 // remounts, after read-only or layout flips), and the size watcher follows whichever card is on screen.
 export function usePaletteStripBox(active = true): StripBox | null {
+  return useToolbarBox(STRIP_CARD, active);
+}
+
+// Where a toolbar is on screen (the strip's card, Draw's dock), kept current as it or the window resizes; null while
+// it is not on screen.
+export function useToolbarBox(selector: string, active = true): StripBox | null {
   const [box, setBox] = useState<StripBox | null>(() =>
-    typeof document === 'undefined' ? null : measure(),
+    typeof document === 'undefined' ? null : measure(selector),
   );
   useEffect(() => {
     if (!active) return;
     let watched: HTMLElement | null = null;
+    let watchedParent: HTMLElement | null = null;
     const observer =
       typeof ResizeObserver !== 'undefined' ? new ResizeObserver(() => update()) : null;
     const update = () => {
-      const card = document.querySelector<HTMLElement>(STRIP_CARD);
+      const card = document.querySelector<HTMLElement>(selector);
       if (card !== watched) {
         if (watched) observer?.unobserve(watched);
         if (card) observer?.observe(card);
         watched = card;
       }
-      const next = measure();
+      // Its wrapper too: the strip's card is centred inside a whole-pixel box (SnapWidth's outer box, the card's
+      // grandparent) that takes its new width a beat after the card's, so the card MOVES without resizing again;
+      // that box's resize is the only signal of it (the category bar dropping its names left the tray off-centre).
+      const parent = card?.parentElement?.parentElement ?? null;
+      if (parent !== watchedParent) {
+        if (watchedParent) observer?.unobserve(watchedParent);
+        if (parent) observer?.observe(parent);
+        watchedParent = parent;
+      }
+      const next = measure(selector);
       setBox((prev) => (same(prev, next) ? prev : next));
     };
     update();
@@ -54,7 +76,7 @@ export function usePaletteStripBox(active = true): StripBox | null {
       observer?.disconnect();
       window.removeEventListener('resize', update);
     };
-  }, [active]);
+  }, [active, selector]);
   return box;
 }
 
@@ -88,7 +110,8 @@ export function PaletteTray({
   if (typeof document === 'undefined') return null;
   return createPortal(
     <div
-      className="pointer-events-none fixed z-[var(--z-chrome)] flex justify-center"
+      // Steps aside while the Explorer is open: its panel reaches under the strip (explorer-structure.md "Layout").
+      className="pointer-events-none fixed z-[var(--z-chrome)] flex justify-center [body[data-explorer-open]_&]:hidden [body[data-strip-popover-open]_&]:hidden"
       // Up a pixel, so the tray covers the strip's bottom border where they meet and the two read as one.
       style={{ left: box.left, width: box.width, top: box.bottom - 1 }}
     >
@@ -100,7 +123,7 @@ export function PaletteTray({
         className="pointer-events-auto flex min-w-0 max-w-full animate-fade-in items-center gap-2 rounded-b-xl border border-t-0 border-slate-200 bg-white py-1 pl-3 pr-1 text-[13px] text-slate-700 shadow-[0_6px_10px_-6px_rgba(15,23,42,0.18)] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
         onPointerDown={(e) => e.stopPropagation()}
       >
-        <span className="flex shrink-0 items-center text-brand-600 dark:text-brand-300">
+        <span className="flex shrink-0 items-center text-brand-700 dark:text-brand-300">
           {lead}
         </span>
         <span className="min-w-0 truncate">{children}</span>

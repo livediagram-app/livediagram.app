@@ -4,26 +4,9 @@
 // takes each word where it landed, with its font and colour, every painted background (a highlight,
 // code) and border (a quote's bar, a heading's rule, a divider), each list marker and to-do box, as
 // draw operations in canvas coordinates. article-draw.ts paints them into an SVG or onto a canvas.
+import type { ArticleDrawOp } from '@livediagram/document';
 
-export type ArticleDrawOp =
-  | {
-      k: 'text';
-      x: number;
-      // The alphabetic baseline.
-      y: number;
-      text: string;
-      family: string;
-      size: number;
-      weight: string;
-      style: string;
-      color: string;
-      underline?: boolean;
-      strike?: boolean;
-      anchor?: 'start' | 'middle' | 'end';
-    }
-  | { k: 'rect'; x: number; y: number; w: number; h: number; fill: string; r?: number }
-  | { k: 'line'; x1: number; y1: number; x2: number; y2: number; stroke: string; width: number }
-  | { k: 'check'; x: number; y: number; size: number; stroke: string; done: boolean };
+export type { ArticleDrawOp } from '@livediagram/document';
 
 const transparent = (c: string) =>
   !c || c === 'transparent' || /rgba?\([^)]*,\s*0\)$/.test(c) || /\/\s*0\)$/.test(c);

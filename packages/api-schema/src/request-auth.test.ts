@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { bearerTokenOf, isClerkIdShape, isLoopbackHostname } from './request-auth';
+import {
+  bearerTokenOf,
+  isClerkIdShape,
+  isLoopbackHostname,
+  oauthRedirectUrl,
+} from './request-auth';
 
 describe('bearerTokenOf', () => {
   it('reads and trims a bearer token', () => {
@@ -42,5 +47,20 @@ describe('isClerkIdShape', () => {
     expect(isClerkIdShape('user')).toBe(false);
     expect(isClerkIdShape('my-user_id')).toBe(false);
     expect(isClerkIdShape('')).toBe(false);
+  });
+});
+
+describe('oauthRedirectUrl', () => {
+  it('takes https anywhere and http only on a loopback host', () => {
+    expect(oauthRedirectUrl('https://claude.ai/cb')?.pathname).toBe('/cb');
+    for (const u of ['http://localhost:3000/cb', 'http://127.0.0.1/cb', 'http://[::1]:8787/cb'])
+      expect(oauthRedirectUrl(u)).not.toBeNull();
+    expect(oauthRedirectUrl('http://example.com/cb')).toBeNull();
+  });
+  it('refuses another scheme on loopback, a fragment, and a non-URL', () => {
+    expect(oauthRedirectUrl('javascript://localhost/%0Aalert(1)//')).toBeNull();
+    expect(oauthRedirectUrl('https://claude.ai/cb#x')).toBeNull();
+    expect(oauthRedirectUrl('https://claude.ai/cb#')).toBeNull();
+    expect(oauthRedirectUrl('not a url')).toBeNull();
   });
 });

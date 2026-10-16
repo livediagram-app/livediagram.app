@@ -1,7 +1,7 @@
 // tabs — one row per tab, linked to documents through the
 // document_tabs many-to-many table (migration 0011 / docs/specs/006-document/tab-document-many-to-many.md).
 
-import { capElementActions, type Tab } from '@livediagram/document';
+import { capElementActions, drawnCount, type Tab } from '@livediagram/document';
 import { rowToTab, type TabRow } from '../tab-row';
 import { MAX_TAB_BYTES, TabTooLargeError, byteLength, logTabRefused } from '../limits';
 
@@ -66,7 +66,8 @@ export async function getTab(env: Env, documentId: string, tabId: string): Promi
 export async function tabIdsWithComments(env: Env, documentId: string): Promise<string[]> {
   const { results } = await env.DB.prepare(
     `SELECT dt.tab_id FROM document_tabs dt JOIN tabs t ON t.id = dt.tab_id
-      WHERE dt.document_id = ? AND instr(t.data, '"commentThread"') > 0
+      WHERE dt.document_id = ?
+        AND (instr(t.data, '"commentThread"') > 0 OR instr(t.data, '"cellComments"') > 0)
       ORDER BY dt.order_index, dt.tab_id`,
   )
     .bind(documentId)
@@ -161,15 +162,14 @@ export async function getTabBody(
   return row ? { id: row.id, data: row.data, elementCount: row.element_count ?? null } : null;
 }
 
-// How many elements the document's first tab holds: its stored count, or a parse of its body while the count is
+// How much the document's first tab has to draw (drawnCount): its stored count, or a parse of its body while the count is
 // not yet known (migration 0059). Zero with no tab or an unreadable body. Needs no snapshot store, unlike a render.
 export async function firstTabElementCount(env: Env, documentId: string): Promise<number> {
   const body = await getTabBody(env, documentId);
   if (!body) return 0;
   if (body.elementCount !== null) return body.elementCount;
   try {
-    const parsed = JSON.parse(body.data) as { elements?: unknown };
-    return Array.isArray(parsed.elements) ? parsed.elements.length : 0;
+    return drawnCount(JSON.parse(body.data) as { elements?: unknown; form?: unknown });
   } catch {
     return 0;
   }
@@ -246,7 +246,7 @@ export function tabWriteStatements(
          element_count = excluded.element_count,
          rev = ${advance ? 'tabs.rev + 1' : 'excluded.rev'}
        RETURNING rev`,
-    ).bind(id, name, data, now, tab.elements.length, insertRev),
+    ).bind(id, name, data, now, drawnCount(tab), insertRev),
     env.DB.prepare(
       `INSERT INTO document_tabs (document_id, tab_id, order_index, added_at)
        VALUES (?, ?, ?, ?)
@@ -262,10 +262,10 @@ export function tabWriteStatements(
     ...collabIndexStatements(env, id, tab.elements),
     // The image reference index (docs/specs/009-elements/images.md, "Reference index"): a reference
     // this batch missed is an image the retention sweep reaps.
-    ...imageRefReplaceStatements(env, id, imageRefIds(tab.elements)),
+    ...imageRefReplaceStatements(env, id, imageRefIds(tab.elements, tab.pages)),
     // Placement grants (docs/specs/009-elements/images.md, "Placement grants"), after the
     // document_tabs upsert above, which they read.
-    ...imageGrantPlacementStatements(env, id, imageRefIds(tab.elements), now),
+    ...imageGrantPlacementStatements(env, id, imageRefIds(tab.elements, tab.pages), now),
     // The sheet reference index (docs/specs/029-sheets/sheet-store.md "Deleting a sheet"), after the tabs and
     // document_tabs upserts, which the rows' FK and the settling triggers (migration 0079) read. A write whose
     // references are unchanged touches no row, so the triggers cost it nothing.
@@ -360,7 +360,7 @@ export async function seedTabs(
            updated_at = excluded.updated_at,
            element_count = excluded.element_count,
            rev = tabs.rev + 1`,
-      ).bind(id, name, data, now, tab.elements.length),
+      ).bind(id, name, data, now, drawnCount(tab)),
       env.DB.prepare(
         `INSERT INTO document_tabs (document_id, tab_id, order_index, added_at)
          VALUES (?, ?, ?, ?)
@@ -379,8 +379,10 @@ export async function seedTabs(
   // copy from a share link can carry actions and threads in on create.
   for (const tab of capped) {
     stmts.push(...collabIndexStatements(env, tab.id, tab.elements));
-    stmts.push(...imageRefReplaceStatements(env, tab.id, imageRefIds(tab.elements)));
-    stmts.push(...imageGrantPlacementStatements(env, tab.id, imageRefIds(tab.elements), now));
+    stmts.push(...imageRefReplaceStatements(env, tab.id, imageRefIds(tab.elements, tab.pages)));
+    stmts.push(
+      ...imageGrantPlacementStatements(env, tab.id, imageRefIds(tab.elements, tab.pages), now),
+    );
     // A seed's sheets come after its tabs (routes/documents.ts), so they find these references on create.
     stmts.push(...sheetRefReplaceStatements(env, tab.id, sheetRefIds(tab.elements)));
   }
@@ -539,6 +541,19 @@ export async function documentsContainingTab(env: Env, tabId: string): Promise<s
 // loose. A plain `string` is accepted for the legacy (pre-folder)
 // payload shape and treated as loose.
 type ReorderEntry = string | { id: string; folder?: string | null };
+
+const isReorderEntry = (e: unknown): e is ReorderEntry => {
+  if (typeof e === 'string') return true;
+  if (!e || typeof e !== 'object') return false;
+  const { id, folder } = e as { id?: unknown; folder?: unknown };
+  return typeof id === 'string' && (folder == null || typeof folder === 'string');
+};
+
+// A request's reorder entries, or null when any is not one (a tab id, or an id with a text or null folder): the
+// caller refuses the request before it writes anything.
+export function readReorderEntries(raw: unknown[]): ReorderEntry[] | null {
+  return raw.every(isReorderEntry) ? raw : null;
+}
 
 // Normalise one reorder entry to its (id, folder) form: legacy string
 // entries are loose, and empty / whitespace folder names collapse to

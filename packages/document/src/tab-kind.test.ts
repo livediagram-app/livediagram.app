@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { Tab } from './index';
 import { stampTabKind, tabKindOf } from './tab-kind';
 
-const tab = (t: Partial<Tab> = {}): Tab => ({ id: 't', name: 'T', elements: [], ...t }) as Tab;
+const tab = (t: Partial<Tab> = {}): Tab => ({ id: 't', name: 'T', elements: [], ...t });
 
 describe('tabKindOf', () => {
   it('names the ordinary tab rather than leaving it an absence', () => {

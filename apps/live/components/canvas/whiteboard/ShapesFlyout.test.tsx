@@ -165,7 +165,7 @@ describe('the Shapes flyout', () => {
     const { m } = renderDock();
     openByPress();
     fireEvent.change(field(), { target: { value: 'zzqx' } });
-    expect(screen.getByText('No shapes match')).toBeTruthy();
+    expect(screen.getByText('No shapes match “zzqx”')).toBeTruthy();
     expect(options()).toHaveLength(0);
     fireEvent.keyDown(field(), { key: 'Enter' });
     expect(m.pickSearchedShape).not.toHaveBeenCalled();
@@ -199,10 +199,14 @@ describe('the Shapes flyout', () => {
       fireEvent.pointerLeave(shapes, { pointerType: 'mouse' });
       // Crossing the gap into the flyout keeps it open.
       fireEvent.pointerEnter(flyout()!, { pointerType: 'mouse' });
-      act(() => vi.advanceTimersByTime(1000));
+      act(() => {
+        vi.advanceTimersByTime(1000);
+      });
       expect(flyout()).toBeTruthy();
       fireEvent.pointerLeave(flyout()!, { pointerType: 'mouse' });
-      act(() => vi.advanceTimersByTime(1000));
+      act(() => {
+        vi.advanceTimersByTime(1000);
+      });
       expect(flyout()).toBeNull();
       expect(document.activeElement).toBe(document.body);
     } finally {
@@ -219,7 +223,9 @@ describe('the Shapes flyout', () => {
       fireEvent.keyDown(field(), { key: 'h' });
       fireEvent.change(field(), { target: { value: 'h' } });
       fireEvent.pointerLeave(shapes, { pointerType: 'mouse' });
-      act(() => vi.advanceTimersByTime(1000));
+      act(() => {
+        vi.advanceTimersByTime(1000);
+      });
       expect(flyout()).toBeTruthy();
       expect(document.activeElement).toBe(field());
     } finally {
@@ -242,5 +248,20 @@ describe('the Shapes flyout', () => {
       '[data-shape-search] [data-shape-preview="cylinder"]',
     )!;
     expect(preview.style.color).toBe('rgb(28, 25, 23)');
+  });
+
+  // docs/specs/003-system-architecture/react-state-and-effects.md "Fragments and DOM events": the field's focus
+  // comes back through a Fragment ref, with no wrapper node.
+  it('hands the focus back to its field when a shape menu closes on Escape', () => {
+    renderDock();
+    openByPress();
+    fireEvent.keyDown(field(), { key: 'F10', shiftKey: true });
+    const pin = screen.getByRole('button', { name: 'Pin to dock' });
+    pin.focus();
+    fireEvent.keyDown(pin, { key: 'Escape' });
+    expect(document.activeElement).toBe(field());
+    // No bare wrapper node carries the ref: the search box sits straight in the flyout's column.
+    const column = field().closest('[data-shape-search]')!;
+    expect(column.firstElementChild?.attributes.length).toBeGreaterThan(0);
   });
 });

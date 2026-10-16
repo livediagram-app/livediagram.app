@@ -194,7 +194,8 @@ export function readPastedHtml(html: string): PastedCell[][] | null {
   let row: PastedCell[] | null = null;
   let cell: {
     text: string;
-    style: string;
+    /** The cell's own style, then each inline span's, in document order. */
+    styles: string[];
     tags: Set<string>;
     colspan: number;
     rowspan: number;
@@ -209,7 +210,7 @@ export function readPastedHtml(html: string): PastedCell[][] | null {
       .split('\u0001')
       .join('\n')
       .trim();
-    const format = formatFromStyle(cell.style, cell.tags);
+    const format = formatFromStyle(cell.styles.join(';'), cell.tags);
     const ri = rows.length;
     while (pendingRowSpans[ri]?.has(row.length)) row.push({ text: '' });
     row.push(format ? { text, format } : { text });
@@ -247,7 +248,7 @@ export function readPastedHtml(html: string): PastedCell[][] | null {
       };
       cell = {
         text: '',
-        style: a?.[2] ?? a?.[3] ?? a?.[4] ?? '',
+        styles: [a?.[2] ?? a?.[3] ?? a?.[4] ?? ''],
         tags: new Set(),
         colspan: span('colspan'),
         rowspan: span('rowspan'),
@@ -266,8 +267,8 @@ export function readPastedHtml(html: string): PastedCell[][] | null {
     ) {
       cell.tags.add(name);
     } else if (cell && !closing && (name === 'span' || name === 'font')) {
-      const st = /style\s*=\s*"([^"]*)"/i.exec(attrs);
-      if (st) cell.style += `;${st[1]}`;
+      const style = /style\s*=\s*"([^"]*)"/i.exec(attrs)?.[1];
+      if (style !== undefined) cell.styles.push(style);
     }
   }
   finishCell();
@@ -276,8 +277,9 @@ export function readPastedHtml(html: string): PastedCell[][] | null {
   return rows.map((r) => [...r, ...Array.from({ length: width - r.length }, () => ({ text: '' }))]);
 }
 
-// Pasted plain text as rows: tab-separated when any line holds a tab; comma-separated when every line splits into
-// the same number (more than one) of fields; else a line a row.
+// Pasted plain text as rows: tab-separated when any line holds a tab; comma-separated when there are two lines or
+// more and every one splits into the same number (more than one) of fields; else a line a row. One line is never
+// read as commas: "Thanks, Sam" pasted on a cell is a sentence, not two columns.
 export function readPastedText(text: string): string[][] {
   return parsePastedText(text).rows;
 }
@@ -288,8 +290,9 @@ export function parsePastedText(text: string): ParsedCsv {
   if (trimmed === '') return { rows: [['']], truncated: false };
   if (trimmed.includes('\t')) return parseCsv(trimmed, '\t');
   const csv = parseCsv(trimmed, ',');
+  // Two LINES, not two records: one quoted record running over lines ("Line one\nline two",B) is CSV too.
   if (
-    csv.rows.length > 0 &&
+    /\r?\n/.test(trimmed) &&
     csv.rows[0]!.length > 1 &&
     csv.rows.every((r) => r.length === csv.rows[0]!.length)
   )

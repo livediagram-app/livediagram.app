@@ -60,8 +60,10 @@ describe('UseAsDefaultMenu', () => {
     expect(screen.getByText('New documents that open as')).toBeTruthy();
     const items = screen.getAllByRole('menuitemcheckbox');
     expect(items.map((i) => i.textContent)).toEqual([
+      // The modes in mode order (EDITOR_MODES), then the kinds and template families.
       'Diagrams',
       'Whiteboards',
+      'Sessions',
       'Illustrate pages',
       'Plan boards',
       'Event Storming boards',
@@ -76,6 +78,7 @@ describe('UseAsDefaultMenu', () => {
       'false',
       'false',
       'false',
+      'false',
     ]);
   });
 
@@ -84,7 +87,7 @@ describe('UseAsDefaultMenu', () => {
     open({ isChecked: () => false, isDisabled: () => false, toggle });
     fireEvent.click(screen.getByRole('menuitemcheckbox', { name: 'Retrospectives' }));
     expect(toggle).toHaveBeenCalledWith('template:retrospective');
-    expect(screen.getAllByRole('menuitemcheckbox')).toHaveLength(7);
+    expect(screen.getAllByRole('menuitemcheckbox')).toHaveLength(8);
   });
 
   it('keeps a disabled entry in place and inert', () => {

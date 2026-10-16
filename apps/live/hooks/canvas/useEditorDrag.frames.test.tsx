@@ -29,7 +29,7 @@ const BOARD = (): Element[] => [
   shape('square', 'nested-member', 160, 220, 30, 30),
   // A larger frame that only overlaps: stays.
   shape('frame', 'neighbour', 250, 250, 300, 300),
-  { ...createArrow(120, 120, 200, 140), id: 'loose' } as Element,
+  { ...createArrow(120, 120, 200, 140), id: 'loose' },
 ];
 
 function harness(elements: Element[]) {

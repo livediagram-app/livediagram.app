@@ -7,7 +7,7 @@ import { lucidePalette } from '@livediagram/icons/lucide';
 // custom themes. Lists each as a swatch preview + name with icon actions
 // (edit / duplicate / delete), and a New-theme card. Editing / creating
 // opens the shared CustomThemeBuilder in a modal (the same builder the
-// Tab Look & Feel dialog hosts, so the two can't drift). Reads the
+// Tab Style dialog hosts, so the two can't drift). Reads the
 // reactive list + CRUD from CustomThemeProvider, which the Explorer shell
 // mounts.
 
@@ -15,7 +15,7 @@ import { useState } from 'react';
 import { useConfirm } from '@/hooks/ui/useConfirm';
 import { materialiseCustomTheme } from '@/lib/custom-theme-registry';
 import { useCustomThemes } from '@/components/primitives/CustomThemeProvider';
-import type { CustomThemeDraft } from '@/components/palette/CustomThemeBuilder';
+import type { CustomThemeDraft, ThemeBuilding } from '@/components/palette/CustomThemeBuilder';
 import {
   CopyIcon,
   EmptyState,
@@ -28,13 +28,15 @@ import {
 import { ThemeBuilderModal, themeDeleteConfirm } from './ThemeBuilderModal';
 import { ThemeSwatch } from '@/components/primitives/ThemeSwatch';
 
-export function ThemesPane() {
+// `compact`: inside the editor's Explorer pane: two cards to a row and the small empty state.
+export function ThemesPane({ compact = false }: { compact?: boolean } = {}) {
   const { themes, loading, createTheme, updateTheme, deleteTheme } = useCustomThemes();
   const confirm = useConfirm();
-  const [building, setBuilding] = useState<null | 'new' | string>(null);
+  const [building, setBuilding] = useState<ThemeBuilding | null>(null);
   const [saving, setSaving] = useState(false);
 
-  const editing = typeof building === 'string' ? themes.find((t) => t.id === building) : undefined;
+  const editing =
+    building !== null && building !== 'new' ? themes.find((t) => t.id === building.id) : undefined;
 
   const handleSave = async (draft: CustomThemeDraft) => {
     setSaving(true);
@@ -64,6 +66,7 @@ export function ThemesPane() {
     <div>
       {themes.length === 0 ? (
         <EmptyState
+          compact={compact}
           icon={<PaletteIcon />}
           title="No custom themes yet"
           description="Build your own colour palette and reuse it across every document, just like a built-in one."
@@ -71,13 +74,19 @@ export function ThemesPane() {
           <button
             type="button"
             onClick={() => setBuilding('new')}
-            className={`rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-500 ${SOLID_BRAND_DARK_CONTROL}`}
+            className={`rounded-lg bg-brand-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-800 ${SOLID_BRAND_DARK_CONTROL}`}
           >
             New theme
           </button>
         </EmptyState>
       ) : (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+        <div
+          className={
+            compact
+              ? 'grid grid-cols-2 gap-2.5'
+              : 'grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4'
+          }
+        >
           {themes.map((t) => (
             <div
               key={t.id}
@@ -89,7 +98,7 @@ export function ThemesPane() {
               </span>
               <div className="flex items-center gap-1">
                 <HoverCard title="Edit" description="Open this theme in the builder.">
-                  <IconBtn label="Edit theme" onClick={() => setBuilding(t.id)}>
+                  <IconBtn label="Edit theme" onClick={() => setBuilding({ id: t.id })}>
                     <PencilIcon />
                   </IconBtn>
                 </HoverCard>
@@ -112,7 +121,7 @@ export function ThemesPane() {
           <button
             type="button"
             onClick={() => setBuilding('new')}
-            className="flex min-h-[7rem] flex-col items-center justify-center gap-1.5 rounded-xl border border-dashed border-slate-300 text-slate-500 transition hover:border-brand-400 hover:text-brand-600 dark:border-slate-600 dark:text-slate-400"
+            className="flex min-h-[7rem] flex-col items-center justify-center gap-1.5 rounded-xl border border-dashed border-slate-300 text-slate-500 transition hover:border-brand-400 hover:text-brand-700 dark:border-slate-600 dark:text-slate-400"
           >
             <PlusIcon size={20} />
             <span className="text-xs font-medium">New theme</span>
@@ -125,7 +134,7 @@ export function ThemesPane() {
           title={editing ? 'Edit theme' : 'New theme'}
           initial={editing ? { name: editing.name, definition: editing.definition } : undefined}
           saving={saving}
-          onSave={handleSave}
+          onSave={(draft) => void handleSave(draft)}
           onClose={() => setBuilding(null)}
         />
       ) : null}

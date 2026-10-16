@@ -14,7 +14,7 @@ const deck: Deck = {
 };
 
 describe('pageDeckControls', () => {
-  const verbs = { newPageSlide: vi.fn(), toggleSlideHidden: vi.fn() };
+  const verbs = { newPageSlide: vi.fn(), toggleSlideHidden: vi.fn(), setSlideNotes: vi.fn() };
 
   it('is absent for someone who cannot change the deck', () => {
     expect(pageDeckControls(deck, 't', false, verbs)).toBeUndefined();
@@ -22,8 +22,8 @@ describe('pageDeckControls', () => {
 
   it("finds this tab's slide of a page, hidden or not", () => {
     const c = pageDeckControls(deck, 't', true, verbs)!;
-    expect(c.slideOf('p1')).toEqual({ id: 's1', hidden: false });
-    expect(c.slideOf('p2')).toEqual({ id: 's2', hidden: true });
+    expect(c.slideOf('p1')).toEqual({ id: 's1', hidden: false, notes: '' });
+    expect(c.slideOf('p2')).toEqual({ id: 's2', hidden: true, notes: '' });
     // Another tab's page of the same id is not this page.
     expect(c.slideOf('p3')).toBeUndefined();
   });
@@ -34,6 +34,8 @@ describe('pageDeckControls', () => {
     c.toggleHidden('s1');
     expect(verbs.newPageSlide).toHaveBeenCalledWith('p9');
     expect(verbs.toggleSlideHidden).toHaveBeenCalledWith('s1');
+    c.setNotes('s1', 'Say hello');
+    expect(verbs.setSlideNotes).toHaveBeenCalledWith('s1', 'Say hello');
   });
 });
 

@@ -5,6 +5,7 @@ import {
   relayoutMindMap,
   type Element,
   type MindFlow,
+  type MindSpacing,
 } from '@livediagram/document';
 import { track } from '@/lib/telemetry';
 import { debugLog } from '@/lib/debug-log';
@@ -67,6 +68,24 @@ export function useMindMapSetters({
     track('Element', 'Changed', 'MindFlow');
   };
 
+  // Spacing (docs/specs/009-elements/mind-node.md "Spacing"): stored on each selected map's root, then the map
+  // re-laid out at it, as one commit, the same way a flow pick re-lays it out.
+  const setMindSpacingSelected = (spacing: MindSpacing) => {
+    const ids = currentSelectionIds();
+    if (ids.size === 0) return;
+    commit((all) => {
+      let next = all;
+      for (const rootId of selectedRoots(all, ids)) {
+        next = next.map((el) => (el.id === rootId ? { ...el, mindSpacing: spacing } : el));
+        const plan = relayoutMindMap(next, rootId);
+        if (plan) next = applyMindMoves(next, plan.moves, plan.reanchored);
+        debugLog(`[mind-layout] spacing root=${rootId} spacing=${spacing}`);
+      }
+      return next;
+    });
+    track('Element', 'Changed', 'MindSpacing');
+  };
+
   // Tidy Map on the maps of `ids`, saying what it did: "Map tidied", or "Map already tidy" when
   // no node moves and no connector re-anchors.
   const tidy = (ids: Set<string>) => {
@@ -87,5 +106,5 @@ export function useMindMapSetters({
   // Tidy Map on the map `id` belongs to: the badge on a map's root (element-badges.tsx).
   const tidyMindMap = (id: string) => tidy(new Set([id]));
 
-  return { setMindFlowSelected, tidyMindMapSelected, tidyMindMap };
+  return { setMindFlowSelected, setMindSpacingSelected, tidyMindMapSelected, tidyMindMap };
 }

@@ -12,16 +12,21 @@
 // without walking the index cycle.
 
 import { clamp, type Rect } from './geometry-primitives';
-import type { ShapeKind } from './index';
+import type { Element, ShapeKind } from './index';
+import { CARD_TAGS_MAX, clampCardTag } from './card';
+import { CONCEPT_ROWS, boundConceptRows, isConceptShape, type ConceptRow } from './concept';
+import { withKeyMeaning } from './diagram-key';
 
 // --- Vocabulary -------------------------------------------------------------
 
-export type WebComponentShape = 'banner' | 'callout' | 'stat-row' | 'process' | 'site-header';
+export type WebComponentShape =
+  'banner' | 'callout' | 'card' | 'stat-row' | 'process' | 'site-header';
 
 export function isWebComponentShape(kind: ShapeKind): kind is WebComponentShape {
   return (
     kind === 'banner' ||
     kind === 'callout' ||
+    kind === 'card' ||
     kind === 'stat-row' ||
     kind === 'process' ||
     kind === 'site-header'
@@ -186,8 +191,8 @@ export function headerLayout(
   return { pad, logo, brand, links: placed, linkPx };
 }
 
-// Banner / Callout: the text region inside the padding. A banner's subtitle
-// sits under the title; a callout's badge takes a column on the left.
+// Banner: the text region inside the padding, the subtitle under the title. (The Callout is a Card preset now and
+// lays out with cardLayout, docs/specs/009-elements/card.md.)
 export function bannerLayout(
   width: number,
   height: number,
@@ -200,35 +205,6 @@ export function bannerLayout(
     title: { ...inner, height: Math.max(0, inner.height - subH) },
     subtitle: { x: inner.x, y: inner.y + inner.height - subH, width: inner.width, height: subH },
     subtitlePx,
-  };
-}
-
-export function calloutLayout(
-  width: number,
-  height: number,
-): {
-  badge: { cx: number; cy: number; r: number };
-  heading: LayoutRect;
-  body: LayoutRect;
-  headingPx: number;
-} {
-  const pad = Math.round(clamp(Math.min(width, height) * 0.15, 8, 24));
-  const r = Math.round(clamp(Math.min(width, height) * 0.13, 8, 22));
-  const badge = { cx: pad + r, cy: pad + r, r };
-  const textX = pad + r * 2 + Math.round(pad * 0.75);
-  const headingPx = Math.round(clamp(height * 0.14, 12, 24));
-  const headingH = Math.round(headingPx * 1.4);
-  const textW = Math.max(0, width - textX - pad);
-  return {
-    badge,
-    heading: { x: textX, y: pad, width: textW, height: headingH },
-    body: {
-      x: textX,
-      y: pad + headingH + 2,
-      width: textW,
-      height: Math.max(0, height - pad * 2 - headingH - 2),
-    },
-    headingPx,
   };
 }
 
@@ -276,12 +252,24 @@ export function heroCaptionLayout(
 // The rows a web component carries, as one patch. Each field only lands on
 // its own kind, so a selection-wide write over a stat row and a header only
 // touches what each one has.
-export type WebRows = { stats?: StatItem[]; processSteps?: string[]; navLinks?: string[] };
+export type WebRows = {
+  stats?: StatItem[];
+  processSteps?: string[];
+  navLinks?: string[];
+  // A card's tag chips (docs/specs/009-elements/card.md).
+  tags?: string[];
+  // A concept graphic's rows (docs/specs/009-elements/concept-graphics.md).
+  conceptRows?: ConceptRow[];
+  // One diagram key row's meaning (docs/specs/009-elements/diagram-key.md).
+  keyMeaning?: { rowId: string; text: string };
+};
 
-const ROW_KIND: Record<keyof WebRows, ShapeKind> = {
+// The kind each single-kind row field lands on; concept rows land on any of the three concept graphics.
+const ROW_KIND: Record<Exclude<keyof WebRows, 'conceptRows' | 'keyMeaning'>, ShapeKind> = {
   stats: 'stat-row',
   processSteps: 'process',
   navLinks: 'site-header',
+  tags: 'card',
 };
 
 // Apply `rows` to a shape, bounded the way validate.ts bounds them: each
@@ -303,6 +291,26 @@ export function withWebRows<T extends { shape: ShapeKind }>(el: T, rows: WebRows
   if (rows.navLinks && el.shape === ROW_KIND.navLinks) {
     patch.navLinks = rows.navLinks.slice(0, NAV_LINKS_MAX).map(clampWebText);
   }
+  if (rows.tags && el.shape === ROW_KIND.tags) {
+    // No tags is a card with no tag row, stored as nothing.
+    const next = rows.tags.slice(0, CARD_TAGS_MAX).map(clampCardTag);
+    if (next.length === 0) {
+      const { tags: _gone, ...rest } = el as T & { tags?: string[] };
+      return rest as T;
+    }
+    patch.tags = next;
+  }
+  if (rows.keyMeaning && el.shape === 'diagram-key') {
+    return withKeyMeaning(
+      el as unknown as Element,
+      rows.keyMeaning.rowId,
+      rows.keyMeaning.text,
+    ) as unknown as T;
+  }
+  if (rows.conceptRows && isConceptShape(el.shape)) {
+    const next = boundConceptRows(el.shape, rows.conceptRows);
+    if (next) patch.conceptRows = next;
+  }
   return Object.keys(patch).length > 0 ? { ...el, ...patch } : el;
 }
 
@@ -321,6 +329,13 @@ export function appendWebRow<T extends { shape: ShapeKind } & WebRows>(el: T): T
   if (el.shape === 'site-header') {
     return withWebRows(el, { navLinks: [...(el.navLinks ?? []), 'Link'] });
   }
+  if (el.shape === 'card') return withWebRows(el, { tags: [...(el.tags ?? []), 'Tag'] });
+  if (isConceptShape(el.shape)) {
+    const rows = (el as { conceptRows?: ConceptRow[] }).conceptRows ?? [];
+    const label = `${CONCEPT_ROWS[el.shape].noun} ${rows.length + 1}`;
+    // Appending is the one write that may start below the minimum, one row at a time.
+    return { ...el, conceptRows: [...rows, { label }] };
+  }
   return el;
 }
 
@@ -328,5 +343,10 @@ export function canAppendWebRow(el: { shape: ShapeKind } & WebRows): boolean {
   if (el.shape === 'stat-row') return (el.stats?.length ?? 0) < STATS_MAX;
   if (el.shape === 'process') return (el.processSteps?.length ?? 0) < PROCESS_MAX_STEPS;
   if (el.shape === 'site-header') return (el.navLinks?.length ?? 0) < NAV_LINKS_MAX;
+  if (el.shape === 'card') return (el.tags?.length ?? 0) < CARD_TAGS_MAX;
+  if (isConceptShape(el.shape))
+    return (
+      ((el as { conceptRows?: ConceptRow[] }).conceptRows?.length ?? 0) < CONCEPT_ROWS[el.shape].max
+    );
   return false;
 }

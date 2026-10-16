@@ -52,5 +52,5 @@ export function storedPlacement(db: SqliteD1, id = 'd1') {
 }
 
 export async function errorOf(res: Response): Promise<string> {
-  return ((await res.json()) as { error: string }).error;
+  return (await res.json<{ error: string }>()).error;
 }

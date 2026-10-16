@@ -1,9 +1,10 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import dynamic from 'next/dynamic';
+import { useEffect, useRef, useState, type ComponentType } from 'react';
 import { PREFERS_REDUCED_MOTION, useMediaQuery } from '@livediagram/ui';
 import { EditorWindow } from './hero-editor-window';
-import { heroScene, type HeroSceneKey } from './hero-scenes';
+import { heroSceneData, type HeroSceneKey } from './hero-scene-data';
 
 // One hero scene in its editor window, for a landing beat or a feature category page's hero
 // (docs/specs/019-marketing/marketing-site.md "Feature scenes"). The window's frame and its
@@ -14,6 +15,34 @@ import { heroScene, type HeroSceneKey } from './hero-scenes';
 // settled frame from then on (playing again would snap that frame back to an empty canvas, the
 // same flash); under reduced motion it shows only that frame. Only the scene in view animates, and the
 // scenes' SVG stays out of the page's HTML (about 18 KB gzipped on the home page).
+
+// Each scene's board, loaded on its own: a feature page shows one scene, and importing the hero's
+// whole set put all ten boards in its JavaScript. The board is drawn only once the window plays
+// (below), and its code is fetched as the window mounts, well before that.
+const BOARD_LOADERS: Record<HeroSceneKey, () => Promise<ComponentType>> = {
+  diagram: () => import('./hero-diagram-board').then((m) => m.DiagramBoard),
+  draw: () => import('./hero-draw-board').then((m) => m.DrawBoard),
+  mindmap: () => import('./hero-mindmap-board').then((m) => m.MindMapBoard),
+  infographic: () => import('./hero-illustrate-page').then((m) => m.InfographicPages),
+  slides: () => import('./hero-slides-board').then((m) => m.SlidesBoard),
+  article: () => import('./hero-article-page').then((m) => m.ArticlePage),
+  plan: () => import('./hero-plan-board').then((m) => m.PlanBoard),
+  sheet: () => import('./hero-sheet-board').then((m) => m.SheetBoard),
+  form: () => import('./hero-form-board').then((m) => m.FormBoard),
+  townhall: () => import('./hero-townhall-board').then((m) => m.TownHallBoard),
+};
+const BOARDS: Record<HeroSceneKey, ComponentType> = {
+  diagram: dynamic(BOARD_LOADERS.diagram, { ssr: false }),
+  draw: dynamic(BOARD_LOADERS.draw, { ssr: false }),
+  mindmap: dynamic(BOARD_LOADERS.mindmap, { ssr: false }),
+  infographic: dynamic(BOARD_LOADERS.infographic, { ssr: false }),
+  slides: dynamic(BOARD_LOADERS.slides, { ssr: false }),
+  article: dynamic(BOARD_LOADERS.article, { ssr: false }),
+  plan: dynamic(BOARD_LOADERS.plan, { ssr: false }),
+  sheet: dynamic(BOARD_LOADERS.sheet, { ssr: false }),
+  form: dynamic(BOARD_LOADERS.form, { ssr: false }),
+  townhall: dynamic(BOARD_LOADERS.townhall, { ssr: false }),
+};
 
 // The hero's build cycle (HeroIllustration.tsx CYCLE_MS): the scene's keyframes and its closing
 // veil (hero-fade) are timed to it, so a replay lands as the veil covers the window.
@@ -36,7 +65,7 @@ const VEIL_FIRST = 'hero-fade-end';
 const VEIL_REPLAY = 'hero-fade';
 
 export function FeatureScene({ scene: key }: { scene: HeroSceneKey }) {
-  const scene = heroScene(key);
+  const scene = heroSceneData(key);
   const ref = useRef<HTMLDivElement>(null);
   const wasVisible = useRef(false);
   const [inView, setInView] = useState(false);
@@ -45,6 +74,11 @@ export function FeatureScene({ scene: key }: { scene: HeroSceneKey }) {
   const [done, setDone] = useState(false);
   const reduceMotion = useMediaQuery(PREFERS_REDUCED_MOTION);
   const playing = inView && !done && !reduceMotion;
+
+  // Fetch the board's code now, so it is in before the window first plays.
+  useEffect(() => {
+    void BOARD_LOADERS[key]().catch(() => {});
+  }, [key]);
 
   useEffect(() => {
     const el = ref.current;
@@ -72,7 +106,7 @@ export function FeatureScene({ scene: key }: { scene: HeroSceneKey }) {
   // Drawn while playing, and settled once it has played or when motion is reduced.
   const drawn = playing || done || reduceMotion;
   const veil = playing ? (cycle === 0 ? VEIL_FIRST : VEIL_REPLAY) : VEIL_NONE;
-  const { Board } = scene;
+  const Board = BOARDS[key];
   return (
     <div ref={ref} aria-hidden>
       <EditorWindow
@@ -81,6 +115,8 @@ export function FeatureScene({ scene: key }: { scene: HeroSceneKey }) {
         tabs={scene.tabs}
         shared={scene.shared}
         mode={scene.mode}
+        planTab={scene.planTab}
+        viewBox={scene.landscapeViewBox}
         playing={playing}
         veil={veil}
         document={drawn ? <Board /> : null}

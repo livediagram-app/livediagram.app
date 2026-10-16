@@ -71,6 +71,7 @@ src/write-caps.ts          writesCapsProblem(sheet, writes, documentCells) -> sh
 src/commands.ts            typeInto, typeIntoRanges, clearRanges, formatRanges, borderRange, merge/unmerge,
                            fillRange, fillFromEdge, splitWrite, stepDecimals, boundedRange
 src/commands-axis.ts       insert, append, delete, hide, resize, move, freeze, sort, filter (layout writes)
+src/merge-guards.ts        sortSplitsMerge, moveSplitsMerge: a sort or move that would split a merge is refused
 src/commands-paste.ts      pasteClip, pasteCut, pasteExternal
 src/commands-shift.ts      shiftCells: Insert Cells and Delete Cells (built on the cut-paste move)
 src/selection.ts           Selection ops: move, extend, jump (Ctrl+arrows), select all, rows, columns, cycle
@@ -84,10 +85,17 @@ src/cards.ts               CardSource (structural), card rows for the card funct
 src/a1-io.ts               agents: readRange, writeRows; AGENT_LOCALE (en-GB)
 src/range-names.ts         Named ranges: rangeNameProblem (the name rules and their toasts), findRangeName, sameName,
                            nameHome (own sheet, else the one other sheet with it); RANGE_NAME_MAX 60, RANGE_NAMES_MAX 100
-src/sheet-starters.ts      Setup Sheet: SHEET_STARTS / SheetStartId, SHEET_LOOKS / SheetLook, SHEET_CELL_SIZES,
-                           SETUP_CARDS_MAX, SheetStarter, sheetStarter(id, now) (Blank, Budget, Tracker, Timesheet,
-                           Contacts), SheetSetup, setupWrite (a starter with the look, freeze and sizes as one write),
+src/sheet-starters.ts      Setup Sheet: SHEET_LOOKS / SheetLook, SHEET_CELL_SIZES, cellSizeDefaults / cellSizeOf,
+                           SETUP_CARDS_MAX, SheetStarter, SheetSetup, setupWrite (a starter with the look, freeze and
+                           sizes as one write), setupOptions, grownFor (rows grown and a starter-cell reader),
                            cardsStarter (Plan Cards' header and rows), resetSheetWrite (Clear Sheet)
+src/sheet-templates/       Sheet templates (sheet.md "Sheet templates"): accents.ts (SHEET_ACCENTS, templateTints,
+                           accentChartPalette), design.ts (SheetDesign: blocks of tables, fields and notes; charts),
+                           compile.ts (designWrite: one write and the charts by id), catalogue.ts (SHEET_TEMPLATE_IDS,
+                           SHEET_STARTS / SheetStartId, SHEET_TEMPLATES, sheetTemplate(id, now)), money.ts, work.ts,
+                           people.ts (the designs: pure data and their formulas)
+src/template-starts.ts     Plan templates' starts: TEMPLATE_STARTS, TEMPLATE_START_SHEETS, TEMPLATE_LOOK,
+                           sheetFromTemplate, templateSheetWithCharts
 src/testing/book.ts        test harness: book(spec), calc(formula)
 src/index.ts
 ```
@@ -397,7 +405,7 @@ type SheetWrite =
 `sheet_full` (cells > `SHEET_CELLS_MAX` or bytes > `SHEET_BYTES_MAX`), `input_too_long`, `formula_invalid`
 (template re-parse fails, a ref index out of bounds, `@` misuse), `format_invalid` (unknown key, bad colour,
 size, decimals), `axis_id_invalid` (pattern, or an insert reusing a live id), `title_invalid` (empty or >
-`SHEET_TITLE_MAX`), `merge_invalid` (overlap, or > `SHEET_MERGES_MAX`), `filter_invalid`, `write_too_large`
+`SHEET_TITLE_MAX`), `merge_invalid` (overlap, or > `SHEET_MERGES_MAX`: judged on what the write did to the merges, whether or not it grew anything, whenever the merges or the rows and columns under them changed; a merge problem the sheet already had refuses only a write that adds a merge, so a sheet an older sort broke still takes typed values), `filter_invalid`, `write_too_large`
 (> `SHEET_WRITE_CELLS_MAX` cells or > `SHEET_WRITE_BYTES_MAX`). `validateSheetCreate` checks a whole sheet the
 same way. `writesCapsProblem(sheet, writes, documentCells)` (`write-caps.ts`) applies a change's writes in order
 and answers the cap the result passes: `sheet_full` or `sheet_too_large` by `sheetProblem`, `sheets_full` when
@@ -412,9 +420,15 @@ columns) is never refused.
   `background-color`, `text-align`). `readPastedHtml(html)` tokenises `<table>/<tr>/<td|th>` with `colspan`/
   `rowspan` and the same inline styles plus `<b>/<i>/<u>/<s>`, without a DOM (a small tag scanner; entities via a
   table of the common named ones plus numeric). `readPastedText` splits by tab when any line holds a tab, else by
-  comma when every line parses as CSV with the same column count > 1, else one column.
-- `parseCsv` is RFC 4180 (quoted fields, `""`, CRLF or LF, a final newline), cut at `SHEET_ROWS_MAX` ×
-  `SHEET_COLS_MAX` with `truncated` set. `toCsv` quotes fields holding `,`, `"`, CR or LF.
+  comma when the text holds a line break (a final one trimmed first) and every record parses as CSV with the same
+  column count > 1, else one column, a line a row.
+- `parseCsv(text, sep?)` is RFC 4180 (quoted fields, `""`, CRLF or LF, a final newline, a leading BOM dropped), cut
+  at `SHEET_ROWS_MAX` × `SHEET_COLS_MAX` with `truncated` set. Without `sep`, `separatorOf` picks it: `\t` when the
+  first line holds one; else, over the first `SEPARATOR_SAMPLE_LINES` (20) lines, blank lines dropped, the width
+  with each of `;` and `,` (the shared field count when every record has the same one, > 1, else 0), and `;` when
+  that width is > 0 and ≥ the comma's (a tie is `;`), else `,`; text holding no `;` is `,` without parsing.
+  `toCsv` quotes fields holding `,`, `;`, `"`, CR or LF (a `;` so a one-column sheet's file reads back as one
+  column).
 - `detectSeries(values)`: all numbers with a constant step → arithmetic; all dates with a constant day step, or the
   same day of month a month apart → date series; text with a trailing integer and the same prefix → number series;
   English month (`Jan`/`January`) and day names (`Mon`/`Monday`), case kept → cyclic; else copy. A single number

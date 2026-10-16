@@ -1,3 +1,4 @@
+import { trustedHtml } from './trusted-types';
 // Renders a schema.org payload as an inline `<script type="application/ld+json">`.
 // Marketing and the help centre both emit structured data (docs/specs/019-marketing/marketing-site.md, docs/specs/018-help/help-app.md)
 // and each had grown its own copy of this component.
@@ -27,7 +28,9 @@ export function JsonLd({
   return (
     <script
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(data).replace(/</g, '\\u003c') }}
+      dangerouslySetInnerHTML={{
+        __html: trustedHtml(JSON.stringify(data).replace(/</g, '\\u003c')),
+      }}
       suppressHydrationWarning
     />
   );

@@ -19,7 +19,7 @@ function event(id: string): TimelineEvent {
     occurredAt: 1_700_000_000_000,
     actorId: ME,
     snapshot: { documentId: id, documentName: id },
-  } as TimelineEvent;
+  };
 }
 
 /** Controls whose only loaded events are the viewer's own, filtered to "Other people". */
@@ -40,9 +40,9 @@ describe('Timeline filtered-empty state', () => {
 
     render(<Timeline controls={controls} viewerId={ME} hasMore onLoadMore={onLoadMore} />);
 
-    expect(screen.getByText('No matches in the events loaded so far.')).toBeTruthy();
-    expect(screen.queryByText('No events match these filters.')).toBeNull();
-    expect(screen.getByRole('button', { name: 'Clear filters' })).toBeTruthy();
+    expect(screen.getByText('No loaded events match these filters')).toBeTruthy();
+    expect(screen.queryByText('No events match these filters')).toBeNull();
+    expect(screen.getByRole('button', { name: 'Clear Filters' })).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Show more' }));
     expect(onLoadMore).toHaveBeenCalledOnce();
   });
@@ -61,8 +61,8 @@ describe('Timeline filtered-empty state', () => {
 
     render(<Timeline controls={controls} viewerId={ME} hasMore={false} onLoadMore={vi.fn()} />);
 
-    expect(screen.getByText('No events match these filters.')).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'Clear filters' })).toBeTruthy();
+    expect(screen.getByText('No events match these filters')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Clear Filters' })).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'Show more' })).toBeNull();
   });
 });

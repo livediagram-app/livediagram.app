@@ -1,7 +1,7 @@
 // Finance functions (docs/specs/029-sheets/formulas.md "Functions": Finance), with Sheets' sign conventions:
 // money paid out is negative.
 import { MANY, arrayArg, flatValues, fn, numArg, numFn, numbersOf, opt, type FnDef } from '../fn';
-import { err, isError, type Value } from '../values';
+import { err, isError } from '../values';
 
 function pmt(rate: number, nper: number, pv: number, fv: number, type: number): number {
   if (rate === 0) return -(pv + fv) / nper;
@@ -79,7 +79,7 @@ export const FINANCE_FUNCTIONS: Record<string, FnDef> = {
   IRR: fn(1, 2, (args, f) => {
     const values: number[] = [];
     for (const x of flatValues(arrayArg(args[0]!, f))) {
-      if (isError(x)) return x as Value;
+      if (isError(x)) return x;
       if (typeof x === 'number') values.push(x);
     }
     if (!values.some((v) => v > 0) || !values.some((v) => v < 0))

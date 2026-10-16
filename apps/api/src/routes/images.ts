@@ -6,7 +6,7 @@ import {
   deleteImage,
   documentServesImage,
   findImageBySha,
-  getDocument,
+  getDocumentMeta,
   getImage,
   imageTotalsByOwner,
   imageUsageByOwner,
@@ -296,7 +296,9 @@ export async function handleImages(ctx: RouteContext): Promise<Response> {
         // document must place this image AND may serve it: the
         // image's owner owns `d`, or `d` holds a placement grant
         // (a teammate's or collaborator's upload, or a copy).
-        const liveDoc = await getDocument(env, d);
+        // The owner and team are all the gate needs: one row, not the full document load (its
+        // participants and tab summary), which ran once for every image a visitor's board shows.
+        const liveDoc = await getDocumentMeta(env, d);
         if (liveDoc) {
           // canReadDocument (owner OR any valid share code
           // mapping to this document, see auth/document-access.ts)

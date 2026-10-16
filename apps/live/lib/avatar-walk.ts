@@ -4,7 +4,7 @@
 // keeps it on screen, and what it is standing on. No React, no DOM, so
 // the walk behaviour is unit-testable without a canvas.
 
-import { isBoxed, type Element } from '@livediagram/document';
+import { isBoxed, isFloorShape, type Element } from '@livediagram/document';
 
 // Walk speed in CANVAS px per second. Constant on purpose: an eased
 // glide reads as a camera move, a constant walk reads as a character.
@@ -12,6 +12,19 @@ import { isBoxed, type Element } from '@livediagram/document';
 // is what put you in Avatar mode (docs/specs/009-elements/mode-button.md): clear of the button's own box, so
 // it reads as standing in front of it rather than on top of it.
 export const AVATAR_SPAWN_GAP = 12;
+
+// Where pressing a Selection Mode button should put the character on entry (docs/specs/008-canvas/avatar-mode.md
+// "Entering from a button"): feet just below the button, centred on it. Null for a button of another mode, and for
+// a press made IN Avatar mode, which leaves it: a spawn point set then outlived the walk, so the next entry from
+// the palette put the character back at the button.
+export function avatarSpawnFromButton(
+  button: { x: number; y: number; width: number; height: number; mode?: string },
+  buttonMode: string,
+  currentTool: string,
+): AvatarPoint | null {
+  if (buttonMode !== 'avatar' || currentTool === 'avatar') return null;
+  return { x: button.x + button.width / 2, y: button.y + button.height + AVATAR_SPAWN_GAP };
+}
 
 // How far a shoved character slides, in canvas px (docs/specs/008-canvas/avatar-mode.md). Far enough to be
 // unmistakably a push, short enough that nobody gets flung across the canvas.
@@ -278,6 +291,15 @@ export function elementUnderFeet(elements: Element[], feet: AvatarPoint): string
   for (const el of elements) {
     if (!isBoxed(el)) continue;
     if (el.type === 'shape' && el.shape === 'frame') continue;
+    // A fence is not a destination (docs/specs/009-elements/fence.md): walking along one must not ring it.
+    if (el.type === 'shape' && el.shape === 'fence') continue;
+    // Nor is the office's floor and scenery (docs/specs/009-elements/office.md): a room or a rug is where you
+    // stand, and a plant or a bookshelf is walked round.
+    if (
+      el.type === 'shape' &&
+      (isFloorShape(el.shape) || el.shape === 'plant' || el.shape === 'bookshelf')
+    )
+      continue;
     if (
       feet.x >= el.x &&
       feet.x <= el.x + el.width &&

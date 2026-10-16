@@ -51,3 +51,15 @@ export function choosePlacementAgainUrl(search: string): string {
   const qs = params.toString();
   return qs ? `/new?${qs}` : '/new';
 }
+
+/**
+ * The placement context a /new URL carries (docs/specs/013-workspace/team-shared-documents.md): `?folder=<id>`,
+ * `?team=<id>` or both file the new document there. A missing param is absent, never the root: neither is no
+ * placement, which leaves room for a default folder (docs/specs/013-workspace/default-folders.md "Precedence").
+ */
+export function placementParamsFromSearch(search: string): { folderId?: string; teamId?: string } {
+  const params = new URLSearchParams(search);
+  const folderId = params.get('folder') || undefined;
+  const teamId = params.get('team') || undefined;
+  return { ...(folderId ? { folderId } : {}), ...(teamId ? { teamId } : {}) };
+}

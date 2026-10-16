@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { act, renderHook } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { resetAppearanceForTests, setAppearance } from '@livediagram/ui';
 import {
   createFreehand,
   createShape,
@@ -52,13 +53,15 @@ function setup(
       liveElements: () => elements,
       commit,
       memory: memory as never,
-      swatchOverrides: { overrides: {}, setOverride: vi.fn(), clearOverride: vi.fn() } as never,
+      swatchOverrides: { overrides: {}, setOverride: vi.fn(), clearOverride: vi.fn() },
       pen: { held, update },
       toolIntent,
     }),
   );
   return { result, commit, update, memory, elements: () => elements };
 }
+
+afterEach(() => resetAppearanceForTests());
 
 describe('useQuickStyle pen rows', () => {
   it('restyles the selected strokes in one commit', () => {
@@ -73,10 +76,10 @@ describe('useQuickStyle pen rows', () => {
     expect(elements()[0]).toMatchObject({ penWidth: 2.5 });
   });
 
-  it('offers the tab\u2019s custom colours, and restyles with stock and custom colours', () => {
-    // docs/specs/023-draw-mode/draw-mode.md "The quick style panel stays": the second section.
+  it('restyles with stock and custom colours', () => {
+    // docs/specs/023-draw-mode/draw-mode.md "The quick style panel stays": a custom colour comes
+    // from More colours, the colour picker.
     const { result, elements } = setup(['s1']);
-    expect(result.current.view?.pen?.colour.custom).toEqual([]);
     act(() => result.current.setPenColour('teal'));
     expect(elements()[0]).toMatchObject({ penColour: 'teal' });
     act(() => result.current.setPenColour('#ff6b00'));
@@ -169,9 +172,12 @@ describe('useQuickStyle for a tool in hand', () => {
     expect(result.current.view?.sections.boardStroke).toBeTruthy();
     act(() => result.current.setWidth('thick'));
     expect(commit).not.toHaveBeenCalled();
-    const [before, after] = memory.recordEdit.mock.calls[0]!;
-    expect(before[0]).toMatchObject({ type: 'shape', shape: 'square' });
-    expect(after[0]).toMatchObject({ strokeWidth: 'thick' });
+    const edit = memory.recordEdit.mock.calls[0]!;
+    expect(edit).toHaveProperty(
+      [0, 0],
+      expect.objectContaining({ type: 'shape', shape: 'square' }),
+    );
+    expect(edit).toHaveProperty([1, 0], expect.objectContaining({ strokeWidth: 'thick' }));
   });
 
   it('forgets the tool style on Clear styles', () => {
@@ -191,6 +197,8 @@ describe('useQuickStyle for a tool in hand', () => {
 // version for the canvas the tab paints, which on a dark theme is the dark one in any appearance.
 describe('useQuickStyle swatches on a themed canvas', () => {
   it('shows the dark canvas versions on a dark theme', () => {
+    // A dark viewer sees Midnight as written (docs/specs/011-theme/light-and-dark.md).
+    setAppearance('dark');
     const square = { ...createShape('square', 0, 0), id: 'q1' } as Element;
     const tab = {
       id: 't',
@@ -257,7 +265,7 @@ describe('useQuickStyle Highlighter rows', () => {
           forget: vi.fn(),
           styleNewElement: <T,>(el: T) => el,
         } as never,
-        swatchOverrides: { overrides: {}, setOverride: vi.fn(), clearOverride: vi.fn() } as never,
+        swatchOverrides: { overrides: {}, setOverride: vi.fn(), clearOverride: vi.fn() },
         highlighter,
         toolIntent,
       }),

@@ -91,7 +91,7 @@ describe('the type editor’s States', () => {
 
   it('says so when the boards name no states', () => {
     render(<ItemTypeStatuses statuses={[]} excluded={[]} onChange={vi.fn()} />);
-    expect(screen.getByText(/no states to choose from/)).toBeTruthy();
+    expect(screen.getByText('No States Yet')).toBeTruthy();
   });
 
   it('Select All needs nothing listed to be off', () => {
@@ -128,7 +128,7 @@ describe('the States tab’s Default State', () => {
         onDefaultStatus={vi.fn()}
       />,
     );
-    expect((screen.getByLabelText('Default State') as HTMLSelectElement).value).toBe('');
+    expect(screen.getByLabelText<HTMLSelectElement>('Default State').value).toBe('');
   });
 });
 
@@ -144,7 +144,7 @@ describe('a built-in type’s Default State', () => {
         typeId="task"
       />,
     );
-    const menu = () => screen.getByLabelText('Default State') as HTMLSelectElement;
+    const menu = () => screen.getByLabelText<HTMLSelectElement>('Default State');
     const labels = [...menu().options].map((o) => o.textContent);
     expect(labels).toContain('To Do');
     expect(labels.some((l) => l?.includes('Built-In'))).toBe(false);
@@ -199,7 +199,7 @@ describe('the item panel’s Status', () => {
   // docs/specs/026-plan/plan-board.md "A state no board names": never its raw id.
   it('shows a state no board names as No status, offering no raw id', () => {
     render(<ItemFieldEditor f="status" ctx={ctx(make('next~ab12'))} />);
-    expect((screen.getByRole('combobox') as HTMLSelectElement).value).toBe('');
+    expect(screen.getByRole<HTMLSelectElement>('combobox').value).toBe('');
     const names = screen.getAllByRole('option').map((o) => o.textContent);
     expect(names).toEqual(['No status', 'To Do', 'Doing']);
   });

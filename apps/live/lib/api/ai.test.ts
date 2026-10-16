@@ -25,6 +25,15 @@ describe('extractElementsFromBuffer textSize normalisation', () => {
     expect((out[0] as { textSize?: string }).textSize).toBe('md');
   });
 
+  // docs/specs/008-canvas/canvas-and-palette.md text size: a slider px is a fixed size, and Clean echoes an
+  // element's own size back; flattening it to 'md' lost the size the user set.
+  it('keeps a slider px, and pins one out of range', () => {
+    const kept = extractElementsFromBuffer(`{"elements":[${shape(',"textSize":18')}]}`);
+    expect((kept[0] as { textSize?: unknown }).textSize).toBe(18);
+    const wild = extractElementsFromBuffer(`{"elements":[${shape(',"textSize":400')}]}`);
+    expect((wild[0] as { textSize?: unknown }).textSize).toBe('md');
+  });
+
   it('preserves an explicit hierarchy size', () => {
     const out = extractElementsFromBuffer(`{"elements":[${shape(',"textSize":"lg"')}]}`);
     expect((out[0] as { textSize?: string }).textSize).toBe('lg');
@@ -214,7 +223,7 @@ describe('apiAiReadNotes', () => {
   it('throws when EVERY batch fails, so the one message names the cause', async () => {
     globalThis.fetch = vi.fn(
       async () => new Response(JSON.stringify({ error: 'ai_not_configured' }), { status: 503 }),
-    ) as unknown as typeof fetch;
+    );
     await expect(apiAiReadNotes('o', crops(12))).rejects.toThrow('ai_not_configured');
   });
 
@@ -228,15 +237,13 @@ describe('apiAiReadNotes', () => {
     ] as const) {
       globalThis.fetch = vi.fn(
         async () => new Response(JSON.stringify({ error: token }), { status }),
-      ) as unknown as typeof fetch;
+      );
       await expect(apiAiReadNotes('o', crops(1))).rejects.toThrow(token);
     }
   });
 
   it('falls back to a usable token when the failure is not our envelope', async () => {
-    globalThis.fetch = vi.fn(
-      async () => new Response('<html>502</html>', { status: 502 }),
-    ) as unknown as typeof fetch;
+    globalThis.fetch = vi.fn(async () => new Response('<html>502</html>', { status: 502 }));
     await expect(apiAiReadNotes('o', crops(1))).rejects.toThrow('ai_error');
   });
 });

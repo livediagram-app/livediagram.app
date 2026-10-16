@@ -5,6 +5,7 @@ import {
   type Locator,
   type Page,
 } from '@playwright/test';
+import type { StoredDocument, StoredTab } from './stored';
 import { DEBUG_STORAGE_KEY } from '../lib/debug-log';
 import { TOUR_PENDING_KEY } from '../lib/tour-pending';
 
@@ -50,7 +51,7 @@ export async function enableDebugLogs(context: BrowserContext): Promise<void> {
   await context.addInitScript(
     ([key]) => {
       try {
-        localStorage.setItem(key as string, '*');
+        localStorage.setItem(key, '*');
       } catch {
         // A page with no storage (about:blank, a sandboxed frame) has no trace lines to show.
       }
@@ -59,9 +60,66 @@ export async function enableDebugLogs(context: BrowserContext): Promise<void> {
   );
 }
 
+// The Draw, Avatar, Forms, Illustrate and element tours (docs/specs/023-draw-mode/draw-tour.md, docs/specs/008-canvas/avatar-tour.md,
+// docs/specs/030-forms/forms.md, docs/specs/007-editor/illustrate-tour.md) offer themselves 800 ms into their modes and their overlays would take the presses of every spec there; they have
+// their own unit tests. Marked seen for every page of the context.
+export async function markModeToursSeen(context: BrowserContext): Promise<void> {
+  await context.addInitScript(() => {
+    const key = 'livediagram:user-preferences:v1';
+    try {
+      const prefs = JSON.parse(localStorage.getItem(key) ?? '{}') as Record<string, unknown>;
+      // The Illustrate tour offers each page kind once (lib/tour-tracks.ts): every kind answered.
+      if (
+        prefs.drawTourSeen !== true ||
+        prefs.avatarTourSeen !== true ||
+        prefs.formTourSeen !== true ||
+        !Array.isArray(prefs.illustrateTourKinds) ||
+        !Array.isArray(prefs.elementTourKinds)
+      )
+        localStorage.setItem(
+          key,
+          JSON.stringify({
+            ...prefs,
+            drawTourSeen: true,
+            avatarTourSeen: true,
+            formTourSeen: true,
+            illustrateTourSeen: true,
+            illustrateTourKinds: ['slide', 'infographic', 'article', 'logo'],
+            // Element tours (docs/specs/007-editor/element-tours.md): the offer beside a Sankey's toolbar.
+            elementTourKinds: [
+              'sankey',
+              'layer-stack',
+              'pyramid',
+              'funnel',
+              'cycle',
+              'hub',
+              'onion',
+              'chevrons',
+              'mind-node',
+              'flowchart',
+              'org-chart',
+              'sequence',
+              'chart',
+              'stack',
+              'entity',
+              'tab-window',
+              'lane',
+              'boundary',
+              'diagram-key',
+              'portal',
+            ],
+          }),
+        );
+    } catch {
+      // No storage: nothing to mark.
+    }
+  });
+}
+
 export const test = base.extend<{ pageErrors: string[] }>({
   context: async ({ context }, use) => {
     await enableDebugLogs(context);
+    await markModeToursSeen(context);
     await use(context);
   },
   pageErrors: async ({ page }, use) => {
@@ -98,33 +156,39 @@ export async function untilHydrated(locator: Locator): Promise<void> {
     .toBe(true);
 }
 
-// Complete the /new template wizard into a blank document and land on
-// the editor canvas. Shared by the create-flow tests; resilient to the
-// wizard's step count by clicking whatever advances it.
-// Start a document from a named TEMPLATE in a named category. The blank
-// helper below skips the category step entirely (Blank is on the first
-// screen), so template creation — builders, layers, per-template canvas
-// overrides, the tab kind — is a genuinely different path through the
-// wizard and needs its own way in.
+// The wizard asks only for a mode (docs/specs/007-editor/new-document-route.md "One-step wizard"): choosing one
+// creates the document there and then, and lands on the editor with the mode's start screen over the canvas
+// (docs/specs/007-editor/start-diagramming.md).
+// Resolves to the new document's id; `url` carries a `/new?folder=` / `?team=` context.
+export async function createInMode(page: Page, mode: string, url = '/new'): Promise<string> {
+  await page.goto(url);
+  await page.getByText('New Document', { exact: false }).waitFor();
+  const card = page.locator(`[data-new-mode="${mode}"]`);
+  await untilHydrated(card);
+  await card.click();
+  await page.locator('[data-canvas-a11y-root]').waitFor({ timeout: 30_000 });
+  return new URL(page.url()).pathname.split('/').pop()!;
+}
+
+// The start screen over a new tab, by its mode's title (Start Diagramming, ...).
+export const startScreen = (page: Page, title: RegExp = /^Start /) =>
+  page.getByRole('region', { name: title });
+
+// Start a document from a named TEMPLATE in a named group of Start Diagramming: a Diagram document from the
+// wizard, then the template picked on its start screen, so template creation (builders, layers, per-template
+// canvas overrides, the tab kind) is its own path, as a person takes it.
 export async function startTemplateDocument(
   page: Page,
-  category: RegExp,
+  group: string,
   template: RegExp,
 ): Promise<void> {
-  await page.goto('/new');
-  await page.getByText('New Document', { exact: false }).waitFor();
-  // Category tiles are aria-labelled "Browse <name> templates"; the
-  // template tiles carry their title + description as the accessible name.
-  const categoryTile = page.getByRole('button', { name: category }).first();
-  await untilHydrated(categoryTile);
-  await categoryTile.click();
-  // Picking a template moves straight on to the Location step.
-  await page.getByRole('button', { name: template }).first().click();
-  await page
-    .getByRole('button', { name: /^(create|start|use this|done|finish)$/i })
-    .first()
-    .click();
-  await page.locator('[data-canvas-a11y-root]').waitFor();
+  await createInMode(page, 'diagram');
+  const start = startScreen(page, /^Start Diagramming$/);
+  const rail = start.locator(`[data-rail]`).filter({ hasText: group }).first();
+  await untilHydrated(rail);
+  await rail.click();
+  await start.getByRole('button', { name: template }).first().click();
+  await start.waitFor({ state: 'detached' });
 }
 
 // An event-storming board with a ROW of three domain events on it, one gutter
@@ -133,7 +197,7 @@ export async function startTemplateDocument(
 // a row around that note through the api and reloads. The three are copies of
 // the seeded note (so they carry exactly its stationery), one rhythm step apart.
 export async function startEventStormingRow(page: Page): Promise<void> {
-  await startTemplateDocument(page, /Browse Technical templates/, /^Event storming/i);
+  await startTemplateDocument(page, 'Technical', /^Event storming/i);
   const notes = page.locator('[data-canvas-a11y-root]').getByRole('img', { name: /^Sticky note/ });
   await notes.first().waitFor();
   const apiBase = process.env.NEXT_PUBLIC_API_BASE ?? '/api';
@@ -143,16 +207,19 @@ export async function startEventStormingRow(page: Page): Promise<void> {
       const id = location.pathname.split('/').filter(Boolean).pop()!;
       // Wait for the new board's first save to land (its seeded note on the
       // server), so the row is not written over by it.
-      let tab: { elements: { width: number; x: number }[] } | null = null;
+      type Seed = { width: number; x: number };
+      let tab: (Record<string, unknown> & { elements: Seed[] }) | null = null;
       let tabId = '';
       for (let i = 0; i < 50 && !tab; i += 1) {
-        const liveDoc = await (await fetch(`${base}/documents/${id}`, { headers })).json();
+        const liveDoc = (await (
+          await fetch(`${base}/documents/${id}`, { headers })
+        ).json()) as StoredDocument;
         tabId = liveDoc.document?.tabs?.[0]?.id ?? '';
         if (tabId) {
-          const got = await (
+          const got = (await (
             await fetch(`${base}/documents/${id}/tabs/${tabId}`, { headers })
-          ).json();
-          if (got.tab?.elements?.length === 1) tab = got.tab;
+          ).json()) as StoredTab<Seed>;
+          if (got.tab?.elements?.length === 1) tab = { ...got.tab, elements: got.tab.elements };
         }
         if (!tab) await new Promise((r) => setTimeout(r, 100));
       }
@@ -180,18 +247,24 @@ export async function startEventStormingRow(page: Page): Promise<void> {
   await notes.nth(2).waitFor();
 }
 
-// Dismiss the quick-tour offer (docs/specs/007-editor/editor-tour.md) when this page is owed one.
+// Dismiss the Diagram tour's offer (docs/specs/007-editor/editor-tour.md) when this page is owed one.
 // It lands a BEAT AFTER the canvas does, and its modal overlay swallows pointer events, so a test that
 // merely checks whether it is showing YET races it and then finds its drags going nowhere, silently.
 // The offer comes only while /new's handoff flag is in sessionStorage (lib/tour-pending.ts): without
 // the flag (a reload after declining it, a document opened by URL) nothing is owed, and this returns
 // at once instead of waiting out a timeout. With it, wait until the offer shows, or until the flag
-// clears without one (the tour already seen).
+// clears without one (the tour already seen). The offer is the Diagram tour's, so a tab in another mode
+// keeps it owed without showing it (the mode switch says which mode the tab is in).
 export async function dismissQuickTour(page: Page): Promise<void> {
-  const decline = page.getByRole('button', { name: /^no thanks$/i }).first();
+  const decline = page.getByRole('button', { name: /^no$/i }).first();
   const owed = () => page.evaluate((key) => sessionStorage.getItem(key) === '1', TOUR_PENDING_KEY);
+  const elsewhere = () =>
+    page.evaluate(() => {
+      const mode = document.querySelector('[data-editor-mode]')?.getAttribute('data-editor-mode');
+      return mode !== undefined && mode !== null && mode !== 'diagram';
+    });
   await expect
-    .poll(async () => (await decline.isVisible()) || !(await owed()), {
+    .poll(async () => (await decline.isVisible()) || !(await owed()) || (await elsewhere()), {
       message: 'the owed tour offer never showed',
     })
     .toBe(true);
@@ -208,25 +281,34 @@ export async function openStartBlank(page: Page): Promise<void> {
   await dismissQuickTour(page);
 }
 
+// A blank tab in Facilitate mode straight away: /new?template=blank-session creates it with no wizard
+// (docs/specs/012-collaboration/facilitate-mode.md "Templates"). Where the session kit lives: the
+// Collaborate and Stickers categories and the Session strip.
+export async function openBlankSession(page: Page): Promise<void> {
+  // The Facilitate tour offers itself 800 ms into Facilitate (FacilitateTourHost OFFER_DELAY_MS) and its
+  // overlay would take these specs' presses; it has its own unit tests.
+  await page.addInitScript(() => {
+    const key = 'livediagram:user-preferences:v1';
+    try {
+      const prefs = JSON.parse(localStorage.getItem(key) ?? '{}') as Record<string, unknown>;
+      if (prefs.facilitateTourSeen !== true)
+        localStorage.setItem(key, JSON.stringify({ ...prefs, facilitateTourSeen: true }));
+    } catch {
+      // No storage: nothing to mark.
+    }
+  });
+  await page.goto('/new?template=blank-session');
+  await page.locator('[data-canvas-a11y-root]').waitFor({ timeout: 30_000 });
+  await dismissQuickTour(page);
+}
+
+// A blank Diagram document through the wizard: Diagram on the Mode step, Create, then the start screen's × (a blank
+// canvas, docs/specs/007-editor/start-diagramming.md "Bringing it back").
 export async function startBlankDocument(page: Page): Promise<void> {
-  await page.goto('/new');
-  await page.getByText('New Document', { exact: false }).waitFor();
-  // Step 1: pick the Blank template. Single-click advances to the Location
-  // step (docs/specs/007-editor/new-document-route.md), so no explicit Next is needed here.
-  const blank = page.getByText('Blank Diagram', { exact: false }).first();
-  await untilHydrated(blank);
-  await blank.click();
-  // Step 2 (Location): the footer's primary action finishes the wizard.
-  // Anchored finish verbs: an unanchored /create/i also matched the
-  // settings step's "New Folder ... Create here" tile (the CI breakage
-  // this comment is the tombstone for).
-  await page
-    .getByRole('button', { name: /^(create|start|use this|done|finish)$/i })
-    .first()
-    .click();
-  // The editor is up once the canvas surface (the a11y root, docs/specs/004-interface-design/canvas-accessibility.md)
-  // is in the DOM.
-  await page.locator('[data-canvas-a11y-root]').waitFor();
+  await createInMode(page, 'diagram');
+  const start = startScreen(page, /^Start Diagramming$/);
+  await start.getByRole('button', { name: 'Close' }).click();
+  await start.waitFor({ state: 'detached' });
 }
 
 export type Seed = Record<string, unknown>[];
@@ -241,12 +323,14 @@ export async function seedTab(page: Page, elements: Seed): Promise<void> {
       let tab: Record<string, unknown> | null = null;
       let tabId = '';
       for (let i = 0; i < 50 && !tab; i += 1) {
-        const liveDoc = await (await fetch(`${base}/documents/${id}`, { headers })).json();
+        const liveDoc = (await (
+          await fetch(`${base}/documents/${id}`, { headers })
+        ).json()) as StoredDocument;
         tabId = liveDoc.document?.tabs?.[0]?.id ?? '';
         if (tabId) {
-          const got = await (
+          const got = (await (
             await fetch(`${base}/documents/${id}/tabs/${tabId}`, { headers })
-          ).json();
+          ).json()) as StoredTab;
           tab = got.tab ?? null;
         }
         if (!tab) await new Promise((r) => setTimeout(r, 100));
@@ -332,4 +416,16 @@ export async function settledBox(
     })
     .toBe(true);
   return box!;
+}
+
+/** A palette tile, from its category's flyout on the category bar (docs/specs/007-editor/toolbar-layout.md "The
+ *  category bar"): opens the category (a press, so it stays open whatever the pointer does next) unless its flyout is
+ *  already showing, and returns the tile. */
+export async function paletteTile(page: Page, name: string, category = 'Shapes'): Promise<Locator> {
+  const flyout = page.locator('[data-category-flyout]');
+  const button = page.locator(`[data-category-bar-button][aria-label="${category}"]`);
+  if ((await button.getAttribute('aria-expanded')) !== 'true') await button.click();
+  const tile = flyout.getByRole('button', { name, exact: true }).first();
+  await tile.waitFor();
+  return tile;
 }

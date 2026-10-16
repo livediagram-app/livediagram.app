@@ -11,6 +11,8 @@ type Props = {
   resolve?: () => string;
   label: string;
 };
+// The first props, checked as the type every rerender passes.
+const props = (p: Props): Props => p;
 
 describe('useStableEventProps', () => {
   it('keeps each event handler the same function across renders, calling the newest', () => {
@@ -39,7 +41,7 @@ describe('useStableEventProps', () => {
   it('keeps an absent handler absent, and gives one that appears later its forwarder', () => {
     const onClose = vi.fn();
     const { result, rerender } = renderHook((p: Props) => useStableEventProps(p), {
-      initialProps: { onClose: undefined, label: 'c' } as Props,
+      initialProps: props({ onClose: undefined, label: 'c' }),
     });
     expect(result.current.onClose).toBeUndefined();
 
@@ -54,7 +56,7 @@ describe('useStableEventProps', () => {
 
   it('drops the forwarder while the handler is absent, and restores the same one', () => {
     const { result, rerender } = renderHook((p: Props) => useStableEventProps(p), {
-      initialProps: { onClose: vi.fn(), label: 'd' } as Props,
+      initialProps: props({ onClose: vi.fn(), label: 'd' }),
     });
     const wrapper = result.current.onClose;
 

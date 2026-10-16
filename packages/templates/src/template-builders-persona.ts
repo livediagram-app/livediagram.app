@@ -264,12 +264,13 @@ function howWeHelp(out: Element[], x: number, y: number): void {
     const chip = 30;
     out.push(
       {
-        ...createShape('circle', ix, itemY),
+        // A Step number (docs/specs/009-elements/step-number.md) in the Solid look.
+        ...createShape('step', ix, itemY),
         width: chip,
         height: chip,
         label: `${i + 1}`,
-        textSize: 'sm',
         textBold: true,
+        chipLook: 'solid',
         fillColor: '#5eead4',
         strokeColor: '#5eead4',
         textColor: deep,

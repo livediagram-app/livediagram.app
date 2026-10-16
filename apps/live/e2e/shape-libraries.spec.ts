@@ -1,4 +1,5 @@
 import { deflateRawSync } from 'node:zlib';
+import type { StoredDocument, StoredTab } from './stored';
 import { join } from 'node:path';
 import type { Page } from '@playwright/test';
 import {
@@ -62,11 +63,13 @@ async function stored(page: Page): Promise<Stored[]> {
   const headers = await pageOwnerHeaders(page);
   return page.evaluate(async (headers) => {
     const id = location.pathname.split('/').filter(Boolean).pop()!;
-    const doc = await (await fetch(`/api/documents/${id}`, { headers })).json();
+    const doc = (await (await fetch(`/api/documents/${id}`, { headers })).json()) as StoredDocument;
     const tabId = doc.document?.tabs?.[0]?.id;
     if (!tabId) return [];
-    const tab = await (await fetch(`/api/documents/${id}/tabs/${tabId}`, { headers })).json();
-    return (tab.tab?.elements ?? []) as Stored[];
+    const tab = (await (
+      await fetch(`/api/documents/${id}/tabs/${tabId}`, { headers })
+    ).json()) as StoredTab<Stored>;
+    return tab.tab?.elements ?? [];
   }, headers);
 }
 const storedElements = async (page: Page) => (await stored(page)).length;
@@ -113,16 +116,15 @@ test('a draw.io library becomes a shape library, placed from My shapes', async (
   await expect(page.getByRole('article', { name: 'House shapes' })).toBeVisible();
   await shot(page, '2-explorer');
 
-  // Place both shapes from the palette's My shapes, in the strip's More popover: one box, then two
-  // boxes and their connection.
+  // Place both shapes from the palette's Library (My shapes) flyout: one box, then two boxes and their connection.
   await startBlankDocument(page);
-  await page.getByRole('button', { name: 'Palette category' }).click();
-  await page.locator('[data-option-id="my-shapes"]').click();
-  await page.getByRole('button', { name: 'More My shapes' }).click();
+  const libraryCategory = page.locator('[data-category-bar-button][aria-label="Library"]');
+  await libraryCategory.click();
   await page.getByRole('button', { name: 'Insert Service from House shapes' }).click();
   await expect.poll(() => storedElements(page), { timeout: 15_000 }).toBe(1);
-  // Placing a shape puts More away (docs/specs/007-editor/toolbar-layout.md "More"), so open it again.
-  await page.getByRole('button', { name: 'More My shapes' }).click();
+  // Placing a shape puts the flyout away (docs/specs/007-editor/toolbar-layout.md "The category bar"), so open it
+  // again.
+  await libraryCategory.click();
   await page.getByRole('button', { name: 'Insert Request from House shapes' }).click();
   await expect.poll(() => storedElements(page), { timeout: 15_000 }).toBe(4);
   // Two clicks in a row never cover one another (spec "Consecutive clicks never cover one another").

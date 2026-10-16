@@ -22,8 +22,8 @@ function props(over: Partial<Props> = {}): Props {
   };
 }
 
-const nameInput = () => screen.getByPlaceholderText(/platform squad/i) as HTMLInputElement;
-const orgInput = () => screen.getByPlaceholderText(/acme corp/i) as HTMLInputElement;
+const nameInput = () => screen.getByPlaceholderText<HTMLInputElement>(/platform squad/i);
+const orgInput = () => screen.getByPlaceholderText<HTMLInputElement>(/acme corp/i);
 
 afterEach(() => cleanup());
 

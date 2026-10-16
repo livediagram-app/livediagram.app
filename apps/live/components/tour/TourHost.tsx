@@ -20,13 +20,14 @@ import { tourStepsFor, tourStepTelemetryType, type TourApi } from './tour-steps'
 import { TourStage } from './TourStage';
 import { useTourEngine, type TourOutcome } from './useTourEngine';
 import { useLatest } from '@/hooks/ui/useLatest';
+import { useStartPanelOpen } from '@/components/start/start-panel-open';
 
-// Orchestrates the interactive editor tour (docs/specs/007-editor/editor-tour.md). Mounted once in
-// EditorView; renders nothing until either the /new handoff flag is
-// consumed (a brand-new user's first document → the welcome offer card) or
-// the Settings dialog requests a relaunch. The steps run on the shared
-// engine (useTourEngine) and draw through the shared stage (TourStage);
-// this host owns the offer, the step list and what ending means.
+// Orchestrates the Diagram tour (docs/specs/007-editor/editor-tour.md; the welcome tour until October 2026).
+// Mounted once in EditorView; renders nothing until the open tab is in Diagram mode and either the /new
+// handoff flag is set (a brand-new user's first document → the welcome offer card, waiting for a Diagram tab
+// when the document opened in another mode) or the Settings dialog requests a relaunch. The steps run on the
+// shared engine (useTourEngine) and draw through the shared stage (TourStage); this host owns the offer, the
+// step list and what ending means.
 
 export function TourHost() {
   const ctx = useEditorContext();
@@ -62,9 +63,8 @@ export function TourHost() {
           x: centre.x - base.width / 2,
           y: centre.y - base.height / 2,
         };
-        // Single-undo-block append via the AI merge path: fresh id, so it
-        // lands as a plain add.
-        ctx.applyAiElements([el], 'generate');
+        // The tour's own square, with no history, taken away when the tour ends (useTourSquare).
+        ctx.tourSquare.place(el);
         elementId = el.id;
       }
       ctx.setSelectedId(elementId);
@@ -94,9 +94,10 @@ export function TourHost() {
   });
   const { active } = engine;
 
-  // One tour at a time (docs/specs/026-plan/plan-tour.md "Where it appears"): this one publishes itself
-  // while on screen, and waits while the Plan tour is.
-  const otherTour = useActiveTour() === 'plan';
+  // One tour at a time (docs/specs/007-editor/editor-tour.md "Where it appears"): this one publishes itself
+  // while on screen, and waits while the Plan or Facilitate tour is.
+  const shown = useActiveTour();
+  const otherTour = shown !== null && shown !== 'welcome';
   useEffect(() => {
     setActiveTour('welcome', active);
   }, [active]);
@@ -116,8 +117,20 @@ export function TourHost() {
   // checked again at fire time below in case the preferences fetch lands
   // after mount.
   const seen = ctx.userPreferences?.tourSeen === true;
+  // Diagram mode only (docs/specs/007-editor/editor-tour.md "Where it appears"): a document that opened in
+  // another mode keeps the offer owed until the person is on a Diagram tab.
+  const inDiagram = ctx.editorMode.mode === 'diagram';
+  // Start Diagramming on screen holds the offer until a template is picked or the panel closed
+  // (docs/specs/007-editor/start-diagramming.md "The tours wait").
+  const startPanelOpen = useStartPanelOpen();
   const ready =
-    ctx.hydrated && !ctx.anyWelcomeOpen && !ctx.isReadOnly && !ctx.embedMode && !otherTour;
+    ctx.hydrated &&
+    !ctx.anyWelcomeOpen &&
+    !startPanelOpen &&
+    !ctx.isReadOnly &&
+    !ctx.embedMode &&
+    inDiagram &&
+    !otherTour;
   const offerRef = useLatest(offer);
   useEffect(() => {
     offerPendingRef.current ??= hasTourPending();
@@ -135,10 +148,11 @@ export function TourHost() {
     return () => clearTimeout(t);
   }, [active, ready, seen, offerRef]);
 
-  // Settings relaunch (the "Show Welcome Tour" row, turned on + closed):
+  // Settings relaunch (the Tours › "Diagram Tour" row, turned on + closed):
   // rerun from the top: the welcome card is always step 1. Also re-marks
   // the pending flag so a reload mid-rerun re-offers, exactly like the
-  // first-run path. While the Plan tour runs it waits, offering once that ends.
+  // first-run path. Off a Diagram tab, or while another tour runs, it waits,
+  // offering once the person is on a Diagram tab with nothing else on screen.
   useEffect(() => {
     const onRelaunch = () => {
       markTourPending();
@@ -159,6 +173,8 @@ export function TourHost() {
     // The offer is now RESOLVED, so the reload-surviving pending flag can
     // finally go.
     apiRef.current.closeContextMenu();
+    // The square it placed on an empty tab goes, so the document is left as the person had it.
+    if (ctx.tourSquare.remove() !== null) ctx.setSelectedId(null);
     clearTourPending();
     // Onto the freshest preferences, not this render's: the whole blob is written.
     const next = rebaseUserPreferences(ctx.userPreferences, {
@@ -170,6 +186,16 @@ export function TourHost() {
     if (outcome === 'declined') track('UI', 'Closed', 'TourOffer');
     else track('UI', 'Ended', outcome === 'completed' ? 'TourCompleted' : 'TourSkipped');
   };
+  const endTourRef = useLatest(endTour);
+  const engineRef = useLatest(engine);
+
+  // Ends as skipped when the open tab leaves Diagram mid-tour (its mode switched, or a tab in another mode
+  // opened): the steps point at chrome the other modes do not show.
+  useEffect(() => {
+    if (!active || inDiagram) return;
+    engineRef.current.stop();
+    endTourRef.current('skipped');
+  }, [active, inDiagram, engineRef, endTourRef]);
 
   return <TourStage engine={engine} />;
 }

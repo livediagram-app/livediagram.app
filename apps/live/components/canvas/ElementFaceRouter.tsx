@@ -1,5 +1,7 @@
 'use client';
 
+import dynamic from 'next/dynamic';
+import { TabWindowFace } from './tab-window/TabWindowFace';
 import type { CSSProperties, ReactNode } from 'react';
 import { BORDER_STROKE_PX, DEFAULT_BORDER_STROKE } from '@livediagram/document';
 import {
@@ -15,6 +17,11 @@ import {
   ownColours,
   isSelfDrawingShape,
   isWebComponentShape,
+  isChipShape,
+  isConceptShape,
+  type ConceptShape,
+  type ShapeElement,
+  defaultTextColor,
   type ShapeMarker,
   type TextAlignX,
   type TextAlignY,
@@ -22,7 +29,6 @@ import {
 } from '@livediagram/document';
 import { AnnotationGlyph } from '@/components/canvas/AnnotationMarker';
 import { ElementSettingsButton } from '@/components/canvas/ElementEllipsisMenu';
-import { CollabFaceRouter } from '@/components/canvas/collab/CollabFaceRouter';
 import { CollabSettingsSlot } from '@/components/canvas/collab/collab-chrome';
 import { CommentPanelFace } from '@/components/canvas/CommentPanelFace';
 import { ArticleNoteFace } from '@/components/canvas/article/ArticleNoteFace';
@@ -44,12 +50,23 @@ import { SessionTimerFace } from '@/components/canvas/SessionTimerFace';
 import { ShapeInlineIconLayout } from '@/components/canvas/shape-inline-icon-layout';
 import { InsetContent } from '@/components/canvas/InsetContent';
 import type { ContentInset } from '@/components/canvas/useIndicatorLayout';
-import { TableView } from '@/components/canvas/TableView';
+import { loadCollabFaceRouter, loadTableView } from '@/lib/editor-deferred-code';
 import { VideoView } from '@/components/canvas/VideoView';
 import { HeroCaptionCard } from '@/components/canvas/web/HeroCaptionCard';
+import { ChipFace } from '@/components/canvas/ChipFace';
+import { PersonNodeFace } from '@/components/canvas/PersonNodeFace';
+import { DiagramKeyFace } from '@/components/canvas/DiagramKeyFace';
+import { SequenceFace } from '@/components/canvas/SequenceFace';
+import { BoundaryFace } from '@/components/canvas/BoundaryFace';
+import { ConceptFace } from '@/components/canvas/ConceptFace';
 import { WebComponentFace } from '@/components/canvas/web/WebComponentFace';
 import type { BoxedElementViewProps } from './BoxedElementView.types';
-import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
+import { useElementSurface } from '@/components/canvas/CanvasSurfaceContext';
+
+// Tables and facilitation panels are on few boards, so their faces load on demand; their code is fetched
+// as the editor mounts (lib/editor-deferred-code.ts), so a board that has one finds it already in.
+const TableView = dynamic(loadTableView, { ssr: false });
+const CollabFaceRouter = dynamic(loadCollabFaceRouter, { ssr: false });
 
 // WHAT AN ELEMENT SHOWS IN PLACE OF A PLAIN LABEL.
 //
@@ -85,6 +102,7 @@ type ElementFaceRouterProps = Pick<
   | 'timerControls'
   | 'timerState'
   | 'sessionStartBlocked'
+  | 'sessionRunBy'
   | 'revealedForMe'
   | 'onCommitTable'
   | 'onEnterPortal'
@@ -144,6 +162,7 @@ export function ElementFaceRouter({
   timerControls,
   timerState,
   sessionStartBlocked,
+  sessionRunBy,
   revealedForMe,
   onCommitTable,
   onEnterPortal,
@@ -174,8 +193,10 @@ export function ElementFaceRouter({
   iconCaptionBand,
   labelFrame,
 }: ElementFaceRouterProps) {
-  // The paper under this face, for colours the element doesn't carry (docs/specs/007-editor/live-app.md).
-  const surface = useCanvasSurface();
+  // The paper under this face, for colours the element doesn't carry (docs/specs/007-editor/live-app.md):
+  // its Illustrate page's when the page has a fill of its own (illustrate-pages.md "A dark page has
+  // light ink"), as the label's ink already is, else the canvas's.
+  const surface = useElementSurface(element.id);
   // The shared settings `…` (docs/specs/008-canvas/canvas-and-palette.md), in the same corner on every Behaviours
   // element that has one: see carriesSharedSettingsMenu for who doesn't.
   const settingsButton =
@@ -235,6 +256,7 @@ export function ElementFaceRouter({
           timer={tabTimer ?? null}
           durationMs={(element.session.minutes ?? 5) * 60_000}
           readOnly={!timerControls.pause}
+          runBy={sessionRunBy ?? null}
           borderPx={BORDER_STROKE_PX[element.strokeWidth ?? DEFAULT_BORDER_STROKE]}
           onStart={
             onPressSessionButton && !sessionStartBlocked
@@ -268,6 +290,7 @@ export function ElementFaceRouter({
           label={label}
           textColor={textColor}
           canStart={!!onPressSessionButton && !sessionStartBlocked}
+          runBy={sessionRunBy ?? null}
           timerState={timerState}
           onPress={onPressSessionButton ? () => onPressSessionButton(element) : undefined}
           onSetConfig={
@@ -281,7 +304,7 @@ export function ElementFaceRouter({
         />
       ) : element.type === 'shape' && element.shape === 'focus-button' && !isEditing ? (
         /* Bring Focus (docs/specs/012-collaboration/bring-focus.md): asks everyone else in the room to come and
-           look at this, at your zoom, on your tab. */
+           look at this, on your tab. */
         <FocusButtonFace
           label={label}
           textColor={textColor}
@@ -376,6 +399,15 @@ export function ElementFaceRouter({
           targetName={onEnterPortal?.(element).targetName ?? null}
           onEnter={onEnterPortal?.(element).travel}
         />
+      ) : element.type === 'shape' && element.shape === 'tab-window' ? (
+        /* Tab window (docs/specs/009-elements/tab-window.md): another tab of the document, live, fitted inside it. */
+        <TabWindowFace
+          element={element}
+          surface={surface}
+          selected={isSelected}
+          // A locked window, or a read-only canvas (presenting, a viewer), keeps its tab: no Choose a Tab.
+          canChoose={!readOnly && !isLocked}
+        />
       ) : element.type === 'annotation' && element.articleNote ? (
         <ArticleNoteFace element={element} />
       ) : element.type === 'annotation' ? (
@@ -397,7 +429,8 @@ export function ElementFaceRouter({
             ownerId={imageContext.ownerId}
             documentId={imageContext.documentId}
             shareCode={imageContext.shareCode}
-            canOpenPicker={!!imageContext.onOpenPicker}
+            onOpenPicker={imageContext.onOpenPicker}
+            fontFamily={fontFamily}
           />
           {/* A hero's caption card (docs/specs/009-elements/web-components-and-no-groups.md), over the image. */}
           {element.heroCaption ? (
@@ -456,6 +489,75 @@ export function ElementFaceRouter({
           onFollowLink={onFollowLink}
           fontFamily={fontFamily}
         />
+      ) : element.type === 'shape' && isConceptShape(element.shape) ? (
+        // A layer stack, pyramid or cycle (docs/specs/009-elements/concept-graphics.md): its rows in the accent ramp.
+        <ConceptFace
+          element={element as ShapeElement & { shape: ConceptShape }}
+          labelNode={labelNode}
+          accent={element.strokeColor ?? defaultStrokeColor(element, surface)}
+          fill={element.fillColor ?? defaultFillColor(element, surface)}
+          ink={textColor}
+          fontFamily={fontFamily}
+          editable={isSelected && !readOnly && !isLocked && !!onSetWebRows}
+          onSetRows={(rows) => onSetWebRows?.(element.id, rows)}
+        />
+      ) : element.type === 'shape' &&
+        element.shape === 'mind-node' &&
+        element.mindLook === 'person' ? (
+        // A person node (docs/specs/009-elements/org-chart.md): initials, name and role.
+        <PersonNodeFace
+          element={element}
+          labelNode={labelNode}
+          accent={element.strokeColor ?? defaultStrokeColor(element, surface)}
+          ink={textColor}
+          fontFamily={fontFamily}
+          editable={isSelected && !readOnly && !isLocked}
+          onSetRole={(value) => onSetPageHeading(element.id, 'pageSubtitle', value)}
+        />
+      ) : element.type === 'shape' && element.shape === 'sequence' ? (
+        // A sequence diagram (docs/specs/009-elements/sequence-diagram.md): the export's picture, fitted.
+        <SequenceFace
+          element={element}
+          paper={cardFill}
+          stroke={element.strokeColor ?? defaultStrokeColor(element, surface)}
+          ink={textColor}
+          fontFamily={fontFamily}
+        />
+      ) : element.type === 'shape' && element.shape === 'diagram-key' ? (
+        // A diagram key (docs/specs/009-elements/diagram-key.md): its title, swatches and meanings.
+        <DiagramKeyFace
+          element={element}
+          labelNode={labelNode}
+          accent={element.strokeColor ?? defaultStrokeColor(element, surface)}
+          paper={cardFill}
+          ink={textColor}
+          fontFamily={fontFamily}
+          editable={isSelected && !readOnly && !isLocked && !!onSetWebRows}
+          onSetRows={(rows) => onSetWebRows?.(element.id, rows)}
+        />
+      ) : element.type === 'shape' && element.shape === 'boundary' ? (
+        // A boundary (docs/specs/009-elements/boundary.md): its tint, and its title in its tab or corner. It draws
+        // its own icon, so this sits before the generic inline-icon layout.
+        <BoundaryFace
+          element={element}
+          labelNode={labelNode}
+          // Its own accent, never a remote selector's: the tab, tint and title are its content, and the wrapper's
+          // outline already shows who has it selected.
+          accent={element.strokeColor ?? defaultStrokeColor(element, surface)}
+          ink={textColor}
+          fontFamily={fontFamily}
+          editable={isSelected && !readOnly && !isLocked}
+          onSetMeta={(value) => onSetPageHeading(element.id, 'pageSubtitle', value)}
+        />
+      ) : element.type === 'shape' && isChipShape(element.shape) ? (
+        // A badge or step number (docs/specs/009-elements/badge.md): its pill or disc under its own label.
+        <ChipFace
+          element={element}
+          labelNode={labelNode}
+          accent={element.strokeColor ?? defaultStrokeColor(element, surface)}
+          fill={element.fillColor ?? defaultFillColor(element, surface)}
+          ink={element.textColor ?? defaultTextColor(element, surface)}
+        />
       ) : element.type === 'shape' && isWebComponentShape(element.shape) ? (
         /* The web components (docs/specs/009-elements/web-components-and-no-groups.md): each lays out its own content and
            places the label in its own region, so it is edited like any
@@ -466,7 +568,10 @@ export function ElementFaceRouter({
           kind={element.shape}
           element={element}
           labelNode={labelNode}
-          accent={remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element, surface)}
+          // Its own accent, never a remote selector's: a card's header band, media and tags (a banner's bar, a stat
+          // row's numbers) are its content, so a collaborator's selection recoloured the whole face; the wrapper's
+          // outline already shows who has it selected.
+          accent={element.strokeColor ?? defaultStrokeColor(element, surface)}
           fill={element.fillColor ?? defaultFillColor(element, surface)}
           textColor={textColor}
           fontFamily={fontFamily}
@@ -531,7 +636,10 @@ export function ElementFaceRouter({
         // Icon caption band (docs/specs/010-palette/technology-icons.md): the label (and the inline editor while
         // typing) fills this positioned container instead of the whole box,
         // so the caption stays clear of the glyph in every alignment combo.
-        <div className={`absolute ${iconCaptionBand}`}>{labelNode}</div>
+        // The label's own clip is lifted: a band is a fraction of a small icon,
+        // and a caption taller than it draws over the art (it paints after the
+        // glyph) rather than clipping to a sliver ("A caption never disappears").
+        <div className={`absolute ${iconCaptionBand} [&>*]:overflow-visible`}>{labelNode}</div>
       ) : (
         <InsetContent inset={contentInset}>{labelNode}</InsetContent>
       )}

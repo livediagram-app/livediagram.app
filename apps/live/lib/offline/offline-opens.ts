@@ -30,7 +30,7 @@ export function localOpensOf(raw: unknown): LocalOpens | undefined {
   const r = raw as Record<string, unknown>;
   if (typeof r.lastOpenedAt !== 'number') return undefined;
   if (Array.isArray(r.days) && r.days.every((d) => typeof d === 'string')) {
-    return { days: r.days as string[], lastOpenedAt: r.lastOpenedAt };
+    return { days: r.days, lastOpenedAt: r.lastOpenedAt };
   }
   if (typeof r.lastOpenDay === 'string') {
     return { days: [r.lastOpenDay], lastOpenedAt: r.lastOpenedAt };

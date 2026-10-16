@@ -7,8 +7,10 @@ import { pageSlideLabels, useSlideDeck } from './useSlideDeck';
 // docs/specs/007-editor/illustrate-pages.md "Slides": a page slide is its page. Its row names the
 // page from the slide's own tab, pressing it frames the page, and a copy of it counts as a page
 // slide.
-const track = vi.fn();
-vi.mock('@/lib/telemetry', () => ({ track: (...args: unknown[]) => track(...args) }));
+const track = vi.fn<typeof import('@/lib/telemetry').track>();
+vi.mock('@/lib/telemetry', () => ({
+  track: (...args: Parameters<typeof track>) => track(...args),
+}));
 vi.mock('@/hooks/ui/useSlideThumbnails', () => ({ useSlideThumbnails: () => new Map() }));
 
 const tabs = [
@@ -36,7 +38,7 @@ describe('pageSlideLabels', () => {
       ],
     };
     const labels = pageSlideLabels(deck, tabs);
-    expect(labels.get('s1')).toBe('Page 1 · A4 · Portrait · Infographic');
+    expect(labels.get('s1')).toBe('Page 1 · A4 · Portrait');
     expect(labels.get('s2')).toBe('Launch · Slide (16:9) · Slide');
     expect(labels.get('s3')).toBeNull();
     expect(labels.get('s4')).toBeNull();
@@ -50,6 +52,8 @@ function deckHook(framePage: (tabId: string, pageId: string) => void) {
   const setMultiSelectedIds = vi.fn();
   const hook = renderHook(() =>
     useSlideDeck({
+      prefs: {},
+      commitPrefs: () => {},
       tabs,
       activeTabId: 'a',
       setActiveId,

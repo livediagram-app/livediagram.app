@@ -28,7 +28,7 @@ describe('SharePasswordSection', () => {
     fireEvent.click(screen.getByRole('switch', { name: /Password Protection/ }));
     const field = screen.getByLabelText('Share password') as HTMLInputElement;
     expect(field.value).toBe('');
-    expect((screen.getByRole('button', { name: 'Save' }) as HTMLButtonElement).disabled).toBe(true);
+    expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Save' }).disabled).toBe(true);
     fireEvent.change(field, { target: { value: 'otter' } });
     fireEvent.click(screen.getByRole('button', { name: 'Save' }));
     await vi.waitFor(() => expect(onSetPassword).toHaveBeenCalledWith('otter'));
@@ -93,7 +93,7 @@ describe('SharePasswordSection', () => {
     fireEvent.change(screen.getByLabelText('Share password'), { target: { value: 'badger' } });
     fireEvent.click(screen.getByRole('button', { name: 'Save' }));
     await vi.waitFor(() => expect(onSetPassword).toHaveBeenCalled());
-    expect((screen.getByLabelText('Share password') as HTMLInputElement).value).toBe('badger');
+    expect(screen.getByLabelText<HTMLInputElement>('Share password').value).toBe('badger');
   });
 
   // The dialog can open before the share list loads; the switch must catch up

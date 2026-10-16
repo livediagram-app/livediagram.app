@@ -230,15 +230,18 @@ export function useTabSession(deps: TabSessionDeps) {
     if (vote.hideCursors || vote.hideCounts) track('Tab', 'Started', 'PrivateVote');
   };
 
-  const endVote = () => {
-    if (runBlocked) return;
+  // Whether it ended an open vote, so the caller tallying its Plan cards does so only for a real end.
+  const endVote = (): boolean => {
+    if (runBlocked) return false;
     // Host-only (docs/specs/012-collaboration/session-tools.md). Ending is destructive-ish — you can restart a
     // vote but every dot is lost — so a participant can't do it by
     // accident. Re-checked here as well as hidden in the UI, since the
     // handler is reachable from more than one surface.
-    if (!isVoteHost(deps.activeTab.vote, selfId, deps.isFacilitator)) return;
+    if (!isVoteHost(deps.activeTab.vote, selfId, deps.isFacilitator)) return false;
+    const open = !!deps.activeTab.vote?.active;
     patchActive((t) => (t.vote ? { ...t, vote: { ...t.vote, active: false } } : t));
     track('Tab', 'Ended', 'Vote');
+    return open;
   };
 
   const revealVote = () => {

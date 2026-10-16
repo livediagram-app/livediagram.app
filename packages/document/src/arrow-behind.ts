@@ -19,6 +19,7 @@
 // bowed clear at draw time simply never crosses anything, so the two
 // don't fight.
 
+import { isContainerKind } from './containment';
 import { pointInRect, rectsIntersect, type Rect } from './geometry-primitives';
 import { isBoxed, type ArrowElement, type BoxedElement, type Element } from './index';
 
@@ -43,6 +44,8 @@ export function arrowRoutesBehind(arrow: ArrowElement): boolean {
 //     on top of it by design, so treating one as an obstacle would break
 //     every arrow drawn within a section — the single worst failure this
 //     feature could have.
+//   - `lane` shapes are swimlane backdrops for the same reason: they paint
+//     behind everything, and a hand-off arrow crosses lanes by design.
 //   - `text` and `annotation` have no fill to hide behind. Breaking a line
 //     under a transparent label reads as a rendering fault, not as depth.
 //   - freehand / arrows aren't boxes at all (a freehand IS boxed in the
@@ -56,7 +59,7 @@ function isOccluder(el: Element): el is BoxedElement {
   if (el.type === 'text' || el.type === 'annotation' || el.type === 'freehand') return false;
   if (el.type === 'path') return el.closed && el.fillColor !== 'transparent';
   if (el.type === 'shape' && el.fillColor === 'transparent') return false;
-  return !(el.type === 'shape' && el.shape === 'frame');
+  return !(el.type === 'shape' && isContainerKind(el.shape));
 }
 
 // The arrow's own bounding box, padded by the margin so a box just past an endpoint still registers.

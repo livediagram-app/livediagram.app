@@ -203,7 +203,7 @@ Pick failure copy (`pickFailureMessage`):
 - Grid: `grid-cols-4 gap-2`, square tiles (`aspect-square`, `object-cover`), max height `max-h-72`
   scrolling, as the Gallery grid. Hover / focus shows an overlay with the creator and licence label.
 - Load more: secondary `Button` "Load more" under the grid.
-- Empty: "No images match “<query>”. Try a broader word."
+- Empty: the shared empty state, "No images match “<query>”" ("Try a broader word.")
 - Errors: the two copies in the spec, in the Gallery's rose error box.
 - Picking: the picked tile `aria-busy`, `scale-[1.04]`, a brand border and ring, `PickOverlay` (veil,
   `lvd-pick-ring` arc, the stage's short word `Downloading` / `Adding`) and no credit overlay; other

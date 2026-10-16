@@ -6,15 +6,44 @@ import {
   cardsStarter,
   resetSheetWrite,
   setupWrite,
-  sheetStarter,
-  SHEET_STARTS,
+  cellSizeDefaults,
+  cellSizeOf,
   type SheetSetup,
+  type SheetStarter,
 } from './sheet-starters';
 import { cellKey } from './sheet';
 import { colWidth, rowHeight } from './layout';
 
 const ctx = { now: 1, by: { id: '', name: '', color: '#000000' } };
 const NOW = Date.UTC(2026, 9, 9);
+const TODAY = Math.floor(NOW / 86_400_000) + 25_569;
+
+// Plain starts, as a card table or a test hands one in (the designed templates have their own tests).
+const BUDGET: SheetStarter = {
+  rows: [
+    ['Item', 'Category', 'Amount'],
+    ['Rent', 'Home', '1200'],
+    ['Groceries', 'Food', '320'],
+    ['Transport', 'Travel', '140'],
+    ['Utilities', 'Home', '180'],
+    ['Total', null, '=SUM(C2:C5)'],
+  ],
+  widths: [180, 140, 120],
+  total: true,
+  formats: [{ col: 2, patch: { nf: 'number', dp: 2 } }],
+};
+const TRACKER: SheetStarter = {
+  rows: [
+    ['Task', 'Owner', 'Status', 'Due'],
+    ['Draft the plan', 'Alex', 'In Progress', { n: TODAY + 7, date: true }],
+  ],
+};
+const CONTACTS: SheetStarter = {
+  rows: [
+    ['Name', 'Email'],
+    ['Jordan Lee', { s: 'jordan@example.com' }],
+  ],
+};
 
 function setUp(setup: Partial<SheetSetup> & Pick<SheetSetup, 'start'>, rows = 10) {
   const b = book({}, { rows, cols: 6 });
@@ -37,7 +66,7 @@ function setUp(setup: Partial<SheetSetup> & Pick<SheetSetup, 'start'>, rows = 10
 
 describe('the setup starts', () => {
   it('fills a budget with a header, amounts and a live total, styled and frozen', () => {
-    const { next, at, wb } = setUp({ start: sheetStarter('budget', NOW) });
+    const { next, at, wb } = setUp({ start: BUDGET });
     expect(at(0, 0)).toMatchObject({ input: { s: 'Item' }, format: { b: true, bg: '#e0f2fe' } });
     expect(at(1, 2)).toMatchObject({ input: { n: 1200 }, format: { nf: 'number', dp: 2 } });
     expect(at(5, 0)?.format?.b).toBe(true);
@@ -48,17 +77,15 @@ describe('the setup starts', () => {
   });
 
   it('dates the tracker from today and fills every start', () => {
-    const { at } = setUp({ start: sheetStarter('tracker', NOW) });
+    const { at } = setUp({ start: TRACKER });
     expect(at(1, 3)).toMatchObject({ format: { nf: 'date' } });
-    for (const id of SHEET_STARTS) expect(sheetStarter(id, NOW) === null).toBe(id === 'blank');
-    expect(setUp({ start: sheetStarter('timesheet', NOW) }).wb).toBeTruthy();
-    expect(setUp({ start: sheetStarter('contacts', NOW) }).at(1, 1)?.input).toEqual({
+    expect(setUp({ start: CONTACTS }).at(1, 1)?.input).toEqual({
       s: 'jordan@example.com',
     });
   });
 
   it('draws each look, dark tints included', () => {
-    const start = sheetStarter('budget', NOW);
+    const start = BUDGET;
     expect(setUp({ start, look: 'plain' }).at(0, 0)?.format).toBeUndefined();
     const banded = setUp({ start, look: 'banded', dark: true });
     expect(banded.at(0, 0)?.format?.bg).toBe('#1f3a56');
@@ -143,7 +170,7 @@ describe('the setup starts', () => {
   });
 
   it('resets a set-up sheet to how a placed one starts, awaiting setup again', () => {
-    const { next } = setUp({ start: sheetStarter('budget', NOW), look: 'banded', size: 'roomy' });
+    const { next } = setUp({ start: BUDGET, look: 'banded', size: 'roomy' });
     const messy = applySheetWrite(
       next,
       {
@@ -203,5 +230,15 @@ describe('the setup starts', () => {
       ...fresh.layout,
       setupPending: true,
     });
+  });
+});
+
+describe('cell sizes', () => {
+  it('turns a size into the sheet’s defaults and back, none for a size set by hand', () => {
+    expect(cellSizeDefaults('default')).toEqual({ colWidth: null, rowHeight: null });
+    expect(cellSizeDefaults('roomy')).toEqual({ colWidth: 160, rowHeight: 36 });
+    expect(cellSizeOf({})).toBe('default');
+    expect(cellSizeOf({ colWidth: 100, rowHeight: 24 })).toBe('compact');
+    expect(cellSizeOf({ colWidth: 160 })).toBeNull();
   });
 });

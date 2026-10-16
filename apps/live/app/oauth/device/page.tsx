@@ -5,9 +5,9 @@
 // and approves. On approve the page mints an API token (Clerk-authed, as the consent page does) and hands it to the
 // MCP worker for the waiting CLI to collect; on cancel it refuses the code, so the CLI stops waiting. No help link:
 // the CLI's own README documents it.
-import { Suspense, useState } from 'react';
+import { Suspense, use, useState } from 'react';
+import { browser } from 'react-dom';
 import { useSearchParams } from 'next/navigation';
-import { ToggleSwitch } from '@/components/palette/palette-controls';
 import { apiExchangeOauthToken, apiRevokeToken } from '@/lib/api-client';
 import { clerkEnabled } from '@/lib/clerk-config';
 import {
@@ -19,7 +19,7 @@ import {
 import { handoverFailureCopy, mintAndHandOver, type HandoverFailure } from '@/lib/oauth-handover';
 import { track } from '@/lib/telemetry';
 import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
-import { OAUTH_PRIMARY, OauthShell } from '../oauth-shell';
+import { OAUTH_PRIMARY, OauthShell, ReadOnlyAccessToggle } from '../oauth-shell';
 
 type Step =
   | { kind: 'enter' }
@@ -80,8 +80,9 @@ function Device() {
       </OauthShell>
     );
   if (!isSignedIn || !clerkUserId) {
-    const back =
-      typeof window !== 'undefined' ? window.location.pathname + window.location.search : '';
+    // The browser's own address: this branch renders in the browser only (`use(browser())`, under the page's Suspense).
+    use(browser());
+    const back = window.location.pathname + window.location.search;
     return (
       <OauthShell>
         <h1 className={HEADING}>Sign in to connect the livediagram CLI</h1>
@@ -177,23 +178,7 @@ function Device() {
             wants to access your livediagram documents on your behalf. Approving creates an API
             token, which you can revoke any time from Settings, under Account › API Tokens.
           </p>
-          <button
-            type="button"
-            onClick={() => setReadOnly(!readOnly)}
-            aria-pressed={readOnly}
-            className="mt-4 flex w-full cursor-pointer items-start justify-between gap-3 rounded-lg border border-slate-200 px-3 py-2.5 text-left text-sm dark:border-slate-700"
-          >
-            <span className="min-w-0 text-slate-600 dark:text-slate-300">
-              <span className="font-medium text-slate-800 dark:text-slate-100">
-                Read-only access
-              </span>
-              : let it find and view your documents, but not create, edit, delete, or share them.
-              Leave off for full read + write.
-            </span>
-            <span className="mt-0.5 shrink-0">
-              <ToggleSwitch presentational checked={readOnly} label="Read-only access" />
-            </span>
-          </button>
+          <ReadOnlyAccessToggle readOnly={readOnly} onChange={setReadOnly} />
           {failed ? (
             <p role="alert" className="mt-3 text-xs text-rose-600 dark:text-rose-400">
               {handoverFailureCopy(failed, 'Run the sign-in again from your terminal.')}

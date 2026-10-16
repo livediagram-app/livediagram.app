@@ -72,10 +72,22 @@ const ALL_KINDS = [
   'user-story-map',
   'affinity-map',
   'lean-coffee',
+  'pub-quiz',
+  'icebreaker-questions',
+  'virtual-office',
+  'coworking-space',
+  'team-pod',
+  'all-hands-hall',
+  'two-truths-and-a-lie',
+  'would-you-rather',
+  'people-bingo',
+  'brainstorm',
+  'workshop-board',
   'town-hall',
   'business-model-canvas',
   'empathy-map',
   'funnel',
+  'sankey',
   'okr-tree',
   'sitemap',
   'browser-wireframe',
@@ -100,6 +112,10 @@ const ALL_KINDS = [
   'whiteboard',
   'article',
   'blank-illustration',
+  'blank-slide-deck',
+  'blank-article',
+  'blank-infographic',
+  'blank-logo',
   'sketchnote',
   'rich-picture',
   'comic-strip',
@@ -112,11 +128,17 @@ const ALL_KINDS = [
   'how-it-works',
   'versus',
   'social-carousel',
+  'launch-keynote',
+  'quarterly-review',
+  'team-welcome',
+  'workshop-kickoff',
   'paper-prototype',
   'journey-doodle',
   'pre-mortem',
   'idea-garden',
   'blank-plan',
+  'blank-spreadsheet',
+  'blank-session',
   'project-planner',
   'bug-triage',
   'team-retro',
@@ -130,6 +152,21 @@ const ALL_KINDS = [
   'timesheet',
   'contact-list',
   'task-tracker',
+  'invoice',
+  'expense-report',
+  'loan-calculator',
+  'sales-pipeline',
+  'inventory',
+  'guest-list',
+  'grade-book',
+  'habit-tracker',
+  'blank-form',
+  'bug-report-form',
+  'feedback-form',
+  'feature-request-form',
+  'rsvp-form',
+  'job-application-form',
+  'contact-form',
 ] as const satisfies readonly TemplateKind[];
 
 // Real exhaustiveness check: any TemplateKind missing from
@@ -171,6 +208,15 @@ const PAGED_KINDS = [
   'how-it-works',
   'versus',
   'social-carousel',
+  'launch-keynote',
+  'quarterly-review',
+  'team-welcome',
+  'workshop-kickoff',
+  'floor-plan',
+  'storyboard',
+  'browser-wireframe',
+  'laptop-wireframe',
+  'mobile-wireframe',
 ] as const;
 
 // An element's centre, from its box or, for an arrow, its free endpoints' midpoint.
@@ -191,12 +237,24 @@ describe('templates on pages', () => {
   // A deck is built of slide pages, the logo exploration's lockups of logo pages; every other paged
   // template of infographic pages. Either way a chosen kind, so the first page's kind choice is
   // never offered.
+  // The decks: the Slide Deck and the decks built from slide layouts.
+  const SLIDE_DECK_KINDS = new Set<string>([
+    'slide-deck',
+    'launch-keynote',
+    'quarterly-review',
+    'team-welcome',
+    'workshop-kickoff',
+  ]);
   it.each(PAGED_KINDS)('%s: opens in Illustrate on pages of its kind', (kind) => {
     const o = templateCanvasOverrides(kind);
     expect(o.opensIn).toBe('illustrate');
     expect(o.pages?.length).toBeGreaterThan(0);
     const want = (i: number) =>
-      kind === 'slide-deck' ? 'slide' : kind === 'logo-design' && i < 6 ? 'logo' : 'infographic';
+      SLIDE_DECK_KINDS.has(kind)
+        ? 'slide'
+        : kind === 'logo-design' && i < 6
+          ? 'logo'
+          : 'infographic';
     expect(o.pages!.every((p, i) => p.kind === want(i))).toBe(true);
     expect(new Set(o.pages!.map((p) => p.id)).size).toBe(o.pages!.length);
   });
@@ -229,9 +287,9 @@ describe('templates on pages', () => {
     },
   );
 
-  it('keeps the slide deck’s speaker notes on each slide’s headline', () => {
+  it('leaves the slide deck’s elements without notes', () => {
     const notes = buildTemplate('slide-deck', 0, 0).filter((el) => 'note' in el && el.note);
-    expect(notes).toHaveLength(6);
+    expect(notes).toHaveLength(0);
   });
 
   it('keeps the group card a card the team signs: seven signed notes and an open slot', () => {
@@ -289,8 +347,17 @@ describe('buildTemplate translation invariance', () => {
         k !== 'whiteboard' &&
         k !== 'article' &&
         k !== 'blank-illustration' &&
+        // One empty page of a chosen kind (docs/specs/007-editor/templates-by-mode.md "Blanks of a page kind").
+        k !== 'blank-slide-deck' &&
+        k !== 'blank-article' &&
+        k !== 'blank-infographic' &&
+        k !== 'blank-logo' &&
         // An empty Plan tab: it opens on Start Planning (docs/specs/026-plan/plan-templates.md).
         k !== 'blank-plan' &&
+        // An empty session tab (docs/specs/012-collaboration/facilitate-mode.md "Templates").
+        k !== 'blank-session' &&
+        // A form template's empty Plan tab: the editor starts the form on it (docs/specs/030-forms/forms.md).
+        !k.endsWith('-form') &&
         !(PAGED_KINDS as readonly string[]).includes(k),
     ),
   )('%s: every coordinate shifts by (cx, cy)', (kind) => {
@@ -411,11 +478,44 @@ describe('gantt workstream bars survive theming', () => {
   });
 });
 
+describe('the lane-based process templates give each role its own hue', () => {
+  // Swimlane flowchart and approval workflow (docs/specs/008-canvas/canvas-and-palette.md):
+  // one lane per role, each tinted its own colour, under a title and over a key.
+  const lanesOf = (kind: TemplateKind) =>
+    buildTemplate(kind, 0, 0).filter(
+      (el): el is Extract<Element, { type: 'shape' }> => el.type === 'shape' && el.shape === 'lane',
+    );
+
+  it.each([
+    ['swimlane', ['Customer', 'Sales', 'Warehouse', 'Courier']],
+    ['approval-workflow', ['Requester', 'Manager', 'Finance']],
+  ] as const)('%s: one lane per role, each in its own hue', (kind, roles) => {
+    const lanes = lanesOf(kind);
+    expect(lanes.map((l) => l.label)).toEqual(roles);
+    expect(new Set(lanes.map((l) => l.fillColor)).size).toBe(roles.length);
+    expect(new Set(lanes.map((l) => l.headerFill)).size).toBe(roles.length);
+  });
+
+  it.each(['swimlane', 'approval-workflow'] as const)(
+    '%s: opens with a title and a key',
+    (kind) => {
+      const texts = buildTemplate(kind, 0, 0).filter(
+        (el): el is Extract<Element, { type: 'text' }> => el.type === 'text',
+      );
+      expect(texts.some((t) => t.textSize === 'lg' && t.textBold)).toBe(true);
+      expect(texts.map((t) => t.label)).toContain('Key');
+    },
+  );
+});
+
 describe('system architecture is a vendor-neutral tiered diagram', () => {
   // The logical sibling of Cloud architecture (docs/specs/008-canvas/canvas-and-palette.md): four tier lanes
-  // holding labelled nodes, no vendor marks, every edge pinned and named.
+  // holding labelled nodes, no vendor marks, every edge pinned and named. The
+  // components ride the content layer; the scaffold (lanes, gutter glyphs,
+  // the key's sample lines) is checked apart.
   const els = buildTemplate('system-architecture', 0, 0);
   const shapes = els.filter((el): el is Extract<Element, { type: 'shape' }> => el.type === 'shape');
+  const components = els.filter((el) => el.layerId === 'layer:template:content');
 
   it('stacks the Clients / Edge / Services / Data lanes', () => {
     expect(shapes.filter((el) => el.shape === 'lane').map((el) => el.label)).toEqual([
@@ -427,16 +527,22 @@ describe('system architecture is a vendor-neutral tiered diagram', () => {
   });
 
   it('names every node on the node and uses no technology marks', () => {
-    const nodes = shapes.filter((el) => el.shape !== 'lane');
+    const nodes = components.filter(
+      (el): el is Extract<Element, { type: 'shape' }> => el.type === 'shape',
+    );
     expect(nodes.length).toBeGreaterThan(0);
     for (const n of nodes) {
-      expect(n.label?.length).toBeGreaterThan(0);
+      // A service node is a Card named by its title; a store keeps its label.
+      expect((n.shape === 'card' ? n.pageTitle : n.label)?.length).toBeGreaterThan(0);
       if (n.iconId) expect(isTechIconId(n.iconId)).toBe(false);
     }
+    expect(nodes.filter((n) => n.shape === 'card').every((n) => n.accentEdge === 'left')).toBe(
+      true,
+    );
   });
 
   it('pins and labels every edge', () => {
-    const arrows = els.filter(
+    const arrows = components.filter(
       (el): el is Extract<Element, { type: 'arrow' }> => el.type === 'arrow',
     );
     expect(arrows.length).toBeGreaterThan(0);

@@ -188,7 +188,7 @@ export function acceptDraft(elements: Element[]): Element[] {
     if (el.type !== 'sticky' || el.esDraft !== true) return el;
     const { esDraft: _gone, ...rest } = el;
     void _gone;
-    return rest as StickyElement;
+    return rest;
   });
 }
 

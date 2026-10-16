@@ -32,7 +32,7 @@ function harness(created: Created, lookups: Record<string, unknown> = {}, lint?:
         requested.push(`${request.method} ${path}`);
         if (path === '/events') return new Response(null, { status: 204 });
         if (request.method === 'POST' && path === '/documents') {
-          posted.push((await request.json()) as Record<string, unknown>);
+          posted.push(await request.json<Record<string, unknown>>());
           return Response.json(created ? { document: { id: 'd', ...created } } : {});
         }
         // The lint summary of each created tab (docs/specs/024-agents/diagram-lint.md LN24).
@@ -78,12 +78,13 @@ describe('create_document intent', () => {
   });
 
   it.each([
-    ['retrospective', { mode: 'diagram', tabKind: 'diagram', templateFamily: 'retrospective' }],
-    ['four-ls', { mode: 'diagram', tabKind: 'diagram', templateFamily: 'retrospective' }],
+    ['retrospective', { mode: 'facilitate', tabKind: 'diagram', templateFamily: 'retrospective' }],
+    ['four-ls', { mode: 'facilitate', tabKind: 'diagram', templateFamily: 'retrospective' }],
     ['kanban', { mode: 'plan', tabKind: 'diagram', templateFamily: 'kanban' }],
     ['event-storming', { mode: 'diagram', tabKind: 'event-storming' }],
-    ['incident-postmortem', { mode: 'diagram', tabKind: 'diagram' }],
-    ['lean-coffee', { mode: 'diagram', tabKind: 'diagram' }],
+    ['incident-postmortem', { mode: 'facilitate', tabKind: 'diagram' }],
+    ['floor-plan', { mode: 'illustrate', tabKind: 'diagram' }],
+    ['lean-coffee', { mode: 'facilitate', tabKind: 'diagram' }],
     ['whiteboard', { mode: 'draw', tabKind: 'diagram' }],
     ['flowchart', { mode: 'diagram', tabKind: 'diagram' }],
   ])('sends the intent of a %s template tab', async (template, intent) => {
@@ -96,8 +97,14 @@ describe('create_document intent', () => {
     const { run, posted } = harness(undefined);
     await run([{ name: 'Plan', template: 'project-planner' }]);
     const tabs = posted[0]!.tabs as { id: string; name: string; opensIn?: string }[];
-    expect(tabs.map((t) => t.name)).toEqual(['Plan', 'Backlog', 'Sprint', 'Daily Standup']);
-    expect(new Set(tabs.map((t) => t.id)).size).toBe(4);
+    expect(tabs.map((t) => t.name)).toEqual([
+      'Plan',
+      'Backlog',
+      'Sprint',
+      'Daily Standup',
+      'Overview',
+    ]);
+    expect(new Set(tabs.map((t) => t.id)).size).toBe(5);
     expect(tabs.every((t) => t.opensIn === 'plan')).toBe(true);
   });
 
@@ -185,5 +192,21 @@ describe('create_document lint', () => {
     expect((await run([elements])).structuredContent.lint).toEqual(['lint unavailable']);
     expect(errors[0]?.[0]).toBe('[lint] failed');
     vi.restoreAllMocks();
+  });
+});
+
+// A tab's own theme wins over the document's (docs/specs/015-api/mcp-server.md §4.3): a theme put on a tab was dropped.
+describe('create_document themes', () => {
+  it('gives each tab its own theme, else the document’s', async () => {
+    const { run, posted } = harness({ folderId: null, teamId: null });
+    await run(
+      [
+        { name: 'Own', elements: [], theme: 'mocha' },
+        { name: 'Doc', elements: [] },
+      ],
+      { theme: 'ocean' },
+    );
+    const tabs = (posted[0]!.tabs as { theme?: string }[]).map((t) => t.theme);
+    expect(tabs).toEqual(['mocha', 'ocean']);
   });
 });

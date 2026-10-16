@@ -6,15 +6,16 @@
 // bodies far below the editor state. Undefined outside the editor (share view, exports): a board
 // then draws read-only from nothing.
 import type { StatusBoard } from '@/hooks/plan/usePlanStatusNames';
-import type { PlanFillTab } from '@/hooks/plan/usePlanFillTab';
 import { createContext, useContext } from 'react';
 import type { ItemCommentAction } from '@/lib/api/items';
 import type { PlanCardRef, PlanViewRef } from '@livediagram/document';
 import type {
   BoardStatusTypes,
   Item,
+  ItemCreate,
   ItemMove,
   ItemPatch,
+  ItemPatchOf,
   ItemPerson,
   ItemTypeDef,
   PlanBoardSetup,
@@ -27,6 +28,9 @@ import type { ItemTypesSlice } from '@/hooks/plan/useItemTypes';
 // Someone else's hands on a card: dragging it or reading it.
 export type PlanCardPresence = { name: string; color: string; state: 'drag' | 'view' };
 
+// What the type editor is open on: a new type, or a saved one by its id.
+export type ItemTypeEditing = 'new' | { id: string };
+
 export type PlanContextValue = {
   items: ReadonlyMap<string, Item>;
   // The document's item types, in order (docs/specs/026-plan/item-types.md).
@@ -34,12 +38,17 @@ export type PlanContextValue = {
   // Their changes (the Card Types panel and the type editor).
   itemTypes: ItemTypesSlice;
   // Opens the type editor on a type, or on a new one (filled from `fromId` when duplicating).
-  editType: (typeId: string | 'new', fromId?: string) => void;
+  editType: (target: ItemTypeEditing, fromId?: string) => void;
   // Add New Card Type from a board's Add a Card menu: a new type with only the board's statuses on, added to the
   // board once saved (docs/specs/026-plan/plan-board.md "Add New Card Type").
   createTypeForBoard: (boardId: string, statuses: readonly string[]) => void;
+  // A Gantt chart's Add New Card Type: a new type with Start and Due, added to the chart's types if it names some.
+  createTypeForView: (viewId: string) => void;
   // Setup Board on a board that has columns (its Board Setup's Setup Board): the board showing it, or null.
   setupBoardId: string | null;
+  // New Form on a board's cog (docs/specs/030-forms/forms.md "Starting a form"): a Blank form whose responses go to
+  // this board, on a new Form tab, opened. Absent where no form may be made.
+  newFormFor?: (boardElementId: string) => void;
   openBoardSetup: (boardId: string | null) => void;
   status: PlanItemsStatus;
   self: ItemPerson | null;
@@ -71,6 +80,9 @@ export type PlanContextValue = {
     id?: string;
     // Whether the card was made (false: refused, and the store put back).
   }) => Promise<boolean>;
+  // Many new cards as one write and one undo step (a board's Import CSV); whether they were made. Absent outside
+  // the editor.
+  addItems?: (creates: readonly ItemCreate[]) => Promise<boolean>;
   moveItem: (itemId: string, move: ItemMove) => void;
   // Whether the change landed (false: refused, and the store put back).
   patchItem: (itemId: string, patch: ItemPatch) => Promise<boolean>;
@@ -90,6 +102,8 @@ export type PlanContextValue = {
   // A Plan card's own settings (its Card Size): one element edit, synced and undoable.
   updateCard: (cardElementId: string, ref: PlanCardRef) => void;
   announce: (message: string) => void;
+  // A message on screen (a toast), for an outcome the person waits on (a board's Import CSV).
+  notify?: (message: string) => void;
   setDragging: (itemId: string | null) => void;
   // The card being dragged by this person, if any (the Trash grows to take it).
   draggingItemId: string | null;
@@ -97,13 +111,14 @@ export type PlanContextValue = {
   trashItem: (itemId: string) => void;
   // Many cards to the Trash as one write and one undo step; answers how many went.
   trashItems: (itemIds: readonly string[]) => number;
+  // Many cards changed as one write and one undo step (Keep Them on a template's example cards). Absent outside the
+  // editor's own slice.
+  patchItems?: (patches: readonly ItemPatchOf[]) => void;
   restoreItem: (itemId: string) => void;
   emptyTrash: () => void;
   // A card as a slide of the deck (docs/specs/012-collaboration/presentation-mode.md "Item slides");
   // absent where there is no deck to add to.
   addItemSlide?: (itemId: string) => void;
-  // A whole board as a slide ("Board slides" there); absent with addItemSlide.
-  addBoardSlide?: (boardId: string) => void;
   // The names the tab's boards give their statuses, in order (an All Cards board's rows).
   statusNames: ReadonlyMap<string, string>;
   // The phase the tab's boards give each status: what the plan views count as done
@@ -114,7 +129,7 @@ export type PlanContextValue = {
   statusTypes: BoardStatusTypes;
   // Each board's title and the statuses it names, in board order: the type editor's States groups by them.
   statusBoards: readonly StatusBoard[];
-} & PlanFillTab;
+};
 
 const PlanContext = createContext<PlanContextValue | undefined>(undefined);
 

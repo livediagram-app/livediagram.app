@@ -171,7 +171,8 @@ export function useShareLinks(deps: ShareLinksDeps) {
     password: string | null,
   ): Promise<boolean | undefined> => {
     if (!documentId) return undefined;
-    const trimmed = password && password.trim() ? password : null;
+    // Trimmed, as the visitor's gate trims what is typed, so the two always agree.
+    const trimmed = password?.trim() || null;
     try {
       const passwordSet = await apiSetSharePassword(selfParticipant.id, documentId, trimmed);
       setSharePasswordSet(passwordSet);
@@ -195,8 +196,7 @@ export function useShareLinks(deps: ShareLinksDeps) {
   // the share code as a query param and land on the dedicated visitor
   // path; the editor page reads the code there. Router stitches /live
   // onto the app's hostname so this URL always resolves end-to-end.
-  const shareUrlFor = (code: string) =>
-    typeof window === 'undefined' ? '' : `${window.location.origin}/document/shared?s=${code}`;
+  const shareUrlFor = (code: string) => `${window.location.origin}/document/shared?s=${code}`;
 
   return {
     updateParticipantName,

@@ -1,7 +1,7 @@
 // Small builders for lint fixtures: boxes, frames, lanes and pinned arrows on a tab, and a quiet lint.
 
 import type { LintCode, LintReport } from '@livediagram/api-schema';
-import type { Anchor, ArrowElement, Element, Tab } from '@livediagram/document';
+import type { Anchor, Element, Tab } from '@livediagram/document';
 import { lintTab, type LintOptions } from '../lint';
 
 export const box = (
@@ -9,19 +9,18 @@ export const box = (
   x: number,
   y: number,
   extra: Record<string, unknown> = {},
-): Element =>
-  ({
-    id,
-    type: 'shape',
-    shape: 'square',
-    x,
-    y,
-    width: 120,
-    height: 60,
-    textSize: 'sm',
-    label: id,
-    ...extra,
-  }) as Element;
+): Element => ({
+  id,
+  type: 'shape',
+  shape: 'square',
+  x,
+  y,
+  width: 120,
+  height: 60,
+  textSize: 'sm',
+  label: id,
+  ...extra,
+});
 
 export const frame = (
   id: string,
@@ -38,14 +37,13 @@ export const arrow = (
   to: string,
   anchors: [Anchor, Anchor] = ['e', 'w'],
   extra: Record<string, unknown> = {},
-): Element =>
-  ({
-    id,
-    type: 'arrow',
-    from: { kind: 'pinned', elementId: from, anchor: anchors[0] },
-    to: { kind: 'pinned', elementId: to, anchor: anchors[1] },
-    ...extra,
-  }) as ArrowElement;
+): Element => ({
+  id,
+  type: 'arrow',
+  from: { kind: 'pinned', elementId: from, anchor: anchors[0] },
+  to: { kind: 'pinned', elementId: to, anchor: anchors[1] },
+  ...extra,
+});
 
 export const tabOf = (...elements: Element[]): Pick<Tab, 'elements' | 'layers' | 'theme'> => ({
   elements,
@@ -54,7 +52,7 @@ export const tabOf = (...elements: Element[]): Pick<Tab, 'elements' | 'layers' |
 export const quiet = () => {};
 
 export const lint = (
-  tab: Pick<Tab, 'elements' | 'layers' | 'theme'>,
+  tab: Pick<Tab, 'elements' | 'layers' | 'theme'> & Partial<Pick<Tab, 'opensIn'>>,
   options: LintOptions = {},
 ): LintReport => lintTab(tab, { log: quiet, ...options });
 

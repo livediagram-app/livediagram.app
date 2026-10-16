@@ -63,3 +63,8 @@ fixed band would let the rule cut straight through the word. The height comes
 from the same px table the label itself uses (`FIXED_FONT_PX`), times the
 `leading-tight` line height, plus the label's vertical padding, with a 30px
 floor so an entity at the 16px size keeps a 30px band.
+
+## Element tour
+
+The **Entity tour** is offered beside the first entity a person selects, as an Editor on an unlocked element, and walks through it on the element
+itself ([Element tours](../007-editor/element-tours.md) "The Entity tour").

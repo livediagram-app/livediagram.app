@@ -1,3 +1,4 @@
+import type { ElementStyleOps } from '@/lib/element-style-ops';
 import type { CombineOp } from '@/lib/combine/combine';
 import type { WordmarkPatch } from '@/lib/style-presets';
 import type { EventStormingNoteKind } from '@livediagram/document';
@@ -13,6 +14,7 @@ import type {
   BorderStroke,
   BorderStyle,
   ChartLegendPosition,
+  ChartType,
   ChecklistItem,
   EntityField,
   AgendaItem,
@@ -23,9 +25,11 @@ import type {
   ChartPaletteId,
   CodeThemeId,
   ElementShadow,
+  Finish,
   Layer,
   LegendItem,
   MindFlow,
+  MindSpacing,
   AnimationSetId,
   IconAnimation,
   IconPosition,
@@ -42,6 +46,7 @@ import type {
   ShapeMarker,
   TablePreset,
   TextSize,
+  TextSizePreset,
 } from '@livediagram/document';
 import type { ArrowPreset } from '@/components/palette/StylePresets';
 import type { ColourPalette } from '@/components/palette/context-menu-input-rows';
@@ -148,6 +153,8 @@ export type EditorContextMenuProps = {
   onCommitBorderStroke: (value: BorderStroke) => void;
   onPreviewBorderStyle: (value: BorderStyle) => void;
   onCommitBorderStyle: (value: BorderStyle) => void;
+  // Writes a control's own field onto the selection (lib/element-style-ops.ts).
+  elementStyle: ElementStyleOps;
   onPreviewBorderRadius: (value: BorderRadius) => void;
   onCommitBorderRadius: (value: BorderRadius) => void;
   // Drop shadow (docs/specs/008-canvas/element-shadows.md): preset tiles commit/preview like the border
@@ -156,14 +163,17 @@ export type EditorContextMenuProps = {
   onSetShadow: (shadow: ElementShadow | null) => void;
   onPreviewShadow: (shadow: ElementShadow | null) => void;
   onCommitShadow: (shadow: ElementShadow | null) => void;
+  // Finish tiles (docs/specs/008-canvas/finish.md): hover previews, click commits; `null` is Follow Tab.
+  onPreviewFinish: (finish: Finish | null) => void;
+  onCommitFinish: (finish: Finish | null) => void;
   onPreviewRotation: (deg: number) => void;
   onCommitRotation: (deg: number) => void;
   // Status markers (docs/specs/009-elements/shape-markers.md): set / clear the shape's marker glyph and its
   // size. Commit + hover-preview pairs, like the border tiles above.
   onSetMarker: (value: ShapeMarker | null) => void;
-  onSetMarkerSize: (value: TextSize) => void;
+  onSetMarkerSize: (value: TextSizePreset) => void;
   onPreviewMarker: (value: ShapeMarker | null) => void;
-  onPreviewMarkerSize: (value: TextSize) => void;
+  onPreviewMarkerSize: (value: TextSizePreset) => void;
   // Timeline rail (docs/specs/009-elements/timeline-rail.md): set the rail's point count.
   onSetRailCount: (count: number) => void;
   // Rating (docs/specs/009-elements/rating.md): the star score + its animation.
@@ -177,7 +187,14 @@ export type EditorContextMenuProps = {
   onSetPieAnimSpeed: (value: AnimationSpeed) => void;
   onSetPieAnimRepeat: (value: boolean) => void;
   onSetChartLegend: (value: boolean) => void;
+  // Show Values (docs/specs/009-elements/pie-chart.md).
+  onSetChartValues: (value: boolean) => void;
+  // Show Axis and Right Axis (docs/specs/009-elements/pie-chart.md): the value axis, and the series on a second.
+  onSetChartAxis: (value: boolean) => void;
+  onSetChartRightAxis: (index: number | null) => void;
   onSetChartLegendPosition: (position: ChartLegendPosition) => void;
+  // Chart type (docs/specs/009-elements/pie-chart.md "Chart types"): Column, Bar, Line, Area, Scatter, Pie, Doughnut.
+  onSetChartType: (type: ChartType) => void;
   // A chart drawn from a sheet range: make it an ordinary chart, keeping its last read.
   onUnlinkChart: () => void;
   // Line chart (docs/specs/009-elements/pie-chart.md): open the data modal for the given element (the 2-D
@@ -190,6 +207,18 @@ export type EditorContextMenuProps = {
   onSetCodeWrap: (wrap: boolean) => void;
   // Legend rows (docs/specs/009-elements/pie-chart.md): the whole array, committed in one step.
   onSetLegendItems: (items: LegendItem[]) => void;
+  // Sankey diagram (docs/specs/009-elements/sankey.md): its edits, present only when this session may make
+  // them (an Editor, on an unlocked diagram), so the menu shows no Sankey section otherwise.
+  sankey?: import('./SankeyMenuSection').SankeyMenuHandlers;
+  // A sequence diagram's Edit Sequence (docs/specs/009-elements/sequence-diagram.md "The menu"): present only when this
+  // session may edit it (an Editor, on an unlocked diagram), so the section shows no button otherwise.
+  onEditSequence?: (elementId: string) => void;
+  // The tab theme's chart ramp (themeChartPalette), so a chart or legend's data-row swatches show the colours the
+  // canvas draws (chartRamp). Absent falls back to the built-in ramp.
+  chartThemeRamp?: readonly string[];
+  // Flowchart (docs/specs/009-elements/flowchart.md): present only for an Editor on an unlocked step or
+  // chart lane, so the menu shows no Flowchart section otherwise.
+  flowchart?: import('@/components/flowchart/FlowchartMenuSections').FlowchartMenuHandlers;
   // Mind-map flow (docs/specs/009-elements/mind-node.md): the shape the selected node's whole map grows
   // in. Resolved here rather than in the menu because it is stored on the
   // tree's ROOT, which the menu has no way to walk to.
@@ -197,8 +226,15 @@ export type EditorContextMenuProps = {
   onSetMindFlow: (flow: MindFlow) => void;
   // Lay the selected node's whole map out tidily in its flow (docs/specs/009-elements/mind-node.md "Tidy Map").
   onTidyMindMap: () => void;
-  // Edit Outline (docs/specs/009-elements/mind-node.md): only on a map's root, absent elsewhere.
+  // Edit Outline (docs/specs/009-elements/mind-node.md): the outline of the node's map; absent while it cannot be
+  // edited (a locked tab, edits blocked).
   onEditMindOutline?: () => void;
+  // Spacing (docs/specs/009-elements/mind-node.md "Spacing"): read off the map's root, like the flow.
+  mindSpacing: MindSpacing;
+  onSetMindSpacing: (spacing: MindSpacing) => void;
+  // Select the node's branch, or its whole map (docs/specs/009-elements/mind-node.md "The Mind Map menu").
+  onSelectMindBranch: () => void;
+  onSelectMindMap: () => void;
   // Checklist (docs/specs/009-elements/checklist.md): replace the selected checklist's rows.
   onSetChecklistItems: (items: ChecklistItem[]) => void;
   // Tick one row, as the on-canvas checkbox does: a delta the room merges,
@@ -219,9 +255,10 @@ export type EditorContextMenuProps = {
   onSetPortalName: (name: string) => void;
   onCreateLinkedPortal: () => void;
   // Session button (docs/specs/012-collaboration/session-button.md) / Reveal zone (docs/specs/009-elements/reveal-zone.md) / Picker (docs/specs/012-collaboration/picker.md):
-  // their settings, applied to the element the menu is acting on.
-  onSetSession: (config: import('@livediagram/document').SessionButtonConfig) => void;
-  onSetRevealed: (revealed: boolean) => void;
+  // their settings, applied to the element the menu is acting on. The session button's and the cover's are
+  // absent while somebody else holds the baton (docs/specs/012-collaboration/facilitator.md), so neither section shows.
+  onSetSession?: (config: import('@livediagram/document').SessionButtonConfig) => void;
+  onSetRevealed?: (revealed: boolean) => void;
   onSetPickerSource: (source: import('@livediagram/document').PickerSource) => void;
   onSetPickerOptions: (options: string[]) => void;
   // Reaction pad (docs/specs/009-elements/reaction-pad.md): which burst the pad throws.
@@ -238,6 +275,8 @@ export type EditorContextMenuProps = {
   onSetDecisionDate: (date: string | undefined) => void;
   onSetDecisionDrivers: (drivers: string[]) => void;
   onSetChairFacing: (facing: ChairFacing) => void;
+  // Room (docs/specs/009-elements/office.md): which wall its doorway is in.
+  onSetRoomDoor: (door: import('@livediagram/document').RoomDoor) => void;
   // Every tab, because a portal link can cross tabs, plus which one is active
   // so the picker can mark the off-tab candidates.
   tabs: import('@livediagram/document').Tab[];
@@ -266,8 +305,9 @@ export type EditorContextMenuProps = {
   onApplyTablePreset: (preset: TablePreset) => void;
   onPreviewTablePreset: (preset: TablePreset) => void;
   // Chart palettes (docs/specs/009-elements/pie-chart.md): the chart's flavour of preset.
-  onApplyChartPalette: (id: ChartPaletteId) => void;
-  onPreviewChartPalette: (id: ChartPaletteId) => void;
+  // `null` back to the theme's ramp (a Legend's reset; a chart's goes through Reset Colours).
+  onApplyChartPalette: (id: ChartPaletteId | null) => void;
+  onPreviewChartPalette: (id: ChartPaletteId | null) => void;
   // Arrow style presets (docs/specs/010-palette/style-presets.md): one-click line looks (pattern / thickness /
   // optional flow animation) for the selected arrow, plus a reset.
   onApplyArrowPreset: (preset: ArrowPreset) => void;
@@ -354,6 +394,10 @@ export type EditorContextMenuProps = {
   // The colour palette every ColourRow in this menu offers (docs/specs/008-canvas/canvas-and-palette.md Colours):
   // the theme's swatches plus the user's own, spread straight onto the row.
   colourPalette: ColourPalette;
+  // Tag colours (docs/specs/009-elements/tag-colours.md): the active tab's map, and setting or clearing one tag's
+  // colour across the tab. Absent where the menu cannot edit the tab.
+  tagColours?: readonly import('@livediagram/document').TagColour[];
+  onSetTagColour?: (tag: string, colour: string | null) => void;
   // Table structure toggles (header row / column, zebra) for the Table
   // category.
   onToggleTableHeaderRow: () => void;

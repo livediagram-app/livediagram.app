@@ -3,12 +3,14 @@
 import { renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const trackMock = vi.fn();
-const setFolderMock = vi.fn();
-vi.mock('@/lib/telemetry', () => ({ track: (...a: unknown[]) => trackMock(...a) }));
+const trackMock = vi.fn<typeof import('@/lib/telemetry').track>();
+const setFolderMock = vi.fn<typeof import('@/lib/api-client').apiSetDocumentFolder>();
+vi.mock('@/lib/telemetry', () => ({
+  track: (...a: Parameters<typeof trackMock>) => trackMock(...a),
+}));
 vi.mock('@/lib/api-client', () => ({
   apiCopyDocument: vi.fn(),
-  apiSetDocumentFolder: (...a: unknown[]) => setFolderMock(...a),
+  apiSetDocumentFolder: (...a: Parameters<typeof setFolderMock>) => setFolderMock(...a),
 }));
 vi.mock('@/hooks/persistence/useDocumentListActions', () => ({
   useDocumentListActions: () => ({}),

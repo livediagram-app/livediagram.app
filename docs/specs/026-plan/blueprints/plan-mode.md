@@ -9,16 +9,16 @@ and its templates.
 | ------------ | -------------------------------------------------------------------------------------- |
 | Plan mode    | `EditorMode` `'plan'` (`EDITOR_MODE_CATALOGUE`, 4th entry)                             |
 | Plan palette | `PLAN` layout in `palette-layouts.ts`; categories `plan-boards`, `plan-cards` (band 4) |
-| Plan mark    | `PlanModeIcon` in `packages/ui/src/icons/drawing-kinds.tsx`                            |
+| Plan mark    | `PlanIcon` in `packages/ui/src/icons/drawing-kinds.tsx`                                |
 | Blank Plan   | `TemplateKind` `'blank-plan'`                                                          |
 
 ## Mode wiring
 
 - `packages/document/src/editor-mode.ts`: catalogue entry `{ id: 'plan', label: 'Plan', description: 'Boards of
 items: columns, cards and the work moving through them' }`; `hasPlanLook(mode)`.
-- Every `Record<EditorMode, …>` the compiler flags: `MODE_EVENT` (`ModePlan`), `OPENS_IN_EVENT` (`OpensInPlan`),
+- Every `Record<EditorMode, …>` the compiler flags: `MODE_EVENT` (`ModePlan`),
   template filter (`TemplateModePlan`), `BLANK_TEMPLATE_FOR_MODE` (`blank-plan`), `MODE_WORDS` (Plan, "Plan
-  boards"), marketing `MODE_BEST`, `EDITOR_MODE_ICONS` (widened to `Record<EditorMode, …>`).
+  boards"), `POPULAR_BY_MODE`, `EDITOR_MODE_ICONS` (widened to `Record<EditorMode, …>`).
 - By hand: explorer lens `VALUE_LABELS['opens-in'].plan`, `paletteLayoutFor` (switch on mode), OpenAPI
   regeneration, marketing hero/gallery mode unions, telemetry explanations and catalogue `types`.
 
@@ -57,7 +57,19 @@ items: columns, cards and the work moving through them' }`; `hasPlanLook(mode)`.
 
 Derived from [Plan templates](../plan-templates.md).
 
-- Builders are element-only and make no items: a template comes with no cards.
+- Builders are element-only and make no items. The example cards ([Example cards](../plan-templates.md#example-cards))
+  are separate data: `PLAN_TEMPLATE_SEEDS` (`plan-template-seed-data.ts`, `SeedCard` per card: `ref`, `type`,
+  `status`, `title`, optional fields, `start` / `due` as day offsets, `parent` / `links` by `ref`, `votes` as a count,
+  `archived`), resolved by `planTemplateSeedItems(kind, today, newId?)` (`plan-template-seeds.ts`, the
+  `@livediagram/templates/plan-template-seeds` subpath) into `ItemCreate[]`: fresh ids, refs swapped for ids, dates
+  from `seedDate(today, days)` (UTC), assignees `seedPerson(who)` (`example-<who>` ids), votes one dot each from
+  `example-voter-<n>`, and `example: true` on every card. `seedToday()` is the local calendar day.
+- Seeded by `/new` (cloud: `items` on `apiCreateDocument`; Offline Mode: one `offlineWriteItem` create after
+  `offlineCreateDocument`, by `seedAuthor(self)`) and a start screen's template (`useTemplateFlow`'s `seedCards`, wired to
+  `plan.context.addItems`, after the tabs land). Never by the MCP, the CLI or the api's seeded create.
+- `ExampleCardsNotice` (`apps/live/components/plan/ExampleCardsNotice.tsx`) renders under `PlanBoardHeader` when
+  `canEdit` and the board shows an example card: Clear Example Cards is `trashItems(every example id)`, Keep Them is
+  `patchItems` clearing `example` on each (one `patches` write).
 - `plan-template-catalogue.ts` (pure data): `PLAN_TEMPLATE_KINDS`; `PLAN_TEMPLATE_TABS:
 Record<PlanTemplateKind, PlanTabSpec[]>`; `PlanTabSpec = { name, board?, metrics?, charts?, rail? }`, the Gantt's
   `types` set to the board's `addTypes` when it charts a board of dated cards; every board names its `addTypes`;
@@ -74,14 +86,14 @@ cy)` lays the board at the origin, then metrics (`PLAN_METRIC_SIZE`, 20px gaps, 
 - `templateTabs(kind)` (`build-template.ts`) is the generic list: Plan kinds give theirs, every other kind one
   unnamed tab of `buildTemplate`. `buildTemplateTabs(first, kind, newId, themeId?)` (`template-tab.ts`) makes
   them as `buildTemplateTab` makes one.
-- Consumers: `/new` (`buildTemplatedTabs` in `apps/live/lib/template-builders.ts`), Quick Start
+- Consumers: `/new` (`buildTemplatedTabs` in `apps/live/lib/template-builders.ts`), a start screen
   (`useTemplateFlow` with `template-tab-set.ts`: the followers take `newTabSeed(landed)` and the canvas
   overrides, inserted after the active tab, each `markTabLoaded`), the MCP's `create_document` and the api's
   `compileSeededTabs` (the followers after the compiled tab, fresh ids). A replace fills its one tab with the
   first.
 - Card types on every path ([Item types](../item-types.md#the-type-catalogue)), each through
   `catalogueWithBoardTypes(stored, elements, hasCards)`: `/new` passes `itemTypes: catalogueWithBoardTypes(null,
-elements)` to the create (cloud and Offline Mode), so a template's document has exactly its types; Quick Start
+elements)` to the create (cloud and Offline Mode), so a template's document has exactly its types; a start screen's pick
   calls `bring(elements)` (`usePresetCardTypes`) for every tab it makes before `commitTabs`, so the open-tab effect
   then finds nothing to change; `compileSeededTabs` returns the template tabs' `templateElements` and the create
   route applies them to the catalogue the body gave (or null) with `hasCards` from its seed items; the MCP's
@@ -105,11 +117,11 @@ elements)` to the create (cloud and Offline Mode), so a template's document has 
 | Mode catalogue order, cycle    | `editor-mode.test.ts`                                                                         |
 | Plan palette layout            | `palette-layouts.test.ts`                                                                     |
 | Card tiles no board takes      | `board-card-types.test.ts`, `PaletteTile.disabled.test.tsx`                                   |
-| Templates open in Plan         | `template-modes.test.ts`, `template-tab.test.ts`                                              |
+| Templates open in Plan         | `apps/live/lib/templates.test.ts`, `template-tab.test.ts`                                     |
 | Template set-ups validate, fit | `template-builders-plan.test.ts`                                                              |
 | Hand-offs, tab layout          | `template-builders-plan.test.ts`                                                              |
 | Template tabs on create        | `document-create-seeded.test.ts`, `create-document-placement.test.ts`, `template-tab.test.ts` |
-| Quick Start adds the tabs      | `template-tab-set.test.ts`                                                                    |
+| A start's pick adds the tabs   | `template-tab-set.test.ts`                                                                    |
 | Document-wide statuses, sweep  | `usePlanStatusNames.test.ts`, `usePlanTabSweep.test.ts`                                       |
 | Shift+D wraps over four        | `e2e/editor-modes.spec.ts`                                                                    |
 | A board survives a mode switch | `e2e/editor-modes.spec.ts`                                                                    |

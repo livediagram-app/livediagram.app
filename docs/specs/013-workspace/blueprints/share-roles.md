@@ -31,7 +31,7 @@ socket, the answers route, a look-only Viewer) are not derived here; their earli
 | `apps/api/src/routes/document-share-routes.ts`                                                               | `POST /share` takes three levels                                                               |
 | `apps/api/src/adder-key.ts` (new)                                                                            | `adderKeyFor(documentId, ownerId)`                                                             |
 | `apps/api/src/routes/document-room-routes.ts`                                                                | The ticket carries `adderKey` for a Participant; the upgrade forwards `X-Verified-Adder`       |
-| `apps/api/src/document-room.ts`, `document-room-rules.ts`                                                    | Level on the session; op gate by class; participant `el` ops through the tab write queue       |
+| `apps/api/src/document-room.ts`, `room-op-gate.ts`, `document-room-rules.ts`                                 | Level on the session; op gate by class; participant `el` ops through the tab write queue       |
 | `apps/api/src/participant-write.ts` (new)                                                                    | `writeParticipantOps`, `writeParticipantAnswers`: compare-and-swap writes of the rule's output |
 | `apps/api/src/routes/item-routes.ts`, `item-patches-route.ts`                                                | Create, patch, move and patches at participate                                                 |
 | `apps/api/src/routes/sheet-route-kit.ts`, `sheet-write-route.ts`                                             | `cells` writes at participate                                                                  |
@@ -104,16 +104,16 @@ correction: ElementOp | null, reason }`:
 
 Permitted fields on another's element:
 
-| Element                   | Fields                                                                                                            |
-| ------------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| Any element carrying text | `label`, `richText` (`PARTICIPANT_TEXT_FIELDS`); never on a Behaviour (`participantWritesOn`, `BEHAVIOUR_SHAPES`) |
-| `table`                   | also `cells`, only when every row keeps its length and the row count is unchanged                                 |
-| `sticky`, `image`         | also `x`, `y` (finite), `width`, `height` (positive) (`PARTICIPANT_PLACE_FIELDS`, `isParticipantPlaceable`)       |
-| `sticky`                  | also `fillColor`, `strokeColor`, `textColor`, `penTextColour` (`PARTICIPANT_STICKY_FIELDS`)                       |
-| `text` with `sizing` set  | also `width` and `height`: a text box that hugs its words follows them (SR10)                                     |
-| mind node                 | also `x`, `y` (`PARTICIPANT_MIND_FIELDS`): growing a map re-lays it                                               |
-| mind connector            | the `anchor` of `from` and `to`, each end still pinned to the same node                                           |
-| `image`                   | also `imageId`, `naturalWidth`, `naturalHeight`, `alt`, `credit` (`PARTICIPANT_IMAGE_FIELDS`): its picture        |
+| Element                   | Fields                                                                                                                                                                                                    |
+| ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Any element carrying text | `label`, `richText` (`PARTICIPANT_TEXT_FIELDS`); never on a Behaviour (`participantWritesOn`, `BEHAVIOUR_SHAPES`)                                                                                         |
+| `table`                   | also `cells`, only when every row keeps its length and the row count is unchanged                                                                                                                         |
+| `sticky`, `image`         | also `x`, `y` (finite), `width`, `height` (positive) (`PARTICIPANT_PLACE_FIELDS`, `isParticipantPlaceable`)                                                                                               |
+| `sticky`                  | also `fillColor`, `strokeColor`, `textColor`, `penTextColour` (`PARTICIPANT_STICKY_FIELDS`)                                                                                                               |
+| `text` with `sizing` set  | also `width` and `height`: a text box that hugs its words follows them (SR10)                                                                                                                             |
+| mind node                 | also `x`, `y` (`PARTICIPANT_MIND_FIELDS`): growing a map re-lays it; a taller `height` with a changed label, up to the stored height plus `MIND_GROW_PX_PER_CHAR` (`TEXT_PX_MAX` × 2) per label character |
+| mind connector            | the `anchor` of `from` and `to`, each end still pinned to the same node                                                                                                                                   |
+| `image`                   | also `imageId`, `naturalWidth`, `naturalHeight`, `alt`, `credit` (`PARTICIPANT_IMAGE_FIELDS`): its picture                                                                                                |
 
 `addableOn(tab, el)`: `sticky`, `text` and `image` anywhere; a `shape` only as a mind node whose `mindParentId` names
 a mind node on the tab; an `arrow` only pinned at both ends to mind nodes on the tab (a mind connector). An own
@@ -181,13 +181,13 @@ which the autosave retries as today; the unload flush sends the same ops at once
 
 Hooks that write a tab's structure, or write without passing `commit`, take `structureBlocked`
 (`editsBlocked || isReadOnly`) or `structureCreateBlocked` (`createBlocked || isReadOnly`), never the opened
-`editsBlocked`: layers, lane settling, the Plan tour's content, element helpers, tab canvas, images, paths, mind maps,
+`editsBlocked`: layers, lane settling, the old Plan tour content's sweep, element helpers, tab canvas, images, paths, mind maps,
 snap colours, the whiteboard, the eraser, swatch overrides, the cleanup preview, board scenes and library inserts.
 A held-back commit shows `HELD_BACK_NOTICE` at most once per `HELD_BACK_NOTICE_MS`.
 
 Gestures opened for a Participant, each beside `isReadOnly`: the palette strip in its `participant` variant
 (`ToolbarPalette participant`, `usePaletteCatalogue participant`): one category, `participate`
-(`participantPaletteCategories`: the landing category's sticky and text tiles, an Event Storming board's notes),
+(`participantPaletteCategories`: an Event Storming board's notes, else the Sticky and Text tiles),
 the selection modes in `PARTICIPANT_CANVAS_TOOLS`, no Search, no Event Storming photo import, on every mode; inline text edit (`canWriteText`); a
 move drag (`canMove`, never a resize); the Delete, type-to-edit and Space-to-edit keys; the quick-style panel for
 what `recolour` admits (`canStyle`); answering session tools (`takePart`). Plan: `canEditCards` (add, edit, move)
@@ -224,6 +224,7 @@ export const LEVEL_TELEMETRY_TYPE: Record<AccessLevel, 'View' | 'Participate' | 
 ```ts
 export const PARTICIPANT_ADDABLE_TYPES: readonly ['sticky', 'text', 'image', 'shape', 'arrow'];
 export const PARTICIPANT_MIND_FIELDS: readonly ['x', 'y'];
+export const MIND_GROW_PX_PER_CHAR: number; // TEXT_PX_MAX * 2
 export const PARTICIPANT_IMAGE_FIELDS: readonly [
   'imageId',
   'naturalWidth',

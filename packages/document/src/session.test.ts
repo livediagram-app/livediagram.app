@@ -84,7 +84,14 @@ describe('isVotable', () => {
   // happened to be running.
   it('rejects the interactive Behaviour shapes', () => {
     for (const kind of ['mode-button', 'portal', 'session-button', 'reveal', 'picker'] as const) {
-      expect(isVotable(shape(kind, { shape: kind } as Partial<ShapeElement>))).toBe(false);
+      expect(isVotable(shape(kind, { shape: kind }))).toBe(false);
+    }
+  });
+
+  // The collaboration panels are controls too: a press on one answers it.
+  it('rejects the collaboration panels', () => {
+    for (const kind of ['estimate', 'temperature', 'done-check', 'quiz', 'idea-box'] as const) {
+      expect(isVotable(shape(kind, { shape: kind }))).toBe(false);
     }
   });
 

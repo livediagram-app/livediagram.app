@@ -214,9 +214,9 @@ selectElement, attach }`, made in `useEditorState` and provided by `EditorView` 
 ([Spec](../sheet-store.md#template-starts).) `PlanSheetRef.start` (validated by `isPlanSheetRef`:
 `PLAN_SHEET_START_PATTERN`, kebab-case) names a template start. `@livediagram/sheets` `template-starts.ts`:
 `TEMPLATE_STARTS` (`budget-planner`, `timesheet`, `contact-list`, `task-tracker`), `isTemplateStart`,
-`templateStart(id, now)` (title and `SheetStarter`, dates from `now`) and `templateSheet({ id, tabId, start, now, dark,
+`templateStart(id, now)` (title and `SheetStarter`, dates from `now`) and `templateSheetWithCharts({ id, tabId, start, now, dark,
 rand })` (an `emptySheet`, `setupWrite` with the Header look, the header frozen and the default size, applied with
-`applySheetWrite`, as `{ id, tabId, title, layout, cells }`). `@livediagram/templates`: `hasTemplateSheets(tabs)`
+`applySheetWrite`, as `{ sheet: { id, tabId, title, layout, cells }, charts }`, each chart with its first read). `@livediagram/templates`: `hasTemplateSheets(tabs)`
 (engine-free, in the index) and, at the `@livediagram/templates/template-sheets` subpath so only a caller making sheets
 bundles the engine, `materialiseTemplateSheets(tabs, now, rand)` (`{ tabs, sheets: SheetCreateRequest[] }`, tinted dark
 when the tab's `backgroundColor` is not `isLightColor`, the mark dropped from each Sheet made). Callers:
@@ -230,7 +230,7 @@ when the tab's `backgroundColor` is not `isLightColor`, the mark dropped from ea
 - The wizard's Local only create (`apps/live/lib/template-sheets.ts` `withTemplateSheets`, which imports the subpath
   only when `hasTemplateSheets`), stored as the record's `sheets` by `offlineCreateDocument`.
 - The editor (`useSheetModel`): a Sheet still carrying a known `start`, its sheet absent once the tab is `ready`, for
-  someone who may edit: `templateSheet` (`dark` from the canvas surface), `store.create` (on `sheet_exists`, `resync`),
+  someone who may edit: `templateSheetWithCharts` (`dark` from the canvas surface), `store.create` (on `sheet_exists`, `resync`),
   then `tickElements` drops the mark (no undo step). `PlanSheetView` shows Opening Sheet, never "no longer in this
   document", while `start` (as `copyOf`) is set.
 - `freshCopyFields` copies a Sheet with `start` as `{ sheetId: new, start }`.
@@ -331,7 +331,17 @@ LIMIT SHEET_EXPIRY_BATCH` (the partial index), deletes them in one batch (cells 
   `change_sheet` (destructive: `sheet`, `changes[1..50]` of `set {at, rows}`, `clear {range, what}` (default
   `all`), `format {range, format}`, `insert_rows {at, count, side}`, `insert_cols {at, count, side}`,
   `delete_rows {rows}`, `delete_cols {cols}`, `rename {title}`, `sort {by, range?, descending, header}`,
-  `freeze {rows, cols}`), `add_sheet` (write: `tabId?`, `title?`, `rows?` or `csv?`). Schemas in
+  `freeze {rows, cols}`, the rule changes, `resize`, `merge`, `unmerge`, `border`, `filter`
+  (`sheet-shape-change.ts` `buildShapeChange`), `design` (`sheet-design.ts` `buildDesign`: the input compiled to a
+  `SheetDesign`, formulas read first by `badFormula`, then `designWrite`, dropdown and checkbox rules through
+  `buildRuleChange`, widths last by `fittedWidths` skipping notes, charts by `designCharts`), `chart` and
+  `clear_charts` (`sheet-charts.ts` `buildChartChange`; palettes `paletteOfHeader` / `defaultPalette`, the note
+  `seriesNote` for a one-series type)), `add_sheet` (write: `tabId?`, `title?`, `rows?`, `csv?` or `design?`, the
+  element grown by `sheetContentSize` to at most 1,800 x 1,400, a design's charts in the placing changeset).
+  `changeSheet` reads the tab when a change touches charts (`TOUCHES_CHARTS`) and ends with `updateSheetCharts`: one
+  changeset of `rm` (cleared), `set sheetAnchor` (`chartsFollowing`, `sheet-chart-follow.ts`) and `add` operations.
+  Inserted rows copy the row above's formats, inserted columns its look without `nf`/`dp`/`cur`/`nc`
+  (`formatsCopied`). Schemas in
   `packages/agent-verbs/src/mcp/sheet-schema.ts`; the server instructions in `packages/agent-verbs/src/mcp/schema.ts` mention them.
 - Telemetry: `Mcp·Used·ListSheets|ReadSheet|ChangeSheet|AddSheet` and `Cli·Used·Sheet*`, charted in
   `apps/telemetry` (`apps/telemetry/app/catalogue/connections.ts`, `cli-commands.ts`).
@@ -352,6 +362,9 @@ LIMIT SHEET_EXPIRY_BATCH` (the partial index), deletes them in one batch (cells 
 | Agent change past a sheet or document cap                      | `capsRefusal` before any part is sent: the cap's code, "none of it was written"                                                               |
 | Agent change whose later part the api refuses                  | The landed parts kept and reported as a `partly` line, then the refusal                                                                       |
 | add_sheet fill or placing refused                              | The made sheet deleted, so a retry does not spend the document's cells again                                                                  |
+| Design on a sheet with cells                                   | `sheet_not_empty`, naming clear and add_sheet                                                                                                 |
+| Charts' changeset refused after the writes                     | The writes stand; the answer carries their lines and the refusal                                                                              |
+| New charts with no Sheet framing the sheet on its tab          | Not placed; the answer says so                                                                                                                |
 | Agent delete of rows or columns past the sheet, or all of them | The line names what `deleteAxis` deleted (`deleted row 4`, `deleted rows 50:99`), and the one kept (`; column Z stays, as a sheet keeps one`) |
 | Concurrent writes to one sheet                                 | Rev-guarded batch, retried up to 3 times, then `409 sheet_busy` (toast, refetch)                                                              |
 | Insert after a row someone deleted                             | The engine resolves to the stored neighbour or the end                                                                                        |
@@ -375,6 +388,9 @@ LIMIT SHEET_EXPIRY_BATCH` (the partial index), deletes them in one batch (cells 
 - GET of a full sheet: 50,000 cells × typical 40 bytes ≈ 2 MB JSON (worst 4 MB by the bytes cap), one per sheet on
   the tab, only when a tab with a sheet opens. The tab's sheets come in one request.
 - A write is one D1 batch of at most 6 statements, independent of its cell count.
+- Every statement that names cells by key matches them as `(row_id, col_id)` pairs (`cellsNamedBy`), so the primary
+  key seeks each named cell; matched on the joined `row_id || ':' || col_id`, each read every cell of the sheet
+  (up to `SHEET_CELLS_MAX`). `apps/api/src/db/sheets-plans.test.ts` pins the plan.
 - A whole-sheet sort is one layout write (`orderRows`, ≤ 10,000 ids ≈ 70 KB); no cell is rewritten.
 - Room op carries only the landed write and the touched cells, capped at `SHEET_RELAY_BYTES_MAX`.
 - Deleting a sheet adds one statement to every tab write (two when the tab has a Sheet): measured on the test

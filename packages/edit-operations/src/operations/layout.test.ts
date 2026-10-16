@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Element, Tab } from '@livediagram/document';
+import type { Tab } from '@livediagram/document';
 import { checkoutFlow } from '../fixtures/checkout-flow';
 import { applied, lines, refused } from '../fixtures/outcomes';
 import { boxIn, lockedFlow, run } from '../fixtures/run';
@@ -42,8 +42,8 @@ describe('layout', () => {
     const tab: Tab = {
       ...checkoutFlow(),
       elements: [
-        { id: 'p', type: 'sticky', x: 500, y: 500, width: 100, height: 100 } as Element,
-        { id: 'q', type: 'sticky', x: 900, y: 300, width: 100, height: 100 } as Element,
+        { id: 'p', type: 'sticky', x: 500, y: 500, width: 100, height: 100 },
+        { id: 'q', type: 'sticky', x: 900, y: 300, width: 100, height: 100 },
       ],
     };
     const out = applied(run('layout type:sticky', tab)).tab;

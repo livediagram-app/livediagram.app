@@ -286,6 +286,7 @@ export function ColourPanel({
     color === null ? DEFAULT_COLOUR : color.toLowerCase() === accent.toLowerCase() ? ACCENT : color;
   return (
     <div className="flex flex-col gap-3 p-1.5">
+      <PickerTitle>Text Colour</PickerTitle>
       <ColourPicker
         label="Text colour"
         value={textValue}
@@ -297,6 +298,7 @@ export function ColourPanel({
         yours={yours}
         onPick={(id) => onColor(id === DEFAULT_COLOUR ? null : id === ACCENT ? accent : id)}
       />
+      <PickerTitle divided>Highlight</PickerTitle>
       <ColourPicker
         label="Highlight"
         value={selection.highlight ?? NO_HIGHLIGHT}
@@ -308,6 +310,22 @@ export function ColourPanel({
         onPick={(id) => onHighlight(id === NO_HIGHLIGHT ? null : id)}
       />
     </div>
+  );
+}
+
+// A picker's visible name, so the two pickers (each with its own Theme Palette) read apart at a glance; the
+// picker's group already carries the name for assistive technology, so this one is not announced twice.
+function PickerTitle({ children, divided = false }: { children: ReactNode; divided?: boolean }) {
+  return (
+    <p
+      aria-hidden
+      data-picker-title=""
+      className={`-mb-1 text-[12px] font-semibold text-slate-700 dark:text-slate-200 ${
+        divided ? 'border-t border-slate-200 pt-3 dark:border-slate-700' : ''
+      }`}
+    >
+      {children}
+    </p>
   );
 }
 

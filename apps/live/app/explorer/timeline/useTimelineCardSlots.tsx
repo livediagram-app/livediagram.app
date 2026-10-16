@@ -197,7 +197,7 @@ export function useTimelineCardSlots({
               onDuplicate: () => void duplicateDocument(id),
               onMove: (anchor) => openMovePickerForDocument(id, anchor),
               onDelete: () => void deleteDocument(id),
-              onDismiss: liveDoc.shared ? () => dismissShared(id) : undefined,
+              onDismiss: liveDoc.shared ? () => void dismissShared(id) : undefined,
               favourite: favouriteIds.has(id),
               onToggleFavourite: () => toggleFavourite(id),
               recentExcluded: recentExcluded.includes(id),

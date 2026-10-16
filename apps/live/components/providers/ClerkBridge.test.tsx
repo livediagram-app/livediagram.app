@@ -13,6 +13,8 @@ import { ClerkBridge } from './ClerkBridge';
 
 const clerk = vi.hoisted(() => ({
   reverified: (() => Promise.resolve()) as () => Promise<void>,
+  session: { checkAuthorization: (_: unknown): boolean => true },
+  step: (fetcher: () => Promise<unknown>) => fetcher(),
   auth: { getToken: async () => 'jwt', isLoaded: true, isSignedIn: true, userId: 'u1' },
   signOut: async () => {},
   user: {
@@ -28,7 +30,11 @@ vi.mock('@clerk/react', () => ({
   useAuth: () => clerk.auth,
   useUser: () => ({ user: clerk.user }),
   useClerk: () => ({ signOut: clerk.signOut }),
-  useReverification: () => clerk.reverified,
+  // The delete's reverification is `reverified`; confirmIdentity's runs its fetcher, as Clerk's does when no
+  // step-up is needed, unless a test stands in for the modal.
+  useReverification: (fetcher: () => Promise<unknown>) =>
+    fetcher.toString().includes('delete') ? clerk.reverified : () => clerk.step(fetcher),
+  useSession: () => ({ session: clerk.session }),
 }));
 vi.mock('@/lib/clerk-config', () => ({ clerkPublishableKey: 'pk_test' }));
 
@@ -81,5 +87,32 @@ describe('ClerkBridge', () => {
     await onState.mock.lastCall![0].deleteAccount!();
 
     expect(localStorage.getItem(RECENT_DIAGRAMS_KEY)).toBeNull();
+  });
+
+  // docs/specs/014-identity/auth-and-guest-access.md "Deleting an account"
+  it('confirms identity: at once on a fresh session, through the step-up otherwise, false on a cancel', async () => {
+    const onState = vi.fn<(s: DeferredAuthState) => void>();
+    clerk.session = { checkAuthorization: () => true };
+    render(<ClerkBridge onState={onState} />);
+    expect(await onState.mock.lastCall![0].confirmIdentity!()).toBe(true);
+
+    // No recent verification: the fetcher answers with Clerk's hint, which the real hook meets with its modal.
+    clerk.session = { checkAuthorization: () => false };
+    const hints: unknown[] = [];
+    clerk.step = async (fetcher) => {
+      hints.push(await fetcher());
+      throw new Error('reverification_cancelled');
+    };
+    render(<ClerkBridge onState={onState} />);
+    expect(await onState.mock.lastCall![0].confirmIdentity!()).toBe(false);
+    expect(hints).toEqual([
+      {
+        clerk_error: {
+          type: 'forbidden',
+          reason: 'reverification-error',
+          metadata: { reverification: 'strict' },
+        },
+      },
+    ]);
   });
 });

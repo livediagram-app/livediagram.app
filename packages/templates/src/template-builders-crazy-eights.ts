@@ -146,13 +146,13 @@ function rail(out: Element[], x: number, top: number): void {
     const sy = stepsY + 40 + i * stepH;
     out.push(
       {
-        ...createShape('circle', x, sy + 2),
+        // A Step number (docs/specs/009-elements/step-number.md) in the theme's accent.
+        ...createShape('step', x, sy + 2),
         width: chip,
         height: chip,
         label: `${i + 1}`,
-        textSize: 'sm',
         textBold: true,
-        colorPreset: 'bold',
+        chipLook: 'solid',
         ...scaffold,
       },
       {

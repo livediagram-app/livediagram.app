@@ -15,7 +15,7 @@ export const SOLID_BRAND_DARK_CONTROL = 'dark:bg-brand-600 dark:hover:bg-brand-7
  * appearances. A near-surface fill (white on slate-100, slate-900 on slate-800) is ~1.1:1 against
  * its track, too faint to mark a state.
  */
-export const ACTIVE_SEGMENT = `bg-brand-600 text-white shadow-sm ${SOLID_BRAND_DARK_CONTROL}`;
+export const ACTIVE_SEGMENT = `bg-brand-700 text-white shadow-sm ${SOLID_BRAND_DARK_CONTROL}`;
 
 /**
  * The track an `ACTIVE_SEGMENT` sits in: the deepest surface in dark mode, so the brand fill reads

@@ -65,14 +65,15 @@ function MiniBottomBar({ x, y, w }: { x: number; y: number; w: number }) {
 }
 
 function MiniCornerCluster({ x, y }: { x: number; y: number }) {
+  // Undo, Redo, then Layers beside the theme brush, then the zoom pill ending in Fit.
   return (
     <g>
-      {[0, 1, 2].map((i) => (
+      {[0, 1, 2, 3].map((i) => (
         <rect
           key={i}
-          x={x + i * 18}
+          x={x + i * 15 + (i >= 2 ? 3 : 0)}
           y={y}
-          width={15}
+          width={13}
           height={14}
           rx={3}
           className="fill-white stroke-slate-200"
@@ -80,17 +81,23 @@ function MiniCornerCluster({ x, y }: { x: number; y: number }) {
         />
       ))}
       <rect
-        x={x + 54}
+        x={x + 66}
         y={y}
-        width={44}
+        width={58}
         height={14}
         rx={3}
         className="fill-white stroke-slate-200"
         strokeWidth={1}
       />
-      <Label x={x + 76} y={y + 8} anchor="middle" size={10} weight={600} tone="body">
+      <Label x={x + 85} y={y + 8} anchor="middle" size={10} weight={600} tone="body">
         100%
       </Label>
+      <line x1={x + 106} y1={y + 2} x2={x + 106} y2={y + 12} className="stroke-slate-200" />
+      <path
+        d={`M${x + 110} ${y + 5} v-2 h3 M${x + 120} ${y + 3} h-3 M${x + 120} ${y + 3} v2 M${x + 110} ${y + 9} v2 h3 M${x + 120} ${y + 11} h-3 M${x + 120} ${y + 11} v-2`}
+        className="fill-none stroke-slate-400"
+        strokeWidth={1}
+      />
     </g>
   );
 }
@@ -180,7 +187,7 @@ export function DesktopEditor() {
       {/* The menu button and the palette strip across the top */}
       <MiniTopRow x={40} y={32} w={300} />
       {/* Corner cluster bottom-right, above the bottom bar with the tabs */}
-      <MiniCornerCluster x={284} y={158} />
+      <MiniCornerCluster x={258} y={158} />
       <MiniBottomBar x={30} y={178} w={360} />
       {/* Monitor stand */}
       <rect x={196} y={204} width={28} height={16} className="fill-slate-200" />
@@ -255,7 +262,7 @@ export function TabletLandscape() {
       </g>
       {/* The menu button and the palette strip, like desktop */}
       <MiniTopRow x={60} y={42} w={280} />
-      <MiniCornerCluster x={276} y={150} />
+      <MiniCornerCluster x={250} y={150} />
       <MiniBottomBar x={52} y={168} w={330} />
       <Label x={210} y={210} anchor="middle" size={10} weight={600} tone="muted">
         Full layout, as on a computer
@@ -390,13 +397,16 @@ export function TouchGestures() {
       title: 'Pinch',
       glyph: (
         <g>
+          {/* Two fingertips moving apart along a diagonal. */}
+          <circle cx={-4} cy={4} r={3} className="fill-brand-500" />
+          <circle cx={4} cy={-4} r={3} className="fill-brand-500" />
           <path
-            d="M-9 -9 L9 9 M-9 9 L9 -9"
-            className="stroke-brand-500"
-            strokeWidth={2}
+            d="M-8 8 L-12 12 M-12 7 V12 H-7 M8 -8 L12 -12 M7 -12 H12 V-7"
+            className="fill-none stroke-brand-500"
+            strokeWidth={1.8}
             strokeLinecap="round"
+            strokeLinejoin="round"
           />
-          <circle r={3.5} className="fill-brand-500" />
         </g>
       ),
     },

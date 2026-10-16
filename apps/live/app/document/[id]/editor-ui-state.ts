@@ -51,13 +51,9 @@ export function useEditorUiState(
   // single `selectedId` above: when `multiSelectedIds.size > 0`, single
   // selection / its popover / its accordion controls are suppressed. Both
   // are cleared together by `onDeselect` and by clicking any single element.
-  // Template picker mode. Welcome / "New Document" lives on /live/new
-  // (docs/specs/007-editor/new-document-route.md); the 'welcome' value here is only a benign reset target.
-  // 'templates' opens the per-tab Quick Start grid; 'identity' is the
-  // visitor join flow.
-  const [templatePickerMode, setTemplatePickerMode] = useState<
-    'welcome' | 'templates' | 'identity'
-  >('welcome');
+  // The visitor name prompt (IdentityPrompt, docs/specs/007-editor/new-document-route.md): a visitor joining someone
+  // else's document confirms the name others will see. The editor shows no other picker over the canvas.
+  const [identityPromptOpen, setIdentityPromptOpen] = useState(false);
   // Which line-chart's data modal is open (docs/specs/009-elements/pie-chart.md), or null. The context menu's
   // Data category opens it (the 2-D grid is too wide for the menu).
   const [lineDataOpenForId, setLineDataOpenForId] = useState<string | null>(null);
@@ -65,6 +61,12 @@ export function useEditorUiState(
   // double-click on the card and by the context menu's Code category (a
   // multi-line editor is too big for the menu, like the line chart's grid).
   const [codeEditOpenForId, setCodeEditOpenForId] = useState<string | null>(null);
+  // Which Sankey's Flows dialog is open (docs/specs/009-elements/sankey.md "The Flows dialog"), or null.
+  // Opened by double-click on the diagram and by the menu's Edit Flows.
+  const [sankeyFlowsOpenForId, setSankeyFlowsOpenForId] = useState<string | null>(null);
+  // Which sequence diagram's dialog is open (docs/specs/009-elements/sequence-diagram.md "The Sequence dialog"), or
+  // null. Opened by double-click on the diagram and by the menu's Edit Sequence.
+  const [sequenceOpenForId, setSequenceOpenForId] = useState<string | null>(null);
 
   return {
     selectionStore,
@@ -79,11 +81,15 @@ export function useEditorUiState(
     formatSourceId,
     setFormatSourceId,
     setMultiSelectedIds,
-    templatePickerMode,
-    setTemplatePickerMode,
+    identityPromptOpen,
+    setIdentityPromptOpen,
     lineDataOpenForId,
     setLineDataOpenForId,
     codeEditOpenForId,
     setCodeEditOpenForId,
+    sankeyFlowsOpenForId,
+    setSankeyFlowsOpenForId,
+    sequenceOpenForId,
+    setSequenceOpenForId,
   };
 }

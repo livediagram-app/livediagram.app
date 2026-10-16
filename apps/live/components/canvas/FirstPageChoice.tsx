@@ -8,6 +8,7 @@
 import type { PageKind } from '@livediagram/document';
 import { useRef } from 'react';
 import { moveBetweenKindCards, PAGE_KINDS, PageKindCard } from './page-kind-cards';
+import { GIF_OMIT_ATTR } from '@/lib/gif-export/gif-omit';
 
 export function FirstPageChoice({
   zoom,
@@ -18,7 +19,7 @@ export function FirstPageChoice({
 }) {
   const cards = useRef<(HTMLButtonElement | null)[]>([]);
   return (
-    <div className="absolute inset-0 flex items-center justify-center">
+    <div {...{ [GIF_OMIT_ATTR]: '' }} className="absolute inset-0 flex items-center justify-center">
       <div
         role="group"
         aria-labelledby="first-page-choice-title"

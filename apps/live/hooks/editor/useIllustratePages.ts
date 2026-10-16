@@ -1,11 +1,13 @@
 // Illustrate mode's pages (docs/specs/007-editor/illustrate-pages.md): the active tab's pages
 // laid out in their row, the edits to them (illustrate-page-edits) and framing one in the view. It
-// also centres the view on the first page whenever the mode or the tab changes.
+// also centres the view on the page you were last on (the first, the first time) whenever the mode
+// or the tab changes.
 import type { LogoToolsView } from './useLogoTools';
 import {
   useCallback,
   useEffect,
   useEffectEvent,
+  useInsertionEffect,
   useLayoutEffect,
   useMemo,
   useRef,
@@ -21,10 +23,12 @@ import {
   layOutIllustratePages,
   withContentOnAPage,
   type EditorMode,
+  type Element,
   type LaidOutPage,
   type Tab,
 } from '@livediagram/document';
-import { computeFitBelow, computeReadingFrame } from '@/lib/viewport';
+import { besideLeftInset, computeFitBelow, computeReadingFrame } from '@/lib/viewport';
+import { leftSidebarInset } from '@/lib/left-sidebar-inset';
 import { topStripInset } from '@/lib/top-strip-inset';
 import { debugLog } from '@/lib/debug-log';
 import { track } from '@/lib/telemetry';
@@ -38,6 +42,9 @@ import type { ArticlesView } from './useArticles';
 import { illustratePageEdits, type IllustratePageEdits } from './illustrate-page-edits';
 import type { PageLayoutId } from '@livediagram/templates';
 import { glideViewport, type ViewPose } from '@/lib/viewport-glide';
+import type { View } from '@/lib/viewport-store';
+import { lastIllustratePageKey } from '@/lib/last-illustrate-page';
+import { useLastIllustratePage } from './useLastIllustratePage';
 
 export type { IllustratePageEdits };
 
@@ -61,6 +68,8 @@ export type IllustratePagesView = {
   articles?: ArticlesView | null;
   // The tab's default face, for what the pages draw themselves (a layout preview).
   tabFont?: string;
+  // The tab's elements, for the content a previewed layout carries over from its page.
+  elements?: Element[];
   // A layout previewed on a page while its tile is hovered: the page's own content is hidden
   // under it (the clip leaves the page out) so the preview never mixes with it.
   layoutPreview: { pageId: string; layout: PageLayoutId } | null;
@@ -79,9 +88,11 @@ export type IllustratePagesView = {
 
 export type PageDeckControls = {
   // The deck's slide of this page (on this tab), if it has one.
-  slideOf: (pageId: string) => { id: string; hidden: boolean } | undefined;
+  slideOf: (pageId: string) => { id: string; hidden: boolean; notes: string } | undefined;
   add: (pageId: string) => void;
   toggleHidden: (slideId: string) => void;
+  // The slide's speaker notes, as the Slide Deck panel writes them (an empty string removes them).
+  setNotes: (slideId: string, notes: string) => void;
 };
 
 export function useIllustratePages(deps: {
@@ -100,6 +111,14 @@ export function useIllustratePages(deps: {
   // Given the page-framing call, so a page slide's row frames its page, on this tab or (once it is
   // open) another; set whether or not this tab is in Illustrate mode.
   framePageRef?: RefObject<((pageId: string) => void) | null>;
+  // Given the landing framing while the tab shows pages (null otherwise), so the fit on landing
+  // on a tab (useTabEntryEffects) frames the page you were last on (else the first), not the
+  // whole row of pages.
+  frameFirstPageRef?: RefObject<(() => void) | null>;
+  // The document's id and the view's store, so the page you were last on is remembered per tab
+  // in this browser (useLastIllustratePage); without either, landing frames the first page.
+  documentId?: string;
+  viewport?: { get: () => View; subscribe: (listener: () => void) => () => void };
   // A new document by its flow id, so its writing can take the caret.
   onArticleCreated?: (flow: string) => void;
 }): IllustratePagesView | null {
@@ -119,12 +138,17 @@ export function useIllustratePages(deps: {
     const canvas = deps.canvasMainRef.current;
     if (!canvas) return;
     const inset = topStripInset(canvas);
-    const size = { width: canvas.offsetWidth, height: canvas.offsetHeight };
+    // Beside the docked Contents sidebar, when it is there (docs/specs/007-editor/illustrate-pages.md
+    // "Contents"): the page centres in what shows right of it.
+    const insetLeft = leftSidebarInset(canvas);
+    const size = { width: canvas.offsetWidth - insetLeft, height: canvas.offsetHeight };
     const doc = page?.flow ? articlesOf(activeTab)[page.flow] : undefined;
-    const { zoom, offset } =
+    const { zoom, offset } = besideLeftInset(
       read && page && doc
         ? computeReadingFrame(size, page.rect, inset, articleMarginPx(doc.style))
-        : computeFitBelow(size, illustratePageFitBox(page), inset);
+        : computeFitBelow(size, illustratePageFitBox(page), inset),
+      insetLeft,
+    );
     glide.current?.();
     glide.current = null;
     if (glides) {
@@ -137,12 +161,41 @@ export function useIllustratePages(deps: {
       deps.setViewportZoom(zoom);
       deps.setViewportOffset(offset);
     }
-    debugLog('[illustrate-page] framed', { tabId, page: page?.id ?? 'first', inset, zoom, glides });
+    debugLog('[illustrate-page] framed', {
+      tabId,
+      page: page?.id ?? 'first',
+      inset,
+      insetLeft,
+      zoom,
+      glides,
+    });
   };
-  // Centred on the first page after the tab's own first fit (a frame later), so the page wins.
-  const centre = useEffectEvent(() =>
-    frame(layOutIllustratePages(illustratePagesOf(activeTab))[0]),
+  // The pages laid out once per change to the stored pages, so everything drawn from them (the
+  // Map's picture, the export preview) keeps its memo while the view pans and zooms.
+  const storedPages = activeTab.pages;
+  const legacyOrientation = activeTab.pageOrientation;
+  const current = useMemo(
+    () => illustratePagesOf({ pages: storedPages, pageOrientation: legacyOrientation }),
+    [storedPages, legacyOrientation],
   );
+  const pages = useMemo(() => layOutIllustratePages(current), [current]);
+  // The page you were last on, remembered as the view rests (docs/specs/007-editor/
+  // illustrate-pages.md "Back to the page you were on").
+  const last = useLastIllustratePage({
+    on,
+    storeKey: deps.documentId ? lastIllustratePageKey(deps.documentId, tabId) : undefined,
+    pages,
+    canvasMainRef: deps.canvasMainRef,
+    viewport: deps.viewport,
+  });
+  // The landing frame: the page you were last on, else the first.
+  const frameLanding = () => {
+    const row = layOutIllustratePages(illustratePagesOf(activeTab));
+    frame(last.remembered(row) ?? row[0]);
+    last.arm();
+  };
+  // Centred on the page after the tab's own first fit (a frame later), so the page wins.
+  const centre = useEffectEvent(frameLanding);
   // Entering the mode with a board that does not fit its first page puts it onto a page made
   // around it, where it is (withContentOnAPage, docs/specs/007-editor/illustrate-pages.md "Into
   // pages"): no element moves, resizes or scales. One edit, so one undo takes the page away, said
@@ -159,6 +212,12 @@ export function useIllustratePages(deps: {
       size: placed.pages[0]?.size ?? 'a4',
     });
   });
+  // The tab's own fit on landing (and a fit asked for with new content) frames that page too,
+  // so whichever lands last, the view ends on the page rather than the whole row.
+  const { frameFirstPageRef } = deps;
+  useInsertionEffect(() => {
+    if (frameFirstPageRef) frameFirstPageRef.current = on ? frameLanding : null;
+  });
   useEffect(() => {
     if (!on || !tabLoaded) return;
     const raf = requestAnimationFrame(() => centre());
@@ -168,16 +227,6 @@ export function useIllustratePages(deps: {
   useEffect(() => {
     if (on && tabLoaded && canEdit) putOnAPage();
   }, [on, tabLoaded, tabId, canEdit]);
-
-  // The pages laid out once per change to the stored pages, so everything drawn from them (the
-  // Map's picture, the export preview) keeps its memo while the view pans and zooms.
-  const storedPages = activeTab.pages;
-  const legacyOrientation = activeTab.pageOrientation;
-  const current = useMemo(
-    () => illustratePagesOf({ pages: storedPages, pageOrientation: legacyOrientation }),
-    [storedPages, legacyOrientation],
-  );
-  const pages = useMemo(() => layOutIllustratePages(current), [current]);
 
   // Edit rights now, for a commit made as the panel closes (layout phase: current before any
   // passive cleanup of that render runs).
@@ -246,6 +295,7 @@ export function useIllustratePages(deps: {
     themeBackgrounds,
     themeAccent: themeAccent(theme),
     tabFont,
+    elements: activeTab.elements,
     layoutPreview,
     setLayoutPreview,
   };
@@ -253,17 +303,20 @@ export function useIllustratePages(deps: {
   return {
     ...shared,
     // mayEdit reads a ref, but only when an edit commits (in a handler), never during render.
-    // eslint-disable-next-line react-hooks/refs
+    // oxlint-disable-next-line react/refs
     edit: illustratePageEdits({
       tabId,
+      tab: activeTab,
       current,
       elements: activeTab.elements,
+      layers: activeTab.layers,
       commitTabs,
       onGoTo: setGoTo,
       onArticleCreated: deps.onArticleCreated,
       onLayoutPlaced: deps.clearSelection,
       mayEdit,
       toastInfo: deps.toastInfo,
+      theme,
     }),
   };
 }

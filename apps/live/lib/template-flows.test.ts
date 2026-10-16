@@ -28,7 +28,10 @@ const overlaps = (a: Boxed, b: Boxed) =>
 describe('the swimlane template', () => {
   const els = buildTemplate('swimlane', 0, 0);
   const lanes = shapesOf(els, 'lane');
-  const steps = boxes(els).filter((el) => el.type === 'shape' && el.shape !== 'lane');
+  // The flow's steps: labelled shapes. The key under the lanes draws a label-less sample of each step shape.
+  const steps = boxes(els).filter(
+    (el) => el.type === 'shape' && el.shape !== 'lane' && el.shape !== 'icon' && el.label !== '',
+  );
   const laneOf = (el: Boxed) => lanes.findIndex((l) => inside(centre(el), l));
 
   it('runs across four role lanes, top to bottom', () => {
@@ -39,7 +42,7 @@ describe('the swimlane template', () => {
     for (const s of steps) {
       const lane = lanes[laneOf(s)];
       expect(lane, `${s.label} sits in no lane`).toBeDefined();
-      const gutter = lane!.type === 'shape' ? (lane!.headerSize ?? 132) : 0;
+      const gutter = lane!.type === 'shape' ? (lane.headerSize ?? 132) : 0;
       expect(s.x).toBeGreaterThan(lane!.x + gutter);
       expect(s.y).toBeGreaterThanOrEqual(lane!.y);
       expect(s.y + s.height).toBeLessThanOrEqual(lane!.y + lane!.height);
@@ -63,7 +66,7 @@ describe('the swimlane template', () => {
   });
 
   it('starts and ends in the Customer lane', () => {
-    const terminators = shapesOf(els, 'stadium');
+    const terminators = shapesOf(els, 'stadium').filter((t) => t.label !== '');
     expect(terminators.map((t) => t.label)).toEqual(['Place order', 'Order received']);
     for (const t of terminators) expect(laneOf(t)).toBe(0);
   });
@@ -81,18 +84,22 @@ describe('the approval workflow template', () => {
   });
 
   it('rejects differently at each gate: rework loops back, finance declines for good', () => {
-    const gates = shapesOf(els, 'diamond');
+    const gates = shapesOf(els, 'diamond').filter((g) => g.label !== '');
     expect(gates.map((g) => g.label)).toEqual(['Approved?', 'In budget?']);
     const noTargets = arrows(els)
       .filter((a) => a.label === 'No')
       .map((a) => labelOf(pinnedIds(a).to));
-    expect(noTargets).toEqual(['Request changes', 'Declined']);
-    const loop = arrows(els).find((a) => a.label === 'Revise & resubmit')!;
-    expect(labelOf(pinnedIds(loop).from)).toBe('Request changes');
+    // The manager's No goes back to the requester to revise; Finance's No is final.
+    expect(noTargets).toEqual(['Revise request', 'Declined']);
+    const loop = arrows(els).find((a) => a.label === 'Resubmit')!;
+    expect(labelOf(pinnedIds(loop).from)).toBe('Revise request');
     expect(labelOf(pinnedIds(loop).to)).toBe('Submit request');
-    // Every No drops straight down out of the bottom of its gate.
-    for (const a of arrows(els).filter((x) => x.label === 'No'))
-      expect(a.from).toMatchObject({ anchor: 's' });
+    // The flowchart layout sends each No toward its lane: the manager's back left to the requester,
+    // Finance's on to the right, each out of the gate's side corner.
+    const noAnchors = arrows(els)
+      .filter((a) => a.label === 'No')
+      .map((a) => a.from.kind === 'pinned' && a.from.anchor);
+    expect(noAnchors).toEqual(['w', 'e']);
   });
 });
 
@@ -119,7 +126,7 @@ describe('the data flow diagram template', () => {
     const nodeLabels = new Set(boxes(els).map((b) => b.label));
     for (const f of flows) {
       expect(f.label).toBeTruthy();
-      expect(nodeLabels.has(f.label!)).toBe(false);
+      expect(nodeLabels.has(f.label)).toBe(false);
       const { from, to } = pinnedIds(f);
       expect(map.get(from)).toBeDefined();
       expect(map.get(to)).toBeDefined();

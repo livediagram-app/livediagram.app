@@ -8,7 +8,7 @@
 // diagram (the shared ThemeSwatch scene, with the actual pattern edge to
 // edge) so the user sees the result as they build. A built-in format
 // painter copies a colour from one box and pastes it into others.
-// Shared by the Tab Look & Feel dialog's Theme tab and the Explorer Themes pane,
+// Shared by the Tab Style dialog's Theme tab and the Explorer Themes pane,
 // so the two entry points can't drift. Purely a form: it owns a draft
 // and hands the finished { name, definition } back via onSave.
 
@@ -19,7 +19,6 @@ import {
   isLightColor,
   shade,
   tint,
-  type BackgroundPattern,
   type ShapeKind,
 } from '@livediagram/document';
 import type { CustomThemeDefinition } from '@livediagram/api-schema';
@@ -43,6 +42,9 @@ import { ThemeSwatch } from '@/components/primitives/ThemeSwatch';
 import { RANGE_SLIDER } from '@/components/primitives/surface-classes';
 
 export type CustomThemeDraft = { name: string; definition: CustomThemeDefinition };
+
+// What the builder is open on: a new theme, or a saved one by its id.
+export type ThemeBuilding = 'new' | { id: string };
 
 // The pattern colour is derived from the BACKGROUND base colour (there's
 // no separate control): a subtle darker shade on a light backdrop, a
@@ -242,7 +244,7 @@ export function CustomThemeBuilder({
             <PatternButton
               key={p.id}
               active={def.backgroundPattern === p.id}
-              onClick={() => patch({ backgroundPattern: p.id as BackgroundPattern })}
+              onClick={() => patch({ backgroundPattern: p.id })}
               label={p.shortLabel}
             >
               <p.icon />
@@ -255,7 +257,7 @@ export function CustomThemeBuilder({
             <PatternButton
               key={p.id}
               active={def.backgroundPattern === p.id}
-              onClick={() => patch({ backgroundPattern: p.id as BackgroundPattern })}
+              onClick={() => patch({ backgroundPattern: p.id })}
               label={p.shortLabel}
             >
               <p.icon />

@@ -64,7 +64,7 @@ describe('symmetry', () => {
   it('turns a shape round the centre, its rotation following', () => {
     const twins = symmetryTwins(square, on({ axis: 'radial', copies: 4 }));
     expect(twins).toHaveLength(3);
-    const quarter = twins[0]! as BoxedElement & { rotation?: number };
+    const quarter = twins[0]!;
     // A clockwise quarter turn on screen: (dx, dy) to (-dy, dx).
     const dx = centre(square).x - cx;
     const dy = centre(square).y - cy;
@@ -92,9 +92,9 @@ describe('symmetry', () => {
   });
 
   it('adds no twin that would sit on the drawing itself, or off a mirrored page', () => {
-    const onAxis = { ...square, x: cx - 20 } as BoxedElement;
+    const onAxis = { ...square, x: cx - 20 };
     expect(symmetryTwins(onAxis, on({ axis: 'vertical' }))).toHaveLength(0);
     expect(symmetryTwins(onAxis, on({ axis: 'horizontal' }))).toHaveLength(1);
-    expect(symmetryTwins({ ...square, x: r.x - 500 } as BoxedElement, on({}))).toHaveLength(0);
+    expect(symmetryTwins({ ...square, x: r.x - 500 }, on({}))).toHaveLength(0);
   });
 });

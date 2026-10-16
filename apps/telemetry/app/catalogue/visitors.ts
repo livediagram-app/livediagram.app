@@ -9,10 +9,17 @@ import {
   EXPLORER_REASONS_OPENED,
   TOUR_OFFERED,
   PLAN_TOUR_OFFERED,
+  FACILITATE_TOUR_OFFERED,
+  DRAW_TOUR_OFFERED,
+  FORM_TOUR_OFFERED,
+  AVATAR_TOUR_OFFERED,
+  ILLUSTRATE_TOUR_OFFERED,
+  ELEMENT_TOURS_OFFERED,
   POWER_USER_OFFERED,
   NEW_VERSION_OFFERED,
 } from './features';
 import { chart } from './helpers';
+import { ELEMENT_TOUR_KINDS, elementTourTokens } from '../element-tour-kinds';
 
 export const NEW_VISITORS: Metric = {
   category: 'Participant',
@@ -135,19 +142,25 @@ export const TOUR_OFFER_DISMISSED = chart(
   'UI',
   'Closed',
   'Tours Declined',
-  'The tour turned down on its welcome card, before it started. (The editor records this decline as closing the offer.)',
+  'The Diagram tour (the welcome tour until October 2026) turned down on its welcome card, before it started. (The editor records this decline as closing the offer.)',
   { types: ['TourOffer'], rising: 'neutral' },
 );
 
-export const TOURS_STARTED = chart('UI', 'Started', 'Tours Started', 'The welcome tour started.', {
-  types: ['Tour'],
-});
+export const TOURS_STARTED = chart(
+  'UI',
+  'Started',
+  'Diagram Tours Started',
+  'The Diagram tour (the welcome tour until October 2026) started.',
+  {
+    types: ['Tour'],
+  },
+);
 
 export const TOUR_STEPS_VIEWED = chart(
   'UI',
   'View',
   'Tour Steps Viewed',
-  'A step of the tour shown.',
+  'A step of the Diagram tour shown.',
   { typeIn: (t) => (t ?? '').startsWith('TourStep') },
 );
 
@@ -155,7 +168,7 @@ export const TOURS_COMPLETED = chart(
   'UI',
   'Ended',
   'Tours Completed',
-  'The tour run to its last step.',
+  'The Diagram tour run to its last step.',
   { types: ['TourCompleted'] },
 );
 
@@ -163,7 +176,7 @@ export const TOURS_SKIPPED = chart(
   'UI',
   'Ended',
   'Tours Skipped',
-  'The tour closed before its end.',
+  'The Diagram tour closed before its end, or ended by leaving Diagram mode.',
   { types: ['TourSkipped'], rising: 'neutral' },
 );
 
@@ -171,7 +184,7 @@ export const WELCOME_TOUR: MetricStack = {
   stack: true,
   title: 'Welcome & Tour',
   blurb:
-    'A first visit: the welcome dialog, then the tour offered, started, stepped through, finished or skipped.',
+    'A first visit: the welcome dialog, then the Diagram tour (the welcome tour until October 2026) offered, started, stepped through, finished or skipped.',
   members: [
     WELCOME_DIALOG_CLOSED,
     TOUR_OFFERED,
@@ -184,7 +197,7 @@ export const WELCOME_TOUR: MetricStack = {
   headline: TOURS_STARTED,
 };
 
-// The Plan tour (docs/specs/026-plan/plan-tour.md): its own funnel, beside the welcome tour's.
+// The Plan tour (docs/specs/026-plan/plan-tour.md): its own funnel, beside the Diagram tour's.
 export const PLAN_TOUR_DECLINED = chart(
   'UI',
   'Closed',
@@ -261,38 +274,444 @@ export const PLAN_TOUR: MetricStack = {
   headline: PLAN_TOURS_STARTED,
 };
 
-// Show Me in the card type editor (docs/specs/026-plan/item-types.md "Editing a type"): never offered, so it starts
-// only when pressed.
-export const CARD_TYPE_TOURS_STARTED = chart(
+// The Facilitate tour (docs/specs/012-collaboration/facilitate-tour.md): its own funnel, beside the Plan
+// tour's.
+export const FACILITATE_TOUR_DECLINED = chart(
+  'UI',
+  'Closed',
+  'Facilitate Tours Declined',
+  'The Facilitate tour turned down on its welcome card, before it started.',
+  { types: ['FacilitateTourOffer'], rising: 'neutral' },
+);
+
+export const FACILITATE_TOURS_STARTED = chart(
   'UI',
   'Started',
-  'Card Type Tours Started',
-  'Show Me pressed in the card type editor.',
-  { types: ['CardTypeTour'] },
+  'Facilitate Tours Started',
+  'The Facilitate tour started.',
+  { types: ['FacilitateTour'] },
 );
 
-export const CARD_TYPE_TOURS_COMPLETED = chart(
+export const FACILITATE_TOURS_FROM_WELCOME = chart(
+  'UI',
+  'Selected',
+  'Facilitate Tours from the Welcome Tour',
+  "Show me Facilitate pressed on the welcome tour's closing card (retired October 2026, when the welcome tour became the Diagram tour).",
+  { types: ['FacilitateTourFromWelcome'] },
+);
+
+export const FACILITATE_TOUR_STEPS_VIEWED = chart(
+  'UI',
+  'View',
+  'Facilitate Tour Steps Viewed',
+  'A step of the Facilitate tour shown.',
+  { typeIn: (t) => (t ?? '').startsWith('FacilitateTourStep') },
+);
+
+export const FACILITATE_TOURS_COMPLETED = chart(
   'UI',
   'Ended',
-  'Card Type Tours Completed',
-  'The card type tour run to its end.',
-  { types: ['CardTypeTourCompleted'] },
+  'Facilitate Tours Completed',
+  'The Facilitate tour run to its last step.',
+  { types: ['FacilitateTourCompleted'] },
 );
 
-export const CARD_TYPE_TOURS_SKIPPED = chart(
+export const FACILITATE_TOURS_SKIPPED = chart(
   'UI',
   'Ended',
-  'Card Type Tours Skipped',
-  'The card type tour closed before its end.',
-  { types: ['CardTypeTourSkipped'], rising: 'neutral' },
+  'Facilitate Tours Skipped',
+  'The Facilitate tour closed before its end.',
+  { types: ['FacilitateTourSkipped'], rising: 'neutral' },
 );
 
-export const CARD_TYPE_TOUR: MetricStack = {
+export const FACILITATE_TOUR: MetricStack = {
   stack: true,
-  title: 'Card Type Tour',
-  blurb: "The card type editor's Show Me: started, finished or skipped.",
-  members: [CARD_TYPE_TOURS_STARTED, CARD_TYPE_TOURS_COMPLETED, CARD_TYPE_TOURS_SKIPPED],
-  headline: CARD_TYPE_TOURS_STARTED,
+  title: 'Facilitate Tour',
+  blurb:
+    "The first time in Facilitate mode: the Facilitate tour offered (on its own card; on the welcome tour's closing card until October 2026), stepped through, finished or skipped.",
+  members: [
+    FACILITATE_TOUR_OFFERED,
+    FACILITATE_TOUR_DECLINED,
+    FACILITATE_TOURS_STARTED,
+    FACILITATE_TOURS_FROM_WELCOME,
+    FACILITATE_TOUR_STEPS_VIEWED,
+    FACILITATE_TOURS_COMPLETED,
+    FACILITATE_TOURS_SKIPPED,
+  ],
+  headline: FACILITATE_TOURS_STARTED,
+};
+
+// The Draw tour (docs/specs/023-draw-mode/draw-tour.md): its own funnel, beside the Facilitate tour's.
+export const DRAW_TOUR_DECLINED = chart(
+  'UI',
+  'Closed',
+  'Draw Tours Declined',
+  'The Draw tour turned down on its welcome card, before it started.',
+  { types: ['DrawTourOffer'], rising: 'neutral' },
+);
+
+export const DRAW_TOURS_STARTED = chart(
+  'UI',
+  'Started',
+  'Draw Tours Started',
+  'The Draw tour started.',
+  { types: ['DrawTour'] },
+);
+
+export const DRAW_TOUR_STEPS_VIEWED = chart(
+  'UI',
+  'View',
+  'Draw Tour Steps Viewed',
+  'A step of the Draw tour shown.',
+  { typeIn: (t) => (t ?? '').startsWith('DrawTourStep') },
+);
+
+export const DRAW_TOURS_COMPLETED = chart(
+  'UI',
+  'Ended',
+  'Draw Tours Completed',
+  'The Draw tour run to its last step.',
+  { types: ['DrawTourCompleted'] },
+);
+
+export const DRAW_TOURS_SKIPPED = chart(
+  'UI',
+  'Ended',
+  'Draw Tours Skipped',
+  'The Draw tour closed before its end.',
+  { types: ['DrawTourSkipped'], rising: 'neutral' },
+);
+
+export const DRAW_TOUR: MetricStack = {
+  stack: true,
+  title: 'Draw Tour',
+  blurb:
+    'The first time in Draw mode: the Draw tour offered, stepped through, finished or skipped.',
+  members: [
+    DRAW_TOUR_OFFERED,
+    DRAW_TOUR_DECLINED,
+    DRAW_TOURS_STARTED,
+    DRAW_TOUR_STEPS_VIEWED,
+    DRAW_TOURS_COMPLETED,
+    DRAW_TOURS_SKIPPED,
+  ],
+  headline: DRAW_TOURS_STARTED,
+};
+
+// The Forms tour (docs/specs/030-forms/forms.md "The Forms tour"): its own funnel, beside the Draw tour's.
+export const FORM_TOUR_DECLINED = chart(
+  'UI',
+  'Closed',
+  'Forms Tours Declined',
+  'The Forms tour turned down on its welcome card, before it started.',
+  { types: ['FormTourOffer'], rising: 'neutral' },
+);
+
+export const FORM_TOURS_STARTED = chart(
+  'UI',
+  'Started',
+  'Forms Tours Started',
+  'The Forms tour started.',
+  { types: ['FormTour'] },
+);
+
+export const FORM_TOUR_STEPS_VIEWED = chart(
+  'UI',
+  'View',
+  'Forms Tour Steps Viewed',
+  'A step of the Forms tour shown.',
+  { typeIn: (t) => (t ?? '').startsWith('FormTourStep') },
+);
+
+export const FORM_TOURS_COMPLETED = chart(
+  'UI',
+  'Ended',
+  'Forms Tours Completed',
+  'The Forms tour run to its last step.',
+  { types: ['FormTourCompleted'] },
+);
+
+export const FORM_TOURS_SKIPPED = chart(
+  'UI',
+  'Ended',
+  'Forms Tours Skipped',
+  'The Forms tour closed before its end.',
+  { types: ['FormTourSkipped'], rising: 'neutral' },
+);
+
+export const FORM_TOUR: MetricStack = {
+  stack: true,
+  title: 'Forms Tour',
+  blurb:
+    'The first time on a Form tab: the Forms tour offered, stepped through, finished or skipped.',
+  members: [
+    FORM_TOUR_OFFERED,
+    FORM_TOUR_DECLINED,
+    FORM_TOURS_STARTED,
+    FORM_TOUR_STEPS_VIEWED,
+    FORM_TOURS_COMPLETED,
+    FORM_TOURS_SKIPPED,
+  ],
+  headline: FORM_TOURS_STARTED,
+};
+
+// The Avatar tour (docs/specs/008-canvas/avatar-tour.md): its own funnel, beside the Draw tour's.
+export const AVATAR_TOUR_DECLINED = chart(
+  'UI',
+  'Closed',
+  'Avatar Tours Declined',
+  'The Avatar tour turned down on its welcome card, before it started.',
+  { types: ['AvatarTourOffer'], rising: 'neutral' },
+);
+
+export const AVATAR_TOURS_STARTED = chart(
+  'UI',
+  'Started',
+  'Avatar Tours Started',
+  'The Avatar tour started.',
+  { types: ['AvatarTour'] },
+);
+
+export const AVATAR_TOUR_STEPS_VIEWED = chart(
+  'UI',
+  'View',
+  'Avatar Tour Steps Viewed',
+  'A step of the Avatar tour shown.',
+  { typeIn: (t) => (t ?? '').startsWith('AvatarTourStep') },
+);
+
+export const AVATAR_TOURS_COMPLETED = chart(
+  'UI',
+  'Ended',
+  'Avatar Tours Completed',
+  'The Avatar tour run to its last step.',
+  { types: ['AvatarTourCompleted'] },
+);
+
+export const AVATAR_TOURS_SKIPPED = chart(
+  'UI',
+  'Ended',
+  'Avatar Tours Skipped',
+  'The Avatar tour closed before its end.',
+  { types: ['AvatarTourSkipped'], rising: 'neutral' },
+);
+
+export const AVATAR_TOUR: MetricStack = {
+  stack: true,
+  title: 'Avatar Tour',
+  blurb:
+    'The first time in Avatar mode: the Avatar tour offered, stepped through, finished or skipped.',
+  members: [
+    AVATAR_TOUR_OFFERED,
+    AVATAR_TOUR_DECLINED,
+    AVATAR_TOURS_STARTED,
+    AVATAR_TOUR_STEPS_VIEWED,
+    AVATAR_TOURS_COMPLETED,
+    AVATAR_TOURS_SKIPPED,
+  ],
+  headline: AVATAR_TOURS_STARTED,
+};
+
+// The Illustrate tour (docs/specs/007-editor/illustrate-tour.md): its own funnel, beside the Illustrate tour's.
+export const ILLUSTRATE_TOUR_DECLINED = chart(
+  'UI',
+  'Closed',
+  'Illustrate Tours Declined',
+  'The Illustrate tour turned down on its welcome card, before it started.',
+  { types: ['IllustrateTourOffer'], rising: 'neutral' },
+);
+
+export const ILLUSTRATE_TOURS_STARTED = chart(
+  'UI',
+  'Started',
+  'Illustrate Tours Started',
+  'The Illustrate tour started.',
+  { types: ['IllustrateTour'] },
+);
+
+export const ILLUSTRATE_TOUR_STEPS_VIEWED = chart(
+  'UI',
+  'View',
+  'Illustrate Tour Steps Viewed',
+  'A step of the Illustrate tour shown.',
+  { typeIn: (t) => (t ?? '').startsWith('IllustrateTourStep') },
+);
+
+export const ILLUSTRATE_TOURS_COMPLETED = chart(
+  'UI',
+  'Ended',
+  'Illustrate Tours Completed',
+  'The Illustrate tour run to its last step.',
+  { types: ['IllustrateTourCompleted'] },
+);
+
+export const ILLUSTRATE_TOURS_SKIPPED = chart(
+  'UI',
+  'Ended',
+  'Illustrate Tours Skipped',
+  'The Illustrate tour closed before its end.',
+  { types: ['IllustrateTourSkipped'], rising: 'neutral' },
+);
+
+export const ILLUSTRATE_TOUR: MetricStack = {
+  stack: true,
+  title: 'Illustrate Tour',
+  blurb:
+    'The first time in Illustrate mode: the Illustrate tour offered, stepped through, finished or skipped.',
+  members: [
+    ILLUSTRATE_TOUR_OFFERED,
+    ILLUSTRATE_TOUR_DECLINED,
+    ILLUSTRATE_TOURS_STARTED,
+    ILLUSTRATE_TOUR_STEPS_VIEWED,
+    ILLUSTRATE_TOURS_COMPLETED,
+    ILLUSTRATE_TOURS_SKIPPED,
+  ],
+  headline: ILLUSTRATE_TOURS_STARTED,
+};
+
+// Element tours (docs/specs/007-editor/element-tours.md): a tour of one element type, offered beside a selected one.
+// One stack for them all, as Show Me's: offered, declined, started (and started per element), steps, how they end.
+export const ELEMENT_TOURS_DECLINED = chart(
+  'UI',
+  'Closed',
+  'Element Tours Declined',
+  'An element tour turned down with the cross on its Tour toolbar.',
+  { types: elementTourTokens('Offer'), rising: 'neutral' },
+);
+
+export const ELEMENT_TOURS_STARTED = chart(
+  'UI',
+  'Started',
+  'Element Tours Started',
+  'Play pressed on the Tour toolbar beside a selected element.',
+  { types: elementTourTokens() },
+);
+
+export const ELEMENT_TOURS_BY_KIND: Metric[] = ELEMENT_TOUR_KINDS.map((k) =>
+  chart('UI', 'Started', `${k.title} Tours Started`, `Play pressed beside a selected ${k.title}.`, {
+    types: [k.token],
+  }),
+);
+
+export const ELEMENT_TOUR_STEPS_VIEWED = chart(
+  'UI',
+  'View',
+  'Element Tour Steps Viewed',
+  'A step of an element tour shown.',
+  { typeIn: (t) => ELEMENT_TOUR_KINDS.some((k) => (t ?? '').startsWith(`${k.token}Step`)) },
+);
+
+export const ELEMENT_TOURS_COMPLETED = chart(
+  'UI',
+  'Ended',
+  'Element Tours Completed',
+  'An element tour run to its last card.',
+  { types: elementTourTokens('Completed') },
+);
+
+export const ELEMENT_TOURS_SKIPPED = chart(
+  'UI',
+  'Ended',
+  'Element Tours Skipped',
+  'An element tour closed before its end.',
+  { types: elementTourTokens('Skipped'), rising: 'neutral' },
+);
+
+export const ELEMENT_TOURS: MetricStack = {
+  stack: true,
+  title: 'Element Tours',
+  blurb:
+    'Tours of one element type, offered beside a selected one: offered, declined, started, stepped through, finished or skipped.',
+  members: [
+    ELEMENT_TOURS_OFFERED,
+    ELEMENT_TOURS_DECLINED,
+    ELEMENT_TOURS_STARTED,
+    ...ELEMENT_TOURS_BY_KIND,
+    ELEMENT_TOUR_STEPS_VIEWED,
+    ELEMENT_TOURS_COMPLETED,
+    ELEMENT_TOURS_SKIPPED,
+  ],
+  headline: ELEMENT_TOURS_STARTED,
+};
+
+// Show Me (docs/specs/007-editor/show-me.md): the on-demand tours of one surface each. Never offered, so each starts
+// only when its button is pressed. One stack for all of them: every start, the starts per surface, then how they end.
+const SHOW_ME_SURFACES = [
+  { token: 'CardTypeTour', title: 'Card Type', where: 'the card type editor' },
+  { token: 'ShareTour', title: 'Share', where: 'the Share dialog' },
+  { token: 'DashboardTour', title: 'Dashboard', where: 'Dashboard Settings' },
+  { token: 'PhotoReviewTour', title: 'Photo Review', where: 'the photo import review' },
+  { token: 'LogoTour', title: 'Logo', where: 'a logo page’s panel' },
+  { token: 'SlideTour', title: 'Slide', where: 'a slide page’s panel' },
+  { token: 'InfographicTour', title: 'Infographic', where: 'an infographic page’s panel' },
+  { token: 'ArticleTour', title: 'Article', where: 'an article page’s panel' },
+  { token: 'SankeyFlowsTour', title: 'Sankey Flows', where: 'a Sankey’s Flows dialog' },
+  { token: 'TabStyleTour', title: 'Tab Style', where: 'the Tab Style dialog' },
+] as const;
+
+export const SHOW_ME_TOURS_STARTED = chart(
+  'UI',
+  'Started',
+  'Show Me Tours Started',
+  'Show Me pressed, on any surface.',
+  { types: SHOW_ME_SURFACES.map((s) => s.token) },
+);
+
+export const SHOW_ME_TOURS_BY_SURFACE: Metric[] = SHOW_ME_SURFACES.map((s) =>
+  chart('UI', 'Started', `${s.title} Tours Started`, `Show Me pressed in ${s.where}.`, {
+    types: [s.token],
+  }),
+);
+
+export const SHOW_ME_TOURS_COMPLETED = chart(
+  'UI',
+  'Ended',
+  'Show Me Tours Completed',
+  'A Show Me tour run to its end.',
+  { types: SHOW_ME_SURFACES.map((s) => `${s.token}Completed`) },
+);
+
+export const SHOW_ME_TOURS_SKIPPED = chart(
+  'UI',
+  'Ended',
+  'Show Me Tours Skipped',
+  'A Show Me tour closed before its end.',
+  { types: SHOW_ME_SURFACES.map((s) => `${s.token}Skipped`), rising: 'neutral' },
+);
+
+export const SHOW_ME_TOURS: MetricStack = {
+  stack: true,
+  title: 'Show Me Tours',
+  blurb: 'Show Me, on every surface that has one: started, finished or skipped.',
+  members: [
+    SHOW_ME_TOURS_STARTED,
+    ...SHOW_ME_TOURS_BY_SURFACE,
+    SHOW_ME_TOURS_COMPLETED,
+    SHOW_ME_TOURS_SKIPPED,
+  ],
+  headline: SHOW_ME_TOURS_STARTED,
+};
+
+// Every guided tour in one Dashboard stack, one line per tour started (docs/specs/017-telemetry/telemetry.md).
+// Ten tour stacks took most of the Visitors group; each tour's own funnel is in Pages & Help's
+// Tours & Prompts section, which this links to.
+export const ONBOARDING_TOURS: MetricStack = {
+  stack: true,
+  title: 'Onboarding Tours',
+  blurb:
+    'Every guided tour started, one line per tour. How far people get through each one is in Pages & Help.',
+  members: [
+    TOURS_STARTED,
+    PLAN_TOURS_STARTED,
+    FACILITATE_TOURS_STARTED,
+    DRAW_TOURS_STARTED,
+    FORM_TOURS_STARTED,
+    AVATAR_TOURS_STARTED,
+    ILLUSTRATE_TOURS_STARTED,
+    ELEMENT_TOURS_STARTED,
+    SHOW_ME_TOURS_STARTED,
+  ],
+  seeAlso: { section: 'tours', label: 'See Each Tour in Pages & Help' },
 };
 
 // The once-ever power user mode offer (docs/specs/007-editor/power-user-mode.md), as a funnel.
@@ -408,7 +827,7 @@ export const PAGE_VIEWS_BY_APP: MetricStack = {
   blurb:
     'Every page viewed across the site, by full load or in-app navigation, split by the app that serves it.',
   members: [MARKETING_PAGES, LIVE_PAGES, HELP_PAGES, DASHBOARD_PAGES, COMMUNITY_PAGES],
-  seeAlso: { view: 'pages', label: 'See Every Page on the Pages Tab' },
+  seeAlso: { section: 'pages', label: 'See Every Page in Pages & Help' },
 };
 
 // The landing funnel (docs/specs/019-marketing/landing-funnel.md): arrivals at /new from a public page's call
@@ -435,5 +854,5 @@ export const CALLS_TO_ACTION: MetricStack = {
     'How the public pages turn visitors into documents: arrivals from a call to action, and the documents they created.',
   members: [CTA_ARRIVALS, CTA_DOCUMENTS],
   headline: CTA_DOCUMENTS,
-  seeAlso: { view: 'pages', label: 'See the Landing Funnel on the Pages Tab' },
+  seeAlso: { section: 'pages', label: 'See the Landing Funnel in Pages & Help' },
 };

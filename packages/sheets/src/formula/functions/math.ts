@@ -2,7 +2,7 @@
 import type { FnDef } from '../fn';
 import { MANY, arrayArg, fn, numArg, numFn, numbersOf, volatileFn } from '../fn';
 import { err, isError, scalarOf, type Value } from '../values';
-import { criteriaMask, maskedNumbers, pairsFrom, sameSizeAs } from './conditional';
+import { criteriaMask, ifsNumbers, maskedNumbers, sameSizeAs } from './conditional';
 import { dims } from '../values';
 
 // Round half away from zero, as spreadsheets do, without float drift (2.675 → 2.68).
@@ -59,20 +59,11 @@ export const MATH_FUNCTIONS: Record<string, FnDef> = {
     return isError(ns) ? ns : sum(ns);
   }),
   SUMIFS: fn(3, MANY, (args, f) => {
-    const pairs = pairsFrom(args, 1);
-    if (!pairs) return err('#N/A', 'SUMIFS takes a sum range then pairs of range and criterion');
-    const m = criteriaMask(pairs, f);
-    if (isError(m)) return m;
-    const values = arrayArg(args[0]!, f);
-    const a = dims(values);
-    const b = dims(m.shape);
-    if (a.rows !== b.rows || a.cols !== b.cols)
-      return err('#VALUE!', 'The ranges must be the same size');
-    const ns = maskedNumbers(values, m.mask);
+    const ns = ifsNumbers(args, f, 'SUMIFS takes a sum range then pairs of range and criterion');
     return isError(ns) ? ns : sum(ns);
   }),
   SUMPRODUCT: fn(1, MANY, (args, f) => {
-    const arrays = args.map((a) => arrayArg(a!, f));
+    const arrays = args.map((a) => arrayArg(a, f));
     const d = dims(arrays[0]!);
     if (arrays.some((a) => dims(a).rows !== d.rows || dims(a).cols !== d.cols))
       return err('#VALUE!', 'The arrays must be the same size');

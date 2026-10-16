@@ -27,7 +27,7 @@ The person who creates a team is its first **Admin**. Admins can:
 
 **Members** can see the team and its member list, work in the shared library, and leave the team, but cannot manage membership.
 
-On the team page, an Admin sees a role dropdown (**Admin** or **Member**) on each row to change someone's role, and a small cross to remove them or cancel their invite; both ask you to confirm. An invited person can be given the Admin role before they accept, but they can't manage anything until they have joined.
+On the team page, an Admin sees a role dropdown (**Admin** or **Member**) on each row, which changes the role straight away, and a small cross (shown when you hover the row) to remove them or withdraw their invite. Removing or withdrawing asks you to confirm. An invited person can be given the Admin role before they accept, but they can't manage anything until they have joined.
 
 One rule shapes the whole team: the **last remaining Admin** cannot be demoted, removed, or leave. If you are the only Admin, your row has no role dropdown and **Leave team** is missing from the team's **⋯** menu. To step away, promote someone else to Admin first, or delete the team. Deleting a team removes all of its member rows; its documents go back to their owners (see [Team Shared Documents](/help/collaboration/teams/team-shared-documents/#when-a-team-is-deleted)).
 
@@ -39,7 +39,8 @@ One rule shapes the whole team: the **last remaining Admin** cannot be demoted, 
 </Step>
 <Step n={2}>
   Enter the person's email address and choose **Invite**. They join the list straight away, marked
-  **Invited** with "Waiting for them to accept".
+  **Invited**, with their email address under their name, and the team's summary line counts them as
+  invited.
 </Step>
 <Step n={3}>
   They get an email letting them know, with a link to their Invites page. (If email isn't configured
@@ -49,12 +50,12 @@ One rule shapes the whole team: the **last remaining Admin** cannot be demoted, 
 
 When that person signs in with the same email address, the invite appears in their Explorer **Invites** section, showing the team name, organisation, and member count. They don't need an account yet when you invite them: the invite waits until they sign up with that address. They then choose:
 
-- **Accept**, which adds them to the team as a Member, or
+- **Accept**, which adds them to the team with the role they were given (Member, unless an Admin promoted them), or
 - **Decline**, which removes the invite. An Admin can re-invite the same address later.
 
 A pending invite grants no access until it is accepted. Admins can get an email when someone accepts or declines, controlled by **Someone Responds to a Team Invite** in their [email notifications](/help/account-and-data/email-notifications/).
 
-<Figure caption="Member rows show their role badges above the invite-by-email row that adds someone new.">
+<Figure caption="An Admin's view: a role dropdown on every row but the last Admin's, a pending invite marked Invited, and the invite-by-email row that adds someone new.">
   <RolesAndInvites />
 </Figure>
 

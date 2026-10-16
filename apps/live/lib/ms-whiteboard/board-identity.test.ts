@@ -26,7 +26,7 @@ describe('boardDates', () => {
 
   it('drops dates that are not dates, in the future, or before Whiteboard existed', () => {
     expect(boardDates(undefined, undefined, NOW)).toEqual({});
-    expect(boardDates('', 42 as unknown as string, NOW)).toEqual({});
+    expect(boardDates('', 42, NOW)).toEqual({});
     expect(boardDates('2030-01-01T00:00:00Z', '1999-12-31T00:00:00Z', NOW)).toEqual({});
     expect(Date.parse(BOARD_DATES_FLOOR)).toBeLessThan(Date.parse('2017-07-01T00:00:00Z'));
   });

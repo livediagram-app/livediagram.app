@@ -40,11 +40,19 @@ function treeRoots(ids: ElementId[], edges: Edge[]): ElementId[] {
 
 // Place one component as a top-to-bottom tidy tree. Multiple roots lay out
 // side by side (siblings under an implicit virtual root).
+// A stacked parent's leaves hang in a column under it (graph input's compact org chart,
+// docs/specs/015-api/mcp-server.md §4.7): indented from the parent's left by a quarter of its width plus this, so the
+// bus down from its lower-left quarter has room, each leaf this far below the one before.
+export const STACK_INDENT = 28;
+export const STACK_GAP = 14;
+
 export function positionTreeComponent(
   ids: ElementId[],
   edges: Edge[],
   size: Map<ElementId, Size>,
   centers: Map<ElementId, Pt>,
+  // Parents whose leaf children stack in a column under them instead of a row.
+  stacked: ReadonlySet<ElementId> = new Set(),
 ): PlacedComponent {
   const roots = treeRoots(ids, edges);
   const children = spanningForest(ids, edges, roots);
@@ -78,12 +86,22 @@ export function positionTreeComponent(
   // Post-order horizontal extent of each subtree, then a pre-order walk that
   // packs children left-to-right and centres the parent over their span.
   const extent = new Map<ElementId, number>();
+  const isStack = (id: ElementId) => {
+    const kids = children.get(id)!;
+    return stacked.has(id) && kids.length > 1 && kids.every((k) => children.get(k)!.length === 0);
+  };
+  const stackLeft = (id: ElementId) => size.get(id)!.w / 4 + STACK_INDENT;
   const measure = (id: ElementId): number => {
     const kids = children.get(id)!;
     const own = size.get(id)!.w;
     if (kids.length === 0) {
       extent.set(id, own);
       return own;
+    }
+    if (isStack(id)) {
+      const e = Math.max(own, stackLeft(id) + Math.max(...kids.map((k) => size.get(k)!.w)));
+      extent.set(id, e);
+      return e;
     }
     let total = 0;
     for (const k of kids) total += measure(k) + SIBLING_GAP;
@@ -102,6 +120,16 @@ export function positionTreeComponent(
     const kids = children.get(id)!;
     if (kids.length === 0) {
       pos.set(id, { x: left + (e - s.w) / 2, y });
+      return;
+    }
+    if (isStack(id)) {
+      // The parent at the stack's left; its leaves in a column under it, indented for the bus.
+      pos.set(id, { x: left, y });
+      let ky = y + s.h + LAYER_GAP / 2;
+      for (const k of kids) {
+        pos.set(k, { x: left + stackLeft(id), y: ky });
+        ky += size.get(k)!.h + STACK_GAP;
+      }
       return;
     }
     // Children first, packed within this extent; then the parent centred on
@@ -130,5 +158,6 @@ export function positionTreeComponent(
     left += extent.get(r)! + SIBLING_GAP;
   }
 
-  return { pos, width: Math.max(0, left - SIBLING_GAP), height: Math.max(0, y - LAYER_GAP) };
+  const bottom = Math.max(y - LAYER_GAP, ...[...pos].map(([id, p]) => p.y + size.get(id)!.h));
+  return { pos, width: Math.max(0, left - SIBLING_GAP), height: Math.max(0, bottom) };
 }

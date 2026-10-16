@@ -29,7 +29,7 @@ const APPEARANCE = SETTINGS_CATEGORIES.find((c) => c.id === 'appearance')!;
 function show(settings: UserPreferences = {}) {
   const onChange = vi.fn();
   render(<SettingsCategoryPane category={APPEARANCE} settings={settings} onChange={onChange} />);
-  const slider = (name: string) => screen.getByRole('slider', { name }) as HTMLInputElement;
+  const slider = (name: string) => screen.getByRole<HTMLInputElement>('slider', { name });
   return { onChange, slider };
 }
 

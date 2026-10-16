@@ -137,7 +137,8 @@ http, https or mailto address), a **text colour** and a **highlight** (each a he
   a new tab.
 - **The slash menu**: `/` at the start of a block or after a space opens a menu of blocks, filtered
   as you type (names, then keywords), Up / Down to move, Enter or Tab to choose, Escape to close;
-  it closes when the caret leaves the `/`. Entries: **Text**, **Title**, **Subtitle**, **Heading
+  it closes when the caret leaves the `/`. With nothing matching it says so ("No blocks match"
+  and what was typed). Entries: **Text**, **Title**, **Subtitle**, **Heading
   1 to 3**, **Bulleted list**, **Numbered list**, **To-do list**, **Quote**, **Code**,
   **Divider**, **Page break**, **Image**, **Table**, **Bar chart**, **Pie chart**, **Line chart**,
   **Drawing**, **Callout**, **Sticky note**. (An icon comes in from the palette, where one is
@@ -174,8 +175,9 @@ http, https or mailto address), a **text colour** and a **highlight** (each a he
     Bullets, Numbers, To-do for a list) and is only as wide as the name shown, the menu keeping
     the full names;
   - **Bold**, **Italic**, **Underline**;
-  - **Colour** (a menu holding two colour pickers,
-    [Colour picker](../004-interface-design/colour-picker.md): **Text**, led by **Default colour**
+  - **Colour** (a menu holding two colour pickers, each under its name on screen (**Text Colour**, then
+    **Highlight** below a rule), so their two Theme Palettes read apart,
+    [Colour picker](../004-interface-design/colour-picker.md): **Text colour**, led by **Default colour**
     and the article's **Accent**, then the strong standard colours for paper; **Highlight**, led by
     **No highlight**, then the soft standard colours; each with Custom colours and **Add a custom colour** (four coloured dots));
   - **Link**;
@@ -186,7 +188,8 @@ http, https or mailto address), a **text colour** and a **highlight** (each a he
   - **Insert** (a menu: Image, Table, Chart, then Divider, Page break, Quote, Code; a drawing
     starts from a shape dropped on the page or the slash menu's **Drawing**, a callout from the
     slash menu).
-  - **Comment** (⌘⌥M) and **Assign Action**, with text selected (see "Comments and actions").
+  - **Comment** (⌘⌥M) and **Assign Action**, usable while text is selected (see "Comments and
+    actions").
 - No undo or redo (the canvas controls have them) and no word count.
 - **Narrow**: when the toolbar is wider than the canvas, it scrolls sideways.
 - **On a phone** the toolbar is a bar fixed along the top of the canvas, across it (its controls
@@ -222,7 +225,10 @@ laid out with it, holding ordinary canvas elements that move with it.
   default the text width x 240 px) with grips on its bottom edge (taller or shorter), its right
   edge (wider or narrower, up to the text width, a wrapped zone two thirds of it) and its
   bottom-right corner (both); it grows to keep its elements inside it with 24 px to spare, and never
-  shrinks past them.
+  shrinks past them. Each grip is a focus stop: the arrow keys grow or shrink the zone a step
+  (Shift: ten steps), one edit each; Escape during a grip drag puts the zone back as it was.
+- **An object in the writing connects to nothing**: no quick-connect pluses show on an element of
+  an article page that is not a drawing element.
 - **Wrap**: **In Line** (default; on its own line between blocks, aligned left, centre (default)
   or right), **Wrap Left** (at the left of the text, the text running down its right) or **Wrap
   Right**. A wrapped zone is at most two thirds of the text width; it keeps 14 px clear of the
@@ -326,8 +332,12 @@ A visitor, a locked tab, or a tab with no articles switches straight away.
 
 ## Article style
 
-Set from the page panel's **Style** and **Text** tabs (an article page's panel has **Page**,
-**Background**, **Style** and **Text**; it has no Layouts). **Style** holds Looks, Accent, Headings in the
+Set from **Style** and **Text** in the page's title bar, beside its cog, each opening a popover
+anchored to its button (a bottom sheet on a phone), as an infographic or slide page's Layouts and
+Background do; **Background** sits beside them (`PageArticleButtons`, `PageBackgroundButton`). The
+cog's panel keeps only **Page** (size and orientation) and the page's actions, so the title bar
+carries what is changed often and the cog what is set once. The page toolbar's **Style** command
+opens the Style popover of the page it is on. A locked page shows none of the three. **Style** holds Looks, Accent, Headings in the
 Accent, Margins and Page Numbers; **Text** holds Fonts, then Text Size, Line Spacing, Paragraph
 Spacing and Lines Under Text (under **Size and Spacing**). Every change is one edit, previewed on the page while
 a choice is hovered.
@@ -336,7 +346,8 @@ a choice is hovered.
   - **Clean**: Inter throughout; ink headings; no rules; normal spacing.
   - **Classic**: Lora throughout; ink headings; a rule under the title; 1.5 spacing.
   - **Report**: Poppins headings, Inter body; accent headings; a rule under every heading.
-  - **Notebook**: Nunito throughout; accent headings; the page ruled in lines aligned to the text.
+  - **Notebook**: Nunito throughout; accent headings; no paragraph spacing; the page ruled in lines
+    aligned to the text.
   - **Bold**: Oswald headings, Inter body; accent title and headings; large text.
     Choosing a look sets every field below; a field changed afterwards keeps the rest.
 - **Fonts**: **Headings** and **Body**, each a font from the font catalogue
@@ -381,19 +392,31 @@ ink").
   ([Illustrate pages](illustrate-pages.md) "Page actions").
 - **Slides**: any page of an article can be added as a page slide; it shows that page as it is
   now, the writing on it included.
-- **Present**: an article page presents like any page, its writing drawn, no toolbar, no caret.
+- **Present**: an article page presents like any page, its writing drawn, no toolbar, no caret,
+  from any mode (a page slide presenting outside Illustrate shows its writing too).
 - **Export**: PDF, PNG and SVG draw an article page's writing exactly as on screen (text as real
   text in SVG output; rasterised in PNG, and in PDF, whose pages are images), with its zones'
   elements, its page number and its ruled lines; nothing of the editing chrome.
 - **The Map** shows each page's text as soft grey lines.
 - **Diagram and Draw modes** show the tab's elements as always; the writing belongs to the pages
-  and shows only in Illustrate mode (its zones' elements stay on the canvas where they are).
+  and shows only in Illustrate mode and on a presenting page slide (its zones' elements stay on the
+  canvas where they are).
 - **Viewers** (a view role, a locked tab) read the writing and cannot change it; no caret, no
   toolbar, no zone bar. **A locked page** makes its whole article read the same way for everyone
   ([Illustrate pages](illustrate-pages.md) "Locking a page"), from any of its pages: no caret, no
   page toolbar (hovered or worked on), no zone bar, nothing taken into its writing (an element
   dropped on one of its unlocked pages stays a loose element), and its page count and zones held as
   they are.
+
+## Share roles
+
+([Share roles](../013-workspace/share-roles.md))
+
+| Role            | With an article                                                                                                                                          |
+| --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Editor**      | Everything on this page: writes, formats, inserts, moves zones, sets the style, puts margin notes on, turns articles into pages.                         |
+| **Participant** | Reads the writing as a Viewer does (writing is reshaping the page, an Editor's). A margin note's marker opens its thread, where it comments and replies. |
+| **Viewer**      | Reads the writing and its margin notes; changes nothing.                                                                                                 |
 
 ## Collaboration
 

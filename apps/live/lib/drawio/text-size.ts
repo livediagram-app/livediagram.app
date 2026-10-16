@@ -10,7 +10,6 @@ import {
   RUN_XS_PX,
   arrowLabelFontSize,
   type RunSize,
-  type TextSize,
 } from '@livediagram/document';
 import { nearest } from './nearest';
 
@@ -38,7 +37,7 @@ const tableOf = (scale: TextScale) =>
   >;
 
 /** An element's draw.io font size as the preset nearest on its own scale (D26). */
-export function elementTextSize(px: number, scale: TextScale): TextSize {
+export function elementTextSize(px: number, scale: TextScale): Preset {
   return nearest(tableOf(scale), SIZES, px);
 }
 

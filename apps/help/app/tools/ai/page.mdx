@@ -33,7 +33,7 @@ AI Assistance is off by default and only exists when the people running livediag
 
 The panel is an ordinary corner panel: drag its header to move it, or collapse it to its title bar when you want the space back. To remove it, switch **AI Assistant** off again. The same category has a **Suggested Prompts** switch, which shows a row of one-click starter prompts under the mode buttons (on by default).
 
-The panel is not shown in view-only sessions, or while [zen mode](/help/tools/zen-mode/) hides the chrome.
+The panel is only shown to Editors (not to Participants or Viewers), and not while [zen mode](/help/tools/zen-mode/) hides the chrome.
 
 ## What it can do
 
@@ -52,8 +52,8 @@ Clean applies its changes as a single step, so one **Undo** (⌘Z / Ctrl+Z) reve
 
 ## Limits
 
-- A prompt can be up to 1,000 characters.
-- A request covers at most 200 elements, so on a very large tab, select the part you want help with.
+- Prompts over 1,000 characters are refused, so keep each one short.
+- The assistant works on tabs of up to 200 elements, and a request on a larger tab fails, whatever is selected. Move part of the diagram to its own tab to use it there.
 - The panel remembers your last few exchanges on the tab so a follow-up question makes sense. Switching tabs starts a fresh conversation, and **Clear context** under the response forgets it sooner.
 
 <Tip>

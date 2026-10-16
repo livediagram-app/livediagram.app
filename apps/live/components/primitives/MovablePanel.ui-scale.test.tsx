@@ -3,7 +3,7 @@
 // at its root, and a free-dragged panel stays at the screen position it was
 // dropped at, so its stored screen-px position is written divided by the
 // scale. A corner panel stays its design 16px from the corner.
-import { cleanup, render } from '@testing-library/react';
+import { cleanup, render, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { ReactNode } from 'react';
 
@@ -83,14 +83,25 @@ describe('MovablePanel at a UI scale', () => {
   });
 });
 
+describe('Panel opacity (docs/specs/007-editor/user-preferences.md)', () => {
+  it('lets a panel fade unless it is opaque, docked or as a popover', () => {
+    expect(panel(null).hasAttribute('data-panel-translucent')).toBe(true);
+    cleanup();
+    expect(panel(null, { opaque: true }).hasAttribute('data-panel-translucent')).toBe(false);
+    cleanup();
+    const pop = panel(null, {
+      opaque: true,
+      asPopover: true,
+      popoverOpen: true,
+      popoverAnchor: { top: 40, left: 100, arrowOffset: 30 },
+    });
+    expect(pop.hasAttribute('data-panel-translucent')).toBe(false);
+  });
+});
+
 describe('useUiScale', () => {
   it('is 1 with no provider', () => {
-    let seen = 0;
-    function Probe() {
-      seen = useUiScale('panels');
-      return null;
-    }
-    render(<Probe />);
-    expect(seen).toBe(1);
+    const { result } = renderHook(() => useUiScale('panels'));
+    expect(result.current).toBe(1);
   });
 });

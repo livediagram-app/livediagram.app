@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { use, useEffect, useRef, useState } from 'react';
+import { browser } from 'react-dom';
 import { Button, useCopiedFlash, DialogCloseButton, DialogHeader } from '@livediagram/ui';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { DialogFooter } from '@/components/dialogs/DialogFooter';
@@ -21,6 +22,7 @@ import { ShareTabs, shareTabId, sharePanelId, type ShareTab } from './ShareTabs'
 import { CommunityGuide } from './community/CommunityGuide';
 import { ShareStatus } from './ShareStatus';
 import { SECTION_LABEL } from './share-dialog-parts';
+import { ShareShowMeButton, ShareTourStage, useShareTour } from '@/components/tour/ShareTour';
 
 // How long a just-issued pass wears its highlight ring before it fades.
 const PASS_HIGHLIGHT_MS = 1400;
@@ -70,6 +72,8 @@ export function ShareDialog({
   const highlightTimer = useRef<number | undefined>(undefined);
   useEffect(() => () => window.clearTimeout(highlightTimer.current), []);
   const multiTab = tabs.length > 1;
+  // Show Me: the tour of issuing and managing passes, run on this dialog (docs/specs/007-editor/live-app.md).
+  const { tour, freeze: freezeTour } = useShareTour(multiTab, () => setTab('passes'));
   // Which tab the Live image renders (docs/specs/013-workspace/live-image-share.md). null = the first tab,
   // which the server serves from its cached snapshot, so the URL omits
   // `?tab=`. Document-wide: the same choice applies to every pass's image.
@@ -145,7 +149,9 @@ export function ShareDialog({
 
   // Origin for the embed / live-image snippets. Guarded so a build-time
   // prerender (the dialog isn't shown then) doesn't touch window.
-  const origin = typeof window === 'undefined' ? '' : window.location.origin;
+  // In the browser only (docs/specs/003-system-architecture/react-state-and-effects.md "Rendering in the browser only").
+  use(browser());
+  const origin = window.location.origin;
 
   // Offline documents (docs/specs/006-document/offline-mode.md) have nothing to share yet, so swap the whole
   // dialog for the sync gate until the owner moves it to the cloud.
@@ -158,6 +164,8 @@ export function ShareDialog({
       open
       onClose={close}
       ariaLabel="Share this document"
+      // While Show Me runs, Escape is the tour's, never the dialog's.
+      closeOnEscape={!tour.active}
       size="lg"
       className="max-h-[calc(100%-2rem)]"
     >
@@ -171,7 +179,8 @@ export function ShareDialog({
           />
         }
       >
-        <HelpArticleLink article="sharing" size="md" />
+        <ShareShowMeButton tour={tour} onStart={freezeTour} />
+        <HelpArticleLink article="sharing" variant="labelled" />
         <DialogCloseButton onClick={close} />
       </DialogHeader>
 
@@ -194,11 +203,16 @@ export function ShareDialog({
           aria-labelledby={community ? shareTabId('passes') : undefined}
           className="flex flex-col gap-5 overflow-y-auto px-6 py-5"
         >
-          <ShareComposer tabs={tabs} busy={busy} onIssue={issue} />
+          <ShareComposer
+            tabs={tabs}
+            busy={busy}
+            onIssue={(role, expiry, tabId) => void issue(role, expiry, tabId)}
+          />
 
           <section
             className="flex flex-col gap-2 border-t border-slate-100 pt-5 dark:border-slate-800"
             aria-labelledby="share-passes-heading"
+            data-tour-id="share-passes"
           >
             <p id="share-passes-heading" className={`${SECTION_LABEL} flex items-center gap-1.5`}>
               Passes
@@ -229,10 +243,12 @@ export function ShareDialog({
                     liveImageTabParam={liveImageTabParam}
                     setLiveImageTabId={setLiveImageTabId}
                     shareUrlFor={shareUrlFor}
-                    onCopy={copy}
+                    onCopy={(code) => void copy(code)}
                     onRevoke={(code) => withBusy(() => onRevokeLink(code))}
                     onRescope={
-                      multiTab ? (code, tabId) => withBusy(() => onRescopeLink(code, tabId)) : null
+                      multiTab
+                        ? (code, tabId) => void withBusy(() => onRescopeLink(code, tabId))
+                        : null
                     }
                   />
                 ))}
@@ -258,7 +274,7 @@ export function ShareDialog({
                     link={link}
                     busy={busy}
                     shareUrlFor={shareUrlFor}
-                    onExtend={(code) => withBusy(() => onExtendLink(code))}
+                    onExtend={(code) => void withBusy(() => onExtendLink(code))}
                     onDelete={(code) => withBusy(() => onRevokeLink(code))}
                   />
                 ))}
@@ -284,6 +300,7 @@ export function ShareDialog({
           Done
         </Button>
       </DialogFooter>
+      <ShareTourStage tour={tour} />
     </Dialog>
   );
 }

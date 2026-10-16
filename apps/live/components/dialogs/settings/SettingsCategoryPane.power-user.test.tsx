@@ -17,7 +17,7 @@ function setViewport() {
     removeEventListener: () => {},
     addListener: () => {},
     removeListener: () => {},
-  })) as unknown as typeof window.matchMedia;
+  }));
 }
 
 function renderEditor(settings: UserPreferences, onGoToRow = vi.fn()) {
@@ -63,7 +63,7 @@ describe('Power User Mode children', () => {
     expect(
       minimal.compareDocumentPosition(readout) & Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();
-    expect(within(readout).getAllByRole('listitem')).toHaveLength(5);
+    expect(within(readout).getAllByRole('listitem')).toHaveLength(11);
     expect(within(readout).getAllByText('On').length).toBeGreaterThan(0);
   });
 

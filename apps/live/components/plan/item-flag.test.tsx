@@ -7,25 +7,24 @@ import { toggleFlag } from './item-flag';
 import { PlanCardFace } from './PlanCardFace';
 
 // docs/specs/026-plan/items.md "Flags".
-const track = vi.fn();
-vi.mock('@/lib/telemetry', () => ({ track: (...a: unknown[]) => track(...a) }));
+const track = vi.fn<typeof import('@/lib/telemetry').track>();
+vi.mock('@/lib/telemetry', () => ({ track: (...a: Parameters<typeof track>) => track(...a) }));
 vi.mock('./PlanContext', () => ({ usePlan: () => undefined }));
 
 afterEach(cleanup);
 
-const item = (fields: Item['fields']): Item =>
-  ({
-    id: 'item0001',
-    type: 'task',
-    key: 3,
-    rank: 'i',
-    fields: { title: 'Ship', ...fields },
-    rev: 1,
-    createdAt: 0,
-    updatedAt: 0,
-    createdBy: { id: 'p', name: 'Sam', color: '#2563eb' },
-    updatedBy: { id: 'p', name: 'Sam', color: '#2563eb' },
-  }) as Item;
+const item = (fields: Item['fields']): Item => ({
+  id: 'item0001',
+  type: 'task',
+  key: 3,
+  rank: 'i',
+  fields: { title: 'Ship', ...fields },
+  rev: 1,
+  createdAt: 0,
+  updatedAt: 0,
+  createdBy: { id: 'p', name: 'Sam', color: '#2563eb' },
+  updatedBy: { id: 'p', name: 'Sam', color: '#2563eb' },
+});
 
 describe('flags', () => {
   it('sets the flag, then clears it, and counts each', () => {

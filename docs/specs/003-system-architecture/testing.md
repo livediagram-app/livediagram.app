@@ -17,7 +17,7 @@ Vitest with the same shared config.
 
 Per the repo's reuse-over-duplication rule, test configuration lives in one
 place: `packages/vitest-config`. It sits alongside the other shared configs
-(`eslint-config`, `prettier-config`, `tailwind-config`).
+(`oxlint-config`, `prettier-config`, `tailwind-config`).
 
 It exports:
 
@@ -60,6 +60,28 @@ export default defineProject({ test: { environment: 'jsdom' } });
   those tests flake on a busy machine. CPU time still catches the regression
   the budget is for. The one exception is a test that asserts nothing WAITS
   (no sleep, no retry delay): only wall-clock time can see a wait.
+- **An inline script is tested as the browser runs it.** A boot script ships as a string the page
+  inlines before hydration (appearance, reduce motion, the stale-HTML guard), so its test runs that
+  very string with `runInlineScript(source, globals)` from
+  `@livediagram/vitest-config/inline-script`: a classic script in its own realm whose globals are
+  the stubs it is handed (`document`, `localStorage`, a clock, `URL`) and nothing of the test's,
+  never through `new Function`.
+- **A stubbed fetch reads what it was sent** through `@livediagram/vitest-config/sent-request`:
+  `sentJson(init)` and `sentText(init)` read a string body, `sentForm(init)` a form, and
+  `sentUrl(input)` the URL of a string, a URL or a Request. A body of any other kind fails the
+  test rather than read as `[object Blob]`.
+- **A tight budget is written for a developer's machine and widened on CI and under coverage.** CI's
+  shared runners, under coverage, run the same work about 4x slower than an
+  M-series Mac (the Tidy Up hover: 24 ms locally, 101 to 104 ms on CI), so a
+  budget set for a person's device sits at the line there and fails at random;
+  coverage alone slows it too (the pre-push hook's coverage run read a 16 ms
+  drag frame at 20 ms). Such a test asserts `cpuBudgetMs(ms)`: `ms` in a plain
+  run, `ms x CI_CPU_HEADROOM` (3) when `CI` is `true` or `1` (`CI=false` or
+  `CI=0` is a developer's machine) or the run collects coverage (the shared
+  Vitest config passes `LIVEDIAGRAM_COVERAGE` to its workers). Three is enough
+  beside a 4x slower runner because each budget keeps its own room over the
+  local timing (Tidy Up: 100 ms against 24). A loose regression guard (a budget many times what the
+  work measures) needs neither.
 - **A test never pays a cold module load.** When the code under test imports
   a module lazily (`await import(...)`), the test file also imports it
   statically, so its transform happens at collection, outside every test's
@@ -293,8 +315,11 @@ inputs (`turbo.json`), so a docs-only change never replays a cached pass of thos
     builder tests, `apps/marketing`'s gallery, and `apps/help`'s article guard.
   - `packages/tailwind-config`: the theme's budgets, motion and optical
     utilities, scrollbars.
-  - `packages/eslint-config`: the custom rules (raw SVG, native `title`) and
-    the TypeScript alias wiring.
+  - `packages/oxlint-config`: the shared lint config, linting scratch files
+    with the real config (every rule family, the custom raw SVG and native
+    `title` rules, directives).
+  - `packages/source-ast`: parsing a batch of `.ts` and `.tsx` files with
+    TypeScript 7 (order, parents, positions, JSX) and naming a file it could not read.
   - `packages/telemetry-client`: the shared buffer / flush / beacon engine
     both apps emit through: batching, caps, opt-in gates, page-hide beacon,
     error-tracking caps.
@@ -317,7 +342,8 @@ inputs (`turbo.json`), so a docs-only change never replays a cached pass of thos
     UI-label, template and shortcut guards over article text, search and
     article telemetry, the schema.org JSON-LD builders, and the docs guards: every repo path quoted in
     `docs/` exists, and every blueprint DEFAULTS.md ledger id, COMPLETENESS.md section and README.md
-    index entry is unique, so a merge that keeps both sides of one fails a test.
+    index entry is unique, so a merge that keeps both sides of one fails a test; and the
+    one-TypeScript guard (every workspace on the root's TypeScript 7, no alias to another).
   - `apps/community`: component tests for the gallery (search words, the
     controls, My Shares, Load More), the post page and the like button's
     optimistic rollback, the switched-off gate and the lazy Clerk session; the

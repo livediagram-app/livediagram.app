@@ -29,6 +29,7 @@ export function AddColumnPicker({
   statusNames,
   existing,
   autoFocus = false,
+  short = false,
   onPick,
   onPickAll,
   onName,
@@ -39,6 +40,8 @@ export function AddColumnPicker({
   // The ones this board lacks, with their counts (missingBoardStatuses).
   existing: readonly MissingStatus[];
   autoFocus?: boolean;
+  // A narrow home (the board's Columns section): the button reads Add, its name still Add Column.
+  short?: boolean;
   onPick: (pick: StatusPick) => void;
   onPickAll: (picks: StatusPick[]) => void;
   // A new status's name (a name matching an existing status arrives as a pick instead).
@@ -112,10 +115,11 @@ export function AddColumnPicker({
           <Button
             disabled={!name.trim() || match.kind === 'on-board'}
             onClick={addTyped}
+            aria-label={short ? 'Add Column' : undefined}
             className="h-9 shrink-0 gap-1 px-3 text-[13px] font-semibold"
           >
             <PlusIcon size={14} />
-            Add Column
+            {short ? 'Add' : 'Add Column'}
           </Button>
         </div>
         {note ? (

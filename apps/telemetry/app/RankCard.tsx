@@ -32,7 +32,7 @@ export function RankCard({
   return (
     <div className="rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-900">
       <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">{title}</h3>
-      <p className="mt-0.5 text-xs text-slate-400">{subtitle}</p>
+      <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">{subtitle}</p>
       <RankList {...list} />
     </div>
   );

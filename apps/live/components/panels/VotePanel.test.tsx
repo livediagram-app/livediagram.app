@@ -43,6 +43,7 @@ describe('VotePanel results', () => {
         onClearVote={() => {}}
         isHost
         readOnly={false}
+        canVote
         onPopoverClose={() => {}}
         selfId="me"
         review={null}
@@ -53,5 +54,48 @@ describe('VotePanel results', () => {
     );
     expect(screen.getByText('#12 Ship it')).toBeTruthy();
     expect(screen.getByText('Card')).toBeTruthy();
+  });
+});
+
+// docs/specs/013-workspace/share-roles.md: a Participant is read-only but votes, so it sees its dots left.
+describe('VotePanel dots left', () => {
+  const casting: TabVote = {
+    active: true,
+    revealed: false,
+    votesPerPerson: 3,
+    votes: { a: ['me'] },
+  };
+  const panel = (readOnly: boolean, canVote: boolean) =>
+    render(
+      <VotePanel
+        vote={casting}
+        elements={[]}
+        participantCount={2}
+        results={[]}
+        reviewIndex={null}
+        onJumpToResult={() => {}}
+        onEndVote={() => {}}
+        onRevealVote={() => {}}
+        onClearVote={() => {}}
+        isHost={false}
+        readOnly={readOnly}
+        canVote={canVote}
+        onPopoverClose={() => {}}
+        selfId="me"
+        review={null}
+        onNextResult={() => {}}
+        onPrevResult={() => {}}
+        onDoneReview={() => {}}
+      />,
+    );
+
+  it('shows a Participant its dots left', () => {
+    panel(true, true);
+    expect(screen.getByText('2 of 3 dots left')).toBeTruthy();
+  });
+
+  it('shows a Viewer none', () => {
+    panel(true, false);
+    expect(screen.queryByText(/dots left/)).toBeNull();
   });
 });

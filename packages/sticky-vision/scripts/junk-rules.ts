@@ -1,4 +1,5 @@
 import { collectRows, labelledNotes, type BoxRow } from './junk-features';
+import { parseRules, showRule, type Cond, type Rule } from './junk-rule';
 
 // Learning a junk gate leave-one-wall-out (plans/event-storming-photo-95-
 // experiments C3): for each labelled wall, rules are fitted on the OTHER
@@ -12,6 +13,7 @@ import { collectRows, labelledNotes, type BoxRow } from './junk-features';
 // describes a KIND of junk rather than one photograph's.
 //
 //   npx tsx scripts/junk-rules.ts [--cost 4] [--walls 2] [--rules 4] [--pairs]
+//     [--pre "edge1 < 0.020 AND valIn > 0.450 OR ..."]
 
 const arg = (name: string, fallback: number) => {
   const i = process.argv.indexOf(name);
@@ -28,13 +30,8 @@ const ONLY = process.argv.includes('--only')
   ? process.argv[process.argv.indexOf('--only') + 1]!.split(',')
   : null;
 
-type Cond = { f: string; lt: boolean; t: number };
-type Rule = Cond[];
-
 const holds = (r: BoxRow, c: Cond) => (c.lt ? r.f[c.f]! < c.t : r.f[c.f]! > c.t);
 const fires = (r: BoxRow, rule: Rule) => rule.every((c) => holds(r, c));
-const show = (rule: Rule) =>
-  rule.map((c) => `${c.f} ${c.lt ? '<' : '>'} ${c.t.toFixed(3)}`).join(' AND ');
 
 function candidates(rows: BoxRow[], features: string[]): Cond[] {
   const out: Cond[] = [];
@@ -112,15 +109,15 @@ function learn(train: BoxRow[], features: string[]): Rule[] {
 }
 
 function main() {
-  // `--pre <expr>`: a gate already applied, so the rules learn what is left.
-  const pre = process.argv.includes('--pre')
-    ? (new Function('f', `return ${process.argv[process.argv.indexOf('--pre') + 1]}`) as (
-        f: Record<string, number>,
-      ) => boolean)
-    : () => false;
   const all = collectRows();
-  const preRemoved = all.filter((r) => pre(r.f));
-  const rows = all.filter((r) => !pre(r.f));
+  // `--pre <rules>`: a gate already applied, in the notation the rules print in, so the rules
+  // learn what is left.
+  const preAt = process.argv.indexOf('--pre');
+  const preRules =
+    preAt === -1 ? [] : parseRules(process.argv[preAt + 1] ?? '', Object.keys(all[0]?.f ?? {}));
+  const pre = (r: BoxRow) => preRules.some((rule) => fires(r, rule));
+  const preRemoved = all.filter(pre);
+  const rows = all.filter((r) => !pre(r));
   console.log(
     `pre-gate removed ${preRemoved.filter((r) => !r.note).length} junk/paper, ${preRemoved.filter((r) => r.note).length} notes`,
   );
@@ -155,7 +152,7 @@ function main() {
       `${wall.padEnd(20)} junk ${String(j - pj).padStart(2)}/${String(offJunk).padStart(2)} + paper ${pj} removed, notes lost ${n}` +
         `   prec ${(precBefore * 100).toFixed(0)}% -> ${(precAfter * 100).toFixed(0)}%`,
     );
-    for (const rule of rules) console.log(`    ${show(rule)}`);
+    for (const rule of rules) console.log(`    ${showRule(rule)}`);
   }
   const truth = labelledNotes();
   const p = matched / detected;

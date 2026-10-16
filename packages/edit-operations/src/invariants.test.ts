@@ -30,7 +30,7 @@ const SAMPLES: Readonly<Record<(typeof EDIT_OPERATION_NAMES)[number], string>> =
 };
 
 const samples = Object.entries(SAMPLES);
-const frozen = (tab: Tab): Tab => JSON.parse(JSON.stringify(tab));
+const frozen = (tab: Tab) => JSON.parse(JSON.stringify(tab)) as Tab;
 
 describe('invariants', () => {
   it('has a sample for every operation', () => {

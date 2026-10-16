@@ -62,9 +62,12 @@ type PersistDelete = () => Promise<unknown>;
 
 type EditorCommentsApi = {
   commentThreadOpenId: string | null;
-  // Toggle open / closed: clicking the same id again closes the
-  // popover (matches the existing behaviour).
-  openComments: (elementId: string) => void;
+  // The Sheet cell whose thread is open (docs/specs/029-sheets/sheet.md "Cell comments"), its key; null for the
+  // element's own thread.
+  commentThreadOpenCell: string | null;
+  // Toggle open / closed: clicking the same id (and cell) again closes the
+  // popover (matches the existing behaviour). `cell` opens a Sheet cell's thread.
+  openComments: (elementId: string, cell?: string) => void;
   closeComments: () => void;
   // Returns the minted comment id. With `persist` (view-role visitors, who
   // don't autosave the tab), the hook runs it, adopts the server-minted id
@@ -74,6 +77,7 @@ type EditorCommentsApi = {
     text: string,
     persist?: PersistAdd,
     mentions?: CommentMention[],
+    cell?: string,
   ) => string;
   // Swap a comment's id in place — the view-role persist path gets the
   // authoritative id back from POST /comments, and without adopting it
@@ -83,30 +87,37 @@ type EditorCommentsApi = {
   deleteComment: (elementId: string, commentId: string, persist?: PersistDelete) => void;
   // With `persist` (a session that may comment but not edit), the hook runs it and counts the change once the
   // server took it, as for an add.
-  resolveThread: (elementId: string, persist?: PersistDelete) => void;
-  unresolveThread: (elementId: string, persist?: PersistDelete) => void;
+  resolveThread: (elementId: string, persist?: PersistDelete, cell?: string) => void;
+  unresolveThread: (elementId: string, persist?: PersistDelete, cell?: string) => void;
 };
 
 export function useEditorComments(deps: EditorCommentsDeps): EditorCommentsApi {
-  const [commentThreadOpenId, setCommentThreadOpenId] = useState<string | null>(null);
+  // One state, so the element and its cell always change together.
+  const [open, setOpen] = useState<{ id: string; cell: string | null } | null>(null);
+  const commentThreadOpenId = open?.id ?? null;
+  const commentThreadOpenCell = open?.cell ?? null;
 
-  const openComments = (elementId: string) => {
+  const openComments = (elementId: string, cell?: string) => {
     if (deps.commentsOff) return;
+    const at = cell ?? null;
     // Closure read before the toggle so we emit only on the open
     // transition, never on close, and never double-fire under React
     // strict mode (which would re-run an updater-internal side
     // effect).
-    const wasOpen = commentThreadOpenId === elementId;
-    setCommentThreadOpenId((cur) => (cur === elementId ? null : elementId));
+    const wasOpen = open?.id === elementId && open.cell === at;
+    setOpen((cur) =>
+      cur?.id === elementId && cur.cell === at ? null : { id: elementId, cell: at },
+    );
     if (!wasOpen) track('Comment', 'Opened');
   };
-  const closeComments = () => setCommentThreadOpenId(null);
+  const closeComments = () => setOpen(null);
 
   const addComment = (
     elementId: string,
     text: string,
     persist?: PersistAdd,
     mentions?: CommentMention[],
+    cell?: string,
   ): string => {
     if (deps.commentsOff) return '';
     // Mint OUTSIDE the updater: state updaters must stay pure (strict
@@ -123,7 +134,11 @@ export function useEditorComments(deps: EditorCommentsDeps): EditorCommentsApi {
     if (mentions?.length) deps.onMentioned?.(text, mentions);
     // Adding a comment unresolves a resolved thread (applyElementDelta):
     // the new message is itself a signal the conversation isn't done.
-    deps.applyElementDelta(elementId, { kind: 'comment-add', comment });
+    deps.applyElementDelta(elementId, {
+      kind: 'comment-add',
+      comment,
+      ...(cell !== undefined ? { cell } : {}),
+    });
     if (persist) {
       void persist(comment.id)
         .then((created) => {
@@ -155,8 +170,14 @@ export function useEditorComments(deps: EditorCommentsDeps): EditorCommentsApi {
     }
   };
 
-  const setResolved = (elementId: string, resolved: boolean, persist?: PersistDelete) => {
-    deps.applyElementDelta(elementId, { kind: 'comment-resolve', resolved });
+  const setResolved = (
+    elementId: string,
+    resolved: boolean,
+    persist?: PersistDelete,
+    cell?: string,
+  ) => {
+    const at = cell !== undefined ? { cell } : {};
+    deps.applyElementDelta(elementId, { kind: 'comment-resolve', resolved, ...at });
     const count = () => track('Comment', resolved ? 'Resolved' : 'Unresolved');
     if (!persist) return count();
     // A change the server refused goes back, so the thread never shows a state nobody else sees.
@@ -164,16 +185,17 @@ export function useEditorComments(deps: EditorCommentsDeps): EditorCommentsApi {
       .then(count)
       .catch((err: unknown) => {
         console.warn('[comments] thread state not saved', { resolved, error: String(err) });
-        deps.applyElementDelta(elementId, { kind: 'comment-resolve', resolved: !resolved });
+        deps.applyElementDelta(elementId, { kind: 'comment-resolve', resolved: !resolved, ...at });
       });
   };
-  const resolveThread = (elementId: string, persist?: PersistDelete) =>
-    setResolved(elementId, true, persist);
-  const unresolveThread = (elementId: string, persist?: PersistDelete) =>
-    setResolved(elementId, false, persist);
+  const resolveThread = (elementId: string, persist?: PersistDelete, cell?: string) =>
+    setResolved(elementId, true, persist, cell);
+  const unresolveThread = (elementId: string, persist?: PersistDelete, cell?: string) =>
+    setResolved(elementId, false, persist, cell);
 
   return {
     commentThreadOpenId,
+    commentThreadOpenCell,
     openComments,
     closeComments,
     addComment,

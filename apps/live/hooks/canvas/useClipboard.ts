@@ -31,7 +31,15 @@
 
 import type { Selection } from '@/lib/selection-store';
 import { useEffect, useRef, useState, type RefObject } from 'react';
-import { duplicateElements, type Element, type Tab } from '@livediagram/document';
+import {
+  duplicateElements,
+  sheetDrawnChartIds,
+  withMindBranches,
+  withSheetCharts,
+  withAttached,
+  type Element,
+  type Tab,
+} from '@livediagram/document';
 import { anyModalOpen } from '@/lib/modal-guard';
 import { watchPrimarySelectionPaste } from '@/lib/primary-selection-paste';
 import {
@@ -107,6 +115,9 @@ type ClipboardDeps = {
   // board a paste holding a workshop note lands there
   // (docs/specs/021-event-storming/event-storming.md "Always on a lane").
   canvasPointerRef?: RefObject<{ x: number; y: number } | null>;
+  // The canvas-coord rectangle on screen; a paste whose usual spot is outside
+  // it lands in its middle (docs/specs/008-canvas/canvas-and-palette.md Clipboard).
+  getViewportCanvasRect?: () => { x: number; y: number; width: number; height: number } | null;
   // Lands a board scene pasted from another tool (an Excalidraw copy or file,
   // docs/specs/020-import-export/excalidraw-import-export.md "Paste"): one undo step, selected, for
   // the tab's profile. Absent, such a paste is left alone.
@@ -132,6 +143,7 @@ export function useClipboard(deps: ClipboardDeps) {
     toast,
     onPastePhoto,
     canvasPointerRef,
+    getViewportCanvasRect,
     insertBoardScene,
   } = deps;
 
@@ -155,7 +167,10 @@ export function useClipboard(deps: ClipboardDeps) {
   // this window's own and not another's.
   const copyId = useRef('');
 
-  const copySelection = () => {
+  // A Cut copies what its delete takes: a mind node's branch with it (docs/specs/009-elements/mind-node.md
+  // "Deleting"), so the paste puts the whole branch back. A plain Copy takes only what is selected. `opts` may be a
+  // click event: only a literal `cut: true` counts.
+  const copySelection = (opts?: { cut?: boolean }) => {
     if (isReadOnly) return;
     const { selectedId, multiSelectedIds } = readSelection();
     const idSet =
@@ -165,8 +180,20 @@ export function useClipboard(deps: ClipboardDeps) {
           ? new Set([selectedId])
           : null;
     if (!idSet || idSet.size === 0) return;
+    // A Sheet carries the charts it draws (docs/specs/029-sheets/sheet.md "Charts"): they are never selectable on
+    // the canvas, so the copy takes them here, and the paste relinks them to the Sheet's copy.
+    // A host's badges and step numbers copy with it (docs/specs/009-elements/badge.md).
+    const withCharts = withAttached(
+      activeTab.elements,
+      withSheetCharts(
+        activeTab.elements,
+        opts?.cut === true
+          ? withMindBranches(activeTab.elements, idSet, (el) => el.locked === true)
+          : idSet,
+      ),
+    );
     const snapshot = activeTab.elements
-      .filter((el) => idSet.has(el.id))
+      .filter((el) => withCharts.has(el.id))
       // Deep clone so a later edit to the originals doesn't bleed
       // into a future paste.
       .map((el) => JSON.parse(JSON.stringify(el)) as Element)
@@ -214,7 +241,12 @@ export function useClipboard(deps: ClipboardDeps) {
     if (!pasting || pasting.length === 0) return;
     if (refuseCreate()) return;
     const pointer = at !== undefined ? at : (canvasPointerRef?.current ?? null);
-    const { dx, dy, atPointer } = pasteTranslation(pasting, activeTab, pointer);
+    const { dx, dy, atPointer } = pasteTranslation(
+      pasting,
+      activeTab,
+      pointer,
+      getViewportCanvasRect?.() ?? null,
+    );
     const clipIds = new Set(pasting.map((el) => el.id));
     // Clipboard ids may not exist in the current tab (the source
     // was deleted, the user pasted into a different tab, etc.).
@@ -229,12 +261,15 @@ export function useClipboard(deps: ClipboardDeps) {
     if (newElements.length === 0) return;
     const copyIds = new Set(newElements.map((el) => el.id));
     commit((els) => landPastedCopies([...els, ...newElements], copyIds, atPointer));
-    if (newElements.length === 1) {
-      setSelectedId(newElements[0]!.id);
+    // The charts a pasted Sheet draws are its, not the canvas's to select.
+    const drawn = sheetDrawnChartIds(newElements);
+    const selectable = newElements.filter((el) => !drawn.has(el.id));
+    if (selectable.length === 1) {
+      setSelectedId(selectable[0]!.id);
       setMultiSelectedIds(new Set());
     } else {
       setSelectedId(null);
-      setMultiSelectedIds(new Set(newElements.map((el) => el.id)));
+      setMultiSelectedIds(new Set(selectable.map((el) => el.id)));
     }
     trackDuplicated(newElements);
   };
@@ -375,7 +410,7 @@ export function useClipboard(deps: ClipboardDeps) {
       if (e.defaultPrevented) return;
       if (primaryPaste.current?.isPrimarySelectionPaste()) return;
       // A DOM target: `Element` in this file is the diagram element type.
-      const target = e.target as EventTarget | null;
+      const target = e.target;
       // An article's writing hands on what it cannot hold (docs/specs/007-editor/article-pages.md
       // "Zones": a pasted image or copied elements go into the writing as zones).
       const intoArticle =

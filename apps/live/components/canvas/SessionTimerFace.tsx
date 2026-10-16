@@ -1,5 +1,6 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import { DialTicks } from '@/components/canvas/paper-kit';
 
 import { formatTimerClock, timerDone, type TabTimer } from '@livediagram/document';
@@ -14,8 +15,17 @@ import {
   ElementEllipsisMenu,
   ElementMenuSettingsRow,
 } from '@/components/canvas/ElementEllipsisMenu';
-import { SessionTimerSettings } from '@/components/canvas/SessionElementSettings';
+import { loadSessionElementSettings } from '@/lib/editor-deferred-code';
 import { useNow } from '@/hooks/ui/useNow';
+
+// The settings open from the element's options menu only; fetched once the editor is idle
+// (lib/editor-deferred-code.ts).
+const SessionTimerSettings = dynamic(
+  () => loadSessionElementSettings().then((m) => m.SessionTimerSettings),
+  {
+    ssr: false,
+  },
+);
 
 // The face of a Timer session element (docs/specs/012-collaboration/session-button.md) once it is a real timer
 // rather than a button that starts one somewhere else.
@@ -43,6 +53,7 @@ export function SessionTimerFace({
   minutes,
   onSetMinutes,
   onOpenSettings,
+  runBy = null,
 }: {
   // Null when no timer is running for this tab: the element shows its
   // configured length and a Start.
@@ -62,6 +73,9 @@ export function SessionTimerFace({
   onSetMinutes?: (minutes: number) => void;
   /** The way out of the presets to the element's full menu (docs/specs/008-canvas/canvas-and-palette.md). */
   onOpenSettings?: () => void;
+  /** Somebody else facilitating, by name: an Editor's controls are gone for that reason, and the face says so
+   *  (docs/specs/012-collaboration/facilitator.md "Being told you cannot"). */
+  runBy?: string | null;
 }) {
   // The clock advances 4x a second while running, exactly as the chrome pill's does. A paused or absent
   // timer is static, so nothing spins.
@@ -110,6 +124,9 @@ export function SessionTimerFace({
             </>
           )}
         </ElementEllipsisMenu>
+      ) : null}
+      {readOnly && runBy ? (
+        <span className="sr-only">{`${runBy} is facilitating this session; ask them to run the timer.`}</span>
       ) : null}
       {/* A DIAL (docs/specs/012-collaboration/participant-responses.md). Ticks along the edge you read the digits against
           say "instrument"; the drain behind them is the hand. */}

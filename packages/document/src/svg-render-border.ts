@@ -8,11 +8,11 @@ import {
   BORDER_DASH_ARRAY,
   BORDER_RADIUS_PX,
   BORDER_STROKE_PX,
-  DEFAULT_BORDER_STROKE,
   DEFAULT_BORDER_STYLE,
   DEFAULT_BOX_RADIUS_PX,
   cornerRadiusPx,
 } from './border-style';
+import { finishBorderStroke, finishCornerFallbackPx, type Finish } from './finish';
 import type { BoxedElement } from './index';
 import { r2, xmlEscape } from './svg-render-primitives';
 
@@ -22,11 +22,20 @@ type Bordered = Pick<BoxedElement, 'x' | 'y' | 'width' | 'height'> & {
   borderRadius?: keyof typeof BORDER_RADIUS_PX;
 };
 
-/** The stroke width, dash and radius a shape element's border resolves to. */
-export function borderOf(el: Bordered): { width: number; dash: string | null; radius: number } {
-  const width = BORDER_STROKE_PX[el.strokeWidth ?? DEFAULT_BORDER_STROKE];
+/** The stroke width, dash and radius a shape element's border resolves to, in its finish
+ *  (docs/specs/008-canvas/finish.md: Professional thins an unset border and sharpens an unset corner). */
+export function borderOf(
+  el: Bordered,
+  finish: Finish = 'flexible',
+): { width: number; dash: string | null; radius: number } {
+  const width = BORDER_STROKE_PX[finishBorderStroke(el.strokeWidth, finish)];
   const dash = BORDER_DASH_ARRAY[el.strokeStyle ?? DEFAULT_BORDER_STYLE];
-  const wanted = cornerRadiusPx(el.borderRadius, el.width, el.height, DEFAULT_BOX_RADIUS_PX);
+  const wanted = cornerRadiusPx(
+    el.borderRadius,
+    el.width,
+    el.height,
+    finishCornerFallbackPx(DEFAULT_BOX_RADIUS_PX, finish),
+  );
   // CSS clamps a radius to half the shorter side, so 'full' is a pill.
   const radius = Math.min(wanted, Math.min(el.width, el.height) / 2);
   return { width, dash, radius };
@@ -42,8 +51,14 @@ export function strokeAttrs(stroke: string, width: number, dash: string | null):
 }
 
 /** A rounded box with the element's border inset like a CSS border. */
-export function borderedRect(el: Bordered, fill: string, stroke: string, radius?: number): string {
-  const b = borderOf(el);
+export function borderedRect(
+  el: Bordered,
+  fill: string,
+  stroke: string,
+  radius?: number,
+  finish: Finish = 'flexible',
+): string {
+  const b = borderOf(el, finish);
   const r = radius ?? b.radius;
   const inset = b.width / 2;
   return (

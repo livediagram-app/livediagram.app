@@ -6,33 +6,34 @@
   "scripts": {
     "dev": "node ../../scripts/next-dev.mjs --port 3003",
     "build": "next build",
-    "lint": "eslint .",
+    "lint": "oxlint",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf .next .next-analyze out node_modules .turbo"
   },
   "dependencies": {
     "@livediagram/api-schema": "workspace:*",
+    "@livediagram/forms": "workspace:*",
     "@livediagram/icons": "workspace:*",
     "@livediagram/ui": "workspace:*",
-    "next": "^16.4.0",
-    "react": "^19.3.0",
-    "react-dom": "^19.3.0"
+    "next": "^16.4.1",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
   },
   "devDependencies": {
     "@livediagram/agent-verbs": "workspace:*",
-    "@livediagram/eslint-config": "workspace:*",
     "@livediagram/next-config": "workspace:*",
+    "@livediagram/oxlint-config": "workspace:*",
+    "@livediagram/source-ast": "workspace:*",
     "@livediagram/tailwind-config": "workspace:*",
     "@livediagram/vitest-config": "workspace:*",
     "@tailwindcss/postcss": "^4.3.3",
     "@types/node": "^26.6.4",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
-    "@typescript/native": "npm:typescript@^7.0.2",
-    "eslint": "^10.12.0",
+    "oxlint": "^1.88.0",
     "tailwindcss": "^4.3.3",
-    "typescript": "npm:@typescript/typescript6@^6.0.2",
+    "typescript": "^7.0.2",
     "vitest": "^5.0.3"
   }
 }

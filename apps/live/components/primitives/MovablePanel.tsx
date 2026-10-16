@@ -44,6 +44,7 @@ export function MovablePanel({
   popoverOpen,
   asPopover = false,
   popoverWidth = 'w-64',
+  popoverSheet = false,
   dismissOnOutside = false,
   onPopoverClose,
   popoverAnchor,
@@ -57,6 +58,7 @@ export function MovablePanel({
   onDockDragEnd,
   dataTourId,
   layoutChrome = false,
+  opaque = false,
   children,
 }: MovablePanelProps) {
   const minimalChrome = useMinimalChrome();
@@ -191,15 +193,16 @@ export function MovablePanel({
   // A popover: hung from its button with an arrow, no draggable header.
   if (popoverShown) {
     const anchor = popoverAnchor;
+    const sheet = popoverSheet && anchor !== undefined && anchor.bottom === undefined;
     return (
       <div
         ref={ref}
         data-floating-panel=""
         data-tour-id={dataTourId}
         // Panel opacity reaches every panel (docs/specs/007-editor/user-preferences.md), the
-        // popovers included. The buttons that open them are not panels and
+        // popovers included, unless it is `opaque`. The buttons that open them are not panels and
         // stay opaque.
-        data-panel-translucent=""
+        data-panel-translucent={opaque ? undefined : ''}
         onPointerDown={(e) => e.stopPropagation()}
         onContextMenu={(e) => {
           e.preventDefault();
@@ -207,27 +210,30 @@ export function MovablePanel({
         }}
         style={{
           ...uiScaleStyle(scale),
-          ...(anchor?.bottom !== undefined
-            ? {
-                bottom: px(anchor.bottom + 12),
-                left: px(anchor.left),
-                maxHeight: `calc(100% - ${px(anchor.bottom + 24)}px)`,
-              }
-            : anchor
+          ...(sheet && anchor
+            ? { top: px(anchor.top + 12), left: 0, right: 0, bottom: 0 }
+            : anchor?.bottom !== undefined
               ? {
-                  top: px(anchor.top + 12),
+                  bottom: px(anchor.bottom + 12),
                   left: px(anchor.left),
-                  // Kept on the canvas below its button, as the one above it is: a short canvas
-                  // (a phone in landscape, 286px) otherwise ran the Explorer under the tab bar.
-                  maxHeight: `calc(100% - ${px(anchor.top + 24)}px)`,
+                  maxHeight: `calc(100% - ${px(anchor.bottom + 24)}px)`,
                 }
-              : { top: px(56), right: px(12) }),
+              : anchor
+                ? {
+                    top: px(anchor.top + 12),
+                    left: px(anchor.left),
+                    // Kept on the canvas below its button, as the one above it is: a short canvas
+                    // (a phone in landscape, 286px) otherwise ran the Explorer under the tab bar.
+                    maxHeight: `calc(100% - ${px(anchor.top + 24)}px)`,
+                  }
+                : { top: px(56), right: px(12) }),
         }}
-        className={`pointer-events-auto absolute z-[var(--z-toolbar)] flex ${popoverWidth} max-w-[calc(100vw-2rem)] cursor-default flex-col rounded-lg border border-slate-200 bg-white shadow-lg shadow-slate-900/5 transition-opacity duration-micro dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:shadow-slate-950/40`}
+        className={`pointer-events-auto absolute z-[var(--z-toolbar)] flex ${sheet ? 'rounded-t-lg border-x-0 border-b-0' : `${popoverWidth} max-w-[calc(100vw-2rem)] rounded-lg border`} cursor-default flex-col border-slate-200 bg-white shadow-lg shadow-slate-900/5 transition-opacity duration-micro dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:shadow-slate-950/40`}
       >
         {anchor ? (
           <div
-            style={{ left: px(anchor.arrowOffset) - 7 }}
+            // A sheet starts at the canvas's edge, so the arrow is measured from there.
+            style={{ left: px((sheet ? anchor.left : 0) + anchor.arrowOffset) - 7 }}
             className={`absolute h-3.5 w-3.5 rotate-45 border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 ${
               anchor.bottom !== undefined
                 ? '-bottom-[7px] rounded-br-sm border-b border-r'
@@ -253,7 +259,9 @@ export function MovablePanel({
             </div>
           ) : null}
         </div>
-        <div className={`min-h-0 overflow-y-auto overflow-x-hidden ${flushTop ? '' : 'pt-2'}`}>
+        <div
+          className={`min-h-0 overflow-y-auto overflow-x-hidden ${sheet ? 'flex flex-1 flex-col' : ''} ${flushTop ? '' : 'pt-2'}`}
+        >
           {children}
         </div>
       </div>
@@ -278,8 +286,8 @@ export function MovablePanel({
       data-layout-chrome={layoutChrome ? '' : undefined}
       // Marks the panel as opacity-controlled: globals.css applies the
       // user's --lvd-panel-opacity here (docs/specs/007-editor/user-preferences.md) and restores it to
-      // opaque on hover / focus. The popover branch above carries it too.
-      data-panel-translucent=""
+      // opaque on hover / focus. The popover branch above carries it too. An `opaque` panel never fades.
+      data-panel-translucent={opaque ? undefined : ''}
       onPointerDown={(e) => e.stopPropagation()}
       onContextMenu={(e) => {
         // Swallow the right-click so it doesn't bubble to the canvas

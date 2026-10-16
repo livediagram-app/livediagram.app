@@ -6,7 +6,7 @@
 
 import type { Point } from './geometry-primitives';
 import type { BoxedElement, TextAlignX, TextAlignY, TextSize } from './index';
-import { LABEL_FONT_PX } from './label-font';
+import { labelFontPx } from './label-font';
 import { pickedByOutline, roundedRectRing, shapeHitOutline } from './shape-hit';
 import type { ShapeKind } from './shape-kind';
 import { insidePolygon, segmentDistance } from './whiteboard-stroke';
@@ -39,6 +39,7 @@ const CENTRED_KINDS: ReadonlySet<ShapeKind> = new Set<ShapeKind>([
   'trapezoid',
   'star',
   'actor',
+  'final-state',
 ]);
 
 /** Whether the element's indicators centre on it rather than sit in a corner. */
@@ -93,7 +94,7 @@ export function contentBox(input: {
   icon?: ContentIcon;
 }): IndicatorBox | null {
   const { width, height, label, textSize, padding, alignX, alignY, icon } = input;
-  const px = input.fontPx ?? (textSize === 'scale' ? null : LABEL_FONT_PX[textSize]);
+  const px = input.fontPx ?? (textSize === 'scale' ? null : labelFontPx(textSize));
   const hasText = label.trim() !== '' && px !== null;
   if (!hasText && !icon) return null;
   const room = Math.max(1, width - 2 * padding);

@@ -12,6 +12,7 @@ import {
   type TextAlignX,
   type TextAlignY,
   type TextRun,
+  labelFontPx,
   type TextSize,
 } from '@livediagram/document';
 import {
@@ -22,7 +23,6 @@ import {
   labelRunPx,
   labelTextStyleCss,
   wordmarkTextCss,
-  MULTI_FONT_PX,
   TEXT_ALIGN,
   type LabelPadding,
   type LabelTextStyle,
@@ -284,7 +284,7 @@ export function MultilineLabel({
   // Text animation (docs/specs/028-animation/element-animations.md): the note's words split into units.
   textAnim?: TextAnimView;
 }) {
-  const fontSize = `${fitPx ?? MULTI_FONT_PX[textSize]}px`;
+  const fontSize = `${fitPx ?? labelFontPx(textSize, true)}px`;
   const outerStyle = {
     fontSize,
     alignItems: ALIGN_ITEMS[alignY],

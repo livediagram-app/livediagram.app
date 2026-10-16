@@ -22,6 +22,9 @@ geometry check are [Iconography](../iconography.md)'s; this blueprint builds eve
 | `packages/ui/optical-guard.test.ts`                                    | The guard over `packages/ui/src`                                                                                                                    |
 | `apps/live/e2e/optical.ts`                                             | `auditOptical(page)`: the runner (screenshots, ink diff, verdicts)                                                                                  |
 | `apps/live/e2e/optical-discover.ts`                                    | `discover`: the in-page half (candidates, cap bands, intent, stack rows); one self-contained function                                               |
+| `apps/live/e2e/optical-snap.ts`                                        | `paintedBaseline`, `inheritedSnap`: Chromium's whole-pixel baseline snap and the part a shape inherits from its position (pure)                     |
+| `apps/live/e2e/optical-snap.test.ts`                                   | Their contracts (Vitest)                                                                                                                            |
+| `apps/live/e2e/optical-snap.spec.ts`                                   | The snap guard: the browser paints baselines where `paintedBaseline` says, and transforms move them after                                           |
 | `apps/live/e2e/optical-audit.spec.ts`                                  | The editor's audited screens                                                                                                                        |
 | `apps/live/e2e/optical-audit-sites.spec.ts`                            | The help centre, telemetry dashboard, Community and marketing site                                                                                  |
 | `apps/live/e2e/audit-screens.ts`                                       | Screen setup shared with the contrast audit (seeded diagram, dark visitor, share link)                                                              |
@@ -39,6 +42,7 @@ geometry check are [Iconography](../iconography.md)'s; this blueprint builds eve
 | Cap band         | `capBand` (audit), `capBandBaselineY` (SVG)     |
 | Ink inset        | `--glyph-ink-l / -r / -t / -b` (set by `Glyph`) |
 | Optical offset   | `offsetPx` on an `OpticalFailure`               |
+| Inherited snap   | `inheritedSnap(baseline, shapeTop)`             |
 | Tolerance        | `OPTICAL_TOLERANCE_PX = 0.5`                    |
 | Header icon slot | `HEADER_ICON_SLOT_PX = 20`                      |
 | Opt out of audit | `data-optical-ignore` (art only, see D45)       |
@@ -200,11 +204,23 @@ center`, or shrink-wrapped content (its in-flow children, text and gaps fill the
    Text rendered in capitals (by content, or `text-transform: uppercase`) is judged by its own ink
    instead (a third screenshot, hiding only the glyph fill). A tailed capital (Q, J) runs past the baseline
    by design, so for that reading it stands in as its tail-less twin (O, I: same cap shape and overshoot),
-   and the text is restored straight after.
+   and the text is restored straight after. The probe's `snap` frame holds what step 4 needs: the first
+   own text run's layout `baseline` (the same `firstClientRect.top + fontBoundingBoxAscent`, exact under
+   `text-box` trim) and the shape's `top`, both read in the untransformed layout, and `scale`, the
+   shape's client height over its untransformed height. To read it, every element from the text's host
+   up that carries a `transform`, `translate`, `scale` or `rotate` gets identity transforms (still a
+   containing block, so nothing moves), with `transition: none` held until the restored transforms are
+   flushed.
 4. **Ink.** Clip on the device-pixel grid, one pixel out, keeping the shape's exact box inside it.
    Screenshot; inject `[probe] * { visibility: hidden } [probe] { -webkit-text-fill-color: transparent }`;
    screenshot again; the ink box is every pixel whose summed RGB difference exceeds 96 (D46). A shape
-   another element paints over (sampled at five points) is occluded: no ink checks.
+   another element paints over (sampled at five points) is occluded: no ink checks. Chromium paints a
+   text baseline at `paintedBaseline(b) = round(b)` in CSS px, at any pixel density, in the
+   untransformed layout; transforms move it after. So a caps ink reading subtracts
+   `inheritedSnap(b, top) * scale`, with `inheritedSnap(b, top) = (round(b) - b) - (round(b - top) - (b - top))`
+   over the `snap` frame: the snap at the shape's real position less the snap it would get on a whole
+   pixel. The shape's own geometry (its height, font size and trim) stays in the reading, and so does a
+   transform between the shape and its text. A caps probe without a `snap` frame throws.
 5. **Horizontal.** Each edge is judged by what sits at it: text by its advance (less a trailing
    letter-space), anything else by ink; initials and symbols (1 to 3 non-space characters, not all
    digits) and icons by ink on both edges; numerals by their advance. A shape holding two or more
@@ -230,8 +246,9 @@ and a feature page. Help, telemetry and the Community are same-origin under the 
 ## Static guard
 
 `checkOpticalAlignment({ root }): OpticalViolation[]` parses every `.tsx` under `root` (not tests, not
-`e2e/`, not the primitives' own `optical/` folder) with the TypeScript compiler API and flags a JSX
-element that:
+`e2e/`, not the primitives' own `optical/` folder) with TypeScript 7's native compiler
+(`parseSourceFiles` from `@livediagram/source-ast`, [Source scanners](../../003-system-architecture/source-scanners.md))
+and flags a JSX element that:
 
 - has a class string (static chunks of a literal or template) with `rounded-full` and a centring token,
   and a fixed size (an `h-*` / `size-*` class, or `width` / `height` in its `style`), and
@@ -274,6 +291,9 @@ The ink audit is the arbiter: a site that fails it joins the migration.
 | Hidden / zero-size / occluded shape                | Not a candidate / no ink checks                                                                               |
 | Hover, focus, animation or hydration changes paint | Pointer parked, reduced motion, `animations: 'disabled'`, `networkidle` before tagging                        |
 | Art that is composition, not a glyph frame         | `data-optical-ignore` on the art root (D45); its glyph discs and chips still follow the rules                 |
+| A shape at a fractional position                   | Its caps ink reading drops the inherited snap (step 4); a Share dialog disc at y + 0.5625 reads as at y       |
+| A shape under a fractional transform               | The snap is read in the untransformed layout, where the browser snaps                                         |
+| The browser stops snapping baselines               | `optical-snap.spec.ts` fails, naming the position whose baseline moved                                        |
 
 ## Observability
 
@@ -284,7 +304,8 @@ The ink audit is the arbiter: a site that fails it joins the migration.
 ## Performance
 
 - The utilities add no JS; `ButtonContent` maps children once per render; `Glyph`'s insets are
-  memoised per path. The audit costs two or three screenshots per candidate: seconds per screen.
+  memoised per path. The audit costs two or three screenshots per candidate: seconds per screen. A
+  text shape under a transform adds one style flush to read its `snap` frame.
 
 ## Web Experience
 
@@ -303,6 +324,7 @@ The ink audit is the arbiter: a site that fails it joins the migration.
 | Spec rule                                | Test                                                                                  |
 | ---------------------------------------- | ------------------------------------------------------------------------------------- |
 | Tolerance, cap band, ink, intent, stacks | `optical-audit.spec.ts`, `optical-audit-sites.spec.ts`                                |
+| Shapes judged as on a whole pixel        | `optical-snap.test.ts` (`inheritedSnap`), `optical-snap.spec.ts` (the browser's snap) |
 | Truncated label keeps its ink            | `optical-clip.spec.ts`: the label's columns at row height, clipped against released   |
 | Utilities                                | `optical-utilities.test.ts`                                                           |
 | Primitives and their invariants          | `optical.test.tsx`                                                                    |

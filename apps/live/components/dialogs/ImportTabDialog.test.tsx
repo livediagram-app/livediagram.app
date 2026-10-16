@@ -77,19 +77,27 @@ describe('ImportTabDialog, draw.io', () => {
 });
 
 describe('ImportTabDialog, offered formats', () => {
-  it('offers only the formats it is given (Illustrate mode: JSON)', () => {
-    render(
-      <ImportTabDialog
-        tabName="Poster"
-        onImportFile={vi.fn()}
-        onImportText={vi.fn()}
-        onClose={vi.fn()}
-        formats={['json']}
-      />,
-    );
+  const props = {
+    tabName: 'Poster',
+    onImportFile: vi.fn(),
+    onImportText: vi.fn(),
+    onClose: vi.fn(),
+  };
+
+  it('offers only the formats it is given', () => {
+    render(<ImportTabDialog {...props} formats={['json', 'mermaid']} />);
     expect(screen.getByRole('button', { name: /JSON/ })).toBeTruthy();
-    for (const other of [/Mermaid/, /Markdown/, /Excalidraw/, /draw\.io/]) {
+    expect(screen.getByRole('button', { name: /Mermaid/ })).toBeTruthy();
+    for (const other of [/Markdown/, /Excalidraw/, /draw\.io/]) {
       expect(screen.queryByRole('button', { name: other })).toBeNull();
     }
+  });
+
+  // Illustrate mode and a Dashboard tab (docs/specs/026-plan/plan-tabs.md "Import and Export of a Dashboard").
+  it('opens straight at the one format it offers, with no way back to a list', () => {
+    render(<ImportTabDialog {...props} formats={['json']} />);
+    expect(screen.getByText('Paste your JSON, or import a file.')).toBeTruthy();
+    expect(screen.getByRole('textbox')).toBeTruthy();
+    expect(screen.queryByRole('button', { name: /All formats/ })).toBeNull();
   });
 });

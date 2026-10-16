@@ -43,7 +43,7 @@ const OWNER: Caller = { kind: 'clerk', userId: 'user_1' };
 
 async function ask(db: SqliteD1, name?: string) {
   const res = await call(db, 'POST', 'pairing-requests', TOKEN, { origin: ORIGIN, name });
-  return (await res.json()) as { code: string; pairingUrl: string };
+  return await res.json<{ code: string; pairingUrl: string }>();
 }
 
 describe('workbench pairing routes', () => {

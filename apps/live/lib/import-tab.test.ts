@@ -5,6 +5,7 @@ import {
   TAB_SCHEMA_VERSION,
   type ExportedTabEnvelope,
 } from '@livediagram/document';
+import { defaultCatalogue } from '@livediagram/items';
 import { parseImportedTab } from './import-tab';
 
 // A minimal but valid tab payload.
@@ -163,15 +164,16 @@ describe('parseImportedTab, Plan items', () => {
     const r = parseImportedTab(
       JSON.stringify(envelope({ items: [item, { id: 'nope' }] as never })),
     );
-    expect(r.ok && r.plan).toEqual({ items: [item], itemTypes: null });
+    // Cards with no catalogue: a tab exported before card types started empty, so the default types (legacyCatalogue).
+    expect(r.ok && r.plan).toEqual({ items: [item], itemTypes: defaultCatalogue() });
   });
 
-  it('reads a valid catalogue and drops a broken one', () => {
+  it('reads a valid catalogue and drops a broken one, its cards keeping the default types', () => {
     const catalogue = { version: 1, types: 'broken' };
     const r = parseImportedTab(
       JSON.stringify(envelope({ items: [item], itemTypes: catalogue as never })),
     );
-    expect(r.ok && r.plan?.itemTypes).toBeNull();
+    expect(r.ok && r.plan?.itemTypes).toEqual(defaultCatalogue());
   });
 
   it('has no plan for a file without items', () => {

@@ -43,10 +43,10 @@ import {
   isBool,
   isNonEmptyStr,
   isNum,
-  isObj,
   issue,
   oneOfRule,
 } from './validate-primitives';
+import { isRecord } from './is-record';
 
 export type { ElementValidationIssue } from './validate-primitives';
 
@@ -111,6 +111,20 @@ export const SHAPE_KINDS = new Set<string>([
   // The web components (docs/specs/009-elements/web-components-and-no-groups.md).
   'banner',
   'callout',
+  'card',
+  'badge',
+  'step',
+  'pointer-note',
+  'diagram-key',
+  'stack',
+  'sequence',
+  'boundary',
+  'layer-stack',
+  'pyramid',
+  'cycle',
+  'hub',
+  'onion',
+  'chevrons',
   'stat-row',
   'process',
   'site-header',
@@ -119,6 +133,8 @@ export const SHAPE_KINDS = new Set<string>([
   'mode-button',
   // Portal (docs/specs/009-elements/portal-element.md): a portal to the portal it is paired with.
   'portal',
+  // Tab window (docs/specs/009-elements/tab-window.md): another tab of the document drawn inside it.
+  'tab-window',
   // Session button (docs/specs/012-collaboration/session-button.md): starts a timer / vote / poll for the room.
   'session-button',
   // Reveal zone (docs/specs/009-elements/reveal-zone.md): a cover you click to see what is underneath.
@@ -135,6 +151,19 @@ export const SHAPE_KINDS = new Set<string>([
   'done-check',
   // Chair (docs/specs/009-elements/chair.md): an Avatar-mode character sits down in one.
   'chair',
+  // Fence (docs/specs/009-elements/fence.md): Avatar-mode characters cannot walk through one.
+  'fence',
+  // Desk and sofa (docs/specs/009-elements/chair.md "Desk and sofa").
+  'desk',
+  'sofa',
+  // The virtual office (docs/specs/009-elements/office.md).
+  'room',
+  'meeting-table',
+  'plant',
+  'bookshelf',
+  'water-cooler',
+  'coffee-machine',
+  'rug',
   // The collaboration family (docs/specs/012-collaboration/estimate-card.md to docs/specs/012-collaboration/roll-call.md).
   'estimate',
   'temperature',
@@ -147,6 +176,7 @@ export const SHAPE_KINDS = new Set<string>([
   'quiz',
   'stadium',
   'actor',
+  'final-state',
   'cloud',
   'triangle',
   'trapezoid',
@@ -170,6 +200,7 @@ export const SHAPE_KINDS = new Set<string>([
   'code-block',
   'checklist',
   'legend',
+  'sankey',
   'focus-button',
   'icon',
   'sticker',
@@ -189,6 +220,8 @@ export function coerceShapeKind(shape: unknown): ShapeKind {
 
 // Every stored element carries an id and a known type, and any colour bindings it has are named.
 const COMMON_FIELD_CHECKS: readonly FieldCheck[] = [
+  // A label is text: every renderer reads it as a string.
+  { field: 'label', valid: (v) => typeof v === 'string', rule: 'a string' },
   // Quick-swatch bindings (docs/specs/008-canvas/quick-style-panel.md): a slot 1-6 or absent. A junk
   // slot has no business being written into a document, though the re-derive would ignore it.
   { field: 'strokeSwatch', valid: isQuickSwatchSlot, rule: 'a quick-swatch slot 1 to 6' },
@@ -217,7 +250,7 @@ const PINNED_RULE = `a pinned end: an elementId and an anchor (${ALL_ANCHORS.joi
 
 // The rule an arrow end breaks, or null when it is well formed.
 function endpointRule(ep: unknown): string | null {
-  if (!isObj(ep)) return 'an end: free { x, y }, pinned { elementId, anchor } or on-arrow';
+  if (!isRecord(ep)) return 'an end: free { x, y }, pinned { elementId, anchor } or on-arrow';
   switch (ep.kind) {
     case 'free':
       return isNum(ep.x) && isNum(ep.y) ? null : 'a free end: finite x and y';
@@ -280,7 +313,7 @@ const IMAGE_FIELD_CHECKS: readonly FieldCheck[] = [
   // single-line strings.
   {
     field: 'heroCaption',
-    valid: (c) => isObj(c) && isHeadingStr(c.title) && isHeadingStr(c.subtitle),
+    valid: (c) => isRecord(c) && isHeadingStr(c.title) && isHeadingStr(c.subtitle),
     rule: `{ title, subtitle } of at most ${PAGE_HEADING_MAX} characters each`,
   },
   // Image search credit (docs/specs/009-elements/image-search.md).
@@ -347,7 +380,7 @@ const TEXT_FIELD_CHECKS: readonly FieldCheck[] = [
 // A path's normalised coordinate pair: finite, and never absurdly far outside its box.
 function isPathPoint(p: unknown): boolean {
   return (
-    isObj(p) &&
+    isRecord(p) &&
     isNum(p.nx) &&
     isNum(p.ny) &&
     Math.abs(p.nx) <= PATH_COORD_MAX &&
@@ -423,7 +456,7 @@ function boxedIssue(el: Record<string, unknown>): ElementValidationIssue | null 
 // any element the renderer can safely handle (docs/specs/024-agents/blueprints/edit-operations.md
 // "invalid_result").
 export function elementValidationIssue(el: unknown): ElementValidationIssue | null {
-  if (!isObj(el)) return issue('element', 'an object');
+  if (!isRecord(el)) return issue('element', 'an object');
   if (!isNonEmptyStr(el.id)) return issue('id', 'a non-empty string');
   if (typeof el.type !== 'string' || !ELEMENT_TYPES.has(el.type))
     return issue('type', oneOfRule([...ELEMENT_TYPES]));
@@ -443,7 +476,7 @@ export function isValidElement(el: unknown): el is Element {
 // references downstream, so it's rejected). Other tab fields (theme, font,
 // background) are cosmetic and left unchecked.
 export function isValidTab(tab: unknown): tab is Tab {
-  if (!isObj(tab) || !isNonEmptyStr(tab.id) || typeof tab.name !== 'string') return false;
+  if (!isRecord(tab) || !isNonEmptyStr(tab.id) || typeof tab.name !== 'string') return false;
   if (!boundedArray(tab.elements, MAX_ELEMENTS_PER_TAB)) return false;
   const ids = new Set<string>();
   for (const el of tab.elements) {

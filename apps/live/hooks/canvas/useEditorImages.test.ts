@@ -10,11 +10,11 @@ vi.mock('@/lib/api-client', () => ({ apiListImages, apiFetchImageDataUrl: vi.fn(
 
 const { useEditorImages } = await import('./useEditorImages');
 
-function mount(galleryHidden?: boolean, ownerId = 'user_1') {
+function mount(galleryHidden?: boolean, ownerId = 'user_1', editsBlocked = false) {
   return renderHook(
     ({ owner }: { owner: string }) =>
       useEditorImages({
-        editsBlocked: false,
+        editsBlocked,
         isReadOnly: false,
         embedMode: false,
         galleryHidden,
@@ -49,5 +49,12 @@ describe('useEditorImages', () => {
     expect(apiListImages).not.toHaveBeenCalled();
     hook.rerender({ owner: 'guest-1' });
     expect(apiListImages).toHaveBeenCalledExactlyOnceWith('guest-1');
+  });
+
+  // docs/specs/009-elements/images.md "Placeholder rendering": the Select Image button is offered only
+  // where the picker opens, so a locked tab's empty image shows none.
+  it('offers the picker only while edits can land', () => {
+    expect(mount().result.current.imageContext?.onOpenPicker).toBeTypeOf('function');
+    expect(mount(false, 'user_1', true).result.current.imageContext?.onOpenPicker).toBeUndefined();
   });
 });

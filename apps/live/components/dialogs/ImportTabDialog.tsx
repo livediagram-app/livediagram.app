@@ -28,8 +28,9 @@ type ImportTabDialogProps = {
     text: string,
     onProgress: (progress: ImportImageProgress) => void,
   ) => Promise<ImportOutcome>;
-  // The formats offered, in catalogue order; absent offers every one. Illustrate mode offers JSON
-  // only (docs/specs/007-editor/illustrate-pages.md "Import").
+  // The formats offered, in catalogue order; absent offers every one. Illustrate mode and a Dashboard tab offer
+  // JSON only (docs/specs/007-editor/illustrate-pages.md "Import", docs/specs/026-plan/plan-tabs.md "Import and
+  // Export of a Dashboard"); a single format opens straight at its panel.
   formats?: readonly Format[];
   onClose: () => void;
 };
@@ -112,7 +113,9 @@ export function ImportTabDialog({
   formats,
 }: ImportTabDialogProps) {
   const offered = formats ? FORMATS.filter((f) => formats.includes(f.key)) : FORMATS;
-  const [active, setActive] = useState<Format | null>(null);
+  // One format offered: no list to pick from, so its panel is the dialog.
+  const only = offered.length === 1 ? offered[0]!.key : null;
+  const [active, setActive] = useState<Format | null>(only);
   // Set once an import that met images, or brought a board across with changes, has landed: the
   // dialog then shows how it came across instead of closing.
   const [report, setReport] = useState<DoneOutcome | null>(null);
@@ -152,6 +155,7 @@ export function ImportTabDialog({
             activeFormat={activeFormat ?? null}
             formats={offered}
             onPick={setActive}
+            single={only !== null}
             onImportFile={onImportFile}
             onImportText={onImportText}
             onDone={(outcome) => (needsReport(outcome) ? setReport(outcome) : onClose())}
@@ -171,11 +175,13 @@ function ImportChooser({
   onImportFile,
   onImportText,
   onDone,
+  single,
 }: {
   tabName: string;
   activeFormat: (typeof FORMATS)[number] | null;
   formats: typeof FORMATS;
   onPick: (format: Format | null) => void;
+  single: boolean;
   onImportFile: ImportTabDialogProps['onImportFile'];
   onImportText: ImportTabDialogProps['onImportText'];
   onDone: (outcome: Extract<ImportOutcome, { status: 'done' }>) => void;
@@ -213,7 +219,7 @@ function ImportChooser({
           onImportText={(text, onProgress) => onImportText(activeFormat.key, text, onProgress)}
           onImportFile={(onProgress) => onImportFile(activeFormat.key, onProgress)}
           onDone={onDone}
-          onBack={() => onPick(null)}
+          onBack={single ? undefined : () => onPick(null)}
         />
       ) : (
         <div className="grid grid-cols-3 gap-3">

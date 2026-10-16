@@ -4,7 +4,7 @@ import { helpMetadata } from '@/lib/seo';
 export const metadata = helpMetadata({
   title: 'The livediagram API',
   description:
-    'The livediagram REST API lets your own scripts and integrations read and write documents. Learn the base URL, how to authenticate, and where to find the full reference.',
+    'Call the livediagram REST API from your own scripts and integrations: the base URL, how to authenticate with an API token, and where the full reference is.',
   path: '/help/developers/api-overview/',
 });
 
@@ -15,7 +15,7 @@ export const metadata = helpMetadata({
   categorySlug="developers"
 >
 
-Everything the livediagram editor does, it does by calling a REST API. That API is open to you too: with an [API token](/help/account-and-data/api-tokens/) your own scripts and integrations can read, create, and update documents, tabs, folders, images, themes and more, exactly as the app does.
+Everything the livediagram editor does, it does by calling a REST API. That API is open to you too: with an [API token](/help/account-and-data/api-tokens/) your own scripts and integrations can read, create, and update documents, tabs, folders, images, themes and more, exactly as the app does. Account administration (teams, tokens, deleting the account) stays with the signed-in app.
 
 If you want to connect an AI assistant rather than write code, you usually want the [MCP server](/help/account-and-data/connect-ai-mcp/) instead. It wraps this API in tools Claude and other MCP clients can call directly. To work from a terminal or a coding agent without writing requests yourself, use [the livediagram CLI](/help/developers/cli/).
 
@@ -46,12 +46,13 @@ The token-callable surface mirrors the app:
 
 - **Documents and tabs**: list, read, create, rename, copy, and delete documents; read a tab as JSON, as a text view or as an SVG picture; change a tab with changesets, and revert one.
 - **Comments and Plan items**: read, add, reply to and resolve comments, and read and change the items on a document's Plan boards.
-- **Folders**: organise documents into your personal folder tree.
+- **Folders**: organise documents into folders, personal or in a team you belong to.
+- **Sheets and pages**: read and change the cells of a document's Sheets, and write Illustrate pages and articles.
 - **Sharing**: create, list, extend and revoke share links, and set or remove a share password.
 - **Trash**: list what you can restore, restore it, or delete it for good.
 - **Images, themes and shape libraries**: upload and reference images, and manage your saved custom themes and shape libraries.
 
-[Working with Documents](/help/developers/working-with-documents/) walks through the common calls with copy-pasteable examples.
+[Working with Documents](/help/developers/working-with-documents/) walks through the common calls with copy-pasteable examples. [Edit Operations Reference](/help/developers/working-with-documents/edit-operations/) lists the changeset vocabulary, [Plan Items, Sheets and Images](/help/developers/working-with-documents/plan-sheets-images/) covers cards, cells, uploads and pages, and [Comments and Presence for Agents](/help/developers/agent-comments-presence/) shows how an agent talks to people and shows what it is doing.
 
 ## The full reference
 

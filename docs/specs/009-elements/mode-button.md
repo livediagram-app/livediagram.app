@@ -15,13 +15,14 @@ It also gives a presenter somewhere to put a control bar — a row of buttons th
 - **Fixed size.** It is a control, not a box you draw: `FIXED_SIZE_SHAPES` in `packages/document` suppresses its resize handles, keeps it at its natural size through a union resize, and ignores the drag dimensions when it is drawn. Rotation, colours, and every other element affordance stay.
 - Hover brightens it and a press scales + sinks it. Hover is **desktop-only** — a touch device has no hover, and a sticky `:hover` after a tap reads as a stuck button.
 - **The face text is derived: "Switch to Avatar".** It carries no default label, so re-pointing a button at another mode relabels it instead of leaving yesterday's copy on it. An author who types their own label wins — it is still a shape's label — and an empty one falls back to the derived text, so a button is never blank.
-- **A button for the mode you are already in is the way back out.** It reads "Leave Avatar" and presses you into the tool you were in before, rather than sitting there disabled. On a read-only walkthrough the button can be the only control on screen, so a one-way door would strand the viewer.
+- **A button for the mode you are already in is the way back out.** It reads "Leave Avatar" (whatever its own label: a "Walk In" that walked you out would say the opposite of what it does) and presses you into the tool you were in before, rather than sitting there disabled. On a read-only walkthrough the button can be the only control on screen, so a one-way door would strand the viewer.
 - Every mode's hover card also explains what that mode does, since the author's label ("Walk with me") doesn't have to.
 - Which mode it hands out lives in **`ShapeElement.mode`** (a `SelectionMode`). Absent means `DEFAULT_BUTTON_MODE` — `'avatar'` — so a button authored without one, or by an older client, still does the thing it looks like it should.
 
 ## Pressing it
 
 - A **left-click presses it**, switching the clicker's own canvas tool. Nobody else's mode changes: it is a control for the person who clicked, not a broadcast. The hover card says so.
+- **It hands out its mode in any editor mode**, including Avatar outside Facilitate, where the palette picker and the `W` key leave Avatar out ([Avatar mode](../008-canvas/avatar-mode.md) "Where it is offered").
 - It routes through the **same tool setter the palette picker uses**, so the mode's own rules all still apply: telemetry, the selection clear on entering Avatar / Spotlight, and the empty-canvas guard.
 - **Dragging it moves it, and does NOT press it.** The face fires on `click`, never on pointer-down — and swallows that click when the pointer travelled more than a wobble between press and release (`usePressWithoutDrag`), because a drag on an element still ends in a browser `click` event.
 - **A button that hands out Avatar mode spawns the character at the button**, just below it, rather than at the viewport centre: you pressed a thing on the canvas, so the character should appear where you pressed it.

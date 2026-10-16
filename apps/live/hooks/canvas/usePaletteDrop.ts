@@ -8,12 +8,6 @@
 // canvas <main>.
 
 import { endPlanCardDrag, planCardDragOver } from '@/hooks/plan/plan-card-drop';
-import {
-  dropPlanWidgetFromPalette,
-  endPlanWidgetDrag,
-  planWidgetDragOver,
-} from '@/hooks/plan/plan-widget-drop';
-import { PLAN_WIDGET_MIME } from '@/components/plan/board-widget-catalogue';
 import type { DragEvent as ReactDragEvent, RefObject } from 'react';
 import type { ShapeKind } from '@livediagram/document';
 import { pointerToCanvas } from '@/lib/canvas';
@@ -21,6 +15,7 @@ import { ICON_DND_MIME, PALETTE_DND_MIME } from '@/lib/icons';
 import { STICKER_DND_MIME } from '@/lib/stickers';
 import { getPaletteDragSnap, setPaletteDragSnap } from '@/lib/palette-drag-preview';
 import { TECH_ICON_DND_MIME } from '@/lib/tech-icons';
+import { overFloatingPanel } from '@/lib/canvas-pointer';
 import {
   LIBRARY_SHAPE_DND_MIME,
   readLibraryShapeRef,
@@ -72,21 +67,17 @@ export function usePaletteDrop({
     return file && file.type.startsWith('image/') ? file : null;
   };
   const onDragOver = (e: ReactDragEvent<HTMLElement>) => {
+    // Something inside the canvas already took this drag (a folder in the Explorer panel taking a dragged
+    // document, docs/specs/013-workspace/folders.md "Drag-and-drop"): it is that target's, so the guard below must
+    // not turn its accepted drop into a no-drop and cancel it.
+    if (e.defaultPrevented) return;
     // A drag back over a floating panel (the Palette itself) is a "changed my
     // mind" — show no-drop and don't let the drop below add anything. The
     // dragover events still bubble here from the panel, so check the target,
     // not just the MIME type.
-    if ((e.target as Element | null)?.closest?.('[data-floating-panel]')) {
+    if (overFloatingPanel(e.target)) {
       e.dataTransfer.dropEffect = 'none';
       endPlanCardDrag();
-      endPlanWidgetDrag();
-      return;
-    }
-    // A board widget from the palette lands only in a board's header
-    // (docs/specs/026-plan/board-widgets.md "Placing and arranging widgets").
-    if (e.dataTransfer.types.includes(PLAN_WIDGET_MIME)) {
-      e.preventDefault();
-      e.dataTransfer.dropEffect = planWidgetDragOver(e.clientX, e.clientY) ? 'copy' : 'none';
       return;
     }
     // A Plan card from the palette opens a gap in the board column under the pointer
@@ -113,19 +104,12 @@ export function usePaletteDrop({
   };
   const onDrop = (e: ReactDragEvent<HTMLElement>) => {
     endPlanCardDrag();
-    if (e.dataTransfer.types.includes(PLAN_WIDGET_MIME)) {
-      e.preventDefault();
-      if ((e.target as Element | null)?.closest?.('[data-floating-panel]')) {
-        endPlanWidgetDrag();
-        return;
-      }
-      dropPlanWidgetFromPalette(e.dataTransfer.getData(PLAN_WIDGET_MIME), e.clientX, e.clientY);
-      return;
-    }
+    // Handled by a target inside the canvas (as above).
+    if (e.defaultPrevented) return;
     // Dropped back onto a floating panel (the Palette) — cancel: the drop event
     // bubbles up from the panel to this canvas handler, so without this guard a
     // drop over the Palette would still add an element behind it.
-    if ((e.target as Element | null)?.closest?.('[data-floating-panel]')) return;
+    if (overFloatingPanel(e.target)) return;
     // `kind` or `kind|choice` — the creation-time choice a split tile
     // carries (docs/specs/009-elements/mode-button.md, /105, /123, /135). Without parsing it back out, a
     // dragged Poll tile dropped a timer.

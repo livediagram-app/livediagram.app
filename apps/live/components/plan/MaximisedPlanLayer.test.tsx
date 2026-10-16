@@ -12,7 +12,13 @@ import {
   useMaximisedPlanId,
 } from '@/hooks/plan/maximised-plan';
 import { MOTION_MS } from '@livediagram/tailwind-config/motion';
-import { CanvasCover, MaximisableSlot, useMaximisedPlanLifetime } from './MaximisedPlanLayer';
+import { CanvasPatternContext } from '@/components/canvas/canvas-pattern-context';
+import {
+  CanvasCover,
+  MaximisableSlot,
+  originOf,
+  useMaximisedPlanLifetime,
+} from './MaximisedPlanLayer';
 
 // docs/specs/026-plan/plan-board.md "Maximised board" and plan-views.md "Maximised view": maximising moves the body,
 // never remounts it; a view lays out at the overlay's size; one Escape restores, whatever else listens for it.
@@ -172,7 +178,9 @@ describe('restoring while it is still growing', () => {
     act(() => maximisePlanElement('el'));
     // Mid-grow: still the empty frame, the body on the canvas.
     expect(inSlot()).toBe(true);
-    act(() => vi.advanceTimersByTime(MOTION_MS.long - 120));
+    act(() => {
+      vi.advanceTimersByTime(MOTION_MS.long - 120);
+    });
     expect(inOverlay()).toBe(true);
   });
 
@@ -185,11 +193,15 @@ describe('restoring while it is still growing', () => {
     const moved = vi.spyOn(box, 'appendChild');
     expect(inSlot()).toBe(true);
     // Past the opening's reveal and its settle: neither runs.
-    act(() => vi.advanceTimersByTime(MOTION_MS.long));
+    act(() => {
+      vi.advanceTimersByTime(MOTION_MS.long);
+    });
     expect(inSlot()).toBe(true);
     expect(moved).not.toHaveBeenCalled();
     expect(isMaximisedPlanClosing()).toBe(true);
-    act(() => vi.advanceTimersByTime(MOTION_MS.long));
+    act(() => {
+      vi.advanceTimersByTime(MOTION_MS.long);
+    });
     expect(overlay()).toBeNull();
     expect(inSlot()).toBe(true);
     expect(moved).not.toHaveBeenCalled();
@@ -199,19 +211,92 @@ describe('restoring while it is still growing', () => {
     withBoxes();
     render(<Slot />);
     act(() => maximisePlanElement('el'));
-    act(() => vi.advanceTimersByTime(MOTION_MS.long * 2));
+    act(() => {
+      vi.advanceTimersByTime(MOTION_MS.long * 2);
+    });
     act(() => restorePlanElement());
     expect(inSlot()).toBe(true);
     act(() => maximisePlanElement('el'));
-    act(() => vi.advanceTimersByTime(MOTION_MS.long * 2));
+    act(() => {
+      vi.advanceTimersByTime(MOTION_MS.long * 2);
+    });
     expect(isMaximisedPlanClosing()).toBe(false);
     expect(inOverlay()).toBe(true);
+  });
+});
+
+// docs/specs/026-plan/plan-tabs.md "Slot content": in a Dashboard slot the element is drawn in the slot, its canvas node
+// out of sight under the page, so the grow and the shrink measure the slot where it is drawn, at that moment.
+describe('where a maximised element grows from and shrinks to', () => {
+  afterEach(() => {
+    document.body.innerHTML = '';
+    vi.restoreAllMocks();
+  });
+
+  const boxed = (attrs: Record<string, string>, rect: DOMRect | null) => {
+    const node = document.createElement('div');
+    for (const [k, v] of Object.entries(attrs)) node.setAttribute(k, v);
+    node.getBoundingClientRect = () => rect ?? new DOMRect(0, 0, 0, 0);
+    document.body.appendChild(node);
+    return node;
+  };
+
+  it('measures the slot the element is drawn in, never its canvas node under the page', () => {
+    boxed({ 'data-element-id': 'el' }, new DOMRect(-4000, -3000, 900, 600));
+    boxed({ 'data-plan-slot': 'el' }, new DOMRect(40, 220, 500, 320));
+    expect(originOf('el')).toEqual(new DOMRect(40, 220, 500, 320));
+  });
+
+  it('reads the slot afresh each time (the page scrolled or the row resized while maximised)', () => {
+    const slot = boxed({ 'data-plan-slot': 'el' }, new DOMRect(40, 220, 500, 320));
+    expect(originOf('el')?.top).toBe(220);
+    slot.getBoundingClientRect = () => new DOMRect(40, 80, 500, 320);
+    expect(originOf('el')?.top).toBe(80);
+  });
+
+  it('falls back to the canvas node while the slot has no box, and to nothing at all', () => {
+    boxed({ 'data-plan-slot': 'el' }, null);
+    expect(originOf('el')).toBeNull();
+    boxed({ 'data-element-id': 'el' }, new DOMRect(10, 20, 300, 200));
+    expect(originOf('el')).toEqual(new DOMRect(10, 20, 300, 200));
   });
 });
 
 // docs/specs/026-plan/plan-board.md "The header holds the top row": the cover hands the band to the element's header.
 describe('the canvas cover', () => {
   const insets = { top: 0, right: 0, bottom: 0, left: 0 };
+  // docs/specs/008-canvas/canvas-and-palette.md "Canvas": a cover inherits the canvas's colour and static pattern, but an
+  // animated style is a layer of the canvas's own, so the cover draws it again, under what it holds.
+  it('draws the canvas’s animated style, under the element, and no other', () => {
+    const cover = (pattern: 'aurora' | 'graph' | null) =>
+      render(
+        <CanvasPatternContext.Provider
+          value={pattern ? { pattern, color: '#123456', scale: 1.5, speed: 2, opacity: 0.5 } : null}
+        >
+          <CanvasCover layout={{ insets, band: null }} marker={{ 'data-x': '' }}>
+            <span />
+          </CanvasCover>
+        </CanvasPatternContext.Provider>,
+      ).container;
+    const moving = cover('aurora');
+    const layer = moving.querySelector<HTMLElement>('[data-animated-pattern="aurora"]')!;
+    expect(layer.style.opacity).toBe('0.5');
+    expect(layer.style.getPropertyValue('--lvd-pat')).toBe('#123456');
+    expect(layer.style.getPropertyValue('--lvd-bg-speed')).toBe('2');
+    // First in the cover, so the element (a later positioned sibling) paints over it.
+    expect(
+      moving
+        .querySelector('[data-canvas-cover] > :first-child')!
+        .hasAttribute('data-tab-pattern-layer'),
+    ).toBe(true);
+    expect(moving.querySelector('[data-canvas-cover] > [data-x]')).not.toBeNull();
+    cleanup();
+    // A static pattern rides the inherited background; nothing is drawn twice.
+    expect(cover('graph').querySelector('[data-tab-pattern-layer]')).toBeNull();
+    cleanup();
+    expect(cover(null).querySelector('[data-tab-pattern-layer]')).toBeNull();
+  });
+
   it('sets the header band for the element it holds, and none without one', () => {
     // The cover sits in the canvas, as it is portalled there; the strip's place is set on the canvas.
     const main = document.createElement('main');
@@ -242,6 +327,29 @@ describe('the canvas cover', () => {
     expect(plain.style.getPropertyValue('--plan-band-h')).toBe('');
     // No band: the strip is centred again.
     expect(main.style.getPropertyValue('--plan-strip-end')).toBe('');
+    main.remove();
+  });
+
+  it("lends the element's hue to the chrome in its band, and takes it back", () => {
+    const main = document.createElement('main');
+    document.body.appendChild(main);
+    const band = { height: 53, left: 124, mid: 349, stripEnd: 300 };
+    const { rerender } = render(
+      <CanvasCover layout={{ insets, band }} marker={{}} tint="#0284c7">
+        <span />
+      </CanvasCover>,
+      { container: main },
+    );
+    expect(main.dataset.bandTint).toBe('');
+    expect(main.style.getPropertyValue('--band-tint')).toBe('#0284c7');
+    // No band (the top row has no room for it): the chrome keeps its own colours.
+    rerender(
+      <CanvasCover layout={{ insets, band: null }} marker={{}} tint="#0284c7">
+        <span />
+      </CanvasCover>,
+    );
+    expect(main.dataset.bandTint).toBeUndefined();
+    expect(main.style.getPropertyValue('--band-tint')).toBe('');
     main.remove();
   });
 });

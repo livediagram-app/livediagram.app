@@ -1,6 +1,7 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { use, useMemo, useState } from 'react';
+import { browser } from 'react-dom';
 import type { Folder } from '@livediagram/api-schema';
 import { FolderRow, SkeletonRows } from '@/app/explorer/views';
 import { scopeDocuments, type LibraryLens } from '@/app/explorer/lens/pane-lens';
@@ -19,12 +20,12 @@ import {
   type MoveFolderNode,
 } from '@/components/dialogs/MoveToFolderDialog';
 import { useConfirm } from '@/hooks/ui/useConfirm';
+import { useToast } from '@/hooks/ui/useToast';
+import { offerDeleteUndo } from '@/lib/document-delete-undo';
 import { useTeamLibrary } from '@/hooks/persistence/useTeamLibrary';
 import { apiCreateFolder } from '@/lib/api-client';
-import { fetchSharedTabsNotice } from '@/lib/shared-tabs-notice';
 import { track } from '@/lib/telemetry';
 import { folderDescendants } from '@/lib/folder-tree';
-import { deleteConfirmation } from '@/lib/delete-confirmation';
 import { folderDeleteConfirmation } from '@/lib/folder-delete-confirmation';
 import { useDefaultFolderMenus } from '@/hooks/persistence/useDefaultFolderMenus';
 import { folderDefaultKeys } from '@/lib/placement-defaults/default-destination';
@@ -50,6 +51,7 @@ export function TeamSharedDocuments({
   moveDests,
   onMoveDocumentTo,
   lens,
+  onLibraryChange,
 }: {
   ownerId: string;
   teamId: string;
@@ -69,11 +71,14 @@ export function TeamSharedDocuments({
   // `moveDocumentTo`, which picks the right API call from the document's
   // current placement. Same-team picks keep using lib.moveDocument.
   onMoveDocumentTo?: (id: string, dest: MoveDestination) => void;
+  // A library changed from this page: this team's (null for My documents, from the move picker's New Folder), so the
+  // Explorer's own lists (the sidebar, search, every other move picker) follow without a reload.
+  onLibraryChange?: (teamId: string | null) => void;
   // The Explorer's lens (docs/specs/013-workspace/explorer-filters.md): while it is set, the
   // library lists every matching document at or below the open spot, its folders stepping aside.
   lens?: LibraryLens;
 }) {
-  const lib = useTeamLibrary(ownerId, teamId);
+  const lib = useTeamLibrary(ownerId, teamId, { onChange: () => onLibraryChange?.(teamId) });
   // Default folders (docs/specs/013-workspace/default-folders.md): a joined member may send new
   // documents to this team's folders.
   const teamFolderLists = useMemo(() => ({ [teamId]: lib.folders }), [teamId, lib.folders]);
@@ -84,10 +89,10 @@ export function TeamSharedDocuments({
   });
   // Deep link: /explorer/team?id=<team>&folder=<id> opens with that
   // folder focused (the search panel's team-folder results navigate
-  // here). Safe to read window in the initialiser: the explorer
-  // chrome only mounts post-auth on the client, never in SSG output.
+  // here). The explorer renders in the browser only (use(browser()), docs/specs/003-system-architecture/
+  // react-state-and-effects.md "Rendering in the browser only"), so the initialiser reads the address.
+  use(browser());
   const [spot, setSpot] = useState<Spot>(() => {
-    if (typeof window === 'undefined') return { kind: 'root' };
     const folder = new URLSearchParams(window.location.search).get('folder');
     return folder ? { kind: 'folder', id: folder } : { kind: 'root' };
   });
@@ -99,6 +104,7 @@ export function TeamSharedDocuments({
   // "+ Create" dropdown (mirrors the personal pane header): one compact
   // button instead of two, so the breadcrumb keeps its room on mobile.
   const confirm = useConfirm();
+  const toast = useToast();
   // List, card or details layout — the same device-local preference (docs/specs/006-document/document-snapshots.md) the
   // Explorer browse views use, so a card-view user gets cards here too.
   const [viewMode, setViewMode] = useExplorerViewMode();
@@ -200,18 +206,14 @@ export function TeamSharedDocuments({
     void lib.renameDocument(id, name);
   };
   const duplicateDocument = (id: string) => void lib.duplicateDocument(id);
+  // No question first (docs/specs/013-workspace/trash.md "Deleting"): it goes to the team's Trash, and the toast offers
+  // it back.
   const deleteDocument = async (id: string) => {
-    const d = lib.documents.find((x) => x.id === id);
-    const notice = await fetchSharedTabsNotice(ownerId, id, 'delete');
-    const ok = await confirm(
-      deleteConfirmation({
-        name: d?.name,
-        hasShareLinks: (d?.shareCode ?? null) !== null,
-        sharedTabsNotice: notice,
-        team: true,
-      }),
-    );
-    if (ok) void lib.deleteDocument(id);
+    if (!(await lib.deleteDocument(id))) {
+      toast.error('Could not delete the document. Please try again.');
+      return;
+    }
+    offerDeleteUndo(toast, { ownerId, id, trash: 'Team', onRestored: () => void lib.refresh() });
   };
 
   // The props the card grid and the Details view share (ExplorerViewProps), built once.
@@ -229,7 +231,7 @@ export function TeamSharedDocuments({
     folderActions,
     onStartRenameDocument: startRenameDocument,
     onDuplicateDocument: duplicateDocument,
-    onDeleteDocument: deleteDocument,
+    onDeleteDocument: (id: string) => void deleteDocument(id),
     onMoveDocument: (id) => setMoveTarget({ kind: 'document', id }),
     childrenCount: (id) => lib.childrenByParent.get(id)?.length ?? 0,
     documentsCount: (id) => lib.documentsByFolder.get(id)?.length ?? 0,
@@ -333,7 +335,7 @@ export function TeamSharedDocuments({
               onCommitRename={(name) => commitRenameDocument(d.id, name)}
               onCancelRename={() => setRenamingDocumentId(null)}
               onDuplicate={() => duplicateDocument(d.id)}
-              onDelete={() => deleteDocument(d.id)}
+              onDelete={() => void deleteDocument(d.id)}
             />
           ))}
         </ul>
@@ -376,8 +378,8 @@ export function TeamSharedDocuments({
             // In-team creates go through the lib so the local list updates
             // immediately. Other scopes (personal / another team, reachable
             // via moveDests) create through the API directly: the fresh
-            // folder is a valid destination straight away, and the sweep
-            // picks its tile up on the next explorer refresh.
+            // folder is a valid destination straight away, and the Explorer's
+            // lists hear of it through onLibraryChange.
             if (destTeamId === teamId) {
               const created = await lib.createFolder(parentId, name);
               return created
@@ -392,6 +394,7 @@ export function TeamSharedDocuments({
                 teamId: destTeamId,
               });
               track('Folder', 'Created', destTeamId ? 'Team' : undefined);
+              onLibraryChange?.(destTeamId ?? null);
               return { id: folder.id, name: folder.name, parentId: folder.parentId };
             } catch {
               return null;

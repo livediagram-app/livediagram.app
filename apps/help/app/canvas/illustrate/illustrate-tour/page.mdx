@@ -1,0 +1,61 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'The Illustrate Tour',
+  description:
+    'Take the Illustrate tour: a walkthrough for each kind of page (slides, infographics, articles, logos) that opens the real layouts, backgrounds and deck.',
+  path: '/help/canvas/illustrate/illustrate-tour/',
+});
+
+<ArticleLayout
+  title="The Illustrate Tour"
+  description="A short, optional walkthrough for each kind of page, offered the first time you work on one and replayable from Settings or Show Me."
+  categoryTitle="Canvas"
+  categorySlug="canvas/illustrate"
+>
+
+The Illustrate tour shows you how each kind of page is made, on your own page. There is one tour for each kind: **slides**, **infographics**, **articles** and **logos**. Like the [Diagram Tour](/help/getting-started/diagram-tour/), it works on the real editor rather than screenshots, and it opens the real controls for you: the Layout and Background popovers, the page's settings, the Slide Deck. Anything you pick while a step is open is kept. It takes under a minute, and you can leave at any point.
+
+## When It's Offered
+
+The first time you work on a page of a kind in [Illustrate mode](/help/canvas/illustrate/) on a tab you can edit, a centred card asks whether you'd like a look (**Getting started with slides?**, for a slide): **Yes** starts it, **No** dismisses it. If several kinds are on screen, it runs on the page you can see most of. Add a page of another kind later and that kind's tour is offered then.
+
+It waits while **Start Illustrating** is open and while a new tab's first page asks **What Is This Page For?**. It isn't offered on a locked tab or page, in an embed, or to someone who can only view or take part.
+
+Each kind's tour is offered **once ever**. However you answer (decline, skip midway, or finish), it won't come back on its own for that kind, and if you're signed in the answer follows you to every device. Turning on **Power User Mode** in Settings marks them all as seen. If you answered the single Illustrate tour before it had one tour per kind, each kind's tour is offered to you once more.
+
+## What Each Tour Covers
+
+**Slides**
+
+1. **Choose a Layout**: opens the slide's **Layout** popover. Hover a layout to preview it, press one to place it.
+2. **Change the Background**: opens the **Background** popover: colours, gradients, animated backgrounds and pictures.
+3. **Add It to the Deck**: the slide's **Add to Slides** button, which becomes the eye that hides or shows it once it's in.
+4. **Add Another Slide**: the **+** after the last page.
+5. **Present**: opens the Slide Deck from the **Slides** button, where you order the slides and press **Present**.
+
+**Infographics**: the page's name, **Start From a Layout**, **Change the Background**, **Page Size** (the page's settings), **Add a Page** and **Present It** (any page can be a slide). See [Infographic Layouts](/help/canvas/illustrate/infographic-layouts/).
+
+**Articles**: writing on the page, the page toolbar (held up for you while its step is showing), and the article's style and its fonts and spacing (the page's **Style** and **Text** settings). See [Articles](/help/canvas/illustrate/articles/).
+
+**Logos**: the logo layouts, guides, mirror drawing and combining shapes, as the logo page's Show Me runs them. See [Logo Pages](/help/canvas/illustrate/logo-pages/).
+
+A step whose control isn't on screen when the tour starts (the deck button and **Slides** on a phone, say) is left out, so the count stays honest. Each step has **Next**, **Back** and **Skip tour**; leaving a step closes whatever it opened. If you leave Illustrate mode, switch tab, or delete or lock the page mid-tour, it ends as skipped.
+
+## Show Me on Any Page
+
+Every page's settings (its cog) carry **Show Me** at the top, which runs that page's tour there and then, whenever you like, without the welcome card.
+
+## Replaying the Tour
+
+<Step n={1}>Open **Settings** from the editor and go to **Tours**.</Step>
+
+<Step n={2}>Switch **Illustrate Tour** back on.</Step>
+
+<Step n={3}>
+  Close Settings. Every kind's tour is offered again: if you're in Illustrate mode, the one for the
+  page on screen shows straight away; otherwise it's offered the next time you work in Illustrate.
+</Step>
+
+</ArticleLayout>

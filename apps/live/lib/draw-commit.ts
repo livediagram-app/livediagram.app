@@ -1,3 +1,4 @@
+import { boardTitleForTab } from '@/lib/tab-named-plan';
 import { statusColumnsOf } from '@/hooks/plan/usePlanStatusNames';
 import {
   freshBoardSetup,
@@ -20,13 +21,13 @@ import {
   REACTION_PAD_LABEL,
   type EventStormingNoteKind,
   type StickyElement,
-  type TextElement,
 } from '@livediagram/document';
 import { ARROW_SNAP_THRESHOLD_PX, inheritedSizeFor } from '@/lib/canvas';
 import {
   createComponent,
   createImage,
   createLinkCard,
+  applyShapeVariant,
   createShape,
   createSticky,
   createTable,
@@ -49,7 +50,7 @@ import type { PendingDraw } from '@/lib/draw-mode';
 import { stampSizeFor } from '@/lib/stamp-placement';
 import { placedTextBox } from '@/lib/text-hug';
 import { boardShape } from '@/lib/whiteboard-tool';
-import { placeNewSheet } from '@/lib/sheet-seeds';
+import { placeNewSheet, sheetTitleForTab } from '@/lib/sheet-seeds';
 
 // The pure element construction behind commitDraw (docs/specs/008-canvas/canvas-and-palette.md draw-to-add),
 // lifted out of useShapeDrawing: each builder interprets the gesture's
@@ -264,7 +265,7 @@ export function buildDrawnBoxed(
   const esBoardSticky = intent.type === 'sticky' && isEventStormingTab(activeTab);
   const base =
     intent.type === 'shape'
-      ? createShape(intent.kind, startX, startY)
+      ? applyShapeVariant(createShape(intent.kind, startX, startY), intent.variant)
       : intent.type === 'text'
         ? createText(startX, startY)
         : intent.type === 'sticky'
@@ -326,12 +327,7 @@ export function buildDrawnBoxed(
   // boxes"): it lands empty, one line tall, caret-sized at a click or at the dragged width.
   const hugged =
     base.type === 'text' && drawMode
-      ? placedTextBox(
-          { ...base, ...textSize } as TextElement,
-          isTap,
-          { x: startX, y: startY },
-          dragBox,
-        )
+      ? placedTextBox({ ...base, ...textSize }, isTap, { x: startX, y: startY }, dragBox)
       : {};
   return {
     ...base,
@@ -415,7 +411,10 @@ export function buildDrawnBoxed(
     // (docs/specs/026-plan/plan-board.md "The board set-up").
     ...(intent.type === 'shape' && intent.kind === 'plan-board'
       ? {
-          planBoard: freshBoardSetup(intent.plan, Math.random, statusColumnsOf(activeTab.elements)),
+          planBoard: namedForTab(
+            freshBoardSetup(intent.plan, Math.random, statusColumnsOf(activeTab.elements)),
+            activeTab.name,
+          ),
         }
       : {}),
     ...(intent.type === 'shape' && intent.kind === 'plan-card'
@@ -424,7 +423,7 @@ export function buildDrawnBoxed(
     // A Sheet names a new sheet, which the Sheet makes in the sheet store as it first draws
     // (docs/specs/029-sheets/sheet.md "Placing a sheet").
     ...(intent.type === 'shape' && intent.kind === 'plan-sheet'
-      ? { planSheet: placeNewSheet() }
+      ? { planSheet: placeNewSheet({ title: sheetTitleForTab(activeTab.name) }) }
       : {}),
     // A plan view takes its tile's view (docs/specs/026-plan/plan-views.md), tapped in at that view's size.
     ...(intent.type === 'shape' && intent.kind === 'plan-view' && isPlanViewId(intent.plan)
@@ -471,4 +470,9 @@ export function buildEventStormingNote(
     null,
     activeTab,
   ) as StickyElement;
+}
+
+// A board placed on a tab is named after it (docs/specs/026-plan/plan-board.md "The board set-up").
+function namedForTab<T extends { title: string }>(setup: T, tabName: string | undefined): T {
+  return { ...setup, title: boardTitleForTab(tabName, setup.title) };
 }

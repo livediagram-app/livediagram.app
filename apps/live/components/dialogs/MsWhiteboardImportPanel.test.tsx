@@ -49,7 +49,7 @@ describe('MsWhiteboardImportPanel', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Choose a folder' }));
     fireEvent.click(await screen.findByRole('checkbox', { name: 'Select all' }));
     expect(
-      (screen.getByRole('button', { name: 'Import 0 boards' }) as HTMLButtonElement).disabled,
+      screen.getByRole<HTMLButtonElement>('button', { name: 'Import 0 boards' }).disabled,
     ).toBe(true);
   });
 

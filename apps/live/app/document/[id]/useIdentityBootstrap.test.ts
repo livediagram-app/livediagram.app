@@ -129,7 +129,7 @@ describe('useIdentityBootstrap in a workbench', () => {
     expect(set.setIsOwner).toHaveBeenCalledWith(true);
     expect(set.setSessionRole).toHaveBeenCalledWith('edit');
     expect(set.setNameConfirmed).toHaveBeenCalledWith(true);
-    expect(set.setTemplatePickerMode).not.toHaveBeenCalled();
+    expect(set.setIdentityPromptOpen).not.toHaveBeenCalled();
     expect(set.setSessionShareCode).not.toHaveBeenCalled();
     expect(set.setLoadingDocument).toHaveBeenCalledWith(false);
     expect(seed).toHaveBeenCalledWith('user_1', DOC, null, null);
@@ -159,10 +159,11 @@ describe('useIdentityBootstrap in a workbench', () => {
 
     await vi.waitFor(() => expect(set.setHydrated).toHaveBeenCalledWith(true));
 
-    const self = set.setSelfParticipant!.mock.calls[0]![0];
-    expect(self.id).toBe('user_1');
-    expect(self.name).toEqual(expect.any(String));
-    expect(self.color).toEqual(expect.any(String));
+    expect(set.setSelfParticipant!.mock.calls[0]![0]).toMatchObject({
+      id: 'user_1',
+      name: expect.any(String),
+      color: expect.any(String),
+    });
     expect(api.apiSaveSelf).not.toHaveBeenCalled();
   });
 

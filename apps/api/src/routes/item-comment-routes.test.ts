@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
+import { sentJson } from '@livediagram/vitest-config/sent-request';
 import type { ItemCommentAddResponse, ItemResponse, ItemsResponse } from '@livediagram/api-schema';
 import type { CommentThread } from '@livediagram/document';
 import type { Item } from '@livediagram/items';
@@ -11,7 +12,8 @@ import { handleDocuments } from './documents';
 // may add, delete, resolve and reopen; author ids only to their author; the relay; restore; Community copies.
 
 let sql: SqliteD1;
-let relayed: { op?: { upserts?: Item[] } }[];
+type Relayed = { op?: { upserts?: Item[] } };
+let relayed: Relayed[];
 
 async function call<T = unknown>({
   method = 'POST',
@@ -53,7 +55,7 @@ beforeEach(async () => {
     idFromName: (n: string) => n,
     get: () => ({
       fetch: async (_url: string, init: RequestInit) => {
-        relayed.push(JSON.parse(String(init.body)));
+        relayed.push(sentJson(init) as Relayed);
         return new Response(null, { status: 204 });
       },
     }),

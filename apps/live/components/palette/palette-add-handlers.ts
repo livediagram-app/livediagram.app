@@ -22,6 +22,7 @@ export const PALETTE_ADD_HANDLER_KEYS = [
   'onAddCallout',
   'onAddStatRow',
   'onAddProcess',
+  'onAddFlowchart',
   'onAddAvatar',
   'onAddImage',
   'onAddArrow',

@@ -14,7 +14,7 @@ import {
 // ORDINARY comment field rather than growing a parallel one, so most of what
 // is worth pinning is "the existing helpers work on it unchanged".
 
-const pin = () => createShape('comment-pin', 0, 0) as ShapeElement;
+const pin = () => createShape('comment-pin', 0, 0);
 
 describe('comment pin', () => {
   it('is a registered shape kind', () => {

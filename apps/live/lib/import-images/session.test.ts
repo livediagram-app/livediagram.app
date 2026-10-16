@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { ApiError } from '../api/core';
 import { createImportImageSession, type ImportImageSessionDeps } from './session';
 import { fakeCodec, PNG_HEAD } from './test-fakes';
-import type { ImportImageSource, PreparedImportImage } from './types';
+import type { ImportImageSource } from './types';
 import { IMPORT_IMAGE_CONCURRENCY, OFFLINE_IMPORT_EMBED_BUDGET_CHARS } from './constants';
 
 const pngSource = (fill = 1): ImportImageSource => {
@@ -30,7 +30,7 @@ describe('createImportImageSession', () => {
     const d = deps();
     const out = await createImportImageSession(d).store(pngSource());
     expect(out).toEqual({ ok: true, imageId: 'img-1', width: 40, height: 20, kind: 'uploaded' });
-    const prepared = vi.mocked(d.upload).mock.calls[0]![0] as PreparedImportImage;
+    const prepared = vi.mocked(d.upload).mock.calls[0]![0];
     expect(prepared.mimeType).toBe('image/png');
   });
 

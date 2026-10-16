@@ -6,29 +6,27 @@ Status: shipped
 
 Deleting a document moves it to the **Trash** for **30 days**; after that it is
 purged for good. The Trash is a quiet backstop, not a feature to manage:
-deletion still feels permanent, the delete confirmations stay, and nothing nags
-about where the document went. Someone who deleted the wrong thing can go and
-fetch it back.
+a delete asks nothing first, offers an Undo, and nothing nags
+about where the document went. Someone who deleted the wrong thing can undo it
+on the spot, or go and fetch it back.
 
 ### Deleting
 
-Every document delete asks one short question, the same everywhere (the
-Explorer, the editor, the Explorer panel's popover, the team library;
-`apps/live/lib/delete-confirmation.ts`):
+A document delete asks nothing first, the same everywhere (the Explorer, the editor, the Explorer panel, the team
+library): it only moves the document to the Trash, so a question would guard nothing that is lost.
 
-- Title **Confirm**; first line **Delete "<name>"?**
-- A second line only for what applies, in this order: "It is deleted for the
-  whole team." (a team document), "Its share links stop working." (only when
-  the document has share links; for the document open in the editor this is
-  asked of the server, and left out when it cannot say), and the shared-tabs
-  sentence ([Tab ↔ document many-to-many](../006-document/tab-document-many-to-many.md)).
-- The **Delete** button is not red: nothing is lost for 30 days.
-- The Trash is not mentioned: it is a backstop, found in Settings. There is no
-  undo toast and no "moved to Trash" message.
-- From a list (the Explorer, the editor's Explorer panel, `/new`), the row leaves at
-  once and "Document deleted" shows only once the delete has landed. A delete that
-  fails puts the row back where it was and says "Could not delete the document.
-  Please try again." (logged `[explorer] delete-failed, row restored`).
+- **Document deleted** shows once the delete has landed, with **Undo** (`apps/live/lib/document-delete-undo.ts`,
+  `offerDeleteUndo`). Undo restores it from the Trash exactly as Restore does (`Trash·Restored`, typed by the Trash it
+  was in), closes the toast and says **Document restored**; a restore that fails says "Could not restore the document.
+  It is still in the Trash, in Settings." The toast waits until it is closed (an action toast, WCAG 2.2.1), and the
+  "Show notifications" preference silences it like any other, leaving the Trash.
+- From a list (the Explorer, the editor's Explorer panel, `/new`), the row leaves at once, and Undo puts it back where it
+  was. A delete that fails puts the row back and says "Could not delete the document. Please try again." (logged
+  `[explorer] delete-failed, row restored`).
+- Deleting the document open in the editor takes the editor to the Explorer, which offers the same toast on arrival:
+  the delete is handed over in `sessionStorage` for 30 seconds (`handOffDeleteUndo`, `takeDeleteUndo`,
+  `useDeleteUndoHandoff`).
+- A team document deleted from the team library goes to the team's Trash, and its Undo restores it there.
 
 Every delete of a whole document goes to the Trash: the Explorer, the editor,
 the team library, the public API with a token, and the MCP server. So does a
@@ -161,7 +159,9 @@ document holds goes, a tab still linked elsewhere stays exactly where it is.
 
 The api worker's daily `0 3 * * *` cron purges every document that has been in
 the Trash for 30 days or more, through the same removal that deletes a document
-today (`documentRemovalStatements`), plus its snapshot and its Timeline events.
+today (`documentRemovalStatements`), plus its snapshot, its Timeline events and
+its realtime room's storage ([API](../015-api/api.md) "Purging a room"), where the
+collaboration ledger kept the text of its comments, ideas and answers.
 The purge is set-based and capped per run, so a backlog drains over a few days
 rather than overrunning one invocation. It logs how many it purged.
 

@@ -13,7 +13,8 @@ a drag's cost to what it moves, whatever the size of the board
   in a preview beside the document. The canvas draws an element from the preview when it has one,
   else from the document. Nothing in the document changes until the gesture ends.
 - **It covers what the gesture changes:** the dragged elements, and every arrow whose drawing
-  depends on them (pinned to them, or routed behind them). Nothing else is redrawn while it lasts.
+  depends on them (pinned to them, or routed behind them). Nothing else is redrawn while it lasts:
+  not the canvas, and not the layer that holds the elements, only each previewed element itself.
 - **Everything derived from the board stays as it was** while the preview lasts: the element index,
   the element grid, the arrow labels of arrows the drag does not touch, the Map (which already holds
   its drawing through a gesture, [Minimap](minimap.md)), the selection chrome (already hidden while

@@ -28,7 +28,7 @@ import { SOLID_BRAND_DARK } from '@livediagram/ui';
 function NewPill() {
   return (
     <span
-      className={`mr-1.5 inline-flex items-center rounded bg-brand-600 px-1.5 py-px align-[1px] text-[9px] font-semibold text-white ${SOLID_BRAND_DARK}`}
+      className={`mr-1.5 inline-flex items-center rounded bg-brand-700 px-1.5 py-px align-[1px] text-[9px] font-semibold text-white ${SOLID_BRAND_DARK}`}
     >
       <span className="text-optical-line text-optical-caps">New</span>
     </span>

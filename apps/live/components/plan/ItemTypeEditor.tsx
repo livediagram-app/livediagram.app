@@ -29,7 +29,11 @@ import { Dialog } from '@/components/dialogs/Dialog';
 import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { DialogFooter } from '@/components/dialogs/DialogFooter';
-import { CardTypeTourStage, ShowMeButton, useCardTypeTour } from '@/components/tour/CardTypeTour';
+import {
+  CardTypeShowMeButton,
+  CardTypeTourStage,
+  useCardTypeTour,
+} from '@/components/tour/CardTypeTour';
 import { SheetRow } from './PlanModal';
 import { ItemTypeConfiguration } from './ItemTypeConfiguration';
 import { ItemTypeEditorTabs, type TypeEditorTab } from './ItemTypeEditorTabs';
@@ -49,7 +53,6 @@ export function ItemTypeEditor({
   template,
   types,
   itemCount,
-  canDelete,
   onSave,
   onDelete,
   onClose,
@@ -62,7 +65,6 @@ export function ItemTypeEditor({
   types: readonly ItemTypeDef[];
   // How many cards (out of the Trash) have this type: a delete says they go to the Trash with it.
   itemCount: number;
-  canDelete: boolean;
   onSave: (type: ItemTypeDef) => void;
   // Deletes the type and moves its cards to the Trash, once confirmed.
   onDelete: () => void;
@@ -74,12 +76,12 @@ export function ItemTypeEditor({
   const start = type ?? template ?? NEW_TYPE;
   const [label, setLabel] = useState(start.label);
   const [color, setColor] = useState(start.color);
-  const [glyph, setGlyph] = useState(String(start.glyph));
+  const [glyph, setGlyph] = useState(start.glyph);
   // The fields, custom fields and the panel's tabs (the type's own, or its one Overview tab), as one draft.
   const [layout, setLayout] = useState<LayoutDraft>(() => ({
     fields: [...start.fields],
     custom: [...(start.custom ?? [])],
-    tabs: tabsOf({ ...start, id: '', newTitle: '' } as ItemTypeDef).map((t) => ({
+    tabs: tabsOf({ ...start, id: '', newTitle: '' }).map((t) => ({
       ...t,
       fields: [...t.fields],
     })),
@@ -201,7 +203,7 @@ export function ItemTypeEditor({
           {type ? `Edit ${type.label} Card Type` : 'New Card Type'}
         </h2>
         {/* Show Me, Help on card types, and the editor's own close (as Cancel: the draft is dropped). */}
-        <ShowMeButton tour={tour} />
+        <CardTypeShowMeButton tour={tour} />
         <HelpArticleLink article="planCardTypes" variant="labelled" />
         <DialogCloseButton compact onClick={onClose} />
       </div>
@@ -260,7 +262,7 @@ export function ItemTypeEditor({
       />
       <DialogFooter>
         <>
-          {type && canDelete ? (
+          {type ? (
             <Button
               variant="secondary"
               // Duplicate Type, when there, sits beside it and ends the left group instead.

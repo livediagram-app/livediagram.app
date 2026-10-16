@@ -9,6 +9,10 @@ import {
   applyLayoutChange,
   applySheetWrite,
   cellKey,
+  formatA1,
+  layoutIndex,
+  rangeOptions,
+  splitCellKey,
   inverseLayoutChanges,
   inverseSheetWrite,
   mergeSheetChange,
@@ -18,6 +22,7 @@ import {
   undoReadsNow,
   uniqueSheetTitle,
   validateWrite,
+  writeForRules,
   type CardSource,
   type Sheet,
   type SheetJson,
@@ -25,6 +30,7 @@ import {
   type SheetPerson,
   type SheetRejection,
   type SheetWrite,
+  type WriteCheck,
 } from '@livediagram/sheets';
 import { debugLog } from '@/lib/debug-log';
 import type { SheetsBridge } from '@/hooks/sheets/useSheetsBridge';
@@ -38,6 +44,22 @@ import {
   type SheetsScope,
 } from '@/lib/api/sheets';
 import type { ItemUndoStep } from '@/hooks/plan/item-undo-journal';
+
+// How a write is made: `undoable` false for an undo or redo itself (`undo` true then); `alongside`, a change outside
+// the sheet made with it (Clear Sheet taking the Sheet's charts), undone and redone with it as one step.
+// `unchecked`: written as it is, past the validation rules (an import, a card table's sync, a template's start;
+// data-validation.md "Where values are checked").
+type WriteOpts = {
+  undoable?: boolean;
+  undo?: boolean;
+  unchecked?: boolean;
+  alongside?: ItemUndoStep;
+};
+
+// A new tab's sheet waiting for the tab to be saved: retried this many times, this much longer each time
+// (docs/specs/029-sheets/sheet-store.md "Changing a sheet"). Safe range 2..6 and 300..2000 ms.
+const CREATE_TAB_RETRIES = 4;
+const CREATE_TAB_RETRY_MS = 800;
 
 export type SheetStoreDeps = {
   scope: SheetsScope;
@@ -73,7 +95,25 @@ const REFUSALS: Partial<Record<string, string>> = {
   sheet_title_taken: 'Another sheet on this tab is called that',
   input_too_long: 'A cell holds up to 10,000 characters',
   sheet_not_found: 'This sheet is no longer in this document',
+  rules_full: 'This sheet holds the most rules it can',
 };
+
+// What a refused write says: a value a validation rule refuses names its cell and what the rule allows.
+export function writeRefusalMessage(
+  check: { error: string; at?: string; line?: string },
+  layout?: SheetLayout,
+): string {
+  if (check.error === 'value_invalid' && check.line) {
+    const ix = layout && check.at ? layoutIndex(layout) : null;
+    const { r, c } = check.at ? splitCellKey(check.at) : { r: '', c: '' };
+    const row = ix?.rowPos.get(r);
+    const col = ix?.colPos.get(c);
+    return row !== undefined && col !== undefined
+      ? `${formatA1(row, col)}: ${check.line}`
+      : check.line;
+  }
+  return sheetRefusalMessage(check.error);
+}
 
 export function sheetRefusalMessage(code: string | null): string {
   return (code && REFUSALS[code]) ?? "Couldn't save that change";
@@ -95,6 +135,8 @@ export class SheetStore {
   private readonly tabStatus = new Map<string, TabStatus>();
   private readonly workbooks = new Map<string, Workbook>();
   private readonly queues = new Map<string, Promise<void>>();
+  // Each tab's load in flight (loadTab).
+  private readonly loads = new Map<string, Promise<void>>();
   private readonly listeners = new Set<() => void>();
   private readonly refetchTimers = new Map<string, ReturnType<typeof setTimeout>>();
   // Sheets this person deleted with their elements, as they were: Undo puts the element back and its sheet with it
@@ -175,9 +217,21 @@ export class SheetStore {
 
   // ---- Loading -----------------------------------------------------------------------------------------
 
-  async loadTab(tabId: string, force = false): Promise<void> {
-    const status = this.tabStatus.get(tabId);
-    if (!force && (status === 'loading' || status === 'ready')) return;
+  // Settles once the tab's sheets are in (or the load failed, never rejecting): a second caller while a load is in
+  // flight waits for that same load, so what it reads next is the loaded tab, never the empty one.
+  loadTab(tabId: string, force = false): Promise<void> {
+    const inFlight = this.loads.get(tabId);
+    if (!force && inFlight) return inFlight;
+    if (!force && this.tabStatus.get(tabId) === 'ready') return Promise.resolve();
+    const load = this.fetchTab(tabId);
+    this.loads.set(tabId, load);
+    void load.finally(() => {
+      if (this.loads.get(tabId) === load) this.loads.delete(tabId);
+    });
+    return load;
+  }
+
+  private async fetchTab(tabId: string): Promise<void> {
     this.tabStatus.set(tabId, 'loading');
     this.notify();
     try {
@@ -271,7 +325,7 @@ export class SheetStore {
   create(
     create: SheetCreateRequest & { id: string },
     seed?: SheetJson,
-    opts: { onRefused?: (code: string | null) => boolean } = {},
+    opts: { onRefused?: (code: string | null) => boolean; onCreated?: () => void } = {},
   ): void {
     const now = Date.now();
     const json: SheetJson = seed ?? {
@@ -287,13 +341,31 @@ export class SheetStore {
     };
     this.adopt(json);
     this.notify();
+    this.sendCreate(create, opts, 0);
+  }
+
+  // Sends a create. A sheet on a tab made a moment ago can reach the server before its tab is saved: `tab_not_found`
+  // is retried, a little later each time, before it counts as refused.
+  private sendCreate(
+    create: SheetCreateRequest & { id: string },
+    opts: { onRefused?: (code: string | null) => boolean; onCreated?: () => void },
+    attempt: number,
+  ): void {
     this.enqueue(create.id, async () => {
       try {
         const stored = await this.api.createSheet(this.deps.scope, create, this.by());
         this.adopt(stored);
         this.notify();
+        opts.onCreated?.();
       } catch (e) {
         const code = e instanceof ApiError ? e.code : null;
+        if (code === 'tab_not_found' && attempt < CREATE_TAB_RETRIES) {
+          setTimeout(
+            () => this.sendCreate(create, opts, attempt + 1),
+            CREATE_TAB_RETRY_MS * (attempt + 1),
+          );
+          return;
+        }
         if (!opts.onRefused?.(code)) this.refused(e, create.id);
         this.drop(create.id);
         this.notify();
@@ -303,11 +375,7 @@ export class SheetStore {
 
   // One change to a sheet, as the person made it: applied now, sent in order, undoable unless `undoable` is false
   // (an undo or redo itself). Refused at once (with the reason) when it breaks a limit.
-  write(
-    sheetId: string,
-    write: SheetWrite,
-    opts: { undoable?: boolean; undo?: boolean } = {},
-  ): SheetRejection | null {
+  write(sheetId: string, write: SheetWrite, opts: WriteOpts = {}): SheetRejection | null {
     return this.writeAll([{ sheetId, write }], opts);
   }
 
@@ -317,20 +385,31 @@ export class SheetStore {
   // before it leave it, so the per-write cap never refuses what the sheet allows.
   writeAll(
     edits: readonly { sheetId: string; write: SheetWrite }[],
-    opts: { undoable?: boolean; undo?: boolean } = {},
+    opts: WriteOpts = {},
   ): SheetRejection | null {
     const now = Date.now();
     const states = new Map<string, Sheet>();
     const plan: { sheetId: string; write: SheetWrite; parts: SheetWrite[] }[] = [];
-    for (const { sheetId, write } of edits) {
+    const checked = !opts.undo && !opts.unchecked && opts.undoable !== false;
+    for (const { sheetId, write: asMade } of edits) {
       const entry = this.entries.get(sheetId);
       if (!entry) return 'write_invalid';
+      // What is typed or pasted takes its cell's rule: `done` is saved as the option `Done` (data-validation.md).
+      const write = checked ? writeForRules(entry.view.layout, asMade) : asMade;
       const parts = splitWrite(write);
       let state = states.get(sheetId) ?? entry.view;
+      // A Dropdown from a Range's options are worked out here, from the tab's workbook (the api cannot).
+      const wb = this.workbooks.get(entry.view.tabId);
+      const checks: WriteCheck = {
+        // Quiet writes (a card table's sync, a seed) are the system's, stored as they are.
+        checkRules: checked,
+        locale: this.deps.locale,
+        ...(wb ? { rangeValues: (rule) => rangeOptions(wb, sheetId, rule) } : {}),
+      };
       for (const part of parts) {
-        const check = validateWrite(state, part);
+        const check = validateWrite(state, part, checks);
         if (!check.ok) {
-          this.deps.toast(sheetRefusalMessage(check.error));
+          this.deps.toast(writeRefusalMessage(check, state.layout));
           return check.error;
         }
         // Only a later part or write needs the sheet as this one leaves it.
@@ -354,7 +433,14 @@ export class SheetStore {
       for (const part of parts) {
         const wid = newWid();
         entry.pending.push({ wid, write: part });
-        this.enqueue(sheetId, () => this.send(sheetId, wid, part, opts.undo === true));
+        this.enqueue(sheetId, () =>
+          this.send(sheetId, wid, part, {
+            ...(opts.undo ? { undo: true } : {}),
+            ...(opts.unchecked || (opts.undoable === false && !opts.undo)
+              ? { unchecked: true }
+              : {}),
+          }),
+        );
       }
       entry.view = { ...result.sheet, rev: entry.confirmed.rev };
       this.workbookUpdate(
@@ -364,9 +450,20 @@ export class SheetStore {
       );
     }
     if (opts.undoable !== false) {
+      const alongside = opts.alongside;
       this.deps.pushUndo({
-        undo: () => void this.writeAll(this.undoWrites(inverses), { undoable: false, undo: true }),
-        redo: () => void this.writeAll(edits, { undoable: false, undo: true }),
+        undo: () => {
+          this.writeAll(this.undoWrites(inverses), { undoable: false, undo: true });
+          alongside?.undo();
+        },
+        redo: () => {
+          // The writes as made (each value as its rule took it).
+          this.writeAll(
+            plan.map(({ sheetId, write }) => ({ sheetId, write })),
+            { undoable: false, undo: true },
+          );
+          alongside?.redo();
+        },
       });
     }
     this.notify();
@@ -444,7 +541,7 @@ export class SheetStore {
     sheetId: string,
     wid: string,
     write: SheetWrite,
-    undo: boolean,
+    flags: { undo?: true; unchecked?: true },
     attempt = 0,
   ): Promise<void> {
     let answer: SheetWriteResponse;
@@ -452,7 +549,7 @@ export class SheetStore {
       answer = await this.api.writeSheet(
         this.deps.scope,
         sheetId,
-        { write, wid, ...(undo ? { undo: true } : {}) },
+        { write, wid, ...flags },
         this.by(),
       );
     } catch (e) {
@@ -463,7 +560,7 @@ export class SheetStore {
         debugLog('[sheets] sheets.write.retrying', { attempt, status: errorStatus(e) });
         await this.wait(sheetWriteRetryMs(attempt));
         if (!this.entries.get(sheetId)?.pending.some((p) => p.wid === wid)) return;
-        return this.send(sheetId, wid, write, undo, attempt + 1);
+        return this.send(sheetId, wid, write, flags, attempt + 1);
       }
       this.refused(e, sheetId);
       const entry = this.entries.get(sheetId);

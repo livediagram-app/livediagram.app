@@ -4,8 +4,10 @@ import {
   DEFAULT_BOX_RADIUS_PX,
   MIND_NODE_RADIUS_PX,
   cornerRadiusPx,
+  finishBorderStroke,
+  finishCornerFallbackPx,
+  finishDrawsDefaultShadow,
   BORDER_STROKE_PX,
-  DEFAULT_BORDER_STROKE,
   DEFAULT_BORDER_STYLE,
   defaultFillColor,
   defaultStrokeColor,
@@ -15,6 +17,7 @@ import {
   supportsShadow,
   type BoxedElement,
   type CanvasSurface,
+  type Finish,
 } from '@livediagram/document';
 import { isCssNativeBorderStyle } from '@/components/canvas/border-css';
 import { isSvgRenderedShape } from '@/components/canvas/shape-svg-overlay';
@@ -39,7 +42,12 @@ export function describeVariant(
   // (docs/specs/007-editor/live-app.md). A parameter rather than a context read because this is a pure
   // function the view calls — the view is where the context lives.
   surface: CanvasSurface = 'light',
+  // The drawing style (docs/specs/008-canvas/finish.md): Professional drops the default shadows and thins and
+  // sharpens unset borders; Sketch hands the body to the SketchOverlay, so the wrapper draws none.
+  finish: Finish = 'flexible',
 ): { className: string; style: CSSProperties } {
+  const sketched = finish === 'sketch';
+  const softShadow = finishDrawsDefaultShadow(finish) ? 'shadow-sm ' : '';
   // Multi-selection uses a much louder ring (solid brand-500, offset)
   // so a busy canvas with many selected elements reads unambiguously.
   // Single selection keeps the subtler brand-200 / brand-300 rings, and in
@@ -106,22 +114,24 @@ export function describeVariant(
         element.borderRadius !== undefined
           ? cornerRadiusPx(element.borderRadius, element.width, element.height, 0)
           : null;
+      const fallbackPx = finishCornerFallbackPx(DEFAULT_BOX_RADIUS_PX, finish);
       // A mind node (docs/specs/009-elements/mind-node.md) is a soft-cornered pill-ish box by default:
       // rounded enough to read as a node in a tree rather than a flowchart
       // box. Unlike the fixed silhouettes above it honours a radius pick, so a
       // full radius on a square node draws a bubble-map circle.
       const mindRadius =
         element.shape === 'mind-node'
-          ? `${cornerRadiusPx(element.borderRadius, element.width, element.height, MIND_NODE_RADIUS_PX)}px`
+          ? `${cornerRadiusPx(element.borderRadius, element.width, element.height, finishCornerFallbackPx(MIND_NODE_RADIUS_PX, finish))}px`
           : null;
-      const strokePx = BORDER_STROKE_PX[element.strokeWidth ?? DEFAULT_BORDER_STROKE];
+      const strokePx = BORDER_STROKE_PX[finishBorderStroke(element.strokeWidth, finish)];
       const style = element.strokeStyle ?? DEFAULT_BORDER_STYLE;
       // The composite dash patterns can't be drawn by a CSS border, so
       // BoxedElementView strokes them with an SVG overlay (BoxBorderOverlay)
       // instead. Here we drop the CSS border for those so the two don't
       // double up. Remote-selection highlights are always a solid border,
       // so they keep the CSS path regardless of the picked pattern.
-      const useSvgBorder = !remoteBorderColor && !isCssNativeBorderStyle(style);
+      // Sketch draws the border itself (SketchOverlay), a remote highlight included.
+      const useSvgBorder = sketched || (!remoteBorderColor && !isCssNativeBorderStyle(style));
       // Transparent-fill shapes (icons, outline boxes) take the filter
       // path: a box-shadow behind a see-through body reads as a floating
       // grey rectangle.
@@ -133,14 +143,14 @@ export function describeVariant(
       return {
         // Drop the border-2 class so we can drive border width from
         // the user's strokeWidth pick instead of a fixed 2px.
-        className: `text-brand-800 shadow-sm dark:text-white ${ring}`,
+        className: `text-brand-800 ${sketched ? '' : softShadow}dark:text-white ${ring}`,
         style: {
           ...(fill === 'transparent' ? filterShadow : boxShadow),
           borderRadius:
             fixedRadius ??
             mindRadius ??
-            `${userRadius ?? cornerRadiusPx(undefined, element.width, element.height, DEFAULT_BOX_RADIUS_PX)}px`,
-          backgroundColor: fill,
+            `${userRadius ?? cornerRadiusPx(undefined, element.width, element.height, fallbackPx)}px`,
+          backgroundColor: sketched ? 'transparent' : fill,
           borderColor: remoteBorderColor ?? own.stroke ?? defaultStrokeColor(element, surface),
           borderWidth: useSvgBorder ? 0 : remoteBorderColor ? remoteBorderWidth : strokePx,
           borderStyle: useSvgBorder
@@ -148,7 +158,7 @@ export function describeVariant(
             : remoteBorderColor
               ? 'solid'
               : // Guarded by useSvgBorder above: only CSS-native styles reach here.
-                (style as CSSProperties['borderStyle']),
+                style,
         },
       };
     }
@@ -187,11 +197,17 @@ export function describeVariant(
         // itself never changes shape. A user-set shadow (docs/specs/008-canvas/element-shadows.md) replaces
         // the peel outright — an explicit choice wins, so the class is
         // dropped with it.
-        className: `text-amber-950 ${shadow ? '' : 'lvd-sticky-peel'} ${ring}`.trim(),
+        className:
+          `text-amber-950 ${shadow || !finishDrawsDefaultShadow(finish) || sketched ? '' : 'lvd-sticky-peel'} ${ring}`.trim(),
         style: {
           ...boxShadow,
-          backgroundColor: element.fillColor ?? defaultFillColor(element, surface),
-          ...stickyBorder,
+          // Under Sketch the sheet and its edge are the SketchOverlay's.
+          ...(sketched
+            ? {}
+            : {
+                backgroundColor: element.fillColor ?? defaultFillColor(element, surface),
+                ...stickyBorder,
+              }),
         },
       };
     }
@@ -280,28 +296,12 @@ export function describeVariant(
         },
       };
     }
-    case 'link-card': {
-      // A bookmark card (docs/specs/009-elements/link-cards.md): fill background + 1px border, rounded.
-      // The favicon / title / image render as the child content
-      // (LinkCardView); overflow-hidden clips the image to the rounded box.
-      const ring = `${singleRing('ring-2 ring-brand-200')} ${multiRing}`.trim();
-      return {
-        className: `overflow-hidden shadow-sm ${ring}`,
-        style: {
-          ...boxShadow,
-          borderRadius: '10px',
-          backgroundColor: element.fillColor ?? defaultFillColor(element, surface),
-          borderColor:
-            remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element, surface),
-          borderWidth: remoteBorderColor ? remoteBorderWidth : 1,
-          borderStyle: 'solid',
-        },
-      };
-    }
+    // A bookmark card (docs/specs/009-elements/link-cards.md): fill background + 1px border, rounded; the favicon,
+    // title and image render as the child content (LinkCardView). A video
+    // (docs/specs/009-elements/youtube-video.md): the poster or player fills the box edge to edge, so the same
+    // frame reads as a dark rounded one with a hairline, not a padded card. overflow-hidden clips either to the radius.
+    case 'link-card':
     case 'video': {
-      // A video (docs/specs/009-elements/youtube-video.md): the poster / player fills the box edge to edge, so
-      // this is a dark rounded frame with a hairline, not a padded card.
-      // overflow-hidden clips the poster and the iframe to the radius.
       const ring = `${singleRing('ring-2 ring-brand-200')} ${multiRing}`.trim();
       return {
         className: `overflow-hidden shadow-sm ${ring}`,

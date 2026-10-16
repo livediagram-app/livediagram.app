@@ -1,17 +1,17 @@
 // @vitest-environment jsdom
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, renderHook } from '@testing-library/react';
-import type { ChangesetRoomOp } from '@livediagram/api-schema';
+import type { ChangesetRoomOp, ChangesetSummary } from '@livediagram/api-schema';
 import type { Tab } from '@livediagram/document';
 
-const apiRevertChangeset = vi.fn();
-const apiListChangesets = vi.fn();
+const apiRevertChangeset = vi.fn<typeof import('@/lib/api-client').apiRevertChangeset>();
+const apiListChangesets = vi.fn<typeof import('@/lib/api-client').apiListChangesets>();
 vi.mock('@/lib/api-client', () => ({
-  apiRevertChangeset: (...a: unknown[]) => apiRevertChangeset(...a),
-  apiListChangesets: (...a: unknown[]) => apiListChangesets(...a),
+  apiRevertChangeset: (...a: Parameters<typeof apiRevertChangeset>) => apiRevertChangeset(...a),
+  apiListChangesets: (...a: Parameters<typeof apiListChangesets>) => apiListChangesets(...a),
 }));
-const track = vi.fn();
-vi.mock('@/lib/telemetry', () => ({ track: (...a: unknown[]) => track(...a) }));
+const track = vi.fn<typeof import('@/lib/telemetry').track>();
+vi.mock('@/lib/telemetry', () => ({ track: (...a: Parameters<typeof track>) => track(...a) }));
 
 import { useChangesetFeed } from './useChangesetFeed';
 import { createRemoteOpJournal } from './save-baseline';
@@ -48,6 +48,7 @@ function setup(seen = new Map([['t1', 1]])) {
     info: vi.fn(),
     offer: vi.fn(),
     action: vi.fn(),
+    dismissAction: vi.fn(),
   };
   const deps = {
     noteSeen: vi.fn((tabId: string, rev: number) => seen.set(tabId, rev)),
@@ -186,7 +187,7 @@ describe('useChangesetFeed on joining the room', () => {
     apiListChangesets.mockResolvedValue([
       { id: 'cs_0000000003', tabId: 't1', rev: 3 },
       { id: 'cs_0000000002', tabId: 'unloaded', rev: 9 },
-    ]);
+    ] as ChangesetSummary[]);
     const { result, deps } = setup(new Map([['t1', 1]]));
     await act(async () => result.current.checkSinceLoad());
     expect(apiListChangesets).toHaveBeenCalledWith('me', 'd1', null);
@@ -195,7 +196,9 @@ describe('useChangesetFeed on joining the room', () => {
 
   it('re-reads nothing when every loaded tab is up to date, and survives a failed read', async () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
-    apiListChangesets.mockResolvedValue([{ id: 'cs_0000000001', tabId: 't1', rev: 1 }]);
+    apiListChangesets.mockResolvedValue([
+      { id: 'cs_0000000001', tabId: 't1', rev: 1 },
+    ] as ChangesetSummary[]);
     const { result, deps } = setup(new Map([['t1', 1]]));
     await act(async () => result.current.checkSinceLoad());
     expect(deps.refetchTabs).not.toHaveBeenCalled();

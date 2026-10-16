@@ -2,17 +2,16 @@ import type { BoxedElement } from '@livediagram/document';
 import { describe, expect, it } from 'vitest';
 import { describeVariant, editingLook } from '@/components/canvas/element-variant';
 
-const shape = (over: Record<string, unknown> = {}): BoxedElement =>
-  ({
-    id: 's',
-    type: 'shape',
-    shape: 'square',
-    x: 0,
-    y: 0,
-    width: 100,
-    height: 60,
-    ...over,
-  }) as BoxedElement;
+const shape = (over: Record<string, unknown> = {}): BoxedElement => ({
+  id: 's',
+  type: 'shape',
+  shape: 'square',
+  x: 0,
+  y: 0,
+  width: 100,
+  height: 60,
+  ...over,
+});
 const make = (type: string, over: Record<string, unknown> = {}): BoxedElement =>
   ({ id: 'e', type, x: 0, y: 0, width: 100, height: 60, ...over }) as BoxedElement;
 
@@ -245,5 +244,51 @@ describe('editingLook (docs/specs/023-draw-mode/path-tool.md "Editing")', () => 
 
   it('never gives a path in its edit mode a text cursor, nor lifts it over its own nodes', () => {
     expect(editingLook({ type: 'path' }, true)).toEqual({ raise: false, textCursor: false });
+  });
+});
+
+// Finish (docs/specs/008-canvas/finish.md): Professional drops the soft shadow and the sticky peel and
+// sharpens and thins unset borders; Sketch leaves the body to the SketchOverlay.
+describe('describeVariant — finish', () => {
+  it('Flexible is the default and keeps the soft shadow, peel, corner and border', () => {
+    const v = describeVariant(shape(), false, false, null, 'light', 'flexible');
+    expect(v).toEqual(describeVariant(shape(), false, false, null));
+    expect(v.className).toContain('shadow-sm');
+    expect(describeVariant(make('sticky'), false, false, null).className).toContain(
+      'lvd-sticky-peel',
+    );
+  });
+
+  it('Professional drops the soft shadow and peel, sharpens the corner and thins the border', () => {
+    const flex = describeVariant(shape(), false, false, null, 'light', 'flexible');
+    const pro = describeVariant(shape(), false, false, null, 'light', 'professional');
+    expect(pro.className).not.toContain('shadow-sm');
+    expect(pro.style.borderRadius).toBe('0px');
+    expect(Number(pro.style.borderWidth)).toBeLessThan(Number(flex.style.borderWidth));
+    expect(
+      describeVariant(make('sticky'), false, false, null, 'light', 'professional').className,
+    ).not.toContain('lvd-sticky-peel');
+  });
+
+  it('Professional keeps what the element sets itself', () => {
+    const own = shape({ strokeWidth: 'thick', borderRadius: 'large' });
+    const flex = describeVariant(own, false, false, null, 'light', 'flexible');
+    const pro = describeVariant(own, false, false, null, 'light', 'professional');
+    expect(pro.style.borderWidth).toBe(flex.style.borderWidth);
+    expect(pro.style.borderRadius).toBe(flex.style.borderRadius);
+  });
+
+  it('Sketch hands the body to the overlay: no background, border, shadow or peel', () => {
+    const v = describeVariant(shape(), false, false, null, 'light', 'sketch');
+    expect(v.style.backgroundColor).toBe('transparent');
+    expect(v.style.borderWidth).toBe(0);
+    expect(v.className).not.toContain('shadow-sm');
+    // A remote highlight is drawn by the overlay too.
+    expect(
+      describeVariant(shape(), false, false, '#f00', 'light', 'sketch').style.borderWidth,
+    ).toBe(0);
+    const sticky = describeVariant(make('sticky'), false, false, null, 'light', 'sketch');
+    expect(sticky.className).not.toContain('lvd-sticky-peel');
+    expect(sticky.style.backgroundColor).toBeUndefined();
   });
 });

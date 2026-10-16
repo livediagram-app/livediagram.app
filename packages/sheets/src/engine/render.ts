@@ -3,10 +3,13 @@
 import { columnLetters } from '../address';
 import { colWidth, layoutIndex, posRangeOf, rowHeight } from '../layout';
 import { displayValue } from '../number-format';
-import { cellKey, type Border, type CellFormat } from '../sheet';
+import { cellKey, type Border, type CellFormat, type Sheet } from '../sheet';
 import { Workbook } from './workbook';
 import type { CardSource } from '../cards';
 import { sheetFromJson, type SheetJson } from '../sheet-json';
+import { checkboxValue, optionFor, validationRuleAt } from '../rules/validation';
+import { formatRuleStyle } from '../rules/format-rules';
+import { isArray, isError, scalarOf } from '../formula/values';
 
 export type RenderCell = {
   r: number; // index into the model's rows
@@ -28,6 +31,10 @@ export type RenderCell = {
   rowSpan?: number;
   colSpan?: number;
   borders?: { t?: Border; r?: Border; b?: Border; l?: Border };
+  // A dropdown drawn as a chip (data-validation.md "Drawing"): its value on a pill in its option's colour, if any.
+  chip?: { color?: string };
+  // A dropdown drawn with an arrow at its right instead.
+  arrow?: true;
 };
 
 export type SheetRenderModel = {
@@ -90,10 +97,33 @@ export function renderWindow(
       if (covered.has(`${r},${c}`)) continue;
       const cell = sheet.cells.get(cellKey(layout.rows[r]!, layout.cols[c]!));
       const value = wb.value(sheetId, r, c);
-      const f: CellFormat = cell?.format ?? {};
-      const shown = displayValue(value, f, locale);
+      const own: CellFormat = cell?.format ?? {};
+      let shown = displayValue(value, own, locale);
+      // A met format rule's style draws over the cell's own (conditional-formatting.md).
+      const style = layout.formatRules?.length
+        ? formatRuleStyle(wb, sheetId, r, c, value, shown.text)
+        : null;
+      const f: CellFormat = style ? { ...own, ...style } : own;
+      // A checkbox draws as a box, a chip on its option's colour (data-validation.md "Drawing").
+      const rule = layout.rules?.length ? validationRuleAt(layout, r, c) : null;
+      const scalar = isArray(value) ? scalarOf(value) : value;
+      let chip: { color?: string } | undefined;
+      if (rule?.is === 'check') {
+        const box = checkboxValue(scalar);
+        if (box !== undefined) shown = { text: box ? '☑' : '☐', align: 'c', kind: 'text' };
+      } else if (
+        (rule?.is === 'list' || rule?.is === 'range') &&
+        !rule.show &&
+        scalar !== null &&
+        scalar !== '' &&
+        !isError(scalar)
+      ) {
+        const color = rule.is === 'list' ? optionFor(rule, scalar)?.c : undefined;
+        chip = color ? { color } : {};
+      }
+      const arrow = (rule?.is === 'list' || rule?.is === 'range') && rule.show === 'arrow';
       const span = spans.get(`${r},${c}`);
-      if (!shown.text && !f.bg && !f.bt && !f.br && !f.bb && !f.bl) continue;
+      if (!shown.text && !arrow && !f.bg && !f.bt && !f.br && !f.bb && !f.bl) continue;
       const out: RenderCell = {
         r: rowAt.get(r)!,
         c: colAt.get(c)!,
@@ -108,6 +138,8 @@ export function renderWindow(
       if (f.st) out.strike = true;
       if (f.fc) out.color = f.fc;
       if (f.bg) out.fill = f.bg;
+      if (chip) out.chip = chip;
+      if (arrow) out.arrow = true;
       if (f.ff) out.font = f.ff;
       if (f.fs) out.size = f.fs;
       if (f.wr) out.wrap = f.wr;
@@ -138,6 +170,45 @@ export function renderWindow(
   };
 }
 
+// The grid a sheet's cells fill, in px (docs/specs/029-sheets/sheet.md "Exports and images"): its visible rows and
+// columns through the last that holds an input, a fill, a border or a merge, and one more of each so the grid reads
+// as going on; null for a sheet with nothing in it. A Sheet tab's image grows its Sheet to this, as the tab shows it.
+export function sheetContentSize(sheet: Sheet): { width: number; height: number } | null {
+  const { layout } = sheet;
+  const ix = layoutIndex(layout);
+  let lastRow = -1;
+  let lastCol = -1;
+  for (const [key, cell] of sheet.cells) {
+    const f = cell.format;
+    if (!cell.input && !f?.bg && !f?.bt && !f?.br && !f?.bb && !f?.bl) continue;
+    const [r, c] = key.split(':');
+    lastRow = Math.max(lastRow, ix.rowPos.get(r!) ?? -1);
+    lastCol = Math.max(lastCol, ix.colPos.get(c!) ?? -1);
+  }
+  for (const m of layout.merges ?? []) {
+    const p = posRangeOf(layout, m);
+    if (!p) continue;
+    lastRow = Math.max(lastRow, p.r2);
+    lastCol = Math.max(lastCol, p.c2);
+  }
+  if (lastRow < 0) return null;
+  const span = (
+    ids: readonly string[],
+    hidden: ReadonlySet<string>,
+    last: number,
+    size: (id: string) => number,
+  ) => {
+    let px = 0;
+    for (let i = 0; i <= Math.min(last + 1, ids.length - 1); i++)
+      if (!hidden.has(ids[i]!)) px += size(ids[i]!);
+    return px;
+  };
+  return {
+    width: span(layout.cols, ix.hiddenCols, lastCol, (id) => colWidth(layout, id)),
+    height: span(layout.rows, ix.hiddenRows, lastRow, (id) => rowHeight(layout, id)),
+  };
+}
+
 // The chrome around the grid a static render draws (packages/document svg-render-plan-sheet.ts).
 const STATIC_HEADER_H = 40 + 22;
 const STATIC_ROW_HEAD_W = 46;
@@ -161,18 +232,24 @@ export function renderModelsForTab(
   });
   for (const f of frames) {
     if (out.has(f.sheetId)) continue;
-    const model = renderWindow(
-      wb,
-      f.sheetId,
-      {
-        width: Math.max(1, f.width - STATIC_ROW_HEAD_W),
-        height: Math.max(1, f.height - STATIC_HEADER_H),
-      },
-      wb.locale,
-    );
+    const model = renderFrameWindow(wb, f);
     if (model) out.set(f.sheetId, model);
   }
   return out;
+}
+
+// One Sheet element's window, from a workbook already holding its sheet (the editor's sheet store, for its images:
+// docs/specs/026-plan/plan-tabs.md "Export"): the cells that fit its grid area, inside the static render's chrome.
+export function renderFrameWindow(wb: Workbook, frame: SheetFrame): SheetRenderModel | undefined {
+  return renderWindow(
+    wb,
+    frame.sheetId,
+    {
+      width: Math.max(1, frame.width - STATIC_ROW_HEAD_W),
+      height: Math.max(1, frame.height - STATIC_HEADER_H),
+    },
+    wb.locale,
+  );
 }
 
 // The Sheet elements of a tab, as frames (structural: any element list).

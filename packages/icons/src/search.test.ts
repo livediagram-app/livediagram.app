@@ -36,10 +36,43 @@ describe('searchIcons', () => {
 describe('icon ids', () => {
   it('knows the catalogues’ ids and suggests icons like one that is not', () => {
     expect(isIconId('clock')).toBe(true);
-    expect(isIconId('flame')).toBe(false);
-    expect(iconsLike('flame').map((i) => i.id)).toContain('emoji-fire');
+    expect(isIconId('flame')).toBe(true);
+    expect(isIconId('fire')).toBe(false);
+    expect(iconsLike('fire').map((i) => i.id)).toContain('flame');
     expect(iconsLike('alarm-clock', 2)).toHaveLength(2);
     expect(iconsLike('---')).toEqual([]);
     expect(iconsLike('qqqqzz')).toEqual([]);
+  });
+});
+
+describe('searchIcons, several words and spacing', () => {
+  const ids = (q: string) => searchIcons(q, 5).icons.map((i) => i.id);
+  it('finds an icon holding every word of a several-word query', () => {
+    expect(ids('credit card')[0]).toBe('credit-card');
+    expect(ids('shopping cart')[0]).toBe('cart');
+    expect(ids('mobile phone')).toContain('smartphone');
+  });
+  it('reads a word only where a word starts: lock is not clock, load not download', () => {
+    expect(ids('lock auth')).not.toContain('clock');
+    expect(ids('load balancer')).not.toContain('download');
+  });
+  it('matches spacing aside', () => {
+    expect(ids('route53')[0]).toBe('aws-route53');
+  });
+  it('finds the services architecture diagrams reach for', () => {
+    expect(ids('elasticache')[0]).toBe('aws-elasticache');
+    expect(ids('fargate')[0]).toBe('aws-fargate');
+    expect(ids('application load balancer')).toContain('aws-elb');
+    expect(ids('browser')[0]).toBe('browser');
+  });
+
+  it('finds a Technology icon by its provider and id words, and an id as given', () => {
+    for (const q of ['aws lambda', 'aws-lambda', 'aws rds', 'aws s3', 'aws sqs'])
+      expect(searchIcons(q, 1).icons[0]!.id).toBe(q.replace(' ', '-'));
+  });
+
+  it('puts an emoji after the line-art icon answering as well', () => {
+    const ids = searchIcons('rocket', 5).icons.map((i) => i.id);
+    expect(ids.indexOf('rocket')).toBeLessThan(ids.indexOf('emoji-rocket'));
   });
 });

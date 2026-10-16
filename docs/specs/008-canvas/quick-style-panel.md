@@ -89,7 +89,7 @@ Top to bottom, each a small title over one row of option buttons:
 | Section            | Applies to                                         | Options                               |
 | ------------------ | -------------------------------------------------- | ------------------------------------- |
 | Stroke             | Shapes + arrows                                    | 7 colours, then Ink                   |
-| Background         | Shapes                                             | 7 colours                             |
+| Background         | Shapes                                             | 7 colours, then Transparent           |
 | Text colour        | Text elements                                      | 7 colours, then Ink                   |
 | Stroke width       | Shapes + arrows                                    | Thin / Medium / Thick                 |
 | Stroke style       | Shapes                                             | Solid / Dashed / Dotted               |
@@ -100,6 +100,12 @@ Top to bottom, each a small title over one row of option buttons:
 | Highlighter colour | Highlight strokes, or the armed Highlighter        | Yellow / Green / Pink / Blue / Orange |
 | Highlighter width  | Highlight strokes, or the armed Highlighter        | Thin / Medium / Bold                  |
 | Actions            | Shapes + arrows + text elements                    | Clear styles                          |
+
+**Transparent** ends the Background row, after its seven colours: the shared no-colour chip (white
+crossed by a diagonal), named "Transparent". A press clears the shape's fill to `transparent`
+(and its theme binding and colour preset), so what is behind it shows through; it is marked when
+every selected shape's fill is transparent. It has no colour to edit, so a right-click on it
+opens nothing.
 
 - **Flowing** is a dashed line with the marching-dashes flow animation (`strokeStyle: 'dashed'`,
   `flow: 'dashes'`). So the plain arrow and the animated dashed arrow are each one click, the two
@@ -275,7 +281,7 @@ over, never refused, so they never hide the panel from the rest.
 - An option is **highlighted** when every supporting element has that value. When they disagree,
   nothing is highlighted: a mixed row claiming one value would be a lie.
 - **In Draw mode the Stroke and Text colour rows are the stock colours**: Ink, the eight hued
-  colours and the tab's custom colours, as Marker colour offers them
+  colours and More colours (custom colours live in its picker), as Marker colour offers them
   ([Draw mode](../023-draw-mode/draw-mode.md) "The quick style panel stays"); a stock colour,
   Ink included, is stored by name and marked by name, each swatch in its version for the canvas.
   A line with no colour of its own wears its theme default and marks none. Background keeps the

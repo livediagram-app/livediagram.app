@@ -1,6 +1,11 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { cpuMsOf } from '@livediagram/vitest-config/cpu-time';
-import { chatCompletions, chatCompletionsUrl, providerOf } from './ai-client';
+import { cpuBudgetMs, cpuMsOf } from '@livediagram/vitest-config/cpu-time';
+import {
+  AI_PROVIDER_TIMEOUT_MS,
+  chatCompletions,
+  chatCompletionsUrl,
+  providerOf,
+} from './ai-client';
 import { GOOGLE_BASE_URL } from './ai-provider';
 import type { Env } from './types';
 
@@ -37,7 +42,7 @@ describe('chatCompletionsUrl', () => {
 describe('chatCompletions', () => {
   it('posts the body as-is, with the key as a bearer token', async () => {
     const spy = vi.fn(async () => new Response('{}', { status: 200 }));
-    globalThis.fetch = spy as unknown as typeof fetch;
+    globalThis.fetch = spy;
     await chatCompletions(provider, { model: 'm', messages: [] });
     const [url, init] = spy.mock.calls[0] as unknown as [string, RequestInit];
     expect(url).toBe(`${GOOGLE_BASE_URL}/chat/completions`);
@@ -46,8 +51,43 @@ describe('chatCompletions', () => {
   });
 
   it('hands the provider’s response back untouched, failures included', async () => {
-    globalThis.fetch = vi.fn(async () => new Response('nope', { status: 429 })) as typeof fetch;
+    globalThis.fetch = vi.fn(async () => new Response('nope', { status: 429 }));
     expect((await chatCompletions(provider, {})).status).toBe(429);
+  });
+});
+
+// A provider that never starts answering is abandoned, once, rather than holding the request open; one
+// that has started is never cut, however long its stream runs.
+describe('chatCompletions timeout', () => {
+  // A fetch that answers only when its signal aborts, as a hung provider would.
+  const hanging = vi.fn(
+    (_url: string, init: RequestInit) =>
+      new Promise<Response>((_resolve, reject) => {
+        init.signal!.addEventListener('abort', () => reject(init.signal!.reason));
+      }),
+  );
+
+  it('gives up on a provider that never answers, without a second wait', async () => {
+    vi.useFakeTimers();
+    hanging.mockClear();
+    globalThis.fetch = hanging as unknown as typeof fetch;
+    const call = chatCompletions(provider, {});
+    const settled = expect(call).rejects.toMatchObject({ name: 'TimeoutError' });
+    await vi.advanceTimersByTimeAsync(AI_PROVIDER_TIMEOUT_MS);
+    await settled;
+    expect(hanging).toHaveBeenCalledTimes(1);
+  });
+
+  it('leaves an answer that has started alone', async () => {
+    vi.useFakeTimers();
+    let signal: AbortSignal | undefined;
+    globalThis.fetch = vi.fn(async (_url: string, init: RequestInit) => {
+      signal = init.signal ?? undefined;
+      return new Response('{}', { status: 200 });
+    }) as unknown as typeof fetch;
+    await chatCompletions(provider, {});
+    await vi.advanceTimersByTimeAsync(AI_PROVIDER_TIMEOUT_MS * 2);
+    expect(signal?.aborted).toBe(false);
   });
 });
 
@@ -68,7 +108,7 @@ describe('one retry on a provider spike', () => {
       return calls === 1
         ? new Response('busy', { status: 503 })
         : new Response('{"ok":true}', { status: 200 });
-    }) as typeof fetch;
+    });
     vi.spyOn(console, 'error').mockImplementation(() => {});
     vi.useFakeTimers();
     const pending = chatCompletions(provider, {});
@@ -83,7 +123,7 @@ describe('one retry on a provider spike', () => {
     globalThis.fetch = vi.fn(async () => {
       calls += 1;
       return new Response('busy', { status: 503 });
-    }) as typeof fetch;
+    });
     vi.spyOn(console, 'error').mockImplementation(() => {});
     vi.useFakeTimers();
     const pending = chatCompletions(provider, {});
@@ -97,12 +137,13 @@ describe('one retry on a provider spike', () => {
     globalThis.fetch = vi.fn(async () => {
       calls += 1;
       return new Response('nope', { status: 400 });
-    }) as typeof fetch;
+    });
     await chatCompletions(provider, {});
     expect(calls).toBe(1);
   });
 
-  it.each([
+  // Whatever fetch throws, an Error or not.
+  it.each<[string, unknown, string]>([
     ['an Error', new Error('socket hang up'), 'socket hang up'],
     ['a bare value', 'dropped', 'dropped'],
   ])('retries a network drop thrown as %s once, and says why', async (_kind, thrown, reason) => {
@@ -113,7 +154,7 @@ describe('one retry on a provider spike', () => {
         calls += 1;
         if (calls === 1) throw thrown;
         return new Response('{"ok":true}', { status: 200 });
-      }) as typeof fetch;
+      });
       const error = vi.spyOn(console, 'error').mockImplementation(() => {});
       const pending = chatCompletions(provider, {});
       await vi.runAllTimersAsync();
@@ -144,6 +185,6 @@ describe('the base URL is trimmed without a regex', () => {
       url = chatCompletionsUrl('https://x'.padEnd(50_000, '/'));
     });
     expect(url).toBe('https://x/chat/completions');
-    expect(spent).toBeLessThan(50);
+    expect(spent).toBeLessThan(cpuBudgetMs(50));
   });
 });

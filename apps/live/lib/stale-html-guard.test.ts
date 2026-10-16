@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
+import { runInlineScript } from '@livediagram/vitest-config/inline-script';
 import { STALE_HTML_GUARD_ATTRIBUTES, STALE_HTML_GUARD_SCRIPT } from './stale-html-guard';
 import { BUILD_ID_HEADER } from '@livediagram/api-schema';
 import { API_BASE } from './api/base';
@@ -14,17 +15,29 @@ import {
 
 type Listener = (event: Record<string, unknown>) => void;
 
+type Harness = {
+  now?: number;
+  links?: { href: string; sheet: unknown }[];
+  resources?: { name: string; responseStatus?: number }[];
+  build?: string | null;
+  liveBuild?: string | null;
+  storage?: Map<string, string>;
+  storageThrows?: boolean;
+  appRecovery?: boolean;
+  currentScript?: boolean;
+};
+
 function harness({
   now = 1_000,
-  links = [] as { href: string; sheet: unknown }[],
-  resources = [] as { name: string; responseStatus?: number }[],
-  build = 'b1' as string | null,
-  liveBuild = 'b1' as string | null,
+  links = [],
+  resources = [],
+  build = 'b1',
+  liveBuild = 'b1',
   storage = new Map<string, string>(),
   storageThrows = false,
   appRecovery = false,
   currentScript = true,
-} = {}) {
+}: Harness = {}) {
   const listeners: Record<string, Listener[]> = {};
   const docListeners: Record<string, Listener[]> = {};
   const reload = vi.fn();
@@ -65,17 +78,16 @@ function harness({
   };
   const location = { pathname: '/explorer/unsorted', search: '?x=1', reload };
   const performance = { getEntriesByType: (t: string) => (t === 'resource' ? resources : []) };
-  new Function(
-    'window',
-    'document',
-    'location',
-    'sessionStorage',
-    'performance',
-    'fetch',
-    'Date',
-    'console',
-    STALE_HTML_GUARD_SCRIPT,
-  )(win, document, location, sessionStorage, performance, fetchSpy, { now: () => now }, { warn });
+  runInlineScript(STALE_HTML_GUARD_SCRIPT, {
+    window: win,
+    document,
+    location,
+    sessionStorage,
+    performance,
+    fetch: fetchSpy,
+    Date: { now: () => now },
+    console: { warn },
+  });
   const fire = (type: string, event: Record<string, unknown>) =>
     (listeners[type] ?? []).forEach((fn) => fn(event));
   const fireDoc = (type: string) => (docListeners[type] ?? []).forEach((fn) => fn({}));

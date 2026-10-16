@@ -11,7 +11,7 @@ Derived from [Item types](../item-types.md). Contract for the type catalogue: it
 | type catalogue    | `ItemTypeCatalogue` `{ version: 1, types }` (`type-catalogue.ts`); null = not chosen (defaults)              |
 | custom field      | `CustomFieldDef` `{ id, label, kind, options?, linkType?, onCard? }`; kinds `CUSTOM_FIELD_KINDS`             |
 | glyph set         | `PLAN_GLYPHS` (`glyphs.ts`), ids `PlanGlyphId`; `planGlyphPath(id)`; `PLAN_GLYPH_CATEGORIES`                 |
-| card type (UI)    | the panel `CardTypesPanel`, its button `CardTypesClusterButton`, the editor `ItemTypeEditor`                 |
+| card type (UI)    | the panel `CardTypesPanel`, its button in `PlanCardsClusterStrip`, the editor `ItemTypeEditor`               |
 | Add Default Types | `ItemTypesSlice.addDefaultTypes()` (`defaultTypesToAdd`, appended; one undo step), behind a `ConfirmPopover` |
 | default types     | `ITEM_TYPES` (`item-types.ts`); ready-made types `READY_MADE_CARD_TYPES` (`brought-types.ts`)                |
 
@@ -108,10 +108,11 @@ linkType: 'project' }`) in item-types.ts; Task and the brought Bug and Story car
   card's colour dot when it has one, else its type's glyph.
 - Consumers: `PlanCardFace` (stripe, glyph, custom field chips via `custom-field-text.ts`), `ItemPanel` (the
   type's field order, `CustomFieldEditor`), `AddCardPopover`, `PlanBoardView`
-  (projection), `PlanBoardCells`/`PlanCardView` names, `newCardItemWrite`,
-  the palette's Cards (`PalettePlanCardsTab`) and Popular (`PlanAwareTileGrid`, `withDocumentCardTiles`),
+  (projection), `PlanBoardCells`/`PlanCardView` names,
+  the palette's Cards tiles (`planCardTile`, in `PalettePlanCardsTab`, `ToolbarPalette`'s strip and `BoardCardsStrip`),
   SVG export and thumbnails (`itemTypes` render option), the MCP's previews.
-- `CardTypesClusterButton` (on `ClusterPopoverButton`, shared with Slides) opens dock panel `card-types`;
+- The Card Types segment of `PlanCardsClusterStrip` (a `ClusterPopoverSegment`, from `ClusterPopoverButton.tsx`,
+  shared with Slides) opens dock panel `card-types` (`useCardTypesOpener` opens it from Edit Cards);
   `CardTypesPanel` is a `MovablePanel` popover; `ItemTypeEditor` + `ItemTypeLayoutEditor` (forms in `ItemTypeFieldForms`) the modal (`Dialog`,
   `size="lg"`, `phoneSheet`), rendered by `PlanSheetsHost`. Delete with items patches each to the chosen type
   first.
@@ -126,8 +127,10 @@ linkType: 'project' }`) in item-types.ts; Task and the brought Bug and Story car
   `ItemTypeLayoutEditor`). The tab's one panel scrolls (`overflow-y-auto`). Red-dot flags: a clashing name, a tab
   problem or a custom field problem flag `configuration`; a left-out status problem flags `statuses`.
 - Show Me steps (`card-type-tour-steps.ts`): `general` shows `configuration` and focuses the Name input (focus
-  scrolls it into view); `fields` shows `configuration` and scrolls `card-type-fields` to the panel's top
-  (`scrollIntoView({ block: 'start' })`, instant under reduced motion); `states` and `display` show their tabs.
+  scrolls it into view); `fields` shows `configuration` and asks for `card-type-fields` at the panel's top
+  (`revealAt: 'start'`: the tour engine's `revealInScrollers` from `tour-reveal.ts` scrolls it there, instant under
+  reduced motion); `states` and `display` show their tabs. The button and the running tour are the shared `ShowMeButton` /
+  `ShowMeStage` (`ShowMe.tsx`, [Show Me](../../007-editor/show-me.md)); `CardTypeTour.tsx` keeps the literal telemetry.
 
 ## Tabs
 
@@ -254,16 +257,20 @@ statusName)` ("{Type} cards can't be {Status}") live beside it.
 [Plan templates](../plan-templates.md#ready-made-card-types)) is those five then the ten more. Presets set the types
 a board takes (Kanban: Tasks and Actions, Sprint: Stories, Tasks and Bugs, Bug Triage: Bugs, Roadmap: Projects).
 
-- `boardTypeIdsOf(elements)`: each `plan-board`'s `addTypes`, or `ITEM_TYPES`' ids for one that names none (Blank);
-  nothing for Archive or All Cards.
+- `boardTypeIdsOf(elements)`: each `plan-board`'s `addTypes`; nothing for one that names none (Blank), Archive or
+  All Cards.
 - `broughtTypesToAdd(named, types)`: the ready-made types named that `types` lacks, each once, in order;
   `boardTypesToAdd(elements, types)` the same off the elements; `defaultTypesToAdd(types)` the missing defaults.
-- `catalogueWithBoardTypes(stored, elements, hasCards = false)`: with `stored` null and no cards, exactly the types
-  the boards bring (null when none, or when they are the five defaults in order: already what it reads as);
-  otherwise `typesOf(stored)` with the missing ones after, capped at `ITEM_TYPES_MAX`; null when nothing changes.
+- `catalogueWithBoardTypes(stored, elements)`: `typesOf(stored)` (empty for null) with the missing ones after,
+  capped at `ITEM_TYPES_MAX`; null when nothing changes.
+- `typesOf(null)` is `[]`; `validateItemTypeCatalogue` takes 0 to `ITEM_TYPES_MAX` types. `legacyCatalogue(stored,
+hasCards)` answers `defaultCatalogue()` for a null catalogue with cards (offline records in `recordToDocument` and
+  `offline-items`, exported tabs in `parseImportedTab`, and the api's create with carried items); migration
+  `0090_card_types_start_empty.sql` stores the same for D1 documents with items and a null catalogue (its JSON is
+  guarded by `apps/api/src/card-types-migration.test.ts`).
 - `READY_MADE_DEFAULT_STATE_NAMES` / `readyMadeDefaultStatus` name a Default State for every ready-made type.
-- The editor: `usePresetCardTypes({ catalogue, hasCards, itemsReady, saveCatalogue, ... })` applies it to boards
-  that appear on the open tab once the items are read, and `bring(elements)` (Quick Start) at once, or held until
+- The editor: `usePresetCardTypes({ catalogue, itemsReady, saveCatalogue, ... })` applies it to boards
+  that appear on the open tab once the items are read, and `bring(elements)` (a template picked on a start) at once, or held until
   they are. Nothing in the interface sets a type apart: `CardTypesPanel` is one list (`aria-label` "Card Types").
 
 `CardTypesPanel` rows are cards (stripe, tinted glyph tile, "N fields", count pill, pencil; the row opens the

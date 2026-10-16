@@ -4,6 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { penColourHex } from '@livediagram/document';
 import { presetSetup, statusColumn } from '@livediagram/items';
 import { EditorContext } from '@/app/document/[id]/EditorContext';
+import type { ComponentProps } from 'react';
 import { PlanColumnPopover } from './PlanColumnPopover';
 
 // docs/specs/026-plan/plan-board.md "Column settings" on the one colour picker
@@ -13,7 +14,7 @@ vi.mock('./PlanContext', () => ({ usePlan: () => plan }));
 vi.mock('@/hooks/ui/useIsMobileViewport', () => ({ useIsMobileViewport: () => false }));
 afterEach(cleanup);
 
-function open(color?: string) {
+function open(color?: string, onClose: (focus: boolean) => void = () => {}) {
   const setup = {
     ...presetSetup('kanban'),
     columns: [
@@ -21,7 +22,7 @@ function open(color?: string) {
       { ...statusColumn('done', 'Done'), color: '#abcdef' },
     ],
   };
-  const onChange = vi.fn();
+  const onChange = vi.fn<ComponentProps<typeof PlanColumnPopover>['onChange']>();
   // Inside an editor with an empty document: no custom colours picked yet.
   render(
     <EditorContext.Provider value={{ tabs: [] } as never}>
@@ -32,18 +33,21 @@ function open(color?: string) {
         onChange={onChange}
         onMoveCards={() => {}}
         onTrashCards={() => {}}
-        onClose={() => {}}
+        onClose={onClose}
       />
     </EditorContext.Provider>,
   );
   return onChange;
 }
-const columnColour = (onChange: ReturnType<typeof vi.fn>) =>
-  onChange.mock.lastCall![0].columns[0].color as string | undefined;
+const columnColour = (onChange: ReturnType<typeof open>) =>
+  onChange.mock.lastCall![0].columns[0]?.color;
 
 describe('a column colour', () => {
   it('offers No colour first, picked when the column has none, and the standard colours by hex', () => {
     const onChange = open();
+    // Condensed to a swatch at the row's end; pressed, the picker opens in its own popover.
+    expect(screen.queryByRole('group', { name: 'Colour' })).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Colour' }));
     const picker = screen.getByRole('group', { name: 'Colour' });
     const none = within(picker).getByRole('button', { name: 'No colour' });
     expect(none.getAttribute('aria-pressed')).toBe('true');
@@ -54,6 +58,7 @@ describe('a column colour', () => {
 
   it('clears the colour with No colour, and shows only the colour in force as a custom colour', () => {
     const onChange = open('#2563eb');
+    fireEvent.click(screen.getByRole('button', { name: 'Colour' }));
     const yours = within(screen.getByRole('group', { name: 'Custom Colours' })).getAllByRole(
       'button',
     );
@@ -65,5 +70,19 @@ describe('a column colour', () => {
     expect(yours[0]!.getAttribute('aria-pressed')).toBe('true');
     fireEvent.click(screen.getByRole('button', { name: 'No colour' }));
     expect(columnColour(onChange)).toBeUndefined();
+  });
+});
+
+describe('Escape in the column colour picker', () => {
+  it('closes the picker alone; the next Escape closes the column popover', () => {
+    const onClose = vi.fn();
+    open(undefined, onClose);
+    fireEvent.click(screen.getByRole('button', { name: 'Colour' }));
+    expect(screen.getByRole('group', { name: 'Colour' })).toBeTruthy();
+    fireEvent.keyDown(document.activeElement ?? document.body, { key: 'Escape' });
+    expect(screen.queryByRole('group', { name: 'Colour' })).toBeNull();
+    expect(onClose).not.toHaveBeenCalled();
+    fireEvent.keyDown(document.activeElement ?? document.body, { key: 'Escape' });
+    expect(onClose).toHaveBeenCalledWith(true);
   });
 });

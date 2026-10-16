@@ -48,8 +48,9 @@ describe('useImageBlobUrl', () => {
 
   it('shows loading, never the previous image, as soon as the image changes', async () => {
     apiFetchImageBlobUrl.mockResolvedValueOnce('blob:a').mockResolvedValueOnce('blob:b');
+    const initialProps: { id: string | null } = { id: 'a' };
     const { result, rerender } = renderHook(({ id }) => useImageBlobUrl('u', id), {
-      initialProps: { id: 'a' as string | null },
+      initialProps,
     });
     await waitFor(() => expect(result.current).toEqual({ status: 'ready', src: 'blob:a' }));
     rerender({ id: 'b' });

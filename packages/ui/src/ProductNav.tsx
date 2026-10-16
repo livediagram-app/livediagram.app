@@ -79,7 +79,7 @@ const ICONS: Record<ProductNavKey, () => ReactNode> = {
 };
 
 const ITEMS: { key: ProductNavKey; label: string; href: string; desc: string }[] = [
-  { key: 'home', label: 'Welcome', href: '/', desc: 'Learn about our features' },
+  { key: 'home', label: 'Home', href: '/', desc: 'Learn about our features' },
   { key: 'editor', label: 'Editor', href: '/new', desc: 'Start or edit a document' },
   { key: 'explorer', label: 'Explorer', href: '/explorer', desc: 'Your documents & folders' },
   {
@@ -143,7 +143,7 @@ export function ProductNav({
         aria-label={`Switch section, currently ${active.label}`}
         onClick={toggle}
         onKeyDown={onTriggerKeyDown}
-        className="optical-edges flex h-[34px] items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 text-sm font-medium text-slate-600 shadow-sm outline-none transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-800 focus-visible:border-slate-300 focus-visible:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-slate-600 dark:hover:bg-slate-700 dark:hover:text-slate-100"
+        className="optical-edges relative flex h-[34px] items-center gap-1.5 touch-target-y rounded-lg border border-slate-200 bg-white px-2.5 text-sm font-medium text-slate-600 shadow-sm outline-none transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-800 focus-visible:border-slate-300 focus-visible:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-slate-600 dark:hover:bg-slate-700 dark:hover:text-slate-100"
       >
         {/* Hamburger affordance so the label reads as an openable menu, not a
             static section name. */}
@@ -202,7 +202,7 @@ export function ProductNav({
                 <span
                   className={`mt-0.5 shrink-0 ${
                     isCurrent
-                      ? 'text-brand-600 dark:text-brand-300'
+                      ? 'text-brand-700 dark:text-brand-300'
                       : 'text-slate-500 dark:text-slate-400'
                   }`}
                 >
@@ -226,6 +226,39 @@ export function ProductNav({
         </div>
       </div>
     </div>
+  );
+}
+
+// The same surfaces as a row of links, for a host that carries no menu (the editor's Explorer footer,
+// docs/specs/013-workspace/explorer-structure.md "Layout"): each icon and label, `current` left out. Asks whether
+// the Community is on as it mounts, since a host shows it only once someone opens it. Telemetry stays in the menu but
+// not in this row: the Explorer footer keeps to where someone works.
+export function ProductNavLinks({
+  current,
+  className = '',
+}: {
+  current: ProductNavKey;
+  className?: string;
+}) {
+  const communityOn = useCommunityEnabled(undefined, true);
+  const items = ITEMS.filter(
+    (i) => i.key !== current && i.key !== 'telemetry' && (communityOn || i.key !== 'community'),
+  );
+  return (
+    <nav aria-label="Go to" className={`flex items-center gap-0.5 ${className}`}>
+      {items.map((item) => (
+        <a
+          key={item.key}
+          href={item.href}
+          className="flex h-8 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-md px-2 text-xs font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 pointer-coarse:h-11 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
+        >
+          <span aria-hidden className="flex opacity-80">
+            {ICONS[item.key]()}
+          </span>
+          {item.label}
+        </a>
+      ))}
+    </nav>
   );
 }
 

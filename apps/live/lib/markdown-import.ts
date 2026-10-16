@@ -1,6 +1,6 @@
 // Markdown → diagram import (docs/specs/020-import-export/markdown-import.md). Turns an arbitrary Markdown
 // outline (XMind / Obsidian / hand-written notes) into a themed, editable
-// node-link diagram on a new tab.
+// node-link diagram that replaces the active tab's contents.
 //
 // Deliberately format-agnostic: we extract whatever hierarchy is present
 // (headings, nested lists, prose, GFM tables) rather than pattern-matching

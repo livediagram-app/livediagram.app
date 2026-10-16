@@ -25,6 +25,8 @@ const { db, canReadDocument, canEditDocument, resolveDocumentGrant } = vi.hoiste
   db: {
     listDocumentsByOwner: vi.fn(),
     getDocument: vi.fn(),
+    // The save's own one-query read (db/tab-save-document.ts); answered from getDocument's mock below.
+    getDocumentForSave: vi.fn(),
     // Community link check on the tab read (docs/specs/025-community/community.md): an ordinary link here.
     getShareLink: vi.fn(async () => null),
     // The thumbnail route's one-query gate + freshness read.
@@ -67,6 +69,9 @@ const { db, canReadDocument, canEditDocument, resolveDocumentGrant } = vi.hoiste
     listSharedWith: vi.fn(),
     deleteTabRow: vi.fn(),
     deleteShareLinksForTab: vi.fn(async (): Promise<string[]> => []),
+    deleteFormLinksForTab: vi.fn(async (): Promise<number> => 0),
+    // No live form links: a deleted tab unpublishes no form here (forms.test.ts covers it).
+    liveFormLinksOf: vi.fn(async () => []),
     rescopeShareLink: vi.fn(),
   },
   // gateRead / gateEdit (context.ts) forward to these; mocking the auth
@@ -126,6 +131,10 @@ function fakeDocument(ownerId: string, teamId: string | null = null): DocumentDT
 beforeEach(() => {
   for (const fn of Object.values(db)) fn.mockReset();
   db.setDocumentFolder.mockResolvedValue(true);
+  db.getDocumentForSave.mockImplementation(async (...args: unknown[]) => {
+    const doc = (await db.getDocument(...args)) as DocumentDTO | null;
+    return doc ? { ...doc, tabCount: doc.tabs?.length ?? 0 } : null;
+  });
   canReadDocument.mockReset();
   canEditDocument.mockReset();
   resolveDocumentGrant.mockReset();
@@ -930,7 +939,7 @@ describe('share-link scope (docs/specs/013-workspace/tab-scoped-share-links.md)'
     });
     const res = await handleDocuments(ctx);
     expect(res.status).toBe(200);
-    expect(((await res.json()) as { link: { tabId: string } }).link.tabId).toBe('t2');
+    expect((await res.json<{ link: { tabId: string } }>()).link.tabId).toBe('t2');
     expect(db.rescopeShareLink).toHaveBeenCalledWith({}, 'CODE2345', 't2');
     expect(sent).toHaveLength(1);
   });

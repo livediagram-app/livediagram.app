@@ -9,6 +9,12 @@ export const POWER_USER_PRESET = {
   autoRebindArrows: { autoRebindArrows: true },
   tourSeen: { tourSeen: true },
   planTourSeen: { planTourSeen: true },
+  facilitateTourSeen: { facilitateTourSeen: true },
+  drawTourSeen: { drawTourSeen: true },
+  formTourSeen: { formTourSeen: true },
+  avatarTourSeen: { avatarTourSeen: true },
+  illustrateTourSeen: { illustrateTourSeen: true },
+  elementToursSeen: { elementToursSeen: true },
   aiSuggestedPrompts: { aiSuggestedPrompts: false },
   minimalChrome: { minimalChrome: true },
 } as const satisfies Record<string, Partial<UserPreferences>>;
@@ -56,7 +62,7 @@ function switchOn(prefs: UserPreferences): Switched {
   next.powerUserMode = true;
   next.powerUserBaseline = baseline;
   debugLog('[power-user] on', { applied: Object.keys(POWER_USER_PRESET) });
-  return { prefs: next as UserPreferences, restored: [], kept: [] };
+  return { prefs: next, restored: [], kept: [] };
 }
 
 // Does this preset setting still hold what switching on wrote? Switch-off
@@ -87,5 +93,5 @@ function switchOff(prefs: UserPreferences): Switched {
   delete next.powerUserMode;
   delete next.powerUserBaseline;
   debugLog('[power-user] off', { restored, kept });
-  return { prefs: next as UserPreferences, restored, kept };
+  return { prefs: next, restored, kept };
 }

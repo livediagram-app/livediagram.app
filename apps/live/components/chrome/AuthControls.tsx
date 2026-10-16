@@ -117,7 +117,7 @@ function AuthControlsEnabled({ onOpenAccount }: AuthControlsProps) {
             pictureUrl={user?.pictureUrl}
             size={HEADER_ICON_SLOT_PX}
             aria-hidden
-            className={`bg-brand-500 text-[10px] font-semibold text-white ${SOLID_BRAND_DARK}`}
+            className={`bg-brand-700 text-[10px] font-semibold text-white ${SOLID_BRAND_DARK}`}
           >
             {accountInitial(user)}
           </PictureDisc>

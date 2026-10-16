@@ -60,7 +60,7 @@ Folder membership changes two ways:
 
 Folder rides the **same wire path as `orderIndex`**, never the per-tab content `PUT`:
 
-- `PUT /api/documents/:id` body widens from `{ name?, tabIds? }` to also accept `{ tabs?: { id, folder? }[] }`. New clients send `tabs` (order = array position, plus folder); the server falls back to `tabIds` (folder null) for older clients. Empty/whitespace folder names are trimmed to NULL server-side.
+- `PUT /api/documents/:id` body widens from `{ name?, tabIds? }` to also accept `{ tabs?: { id, folder? }[] }`. New clients send `tabs` (order = array position, plus folder); the server falls back to `tabIds` (folder null) for older clients. Empty/whitespace folder names are trimmed to NULL server-side. An entry that is neither a tab id nor `{ id, folder? }` with a text or null folder refuses the whole request (400 `invalid tabs`) before anything is written, the rename included.
 - The `document-meta` room op's `tabs` entries widen to `{ id, name, orderIndex, folder? }` so a peer's folder change applies live. `folder` is optional throughout, so an older peer/client omitting it is treated as loose — no parse break.
 - `reorderTabs` writes `document_tabs.folder` alongside `order_index`. The per-tab content upsert (`upsertTab`) leaves `document_tabs.folder` untouched, so a content save can never clobber membership.
 - The persisted tab body strips `folder` (centralised with `templateChosen` in `stripUiTabFields`), so folder never leaks into the shared `tabs.data`.

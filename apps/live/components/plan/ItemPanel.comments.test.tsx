@@ -28,7 +28,7 @@ const card = (type = 'task'): Item => ({
         },
       ],
       resolved: false,
-    } as never,
+    },
   },
   rev: 1,
   createdAt: 0,

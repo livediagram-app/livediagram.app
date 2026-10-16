@@ -3,17 +3,20 @@
 @import '@livediagram/template-previews/preview-art-tile.css';
 @import '@livediagram/template-previews/preview-motion.css';
 @import './qa-board.css';
+@import './forms.css';
 @import './canvas-motion.css';
 @import './motion-shape.css';
 @import './motion-text.css';
 @import './motion-sticky.css';
 @import './motion-media.css';
+@import './motion-page.css';
 @import './motion-drawing.css';
 @import './motion-table.css';
 @import './thumbnail-loader.css';
 @import './image-search-loader.css';
 @import './article-pages.css';
 @import './split-view.css';
+@import './sketch-face.css';
 
 /* A phone: narrower than `sm`, or a touch screen under 500px tall (one held sideways). The JS twin
  * is PHONE_MEDIA_QUERY (lib/responsive.ts); the two state the same query. Phone-only layout uses
@@ -145,6 +148,19 @@
      outside the transition budget; reduced motion stops them. */
   --animate-sync-spin: sync-spin 2s linear infinite;
   --animate-sync-rise: sync-rise 1.6s ease-in-out infinite;
+  /* A direction nudged while its control is hovered or focused (Add a Slot's sides): the arrow bounces the way it
+     points. Looping while hovered; reduced motion stops it. */
+  --animate-nudge-up: nudge-up 0.9s ease-in-out infinite;
+  --animate-nudge-down: nudge-down 0.9s ease-in-out infinite;
+  --animate-nudge-left: nudge-left 0.9s ease-in-out infinite;
+  --animate-nudge-right: nudge-right 0.9s ease-in-out infinite;
+  /* A drink in an Avatar-mode character's hand (docs/specs/009-elements/office.md "Using it"): a sip every
+     8 seconds, and a coffee's steam. Looping; reduced motion stops them. */
+  --animate-avatar-sip: avatar-sip 8s ease-in-out infinite;
+  --animate-avatar-steam: avatar-steam 2.4s ease-out infinite;
+  /* An Away Avatar-mode character's Zz (docs/specs/008-canvas/avatar-mode.md "Status"): rising and fading.
+     Looping; reduced motion stops it. */
+  --animate-avatar-zz: avatar-zz 3s ease-out infinite;
   --animate-pop-out: pop-out var(--transition-duration-micro) cubic-bezier(0.4, 0, 1, 1) forwards;
   /* The template picker's open shelf arriving (docs/specs/008-canvas/canvas-and-palette.md
      "Templates section"): a longer rise than fly-up-in, so opening a tile below
@@ -189,12 +205,6 @@
      EmptyState animates alike; see packages/ui/src/EmptyState.tsx. */
 }
 
-/* The entry pop for a newly added element. It carries the element's own
-   rotation through every frame via --lvd-enter-rot (0deg when unset): a
-   keyframe that sets `transform` at all REPLACES the inline
-   `transform: rotate(Ndeg)` for its whole duration, so without this a tilted
-   element — a rotated shape, or any sticker (docs/specs/010-palette/stickers.md) — popped in flat and
-   then visibly snapped to its angle when the class dropped. */
 /* The syncing arrows turn about their own centre (transform-box: fill-box). */
 @keyframes sync-spin {
   to {
@@ -202,7 +212,85 @@
   }
 }
 
+/* A nudged arrow bounces 3px the way it points, and back. */
+@keyframes nudge-up {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+@keyframes nudge-down {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(3px);
+  }
+}
+@keyframes nudge-left {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(-3px);
+  }
+}
+@keyframes nudge-right {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(3px);
+  }
+}
+
 /* The waiting arrow drifts up and back: about a pixel on screen at 14px. */
+@keyframes avatar-sip {
+  0%,
+  84%,
+  100% {
+    transform: translateY(0);
+  }
+  88%,
+  95% {
+    transform: translateY(-5px);
+  }
+}
+
+@keyframes avatar-steam {
+  0% {
+    transform: translateY(0);
+    opacity: 0;
+  }
+  30% {
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateY(-4px);
+    opacity: 0;
+  }
+}
+
+@keyframes avatar-zz {
+  0% {
+    transform: translateY(4px);
+    opacity: 0;
+  }
+  30% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-8px);
+    opacity: 0;
+  }
+}
+
 @keyframes sync-rise {
   0%,
   100% {
@@ -215,6 +303,12 @@
   }
 }
 
+/* The entry pop for a newly added element. It carries the element's own
+   rotation through every frame via --lvd-enter-rot (0deg when unset): a
+   keyframe that sets `transform` at all REPLACES the inline
+   `transform: rotate(Ndeg)` for its whole duration, so without this a tilted
+   element (a rotated shape, or any sticker, docs/specs/010-palette/stickers.md) popped in flat and
+   then visibly snapped to its angle when the class dropped. */
 @keyframes pop-in {
   0% {
     transform: rotate(var(--lvd-enter-rot, 0deg)) scale(0);
@@ -395,6 +489,12 @@
 [data-panel-translucent]:focus-within {
   opacity: 1;
 }
+/* A touch screen has no hover to bring a panel back, so it would stay faded while in use: panels are opaque there. */
+@media (hover: none) {
+  [data-panel-translucent] {
+    opacity: 1;
+  }
+}
 
 /*
  * Reduced motion (accessibility, docs/specs/007-editor/user-preferences.md). Honour BOTH the operating
@@ -405,7 +505,7 @@
  * moving (docs/specs/004-interface-design/motion.md "Reduced motion").
  *
  * Animations collapse to 0.01ms rather than 0, so animationend still fires for
- * the JS that waits on it (PresentationHost). Transitions collapse to 0s: every
+ * the JS that waits on it (a split pane closing). Transitions collapse to 0s: every
  * element's transition-property defaults to `all`, so any non-zero duration on
  * `*` would turn every style write into a transition, and a position written
  * and measured in the same frame would read back the old value (the tab
@@ -436,6 +536,23 @@
    with Reduce motion on they don't play at all: the picker shows the static
    art, as it does with the OS setting (preview-motion.css). */
 :root.reduce-motion .preview-motion * {
+  animation: none !important;
+}
+
+/* The direction nudges and a held drink's sip and steam (above) loop, so reduced motion stops them outright
+   rather than freezing a frame. */
+@media (prefers-reduced-motion: reduce) {
+  [class*='animate-nudge-'],
+  .animate-avatar-sip,
+  .animate-avatar-steam,
+  .animate-avatar-zz {
+    animation: none !important;
+  }
+}
+:root.reduce-motion [class*='animate-nudge-'],
+:root.reduce-motion .animate-avatar-sip,
+:root.reduce-motion .animate-avatar-steam,
+:root.reduce-motion .animate-avatar-zz {
   animation: none !important;
 }
 
@@ -731,16 +848,12 @@
 /* Presenting a slide deck (docs/specs/012-collaboration/presentation-mode.md).
 
    The SLIDE is the canvas itself, narrowed to one slide's elements and framed
-   to their bounds by useEditorState. These rules are only the motion and the
-   frame around it, driven by two attributes the PresentationHost sets on
-   <html>: `data-presenting` while a deck is running, and `data-slide-move`
-   for the length of one transition.
-
-   Everything animates ONE layer — the canvas's content wrapper — with a
-   transform and an opacity. Per-element animation was the alternative and is
-   the wrong shape: a hundred-element slide would cost a hundred times what a
-   one-element slide does, for a move the audience reads as a single card
-   sliding. */
+   to their bounds by useEditorState. These rules are only the frame around
+   it, driven by the attributes the PresentationHost sets on <html>:
+   `data-presenting` while a deck is running, and `data-slide-move="pending"`
+   while the first slide waits for the screen to settle. The motion itself is a
+   View Transition of the canvas surface (canvas-motion.css): one picture moves,
+   so a hundred-element slide costs what a one-element slide does. */
 
 /* Chrome hiding is NOT done here: presenting reports zenMode, so the editor's
    own zen treatment (docs/specs/007-editor/zen-mode.md) takes the header, tab bar, palette and panels
@@ -803,6 +916,15 @@ html[data-presenting][data-hide-pointer][data-pointer-idle] [data-presentation-s
   --ld-timeline-neutral-soft: rgb(148 163 184 / 0.06);
 }
 
+/* The element plane (docs/specs/008-canvas/canvas-performance.md "The canvas's cursor stays off the
+   elements"): the canvas's cursor is inherited, and changes on a tool switch, a pan and a stroke
+   landing; stopping it here means such a change restyles this one node, not every element. Each
+   element sets its own cursor where it takes a press. A pen or path cursor that must show over the
+   elements passes through on purpose (the rule below matches the plane too). */
+[data-element-plane] {
+  cursor: auto;
+}
+
 /* A whiteboard pen in hand draws wherever it presses (docs/specs/023-draw-mode/draw-mode.md "Pens"):
    elements, handles and labels under it keep the pen cursor instead of their own. A path in its
    edit mode owns the cursor the same way (docs/specs/023-draw-mode/path-tool.md "Cursors in edit
@@ -842,4 +964,45 @@ html[data-presenting][data-hide-pointer][data-pointer-idle] [data-presentation-s
 }
 :root.reduce-motion .changeset-reveal {
   animation: none !important;
+}
+
+/* Palette tiles in the tab's finish (docs/specs/008-canvas/finish.md, palette-tile-finish.ts). Professional:
+   square corners, fine mitred lines. Sketch: the shared wobble filter (SketchFilterDefs). */
+.palette-finish-professional svg {
+  stroke-linejoin: miter;
+}
+.palette-finish-professional svg :where(path, rect, circle, ellipse, polygon, polyline, line) {
+  stroke-width: 1px;
+}
+.palette-finish-professional svg rect {
+  rx: 0;
+  ry: 0;
+}
+.palette-finish-sketch svg {
+  filter: url(#lvd-sketch-tile);
+}
+
+/* A Tab Style change (lib/tab-style-ease.ts, docs/specs/011-theme/canvas-and-theme-dialog.md "Eased changes") eases the canvas's colours instead of snapping them. On only for the moment of the change, so it
+   costs nothing the rest of the time; Reduce motion (above) zeroes it. */
+:root.lvd-style-transition [data-canvas-root],
+:root.lvd-style-transition [data-canvas-root] * {
+  transition-property: background-color, border-color, color, fill, stroke, opacity;
+  transition-duration: 250ms;
+  transition-timing-function: ease-out;
+}
+
+/* View Transitions (docs/specs/004-interface-design/motion.md "View Transitions"). The document root takes no part,
+   so only a named surface is captured: the rest of the page neither cross-fades nor freezes into a picture. Reduced
+   motion adds nothing here: the handlers start no View Transition then (lib/view-transition.ts). */
+html {
+  view-transition-name: none;
+}
+
+/* The start's mode switch (docs/specs/007-editor/start-diagramming.md "Changing mode"): the browser's own
+   cross-fade, on the short token and the ease-out curve, so the panel turns in place. */
+::view-transition-group(.start-mode),
+::view-transition-old(.start-mode),
+::view-transition-new(.start-mode) {
+  animation-duration: var(--transition-duration-short);
+  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
 }

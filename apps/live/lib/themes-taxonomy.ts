@@ -1,9 +1,8 @@
-// Theme taxonomy + metadata (docs/specs/007-editor/new-document-route.md): the per-theme description blurbs and the
-// colour-temperament categories the picker buckets themes into. Pure catalogue
-// data plus its lookups, split out of themes.ts (the recolouring engine) — this
+// Theme metadata (docs/specs/011-theme/canvas-and-theme-dialog.md "Colours panel"): the per-theme description blurbs
+// shown on the theme cards. Pure catalogue data plus its lookup, split out of themes.ts (the recolouring engine) — this
 // is consumed by the theme-picker UI, not by element recolouring, so it stands
 // on its own. Type-only imports from ./themes (erased at build, no cycle).
-import type { ThemeId, ThemeCategory } from './themes';
+import type { ThemeId } from './themes';
 
 // Short, user-facing blurb per built-in theme, shown under the label on
 // the picker's theme cards (docs/specs/007-editor/new-document-route.md). A `Record<ThemeId, string>` so the
@@ -37,58 +36,16 @@ const THEME_DESCRIPTIONS: Record<ThemeId, string> = {
   rainbow: 'A different hue per branch.',
   pastel: 'Soft multi-colour, a hue per branch.',
   tropical: 'Bright, summery hues per branch.',
-  autumn: 'Warm reds, golds and browns.',
-  jewel: 'Rich, saturated gem tones.',
   uml: 'Standard notation, each shape its colour.',
+  sparkle: 'Gold on a midnight navy.',
+  spring: 'Painted-egg pastels, a hue per branch.',
+  pumpkin: 'Orange, purple and green on a moonless night.',
+  yuletide: 'Holly red, pine green and tinsel gold.',
+  frost: 'Icy blues on fresh snow.',
+  evergreen: 'Berry red on deep fir green.',
 };
 
 // The blurb for a theme id, or undefined for an unknown / custom id.
 export function themeDescription(id: string): string | undefined {
   return (THEME_DESCRIPTIONS as Record<string, string>)[id];
-}
-
-export const THEME_CATEGORIES: { id: ThemeCategory; label: string; description: string }[] = [
-  { id: 'formal', label: 'Formal', description: 'Standard notations like UML.' },
-  { id: 'cool', label: 'Cool', description: 'Blues, greens and purples.' },
-  { id: 'warm', label: 'Warm', description: 'Reds, oranges and earthy tones.' },
-  { id: 'dark', label: 'Dark', description: 'Dark-backdrop themes.' },
-  { id: 'multicolour', label: 'Multi-colour', description: 'A different hue per branch.' },
-];
-
-const THEME_CATEGORY: Record<ThemeId, ThemeCategory> = {
-  // Cool: blues / greens / purples, plus the greyscale Mono.
-  brand: 'cool',
-  forest: 'cool',
-  ocean: 'cool',
-  sky: 'cool',
-  lavender: 'cool',
-  indigo: 'cool',
-  steel: 'cool',
-  mono: 'cool',
-  // Warm: reds / oranges / pinks / earthy browns.
-  slate: 'warm', // legacy id, now the Pink theme
-  sunset: 'warm',
-  rose: 'warm',
-  cream: 'warm',
-  sand: 'warm',
-  mocha: 'warm',
-  olive: 'warm',
-  // Dark: dark-backdrop themes.
-  midnight: 'dark',
-  pine: 'dark',
-  plum: 'dark',
-  abyss: 'dark',
-  espresso: 'dark',
-  // Multi-colour "rainbow" themes (docs/specs/011-theme/multicolour-themes.md).
-  rainbow: 'multicolour',
-  pastel: 'multicolour',
-  tropical: 'multicolour',
-  autumn: 'multicolour',
-  jewel: 'multicolour',
-  // Formal notations.
-  uml: 'formal',
-};
-
-export function themeCategory(id: ThemeId): ThemeCategory {
-  return THEME_CATEGORY[id];
 }

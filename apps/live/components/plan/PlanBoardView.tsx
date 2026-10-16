@@ -4,12 +4,16 @@
 // its set-up projected over the document's items into columns, rows and cards. In Plan mode cards
 // take the pointer and the keyboard; in the other modes the board is an element like any other and a
 // double-click opens a card. Everything the board changes goes through PlanContext.
+import { planFontStyle } from '@/lib/plan-font';
+import { useSlotSettings } from '@/components/plan/dashboard/slot-menu';
+import { SlotBoardCog } from './SlotBoardCog';
 import { isCardVotableInVote } from '@livediagram/document';
 import { useCardVote } from './CardVoteContext';
 import { useViewportStoreIfAny } from '@/hooks/canvas/useViewportStore';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { frameBoardColumn } from '@/hooks/plan/frame-board-column';
 import { markPanThrough } from '@/hooks/canvas/pan-through';
+import { mayCreateCardType } from './may-create-card-type';
 import { useSelectionOf } from '@/hooks/canvas/useSelectionStore';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { cornerRadiusPx, type ShapeElement } from '@livediagram/document';
@@ -26,11 +30,11 @@ import {
   boardAddTypes,
   newItemId,
   isTrashed,
-  ITEM_TYPES_MAX,
 } from '@livediagram/items';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { track } from '@/lib/telemetry';
 import { usePlanBoardDrop } from '@/hooks/plan/usePlanBoardDrop';
+import { useBoardCsv } from '@/hooks/plan/useBoardCsv';
 import { cellStatus, laneMove } from './plan-board-moves';
 import { DropGap, LaneRow, PlanBoardCard, PlanDragGhost } from './PlanBoardCells';
 import {
@@ -44,19 +48,21 @@ import { boardRowTemplate } from './plan-board-rows';
 import { PlanSetupBoard } from './PlanSetupBoard';
 import { setUpBoard, setupFromBoard, setupLayoutOf, withSetupLayout } from './setup-board';
 import { pickableStatuses } from './column-status-picks';
-import { boardItems } from './widgets/widget-stats';
-import { trackFillTab, trackSetup } from './track-board-setup';
+import { boardItems } from '@livediagram/plan-art';
+import { trackSetup } from './track-board-setup';
 import { boardColumnTemplate } from './plan-board-columns';
+import { boardLook, shownQuick } from './phone-board';
 import { useEdgeAutoScroll } from '@/hooks/plan/useEdgeAutoScroll';
 import { PlanCardMenuHost } from './PlanCardMenu';
-import { BoardMoreMenu } from './BoardMoreMenu';
 import { BoardSettingsButton } from './BoardSettingsButton';
 import { usePlanCardFlip } from '@/hooks/plan/usePlanCardFlip';
+import { COLUMN_ATTR, useColumnMoveFlip } from './column-move-flip';
 import { usePlan } from './PlanContext';
 import { PlanBoardHeader } from './PlanBoardHeader';
+import { ExampleCardsNotice } from './ExampleCardsNotice';
 import { AddCardButton } from './AddCardButton';
 import { planBoardKey } from './plan-board-keys';
-import { planOwnColours, planPalette } from './plan-palette';
+import { planBandTint, planOwnColours, planPalette } from './plan-palette';
 import { useBoardMaximised } from '@/hooks/plan/useBoardMaximised';
 import { MaximisePlanButton, MaximisableSlot } from './MaximisedPlanLayer';
 import { FocusElementButton } from './FocusElementButton';
@@ -97,7 +103,12 @@ export function PlanBoardView({
   const radius = `${cornerRadiusPx(element.borderRadius, element.width, element.height, PLAN_BOARD_RADIUS_PX)}px`;
   const types = plan?.types ?? ITEM_TYPES;
   const setup = useMemo(() => normaliseBoardSetup(element.planBoard), [element.planBoard]);
+  // Its Board tab's Import CSV… and Download CSV (docs/specs/026-plan/plan-board.md "CSV").
+  useBoardCsv(element.id, setup);
   const [quick, setQuick] = useState<QuickFilter>({});
+  // A phone draws the board its own way (phone-board.ts): no widgets, so no quick filter either.
+  const phone = useIsMobileViewport();
+  const applied = shownQuick(quick, phone);
   const [adding, setAdding] = useState<{ status: string; laneKey: string } | null>(null);
   const closeAdding = useCallback(() => setAdding(null), []);
   const [collapsed, setCollapsed] = useState<ReadonlySet<string>>(new Set());
@@ -109,8 +120,8 @@ export function PlanBoardView({
   const items = plan?.items ?? NO_ITEMS;
   const statusNames = plan?.statusNames;
   const projection = useMemo(
-    () => (setup ? projectBoard(setup, items, quick, types, statusNames) : null),
-    [setup, items, quick, types, statusNames],
+    () => (setup ? projectBoard(setup, items, applied, types, statusNames) : null),
+    [setup, items, applied, types, statusNames],
   );
   // The statuses a column can be made for: the boards', any a card is in and the card types' Default States
   // (docs/specs/026-plan/plan-board.md "The column picker").
@@ -134,6 +145,7 @@ export function PlanBoardView({
   // Maximised, for this person only (docs/specs/026-plan/plan-board.md "Maximised board").
   // Or filling its tab, for everyone ("Fill Tab"): no Maximise/Restore then, and Escape leaves it be.
   const { maximised, filled } = useBoardMaximised(element.id, interactive);
+  const slot = useSlotSettings();
   // The tab's session vote, when this board's cards take dots in it (its layer, under a layer-scoped vote).
   const tabCardVote = useCardVote();
   const cardVote =
@@ -142,7 +154,6 @@ export function PlanBoardView({
       : null;
   // On a phone a tap on a column's header frames that column on screen, as a tap on a page does in Illustrate.
   const viewport = useViewportStoreIfAny();
-  const phone = useIsMobileViewport();
   const frameColumn =
     phone && interactive && !maximised && !filled && viewport
       ? (header: HTMLElement) => {
@@ -151,7 +162,7 @@ export function PlanBoardView({
         }
       : null;
 
-  const { drag, incoming, widgetSlot, flashWidget } = usePlanBoardDrop({
+  const { drag, incoming } = usePlanBoardDrop({
     element,
     boardRef,
     plan,
@@ -209,9 +220,16 @@ export function PlanBoardView({
         : '',
     [projection, collapsed],
   );
-  usePlanCardFlip(bodyRef, flipSignature, drag.drag?.itemId ?? null);
-  // Maximised (or filling its tab), a card dragged near the columns' left or right edge scrolls them sideways.
-  useEdgeAutoScroll(bodyRef, (maximised || filled) && (!!drag.drag || !!incoming));
+  // A column moved left or right glides there (column-move-flip.ts), its cards riding along rather than gliding too.
+  const gridRef = useRef<HTMLDivElement>(null);
+  const columnMove = useColumnMoveFlip(gridRef, setup?.columns.map((c) => c.id).join('|') ?? '');
+  usePlanCardFlip(bodyRef, flipSignature, drag.drag?.itemId ?? null, columnMove.isMoving);
+  // Maximised (or filling its tab, or a phone's Dashboard slot, one column a screen), a card dragged near the columns'
+  // left or right edge scrolls them sideways.
+  useEdgeAutoScroll(
+    bodyRef,
+    (maximised || filled || (phone && !!slot)) && (!!drag.drag || !!incoming),
+  );
 
   if (!setup || !projection) {
     return (
@@ -238,9 +256,9 @@ export function PlanBoardView({
   // Setup Board asked for again from the board's Board Setup (a board that has columns), for this person only.
   const settingUp = canEdit && plan?.setupBoardId === element.id;
   // The Add a Card menu's Add New Card Type: a new type with only this board's statuses, added to it once saved
-  // (docs/specs/026-plan/plan-board.md "Add New Card Type"); not offered once the catalogue is full.
+  // (docs/specs/026-plan/plan-board.md "Add New Card Type"), for an Editor while the catalogue has room.
   const createType =
-    plan && plan.types.length < ITEM_TYPES_MAX
+    plan && mayCreateCardType(plan)
       ? () =>
           plan.createTypeForBoard(
             element.id,
@@ -262,6 +280,8 @@ export function PlanBoardView({
         ?.focus();
     } else if (action.kind === 'open') plan.openItem(item.id);
     else if (action.kind === 'trash') {
+      // Focus goes on to a neighbour rather than falling to the page with the card.
+      focusNextRef.current = action.focusAfter;
       plan.trashItem(item.id);
       plan.announce(`#${item.key} moved to the Trash`);
     } else if (action.kind === 'add') setAdding({ status: action.status, laneKey: action.laneKey });
@@ -281,7 +301,17 @@ export function PlanBoardView({
   const dragging = drag.drag;
   // A slot per column, two or three for a wider one (docs/specs/026-plan/plan-board.md "The board set-up"); five
   // slots across while it covers the canvas, then it scrolls sideways.
-  const columnTemplate = boardColumnTemplate(setup.columns, maximised || filled);
+  const look = boardLook(
+    {
+      phone,
+      covering: maximised || filled,
+      inSlot: !!slot,
+      interactive,
+      dragging: !!dragging || !!incoming,
+    },
+    setup.cardSize,
+  );
+  const columnTemplate = boardColumnTemplate(setup.columns, look.columns);
 
   const board = (
     <div
@@ -296,7 +326,7 @@ export function PlanBoardView({
         borderColor: palette.border,
         color: palette.text,
         borderRadius: radius,
-        ...(fontFamily ? { fontFamily } : {}),
+        ...planFontStyle(fontFamily),
       }}
     >
       <PlanBoardHeader
@@ -305,15 +335,15 @@ export function PlanBoardView({
         items={shownItems}
         types={types}
         palette={palette}
-        widgetDropAt={widgetSlot}
-        flashWidget={flashWidget}
         selected={selected}
+        movable={!maximised && !filled}
         canRename={canEdit && interactive}
         onOpenItem={(id) => plan?.openItem(id)}
         onSetup={(next, part) => {
           plan?.updateBoard(element.id, next);
           trackSetup(part);
         }}
+        showWidgets={look.widgets}
         onWidgets={(next) => {
           plan?.updateBoard(element.id, { ...setup, widgets: next });
           trackSetup('Widgets');
@@ -338,29 +368,42 @@ export function PlanBoardView({
         end={
           interactive ? (
             <>
-              {/* The board's settings, the same as its element menu's Board and Cards, for an editor. */}
-              <BoardMoreMenu boardId={element.id} title={setup.title} />
-              {/* Focus glides the view to fit the board; not while it already fills the view. */}
+              {/* Focus glides the view to fit the board; not while it fills the view. */}
               {maximised || filled ? null : (
                 <FocusElementButton bounds={element} kind="Board" palette={palette} />
               )}
               {filled ? null : (
                 <MaximisePlanButton id={element.id} maximised={maximised} palette={palette} />
               )}
-              {/* The cog last, at the header's far right. */}
-              {canEdit ? <BoardSettingsButton element={element} palette={palette} /> : null}
+              {/* The cog last, at the header's far right: the board's one menu (its element menu). In a Dashboard
+                  slot, Board Settings with the slot's own section folded in, or the slot's cog for someone who may
+                  not edit the board (slot-menu.ts). */}
+              {slot ? (
+                canEdit ? (
+                  <SlotBoardCog element={element} palette={palette} slot={slot} />
+                ) : (
+                  slot.cog
+                )
+              ) : canEdit ? (
+                <BoardSettingsButton element={element} palette={palette} />
+              ) : null}
             </>
           ) : null
         }
       />
+      {/* A template's example cards: Clear Example Cards or Keep Them, for an Editor (ExampleCardsNotice). */}
+      {interactive && plan ? (
+        <ExampleCardsNotice shown={shownItems} plan={plan} palette={palette} />
+      ) : null}
       <div
         ref={bodyRef}
         // A scroll container resets touch-action, so without touch-none a finger on a card starts a native
-        // scroll and the browser cancels the drag; the canvas pans across empty board instead. Maximised, the
-        // board covers the canvas, so a finger on empty board scrolls the board itself; each card is touch-none
-        // on its own, so a finger on one still picks it up.
-        className={`min-h-0 flex-1 overflow-auto px-3 pb-3 ${maximised || filled ? '@container' : ''} ${
-          interactive ? (maximised || filled ? 'touch-pan-x touch-pan-y' : 'touch-none') : ''
+        // scroll and the browser cancels the drag; the canvas pans across empty board instead. Maximised, filling
+        // its tab or in a Dashboard slot, nothing under the board pans, so a finger on empty board scrolls the board
+        // (and past its end, the Dashboard's page); each card is touch-none on its own, so a finger on one still
+        // picks it up. On a phone its columns snap into view one at a time (phone-board.ts).
+        className={`min-h-0 flex-1 overflow-auto px-3 ${look.endClearance || 'pb-3'} ${look.container ? '@container' : ''} ${look.touch} ${
+          look.snap ? 'snap-x snap-mandatory scroll-px-3' : ''
         }`}
         onPointerDown={interactive ? keepBoardPress : undefined}
       >
@@ -381,7 +424,7 @@ export function PlanBoardView({
                   onCancel: () => plan?.openBoardSetup(null),
                 }
               : {})}
-            {...(plan && plan.types.length < ITEM_TYPES_MAX
+            {...(plan && mayCreateCardType(plan)
               ? { onCreateType: () => plan.editType('new') }
               : {})}
             layout={setupLayoutOf(setup)}
@@ -390,18 +433,15 @@ export function PlanBoardView({
               const all = plan.types.map((t) => t.id);
               const build = (from: PlanBoardSetup) =>
                 withSetupLayout(setUpBoard(from, columns, typeIds, all), layout);
-              const fillTab = layout.fillTab;
-              // Fill Tab turned on deletes the rest of the canvas in the same change (one undo step), built from the
-              // board as it is at that commit.
-              if (fillTab !== (setup.fillTab === true)) trackFillTab(fillTab);
-              if (fillTab && !setup.fillTab) plan.fillTab(element.id, build);
-              else plan.updateBoard(element.id, build(setup));
+              // No Fill Tab to change (plan-board.md "Fill Tab"): an old board's stored flag rides through the layout.
+              plan.updateBoard(element.id, build(setup));
               trackSetup('BoardSetUp');
               if (settingUp) plan.openBoardSetup(null);
             }}
           />
         ) : (
           <div
+            ref={gridRef}
             className="grid min-h-full gap-3"
             style={{
               gridTemplateColumns: columnTemplate,
@@ -420,6 +460,7 @@ export function PlanBoardView({
                 palette={palette}
                 canEdit={canEdit}
                 onChange={(next, part) => {
+                  if (part === 'ColumnReordered') columnMove.beforeMove(col.column.id);
                   plan?.updateBoard(element.id, next);
                   trackSetup(part);
                 }}
@@ -498,6 +539,7 @@ export function PlanBoardView({
                         return (
                           <div
                             key={col.column.id}
+                            {...{ [COLUMN_ATTR]: col.column.id }}
                             data-plan-status={col.column.status}
                             data-plan-lane={lane.key}
                             role="list"
@@ -528,7 +570,7 @@ export function PlanBoardView({
                                 done={done}
                                 // What a card shows is its type's Display (docs/specs/026-plan/item-types.md "Card display").
                                 setupFields={CARD_FIELDS}
-                                cardSize={setup.cardSize}
+                                cardSize={look.cardSize}
                                 faceDown={cardIsFaceDown(item, setup, self?.id ?? '')}
                                 presence={plan?.presence.get(item.id)}
                                 interactive={interactive}
@@ -537,7 +579,7 @@ export function PlanBoardView({
                                 onKey={onCardKey}
                                 onMenu={(it, at) => setMenu({ itemId: it.id, at })}
                                 cardVote={cardVote}
-                                {...(interactive && canEdit
+                                {...(interactive && canEditCards
                                   ? {
                                       onLongPress: (it: Item, at: { x: number; y: number }) => {
                                         // The held press opens the menu instead of becoming a drag or a click.
@@ -569,13 +611,13 @@ export function PlanBoardView({
                                 onAdd={({ type, fields }) => {
                                   // Opened at once to be named (plan-board.md "Open an item").
                                   const id = newItemId();
-                                  plan?.addItem({
+                                  void plan?.addItem({
                                     id,
                                     type,
                                     fields: {
                                       ...fields,
                                       ...(withLanes ? laneMove(lane).set : {}),
-                                    } as Item['fields'],
+                                    },
                                     status: cellStatus(setup, col.column.status, lane),
                                     after: cell[cell.length - 1]?.id ?? null,
                                   });
@@ -597,7 +639,9 @@ export function PlanBoardView({
           menu={menu}
           plan={plan}
           setup={setup}
-          canEdit={canEdit}
+          // A Participant works on cards (duplicates, moves, flags) and never retires them, as in the item panel.
+          canEdit={canEditCards}
+          canRetire={canEdit}
           onClose={() => setMenu(null)}
         />
       ) : null}
@@ -605,7 +649,7 @@ export function PlanBoardView({
         <PlanDragGhost
           drag={dragging}
           pointer={drag.pointer}
-          size={setup.cardSize}
+          size={look.cardSize}
           item={items.get(dragging.itemId)!}
           palette={palette}
           fields={CARD_FIELDS}
@@ -619,6 +663,8 @@ export function PlanBoardView({
     <MaximisableSlot
       id={element.id}
       maximised={maximised}
+      tint={planBandTint(element)}
+      blend={{ surface: palette.surface, line: palette.border }}
       fill={filled}
       placeholder={{
         backgroundColor: palette.surface,

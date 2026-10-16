@@ -8,7 +8,7 @@ import { argvToOperationLine } from '../argv-line';
 import { readPlainTab } from '../copies';
 import { defineVerb, VerbRefusal, type Verb, type VerbContext } from '../define';
 import { classifySource } from '../source-kind';
-import { submitChangeset, writeFlags, type WriteFlags } from '../write';
+import { submitChangeset, writeFlags } from '../write';
 import { tabOf } from './shared';
 
 const docArg = z.string().describe('A name, id prefix or livediagram URL');
@@ -60,7 +60,7 @@ export const changesetApply = defineVerb({
         hint: 'expected edit operations, a graph, Mermaid or elements: livediagram guide edit',
       });
     const target = await targetOf(ctx, input.doc, input.tab);
-    return outputOf(await submitChangeset(ctx, target, source.body, input as WriteFlags));
+    return outputOf(await submitChangeset(ctx, target, source.body, input));
   },
   text: ({ text }) => [text],
   quiet: ({ changeset }) => (changeset ? [changeset.id] : []),
@@ -129,9 +129,7 @@ function elementVerb(op: ElementOperation): Verb {
       const line = argvToOperationLine(op, input.words);
       ctx.log(`operation ${line}`);
       const target = await targetOf(ctx, input.doc, input.tab);
-      return outputOf(
-        await submitChangeset(ctx, target, { operations: line }, input as WriteFlags),
-      );
+      return outputOf(await submitChangeset(ctx, target, { operations: line }, input));
     },
     text: ({ text }) => [text],
     quiet: ({ changeset }) => (changeset ? [changeset.id] : []),
@@ -143,7 +141,7 @@ function elementVerb(op: ElementOperation): Verb {
       ],
       prints: 'one result line per element, then the revision, lint verdict and revert command',
     },
-  }) as Verb;
+  });
 }
 
 export const elementVerbs: readonly Verb[] = (

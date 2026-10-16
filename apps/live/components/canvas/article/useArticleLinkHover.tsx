@@ -47,7 +47,7 @@ export function useArticleLinkHover(
       if (!a) return;
       stay();
       const pos = view.posAtDOM(a, 0);
-      const range = markRange(view.state.doc.resolve(pos), articleSchema.marks.link!);
+      const range = markRange(view.state.doc.resolve(pos), articleSchema.marks.link);
       if (!range) return;
       const r = a.getBoundingClientRect();
       setHover({
@@ -77,7 +77,7 @@ export function useArticleLinkHover(
       stay();
     };
     // The view is made once, before this runs.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps
   }, []);
 
   if (!hover) return null;
@@ -93,7 +93,7 @@ export function useArticleLinkHover(
   };
   const remove = () => {
     if (!view) return;
-    view.dispatch(view.state.tr.removeMark(hover.from, hover.to, articleSchema.marks.link!));
+    view.dispatch(view.state.tr.removeMark(hover.from, hover.to, articleSchema.marks.link));
     setHover(null);
   };
   const button =

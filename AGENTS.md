@@ -201,23 +201,34 @@ apps/
   api/          # Cloudflare Worker REST + WebSocket API (D1 + Durable Objects, /api)
   mcp/          # Cloudflare Worker MCP server for AI tools (OAuth + tools, mcp.livediagram.app)
   router/       # Cloudflare Worker stitching the apps under one hostname
+  cli/          # the livediagram command line for agents and scripts (Node, one esbuild bundle)
 packages/
   ui/             # shared UI primitives (Brand, SiteHeader, Button, TextInput, Select, Tooltip, hooks) + chrome icons (src/icons)
   document/       # document data model (Tab, Element types + element helpers)
   icons/          # icon catalogues (line-art + Technology + stickers) + SVG markup builders + xmlEscape
-  templates/      # template catalogue + pure element builders (editor Quick Start + MCP)
-  template-previews/ # per-template preview SVGs (editor picker + marketing template gallery)
+  templates/      # template catalogue + pure element builders (editor template starts + MCP)
+  template-previews/ # per-template preview SVGs (editor template starts + marketing template gallery)
   help-registry/  # help-centre article/category registry + keywords (help app + editor search)
   explorer-lens/  # the Explorer filter lens: parse, match and autocomplete filter tokens (pure)
+  page-background/ # a page background's colours, patterns and motions + their parser (slides and form covers, pure)
+  forms/          # Form tabs: form model, answer checks, answer-to-card mapping, starters (pure)
+  plan-art/       # Plan tab images (Board, Sheet, Dashboard as laid out) for editor exports + MCP previews (pure)
   items/          # items, item types, fields, ranks, writes and the Plan board projection (pure)
   sheets/         # the Sheet engine: A1 addressing, formulas, recalculation, writes, CSV (pure)
   document-views/ # read-only text views of a tab (outline, graph, layout, ...) for agents and scripts
   api-schema/     # wire-format DTOs the api worker emits + the live editor consumes
+  api-client/     # the api client the MCP server and the CLI share (fetch, timeouts, ApiError)
+  agent-verbs/    # the verbs the CLI routes to: schemas, handlers, compact text, addressing, guides
+  edit-operations/ # the engine agent changesets run on: edit operations and replace, into element ops (pure)
+  diagram-lint/   # checks how a tab is drawn (overlaps, crossings, arrows behind boxes), with a fix each
+  render-png/     # SVG to PNG with resvg (wasm) + Inter, for MCP previews and the CLI's renders
   sticky-vision/  # finds sticky notes in a wall photo (classical CV, no DOM) for the event-storming photo import
   sticky-model/   # the learned sticky-boundary model's browser-safe parts (cues, decode) + its training scripts
   telemetry-client/ # shared browser telemetry emitter (buffer/flush/beacon engine)
   licences/     # build-time generator of the /licences page from what each app bundles
-  eslint-config/  # shared ESLint flat config
+  fake-google/  # in-memory Google Drive + OAuth, for tests only
+  source-ast/   # parses the repo's own TypeScript with TypeScript 7, for the static guards that read code
+  oxlint-config/  # shared oxlint config + the repo's own lint rules
   prettier-config/# shared Prettier config
   tailwind-config/# shared Tailwind theme (brand palette)
   vitest-config/  # shared Vitest defaults (extended per workspace)
@@ -272,7 +283,7 @@ See [Auth + guest access](docs/specs/014-identity/auth-and-guest-access.md).
 - If two apps need the same thing (UI component, util, type, schema, API client, validator, config), it lives in `packages/`, not copied into each app.
 - If you find yourself copy-pasting code across apps or packages, stop and extract it. "I'll dedupe later" is how drift starts.
 - Design package APIs to be consumed by multiple callers — generic enough to reuse, specific enough to be useful.
-- Tailwind theme, ESLint, Prettier, TS config, and shared UI primitives all live in `packages/` for exactly this reason.
+- Tailwind theme, oxlint, Prettier, TS config, and shared UI primitives all live in `packages/` for exactly this reason.
 
 When the right place for code is genuinely unclear, default to `packages/`.
 

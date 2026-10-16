@@ -80,7 +80,11 @@ export async function emitTimelineEvent(
   const snapshot = JSON.stringify(draft.snapshot ?? {});
   const id = crypto.randomUUID();
 
-  await env.DB.prepare(
+  // One batch, one round trip: the upsert, then the scopes attached to whichever row survived it (on a
+  // conflict that is the ORIGINAL row, whose id this call never generated, so it is found by its unique key
+  // rather than by `id`). A batch runs in order in one transaction, so the attach sees the upsert. It was three
+  // round trips (insert, re-read, attach), and the coalesced editing event runs on every autosave.
+  const upsert = env.DB.prepare(
     `INSERT INTO timeline_events
        (id, actor_id, source_type, source_id, event_type, dedupe_key,
         title, description, occurred_at, snapshot, created_at)
@@ -95,33 +99,33 @@ export async function emitTimelineEvent(
        snapshot = excluded.snapshot,
        occurred_at = MAX(timeline_events.occurred_at, excluded.occurred_at)`
      }`,
-  )
-    .bind(
-      id,
-      draft.actorId,
-      draft.sourceType,
-      draft.sourceId,
-      draft.eventType,
-      dedupeKey,
-      draft.title,
-      draft.description ?? null,
-      occurredAt,
-      snapshot,
-      now,
-    )
-    .run();
-
-  // Re-read rather than trusting `id`: on a conflict the row that
-  // survived is the ORIGINAL one, whose id we never generated.
-  const row = await env.DB.prepare(
-    `SELECT id FROM timeline_events
-      WHERE source_type = ?1 AND source_id = ?2 AND event_type = ?3 AND dedupe_key = ?4`,
-  )
-    .bind(draft.sourceType, draft.sourceId, draft.eventType, dedupeKey)
-    .first<{ id: string }>();
-  if (!row) return;
-
-  await attachEventToScopes(env, row.id, scopes, now);
+  ).bind(
+    id,
+    draft.actorId,
+    draft.sourceType,
+    draft.sourceId,
+    draft.eventType,
+    dedupeKey,
+    draft.title,
+    draft.description ?? null,
+    occurredAt,
+    snapshot,
+    now,
+  );
+  const attach = env.DB.prepare(
+    `INSERT OR IGNORE INTO timeline_event_scopes (event_id, scope_type, scope_id, added_at)
+     SELECT e.id, s.value ->> 0, s.value ->> 1, ?6
+       FROM timeline_events e, json_each(?5) s
+      WHERE e.source_type = ?1 AND e.source_id = ?2 AND e.event_type = ?3 AND e.dedupe_key = ?4`,
+  ).bind(
+    draft.sourceType,
+    draft.sourceId,
+    draft.eventType,
+    dedupeKey,
+    JSON.stringify(scopes.map((scope) => [scope.scopeType, scope.scopeId])),
+    now,
+  );
+  await env.DB.batch([upsert, attach]);
 }
 
 // Add scope memberships for an existing event. Split out because the

@@ -1,7 +1,7 @@
 import { MAX_TAB_ID_LEN } from './document-room-rules';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { DOCUMENT_FORMAT } from '@livediagram/api-schema';
-import type { ParticipantPresence } from '@livediagram/api-schema';
+import type { ParticipantPresence, RoomIncoming } from '@livediagram/api-schema';
 import {
   MUTATION_OP_KINDS,
   PRESENCE_OP_KINDS,
@@ -59,6 +59,12 @@ type FakeSocket = {
   failSend?: boolean;
 };
 
+// What the room sent a socket, read as the messages the room speaks.
+const received = (ws: FakeSocket): RoomIncoming[] =>
+  ws.sent.map((raw) => JSON.parse(raw) as RoomIncoming);
+const receivedOf = <K extends RoomIncoming['kind']>(ws: FakeSocket, kind: K) =>
+  received(ws).filter((m): m is Extract<RoomIncoming, { kind: K }> => m.kind === kind);
+
 // Fake DurableObjectState covering the two hibernation members the room
 // uses. `getWebSockets()` is the runtime-managed connected set; the fake
 // simply returns everything accepted (the real runtime also prunes
@@ -81,6 +87,7 @@ type FakeState = {
     list: (opts: { prefix: string }) => Promise<Map<string, unknown>>;
     setAlarm: (when: number) => Promise<void>;
     deleteAlarm: () => Promise<void>;
+    deleteAll: () => Promise<void>;
   };
   blockConcurrencyWhile: (fn: () => Promise<void>) => Promise<void>;
   waitUntil: (promise: Promise<unknown>) => void;
@@ -129,6 +136,10 @@ function makeState(store: Map<string, unknown> = new Map()): FakeState {
       },
       deleteAlarm: () => {
         state.alarms.push(null);
+        return Promise.resolve();
+      },
+      deleteAll: () => {
+        store.clear();
         return Promise.resolve();
       },
     },
@@ -196,10 +207,11 @@ describe('DocumentRoom /broadcast endpoint', () => {
     // The `from: 'system'` stamp is what lets the live editor
     // distinguish a server-originated op from a peer's op; pinning it
     // here means a future refactor can't silently drop it.
-    const aPayload = JSON.parse(a.sent[0]!);
-    expect(aPayload.from).toBe('system');
-    expect(aPayload.kind).toBe('op');
-    expect(aPayload.op).toEqual({ kind: 'share-revoked', code: 'CODE-123' });
+    expect(received(a)[0]).toMatchObject({
+      kind: 'op',
+      from: 'system',
+      op: { kind: 'share-revoked', code: 'CODE-123' },
+    });
   });
 
   it('sequences an `ordered` system op into the catch-up log (docs/specs/012-collaboration/qa-board.md)', async () => {
@@ -214,17 +226,18 @@ describe('DocumentRoom /broadcast endpoint', () => {
         body: JSON.stringify({ ordered: true, op }),
       }),
     );
-    const sent = JSON.parse(a.sent[0]!);
-    expect(sent).toMatchObject({ kind: 'op', from: 'system', op, seq: 1 });
-    expect(typeof sent.epoch).toBe('string');
+    expect(received(a)[0]).toMatchObject({
+      kind: 'op',
+      from: 'system',
+      op,
+      seq: 1,
+      epoch: expect.any(String),
+    });
     // A fresh client asking to catch up gets it replayed.
     const b = makeSocket();
     seedSession(state, b, presence('p-b', 'view'));
     room.webSocketMessage(b as never, JSON.stringify({ kind: 'sync', epoch: null, lastSeq: 0 }));
-    const catchup = b.sent.map((m) => JSON.parse(m)).find((m) => Array.isArray(m.ops)) as {
-      ops: { from: string; seq: number; op: unknown }[];
-    };
-    expect(catchup.ops).toEqual([{ from: 'system', seq: 1, op }]);
+    expect(receivedOf(b, 'catchup')[0]?.ops).toEqual([{ from: 'system', seq: 1, op }]);
   });
 
   it('returns 400 when the body is not valid JSON', async () => {
@@ -467,13 +480,11 @@ describe('DocumentRoom hello frame role forcing', () => {
     // editor already applied optimistically).
     expect(sender.sent).toHaveLength(0);
     expect(peer.sent).toHaveLength(1);
-    const payload = JSON.parse(peer.sent[0]!);
-    expect(payload.kind).toBe('op');
     // `from` is the sender's server-assigned ephemeral id (not the claimed
     // 'sender'), so peers still get a stable per-session attribution key.
     const senderId = storedPresence(sender)?.id;
-    expect(payload.from).toBe(senderId);
-    expect(payload.from).not.toBe('sender');
+    expect(received(peer)[0]).toMatchObject({ kind: 'op', from: senderId });
+    expect(senderId).not.toBe('sender');
   });
 
   it('ignores op messages from a session that never sent hello', () => {
@@ -507,7 +518,7 @@ describe('DocumentRoom op-role enforcement', () => {
   }
 
   function opsReceived(ws: FakeSocket): unknown[] {
-    return ws.sent.map((s) => JSON.parse(s)).filter((m) => m.kind === 'op');
+    return receivedOf(ws, 'op');
   }
 
   it('relays an op from an edit-role session to peers', () => {
@@ -561,9 +572,11 @@ describe('DocumentRoom op-role enforcement', () => {
   const EDITOR_ONLY_PRESENCE_KINDS = ['drag-preview', 'focus-here'];
   // `poll-answer` relays only once the room accepts it for a running poll, under the key the room chose
   // (docs/specs/012-collaboration/vote-integrity.md); its own tests below and in the live poll block pin that.
-  const ROOM_DECIDED_PRESENCE_KINDS = ['poll-answer'];
+  // `follow` is the room's alone: never relayed, it tells the person followed (the "DocumentRoom follow" block).
+  const ROOM_DECIDED_PRESENCE_KINDS = ['poll-answer', 'follow'];
   // A reaction is taking part (docs/specs/013-workspace/share-roles.md): a Participant's, never a Viewer's.
-  const PARTICIPANT_PRESENCE_KINDS = ['reaction'];
+  // So is speaking (docs/specs/008-canvas/avatar-mode.md "Who may speak").
+  const PARTICIPANT_PRESENCE_KINDS = ['reaction', 'avatar-say'];
   for (const kind of PARTICIPANT_PRESENCE_KINDS) {
     it(`drops a '${kind}' from a Viewer and relays a Participant's`, () => {
       const { room } = newRoom();
@@ -571,12 +584,26 @@ describe('DocumentRoom op-role enforcement', () => {
       const viewer = connect(room, 'viewer', 'view');
       const participant = connect(room, 'participant', 'participate');
       editor.ws.sent.length = 0;
-      sendFrame(room, viewer.ws, { kind: 'op', op: { kind, tabId: 't', x: 1, y: 2 } });
+      const op = { kind, tabId: 't', id: 'b1', text: 'hi', x: 1, y: 2 };
+      sendFrame(room, viewer.ws, { kind: 'op', op });
       expect(opsReceived(editor.ws)).toHaveLength(0);
-      sendFrame(room, participant.ws, { kind: 'op', op: { kind, tabId: 't', x: 1, y: 2 } });
+      sendFrame(room, participant.ws, { kind: 'op', op });
       expect(opsReceived(editor.ws)).toHaveLength(1);
     });
   }
+  it('drops a malformed avatar-say even from an editor', () => {
+    const { room } = newRoom();
+    const speaker = connect(room, 'speaker', 'edit');
+    const peer = connect(room, 'peer', 'edit');
+    peer.ws.sent.length = 0;
+    for (const bad of [{ text: 'x'.repeat(301) }, { text: '   ' }, { text: 7 }, { x: 'left' }]) {
+      sendFrame(room, speaker.ws, {
+        kind: 'op',
+        op: { kind: 'avatar-say', tabId: 't', id: 'b1', text: 'hi', x: 1, y: 2, ...bad },
+      });
+    }
+    expect(opsReceived(peer.ws)).toHaveLength(0);
+  });
   for (const kind of [...PRESENCE_OP_KINDS].filter(
     (k) =>
       !ADDRESSED_PRESENCE_KINDS.includes(k) &&
@@ -975,8 +1002,9 @@ describe('DocumentRoom tab-focus presence echo', () => {
     // A's broadcast id is its server-assigned ephemeral id (docs/specs/015-api/public-api-and-tokens.md §6), not
     // the claimed 'p-a' — find its row by the stored id.
     const aId = storedPresence(a)?.id;
-    const presenceFrames = b.sent.map((s) => JSON.parse(s)).filter((m) => m.kind === 'presence');
-    const aRow = presenceFrames.at(-1)!.participants.find((p: { id: string }) => p.id === aId);
+    const aRow = receivedOf(b, 'presence')
+      .at(-1)!
+      .participants.find((p) => p.id === aId);
     expect(aRow?.tabId).toBe('tab-2');
   });
 
@@ -997,8 +1025,9 @@ describe('DocumentRoom tab-focus presence echo', () => {
     room.acceptSession(asWs(b), 'edit');
     sendFrame(room, b, { kind: 'hello', participant: { id: 'p-b', name: 'B', color: '#def' } });
     const aId = storedPresence(a)?.id;
-    const frames = b.sent.map((m) => JSON.parse(m)).filter((m) => m.kind === 'presence');
-    const aRow = frames.at(-1)!.participants.find((p: { id: string }) => p.id === aId);
+    const aRow = receivedOf(b, 'presence')
+      .at(-1)!
+      .participants.find((p) => p.id === aId);
     expect(aRow?.besideTabId).toBe('tab-3');
 
     sendFrame(room, a, { kind: 'op', op: { kind: 'tab-focus', tabId: 'tab-1' } });
@@ -1048,8 +1077,7 @@ describe('DocumentRoom hibernation survival', () => {
     expect(editor.sent).toHaveLength(0);
     // ... the editor still relays under the SAME ephemeral id ...
     sendFrame(after, editor, { kind: 'op', op: { kind: 'cursor', tabId: 't', x: 1, y: 2 } });
-    const relayed = JSON.parse(viewer.sent.at(-1)!);
-    expect(relayed.from).toBe(editorId);
+    expect(received(viewer).at(-1)).toMatchObject({ from: editorId });
     // ... and the remembered tab still reaches late joiners via presence.
     const joiner = makeSocket();
     after.acceptSession(asWs(joiner), 'edit');
@@ -1077,13 +1105,8 @@ describe('DocumentRoom op ordering + reconnect catch-up (docs/specs/012-collabor
     peer.sent.length = 0;
     return { editor, peer };
   }
-  const opFrames = (ws: FakeSocket) =>
-    ws.sent.map((s) => JSON.parse(s)).filter((m) => m.kind === 'op');
-  const lastCatchup = (ws: FakeSocket) =>
-    ws.sent
-      .map((s) => JSON.parse(s))
-      .filter((m) => m.kind === 'catchup')
-      .at(-1);
+  const opFrames = (ws: FakeSocket) => receivedOf(ws, 'op');
+  const lastCatchup = (ws: FakeSocket) => receivedOf(ws, 'catchup').at(-1)!;
 
   it('stamps a monotonic seq + epoch on mutation ops as it relays them', () => {
     const { room } = newRoom();
@@ -1098,10 +1121,9 @@ describe('DocumentRoom op ordering + reconnect catch-up (docs/specs/012-collabor
       op: { kind: 'el', tabId: 't', op: { kind: 'remove', id: 'b' } },
     });
 
-    const received = opFrames(peer);
-    expect(received.map((f) => f.seq)).toEqual([1, 2]);
-    expect(received[0].epoch).toBe(room.epoch);
-    expect(received[1].epoch).toBe(room.epoch);
+    const frames = opFrames(peer);
+    expect(frames.map((f) => f.seq)).toEqual([1, 2]);
+    expect(frames.map((f) => f.epoch)).toEqual([room.epoch, room.epoch]);
   });
 
   it('tells the sender the seq its own op took, and a joiner where the stream stands', () => {
@@ -1114,8 +1136,7 @@ describe('DocumentRoom op ordering + reconnect catch-up (docs/specs/012-collabor
       kind: 'op',
       op: { kind: 'el', tabId: 't', op: { kind: 'remove', id: 'a' } },
     });
-    const cursors = (ws: FakeSocket) =>
-      ws.sent.map((s) => JSON.parse(s)).filter((m) => m.kind === 'cursor');
+    const cursors = (ws: FakeSocket) => receivedOf(ws, 'cursor');
     expect(cursors(editor)).toEqual([{ kind: 'cursor', epoch: room.epoch, seq: 1 }]);
     // Peers learn the seq from the op itself, not a cursor.
     expect(cursors(peer)).toEqual([]);
@@ -1137,13 +1158,13 @@ describe('DocumentRoom op ordering + reconnect catch-up (docs/specs/012-collabor
     for (const ref of [0, -1, 1.5, '8', Number.MAX_SAFE_INTEGER + 2]) {
       sendFrame(room, editor, { kind: 'op', op: remove('b'), ref });
     }
-    const cursors = editor.sent.map((s) => JSON.parse(s)).filter((m) => m.kind === 'cursor');
+    const cursors = receivedOf(editor, 'cursor');
     expect(cursors).toEqual([
       { kind: 'cursor', epoch: room.epoch, seq: 1, ref: 7 },
       ...[2, 3, 4, 5, 6].map((seq) => ({ kind: 'cursor', epoch: room.epoch, seq })),
     ]);
     // The ref is the sender's alone: peers get the op without it.
-    expect(peer.sent.map((s) => JSON.parse(s)).filter((m) => 'ref' in m)).toEqual([]);
+    expect(received(peer).filter((m) => 'ref' in m)).toEqual([]);
   });
 
   it('never stamps a seq on an ephemeral presence op', () => {
@@ -1153,8 +1174,9 @@ describe('DocumentRoom op ordering + reconnect catch-up (docs/specs/012-collabor
     sendFrame(room, editor, { kind: 'op', op: { kind: 'cursor', tabId: 't', x: 1, y: 2 } });
 
     const frame = opFrames(peer)[0];
-    expect(frame.seq).toBeUndefined();
-    expect(frame.epoch).toBeUndefined();
+    expect(frame).toBeDefined();
+    expect(frame?.seq).toBeUndefined();
+    expect(frame?.epoch).toBeUndefined();
     // A presence op must not advance the mutation sequence.
     expect(room.seq).toBe(0);
   });
@@ -1180,7 +1202,7 @@ describe('DocumentRoom op ordering + reconnect catch-up (docs/specs/012-collabor
     const catchup = lastCatchup(back);
     expect(catchup.resync).toBe(false);
     expect(catchup.seq).toBe(3);
-    expect(catchup.ops.map((o: { seq: number }) => o.seq)).toEqual([2, 3]);
+    expect(catchup.ops.map((o) => o.seq)).toEqual([2, 3]);
   });
 
   it('returns an empty non-resync delta when the client is already current', () => {
@@ -1216,7 +1238,7 @@ describe('DocumentRoom op ordering + reconnect catch-up (docs/specs/012-collabor
 
     const catchup = lastCatchup(fresh);
     expect(catchup.resync).toBe(false);
-    expect(catchup.ops.map((o: { seq: number }) => o.seq)).toEqual([1]);
+    expect(catchup.ops.map((o) => o.seq)).toEqual([1]);
   });
 
   it('tells a client from a previous room instance (stale epoch) to re-hydrate', () => {
@@ -1765,11 +1787,7 @@ describe('DocumentRoom live poll (docs/specs/012-collaboration/collab-race-harde
     sendFrame(room, ws, { kind: 'hello', participant: { id, name: id, color: '#000' } });
     return ws;
   }
-  const ops = (ws: FakeSocket) =>
-    ws.sent
-      .map((s) => JSON.parse(s))
-      .filter((m) => m.kind === 'op')
-      .map((m) => m.op);
+  const ops = (ws: FakeSocket) => receivedOf(ws, 'op').map((m) => m.op);
 
   it('replays the running poll and every answer to a late joiner', async () => {
     const { room } = newRoom();
@@ -2003,8 +2021,13 @@ describe('DocumentRoom worker mutations (docs/specs/012-collaboration/collab-rac
       new Request('https://room/mutation', { method: 'POST', body: JSON.stringify({ op }) }),
     );
     expect(res.status).toBe(204);
-    const frame = JSON.parse(peer.sent.at(-1)!);
-    expect(frame).toMatchObject({ kind: 'op', from: 'system', op, seq: 1, epoch: room.epoch });
+    expect(received(peer).at(-1)).toMatchObject({
+      kind: 'op',
+      from: 'system',
+      op,
+      seq: 1,
+      epoch: room.epoch,
+    });
   });
 
   it('accepts nothing but an element delta', async () => {
@@ -2096,11 +2119,7 @@ describe('DocumentRoom tab-scoped sessions', () => {
     };
     state.sockets.push(asWs(ws));
   }
-  const ops = (ws: FakeSocket) =>
-    ws.sent
-      .map((m) => JSON.parse(m))
-      .filter((m) => m.kind === 'op')
-      .map((m) => m.op);
+  const ops = (ws: FakeSocket) => receivedOf(ws, 'op').map((m) => m.op);
 
   it('keeps another tab out of a scoped session and lets its own through', () => {
     const { room, state } = newRoom();
@@ -2130,7 +2149,12 @@ describe('DocumentRoom tab-scoped sessions', () => {
         ],
       },
     });
-    expect(ops(scoped)[0].tabs[0]).toEqual({ id: 't1', name: '', orderIndex: 0, outOfScope: true });
+    expect(ops(scoped)[0]).toHaveProperty(['tabs', 0], {
+      id: 't1',
+      name: '',
+      orderIndex: 0,
+      outOfScope: true,
+    });
   });
 
   it('refuses a scoped session changing another tab, or the document', () => {
@@ -2155,8 +2179,8 @@ describe('DocumentRoom tab-scoped sessions', () => {
     const scoped = makeSocket();
     scopedSession(state, scoped, presence('p-s', 'view'), 't2');
     sendFrame(room, scoped, { kind: 'sync', epoch: null, lastSeq: 0 });
-    const catchup = scoped.sent.map((m) => JSON.parse(m)).find((m) => m.kind === 'catchup');
-    expect(catchup.ops.map((o: { op: { tabId: string } }) => o.op.tabId)).toEqual(['t2']);
+    const catchup = receivedOf(scoped, 'catchup')[0]!;
+    expect(catchup.ops.map((o) => ('tabId' in o.op ? o.op.tabId : undefined))).toEqual(['t2']);
   });
 
   for (const kind of ['share-revoked', 'share-rescoped']) {
@@ -2423,15 +2447,17 @@ describe('DocumentRoom and agent changesets', () => {
   const mutation = (op: unknown) =>
     new Request('https://room/mutation', { method: 'POST', body: JSON.stringify({ op }) });
   const selections = async (room: DocumentRoom, query: string) =>
-    (await (await room.fetch(new Request(`https://room/selections?${query}`))).json()) as {
+    await (
+      await room.fetch(new Request(`https://room/selections?${query}`))
+    ).json<{
       selections: unknown[];
-    };
+    }>();
 
   it('sequences a changeset in one slot for everybody, outside the ledger', async () => {
     const { room, state } = newRoom();
     const peer = join(room, 'p');
     expect((await room.fetch(mutation(changeset))).status).toBe(204);
-    expect(JSON.parse(peer.sent.at(-1)!)).toMatchObject({
+    expect(received(peer).at(-1)).toMatchObject({
       kind: 'op',
       from: 'system',
       op: changeset,
@@ -2446,7 +2472,7 @@ describe('DocumentRoom and agent changesets', () => {
     const peer = join(room, 'p');
     const meta = { kind: 'tab-meta', tabId: 't1', patch: { name: 'Renamed' } };
     expect((await room.fetch(mutation(meta))).status).toBe(204);
-    expect(JSON.parse(peer.sent.at(-1)!)).toMatchObject({ from: 'system', op: meta });
+    expect(received(peer).at(-1)).toMatchObject({ from: 'system', op: meta });
   });
 
   it('sequences the document-meta of a document rename the api made, and refuses other kinds', async () => {
@@ -2458,7 +2484,7 @@ describe('DocumentRoom and agent changesets', () => {
       tabs: [{ id: 't1', name: 'Main', orderIndex: 0 }],
     };
     expect((await room.fetch(mutation(meta))).status).toBe(204);
-    expect(JSON.parse(peer.sent.at(-1)!)).toMatchObject({ from: 'system', op: meta });
+    expect(received(peer).at(-1)).toMatchObject({ from: 'system', op: meta });
     expect((await room.fetch(mutation({ kind: 'tab', tabId: 't1' }))).status).toBe(400);
   });
 
@@ -2647,5 +2673,82 @@ describe('DocumentRoom agent presence (docs/specs/024-agents/agent-presence.md)'
     await Promise.resolve();
     await new Promise((r) => setTimeout(r, 0));
     expect(woken.agents.live().map((r) => r.tokenId)).toEqual(['tok_1']);
+  });
+});
+
+// docs/specs/012-collaboration/realtime-conflict-resolution.md "Keepalive": the runtime answers the client's ping
+// itself, so a keepalive never wakes the room.
+describe('DocumentRoom keepalive', () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('asks the runtime to answer ping with pong', () => {
+    class Pair {
+      request: string;
+      response: string;
+      constructor(request: string, response: string) {
+        this.request = request;
+        this.response = response;
+      }
+    }
+    vi.stubGlobal('WebSocketRequestResponsePair', Pair);
+    const state = makeState();
+    const setWebSocketAutoResponse = vi.fn();
+    new DocumentRoom({ ...state, setWebSocketAutoResponse } as unknown as DurableObjectState);
+    expect(setWebSocketAutoResponse).toHaveBeenCalledWith(new Pair('ping', 'pong'));
+  });
+});
+
+// docs/specs/015-api/api.md "Purging a room": a document removed for good leaves nothing in its room.
+describe('DocumentRoom /purge', () => {
+  it('ends every session and drops everything stored, the ledger included', async () => {
+    const { room, state } = newRoom();
+    const ws = makeSocket() as FakeSocket & { closed?: [number, string] };
+    (ws as unknown as { close: (code: number, reason: string) => void }).close = (code, reason) => {
+      ws.closed = [code, reason];
+    };
+    seedSession(state, ws, presence('p-a', 'edit'));
+    state.store.set('ledger:t1:el-1', { comments: [{ id: 'c1', text: 'private words' }] });
+    expect(state.store.size).toBeGreaterThan(0);
+
+    const res = await room.fetch(new Request('https://room/purge', { method: 'POST' }));
+
+    expect(res.status).toBe(204);
+    expect(ws.closed).toEqual([4004, 'document-purged']);
+    expect(state.store.size).toBe(0);
+    expect(state.alarms.at(-1)).toBeNull();
+  });
+});
+
+// docs/specs/012-collaboration/follow-me-viewport.md "Who follows whom": the room keeps who follows whom and tells
+// each person, on their own socket, who follows them. Nobody else hears it.
+describe('DocumentRoom follow', () => {
+  const followers = (ws: FakeSocket) => receivedOf(ws, 'followers').map((m) => m.ids);
+
+  it('tells the person followed, and only them, as follows start, move, stop and leave', () => {
+    const { room, state } = newRoom();
+    const a = makeSocket();
+    const b = makeSocket();
+    const c = makeSocket();
+    seedSession(state, a, presence('p-a', 'edit'));
+    seedSession(state, b, presence('p-b', 'view'));
+    seedSession(state, c, presence('p-c', 'edit'));
+
+    sendFrame(room, b, { kind: 'op', op: { kind: 'follow', target: 'p-a' } });
+    sendFrame(room, c, { kind: 'op', op: { kind: 'follow', target: 'p-a' } });
+    expect(followers(a)).toEqual([['p-b'], ['p-b', 'p-c']]);
+    // Nothing relayed to anyone else.
+    expect(b.sent.concat(c.sent).some((s) => s.includes('"follow"'))).toBe(false);
+
+    // c moves to b: a loses one, b gains one.
+    sendFrame(room, c, { kind: 'op', op: { kind: 'follow', target: 'p-b' } });
+    expect(followers(a).at(-1)).toEqual(['p-b']);
+    expect(followers(b)).toEqual([['p-c']]);
+
+    // b stops; then c leaves the room.
+    sendFrame(room, b, { kind: 'op', op: { kind: 'follow', target: null } });
+    expect(followers(a).at(-1)).toEqual([]);
+    state.sockets = state.sockets.filter((s) => s !== asWs(c));
+    room.webSocketClose(asWs(c));
+    expect(followers(b).at(-1)).toEqual([]);
   });
 });

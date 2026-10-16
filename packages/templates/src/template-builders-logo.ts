@@ -93,11 +93,11 @@ function tagline(x: number, y: number, w: number, align: 'left' | 'center'): Ele
 type Variant = 'horizontal' | 'stacked' | 'app-icon' | 'horizontal-tag' | 'stacked-tag' | 'mono';
 
 // One lockup composed around the artboard centre (bx, by). Widths are the
-// measured ink of the Inter wordmark at `lg` (about 170px, times S) plus a
-// little slack, so the horizontal lockups sit optically centred instead of
+// measured ink of the Inter wordmark at `lg` (about 170px, times S) plus its
+// padding and a little slack, so it never wraps, so the horizontal lockups sit optically centred instead of
 // trailing an empty text box.
 function lockup(variant: Variant, bx: number, by: number): Element[] {
-  const wordW = 176 * S;
+  const wordW = 196 * S;
   const wordH = 44 * S;
   if (variant === 'horizontal' || variant === 'horizontal-tag' || variant === 'mono') {
     const size = 72 * S;
@@ -164,7 +164,7 @@ const BOARDS: Board[] = [
   {
     variant: 'horizontal-tag',
     name: 'Horizontal + Tagline',
-    use: 'Use it on the shop front and printed ads, where there is room to read.',
+    use: 'Use it on the shop front and printed ads.',
   },
   {
     variant: 'stacked-tag',
@@ -174,7 +174,7 @@ const BOARDS: Board[] = [
   {
     variant: 'mono',
     name: 'One Colour',
-    use: 'Use it on stamps, receipts and engraving, wherever there is one ink.',
+    use: 'Use it on stamps, receipts and engraving.',
   },
 ];
 

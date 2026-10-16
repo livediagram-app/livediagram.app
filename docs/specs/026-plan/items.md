@@ -157,6 +157,16 @@ The five **default types** ([Item types](item-types.md#the-type-catalogue)), eac
   archived, trashed or restored.
 - Flag and Remove Flag send `Plan · Toggled · FlagOn` and `Plan · Toggled · FlagOff`.
 
+## Example cards
+
+- An **example card** is one a Plan template made to show how its boards run
+  ([Plan templates](plan-templates.md#example-cards)). It carries `example: true` (a flag: set, or the key removed),
+  set only when the template's cards are made and taken off by the board notice's **Keep Them**.
+- The flag changes nothing on the card: an example card shows, counts, sorts, moves, archives and restores like any
+  other, keeps its flag in a copy, an export or the Trash, and wears no mark of its own. It is what lets **Clear
+  Example Cards** find exactly the template's cards.
+- Only the template seed sets it; no card menu, panel field or agent verb offers it.
+
 ## The Plan strip
 
 - Plan mode's bottom-right strip (**Trash**, **New Card**, **Find a Card**, **Card Types**, each below) shows only
@@ -164,6 +174,9 @@ The five **default types** ([Item types](item-types.md#the-type-catalogue)), eac
   ([Card tables](../029-sheets/sheet.md#card-tables)). On an empty tab, or one of only diagrams, stickies and plain
   Sheets, it is hidden: those buttons would be noise there. It comes back the moment such an element arrives (a board
   placed, a Sheet set up from Plan Cards), and goes when the last one leaves.
+- On a wide desktop (1440 px and up) each of its buttons is named beside its icon (**Trash**, **New Card**, **Find
+  a Card**, **Card Types**), as the cluster's other strips are ([Live app](../007-editor/live-app.md)); narrower,
+  they are icons alone.
 
 ## Trash
 
@@ -171,10 +184,12 @@ The five **default types** ([Item types](item-types.md#the-type-catalogue)), eac
   on All Cards). A trashed item keeps the status it had under `trashedFrom`.
 - In Plan mode a **Trash** button leads the bottom-right cluster's Plan strip, on its left before **Find a
   Card** and **Card Types** (not on a phone, whose cluster has no room for it: a card's menu still sends it to
-  the Trash), its count tucked into its corner; with a grey badge of how many cards
+  the Trash), its count tucked into its corner (beside its name where the strip is named, The Plan strip); with a grey badge of how many cards
   it holds. While a card is dragged the button opens out into a dashed **Drop to Trash** target, and while the
   card is over it fills with the brand colour, tips its lid and reads **Let go to trash it** (no motion with reduced motion; the
-  colours still change); a card let go there is trashed and the move is announced.
+  colours still change); a card let go there is trashed and the move is announced. That holds wherever the board is:
+  a maximised or tab-filling board runs under the bottom-right controls, so the target floats over the board, and
+  a card over it is over the Trash, not over a column (no slot opens beneath it).
 - **Every way of deleting a card trashes it**: **Trash** in its menu and in the item panel's ⋯ menu (named
   **Trash**, not Delete), the Delete key on a focused card, and the drop on the Trash button. Each closes an open
   panel and is announced ("Card moved to the Trash"). A card leaves the store for good only from the Trash popover
@@ -283,9 +298,9 @@ author redaction, and the same thread list, composer and resolve control the com
   puts that card in the Trash (restorable from there) without leaving the list.
 - Empty: the shared empty state (as the Trash's: an icon badge, a title and a line), filling the list's height:
   **No cards yet** ("Add one from a board, or drag one in from the palette."); a search matching nothing, **No cards
-  match** ("Try another word, a number or a card type."); filters matching nothing, **No cards match these filters**
-  ("Remove a filter, or clear the search, to see more."); no strays, **Every card is on a board** ("None of them sits
-  off a board here.").
+  match “<words>”** ("Try another word, a number or a card type."); filters matching nothing, **No cards match these
+  filters** ("Remove a filter, or clear the search, to see more."); no strays, **No cards off a board** ("Every card
+  here is on a board."). The copy follows [Empty states](../004-interface-design/empty-states.md).
 - Opening it is tracked as `Plan · Opened · CardFinder`.
 
 ## Who may do what

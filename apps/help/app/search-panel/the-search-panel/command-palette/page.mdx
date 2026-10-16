@@ -5,7 +5,7 @@ import { SearchCommandPalette } from '@/components/illustrations/search-panel';
 export const metadata = helpMetadata({
   title: 'The Command Palette (⌘K)',
   description:
-    'Press Cmd/Ctrl+K in the editor to open the search panel and run any editor command by name: undo, auto layout, export, settings, canvas tools and more, without hunting through menus.',
+    'Run any livediagram editor command by name with Cmd/Ctrl+K: undo, auto layout, export, settings, canvas tools and more, straight from the search panel.',
   path: '/help/search-panel/the-search-panel/command-palette/',
 });
 
@@ -28,7 +28,7 @@ The palette and search are one surface, so you can find a document and run a com
 
 ## Running a command
 
-Start typing and matching commands appear in an **Actions** group, below any documents, tabs or elements that also match. Click the one you want, or arrow down to it and press `Enter`. Commands match on their name and on a few related words, so "tidy" finds Auto Layout and "front" finds Bring to front. At most 10 actions show at once, so type a little more to narrow a long list.
+Start typing and matching commands appear in an **Actions** group, below any documents, tabs or elements that also match. Click the one you want, or arrow down to it and press `Enter`. Commands match on their name and on a few related words, so "tidy" finds Auto Layout and "front" finds Bring to Front. At most 10 actions show at once, so type a little more to narrow a long list.
 
 Commands only show once you've typed something, so an empty box just lists places to jump to and never runs an action by accident. Because the Actions group sits below the navigation groups, the preselected first result is still a place to go when your query also names a tab or element; arrow down to the command to run it deliberately.
 
@@ -42,13 +42,13 @@ Every command does exactly what its menu item or shortcut does: it's the same ac
 
 The list follows what you're doing, so it only offers commands that apply right now:
 
-- **With something selected:** Delete selection, Duplicate selection, Lock / unlock selection, Bring to front and Send to back. For a single shape or other boxed element also Rotate 90°, 180° or 270°, Reset rotation, Add / edit note and Add comment, plus Clear animation when it has one and the shape markers (Add … marker, Clear marker) for a plain shape.
+- **With something selected:** Delete Selection, Duplicate Selection, Lock / Unlock Selection, Bring to Front and Send to Back. For a single shape or other boxed element also Rotate 90°, 180° or 270°, Reset Rotation, Add / Edit Note and Add Comment, plus Clear Animation when it (or an arrow) has one and the shape markers (Add … Marker, Clear Marker) for a plain shape. On an Illustrate logo page, a selection also offers Unite, Subtract, Intersect and Exclude Shapes, and Mirror Copy.
 - **History:** Undo and Redo, shown only when there's something to undo or redo.
-- **Document and tab:** Create new tab, Rename tab, Rename document, Delete document, Open theme, Open canvas options, and Share document (owner only, and not for a document saved only in this browser).
-- **Layout cleanup** (only here, not in any menu): Auto Layout (tidy up), one Auto Layout command per layout style (Flowchart (down), Flowchart (right), Tree and Mindmap), and Auto-align to grid. See [Layout Cleanup](/help/tools/layout-cleanup/).
-- **Dialogs:** Export…, Import…, Browse templates, Open settings, and Keyboard shortcuts.
-- **View:** Enter (or Exit) zen mode, Fit to screen, and Collaborators, which opens the [list of people in the document](/help/collaboration/live-presence/#collaborators).
-- **Tools:** pick up the Select tool, Hand tool, Eraser tool, Format painter, Laser pointer, Spotlight, Avatar mode, Slide Deck or Isometric view without opening the palette. Type "laser" and you get the laser, not just the article about it.
+- **Document and tab:** Create New Tab, Rename Tab, Rename Document, Delete Document, Open Theme, Open Canvas Options, and Share Document (owner only, and not for a document saved only in this browser).
+- **Layout cleanup** (only here, not in any menu): Auto Layout (tidy up), one Auto Layout command per layout style (Flowchart (down), Flowchart (right), Tree and Mindmap), and Auto-align to Grid. See [Layout Cleanup](/help/tools/layout-cleanup/).
+- **Dialogs:** Export…, Import…, Open Settings, and Keyboard Shortcuts.
+- **View:** Enter (or Exit) zen mode, Fit to Screen, and Collaborators, which opens the [list of people in the document](/help/collaboration/live-presence/#collaborators).
+- **Tools:** pick up the Select Tool, Hand Tool, Eraser Tool, Format Painter, Laser Pointer, Spotlight, Avatar Mode, Slide Deck or Isometric View without opening the palette. Type "laser" and you get the laser, not just the article about it.
 
 A few rules keep the tool list honest, matching the palette's own tool menu: the tool you're already holding isn't offered; everything except Select and Hand needs something on the canvas first; Spotlight and Slide Deck are desktop-only; and the Format painter isn't offered on a Draw whiteboard, whose dock replaces it.
 
@@ -56,7 +56,7 @@ On an Event Storming board where reading a wall photo is available, **Add Notes 
 
 ## In read-only views
 
-When you're viewing a document you can't edit (a view-only share link, for example), the palette still offers the actions that don't change anything: Enter or Exit zen mode, Fit to screen, Export…, Collaborators, and the tools that only change how you look at the canvas (Select, Hand, Laser pointer, Spotlight, Avatar mode, Slide Deck and Isometric view). The Eraser, the Format painter and every command that would change the document simply aren't listed.
+When you're on a Viewer or Participant share link, the palette still offers the actions that don't change anything: Enter or Exit zen mode, Fit to Screen, Export…, Collaborators, and the tools that only change how you look at the canvas (Select, Hand, Laser Pointer, Spotlight, Avatar Mode and Isometric View). The Eraser, the Format Painter, Slide Deck and every command that would change the document simply aren't listed.
 
 <Tip>
   Forgotten a shortcut? Open the palette with `⌘K`, type the first few letters of what you want to

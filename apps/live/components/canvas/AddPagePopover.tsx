@@ -10,7 +10,7 @@ import { useClickOutside, useEscape, Portal } from '@livediagram/ui';
 import { BottomSheet } from '@/components/primitives/BottomSheet';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { VIEWPORT_EDGE_MARGIN as EDGE } from '@/lib/clamp-to-viewport';
-import { moveBetweenKindCards, PAGE_KINDS, PageKindCard } from './page-kind-cards';
+import { kindsWithSuggestedFirst, moveBetweenKindCards, PageKindCard } from './page-kind-cards';
 
 const WIDTH = 420;
 const GAP = 10;
@@ -19,7 +19,10 @@ export function AddPagePopover({
   getAnchor,
   onAdd,
   onClose,
+  suggested,
 }: {
+  // The last page's kind: offered first, highlighted, and focused, as the next page most often is.
+  suggested?: PageKind;
   // The + button the popover hangs from.
   getAnchor: () => HTMLElement | null;
   onAdd: (kind: PageKind) => void;
@@ -59,10 +62,11 @@ export function AddPagePopover({
     >
       <p className="px-0.5 text-xs font-semibold text-slate-500 dark:text-slate-400">Add a Page</p>
       <div className="grid grid-cols-2 gap-2">
-        {PAGE_KINDS.map((k, i) => (
+        {kindsWithSuggestedFirst(suggested).map((k, i) => (
           <PageKindCard
             key={k.kind}
             choice={k}
+            suggested={k.kind === suggested}
             ref={(el) => {
               cards.current[i] = el;
             }}

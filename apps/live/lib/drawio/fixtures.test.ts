@@ -56,7 +56,7 @@ function expectSound(page: ImportedPage) {
   ).toBe(true);
 }
 
-const FLOWCHART_NOTES: ImportNote[] = [{ kind: 'arrowhead-approximated', count: 1 }];
+const FLOWCHART_NOTES: ImportNote[] = [];
 
 describe('flowchart.drawio', () => {
   it('imports every shape and connection', async () => {
@@ -183,10 +183,7 @@ describe('uml.drawio', () => {
     expect(report).toEqual({
       pages: 1,
       elements: 13,
-      notes: [
-        { kind: 'shape-approximated', count: 2 },
-        { kind: 'arrowhead-approximated', count: 1 },
-      ],
+      notes: [{ kind: 'shape-approximated', count: 2 }],
     });
     // The actor's name sits under the figure, as in draw.io: the box grows to hold it.
     const shopper = byLabel(page, 'Shopper') as ShapeElement;
@@ -405,5 +402,19 @@ describe('refusals', () => {
       { tabIdForPage: () => 't' },
     );
     expect(result).toMatchObject({ ok: false, error: expect.stringContaining('too large') });
+  });
+});
+
+// A duplicate id rewires a parent chain (the last cell with an id wins, D21): here the edge label takes the root's
+// id "0", so 1 → 0 → e4 → 1 loops. The overlap test walked that chain with no stop and froze the import, and the
+// tab with it; it must finish, its cells kept.
+describe('a parent cycle', () => {
+  it('imports, rather than walking the cycle forever', async () => {
+    const text = new TextDecoder()
+      .decode(fixtureBytes('flowchart.drawio'))
+      .replace('id="e4label"', 'id="0"');
+    const result = await importDrawio({ kind: 'text', text }, { tabIdForPage: () => 't' });
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.pages[0]!.elements.every(isValidElement)).toBe(true);
   });
 });

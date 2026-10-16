@@ -4,6 +4,7 @@
 import {
   createImage,
   createPinnedArrow,
+  createCalloutCard,
   createShape,
   createText,
   LABEL_FONT_PX,
@@ -39,6 +40,14 @@ export type Kit = {
   ) => TextElement;
   // A headline fitted to its box (the fit-to-box size), bold.
   title: (x: number, y: number, w: number, h: number, label: string) => TextElement;
+  // A Callout (a Card preset, docs/specs/009-elements/card.md) in the box.
+  callout: (
+    x: number,
+    y: number,
+    w: number,
+    h: number,
+    extra?: Partial<ShapeElement>,
+  ) => ShapeElement;
   image: (x: number, y: number, w: number, h: number) => ImageElement;
 };
 
@@ -57,6 +66,12 @@ export function kit(box: LayoutBox): Kit {
     wide: box.width > box.height * WIDE_RATIO,
     shape: (kind, x, y, w, h, extra = {}) => ({
       ...createShape(kind, r(box.x + x), r(box.y + y)),
+      width: r(w),
+      height: r(h),
+      ...extra,
+    }),
+    callout: (x, y, w, h, extra = {}) => ({
+      ...createCalloutCard(r(box.x + x), r(box.y + y)),
       width: r(w),
       height: r(h),
       ...extra,

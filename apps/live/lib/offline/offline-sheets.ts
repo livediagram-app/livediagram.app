@@ -122,7 +122,10 @@ export async function offlineWriteSheet(
         )
           throw new ApiError('sheet write', 409, 'sheet_title_taken');
       }
-      const check = validateWrite(sheet, write);
+      // As the api: validation rules unless an undo or a write stored as it is (data-validation.md).
+      const check = validateWrite(sheet, write, {
+        checkRules: !request.undo && !request.unchecked,
+      });
       if (!check.ok)
         throw new ApiError('sheet write', check.error === 'sheet_full' ? 413 : 400, check.error);
       const result = applySheetWrite(

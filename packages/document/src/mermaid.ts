@@ -25,6 +25,7 @@ import {
   cleanLine,
   decodeLabel,
   directionOf,
+  framedClusters,
   readId,
   type MermaidDirection,
   type ParseMermaidResult,
@@ -311,6 +312,8 @@ function parseFlowchart(lines: string[]): ParseMermaidResult {
   const clusters: GraphCluster[] = [];
   let currentCluster: GraphCluster | null = null;
   let subgraphDepth = 0;
+  // Subgraphs inside another, folded into it: said back to an agent rather than dropped silently.
+  let folded = 0;
 
   const touch = (id: string) => {
     if (!nodes.has(id)) {
@@ -395,6 +398,7 @@ function parseFlowchart(lines: string[]): ParseMermaidResult {
     const sub = /^subgraph\s+(\S.*)$/i.exec(line);
     if (sub) {
       subgraphDepth += 1;
+      if (subgraphDepth > 1) folded += 1;
       // Only top-level subgraphs become frames; nested ones fold into
       // their ancestor (frames import one level deep).
       if (subgraphDepth === 1) {
@@ -462,18 +466,8 @@ function parseFlowchart(lines: string[]): ParseMermaidResult {
     return { ok: false, error: UNSUPPORTED_ERROR };
   }
 
-  // An edge may reference a subgraph id (the arrow pins to the frame). The
-  // mention auto-created a node with that id — remove it so the id resolves
-  // to the cluster, unless a real node def claimed it.
-  for (const c of clusters) {
-    if (implicit.has(c.id) && nodes.has(c.id)) {
-      nodes.delete(c.id);
-      for (const other of clusters) {
-        other.members = other.members.filter((m) => m !== c.id);
-      }
-    }
-  }
-  const realClusters = clusters.filter((c) => c.members.length > 0);
+  // An edge to a subgraph id pins to its frame.
+  const realClusters = framedClusters(clusters, implicit, nodes);
 
   // A flowchart needs either the header or at least one connection — a bare
   // word (or a stray line of prose) is not a diagram.
@@ -493,6 +487,7 @@ function parseFlowchart(lines: string[]): ParseMermaidResult {
       ...(realClusters.length ? { clusters: realClusters } : {}),
     },
     direction,
+    ...(folded ? { folded } : {}),
   };
 }
 

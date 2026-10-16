@@ -80,7 +80,9 @@ describe('usePhotoPicker', () => {
     act(() => h.api().open());
     // Cancelling the OS dialog fires no `change` at all; the window simply gets
     // its focus back. Without this the button would be dead ever after.
-    act(() => window.dispatchEvent(new Event('focus')));
+    act(() => {
+      window.dispatchEvent(new Event('focus'));
+    });
     act(() => void vi.advanceTimersByTime(600));
     act(() => h.api().open());
     expect(h.clicks).toHaveBeenCalledTimes(2);
@@ -94,7 +96,9 @@ describe('usePhotoPicker', () => {
   it('ignores a click that arrives in the instant after the dialog closes', () => {
     const h = setup();
     act(() => h.api().open());
-    act(() => window.dispatchEvent(new Event('focus')));
+    act(() => {
+      window.dispatchEvent(new Event('focus'));
+    });
     act(() => h.api().open());
     expect(h.clicks).toHaveBeenCalledTimes(1);
   });
@@ -102,7 +106,9 @@ describe('usePhotoPicker', () => {
   it('still delivers the file that was already on its way', () => {
     const h = setup();
     act(() => h.api().open());
-    act(() => window.dispatchEvent(new Event('focus')));
+    act(() => {
+      window.dispatchEvent(new Event('focus'));
+    });
     act(() => h.api().open());
     act(() => h.api().onChange(change(h.input, [file()])));
     expect(h.onFile).toHaveBeenCalledTimes(1);

@@ -54,7 +54,7 @@ const tabIdsOf = (file: PullFile) => file.document.tabs.map((t) => t.id);
 // (RL10).
 function savedAtOf(file: PullFile): number {
   if (file.livediagramSync.pulledAt !== undefined) return file.livediagramSync.pulledAt;
-  const updated = file.document.tabs.map((t) => Reflect.get(t, 'updatedAt'));
+  const updated = file.document.tabs.map((t): unknown => Reflect.get(t, 'updatedAt'));
   return Math.max(0, ...updated.filter((at): at is number => typeof at === 'number'));
 }
 const summariesOf = (file: PullFile) =>

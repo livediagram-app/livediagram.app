@@ -107,7 +107,7 @@ colours can be snapped afterwards, in one press, if wanted.
 
 ## Widths
 
-- **Ink** takes the nearest marker width (Fine, Medium, Bold), nearest by ratio.
+- **Ink** takes the nearest marker width (Fine, Medium, Bold, Thick, Heavy, Broad), nearest by ratio.
 - **Shapes and frames** take the nearest border width
   (`nearestBorderStroke`); a shape with no stroke has no border.
 - **Lines, paths and arrows** take the nearest border width, an arrow stored as
@@ -141,9 +141,10 @@ colours can be snapped afterwards, in one press, if wanted.
 | frame      | A frame titled with its name, in the palette frame's title look (top right, padded); unnamed, "Frame"                                                                                                                    | The same                                                |
 
 - **Heads**: arrow (an open V), triangle, hollow triangle, circle, hollow
-  circle, diamond, hollow diamond; a bar lands as an open V (degraded: "Bar
-  arrowheads drawn as open arrowheads"). An arrow with two different heads uses
-  its end's (degraded: "Arrows with two different heads use one").
+  circle, diamond, hollow diamond, and the ER ends one, many and one or many; a bar
+  lands as an open V (degraded: "Bar arrowheads drawn as open arrowheads"). An arrow
+  with two different heads keeps both: the end's as its head, the start's as its start
+  head (`arrowheadStartShape`).
 - **Bends**: an arrow through more than two points is drawn as a smooth curve
   through them; a sharp-cornered one says so (degraded: "Bent arrows drawn as
   curves").
@@ -234,6 +235,10 @@ the landing writes no more than the drawing needs:
 - An item with no usable geometry (no points, a non-finite coordinate, a
   zero-sized box) is skipped and counted ("Elements without a size were
   skipped"), never thrown.
+- An item with a coordinate or size more than `IMPORT_COORD_MAX` (10,000,000)
+  from zero is skipped and counted ("Elements too far off the board were
+  skipped"): no real board reaches that far, and a larger finite number
+  overflows to Infinity once the landing moves it.
 - The landing never throws; it returns `{ ok: false, rejection }` or the
   landed result.
 - Size caps on the raw input (the clipboard's 4 MB) are the parsers', checked

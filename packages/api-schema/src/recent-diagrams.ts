@@ -12,8 +12,22 @@ export const RECENT_DIAGRAMS_KEY = 'livediagram:recent-diagrams:v1';
 // How many diagrams the note holds: the hero's Welcome back window draws three over two.
 export const RECENT_DIAGRAMS_LIMIT = 6;
 
+// The document list's opt-in (`GET /api/documents?include=team-recent`): the newest documents of the
+// teams the caller has joined, beside their personal library, so the note can hold both.
+export const TEAM_RECENT_INCLUDE = 'team-recent';
+
+// How many team documents that brings: the note's six twice over, so a few hidden from Recent (a
+// preference the server does not see) still leave six to show.
+export const TEAM_RECENT_LIMIT = RECENT_DIAGRAMS_LIMIT * 2;
+
+// A team library document as the list's `teamRecent` carries it: its summary and its team's name.
+export type TeamRecentDocument = DocumentSummary & { teamName: string };
+
 // The Cache Storage cache holding each noted diagram's snapshot SVG.
-export const RECENT_THUMBS_CACHE = 'livediagram-recent-thumbs-v1';
+export const RECENT_THUMBS_CACHE = 'livediagram-recent-thumbs-v2';
+// The cache before v2, when a Local only document was cached as having no preview: dropped by the editor's
+// sync, so every browser draws those previews once (docs/specs/019-marketing/returning-visitor.md).
+export const RECENT_THUMBS_CACHE_LEGACY = 'livediagram-recent-thumbs-v1';
 
 export type RecentDiagram = {
   id: string;
@@ -21,6 +35,8 @@ export type RecentDiagram = {
   savedAt: number;
   // The mode it opens in (its glyph on a tile without a thumbnail); null when unknown.
   mode: EditorMode | null;
+  // The team whose library holds it, for the tile's team mark; null for your own.
+  teamName: string | null;
 };
 
 type RecentDiagramsNote = { v: 1; diagrams: RecentDiagram[] };
@@ -28,7 +44,9 @@ type RecentDiagramsNote = { v: 1; diagrams: RecentDiagram[] };
 // The documents worth coming back to, newest save first: nothing empty, nothing hidden from Recent
 // (docs/specs/013-workspace/hide-from-recent.md), at most RECENT_DIAGRAMS_LIMIT.
 export function pickRecentDiagrams(
-  documents: readonly Pick<DocumentSummary, 'id' | 'name' | 'savedAt' | 'empty' | 'opensIn'>[],
+  documents: readonly (Pick<DocumentSummary, 'id' | 'name' | 'savedAt' | 'empty' | 'opensIn'> & {
+    teamName?: string;
+  })[],
   hidden: readonly string[] = [],
 ): RecentDiagram[] {
   const skip = new Set(hidden);
@@ -36,7 +54,13 @@ export function pickRecentDiagrams(
     .filter((d) => !d.empty && !skip.has(d.id))
     .sort((a, b) => (b.savedAt ?? 0) - (a.savedAt ?? 0))
     .slice(0, RECENT_DIAGRAMS_LIMIT)
-    .map((d) => ({ id: d.id, name: d.name, savedAt: d.savedAt ?? 0, mode: d.opensIn ?? null }));
+    .map((d) => ({
+      id: d.id,
+      name: d.name,
+      savedAt: d.savedAt ?? 0,
+      mode: d.opensIn ?? null,
+      teamName: d.teamName ?? null,
+    }));
 }
 
 export function serializeRecentDiagrams(diagrams: readonly RecentDiagram[]): string {
@@ -66,6 +90,8 @@ export function parseRecentDiagrams(raw: string | null): RecentDiagram[] {
         name: d.name,
         savedAt: d.savedAt,
         mode: EDITOR_MODES.includes(d.mode as EditorMode) ? d.mode : null,
+        // A note written before teams joined it has none: your own.
+        teamName: typeof d.teamName === 'string' && d.teamName.length > 0 ? d.teamName : null,
       }));
   } catch {
     return [];
@@ -105,9 +131,6 @@ function openingTag(svg: string, open: string): string | null {
   return svg.slice(start, end < 0 ? svg.length : end);
 }
 
-// Before first paint (inline in the landing page's <head>): marks <html data-returning> when the note
-// holds a diagram, so the overview's frames stay hidden and a returning visitor never sees them flash
-// before Welcome back draws. Kept tiny and dependency-free; a parse is not needed to know there is one.
-export const RETURNING_BOOT_SCRIPT = `try{var r=localStorage.getItem(${JSON.stringify(
-  RECENT_DIAGRAMS_KEY,
-)});if(r&&r.indexOf('"id"')>-1)document.documentElement.setAttribute('data-returning','')}catch(e){}`;
+// How many recent diagrams the landing hero needs before its fan shows them in place of templates
+// (docs/specs/019-marketing/returning-visitor.md).
+export const RECENT_FAN_MIN = 3;

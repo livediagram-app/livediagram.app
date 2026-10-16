@@ -4,19 +4,30 @@
 
 import type { AnimationSetId, BodyAnimationSet } from './animation-sets';
 import { isChartShape, isProgressShape, isRatingShape } from './data-shapes';
+import { isSankeyShape } from './sankey-model';
+import { isConceptShape } from './concept';
 import { takesTypedLabel } from './element-types';
 import type { Element } from './index';
 import { selfLabelled } from './svg-render-describe';
 
-// Shapes with a set of their own (Icon, Chart, Progress, Rating), owned outside these catalogues.
+// Shapes with a set of their own (Icon, Chart, Sankey, Progress, Rating), owned outside these catalogues.
 function hasOwnShapeSet(el: Element): boolean {
   return (
     el.type === 'shape' &&
     (el.shape === 'icon' ||
       isChartShape(el.shape) ||
+      isSankeyShape(el.shape) ||
       isProgressShape(el.shape) ||
       isRatingShape(el.shape))
   );
+}
+
+// Shapes whose rows are what moves, not the box (Concept, Sequence), so they take their own set instead of Shape. One
+// that carries words of its own beyond its rows (a layer stack, pyramid, onion or chevrons) takes the Text set too; a
+// self-labelled one (sequence, cycle, hub) does not. A Shape `animation` stored on one before it had its own set no
+// longer plays: the menu has no Shape category on it to change or clear it.
+export function hasOwnBodySet(el: Element): boolean {
+  return el.type === 'shape' && (isConceptShape(el.shape) || el.shape === 'sequence');
 }
 
 /** The body set that animates the element itself, or undefined when it takes none of these. */
@@ -33,7 +44,7 @@ export function bodyAnimationSetOf(el: Element): BodyAnimationSet | undefined {
     case 'table':
       return 'table';
     case 'shape':
-      return hasOwnShapeSet(el) ? undefined : 'shape';
+      return hasOwnShapeSet(el) || hasOwnBodySet(el) ? undefined : 'shape';
     case 'annotation':
     case 'link-card':
       return 'shape';
@@ -43,7 +54,21 @@ export function bodyAnimationSetOf(el: Element): BodyAnimationSet | undefined {
 }
 
 // Shapes that keep their words still: their caption is part of the art or drawn by the shape.
-const WORDLESS_SHAPES = new Set<string>(['icon', 'chair', 'sticker']);
+const WORDLESS_SHAPES = new Set<string>([
+  'icon',
+  'chair',
+  'desk',
+  'sofa',
+  'fence',
+  'sticker',
+  // The office pieces (docs/specs/009-elements/office.md) but the room, whose label is its name plate.
+  'meeting-table',
+  'plant',
+  'bookshelf',
+  'water-cooler',
+  'coffee-machine',
+  'rug',
+]);
 
 /** Whether the element carries words the Text set can animate. */
 export function carriesWords(el: Element): boolean {

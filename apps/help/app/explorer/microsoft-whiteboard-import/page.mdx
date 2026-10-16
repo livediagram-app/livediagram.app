@@ -5,7 +5,7 @@ import { WhiteboardImportList } from '@/components/illustrations/explorer-import
 export const metadata = helpMetadata({
   title: 'Importing Microsoft Whiteboard boards',
   description:
-    'Bring boards from Microsoft Whiteboard across from the Explorer: each board becomes its own document with one whiteboard tab, named and dated as the board, its pen strokes, colours, sticky notes, text, shapes, lines and images all editable.',
+    'Import Microsoft Whiteboard boards from the Explorer as dated documents, with pen strokes, colours, sticky notes, text, shapes and images all editable.',
   path: '/help/explorer/microsoft-whiteboard-import/',
 });
 
@@ -55,8 +55,8 @@ A few things change on the way, and the import says how many of each:
 
 - **Rainbow ink** is drawn in pink, and **galaxy ink** in violet.
 - **Tables** become rectangles, with the ink inside them kept.
-- **Strokes drawn in the board's own colour**, which you could never see on the board, are left out.
-- **Images missing from the export** come in as empty image placeholders you can fill later.
+- **Strokes drawn in a dark board's own colour**, which you could never see on it, are left out.
+- **Images missing from the export** are left out, and the report counts them.
 - Anything Whiteboard keeps that livediagram doesn't recognise is skipped and counted, never fatal.
 
 Comments and reactions on a board are not imported.

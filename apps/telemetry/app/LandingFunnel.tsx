@@ -26,9 +26,9 @@ export function LandingFunnel({
 
   return (
     <section className="mt-8">
-      <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+      <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
         Landing funnel
-      </h3>
+      </h2>
       <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
         From a public page to a document, for{' '}
         <span className="font-medium">{windowLabel(active)}</span>. Every call to action into the
@@ -59,7 +59,7 @@ export function LandingFunnel({
             </CardColumns>
           </div>
           {funnel.quiet.length > 0 ? (
-            <p className="mt-4 text-xs text-slate-400">
+            <p className="mt-4 text-xs text-slate-500 dark:text-slate-400">
               No views or arrivals in this window:{' '}
               {funnel.quiet.map((s) => SURFACE_LABELS[s]).join(', ')}.
             </p>
@@ -146,7 +146,9 @@ function Stat({
           <TrendBadge now={count} before={before} against={against} />
         ) : null}
       </div>
-      <p className="mt-1 text-xs text-slate-400">{step ?? 'Landing, feature, help and more'}</p>
+      <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+        {step ?? 'Landing, feature, help and more'}
+      </p>
     </div>
   );
 }

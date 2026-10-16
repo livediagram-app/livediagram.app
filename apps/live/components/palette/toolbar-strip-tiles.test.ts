@@ -33,9 +33,9 @@ describe('stripTilesFor', () => {
   });
 
   it('always offers More for the categories whose body is more than tiles', () => {
-    // The three searchable catalogues, the Behaviours group browser and My shapes (no strip tiles
-    // of its own) can only be fully reached through More.
-    for (const id of ['icons', 'stickers', 'technology', 'behaviour', 'my-shapes']) {
+    // The three searchable catalogues and My shapes (no strip tiles of its own) can only be fully
+    // reached through More.
+    for (const id of ['icons', 'stickers', 'technology', 'my-shapes']) {
       expect(stripTilesFor(id, NONE).hasMore, id).toBe(true);
     }
   });
@@ -57,8 +57,8 @@ describe('stripTilesFor', () => {
 
   // docs/specs/007-editor/toolbar-layout.md: using a tile never reorders the strip.
   it('keeps the category\u2019s own order, the first tiles on the strip and the rest behind More', () => {
-    const own = tilesForCategory('behaviour').map((t) => t.id);
-    const strip = stripTilesFor('behaviour', NONE);
+    const own = tilesForCategory('shapes').map((t) => t.id);
+    const strip = stripTilesFor('shapes', NONE);
     expect(strip.hasMore).toBe(true);
     expect(strip.tiles.map((t) => t.id)).toEqual(own.slice(0, strip.tiles.length));
   });
@@ -68,14 +68,23 @@ describe('stripTilesFor', () => {
     ['shapes', ['shapes:diamond', 'shapes:stadium']],
     ['write', ['tools:text']],
     ['draw', ['tools:highlighter', 'tools:polygon']],
-    ['build', ['tools:table']],
-    ['components', ['tools:entity']],
     ['devices', ['devices:laptop']],
-    ['media', ['tools:image', 'media:embed-website']],
+    ['media', ['media:tab-window', 'media:embed-website']],
     ['data', ['data:legend']],
-    ['behaviour', ['tools:mode-isometric']],
   ])('divides %s into its groups', (category, after) => {
     expect([...stripTilesFor(category, NONE).dividersAfter]).toEqual(after);
+  });
+
+  it('drops the dividers of a category that exactly fills the strip, keeping every tile', () => {
+    // Components holds the strip's full twelve tiles (with the Card, Badge and Step number), so its
+    // divider after the entity gives way rather than a tile.
+    const components = stripTilesFor('components', NONE);
+    expect(components.tiles).toHaveLength(STRIP_TILE_LIMIT);
+    expect([...components.dividersAfter]).toEqual([]);
+    // Build fills it too since the Sequence diagram joined (docs/specs/009-elements/sequence-diagram.md).
+    const build = stripTilesFor('build', NONE);
+    expect(build.tiles).toHaveLength(STRIP_TILE_LIMIT);
+    expect([...build.dividersAfter]).toEqual([]);
   });
 
   it('gives a divided category one tile less when it overflows, to make room', () => {

@@ -54,10 +54,14 @@ export function ElementVoteOverlay({
   // count alone used to appear only once an element had a dot, which made
   // the first dot on a canvas an act of faith: nothing on screen said an
   // element was a target or how to add to it.
-  const showStepper = !!vote && vote.active && votableInVote === true;
+  // Only for someone who can cast: a Viewer watches the live counts (docs/specs/012-collaboration/session-tools.md
+  // "Roles"), and a stepper whose plus does nothing reads as a broken control.
+  const canVote = !!onCastVote;
+  const showStepper = !!vote && vote.active && votableInVote === true && canVote;
   // Once casting closes the buttons go: the tally is a result to read, not
   // a control, and the walkthrough wants the canvas quiet.
-  const showReadOnlyCount = !!vote && !vote.active && voteTotal > 0 && votableInVote === true;
+  const showReadOnlyCount =
+    !!vote && (!vote.active || !canVote) && voteTotal > 0 && votableInVote === true;
   // Budget, and the one-dot-per-item rule when the vote has it (docs/specs/012-collaboration/session-tools.md).
   // Either disables plus rather than hiding it, so the control doesn't move
   // under the pointer mid-vote.
@@ -151,7 +155,7 @@ export function ElementVoteOverlay({
               className={
                 'flex h-5 min-w-[20px] items-center justify-center rounded-full px-1.5 text-[11px] font-semibold shadow-sm ' +
                 (myVotes > 0
-                  ? `bg-brand-500 text-white ${SOLID_BRAND_DARK}`
+                  ? `bg-brand-700 text-white ${SOLID_BRAND_DARK}`
                   : 'border border-slate-200 bg-white text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100')
               }
             >

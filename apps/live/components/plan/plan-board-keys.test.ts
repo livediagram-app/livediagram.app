@@ -78,7 +78,10 @@ describe('planBoardKey', () => {
 
   it('opens, trashes and adds', () => {
     expect(planBoardKey(p, a.id, 'Enter', false, false)).toEqual({ kind: 'open' });
-    expect(planBoardKey(p, a.id, 'Delete', false, true)).toEqual({ kind: 'trash' });
+    expect(planBoardKey(p, a.id, 'Delete', false, true)).toEqual({
+      kind: 'trash',
+      focusAfter: b.id,
+    });
     expect(planBoardKey(p, a.id, 'Delete', false, false)).toBeNull();
     expect(planBoardKey(p, a.id, 'n', false, true)).toEqual({
       kind: 'add',
@@ -87,5 +90,19 @@ describe('planBoardKey', () => {
     });
     expect(planBoardKey(p, 'missing', 'Enter', false, true)).toBeNull();
     expect(planBoardKey(p, a.id, 'q', false, true)).toBeNull();
+  });
+
+  // A keyboard user deleting a card keeps their place: focus goes to the next card in the cell, else the one
+  // before, rather than falling to the page.
+  it('hands focus on to a neighbour when a card is trashed', () => {
+    expect(planBoardKey(p, b.id, 'Backspace', false, true)).toEqual({
+      kind: 'trash',
+      focusAfter: a.id,
+    });
+    // The last card in its cell: the nearest card on the board takes it (here the one before, in To do).
+    expect(planBoardKey(p, c.id, 'Delete', false, true)).toEqual({
+      kind: 'trash',
+      focusAfter: b.id,
+    });
   });
 });

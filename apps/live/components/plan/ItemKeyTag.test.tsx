@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
 import { ItemKeyTag, KEY_COPIED_MS } from './ItemPanelHeaderParts';
 
 afterEach(() => {
@@ -9,9 +9,9 @@ afterEach(() => {
 });
 
 describe('ItemKeyTag', () => {
-  let writeText: ReturnType<typeof vi.fn>;
+  let writeText: Mock<Clipboard['writeText']>;
   beforeEach(() => {
-    writeText = vi.fn(() => Promise.resolve());
+    writeText = vi.fn<Clipboard['writeText']>(() => Promise.resolve());
     Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true });
   });
 
@@ -22,7 +22,9 @@ describe('ItemKeyTag', () => {
     expect(writeText).toHaveBeenCalledWith('#12');
     await act(async () => {});
     expect(screen.getByRole('button', { name: 'Copied #12' })).toBeTruthy();
-    act(() => vi.advanceTimersByTime(KEY_COPIED_MS));
+    act(() => {
+      vi.advanceTimersByTime(KEY_COPIED_MS);
+    });
     expect(screen.getByRole('button', { name: 'Copy card number #12' })).toBeTruthy();
   });
 

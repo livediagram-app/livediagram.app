@@ -57,7 +57,7 @@ function recordFromFile(
     driveFileId: file.id,
     ...fileState(file),
     ldName,
-  } as DriveItem;
+  };
 }
 
 async function contentFor(ctx: PassContext, liveDoc: MirrorDocument) {
@@ -140,7 +140,7 @@ async function runOp(ctx: PassContext, op: OutboundOp, hooks: OutboundHooks): Pr
       const file = await ctx.drive.updateFile(item.driveFileId, {
         ...(op.rename ? { name: op.folder.name } : {}),
         ...(move
-          ? { addParent: parentId!, ...(item.parentId ? { removeParent: item.parentId } : {}) }
+          ? { addParent: parentId, ...(item.parentId ? { removeParent: item.parentId } : {}) }
           : {}),
         ...(op.untrash ? { trashed: false } : {}),
       });
@@ -166,7 +166,7 @@ async function runOp(ctx: PassContext, op: OutboundOp, hooks: OutboundHooks): Pr
         const file = await ctx.drive.updateFile(item.driveFileId, {
           ...(op.rename ? { name: driveFileName(op.document.name) } : {}),
           ...(move
-            ? { addParent: parentId!, ...(item.parentId ? { removeParent: item.parentId } : {}) }
+            ? { addParent: parentId, ...(item.parentId ? { removeParent: item.parentId } : {}) }
             : {}),
           ...(op.untrash ? { trashed: false } : {}),
           ...(content ? { content: content.text, thumbnailPng: content.thumbnailPng } : {}),

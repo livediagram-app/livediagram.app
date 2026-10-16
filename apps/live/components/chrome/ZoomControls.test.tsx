@@ -3,6 +3,9 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ZOOM_OFF_REASON, ZoomControls } from './ZoomControls';
 
+const touch = vi.hoisted(() => ({ coarse: false }));
+vi.mock('@/hooks/ui/useCoarsePointer', () => ({ useCoarsePointer: () => touch.coarse }));
+
 // docs/specs/026-plan/plan-board.md "Maximised board", "Zoom stands down": the controls stay, disabled, saying why.
 
 afterEach(cleanup);
@@ -41,5 +44,54 @@ describe('ZoomControls', () => {
     expect(h.onZoomIn).not.toHaveBeenCalled();
     expect(h.onFitToScreen).not.toHaveBeenCalled();
     expect(ZOOM_OFF_REASON).toMatch(/^Zoom is off while/);
+  });
+
+  // docs/specs/026-plan/plan-tabs.md "On a phone": with pinch zoom and zoom off, nothing is left to offer.
+  it('goes on a touch screen while zoom is off, and stays while it is on', () => {
+    const h = handlers();
+    const { container, rerender } = render(<ZoomControls zoom={1} {...h} pinchOnly zoomOff />);
+    expect(container.querySelector('[data-zoom-controls]')).toBeNull();
+    rerender(<ZoomControls zoom={1} {...h} pinchOnly />);
+    expect(screen.getAllByRole('button', { name: 'Fit to screen' }).length).toBeGreaterThan(0);
+  });
+
+  // A tablet is a touch screen too: wide, so the zoom buttons show, but with zoom off it has nothing to offer either.
+  it('goes on a tablet while zoom is off, and stays under a mouse', () => {
+    const h = handlers();
+    touch.coarse = true;
+    const { container, rerender } = render(<ZoomControls zoom={1} {...h} zoomOff />);
+    expect(container.querySelector('[data-zoom-controls]')).toBeNull();
+    rerender(<ZoomControls zoom={1} {...h} />);
+    expect(container.querySelector('[data-zoom-controls]')).not.toBeNull();
+    touch.coarse = false;
+    rerender(<ZoomControls zoom={1} {...h} zoomOff />);
+    expect(container.querySelector('[data-zoom-controls]')).not.toBeNull();
+  });
+});
+
+// docs/specs/029-sheets/sheet.md "Zoom": a Sheet zooms 50% to 200%, so its presets stop at 50%.
+describe('ZoomControls presets', () => {
+  const levels = () =>
+    screen.getAllByRole('menuitemradio').map((b) => b.textContent?.replace(/\D/g, ''));
+  const openPresets = () =>
+    fireEvent.keyDown(
+      screen
+        .getAllByRole('button', { name: 'Fit to screen' })
+        .find((b) => b.getAttribute('aria-haspopup') === 'menu')!,
+      { key: 'ArrowDown' },
+    );
+
+  it('offers every preset on the canvas', () => {
+    render(<ZoomControls zoom={1} {...handlers()} />);
+    openPresets();
+    expect(levels()).toEqual(['25', '50', '75', '100', '125', '150']);
+  });
+
+  it('offers only the levels a Sheet can reach', () => {
+    render(
+      <ZoomControls zoom={1} {...handlers()} zoomScope="sheet" zoomRange={{ min: 0.5, max: 2 }} />,
+    );
+    openPresets();
+    expect(levels()).toEqual(['50', '75', '100', '125', '150']);
   });
 });

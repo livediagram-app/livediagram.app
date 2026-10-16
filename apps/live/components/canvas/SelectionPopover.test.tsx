@@ -17,7 +17,7 @@ function setTouch(touch: boolean) {
     removeEventListener: () => {},
     addListener: () => {},
     removeListener: () => {},
-  })) as unknown as typeof window.matchMedia;
+  }));
 }
 
 const BOUNDS = { x: 100, y: 100, width: 80, height: 40 };
@@ -38,12 +38,11 @@ function renderSingle(minimal = false, powerUser = minimal) {
   );
 }
 
-function renderMulti(minimal = false, powerUser = minimal) {
+function renderMulti(minimal = false, powerUser = minimal, allLocked = false) {
   render(
     <MinimalChromeProvider value={minimal} powerUser={powerUser}>
       <MultiSelectionToolbar
-        anyLocked={false}
-        allLocked={false}
+        allLocked={allLocked}
         selectedElements={[]}
         onDuplicate={() => {}}
         onDelete={() => {}}
@@ -173,5 +172,35 @@ describe('Edit Points (docs/specs/023-draw-mode/path-tool.md "Editing")', () => 
     );
     fireEvent.click(screen.getByRole('button', { name: /^Edit Points/ }));
     expect(onEditPoints).toHaveBeenCalled();
+  });
+});
+
+// docs/specs/004-interface-design/touch-targets.md: its 32px buttons sit 4px apart, so each reaches a
+// 44px-tall tap area on a touch screen, never a sideways one.
+describe('SelectionPopover tap areas', () => {
+  it('gives every 32px button a positioned, vertical-only touch pad', () => {
+    setTouch(true);
+    renderSingle();
+    const bar = screen.getByTestId('selection-popover');
+    expect(bar.className).toContain('[&_.h-8]:touch-target-y');
+    expect(bar.className).toContain('[&_.h-8]:relative');
+    expect(bar.className).not.toMatch(/\[&_\.h-8\]:touch-target(\s|$)/);
+    expect(screen.getByRole('button', { name: 'Duplicate' }).className).toMatch(/\bh-8\b/);
+  });
+});
+
+// A click locks every member unless all are locked already, so the button says what it will do: Lock for a
+// mixed selection, Unlock only for a fully locked one.
+describe('MultiSelectionToolbar lock', () => {
+  it('offers Lock for a selection that is only partly locked', () => {
+    setTouch(false);
+    renderMulti(false, false, false);
+    expect(screen.getByRole('button', { name: 'Lock selected elements' })).toBeTruthy();
+  });
+
+  it('offers Unlock once every member is locked', () => {
+    setTouch(false);
+    renderMulti(false, false, true);
+    expect(screen.getByRole('button', { name: 'Unlock selected elements' })).toBeTruthy();
   });
 });

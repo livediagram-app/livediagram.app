@@ -1,10 +1,15 @@
 // @vitest-environment jsdom
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { CARD_TYPE_TOUR_STEPS } from './card-type-tour-steps';
-import { CardTypeTourStage, ShowMeButton, useCardTypeTour } from './CardTypeTour';
+import { CARD_TYPE_TOUR_STEPS, type CardTypeTourApi } from './card-type-tour-steps';
+import { CardTypeShowMeButton, CardTypeTourStage, useCardTypeTour } from './CardTypeTour';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
+// The tour wears the active tab's colours (tour-colours.ts); outside an editor, a plain light palette.
+vi.mock('@/components/start/useStartPalette', async () => {
+  const { planPalette } = await import('@livediagram/document');
+  return { useStartPalette: () => planPalette('light') };
+});
 // jsdom lays nothing out, so "on screen" is just "in the document" here.
 vi.mock('./tour-dom', async (actual) => ({
   ...(await actual<typeof import('./tour-dom')>()),
@@ -14,10 +19,10 @@ afterEach(cleanup);
 
 // docs/specs/026-plan/item-types.md "Editing a type": Show Me, never offered, run on the editor itself.
 function Editor({ showTab }: { showTab: (tab: string) => void }) {
-  const tour = useCardTypeTour(showTab as never);
+  const tour = useCardTypeTour(showTab);
   return (
     <div>
-      <ShowMeButton tour={tour} />
+      <CardTypeShowMeButton tour={tour} />
       <div data-tour-id="card-type-general">
         <input aria-label="Name" />
       </div>
@@ -27,17 +32,13 @@ function Editor({ showTab }: { showTab: (tab: string) => void }) {
 }
 
 describe('Show Me', () => {
-  it('scrolls Configuration’s Fields section into view for its step', async () => {
-    const section = document.createElement('section');
-    section.dataset.tourId = 'card-type-fields';
-    const scrollIntoView = vi.fn();
-    section.scrollIntoView = scrollIntoView;
-    document.body.append(section);
+  // The engine scrolls it there (tour-reveal.ts): Fields sits under General, below the panel's fold.
+  it('brings Configuration’s Fields section to the top of the panel for its step', async () => {
+    const fields = CARD_TYPE_TOUR_STEPS.find((s) => s.id === 'fields')!;
+    expect(fields.revealAt).toBe('start');
     const showTab = vi.fn();
-    await CARD_TYPE_TOUR_STEPS.find((s) => s.id === 'fields')!.prepare!({ showTab });
+    await fields.prepare!({ showTab });
     expect(showTab).toHaveBeenCalledWith('configuration');
-    expect(scrollIntoView).toHaveBeenCalledWith(expect.objectContaining({ block: 'start' }));
-    section.remove();
   });
 
   it('starts on its first step when pressed, opens Configuration and puts the caret in Name', async () => {
@@ -60,7 +61,7 @@ describe('Show Me', () => {
 
   it('opens each step’s tab, and ends on a closing card', () => {
     const tabs = CARD_TYPE_TOUR_STEPS.map((s) => {
-      const showTab = vi.fn();
+      const showTab = vi.fn<CardTypeTourApi['showTab']>();
       void s.prepare?.({ showTab });
       return showTab.mock.calls[0]?.[0];
     });

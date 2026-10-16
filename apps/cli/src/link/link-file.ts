@@ -139,7 +139,7 @@ function coversOf(table: Table, path: string): LinkFile['covers'] {
     (!Array.isArray(listed) || !listed.every((d) => typeof d === 'string'))
   )
     throw wrongType(path, 'covers.documents', 'an array of strings');
-  const documents = (listed ?? []) as string[];
+  const documents = listed ?? [];
   if (folder === null && documents.length === 0)
     throw refuse(
       EXIT.rejected,
@@ -219,7 +219,7 @@ export function parseLinkFile(text: string, path: string): LinkFile {
     covers: coversOf(covers, path),
     mirror: mirrorOf(mirror, root, path),
     hooks: { block: block ?? false },
-    sources: (sources ?? []) as Record<string, unknown>[],
+    sources: sources ?? [],
   };
 }
 

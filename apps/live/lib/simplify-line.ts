@@ -1,5 +1,5 @@
 // An open line with fewer points (Ramer-Douglas-Peucker): what Mirror's merge and Tidy Up turn a
-// drawn stroke's samples into (docs/specs/007-editor/logo-pages.md "Mirror", "Tidy Up"). Pure.
+// drawn stroke's samples into (docs/specs/007-editor/logo-pages.md "Mirror", "Tidy"). Pure.
 
 /** The fewest of `pts` within `tol` of the polyline they draw, its ends kept. */
 export function simplifyLine(pts: readonly { x: number; y: number }[], tol: number) {

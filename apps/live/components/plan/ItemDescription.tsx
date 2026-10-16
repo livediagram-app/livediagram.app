@@ -108,7 +108,7 @@ export function ItemDescription({
           type="button"
           onClick={() => setEditing(true)}
           aria-label="Edit the description"
-          className="absolute right-2 top-2 flex items-center gap-1 rounded-md bg-white px-1.5 py-0.5 text-[11px] font-medium text-slate-500 opacity-0 shadow-sm transition focus-visible:opacity-100 group-hover:opacity-100 max-sm:opacity-100 dark:bg-slate-900 dark:text-slate-400"
+          className="absolute right-2 top-2 flex items-center gap-1 rounded-md bg-white px-1.5 py-0.5 text-[11px] font-medium text-slate-500 opacity-0 shadow-sm transition focus-visible:opacity-100 group-hover:opacity-100 max-sm:opacity-100 [@media(hover:none)]:opacity-100 dark:bg-slate-900 dark:text-slate-400"
         >
           <PencilIcon size={11} />
           Edit
@@ -122,7 +122,7 @@ export function ItemDescription({
       className="rounded-xl bg-slate-50 p-2 dark:bg-slate-800/40"
       onBlur={(e) => {
         // Focus moving within (the toolbar, the link field) keeps the editor open.
-        if (e.currentTarget.contains(e.relatedTarget as Node | null)) return;
+        if (e.currentTarget.contains(e.relatedTarget)) return;
         save();
         setEditing(false);
       }}

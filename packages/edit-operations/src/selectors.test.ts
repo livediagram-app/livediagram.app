@@ -20,15 +20,22 @@ const ids = (selector: string, state = stateOf()) => {
 const refusal = (selector: string, state = stateOf()): EditRejection => {
   const out = resolveSelector(state, selector, 1);
   if (!('rejection' in out))
-    throw new Error(`expected a refusal, got ${out.els.map((el) => el.id)}`);
+    throw new Error(`expected a refusal, got ${out.els.map((el) => el.id).join(', ')}`);
   return out.rejection;
 };
 const withElements = (...extra: Element[]): Tab => {
   const tab = checkoutFlow();
   return { ...tab, elements: [...tab.elements, ...extra] };
 };
-const sticky = (id: string, label: string, x = 600, y = 0): Element =>
-  ({ id, type: 'sticky', label, x, y, width: 100, height: 100 }) as Element;
+const sticky = (id: string, label: string, x = 600, y = 0): Element => ({
+  id,
+  type: 'sticky',
+  label,
+  x,
+  y,
+  width: 100,
+  height: 100,
+});
 
 describe('selector rows', () => {
   it('a ref, any unique prefix or the id', () => {

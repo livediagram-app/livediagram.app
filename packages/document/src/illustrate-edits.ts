@@ -35,8 +35,8 @@ import {
   withContentFittedToPage,
   withDuplicatedPage,
   withPageContentReplaced,
-  withPageInkFor,
 } from './illustrate-page-content';
+import { pagesInkFor, type InkMemory, type PageInk } from './page-ink';
 import { sameFill, withBackgroundPatch } from './illustrate-page-paint';
 
 export type PageEditRefusal =
@@ -98,7 +98,7 @@ export function pageLockSet<T extends PagesTab>(
     const { locked: _drop, ...rest } = p;
     return locked ? { ...rest, locked: true as const } : rest;
   });
-  return { tab: withIllustratePages(tab, next) as T };
+  return { tab: withIllustratePages(tab, next) };
 }
 
 /** A page's name set (trimmed, capped at PAGE_NAME_MAX); empty clears it. */
@@ -114,7 +114,7 @@ export function pageRenamed<T extends PagesTab>(tab: T, pageId: string, raw: str
     const { name: _drop, ...rest } = p;
     return name ? { ...rest, name } : rest;
   });
-  return { tab: withIllustratePages(tab, next) as T };
+  return { tab: withIllustratePages(tab, next) };
 }
 
 // A turn or a new size re-fits an infographic page's content into the page as it now is
@@ -128,9 +128,9 @@ function reshaped<T extends PagesTab>(
   const pages = pagesOf(tab);
   const reach = pagesSharing(pages, pageId);
   const next = pages.map((p) => (reach.has(p.id) ? patch(p) : p));
-  if (pages.find((p) => p.id === pageId)?.flow) return withIllustratePages(tab, next) as T;
+  if (pages.find((p) => p.id === pageId)?.flow) return withIllustratePages(tab, next);
   const ids = elementIdsOnPage(tab.elements, layOutIllustratePages(pages), pageId);
-  return withContentFittedToPage(withIllustratePages(tab, next), ids, pageId) as T;
+  return withContentFittedToPage(withIllustratePages(tab, next), ids, pageId);
 }
 
 /** A page turned. A page in a slide size, or the logo artboard, has no turn. */
@@ -171,13 +171,30 @@ export function pageResized<T extends PagesTab>(
   };
 }
 
-/** A page's background patched; on an article, every page of it. A new fill re-inks the page's
- *  own-coloured content so it still reads (withPageInkFor). A logo page takes no pattern. */
+/** A page's background patched; on an article, every page of it. A new fill re-inks what is on
+ *  the page so it still reads (pageInkFor, docs/specs/007-editor/illustrate-pages.md "Re-inking"),
+ *  judged from the author's own colours where `memory` recalls them; `memory` comes back as it is
+ *  after (the caller keeps it). A logo page takes no pattern. */
 export function pageBackgroundSet<T extends PagesTab>(
   tab: T,
   pageId: string,
   patch: Partial<PageBackground>,
-): PageEdit<T> {
+  memory?: InkMemory,
+): PageEdit<T> & { memory?: InkMemory } {
+  const stored = pageBackgroundStored(tab, pageId, patch);
+  if ('refused' in stored) return stored;
+  if (stored.inks.length === 0) return { tab: stored.tab };
+  return pagesInkFor(stored.tab, stored.inks, memory);
+}
+
+/** pageBackgroundSet's page half: the background written onto the page (and its article), and
+ *  the pages a new fill must re-ink, left for the caller to ink (pagesInkFor) so a spread over
+ *  many pages inks them in one walk. No inks when nothing changed or the fill was left alone. */
+export function pageBackgroundStored<T extends PagesTab>(
+  tab: T,
+  pageId: string,
+  patch: Partial<PageBackground>,
+): { tab: T; inks: PageInk[] } | { refused: PageEditRefusal } {
   const pages = pagesOf(tab);
   const target = pages.find((p) => p.id === pageId);
   if (!target) return refused('unknown_page');
@@ -185,16 +202,18 @@ export function pageBackgroundSet<T extends PagesTab>(
   if (target.kind === 'logo' && 'pattern' in patch) return refused('pattern_not_offered');
   const was = target.background;
   const background = withBackgroundPatch(target, patch);
-  if (sameFill(was?.fill, background?.fill) && was?.pattern === background?.pattern) return { tab };
+  if (sameFill(was?.fill, background?.fill) && was?.pattern === background?.pattern) {
+    return { tab, inks: [] };
+  }
   const reach = pagesSharing(pages, pageId);
   const next = pages.map((p) => {
     if (!reach.has(p.id)) return p;
     const { background: _drop, ...rest } = p;
     return background ? { ...rest, background } : rest;
   });
-  let out = withIllustratePages(tab, next) as T;
-  if ('fill' in patch) for (const id of reach) out = withPageInkFor(out, id, background);
-  return { tab: out };
+  const out = withIllustratePages(tab, next) as T;
+  if (!('fill' in patch)) return { tab: out, inks: [] };
+  return { tab: out, inks: [...reach].map((id) => ({ pageId: id, background })) };
 }
 
 /** Whether another page of this kind fits (an article's copy is all its pages). */
@@ -216,6 +235,9 @@ export function pageAdded<T extends PagesTab>(
 ): PageEdit<T> {
   const pages = pagesOf(tab);
   if (!room(pages) || pages.some((p) => p.id === id)) return refused('page_limit');
+  // The new page wears the background of the page before it (the last), whatever either kind; a
+  // logo page takes its fill alone, since it takes no pattern.
+  const carried = carriedBackground(pages[pages.length - 1]?.background, kind);
   if (kind === 'article') {
     const last = pages[pages.length - 1];
     const paper = last && ['a4', 'letter', 'a3'].includes(last.size ?? 'a4');
@@ -225,6 +247,7 @@ export function pageAdded<T extends PagesTab>(
         id,
         orientation: paper ? last.orientation : 'portrait',
         ...(paper && last.size ? { size: last.size } : {}),
+        ...(carried ? { background: carried } : {}),
       },
       flow,
     );
@@ -243,7 +266,23 @@ export function pageAdded<T extends PagesTab>(
     const size = model?.size === 'fit' ? undefined : model?.size;
     page = { id, orientation: model?.orientation ?? 'portrait', ...(size ? { size } : {}) };
   }
-  return { tab: withIllustratePages(tab, [...pages, page]) as T };
+  if (carried) page = { ...page, background: carried };
+  return { tab: withIllustratePages(tab, [...pages, page]) };
+}
+
+// The background a new page of `kind` carries over from the page before it: none for the paper,
+// and no pattern on a logo page.
+function carriedBackground(
+  background: PageBackground | undefined,
+  kind: PageKind,
+): PageBackground | undefined {
+  if (!background) return undefined;
+  const { fill, pattern } = background;
+  const out: PageBackground = {
+    ...(fill ? { fill } : {}),
+    ...(pattern && kind !== 'logo' ? { pattern } : {}),
+  };
+  return out.fill || out.pattern ? out : undefined;
 }
 
 /** A copy after the page, content and all; an article page copies its whole article (`flow` the
@@ -259,10 +298,10 @@ export function pageDuplicated<T extends PagesTab>(
   if (!target) return refused('unknown_page');
   if (target.flow) {
     const out = withArticleDuplicated(tab, target.flow, flow);
-    return out ? { tab: out as T } : refused('page_limit');
+    return out ? { tab: out } : refused('page_limit');
   }
   if (!room(pages) || pages.some((p) => p.id === id)) return refused('page_limit');
-  return { tab: withDuplicatedPage(tab, pageId, id) as T };
+  return { tab: withDuplicatedPage(tab, pageId, id) };
 }
 
 /** A page deleted with everything on it, the pages after it closing the gap; an article page
@@ -275,14 +314,14 @@ export function pageRemoved<T extends PagesTab>(tab: T, pageId: string): PageEdi
   if (pageUnits(pages).length <= 1) return refused('last_page');
   if (target.flow) {
     const out = withArticleRemoved(tab, target.flow);
-    return out ? { tab: out as T } : refused('last_page');
+    return out ? { tab: out } : refused('last_page');
   }
   const emptied = withPageContentReplaced(tab, pageId, []);
   return {
     tab: withIllustratePages(
       emptied,
       pages.filter((p) => p.id !== pageId),
-    ) as T,
+    ),
   };
 }
 
@@ -311,5 +350,5 @@ export function pageLaidOut<T extends PagesTab>(
   const pages = pagesOf(tab);
   if (!pages.some((p) => p.id === pageId)) return refused('unknown_page');
   if (pageLockRefuses(pages, pageId)) return refused('locked');
-  return { tab: withPageContentReplaced(tab, pageId, [...placed]) as T };
+  return { tab: withPageContentReplaced(tab, pageId, [...placed]) };
 }

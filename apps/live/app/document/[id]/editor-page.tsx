@@ -4,10 +4,12 @@ import dynamic from 'next/dynamic';
 import { useEffect, type ReactNode } from 'react';
 import { setSessionSharePassword } from '@/lib/api-client';
 import { ensureIconCatalogs } from '@/lib/icon-registry';
+import { DOCUMENT_CONTENT_CODE, EDITOR_SURFACE_CODE } from '@/lib/editor-deferred-code';
+import { prefetchWhenIdle } from '@/lib/idle-prefetch';
 import { track } from '@/lib/telemetry';
 import { requestDriveFlush } from '@/lib/drive/tab-election';
 import { EditorHeader } from '@/components/chrome/EditorHeader';
-import { Explorer } from '@/components/panels/Explorer';
+import { LazyExplorer } from '@/components/panels/LazyExplorer';
 import { OpeningScreen } from '@/components/chrome/OpeningScreen';
 // Static, unlike the other status cards: it must render offline (docs/specs/007-editor/load-recovery.md
 // "Offline"); its recovery tools are the lazy part.
@@ -59,6 +61,13 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
   useEffect(() => {
     void ensureIconCatalogs();
   }, []);
+  // The code the editor loads on demand (lib/editor-deferred-code.ts): what a board may draw on open
+  // alongside the document request, and the surfaces someone opens once the document has rendered.
+  useEffect(() => prefetchWhenIdle(DOCUMENT_CONTENT_CODE), []);
+  useEffect(
+    () => (state.loadingDocument ? undefined : prefetchWhenIdle(EDITOR_SURFACE_CODE)),
+    [state.loadingDocument],
+  );
   // Leaving a document (another document, the Explorer) flushes its pending
   // Google Drive write (docs/specs/022-drive-mirror/drive-mirror.md, "Cadence").
   useEffect(() => {
@@ -104,7 +113,7 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
   // element until a branch returns it, so building it on every render is
   // free when no status screen shows.
   const fullExplorer = (
-    <Explorer
+    <LazyExplorer
       recentExcludedIds={state.userPreferences?.recentExcludedIds ?? []}
       onToggleRecentExclusion={state.toggleRecentExclusion}
       favouriteIds={state.favouriteIds ?? new Set()}
@@ -115,17 +124,17 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
       folders={folders}
       loading={documentListLoading}
       shared={sharedDocuments}
-      onDismissShared={dismissSharedDocument}
+      onDismissShared={(id) => void dismissSharedDocument(id)}
       currentDocumentId={null}
       onMoveTo={(x, y) => setExplorerPosition({ x, y })}
       onReset={() => setExplorerPosition(null)}
       onOpenDocument={openDocument}
       onNewDocument={newDocument}
-      onDeleteDocument={deleteDocument}
+      onDeleteDocument={(id) => void deleteDocument(id)}
       onDuplicateDocument={(id) => void duplicateDocument(id)}
       onCreateFolder={createFolder}
       onRenameFolder={renameFolder}
-      onDeleteFolder={deleteFolder}
+      onDeleteFolder={(id) => void deleteFolder(id)}
       onMoveDocumentToFolder={moveDocumentToFolder}
     />
   );

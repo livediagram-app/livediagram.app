@@ -27,6 +27,9 @@ class box: make it one element.
 
 ## The elements
 
+The Callout has since become a preset of the Card ([The card](card.md)): its row below describes the stored
+`callout` kind that the read migration turns into a card with `cardMedia: 'badge'`.
+
 Each is a `ShapeElement` kind except the Hero, which is an image (see below). All of them keep
 the ordinary element behaviours for free: move, resize, rotate, lock, layers, colours, font,
 shadow, comments, links, copy / paste, undo.

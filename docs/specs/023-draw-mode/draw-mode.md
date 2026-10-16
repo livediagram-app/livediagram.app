@@ -35,20 +35,16 @@ pen widths, dock spacing) are named constants, tuned in place.
 
 ## Creating one
 
-- **New Document wizard:** a **Blank Whiteboard** template (kind id `whiteboard`, a
-  blank builder and a preview tile, `packages/templates`), producing a document
-  with one tab that opens in Draw mode. It is a card on the **Popular** shelf, second (after
-  Blank Diagram), described **"Free drawing without distractions"**. It is not a category: a
-  different activity from the diagram templates, so it is never a category tile or on a
-  category shelf. Draw has templates of its own too (Sketchnote, Rich Picture, Comic Strip,
-  Doodle Warm-Up), and the template step's **Draw** filter shows just them
-  ([Templates by mode](../007-editor/templates-by-mode.md)).
-- **New tab:** the tab bar's new-tab action opens Quick Start as on any
-  document, and Quick Start offers **Blank Whiteboard** on its Popular shelf, so a whiteboard can be added to any document in the same two
-  clicks as an ordinary tab.
-- **No theme step.** Like every template now, picking the Whiteboard
-  template goes straight to the settings step in the New Document wizard and
-  lands at once in Quick Start; the tab looks the same in either mode
+- **New Document wizard:** choosing **Draw** on the wizard's Mode step ([New document
+  route](../007-editor/new-document-route.md) "Choosing a mode") makes a document with one tab in Draw mode, from the
+  **Blank Whiteboard** template (kind id `whiteboard`, a blank builder and a preview tile, `packages/templates`).
+- **Start Drawing:** an empty Draw tab offers its templates in **Start Drawing** ([Template
+  starts](../007-editor/start-diagramming.md)): Blank Whiteboard first under Recommended, then **Visual Notes**,
+  **Workshops** and **Prototypes**, with the pen staying in hand around it. The × starts from the blank whiteboard,
+  and a top-centre pill brings it back while the tab is empty.
+- **New tab:** a new tab opens on its mode's start; another mode's start finds **Blank Whiteboard** and every
+  Draw template by search ([Template starts](../007-editor/start-diagramming.md#found-in-other-modes)).
+- **No theme step.** A new whiteboard starts on the default theme; the tab looks the same in either mode
   ([Appearance](#appearance)).
 - **Import:** a Microsoft Whiteboard import makes each board its own new
   document with one tab that opens in Draw mode, named and dated after the board, and Excalidraw pasted onto a whiteboard lands as its own
@@ -78,25 +74,21 @@ pointing at the button that opened it, on the edge facing the dock, over its but
   **Stroke** and **Text colour** rows offer the **stock colours**, the same
   choices as Marker colour: **Ink** first, then the eight hued colours in the
   standard order, Red to Pink (each stored by name, drawn in its version for the
-  canvas), then **More colours**, then the tab's custom
-  colours section when there is one. Ink is stored by name like the others; a
+  canvas), then **More colours**: one row each. Ink is stored by name like the others; a
   line with no colour of its own wears its theme default, so no choice is
   marked for it. **Background** keeps its fills, "no fill" first. **Corners** (None, Small,
   Medium, Large) rounds the selected rectangles, which the menu does not
   offer on a whiteboard ([Corner radius](../008-canvas/corner-radius.md)).
   A restyle on a whiteboard never feeds the style memory Diagram mode uses; the
   board's own memory remembers a stock colour by name.
-  Selected pen strokes get **Marker colour** and **Marker width** (Fine / Medium /
-  Bold). The quick style panel is **quick choices first**: **Marker colour** is
-  Ink and the eight hued stock colours, adaptive like the marker's picker, then
-  **More colours**, which opens the full colour picker
-  ([Colour picker](../004-interface-design/colour-picker.md#quick-style)). Below them, **a second section of custom
-  colours appears only when custom colours are used on this whiteboard
-  tab**: the custom (hex) colours of the tab's marker strokes, shapes, lines,
-  arrows, paths and text (exactly the colours [Snap colours](#snap-colours)
-  would convert), up to eight, most recently drawn first (imported and
-  pasted content brings its own); with none on the tab, the section is
-  not there. A custom colour is added with the marker picker's **Add a custom colour**. With nothing selected
+  Selected pen strokes get **Marker colour** and **Marker width** (the six widths, Fine to
+  Broad, in one row). The quick style panel is **quick choices first, one row per setting**:
+  **Marker colour** is Ink and the eight hued stock colours, adaptive like the marker's picker,
+  then **More colours**, which opens the full colour picker
+  ([Colour picker](../004-interface-design/colour-picker.md#quick-style)). **Custom colours live
+  only in that picker** (its Custom Colours, the document's own, the same list wherever a picker
+  opens): the panel never shows a second row of them, so there is one list of custom colours,
+  never two that disagree. A custom colour is added with the picker's **Add a custom colour**. With nothing selected
   and a pen in hand, the panel styles **that pen**: picking up a pen already
   offers its colour and width, the same settings its dock flyout holds.
   **Every pen shows the same rows**, so Marker width stays at the same height
@@ -108,11 +100,15 @@ pointing at the button that opened it, on the edge facing the dock, over its but
 - **One dock, no modes.** Every user sees the same three groups; the shapes
   bar stays small by starting with just two pinned shapes, so there is no
   simpler mode to switch to.
-- **The dock is three groups side by side**, centred together at the top
-  (or bottom) of the canvas with a clear gap between them, left to right: **drawing
-  tools**, **shapes** and **settings** (the cog on its own). Each group is its
-  own pill, and its own toolbar for assistive technology ("Drawing tools",
-  "Shapes", "Settings"), each one Tab stop with arrow keys moving within it.
+- **The dock is three groups side by side in one card**, centred at the top
+  (or bottom) of the canvas, a hairline between each group, left to right: **drawing
+  tools**, **shapes** and **settings** (the cog on its own). **It looks like the other modes'
+  palette** ([Toolbar layout](../007-editor/toolbar-layout.md)): the same card, the same 36 px
+  tiles and hairlines, and a tool in hand marked as the palette marks its active tool (a soft
+  brand fill with a hairline ring), so Draw reads as the same product. What it holds and how it
+  behaves stay Draw's own (pens that stay in hand, flyouts, pinned shapes). Each group is still
+  its own toolbar for assistive technology ("Drawing tools", "Shapes", "Settings"), each one Tab
+  stop with arrow keys moving within it.
 - **Drawing tools, left to right:**
   1. **Select** (marquee and move; the ordinary select tool). A board with content opens on
      Select; an empty one puts the active pen in hand.
@@ -145,7 +141,7 @@ pointing at the button that opened it, on the edge facing the dock, over its but
      - **No full list**: with the field empty only the six slots show;
        typing replaces them with **at most six results**, the best matches
        first, as the shapes' own previews in the board's ink. No match says
-       "No shapes match".
+       "No shapes match “<words>”" (the shared empty state, with Clear Search).
      - Arrow keys move through the slots or the results, **Enter** or a press
        picks one, which arms it like a dock shape (plain ink, the tool style
        of its kind, drawn with a drag or dropped with a click) and closes the
@@ -310,17 +306,17 @@ Explorer Home's Jump back in.
 - **Markers 2 and 3 are adjustable**: their flyouts change both
   colour and width. They start as **blue** (second) and **red** (third), and
   keep their place and name whatever colour they are given.
-- **Widths**, on every pen including Marker 1: **Fine** (1 px),
-  **Medium** (1.5 px, the default) and **Bold** (2.5 px),
-  `WHITEBOARD_PEN_WIDTHS`: a subtle line at 100%, not a felt tip (the width at
-  medium pressure). (Tuned with
-  the operator: Medium is what Fine was, each step one notch thinner.) The width is recorded as the stroke's `penWidth`, which every
+- **Widths**, on every pen including Marker 1, six in all (`WHITEBOARD_PEN_WIDTHS`, the width at
+  medium pressure): **Fine** (1 px), **Medium** (1.5 px, the default) and **Bold** (2.5 px), a
+  subtle line at 100%, not a felt tip (tuned with the operator: Medium is what Fine was, each step
+  one notch thinner); then three progressively stronger, each about half again the last, for
+  felt-tip and poster marks: **Thick** (4 px), **Heavy** (6 px) and **Broad** (9 px). The width is recorded as the stroke's `penWidth`, which every
   freehand renderer honours; choosing a border width from an element's menu
   afterwards replaces it. A pen stores its width as the preset's name, not its
   px, so retuning the px never reinterprets a stored choice.
   - **Each width is pictured the same wherever it is chosen** (the marker's popover and the quick
-    style panel's Marker width row, `PenWidthIcon`): as the thin, medium and thick border-width
-    previews, not to scale. Drawn to scale, 1 and 1.5 px looked identical in the popover.
+    style panel's Marker width row, `PenWidthIcon`): as a line in six even steps, thinnest first,
+    not to scale. Drawn to scale, 1 and 1.5 px looked identical in the popover.
 - **The markers outside Draw mode:** the Toolbar strip's Search offers Marker 1, 2 and 3 in the
   other modes ([Toolbar layout](../007-editor/toolbar-layout.md#search-every-element-type)), each
   as this browser last set it. Picking one picks the pen up exactly as the dock does (the same pen
@@ -361,7 +357,7 @@ Explorer Home's Jump back in.
     to see on the dark board") and offers a nearby version that is not, as
     a swatch to press. **The warning's line is always reserved**, empty
     until needed, so it never shifts the picker.
-  - **Width:** Fine, Medium, Bold.
+  - **Width:** Fine, Medium, Bold, Thick, Heavy, Broad.
   - Each swatch has its name as its tooltip and accessible name ("Blue",
     "#ff6b00"); arrow keys move focus through every swatch and +
     (wrapping), Enter picks, Escape closes.
@@ -559,8 +555,7 @@ Microsoft Whiteboard board ([Microsoft Whiteboard import](../020-import-export/w
   dark on the light board and light on the dark one, whatever board it was
   drawn on. A colour close to a **stock colour** (Blue, Red, Orange, Yellow,
   Green, Teal, Violet, Pink) lands by its name and is drawn in the version for each
-  viewer's board. Anything else keeps its exact hex, a custom colour, and shows
-  in the quick style panel's custom colours.
+  viewer's board. Anything else keeps its exact hex, a custom colour.
 - **Named colours on every mark:** a stock colour is stored by name on a
   stroke, shape, line, arrow and path (its line colour) and on a text box, a
   shape's label, a sticky note's text and an arrow's label (its text colour),
@@ -766,8 +761,7 @@ light and dark boards like everything drawn with the stock colours.
 - **What it converts:** every custom (`#rrggbb`) colour held in a field that
   has a stock counterpart: a marker stroke's colour, a shape's outline, a
   line's, arrow's or path's colour, a text box's text, and the label of an
-  unfilled shape or of an arrow. These are the custom colours the quick style
-  panel's custom section offers. Further kinds join as they gain a stock
+  unfilled shape or of an arrow. Further kinds join as they gain a stock
   colour field.
 - **The rule:** each colour is read in OKLCH.
   - A **neutral** colour (chroma under 0.05: black, grey, white, slate)
@@ -876,8 +870,7 @@ and dark and snapping custom colours. Registered per
 Draw mode is built in rounds and tuned with the operator between them.
 
 - **Round one** (built, being tuned): the mode and its switch
-  ([Editor modes](../007-editor/editor-modes.md)), the template and Quick Start
-  entry, the dock with every tool above, pen versus touch, the one look,
+  ([Editor modes](../007-editor/editor-modes.md)), the template, the dock with every tool above, pen versus touch, the one look,
   the backgrounds, telemetry and the help article. Entering Draw mode on an
   empty tab, by opening it or by switching, puts the active pen in hand; a
   tab with content opens on Select.

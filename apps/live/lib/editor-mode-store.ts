@@ -11,7 +11,17 @@ import { editorModeSwitchable, opensInOf, type EditorMode, type Tab } from '@liv
 
 export type EditorModeTab = Pick<Tab, 'id' | 'kind' | 'opensIn' | 'layers' | 'locked'>;
 
-export type ResolvedEditorMode = { mode: EditorMode; canSwitch: boolean };
+// `lockedReason`: the switch shows but only its own mode can be picked, and this says why (a Board, Sheet or Dashboard
+// tab is always in Plan, docs/specs/026-plan/plan-tabs.md).
+export type ResolvedEditorMode = { mode: EditorMode; canSwitch: boolean; lockedReason?: string };
+
+const KIND_NAMES: Readonly<Record<string, string>> = {
+  board: 'A Board tab',
+  sheet: 'A Sheet tab',
+  dashboard: 'A Dashboard',
+  // docs/specs/030-forms/forms.md "The Form tab".
+  form: 'A Form tab',
+};
 
 export function resolveEditorMode(input: {
   tab: EditorModeTab | undefined;
@@ -19,5 +29,10 @@ export function resolveEditorMode(input: {
 }): ResolvedEditorMode {
   const { tab, canEdit } = input;
   const canSwitch = !!tab && editorModeSwitchable(tab) && canEdit && tab.locked !== true;
-  return { mode: opensInOf(tab), canSwitch };
+  const kindName = tab?.kind ? KIND_NAMES[tab.kind] : undefined;
+  return {
+    mode: opensInOf(tab),
+    canSwitch,
+    ...(kindName && canEdit ? { lockedReason: `${kindName} is always in Plan.` } : {}),
+  };
 }

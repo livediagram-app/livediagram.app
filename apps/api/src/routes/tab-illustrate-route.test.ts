@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { sentJson } from '@livediagram/vitest-config/sent-request';
 import type { IllustrateAnswer } from '@livediagram/api-schema';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import type { Env } from '../types';
@@ -12,12 +13,13 @@ import { layoutCatalogueFor } from '@livediagram/templates';
 // editor's own edit.
 
 function roomRecorder(status = 204) {
-  const bodies: { op: { kind: string; [k: string]: unknown } }[] = [];
+  type Relayed = { op: { kind: string; [k: string]: unknown } };
+  const bodies: Relayed[] = [];
   const binding = {
     idFromName: (name: string) => name,
     get: () => ({
       fetch: async (_url: string, init?: RequestInit) => {
-        if (init?.body) bodies.push(JSON.parse(String(init.body)));
+        if (init?.body) bodies.push(sentJson(init) as Relayed);
         return new Response(null, { status });
       },
     }),
@@ -57,12 +59,20 @@ async function setUp(status = 204, tab: Record<string, unknown> = {}) {
   return { db, room };
 }
 
+// The stored tab, as far as these tests read it.
+type StoredTab = {
+  elements: unknown[];
+  opensIn?: string;
+  pages?: unknown[];
+  articles: Record<string, unknown>;
+};
+
 const stored = (db: SqliteD1) => {
   const row = db.sql.prepare("SELECT data, rev FROM tabs WHERE id = 't1'").get() as {
     data: string;
     rev: number;
   };
-  return { ...JSON.parse(row.data), rev: row.rev };
+  return { ...(JSON.parse(row.data) as StoredTab), rev: row.rev };
 };
 
 afterEach(() => vi.restoreAllMocks());
@@ -170,6 +180,8 @@ describe('an article write', () => {
     expect(res.status).toBe(200);
     const body = (await res.json()) as IllustrateAnswer;
     expect(body.article).toMatchObject({ title: 'Brief', pages: [1], blocks: 3, created: true });
+    // The answer says how many pages the writing takes, as estimated.
+    expect(body.lines.at(-1)).toMatch(/^It takes about 1 page once laid out \(estimated/);
     const tab = stored(db);
     expect(Object.values(tab.articles)).toHaveLength(1);
     const kinds = room.bodies.map((b) => b.op.kind);

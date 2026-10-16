@@ -34,64 +34,60 @@ export function SettingsTokensRow({ row }: { row: SettingsTokensRowSpec }) {
   return (
     <SettingsRowShell
       row={row}
-      wrapper={() => (
-        <div className="flex flex-col gap-4 rounded-xl border border-slate-200 bg-white p-3.5 dark:border-slate-700 dark:bg-slate-800">
-          {!authLoaded ? null : !enabled ? (
-            <div className="flex items-start gap-3">
-              <span
-                aria-hidden
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-400 dark:bg-slate-700 dark:text-slate-400"
-              >
-                {TokensGlyph}
-              </span>
-              <span className="min-w-0">
-                <span className="block text-sm font-semibold text-slate-800 dark:text-slate-100">
-                  {row.label}
-                </span>
-                <span className="block text-xs text-slate-500 dark:text-slate-400">
-                  Sign in to create API tokens.
-                  <SettingsSignInLink />
-                </span>
-              </span>
-            </div>
+      leading={
+        authLoaded && !enabled ? (
+          <span
+            aria-hidden
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-400 dark:bg-slate-700 dark:text-slate-400"
+          >
+            {TokensGlyph}
+          </span>
+        ) : null
+      }
+      descriptionContent={
+        authLoaded && !enabled ? (
+          <>
+            Sign in to create API tokens.
+            <SettingsSignInLink />
+          </>
+        ) : undefined
+      }
+    >
+      {!authLoaded || !enabled ? null : (
+        <div className="flex flex-col gap-4">
+          <SettingsTokenOverview
+            count={tokens.list === null ? null : tokens.count}
+            max={tokens.max}
+            composing={composing || secret !== null}
+            onNew={() => setComposing(true)}
+          />
+          {secret !== null ? (
+            <SettingsTokenReveal secret={secret} onDone={() => setSecret(null)} />
+          ) : composing || firstRun ? (
+            <SettingsTokenCreate
+              tokens={tokens}
+              onCancel={firstRun ? undefined : () => setComposing(false)}
+              onCreated={(minted) => {
+                setComposing(false);
+                setSecret(minted);
+              }}
+            />
+          ) : null}
+          {firstRun ? (
+            <p className="text-[11px] text-slate-500 dark:text-slate-400">
+              Connecting Claude or another AI tool? It creates its own token when you approve it.{' '}
+              <HelpArticleLink article="connectAiTool" variant="text" label="Read the guide" />
+            </p>
           ) : (
-            <>
-              <SettingsTokenOverview
-                count={tokens.list === null ? null : tokens.count}
-                max={tokens.max}
-                composing={composing || secret !== null}
-                onNew={() => setComposing(true)}
-              />
-              {secret !== null ? (
-                <SettingsTokenReveal secret={secret} onDone={() => setSecret(null)} />
-              ) : composing || firstRun ? (
-                <SettingsTokenCreate
-                  tokens={tokens}
-                  onCancel={firstRun ? undefined : () => setComposing(false)}
-                  onCreated={(minted) => {
-                    setComposing(false);
-                    setSecret(minted);
-                  }}
-                />
-              ) : null}
-              {firstRun ? (
-                <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                  Connecting Claude or another AI tool? It creates its own token when you approve
-                  it.{' '}
-                  <HelpArticleLink article="connectAiTool" variant="text" label="Read the guide" />
-                </p>
-              ) : (
-                <SettingsTokenList
-                  tokens={tokens.list}
-                  onRevoke={tokens.revoke}
-                  pairingsFor={pairings.forToken}
-                  onUnpair={pairings.unpair}
-                />
-              )}
-            </>
+            <SettingsTokenList
+              tokens={tokens.list}
+              onRevoke={(id) => void tokens.revoke(id)}
+              pairingsFor={pairings.forToken}
+              onUnpair={(id) => void pairings.unpair(id)}
+            />
           )}
         </div>
       )}
-    />
+    </SettingsRowShell>
   );
 }

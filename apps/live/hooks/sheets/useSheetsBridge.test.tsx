@@ -34,6 +34,7 @@ function opts(over: Partial<Opts> = {}): Opts {
     tickElements: vi.fn(),
     switchToPlan: vi.fn(),
     selectElement: vi.fn(),
+    sheetRetitled: vi.fn(),
     ...over,
   };
 }
@@ -42,6 +43,7 @@ const handlers = (): SheetsHandlers => ({
   receive: vi.fn(),
   title: vi.fn((id: string) => (id === 's1' ? 'Budget' : undefined)),
   release: vi.fn(),
+  retitle: vi.fn(),
   presence: vi.fn(),
   resync: vi.fn(),
   reannounce: vi.fn(),
@@ -95,7 +97,7 @@ describe('useSheetsBridge', () => {
     b.sendPresence(presenceOp);
     b.commitElements(map);
     const make = () => ({}) as never;
-    b.placeElement({ x: 1, y: 2 }, make);
+    b.placeElement({ x: 1, y: 2 }, make, { select: false });
     b.tickElements(map);
     b.switchToPlan();
     b.selectElement('el1');
@@ -104,7 +106,7 @@ describe('useSheetsBridge', () => {
     expect(next.notify).toHaveBeenCalledWith('n');
     expect(next.send).toHaveBeenCalledWith(presenceOp);
     expect(next.commitElements).toHaveBeenCalledWith(map);
-    expect(next.placeElement).toHaveBeenCalledWith({ x: 1, y: 2 }, make);
+    expect(next.placeElement).toHaveBeenCalledWith({ x: 1, y: 2 }, make, { select: false });
     expect(next.tickElements).toHaveBeenCalledWith(map);
     expect(next.switchToPlan).toHaveBeenCalledOnce();
     expect(next.selectElement).toHaveBeenCalledWith('el1');

@@ -21,7 +21,7 @@
 // Any image that is missing, over a limit, fails to load, or isn't one of the
 // accepted raster formats is left out, and the renderer draws its placeholder.
 
-import type { Tab } from '@livediagram/document';
+import { pageImageIds, type Tab } from '@livediagram/document';
 import { bytesToBase64 } from './bytes';
 import { sniffImageType } from './image-sniff';
 
@@ -35,11 +35,13 @@ export type EmbedImageLimits = {
 };
 
 // The distinct image ids a tab references, in document order.
-export function tabImageIds(tab: Pick<Tab, 'elements'>): string[] {
+export function tabImageIds(tab: Pick<Tab, 'elements'> & Partial<Pick<Tab, 'pages'>>): string[] {
   return [
-    ...new Set(
-      tab.elements.flatMap((el) => (el.type === 'image' && el.imageId ? [el.imageId] : [])),
-    ),
+    ...new Set([
+      ...tab.elements.flatMap((el) => (el.type === 'image' && el.imageId ? [el.imageId] : [])),
+      // A page's picture background (docs/specs/007-editor/illustrate-pages.md "Image backgrounds").
+      ...pageImageIds(tab.pages),
+    ]),
   ];
 }
 
@@ -56,7 +58,7 @@ function dataUrlType(bytes: Uint8Array, declared: string | null): string | null 
 }
 
 export async function embedTabImages(
-  tab: Pick<Tab, 'elements'>,
+  tab: Pick<Tab, 'elements'> & Partial<Pick<Tab, 'pages'>>,
   load: EmbedImageSource,
   limits: EmbedImageLimits = {},
 ): Promise<Map<string, string>> {

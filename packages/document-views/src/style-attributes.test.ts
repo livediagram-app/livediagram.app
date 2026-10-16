@@ -13,7 +13,7 @@ describe('styleAttributesOf', () => {
     expect(style(createText(0, 0))).toBe('');
     expect(style(createSticky(0, 0))).toBe('');
     expect(style(createTable(0, 0))).toBe('');
-    expect(style({ ...createText(0, 0), font: 'serif' } as Element)).toBe('font=serif');
+    expect(style({ ...createText(0, 0), font: 'serif' })).toBe('font=serif');
   });
 
   it('prints every present style on a kind without a factory, quoting where needed', () => {

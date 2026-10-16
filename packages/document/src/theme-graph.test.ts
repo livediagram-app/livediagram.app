@@ -95,7 +95,7 @@ describe('wrapper logs', () => {
     switchThemeElements(tree(), rainbow, theme('pastel'));
     resetThemeElementsToTheme(tree(), rainbow);
     resetArrowsToTheme(tree(), rainbow);
-    expect(info.mock.calls.map((c) => c[0])).toEqual([
+    expect(info.mock.calls.map((c): unknown => c[0])).toEqual([
       '[theme-graph] recolour theme=rainbow elements=5 branches=2',
       '[theme-graph] switch theme=pastel elements=5 branches=2',
       '[theme-graph] reset theme=rainbow elements=5 branches=2',

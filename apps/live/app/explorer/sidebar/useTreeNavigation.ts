@@ -56,7 +56,7 @@ export function useTreeNavigation(ref: RefObject<HTMLElement | null>) {
 
   const onFocus = useCallback(
     (e: React.FocusEvent<HTMLElement>) => {
-      const target = e.target as HTMLElement;
+      const target = e.target;
       if (!target.matches(ITEM)) return;
       focusedRef.current = target;
       syncTabStop();

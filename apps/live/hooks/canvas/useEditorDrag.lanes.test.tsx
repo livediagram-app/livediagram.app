@@ -27,7 +27,7 @@ import type { EditorDragDeps } from './useEditorDrag.types';
 const TIMELINE: EsTimeline = { originY: 0 };
 
 function note(id: string, x: number, y = 0): StickyElement {
-  return { id, type: 'sticky', x, y, width: 200, height: 200, label: id } as StickyElement;
+  return { id, type: 'sticky', x, y, width: 200, height: 200, label: id };
 }
 
 // A WORKSHOP note: a sticky with an event-storming kind, which always lands

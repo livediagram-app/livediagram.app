@@ -19,6 +19,7 @@ describe('DEFAULT_KEY_ENTRIES', () => {
     expect(DEFAULT_KEY_ENTRIES.map((e) => e.label)).toEqual([
       'Diagrams',
       'Whiteboards',
+      'Sessions',
       'Illustrate pages',
       'Plan boards',
       'Event Storming boards',

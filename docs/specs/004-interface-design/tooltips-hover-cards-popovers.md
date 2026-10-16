@@ -128,6 +128,34 @@ hidden. A control that shows its own text needs no hint on touch, and its long p
   untouched.
 - A tap never shows a hint.
 
+## On-screen keyboard
+
+A touch screen's keyboard covers the bottom of the screen, but a popover, menu, floating panel or bottom sheet is placed
+against the whole window, so a field in one low on the screen (a Sheet chart's **Range** in a slot's picker) went
+under the keyboard the moment it was tapped. Every floating surface stays in view while the keyboard opens and closes:
+
+- While a text field inside a floating surface (`[data-anchored-popover]`, `[data-floating-panel]`,
+  `[data-bottom-sheet]`, `[data-menu-surface]`, `role="dialog"`, `role="menu"`, or failing those the field's nearest
+  fixed ancestor short of a whole-screen layer) has focus on a touch screen, every change of the visible area
+  (`visualViewport` resize and scroll, focus in and out) checks it again, after the frame's own placement.
+- The surface moves into the visible area, 8 px clear of its edges: all of it when it fits there, else just far enough
+  to show the field, never past the surface's top. A surface capped at the room its placement had, so that it scrolls,
+  first grows to its content's height or the visible area's, whichever is less, and so moves up whole rather than
+  cutting a line under its top edge; one still taller then scrolls the field into its own view. It gets its own cap
+  back when the field lets go.
+- It moves by a `translateY` put in front of its own transform, so its placement is untouched; when the field lets go
+  of focus or the keyboard goes, it returns to where its placement puts it.
+- A panel anchored to a control (`AnchoredPopover`) never shrinks below 160 px of room on its side (or its own height,
+  when less), however little the window leaves it, so a keyboard that shrinks the window cannot squeeze it to nothing.
+- A modal `Dialog` first fits itself to the visible area (live-app.md "A dialog stays above the on-screen keyboard"),
+  so it fits there and the move above has nothing left to do.
+- Under a mouse nothing listens: no keyboard rises over the page.
+- The canvas's own fields (a label being typed) pan the canvas instead, on a tablet as on a phone
+  ([Mobile chrome](../007-editor/live-app.md)).
+
+Where it lives: `apps/live/hooks/ui/useFloatingKeyboardAvoidance.ts`, mounted once for every page by
+`components/providers/KeyboardAvoidanceBoot.tsx` in the root layout.
+
 ## Native `title`
 
 The browser's own `title` tooltip is not used for hints. It waits on the browser's own timer, never
@@ -149,6 +177,6 @@ None. Hints change no one's workflow, and hovering is not an action worth counti
 ## Where it lives
 
 - `@livediagram/ui` owns `Tooltip` and `HoverCard`, used by every app.
-- The shared lint config (`@livediagram/eslint-config`) holds the native-`title` rule.
+- The shared lint config (`@livediagram/oxlint-config`) holds the native-`title` rule.
 - Popovers keep their own homes (`packages/ui` popover positioning, the editor's menus and pickers);
   this spec only fixes what the word means. A popover that is a menu follows [Menus](./menus.md).

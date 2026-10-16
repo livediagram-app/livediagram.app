@@ -13,6 +13,7 @@ import type {
   ActivityAction,
   ActivityCard,
   ActivityCardThread,
+  ActivityFormResponses,
   ActivityPlace,
   ActivityThread,
 } from '@livediagram/api-schema';
@@ -26,7 +27,11 @@ import {
 } from '@livediagram/ui';
 import { ActionMenuIcon, CommentMenuIcon } from '@/components/palette/context-menu-icons';
 import { PlanTypeGlyph } from '@/components/plan/plan-type-glyph';
-import { cardDeepLinkHref, collabDeepLinkHref } from '@/lib/collab-deep-link';
+import { cardDeepLinkHref, collabDeepLinkHref, formResponsesHref } from '@/lib/collab-deep-link';
+import { lucideGlyph } from '@livediagram/ui';
+import { lucideClipboardList } from '@livediagram/icons/lucide';
+
+const FormGlyph = lucideGlyph(lucideClipboardList, 16);
 import { helpArticleHref } from '@/lib/help-articles';
 import { initialsOf } from '@/lib/identity';
 import { formatRelativeTimeShort, useRelativeNow } from '@/lib/relative-time';
@@ -81,7 +86,7 @@ export function ActivityActionRow({
           ? `Assigned by ${action.assigner.name?.trim() || 'a teammate'}`
           : `Assigned to ${assignee}`,
         colorClass: action.assignedToMe
-          ? `bg-brand-500 ${SOLID_BRAND_DARK}`
+          ? `bg-brand-700 ${SOLID_BRAND_DARK}`
           : 'bg-slate-400 dark:bg-slate-600',
       }}
       at={action.updatedAt}
@@ -151,7 +156,7 @@ export function ActivityCardRow({ card, onOpen }: { card: ActivityCard; onOpen: 
       avatar={{
         name: 'You',
         detail: 'Assigned to you',
-        colorClass: `bg-brand-500 ${SOLID_BRAND_DARK}`,
+        colorClass: `bg-brand-700 ${SOLID_BRAND_DARK}`,
       }}
       at={card.updatedAt}
     />
@@ -185,6 +190,29 @@ export function ActivityCardThreadRow({
   );
 }
 
+// A form with responses the reader has not seen (docs/specs/030-forms/forms.md "Hearing about responses"): how many,
+// the form, and the board they land on; it opens that board.
+export function ActivityFormResponsesRow({
+  form,
+  onOpen,
+}: {
+  form: ActivityFormResponses;
+  onOpen: () => void;
+}) {
+  return (
+    <ActivityRowShell
+      href={formResponsesHref(form)}
+      place={form}
+      where="Responses on its board"
+      onOpen={onOpen}
+      icon={<FormGlyph />}
+      title={`${form.unseen} new ${form.unseen === 1 ? 'response' : 'responses'} to ${form.heading}`}
+      detail={null}
+      at={form.latestAt}
+    />
+  );
+}
+
 // The shared row: kind glyph far left, title + detail in the middle
 // with the "where" line under them, avatar-over-time far right. The
 // whole row is one link into the editor (docs/specs/013-workspace/inbox.md §1).
@@ -209,7 +237,8 @@ function ActivityRowShell({
   title: string;
   detail: string | null;
   hint?: string | null;
-  avatar: { name: string; detail: string; colorClass?: string; color?: string };
+  // Absent where no one person stands behind the row (a form's responses).
+  avatar?: { name: string; detail: string; colorClass?: string; color?: string };
   at: number;
 }) {
   const now = useRelativeNow();
@@ -247,15 +276,17 @@ function ActivityRowShell({
           </span>
         </span>
         <span className="flex shrink-0 flex-col items-end gap-0.5">
-          <HoverCard title={avatar.name} description={avatar.detail}>
-            <GlyphDisc
-              size={24}
-              className={`text-[9px] font-semibold text-white ${avatar.colorClass ?? ''} ${avatar.color ? IDENTITY_FILL : ''}`}
-              style={avatar.color ? identityVars(avatar.color) : undefined}
-            >
-              {initialsOf(avatar.name)}
-            </GlyphDisc>
-          </HoverCard>
+          {avatar ? (
+            <HoverCard title={avatar.name} description={avatar.detail}>
+              <GlyphDisc
+                size={24}
+                className={`text-[9px] font-semibold text-white ${avatar.colorClass ?? ''} ${avatar.color ? IDENTITY_FILL : ''}`}
+                style={avatar.color ? identityVars(avatar.color) : undefined}
+              >
+                {initialsOf(avatar.name)}
+              </GlyphDisc>
+            </HoverCard>
+          ) : null}
           <span className="text-[10px] text-slate-400 dark:text-slate-400">
             {formatRelativeTimeShort(now - at)}
           </span>
@@ -266,7 +297,7 @@ function ActivityRowShell({
 }
 
 // What every row knows of its document: an element's full place, or a card's.
-type DocumentPlace = ActivityPlace | ActivityCard | ActivityCardThread;
+type DocumentPlace = ActivityPlace | ActivityCard | ActivityCardThread | ActivityFormResponses;
 
 // Which document the row is from; a team document's chip leads with the
 // team glyph so the source of the work reads at a glance.
@@ -285,9 +316,10 @@ function PlaceChip({ place }: { place: DocumentPlace }) {
 
 // Nothing outstanding anywhere. No New Document CTA: a new document puts
 // nothing on this page; assigning an action or commenting does.
-export function ActivityEmptyState() {
+export function ActivityEmptyState({ compact = false }: { compact?: boolean } = {}) {
   return (
     <EmptyState
+      compact={compact}
       icon={<InboxIcon />}
       title="Nothing waiting on you"
       description="Open actions and Plan cards assigned to you, actions you assigned, and comment threads you're in, collect here across every document."
@@ -296,7 +328,7 @@ export function ActivityEmptyState() {
         href={helpArticleHref('assignedActions')}
         target="_blank"
         rel="noreferrer noopener"
-        className={`inline-flex items-center gap-1.5 rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-500 ${SOLID_BRAND_DARK_CONTROL}`}
+        className={`inline-flex items-center gap-1.5 rounded-lg bg-brand-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-800 ${SOLID_BRAND_DARK_CONTROL}`}
       >
         How actions work
       </a>
@@ -315,7 +347,7 @@ export function ActivityFailedState({ onRetry }: { onRetry: () => void }) {
       <button
         type="button"
         onClick={onRetry}
-        className={`mt-3 inline-block rounded-md bg-brand-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-brand-500 ${SOLID_BRAND_DARK_CONTROL}`}
+        className={`mt-3 inline-block rounded-md bg-brand-700 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-brand-800 ${SOLID_BRAND_DARK_CONTROL}`}
       >
         Try again
       </button>

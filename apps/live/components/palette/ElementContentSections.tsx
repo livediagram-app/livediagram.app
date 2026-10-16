@@ -20,12 +20,8 @@ import {
 } from '@/components/palette/context-menu-icons';
 import { MenuAccordionSection, MenuGroupSeparator } from '@/components/primitives/PortalMenu';
 import { MenuTile, MenuTileGrid } from '@/components/primitives/MenuTiles';
-import {
-  ColourRow,
-  MenuToggleRow,
-  TextSizeTiles,
-  TextToggle,
-} from '@/components/palette/context-menu-rows';
+import { ColourRow, MenuToggleRow, TextToggle } from '@/components/palette/context-menu-rows';
+import { presetPxFor, TextSizeControl } from '@/components/palette/TextSizeControl';
 import { ImageCreditRow } from '@/components/palette/ImageCreditRow';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
 import type { useContextMenuScaffold } from './useContextMenuScaffold';
@@ -112,11 +108,9 @@ export function ElementContentSections({
               <StrikethroughIcon />
             </TextToggle>
           </div>
-          <p className="px-3 pb-1 text-[10px] font-medium text-slate-500 dark:text-slate-400">
-            Size
-          </p>
-          <TextSizeTiles
+          <TextSizeControl
             current={target.textSize ?? 'sm'}
+            presetPx={presetPxFor(target.type)}
             onSet={props.onSetTextSize}
             onPreview={props.onPreviewTextSize}
             onPreviewEnd={props.onPreviewStyleEnd}
@@ -264,9 +258,10 @@ export function ElementContentSections({
       {/* ── Collaboration group (docs/specs/012-collaboration/assigned-actions.md): two categories — Collaborate
             (the people tiles: Assign Action + Comments) then Resources
             (the attached-material tiles: Link + Note). Both boxed-only:
-            arrows can't be linked, noted, commented on, or assigned. */}
+            arrows can't be linked, noted, commented on, or assigned, and nor can a Plan item
+            (docs/specs/026-plan/plan-mode.md "Nothing attached to Plan items"). */}
       {showCollaborateGroup ? <MenuGroupSeparator /> : null}
-      {boxed ? (
+      {boxed && showCollaborateGroup ? (
         <MenuAccordionSection
           title="Collaborate"
           icon={<CommentMenuIcon />}
@@ -297,7 +292,7 @@ export function ElementContentSections({
           </MenuTileGrid>
         </MenuAccordionSection>
       ) : null}
-      {boxed ? (
+      {boxed && showCollaborateGroup ? (
         <MenuAccordionSection
           title="Resources"
           icon={<LinkMenuIcon />}

@@ -6,7 +6,7 @@
 // into the editor as every other scene. Chrome (panels, labels) still comes
 // from the shared primitives.
 
-import { Scene, Panel, Label, TextBar } from './primitives';
+import { Scene, Panel, Label } from './primitives';
 
 // --- Reusable motif builders -------------------------------------------------
 
@@ -75,7 +75,8 @@ function ProgressRing({
         strokeDasharray={`${on} ${circ - on}`}
         transform={`rotate(-90 ${cx} ${cy})`}
       />
-      <Label x={cx} y={cy + 1} anchor="middle" size={14} weight={700} tone="strong">
+      {/* A small ring gets a smaller figure, so it sits inside the band rather than touching it. */}
+      <Label x={cx} y={cy + 1} anchor="middle" size={r < 26 ? 11 : 14} weight={700} tone="strong">
         {pct}%
       </Label>
     </g>
@@ -204,8 +205,9 @@ function PieLegendRow({ cx, y }: { cx: number; y: number }) {
   );
 }
 
-/** A horizontal timeline rail: evenly spaced milestone dots, each with its
- *  label above it, as RailView draws it. */
+/** A horizontal timeline rail as RailView draws it: the line, evenly spaced dots
+ *  above it, each joined to it by a short tick, with its label above the dot. Slate,
+ *  the element's default colours. */
 function TimelineRail({ x, y, w, points }: { x: number; y: number; w: number; points: string[] }) {
   const n = points.length;
   const step = w / (n - 1);
@@ -213,10 +215,10 @@ function TimelineRail({ x, y, w, points }: { x: number; y: number; w: number; po
     <g>
       <line
         x1={x}
-        y1={y}
+        y1={y + 14}
         x2={x + w}
-        y2={y}
-        className="stroke-brand-300"
+        y2={y + 14}
+        className="stroke-slate-400"
         strokeWidth={3}
         strokeLinecap="round"
       />
@@ -224,11 +226,12 @@ function TimelineRail({ x, y, w, points }: { x: number; y: number; w: number; po
         const px = x + i * step;
         return (
           <g key={i}>
+            <line x1={px} y1={y} x2={px} y2={y + 14} className="stroke-slate-400" strokeWidth={2} />
             <circle
               cx={px}
               cy={y}
               r={7}
-              className="fill-brand-500 stroke-white"
+              className="fill-slate-500 stroke-white"
               strokeWidth={2.5}
             />
             <Label x={px} y={y - 20} anchor="middle" size={10} weight={600} tone="body">
@@ -255,7 +258,7 @@ export function DataElementsOverview() {
         <ProgressRing cx={252} cy={53} r={22} pct={65} />
       </Panel>
       <Panel x={312} y={18} w={88} h={70} title="RATING">
-        <StarRow x={322} cy={62} r={8} filled={4} gap={16} />
+        <StarRow x={326} cy={62} r={6.5} filled={4} gap={15} />
       </Panel>
       <Panel x={20} y={104} w={172} h={120} title="PIE">
         <Pie cx={70} cy={172} r={38} />
@@ -292,10 +295,8 @@ export function ProgressBarAndRing() {
 export function StarRating() {
   return (
     <Scene w={420} h={170}>
-      <StarRow x={94} cy={78} r={20} filled={4} gap={56} />
-      <Label x={210} y={130} anchor="middle" size={12} weight={600} tone="muted">
-        4 of 5
-      </Label>
+      {/* The element draws only the stars, no score label (RatingView.tsx). Centred on the scene. */}
+      <StarRow x={98} cy={85} r={20} filled={4} gap={56} />
     </Scene>
   );
 }
@@ -317,9 +318,10 @@ export function PieChartWithLegend() {
 export function LegendCard() {
   return (
     <Scene w={420} h={200}>
-      <Panel x={120} y={26} w={180} h={148} title="LEGEND">
+      {/* No heading: the legend element draws only its dot-and-label rows (LegendView.tsx). */}
+      <Panel x={120} y={44} w={180} h={120}>
         {PIE_SLICES.map((s, i) => {
-          const cy = 84 + i * 26;
+          const cy = 66 + i * 26;
           return (
             <g key={s.label}>
               <circle cx={144} cy={cy} r={6} className={s.cls} />
@@ -408,7 +410,6 @@ export function TimelineRailScene() {
   return (
     <Scene w={420} h={150}>
       <TimelineRail x={48} y={68} w={324} points={['Kickoff', 'Design', 'Build', 'Launch']} />
-      <TextBar x={158} y={108} w={104} tone="faint" />
     </Scene>
   );
 }

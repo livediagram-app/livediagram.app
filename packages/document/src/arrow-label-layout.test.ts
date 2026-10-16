@@ -327,3 +327,36 @@ describe('arrow label measurement across a font load', () => {
     expect(again.width).toBe(first.width);
   });
 });
+
+describe('a label on a shared run', () => {
+  it('cuts every line run along it on that track, and no line that only crosses it', () => {
+    const box = (id: string, x: number, y: number) =>
+      ({ id, type: 'shape', shape: 'square', x, y, width: 40, height: 40 }) as Element;
+    const pinned = (id: string, from: string, fa: string, to: string, ta: string, label?: string) =>
+      ({
+        id,
+        type: 'arrow',
+        arrowStyle: 'straight',
+        from: { kind: 'pinned', elementId: from, anchor: fa },
+        to: { kind: 'pinned', elementId: to, anchor: ta },
+        ...(label ? { label, labelOffset: { t: 0.5, offset: 0 } } : {}),
+      }) as Element;
+    // a and b run level along one track (into two targets, so no fan spreads their ends); c drops across it at the
+    // label's middle.
+    const elements = [
+      box('a', 0, 0),
+      box('b', -200, 0),
+      box('t', 600, 0),
+      box('t2', 600, 0),
+      box('c', 300, -200),
+      box('d', 300, 200),
+      pinned('ab', 'a', 'e', 't', 'w', 'publish'),
+      pinned('bb', 'b', 'e', 't2', 'w'),
+      pinned('cd', 'c', 's', 'd', 'n'),
+    ];
+    const pass = arrowLabelPass(elements);
+    const label = pass.layouts.get('ab')!.knockout!;
+    expect(pass.knockoutsOf('bb')).toContainEqual(label);
+    expect(pass.knockoutsOf('cd')).not.toContainEqual(label);
+  });
+});

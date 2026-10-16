@@ -112,7 +112,8 @@ export function excalidrawToBoardScene(envelope: ExcalidrawEnvelope): BoardScene
   for (const el of elements) {
     if (consumed.has(el)) continue;
     const key = keyOf.get(el)!;
-    const type = el.type ?? '';
+    // A type that is not text (a malformed file) is skipped as unknown, as a missing one is.
+    const type = typeof el.type === 'string' ? el.type : '';
     if (!MAPPED.has(type)) {
       notes.add(skippedTypeRule(type || 'unknown'), 'skipped');
       continue;
@@ -128,7 +129,7 @@ export function excalidrawToBoardScene(envelope: ExcalidrawEnvelope): BoardScene
       items.push({
         ...common,
         kind: 'shape',
-        shape: SHAPES[type]!,
+        shape: SHAPES[type],
         ...boxOf(el),
         ...(el.roundness ? { rounded: true } : {}),
         stroke: strokeOf(el, notes),

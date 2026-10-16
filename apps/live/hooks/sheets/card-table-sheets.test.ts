@@ -13,8 +13,10 @@ import {
 
 afterEach(() => forgetCardTableSheets());
 
-const shape = (kind: Parameters<typeof createShape>[0], extra: object = {}): Element =>
-  ({ ...createShape(kind, 0, 0), ...extra }) as Element;
+const shape = (kind: Parameters<typeof createShape>[0], extra: object = {}): Element => ({
+  ...createShape(kind, 0, 0),
+  ...extra,
+});
 
 describe('showsCards', () => {
   const none = new Set<string>();

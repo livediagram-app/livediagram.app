@@ -183,8 +183,15 @@ describe('buildSearchResults', () => {
 });
 
 describe('buildSearchResults — table cells (docs/specs/008-canvas/canvas-and-palette.md Search panel)', () => {
-  const table = (id: string, cells: string[][]): Element =>
-    ({ id, type: 'table', x: 0, y: 0, width: 200, height: 100, cells }) as Element;
+  const table = (id: string, cells: string[][]): Element => ({
+    id,
+    type: 'table',
+    x: 0,
+    y: 0,
+    width: 200,
+    height: 100,
+    cells,
+  });
 
   it('matches a table by its cell text and surfaces the matching cell as the label', () => {
     const t = tab('t1', 'Tab', [
@@ -466,7 +473,7 @@ describe('buildSearchResults — help articles (docs/specs/018-help/help-app.md 
     const out = buildSearchResults({ query: 'hotkey', documents: [], folders: [], helpItems });
     const help = out.find((g) => g.key === 'help')!;
     expect(help.items).toHaveLength(1);
-    expect(help.items[0]!.kind === 'help' && help.items[0]!.leaf).toBe('keyboard-shortcuts');
+    expect(help.items[0]!.kind === 'help' && help.items[0].leaf).toBe('keyboard-shortcuts');
   });
 
   it('does not surface help on an empty query (no catalogue dump)', () => {

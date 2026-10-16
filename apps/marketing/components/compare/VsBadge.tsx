@@ -12,7 +12,7 @@ export function VsBadge({ slug, size = 'lg' }: { slug: string; size?: 'lg' | 'sm
   return (
     <span className="inline-flex items-center gap-3" aria-hidden="true">
       <span
-        className={`flex items-center justify-center bg-brand-500 text-white shadow-md shadow-brand-500/25 dark:bg-brand-600 ${tile}`}
+        className={`flex items-center justify-center bg-brand-700 text-white shadow-md shadow-brand-500/25 dark:bg-brand-600 ${tile}`}
       >
         <BrandMark className={mark} tone="mono" />
       </span>

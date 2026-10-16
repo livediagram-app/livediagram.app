@@ -17,13 +17,7 @@ import {
   type QuickCorners,
   type QuickStyleView,
 } from './quick-style';
-import {
-  customOptions,
-  INK_CHOICE,
-  stockOptions,
-  type PenColourChoice,
-  type PenPalette,
-} from './quick-style-pen';
+import { INK_CHOICE, stockOptions, type PenColourChoice, type PenPalette } from './quick-style-pen';
 
 type Coloured = {
   strokeColor?: string;
@@ -43,7 +37,7 @@ const shared = <T>(values: T[]): T | null =>
   values.length > 0 && values.every((v) => v === values[0]) ? values[0]! : null;
 
 function section(values: (PenColourChoice | null)[], palette: PenPalette): BoardColourSection {
-  return { value: shared(values), options: stockOptions(palette), custom: customOptions(palette) };
+  return { value: shared(values), options: stockOptions(palette) };
 }
 
 // A target whose line the Stroke row colours (a shape that draws one, an arrow, a path).
@@ -153,12 +147,12 @@ export function applyBoardStroke(el: Element, choice: PenColourChoice): Element 
     ...rest
   } = el as Element & Coloured & { strokeSwatch?: unknown };
   const cleared = rest.type === 'shape' ? { ...rest, colorPreset: undefined } : rest;
-  return { ...cleared, ...colourFields(choice, 'penColour', 'strokeColor') } as Element;
+  return { ...cleared, ...colourFields(choice, 'penColour', 'strokeColor') };
 }
 
 /** The Text colour row on a whiteboard: a text box's colour, any swatch binding replaced. */
 export function applyBoardTextColour(el: Element, choice: PenColourChoice): Element {
   if (!takesText(el) || el.type !== 'text') return el;
   const { textColor: _c, penTextColour: _n, textSwatch: _s, ...rest } = el;
-  return { ...rest, ...colourFields(choice, 'penTextColour', 'textColor') } as Element;
+  return { ...rest, ...colourFields(choice, 'penTextColour', 'textColor') };
 }

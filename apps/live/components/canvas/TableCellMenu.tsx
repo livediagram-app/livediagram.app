@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { createPortal } from 'react-dom';
-import type { TableCellStyle, TableElement, TextSize } from '@livediagram/document';
+import type { TableCellStyle, TableElement } from '@livediagram/document';
 import { ContextMenu, ContextMenuDivider } from '@/components/palette/ContextMenu';
 import { SizeButton } from '@/components/palette/palette-controls';
 import {
@@ -11,7 +11,7 @@ import {
 import { ColourRow } from '@/components/palette/context-menu-input-rows';
 import { FillColourIcon, TextColourIcon } from '@/components/palette/context-menu-icons';
 import { useColourPalette } from '@/hooks/ui/useColourPalette';
-import { TextSizeTiles } from '@/components/palette/context-menu-rows';
+import { presetPxFor, TextSizeControl } from '@/components/palette/TextSizeControl';
 import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
 import { MenuTile, MenuTileGrid } from '@/components/primitives/MenuTiles';
 import { AlignIcon, CellLinkIcon } from '@/components/canvas/table-icons';
@@ -110,10 +110,15 @@ export function TableCellMenu({
             <span className="underline">U</span>
           </button>
         </div>
-        <p className="px-3 pb-1 text-[10px] font-medium text-slate-500 dark:text-slate-400">Size</p>
-        <TextSizeTiles
-          current={(sc?.textSize ?? element.textSize ?? 'md') as TextSize}
-          onSet={(size) => applyStyle({ textSize: size })}
+        <TextSizeControl
+          current={sc?.textSize ?? element.textSize ?? 'md'}
+          presetPx={presetPxFor('table')}
+          onSet={(textSize) => {
+            onPreviewStyle?.(null);
+            applyStyle({ textSize });
+          }}
+          onPreview={(textSize) => onPreviewStyle?.({ textSize })}
+          onPreviewEnd={() => onPreviewStyle?.(null)}
         />
       </MenuAccordionSection>
       {/* The SAME colour picker every other element gets (docs/specs/004-interface-design/colour-picker.md):

@@ -22,7 +22,7 @@ import { ITEM_TYPES, itemTitle, typeIn } from '@livediagram/items';
 import { usePlan } from '@/components/plan/PlanContext';
 import { useSelectionOf } from '@/hooks/canvas/useSelectionStore';
 import { sameMembers, selectionIds, type Selection } from '@/lib/selection-store';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 
 import { slideName, type Slide } from '@livediagram/document';
 
@@ -30,217 +30,15 @@ import { ModePanel, type ModePanelProps } from '@/components/panels/ModePanel';
 import { PageSlidePicker } from '@/components/panels/PageSlidePicker';
 import { SlideRowMenu } from '@/components/panels/SlideRowMenu';
 import { SlideDeckSettingsPopover } from '@/components/panels/SlideDeckSettingsPopover';
-import { EyeOffIcon } from '@/components/panels/layers-panel-icons';
+import { SlideDeckRow } from '@/components/panels/SlideDeckRow';
+import { PlayIcon } from '@/components/primitives/PlayIcon';
 import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
 import type { SlideDeckState } from '@/app/document/[id]/useSlideDeck';
 import { track } from '@/lib/telemetry';
-import { isDragTravel } from '@/lib/press-gestures';
-import { HoverCard, SOLID_BRAND_DARK_CONTROL, Glyph } from '@livediagram/ui';
-import { useLatest } from '@/hooks/ui/useLatest';
-
-function PlayIcon() {
-  return (
-    <Glyph size={12} units={12} filled>
-      <path d="M3 1.8 10 6l-7 4.2z" />
-    </Glyph>
-  );
-}
-
-/** Where a dropped row will land, drawn between rows like the tab bar's caret. */
-function DropCaret() {
-  return <div aria-hidden className="pointer-events-none -my-0.5 h-0.5 rounded bg-brand-500" />;
-}
-
-/** One slide row: position, name, and where it came from. */
-function SlideRow({
-  slide,
-  index,
-  tabName,
-  pageName,
-  isOpen,
-  isDragging,
-  renaming,
-  thumb,
-  card,
-  onOpen,
-  onRename,
-  onRenameDone,
-  menu,
-  onPointerDown,
-  onPointerMove,
-  onPointerUp,
-}: {
-  slide: Slide;
-  index: number;
-  /** Absent when the slide's tab has been deleted. */
-  tabName: string | undefined;
-  // A page slide's page, named (when its tab is the one in Illustrate mode); else "Page".
-  pageName?: string;
-  isOpen: boolean;
-  isDragging: boolean;
-  renaming: boolean;
-  /** Preview markup + viewBox, absent for an empty slide or a missing tab. */
-  thumb: { markup: string; viewBox: string } | undefined;
-  // An item slide's card (docs/specs/012-collaboration/presentation-mode.md "Item slides"): its title and
-  // type colour, for the row's name and picture. Absent for every other slide, or a deleted item.
-  card?: { title: string; color: string };
-  onOpen: () => void;
-  onRename: (name: string) => void;
-  onRenameDone: () => void;
-  menu: React.ReactNode;
-  onPointerDown: (e: React.PointerEvent) => void;
-  onPointerMove: (e: React.PointerEvent) => void;
-  onPointerUp: (e: React.PointerEvent) => void;
-}) {
-  const [draft, setDraft] = useState('');
-  const inputRef = useRef<HTMLInputElement | null>(null);
-  // The draft is seeded during render from the name it is renaming (null while not renaming), and
-  // re-seeded if that name changes underneath.
-  const name = slide.name ?? '';
-  const [renamingFrom, setRenamingFrom] = useState<string | null>(null);
-  if (renaming && renamingFrom !== name) {
-    setRenamingFrom(name);
-    setDraft(name);
-  } else if (!renaming && renamingFrom !== null) {
-    setRenamingFrom(null);
-  }
-  useEffect(() => {
-    if (!renaming) return;
-    // Select rather than just focus: renaming usually replaces the name.
-    const t = window.setTimeout(() => inputRef.current?.select(), 0);
-    return () => window.clearTimeout(t);
-  }, [renaming, name]);
-
-  const commit = () => {
-    onRename(draft);
-    onRenameDone();
-  };
-
-  return (
-    <div
-      data-slide-slot={index}
-      onPointerDown={onPointerDown}
-      onPointerMove={onPointerMove}
-      onPointerUp={onPointerUp}
-      onPointerCancel={onPointerUp}
-      // Without this a touch-drag scrolls the panel instead of moving the row.
-      style={{ touchAction: 'none' }}
-      className={`flex w-full items-center gap-2 rounded-md border px-2 py-1.5 text-left transition ${
-        isDragging
-          ? 'cursor-grabbing border-brand-400 bg-brand-50 opacity-50 dark:border-brand-500/60 dark:bg-brand-500/15'
-          : isOpen
-            ? 'cursor-grab border-brand-300 bg-brand-50/70 dark:border-brand-500/50 dark:bg-brand-500/10'
-            : 'cursor-grab border-slate-200 bg-white hover:border-brand-300 dark:border-slate-700 dark:bg-slate-800/60'
-      }`}
-    >
-      <span
-        className={`w-4 shrink-0 text-center text-[10px] font-semibold tabular-nums ${
-          slide.hidden ? 'text-slate-300 dark:text-slate-600' : 'text-slate-400'
-        }`}
-      >
-        {index + 1}
-      </span>
-      {/* A passive marker, not a control: the toggle lives in the row's menu
-          under Visibility, so the row stays one press = open this slide. */}
-      {slide.hidden ? (
-        <HoverCard
-          title="Hidden from the presentation"
-          description="This slide is skipped when you present. Show it again from its menu."
-        >
-          <span
-            aria-label="Hidden from the presentation"
-            className="flex h-5 w-5 shrink-0 items-center justify-center text-slate-300 dark:text-slate-600"
-          >
-            <EyeOffIcon />
-          </span>
-        </HoverCard>
-      ) : null}
-      {/* The picture of the slide. A deck row without one is a list of names,
-          and seeing the shape of the talk is the whole point of a sorter. It
-          dims with the row when the slide is hidden. */}
-      <span
-        className={`flex h-8 w-11 shrink-0 items-center justify-center overflow-hidden rounded border border-slate-200 bg-white transition dark:border-slate-700 dark:bg-slate-950 ${
-          slide.hidden ? 'opacity-40' : ''
-        }`}
-      >
-        {thumb ? (
-          <svg
-            viewBox={thumb.viewBox}
-            preserveAspectRatio="xMidYMid meet"
-            className="h-full w-full"
-            aria-hidden
-            dangerouslySetInnerHTML={{ __html: thumb.markup }}
-          />
-        ) : slide.itemId ? (
-          <span
-            aria-hidden
-            className="relative flex h-5 w-8 flex-col justify-center gap-0.5 overflow-hidden rounded-sm border border-slate-200 bg-white pl-1.5 dark:border-slate-600 dark:bg-slate-800"
-          >
-            <span
-              className="absolute inset-y-0 left-0 w-0.5"
-              style={{ backgroundColor: card?.color ?? '#94a3b8' }}
-            />
-            <span className="h-0.5 w-4 rounded-full bg-slate-400" />
-            <span className="h-0.5 w-2.5 rounded-full bg-slate-300 dark:bg-slate-600" />
-          </span>
-        ) : null}
-      </span>
-      {renaming ? (
-        <input
-          ref={inputRef}
-          value={draft}
-          autoFocus
-          onChange={(e) => setDraft(e.target.value)}
-          onBlur={commit}
-          // The canvas listens for keys; a text field has to keep its own or
-          // typing a slide name would fire tool shortcuts.
-          onKeyDown={(e) => {
-            e.stopPropagation();
-            if (e.key === 'Enter') commit();
-            if (e.key === 'Escape') onRenameDone();
-          }}
-          onPointerDown={(e) => e.stopPropagation()}
-          placeholder={`Slide ${index + 1}`}
-          className="min-w-0 flex-1 rounded border border-brand-300 bg-white px-1 py-0.5 text-[11px] text-slate-800 outline-none dark:bg-slate-900 dark:text-slate-100"
-        />
-      ) : (
-        <button
-          type="button"
-          onClick={onOpen}
-          className="flex min-w-0 flex-1 cursor-pointer flex-col text-left"
-        >
-          <span
-            className={`truncate text-[11px] font-medium ${
-              slide.hidden
-                ? 'text-slate-400 line-through dark:text-slate-400'
-                : 'text-slate-700 dark:text-slate-200'
-            }`}
-          >
-            {slide.name ?? card?.title ?? slideName(slide, index)}
-          </span>
-          <span className="truncate text-[9px] text-slate-400">
-            {/* The tab is named because a deck spans tabs: "3 elements" on its
-                own does not say which tab they are on. A slide whose tab has
-                been deleted says so rather than showing a blank. */}
-            {tabName ?? 'Tab deleted'} ·{' '}
-            {slide.itemId
-              ? card
-                ? 'Card'
-                : 'Card deleted'
-              : slide.pageId
-                ? (pageName ?? 'Page deleted')
-                : slide.elementIds.length === 1
-                  ? '1 element'
-                  : `${slide.elementIds.length} elements`}
-            {slide.notes ? ' · notes' : ''}
-            {slide.hidden ? ' · hidden' : ''}
-          </span>
-        </button>
-      )}
-      {menu}
-    </div>
-  );
-}
+import { rowDropIndex, useRowReorderDrag } from '@/hooks/ui/useRowReorderDrag';
+import { DropCaret } from '@/components/primitives/DropCaret';
+import { SOLID_BRAND_DARK_CONTROL } from '@livediagram/ui';
+import { SlideDeckIcon } from '@/components/palette/palette-icons';
 
 const selectionSetOf = (s: Selection) => selectionIds(s.selectedId, s.multiSelectedIds);
 
@@ -259,9 +57,11 @@ export function SlideDeckPanel({
   activeTabId: string;
   isReadOnly: boolean;
   // The active tab's pages while it is shown in Illustrate mode: slides are then added a page at
-  // a time (PageSlidePicker) rather than from a selection.
-  pages?: readonly { id: string; label: string }[];
+  // a time (PageSlidePicker) rather than from a selection, and its slide pages all at once.
+  pages?: readonly { id: string; label: string; slide?: boolean }[];
 } & ModePanelProps) {
+  // The Illustrate popover: room for large pictures, headlines and Present from Here.
+  const roomy = placement.asPopover === true;
   // An item slide's card, read live from the items (docs/specs/012-collaboration/presentation-mode.md
   // "Item slides").
   const plan = usePlan();
@@ -277,6 +77,7 @@ export function SlideDeckPanel({
     runnable,
     thumbs,
     pageLabels,
+    headlines,
     newSlideFromSelection,
     newPageSlide,
     addSelectionToSlide,
@@ -316,130 +117,123 @@ export function SlideDeckPanel({
   const deleting = deck.slides.find((s) => s.id === confirmDelete?.id) ?? null;
   const notesSlide = deck.slides.find((s) => s.id === notesForId) ?? null;
 
-  // Row drag. The order does NOT change while you drag: a caret shows where the
-  // row will land and the move commits on release. Reordering live meant the
-  // list reshuffled under the pointer, which moved the very row you were aiming
-  // at — the tab bar settled this question already (docs/specs/006-document/tab-folders.md) and this follows
-  // it, with pointer events instead of HTML5 dnd so it works on touch.
-  const [draggingId, setDraggingId] = useState<string | null>(null);
-  const [moving, setMoving] = useState(false);
-  const [dropAt, setDropAt] = useState<{ index: number; side: 'before' | 'after' } | null>(null);
-  const origin = useRef<{ x: number; y: number } | null>(null);
-  const dragging = useRef(false);
-  const dropRef = useLatest<{ index: number; side: 'before' | 'after' } | null>(dropAt);
+  // Row drag: a caret shows where the row lands, the move commits on release (useRowReorderDrag).
+  const { draggingId, moving, beginDrag, moveDrag, endDrag, caretBefore, caretAfterLast } =
+    useRowReorderDrag({
+      slot: 'slide-slot',
+      count: deck.slides.length,
+      disabled: isReadOnly,
+      onDrop: (id, drop) => {
+        const to = rowDropIndex(
+          deck.slides.findIndex((s) => s.id === id),
+          drop,
+          deck.slides.length,
+        );
+        if (to !== null) reorderSlides(id, to);
+      },
+    });
 
-  const slotUnder = (x: number, y: number) => {
-    const el = document.elementFromPoint(x, y)?.closest('[data-slide-slot]');
-    if (!el) return null;
-    const raw = el.getAttribute('data-slide-slot');
-    if (raw === null) return null;
-    const rect = el.getBoundingClientRect();
-    return {
-      index: Number(raw),
-      // Which half the pointer is in decides the side, so the caret sits
-      // exactly where the row will land.
-      side: (y < rect.top + rect.height / 2 ? 'before' : 'after') as 'before' | 'after',
-    };
+  // The talk's planned length: every shown slide's minutes.
+  const totalMinutes = deck.slides.reduce((n, sl) => n + (sl.hidden ? 0 : (sl.minutes ?? 0)), 0);
+  // A deck spanning tabs names each slide's tab.
+  const spansTabs = new Set(deck.slides.map((sl) => sl.tabId)).size > 1;
+  // The active tab's slide pages not yet in the deck, for Add All Slide Pages.
+  const inDeck = new Set(
+    deck.slides.filter((sl) => sl.tabId === activeTabId && sl.pageId).map((sl) => sl.pageId),
+  );
+  const missingSlidePages = (pages ?? []).filter((p) => p.slide && !inDeck.has(p.id));
+  const addAll = () => {
+    track('UI', 'Added', 'AllPageSlides');
+    for (const p of missingSlidePages) newPageSlide(p.id);
   };
-
-  const beginDrag = (e: React.PointerEvent, id: string) => {
-    if (e.button !== 0 || isReadOnly) return;
-    origin.current = { x: e.clientX, y: e.clientY };
-    dragging.current = false;
-    setMoving(false);
-    setDraggingId(id);
-    // NOT captured here. A row carries a press target and a `…` button, and
-    // capturing on pointer-down redirects every later event to the row, so the
-    // click those needed never arrives. Capture happens once it IS a drag.
-  };
-
-  const moveDrag = (e: React.PointerEvent) => {
-    if (!draggingId || !origin.current) return;
-    if (!dragging.current) {
-      const dx = e.clientX - origin.current.x;
-      const dy = e.clientY - origin.current.y;
-      if (!isDragTravel(dx, dy)) return;
-      dragging.current = true;
-      setMoving(true);
-      e.currentTarget.setPointerCapture(e.pointerId);
-    }
-    // elementFromPoint, not the event target: pointer capture keeps every move
-    // on the row the drag started from.
-    setDropAt(slotUnder(e.clientX, e.clientY));
-  };
-
-  const endDrag = (e: React.PointerEvent) => {
-    if (dragging.current && e.currentTarget.hasPointerCapture?.(e.pointerId)) {
-      e.currentTarget.releasePointerCapture(e.pointerId);
-    }
-    const target = dropRef.current;
-    const id = draggingId;
-    if (dragging.current && id && target) {
-      const from = deck.slides.findIndex((s) => s.id === id);
-      // The caret sits BETWEEN rows, so 'after' means the slot below. Pulling
-      // the dragged row out first shifts everything below it up by one, which
-      // is why a downward move loses a step.
-      let to = target.side === 'before' ? target.index : target.index + 1;
-      if (from >= 0 && from < to) to -= 1;
-      const clamped = Math.max(0, Math.min(deck.slides.length - 1, to));
-      if (from >= 0 && clamped !== from) reorderSlides(id, clamped);
-    }
-    setDraggingId(null);
-    setMoving(false);
-    setDropAt(null);
-    dragging.current = false;
-    origin.current = null;
-  };
-
-  const caretBefore = (i: number) =>
-    moving &&
-    dropAt !== null &&
-    (dropAt.side === 'before' ? dropAt.index === i : dropAt.index === i - 1);
+  const addAllButton =
+    !isReadOnly && missingSlidePages.length > 0 ? (
+      <button
+        type="button"
+        onClick={addAll}
+        className="flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-brand-300 bg-brand-50/60 px-3 py-2 text-xs font-semibold text-brand-700 transition hover:border-brand-400 hover:bg-brand-50 focus-visible:outline-2 focus-visible:outline-brand-600 dark:border-brand-500/40 dark:bg-brand-500/10 dark:text-brand-200 dark:hover:bg-brand-500/20"
+      >
+        <SlideDeckIcon />
+        {missingSlidePages.length === 1
+          ? 'Add the Slide Page'
+          : `Add All ${missingSlidePages.length} Slide Pages`}
+      </button>
+    ) : null;
 
   return (
     <ModePanel
       title="Slide Deck"
       helpArticle="slideDeck"
+      // The Illustrate tour's Present step rings it (docs/specs/007-editor/illustrate-tour.md).
+      dataTourId="slide-deck"
       // The SAME presenter settings the HUD's cog carries, reachable BEFORE
       // you start. Discovering "Actual size" or "Auto-advance" mid-talk means
       // changing it while a room watches; the point of a rehearsal is
       // arriving with it already set. One state, one localStorage key, two
       // doors — so whichever you find, the other agrees.
       headerActions={
-        isReadOnly ? undefined : (
-          <SlideDeckSettingsPopover
-            config={state.config}
-            onChange={state.updateConfig}
-            onResetPosition={placement.onReset ?? (() => {})}
-            resettable={placement.position !== null}
-          />
-        )
+        <>
+          {deck.slides.length > 0 ? (
+            <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold tabular-nums text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+              {deck.slides.length === 1 ? '1 slide' : `${deck.slides.length} slides`}
+              {totalMinutes > 0 ? ` · ${totalMinutes} min` : ''}
+            </span>
+          ) : null}
+          {isReadOnly ? null : (
+            <SlideDeckSettingsPopover
+              config={state.config}
+              onChange={state.updateConfig}
+              onResetPosition={placement.onReset ?? (() => {})}
+              resettable={placement.position !== null}
+            />
+          )}
+        </>
       }
+      {...(roomy ? { popoverWidth: 'w-[420px]' } : {})}
       {...placement}
     >
-      <div className="flex max-h-[26rem] flex-col gap-2 px-2 pb-2">
+      <div
+        className={`flex flex-col gap-2 px-2 pb-2 ${roomy ? 'max-h-[min(calc(100vh-200px),620px)]' : 'max-h-[26rem]'}`}
+      >
         {deck.slides.length === 0 ? (
-          <p className="px-1 py-3 text-center text-[11px] leading-snug text-slate-400 dark:text-slate-400">
-            {/* Each way in names the button it has: an Illustrate tab adds a page at a time. */}
-            {pages
-              ? 'No slides yet. Pick a page, then press'
-              : 'No slides yet. Select what you want on the first slide, then press'}{' '}
-            <span className="font-medium text-slate-500 dark:text-slate-300">
-              {pages ? 'Add as slide' : 'New slide'}
+          <div className="flex flex-col items-center gap-2 px-2 py-5 text-center">
+            <span className="flex h-11 w-11 items-center justify-center rounded-full bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-200">
+              <SlideDeckIcon />
             </span>
-            .
-          </p>
+            <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">
+              Build your deck
+            </p>
+            <p className="max-w-[18rem] text-xs leading-snug text-slate-500 dark:text-slate-400">
+              {/* Each way in names the button it has: an Illustrate tab adds a page at a time. */}
+              {pages
+                ? 'Add your slide pages in one go, or pick any page below and press'
+                : 'Select what you want on the first slide, then press'}{' '}
+              <span className="font-medium text-slate-700 dark:text-slate-200">
+                {pages ? 'Add as slide' : 'New slide'}
+              </span>
+              .
+            </p>
+            {addAllButton}
+          </div>
         ) : (
-          <div className="flex max-h-52 flex-col gap-1 overflow-y-auto overflow-x-hidden py-px">
+          <div
+            className={`flex flex-col gap-1 overflow-y-auto overflow-x-hidden py-px ${roomy ? 'min-h-0 flex-1' : 'max-h-52'}`}
+          >
             {deck.slides.map((slide, i) => (
               <div key={slide.id} className="flex flex-col gap-1">
                 {caretBefore(i) ? <DropCaret /> : null}
-                <SlideRow
+                <SlideDeckRow
                   slide={slide}
                   index={i}
                   tabName={tabNames.get(slide.tabId)}
+                  showTab={spansTabs || !roomy}
                   // From the slide's own tab's pages, so a slide on another tab names its page too.
-                  pageName={pageLabels.get(slide.id) ?? undefined}
+                  pageName={pageLabels.get(slide.id) ?? null}
+                  headline={headlines.get(slide.id)}
+                  roomy={roomy}
+                  onPresentFrom={
+                    slide.hidden || runnable.length === 0 ? undefined : () => void start(slide.id)
+                  }
                   isOpen={slide.id === openSlideId}
                   isDragging={draggingId === slide.id && moving}
                   renaming={renamingId === slide.id}
@@ -476,9 +270,7 @@ export function SlideDeckPanel({
               </div>
             ))}
             {/* The caret past the last row, for a drop below everything. */}
-            {moving && dropAt?.side === 'after' && dropAt.index === deck.slides.length - 1 ? (
-              <DropCaret />
-            ) : null}
+            {caretAfterLast ? <DropCaret /> : null}
           </div>
         )}
 
@@ -542,6 +334,7 @@ export function SlideDeckPanel({
           </label>
         ) : null}
 
+        {deck.slides.length > 0 ? addAllButton : null}
         {!isReadOnly && pages ? (
           <PageSlidePicker pages={pages} onAdd={newPageSlide} />
         ) : !isReadOnly ? (
@@ -561,7 +354,9 @@ export function SlideDeckPanel({
           type="button"
           onClick={() => void start()}
           disabled={runnable.length === 0 || startingDeck}
-          className={`flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-md bg-brand-600 px-2 py-2 text-[11px] font-semibold text-white transition hover:bg-brand-700 disabled:cursor-default disabled:opacity-40 ${SOLID_BRAND_DARK_CONTROL}`}
+          className={`flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-md bg-brand-700 font-semibold text-white transition hover:bg-brand-800 disabled:cursor-default disabled:opacity-40 ${
+            roomy ? 'rounded-lg px-3 py-2.5 text-sm' : 'px-2 py-2 text-[11px]'
+          } ${SOLID_BRAND_DARK_CONTROL}`}
         >
           <PlayIcon />
           {startingDeck ? 'Loading…' : 'Present'}

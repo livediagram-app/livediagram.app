@@ -6,10 +6,14 @@
 // what the type leaves out, so a status added later is open to every type. All may be unticked: such a card stays in
 // the status it is made in. A type leaves out at most ITEM_TYPE_EXCLUDED_STATUSES_MAX: at the cap a status still
 // ticked cannot be unticked (Deselect All stops there too), and a note says why.
+import { CompactEmptyState, lucideGlyph } from '@livediagram/ui';
+import { lucideColumns2 } from '@livediagram/icons/lucide';
 import { useId } from 'react';
 import { ITEM_TYPE_EXCLUDED_STATUSES_MAX, readyMadeDefaultStatus } from '@livediagram/items';
 import { Button, Select } from '@livediagram/ui';
 import { OptionRows } from './OptionRows';
+
+const StatesGlyph = lucideGlyph(lucideColumns2, 18);
 
 type Status = { status: string; name: string };
 
@@ -83,9 +87,11 @@ export function ItemTypeStatuses({
   const defaultId = useId();
   if (statuses.length === 0)
     return (
-      <p className="rounded-lg border border-dashed border-slate-300 px-3 py-4 text-center text-[12px] text-slate-500 dark:border-slate-600 dark:text-slate-400">
-        No boards on this tab have columns yet, so there are no states to choose from.
-      </p>
+      <CompactEmptyState
+        icon={<StatesGlyph />}
+        title="No States Yet"
+        description="When you add states to a board, they’re added here automatically."
+      />
     );
   const onCount = statuses.filter((s) => !excluded.includes(s.status)).length;
   // A ready-made type's Default State by name, as this document has it (none chosen falls back to it).

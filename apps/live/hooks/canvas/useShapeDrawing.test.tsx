@@ -3,7 +3,6 @@
 import { act, renderHook } from '@testing-library/react';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
-import type { Tab } from '@livediagram/document';
 import type { CanvasTool } from '@/components/palette/palette.types';
 import { useShapeDrawing } from './useShapeDrawing';
 import { createSelectionStore } from '@/lib/selection-store';
@@ -14,7 +13,9 @@ vi.mock('@/lib/telemetry', () => ({ track: vi.fn(), titleCaseType: (s: string) =
 // The Highlighter is a Draw tile (docs/specs/008-canvas/highlighter.md): picking it arms the marker
 // for one stroke and clears the selection, like the pens. It is not a canvas tool.
 
-function setup() {
+type Commit = Parameters<typeof useShapeDrawing>[0]['commit'];
+
+function setup(commit = vi.fn<Commit>()) {
   const selection = createSelectionStore();
   selection.setSelection({ selectedId: 'el-1', multiSelectedIds: new Set(['el-2']) });
   return renderHook(
@@ -25,9 +26,9 @@ function setup() {
         readSelection: selection.get,
         canvasTool: tool,
         setCanvasTool: vi.fn(),
-        activeTab: { id: 't1', name: 'Tab', elements: [] } as unknown as Tab,
+        activeTab: { id: 't1', name: 'Tab', elements: [] },
         drawMode: false,
-        commit: vi.fn(),
+        commit,
         setSelectedId: selection.setSelectedId,
         setMultiSelectedIds: selection.setMultiSelectedIds,
         setEditingId,
@@ -125,5 +126,59 @@ describe('useShapeDrawing marker', () => {
       variant: 'whiteboard',
       colour: null,
     });
+  });
+});
+
+// docs/specs/009-elements/images.md "Placeholder rendering": an image lands as its empty placeholder,
+// selected, and no picker opens on its own (the placeholder's Select Image button opens it).
+describe('useShapeDrawing image', () => {
+  it('drops the empty placeholder and selects it, opening nothing', () => {
+    const commit = vi.fn<Commit>();
+    const { result, rerender } = setup(commit);
+    act(() => result.current.drawing.commitDraw({ type: 'image' }, 0, 0, 200, 150));
+    // The selection store does not re-render the hook on its own.
+    rerender({ tool: 'select' });
+    const placed = commit.mock.calls[0]![0]([])[0]!;
+    expect(placed).toMatchObject({ type: 'image', imageId: null });
+    expect(result.current.selectedId).toBe(placed.id);
+    expect(result.current.editingId).not.toBe(placed.id);
+    expect(result.current.drawing.pendingDraw).toBeNull();
+  });
+});
+
+// docs/specs/009-elements/badge.md "Badge presets": the Warning badge is rose on any tab, whatever the theme or the
+// style the board remembers for badges.
+describe('placing a badge preset', () => {
+  it('keeps the Warning badge rose on a themed tab with a remembered badge colour', () => {
+    const commit = vi.fn<Commit>();
+    const selection = createSelectionStore();
+    const { result } = renderHook(() =>
+      useShapeDrawing({
+        editsBlocked: false,
+        readSelection: selection.get,
+        canvasTool: 'select',
+        setCanvasTool: vi.fn(),
+        activeTab: { id: 't1', name: 'Tab', theme: 'ocean', elements: [] },
+        drawMode: false,
+        commit,
+        setSelectedId: selection.setSelectedId,
+        setMultiSelectedIds: selection.setMultiSelectedIds,
+        setEditingId: vi.fn(),
+        zoomRef: { current: 1 },
+        // The board remembers blue for badges.
+        styleNewElement: (el) => ({ ...el, strokeColor: '#2563eb' }),
+      }),
+    );
+    act(() =>
+      result.current.commitDraw(
+        { type: 'shape', kind: 'badge', variant: 'warning' },
+        100,
+        100,
+        100,
+        100,
+      ),
+    );
+    const [placed] = commit.mock.calls[0]![0]([]);
+    expect(placed).toMatchObject({ shape: 'badge', label: 'PII', strokeColor: '#e11d48' });
   });
 });

@@ -6,15 +6,14 @@ import { useTidyUpStrokes } from './useTidyUpStrokes';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
-// docs/specs/007-editor/logo-pages.md "Tidy Up": one edit, in place, ids kept.
-const line = (id: string, locked = false): Element =>
-  ({
-    id,
-    type: 'freehand',
-    closed: false,
-    locked,
-    ...packFreehandPoints(Array.from({ length: 12 }, (_, i) => ({ x: i * 10, y: Math.sin(i) }))),
-  }) as Element;
+// docs/specs/007-editor/logo-pages.md "Tidy": one edit, in place, ids kept.
+const line = (id: string, locked = false): Element => ({
+  id,
+  type: 'freehand',
+  closed: false,
+  locked,
+  ...packFreehandPoints(Array.from({ length: 12 }, (_, i) => ({ x: i * 10, y: Math.sin(i) }))),
+});
 const box = { id: 'b', type: 'shape', shape: 'square', x: 0, y: 0, width: 5, height: 5 } as Element;
 
 function setup(elements: Element[], ids: string[], readOnly = false) {

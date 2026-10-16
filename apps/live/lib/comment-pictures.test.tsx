@@ -5,13 +5,14 @@
 import { cleanup, renderHook, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-const auth = vi.hoisted(() => ({
-  state: {
-    isSignedIn: true,
-    userId: 'user_bob' as string | null,
-    user: { pictureUrl: 'https://img.clerk.com/bob' } as { pictureUrl: string | null } | null,
-  },
-}));
+const auth = vi.hoisted(() => {
+  const state: {
+    isSignedIn: boolean;
+    userId: string | null;
+    user: { pictureUrl: string | null } | null;
+  } = { isSignedIn: true, userId: 'user_bob', user: { pictureUrl: 'https://img.clerk.com/bob' } };
+  return { state };
+});
 vi.mock('@/components/providers/deferred-auth', () => ({ useDeferredAuth: () => auth.state }));
 const fetchMock = vi.hoisted(() => vi.fn());
 vi.mock('@/lib/api/core', () => ({

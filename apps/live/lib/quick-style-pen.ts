@@ -1,14 +1,12 @@
 // The quick style panel's marker rows on a whiteboard (docs/specs/023-draw-mode/draw-mode.md "The
 // quick style panel stays"): the colour and width of the selected marker strokes, or, with nothing
-// selected, of the marker in hand. Quick choices only: Marker colour is the nine stock colours (Ink
-// first), adaptive per board, then, only when custom colours are used on this tab, a second section
-// of them, most recently drawn first; Marker width is the pens' named widths.
+// selected, of the marker in hand. Quick choices only, one row each: Marker colour is the nine stock
+// colours (Ink first), adaptive per board, with custom colours one press deeper in the colour
+// picker; Marker width is the pens' named widths.
 import {
   PEN_COLOUR_NAMES,
   STANDARD_COLOUR_NAMES,
   type HuedPenColourName,
-  SNAP_COLOUR_FIELDS,
-  isCustomPenColour,
   isPenColourName,
   penColourCss,
   type Appearance,
@@ -20,6 +18,7 @@ import {
   PEN_NAMES,
   WHITEBOARD_PEN_WIDTHS,
   colourLabel,
+  type PenWidthId,
   penAdjustsColour,
   type WhiteboardPen,
   type WhiteboardPenId,
@@ -27,11 +26,9 @@ import {
 
 // The board's ink as a choice: an unpainted stroke, drawn in whatever ink the appearance gives.
 export const INK_CHOICE = 'ink';
-export type PenColourChoice = typeof INK_CHOICE | PenColour;
-export type PenWidthId = 'fine' | 'medium' | 'bold';
-
-// How many custom colours of the tab the second section offers.
-export const TAB_CUSTOM_COLOURS_MAX = 8;
+// INK_CHOICE, or a PenColour (a stock name or a custom hex).
+export type PenColourChoice = string;
+export type { PenWidthId };
 
 export type PenColourOption = { value: PenColourChoice; name: string; swatch: string };
 export type QuickPenStyle = {
@@ -46,14 +43,12 @@ export type QuickPenStyle = {
     value: PenColourChoice | null;
     // The stock colours (the ink alone for the main pen).
     options: PenColourOption[];
-    // The tab's custom colours, most recently drawn first; empty: no second section.
-    custom: PenColourOption[];
   };
   width: { value: PenWidthId | null };
 };
 
-// Where the panel's colours come from: the viewer's board and ink, and the tab's custom colours.
-export type PenPalette = { board: Appearance; ink: string; custom: readonly string[] };
+// Where the panel's colours come from: the viewer's board and its ink.
+export type PenPalette = { board: Appearance; ink: string };
 
 export function isPenStroke(el: Element): el is FreehandElement {
   return (
@@ -62,33 +57,6 @@ export function isPenStroke(el: Element): el is FreehandElement {
     el.pen !== 'highlighter' &&
     el.locked !== true
   );
-}
-
-// The custom colours an element holds where a stock colour could stand instead: the snap's own
-// field table (SNAP_COLOUR_FIELDS), so the custom section offers exactly the colours a snap would
-// convert. Fills are washes, never marker colours, and are no rows.
-function heldColours(el: Element): unknown[] {
-  return SNAP_COLOUR_FIELDS.filter((row) => row.applies(el)).map(
-    (row) => (el as unknown as Record<string, unknown>)[row.hex],
-  );
-}
-
-/**
- * The custom (hex) colours used on a whiteboard tab, most recently drawn first (the later in the
- * tab, the more recent), at most eight: every custom colour a snap could convert (the marker
- * strokes', shapes', lines', arrows' and paths' colours, text boxes' text, unfilled shapes' and
- * arrows' labels), imported ones included.
- */
-export function tabCustomColours(elements: readonly Element[]): string[] {
-  const out: string[] = [];
-  for (let i = elements.length - 1; i >= 0 && out.length < TAB_CUSTOM_COLOURS_MAX; i--) {
-    for (const colour of heldColours(elements[i]!)) {
-      if (!isCustomPenColour(colour) || out.length >= TAB_CUSTOM_COLOURS_MAX) continue;
-      const hex = colour.toLowerCase();
-      if (!out.includes(hex)) out.push(hex);
-    }
-  }
-  return out;
 }
 
 const optionOf = (colour: PenColour, palette: PenPalette): PenColourOption => ({
@@ -112,12 +80,9 @@ export const stockOptions = (palette: PenPalette): PenColourOption[] => [
   inkOption(palette),
   ...QUICK_HUES.map((c) => optionOf(c, palette)),
 ];
-/** The tab's custom colours as choices, most recently drawn first. */
-export const customOptions = (palette: PenPalette): PenColourOption[] =>
-  palette.custom.map((c) => optionOf(c, palette));
 
 const widthIdOf = (px: number | undefined): PenWidthId | null =>
-  (WHITEBOARD_PEN_WIDTHS.find((w) => w.px === px)?.id as PenWidthId | undefined) ?? null;
+  WHITEBOARD_PEN_WIDTHS.find((w) => w.px === px)?.id ?? null;
 
 const shared = <T>(values: T[]): T | null =>
   values.length > 0 && values.every((v) => v === values[0]) ? values[0]! : null;
@@ -141,7 +106,6 @@ export function strokesPenStyle(
     colour: {
       value: shared(strokes.map(colourOfStroke)),
       options: stockOptions(palette),
-      custom: customOptions(palette),
     },
     width: { value: shared(strokes.map((s) => widthIdOf(s.penWidth))) },
   };
@@ -151,12 +115,8 @@ export function heldPenStyle(pen: WhiteboardPen, palette: PenPalette): QuickPenS
   return {
     subject: { kind: 'pen', id: pen.id, name: PEN_NAMES[pen.id] },
     colour: penAdjustsColour(pen)
-      ? {
-          value: pen.colour ?? INK_CHOICE,
-          options: stockOptions(palette),
-          custom: customOptions(palette),
-        }
-      : { value: INK_CHOICE, options: [inkOption(palette)], custom: [] },
+      ? { value: pen.colour ?? INK_CHOICE, options: stockOptions(palette) }
+      : { value: INK_CHOICE, options: [inkOption(palette)] },
     width: { value: widthIdOf(pen.width) },
   };
 }

@@ -2,13 +2,12 @@
 // §4.9d): change_pages and write_article, over the verbs the CLI shares (@livediagram/agent-verbs). Pages are
 // named by id, place or name, articles by id or title; a refusal is a tool error that says what is there.
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import type { PageChange } from '@livediagram/api-schema';
 import { changePages, writeArticle, type IllustrateDone } from '@livediagram/agent-verbs';
 import { mcpChangePages, mcpWriteArticle } from '@livediagram/agent-verbs/mcp';
 import { clientFor } from './api';
 import type { Env } from './env';
 import { registerTool } from './tool-annotations';
-import { deepLink, errorResult, requireToken, textResult, type Extra } from './tool-helpers';
+import { deepLink, errorResult, requireToken, textResult } from './tool-helpers';
 
 // A refusal names the change it stopped at, 1 first as the agent counts them.
 const refusalText = (r: { message: string; change?: number }) =>
@@ -27,11 +26,11 @@ const answerOf = (env: Env, done: IllustrateDone) => ({
 
 export function registerIllustrateTools(server: McpServer, env: Env): void {
   registerTool(server, env, mcpChangePages, async (args, extra) => {
-    const api = clientFor(env, requireToken(extra as Extra));
+    const api = clientFor(env, requireToken(extra));
     const done = await changePages(
       api,
       args.documentId,
-      { ...(args.tabId ? { tabId: args.tabId } : {}), changes: args.changes as PageChange[] },
+      { ...(args.tabId ? { tabId: args.tabId } : {}), changes: args.changes },
       'mcp',
     );
     if (!done.ok) return errorResult(refusalText(done));
@@ -39,7 +38,7 @@ export function registerIllustrateTools(server: McpServer, env: Env): void {
   });
 
   registerTool(server, env, mcpWriteArticle, async (args, extra) => {
-    const api = clientFor(env, requireToken(extra as Extra));
+    const api = clientFor(env, requireToken(extra));
     const { documentId, ...given } = args;
     // Only what was given: an absent field keeps the article's own.
     const write = Object.fromEntries(

@@ -1,7 +1,8 @@
 # Item types
 
 A document's **item types** are the kinds of item its Plan boards hold: the ones its boards brought (a template's,
-a board's, or the five **default types**, Project, Task, Note, Idea and Action) and any a person adds. Every type is
+a board's, or the five **default types**, Project, Task, Note, Idea and Action, added on request) and any a person
+adds. A document starts with none. Every type is
 the document's own: none is set apart as built in. Each is a name, a colour, a glyph and the fields its items
 offer, including fields a person makes up. People edit them from the **Card Types** panel; every card, board,
 item panel and the palette's Cards category reads them from the document.
@@ -10,30 +11,33 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
 
 ## Domain language
 
-| Term                | Means                                                                                                                     | Never called                |
-| ------------------- | ------------------------------------------------------------------------------------------------------------------------- | --------------------------- |
-| **item type**       | What an item is: an id, a name, a colour, a glyph and its fields                                                          | kind, category, template    |
-| **type catalogue**  | A document's item types, in the order the interface lists them                                                            | schema, config, type list   |
-| **custom field**    | A field a person adds to a type: an id, a name and a field kind                                                           | property, attribute, column |
-| **card type**       | The interface's name for an item type, on the Card Types panel and its button, because the interface shows items as cards | (no other name)             |
-| **default types**   | Project, Task, Note, Idea and Action: what a document with no card types chosen reads as, and what a Blank board brings   | built-in types              |
-| **ready-made type** | A card type livediagram defines in code that a board can bring: the default types and the ten more a template uses        | preset type, built-in type  |
+| Term                | Means                                                                                                                                | Never called                |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------ | --------------------------- |
+| **item type**       | What an item is: an id, a name, a colour, a glyph and its fields                                                                     | kind, category, template    |
+| **type catalogue**  | A document's item types, in the order the interface lists them                                                                       | schema, config, type list   |
+| **custom field**    | A field a person adds to a type: an id, a name and a field kind                                                                      | property, attribute, column |
+| **card type**       | The interface's name for an item type, on the Card Types panel and its button, because the interface shows items as cards            | (no other name)             |
+| **default types**   | Project, Task, Note, Idea and Action: what Add Default Types adds, and what a document made before card types started empty reads as | built-in types              |
+| **ready-made type** | A card type livediagram defines in code that a board can bring: the default types and the ten more a template uses                   | preset type, built-in type  |
 
 ## The type catalogue
 
-- Every document has one. Until its card types are **chosen**, it reads as the **default types**, from code: a
-  document stores nothing, and a default type improved in a later release reaches it.
-- **The first boards choose them.** While a document's card types are not chosen and it has no cards, the first
-  boards made in it (a template's tabs, a board from Start Planning or the palette, an agent's) make its card
-  types exactly the [ready-made types](plan-templates.md#ready-made-card-types) those boards bring, in the order
-  they name them: a Hiring Pipeline document has Role, Candidate and Onboarding Task, a Kanban board's Task and
-  Action. A Blank board brings the five default types, so a document started with one reads as before. A board
-  that takes every type (Blank) and an Archive or All Cards board bring nothing else.
-- **After that, boards add what is missing**: a board made in a document whose card types are chosen (or that has
-  cards) adds each ready-made type it brings that the document lacks (by id), after the ones it has; a Blank board
-  brings any of the five default types the document lacks. A document that has a type of that id, or of that
-  name (one renamed "Task"), keeps its own and gains nothing for it. A Blank board made first leaves the document
-  reading as the default types, and they count as chosen: a later board adds what is missing.
+- Every document has one. **A document starts with no card types**: until its card types are chosen it stores
+  nothing and reads as none. The default types never arrive on their own; they come only when someone asks, with
+  **Add Default Types** (or an agent's `add_default_types`).
+- **Boards bring the types they name.** A board made in a document (a template's tabs, a board from Start Planning
+  or the palette, an agent's) adds each [ready-made type](plan-templates.md#ready-made-card-types) it brings that
+  the document lacks (by id), after the ones it has, in the order the boards name them. So in a fresh document the
+  first boards choose its card types, exactly: a Hiring Pipeline document has Role, Candidate and Onboarding Task, a
+  Kanban board's Task and Action. A document that has a type of that id, or of that name (one renamed "Task"),
+  keeps its own and gains nothing for it. A board that takes every type (Blank), an Archive and an All Cards board
+  bring none. A **Gantt chart** brings the types it names, else **Project**, so a document whose first Plan tab is a
+  Gantt chart has a type to add cards of ([Add Card](plan-views.md#gantt-chart)); no other view brings any.
+- **Every type can be deleted, the last one too**: a document left with none stores an empty catalogue and shows
+  the empty states below.
+- **Documents made before card types started empty** that have cards and never chose their types read as the five
+  default types, as they always did: D1 documents were given them, stored, by migration 0090; an offline record, a
+  Drive file or an exported tab with cards and no catalogue is read the same way (`legacyCatalogue`).
 - Any change (a board choosing them, a type added, edited or deleted) stores the **whole catalogue** with the
   document. From then on the stored catalogue is the document's, whole; later releases do not change it.
 - **Add Default Types** adds any of the five default types the document lacks, as they are defined, after its
@@ -116,12 +120,25 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
     (sent with `undo: true`, which the editor's undo and redo always set).
 - A type holds up to **24 fields** and up to **12 custom fields**, Parent not counted (it was a built-in field, so a
   type already at 12 keeps reading and saving once it gains Parent). A catalogue holds up to **32 types**.
-- **Custom field kinds**: Text, Long Text (up to 2,000 characters), Number, Date, Checkbox, Link (an `https://`
-  URL), Choice (one of up to 20 named options) and Card (a link to one card of another type, below). Every value
-  is a plain string, number or true/false, which the
-  item store keeps for any field. People are assigned with the built-in Assignee field, so there is no custom
-  person kind. Their values are ordinary entries in the item's `fields`, under the custom
-  field's id (`f-` and a slug of its name), so the store, agents and exports already carry them.
+- **Custom field kinds**: Text, Long Text (up to 2,000 characters), Number, Currency, Date, Checkbox, Link (an
+  `https://` URL), Email, Choice (one of up to 20 named options), Multiple Choice (several of up to 20 named
+  options), Rating (a whole number from 1 to its scale, 3 to 10) and Card (a link to one card of another type,
+  below). Multiple Choice and Rating came with [Forms](../030-forms/forms.md#new-card-field-kinds), which describes
+  how they read and are edited.
+  - **Currency** is an amount in the one currency its field names (`currency`, an ISO 4217 code such as GBP, USD or
+    EUR, chosen when the field is made and changeable later; GBP when none is given). Its value is a number with up to
+    two decimals; it reads, on the card and in the panel, as the person's locale formats that currency ("£12,500",
+    "$1,200.50"). Changing the field's currency changes how every value reads, never the numbers.
+  - On a card a value reads short: a Number grouped as the reader's locale groups digits ("82,000"), a Link as its
+    site and its last path step ("sentry.io/…/4521", the site alone for a bare address), a Long Text its first line.
+  - **Email** is one email address (up to 254 characters, something@domain), kept as typed less surrounding spaces.
+    The panel shows it as a mailto link; the card shows the address. A value that is not an address is refused, as
+    a Link that is not `https://` is.
+    Every value
+    is a plain string, number or true/false, which the
+    item store keeps for any field. People are assigned with the built-in Assignee field, so there is no custom
+    person kind. Their values are ordinary entries in the item's `fields`, under the custom
+    field's id (`f-` and a slug of its name), so the store, agents and exports already carry them.
 - **Card fields** link a card to one other card, of the card type the field names (`linkType`): an Objective's
   **Owner** links to a Person. The value is that card's id. **Parent** is one of them: Task (and the Bug and Story
   [ready-made types](plan-templates.md#ready-made-card-types)) carries a Card field named **Parent**, linking to Projects, under the one custom id
@@ -151,7 +168,7 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
     filter row above its list: a **Card Type** menu ("All card types", then each type the list holds) when it holds
     more than one, and a **State** menu ("All states", then each state it holds, "No status" last) when it holds
     more than one; both start at All, are each viewer's own and unsaved, and while one narrows the list "N of M"
-    shows beside them. A filter matching nothing says "No cards match." with **Clear Filters**.
+    shows beside them. A filter matching nothing shows the shared empty state, "No cards match these filters", with **Clear Filters**.
   - **On the card face**: a Card field placed by the type's Display reads its linked card's title with the linked
     type's glyph, in its colour.
   - **Boards** can lay their rows by a Card field (Swimlanes by a field): a row per linked card (named by its
@@ -191,6 +208,12 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
   `Duplicated` · `CardType` when a duplicate is saved. **Add Type** is a dashed tile at the end, with **Add Default
   Types** under it while the document lacks any of the five. The panel does not reorder types: the catalogue keeps
   its order (the order boards brought them in, then added types in the order they were added).
+- **With no types**, the list's place holds an empty state (the Cards glyph): **No Card Types Yet**, and "Add a card
+  type of your own, or add the default types: Project, Task, Note, Idea and Action." for someone who may edit, "This
+  document has no card types yet." for anyone else. Add Type and Add Default Types sit under it as always.
+- **With no types**, Plan's bottom-right strip shows only **Card Types**: New Card and Find a Card would surface
+  nothing, so they wait for the first type. The Trash stays while it holds cards (deleting the last type sends its
+  cards there), so they can be restored once a type exists.
 - Someone who may only view the document sees the list without the edit and add controls.
 
 ## Add New Card Type
@@ -251,8 +274,8 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
   still named beside Save. The tabs edit one draft: switching loses nothing, and Save or Cancel acts on the whole.
   The title row ends with **Show Me**, **Help** (the Card Types help article) and a close cross, which acts as
   Cancel.
-  - **Show Me** runs a guided tour of making a card type, there and then, on the editor itself; it is never offered
-    or started on its own. It uses the shared tour (the step card, Back, Next and Skip, the ring around what it
+  - **Show Me** ([Show Me](../007-editor/show-me.md)) runs a guided tour of making a card type, there and then, on the
+    editor itself; it is never offered or started on its own. It uses the shared tour (the step card, Back, Next and Skip, the ring around what it
     points at with room to breathe, drawn over the editor), and each step opens the editor tab it is about and points at a real
     control, which stays usable: the person types the name, picks a colour or adds a field while the step is up, and
     their edits stay in the draft. The steps: **Name It, Then Give It a Look** (the Configuration tab's General
@@ -310,8 +333,10 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
     first, then the tabs) and **Remove** (absent for a field the type always keeps). Title has no menu.
   - Each group ends with **Add Field**, a full-width dashed row (as **Add Type** in the panel), which opens a
     popover anchored to it (24 rem wide, over the editor, so it is never squeezed by the Details column), which offers the built-in fields the type lacks as chips, and **New
-    Custom Field**: a name, then its kind as a grid of eight icon tiles, four to a row (Text, Long Text, Number,
-    Date, Checkbox, Link, Choice, **Link to Card**; one radio group), then the options, one a line, for Choice, or for
+    Custom Field**: a name, then its kind as a grid of twelve icon tiles, six to a row (Text, Long Text, Number,
+    Currency, Date, Checkbox, Link, Email, Choice, Multiple Choice, Rating, **Link to Card**; one radio group), then
+    the options, one a line, for Choice and Multiple Choice, its **Scale** ("Out of 3" to "Out of 10", 5 first
+    chosen) for Rating, its **Currency** (a select of the common codes, GBP first) for Currency, or for
     Link to Card **Links To** a card type (required), and a **Preview** of the field as the card's panel will show it:
     its name as typed ("Field name" until then) beside a sample value of its kind (Choice shows its first option,
     Link to Card the linked type's name). The field lands in that group
@@ -326,7 +351,7 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
     leaves it out; Select All turns every listed status back on (a left-out status no board lists any more stays
     left out); Deselect All turns them off in board order as far as the cap allows. All may be off, and then a note
     says a card of this type stays in the state it is made in and can never be moved to another. With no columns
-    on the tab's boards it says there are no states to choose from. At most 64 may be off: then every status still
+    on the tab's boards it shows an empty state, **No States Yet**: "When you add states to a board, they’re added here automatically." At most 64 may be off: then every status still
     on is disabled, and a note says "A type can turn off at most 64 states. Turn one back on to turn off another."
     Under them, **Default State**: a menu of every state still on, each once and by its own name, in board order,
     after **None** (left out for a ready-made type whose named state the document has: that state shows picked until
@@ -355,7 +380,7 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
     without a name or a Choice without options, a tab without a name, or two tabs with one name, or more than 64
     statuses off (a type stored that way: "Too many states turned off: a type can turn off at most 64.", on the
     States tab).
-  - **Delete** (one word, as is **Duplicate**, so a phone's footer keeps each on one line), at the foot, for a type that is not the catalogue's last.
+  - **Delete** (one word, as is **Duplicate**, so a phone's footer keeps each on one line), at the foot, for any type that exists, the catalogue's last too.
   - **Save** applies the whole edit as one change; **Cancel** drops it.
 - Removing a field from a type, or deleting a custom field, never deletes values: items keep them, and they show
   again if the field returns. The type editor says so under the field list once a field is removed.
@@ -370,6 +395,8 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
 
 - **The palette's Cards category** lists a card per type, in catalogue order, captioned "<Name> card", each
   tile a small card with the type's colour stripe and its glyph on the face, and lands it in a board's column as every other type's do.
+  With no types it says "No card types yet. Add one, or the default types, with Edit Cards." (someone who may only
+  view: "This document has no card types yet."), above Edit Cards.
 - **Cards** draw a type's colour (behind the card number) and glyph (an item's own [Colour](items.md#colour) is a dot beside them,
   never in their place); the item panel's type picker lists the catalogue; the Add a
   Card popover offers the types the board shows, and its title field's `name:` prefix matches a type's name
@@ -392,9 +419,9 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
 
 ## Storage and sync
 
-- The stored catalogue is a JSON column on the document (`item_types`, null while no card types are chosen: the default types), written only by
-  its own route, `PUT /api/documents/{id}/item-types` with `{ itemTypes }` (a catalogue, or null for the default
-  types), by anyone who may edit the document. Its answer is the catalogue as stored.
+- The stored catalogue is a JSON column on the document (`item_types`, null while no card types are chosen: none), written only by
+  its own route, `PUT /api/documents/{id}/item-types` with `{ itemTypes }` (a catalogue, which may hold no types, or
+  null for none chosen), by anyone who may edit the document. Its answer is the catalogue as stored.
 - The catalogue has a **revision** (`item_types_rev`, 0 until its first write), raised by every write and carried by
   the document's GET (`itemTypesRev`), the plan agents read and the room's op. A write names the revision it changed
   (`expectedRev`); when another change landed since, it is refused (409 `item_types_stale`, carrying the catalogue and

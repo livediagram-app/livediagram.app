@@ -35,7 +35,7 @@ function arrive(
     link: { current: link },
     hydrated: true,
     activeId: over.activeId ?? 't1',
-    activeTabLoadState: over.state ?? ('ready' as TabLoadState),
+    activeTabLoadState: over.state ?? 'ready',
     elements: over.elements ?? [board],
     ...calls,
   };

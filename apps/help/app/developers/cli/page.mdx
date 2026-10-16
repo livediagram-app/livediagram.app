@@ -5,7 +5,7 @@ import { CliDeviceSignIn, CliConsent } from '@/components/illustrations/cli';
 export const metadata = helpMetadata({
   title: 'The livediagram CLI',
   description:
-    'Install the livediagram command line from npm, sign in through the browser, a device code or an API token, and read, build, edit and export documents from a terminal or a coding agent.',
+    'Install the livediagram CLI from npm, sign in by browser, device code or API token, then read, build, edit and export documents from a terminal or agent.',
   path: '/help/developers/cli/',
 });
 
@@ -64,7 +64,7 @@ The terminal waits up to ten minutes for you. If the browser cannot reach it (on
 livediagram auth login --device
 ```
 
-The terminal prints a page address, `https://livediagram.app/oauth/device`, and a code of eight letters such as `BCDF-GHJK`, plus a link with the code already filled in. Open the page on any device, sign in, type the code under **Code shown in your terminal** and choose **Continue**. You then see the same **Connect livediagram CLI** card with its **Read-only access** switch; choose **Connect**, and the page says **You're connected**. The terminal carries on by itself.
+The terminal prints a page address, `https://livediagram.app/oauth/device`, and a code of eight letters such as `BCDF-GHJK`, plus a link with the code already filled in. Open the page on any device, sign in, type the code under **Code shown in your terminal** and choose **Continue**. You then see a **Connect livediagram CLI** card with the same **Read-only access** switch; choose **Connect**, and the page says **You're connected**. The terminal carries on by itself.
 
 <Figure caption="Device sign-in: the terminal shows the page and a code, which you enter under Connect a terminal on any device.">
   <CliDeviceSignIn />
@@ -120,6 +120,15 @@ livediagram tab render "Auth flow" --png auth.png
 
 `tab view` reads a tab as text, the outline by default; `--view` picks `graph`, `layout`, `comments`, `show` (one element, with `--ref`) or `find` (with `--text`), and `--budget` fits it to about that many tokens. `tab render` writes a PNG or SVG preview and prints its path and size, never image bytes.
 
+A few commands read livediagram's catalogues rather than your documents, which helps before writing anything:
+
+```bash
+livediagram template ls                       # the templates a document or tab can start from
+livediagram template view kanban              # one template, as the outline of the tab it builds
+livediagram icon search "message queue"       # icons by name, best match first, for iconId=
+livediagram schema sticky                     # the element kinds, or one kind's fields and values
+```
+
 ## Change a Diagram
 
 ```bash
@@ -128,11 +137,13 @@ livediagram document create "Retro" --template start-stop-continue
 livediagram element set "Auth flow" n3 label="Sign in" shape=stadium
 livediagram edit "Auth flow" -f ops.txt                     # many edit operations at once
 livediagram changeset revert "Auth flow" cs_8k2m4q7d1x
+livediagram tab add "Auth flow" Details -f detail.mmd       # a new tab, empty, from a file or --template
+livediagram tab rm "Auth flow" Scratch                      # delete one tab; the others stay
 ```
 
 Every change is **one changeset**, applied all or nothing and checked against the version of the tab you last read, so the CLI never silently overwrites someone else's work. Each write prints what changed, the new revision, a lint summary and the command that reverts it. Add `--dry-run` to see the plan without writing anything, and `--summary` to say what the change is for. `livediagram guide edit` explains how edit operations read.
 
-`document rm` moves a document to the [Trash](/help/account-and-data/trash/) for 30 days; the CLI has no permanent delete.
+`document rm` moves a document to the [Trash](/help/account-and-data/trash/) for 30 days, and `document restore` brings it back to its folder (or the top level, when that folder is gone); the CLI has no permanent delete.
 
 ## Comments, Items and Waiting
 
@@ -151,6 +162,19 @@ livediagram watch "Shop"                         # stream changes until you stop
 
 `wait` blocks until someone comments or the document changes (a burst of edits counts as one change), prints it and exits, which lets an agent respond to the people working beside it. Comments the CLI adds are yours.
 
+## Pages and Articles
+
+[Illustrate](/help/canvas/illustrate/) tabs hold pages (infographics, slides and logos) and articles, which have their own commands:
+
+```bash
+livediagram page ls "Pitch deck"                                  # each page, its refs, articles and layouts
+livediagram page set "Pitch deck" --add slide --layout slide-title  # add, lay out, move, copy or delete pages
+livediagram article get "Project brief" > brief.md                # an article as Markdown
+livediagram article set "Project brief" brief.md                  # write it back, or a new one
+```
+
+`page set` makes one change from its flags, or up to 50 from a JSON list with `--changes`. `article set` writes over the article you name with `--article`, adds after its last block with `--append`, or starts another with `--new`, and the editor flows the text onto as many pages as it needs.
+
 ## Files, Exports and Pictures
 
 ```bash
@@ -163,7 +187,7 @@ livediagram graph render flow.mmd --png flow.png
 
 To keep a repository's diagrams in step with livediagram, link it instead: see [Diagrams in Your Repository](/help/developers/repositories/). To draw beside your agent inside a developer tool, see [Diagrams in Your Developer Tools](/help/developers/workbenches/).
 
-`pull` writes the document in the format the editor imports, and never overwrites a file holding changes you have not pushed yet (add `--force` to drop them). `push` sends each changed tab as a changeset; a tab that changed on livediagram since you pulled it is refused and named, so pull again. Only elements travel, and nothing on livediagram is deleted by a push. `export --all` writes every document you can read, for backups and docs. `graph lint` and `graph render` work on the file alone and send nothing.
+`pull` writes the document in the format the editor imports, and never overwrites a file holding changes you have not pushed yet (add `--force` to drop them). `push` sends each changed tab as a changeset; a tab that changed on livediagram since you pulled it is refused and named, so pull again. Only elements travel: each changed tab's elements are replaced by the file's, so an element you removed from the file is removed from the tab, and a tab the document lacks is created. Changes to a tab's name, theme or background are not sent (a tab a push creates goes up with its name), and no tab or document is ever deleted by a push. `export --all` writes every document you can read, for backups and docs. `graph lint` and `graph render` work on the file alone and send nothing.
 
 ## Help, Guides and the Agent Skill
 
@@ -173,13 +197,14 @@ livediagram tab --help             # a resource's verbs
 livediagram tab view --help        # usage, flags and examples
 livediagram guide                  # how-tos: build, edit, views, comments, collaborate, workbench
 livediagram skill install --to ~/.claude/skills
+livediagram skill print > SKILL.md
 ```
 
-Help is kept short so an agent pays only for what it asks. `skill install` writes a `SKILL.md` that tells a coding agent when to reach for the CLI; without `--to` it lists the usual skills folders (such as `~/.claude/skills` for Claude Code). `livediagram api GET /documents` calls any API path with your sign-in, as an escape hatch.
+Help is kept short so an agent pays only for what it asks. `skill install` writes a `SKILL.md` that tells a coding agent when to reach for the CLI; without `--to` it lists the usual skills folders (such as `~/.claude/skills` for Claude Code). `skill print` writes the same file to stdout, for agents that keep their skills somewhere else. `livediagram api GET /documents` calls any API path with your sign-in, as an escape hatch.
 
 ## Output and Exit Codes
 
-The CLI never prompts: it is safe in pipes, scripts and CI. **stdout carries only data**; hints, warnings and errors go to stderr. Output is compact text; `--json` gives the same data as JSON, `--json=id,name` picks fields, and `-q` prints only refs or ids. A list that was cut short ends with a line saying how to see the rest.
+The CLI never prompts when its input or output is not a terminal, so it is safe in pipes, scripts and CI. (In a terminal, only `link init` without `--folder` or `--doc` asks you to pick a folder.) **stdout carries only data**; hints, warnings and errors go to stderr. Output is compact text; `--json` gives the same data as JSON, `--json=id,name` picks fields, and `-q` prints only refs or ids. A list that was cut short ends with a line saying how to see the rest.
 
 | Exit code | Meaning                                                    |
 | --------- | ---------------------------------------------------------- |
@@ -213,7 +238,7 @@ The CLI is subject to the same limits as any API client, per token: on the hoste
 
 ## Usage Counts
 
-The CLI counts which commands succeed, by the command's name only (never its arguments, your documents or the host), and sends the count to the host it talks to, as anonymous [telemetry](/help/privacy-and-security/what-we-collect/). The first run says so. Turn it off with `livediagram telemetry off`, `LIVEDIAGRAM_TELEMETRY=0` or `DO_NOT_TRACK=1`.
+The CLI counts which commands succeed, and which fail because of the server or the network, by the command's name only (never its arguments, your documents or the host), and sends the count to the host it talks to, as anonymous [telemetry](/help/privacy-and-security/what-we-collect/). The first time it counts one, it says so. Turn it off with `livediagram telemetry off`, `LIVEDIAGRAM_TELEMETRY=0` or `DO_NOT_TRACK=1`.
 
 ## Keep It Safe
 

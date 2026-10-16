@@ -30,19 +30,19 @@ import { hashSharePassword } from '../auth/share-password-hash';
 import { closeShareCodeSessions } from '../room-access-client';
 import { broadcastShareOp } from '../room-client';
 import { recordShareLinkCreated } from '../timeline';
-import { requireOwnedDocument, type RouteContext } from './context';
+import { readOptionalBody, requireManagedDocument, type RouteContext } from './context';
 
 // Returns null when the request isn't a share route.
 export async function handleDocumentShareRoutes(ctx: RouteContext): Promise<Response | null> {
   const { request, env, segments } = ctx;
-  // /api/documents/<id>/share: owner-only.
+  // /api/documents/<id>/share: the owner, or a joined member of the document's team.
   //   GET     : list every share link for this document.
   //   POST    : mint a new link. Body: { role: 'edit' | 'participate' | 'view' }
   //   DELETE  : revoke every link (back-compat with the
   //             single-code era).
   if (segments.length === 4 && segments[3] === 'share') {
     const id = segments[2]!;
-    const access = await requireOwnedDocument(ctx, id);
+    const access = await requireManagedDocument(ctx, id);
     if (access instanceof Response) return access;
 
     if (request.method === 'GET') {
@@ -53,7 +53,7 @@ export async function handleDocumentShareRoutes(ctx: RouteContext): Promise<Resp
       return json({ links, passwordSet });
     }
     if (request.method === 'POST') {
-      const body = (await request.json().catch(() => ({}))) as {
+      const body = (await readOptionalBody(request)) as {
         role?: unknown;
         expiry?: ShareLinkExpiry;
         tabId?: unknown;
@@ -63,7 +63,9 @@ export async function handleDocumentShareRoutes(ctx: RouteContext): Promise<Resp
       // An OMITTED role still defaults to 'edit', the documented behaviour; the three levels are
       // docs/specs/013-workspace/share-roles.md's.
       if (body.role !== undefined && !isAccessLevel(body.role)) {
-        console.warn('[access-levels] invalid role', { value: String(body.role).slice(0, 40) });
+        console.warn('[access-levels] invalid role', {
+          value: typeof body.role === 'string' ? body.role.slice(0, 40) : typeof body.role,
+        });
         return badRequest('invalid role');
       }
       const role: ShareRole = body.role ?? DEFAULT_LINK_LEVEL;
@@ -81,11 +83,13 @@ export async function handleDocumentShareRoutes(ctx: RouteContext): Promise<Resp
       // docs/specs/013-workspace/timeline.md §4.3: owner-only. Who a document is shared with is the
       // owner's business — a team member seeing "a link was created"
       // learns nothing they can act on.
-      ctx.waitUntil?.(recordShareLinkCreated(env, access, role, access.ownerId));
+      // The one who shared: on a team document a joined member as often as its owner.
+      const sharer = ctx.verifiedUserId ?? access.ownerId;
+      ctx.waitUntil?.(recordShareLinkCreated(env, access, role, sharer));
       // docs/specs/014-identity/transactional-email.md (#6): a first-ever share link is a milestone. Best-effort,
       // off the response path; claimFirstShare dedups so it fires only once.
       if (emailEnabled(env)) {
-        ctx.waitUntil?.(notifyFirstShare(env, access.ownerId));
+        ctx.waitUntil?.(notifyFirstShare(env, sharer));
       }
       return json({ link }, { status: 201 });
     }
@@ -108,16 +112,16 @@ export async function handleDocumentShareRoutes(ctx: RouteContext): Promise<Resp
     }
   }
 
-  // /api/documents/<id>/share-password — owner-only get/set of the
+  // /api/documents/<id>/share-password — owner (or team member) get/set of the
   // document's optional share password (docs/specs/013-workspace/share-password.md). PUT body
   // { password: string | null }; null / empty clears it.
   if (segments.length === 4 && segments[3] === 'share-password') {
     const id = segments[2]!;
-    const access = await requireOwnedDocument(ctx, id);
+    const access = await requireManagedDocument(ctx, id);
     if (access instanceof Response) return access;
 
     if (request.method === 'PUT') {
-      const body = (await request.json().catch(() => ({}))) as { password?: string | null };
+      const body = (await readOptionalBody(request)) as { password?: string | null };
       const password = typeof body.password === 'string' ? body.password : null;
       if (password !== null && password.length > MAX_PASSWORD_LEN) {
         return badRequest('password too long');
@@ -132,8 +136,11 @@ export async function handleDocumentShareRoutes(ctx: RouteContext): Promise<Resp
           : null;
       if (post && post.state !== 'hidden') return conflict('community_published');
       // Whitespace-only clears, so a stray space can't lock a document in a way
-      // the owner can't see. Anything else is stored as its hash.
-      const stored = password?.trim() ? await hashSharePassword(password) : null;
+      // the owner can't see. Anything else is stored as the hash of its trimmed
+      // value: the visitor's gate trims what is typed, so an untrimmed hash
+      // could never be matched.
+      const trimmed = password?.trim() ?? '';
+      const stored = trimmed ? await hashSharePassword(trimmed) : null;
       await setDocumentSharePassword(env, id, stored);
       // Visitors a share code admitted before this password meet the gate again
       // (docs/specs/013-workspace/share-password.md). Clearing it widens access, so closes nobody.
@@ -146,12 +153,12 @@ export async function handleDocumentShareRoutes(ctx: RouteContext): Promise<Resp
   if (segments.length === 5 && segments[3] === 'share') {
     const id = segments[2]!;
     const code = segments[4]!;
-    const access = await requireOwnedDocument(ctx, id);
+    const access = await requireManagedDocument(ctx, id);
     if (access instanceof Response) return access;
 
     if (request.method === 'DELETE') {
-      // The ownership check above is on the URL's document; the delete is by
-      // code alone. Without this, owning ANY document let you revoke any link
+      // The access check above is on the URL's document; the delete is by
+      // code alone. Without this, managing ANY document let you revoke any link
       // whose code you had seen. Same guard as /extend below.
       const existing = await getShareLinkIncludingExpired(env, code);
       // A Community post's link is not the owner's to revoke here: Remove From Community does that
@@ -180,7 +187,7 @@ export async function handleDocumentShareRoutes(ctx: RouteContext): Promise<Resp
       if (!existing || existing.documentId !== id || existing.purpose === 'community') {
         return notFound();
       }
-      const body = (await request.json().catch(() => ({}))) as { tabId?: unknown };
+      const body = await readOptionalBody(request);
       if (!('tabId' in body)) return badRequest('invalid tab');
       const tabId = parseScope(body.tabId, access.tabs);
       if (tabId === INVALID_SCOPE) return badRequest('invalid tab');
@@ -193,13 +200,13 @@ export async function handleDocumentShareRoutes(ctx: RouteContext): Promise<Resp
 
   // /api/documents/<id>/share/<code>/extend — re-arm an expiring link
   // for another round of its creation-time duration (docs/specs/013-workspace/share-link-expiry.md).
-  // Owner-only; works whether the link is currently active or expired
+  // Owner or team member; works whether the link is currently active or expired
   // (extending an active link pushes the deadline out from now); 400
   // on a never-expiring link (nothing to extend).
   if (segments.length === 6 && segments[3] === 'share' && segments[5] === 'extend') {
     const id = segments[2]!;
     const code = segments[4]!;
-    const access = await requireOwnedDocument(ctx, id);
+    const access = await requireManagedDocument(ctx, id);
     if (access instanceof Response) return access;
 
     if (request.method === 'POST') {

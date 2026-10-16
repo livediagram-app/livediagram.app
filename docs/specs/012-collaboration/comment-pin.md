@@ -82,7 +82,7 @@ is what an arrow already says on this canvas. Not a bespoke link: a second
 kind of connection would be a second thing to lay out, export and explain.
 It also means the pair behaves like anything else — move the element and the
 arrow follows; delete the arrow and the panel is a note that floated free.
-The panel is added from the palette's Collaborate category only. The
+The panel is added from the palette only: Facilitate's **Record** category, or Diagram's **Write**. The
 element menu's Collaborate section once offered a `Comment Panel` tile that
 dropped the panel and the arrow in one go; it was removed, since a second
 way in from every element's menu was one more tile to read past on the way

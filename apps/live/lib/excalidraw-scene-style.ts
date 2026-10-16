@@ -125,9 +125,12 @@ const HEADS: Record<string, SceneHead> = {
   circle_outline: 'circle-hollow',
   diamond: 'diamond',
   diamond_outline: 'diamond-hollow',
+  crowfoot_one: 'one',
+  crowfoot_many: 'many',
+  crowfoot_one_or_many: 'one-or-many',
 };
 
-/** An arrowhead; one with no counterpart (crow's feet, unknown) is a plain arrow, noted. */
+/** An arrowhead; one with no counterpart (an unknown one) is a plain arrow, noted. */
 export function headOf(value: string | null | undefined, notes: SceneNotes): SceneHead | undefined {
   if (value === null || value === undefined) return undefined;
   const head = HEADS[value];

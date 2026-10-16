@@ -1,8 +1,6 @@
 import {
   CROP_MAX_BYTES,
   CROP_MAX_EDGE_PX,
-  isPhotoAcceptedType,
-  PHOTO_ACCEPTED_TYPES,
   PHOTO_MAX_EDGE_PX,
   PHOTO_MAX_NOTES,
   type NoteCrop,
@@ -19,6 +17,9 @@ import { isFlatImage } from '@livediagram/sticky-model';
 import { boundaryCuesFor } from './photo-model/client';
 import type { BoundaryBackend, BoundaryOutcome, ClassicalReason } from './photo-model/protocol';
 import { debugLog } from '@/lib/debug-log';
+import { photoTypeError, type PhotoDetectError } from './photo-accept';
+
+export { PHOTO_ACCEPT_ATTR, photoTypeError, type PhotoDetectError } from './photo-accept';
 
 // Getting a photograph ready to become notes (docs/specs/021-event-storming/event-storming.md Phase 8) — all of it in
 // the browser.
@@ -41,9 +42,6 @@ import { debugLog } from '@/lib/debug-log';
 //  4. Re-encode each crop as a small JPEG — which drops EXIF with it, after
 //     the orientation has already been applied.
 
-export type PhotoDetectError =
-  'photo_unsupported_heic' | 'photo_unsupported_type' | 'photo_unreadable' | 'crops_too_large';
-
 export class PhotoDetectFailed extends Error {
   readonly reason: PhotoDetectError;
 
@@ -57,17 +55,6 @@ export class PhotoDetectFailed extends Error {
 // Crisp enough for marker handwriting, small enough that sixteen of them are a
 // modest request.
 const JPEG_QUALITY = 0.85;
-
-export const PHOTO_ACCEPT_ATTR = PHOTO_ACCEPTED_TYPES.join(',');
-
-export function photoTypeError(type: string): PhotoDetectError | null {
-  if (isPhotoAcceptedType(type)) return null;
-  // Called out separately because it is the single commonest rejection: HEIC
-  // is the iPhone default, and "save as JPEG" is advice the author can act on
-  // (docs/specs/009-elements/images.md makes the same distinction for uploads).
-  if (type === 'image/heic' || type === 'image/heif') return 'photo_unsupported_heic';
-  return 'photo_unsupported_type';
-}
 
 // Which detector found the boxes, and on what: the hybrid on a backend, or the
 // classical detector alone and why. Closed values, logged and counted.

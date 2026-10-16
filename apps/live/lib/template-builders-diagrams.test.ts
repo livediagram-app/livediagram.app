@@ -20,27 +20,32 @@ const centreOf = (el: { x: number; y: number; width: number; height: number }) =
 
 describe('pyramid template', () => {
   const els = buildTemplate('pyramid', 0, 0);
-  const bands = shapesOf(els, 'triangle');
+  const [pyramid] = shapesOf(els, 'pyramid');
 
-  it('bands one triangle into five theme-locked tiers that share an apex', () => {
-    expect(bands).toHaveLength(5);
-    // The triangle silhouette's apex sits at 50% across, 2% down its box.
-    const apexes = bands.map((b) => ({ x: b.x + b.width / 2, y: b.y + b.height * 0.02 }));
-    for (const a of apexes) {
-      expect(a.x).toBeCloseTo(apexes[0]!.x, 5);
-      expect(a.y).toBeCloseTo(apexes[0]!.y, 5);
-    }
-    // Largest band first, so each smaller one paints over the top of it.
-    const widths = bands.map((b) => b.width);
-    expect([...widths].sort((a, b) => b - a)).toEqual(widths);
-    expect(bands.every((b) => b.themeLockFill)).toBe(true);
+  it('is one theme-locked Pyramid element with the five tiers, peak first', () => {
+    expect(shapesOf(els, 'triangle')).toHaveLength(0);
+    expect(pyramid?.conceptRows?.map((r) => r.label)).toEqual([
+      'Purpose',
+      'Vision',
+      'Strategy',
+      'Goals',
+      'Initiatives',
+    ]);
+    expect(pyramid?.themeLockFill).toBe(true);
   });
 
-  it('names each tier and gives it a guiding question on the rail', () => {
-    const t = texts(els);
-    for (const tier of ['Purpose', 'Vision', 'Strategy', 'Goals', 'Initiatives'])
-      expect(t).toContain(tier);
-    expect(t.filter((l) => l.endsWith('?'))).toHaveLength(5);
+  it('gives each tier a guiding question card on the rail', () => {
+    const cards = shapesOf(els, 'card');
+    expect(cards.map((c) => c.pageTitle?.endsWith('?'))).toEqual(Array(5).fill(true));
+    expect(cards.every((c) => c.iconId && c.cardMedia === 'tile' && c.themeLockFill)).toBe(true);
+    expect(cards.every((c) => c.accentEdge === 'left')).toBe(true);
+    // The rail sits clear of the pyramid, to its right.
+    expect(cards.every((c) => c.x > pyramid!.x + pyramid!.width)).toBe(true);
+  });
+
+  it('opens with a bold title', () => {
+    const title = els.find((el) => el.type === 'text' && el.textSize === 'lg');
+    expect(title).toMatchObject({ textBold: true });
   });
 });
 
@@ -82,14 +87,22 @@ describe('venn template', () => {
     expect(spot?.colorPreset).toBe('bold');
     expect(circles.map((c) => inside(centreOf(spot!), c))).toEqual([true, true, true]);
   });
+
+  it('shows four tested ideas, each tagged with the region it landed in', () => {
+    const chips = shapesOf(els, 'stadium')
+      .slice(1)
+      .map((s) => s.label);
+    expect(chips).toEqual(['Sweet spot', 'Unbuildable', 'Unsustainable', 'Useless']);
+    // The rail sits clear of the circles, to their right.
+    const rightmost = Math.max(...circles.map((c) => c.x + c.width));
+    const chipShapes = shapesOf(els, 'stadium').slice(1);
+    expect(chipShapes.every((c) => c.x > rightmost)).toBe(true);
+  });
 });
 
 describe('user journey template', () => {
   const els = buildTemplate('journey', 0, 0);
-  const stickies = els.filter((el) => el.type === 'sticky') as Extract<
-    Element,
-    { type: 'sticky' }
-  >[];
+  const stickies = els.filter((el) => el.type === 'sticky');
   const faces = shapesOf(els, 'sticker');
 
   it('lays five numbered stages across the top', () => {
@@ -169,22 +182,42 @@ describe('fishbone template', () => {
     expect(head?.label).toBe('Orders ship 2 days late');
     expect(head?.colorPreset).toBe('bold');
   });
+
+  it('marks the two likely root causes in red and keys them', () => {
+    const roots = els.filter((el) => el.type === 'text' && el.textColor === '#e11d48');
+    expect(roots.map((r) => (r as { label?: string }).label)).toEqual([
+      'Orders batched daily, not hourly',
+      'Courier cut-off is 3pm',
+    ]);
+    expect(texts(els).some((t) => t.startsWith('Likely root cause'))).toBe(true);
+  });
 });
 
 describe('timeline template', () => {
   const els = buildTemplate('timeline', 0, 0);
-  const circles = shapesOf(els, 'circle');
+  const allCircles = shapesOf(els, 'circle');
+  // The milestone discs; the three small ones are the legend's keys.
+  const circles = allCircles.filter((c) => c.width > 30);
 
   it('colours six milestones by status and keys them in a legend', () => {
-    // Six milestones plus three legend dots.
-    expect(circles).toHaveLength(9);
-    const milestones = circles.slice(0, 6).map((c) => c.fillColor);
+    expect(allCircles).toHaveLength(9);
+    expect(circles).toHaveLength(6);
+    const milestones = circles.map((c) => c.fillColor);
     expect(milestones.filter((f) => f === '#22c55e')).toHaveLength(3);
     expect(milestones.filter((f) => f === '#3b82f6')).toHaveLength(1);
     expect(milestones.filter((f) => f === '#ffffff')).toHaveLength(2);
-    expect(circles.every((c) => c.themeLockFill)).toBe(true);
+    expect(allCircles.every((c) => c.themeLockFill)).toBe(true);
     const t = texts(els);
     for (const key of ['Done', 'In progress', 'Up next']) expect(t).toContain(key);
+  });
+
+  it('puts a glyph in every milestone disc', () => {
+    const glyphs = shapesOf(els, 'icon');
+    expect(glyphs).toHaveLength(6);
+    circles.forEach((c, i) => {
+      expect(centreOf(glyphs[i]!).x).toBeCloseTo(centreOf(c).x, 5);
+      expect(centreOf(glyphs[i]!).y).toBeCloseTo(centreOf(c).y, 5);
+    });
   });
 
   it('marks Today between the milestone in progress and the next one', () => {

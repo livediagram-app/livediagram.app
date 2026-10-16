@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { articleJsonLd, helpUrl, webSiteJsonLd } from './structured-data';
+import { articleJsonLd, collectionJsonLd, helpUrl, webSiteJsonLd } from './structured-data';
 
 const PUBLISHER = { '@type': 'Organization', name: 'livediagram', url: 'https://livediagram.app' };
 
@@ -46,6 +46,33 @@ describe('webSiteJsonLd', () => {
       url: 'https://livediagram.app/help/',
       publisher: PUBLISHER,
       inLanguage: 'en-GB',
+    });
+  });
+});
+
+describe('collectionJsonLd', () => {
+  it("lists a landing page's articles in order, at absolute URLs", () => {
+    expect(
+      collectionJsonLd({
+        title: 'Canvas',
+        description: 'All about the canvas.',
+        appPath: '/canvas/',
+        items: [
+          { name: 'Themes', appPath: '/canvas/themes/' },
+          { name: 'Layers', appPath: '/canvas/layers/' },
+        ],
+      }),
+    ).toMatchObject({
+      '@type': 'CollectionPage',
+      name: 'Canvas',
+      url: 'https://livediagram.app/help/canvas/',
+      mainEntity: {
+        '@type': 'ItemList',
+        itemListElement: [
+          { position: 1, name: 'Themes', url: 'https://livediagram.app/help/canvas/themes/' },
+          { position: 2, name: 'Layers', url: 'https://livediagram.app/help/canvas/layers/' },
+        ],
+      },
     });
   });
 });

@@ -1,8 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { dashboardOpen } from '@/hooks/plan/dashboard-drop';
 import { ShapeGlyph } from '@/components/primitives/shape-icon';
 import { usePaletteDragPreview, usePaletteDragSnap } from '@/lib/palette-drag-preview';
+import { overFloatingPanel } from '@/lib/canvas-pointer';
 
 // Drag-to-add ghost (docs/specs/010-palette/palette-drag-ghost.md). While a palette tile is being dragged, this
 // paints a translucent footprint of what will land — sized to the shape's
@@ -28,7 +30,7 @@ export function PaletteDragGhost({ zoom }: { zoom: number }) {
       // Panels live inside the canvas <main> for layout, so a drag back over
       // the palette still reports the canvas — exclude panels explicitly,
       // mirroring usePaletteDrop's no-drop guard.
-      const overPanel = !!target?.closest?.('[data-floating-panel]');
+      const overPanel = overFloatingPanel(target);
       const overCanvas = !!target?.closest?.('main');
       setCursor({ x: e.clientX, y: e.clientY, over: overCanvas && !overPanel });
     };
@@ -40,6 +42,8 @@ export function PaletteDragGhost({ zoom }: { zoom: number }) {
   // A Plan card never lands on the canvas: the board column it would join opens a gap instead
   // (docs/specs/026-plan/plan-mode.md "The palette"), so no ghost suggests otherwise.
   if (preview.kind === 'plan-card') return null;
+  // On a Dashboard a tile fills a slot, which lights up instead (DashboardPage): no canvas footprint.
+  if (dashboardOpen()) return null;
 
   const w = preview.width * zoom;
   const h = preview.height * zoom;

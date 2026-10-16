@@ -2,12 +2,14 @@
 
 import type { ReactNode } from 'react';
 import { Portal } from '@livediagram/ui';
+import { useStartPalette } from '@/components/start/useStartPalette';
 import { TourPopover, type TourCardCopy, type TourWelcomeChoice } from './TourPopover';
 import type { TourEngine } from './useTourEngine';
 
 // What a running tour draws (docs/specs/007-editor/editor-tour.md "The steps"), shared by every tour:
 // the subtle backdrop behind a bookend card, the dimming highlight ring around a step's target, and the
-// step popover. Nothing while the tour is not running.
+// step popover. Nothing while the tour is not running. The card and the ring wear the active tab's colours, as the
+// start panels do (useStartPalette, tour-colours.ts).
 export function TourStage<Api>({
   engine,
   ariaPrefix,
@@ -30,8 +32,10 @@ export function TourStage<Api>({
   // The room between the target and its ring, in px (a dialog's tightly packed rows want more).
   pad?: number;
 }) {
+  const palette = useStartPalette();
   const { step, stepIndex, targetRect } = engine;
   if (!engine.active || !step) return null;
+  const ringLayer = step.layer ?? layer;
   return (
     <Portal>
       {step.card ? (
@@ -55,12 +59,13 @@ export function TourStage<Api>({
         // first appearance.
         <div
           aria-hidden
-          className={`pointer-events-none fixed ${layer === 'modal' ? 'z-[calc(var(--z-modal)+1)]' : 'z-[var(--z-overlay)]'} animate-fade-in rounded-xl border-2 border-brand-400 transition-all duration-long ease-out dark:border-brand-500`}
+          className={`pointer-events-none fixed ${ringLayer === 'modal' ? 'z-[calc(var(--z-modal)+1)]' : step.ringOverMenu ? 'z-[calc(var(--z-overlay)+1)]' : 'z-[var(--z-overlay)]'} animate-fade-in rounded-xl border-2 transition-all duration-long ease-out`}
           style={{
             left: targetRect.left - pad,
             top: targetRect.top - pad,
             width: targetRect.width + pad * 2,
             height: targetRect.height + pad * 2,
+            borderColor: palette.focus,
             boxShadow: '0 0 0 100vmax rgba(15, 23, 42, 0.4)',
           }}
         />
@@ -76,6 +81,7 @@ export function TourStage<Api>({
         title={step.title}
         body={step.body}
         targetRect={targetRect}
+        palette={palette}
         {...(ariaPrefix ? { ariaPrefix } : {})}
         {...(copy ? { copy } : {})}
         {...(welcomeArt ? { welcomeArt } : {})}

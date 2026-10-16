@@ -146,9 +146,17 @@ function sameTabContent(prev: Tab | undefined, current: Tab): boolean {
     const b = current.elements[i];
     if (a !== b && JSON.stringify(a) !== JSON.stringify(b)) return false;
   }
-  const { elements: _p, ...prevMeta } = prev;
-  const { elements: _c, ...currentMeta } = current;
-  return JSON.stringify(prevMeta) === JSON.stringify(currentMeta);
+  // The rest of the tab key by key, identity first too: an Illustrate tab's articles and pages are large,
+  // and serialising all of it on both sides every autosave cost the most when nothing in it had changed.
+  const prevMeta = prev as unknown as Record<string, unknown>;
+  const currentMeta = current as unknown as Record<string, unknown>;
+  for (const key of new Set([...Object.keys(prevMeta), ...Object.keys(currentMeta)])) {
+    if (key === 'elements') continue;
+    const a = prevMeta[key];
+    const b = currentMeta[key];
+    if (a !== b && JSON.stringify(a) !== JSON.stringify(b)) return false;
+  }
+  return true;
 }
 
 // Whether the autosave may write this document (docs/specs/007-editor/load-recovery.md "Offline").
@@ -233,6 +241,20 @@ export function resolveDocumentSession(input: {
     sessionRole: isOwner ? 'edit' : linkRole,
     sessionShareCode: isOwner ? null : input.shareCodeParam,
   };
+}
+
+// May this session share the document (the header's Share button, the Share command, the share-link
+// list)? Its owner, and on a TEAM document every joined member
+// (docs/specs/013-workspace/team-shared-documents.md: the team's library belongs to all of them). A
+// team document opened without a share code was let in by the api as owner or joined member, so no
+// code plus a team id is membership; a share-link visitor carries a code and stays a visitor, who
+// gets Make a Copy instead.
+export function mayShareDocument(input: {
+  isOwner: boolean;
+  teamId: string | null;
+  sessionShareCode: string | null;
+}): boolean {
+  return input.isOwner || (input.teamId !== null && input.sessionShareCode === null);
 }
 
 // Drop entries whose key isn't in `present`, returning the SAME map

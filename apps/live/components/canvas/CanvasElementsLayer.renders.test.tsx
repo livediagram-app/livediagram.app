@@ -25,7 +25,8 @@ vi.mock('./BoxedElementView', () => ({
   BoxedElementView: memo(function BoxedStub({ element }: { element: Element }) {
     bump(renders.boxed, element.id);
     drawnAs.set(element.id, element);
-    return null;
+    // A mark where the view mounts, so a test can see where each boxed element is drawn.
+    return <span data-boxed-stub={element.id} />;
   }),
 }));
 vi.mock('./ArrowView', async (importOriginal) => {
@@ -49,6 +50,17 @@ vi.mock('./selection-aware-views', async (importOriginal) => {
       bump(renders.frame, props.arrow.id);
       return null;
     }),
+  };
+});
+// Each element's slot in the list: its count shows whether a layer render walked the board.
+const slotRenders = { count: 0 };
+vi.mock('./PreviewedElement', async (importOriginal) => {
+  const real = await importOriginal<typeof import('./PreviewedElement')>();
+  return {
+    PreviewedElement: (props: Parameters<typeof real.PreviewedElement>[0]) => {
+      slotRenders.count += 1;
+      return real.PreviewedElement(props);
+    },
   };
 });
 // The grips layer is re-created on every layer render, so its count is the layer's.
@@ -154,6 +166,7 @@ function mount(first = layerProps()) {
   renders.arrow.clear();
   renders.frame.clear();
   layerRenders.count = 0;
+  slotRenders.count = 0;
   return view;
 }
 
@@ -168,6 +181,22 @@ describe('element views render only for their own changes', () => {
     const { rerender } = mount();
     rerender(<CanvasElementsLayer {...layerProps()} />);
     expect(counts()).toEqual({ boxed: 0, arrows: 0 });
+  });
+
+  // docs/specs/008-canvas/canvas-performance.md "A move re-renders what moved": a press or a release
+  // renders the editor (a drag begins or ends), and that must not walk the board's elements.
+  it('walks no element slot for an editor render that changes nothing they show', () => {
+    const { rerender } = mount();
+    rerender(<CanvasElementsLayer {...layerProps()} />);
+    rerender(<CanvasElementsLayer {...layerProps()} />);
+    expect(slotRenders.count).toBe(0);
+  });
+
+  it('walks the element slots again when an element changes', () => {
+    const { rerender } = mount();
+    const moved = BOARD.map((el) => (el.id === c.id ? { ...el, x: 40 } : el));
+    rerender(<CanvasElementsLayer {...layerProps({ elements: moved })} />);
+    expect(slotRenders.count).toBe(BOARD.length);
   });
 
   it('renders no element view, and no arrow frame slot, for a zoom', () => {
@@ -248,6 +277,45 @@ describe('drawing a drag preview', () => {
     expect([...renders.arrow.keys()]).toEqual([ab.id]);
   });
 
+  // docs/specs/008-canvas/canvas-performance.md "A move re-renders what moved": a preview frame renders
+  // neither the layer nor any element it leaves alone.
+  it('does not render the layer itself for a preview frame', () => {
+    mount();
+    for (const y of [10, 20, 30])
+      act(() =>
+        setLocalPreview(
+          't',
+          BOARD.map((el) => (el.id === a.id ? { ...a, y } : el)),
+          BOARD,
+        ),
+      );
+    expect(layerRenders.count).toBe(0);
+    expect([...renders.boxed.keys()]).toEqual([a.id]);
+    expect(renders.boxed.get(a.id)).toBe(3);
+    expect((drawnAs.get(a.id) as { y: number } | undefined)?.y).toBe(30);
+  });
+
+  it('lists an element the preview adds, after its neighbour, and drops one it removes', () => {
+    const { container } = mount();
+    const copy = { ...c, id: 'copy-of-c', x: 80 };
+    act(() =>
+      setLocalPreview(
+        't',
+        [a, b, c, copy, ab].filter((el) => el.id !== b.id),
+        BOARD,
+      ),
+    );
+    expect(drawnAs.get(copy.id)).toBe(copy);
+    expect(renders.boxed.has(b.id)).toBe(false);
+    expect(container.querySelectorAll('[data-arrow-svg]').length).toBe(1);
+    // The copy moving on renders it alone; the list holds.
+    const before = layerRenders.count;
+    const moved = { ...copy, x: 120 };
+    act(() => setLocalPreview('t', [a, c, moved, ab], BOARD));
+    expect(layerRenders.count).toBe(before);
+    expect(drawnAs.get(copy.id)).toBe(moved);
+  });
+
   it('ignores a preview for another tab', () => {
     mount();
     act(() =>
@@ -271,5 +339,44 @@ describe('drawing a drag preview', () => {
     );
     act(() => resetDragPreviewForTests());
     expect(drawnAs.get(a.id)).toBe(a);
+  });
+});
+
+// docs/specs/008-canvas/canvas-performance.md "The canvas's cursor stays off the elements": every
+// element sits in the plane that stops the canvas's cursor (globals.css [data-element-plane]).
+describe('the element plane', () => {
+  it('holds every element, and nothing else the layer draws', () => {
+    const { container } = mount();
+    const plane = container.querySelector('[data-element-plane]');
+    expect(plane).not.toBeNull();
+    expect(plane!.className).toBe('contents');
+    // Every element: the three boxed ones and the arrow, none of them outside it.
+    expect(plane!.querySelectorAll('[data-boxed-stub]').length).toBe(3);
+    expect(container.querySelectorAll('[data-boxed-stub]').length).toBe(3);
+    expect(plane!.querySelectorAll('[data-arrow-svg]').length).toBe(1);
+    expect(container.querySelectorAll('[data-element-plane]').length).toBe(1);
+    expect(plane!.querySelector('[data-selection-grips]')).toBeNull();
+  });
+});
+
+// docs/specs/029-sheets/sheet.md "Charts": a chart that sits in a Sheet on the tab is the Sheet's to draw.
+describe('charts that sit in a Sheet', () => {
+  it('are not drawn on the canvas while their Sheet is on the tab; floating and orphaned ones are', () => {
+    const range = { r1: 'aaaa', c1: 'bbbb', r2: 'cccc', c2: 'dddd' };
+    const sheet = { ...createShape('plan-sheet', 0, 0), planSheet: { sheetId: 'sheet0001' } };
+    const chartOf = (sheetId: string, anchored: boolean) => ({
+      ...createShape('bar-chart', 0, 0),
+      chartSource: { sheetId, range },
+      ...(anchored ? { sheetAnchor: { x: 0, y: 0 } } : {}),
+    });
+    const inSheet = chartOf('sheet0001', true);
+    const floating = chartOf('sheet0001', false);
+    const orphan = chartOf('sheet0002', true);
+    drawnAs.clear();
+    mount(layerProps({ elements: [sheet, inSheet, floating, orphan] as Element[] }));
+    expect(drawnAs.has(sheet.id)).toBe(true);
+    expect(drawnAs.has(inSheet.id)).toBe(false);
+    expect(drawnAs.has(floating.id)).toBe(true);
+    expect(drawnAs.has(orphan.id)).toBe(true);
   });
 });

@@ -28,10 +28,15 @@ export const HELP_ARTICLES = {
   autoAttachArrows: 'palette/auto-attach-arrows',
   // Of the elements added in docs/specs/009-elements/youtube-video.md and docs/specs/009-elements/mind-node.md, docs/specs/009-elements/lane.md, docs/specs/009-elements/entity.md, docs/specs/009-elements/embed-providers.md, only the embed has a
   // surface that links its article (the link picker, when it is restricted to
-  // a URL). Mind maps, lanes and entities had keys here and no placement, so
-  // they were removed; their articles are still in the help centre. The mind
-  // map's Edit Outline dialog links its own sub-article from its header.
+  // a URL). Lanes and entities had keys here and no placement, so they were
+  // removed; their element tours brought them back, below. The mind map's Edit
+  // Outline dialog links its own sub-article from its header, and the mind
+  // map's, the flowchart's and the org chart's element tours (docs/specs/007-editor/element-tours.md) link their
+  // articles.
   embedElements: 'palette/embed-elements',
+  mindMaps: 'palette/mind-maps',
+  flowcharts: 'palette/flowcharts',
+  orgCharts: 'palette/org-charts',
   mindMapOutline: 'palette/mind-maps/edit-outline',
   alignmentGuides: 'palette/alignment-guides',
   panelOpacity: 'palette/panel-opacity',
@@ -66,6 +71,7 @@ export const HELP_ARTICLES = {
   changingTheBackground: 'canvas/the-canvas/changing-the-background',
   themes: 'canvas/themes',
   changingTheme: 'canvas/themes/changing-theme',
+  choosingAFinish: 'canvas/finish',
   customThemes: 'canvas/themes/custom-themes',
   choosingFonts: 'canvas/text-and-fonts/choosing-fonts',
   // Links / activity / comments
@@ -74,7 +80,15 @@ export const HELP_ARTICLES = {
   planBoards: 'canvas/plan-mode/boards',
   planCards: 'canvas/plan-mode/cards',
   planSheets: 'canvas/plan-mode/sheets',
+  planDashboards: 'canvas/plan-mode/dashboards',
+  planForms: 'canvas/plan-mode/forms',
   planTour: 'canvas/plan-mode/plan-tour',
+  facilitateTour: 'canvas/facilitate-mode/facilitate-tour',
+  // The event-storming board, its photo import review included (docs/specs/021-event-storming/event-storming.md).
+  eventStormingBoards: 'canvas/event-storming-boards',
+  drawTour: 'canvas/draw-mode/draw-tour',
+  avatarTour: 'selection-modes/avatar-mode/avatar-tour',
+  illustrateTour: 'canvas/illustrate/illustrate-tour',
   links: 'canvas/links',
   comments: 'collaboration/comments',
   livePresence: 'collaboration/live-presence',
@@ -83,6 +97,8 @@ export const HELP_ARTICLES = {
   // Standing panels.
   explorerPanel: 'explorer/explorer-panel',
   layers: 'canvas/layers',
+  // The Tidy Up popover's tidiers (docs/specs/008-canvas/layout-cleanup.md).
+  layoutCleanup: 'tools/layout-cleanup',
   minimap: 'user-interface/minimap',
   sessionPolls: 'collaboration/session-tools/polls',
   sessionVoting: 'collaboration/session-tools/voting',
@@ -97,10 +113,21 @@ export const HELP_ARTICLES = {
   defaultFolders: 'explorer/folders/default-folders',
   explorerFilters: 'explorer/filters',
   dataElements: 'palette/tools/data-elements',
+  sankeyDiagram: 'palette/build/sankey-diagram',
+  // The round-two element tours' closing cards (docs/specs/007-editor/element-tours.md).
+  stacks: 'palette/stacks',
+  entities: 'palette/entities',
+  tabWindows: 'canvas/illustrate/tab-windows',
+  lanes: 'palette/lanes',
+  boundaries: 'palette/boundaries',
+  diagramKeys: 'palette/diagram-keys',
+  portals: 'palette/tools/portals',
+  sequenceDiagram: 'palette/sequence-diagrams',
+  conceptGraphics: 'palette/concept-graphics',
   palette: 'palette',
   // Settings
   powerUserMode: 'user-interface/power-user-mode',
-  welcomeTour: 'getting-started/welcome-tour',
+  diagramTour: 'getting-started/diagram-tour',
   whatWeCollect: 'privacy-and-security/what-we-collect',
   offlineMode: 'privacy-and-security/offline-mode',
   // Onboarding / empty states
@@ -108,6 +135,10 @@ export const HELP_ARTICLES = {
   templates: 'canvas/templates',
   drawMode: 'canvas/draw-mode',
   logoPages: 'canvas/illustrate/logo-pages',
+  // Each page kind's Show Me links its own article (docs/specs/007-editor/illustrate-tour.md).
+  slidePages: 'canvas/illustrate/slide-pages',
+  infographicLayouts: 'canvas/illustrate/infographic-layouts',
+  articlePages: 'canvas/illustrate/articles',
   keyboardShortcuts: 'tips-and-tricks/keyboard-shortcuts',
   guestVsAccount: 'getting-started/guest-vs-account',
   // Load recovery (docs/specs/007-editor/load-recovery.md).
@@ -139,8 +170,36 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     title: 'Learn about sheets',
     description: 'Cells, formulas, charts, setup and settings.',
   },
+  planDashboards: {
+    title: 'Learn about dashboards',
+    description: 'Rows of slots, what a slot can show, and arranging them.',
+  },
+  planForms: {
+    title: 'Learn about forms',
+    description: 'Questions, where answers go, publishing and responses.',
+  },
+  eventStormingBoards: {
+    title: 'Learn about event-storming boards',
+    description: 'Lanes, next-note buttons, and importing a photo of the wall.',
+  },
   planTour: {
     title: 'Learn about the Plan Tour',
+    description: 'What the tour shows you and how replaying works.',
+  },
+  facilitateTour: {
+    title: 'Learn about the Facilitate Tour',
+    description: 'What the tour shows you and how replaying works.',
+  },
+  drawTour: {
+    title: 'Learn about the Draw Tour',
+    description: 'What the tour shows you and how replaying works.',
+  },
+  avatarTour: {
+    title: 'Learn about the Avatar Tour',
+    description: 'What the tour shows you and how replaying works.',
+  },
+  illustrateTour: {
+    title: 'Learn about the Illustrate Tour',
     description: 'What the tour shows you and how replaying works.',
   },
   sharing: {
@@ -272,6 +331,10 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     title: 'Learn about custom themes',
     description: 'Build your own palette and reuse it across documents.',
   },
+  choosingAFinish: {
+    title: 'Learn about finishes',
+    description: 'Drawing a tab crisp and print-ready, or sketched by hand.',
+  },
   choosingFonts: {
     title: 'Learn about fonts',
     description: 'Tips for choosing a typeface and text size for a tab.',
@@ -292,9 +355,26 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     title: 'Learn about the Explorer',
     description: 'Tips and tricks to help you get the most out of the Explorer.',
   },
+  layoutCleanup: {
+    title: 'Learn about tidying a layout',
+    description:
+      'Tips for laying a diagram out in one press, and choosing the style that suits it.',
+  },
   layers: {
     title: 'Learn about layers',
     description: 'Tips and tricks for stacking, hiding and locking parts of a tab.',
+  },
+  orgCharts: {
+    title: 'Learn about org charts',
+    description: 'People and roles in a tree: reports, peers, and the downward flow.',
+  },
+  flowcharts: {
+    title: 'Learn about flowcharts',
+    description: 'Growing a chart a step at a time, step types, swimlanes and direction.',
+  },
+  mindMaps: {
+    title: 'Learn about mind maps',
+    description: 'Growing a map with Tab and Enter, its branching shapes, spacing and Tidy Map.',
   },
   mindMapOutline: {
     title: 'Learn about editing an outline',
@@ -352,6 +432,47 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     title: 'Learn about data elements',
     description: 'Charts and data-driven elements, and how to edit their data.',
   },
+  sankeyDiagram: {
+    title: 'Learn about Sankey diagrams',
+    description: 'Writing flows, reading the bands, and styling nodes and labels.',
+  },
+  stacks: {
+    title: 'Learn about stacks',
+    description: 'Rows, columns and grids that lay out what you drop in them.',
+  },
+  entities: {
+    title: 'Learn about entities',
+    description: 'UML classes and ER tables: a title over name and type fields.',
+  },
+  tabWindows: {
+    title: 'Learn about tab windows',
+    description: 'Show another tab live on a slide, and keep it up to date.',
+  },
+  lanes: {
+    title: 'Learn about lanes',
+    description: 'Swimlanes: title gutters, seams, and columns as well as rows.',
+  },
+  boundaries: {
+    title: 'Learn about boundaries',
+    description: 'Zones that hold what is inside them: regions, VPCs, C4 systems.',
+  },
+  diagramKeys: {
+    title: 'Learn about diagram keys',
+    description: 'A legend that lists the line styles and tag colours you use.',
+  },
+  portals: {
+    title: 'Learn about portals',
+    description: 'Linked rings that take you across the canvas or to another tab.',
+  },
+  conceptGraphics: {
+    title: 'Learn about concept graphics',
+    description:
+      'Stacks, pyramids, funnels, cycles, hubs, onions and chevrons, and editing their rows.',
+  },
+  sequenceDiagram: {
+    title: 'Learn about sequence diagrams',
+    description: 'Writing participants and messages, and the three kinds of arrow.',
+  },
   palette: {
     title: 'Learn about the Palette',
     description: 'Tips and tricks to help you get the most out of the Palette.',
@@ -360,8 +481,8 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     title: 'Learn about power user mode',
     description: 'The recommended settings it applies, and Minimal chrome.',
   },
-  welcomeTour: {
-    title: 'Learn about the Welcome Tour',
+  diagramTour: {
+    title: 'Learn about the Diagram Tour',
     description: 'What the tour covers and how replaying works.',
   },
   whatWeCollect: {
@@ -387,6 +508,18 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   logoPages: {
     title: 'Learn about logo pages',
     description: 'Guides, mirror drawing, wordmarks, combining shapes and the logo kit.',
+  },
+  slidePages: {
+    title: 'Learn about slide pages',
+    description: 'Slide layouts, backgrounds, the deck and presenting.',
+  },
+  infographicLayouts: {
+    title: 'Learn about infographic layouts',
+    description: 'Starting a page from a layout, its theme, and making it your own.',
+  },
+  articlePages: {
+    title: 'Learn about articles',
+    description: 'Writing, the page toolbar, article style and how pages flow.',
   },
   livePresence: {
     title: 'Learn about live presence',

@@ -47,6 +47,11 @@ export type DeferredAuthState = {
   // Reverified account self-deletion (Clerk step-up auth modal +
   // user.delete). Null until the bridge publishes it / when disabled.
   deleteAccount: (() => Promise<void>) | null;
+  // Step-up auth on its own, ahead of anything irreversible: resolves true once the session has a strict
+  // reverification (asking for one with Clerk's modal when it has none), false when it was cancelled or failed.
+  // Account deletion runs it BEFORE the server data goes, so a cancelled prompt deletes nothing. Absent outside
+  // Clerk.
+  confirmIdentity?: () => Promise<boolean>;
 };
 
 const clerkConfigured = (clerkEnabled && !!clerkPublishableKey) || e2eAuthEnabled;

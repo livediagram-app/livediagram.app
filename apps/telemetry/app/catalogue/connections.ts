@@ -72,6 +72,12 @@ export const MCP_TOOL_METRICS: readonly Metric[] = [
   mcpTool('FindDocuments', 'Find Documents', 'Searching the user’s documents by name.'),
   mcpTool('ReadDocument', 'Read Document', 'Reading one document’s tabs and elements.'),
   mcpTool('ListTemplates', 'List Templates', 'Listing the templates a document can start from.'),
+  mcpTool('SearchIcons', 'Search Icons', 'Finding icons by name for diagram boxes.'),
+  mcpTool(
+    'ListImages',
+    'List Images',
+    'Listing the user’s image gallery, to place their pictures.',
+  ),
   mcpTool('CreateDocument', 'Create Document', 'Making a new document.'),
   mcpTool('AddTab', 'Add Tab', 'Adding a tab to an existing document.'),
   mcpTool('UpdateDocument', 'Update Document', 'Editing a document’s elements.'),
@@ -123,6 +129,22 @@ export const MCP_TOOL_METRICS: readonly Metric[] = [
     'Adding, changing, laying out, moving or deleting Illustrate pages: slides, logos, infographics.',
   ),
   mcpTool('WriteArticle', 'Write Article', 'Writing an article on Illustrate pages from Markdown.'),
+  mcpTool(
+    'ReadForm',
+    'Read Form',
+    'Reading a form: its questions, where responses go, its state and link.',
+  ),
+  mcpTool(
+    'AddForm',
+    'Add Form',
+    'Making a form from a starter or questions, its responses to a board or sheet.',
+  ),
+  mcpTool(
+    'ChangeForm',
+    'Change Form',
+    'Changing a form’s questions, sections, look, settings or destination.',
+  ),
+  mcpTool('ShareForm', 'Share Form', 'Publishing, closing or deleting a form’s link.'),
 ];
 
 export const MCP_TOOL_CALLS: MetricStack = {

@@ -1,12 +1,8 @@
-// Card primitives for the theme picker's two-level browse, mirroring
-// template-picker-cards: a selectable ThemeCard (swatch + label) and a
-// ThemeCategoryCard (a sampler of the category's swatches that drills
-// into it). Lifted out of TemplatePicker so the same card renders across
-// the overview and the category detail view.
+// Card primitives for the flat theme list (ThemeBrowser): a selectable ThemeCard (swatch + label), a custom
+// theme's card with its edit / delete actions, and the "New theme" card.
 
 import type { CustomTheme } from '@livediagram/api-schema';
 import { CopyIcon, PencilIcon, PlusIcon, TrashIcon } from '@livediagram/ui';
-import { PickerCard } from '@/components/palette/PickerCard';
 import { type ThemeDefinition } from '@/lib/themes';
 import { themeDescription } from '@/lib/themes-taxonomy';
 import { materialiseCustomTheme } from '@/lib/custom-theme-registry';
@@ -65,50 +61,13 @@ export function ThemeCard({
           type="button"
           onClick={onCopy}
           aria-label={`Copy ${theme.label} to a new theme`}
-          className="absolute right-1.5 top-1.5 flex items-center gap-1 rounded-md bg-white/90 px-1.5 py-1 text-[10px] font-semibold text-slate-600 opacity-0 shadow-sm transition hover:text-brand-600 focus:opacity-100 group-hover:opacity-100 dark:bg-slate-900/85 dark:text-slate-200"
+          className="absolute right-1.5 top-1.5 flex items-center gap-1 rounded-md bg-white/90 px-1.5 py-1 text-[10px] font-semibold text-slate-600 opacity-0 shadow-sm transition hover:text-brand-700 focus:opacity-100 group-hover:opacity-100 dark:bg-slate-900/85 dark:text-slate-200 [@media(hover:none)]:opacity-100"
         >
           <CopyIcon size={11} />
           Copy
         </button>
       ) : null}
     </div>
-  );
-}
-
-// The Default quick-pick on the colour-scheme overview, sized + laid out exactly
-// like a ThemeCategoryCard (hero swatch + label + description) so it
-// doesn't read as an odd small tile next to the category cards. Unlike a
-// category card it's directly selectable (click selects; double-click
-// commits) and shows an active state.
-export function ThemeQuickPickCard({
-  theme,
-  label,
-  description,
-  active,
-  onSelect,
-  onCommit,
-}: {
-  theme: ThemeDefinition;
-  label: string;
-  description: string;
-  active: boolean;
-  onSelect: () => void;
-  onCommit: () => void;
-}) {
-  return (
-    <PickerCard
-      active={active}
-      onSelect={onSelect}
-      onCommit={onCommit}
-      label={label}
-      description={description}
-    >
-      <div className="w-full">
-        {/* Match the category cards' 2×2 sampler height (two h-9 rows +
-            gap) so Default doesn't tower over the other tiles on the row. */}
-        <ThemeSwatch theme={theme} heightClass="h-[4.75rem]" />
-      </div>
-    </PickerCard>
   );
 }
 
@@ -153,12 +112,12 @@ export function CustomThemeCard({
           {theme.name}
         </span>
       </button>
-      <div className="absolute right-1 top-1 flex gap-0.5 opacity-0 transition group-hover:opacity-100">
+      <div className="absolute right-1 top-1 flex gap-0.5 opacity-0 transition focus-within:opacity-100 group-hover:opacity-100 [@media(hover:none)]:opacity-100">
         <button
           type="button"
           onClick={onEdit}
           aria-label={`Edit ${theme.name}`}
-          className="rounded bg-white/90 p-0.5 text-slate-500 shadow-sm hover:text-brand-600 dark:bg-slate-800/90 dark:text-slate-300"
+          className="rounded bg-white/90 p-0.5 text-slate-500 shadow-sm hover:text-brand-700 dark:bg-slate-800/90 dark:text-slate-300"
         >
           <PencilIcon size={12} />
         </button>
@@ -166,7 +125,7 @@ export function CustomThemeCard({
           type="button"
           onClick={onDelete}
           aria-label={`Delete ${theme.name}`}
-          className="rounded bg-white/90 p-0.5 text-slate-500 shadow-sm hover:text-brand-600 dark:bg-slate-800/90 dark:text-slate-300"
+          className="rounded bg-white/90 p-0.5 text-slate-500 shadow-sm hover:text-brand-700 dark:bg-slate-800/90 dark:text-slate-300"
         >
           <TrashIcon size={12} />
         </button>
@@ -186,63 +145,12 @@ export function NewThemeCard({ onClick }: { onClick: () => void }) {
       onClick={onClick}
       className="group flex flex-col gap-1 rounded-md border border-dashed border-slate-300 p-1.5 text-left transition hover:border-brand-400 hover:bg-brand-50/40 dark:border-slate-600 dark:hover:border-brand-500/60 dark:hover:bg-brand-500/10"
     >
-      <span className="flex h-20 w-full items-center justify-center rounded-md bg-slate-50 text-slate-400 transition group-hover:text-brand-500 dark:bg-slate-800/60 dark:group-hover:text-brand-300">
+      <span className="flex h-20 w-full items-center justify-center rounded-md bg-slate-50 text-slate-400 transition group-hover:text-brand-700 dark:bg-slate-800/60 dark:group-hover:text-brand-300">
         <PlusIcon size={18} />
       </span>
       <span className="w-full truncate text-center text-[10px] font-medium text-slate-600 dark:text-slate-300">
         New theme
       </span>
     </button>
-  );
-}
-
-// A category tile on the theme overview: a 2×2 sampler of the category's
-// swatches as the illustration, plus the label, a count and a one-line
-// description. Clicking it drills into the category.
-export function ThemeCategoryCard({
-  label,
-  description,
-  count,
-  themes,
-  selected,
-  onOpen,
-}: {
-  label: string;
-  description: string;
-  count: number;
-  themes: ThemeDefinition[];
-  // True when the currently-selected theme lives in this category, so the
-  // card reads as "your selection is in here" on the overview.
-  selected: boolean;
-  onOpen: () => void;
-}) {
-  return (
-    <PickerCard
-      active={selected}
-      onSelect={onOpen}
-      ariaLabel={`Browse ${label} themes`}
-      label={label}
-      description={description}
-      count={count}
-    >
-      {/* Always a full 2×2 sampler so categories with fewer than four
-          themes (Formal has one, Custom can have none) keep the same
-          footprint + visual weight as Cool / Warm / etc. — empty slots
-          render as muted placeholders rather than collapsing the grid. */}
-      <div className="grid w-full grid-cols-2 gap-1">
-        {Array.from({ length: 4 }, (_, i) => {
-          const theme = themes[i];
-          return theme ? (
-            <ThemeSwatch key={theme.id} theme={theme} size="sm" />
-          ) : (
-            <span
-              key={`placeholder-${i}`}
-              aria-hidden
-              className="h-9 w-full rounded-md border border-dashed border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-800/50"
-            />
-          );
-        })}
-      </div>
-    </PickerCard>
   );
 }

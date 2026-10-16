@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { defineVerb, VerbRefusal } from '../define';
 import { cardTypeChangeSchema } from '../mcp/plan-schema';
 import { changeCardTypes } from '../plan/card-types';
-import { listedType } from '../plan/plan-listing';
+import { listedTypes } from '../plan/plan-listing';
 import { readPlanState } from '../plan/plan-state';
 import { columns, documentOf } from './shared';
 
@@ -30,7 +30,7 @@ export const typeLs = defineVerb({
   run: async (ctx, input) => {
     const document = await documentOf(ctx, input.doc);
     const { plan } = await readPlanState(ctx.api, document.id);
-    return { types: plan.types.map(listedType) };
+    return { types: listedTypes(plan.types, plan.statuses) };
   },
   text: ({ types }) =>
     columns(

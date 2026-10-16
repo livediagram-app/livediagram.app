@@ -19,6 +19,7 @@ presence, CSV, telemetry and help. The model and pure behaviour are the engine's
 | card table     | `CardTable` in `layout.cardTables` (sheets-engine blueprint)                                             |
 | Fill Tab       | `planSheet.fillTab: true`; `FillTabKind` `'Sheet'` (`components/plan/fill-tab.ts`)                       |
 | maximised      | `MaximisedKind` `'Sheet'`                                                                                |
+| cell thread    | `cellComments: CellCommentThreads` on the element, keyed `rowId:colId` (`cell-comments.ts`)              |
 
 ## Document model (`packages/document`)
 
@@ -30,8 +31,21 @@ presence, CSV, telemetry and help. The model and pure behaviour are the engine's
   package; `copyOf` likewise; `fillTab` absent or `true`; no other keys).
 - `chart-source.ts`: `ChartSource` (a chart element's `chartSource`: the sheet and the range by row and column ids),
   `isChartSource`, `chartFieldsFromTable`, `relinkCopiedCharts` and `copiedSheetId` (a chart copied with its Sheet
-  reads the copy).
-- `element-fields.ts`: known field `planSheet`.
+  reads the copy); `SheetAnchor` (a chart's `sheetAnchor` `{ x, y }`, 0 to `SHEET_ANCHOR_MAX` 1,000,000, validated by
+  `isSheetAnchor` in `validate-shape.ts`), `isSheetAnchoredChart`, `sheetDrawnChartIds` (anchored charts whose Sheet
+  is on the tab) and `chartsInSheet`.
+- `element-fields.ts`: known fields `planSheet`, `sheetAnchor` (also in edit-operations' chart kind fields),
+  `cellComments`.
+- `cell-comments.ts` (Cell comments): `CellCommentThreads`, `CELL_THREADS_MAX` 1,000, `CELL_KEY_PATTERN` (two axis
+  ids, the engine's `AXIS_ID_PATTERN` repeated), `isCellKey`, `takesCellThreads` (a `plan-sheet` only), `threadAt` and
+  `withThreadAt` (an element's own thread with no cell, else a cell's), `elementThreads` (own first, then cells in key
+  order), `mapElementThreads`, `threadHolding`. Every thread reader goes through them: the comment deltas
+  (`comment-add` and `comment-resolve` take `cell?`; `comment-remove` and `comment-rekey` find their comment in any
+  thread), `mergeIncomingElement` (keeps the receiver's `cellComments`), `elementChangeIsDeltaOnly`, the room ledger
+  (`adds[id].cell`, `comments.cells[cell]` each cell's latest resolve), `withoutCommentAuthorIds`,
+  `LIVE_ELEMENT_FIELDS` (`cellComments`, so undo keeps them), `tabStatsOf` (counts them) and `freshCopyFields`
+  (a copy carries none). `validate-shape.ts`: rule `cellComments` (an object of at most `CELL_THREADS_MAX` threads,
+  each key `isCellKey`, each `{ comments: isComment[] ≤ COMMENTS_MAX, resolved: boolean }`).
 - `shape-factory.ts`: `SHAPE_DEFAULT_SIZE['plan-sheet'] = { width: 960, height: 560 }`; `createShape` leaves
   `planSheet` to the caller (it needs a store id).
 - `data-shapes.ts` `isPlanShape`, `colors.ts` `SELF_PAINTING_SHAPES`, `session.ts` `NON_VOTABLE_SHAPES`,
@@ -81,7 +95,7 @@ SheetFace.tsx            the frame: loading (SheetBuildAnimation, "Opening Sheet
 SheetHeader.tsx          title (in-place edit), FocusElementButton kind="Sheet", MaximisePlanButton kind="Sheet"
                          (neither while the Sheet fills its tab), the Sheet Settings cog (plan/SettingsCog.tsx, shared
                          with BoardSettingsButton)
-SheetMenuSection.tsx     The element menu's Sheet flyout: SheetSettingsPanel with the Sheet's controller, read from
+SheetMenuSection.tsx     The element menu's Sheet rows: SheetSettingsPanel (its `asRow`, a flyout row per section) with the Sheet's controller, read from
                          sheet-settings-registry.ts (usePublishSheetSettings in PlanSheetView, useSheetSettingsEntry)
 SheetSettingsPanel.tsx   Sheet Settings' sections (BoardSettingsSection): Sheet Setup, Sheet Options (with Fill Tab's
                          OptionRows), Cells, Freeze (editors), Calculations, Named Ranges (SheetNamedRanges.tsx); options through actions.setOptions (LayoutChange
@@ -93,8 +107,11 @@ SheetSetupStart.tsx      Start From's option list, and Plan Cards' Cards (CardSe
 SheetSetupStyle.tsx      Style's looks (LOOKS, drawn previews), Cell Size and Freeze Header Row
 SheetColourSwatches.tsx  Text Colour's and Fill Colour's toolbar swatches (TOOLBAR_SWATCHES) and the full picker
 SheetMergeConfirm.tsx    the merge confirm, shared by the toolbar and the cell menu
-sheet-charts.ts          Insert Chart: chartRangeOf (selection, or regionAround one cell), placeSheetChart (a chart
-                         element with chartSource, through bridge.placeElement), SHEET_CHART_KINDS
+sheet-charts.ts          Insert Chart: chartRangeOf (selection, or regionAround one cell), newChartAnchor,
+                         placeSheetChart (a chart element with chartSource and sheetAnchor, through
+                         bridge.placeElement), movedAnchor, resizedChart
+sheet-charts-context.ts  SheetChartsContext: the tab's elements for a Sheet to draw its charts from
+SheetChartsLayer.tsx     the charts in a Sheet over its cells: select, move, resize, delete (Editor)
 SheetLinkedChart.tsx     a chart with chartSource: reads sheetChartTable live from the store (sheetStoreOf) and draws
                          through canvas/DataChartView; ticks the last read onto the element (bridge.tickElements)
 card-table-sync.ts       card tables: pullChanges (cards to rows) and pushPlan (a write to patches, new cards, trash),
@@ -107,7 +124,9 @@ SheetBordersPicker.tsx   the Borders menu: a 4 x 2 grid of drawn borders and dra
 sheet-rename.ts          renameSheet: trim, unchanged, unique on the tab (TITLE_TAKEN toast); header and settings
 sheet-status-pick.ts     the viewer's totals pick (localStorage, useSyncExternalStore), status bar and settings
 SheetToolbar.tsx         the category switcher (PaletteDropdown) and the category's buttons, labelled when they
-                         all fit (never on a phone), folding into More when narrow (TOOLBAR_PX)
+                         all fit (never on a phone), folding into More when narrow (TOOLBAR_PX); on a phone no
+                         Search or chevrons, PHONE_GAP_PX / PHONE_SEPARATOR_PX, an iconOnly switcher, glyph-only
+                         word buttons, controls drawn as their menu's glyph
 sheet-toolbar-categories.tsx the six categories (Text, Cells, Numbers, Data, Charts, Functions) and their
                          buttons
 SheetToolbarMenus.tsx    number format, colours, font size, borders, merge (with its confirm), alignment, wrap,
@@ -154,7 +173,7 @@ components/plan/SetupCard.tsx        the setup card and wizard stepper Setup Boa
 components/plan/CardSearchControls.tsx  the Cards panel's search and field filters (useCardSearch), reused by
                                      Setup Sheet's Cards step
 components/plan/fill-tab.ts          Fill Tab for boards and Sheets: fillTabElementOf (the first filling board or
-                                     Sheet, with its FillTabKind), fillTabSheetElements, unfillSheetElements
+                                     Sheet, with its FillTabKind), fillTabElements
 hooks/plan/useFocusNewPlanElement.ts a board, view or Sheet just added is glided into view (isFocusedOnAdd)
 hooks/canvas/useCanvasFocus.tsx      the canvas's Focus (CanvasFocusProvider), read by FocusElementButton
 components/primitives/NumberStepper.tsx  the − / + number field (the toolbar's Font Size)
@@ -226,7 +245,21 @@ shares with DiagramBuildAnimation) and `packages/ui/src/LoadingSweep.tsx` (the p
   button with Space held (`onKeyDown` / `onKeyUp` in SheetGrid; an unused Space types a space on release), and one
   finger while not maximised (a second finger ends
   it for the pinch; `swallowClick` drops the tap that follows a pan). Maximised, a finger scrolls natively.
-- Touch: a tap selects a cell; a double-tap edits.
+- Touch (`useSheetTouch.ts`; sheet.md "On a touch screen"): every finger press goes to `useSheetTouch.onTouchDown`
+  instead of the mouse path. A press within `TOUCH_GRIP_HIT_PX` (22) of the selection's corner, while the grid has the
+  keys and no edit is open, begins a `select` drag from the range's top left (the grip). Otherwise the press goes to
+  `useSheetPan.begin` (a pan, or maximised the native scroll; propagation stops either way, so the canvas never sees it)
+  and, on a cell or header, arms `useLongPress`. Its firing calls `pan.release()` (the pan lets go, swallowing
+  nothing), selects what is under the finger unless the selection holds it (`selectFor`, shared with the menus), and
+  watches the finger: past `HOLD_DRAG_PX` (6) it begins a `select` drag from the held cell (`axisSelect` from a header);
+  lifted unmoved it opens the menu (`openMenu`). From a hold or a grip press until the finger lifts a non-passive
+  window `touchmove` listener prevents the page's scroll, and the lift stamps a time: a click within `AFTER_SELECT_MS`
+  (400) of it is not a tap. A non-primary finger cancels the hold (`useLongPress.cancel`). A touch `contextmenu` is
+  prevented and opens nothing. Drags end on `pointercancel` as on `pointerup`.
+- Touch taps (`onClick`, maximised too): a cell selects it, a header its column or row, the corner the whole sheet;
+  an open edit is saved first. A double-tap edits. `SheetSelectionLayer` draws the corner handle
+  `pointer-coarse:scale-[2] pointer-coarse:rounded-full`, shown under a coarse pointer to anyone while the grid has the
+  keys; the viewport carries `[-webkit-touch-callout:none] pointer-coarse:select-none` and the editor `select-text`.
 
 ### Commands
 
@@ -234,7 +267,9 @@ shares with DiagramBuildAnimation) and `packages/ui/src/LoadingSweep.tsx` (the p
 to an engine command builder (`commands.ts`) and then the controller's write (`store.write`, plus `track('Sheet',
 'Changed', kind)`); e.g. `bold()` → `formatRange(sel,
 { b: !activeBold || null })`; `insertRowsAbove(n)` → layout `insertRows` after the row above with new ids;
-`sortColumn(dir)` → `sortSheetRows`; `merge('all')` → layout `merge` plus cleared cells after a confirm when any
+`sortColumn(dir)` → `sortSheet` (the active cell's column); `sortFilter(colId, dir)` (the filter menu's sort) →
+`sortFilter`, the filter's rows under its header by that column, its bottom row id carried to the row now in that
+place; `merge('all')` → layout `merge` plus cleared cells after a confirm when any
 non-top-left cell holds an input.
 
 ### Clipboard
@@ -260,14 +295,11 @@ non-top-left cell holds an input.
 
 - Stored as `planSheet.fillTab: true` (validated by `isPlanSheetRef`). `fill-tab.ts`: `fillTabElementOf(elements)`
   returns the first board or Sheet in element order with Fill Tab on, with its `FillTabKind` (`'Board' | 'Sheet'`);
-  `fillTabSheetElements(elements, id)` sets it and drops every other element; `unfillSheetElements(elements, id)`
-  clears it.
-- `usePlanCoverWiring` publishes `{ fillTabId, fillTabKind, tabElementCount }` to `plan-cover-store.ts`; `useFillsTab(id)`
+  on a Sheet tab, its first Sheet whatever the flag says.
+- `usePlanCoverWiring` publishes `{ fillTabId, fillTabKind, planKind }` to `plan-cover-store.ts`; `useFillsTab(id)`
   reads whether an element fills its tab.
-- `usePlanFillTab().fillTabSheet(sheetElementId, on)` commits either as one change and one undo step.
-- Sheet Settings' Sheet Options holds Fill Tab as `OptionRows` (**On Canvas**, **Fill Tab**, the hint `SHEET_FILL_TAB_HINT`);
-  turning it on with other elements on the tab asks `fillTabConfirm` first. Telemetry `Plan · Toggled ·
-SheetFillTabOn` / `SheetFillTabOff`.
+- Sheet Settings offers no Fill Tab switch: a Sheet tab always fills it (docs/specs/026-plan/plan-tabs.md), and a
+  stored `fillTab` on a Sheet elsewhere is honoured but never set from the UI (`SheetFillTab.test.tsx`).
 - Filled: `useBoardMaximised` gives `filled`, the slot draws over the canvas area, `SheetHeader` hides Focus and
   Maximise (`useFillsTab`), and Escape does not restore.
 
@@ -306,7 +338,40 @@ SheetFillTabOn` / `SheetFillTabOff`.
 ### Charts
 
 - `sheet-charts.ts`: `chartRangeOf` (the selection's last range, or `regionAround` a single cell; nothing to chart says
-  `NOTHING_TO_CHART`) and `placeSheetChart` (a chart element with `chartSource`, through `bridge.placeElement`).
+  `NOTHING_TO_CHART`), `newChartAnchor` (right of the range by `CHART_GAP_PX` (24), level with its top row, clamped
+  into the cells in view), `chartSizeOf`, and `placeSheetChart` (a chart element with `chartSource` and
+  `sheetAnchor`, through `bridge.placeElement` with `{ select: false }`; its canvas x/y over the Sheet's top right;
+  `takePlacedChart` lets the Sheet select it once it draws). `movedAnchor` (clamped 0 to `SHEET_ANCHOR_MAX`) and
+  `resizedChart` (at least `CHART_MIN_WIDTH` 160 by `CHART_MIN_HEIGHT` 120) are the drag maths.
+- `sheet-charts-context.ts`: `SheetChartsContext` `{ elements, chartPalette, editable, renderChart? }`, provided by
+  `CanvasElementsLayer` (the open tab, editable) and by `DashboardTabPreview` (another tab's elements, not editable:
+  Insert Chart toasts `OPEN_TAB_TO_CHART`; it passes the outer `renderChart` on).
+- `apps/live/components/canvas/sheet-chart-renderer.tsx`: `useSheetChartRenderer(boxedShared, tabFontStack)` returns `renderChart(element,
+interactive)`, a `BoxedElementView` with the layer's `boxedShared` (the props every boxed view on the canvas takes,
+  built once in `CanvasElementsLayer` and spread into each `SelectableBoxedView` too) and `sheetChartElement` (x and
+  y 0, no `rotation`), never selected, editing, movable, writable or resizable. Not `interactive` (a Dashboard slot):
+  read-only, wrapped in `ElementIndicatorStyleProvider style="off"`.
+- `SheetChartsLayer` (inside `SheetGrid`'s cells area, z 6): `chartsInSheet` of the context's elements, each at
+  `sheetAnchor - scroll`, drawn through `SheetLinkedChart` and the context's `renderChart(live, editable)`
+  (`DataChartView` on a card, the `cardStyle`, when there is none; otherwise only `ringStyle`, a 2 px focus outline
+  2 px outside, when selected). Its frame takes presses in the capture phase (`framePress`: not on
+  `[data-sheet-chart-control]` or `[data-indicators]`; `viewPress` for up and click also skips the frame itself, where
+  a drag's release lands), so the canvas gestures of the view under it never run. Editable only when the context is,
+  the Sheet is interactive and `c.canShape`: pointer-down selects and drags (screen px over the layer's scale,
+  `DRAG_SLOP_PX` 3), the corner handle resizes, Delete or Backspace or **Delete Chart** removes, Escape lets go
+  (`data-keeps-escape` while selected); each commit is one `bridge.commitElements`. A right-click (at the pointer,
+  `MENU_GAP_PX` 4 above so the menu's own gap lands it there) and the selected chart's **Chart Options** button
+  (`ChartButton`, `data-context-menu-trigger`, a toggle) call `openElementMenu` (`hooks/canvas/element-menu-opener.ts`):
+  the canvas host selects the chart (`useSheetChartMenuSelection`: `setSelectedId` directly, since `selectElement`
+  skips inert ids; cleared when the menu closes or moves to another element) and opens its ordinary element menu.
+  `usePruneInertSelection(layerInertIds, store, sheetChartIds)` keeps such a chart selected as the inert set is
+  re-derived on each edit. `EditorContextMenu` offers no Rotation for an `isSheetAnchoredChart`. Otherwise
+  `pointer-events: none`, no menu.
+- `deriveCanvasSelection` (`lib/canvas-selection.ts`) treats a selected chart in `sheetDrawnChartIds` as covered: no
+  popover, plus or multi toolbar floats on the canvas over where it is not drawn.
+- On the canvas, `sheetDrawnChartIds` (packages/document `chart-source.ts`) drops anchored charts whose Sheet is on
+  the tab from `CanvasElementsLayer`'s paint list and, through `useSheetChartInertIds`, from every selection surface;
+  `withSheetCharts` always carries an anchored chart with its moved Sheet. Unlink From Sheet clears `sheetAnchor`.
 - `SheetLinkedChart` reads `sheetChartTable` live from the store and draws through `canvas/DataChartView`; the read it
   keeps on the element is made in `AGENT_LOCALE` (en-GB) and ticked on quietly (`bridge.tickElements`), while the
   person sees a read in their own locale, so editors in different locales never rewrite it.
@@ -314,7 +379,9 @@ SheetFillTabOn` / `SheetFillTabOff`.
 ### Headers and status bar
 
 - `SheetHeaders` draws the unhide markers between the neighbours of hidden lines even with headers hidden (at the
-  grid's own edge then), so hidden lines can always come back.
+  grid's own edge then), so hidden lines can always come back. It reads `Geometry.userHiddenRow` (the layout's
+  `hiddenRows`), not `hiddenRow` (which also counts the filter's rows, drawn at no height): a filtered-out row gets no
+  marker.
 - The status bar's totals pick opens in the shared `AnchoredPopover` (`STATS_MENU_PX` wide).
 
 ### Presence
@@ -322,6 +389,33 @@ SheetFillTabOn` / `SheetFillTabOff`.
 - `SheetPresence` (`sheet-presence-store.ts`, one per store through `sheetPresenceFor`) sends `sheet-presence` on
   selection change (throttled `PRESENCE_THROTTLE_MS`) and on edit start and end, `null` on blur or unmount; hears
   others', which `SheetSelectionLayer` draws as outlines and name tags (tag hidden after `PEER_TAG_MS` still). Re-sends on a newcomer and on rejoin as `usePlanPresence` does.
+
+### Cell comments
+
+- Editor wiring (main bundle, `hooks/sheets/sheet-comments-context.tsx`): `SheetsProviders` in `EditorView` holds
+  the sheets bridge and `SheetCommentsProvider` (`open(elementId, cell)` from `useEditorComments.openComments`, the
+  open cell from `commentThreadOpenId` + `commentThreadOpenCell`, `canComment` = `can.takePart`);
+  `cellCommentAnchorSelector` names the anchor (`[data-cell-comment-anchor="<elementId>:<cell>"]`).
+  `hooks/sheets/sheet-cell-refs.ts`: a drawn Sheet registers a namer (cell key to A1, null when gone) and a focuser
+  (select a cell); `useCellRef` re-renders on registration.
+- `SheetWorkspace` (`PlanSheetView.tsx`) provides `SheetCellThreadsProvider` `{ elementId, threads:
+element.cellComments }`.
+- `SheetCellComments` (`SheetGrid`, beside `SheetCardRows`, given `pointer.hover`): `cellMarkers` (`sheet-cell-comments.ts`,
+  kept in a WeakMap on the threads and the layout) gives each open thread's position; a `CELL_MARKER_PX` amber
+  (`CELL_COMMENT_COLOUR`) triangle `button` (`aria-label` "Show Comments on B4", `data-comment-trigger`) at the cell's
+  (or its merge's) top right, hidden out of view, under frozen lines, or on hidden lines; a press opens the thread.
+  The pointer resting `CELL_PREVIEW_DELAY_MS` on a commented cell shows `CellPreview` (`role="tooltip"`: author, the
+  first `CELL_PREVIEW_CHARS` of the first comment, "N more"). The open cell's anchor is drawn over its cell. A
+  `keydown` listener on the grid takes Ctrl/⌘ + Alt + M (`isCommentShortcut`, by `code`) for the active cell (its
+  merge's top-left, `threadCellAt`).
+- `SheetCellCommentRow` in `SheetCellMenu` after the toolbar: **Insert Comment** (Editor, Participant) or **Show
+  Comments** (anyone, where a thread is).
+- `EditorAnchoredPopovers`: with an open cell, `CommentThreadPopover` gets `anchorSelector` and `title` "Cell
+  Comments", the thread `threadAt(target, cell)`, and each add and resolve the cell (`apiAddComment` takes `cell`
+  for a session that may comment but not edit).
+- Comments panel: `commentRowsFromElements` makes a row per thread (`CommentRow.cell`); `useCommentRowLabel` names it
+  `Budget!B4`, `Budget (Deleted Cell)` or `Budget`; a click runs `onOpenCommentsForElement(id, cell)`, which focuses
+  the cell (`focusSheetCell`) and opens its thread.
 
 ### Find
 
@@ -425,8 +519,13 @@ Editor logs (`[sheets]`): `sheets.load.failed`, `sheets.write.failed <error>`, `
 | Fill Tab on a Sheet: confirm, delete the rest, On Canvas    | `apps/live/components/sheets/SheetFillTab.test.tsx`                                                                                            |
 | Card tables: pull, push, kept fields, drafts, Controls      | `card-table-sync.test.ts`, `useCardTableSync.test.tsx`, `SheetCardRows.test.tsx`, `card-controls-column.test.ts`, `card-field-options.test.ts` |
 | Enter / Tab cycle only a selection larger than its merge    | `packages/sheets/src/selection.test.ts` (`selectsSeveral`)                                                                                     |
+| Charts in a Sheet: draw, move, resize, delete, roles        | `apps/live/components/sheets/SheetChartsLayer.test.tsx`                                                                                        |
 | Insert Chart: range, region, placement                      | `apps/live/components/sheets/sheet-charts.test.tsx`                                                                                            |
 | End to end: place, type, formula, stored, maximise, restore | `apps/live/e2e/plan-sheet.spec.ts`                                                                                                             |
+| Cell comments: model, deltas, ledger, validation, copies    | `packages/document/src/cell-comments.test.ts`, `packages/document-views/src/cell-comments.test.ts`                                             |
+| Cell comments: markers, preview, menu row, keys, panel      | `components/sheets/SheetCellComments.test.tsx`, `components/panels/collaborate/CollaborateRows.cells.test.tsx`                                 |
+| Cell comments over the api: roles, verbs, listing, trust    | `apps/api/src/routes/comment-routes-cells.test.ts`, `apps/api/src/comments-cells.test.ts`                                                      |
+| Cell comments by agents: `--cell`                           | `packages/agent-verbs/src/verbs/comment-cells.test.ts`                                                                                         |
 
 ## Assets and external resources
 
@@ -465,4 +564,9 @@ Editor logs (`[sheets]`): `sheets.load.failed`, `sheets.write.failed <error>`, `
 | `SEPARATOR_PX`             | 17                                                                                        | A divider's room (`SheetToolbar.tsx`)           |
 | `CHEVRON_PX`               | 12                                                                                        | A menu button's chevron (`SheetToolbar.tsx`)    |
 | `STATS_MENU_PX`            | 208                                                                                       | Totals pick width (`SheetStatusBar.tsx`)        |
+| `CELL_THREADS_MAX`         | 1000                                                                                      | Default (D28)                                   |
+| `CELL_COMMENT_COLOUR`      | `#f59e0b`                                                                                 | Spec (amber-500)                                |
+| `CELL_MARKER_PX`           | 8                                                                                         | Default (D29)                                   |
+| `CELL_PREVIEW_DELAY_MS`    | 400                                                                                       | Default (D29)                                   |
+| `CELL_PREVIEW_CHARS`       | 140                                                                                       | Default (D29)                                   |
 | `SHEET_FILL_TAB_HINT`      | "The sheet always fills this tab, for everyone, so the rest of the canvas can’t be used." | Spec (`SheetSettingsPanel.tsx`)                 |

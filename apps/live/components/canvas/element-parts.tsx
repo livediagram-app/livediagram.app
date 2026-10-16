@@ -1,6 +1,7 @@
 // Shared building blocks used by all boxed element views (shape, text, sticky).
 // Kept here to avoid duplication across the three view components.
 
+import { useElementIndicatorsSuppressed } from './ElementIndicatorStyleContext';
 import type { CSSProperties, PointerEvent as ReactPointerEvent } from 'react';
 import { LockIcon, SOLID_BRAND_DARK } from '@livediagram/ui';
 import type { DragMode } from '@/lib/canvas';
@@ -17,6 +18,9 @@ import { useCanvasZoom } from '@/components/canvas/CanvasZoomContext';
 
 export function LockBadge() {
   const zoom = useCanvasZoom();
+  // Editor chrome: an embed or a presented slide shows none (SuppressElementIndicators).
+  const suppressed = useElementIndicatorsSuppressed();
+  if (suppressed) return null;
   // Scales with the canvas and hides at overview zooms, like the other
   // on-element adornments (element-badges.tsx). The resize handles below
   // KEEP their counter-scaling: interaction grips need a constant hit size.
@@ -24,7 +28,7 @@ export function LockBadge() {
   return (
     <div
       aria-hidden
-      className={`pointer-events-none absolute -left-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-brand-500 text-white shadow-sm ${SOLID_BRAND_DARK}`}
+      className={`pointer-events-none absolute -left-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-brand-700 text-white shadow-sm ${SOLID_BRAND_DARK}`}
     >
       <LockIcon size={11} />
     </div>

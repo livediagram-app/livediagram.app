@@ -18,11 +18,13 @@ import {
   defaultPadding,
   isBoxed,
   isChartShape,
+  positionsInlineIcon,
   isLaneBand,
   laneEdgeOfElement,
   isChecklistShape,
   isCodeBlockShape,
   isLegendShape,
+  isSankeyShape,
   isMindNode,
   isLineShape,
   isProgressShape,
@@ -32,6 +34,7 @@ import {
   supportsTextAlign,
   supportsBorderControls,
   supportsColours,
+  supportsShadow,
   type IconSize,
   type IconWeight,
   DEFAULT_ICON_WEIGHT,
@@ -39,6 +42,7 @@ import {
   type TextAlignX,
   type TextAlignY,
   type TextSize,
+  isSeatingShape,
 } from '@livediagram/document';
 import { ContextMenuDivider } from '@/components/palette/ContextMenu';
 import {
@@ -52,6 +56,7 @@ import { MenuTile } from '@/components/primitives/MenuTiles';
 import { MenuFlyoutSection } from '@/components/primitives/MenuFlyoutSection';
 import { MenuToggleRow } from '@/components/palette/context-menu-input-rows';
 import { TypographySections } from './TypographySections';
+import { presetPxFor } from './TextSizeControl';
 import { WordmarkSection } from './WordmarkSection';
 
 import { IconSizeTiles, IconWeightTiles } from '@/components/palette/context-menu-tiles';
@@ -101,7 +106,12 @@ export function ElementAppearanceSections({
   headerFillHandlers,
   arrowheadColorHandlers,
   strokeColorHandlers,
-}: ElementAppearanceSectionsProps) {
+  afterGroup = true,
+}: ElementAppearanceSectionsProps & {
+  // A group sits above (Layer, Size, Rotation): the appearance group is set apart from it. Not on an element covering
+  // the canvas, whose menu has none of them.
+  afterGroup?: boolean;
+}) {
   const boxed = isBoxed(target);
   const isIcon = target.type === 'shape' && target.shape === 'icon';
   // Border controls apply only where a wrapper border actually renders
@@ -120,6 +130,7 @@ export function ElementAppearanceSections({
   const isLine = target.type === 'shape' && isLineShape(target.shape);
   const isCodeBlock = target.type === 'shape' && isCodeBlockShape(target.shape);
   const isLegend = target.type === 'shape' && isLegendShape(target.shape);
+  const isSankey = target.type === 'shape' && isSankeyShape(target.shape);
   const isMind = isMindNode(target);
   const isChecklist = target.type === 'shape' && isChecklistShape(target.shape);
   const isEntity = target.type === 'shape' && target.shape === 'entity';
@@ -128,15 +139,20 @@ export function ElementAppearanceSections({
   // Portal (docs/specs/009-elements/portal-element.md): its one setting is which portal it leads to.
   const isPortal = target.type === 'shape' && target.shape === 'portal';
   // The other Behaviour kinds with settings (docs/specs/012-collaboration/session-button.md, /106, /107).
-  const isSessionButton = target.type === 'shape' && target.shape === 'session-button';
-  const isReveal = target.type === 'shape' && target.shape === 'reveal';
+  // Both are the facilitator's while somebody holds the baton (docs/specs/012-collaboration/facilitator.md): no handler, no section.
+  const isSessionButton =
+    target.type === 'shape' && target.shape === 'session-button' && !!props.onSetSession;
+  const isReveal = target.type === 'shape' && target.shape === 'reveal' && !!props.onSetRevealed;
   const isPicker = target.type === 'shape' && target.shape === 'picker';
   const isReactionPad = target.type === 'shape' && target.shape === 'reaction-pad';
   // The collaboration elements that carry settings (docs/specs/012-collaboration/estimate-card.md, 127, 128, 130).
   const isEstimate = target.type === 'shape' && target.shape === 'estimate';
   const isAgenda = target.type === 'shape' && target.shape === 'agenda';
   const isDecision = target.type === 'shape' && target.shape === 'decision';
-  const isChair = target.type === 'shape' && target.shape === 'chair';
+  // A desk and a sofa share the chair's facing section (docs/specs/009-elements/chair.md "Desk and sofa").
+  // The meeting table does not turn (docs/specs/009-elements/office.md), so it has no facing section.
+  const isChair =
+    target.type === 'shape' && isSeatingShape(target.shape) && target.shape !== 'meeting-table';
   // The Text band (docs/specs/008-canvas/canvas-and-palette.md): Markers + Alignment. Markers are regular-shape
   // only (self-drawing shapes have no label slot); Alignment applies to any
   // boxed element with a text slot.
@@ -173,11 +189,14 @@ export function ElementAppearanceSections({
     hasStylePresets(target) ||
     target.type === 'sticky' ||
     target.type === 'arrow' ||
-    (boxed && supportsColours(target) && !isChart) ||
-    (borderable && !isChart);
+    (boxed && supportsColours(target) && !isChart && !isSankey) ||
+    (borderable && !isChart) ||
+    // An image has no colours, border or looks, only a Shadow (docs/specs/008-canvas/element-shadows.md),
+    // which sits in this flyout: without this it was never reachable on one.
+    supportsShadow(target);
   return (
     <>
-      {showAppearanceGroup ? <MenuGroupSeparator /> : null}
+      {showAppearanceGroup && afterGroup ? <MenuGroupSeparator /> : null}
       {/* ── Style band (docs/specs/008-canvas/canvas-and-palette.md): Presets (docs/specs/010-palette/style-presets.md) + Colours + Border,
             grouped under one "Style" row that opens them in a side flyout —
             the same fold the Text band uses — so the three style categories
@@ -225,6 +244,7 @@ export function ElementAppearanceSections({
         isLine={isLine}
         isCodeBlock={isCodeBlock}
         isLegend={isLegend}
+        isSankey={isSankey}
         isMindNode={isMind}
         isChecklist={isChecklist}
         isEntity={isEntity}
@@ -288,28 +308,34 @@ export function ElementAppearanceSections({
         <>
           <MenuGroupSeparator />
           <MenuAccordionSection title="Icon" icon={<IconCategoryGlyph />} {...sectionProps('icon')}>
-            <p className="px-3 pb-1 text-[10px] font-medium text-slate-500 dark:text-slate-400">
-              Icon position
-            </p>
-            <IconPositionGrid
-              current={(target as { iconPosition?: string }).iconPosition ?? 'left'}
-              onPick={(pos) =>
-                props.onSetIconPosition(
-                  target.id,
-                  (target as { iconId?: string }).iconId ?? '',
-                  pos,
-                )
-              }
-              onPreview={(pos) =>
-                props.onPreviewIconPosition(
-                  target.id,
-                  (target as { iconId?: string }).iconId ?? '',
-                  pos,
-                )
-              }
-              onPreviewEnd={props.onPreviewStyleEnd}
-            />
-            <ContextMenuDivider />
+            {/* A card, callout, header or boundary places its own icon, so it offers no position. */}
+            {positionsInlineIcon(target) ? (
+              <>
+                <p className="px-3 pb-1 text-[10px] font-medium text-slate-500 dark:text-slate-400">
+                  Icon position
+                </p>
+                <IconPositionGrid
+                  current={(target as { iconPosition?: string }).iconPosition ?? 'left'}
+                  onPick={(pos) =>
+                    props.onSetIconPosition(
+                      target.id,
+                      (target as { iconId?: string }).iconId ?? '',
+                      pos,
+                    )
+                  }
+                  onPreview={(pos) =>
+                    props.onPreviewIconPosition(
+                      target.id,
+                      (target as { iconId?: string }).iconId ?? '',
+                      pos,
+                    )
+                  }
+                  onPreviewEnd={props.onPreviewStyleEnd}
+                />
+                <ContextMenuDivider />
+              </>
+            ) : null}
+
             <div className="px-2 py-1.5">
               <MenuTile
                 icon={<RemoveIconGlyph />}
@@ -341,6 +367,7 @@ export function ElementAppearanceSections({
             <TypographySections
               currentFont={(target as { font?: string }).font ?? null}
               currentSize={(target as { textSize?: TextSize }).textSize ?? 'sm'}
+              presetPx={presetPxFor(target.type)}
               padding={(target as { padding?: Padding }).padding ?? defaultPadding(target)}
               onSetFont={props.onSetFont}
               onSetSize={props.onSetTextSize}

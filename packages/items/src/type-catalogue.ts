@@ -5,6 +5,11 @@
 import { readCardDisplay } from './card-display';
 import { isPlanGlyphId } from './glyphs';
 import {
+  CURRENCY_CODE,
+  RATING_FIELD_SCALE_DEFAULT,
+  RATING_FIELD_SCALE_MAX,
+  RATING_FIELD_SCALE_MIN,
+  CURRENCY_DEFAULT,
   CUSTOM_FIELD_KINDS,
   FALLBACK_ITEM_TYPE,
   ITEM_TYPES,
@@ -105,9 +110,12 @@ export interface ItemTypeCatalogue {
 
 const BUILT_IN_FIELDS = new Set<string>(BUILT_IN_FIELD_IDS);
 
-// The types a document's stored catalogue holds, or the default types when it holds none.
+const NO_TYPES: readonly ItemTypeDef[] = [];
+
+// The types a document's stored catalogue holds; none while its card types are not chosen (docs/specs/026-plan/
+// item-types.md "The type catalogue": the default types arrive only through Add Default Types).
 export function typesOf(stored: ItemTypeCatalogue | null | undefined): readonly ItemTypeDef[] {
-  return stored?.types ?? ITEM_TYPES;
+  return stored?.types ?? NO_TYPES;
 }
 
 // A type by id within a catalogue; an unknown id (deleted, or an agent's) draws as "Item".
@@ -241,7 +249,7 @@ function readCustom(input: unknown, at: string): CustomFieldDef | string {
     label,
     kind: kind as CustomFieldKind,
   };
-  if (kind === 'choice') {
+  if (kind === 'choice' || kind === 'multichoice') {
     const raw = input['options'];
     if (!Array.isArray(raw)) return `${at}.options`;
     const options = raw.map((o) => (typeof o === 'string' ? o.trim() : ''));
@@ -254,11 +262,27 @@ function readCustom(input: unknown, at: string): CustomFieldDef | string {
       return `${at}.options`;
     field.options = options;
   }
+  if (kind === 'rating' && input['scale'] !== undefined) {
+    const scale = input['scale'];
+    if (
+      typeof scale !== 'number' ||
+      !Number.isInteger(scale) ||
+      scale < RATING_FIELD_SCALE_MIN ||
+      scale > RATING_FIELD_SCALE_MAX
+    )
+      return `${at}.scale`;
+    if (scale !== RATING_FIELD_SCALE_DEFAULT) field.scale = scale;
+  }
   if (kind === 'card') {
     // The type it links to; one the catalogue lacks is kept (the type may come back), never refused.
     const linkType = input['linkType'];
     if (typeof linkType !== 'string' || !ITEM_TYPE_PATTERN.test(linkType)) return `${at}.linkType`;
     field.linkType = linkType;
+  }
+  if (kind === 'currency' && input['currency'] !== undefined) {
+    const code = input['currency'];
+    if (typeof code !== 'string' || !CURRENCY_CODE.test(code)) return `${at}.currency`;
+    if (code !== CURRENCY_DEFAULT) field.currency = code;
   }
   if (input['onCard'] === true) field.onCard = true;
   return field;
@@ -447,7 +471,7 @@ export function validateItemTypeCatalogue(input: unknown): Result {
   if (!isObj(input)) return { ok: false, reason: 'not an object' };
   if (input['version'] !== ITEM_TYPE_CATALOGUE_VERSION) return { ok: false, reason: 'version' };
   const typesIn = input['types'];
-  if (!Array.isArray(typesIn) || typesIn.length < 1 || typesIn.length > ITEM_TYPES_MAX)
+  if (!Array.isArray(typesIn) || typesIn.length > ITEM_TYPES_MAX)
     return { ok: false, reason: 'types' };
   const types: ItemTypeDef[] = [];
   for (const [i, t] of typesIn.entries()) {
@@ -464,8 +488,8 @@ export function validateItemTypeCatalogue(input: unknown): Result {
   return { ok: true, catalogue };
 }
 
-// A stored catalogue read back (D1, an offline record, a Drive file): kept when valid, else the
-// default types, so a damaged value never stops a document opening.
+// A stored catalogue read back (D1, an offline record, a Drive file): kept when valid, else none
+// (not chosen), so a damaged value never stops a document opening.
 export function readItemTypeCatalogue(input: unknown): ItemTypeCatalogue | null {
   if (input === null || input === undefined) return null;
   const parsed = typeof input === 'string' ? safeParse(input) : input;
@@ -481,7 +505,19 @@ function safeParse(text: string): unknown {
   }
 }
 
-// The catalogue a first change starts from: the default types, as a stored catalogue.
+// The default types as a stored catalogue: what a document made before card types started empty, with cards,
+// reads as (legacyCatalogue).
 export function defaultCatalogue(): ItemTypeCatalogue {
   return { version: ITEM_TYPE_CATALOGUE_VERSION, types: ITEM_TYPES };
+}
+
+// What a document made before card types started empty reads as (docs/specs/026-plan/item-types.md "The type
+// catalogue"): one never chosen (`stored` null) that has cards kept the five default types its cards were made
+// with, so it reads as them; anything else reads as it is stored. Used where a document is read whole and its cards
+// are known (an offline record, a Drive file); D1 documents were given theirs by migration 0090.
+export function legacyCatalogue(
+  stored: ItemTypeCatalogue | null,
+  hasCards: boolean,
+): ItemTypeCatalogue | null {
+  return stored === null && hasCards ? defaultCatalogue() : stored;
 }

@@ -2,18 +2,22 @@
 
 import type { TelemetrySummary, TelemetryWindowKey } from '@livediagram/api-schema';
 import { CardColumns } from './CardColumns';
-import { SETTINGS_STACKS } from './metric-catalogue';
+import { SETTINGS_CHANGED, SETTINGS_STACKS } from './metric-catalogue';
 import { MetricGroups, type MetricGroup } from './MetricCards';
 import { isSettingsCategory } from './opened-types';
 import { RankCard, rank } from './RankCard';
 import { rankTrend, windowLabel } from './windows';
 
-// Settings view (docs/specs/017-telemetry/telemetry.md): how often each setting in the editor's Settings
-// dialog gets changed, one stack per Settings category, one chart per row.
+// Settings section of the Features tab (docs/specs/017-telemetry/telemetry.md): how often each setting in
+// the editor's Settings dialog gets changed, the categories summed first (Settings Changed, which
+// left the Dashboard in October 2026), then one stack per Settings category, one chart per row.
 // Below them, which categories people open inside the dialog
 // (`UI·Opened·Settings<Category>`), the signal for whether the dialog's
 // layout puts the right ones first.
-export const GROUPS: MetricGroup[] = [{ title: 'By category', metrics: [...SETTINGS_STACKS] }];
+export const GROUPS: MetricGroup[] = [
+  { title: 'All categories', metrics: [SETTINGS_CHANGED] },
+  { title: 'By category', metrics: [...SETTINGS_STACKS] },
+];
 
 export function SettingsView({
   summary,

@@ -6,6 +6,7 @@
 // it is one column and Details becomes the first tab. Every field saves as it changes. It follows the
 // item wherever someone moves it, and closes if someone deletes it.
 import { useEffect, useState, type ReactNode } from 'react';
+import { markResponseOpened } from '@/components/forms/fresh-responses';
 import {
   BUILT_IN_FIELD_IDS,
   detailFieldsOf,
@@ -115,6 +116,8 @@ function useTitleFocus(id: string, on: boolean, select: boolean): void {
 // tab with its own clock.
 export function ItemPanel(props: ItemPanelProps) {
   const { item, onClose } = props;
+  // A response's card stops showing New once opened (docs/specs/030-forms/forms.md "Hearing about responses").
+  useEffect(() => markResponseOpened(item), [item]);
   return (
     <Dialog
       open

@@ -75,8 +75,9 @@ notes already on the board. There is nothing to switch on.
   lane or no lane. It stays there: nothing moves it back later.
 - **The arrow keys move a note a whole lane** up or down; left and right still
   nudge it a pixel at a time (ten with Shift).
-- **Nothing on the board ever moves to make room.** Only the note you are
-  placing moves; to open a gap, press **Alt** while dragging (above).
+- **Nothing on the board moves to make room while you drag.** Only the note you
+  are placing moves; to open a gap, press **Alt** while dragging (above). (A
+  next-note tab is the one exception: it opens a gap when its spot is taken.)
 - **You see them only while you are dragging**: the lane a note is about to
   land in lights up, with its neighbours fainter either side, and everything
   disappears again when you let go.
@@ -137,7 +138,8 @@ Event Storming palette reads that wall in:
 1. Take or drop a photo of the wall (you can also paste one onto the board).
 2. The photo fills the screen and a box appears on every sticky found in it,
    with the words read from its handwriting. The box's colour is the kind, taken
-   from the paper.
+   from the paper. **Show Me**, at the photo's top left, walks you through
+   checking it, on your own photo.
 3. Check it right there: **untick** a box that is not a note, **click the
    words** to fix a misreading, and **drag round** a sticky it missed. A box
    that is slightly off can be fixed rather than redrawn: **click it** to select
@@ -147,13 +149,13 @@ Event Storming palette reads that wall in:
    a trackpad or a phone, or use the **+** button), and drag with the **middle
    mouse button** to move around (or hold **Space** and drag). **Fit** shows
    the whole photo again.
-4. **Add** puts the notes **on the board, as a draft**: outlined, laid out where they
+4. **Add 5 notes** (the button counts them) puts the notes **on the board, as a draft**: outlined, laid out where they
    were on the wall, with the rest of the board faded behind them: the second look, at
    the notes in place and at the size they will really be.
 5. Fix anything from right there: double-click to correct a word it misread,
    drag one that landed awkwardly, delete what you do not want, or right-click
    a note and **Change Kind** if the light made a colour ambiguous.
-6. **Add** keeps them, in one step that a single Undo takes back. **Discard**
+6. **Add 5 notes** on the draft bar keeps them, in one step that a single Undo takes back. **Discard**
    leaves the board exactly as it was.
 
 The notes land on the lanes the way the wall had them: each row of the photo
@@ -161,16 +163,17 @@ on a lane of its own, in the same order, even when the photo squeezes two rows
 closer than one lane. Notes roughly above one another line up in one column,
 and notes lapped over each other in a row are spread along their lane.
 
-A note your board already has is marked **"already here"** and left alone:
+A note your board already has is marked with a tick (its tooltip reads **Already here**) and left alone:
 never moved, never re-worded, even if the photo reads it differently. That is
 what makes the next photo of the next piece of wall safe to import: only what
 is new is added.
 
 <Tip>
-  The photo never leaves your machine. Your browser finds the stickies in it and sends only small
-  crops of individual notes to be read, so the room, the whiteboard behind, and whoever is standing
-  in front of it stay with you. The first import also downloads a small note-finding model (under
-  half a megabyte), which runs in your browser too.
+  The photo never leaves your machine. Your browser finds the stickies in it, so the room, the
+  whiteboard behind, and whoever is standing in front of it stay with you. Where the server has a
+  reading model, only small crops of individual notes are sent to be read. Where it has none (or its
+  quota is spent), the handwriting is read in your browser too, and the first import downloads that
+  reading model, about 180 MB. The note-finding model is small, under half a megabyte.
 </Tip>
 
 <Note>

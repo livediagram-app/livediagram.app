@@ -63,7 +63,7 @@ export function TimelineGroup({
               height={DAY_BADGE_HEIGHT_PX}
               radius="sm"
               caps
-              className={`bg-brand-500 px-1.5 text-[10px] font-semibold text-white ${SOLID_BRAND_DARK}`}
+              className={`bg-brand-700 px-1.5 text-[10px] font-semibold text-white ${SOLID_BRAND_DARK}`}
             >
               Today
             </Chip>
@@ -85,7 +85,7 @@ export function TimelineGroup({
           >
             {label}
           </p>
-          <p className="text-[10px] text-slate-400">{year}</p>
+          <p className="text-[10px] text-slate-500 dark:text-slate-400">{year}</p>
         </div>
         <div className={CARD_GRID}>{children}</div>
       </div>

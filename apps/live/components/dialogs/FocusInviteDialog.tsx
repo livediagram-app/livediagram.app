@@ -31,15 +31,15 @@ export function FocusInviteDialog({
     <Dialog open onClose={onDismiss} ariaLabel="Someone wants you to look at something" size="sm">
       <div className="flex flex-col gap-3 p-4">
         <div className="flex flex-col gap-1">
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-brand-600 dark:text-brand-300">
+          <span className="text-[11px] font-semibold uppercase tracking-wider text-brand-700 dark:text-brand-300">
             Bring Focus
           </span>
           <h2 className="text-base font-semibold leading-snug text-slate-800 dark:text-slate-100">
             {from} wants you to look at something
           </h2>
           <p className="text-[13px] leading-snug text-slate-500 dark:text-slate-400">
-            This will move your view to where they are pointing, at their zoom. Your view is your
-            own again straight afterwards.
+            This will move your view to where they are pointing, keeping your zoom. Your view is
+            your own again straight afterwards.
           </p>
         </div>
         <div className="flex items-center justify-end gap-2">
@@ -54,7 +54,7 @@ export function FocusInviteDialog({
             type="button"
             autoFocus
             onClick={onAccept}
-            className={`cursor-pointer rounded-lg bg-brand-500 px-4 py-1.5 text-[13px] font-semibold text-white transition hover:bg-brand-600 ${SOLID_BRAND_DARK_CONTROL}`}
+            className={`cursor-pointer rounded-lg bg-brand-700 px-4 py-1.5 text-[13px] font-semibold text-white transition hover:bg-brand-800 ${SOLID_BRAND_DARK_CONTROL}`}
           >
             Take me there
           </button>

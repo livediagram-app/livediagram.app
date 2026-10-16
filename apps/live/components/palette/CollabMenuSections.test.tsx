@@ -7,6 +7,7 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { AgendaItem, ShapeElement } from '@livediagram/document';
+import type { ComponentProps } from 'react';
 import { AgendaMenuSection, DecisionMenuSection } from './CollabMenuSections';
 
 const shape = (over: Partial<ShapeElement>): ShapeElement =>
@@ -23,7 +24,7 @@ describe('AgendaMenuSection', () => {
       onSetItems={vi.fn()}
     />
   );
-  const name = (i: number) => screen.getByLabelText(`Segment ${i} name`) as HTMLInputElement;
+  const name = (i: number) => screen.getByLabelText<HTMLInputElement>(`Segment ${i} name`);
 
   // Same loop as the decision drivers below: a fresh `?? []` per render, set by an effect.
   it('settles for an element without segments', () => {
@@ -41,7 +42,7 @@ describe('AgendaMenuSection', () => {
   });
 
   it('carries the current segment with its row on move and remove', () => {
-    const onSetItems = vi.fn();
+    const onSetItems = vi.fn<ComponentProps<typeof AgendaMenuSection>['onSetItems']>();
     render(
       <AgendaMenuSection
         target={shape({
@@ -57,12 +58,12 @@ describe('AgendaMenuSection', () => {
     );
     fireEvent.click(screen.getByLabelText('Move segment 3 up'));
     const [moved, moveCurrent] = onSetItems.mock.calls[0]!;
-    expect(moved.map((r: AgendaItem) => r.label)).toEqual(['A', 'C', 'B']);
-    expect([0, 1, 2].map(moveCurrent)).toEqual([0, 2, 1]);
+    expect(moved.map((r) => r.label)).toEqual(['A', 'C', 'B']);
+    expect([0, 1, 2].map((i) => moveCurrent?.(i))).toEqual([0, 2, 1]);
     fireEvent.click(screen.getByLabelText('Remove segment 2'));
     const [left, removeCurrent] = onSetItems.mock.calls[1]!;
-    expect(left.map((r: AgendaItem) => r.label)).toEqual(['A', 'C']);
-    expect([0, 1, 2].map(removeCurrent)).toEqual([0, undefined, 1]);
+    expect(left.map((r) => r.label)).toEqual(['A', 'C']);
+    expect([0, 1, 2].map((i) => removeCurrent?.(i))).toEqual([0, undefined, 1]);
   });
 
   it('follows the element when its segments change', () => {
@@ -83,7 +84,7 @@ describe('DecisionMenuSection', () => {
       onSetDrivers={vi.fn()}
     />
   );
-  const driver = (i: number) => screen.getByLabelText(`Driver ${i}`) as HTMLInputElement;
+  const driver = (i: number) => screen.getByLabelText<HTMLInputElement>(`Driver ${i}`);
 
   // An element without drivers once re-rendered forever: `?? []` minted a new array per render and
   // the follow effect set it, which rendered again.

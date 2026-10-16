@@ -7,6 +7,7 @@
 // Pure types; re-exported through index.ts so the public
 // `@livediagram/document` surface is unchanged.
 
+import type { Finish } from './finish';
 import type { ArrowFlow, ElementId, ElementLink, TextSize } from './index';
 import type { ArrowheadShape, ArrowheadSize, ArrowStyle } from './arrow-style';
 import type { AnimationSpeed } from './animation';
@@ -120,6 +121,9 @@ export type ArrowElement = {
   // filled triangle so arrows authored before the field render
   // unchanged (see `arrowheadShapeOf`).
   arrowheadShape?: ArrowheadShape;
+  // The start's head when it differs from the end's (an ER relationship: a one at one table, a many at the other).
+  // Absent = the start takes `arrowheadShape`.
+  arrowheadStartShape?: ArrowheadShape;
   // Path shape. 'straight' is the default and matches every arrow
   // authored before the field existed. 'curved' bows the line out
   // perpendicular to the from→to chord (smooth quadratic Bezier).
@@ -219,4 +223,6 @@ export type ArrowElement = {
   // opaque plate on an otherwise clean diagram adds a box nobody asked for.
   labelFill?: string;
   font?: string;
+  // Drawing style (docs/specs/008-canvas/finish.md); unset follows the tab's.
+  finish?: Finish;
 };

@@ -29,7 +29,7 @@ Ask remembers the last few exchanges, so you can follow up ("and which of those 
 
 ## Clean: tidy what's there
 
-**Clean** works on what is already on the tab. It fixes label typos and normalises sizes, positions, and styles so a diagram that grew messily reads consistently. The prompt is optional: leave it blank for a general tidy, or say what you want ("Normalise colours"). Clean respects your layout rather than re-flowing it, and it never changes what an element is (a checklist stays a checklist, a diamond stays a diamond), so it is the safe choice once a diagram is arranged the way you like.
+**Clean** works on what is already on the tab. It fixes label typos and normalises sizes, positions, and styles so a diagram that grew messily reads consistently. The prompt is optional: leave it blank for a general tidy, or say what you want ("Even out the box sizes"). Clean leaves colours alone; the tab's theme sets them. Clean respects your layout rather than re-flowing it, and it never changes what an element is (a checklist stays a checklist, a diamond stays a diamond), so it is the safe choice once a diagram is arranged the way you like.
 
 While it works, the panel shows how many elements it has processed so far. When it finishes, the changes land in a single step, so one **Undo** (⌘Z / Ctrl+Z) reverses the whole operation.
 
@@ -40,7 +40,7 @@ If you want the layout itself recomputed from the arrows, use [Auto Layout](/hel
 Whatever the mode, the assistant only ever sees the **active tab**. If you have elements selected when you send a request, those are marked as the focus: Clean concentrates its edits there while still seeing the rest of the tab, so an arrow whose other end sits outside the selection stays connected correctly, and Ask answers about the selection in context. With nothing selected, the whole tab is fair game. The **Context** line above the prompt box shows which it will use.
 
 <Note>
-  Prompts are capped at 1,000 characters, so think of each request as one clear instruction. If a
+  Prompts over 1,000 characters are refused, so think of each request as one clear instruction. If a
   result is not quite right, undo it, adjust the prompt and send again rather than stacking
   corrections into one long message.
 </Note>

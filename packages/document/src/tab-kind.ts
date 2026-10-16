@@ -9,7 +9,17 @@ import { isEventStormingTab } from './event-storming';
 
 // Whiteboarding is an editor mode, not a kind (docs/specs/007-editor/editor-modes.md): a stored
 // 'whiteboard' is migrated on read into a general tab that opens in Draw (./legacy-whiteboard-tab).
-export type TabKind = 'diagram' | 'event-storming';
+// Board, Sheet and Dashboard are the Plan tab kinds (docs/specs/026-plan/plan-tabs.md), and Form
+// (docs/specs/030-forms/forms.md).
+export type TabKind = 'diagram' | 'event-storming' | 'board' | 'sheet' | 'dashboard' | 'form';
+
+export const PLAN_TAB_KINDS = ['board', 'sheet', 'dashboard', 'form'] as const;
+export type PlanTabKind = (typeof PLAN_TAB_KINDS)[number];
+
+// The tab is a Board, Sheet, Dashboard or Form tab: always in Plan mode.
+export function isPlanTabKind(kind: string | undefined): kind is PlanTabKind {
+  return kind === 'board' || kind === 'sheet' || kind === 'dashboard' || kind === 'form';
+}
 
 export const DEFAULT_TAB_KIND: TabKind = 'diagram';
 
@@ -21,6 +31,10 @@ export const DEFAULT_TAB_KIND: TabKind = 'diagram';
 export function tabKindOf(tab: { kind?: string } | undefined): TabKind {
   switch (tab?.kind) {
     case 'event-storming':
+    case 'board':
+    case 'sheet':
+    case 'dashboard':
+    case 'form':
       return tab.kind;
     default:
       return DEFAULT_TAB_KIND;

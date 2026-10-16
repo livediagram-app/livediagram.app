@@ -53,7 +53,7 @@ describe('a debounced text field', () => {
         onSave={vi.fn()}
       />,
     );
-    expect((screen.getByLabelText('Title') as HTMLInputElement).maxLength).toBe(10);
+    expect(screen.getByLabelText<HTMLInputElement>('Title').maxLength).toBe(10);
     expect(screen.getByText('1 character left')).toBeTruthy();
   });
 

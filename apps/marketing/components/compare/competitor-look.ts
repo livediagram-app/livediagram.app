@@ -16,7 +16,7 @@ import { lucideGlyph } from '@livediagram/ui';
 // short highlight chips for its card. Tailwind classes are written out in full so the build sees them.
 // competitor-look.test.ts pins one entry per ALTERNATIVES slug.
 
-export type CompetitorLook = {
+type CompetitorLook = {
   icon: ReturnType<typeof lucideGlyph>;
   // The card's header wash and the glyph's colour.
   panel: string;
@@ -48,7 +48,7 @@ export const COMPETITOR_LOOK: Record<string, CompetitorLook> = {
     icon: lucideGlyph(lucidePencil, 22),
     panel: 'from-violet-100 to-fuchsia-50 dark:from-violet-500/15 dark:to-fuchsia-500/5',
     glyph: 'text-violet-600 dark:text-violet-300',
-    highlights: ['95 templates', 'Tabs and folders', '.excalidraw in and out'],
+    highlights: ['132 templates', 'Tabs and folders', '.excalidraw in and out'],
   },
   drawio: {
     icon: lucideGlyph(lucideWorkflow, 22),
@@ -60,7 +60,7 @@ export const COMPETITOR_LOOK: Record<string, CompetitorLook> = {
     icon: lucideGlyph(lucideAppWindow, 22),
     panel: 'from-yellow-100 to-lime-50 dark:from-yellow-500/15 dark:to-lime-500/5',
     glyph: 'text-yellow-700 dark:text-yellow-300',
-    highlights: ['Connectors that route', 'Infinite canvas', 'Present from it'],
+    highlights: ['Slide layouts', 'Slides from your canvas', 'No account'],
   },
   figjam: {
     icon: lucideGlyph(lucideShapes, 22),
@@ -72,6 +72,6 @@ export const COMPETITOR_LOOK: Record<string, CompetitorLook> = {
     icon: lucideGlyph(lucideNetwork, 22),
     panel: 'from-emerald-100 to-teal-50 dark:from-emerald-500/15 dark:to-teal-500/5',
     glyph: 'text-emerald-600 dark:text-emerald-300',
-    highlights: ['No shape limits', 'No sign-up', 'Open source'],
+    highlights: ['No plan limits', 'No sign-up', 'Open source'],
   },
 };

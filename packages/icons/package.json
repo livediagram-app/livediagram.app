@@ -10,6 +10,7 @@
     ".": "./src/index.ts",
     "./icon-catalog-1": "./src/icon-catalog-1.ts",
     "./icon-catalog-2": "./src/icon-catalog-2.ts",
+    "./icon-catalog-3": "./src/icon-catalog-3.ts",
     "./tech-icon-catalog": "./src/tech-icon-catalog.ts",
     "./resolve": "./src/resolve.ts",
     "./sticker-catalog": "./src/sticker-catalog.ts",
@@ -19,7 +20,7 @@
     "./search": "./src/search.ts"
   },
   "scripts": {
-    "lint": "eslint .",
+    "lint": "oxlint",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "typecheck": "tsc --noEmit",
@@ -27,14 +28,13 @@
     "vendor:lucide": "node scripts/vendor-lucide.ts"
   },
   "devDependencies": {
-    "@livediagram/eslint-config": "workspace:*",
+    "@livediagram/oxlint-config": "workspace:*",
     "@livediagram/vitest-config": "workspace:*",
     "@types/node": "^26.6.4",
-    "@typescript/native": "npm:typescript@^7.0.2",
     "@vitest/coverage-v8": "^5.0.3",
-    "eslint": "^10.12.0",
     "lucide-static": "1.52.0",
-    "typescript": "npm:@typescript/typescript6@^6.0.2",
+    "oxlint": "^1.88.0",
+    "typescript": "^7.0.2",
     "vitest": "^5.0.3"
   },
   "dependencies": {

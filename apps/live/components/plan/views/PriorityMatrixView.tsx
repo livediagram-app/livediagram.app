@@ -1,23 +1,40 @@
 'use client';
 
 // Priority by Status (docs/specs/026-plan/plan-views.md "Priority by Status"): a grid of priority by status
-// phase, each cell the cards in both, shaded by how many against the fullest cell.
+// phase, each cell the cards in both, shaded by how many against the fullest cell. The cells share the view's
+// area and their counts grow with them (view-layout matrixLayout).
 import { useMemo } from 'react';
 import {
   PRIORITY_LABELS,
   STATUS_PHASES,
   STATUS_PHASE_LABELS,
   priorityMatrixModel,
+  cardsInStatuses,
 } from '@livediagram/items';
 import { PRIORITY_COLOURS } from '../plan-palette';
 import { PHASE_COLOURS, ViewFrame, viewState } from './view-frame';
+import { matrixLayout } from './view-layout';
 import type { PlanViewProps } from './PlanViewView';
 
 const NO_PHASES = new Map();
+// The Statuses setting leaves nothing (docs/specs/026-plan/plan-views.md "Statuses").
+const NO_MATCH = 'No cards in the chosen statuses.';
 
-export function PriorityMatrixView({ plan, items, palette, fontFamily }: PlanViewProps) {
+export function PriorityMatrixView({
+  plan,
+  items,
+  palette,
+  fontFamily,
+  width,
+  height,
+  settings,
+}: PlanViewProps) {
   const phases = plan?.statusPhases ?? NO_PHASES;
-  const model = useMemo(() => priorityMatrixModel(items.values(), phases), [items, phases]);
+  // Only the cards in the chosen statuses, when the view names some.
+  const statuses = settings.statuses;
+  const counted = useMemo(() => cardsInStatuses(items, statuses), [items, statuses]);
+  const model = useMemo(() => priorityMatrixModel(counted.values(), phases), [counted, phases]);
+  const layout = matrixLayout(width, height, model.rows.length);
   return (
     <ViewFrame
       title="Priority by Status"
@@ -26,14 +43,18 @@ export function PriorityMatrixView({ plan, items, palette, fontFamily }: PlanVie
       palette={palette}
       fontFamily={fontFamily}
       state={viewState(plan, model.total > 0)}
-      empty="No cards yet. Add cards to a board to see where they stand."
+      empty={
+        settings.statuses ? NO_MATCH : 'No cards yet. Add cards to a board to see where they stand.'
+      }
     >
       <div
         role="table"
         aria-label="Cards by priority and status"
-        className="absolute inset-0 grid gap-1 p-3 text-[12px]"
+        className="absolute inset-0 grid p-3"
         style={{
-          gridTemplateColumns: 'minmax(0, min(120px, 25%)) repeat(3, minmax(0, 1fr))',
+          gap: layout.gap,
+          fontSize: layout.labelFont,
+          gridTemplateColumns: `minmax(0, ${layout.labelColumn}px) repeat(3, minmax(0, 1fr))`,
           gridTemplateRows: `auto repeat(${model.rows.length}, minmax(0, 1fr))`,
         }}
       >
@@ -42,8 +63,8 @@ export function PriorityMatrixView({ plan, items, palette, fontFamily }: PlanVie
           <span
             key={p}
             role="columnheader"
-            className="flex min-w-0 items-center justify-center gap-1.5 truncate pb-1 text-[11px] font-semibold"
-            style={{ color: palette.muted }}
+            className="flex min-w-0 items-center justify-center gap-1.5 truncate pb-1 font-semibold"
+            style={{ color: palette.muted, fontSize: layout.labelFont - 1 }}
           >
             <span
               aria-hidden
@@ -78,8 +99,9 @@ export function PriorityMatrixView({ plan, items, palette, fontFamily }: PlanVie
                     key={p}
                     role="cell"
                     aria-label={`${label}, ${STATUS_PHASE_LABELS[p]}: ${n}`}
-                    className="flex min-h-0 items-center justify-center rounded-md font-semibold tabular-nums"
+                    className="flex min-h-0 min-w-0 items-center justify-center overflow-hidden rounded-md font-semibold tabular-nums"
                     style={{
+                      fontSize: layout.countFont,
                       backgroundColor: n
                         ? `color-mix(in srgb, ${tint} ${Math.round(12 + share * 48)}%, ${palette.surface})`
                         : palette.column,

@@ -6,12 +6,16 @@
 // CSV end setup without a style.
 import { useEffect, useMemo, useState } from 'react';
 import { Button, CheckIcon, ChevronLeftIcon } from '@livediagram/ui';
+import { chartTypeOf } from '@livediagram/document';
 import { cardSourceOf, findCards, type BoardStatusTypes } from '@livediagram/items';
 import {
   cardsStarter,
+  designWrite,
+  isSheetTemplateId,
   setupWrite,
-  sheetStarter,
+  sheetTemplate,
   single,
+  TEMPLATE_LOOK,
   type SheetCellSize,
   type SheetLook,
 } from '@livediagram/sheets';
@@ -46,18 +50,31 @@ const stepsFor = (start: SetupStart): StepId[] =>
 
 const NO_STATUS_TYPES: BoardStatusTypes = new Map();
 
-// Now, for a start's dates (the Tracker's due dates), read when Create Sheet is pressed.
+// Now, for a template's dates (the Tracker's due dates, the Timesheet's week), read when Create Sheet is pressed.
 const todayMs = () => Date.now();
 
+// `Sheet · Created · <Start>` (docs/specs/017-telemetry/telemetry.md): a closed set, one per start.
 const TELEMETRY: Record<SetupStart, string> = {
   blank: 'Blank',
   budget: 'Budget',
   tracker: 'Tracker',
   timesheet: 'Timesheet',
   contacts: 'Contacts',
+  invoice: 'Invoice',
+  expenses: 'ExpenseReport',
+  pipeline: 'SalesPipeline',
+  inventory: 'Inventory',
+  guests: 'GuestList',
+  grades: 'GradeBook',
+  habits: 'HabitTracker',
+  loan: 'LoanCalculator',
   cards: 'Cards',
   csv: 'Csv',
 };
+
+// The look Style starts on: a template's own Banded, else Header.
+const lookFor = (start: SetupStart | undefined): SheetLook =>
+  isSheetTemplateId(start) ? TEMPLATE_LOOK : 'header';
 
 // The card type new rows of an imported table take (sheet.md "Card tables"): the one type the import was filtered
 // to, else the type most of its cards have.
@@ -79,8 +96,13 @@ export function SheetSetup({ onImportCsv }: { onImportCsv: () => void }) {
   // Placed from Start Planning as a sheet type (Card Table, Budget, Tracker): that start, a step in.
   const preset = setupStartOf(c.sheet.id);
   const [step, setStep] = useState(preset ? 1 : 0);
-  const [start, setStart] = useState<SetupStart>(preset ?? 'blank');
-  const [look, setLook] = useState<SheetLook>('header');
+  const [start, setStartOnly] = useState<SetupStart>(preset ?? 'blank');
+  const [look, setLook] = useState<SheetLook>(lookFor(preset));
+  // A new start brings its own first look (a template's Banded).
+  const setStart = (s: SetupStart) => {
+    setStartOnly(s);
+    setLook(lookFor(s));
+  };
   const [freeze, setFreeze] = useState(!!preset);
   const sheetId = c.sheet.id;
   useEffect(() => forgetSetupStart(sheetId), [sheetId]);
@@ -105,6 +127,31 @@ export function SheetSetup({ onImportCsv }: { onImportCsv: () => void }) {
       { undoable: false },
     );
   const create = () => {
+    if (isSheetTemplateId(start)) {
+      const made = designWrite(c.workbook, c.sheet.id, sheetTemplate(start, todayMs()), {
+        look,
+        freezeHeader: freeze,
+        size,
+        dark,
+      });
+      if (!made || !c.write(made.write, 'Setup')) return;
+      track('Sheet', 'Created', TELEMETRY[start]);
+      // The template's charts, over its cells (each one undo step, as Insert Chart's).
+      for (const ch of made.charts)
+        c.placeChart?.(
+          chartTypeOf({ shape: ch.kind })!,
+          { range: ch.range, ...(ch.cols ? { cols: ch.cols } : {}) },
+          ch.anchor,
+          {
+            size: { width: ch.width, height: ch.height },
+            palette: ch.palette,
+            template: true,
+          },
+        );
+      c.setSelection(single({ r: 0, c: 0 }));
+      c.focusGrid();
+      return;
+    }
     const starter =
       start === 'cards' && plan
         ? (() => {
@@ -117,9 +164,7 @@ export function SheetSetup({ onImportCsv }: { onImportCsv: () => void }) {
               importType(cards, search.filters),
             );
           })()
-        : start === 'cards' || start === 'csv'
-          ? null
-          : sheetStarter(start, todayMs());
+        : null;
     const write = setupWrite(c.workbook, c.sheet.id, {
       start: starter,
       look,
@@ -168,6 +213,7 @@ export function SheetSetup({ onImportCsv }: { onImportCsv: () => void }) {
       icon={<SheetArt size={20} />}
       help="planSheets"
       palette={c.palette}
+      wide
       steps={steps.map((id) => ({ label: STEP_LABELS[id] }))}
       at={at}
       onStep={setStep}

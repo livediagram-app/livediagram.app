@@ -26,14 +26,14 @@
     "icons:brand": "pnpm --filter @livediagram/live icons:brand"
   },
   "devDependencies": {
-    "@livediagram/eslint-config": "workspace:*",
+    "@livediagram/oxlint-config": "workspace:*",
     "@livediagram/prettier-config": "workspace:*",
-    "@typescript/native": "npm:typescript@^7.0.2",
     "esbuild": "^0.28.2",
-    "eslint": "^10.12.0",
+    "oxlint": "^1.88.0",
+    "oxlint-tsgolint": "^7.0.2004",
     "prettier": "^3.9.9",
     "turbo": "^2.11.7",
-    "typescript": "npm:@typescript/typescript6@^6.0.2",
+    "typescript": "^7.0.2",
     "wrangler": "^4.148.0"
   },
   "engines": {

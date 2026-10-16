@@ -10,7 +10,8 @@
 
 import type { ReactNode } from 'react';
 
-import { Scene, Label, Avatar, Panel } from './primitives';
+import { CollaborateCategories as CategoryPicker } from './palette-behaviour';
+import { Scene, Label, Avatar } from './primitives';
 
 // --- Shared card chrome ------------------------------------------------------
 
@@ -73,13 +74,23 @@ function AccentBar({
   w,
   h = 22,
   label,
+  count,
 }: {
   x: number;
   y: number;
   w: number;
   h?: number;
   label: string;
+  // How many things the action covers, as a badge in the accent
+  // (docs/specs/004-interface-design/counts.md), never "(3)" in the label.
+  count?: number;
 }) {
+  // The label and its badge sit centred together, 6px apart.
+  const textW = label.length * 5.8;
+  const badge = 16;
+  const run = count === undefined ? textW : textW + 6 + badge;
+  const left = x + (w - run) / 2;
+  const cy = y + h / 2;
   return (
     <g>
       <rect
@@ -92,99 +103,42 @@ function AccentBar({
         strokeWidth={1.2}
         strokeDasharray="4 3"
       />
-      <Label x={x + w / 2} y={y + h / 2 + 1} anchor="middle" size={10} weight={600} tone="accent">
+      <Label x={left + textW / 2} y={cy + 1} anchor="middle" size={10} weight={600} tone="accent">
         {label}
       </Label>
+      {count !== undefined && (
+        <g>
+          <rect
+            x={left + textW + 6}
+            y={cy - badge / 2}
+            width={badge}
+            height={badge}
+            rx={badge / 2}
+            className="fill-brand-500"
+          />
+          <Label
+            x={left + textW + 6 + badge / 2}
+            y={cy + 1}
+            anchor="middle"
+            size={9}
+            weight={700}
+            tone="onAccent"
+          >
+            {String(count)}
+          </Label>
+        </g>
+      )}
     </g>
   );
 }
 
 // --- Scenes ------------------------------------------------------------------
 
-// The Collaborate category's groups, in BEHAVIOUR_GROUPS order
-// (apps/live/components/palette/palette-create-tabs.tsx). Ask and Record are
-// the two this article covers, so they are the two drawn lit.
-const GROUPS: { label: string; lit: boolean }[] = [
-  { label: 'Ask', lit: true },
-  { label: 'Tools', lit: false },
-  { label: 'Record', lit: true },
-  { label: 'React', lit: false },
-  { label: 'Selection Mode', lit: false },
-  { label: 'Navigate', lit: false },
-];
-
-/** The Collaborate category: a search across every group, over the six
- *  groups you click into. Ask and Record hold the elements that collect what
- *  the room thinks. */
-export function CollaborateGroups() {
-  const px = 52;
-  const py = 12;
-  return (
-    <Scene w={420} h={228} bg="plain">
-      <Panel x={px} y={py} w={316} h={204} title="COLLABORATE">
-        <rect
-          x={px + 12}
-          y={py + 32}
-          width={292}
-          height={24}
-          rx={7}
-          className="fill-slate-50 stroke-slate-200"
-          strokeWidth={1.5}
-        />
-        <circle
-          cx={px + 25}
-          cy={py + 44}
-          r={4}
-          className="fill-none stroke-slate-400"
-          strokeWidth={1.5}
-        />
-        <path
-          d="M0 0 L4 4"
-          transform={`translate(${px + 28} ${py + 47})`}
-          className="stroke-slate-400"
-          strokeWidth={1.5}
-        />
-        <Label x={px + 38} y={py + 45} size={10} tone="muted">
-          Search collaboration
-        </Label>
-        {GROUPS.map((g, i) => {
-          const gx = px + 12 + (i % 3) * 100;
-          const gy = py + 66 + Math.floor(i / 3) * 66;
-          return (
-            <g key={g.label}>
-              <rect
-                x={gx}
-                y={gy}
-                width={92}
-                height={56}
-                rx={9}
-                className={g.lit ? 'fill-brand-50 stroke-brand-300' : 'fill-white stroke-slate-200'}
-                strokeWidth={1.5}
-              />
-              <rect
-                x={gx + 32}
-                y={gy + 9}
-                width={28}
-                height={22}
-                rx={6}
-                className={g.lit ? 'fill-brand-100' : 'fill-slate-100'}
-              />
-              <Label
-                x={gx + 46}
-                y={gy + 44}
-                anchor="middle"
-                size={10}
-                weight={600}
-                tone={g.lit ? 'accent' : 'body'}
-              >
-                {g.label}
-              </Label>
-            </g>
-          );
-        })}
-      </Panel>
-    </Scene>
-  );
+/** Facilitate mode's Collaborate band in the category picker: the six Collaborate
+ *  categories. Ask and Record hold the elements that collect what the room thinks,
+ *  so they are the two drawn lit. */
+export function CollaborateCategories() {
+  return <CategoryPicker lit={['Ask', 'Record']} />;
 }
 
 /** An estimate card before the reveal: your own pick lifted, who has
@@ -256,35 +210,35 @@ export function EstimateCard() {
         <rect x={cx - 50} y={y + 136} width={100} height={4} rx={2} className="fill-slate-100" />
         <rect x={cx - 50} y={y + 136} width={60} height={4} rx={2} className="fill-brand-500" />
         {/* The one action, at the foot, under the cards it acts on. */}
-        <AccentBar x={x + 12} y={y + 154} w={w - 24} label="Reveal (3)" />
+        <AccentBar x={x + 12} y={y + 154} w={w - 24} label="Reveal" count={3} />
       </CollabCard>
     </Scene>
   );
 }
 
-// Cool to warm, as TEMPERATURE_COLORS runs (blue, cyan, lime, amber, rose),
-// expressed through the house accent hues rather than the editor's hex values.
-const TEMPERATURE_HUES = ['indigo', 'teal', 'emerald', 'amber', 'rose'] as const;
+// Cool to warm, the fixed TEMPERATURE_COLORS (blue, cyan, lime, amber, rose
+// at their 400 shade), so the figure shows the same hues the card always draws.
+const TEMPERATURE_HUES = ['blue', 'cyan', 'lime', 'amber', 'rose'] as const;
 const HUE_FILL: Record<(typeof TEMPERATURE_HUES)[number], string> = {
-  indigo: 'fill-indigo-400',
-  teal: 'fill-teal-400',
-  emerald: 'fill-emerald-400',
+  blue: 'fill-blue-400',
+  cyan: 'fill-cyan-400',
+  lime: 'fill-lime-400',
   amber: 'fill-amber-400',
   rose: 'fill-rose-400',
 };
 const HUE_STROKE: Record<(typeof TEMPERATURE_HUES)[number], string> = {
-  indigo: 'stroke-indigo-400',
-  teal: 'stroke-teal-400',
-  emerald: 'stroke-emerald-400',
+  blue: 'stroke-blue-400',
+  cyan: 'stroke-cyan-400',
+  lime: 'stroke-lime-400',
   amber: 'stroke-amber-400',
   rose: 'stroke-rose-400',
 };
 
 /** A temperature check: five faces, the bars they fill, and the average. */
 export function TemperatureCheckCard() {
-  const x = 100;
+  const x = 86;
   const y = 12;
-  const w = 220;
+  const w = 248;
   const tally = [0, 1, 4, 2, 3];
   // The face's mouth per value, frown to beam (as MoodGlyph draws it).
   const mouths = [
@@ -302,7 +256,7 @@ export function TemperatureCheckCard() {
   const trackX = x + 14;
   const trackW = w - 28;
   return (
-    <Scene w={420} h={214}>
+    <Scene w={420} h={226}>
       <defs>
         <linearGradient id="temperature-track">
           {TEMPERATURE_HUES.map((hue, i) => (
@@ -314,7 +268,7 @@ export function TemperatureCheckCard() {
           ))}
         </linearGradient>
       </defs>
-      <CollabCard x={x} y={y} w={w} h={190} title="How are we feeling?" aside="10 ANSWERED">
+      <CollabCard x={x} y={y} w={w} h={202} title="How are we feeling?" aside="10 ANSWERED">
         {tally.map((count, i) => {
           const hue = TEMPERATURE_HUES[i]!;
           const bx = left + i * (col + gap);
@@ -359,10 +313,13 @@ export function TemperatureCheckCard() {
               >
                 {String(i + 1)}
               </Label>
-              {/* The bar, rounded, easing to its share. */}
+              {/* The count over each bar, then the bar, rounded, easing to its share. */}
+              <Label x={cx} y={y + 88} anchor="middle" size={9} weight={600} tone="muted">
+                {String(count)}
+              </Label>
               <rect
                 x={cx - 11}
-                y={y + 86}
+                y={y + 96}
                 width={22}
                 height={full}
                 rx={11}
@@ -371,7 +328,7 @@ export function TemperatureCheckCard() {
               {barH > 0 && (
                 <rect
                   x={cx - 11}
-                  y={y + 86 + full - barH}
+                  y={y + 96 + full - barH}
                   width={22}
                   height={barH}
                   rx={Math.min(11, barH / 2)}
@@ -384,7 +341,7 @@ export function TemperatureCheckCard() {
         {/* The mood meter, the marker at the average. */}
         <rect
           x={trackX}
-          y={y + 152}
+          y={y + 164}
           width={trackW}
           height={6}
           rx={3}
@@ -392,15 +349,15 @@ export function TemperatureCheckCard() {
         />
         <circle
           cx={trackX + 6 + pos * (trackW - 12)}
-          cy={y + 155}
+          cy={y + 167}
           r={5.5}
           className={`fill-white ${HUE_STROKE[TEMPERATURE_HUES[Math.round(pos * 4)]!]}`}
           strokeWidth={2.5}
         />
-        <Label x={trackX} y={y + 176} size={15} weight={700} tone="strong">
+        <Label x={trackX} y={y + 188} size={15} weight={700} tone="strong">
           3.7
         </Label>
-        <Label x={x + w - 14} y={y + 176} anchor="end" size={10} tone="muted">
+        <Label x={x + w - 14} y={y + 188} anchor="end" size={10} tone="muted">
           from 10 people
         </Label>
       </CollabCard>
@@ -419,7 +376,7 @@ export function IdeaBoxCard() {
     <Scene w={420} h={222}>
       <CollabCard x={x} y={y} w={w} h={198} title="What slowed us down?" aside="7 IDEAS">
         {/* The facilitator's one action, the Q&A board's dashed accent bar. */}
-        <AccentBar x={x + 12} y={y + 40} w={w - 24} label="Open the Box (7)" />
+        <AccentBar x={x + 12} y={y + 40} w={w - 24} label="Open the Box" count={7} />
         {/* Sealed: a lock, the count, and no text. */}
         <rect
           x={x + 12}
@@ -764,7 +721,9 @@ export function RollCallCard() {
 export function QuizRoundCard() {
   const cx = 210;
   const cy = 128;
-  const r = 52;
+  const r = 54;
+  // The countdown ring runs just outside the disc, as QuizFace draws it.
+  const ring = r + 7;
   const answers = ['Venus', 'Mercury', 'Mars', 'Earth'];
   const at = [
     [cx, cy - 92],
@@ -772,7 +731,7 @@ export function QuizRoundCard() {
     [cx, cy + 92],
     [cx - 132, cy],
   ] as const;
-  const circumference = 2 * Math.PI * (r - 4);
+  const circumference = 2 * Math.PI * ring;
   return (
     <Scene w={420} h={256}>
       <circle cx={cx} cy={cy} r={r} className="fill-white stroke-brand-300" strokeWidth={2} />
@@ -780,23 +739,26 @@ export function QuizRoundCard() {
       <circle
         cx={cx}
         cy={cy}
-        r={r - 4}
+        r={ring}
         className="fill-none stroke-brand-500"
         strokeWidth={3}
         strokeDasharray={`${circumference * 0.66} ${circumference}`}
         transform={`rotate(-90 ${cx} ${cy})`}
         strokeLinecap="round"
       />
-      <Label x={cx} y={cy - 26} anchor="middle" size={14} weight={700} tone="strong">
+      <Label x={cx} y={cy - 30} anchor="middle" size={14} weight={700} tone="strong">
         13
       </Label>
-      <Label x={cx} y={cy - 6} anchor="middle" size={10} weight={700} tone="strong">
-        Which planet is
+      <Label x={cx} y={cy - 12} anchor="middle" size={10} weight={700} tone="strong">
+        Which planet
       </Label>
-      <Label x={cx} y={cy + 7} anchor="middle" size={10} weight={700} tone="strong">
-        closest to the sun?
+      <Label x={cx} y={cy} anchor="middle" size={10} weight={700} tone="strong">
+        is closest to
       </Label>
-      <Label x={cx} y={cy + 26} anchor="middle" size={10} tone="muted">
+      <Label x={cx} y={cy + 12} anchor="middle" size={10} weight={700} tone="strong">
+        the sun?
+      </Label>
+      <Label x={cx} y={cy + 30} anchor="middle" size={10} tone="muted">
         3 answered
       </Label>
       {answers.map((a, i) => {

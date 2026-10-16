@@ -283,30 +283,33 @@ export function defaultTypesToAdd(types: readonly ItemTypeDef[]): ItemTypeDef[] 
   );
 }
 
-type BoardLike = { type?: unknown; shape?: unknown; planBoard?: unknown };
+type BoardLike = { type?: unknown; shape?: unknown; planBoard?: unknown; planView?: unknown };
+
+// What a Gantt chart brings (docs/specs/026-plan/plan-views.md "Gantt Chart"): the types it names, else Project, so a
+// document whose first Plan tab is a Gantt chart has a type to add cards of.
+const GANTT_BRINGS: readonly string[] = ['project'];
 
 // The card type ids the Plan boards among `elements` bring, in board order (docs/specs/026-plan/item-types.md
-// "The type catalogue"): a board's Card Types; a board that takes every type (Blank) brings the five default types;
-// an Archive or All Cards board brings none.
+// "The type catalogue"): a board's Card Types; a board that takes every type (Blank), an Archive or an All Cards
+// board brings none. A Gantt chart brings its own (GANTT_BRINGS); no other view brings any.
 export function boardTypeIdsOf(elements: readonly BoardLike[]): string[] {
   const named: string[] = [];
   for (const el of elements) {
+    if (el.type === 'shape' && el.shape === 'plan-view') {
+      const view = el.planView as { view?: unknown; types?: unknown } | undefined;
+      if (view?.view !== 'gantt') continue;
+      const types = Array.isArray(view.types)
+        ? view.types.filter((t): t is string => typeof t === 'string')
+        : [];
+      named.push(...(types.length > 0 ? types : GANTT_BRINGS));
+      continue;
+    }
     if (el.type !== 'shape' || el.shape !== 'plan-board') continue;
     const setup = normaliseBoardSetup(el.planBoard);
     if (!setup || setup.archive || setup.allCards) continue;
-    named.push(...(setup.addTypes ?? DEFAULT_TYPE_IDS));
+    named.push(...(setup.addTypes ?? []));
   }
   return named;
-}
-
-// Whether a board among `elements` takes every type (Blank): made first, it chose the default types while storing
-// nothing, so a later board is not among the first and only adds what is missing.
-export function hasBlankBoard(elements: readonly BoardLike[]): boolean {
-  return elements.some((el) => {
-    if (el.type !== 'shape' || el.shape !== 'plan-board') return false;
-    const setup = normaliseBoardSetup(el.planBoard);
-    return !!setup && !setup.archive && !setup.allCards && setup.addTypes === undefined;
-  });
 }
 
 // The ready-made types the Plan boards among `elements` bring that the document lacks, in board order.
@@ -317,29 +320,14 @@ export function boardTypesToAdd(
   return broughtTypesToAdd(boardTypeIdsOf(elements), types);
 }
 
-const sameIds = (a: readonly ItemTypeDef[], b: readonly ItemTypeDef[]) =>
-  a.length === b.length && a.every((t, i) => t.id === b[i]!.id);
-
 // The catalogue a document holds once the boards among `elements` are made in it (docs/specs/026-plan/item-types.md
-// "The type catalogue"), or null when that is what it holds already.
-// - Not chosen yet (`stored` null), no cards (`hasCards` false) and no Blank board already there (`hadBlank` false,
-//   hasBlankBoard): the first boards choose its card types, exactly the ones they bring. Bringing just the five
-//   default types is what it reads as already: null.
-// - A Blank board already there chose the default types (storing nothing): a later board adds what it lacks, as
-//   below.
-// - Otherwise: `stored` (or the default types) with the types the boards bring that it lacks after them, at most
-//   ITEM_TYPES_MAX in all.
+// "The type catalogue"), or null when that is what it holds already: its types (none while not chosen) with the
+// ready-made types the boards bring that it lacks after them, at most ITEM_TYPES_MAX in all. The first boards in a
+// fresh document so choose its card types, exactly the ones they bring.
 export function catalogueWithBoardTypes(
   stored: ItemTypeCatalogue | null,
   elements: readonly BoardLike[],
-  hasCards = false,
-  hadBlank = false,
 ): ItemTypeCatalogue | null {
-  if (stored === null && !hasCards && !hadBlank) {
-    const chosen = broughtTypesToAdd(boardTypeIdsOf(elements), []).slice(0, ITEM_TYPES_MAX);
-    if (chosen.length === 0 || sameIds(chosen, ITEM_TYPES)) return null;
-    return { version: ITEM_TYPE_CATALOGUE_VERSION, types: chosen };
-  }
   const types = typesOf(stored);
   const room = ITEM_TYPES_MAX - types.length;
   const missing = boardTypesToAdd(elements, types).slice(0, Math.max(0, room));

@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi, type MockInstance } from 'vitest';
 import { migrateRetiredScheme, retiredSchemeOf } from './retired-schemes';
 import type { Element, Tab } from './index';
 
@@ -13,8 +13,16 @@ const CHARCOAL = {
   grid: '#636373',
 };
 
-const shape = (o: Record<string, unknown> = {}): Element =>
-  ({ id: 's', type: 'shape', shape: 'square', x: 0, y: 0, width: 10, height: 10, ...o }) as Element;
+const shape = (o: Record<string, unknown> = {}): Element => ({
+  id: 's',
+  type: 'shape',
+  shape: 'square',
+  x: 0,
+  y: 0,
+  width: 10,
+  height: 10,
+  ...o,
+});
 const charcoalShape = (o: Record<string, unknown> = {}) =>
   shape({ fillColor: CHARCOAL.fill, strokeColor: CHARCOAL.stroke, textColor: CHARCOAL.text, ...o });
 
@@ -28,7 +36,7 @@ const charcoalTab = (elements: Element[] = [charcoalShape()], o: Partial<Tab> = 
     ...o,
   });
 
-let info: ReturnType<typeof vi.spyOn>;
+let info: MockInstance<typeof console.info>;
 beforeEach(() => {
   info = vi.spyOn(console, 'info').mockImplementation(() => {});
 });

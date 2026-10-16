@@ -15,30 +15,20 @@ import {
   SLIDE_LAYOUTS,
 } from '@livediagram/templates';
 import { buildPageLayout } from '@livediagram/templates';
+import { isIconId } from '@livediagram/icons/search';
 
 // docs/specs/007-editor/illustrate-pages.md "Slide layouts": a slide page's own catalogue, every
 // layout fitting a 16:9 and a 4:3 slide inside its margins.
 describe('slide layouts', () => {
-  it('are the seventeen of the spec, by category, each unique', () => {
-    expect(SLIDE_LAYOUTS.map((l) => [l.category, l.id])).toEqual([
-      ['slide-openers', 'slide-title'],
-      ['slide-openers', 'slide-section'],
-      ['slide-openers', 'agenda'],
-      ['slide-content', 'slide-bullets'],
-      ['slide-content', 'slide-two-columns'],
-      ['slide-content', 'slide-image-text'],
-      ['slide-content', 'slide-statement'],
-      ['slide-content', 'quote'],
-      ['slide-data', 'big-number'],
-      ['slide-data', 'key-stats'],
-      ['slide-data', 'chart-story'],
-      ['slide-data', 'comparison'],
-      ['slide-steps', 'process'],
-      ['slide-steps', 'timeline'],
-      ['slide-steps', 'roadmap'],
-      ['slide-closers', 'slide-closing'],
-      ['slide-closers', 'team'],
-    ]);
+  it('are the forty-six of the spec, at least nine to a category, each unique', () => {
+    expect(SLIDE_LAYOUTS).toHaveLength(46);
+    expect(new Set(SLIDE_LAYOUTS.map((l) => l.id)).size).toBe(SLIDE_LAYOUTS.length);
+    for (const c of SLIDE_LAYOUT_CATEGORIES) {
+      expect(
+        SLIDE_LAYOUTS.filter((l) => l.category === c.id).length,
+        c.label,
+      ).toBeGreaterThanOrEqual(9);
+    }
     expect(SLIDE_LAYOUT_CATEGORIES.map((c) => c.label)).toEqual([
       'Openers',
       'Content',
@@ -90,6 +80,23 @@ describe('slide layouts', () => {
         const els = buildPageLayout(layout.id, page!);
         expect(els.length).toBeGreaterThan(2);
         expect(new Set(els.map((e) => e.id)).size).toBe(els.length);
+        // Every icon is one the catalogue draws.
+        for (const el of els) {
+          if (el.type === 'shape' && el.shape === 'icon')
+            expect(isIconId(el.iconId!), el.iconId).toBe(true);
+        }
+        // No two text boxes overlap: each line has its own room.
+        const texts = els.filter((e) => e.type === 'text');
+        for (let a = 0; a < texts.length; a += 1) {
+          for (let c = a + 1; c < texts.length; c += 1) {
+            const p = texts[a]!;
+            const q = texts[c]!;
+            const overlap =
+              Math.min(p.x + p.width, q.x + q.width) - Math.max(p.x, q.x) > 1 &&
+              Math.min(p.y + p.height, q.y + q.height) - Math.max(p.y, q.y) > 1;
+            expect(overlap, `${p.label} / ${q.label}`).toBe(false);
+          }
+        }
         for (const b of boxes(els)) {
           expect(b.x).toBeGreaterThanOrEqual(box.x - 1);
           expect(b.y).toBeGreaterThanOrEqual(box.y - 1);

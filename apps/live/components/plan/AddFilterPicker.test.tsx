@@ -37,4 +37,12 @@ describe('Add Filter', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Back to the fields' }));
     expect(screen.getByText('Filter by')).toBeTruthy();
   });
+
+  it('says no fields match the words when none do', () => {
+    const fields = Array.from({ length: 10 }, (_, i) => ({ id: `f${i}`, label: `Field ${i}` }));
+    render(<AddFilterPicker fields={fields} valuesOf={() => []} onPick={vi.fn()} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Add Filter' }));
+    fireEvent.change(screen.getByLabelText('Find a field'), { target: { value: 'zzz' } });
+    expect(screen.getByRole('status').textContent).toContain('No fields match “zzz”');
+  });
 });

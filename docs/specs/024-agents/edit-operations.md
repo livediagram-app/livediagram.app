@@ -26,7 +26,9 @@ editing an existing tab use the same operations; a full rebuild uses `replace`. 
 | `layout`  | `layout <selector> [style=flow\|tree\|mindmap] [direction=down\|right]`           | Lays out only the selection, keeping its top-left corner                                          |
 | `test`    | `test <selector> key=value…`                                                      | Fails the changeset unless the element holds these values                                         |
 
-- **`replace`** is the other changeset body: a whole tab from `graph`, `mermaid`, `template` or `elements`, exactly
+- **`replace`** is the other changeset body: a whole tab from `graph`, `mermaid`, `template`, `dashboard` (a new
+  Plan Dashboard tab, or a Dashboard tab rebuilt whole, [Plan agents](../026-plan/plan-agents.md) "Making a
+  dashboard") or `elements`, exactly
   as the MCP takes them ([MCP server](../015-api/mcp-server.md) §4.7). It is still a changeset: previewed, based,
   attributed and revertable.
 - **Ids** given with `id=` name the new element, so later operations in the same changeset can refer to it. An id is
@@ -44,6 +46,12 @@ editing an existing tab use the same operations; a full rebuild uses `replace`. 
   label is cut; a sticky's or a text's label is its content and is kept whole. Every style key a
   [view](document-views.md) prints (`stroke=`, `text-color=`, `border=`, `font=` beside `fill=`, `text=`, `line=`)
   writes back unchanged.
+- **Closed vocabularies.** A stored field with a closed list of values (`textSize`, `textAlignX`, `textAlignY`,
+  `iconPosition`, `arrowStyle`, `arrowEnds`, `arrowheadShape`, `strokeStyle`, `borderRadius`, `iconWeight`, `font` (the editor's
+  faces: a family name such as "serif" drew in the tab's font in silence), and the diagram-building kinds'
+  `accentEdge`, `cardMedia`, `chipLook`, `attachAt`, `boundaryStyle`, `pyramidVariant`;
+  `ELEMENT_FIELD_VALUES` in `@livediagram/document`) refuses a value off it as `invalid_value`, naming the values it
+  takes (a `textSize` may also be a pixel number, as a Step number stores one), as the MCP's whole-element check does: `textSize=xl` used to be stored and drawn as tiny overlapping text.
 - **Locks.** A changeset on a locked tab is refused, and so is an operation that changes a locked element or an
   element on a locked layer (`element_locked`).
 
@@ -85,8 +93,12 @@ The editor's drag carries by the same rule ([Canvas and palette](../008-canvas/c
 
 `add` and `move` take one of: `right-of:<x>`, `left-of:<x>`, `above:<x>`, `below:<x>` (with `gap:<n>`),
 `after:<x>` (along the flow of x's outgoing arrows), `inside:<frame>` (the next free slot), `align:<x>` (sharing x's
-centre on the axis the element is already nearer it), `at:x,y`. Without one, a new element goes beside the last one
-added, or right of the content. An occupied spot moves along the placement axis until free. Coordinates shown and
+centre on the axis the element is already nearer it), `at:x,y`. `inside:<frame>` may also go with a side
+(`inside:<frame> right-of:<x>`): beside x, which must be inside that frame or lane (refused, naming the frame,
+otherwise), the way a model writes "in the group, next to x". A side may also take `align:<x>`
+(`below:<frame> align:<x>`): beside the reference, centred on x across the side, so a box goes under a group, outside
+it, lined up with one of its members. Without one, a new element goes beside the last one added, or right of the
+content. To place beside a group but outside it, place against the frame or lane itself. An occupied spot moves along the placement axis until free. Coordinates shown and
 taken are rounded and relative to the tab's content origin.
 
 ## Layout on edit
@@ -95,6 +107,33 @@ The layout an agent did not ask to change stays put:
 
 - `set` changes no geometry it is not given, except a box growing around its centre to fit a longer label
   (reported).
+- **A new box matches its siblings.** `add` and `insert` of a shape given no size take the text size most boxes of
+  that shape on the tab wear and at least their median size (grown only for a longer label), so a step added to a
+  drawn flow is not a small box wrapping its label mid-word. Siblings shorter than the palette's box of their shape
+  wear the template look, and the label is measured as that look measures, from their size: a short label takes
+  their size exactly, never the palette's taller square, and keeps their height while its label holds one line. On
+  a tab with no box of that shape, it takes the template's proportions graph input draws
+  ([MCP server](../015-api/mcp-server.md) §4.7, 180×64 for a square). Either way the label is measured at the box's
+  own text size, and a label written over several lines line by line.
+- **A new box placed beside a member joins its frame or lane**: `add` with a placement against an element inside a
+  container grows that container (`widened`, `taller`) to hold the new box with its padding, as an insertion does,
+  instead of the box landing just outside it. The box lands beside its neighbour, making way only for what the
+  container holds, and what sat past the container on the side it grew, within its span, moves on by the growth, never
+  taken in. A box `inside:` a container that holds something grows it the same way.
+- **A new arrow takes the tab's line.** `connect` with no `line=` draws with the line most of the tab's pinned arrows
+  use: angled (anchors along the axis the two boxes lie on, bent twice as graph input bends an elbow) or curved; a
+  given `line=` wins. **An angled arrow joins its source's trunk**: where the source already sends an exact-ended
+  angled arrow out of the side that faces the new target (a gateway fanning down to its services), the new arrow
+  leaves from that point too and bends in the trunk's channel, into the target's facing side, so a service added
+  to the row hangs off the gateway's bar like its siblings rather than running sideways behind them.
+- **A member moved out leaves no hole.** `move` that takes a box out of its frame or lane gives back the room it
+  had stretched: on each side but the top (the heading's), where the box reached past what stays, the container
+  comes in to what stays with its padding (`narrower`, `shorter`), and what lay past that edge moves back with it,
+  as growing moved it on. A container left empty keeps its size.
+- **A re-ended arrow is re-routed.** `set` of an arrow's `from` or `to` drops its old bends (unless it writes new
+  ones), and an angled arrow bends twice between its new ends, meeting both square. So does an arrow a `move`
+  re-anchors with one end's box moved and the other not: kept, its old bend ran the line through the moved box.
+  An arrow whose two ends moved together moved whole, and keeps its route.
 - `insert` places the node at the midpoint and **makes room**: everything beyond it along the flow, within the same
   frame or lane, or outside them within b's connected group along arrows, shifts by the node's size and the gap
   (reported as moves), whatever room there already was. A frame or lane holding shifted members grows with them.
@@ -108,11 +147,11 @@ A changeset answers with what it did, one line per element, the same text for a 
 
 ```text
 ~ n3  label "Login"→"Sign in" · shape square→stadium · widened 140→160
-+ verify  square "Verify email" @45,300 131×120
-~ f2  taller 200→360
++ verify  square "Verify email" @40,300 140×60
+~ f2  taller 200→300
 ~ a3  to n4→verify
 + arrow  verify→n4 (style of a3)
-» n4 n5 n6 n7 n8  +0,+160 (make room)
+» n4 n5 n6 n7 n8  +0,+100 (make room)
 f2  +verify
 rev 41→42 · cs_8k2m4q7d1x · lint clean · revert: livediagram changeset revert 3f9c2a71-… cs_8k2m4q7d1x
 ```
@@ -135,26 +174,26 @@ error target_ambiguous · op 2 · set "Pay" fill=green
 nothing was applied
 ```
 
-| Code                 | When                                                       | Names                                  |
-| -------------------- | ---------------------------------------------------------- | -------------------------------------- |
-| `parse_error`        | A line does not parse                                      | The column and what was expected       |
-| `unknown_operation`  | Not in the vocabulary                                      | The vocabulary                         |
-| `target_not_found`   | A selector matches nothing                                 | The nearest labels and refs            |
-| `target_ambiguous`   | Several matches without `all`                              | The matches                            |
-| `unknown_field`      | A field the kind does not have                             | The kind's fields                      |
-| `invalid_value`      | A value outside the vocabulary or range                    | The allowed values                     |
-|                      | An `iconId` that names no icon                             | Icons like it (`flame` → `emoji-fire`) |
-| `id_taken`           | `id=` collides                                             | A free id                              |
-| `arrow_exists`       | `connect a -> b` when an a→b arrow exists, without `again` | The existing arrow                     |
-| `not_connected`      | `insert between a b` with no a→b arrow                     | The arrows touching a and b            |
-| `frame_captures`     | `wrap` would capture a non-member                          | The bystanders                         |
-| `element_locked`     | The tab, a target or its layer is locked                   | Each locked element or the tab         |
-| `test_failed`        | A `test` does not hold                                     | Expected and actual                    |
-| `changeset_conflict` | A target changed since the base                            | Each element as read and as now        |
-| `elements_held`      | A target is selected by a person                           | Each element and who holds it          |
-| `invalid_result`     | The result fails validation                                | The element, field and rule            |
-| `not_expressible`    | A strict source's tab would hold residue (`422`)           | Each element and field                 |
-| `too_large`          | Over `CHANGESET_MAX_OPERATIONS` or the tab cap             | The cap                                |
+| Code                 | When                                                                                                                                                                                                                                              | Names                                  |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------- |
+| `parse_error`        | A line does not parse                                                                                                                                                                                                                             | The column and what was expected       |
+| `unknown_operation`  | Not in the vocabulary                                                                                                                                                                                                                             | The vocabulary                         |
+| `target_not_found`   | A selector matches nothing; up to 10 such operations are named in one answer, the rest read on past it (any other refusal stops at once and is named after them); a miss on what a skipped operation would have made names that operation instead | The nearest labels and refs            |
+| `target_ambiguous`   | Several matches without `all`                                                                                                                                                                                                                     | The matches                            |
+| `unknown_field`      | A field the kind does not have                                                                                                                                                                                                                    | The kind's fields                      |
+| `invalid_value`      | A value outside the vocabulary or range                                                                                                                                                                                                           | The allowed values                     |
+|                      | An `iconId` that names no icon                                                                                                                                                                                                                    | Icons like it (`flame` → `emoji-fire`) |
+| `id_taken`           | `id=` collides                                                                                                                                                                                                                                    | A free id                              |
+| `arrow_exists`       | `connect a -> b` when an a→b arrow exists, without `again`                                                                                                                                                                                        | The existing arrow                     |
+| `not_connected`      | `insert between a b` with no a→b arrow                                                                                                                                                                                                            | The arrows touching a and b            |
+| `frame_captures`     | `wrap` would capture a non-member                                                                                                                                                                                                                 | The bystanders                         |
+| `element_locked`     | The tab, a target or its layer is locked                                                                                                                                                                                                          | Each locked element or the tab         |
+| `test_failed`        | A `test` does not hold                                                                                                                                                                                                                            | Expected and actual                    |
+| `changeset_conflict` | A target changed since the base                                                                                                                                                                                                                   | Each element as read and as now        |
+| `elements_held`      | A target is selected by a person                                                                                                                                                                                                                  | Each element and who holds it          |
+| `invalid_result`     | The result fails validation                                                                                                                                                                                                                       | The element, field and rule            |
+| `not_expressible`    | A strict source's tab would hold residue (`422`)                                                                                                                                                                                                  | Each element and field                 |
+| `too_large`          | Over `CHANGESET_MAX_OPERATIONS` or the tab cap                                                                                                                                                                                                    | The cap                                |
 
 ## Where the engine lives
 

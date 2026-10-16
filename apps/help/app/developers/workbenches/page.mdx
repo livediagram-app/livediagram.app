@@ -1,10 +1,11 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
 
 export const metadata = helpMetadata({
   title: 'Diagrams in Your Developer Tools',
   description:
-    'Open a livediagram document live inside a developer tool beside your coding agent, signed in as you: pair the tool once, then draw, select and talk to the agent about what you selected.',
+    'Open a livediagram document live inside your developer tool, signed in as you: pair once, then draw, select and talk to your coding agent about it.',
   path: '/help/developers/workbenches/',
 });
 
@@ -13,11 +14,14 @@ export const metadata = helpMetadata({
   description="Draw in a document inside your developer tool, signed in, and talk to your agent about what you select."
   categoryTitle="Developers"
   categorySlug="developers"
+  subArticles={getSubArticles("workbenches")}
 >
 
 A **workbench** is a developer tool that shows a livediagram document live beside a coding agent. You draw in the editor right there, everything reaches livediagram at once, and when you type a message to your agent, the tool attaches what you had selected so the agent reads exactly those elements.
 
 The editor in a workbench is signed in as you, for one document at a time. It has the canvas, the tab bar, the palette and the panels; account settings, sharing and your document library stay in livediagram itself, one click away through **Open in livediagram**.
+
+Building a tool of your own? [Building a Workbench](/help/developers/workbenches/building-a-workbench/) has the full integration contract.
 
 ## Pair a Workbench Once
 
@@ -27,7 +31,7 @@ A workbench opens your documents through your [CLI](/help/developers/cli/) sign-
 livediagram workbench pair --origin https://127.0.0.1:5175 --name "Acme Editor"
 ```
 
-Your browser opens a page asking **Allow Acme Editor at `https://127.0.0.1:5175` to open your documents?** Check the address: it is what livediagram enforces, while the name is only a label. Choose **Allow**, and the command finishes by itself. **Don't allow** pairs nothing.
+The command prints a link and, in a terminal, opens it in your browser: a page headed **Allow this workbench?**, asking **Allow Acme Editor at `https://127.0.0.1:5175` to open your documents with the token livediagram CLI?** Check the address: it is what livediagram enforces, while the name is only a label. Choose **Allow**, and the command finishes by itself. **Don't allow** pairs nothing.
 
 Pairing belongs to one CLI sign-in and one address. If someone obtained your token, it would still open nothing in a tool you never allowed.
 

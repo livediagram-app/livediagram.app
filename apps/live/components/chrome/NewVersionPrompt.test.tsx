@@ -5,8 +5,8 @@ import { DOCUMENT_FORMAT } from '@livediagram/api-schema';
 import { noteServerDocumentFormat, resetServerReleaseForTests } from '@/lib/server-release';
 import { RELOAD_SAVE_WAIT_MS } from '@/lib/reload-when-saved';
 
-const track = vi.fn();
-vi.mock('@/lib/telemetry', () => ({ track: (...a: unknown[]) => track(...a) }));
+const track = vi.fn<typeof import('@/lib/telemetry').track>();
+vi.mock('@/lib/telemetry', () => ({ track: (...a: Parameters<typeof track>) => track(...a) }));
 
 const { NewVersionPrompt } = await import('./NewVersionPrompt');
 
@@ -66,9 +66,7 @@ describe('NewVersionPrompt', () => {
     newer();
     await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Reload' })));
     expect(screen.getByRole('status').textContent).toContain('Saving your changes…');
-    expect((screen.getByRole('button', { name: 'Reload' }) as HTMLButtonElement).disabled).toBe(
-      true,
-    );
+    expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Reload' }).disabled).toBe(true);
     expect(reload).not.toHaveBeenCalled();
     unsaved = false;
     await act(async () => vi.advanceTimersByTimeAsync(400));
@@ -86,9 +84,7 @@ describe('NewVersionPrompt', () => {
     expect(screen.getByRole('status').textContent).toContain(
       "Your latest changes aren't saved yet. Reload once they are.",
     );
-    expect((screen.getByRole('button', { name: 'Reload' }) as HTMLButtonElement).disabled).toBe(
-      false,
-    );
+    expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Reload' }).disabled).toBe(false);
   });
 
   it('hides on Not now until a still newer number arrives', () => {

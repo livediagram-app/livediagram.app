@@ -85,7 +85,7 @@ Changing a link's scope broadcasts a system op `share-rescoped { code }`. Sessio
 
 - A scoped visitor lands **on their tab**, whatever tab the document last had open.
 - Other tabs render as **"Not shared" pills**: greyed, an eye-off glyph, the label "Not shared", not clickable, not draggable, no context menu. The hover card reads "This tab isn't shared with you". They never sit inside a tab folder (the folder name is withheld too).
-- Everything that works across tabs, or on the tab bar itself, is off for a scoped visitor: the add-tab button, the tab menu (so rename, duplicate, delete, lock and the tab's session tools too), drag-reordering, tab folders, document rename, and the slide deck (picking it says "The slide deck isn't shared with you").
+- Everything that works across tabs, or on the tab bar itself, is off for a scoped visitor: the add-tab button, the mode menu's New Tab offer (a mode that would open a new tab is shown but inert), the tab menu (so rename, duplicate, delete, lock and the tab's session tools too), drag-reordering, tab folders, document rename, and the slide deck (picking it says "The slide deck isn't shared with you").
 - An element link, search result or keyboard switch pointing at a tab outside the scope does nothing but show the toast "That tab isn't shared with you".
 - Make a copy takes their tab only.
 
@@ -99,7 +99,7 @@ Changing a link's scope broadcasts a system op `share-rescoped { code }`. Sessio
 ## API
 
 - `POST /api/documents/:id/share` body gains optional `tabId: string | null`. An unknown tab, or one not in this document, is `400 invalid tab`.
-- `PUT /api/documents/:id/share/:code` (owner-only), body `{ tabId: string | null }`: rescope. `400 invalid tab` as above, `404` for an unknown code. Returns `{ link }` and broadcasts `share-rescoped`.
+- `PUT /api/documents/:id/share/:code` (owner, or a joined team member on a team document), body `{ tabId: string | null }`: rescope. `400 invalid tab` as above, `404` for an unknown code. Returns `{ link }` and broadcasts `share-rescoped`.
 - `GET /api/share/:code` returns `tabId` alongside `role`.
 
 ## Testing

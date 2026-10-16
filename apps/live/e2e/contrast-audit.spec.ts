@@ -21,8 +21,8 @@ import {
 // Contrast audit, dark mode (docs/specs/003-system-architecture/e2e-smoke.md; the palette it guards is
 // docs/specs/004-interface-design/color-scheme.md, Dark palette (Steel)). Every visible text node on each
 // screen must meet WCAG AA against the background painted under it. There is no allow-list: a failure
-// is fixed at its colour. Light mode is deliberately out of scope: its colours belong to the light half
-// of #74, owned by Thomas.
+// is fixed at its colour. Light mode is out of scope here: its brand ramp (solid fills and brand ink) is held by
+// app/light-palette.test.ts, and the editor's light muted text is still being brought in line (color-scheme.md).
 
 test.use({ colorScheme: 'dark', reducedMotion: 'reduce', viewport: { width: 1440, height: 860 } });
 
@@ -43,13 +43,9 @@ test.describe('Contrast audit, dark mode', () => {
     await darkVisitor(page);
     await page.goto('/new');
     await page.getByText('New Document', { exact: false }).first().waitFor();
-    await untilHydrated(page.getByRole('button', { name: /^next$/i }));
+    await untilHydrated(page.getByRole('button', { name: /^create$/i }));
     await expect(page.locator('html')).toHaveClass(/dark/);
-    expectAA(await auditContrast(page), 'wizard, template step');
-
-    await page.getByRole('button', { name: /^next$/i }).click();
-    await page.getByText('Name your document', { exact: false }).first().waitFor();
-    expectAA(await auditContrast(page), 'wizard, location step');
+    expectAA(await auditContrast(page), 'wizard');
     expectNoPageErrors(pageErrors);
   });
 

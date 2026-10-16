@@ -1,0 +1,74 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { ConceptGraphics } from '@/components/illustrations/palette-diagram-elements';
+
+export const metadata = helpMetadata({
+  title: 'Concept Graphics',
+  description:
+    'Layer stacks, pyramids, funnels, cycles, hubs, onion rings and chevrons as single elements that lay out their own rows: add one and it redraws.',
+  path: '/help/palette/concept-graphics/',
+});
+
+<ArticleLayout
+  title="Concept Graphics"
+  description="Layer stacks, pyramids, funnels, cycles, hubs, onion rings and chevrons that lay out their own rows."
+  categoryTitle="Palette"
+  categorySlug="palette"
+  subArticles={getSubArticles("concept-graphics")}
+>
+
+The **Concepts** category holds seven graphics for the shapes ideas come in. Each one is a single element that lays out its own rows, so adding a tier or resizing it redraws the whole thing, with nothing to re-cut or realign.
+
+- **Layer Stack**: bands stacked top to bottom, each with an optional side note. A tech stack, the OSI model, architecture tiers.
+- **Pyramid**: tiers cut from one triangle. A hierarchy of needs, a strategy stack.
+- **Funnel**: bands narrowing downward, each with an optional value. A conversion funnel.
+- **Cycle**: steps round a ring joined by arrows, with a label in the middle. Plan, Do, Check, Act; a flywheel; a release loop.
+- **Hub and Spoke**: satellites round a central hub, joined by spokes. An ecosystem, stakeholders, everything that touches one service. Switch the spokes off under **Spokes** in its section.
+- **Onion**: concentric rings from a core outward. Clean architecture, trust layers, a maturity model.
+- **Chevrons**: arrow-shaped stages in a row, each pointing into the next, with an optional note under each. A pipeline, a value chain, delivery phases.
+
+Concepts is in the palette in Diagram, Illustrate and Facilitate modes.
+
+<Figure caption="A layer stack, a pyramid, a funnel and a cycle.">
+  <ConceptGraphics />
+</Figure>
+
+## Take the tour
+
+The first time you select a layer stack, a pyramid, a funnel, a cycle, a hub and spoke, an onion or a chevron process (every concept graphic), a small **Tour** toolbar appears beside its toolbar. Press **Play** for a short tour on your own graphic: its rows, typing over one (and a funnel band's number), adding one from the "+" ring, the menu (a chevron stage's own bar instead), the colour ramp, and its animation played on it (**Build**, **Flow** round a cycle's arrows, or **Pulse** round a hub or out from an onion's core; it is only shown, not added). Press the cross if you would rather not; either way it is not offered again. To be offered it again, open **Settings**, then **Tours**, open **Element Tours** and switch its tour back on.
+
+## Editing the rows
+
+Select the graphic, then click a row's words to type in place. Enter keeps the change and Escape puts it back. A layer's side note and a funnel band's value edit the same way.
+
+To add, remove or reorder rows, right-click and open the **Rows** section, or use **Add Layer**, **Add Tier**, **Add Step**, **Add Satellite**, **Add Ring** or **Add Stage** on the ring round the selected graphic. A stack takes 2 to 8 layers, a pyramid 2 to 6 tiers, a cycle 3 to 8 steps, a hub 3 to 8 satellites, an onion 2 to 6 rings and a chevron process 2 to 8 stages.
+
+A chevron process is edited right on the canvas instead of in a **Rows** section. Select it and point at a stage: a small bar appears at its top to move the stage left or right, or delete it. If no stage has a note yet, the bar also offers **Add Note**. On a phone, every stage shows its bar while the graphic is selected.
+
+The first row is the top layer, the top tier (a pyramid's apex, a funnel's widest band) the cycle's first step or the hub's first satellite at twelve o'clock (the rest following clockwise), an onion's core, or a chevron process's first stage on the left. Double-click a cycle or a hub to edit the label in its middle.
+
+## Pyramid, inverted or funnel
+
+A Pyramid, an Inverted pyramid and a Funnel are one element in three shapes. Right-click and pick one under **Shape** in its section to switch, keeping its rows.
+
+## Colours
+
+The rows are a ramp from the element's colour: the first row in full, each later one lighter. Each row's words take whichever ink reads best on it. Pick a new colour in **Colours** and the whole ramp follows, as does a theme switch. A cycle draws its first step solid, to show where the loop starts.
+
+## Animation
+
+Concept graphics animate their rows rather than the whole box. Right-click, open **Animation** and pick one. A graphic with words of its own (a layer stack, pyramid, onion or chevrons) lists **Concept** and **Text** there: open **Concept** for these:
+
+- **Build**: the rows appear one after another in reading order (a stack top down, a pyramid from its base up, a cycle clockwise, a hub's centre then each satellite, an onion from the core outward, chevrons left to right). It plays once unless you turn on **Repeat**.
+- **Pulse**: each row lights in turn, then the loop starts again. On a cycle it reads as "we are here" travelling round; on an onion it ripples outward and on chevrons it runs along the stages.
+- **Flow** (cycles only): dashes travel round the arrows in the loop's direction.
+
+**Speed** sets the pace. Exports, and anyone who has turned on reduced motion, see every row at rest.
+
+<Tip>
+  The **Pyramid**, **Funnel** and **Flywheel** templates are built on these elements, so they make a
+  quick starting point with worked content.
+</Tip>
+
+</ArticleLayout>

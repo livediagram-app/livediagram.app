@@ -9,6 +9,12 @@ const ALL = new Set([
   'autoRebindArrows',
   'tourSeen',
   'planTourSeen',
+  'facilitateTourSeen',
+  'drawTourSeen',
+  'formTourSeen',
+  'avatarTourSeen',
+  'illustrateTourSeen',
+  'elementToursSeen',
   'aiSuggestedPrompts',
 ]);
 
@@ -19,8 +25,14 @@ describe('presetSummaryLines', () => {
     expect(lines.map((l) => [l.label, l.value, l.categoryLabel])).toEqual([
       ['Alignment Guides', 'On', 'Editor'],
       ['Auto-Attach Arrows', 'On', 'Editor'],
-      ['Show Welcome Tour', 'Off', 'Accessibility'],
-      ['Show Plan Tour', 'Off', 'Accessibility'],
+      ['Diagram Tour', 'Off', 'Tours'],
+      ['Plan Tour', 'Off', 'Tours'],
+      ['Facilitate Tour', 'Off', 'Tours'],
+      ['Draw Tour', 'Off', 'Tours'],
+      ['Forms Tour', 'Off', 'Tours'],
+      ['Avatar Tour', 'Off', 'Tours'],
+      ['Illustrate Tour', 'Off', 'Tours'],
+      ['Element Tours', 'Off', 'Tours'],
       ['Suggested Prompts', 'Off', 'AI Tools'],
     ]);
     expect(lines.every((l) => !l.changed && l.reachable)).toBe(true);

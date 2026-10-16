@@ -163,9 +163,7 @@ describe('sheet rows and columns', () => {
   it('inserts and deletes rows and columns by number and letter', async () => {
     const { ctx } = ctxWith();
     const run = async (verb: typeof sheetInsertRows, input: Record<string, unknown>) =>
-      verb.text!(
-        (await verb.run!(ctx, verb.input.parse({ doc: DOC_A, sheet: 'Costs', ...input }))) as never,
-      );
+      verb.text!(await verb.run!(ctx, verb.input.parse({ doc: DOC_A, sheet: 'Costs', ...input })));
     expect(await run(sheetInsertRows, { where: '2', count: '2', after: true })).toEqual([
       '~ sheet "Costs": inserted 2 rows after row 2',
     ]);

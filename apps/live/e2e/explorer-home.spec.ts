@@ -321,7 +321,7 @@ test('what others did since the last look is marked New', async ({ page, baseURL
 
   // The first look sets the mark; nothing is new to someone who never looked.
   await page.goto('/explorer/home');
-  await expect(page.getByText('Nothing from others in the last 14 days.')).toBeVisible();
+  await expect(page.getByText('No updates yet')).toBeVisible();
 
   const lee = await person(page.request, 'Lee', '#14b8a6');
   await visitorSaves(page.request, lee, code, doc, [box('a', 'Launch day', 40, 40)]);

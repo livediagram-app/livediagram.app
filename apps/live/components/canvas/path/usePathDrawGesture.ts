@@ -352,7 +352,7 @@ export function usePathDrawGesture({
       if (raf !== null) window.cancelAnimationFrame(raf);
     };
     // toCanvas reads refs only.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps
   }, [armed]);
 
   // Undo while drawing: the last placed node goes (handles and all) and waits for a redo; with

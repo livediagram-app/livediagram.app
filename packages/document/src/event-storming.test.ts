@@ -112,8 +112,7 @@ describe('EVENT_STORMING_NOTES', () => {
 // that sets each stage layer's visibility; the rail is an independent
 // see-it-against-a-timeline toggle. Everything here is pure Tab -> Tab.
 describe('event-storming views', () => {
-  const esTab = (): Tab =>
-    ({ id: 't', name: 'T', elements: [], layers: eventStormingLayers() }) as unknown as Tab;
+  const esTab = (): Tab => ({ id: 't', name: 'T', elements: [], layers: eventStormingLayers() });
 
   it('ships exactly one layer, visible', () => {
     const layers = eventStormingLayers();
@@ -219,7 +218,7 @@ describe('eventStormingNoteFont', () => {
 // then as a single layer a facilitator can delete from the Layers panel.
 // `kind` says what the tab IS.
 describe('tab kind', () => {
-  const tabWith = (t: Partial<Tab>): Tab => ({ id: 't', name: 'T', elements: [], ...t }) as Tab;
+  const tabWith = (t: Partial<Tab>): Tab => ({ id: 't', name: 'T', elements: [], ...t });
 
   it('recognises a board by its kind, with no layers at all', () => {
     expect(isEventStormingTab(tabWith({ kind: 'event-storming' }))).toBe(true);

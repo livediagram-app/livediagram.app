@@ -13,14 +13,28 @@ import {
   type EditOperation,
   type ReplaceBody,
 } from '@livediagram/edit-operations';
-import { isRecord, ELEMENT_FINGERPRINT_LENGTH, type GraphInput } from '@livediagram/document';
+import {
+  isFinish,
+  isRecord,
+  ELEMENT_FINGERPRINT_LENGTH,
+  type Finish,
+  type GraphInput,
+} from '@livediagram/document';
 
 // A changeset request as the route receives it (docs/specs/024-agents/blueprints/agent-changesets.md
 // "Interfaces and contracts"), checked member by member before anything is read. Pure.
 
 export type ChangesetBody =
   | { kind: 'operations'; operations: EditOperation[] }
-  | { kind: 'replace'; replace: ReplaceBody; theme?: string; name?: string };
+  | {
+      kind: 'replace';
+      replace: ReplaceBody;
+      theme?: string;
+      finish?: Finish;
+      name?: string;
+      // A new tab of elements made a Board or Sheet tab (docs/specs/030-forms/forms.md "Agents").
+      tabKind?: 'board' | 'sheet';
+    };
 
 export type ParsedChangeset = {
   body: ChangesetBody;
@@ -33,7 +47,7 @@ export type Refusal = { status: number; body: Record<string, unknown> };
 
 export type ParseResult = { ok: true; value: ParsedChangeset } | { ok: false; refusal: Refusal };
 
-const REPLACE_SOURCES = ['graph', 'mermaid', 'template', 'elements'] as const;
+const REPLACE_SOURCES = ['graph', 'mermaid', 'template', 'dashboard', 'form', 'elements'] as const;
 const FINGERPRINT = new RegExp(`^[0-9a-f]{${ELEMENT_FINGERPRINT_LENGTH}}$`);
 
 const refuse = (status: number, body: Record<string, unknown>): ParseResult => ({
@@ -75,15 +89,14 @@ export function parseChangesetRequest(raw: unknown, log: EditLog = () => {}): Pa
     return refuse(400, { error: 'invalid_body', message: '"strict" must be a boolean' });
   }
   const summary = parseSummary(raw.summary);
-  if (summary === 'too_long') {
-    return refuse(422, {
-      error: 'invalid_value',
-      message: `"summary" holds at most ${CHANGESET_SUMMARY_MAX} characters`,
-      cap: CHANGESET_SUMMARY_MAX,
-    });
-  }
-  if (summary === 'invalid') {
-    return refuse(400, { error: 'invalid_body', message: '"summary" must be a string' });
+  if (!summary.ok) {
+    return summary.refused === 'too_long'
+      ? refuse(422, {
+          error: 'invalid_value',
+          message: `"summary" holds at most ${CHANGESET_SUMMARY_MAX} characters`,
+          cap: CHANGESET_SUMMARY_MAX,
+        })
+      : refuse(400, { error: 'invalid_body', message: '"summary" must be a string' });
   }
   const base = parseBase(raw.base);
   if (base === 'invalid') {
@@ -95,7 +108,7 @@ export function parseChangesetRequest(raw: unknown, log: EditLog = () => {}): Pa
   }
   const body = hasOps ? parseOperations(raw.operations, log) : parseReplace(raw.replace);
   if ('refusal' in body) return { ok: false, refusal: body.refusal };
-  return { ok: true, value: { body, ...(base ? { base } : {}), strict, summary } };
+  return { ok: true, value: { body, ...(base ? { base } : {}), strict, summary: summary.text } };
 }
 
 // The operations in either form: a string of lines (the line form, JSON objects allowed on a line) or
@@ -141,14 +154,21 @@ function parseReplace(raw: unknown): ChangesetBody | { refusal: Refusal } {
   if (!isRecord(raw)) return bad('"replace" must be an object');
   const sources = REPLACE_SOURCES.filter((s) => raw[s] !== undefined);
   if (sources.length !== 1)
-    return bad('"replace" takes exactly one of graph, mermaid, template or elements');
+    return bad(
+      '"replace" takes exactly one of graph, mermaid, template, dashboard, form or elements',
+    );
   if (raw.layout !== undefined && raw.layout !== 'auto' && raw.layout !== 'preserve') {
     return bad('"replace.layout" is "auto" or "preserve"');
   }
   if (raw.theme !== undefined && typeof raw.theme !== 'string')
     return bad('"replace.theme" must be a string');
+  if (raw.finish !== undefined && !isFinish(raw.finish))
+    return bad('"replace.finish" is "flexible", "professional" or "sketch"');
   if (raw.name !== undefined && typeof raw.name !== 'string')
     return bad('"replace.name" must be a string');
+  const kind = raw.kind === 'board' || raw.kind === 'sheet' ? raw.kind : undefined;
+  if (raw.kind !== undefined && !(kind && sources[0] === 'elements'))
+    return bad('"replace.kind" is "board" or "sheet", with elements');
   const layout = raw.layout === 'auto' || raw.layout === 'preserve' ? raw.layout : undefined;
   // The engine checks each source's shape itself (applyReplace), naming what is wrong.
   const replace = replaceBodyOf(sources[0]!, raw, layout);
@@ -157,7 +177,9 @@ function parseReplace(raw: unknown): ChangesetBody | { refusal: Refusal } {
     kind: 'replace',
     replace,
     ...(typeof raw.theme === 'string' ? { theme: raw.theme } : {}),
+    ...(isFinish(raw.finish) ? { finish: raw.finish } : {}),
     ...(typeof raw.name === 'string' ? { name: raw.name } : {}),
+    ...(kind ? { tabKind: kind } : {}),
   };
 }
 
@@ -173,6 +195,12 @@ function replaceBodyOf(
       return typeof raw.mermaid === 'string' ? { mermaid: raw.mermaid } : null;
     case 'template':
       return typeof raw.template === 'string' ? { template: raw.template } : null;
+    // Checked whole by the engine (dashboard-body.ts), which names each problem.
+    case 'dashboard':
+      return isRecord(raw.dashboard) ? { dashboard: raw.dashboard } : null;
+    // Read whole by the engine (readForm), as the editor reads a stored form.
+    case 'form':
+      return isRecord(raw.form) ? { form: raw.form } : null;
     case 'elements':
       return Array.isArray(raw.elements)
         ? { elements: raw.elements, ...(layout ? { layout } : {}) }
@@ -180,12 +208,18 @@ function replaceBodyOf(
   }
 }
 
-function parseSummary(raw: unknown): string | null | 'too_long' | 'invalid' {
-  if (raw === undefined || raw === null) return null;
-  if (typeof raw !== 'string') return 'invalid';
+// A summary is free text, so a refusal is told apart from it rather than spelled like one.
+type SummaryResult =
+  { ok: true; text: string | null } | { ok: false; refused: 'too_long' | 'invalid' };
+
+function parseSummary(raw: unknown): SummaryResult {
+  if (raw === undefined || raw === null) return { ok: true, text: null };
+  if (typeof raw !== 'string') return { ok: false, refused: 'invalid' };
   const clean = withoutControls(raw).trim();
-  if (clean === '') return null;
-  return [...clean].length > CHANGESET_SUMMARY_MAX ? 'too_long' : clean;
+  if (clean === '') return { ok: true, text: null };
+  return [...clean].length > CHANGESET_SUMMARY_MAX
+    ? { ok: false, refused: 'too_long' }
+    : { ok: true, text: clean };
 }
 
 function parseBase(raw: unknown): ChangesetBase | undefined | 'invalid' {

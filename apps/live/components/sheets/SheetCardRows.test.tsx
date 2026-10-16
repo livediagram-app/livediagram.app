@@ -130,6 +130,14 @@ describe('card table rows', () => {
     expect(screen.queryByRole('button', { name: /^Choose/ })).toBeNull();
   });
 
+  it('shows a dropdown with nothing to pick as the shared empty state', () => {
+    plan = { ...plan, statusNames: new Map() };
+    renderSheet(h, () => <SheetCardRows />);
+    act(() => h.select('B2'));
+    fireEvent.click(screen.getByRole('button', { name: 'Choose State' }));
+    expect(screen.getByText('No choices yet').closest('[data-empty-state]')).toBeTruthy();
+  });
+
   it('draws nothing without the plan', () => {
     plan = undefined;
     renderSheet(h, () => <SheetCardRows />);

@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import type { Tab } from '@livediagram/document';
-import { dataUrlToFile, isDataImageId, rewriteImageIds } from './offline-images';
+import { dataUrlToFile, isDataImageId, rewriteImageIds, tabImageIds } from './offline-images';
 
 // 1x1 transparent PNG.
 const PNG_DATA_URL =
   'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==';
 
 function tab(elements: Tab['elements']): Tab {
-  return { id: 't1', name: 'Tab 1', elements } as Tab;
+  return { id: 't1', name: 'Tab 1', elements };
 }
 
 function imageEl(id: string, imageId: string | null) {
@@ -40,6 +40,24 @@ describe('rewriteImageIds', () => {
     expect(els.find((e) => e.id === 'c')!.imageId).toBeNull();
     // Untouched elements keep identity (no needless re-renders / saves).
     expect(els.find((e) => e.id === 'b')).toBe(tabs[0]!.elements[1]);
+  });
+
+  it('re-homes a page background picture too, and lists it with the elements', () => {
+    const withPage = {
+      ...tab([imageEl('a', 'img_1')]),
+      pages: [
+        {
+          id: 'p',
+          orientation: 'portrait',
+          background: { fill: { kind: 'image', imageId: 'img_bg', tone: '#000000' } },
+        },
+      ],
+    } as Tab;
+    expect(tabImageIds(withPage).sort()).toEqual(['img_1', 'img_bg']);
+    const out = rewriteImageIds([withPage], new Map([['img_bg', PNG_DATA_URL]]));
+    const fill = out[0]!.pages![0]!.background!.fill as { imageId: string; tone: string };
+    expect(fill.imageId).toBe(PNG_DATA_URL);
+    expect(fill.tone).toBe('#000000');
   });
 
   it('returns the input array untouched for an empty mapping', () => {

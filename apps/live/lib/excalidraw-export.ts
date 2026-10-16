@@ -23,6 +23,7 @@ import {
   type BoxedElement,
   type Tab,
   type TabPlanData,
+  type TextSize,
 } from '@livediagram/document';
 import { planBoardParts, planCardLabel, type PlanPart } from './excalidraw-export-plan';
 
@@ -64,6 +65,9 @@ const STROKE_WIDTH_PX = { none: 1, thin: 1, medium: 2, thick: 4, 'extra-thick': 
 const strokeStyleOut = (s: string | undefined): string =>
   s === 'dotted' ? 'dotted' : s && s !== 'solid' ? 'dashed' : 'solid';
 const FONT_SIZE_PX = { scale: 20, sm: 16, md: 20, lg: 28 } as const;
+// An exact size from the Size slider exports at its own px; a preset at Excalidraw's nearest.
+const fontSizePx = (size: TextSize | undefined): number =>
+  typeof size === 'number' ? size : FONT_SIZE_PX[size ?? 'md'];
 const ARROWHEAD_OUT: Record<ArrowheadShape, string> = {
   triangle: 'triangle',
   'triangle-hollow': 'triangle_outline',
@@ -72,6 +76,12 @@ const ARROWHEAD_OUT: Record<ArrowheadShape, string> = {
   'circle-hollow': 'circle_outline',
   diamond: 'diamond',
   'diamond-hollow': 'diamond_outline',
+  // Excalidraw's crow's feet; its two zero-or variants have no match, so they take the nearest.
+  one: 'crowfoot_one',
+  'zero-or-one': 'crowfoot_one',
+  many: 'crowfoot_many',
+  'zero-or-many': 'crowfoot_many',
+  'one-or-many': 'crowfoot_one_or_many',
 };
 const rad = (deg: number | undefined): number => (deg ? (deg * Math.PI) / 180 : 0);
 
@@ -89,7 +99,7 @@ export function tabToExcalidrawText(tab: Tab, plan?: TabPlanData): string {
     box: { x: number; y: number; width: number; height: number },
     color: string,
   ): ExcalidrawOut => {
-    const fontSize = FONT_SIZE_PX[('textSize' in host && host.textSize) || 'md'];
+    const fontSize = fontSizePx(('textSize' in host && host.textSize) || undefined);
     return chassis(host, seq++, {
       id: `${host.id}-label`,
       type: 'text',
@@ -197,7 +207,7 @@ export function tabToExcalidrawText(tab: Tab, plan?: TabPlanData): string {
 
     if (el.type === 'text') {
       const color = el.textColor ?? defaultTextColor(el);
-      const fontSize = FONT_SIZE_PX[el.textSize ?? 'md'];
+      const fontSize = fontSizePx(el.textSize);
       out.push(
         chassis(el, seq++, {
           ...base,
@@ -314,6 +324,9 @@ export function tabToExcalidrawText(tab: Tab, plan?: TabPlanData): string {
 
     const ends = el.arrowEnds ?? 'to';
     const head = ARROWHEAD_OUT[el.arrowheadShape ?? 'triangle'] ?? 'arrow';
+    // The start's own head when it differs (an ER relationship's other cardinality).
+    const startHead =
+      ARROWHEAD_OUT[el.arrowheadStartShape ?? el.arrowheadShape ?? 'triangle'] ?? 'arrow';
     const arrowOut = chassis(el, seq++, {
       type: 'arrow',
       x: from.x,
@@ -328,7 +341,7 @@ export function tabToExcalidrawText(tab: Tab, plan?: TabPlanData): string {
       lastCommittedPoint: null,
       startBinding,
       endBinding,
-      startArrowhead: ends === 'from' || ends === 'both' ? head : null,
+      startArrowhead: ends === 'from' || ends === 'both' ? startHead : null,
       endArrowhead: ends === 'to' || ends === 'both' ? head : null,
       elbowed: el.arrowStyle === 'angled',
     });

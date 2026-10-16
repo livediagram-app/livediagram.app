@@ -16,7 +16,7 @@ import {
 
 // A 200x200 workshop note at (x, y) — the event-storming square silhouette.
 function note(id: string, x: number, y = 0, width = 200, height = 200): StickyElement {
-  return { id, type: 'sticky', x, y, width, height, label: id } as StickyElement;
+  return { id, type: 'sticky', x, y, width, height, label: id };
 }
 
 function arrow(id: string, from: { x: number; y: number }, to: { x: number; y: number }) {

@@ -47,9 +47,7 @@ describe('articles turned into Page elements', () => {
     expect(made[0]!.label).toBe('Hello world');
     expect(made[1]!.label).toContain('Goals');
     expect('articles' in out).toBe(false);
-    expect((out.pages as IllustratePage[]).every((p) => p.kind === 'infographic' && !p.flow)).toBe(
-      true,
-    );
+    expect(out.pages.every((p) => p.kind === 'infographic' && !p.flow)).toBe(true);
   });
 
   // docs/specs/007-editor/article-pages.md "Leaving Illustrate": a lock holds an article as it is.
@@ -86,7 +84,7 @@ describe('articles turned into Page elements', () => {
     expect(made[0]!.label).toBe('Mine');
     expect(Object.keys(out.articles as object)).toEqual(['g']);
     expect((out.articles as Record<string, unknown>).g).toBe(held);
-    const kinds = (out.pages as IllustratePage[]).map((p) => [p.id, p.kind, p.flow]);
+    const kinds = out.pages.map((p) => [p.id, p.kind, p.flow]);
     expect(kinds).toEqual([
       ['a', 'infographic', undefined],
       ['b', 'article', 'g'],

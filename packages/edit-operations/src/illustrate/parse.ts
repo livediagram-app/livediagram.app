@@ -12,6 +12,7 @@ import {
   type PageChange,
 } from '@livediagram/api-schema';
 import {
+  isRecord,
   ARTICLE_LOOK_IDS,
   ARTICLE_MARKDOWN_MAX,
   isArticleHex,
@@ -24,7 +25,6 @@ import {
 const PAGE_KINDS = ['infographic', 'article', 'slide', 'logo'] as const;
 
 type Raw = Record<string, unknown>;
-const isRecord = (v: unknown): v is Raw => typeof v === 'object' && v !== null && !Array.isArray(v);
 
 class Refused extends Error {
   readonly code: IllustrateRefusal['code'];
@@ -100,7 +100,7 @@ function background(v: unknown, change: number): PageBackgroundInput {
   if (v.angle !== undefined) {
     if (typeof v.angle !== 'number' || !Number.isFinite(v.angle) || v.gradient === undefined)
       bad('"background.angle" is a number of degrees, beside a gradient.', change);
-    out.angle = (((Math.round(v.angle as number) % 360) + 360) % 360) as number;
+    out.angle = ((Math.round(v.angle as number) % 360) + 360) % 360;
   }
   if (v.pattern !== undefined)
     out.pattern = oneOf(
@@ -182,6 +182,7 @@ function pageChange(v: unknown, i: number): PageChange {
       return { op, page: pageRef(v.page, i), to: place(v.to, 'to', i) };
     case 'duplicate':
     case 'delete':
+    case 'apply_background_to_all':
       onlyKeys(v, [...COMMON, 'page'], op, i);
       return { op, page: pageRef(v.page, i) };
   }

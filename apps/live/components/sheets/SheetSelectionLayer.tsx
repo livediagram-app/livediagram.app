@@ -136,9 +136,10 @@ export function SheetSelectionLayer({
         }}
       />
       {showHandle ? (
+        // Under a finger it is the selection's grip (useSheetTouch): drawn round and twice the size.
         <div
           data-sheet-fill-handle
-          className="pointer-events-none absolute"
+          className="pointer-events-none absolute pointer-coarse:scale-[2] pointer-coarse:rounded-full"
           style={{
             left: handle.x - FILL_HANDLE_PX / 2,
             top: handle.y - FILL_HANDLE_PX / 2,

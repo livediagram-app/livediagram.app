@@ -57,7 +57,7 @@ describe('buildReferenceBoard', () => {
 
   it('joins each arrow to a near neighbour of its shape, as real diagrams do', () => {
     expect(ARROW_NEIGHBOURS).toBe(3);
-    const shapes = board.filter((e) => e.type === 'shape') as Extract<Element, { type: 'shape' }>[];
+    const shapes = board.filter((e) => e.type === 'shape');
     const centre = (s: (typeof shapes)[number]) => ({
       x: s.x + s.width / 2,
       y: s.y + s.height / 2,

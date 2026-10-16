@@ -31,7 +31,7 @@ beforeEach(() => {
         status: 200,
         headers: { 'Content-Type': 'application/json' },
       }),
-  ) as typeof fetch;
+  );
 });
 afterEach(() => {
   globalThis.fetch = originalFetch;
@@ -167,7 +167,7 @@ describe('handleAi provider (docs/specs/007-editor/ai-assistance.md, "Each featu
     const [url, init] = vi.mocked(globalThis.fetch).mock.calls[0]!;
     expect(url).toBe('https://api.openai.com/v1/chat/completions');
     expect(new Headers((init as RequestInit).headers).get('Authorization')).toBe('Bearer test-key');
-    expect(JSON.parse((init as RequestInit).body as string).model).toBe('gpt-4o');
+    expect(JSON.parse((init as RequestInit).body as string)).toHaveProperty('model', 'gpt-4o');
   });
 });
 
@@ -202,7 +202,7 @@ describe('handleAi with the provider unreachable', () => {
     try {
       globalThis.fetch = vi.fn(async () => {
         throw new TypeError('fetch failed');
-      }) as typeof fetch;
+      });
       const pending = handleAi(makeCtx({ env: {} }));
       await vi.runAllTimersAsync();
       const res = await pending;

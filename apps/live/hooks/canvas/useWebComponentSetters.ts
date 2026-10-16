@@ -13,13 +13,19 @@ import { elementTelemetryType } from '@/lib/element-telemetry';
 type WebComponentSetterDeps = {
   currentSelectionIds: () => Set<string>;
   commit: (mapElements: (els: Element[]) => Element[]) => void;
+  // The active tab's elements as they are now.
+  elements: () => Element[];
 };
 
 // The web components' writes (docs/specs/009-elements/web-components-and-no-groups.md): the rows of a stat row / process /
 // header, and a hero image's caption card. Two addressing styles, like the
 // checklist's: the canvas edits ONE element by id (an inline edit, the "+" at
 // the end of a row), the context menu edits the selection.
-export function useWebComponentSetters({ currentSelectionIds, commit }: WebComponentSetterDeps) {
+export function useWebComponentSetters({
+  currentSelectionIds,
+  commit,
+  elements,
+}: WebComponentSetterDeps) {
   // Replace the rows of one element, from an inline edit on the canvas.
   // Bounded by withWebRows, so a paste can't outgrow what validate accepts.
   const setWebRows = (elementId: string, rows: WebRows) => {
@@ -29,17 +35,15 @@ export function useWebComponentSetters({ currentSelectionIds, commit }: WebCompo
   };
 
   // The canvas "+": one more row on one element.
+  // Whether a row is added is read from the elements as they are, not from inside the commit's updater, which React
+  // may run after this returns (so the event would be lost).
   const appendWebRowTo = (elementId: string) => {
-    let added: Element | null = null;
+    const el = elements().find((e) => e.id === elementId);
+    if (!el || el.type !== 'shape' || appendWebRow(el) === el) return;
     commit((els) =>
-      els.map((el) => {
-        if (el.id !== elementId || el.type !== 'shape') return el;
-        const next = appendWebRow(el);
-        if (next !== el) added = next;
-        return next;
-      }),
+      els.map((e) => (e.id === elementId && e.type === 'shape' ? appendWebRow(e) : e)),
     );
-    if (added) track('Element', 'Changed', elementTelemetryType(added));
+    track('Element', 'Changed', elementTelemetryType(el));
   };
 
   // The menu's row editors: the whole array at once, so an add / remove /
@@ -53,7 +57,15 @@ export function useWebComponentSetters({ currentSelectionIds, commit }: WebCompo
     track(
       'Element',
       'Changed',
-      rows.stats ? 'StatRow' : rows.processSteps ? 'ProcessSteps' : 'Header',
+      rows.stats
+        ? 'StatRow'
+        : rows.processSteps
+          ? 'ProcessSteps'
+          : rows.tags
+            ? 'Card'
+            : rows.conceptRows
+              ? 'ConceptRows'
+              : 'Header',
     );
   };
 

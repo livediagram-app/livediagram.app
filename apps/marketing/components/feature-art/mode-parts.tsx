@@ -2,11 +2,11 @@
 // the editor's surfaces drawn small, on a 300 by 96 stage (one unit is one CSS pixel in the
 // card's 96px Frame). Every surface has a light and a dark half, through Tailwind's dark:
 // variants and the canvas palette (--art-*), with the light value restated as the SVG attribute
-// underneath. Motion comes from the fa-f-* loops (app/feature-art-animations.css, the whiteboard, Plan and documents block).
+// underneath. Motion comes from the fa-f-* loops (app/feature-art/modes.css, the whiteboard, Plan and documents block).
 
 import type { ReactNode } from 'react';
 import { FONT } from '@/components/art-tokens';
-import { Frame } from './shared';
+import { Cursor as TeammateCursor, Frame } from './shared';
 
 export { FONT, YOU, TEAMMATE, at } from '@/components/art-tokens';
 export { SERIF } from './page-kit';
@@ -78,25 +78,7 @@ export function Avatar({
 
 /** A collaborator's pointer with their name tag, its tip at (0, 0) of the group. */
 export function Cursor({ colour, name }: { colour: string; name?: string }) {
-  return (
-    <g>
-      <path
-        d="M0 0 L0 10.5 L3 7.8 L5.2 12.4 L7 11.6 L4.9 7.1 L8.8 7 Z"
-        fill={colour}
-        stroke="#fff"
-        strokeWidth="1"
-        strokeLinejoin="round"
-      />
-      {name ? (
-        <g>
-          <rect x="7" y="10" width={name.length * 4.6 + 6} height="9" rx="3" fill={colour} />
-          <text x="10" y="16.6" fontSize="6.2" fontWeight="700" fill="#fff">
-            {name}
-          </text>
-        </g>
-      ) : null}
-    </g>
-  );
+  return <TeammateCursor color={colour} name={name} size={10.5} />;
 }
 
 /** A small label pill. `tone` picks its colour; the default is neutral. */

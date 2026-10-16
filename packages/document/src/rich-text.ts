@@ -50,6 +50,9 @@ export type TextRun = {
   // (http / https / mailto only); renderers re-check before following.
   link?: string;
   heading?: RunHeading;
+  // A secondary run, drawn at 0.65 of its colour's opacity (docs/specs/009-elements/block-type-picker.md "Title and
+  // Caption"), so a caption reads as secondary in any theme without baking a grey.
+  muted?: boolean;
 };
 
 // The attributes to write over a range. A key present with `undefined`
@@ -64,6 +67,7 @@ export type RunPatch = Partial<{
   color: string | undefined;
   link: string | undefined;
   heading: RunHeading | undefined;
+  muted: boolean | undefined;
 }>;
 
 // The attribute keys, used to compare/copy run formatting without touching
@@ -78,6 +82,7 @@ const ATTR_KEYS = [
   'color',
   'link',
   'heading',
+  'muted',
 ] as const;
 
 /** Concatenated plain text of the runs. `element.label` is kept === this. */

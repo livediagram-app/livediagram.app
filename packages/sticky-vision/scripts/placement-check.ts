@@ -81,10 +81,11 @@ for (const file of walls) {
     width: 200,
     height: 200,
   };
-  for (const [label, existing] of [
-    ['empty', [] as BoardNote[]],
-    ['seeded', [seed]],
-  ] as const) {
+  const boards: { label: string; existing: BoardNote[] }[] = [
+    { label: 'empty', existing: [] },
+    { label: 'seeded', existing: [seed] },
+  ];
+  for (const { label, existing } of boards) {
     const started = performance.now();
     const { additions } = reconcilePhoto(detected, existing);
     const took = performance.now() - started;
