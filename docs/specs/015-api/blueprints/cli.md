@@ -1044,7 +1044,7 @@ WebSocket) with a fixed clock; none waits on a real timer or the network.
 
 | Constant                           | Value                  | Provenance                                  | Safe range         |
 | ---------------------------------- | ---------------------- | ------------------------------------------- | ------------------ |
-| `HELP_TOP_MAX_TOKENS`              | 500                    | Spec                                        | 400 to 600         |
+| `HELP_TOP_MAX_TOKENS`              | 520                    | Spec                                        | 400 to 600         |
 | `HELP_RESOURCE_MAX_TOKENS`         | 250                    | Spec                                        | 150 to 300         |
 | `HELP_VERB_MAX_TOKENS`             | 400                    | Spec                                        | 300 to 500         |
 | `GUIDE_TOPIC_MAX_TOKENS`           | 1200                   | Research (agent-cli-ergonomics §4.2), CLI49 | 800 to 2000        |

@@ -593,6 +593,8 @@ export * from './comment-mentions';
 export * from './is-record';
 // The shared FNV-1a string hash for deterministic picks.
 export * from './string-hash';
+// The shared seeded PRNG for deterministic randomness.
+export * from './seeded-random';
 // The shared count-with-noun wording.
 export * from './plural';
 // Per-element assigned actions (docs/specs/012-collaboration/assigned-actions.md).

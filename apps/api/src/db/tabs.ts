@@ -543,6 +543,19 @@ export async function documentsContainingTab(env: Env, tabId: string): Promise<s
 // payload shape and treated as loose.
 type ReorderEntry = string | { id: string; folder?: string | null };
 
+const isReorderEntry = (e: unknown): e is ReorderEntry => {
+  if (typeof e === 'string') return true;
+  if (!e || typeof e !== 'object') return false;
+  const { id, folder } = e as { id?: unknown; folder?: unknown };
+  return typeof id === 'string' && (folder == null || typeof folder === 'string');
+};
+
+// A request's reorder entries, or null when any is not one (a tab id, or an id with a text or null folder): the
+// caller refuses the request before it writes anything.
+export function readReorderEntries(raw: unknown[]): ReorderEntry[] | null {
+  return raw.every(isReorderEntry) ? raw : null;
+}
+
 // Normalise one reorder entry to its (id, folder) form: legacy string
 // entries are loose, and empty / whitespace folder names collapse to
 // NULL so a blank folder can never persist. Pure + exported for tests.

@@ -124,3 +124,8 @@ building a deck puts a window onto the tab it drew the diagram on rather than co
 - Panning or zooming inside a window, or showing a region of a tab: a window shows the whole tab, fitted.
 - Editing the shown tab through the window: it opens the tab instead.
 - Showing a tab of another document.
+
+## Element tour
+
+The **Tab Window tour** is offered beside the first tab window a person selects, as an Editor on an unlocked element, and walks through it on the element
+itself ([Element tours](../007-editor/element-tours.md) "The Tab Window tour").

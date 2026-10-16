@@ -18,6 +18,7 @@ export const FORM_RESPONSES_SQL = `WITH ${VISIBLE_DOCUMENTS_CTES}
     LEFT JOIN form_reads r ON r.code = l.code AND r.owner_id = ?1
    WHERE v.via <> 'shared'
      AND l.suspended_at IS NULL
+     AND l.deleted_at IS NULL
      AND l.responses > COALESCE(r.seen_number, 0)
    ORDER BY latest_at DESC
    LIMIT ?3`;

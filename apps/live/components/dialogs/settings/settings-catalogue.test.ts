@@ -170,6 +170,14 @@ describe('settings catalogue', () => {
       ['elementTour-flowchart', 'toggle', 'Flowchart Tour', 'flowcharts'],
       ['elementTour-org-chart', 'toggle', 'Org Chart Tour', 'orgCharts'],
       ['elementTour-sequence', 'toggle', 'Sequence Tour', 'sequenceDiagram'],
+      ['elementTour-chart', 'toggle', 'Chart Tour', 'dataElements'],
+      ['elementTour-stack', 'toggle', 'Stack Tour', 'stacks'],
+      ['elementTour-entity', 'toggle', 'Entity Tour', 'entities'],
+      ['elementTour-tab-window', 'toggle', 'Tab Window Tour', 'tabWindows'],
+      ['elementTour-lane', 'toggle', 'Lane Tour', 'lanes'],
+      ['elementTour-boundary', 'toggle', 'Boundary Tour', 'boundaries'],
+      ['elementTour-diagram-key', 'toggle', 'Diagram Key Tour', 'diagramKeys'],
+      ['elementTour-portal', 'toggle', 'Portal Tour', 'portals'],
     ]);
     // One shared explanation under the section heading, not one per row.
     expect(tours.sectionNotes?.['Offer Again']?.note).toMatch(/close Settings/);
@@ -201,6 +209,14 @@ describe('settings catalogue', () => {
         ['FlowchartTourSeenOff', 'FlowchartTourSeenOn'],
         ['OrgChartTourSeenOff', 'OrgChartTourSeenOn'],
         ['SequenceTourSeenOff', 'SequenceTourSeenOn'],
+        ['ChartTourSeenOff', 'ChartTourSeenOn'],
+        ['StackTourSeenOff', 'StackTourSeenOn'],
+        ['EntityTourSeenOff', 'EntityTourSeenOn'],
+        ['TabWindowTourSeenOff', 'TabWindowTourSeenOn'],
+        ['LaneTourSeenOff', 'LaneTourSeenOn'],
+        ['BoundaryTourSeenOff', 'BoundaryTourSeenOn'],
+        ['DiagramKeyTourSeenOff', 'DiagramKeyTourSeenOn'],
+        ['PortalTourSeenOff', 'PortalTourSeenOn'],
       ],
     );
   });
@@ -262,6 +278,14 @@ describe('settings catalogue', () => {
       'elementTour-flowchart': ['elementTourKinds'],
       'elementTour-org-chart': ['elementTourKinds'],
       'elementTour-sequence': ['elementTourKinds'],
+      'elementTour-chart': ['elementTourKinds'],
+      'elementTour-stack': ['elementTourKinds'],
+      'elementTour-entity': ['elementTourKinds'],
+      'elementTour-tab-window': ['elementTourKinds'],
+      'elementTour-lane': ['elementTourKinds'],
+      'elementTour-boundary': ['elementTourKinds'],
+      'elementTour-diagram-key': ['elementTourKinds'],
+      'elementTour-portal': ['elementTourKinds'],
     };
     // Power user mode is a PRESET by design (docs/specs/007-editor/power-user-mode.md): it moves
     // exactly the preset's settings, pinned by its own test below.

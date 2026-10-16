@@ -29,7 +29,7 @@ export const HELP_ARTICLES = {
   // Of the elements added in docs/specs/009-elements/youtube-video.md and docs/specs/009-elements/mind-node.md, docs/specs/009-elements/lane.md, docs/specs/009-elements/entity.md, docs/specs/009-elements/embed-providers.md, only the embed has a
   // surface that links its article (the link picker, when it is restricted to
   // a URL). Lanes and entities had keys here and no placement, so they were
-  // removed; their articles are still in the help centre. The mind map's Edit
+  // removed; their element tours brought them back, below. The mind map's Edit
   // Outline dialog links its own sub-article from its header, and the mind
   // map's, the flowchart's and the org chart's element tours (docs/specs/007-editor/element-tours.md) link their
   // articles.
@@ -114,6 +114,14 @@ export const HELP_ARTICLES = {
   explorerFilters: 'explorer/filters',
   dataElements: 'palette/tools/data-elements',
   sankeyDiagram: 'palette/build/sankey-diagram',
+  // The round-two element tours' closing cards (docs/specs/007-editor/element-tours.md).
+  stacks: 'palette/stacks',
+  entities: 'palette/entities',
+  tabWindows: 'canvas/illustrate/tab-windows',
+  lanes: 'palette/lanes',
+  boundaries: 'palette/boundaries',
+  diagramKeys: 'palette/diagram-keys',
+  portals: 'palette/tools/portals',
   sequenceDiagram: 'palette/sequence-diagrams',
   conceptGraphics: 'palette/concept-graphics',
   palette: 'palette',
@@ -427,6 +435,34 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   sankeyDiagram: {
     title: 'Learn about Sankey diagrams',
     description: 'Writing flows, reading the bands, and styling nodes and labels.',
+  },
+  stacks: {
+    title: 'Learn about stacks',
+    description: 'Rows, columns and grids that lay out what you drop in them.',
+  },
+  entities: {
+    title: 'Learn about entities',
+    description: 'UML classes and ER tables: a title over name and type fields.',
+  },
+  tabWindows: {
+    title: 'Learn about tab windows',
+    description: 'Show another tab live on a slide, and keep it up to date.',
+  },
+  lanes: {
+    title: 'Learn about lanes',
+    description: 'Swimlanes: title gutters, seams, and columns as well as rows.',
+  },
+  boundaries: {
+    title: 'Learn about boundaries',
+    description: 'Zones that hold what is inside them: regions, VPCs, C4 systems.',
+  },
+  diagramKeys: {
+    title: 'Learn about diagram keys',
+    description: 'A legend that lists the line styles and tag colours you use.',
+  },
+  portals: {
+    title: 'Learn about portals',
+    description: 'Linked rings that take you across the canvas or to another tab.',
   },
   conceptGraphics: {
     title: 'Learn about concept graphics',

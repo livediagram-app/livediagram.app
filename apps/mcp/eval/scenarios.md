@@ -54,3 +54,11 @@ Each prompt is what a user would type to Claude with the livediagram connector. 
 - F4 (easy) "A town hall Q&A board for our all-hands with 5 seeded questions."
 - W1 (medium, Draw) "Sketch a hand-drawn whiteboard of our customer onboarding flow, like someone drew it in a meeting."
 - W2 (medium, Draw) "A sketchnote summarising a talk on remote work: the big idea, three key points and a couple of quotes."
+
+## Forms
+
+- Q1 (easy) "Make an RSVP form for our office holiday party on 18 December: name, whether they're coming, plus-one, and dietary needs. Send me the link."
+- Q2 (medium) "We need a bug report form customers can fill in. Reports should land on our Bugs board as Bug cards, with severity and the browser they used as card fields, and the summary as the card title."
+- Q3 (medium) "Create a post-workshop feedback survey: overall rating out of 10, what worked, what didn't, would they recommend us, and an optional email. Responses should go into a spreadsheet."
+- Q4 (hard) "Build a job application form for a senior engineer role in three pages: about you (name, email, LinkedIn), experience (years, current stack as multiple choice, a short paragraph on a project they're proud of), and logistics (notice period, salary expectation, right to work). Only show a visa question if they say they don't have the right to work. Candidates should land in a hiring pipeline board. Make it look branded with a cover."
+- Q5 (edit) After Q1: "Close the RSVP at 5pm on 15 December, cap it at 80 people, add a question asking which session they'll attend (afternoon or evening), and make dietary needs required."

@@ -13,6 +13,14 @@ export const ELEMENT_TOUR_KINDS = [
   { token: 'FlowchartTour', title: 'Flowchart' },
   { token: 'OrgChartTour', title: 'Org Chart' },
   { token: 'SequenceTour', title: 'Sequence' },
+  { token: 'ChartTour', title: 'Chart' },
+  { token: 'StackTour', title: 'Stack' },
+  { token: 'EntityTour', title: 'Entity' },
+  { token: 'TabWindowTour', title: 'Tab Window' },
+  { token: 'LaneTour', title: 'Lane' },
+  { token: 'BoundaryTour', title: 'Boundary' },
+  { token: 'DiagramKeyTour', title: 'Diagram Key' },
+  { token: 'PortalTour', title: 'Portal' },
 ] as const;
 
 export const elementTourTokens = (suffix = ''): string[] =>

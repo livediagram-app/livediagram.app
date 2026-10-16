@@ -1,4 +1,4 @@
-// form_links, form_reports and form_reads (migration 0092, docs/specs/030-forms/blueprints/forms.md §11): a Form
+// form_links, form_reports and form_reads (migrations 0092 and 0093, docs/specs/030-forms/blueprints/forms.md §11): a Form
 // tab's public link, what respondents reported, and what each reader has seen of its responses.
 import { FORM_CODE_LENGTH } from '@livediagram/forms';
 import type { Env } from '../types';
@@ -13,12 +13,14 @@ export type FormLinkRow = {
   hour_start: number;
   hour_count: number;
   suspended_at: number | null;
+  // When its owner deleted it (Delete Link): kept so the tab's numbers carry on, never answering again.
+  deleted_at: number | null;
   last_email_at: number | null;
   held_emails: number;
 };
 
 const COLS =
-  'code, document_id, tab_id, open, created_at, responses, hour_start, hour_count, suspended_at, last_email_at, held_emails';
+  'code, document_id, tab_id, open, created_at, responses, hour_start, hour_count, suspended_at, deleted_at, last_email_at, held_emails';
 
 const BASE62 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 
@@ -40,33 +42,33 @@ function randomBytes(n: number): Uint8Array {
   return crypto.getRandomValues(new Uint8Array(n));
 }
 
-// The tab's live link (not suspended), or null.
+// The tab's live link (not suspended, not deleted), or null.
 export async function getLiveFormLink(
   env: Env,
   documentId: string,
   tabId: string,
 ): Promise<FormLinkRow | null> {
   return env.DB.prepare(
-    `SELECT ${COLS} FROM form_links WHERE document_id = ? AND tab_id = ? AND suspended_at IS NULL`,
+    `SELECT ${COLS} FROM form_links WHERE document_id = ? AND tab_id = ? AND suspended_at IS NULL AND deleted_at IS NULL`,
   )
     .bind(documentId, tabId)
     .first<FormLinkRow>();
 }
 
-// The document's live links (not suspended), each with its Form tab: few, one a Form tab at most.
+// The document's live links (not suspended, not deleted), each with its Form tab: few, one a Form tab at most.
 export async function liveFormLinksOf(
   env: Env,
   documentId: string,
 ): Promise<{ code: string; tab_id: string }[]> {
   const res = await env.DB.prepare(
-    'SELECT code, tab_id FROM form_links WHERE document_id = ? AND suspended_at IS NULL',
+    'SELECT code, tab_id FROM form_links WHERE document_id = ? AND suspended_at IS NULL AND deleted_at IS NULL',
   )
     .bind(documentId)
     .all<{ code: string; tab_id: string }>();
   return res.results ?? [];
 }
 
-// The link a code names, suspended or not.
+// The link a code names, suspended, deleted or not.
 export async function getFormLink(env: Env, code: string): Promise<FormLinkRow | null> {
   return env.DB.prepare(`SELECT ${COLS} FROM form_links WHERE code = ?`)
     .bind(code)
@@ -96,8 +98,8 @@ export async function countSuspendedFormLinks(env: Env, documentId: string): Pro
   return Number(row?.n ?? 0);
 }
 
-// A new live link for the tab. Its response number carries on from the tab's suspended link, so numbers never
-// repeat on one form. Null when the tab already has a live link (the unique index refuses a second).
+// A new live link for the tab. Its response number carries on from the tab's earlier links (suspended or deleted),
+// so numbers never repeat on one form. Null when the tab already has a live link (the unique index refuses a second).
 export async function createFormLink(
   env: Env,
   documentId: string,
@@ -128,10 +130,13 @@ export async function setFormLinkOpen(env: Env, code: string, open: boolean): Pr
     .run();
 }
 
-// A link deleted by its owner. A suspended link is kept (its code must never answer again).
-export async function deleteFormLink(env: Env, code: string): Promise<void> {
-  await env.DB.prepare('DELETE FROM form_links WHERE code = ? AND suspended_at IS NULL')
-    .bind(code)
+// A link deleted by its owner: kept, marked, closed (its number carries on to the tab's next link; its code never
+// answers again). A suspended link stays as it is.
+export async function deleteFormLink(env: Env, code: string, now: number): Promise<void> {
+  await env.DB.prepare(
+    'UPDATE form_links SET deleted_at = ?, open = 0 WHERE code = ? AND suspended_at IS NULL AND deleted_at IS NULL',
+  )
+    .bind(now, code)
     .run();
 }
 
@@ -149,13 +154,15 @@ export async function deleteFormLinksForTab(
 
 export const FORM_HOUR_MS = 60 * 60 * 1000;
 
-// Takes the next response number, within the form's hourly cap: one guarded UPDATE, so two responses at once
-// never share a number and the cap holds. Null when the cap is reached (or the link went meanwhile).
+// Takes the next response number, within the form's hourly cap and its Response Limit (`limit`, null for none or for
+// a preview): one guarded UPDATE, so two responses at once never share a number and neither cap is passed. Null when
+// one is reached (or the link went meanwhile).
 export async function claimResponseNumber(
   env: Env,
   code: string,
   now: number,
   hourlyCap: number,
+  limit: number | null = null,
 ): Promise<number | null> {
   const windowStart = now - FORM_HOUR_MS;
   const row = await env.DB.prepare(
@@ -164,10 +171,11 @@ export async function claimResponseNumber(
             last_response_at = ?,
             hour_count = CASE WHEN hour_start <= ? THEN 1 ELSE hour_count + 1 END,
             hour_start = CASE WHEN hour_start <= ? THEN ? ELSE hour_start END
-      WHERE code = ? AND suspended_at IS NULL AND (hour_start <= ? OR hour_count < ?)
+      WHERE code = ? AND suspended_at IS NULL AND deleted_at IS NULL AND (hour_start <= ? OR hour_count < ?)
+        AND (? IS NULL OR responses < ?)
       RETURNING responses`,
   )
-    .bind(now, windowStart, windowStart, now, code, windowStart, hourlyCap)
+    .bind(now, windowStart, windowStart, now, code, windowStart, hourlyCap, limit, limit)
     .first<{ responses: number }>();
   return row ? row.responses : null;
 }

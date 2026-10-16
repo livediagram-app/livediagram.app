@@ -286,6 +286,47 @@ describe('graphShapeError', () => {
       resolveGraphInput({ graph: { nodes: [{ id: 'x', group: 'x' }], edges: [] } }).error,
     ).toMatch(/^id "x" names both a node and a group/);
   });
+  // Each node becomes an element of its id: two of one id laid out as two elements sharing it (a tab the api refuses)
+  // or threw in the layout, where an agent should be told which id to change.
+  it('refuses an id used by two nodes, or by two groups, naming it', () => {
+    expect(
+      resolveGraphInput({ graph: { nodes: [...nodes, { id: 'a', label: 'Again' }], edges: [] } })
+        .error,
+    ).toBe('node id "a" is used twice: give each node its own id');
+    expect(
+      resolveGraphInput({
+        graph: {
+          nodes,
+          edges: [],
+          groups: [
+            { id: 'g', label: 'One' },
+            { id: 'g', label: 'Two' },
+          ],
+        },
+      }).error,
+    ).toBe('group id "g" is used twice: give each group its own id');
+  });
+  it('refuses a node in two lanes, naming it and both lanes', () => {
+    const graph = {
+      style: 'lanes' as const,
+      nodes: [
+        { id: 'a', label: 'A', group: 'two' },
+        { id: 'b', label: 'B', group: 'one' },
+      ],
+      edges: [],
+      groups: [
+        { id: 'one', label: 'One', members: ['a'] },
+        { id: 'two', label: 'Two' },
+      ],
+    };
+    expect(resolveGraphInput({ graph }).error).toBe(
+      'node "a" is in two lanes, "one" and "two": a lanes graph puts each node in one lane',
+    );
+    // Any other style draws the node once, so it is not refused there.
+    expect(
+      resolveGraphInput({ graph: { ...graph, style: 'flow' as const } }).error,
+    ).toBeUndefined();
+  });
   it('refuses a group nested in another, naming both', () => {
     const r = resolveGraphInput({
       graph: {

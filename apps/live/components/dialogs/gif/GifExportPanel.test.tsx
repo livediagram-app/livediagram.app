@@ -71,6 +71,12 @@ function open(over: Partial<{ pages: typeof pages }> = {}) {
 }
 const hold = () => screen.getByRole('slider') as HTMLInputElement;
 
+// A make yields one task per frame (make-gif.ts), so under a loaded runner (the pre-push coverage
+// run, CI) it can outlast Testing Library's 1 s wait and Vitest's 5 s test: the tests that wait
+// for a whole make get room for one.
+const MAKE_WAIT = { timeout: 10_000 };
+const MAKE_TEST_MS = 15_000;
+
 beforeEach(() => {
   h.config = { ...DEFAULT_PRESENTATION_CONFIG };
   h.sampleBytes = 10_000;
@@ -130,43 +136,58 @@ describe('the GIF panel', () => {
     expect(screen.queryByText(GIF_TOO_LONG_COPY)).toBeNull();
   });
 
-  it('downloads the GIF with its name, and counts the export', async () => {
-    const { onDone } = open();
-    await act(async () => {
-      fireEvent.click(screen.getByRole('button', { name: 'Download GIF' }));
-    });
-    await waitFor(() => expect(onDone).toHaveBeenCalled(), { timeout: 8000 });
-    const [blob, name] = h.download.mock.calls[0]!;
-    expect(name).toBe('Doc - Deck.gif');
-    expect((blob as Blob).type).toBe('image/gif');
-    expect(h.track).toHaveBeenCalledWith('Document', 'Exported', 'IllustrateGIFPages');
-  });
+  it(
+    'downloads the GIF with its name, and counts the export',
+    async () => {
+      const { onDone } = open();
+      await act(async () => {
+        fireEvent.click(screen.getByRole('button', { name: 'Download GIF' }));
+      });
+      await waitFor(() => expect(onDone).toHaveBeenCalled(), MAKE_WAIT);
+      const [blob, name] = h.download.mock.calls[0]!;
+      expect(name).toBe('Doc - Deck.gif');
+      expect((blob as Blob).type).toBe('image/gif');
+      expect(h.track).toHaveBeenCalledWith('Document', 'Exported', 'IllustrateGIFPages');
+    },
+    MAKE_TEST_MS,
+  );
 
-  it('counts one page as IllustrateGIF, named for the page', async () => {
-    open();
-    fireEvent.click(screen.getByRole('button', { name: 'One page' }));
-    await act(async () => {
-      fireEvent.click(screen.getByRole('button', { name: 'Download GIF' }));
-    });
-    await waitFor(() => expect(h.download).toHaveBeenCalled());
-    expect(h.download.mock.calls[0]![1]).toMatch(/^Doc - Deck - .+\.gif$/);
-    expect(h.track).toHaveBeenCalledWith('Document', 'Exported', 'IllustrateGIF');
-  });
+  it(
+    'counts one page as IllustrateGIF, named for the page',
+    async () => {
+      open();
+      fireEvent.click(screen.getByRole('button', { name: 'One page' }));
+      await act(async () => {
+        fireEvent.click(screen.getByRole('button', { name: 'Download GIF' }));
+      });
+      await waitFor(() => expect(h.download).toHaveBeenCalled(), MAKE_WAIT);
+      expect(h.download.mock.calls[0]![1]).toMatch(/^Doc - Deck - .+\.gif$/);
+      expect(h.track).toHaveBeenCalledWith('Document', 'Exported', 'IllustrateGIF');
+    },
+    MAKE_TEST_MS,
+  );
 
-  it('shows progress while making, and Cancel stops with nothing downloaded', async () => {
-    let finish: (v: { bytes: Uint8Array; written: number }) => void = () => {};
-    h.encoder.finish.mockReturnValue(new Promise((r) => (finish = r)));
-    open();
-    await act(async () => {
-      fireEvent.click(screen.getByRole('button', { name: 'Download GIF' }));
-    });
-    await waitFor(() => expect(screen.getByRole('progressbar')).toBeTruthy());
-    expect(screen.getByRole('button', { name: /Making GIF… \d+%/ })).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
-    finish({ bytes: new Uint8Array([71]), written: 1 });
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Download GIF' })).toBeTruthy());
-    expect(h.download).not.toHaveBeenCalled();
-  });
+  it(
+    'shows progress while making, and Cancel stops with nothing downloaded',
+    async () => {
+      let finish: (v: { bytes: Uint8Array; written: number }) => void = () => {};
+      h.encoder.finish.mockReturnValue(new Promise((r) => (finish = r)));
+      open();
+      await act(async () => {
+        fireEvent.click(screen.getByRole('button', { name: 'Download GIF' }));
+      });
+      await waitFor(() => expect(screen.getByRole('progressbar')).toBeTruthy(), MAKE_WAIT);
+      expect(screen.getByRole('button', { name: /Making GIF… \d+%/ })).toBeTruthy();
+      fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+      finish({ bytes: new Uint8Array([71]), written: 1 });
+      await waitFor(
+        () => expect(screen.getByRole('button', { name: 'Download GIF' })).toBeTruthy(),
+        MAKE_WAIT,
+      );
+      expect(h.download).not.toHaveBeenCalled();
+    },
+    MAKE_TEST_MS,
+  );
 
   it('clears the canvas selection as it opens, so no frame shows a selection ring', () => {
     const onClearSelection = vi.fn();
@@ -205,20 +226,26 @@ describe('the GIF panel', () => {
     expect(h.snapshot).toHaveBeenCalled();
   });
 
-  it('keeps a failed Download’s message up, though the preview’s estimate succeeds after it', async () => {
-    h.encoder.finish.mockRejectedValue(new Error('out of memory'));
-    open();
-    await act(async () => {
-      fireEvent.click(screen.getByRole('button', { name: 'Download GIF' }));
-    });
-    expect((await screen.findByRole('alert')).textContent).toBe(GIF_ERROR_COPY.failed);
-    // The estimate runs again once the make ends; its success must not wipe the error.
-    await act(async () => {
-      await new Promise((r) => setTimeout(r, 800));
-    });
-    expect(screen.getByRole('alert').textContent).toBe(GIF_ERROR_COPY.failed);
-    expect(h.download).not.toHaveBeenCalled();
-  });
+  it(
+    'keeps a failed Download’s message up, though the preview’s estimate succeeds after it',
+    async () => {
+      h.encoder.finish.mockRejectedValue(new Error('out of memory'));
+      open();
+      await act(async () => {
+        fireEvent.click(screen.getByRole('button', { name: 'Download GIF' }));
+      });
+      expect((await screen.findByRole('alert', {}, MAKE_WAIT)).textContent).toBe(
+        GIF_ERROR_COPY.failed,
+      );
+      // The estimate runs again once the make ends; its success must not wipe the error.
+      await act(async () => {
+        await new Promise((r) => setTimeout(r, 800));
+      });
+      expect(screen.getByRole('alert').textContent).toBe(GIF_ERROR_COPY.failed);
+      expect(h.download).not.toHaveBeenCalled();
+    },
+    MAKE_TEST_MS,
+  );
 
   it.each([
     ['page-missing', new GifExportError('page-missing')],

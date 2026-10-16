@@ -99,6 +99,8 @@ export function DiagramKeyFace({
               )}
             </svg>
             <div
+              // Its row's meaning, named for the Diagram Key tour to ring (the row's wrapper has no box of its own).
+              data-key-meaning={row.id}
               className="absolute flex items-center"
               style={{ ...rectStyle(meaning), fontFamily }}
             >

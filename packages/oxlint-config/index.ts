@@ -52,6 +52,9 @@ export default defineConfig({
     reportUnusedDisableDirectives: 'error',
     // Only `oxlint-disable` directives count, so a pasted `eslint-disable` never hides a finding.
     respectEslintDisableDirectives: false,
+    // Type-aware rules run through oxlint-tsgolint, on typescript-go: the TypeScript the repo
+    // type-checks with, reading each workspace's tsconfig.
+    typeAware: true,
   },
   rules: {
     // Correctness and suspicious-code rules (ESLint's recommended set).
@@ -132,6 +135,14 @@ export default defineConfig({
     'typescript/prefer-as-const': 'error',
     'typescript/prefer-namespace-keyword': 'error',
     'typescript/triple-slash-reference': 'error',
+
+    // Type-aware rules (typescript-eslint's recommended type-checked set), through oxlint-tsgolint.
+    'typescript/no-array-delete': 'error',
+    'typescript/no-duplicate-type-constituents': 'error',
+    'typescript/no-for-in-array': 'error',
+    'typescript/no-unsafe-enum-comparison': 'error',
+    'typescript/no-unsafe-unary-minus': 'error',
+    'typescript/restrict-plus-operands': 'error',
 
     // Every React hooks rule, the React Compiler's included, is an error with no per-line
     // suppressions (docs/specs/003-system-architecture/react-state-and-effects.md): render is

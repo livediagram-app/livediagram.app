@@ -3,6 +3,7 @@
 // previewed there, never stored), the "+" ring opened on the add it offers, the More button, and the closing card.
 // Each kind's own steps and words live in its own file (layer-stack-tour-steps.ts, ...).
 import type { ConceptRow } from '@livediagram/document';
+import type { TourPreviewAnim } from '@/lib/concept-tour-preview';
 import type { ElementTourApi } from './element-tour-api';
 import { waitForSelector } from './tour-dom';
 import type { TourStepOf } from './tour-step';
@@ -19,8 +20,12 @@ export type ConceptTourContext = {
 
 // The selector of the toured graphic, or of one of its parts.
 export function inElement(elementId: string, part = ''): string {
-  const id = typeof CSS !== 'undefined' && CSS.escape ? CSS.escape(elementId) : elementId;
-  return `[data-element-id="${id}"]${part ? ` ${part}` : ''}`;
+  return `[data-element-id="${escapeId(elementId)}"]${part ? ` ${part}` : ''}`;
+}
+
+// An id made safe for an attribute selector.
+export function escapeId(id: string): string {
+  return typeof CSS !== 'undefined' && CSS.escape ? CSS.escape(id) : id;
 }
 
 // The "+" sides, nearest the reader's eye first: the ring under a graphic is where a new row lands.
@@ -58,7 +63,7 @@ export function onGraphic(
   title: string,
   body: string,
   selector: string,
-  preview?: 'build' | 'pulse' | 'flow',
+  preview?: TourPreviewAnim,
 ): Step {
   return {
     id,

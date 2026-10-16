@@ -152,7 +152,7 @@ export async function handleFormLinkRoutes(ctx: RouteContext): Promise<Response 
     return answer(ctx, documentId, tabId, owner, editor);
   }
   if (request.method === 'DELETE') {
-    await deleteFormLink(env, live.code);
+    await deleteFormLink(env, live.code, Date.now());
     console.info('[forms] form.deleted', { documentId });
     return answer(ctx, documentId, tabId, owner, editor);
   }

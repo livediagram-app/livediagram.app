@@ -127,7 +127,7 @@ export function PagedCarousel<T>({
           const el = e.currentTarget;
           if (el.clientWidth > 0) setPage(Math.round(el.scrollLeft / el.clientWidth));
         }}
-        className="flex snap-x snap-mandatory items-start overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        className="relative flex snap-x snap-mandatory items-start overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
         {pages.map((pageItems, i) => (
           <div

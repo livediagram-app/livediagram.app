@@ -124,6 +124,22 @@ export const MCP_TOOL_METRICS: readonly Metric[] = [
     'Adding, changing, laying out, moving or deleting Illustrate pages: slides, logos, infographics.',
   ),
   mcpTool('WriteArticle', 'Write Article', 'Writing an article on Illustrate pages from Markdown.'),
+  mcpTool(
+    'ReadForm',
+    'Read Form',
+    'Reading a form: its questions, where responses go, its state and link.',
+  ),
+  mcpTool(
+    'AddForm',
+    'Add Form',
+    'Making a form from a starter or questions, its responses to a board or sheet.',
+  ),
+  mcpTool(
+    'ChangeForm',
+    'Change Form',
+    'Changing a form’s questions, sections, look, settings or destination.',
+  ),
+  mcpTool('ShareForm', 'Share Form', 'Publishing, closing or deleting a form’s link.'),
 ];
 
 export const MCP_TOOL_CALLS: MetricStack = {

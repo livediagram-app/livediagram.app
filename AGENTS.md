@@ -201,6 +201,7 @@ apps/
   api/          # Cloudflare Worker REST + WebSocket API (D1 + Durable Objects, /api)
   mcp/          # Cloudflare Worker MCP server for AI tools (OAuth + tools, mcp.livediagram.app)
   router/       # Cloudflare Worker stitching the apps under one hostname
+  cli/          # the livediagram command line for agents and scripts (Node, one esbuild bundle)
 packages/
   ui/             # shared UI primitives (Brand, SiteHeader, Button, TextInput, Select, Tooltip, hooks) + chrome icons (src/icons)
   document/       # document data model (Tab, Element types + element helpers)
@@ -216,11 +217,17 @@ packages/
   sheets/         # the Sheet engine: A1 addressing, formulas, recalculation, writes, CSV (pure)
   document-views/ # read-only text views of a tab (outline, graph, layout, ...) for agents and scripts
   api-schema/     # wire-format DTOs the api worker emits + the live editor consumes
+  api-client/     # the api client the MCP server and the CLI share (fetch, timeouts, ApiError)
+  agent-verbs/    # the verbs the CLI routes to: schemas, handlers, compact text, addressing, guides
+  edit-operations/ # the engine agent changesets run on: edit operations and replace, into element ops (pure)
+  diagram-lint/   # checks how a tab is drawn (overlaps, crossings, arrows behind boxes), with a fix each
+  render-png/     # SVG to PNG with resvg (wasm) + Inter, for MCP previews and the CLI's renders
   sticky-vision/  # finds sticky notes in a wall photo (classical CV, no DOM) for the event-storming photo import
   sticky-model/   # the learned sticky-boundary model's browser-safe parts (cues, decode) + its training scripts
   telemetry-client/ # shared browser telemetry emitter (buffer/flush/beacon engine)
   licences/     # build-time generator of the /licences page from what each app bundles
   preview-env/  # CI tooling for per-PR previews: config generator, tier decision, teardown (Node-only)
+  fake-google/  # in-memory Google Drive + OAuth, for tests only
   source-ast/   # parses the repo's own TypeScript with TypeScript 7, for the static guards that read code
   oxlint-config/  # shared oxlint config + the repo's own lint rules
   prettier-config/# shared Prettier config

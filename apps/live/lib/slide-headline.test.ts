@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cpuMsOf } from '@livediagram/vitest-config/cpu-time';
+import { cpuBudgetMs, cpuMsOf } from '@livediagram/vitest-config/cpu-time';
 import type { Tab } from '@livediagram/document';
 import { presentedSlideName, slideHeadline, SLIDE_HEADLINE_MAX } from './slide-headline';
 
@@ -81,6 +81,6 @@ describe('presentedSlideName', () => {
       names = slides.map((sl, i) => presentedSlideName(sl, big, i));
     });
     expect(names[3]).toBe('Label 60');
-    expect(spent).toBeLessThan(50);
+    expect(spent).toBeLessThan(cpuBudgetMs(50));
   });
 });

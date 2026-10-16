@@ -28,6 +28,7 @@ import { handleFormLinkRoutes } from './form-link-routes';
 import { handleCommentPicturesRoute } from './comment-pictures-routes';
 import { handleTabPut, refuseTokenTabPut } from './tab-put-route';
 import { handleTabRename } from './tab-name-route';
+import { handleTabForm } from './tab-form-route';
 import { handleTabIllustrate } from './tab-illustrate-route';
 import { handleChangesetRoutes } from './changesets';
 import { handleCommentRoutes } from './comment-routes';
@@ -87,6 +88,15 @@ export async function handleDocumentSubresources(ctx: RouteContext): Promise<Res
     ctx.request.method === 'POST'
   ) {
     return handleTabIllustrate(ctx, segments[2]!, segments[4]!);
+  }
+  // /api/documents/<id>/tabs/<tabId>/form: an agent's form write (docs/specs/030-forms/forms.md "Agents").
+  if (
+    segments.length === 6 &&
+    segments[3] === 'tabs' &&
+    segments[5] === 'form' &&
+    ctx.request.method === 'POST'
+  ) {
+    return handleTabForm(ctx, segments[2]!, segments[4]!);
   }
   if (
     segments.length === 6 &&

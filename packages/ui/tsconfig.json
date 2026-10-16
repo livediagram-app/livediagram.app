@@ -5,6 +5,6 @@
     "jsx": "preserve",
     "noEmit": true
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx"],
+  "include": ["src/**/*.ts", "src/**/*.tsx", "optical-guard.test.ts"],
   "exclude": ["node_modules"]
 }

@@ -164,12 +164,13 @@ export function mindMarksToMarkdown(marks: TextRun[]): string {
 
 type Token = { raw: string; literal: string | null; pair: number };
 
-const TOKEN = /(\\[\\*_<`[]|`[^`]*`|\*\*|__|<u>|<\/u>|\*|_)/;
+// `***` and `___` (bold and italic at once, as the writer puts them) are one marker each, so they pair as one.
+const TOKEN = /(\\[\\*_<`[]|`[^`]*`|\*\*\*|___|\*\*|__|<u>|<\/u>|\*|_)/;
 
 const literalOf = (raw: string): string | null => {
   if (raw.startsWith('\\')) return raw.slice(1);
   if (raw.startsWith('`')) return raw.slice(1, -1);
-  return /^(\*\*|__|<u>|<\/u>|\*|_)$/.test(raw) ? null : raw;
+  return /^(\*\*\*|___|\*\*|__|<u>|<\/u>|\*|_)$/.test(raw) ? null : raw;
 };
 
 /**
@@ -201,13 +202,15 @@ function linkText(s: string): string {
   return out + s.slice(at);
 }
 
-const KIND: Record<string, MarkKey> = {
-  '**': 'bold',
-  __: 'bold',
-  '*': 'italic',
-  _: 'italic',
-  '<u>': 'underline',
-  '</u>': 'underline',
+const KIND: Record<string, readonly MarkKey[]> = {
+  '***': ['bold', 'italic'],
+  ___: ['bold', 'italic'],
+  '**': ['bold'],
+  __: ['bold'],
+  '*': ['italic'],
+  _: ['italic'],
+  '<u>': ['underline'],
+  '</u>': ['underline'],
 };
 
 /**
@@ -251,7 +254,7 @@ export function mindMarkdownToMarks(line: string): TextRun[] {
   const runs: TextRun[] = [];
   tokens.forEach((t, i) => {
     if (t.literal === null && t.pair >= 0) {
-      on[KIND[t.raw]!] += t.pair > i ? 1 : -1;
+      for (const k of KIND[t.raw]!) on[k] += t.pair > i ? 1 : -1;
       return;
     }
     const run: TextRun = { text: t.literal ?? t.raw };

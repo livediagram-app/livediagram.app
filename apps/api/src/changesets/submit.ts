@@ -229,6 +229,7 @@ function compile(
       name: body.name ?? 'Tab',
       ...(body.theme ? { themeId: body.theme } : {}),
       ...(body.finish ? { finish: body.finish } : {}),
+      ...(body.tabKind ? { kind: body.tabKind } : {}),
     });
   }
   if (!stored)

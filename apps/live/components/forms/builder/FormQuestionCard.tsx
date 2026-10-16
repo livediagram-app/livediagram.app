@@ -24,7 +24,7 @@ import {
   setOptions,
   setQuestionType,
   updateQuestion,
-} from '@/hooks/forms/form-edits';
+} from '@livediagram/forms';
 import { newFormPartId } from '@livediagram/forms';
 import { ToggleSwitch } from '@/components/palette/palette-controls';
 import { QuestionControl } from '../QuestionControl';

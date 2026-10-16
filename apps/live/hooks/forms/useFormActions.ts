@@ -29,7 +29,7 @@ import {
   uniqueTypeLabel,
   withAutoBoardName,
   withBoardTaking,
-} from './form-start';
+} from '@livediagram/templates';
 
 export type FormActions = {
   // A starter chosen on Start Planning: the tab becomes a Form tab holding it.
@@ -293,7 +293,8 @@ export function useFormActions({
     const { tabs: now, itemTypes: slice, statusNames: names } = live.current;
     const formTab = now.find((t) => t.id === activeId);
     if (!formTab || formTab.locked) return;
-    const form = readForm(formTab.form) ?? blankForm(formTab.name);
+    // A sheet it named (one since removed, the connect box asking again) goes: the new board is where responses go.
+    const { sheet: _gone, ...form } = readForm(formTab.form) ?? blankForm(formTab.name);
     const tab = responsesBoardTab(form.heading, formTab, [...names]);
     const setup = boardsOf(tab)[0]!.setup;
     // The form's type when it has one; else the document's first; else a new Response type.

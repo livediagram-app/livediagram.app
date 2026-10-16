@@ -43,6 +43,7 @@ import {
   listDocumentsByOwner,
   listRecentTeamDocuments,
   listSharedWith,
+  readReorderEntries,
   reorderTabs,
   seedTabs,
   setDocumentPresentation,
@@ -448,8 +449,8 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
       if (read instanceof Response) return read;
       const body = read as {
         name?: string;
-        tabIds?: string[];
-        tabs?: { id: string; folder?: string | null }[];
+        tabIds?: unknown;
+        tabs?: unknown;
         // Slide deck (docs/specs/012-collaboration/presentation-mode.md): serialised StoredPresentation, or null to
         // clear. Absent leaves the stored deck alone, so an ordinary rename
         // can never wipe it.
@@ -471,6 +472,15 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
       // edit-role share visitor can touch metadata.
       const allowed = await gateEdit(ctx, id, ownerId, existing.teamId);
       if (!allowed) return forbidden();
+      // The tab order, read whole before anything is written: one malformed entry refuses the request, rename and
+      // all. Prefer the folder-carrying `tabs` shape; fall back to the legacy `tabIds` (treated as loose) so older
+      // clients keep working.
+      const order = Array.isArray(body.tabs)
+        ? readReorderEntries(body.tabs)
+        : Array.isArray(body.tabIds)
+          ? readReorderEntries(body.tabIds)
+          : undefined;
+      if (order === null) return badRequest('invalid tabs');
       // A rename meets the name cap (docs/specs/006-document/name-length.md); a
       // name echoed back unchanged (a reorder) is kept even if it predates it.
       const name =
@@ -502,13 +512,7 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
         }
         await setDocumentPresentation(env, id, body.presentation);
       }
-      // Prefer the folder-carrying `tabs` shape; fall back to the
-      // legacy `tabIds` (treated as loose) so older clients keep working.
-      if (Array.isArray(body.tabs)) {
-        await reorderTabs(env, id, body.tabs);
-      } else if (Array.isArray(body.tabIds)) {
-        await reorderTabs(env, id, body.tabIds);
-      }
+      if (order) await reorderTabs(env, id, order);
       const liveDoc = await getDocument(env, id);
       // An agent's rename reaches the open editors (docs/specs/024-agents/agent-changesets.md "Whole-tab saves and tab
       // renames"); an editor sends its own rename to the room itself.

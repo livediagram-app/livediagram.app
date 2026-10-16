@@ -7,7 +7,7 @@ import { Fragment, useCallback, useRef } from 'react';
 import { CompactEmptyState, lucideGlyph } from '@livediagram/ui';
 import { lucideClipboardList } from '@livediagram/icons/lucide';
 import type { DestinationProblem } from '@livediagram/forms';
-import { placeQuestion } from '@/hooks/forms/form-edits';
+import { placeQuestion } from '@livediagram/forms';
 import { FormAddBar } from './FormAddBar';
 import { FormConnectCard } from './FormConnectCard';
 import { FormHeaderCard, SectionHeader } from './FormHeaderCard';

@@ -13,7 +13,7 @@
   "scripts": {
     "lint": "oxlint",
     "test": "vitest run",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p scripts",
     "clean": "rm -rf node_modules .turbo",
     "truth:add": "tsx scripts/truth-add.ts"
   },
@@ -24,6 +24,7 @@
     "@livediagram/oxlint-config": "workspace:*",
     "@livediagram/vitest-config": "workspace:*",
     "@playwright/test": "^1.63.0",
+    "@types/node": "^26.6.4",
     "oxlint": "^1.88.0",
     "typescript": "^7.0.2",
     "vitest": "^5.0.3"

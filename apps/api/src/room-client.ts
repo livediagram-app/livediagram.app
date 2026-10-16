@@ -295,11 +295,13 @@ export async function relayTabRename(
 
 // An agent's Illustrate edit (docs/specs/024-agents/illustrate-for-agents.md "The route"), as the ops an
 // editor's own edit sends: a `tab-meta` patch of the pages and mode, then each article's frames, in
-// order. Best-effort and logged, like the tab rename relay; answers how many reached the room.
+// order; and an agent's form write (docs/specs/030-forms/forms.md "Agents"), its form and name as one
+// `tab-meta`. Best-effort and logged under `tag`, like the tab rename relay; answers how many reached the room.
 export async function relayIllustrate(
   env: Env,
   documentId: string,
   ops: readonly RoomOp[],
+  tag = '[illustrate-agent]',
 ): Promise<number> {
   let reached = 0;
   for (const op of ops) {
@@ -315,13 +317,13 @@ export async function relayIllustrate(
         reached += 1;
         continue;
       }
-      console.warn('[illustrate-agent] relay-missed', {
+      console.warn(`${tag} relay-missed`, {
         documentId,
         op: op.kind,
         error: `status ${res.status}`,
       });
     } catch (err) {
-      console.warn('[illustrate-agent] relay-missed', {
+      console.warn(`${tag} relay-missed`, {
         documentId,
         op: op.kind,
         error: String(err),

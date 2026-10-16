@@ -94,10 +94,24 @@ export type ItemTypesRoomOp = {
 // GET /api/documents/:id/plan (docs/specs/026-plan/plan-agents.md "Reading the plan"): the document's Plan boards
 // with their columns, the statuses they name (each once) and the card types, for agents. A tab-scoped link passes
 // tabId and gets that tab's boards.
+// A tab as the plan read names it (docs/specs/026-plan/plan-agents.md "Reading the plan": tabs).
+export type PlanTabOutline = {
+  id: string;
+  name: string;
+  // What the tab is (diagram, board, sheet, dashboard, form, event-storming).
+  kind: string;
+  // Its theme, when it has one of its own.
+  theme?: string;
+  // A Sheet tab's sheets, in canvas order.
+  sheetIds?: string[];
+};
+
 export type PlanResponse = {
   boards: PlanBoardOutline[];
   statuses: PlanStatusName[];
   types: readonly ItemTypeDef[];
+  // Every tab the caller may read, in order; absent from an api older than forms for agents.
+  tabs?: PlanTabOutline[];
   // The catalogue's revision, for a change of card types to name as its `expectedRev`.
   itemTypesRev: number;
 };

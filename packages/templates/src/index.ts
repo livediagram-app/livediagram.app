@@ -40,3 +40,4 @@ export { hasTemplateSheets } from './template-sheet-marks';
 export { withBlankPageThemed } from './blank-page-templates';
 
 export * from './form-templates';
+export * from './form-start';

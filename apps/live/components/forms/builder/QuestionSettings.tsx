@@ -3,6 +3,7 @@
 // A question's own settings, inside its selected card (docs/specs/030-forms/forms.md "Question types"): a Number's
 // bounds and Whole Numbers Only, a Multiple Choice's fewest and most picks, a Single Choice's
 // Show as Dropdown, a Rating's scale, style and end labels. Each change one undo step.
+import { withMax, withMin } from './question-range';
 import {
   RATING_SCALE_DEFAULT,
   RATING_SCALE_MAX,
@@ -13,7 +14,7 @@ import {
 import { Select, TextInput } from '@livediagram/ui';
 import { SwitchRow } from '@/components/primitives/SwitchRow';
 import { SettingsField } from '@/components/plan/settings-panel-parts';
-import { updateQuestion } from '@/hooks/forms/form-edits';
+import { updateQuestion } from '@livediagram/forms';
 import { DraftText } from './DraftText';
 import { useFormBuilder } from './form-builder-context';
 
@@ -71,13 +72,13 @@ export function QuestionSettings({ question: q }: { question: FormQuestion }) {
               label="Minimum"
               whole={false}
               value={q.min}
-              onChange={(min) => set({ min })}
+              onChange={(min) => set(withMin(q, min))}
             />
             <NumberField
               label="Maximum"
               whole={false}
               value={q.max}
-              onChange={(max) => set({ max })}
+              onChange={(max) => set(withMax(q, max))}
             />
           </div>
           <SwitchRow
@@ -95,13 +96,13 @@ export function QuestionSettings({ question: q }: { question: FormQuestion }) {
             label="Fewest Picks"
             min={1}
             value={q.min}
-            onChange={(min) => set({ min: min && min <= picks ? min : undefined })}
+            onChange={(min) => set(withMin(q, min && min <= picks ? min : undefined))}
           />
           <NumberField
             label="Most Picks"
             min={1}
             value={q.max}
-            onChange={(max) => set({ max: max && max <= picks ? max : undefined })}
+            onChange={(max) => set(withMax(q, max && max <= picks ? max : undefined))}
           />
         </div>
       ) : null}

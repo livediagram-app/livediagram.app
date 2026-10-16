@@ -581,9 +581,9 @@ unlabelled circle is a small solid dot ([Mermaid](../020-import-export/mermaid.m
   group itself (`group`), the shape a model reaches for first; it joins that
   group's members, and a group id nothing declares is created with the id as its
   label. `members` is then optional. Nodes and groups share one set of ids: an id naming both is refused, naming
-  it, since each becomes an element of that id. Groups do not nest: a group listed as another's member is refused,
+  it, since each becomes an element of that id, and so is a node id or a group id given twice. Groups do not nest: a group listed as another's member is refused,
   naming both, rather than dropped; and a `lanes` graph refuses a node in no group, which would otherwise land in an
-  unlabelled lane of its own (`graphShapeError`). The api's `replace` with a `graph` refuses the same, so every
+  unlabelled lane of its own, and a node in two lanes, which each lane would draw (`graphShapeError`). The api's `replace` with a `graph` refuses the same, so every
   caller of graph input is held to it (`graphBodyIssue`).
 - `lines` (`angled` for flow, lanes and tree, `curved` for mindmap and cycle): the
   arrows' routing, from the editor's own arrow styles. Angled lines **bend
@@ -879,6 +879,29 @@ not, and reach open editors at once.
 - **Reading**: `read_document` with `view: "pages"` lists the pages, the elements on each, the layouts on offer
   and each article as Markdown in the form `write_article` takes.
 
+### 4.9e The form tools
+
+A Form tab's form ([Forms](../030-forms/forms.md#agents)): its questions, sections, where its responses go and its
+form link. Everything is named as the builder names it (a question by id or prompt, a section by id, title or place,
+a board, card type, column, sheet and card field by name); the server (`apps/mcp/src/form-tools.ts` over
+`packages/agent-verbs/src/forms/`) resolves them and refuses an unknown name with the ones there are. The form is
+built with the editor's own edits (`@livediagram/forms`) and started as Start Planning starts one
+(`@livediagram/templates` `planFormStart`).
+
+- **`read_form`** (read): the form in words (sections, questions with their settings, each answer's destination by
+  field name, section rules by prompt), where responses go, the settings, state, response count, the form link (an
+  Editor's only) and its problems; `image` adds a picture of the form on its tab's look.
+- **`add_form`** (write): a Form tab from a starter or questions, its responses to a new or named board or sheet,
+  the fields its mappings name added to the card type; a new document when no `documentId` is given. Answers as
+  `read_form` does, with the tabs it made.
+- **`change_form`** (destructive): up to 50 question, section, form, settings and destination changes, checked whole
+  and written as one changeset; a refusal writes nothing and names the change. While the form takes responses only
+  `settings` changes go through.
+- **`share_form`** (write): `publish`, `close` or `delete_link`, through the form link routes as Share Form calls
+  them; a form not ready answers every problem.
+- `read_document` lists a Form tab as `kind=form` with a line naming `read_form`; its `image` draws the form as
+  `read_form` does.
+
 ### 4.10 Prompts (discoverability)
 
 Registered MCP **prompts** — pre-canned templates a client surfaces as slash
@@ -964,11 +987,11 @@ which is how the gap was found.
 Three behaviours cover the twenty tools, and each is a preset in
 `apps/mcp/src/tool-annotations.ts`:
 
-| Behaviour       | `readOnlyHint` | `destructiveHint` | Tools                                                                                                                           |
-| --------------- | -------------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| **read**        | `true`         | (not applicable)  | `find_documents`, `read_document`, `list_templates`, `search_icons`, `list_trash`, `list_items`, `list_sheets`, `read_sheet`    |
-| **write**       | `false`        | `false`           | `create_document`, `add_tab`, `share_document`, `rename_document`, `restore_document`, `add_board`, `change_board`, `add_sheet` |
-| **destructive** | `false`        | `true`            | `update_document`, `delete_document`, `change_items`, `change_card_types`, `change_sheet`                                       |
+| Behaviour       | `readOnlyHint` | `destructiveHint` | Tools                                                                                                                                                     |
+| --------------- | -------------- | ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **read**        | `true`         | (not applicable)  | `find_documents`, `read_document`, `list_templates`, `search_icons`, `list_trash`, `list_items`, `list_sheets`, `read_sheet`, `read_form`                 |
+| **write**       | `false`        | `false`           | `create_document`, `add_tab`, `share_document`, `rename_document`, `restore_document`, `add_board`, `change_board`, `add_sheet`, `add_form`, `share_form` |
+| **destructive** | `false`        | `true`            | `update_document`, `delete_document`, `change_items`, `change_card_types`, `change_sheet`, `change_pages`, `write_article`, `change_form`                 |
 
 The split mirrors §4.11's read-only-token boundary exactly (what a
 `read_only = 1` token can still reach is what `read` annotates), so the hint a

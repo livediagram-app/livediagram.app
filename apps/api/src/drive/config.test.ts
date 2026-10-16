@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cpuMsOf } from '@livediagram/vitest-config/cpu-time';
+import { cpuBudgetMs, cpuMsOf } from '@livediagram/vitest-config/cpu-time';
 import { bytesToBase64 } from '@livediagram/api-schema';
 import type { Env } from '../types';
 import { driveMode, googleOAuthBase } from './config';
@@ -48,6 +48,6 @@ describe('googleOAuthBase', () => {
       base = googleOAuthBase(env({ GOOGLE_OAUTH_BASE_URL: long }));
     });
     expect(base).toBe(long);
-    expect(spent).toBeLessThan(50);
+    expect(spent).toBeLessThan(cpuBudgetMs(50));
   });
 });

@@ -8,6 +8,8 @@
 // so corners cross like a pen's) and curves (sampled points, each nudged, drawn as a smooth spline). Two passes
 // from two streams give the doubled line that reads as drawn by hand.
 import type { ShapePart } from './shape-geometry';
+import { seededRandom } from './seeded-random';
+import { fnv1aString } from './string-hash';
 
 export type Pt = { x: number; y: number };
 
@@ -58,26 +60,10 @@ const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v
 // ---------------------------------------------------------------------------------------------------------------
 
 /** FNV-1a (32-bit) of an id: the seed an element's wobble grows from. */
-export function sketchSeed(id: string): number {
-  let h = 0x811c9dc5;
-  for (let i = 0; i < id.length; i++) {
-    h ^= id.charCodeAt(i);
-    h = Math.imul(h, 0x01000193);
-  }
-  return h >>> 0;
-}
+export const sketchSeed: (id: string) => number = fnv1aString;
 
 /** mulberry32: a small, fast, seeded stream of numbers in [0, 1). */
-export function sketchRandom(seed: number): () => number {
-  let a = seed >>> 0;
-  return () => {
-    a = (a + 0x6d2b79f5) >>> 0;
-    let t = a;
-    t = Math.imul(t ^ (t >>> 15), t | 1);
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
+export const sketchRandom: (seed: number) => () => number = seededRandom;
 
 // ---------------------------------------------------------------------------------------------------------------
 // Outlines

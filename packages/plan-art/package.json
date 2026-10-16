@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "@livediagram/document": "workspace:*",
+    "@livediagram/forms": "workspace:*",
     "@livediagram/icons": "workspace:*",
     "@livediagram/items": "workspace:*",
     "@livediagram/ui": "workspace:*"

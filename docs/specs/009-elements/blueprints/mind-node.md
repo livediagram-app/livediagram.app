@@ -24,6 +24,7 @@ Scope, by file:
 | `packages/document/src/duplicate.ts`                         | Re-parents copied children onto copied parents                                                                                     |
 | `packages/document/src/svg-render.ts`                        | The export's corner radius                                                                                                         |
 | `apps/live/app/document/[id]/useMindGrowth.ts`               | `canGrowMindNode`, `growMindNode`, `abandonMindNode`: one commit each                                                              |
+| `apps/live/app/document/[id]/useGrowthLanding.ts`            | Shared with flowchart growth: reveal, typed-ahead landing, Escape on an empty grown node                                           |
 | `apps/live/app/document/[id]/useMindOutline.ts`              | `MindOutlineApi`: the open root, `canEdit`, `save` as one commit                                                                   |
 | `apps/live/lib/mind-dress.ts`                                | `dressMindNode`, `dressMindConnector`: one look for growth and outline saves                                                       |
 | `apps/live/lib/mind-label-fit.ts`                            | `mindLabelFontPx`, `mindLabelPadding`, `mindLabelHeight`, `fitMindLabel`: the height a label needs                                 |
@@ -182,7 +183,7 @@ Every plan is a pure function of the element list; the editor applies it in one 
    connector. `settleLabel` writes and fits the same way.
 6. `setEditingId(null)` (an editor grown from closes), select the node,
    `beginMindHandoff(node.id, handoffActions)`, remember it as landing, and
-   `scrollIntoView(node, { sideMargin: MIND_REVEAL_SIDE_MARGIN })` (`D139`). The node is never
+   `scrollIntoView(node, { sideMargin: GROWTH_REVEAL_SIDE_MARGIN })` (`D139`). The node is never
    put into label editing here.
 7. Landing (an effect on the active tab's elements): once the landing node is in them,
    `landMindHandoff(id)`; `true` (keys arrived for it) opens its editor with `setEditingId(id)`,
@@ -661,21 +662,21 @@ Abandon, the canvas key guards and `makeRoom` emit nothing [GA1].
 
 ## Constants and configuration
 
-| Name                      | Value           | Provenance / safe range                                         |
-| ------------------------- | --------------- | --------------------------------------------------------------- |
-| `MIND_CHILD_GAP_X`        | 64              | Parent to child along the flow at Comfortable; 32 to 120        |
-| `MIND_SIBLING_GAP_Y`      | 18              | Siblings at Comfortable; shifted trees always; 8 to 40          |
-| `MIND_CHILD_GAP_Y`        | 50              | Level gap of the downward and upward flows; derived             |
-| `MIND_SPACING_SCALE`      | ½ … 1½          | Tight 0.5, Compact 0.75, Comfortable 1, Wide 1.5; spec table    |
-| `DEFAULT_MIND_SPACING`    | `'comfortable'` | Maps drawn before spacing keep their gaps                       |
-| `BUBBLE_STEP`             | 50°             | Free-placement fan step; 30° to 60° (`mind-flow.ts`, private)   |
-| `BUBBLE_SEAM`             | π (west)        | Where the tidy bubble circle starts (`mind-layout.ts`, private) |
-| `MIND_TIDY_TOLERANCE`     | 1               | Rounding is the only drift a tidy map has; fixed                |
-| `MIND_HANDOFF_TIMEOUT_MS` | 1500            | Longer than any render, short enough to go unnoticed; 500+      |
-| `MIND_REVEAL_SIDE_MARGIN` | 300             | Screen px clear of the side panels (`useMindGrowth.ts`)         |
-| `DEFAULT_MIND_FLOW`       | `'tree'`        | Maps drawn before flows keep their shape                        |
-| Default size              | 250 × 80        | `SHAPE_DEFAULT_SIZE['mind-node']`; a phrase fits                |
-| Corner radius             | 12px            | Canvas and export, when `borderRadius` is unset                 |
+| Name                        | Value           | Provenance / safe range                                         |
+| --------------------------- | --------------- | --------------------------------------------------------------- |
+| `MIND_CHILD_GAP_X`          | 64              | Parent to child along the flow at Comfortable; 32 to 120        |
+| `MIND_SIBLING_GAP_Y`        | 18              | Siblings at Comfortable; shifted trees always; 8 to 40          |
+| `MIND_CHILD_GAP_Y`          | 50              | Level gap of the downward and upward flows; derived             |
+| `MIND_SPACING_SCALE`        | ½ … 1½          | Tight 0.5, Compact 0.75, Comfortable 1, Wide 1.5; spec table    |
+| `DEFAULT_MIND_SPACING`      | `'comfortable'` | Maps drawn before spacing keep their gaps                       |
+| `BUBBLE_STEP`               | 50°             | Free-placement fan step; 30° to 60° (`mind-flow.ts`, private)   |
+| `BUBBLE_SEAM`               | π (west)        | Where the tidy bubble circle starts (`mind-layout.ts`, private) |
+| `MIND_TIDY_TOLERANCE`       | 1               | Rounding is the only drift a tidy map has; fixed                |
+| `MIND_HANDOFF_TIMEOUT_MS`   | 1500            | Longer than any render, short enough to go unnoticed; 500+      |
+| `GROWTH_REVEAL_SIDE_MARGIN` | 300             | Screen px clear of the side panels (`useGrowthLanding.ts`)      |
+| `DEFAULT_MIND_FLOW`         | `'tree'`        | Maps drawn before flows keep their shape                        |
+| Default size                | 250 × 80        | `SHAPE_DEFAULT_SIZE['mind-node']`; a phrase fits                |
+| Corner radius               | 12px            | Canvas and export, when `borderRadius` is unset                 |
 
 Telemetry: `Element·Added·MindNode` per growth, `Element·Deleted·MindNode` per abandon,
 `Element·Changed·MindFlow`, `Element·Changed·MindSpacing`, `Element·Changed·MindTidy` and

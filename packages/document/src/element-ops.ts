@@ -94,8 +94,11 @@ export function applyElementOp(elements: Element[], op: ElementOp): Element[] {
       return elements.filter((e) => e.id !== op.id);
     case 'reorder': {
       const byId = new Map(elements.map((e) => [e.id, e]));
-      const ordered = op.ids.map((id) => byId.get(id)).filter((e): e is Element => e !== undefined);
+      // Each id at its first place: a peer's op naming one twice must not put the element in the tab twice.
       const orderedIds = new Set(op.ids);
+      const ordered = [...orderedIds]
+        .map((id) => byId.get(id))
+        .filter((e): e is Element => e !== undefined);
       const extras = elements.filter((e) => !orderedIds.has(e.id));
       return [...ordered, ...extras];
     }

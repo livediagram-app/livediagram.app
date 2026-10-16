@@ -101,6 +101,18 @@ const save = (
 afterEach(() => vi.restoreAllMocks());
 
 describe('the tab PUT', () => {
+  // A malformed element is refused by the schema gate like any other, never thrown on by the migrations that run
+  // before it: a step chip's label a number, not text, threw in settleChips and answered 500.
+  it('refuses a malformed chip as an invalid tab, not a server error', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const db = await documentWith([box('a')]);
+    const step = { ...box('s'), shape: 'step', label: 5 } as unknown as Element;
+    const res = await save(db, [box('a'), step]);
+    expect(res.status).toBe(400);
+    expect(await res.json()).toEqual({ error: 'bad_request', message: 'invalid tab' });
+    expect(stored(db).map((e) => e.id)).toEqual(['a']);
+  });
+
   it('refuses an API token with use_changesets, naming the route, before reading anything', async () => {
     const info = vi.spyOn(console, 'info').mockImplementation(() => {});
     const db = await documentWith([box('a')]);

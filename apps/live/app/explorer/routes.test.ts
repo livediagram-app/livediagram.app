@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { explorerPathFor, selectedFromRoute } from './routes';
+import { explorerPathFor, selectedFromRoute, teamFolderPath } from './routes';
 import type { SelectedNode } from './views';
 import { EXPLORER_LANDING_PATH } from '@/lib/explorer-landing';
 
@@ -63,6 +63,11 @@ describe('explorer route mapping', () => {
 
   it('URL-encodes ids', () => {
     expect(explorerPathFor({ kind: 'folder', id: 'a/b c' })).toBe('/explorer/folder?id=a%2Fb%20c');
+  });
+
+  it('opens a team page at a folder, or at its root without one', () => {
+    expect(teamFolderPath('t 1', 'f/2')).toBe('/explorer/team?id=t%201&folder=f%2F2');
+    expect(teamFolderPath('t1', null)).toBe('/explorer/team?id=t1');
   });
 
   it('tolerates the static-export trailing slash', () => {

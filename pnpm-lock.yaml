@@ -37,7 +37,10 @@ importers:
         version: 0.28.2
       oxlint:
         specifier: ^1.88.0
-        version: 1.88.0
+        version: 1.88.0(oxlint-tsgolint@7.0.2004)
+      oxlint-tsgolint:
+        specifier: ^7.0.2004
+        version: 7.0.2004
       prettier:
         specifier: ^3.9.9
         version: 3.9.9
@@ -104,7 +107,7 @@ importers:
         version: 5.0.3(vitest@5.0.3)
       oxlint:
         specifier: ^1.88.0
-        version: 1.88.0
+        version: 1.88.0(oxlint-tsgolint@7.0.2004)
       ts-json-schema-generator:
         specifier: ^2.9.0
         version: 2.9.0
@@ -171,7 +174,7 @@ importers:
         version: 0.28.2
       oxlint:
         specifier: ^1.88.0
-        version: 1.88.0
+        version: 1.88.0(oxlint-tsgolint@7.0.2004)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -238,7 +241,7 @@ importers:
         version: 30.1.2
       oxlint:
         specifier: ^1.88.0
-        version: 1.88.0
+        version: 1.88.0(oxlint-tsgolint@7.0.2004)
       tailwindcss:
         specifier: ^4.3.3
         version: 4.3.3
@@ -323,7 +326,7 @@ importers:
         version: 5.0.3(vitest@5.0.3)
       oxlint:
         specifier: ^1.88.0
-        version: 1.88.0
+        version: 1.88.0(oxlint-tsgolint@7.0.2004)
       tailwindcss:
         specifier: ^4.3.3
         version: 4.3.3
@@ -469,6 +472,9 @@ importers:
       '@testing-library/react':
         specifier: ^16.3.3
         version: 16.3.3(@testing-library/dom@10.4.1)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      '@types/jsdom':
+        specifier: ^30.0.0
+        version: 30.0.0
       '@types/node':
         specifier: ^26.6.4
         version: 26.6.4
@@ -489,7 +495,7 @@ importers:
         version: 30.1.2
       oxlint:
         specifier: ^1.88.0
-        version: 1.88.0
+        version: 1.88.0(oxlint-tsgolint@7.0.2004)
       tailwindcss:
         specifier: ^4.3.3
         version: 4.3.3
@@ -571,7 +577,7 @@ importers:
         version: 30.1.2
       oxlint:
         specifier: ^1.88.0
-        version: 1.88.0
+        version: 1.88.0(oxlint-tsgolint@7.0.2004)
       tailwindcss:
         specifier: ^4.3.3
         version: 4.3.3
@@ -602,6 +608,9 @@ importers:
       '@livediagram/edit-operations':
         specifier: workspace:*
         version: link:../../packages/edit-operations
+      '@livediagram/forms':
+        specifier: workspace:*
+        version: link:../../packages/forms
       '@livediagram/icons':
         specifier: workspace:*
         version: link:../../packages/icons
@@ -647,7 +656,7 @@ importers:
         version: 5.0.3(vitest@5.0.3)
       oxlint:
         specifier: ^1.88.0
-        version: 1.88.0
+        version: 1.88.0(oxlint-tsgolint@7.0.2004)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -680,7 +689,7 @@ importers:
         version: 26.6.4
       oxlint:
         specifier: ^1.88.0
-        version: 1.88.0
+        version: 1.88.0(oxlint-tsgolint@7.0.2004)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -747,7 +756,7 @@ importers:
         version: 19.3.0(@types/react@19.3.0)
       oxlint:
         specifier: ^1.88.0
-        version: 1.88.0
+        version: 1.88.0(oxlint-tsgolint@7.0.2004)
       tailwindcss:
         specifier: ^4.3.3
         version: 4.3.3
@@ -778,9 +787,15 @@ importers:
       '@livediagram/edit-operations':
         specifier: workspace:*
         version: link:../edit-operations
+      '@livediagram/forms':
+        specifier: workspace:*
+        version: link:../forms
       '@livediagram/items':
         specifier: workspace:*
         version: link:../items
+      '@livediagram/page-background':
+        specifier: workspace:*
+        version: link:../page-background
       '@livediagram/sheets':
         specifier: workspace:*
         version: link:../sheets
@@ -802,7 +817,7 @@ importers:
         version: 5.0.3(vitest@5.0.3)
       oxlint:
         specifier: ^1.88.0
-        version: 1.88.0
+        version: 1.88.0(oxlint-tsgolint@7.0.2004)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -823,7 +838,7 @@ importers:
         version: 5.0.3(vitest@5.0.3)
       oxlint:
         specifier: ^1.88.0
-        version: 1.88.0
+        version: 1.88.0(oxlint-tsgolint@7.0.2004)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -854,7 +869,7 @@ importers:
         version: link:../vitest-config
       oxlint:
         specifier: ^1.88.0
-        version: 1.88.0
+        version: 1.88.0(oxlint-tsgolint@7.0.2004)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -891,7 +906,7 @@ importers:
         version: 5.0.3(vitest@5.0.3)
       oxlint:
         specifier: ^1.88.0
-        version: 1.88.0
+        version: 1.88.0(oxlint-tsgolint@7.0.2004)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -931,7 +946,7 @@ importers:
         version: 5.0.3(vitest@5.0.3)
       oxlint:
         specifier: ^1.88.0
-        version: 1.88.0
+        version: 1.88.0(oxlint-tsgolint@7.0.2004)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -965,7 +980,7 @@ importers:
         version: 5.0.3(vitest@5.0.3)
       oxlint:
         specifier: ^1.88.0
-        version: 1.88.0
+        version: 1.88.0(oxlint-tsgolint@7.0.2004)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -981,6 +996,9 @@ importers:
       '@livediagram/document':
         specifier: workspace:*
         version: link:../document
+      '@livediagram/forms':
+        specifier: workspace:*
+        version: link:../forms
       '@livediagram/icons':
         specifier: workspace:*
         version: link:../icons
@@ -1002,7 +1020,7 @@ importers:
         version: 5.0.3(vitest@5.0.3)
       oxlint:
         specifier: ^1.88.0
-        version: 1.88.0
+        version: 1.88.0(oxlint-tsgolint@7.0.2004)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -1030,7 +1048,7 @@ importers:
         version: 5.0.3(vitest@5.0.3)
       oxlint:
         specifier: ^1.88.0
-        version: 1.88.0
+        version: 1.88.0(oxlint-tsgolint@7.0.2004)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -1051,7 +1069,7 @@ importers:
         version: 26.6.4
       oxlint:
         specifier: ^1.88.0
-        version: 1.88.0
+        version: 1.88.0(oxlint-tsgolint@7.0.2004)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -1082,7 +1100,7 @@ importers:
         version: 5.0.3(vitest@5.0.3)
       oxlint:
         specifier: ^1.88.0
-        version: 1.88.0
+        version: 1.88.0(oxlint-tsgolint@7.0.2004)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -1097,7 +1115,7 @@ importers:
         version: link:../oxlint-config
       oxlint:
         specifier: ^1.88.0
-        version: 1.88.0
+        version: 1.88.0(oxlint-tsgolint@7.0.2004)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -1125,7 +1143,7 @@ importers:
         version: 1.52.0
       oxlint:
         specifier: ^1.88.0
-        version: 1.88.0
+        version: 1.88.0(oxlint-tsgolint@7.0.2004)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -1146,7 +1164,7 @@ importers:
         version: 5.0.3(vitest@5.0.3)
       oxlint:
         specifier: ^1.88.0
-        version: 1.88.0
+        version: 1.88.0(oxlint-tsgolint@7.0.2004)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -1170,7 +1188,7 @@ importers:
         version: 5.0.3(vitest@5.0.3)
       oxlint:
         specifier: ^1.88.0
-        version: 1.88.0
+        version: 1.88.0(oxlint-tsgolint@7.0.2004)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -1194,7 +1212,10 @@ importers:
         version: 1.88.0
       oxlint:
         specifier: ^1.88.0
-        version: 1.88.0
+        version: 1.88.0(oxlint-tsgolint@7.0.2004)
+      oxlint-tsgolint:
+        specifier: ^7.0.2004
+        version: 7.0.2004
     devDependencies:
       '@livediagram/vitest-config':
         specifier: workspace:*
@@ -1222,7 +1243,7 @@ importers:
         version: 5.0.3(vitest@5.0.3)
       oxlint:
         specifier: ^1.88.0
-        version: 1.88.0
+        version: 1.88.0(oxlint-tsgolint@7.0.2004)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -1235,6 +1256,9 @@ importers:
       '@livediagram/document':
         specifier: workspace:*
         version: link:../document
+      '@livediagram/forms':
+        specifier: workspace:*
+        version: link:../forms
       '@livediagram/icons':
         specifier: workspace:*
         version: link:../icons
@@ -1256,7 +1280,7 @@ importers:
         version: 5.0.3(vitest@5.0.3)
       oxlint:
         specifier: ^1.88.0
-        version: 1.88.0
+        version: 1.88.0(oxlint-tsgolint@7.0.2004)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -1314,7 +1338,7 @@ importers:
         version: 5.0.3(vitest@5.0.3)
       oxlint:
         specifier: ^1.88.0
-        version: 1.88.0
+        version: 1.88.0(oxlint-tsgolint@7.0.2004)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -1338,7 +1362,7 @@ importers:
         version: 5.0.3(vitest@5.0.3)
       oxlint:
         specifier: ^1.88.0
-        version: 1.88.0
+        version: 1.88.0(oxlint-tsgolint@7.0.2004)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -1366,7 +1390,7 @@ importers:
         version: 5.0.3(vitest@5.0.3)
       oxlint:
         specifier: ^1.88.0
-        version: 1.88.0
+        version: 1.88.0(oxlint-tsgolint@7.0.2004)
       vitest:
         specifier: ^5.0.1
         version: 5.0.3(@types/node@26.6.4)(@vitest/coverage-v8@5.0.3)(jsdom@30.1.2)(vite@7.3.5(@types/node@26.6.4)(jiti@2.7.0)(lightningcss@1.32.0))
@@ -1391,7 +1415,7 @@ importers:
         version: 26.6.4
       oxlint:
         specifier: ^1.88.0
-        version: 1.88.0
+        version: 1.88.0(oxlint-tsgolint@7.0.2004)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -1414,9 +1438,12 @@ importers:
       '@playwright/test':
         specifier: ^1.63.0
         version: 1.63.0
+      '@types/node':
+        specifier: ^26.6.4
+        version: 26.6.4
       oxlint:
         specifier: ^1.88.0
-        version: 1.88.0
+        version: 1.88.0(oxlint-tsgolint@7.0.2004)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -1441,7 +1468,7 @@ importers:
         version: 26.6.4
       oxlint:
         specifier: ^1.88.0
-        version: 1.88.0
+        version: 1.88.0(oxlint-tsgolint@7.0.2004)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -1463,7 +1490,7 @@ importers:
         version: link:../vitest-config
       oxlint:
         specifier: ^1.88.0
-        version: 1.88.0
+        version: 1.88.0(oxlint-tsgolint@7.0.2004)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -1515,7 +1542,7 @@ importers:
         version: 19.3.0(@types/react@19.3.0)
       oxlint:
         specifier: ^1.88.0
-        version: 1.88.0
+        version: 1.88.0(oxlint-tsgolint@7.0.2004)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -1549,7 +1576,7 @@ importers:
         version: link:../vitest-config
       oxlint:
         specifier: ^1.88.0
-        version: 1.88.0
+        version: 1.88.0(oxlint-tsgolint@7.0.2004)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -1610,7 +1637,7 @@ importers:
         version: 16.4.1(@playwright/test@1.63.0)(@types/node@26.6.4)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       oxlint:
         specifier: ^1.88.0
-        version: 1.88.0
+        version: 1.88.0(oxlint-tsgolint@7.0.2004)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -2232,6 +2259,36 @@ packages:
     cpu: [x64]
     os: [win32]
 
+  '@oxlint-tsgolint/darwin-arm64@7.0.2004':
+    resolution: {integrity: sha512-uJk3ttju7Lz+Nv8WG4CsLyewoL1qf/Ny8S8OksJ7Bm/F14Tc9gMfW6arM1PCc57IzH/X/I79YsCWTgxX1FKibQ==}
+    cpu: [arm64]
+    os: [darwin]
+
+  '@oxlint-tsgolint/darwin-x64@7.0.2004':
+    resolution: {integrity: sha512-0BFfHTzDxNDFPcu0UZAXT6CyCJHAXM0dZveyDb4KEHa2qF/DSnOKOrmvK/wFuFol9kvijbGM9JfuOsor+zWXRw==}
+    cpu: [x64]
+    os: [darwin]
+
+  '@oxlint-tsgolint/linux-arm64@7.0.2004':
+    resolution: {integrity: sha512-TAehQc+qdRXyDN3nl/r/3/oPrBVrbtrDeGMkFyG6mf+XphpoJ2lAMVFLclyvrVZCw02RbKROjyw8h72XwQQHcw==}
+    cpu: [arm64]
+    os: [linux]
+
+  '@oxlint-tsgolint/linux-x64@7.0.2004':
+    resolution: {integrity: sha512-LPunZvm6ZbWPfHMAyfZf9ci3HHvNEzLejO8zdqO3GoVGoSEHqqufHUD7+OgeatVSaJP7uXDJ2HaNOHIoH7go4Q==}
+    cpu: [x64]
+    os: [linux]
+
+  '@oxlint-tsgolint/win32-arm64@7.0.2004':
+    resolution: {integrity: sha512-FVWplzDImWhiuawnIZVETaQecv4GWom6Jv4Fx2xj7hhXXDZ5okEgiw1gTCImHTIQsi2ycC5oSxVwrn69bMh7iw==}
+    cpu: [arm64]
+    os: [win32]
+
+  '@oxlint-tsgolint/win32-x64@7.0.2004':
+    resolution: {integrity: sha512-7PsxuUx11Ry9DYTWcljTzRbmZY9B6O9fFFfZV+aodQEMy6pfRT3fhoQRv9PtGN/89z1pPz3nFKrsFm6WqNtX7w==}
+    cpu: [x64]
+    os: [win32]
+
   '@oxlint/binding-android-arm-eabi@1.88.0':
     resolution: {integrity: sha512-k6Fgkf86ubfeH4GvqYsRolfuVAp0pfYVZvifSlXNHPdMaWUOfxUrmLEeDD7hF6U2oJuhsVxhSWq86/xCJ+9MmA==}
     engines: {node: ^20.19.0 || >=22.12.0}
@@ -2740,6 +2797,9 @@ packages:
   '@types/hast@3.0.4':
     resolution: {integrity: sha512-WPs+bbQw5aCj+x6laNGWLH3wviHtoCv/P3+otBhbOhJgG8qtpdAMlTCxLtsTWA7LH1Oh/bFCHsBn0TPS5m30EQ==}
 
+  '@types/jsdom@30.0.0':
+    resolution: {integrity: sha512-uAHGxujGE0cDaKGdK28zgDotFtNA7MKq5DXl8LrfdxdCI8VHcg15oJz+amHTChPNI5JpgEPQWc2xFdrw3em/nQ==}
+
   '@types/json-schema@7.0.15':
     resolution: {integrity: sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==}
 
@@ -2777,6 +2837,9 @@ packages:
 
   '@types/seedrandom@2.4.34':
     resolution: {integrity: sha512-ytDiArvrn/3Xk6/vtylys5tlY6eo7Ane0hvcx++TKo6RxQXuVfW0AF/oeWqAj9dN29SyhtawuXstgmPlwNcv/A==}
+
+  '@types/tough-cookie@4.0.5':
+    resolution: {integrity: sha512-/Ad8+nIOV7Rl++6f1BdKxFSMgmoqEoYbHRpPcx3JEfv8VRsQe9Z4mCXeJBzxs7mbHY/XOZZuXlRNfhpVPbs6ZA==}
 
   '@types/unist@2.0.11':
     resolution: {integrity: sha512-CmBKiL6NNo/OqgmMn95Fk9Whlp2mtvIv+KNpQKN2F4SjvrEesubTRWGYSg+BnWZOnlCaSTU1sMpsBOzgbYhnsA==}
@@ -3955,6 +4018,10 @@ packages:
 
   orderedmap@2.1.1:
     resolution: {integrity: sha512-TvAWxi0nDe1j/rtMcWcIj94+Ffe6n7zhow33h40SKxmsmozs6dz/e+EajymfoFcHd7sxNn8yHM8839uixMOV6g==}
+
+  oxlint-tsgolint@7.0.2004:
+    resolution: {integrity: sha512-vQ9WDF3fiZJvRdSDosNOflerOCOpwol6vWzVDxW76RcU19cjTh7engvkHLvmv+tzedR8fAiJUVUGr6IVZdkzXQ==}
+    hasBin: true
 
   oxlint@1.88.0:
     resolution: {integrity: sha512-uIcFgw8BmqvFRGzH5+r7d2zJMEexwNSrEmM6WQNnGh3VkO0XYTEFoyxyNE6tjKMUib9Cue4XJA2DoWruO5D6aw==}
@@ -5142,6 +5209,24 @@ snapshots:
   '@next/swc-win32-x64-msvc@16.4.1':
     optional: true
 
+  '@oxlint-tsgolint/darwin-arm64@7.0.2004':
+    optional: true
+
+  '@oxlint-tsgolint/darwin-x64@7.0.2004':
+    optional: true
+
+  '@oxlint-tsgolint/linux-arm64@7.0.2004':
+    optional: true
+
+  '@oxlint-tsgolint/linux-x64@7.0.2004':
+    optional: true
+
+  '@oxlint-tsgolint/win32-arm64@7.0.2004':
+    optional: true
+
+  '@oxlint-tsgolint/win32-x64@7.0.2004':
+    optional: true
+
   '@oxlint/binding-android-arm-eabi@1.88.0':
     optional: true
 
@@ -5529,6 +5614,13 @@ snapshots:
     dependencies:
       '@types/unist': 3.0.3
 
+  '@types/jsdom@30.0.0':
+    dependencies:
+      '@types/node': 26.6.4
+      '@types/tough-cookie': 4.0.5
+      parse5: 8.0.1
+      undici-types: 8.9.0
+
   '@types/json-schema@7.0.15': {}
 
   '@types/long@4.0.2': {}
@@ -5563,6 +5655,8 @@ snapshots:
       csstype: 3.2.3
 
   '@types/seedrandom@2.4.34': {}
+
+  '@types/tough-cookie@4.0.5': {}
 
   '@types/unist@2.0.11': {}
 
@@ -6957,7 +7051,16 @@ snapshots:
 
   orderedmap@2.1.1: {}
 
-  oxlint@1.88.0:
+  oxlint-tsgolint@7.0.2004:
+    optionalDependencies:
+      '@oxlint-tsgolint/darwin-arm64': 7.0.2004
+      '@oxlint-tsgolint/darwin-x64': 7.0.2004
+      '@oxlint-tsgolint/linux-arm64': 7.0.2004
+      '@oxlint-tsgolint/linux-x64': 7.0.2004
+      '@oxlint-tsgolint/win32-arm64': 7.0.2004
+      '@oxlint-tsgolint/win32-x64': 7.0.2004
+
+  oxlint@1.88.0(oxlint-tsgolint@7.0.2004):
     optionalDependencies:
       '@oxlint/binding-android-arm-eabi': 1.88.0
       '@oxlint/binding-android-arm64': 1.88.0
@@ -6978,6 +7081,7 @@ snapshots:
       '@oxlint/binding-win32-arm64-msvc': 1.88.0
       '@oxlint/binding-win32-ia32-msvc': 1.88.0
       '@oxlint/binding-win32-x64-msvc': 1.88.0
+      oxlint-tsgolint: 7.0.2004
 
   parse-entities@4.0.2:
     dependencies:

@@ -5,6 +5,8 @@
     "jsx": "preserve",
     "noEmit": true,
     "incremental": true,
+    // The .mts scripts import one another by their real file names, which tsx runs as written.
+    "allowImportingTsExtensions": true,
     "allowJs": true,
     "plugins": [{ "name": "next" }],
     "paths": {
@@ -15,6 +17,7 @@
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
+    "**/*.mts",
     ".next/types/**/*.ts",
     ".next-dev/types/**/*.ts"
   ],

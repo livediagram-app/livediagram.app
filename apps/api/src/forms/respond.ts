@@ -41,10 +41,10 @@ export function formPerson(code: string, form: Pick<FormDefinition, 'heading'>):
 }
 
 // The live link a public request names, with its document and form; null for anything that is not there now (an
-// unknown or suspended code, a trashed document, a tab gone or no longer a Form tab), all answered alike.
+// unknown, suspended or deleted code, a trashed document, a tab gone or no longer a Form tab), all answered alike.
 export async function openFormLink(ctx: RouteContext, code: string) {
   const link = await getFormLink(ctx.env, code);
-  if (!link || link.suspended_at !== null) return null;
+  if (!link || link.suspended_at !== null || link.deleted_at !== null) return null;
   const doc = await getDocument(ctx.env, link.document_id);
   if (!doc) return null;
   const formTab = await readFormTab(ctx.env, link.document_id, link.tab_id);
@@ -156,11 +156,8 @@ export async function respond(
       });
       return refuse({ error: 'form_closed' }, 409);
     }
-    const number = await claimResponseNumber(ctx.env, code, now, FORM_RESPONSES_PER_HOUR);
-    if (number === null) {
-      console.info('[forms] form.response.refused', { error: 'form_busy' });
-      return refuse({ error: 'form_busy' }, 429);
-    }
+    const number = await claimNumber(ctx, code, form, now, preview);
+    if (number instanceof Response) return number;
     const wrote = await writeResponseRow(ctx, {
       documentId: doc.id,
       sheet: form.sheet,
@@ -205,11 +202,8 @@ export async function respond(
     return refuse({ error: 'invalid_answers', errors: {} }, 400);
   }
 
-  const number = await claimResponseNumber(ctx.env, code, now, FORM_RESPONSES_PER_HOUR);
-  if (number === null) {
-    console.info('[forms] form.response.refused', { error: 'form_busy' });
-    return refuse({ error: 'form_busy' }, 429);
-  }
+  const number = await claimNumber(ctx, code, form, now, preview);
+  if (number instanceof Response) return number;
   const create = cardFor(number);
   // Only the title's number differs from the first, so the check holds.
   const made = await createMany(
@@ -232,6 +226,28 @@ export async function respond(
     preview,
     title: String(made.items[0]?.fields['title'] ?? ''),
   });
+}
+
+// The next response number, or the refusal: the Response Limit reached meanwhile (another response took the last
+// place since the form was read: closed, as the form now is), else the hourly cap (busy). A preview passes the limit,
+// as it is taken while the form is closed.
+async function claimNumber(
+  ctx: RouteContext,
+  code: string,
+  form: Pick<FormDefinition, 'limit'>,
+  now: number,
+  preview: boolean,
+): Promise<number | Response> {
+  const limit = preview ? null : (form.limit ?? null);
+  const number = await claimResponseNumber(ctx.env, code, now, FORM_RESPONSES_PER_HOUR, limit);
+  if (number !== null) return number;
+  const link = limit === null ? null : await getFormLink(ctx.env, code);
+  if (link && limit !== null && link.responses >= limit) {
+    console.info('[forms] form.response.refused', { error: 'form_closed' });
+    return refuse({ error: 'form_closed' }, 409);
+  }
+  console.info('[forms] form.response.refused', { error: 'form_busy' });
+  return refuse({ error: 'form_busy' }, 429);
 }
 
 // A response taken (a card or a sheet row): logged, counted, the owner emailed (not for a preview), and answered.

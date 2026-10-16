@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cpuMsOf } from '@livediagram/vitest-config/cpu-time';
+import { cpuBudgetMs, cpuMsOf } from '@livediagram/vitest-config/cpu-time';
 import { createPinnedArrow, createShape } from './factories';
 import { createFlowchartStart } from './flowchart';
 import { addFlowchartLane, applyFlowchartStep, planFlowchartStep } from './flowchart-grow';
@@ -100,6 +100,6 @@ describe('settleFlowcharts', () => {
     }));
     const before = [...filler, ...c.els];
     const after = before.map((e) => (e.id === 'f5' ? { ...e, x: 1 } : e));
-    expect(cpuMsOf(() => settleFlowcharts(before, after))).toBeLessThan(100);
+    expect(cpuMsOf(() => settleFlowcharts(before, after))).toBeLessThan(cpuBudgetMs(100));
   });
 });

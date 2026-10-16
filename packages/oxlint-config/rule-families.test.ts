@@ -41,6 +41,7 @@ const FIXTURES = {
     '// eslint-disable-next-line @typescript-eslint/no-explicit-any\nexport const x: any = 1;\n',
   'script.mjs': 'let a = 1;\nexport default a + undefinedGlobal;\n',
   'module.ts': 'let a = 1;\nexport default a;\n',
+  'typed.ts': 'const xs = [1, 2];\nfor (const i in xs) console.log(i);\n',
 };
 
 let findings: Finding[];
@@ -104,6 +105,10 @@ describe('rule families', () => {
 
   it('ignores eslint-disable directives', () => {
     expect(rulesIn('eslint-directive.ts')).toEqual(['typescript(no-explicit-any)']);
+  });
+
+  it('runs the type-aware rules, which need the type of an expression', () => {
+    expect(rulesIn('typed.ts')).toEqual(['typescript(no-for-in-array)']);
   });
 
   it('runs the JavaScript-only rules on JavaScript and the TypeScript-only rules on TypeScript', () => {

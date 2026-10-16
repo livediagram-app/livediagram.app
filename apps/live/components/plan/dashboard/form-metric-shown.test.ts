@@ -43,6 +43,10 @@ describe('formMetricShown', () => {
       tone: 'red',
     });
     expect(shown('status', { offline: true }).hero).toBe('Draft');
+    // Switched on, but past its Close On or at its Response Limit: closed to respondents.
+    expect(shown('status', { form: { ...form, closesAt: NOW - 1 } }).hero).toBe('Closed');
+    expect(shown('status', { form: { ...form, limit: 42 } }).hero).toBe('Closed');
+    expect(shown('status', { form: { ...form, limit: 43 } }).hero).toBe('Accepting');
   });
 
   it('measures against the limit, when there is one', () => {

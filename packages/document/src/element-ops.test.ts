@@ -75,6 +75,17 @@ describe('applyElementOp', () => {
     expect(applyElementOp(els, { kind: 'remove', id: 'x' })).toEqual([el('a')]);
   });
 
+  // A peer's reorder is applied as sent: one naming an id twice put that element in the tab twice, a tab no save
+  // could then write (two elements of one id). Each id takes its first place.
+  it('places each element once, however often a reorder names it', () => {
+    expect(
+      applyElementOp([el('a'), el('b'), el('c')], {
+        kind: 'reorder',
+        ids: ['c', 'a', 'c', 'a', 'b'],
+      }).map((e) => e.id),
+    ).toEqual(['c', 'a', 'b']);
+  });
+
   it('reorders to the given id order', () => {
     expect(
       applyElementOp([el('a'), el('b'), el('c')], { kind: 'reorder', ids: ['c', 'a', 'b'] }),
@@ -222,5 +233,35 @@ describe('applyRoomElementOp', () => {
   it('ignores a patch for an element it does not have, and applies any other op as before', () => {
     expect(applyRoomElementOp(base, { kind: 'patch', id: 'zz', set: { x: 1 } })).toBe(base);
     expect(applyRoomElementOp(base, { kind: 'remove', id: 'b' }).map((e) => e.id)).toEqual(['a']);
+  });
+});
+
+// docs/specs/012-collaboration/realtime-conflict-resolution.md: the ops a commit derives turn the tab before into the
+// tab after, and applying them batched is applying them one by one. Seeded, so a failure names its case.
+describe('diff and apply converge', () => {
+  const seeded = (seed: number) => {
+    let a = seed >>> 0;
+    return () => {
+      a = (a + 0x6d2b79f5) >>> 0;
+      let t = a;
+      t = Math.imul(t ^ (t >>> 15), t | 1);
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  };
+  it('reproduces any edit of up to a dozen elements, removed, changed, added and reordered', () => {
+    for (let seed = 1; seed <= 2000; seed++) {
+      const r = seeded(seed);
+      const before = Array.from({ length: Math.floor(r() * 12) }, (_, i) => el(`e${i}`));
+      const after = before
+        .filter(() => r() > 0.25)
+        .map((e) => (r() < 0.3 ? ({ ...e, x: 100 } as typeof e) : e));
+      for (let k = Math.floor(r() * 4); k > 0; k--)
+        after.splice(Math.floor(r() * (after.length + 1)), 0, el(`n${seed}-${k}`));
+      if (r() < 0.4) after.sort(() => r() - 0.5);
+      const ops = diffToElementOps(before, after);
+      expect(ops.reduce(applyElementOp, before), `seed ${seed}`).toEqual(after);
+      expect(applyElementOps(before, ops), `seed ${seed}`).toEqual(after);
+    }
   });
 });

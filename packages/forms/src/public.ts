@@ -42,13 +42,23 @@ export const closedMessageOf = (form: Pick<FormDefinition, 'closedMessage'>) =>
 // Why a form takes no responses now, or null while it does (docs/specs/030-forms/forms.md "Publishing").
 export type ClosedReason = 'switched_off' | 'closes_at' | 'limit' | 'no_destination';
 
-export function closedReason(
-  form: Pick<FormDefinition, 'closesAt' | 'limit' | 'destination'>,
-  state: { open: boolean; responses: number; now: number },
-): ClosedReason | null {
-  if (!state.open) return 'switched_off';
-  if (!form.destination) return 'no_destination';
+// Closed by the form's own Settings, whatever its switch says: past its Close On, or at its Response Limit. The
+// editor's status bar and the Form Status metric ask this too, so a switched-on form there reads Closed when it is.
+export function closedBySettings(
+  form: Pick<FormDefinition, 'closesAt' | 'limit'>,
+  state: { responses: number; now: number },
+): 'closes_at' | 'limit' | null {
   if (form.closesAt !== undefined && state.now >= form.closesAt) return 'closes_at';
   if (form.limit !== undefined && state.responses >= form.limit) return 'limit';
   return null;
+}
+
+export function closedReason(
+  form: Pick<FormDefinition, 'closesAt' | 'limit' | 'destination' | 'sheet'>,
+  state: { open: boolean; responses: number; now: number },
+): ClosedReason | null {
+  if (!state.open) return 'switched_off';
+  // A board or a sheet: rows in a sheet need no board (a sheet starter names none).
+  if (!form.destination && !form.sheet) return 'no_destination';
+  return closedBySettings(form, state);
 }

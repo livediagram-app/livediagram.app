@@ -30,9 +30,22 @@ export function createPageRouter(graph: DrawioGraph): PageRouter {
 
   const parentOf = (id: string) => cells.get(id)?.parentId ?? null;
 
+  // A cell and its ancestors, nearest first. Stops at one already met: a duplicate id can close the parent chain
+  // into a cycle (D21), and a walk with no stop froze the import.
+  const ancestry = (id: string): string[] => {
+    const out: string[] = [];
+    const seen = new Set<string>();
+    for (let at: string | null = id; at && !seen.has(at); at = parentOf(at)) {
+      seen.add(at);
+      out.push(at);
+    }
+    return out;
+  };
+
   // A state exists only for a cell whose every ancestor below the root is visible.
   const shown = (id: string): boolean => {
-    for (let at: string | null = id; at && at !== graph.rootId; at = parentOf(at)) {
+    for (const at of ancestry(id)) {
+      if (at === graph.rootId) return true;
       if (!cells.get(at)?.visible) return false;
     }
     return true;
@@ -42,7 +55,7 @@ export function createPageRouter(graph: DrawioGraph): PageRouter {
   const visibleTerminal = (id: string | undefined): string | null => {
     if (!id || !cells.has(id)) return null;
     let best = id;
-    for (let at: string | null = id; at; at = parentOf(at)) {
+    for (const at of ancestry(id)) {
       if (!cells.get(best)?.visible || cells.get(at)?.collapsed) best = at;
     }
     if (best === graph.rootId || parentOf(best) === graph.rootId) return null;
