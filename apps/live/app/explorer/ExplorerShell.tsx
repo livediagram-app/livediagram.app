@@ -21,6 +21,7 @@ import { useDismissibleBanner } from '@/hooks/ui/useDismissibleBanner';
 import { useSearchShortcut } from '@/hooks/ui/useSearchShortcut';
 import { CustomThemeProvider } from '@/components/primitives/CustomThemeProvider';
 import { ShapeLibraryProvider } from '@/components/primitives/ShapeLibraryProvider';
+import { DocumentTagsProvider } from '@/components/tags/DocumentTagsProvider';
 import { AreaErrorBoundary } from '@/components/primitives/AreaErrorBoundary';
 import { ExplorerProvider, useExplorer } from './ExplorerContext';
 import { ExplorerSidebar } from './sidebar/ExplorerSidebar';
@@ -74,7 +75,11 @@ export function ExplorerShell({ children }: { children: ReactNode }) {
         {/* The owner's shape libraries (docs/specs/013-workspace/shape-libraries.md): the Shape
             libraries page and the draw.io import share them. */}
         <ShapeLibraryProvider ownerId={state.ownerId}>
-          <ShellChrome>{children}</ShellChrome>
+          {/* The reader's tags (docs/specs/013-workspace/tags.md): the sidebar's Tags rows, the Tags page, every
+              row's chips and every document menu's Tags read the one list. */}
+          <DocumentTagsProvider ownerId={state.ownerId}>
+            <ShellChrome>{children}</ShellChrome>
+          </DocumentTagsProvider>
         </ShapeLibraryProvider>
       </CustomThemeProvider>
       {/* Moving this browser's Local only documents after signing in

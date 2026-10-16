@@ -39,6 +39,7 @@ import { FolderCard } from './explorer-folder-cards';
 import { CARD_GRID, CARD_PREVIEW as previewArea, CARD_SHELL as cardShell } from '@livediagram/ui';
 import { FolderPreview } from './FolderPreview';
 import { RelativeTimeChip } from '@/components/primitives/RelativeTimeChip';
+import { DocumentRowTags } from '@/components/tags/DocumentRowTags';
 
 export function CardView(props: CardViewProps) {
   const {
@@ -166,6 +167,8 @@ function DocumentCard(
           ) : null}
           {favourite ? <FavouriteMarker /> : null}
           <DriveNoticeMarker documentId={liveDoc.id} />
+          {/* The reader's tags (docs/specs/013-workspace/tags.md "Where tags show"). */}
+          <DocumentRowTags documentId={liveDoc.id} />
           {folderChip ? <FolderChip label={folderChip.label} onOpen={folderChip.onOpen} /> : null}
           {/* A flex box, so the time centres on the row like its neighbours;
               the time truncates itself. */}

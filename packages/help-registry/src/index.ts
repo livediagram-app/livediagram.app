@@ -154,7 +154,7 @@ export const categories: Category[] = [
     title: 'Explorer',
     description:
       'Organise everything you build: how the Explorer keeps your documents, folders, teams, and assets easy to find and manage.',
-    articleCount: 17,
+    articleCount: 18,
     kind: 'feature',
   },
   {
@@ -1883,6 +1883,16 @@ export const articles: Article[] = [
       "Your own named sets of reusable shapes from draw.io, placed from the palette's My shapes and managed on the Explorer page.",
     keywords:
       'shape library libraries my shapes custom shapes reusable stencil stencils preset presets scratchpad drawio draw.io mxlibrary uml icons notation import palette rename delete',
+    category: 'Explorer',
+    categorySlug: 'explorer',
+  },
+  {
+    slug: 'tags',
+    title: 'Tags',
+    description:
+      'Coloured labels you put on your documents to group related ones together, across folders and teams.',
+    keywords:
+      'tag tags label labels labelling categorise categorize group grouping colour color code coded organise organize project client status filter chip chips rename delete',
     category: 'Explorer',
     categorySlug: 'explorer',
   },

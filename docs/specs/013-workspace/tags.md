@@ -59,6 +59,7 @@ A small panel (an anchored popover named "Tags for <document>") that stays open 
   swatch-button skin: the standard colours in the strong tone, then Custom Colours (the custom colours the reader's
   other tags use), ending in Add a custom colour. No Theme Palette: a tag belongs to no tab.
 - **No tags yet**, with an empty field: "No tags yet. Type a name to make your first."
+- A name over 32 characters shows "Keep a tag's name to 32 characters." in place of Create.
 - **At the limit**, Create is replaced by a line: "You have 100 tags, the most there can be. Delete one on the Tags page
   to make room."
 - A name already used (in another case) is never offered to Create; the matching tag shows instead.
@@ -68,7 +69,8 @@ A small panel (an anchored popover named "Tags for <document>") that stays open 
 - **On a row or card.** A tagged document shows its tags as **chips** after its name in the list and Details views and
   in the card's meta row: a pill holding a dot of the tag's colour and its name, on a faint wash of that colour, so any
   colour reads on either appearance. At most **two chips**, then **+N** for the rest, whose tooltip names them all.
-  Pressing a chip opens that tag's page; it never opens the document.
+  Pressing a chip opens that tag's page; it never opens the document. On a phone a list row shows the dots below
+  instead, so the name keeps its room; cards keep their chips.
 - **In the editor's Explorer panel** a row shows up to three **dots** after its name (the panel row is narrow), with a
   tooltip naming the tags. They are not buttons.
 
@@ -81,8 +83,8 @@ At `/explorer/tags`, the **Tags** row in the sidebar's More group.
   documents"), and its menu (`⋯`: Rename, Change Colour, Delete), then the tag's documents, newest first, in the view the
   toggle picked, with the same rows, menus and folder chips as Recent. A document with two tags shows under both: that
   is the grouping.
-- A tag on no documents shows its heading over one quiet line: "No documents tagged yet. Choose Tags in a document's menu
-  to add some."
+- A tag on no documents shows its heading over one quiet line: "Nothing tagged yet. Choose Tags in a document's menu to
+  add some."
 - **No tags at all**: the Explorer's illustrated empty state, "Group related documents with tags", "Make a tag here, or
   choose Tags in any document's menu. Your tags are yours alone: nobody else sees them.", and **New Tag**.
 
@@ -176,10 +178,10 @@ a race with another tab.
 
 ## Who may do what
 
-Tags are the reader's own, on the reader's own lists. The document menu's **Tags** shows wherever that menu offers
-Favourite: on documents the reader owns or whose team they are in, whatever share role they hold on a document open
-in the editor. A document shared with the reader (Editor, Participant or Viewer alike) takes no tags. Nothing in a
-shared session, an embed or a share link shows or changes anyone's tags.
+Tags are the reader's own, on the reader's own lists. The document menu's **Tags** shows on every document in the
+reader's library or their teams' (wherever the menu offers its full verbs), whatever share role the reader holds on a
+document open in the editor. A document shared with the reader (Editor, Participant or Viewer alike) takes no tags: its
+menu is Open and Dismiss. Nothing in a shared session, an embed or a share link shows or changes anyone's tags.
 
 ## Telemetry
 

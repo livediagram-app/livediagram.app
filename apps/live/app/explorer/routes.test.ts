@@ -13,6 +13,7 @@ const STATIC_NODES: SelectedNode[] = [
   { kind: 'inbox' },
   { kind: 'recent' },
   { kind: 'favourites' },
+  { kind: 'tags' },
   { kind: 'themes' },
   { kind: 'shape-libraries' },
   { kind: 'all' },
@@ -29,6 +30,14 @@ describe('explorer route mapping', () => {
       const path = explorerPathFor(node);
       expect(selectedFromRoute(path, new URLSearchParams())).toEqual(node);
     }
+  });
+
+  // docs/specs/013-workspace/tags.md "One tag's page".
+  it("round-trips one tag's page through the query string", () => {
+    const node: SelectedNode = { kind: 'tags', id: 'tag 1' };
+    const url = new URL(explorerPathFor(node), 'https://x.test');
+    expect(url.pathname).toBe('/explorer/tags');
+    expect(selectedFromRoute(url.pathname, url.searchParams)).toEqual(node);
   });
 
   it('round-trips folder and team ids through the query string', () => {

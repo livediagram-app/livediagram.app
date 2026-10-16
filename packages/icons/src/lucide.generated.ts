@@ -312,6 +312,7 @@ export const lucideSuperscript: readonly IconPrim[] = [{"t":"path","d":"m4 19 8-
 export const lucideTable: readonly IconPrim[] = [{"t":"path","d":"M12 3v18"},{"t":"rect","x":3,"y":3,"w":18,"h":18,"rx":2},{"t":"path","d":"M3 9h18"},{"t":"path","d":"M3 15h18"}];
 export const lucideTableCellsMerge: readonly IconPrim[] = [{"t":"path","d":"M12 21v-6"},{"t":"path","d":"M12 9V3"},{"t":"path","d":"M3 15h18"},{"t":"path","d":"M3 9h18"},{"t":"rect","x":3,"y":3,"w":18,"h":18,"rx":2}];
 export const lucideTableCellsSplit: readonly IconPrim[] = [{"t":"path","d":"M12 15V9"},{"t":"path","d":"M3 15h18"},{"t":"path","d":"M3 9h18"},{"t":"rect","x":3,"y":3,"w":18,"h":18,"rx":2}];
+export const lucideTag: readonly IconPrim[] = [{"t":"path","d":"M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"},{"t":"circle","cx":7.5,"cy":7.5,"r":0.5}];
 export const lucideTextAlignCenter: readonly IconPrim[] = [{"t":"path","d":"M21 5H3"},{"t":"path","d":"M17 12H7"},{"t":"path","d":"M19 19H5"}];
 export const lucideTextAlignEnd: readonly IconPrim[] = [{"t":"path","d":"M21 5H3"},{"t":"path","d":"M21 12H9"},{"t":"path","d":"M21 19H7"}];
 export const lucideTextAlignJustify: readonly IconPrim[] = [{"t":"path","d":"M3 5h18"},{"t":"path","d":"M3 12h18"},{"t":"path","d":"M3 19h18"}];

@@ -44,6 +44,7 @@ describe('ExplorerRail', () => {
       'My documents',
       'Design guild',
       'This browser (3)',
+      'Tags',
       'Library',
       'Trash',
     ]);

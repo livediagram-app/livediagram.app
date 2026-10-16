@@ -10,8 +10,8 @@ export const TAG_NAME_MAX = 32;
 /** A tag id; the client mints UUIDs (36). */
 export const TAG_ID_MAX = 64;
 
-/** A standard colour by name (drawn per appearance), or a custom `#rrggbb`. */
-export type TagColour = StandardColourName | string;
+/** A standard colour by name (a StandardColourName, drawn per appearance), or a custom `#rrggbb`. */
+export type TagColour = string;
 
 export type Tag = {
   id: string;

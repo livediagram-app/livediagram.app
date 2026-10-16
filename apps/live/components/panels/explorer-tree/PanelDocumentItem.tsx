@@ -3,6 +3,8 @@
 import { LocalOnlyPill, LOCAL_ONLY_DESCRIPTION } from '@/components/primitives/LocalOnlyPill';
 import { MadeByAiPill, isMadeByAi } from '@/components/primitives/MadeByAiPill';
 import { FavouriteMarker } from '@/app/explorer/document-badges';
+import { useDocumentTags } from '@/components/tags/DocumentTagsProvider';
+import { DocumentTagDots } from '@/components/tags/TagChip';
 import { DocumentThumbnail } from '@/components/panels/DocumentThumbnail';
 import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
 import { relativeSince, useRelativeNow } from '@/lib/relative-time';
@@ -32,6 +34,8 @@ export function PanelDocumentItem({
   const local = isLocalOnly(doc);
   const shareCode = doc.shared?.shareCode;
   const favourite = tree.favouriteIds?.has(doc.id) === true;
+  // The reader's tags as dots (docs/specs/013-workspace/tags.md "Where tags show"): the row is too narrow for chips.
+  const tags = useDocumentTags().tagsFor(doc.id);
   const open = () => tree.onOpenDocument(doc.id, shareCode);
   const now = useRelativeNow();
   const current = doc.id === tree.currentDocumentId;
@@ -52,6 +56,7 @@ export function PanelDocumentItem({
         <span className="flex min-w-0 items-center gap-1">
           {favourite ? <FavouriteMarker /> : null}
           <span className="min-w-0 truncate">{name}</span>
+          <DocumentTagDots tags={tags} />
         </span>
       }
       label={local ? `${name}. ${LOCAL_ONLY_DESCRIPTION}` : name}

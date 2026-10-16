@@ -79,12 +79,15 @@ reached from Home's What happened (**See timeline**). The retired `/explorer/act
 | Row          | Opens                                  | Children                               | Badge                     |
 | ------------ | -------------------------------------- | -------------------------------------- | ------------------------- |
 | This browser | `/explorer/offline`                    | None                                   | Documents in this browser |
+| Tags         | `/explorer/tags` ([Tags](tags.md))     | One row per tag                        | None                      |
 | Library      | Nothing: the row expands and collapses | Image gallery, Themes, Shape libraries | None                      |
 | Trash        | `/explorer/trash` ([Trash](trash.md))  | None                                   | None                      |
 
 - **This browser** shows only while this browser holds at least one offline document, or while its view is the current
   one (so the highlighted row never vanishes under the reader). Its documents are the reader's own
   ([Local only documents](#local-only-documents)).
+- **Tags** always shows, so it can be found before the first tag. Each tag's row carries its colour, its document
+  count as its badge and its menu ([Tags: The sidebar](tags.md#the-sidebar)).
 - **Library** has no view of its own: activating it expands or collapses it.
 
 The group's title is **More**.
@@ -222,7 +225,7 @@ aside: the panel reaches under the strip and they would cover its header.
 
 The rail opens with **New Document** (one click to a new document; a "New" chip first in the row on a phone), then the
 sidebar's three groups, Overview, Spaces and More, as one column of entries: Home, Inbox, Timeline,
-Shared with me; My documents and each team; This browser, Library and Trash. Shared with me and This browser carry
+Shared with me; My documents and each team; This browser, Tags, Library and Trash. Shared with me and This browser carry
 their counts (the panel reads no other feed until its section is shown). No
 Invites, New team or sign-in nudge: those are the Explorer page's.
 
@@ -250,6 +253,7 @@ compact size, skeleton rows while loading, and one line with **Try Again** when 
 | Shared with me | The documents shared with the reader, as rows                                                                                                                                                                                                                                                                          | None       |
 | My documents   | The root folders as preview cards (their counts on the picture), then the root documents as rows; a folder opens **in the pane** under the import and export screens' back bar (back to the folder above, the folder as its chip). New Folder makes the folder in the one open here; a folder's New Subfolder opens it | New Folder |
 | A team         | The team's folders, then its documents, the same way                                                                                                                                                                                                                                                                   | New Folder |
+| Tags           | Each tag as a heading (its chip and count) over its documents as rows ([Tags](tags.md#the-editors-explorer-panel))                                                                                                                                                                                                     | None       |
 | This browser   | The documents saved only in this browser                                                                                                                                                                                                                                                                               | None       |
 | Library        | Three tabs: Image gallery, Themes, Shape libraries, each the Explorer page's own view at the pane's width; Open Page goes to the tab shown                                                                                                                                                                             | None       |
 | Trash          | A line on the 30 days, then each deleted document as a row with **Restore** and **Delete** as icon buttons named by their tooltips (Delete asked first)                                                                                                                                                                | None       |
