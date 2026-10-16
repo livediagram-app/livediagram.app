@@ -281,7 +281,7 @@ function FilmRow({ row, here, thumb, grip }: RowProps) {
     <>
       <span className="flex w-6 shrink-0 flex-col items-center gap-1 pt-0.5">
         <span
-          className={`text-xs font-semibold tabular-nums ${here ? 'text-brand-600 dark:text-brand-300' : 'text-slate-400 dark:text-slate-500'}`}
+          className={`text-xs font-semibold tabular-nums ${here ? 'text-brand-700 dark:text-brand-300' : 'text-slate-400 dark:text-slate-400'}`}
         >
           {row.number}
         </span>

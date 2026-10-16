@@ -103,7 +103,7 @@ export function PageContentsSidebar({
       <div className="flex items-center gap-2 px-3 pb-2 pt-2.5">
         <span
           aria-hidden
-          className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-brand-50 text-brand-600 dark:bg-brand-500/15 dark:text-brand-300"
+          className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-300"
         >
           <ContentsIcon />
         </span>
