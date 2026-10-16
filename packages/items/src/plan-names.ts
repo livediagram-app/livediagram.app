@@ -130,13 +130,6 @@ const BUILT_IN_ALIASES: Readonly<Record<string, string>> = {
   owner: 'assignee',
 };
 
-function builtInKey(key: string): string | undefined {
-  if (isBuiltInFieldId(key)) return key;
-  const k = statusKey(key);
-  if (isBuiltInFieldId(k)) return k;
-  return BUILT_IN_ALIASES[k];
-}
-
 export interface FieldNaming {
   statuses: readonly PlanStatusName[];
   items: readonly Item[];
@@ -161,12 +154,16 @@ export function choiceOption(options: readonly string[], value: string): string 
 // or Choice option case aside. A key the type does not have is refused.
 // A field's key as items store it: a built-in field by id or interface name, or a custom field of `type` by id or
 // name. A key the type does not have is refused.
+// A field by id or name on `type`: a built-in's id first, then the type's own custom field by name, then a built-in by
+// another name the interface gives it ("Owner" is a custom Owner field where the type has one, else the Assignee).
 export function fieldKeyOf(key: string, type: ItemTypeDef): Named<{ key: string }> {
-  const builtIn = builtInKey(key);
-  if (builtIn) return { ok: true, key: builtIn };
   const k = statusKey(key);
+  if (isBuiltInFieldId(key)) return { ok: true, key };
+  if (isBuiltInFieldId(k)) return { ok: true, key: k };
   const field = type.custom?.find((f) => f.id === key || statusKey(f.label) === k);
   if (field) return { ok: true, key: field.id };
+  const alias = BUILT_IN_ALIASES[k];
+  if (alias) return { ok: true, key: alias };
   const names = [
     ...type.fields.filter((f) => isBuiltInFieldId(f)),
     ...(type.custom ?? []).map((f) => f.label),

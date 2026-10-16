@@ -43,7 +43,10 @@ changing card types and adding boards, for the MCP tools and the CLI verbs.
   replaces a Choice field's options, sets or clears `onCard`; clearing it drops the field from an own Detailed Display
   (`withoutOnDetailed`), and a field the change ticks (`add.custom`, `set.addCustom`, `set.editCustom`) is appended
   to an own Detailed Display's `body` when not placed (`withOnCardShown`). `typeNamed` resolves a type by its current name, else
-  a name it had earlier in the batch (`formerNames`).
+  a name it had earlier in the batch (`formerNames`). `add.defaultStatus` and `set.defaultStatus` go through `defaultStatusOf(name,
+statuses)`: a column found sets `defaultStatus` to its status id; none found leaves the type's Default State unset
+  (an `add`) or unchanged (a `set`) and appends `; no Default State, no board has a column "<name>" yet; set it once
+one does` to the change's `applied` line (`DEFAULT_STATUS_PENDING`). `set.defaultStatus: null` still clears it.
 - `listedType(t, statuses)` / `listedTypes`: id, name, color, glyph, built-in fields, custom (with `onCard`), the
   Default State by column name, `display` per size by slot and field name (`namedDisplay` over `typeCardLayout`),
   `tabs` by name (`tabsOf`), `detailsLabel` (`detailsLabelOf`).
@@ -78,7 +81,9 @@ types? }`, `change_card_types { documentId, changes[1..32] }`; outputs `listItem
 | Case                                                                       | Handling                                                                                                                                |
 | -------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
 | column name no board has                                                   | `status_unknown`, lists the columns                                                                                                     |
+| custom field named as a built-in's other name ("Owner")                    | `fieldKeyOf`: built-in id, then the type's custom field by name, then `BUILT_IN_ALIASES`                                                |
 | no board at all                                                            | `status_unknown`, says to use `add_board` or leave status out                                                                           |
+| card type `defaultStatus` naming no column                                 | not refused: Default State left unset, the `applied` line says so (`DEFAULT_STATUS_PENDING`)                                            |
 | card type unknown                                                          | `type_unknown`, lists `Name (id)` for each type                                                                                         |
 | field the type lacks                                                       | `field_unknown`, lists the type's fields                                                                                                |
 | Choice option not offered                                                  | `choice_unknown`, lists the options                                                                                                     |

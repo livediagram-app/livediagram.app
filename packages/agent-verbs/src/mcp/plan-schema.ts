@@ -287,7 +287,10 @@ export const cardTypeChangeSchema = z.discriminatedUnion('op', [
     custom: z.array(customField).optional().describe('Its custom fields.'),
     defaultStatus: statusArg
       .optional()
-      .describe('The column a card of it starts in when none is given.'),
+      .describe(
+        'The column a card of it starts in when none is given (a board’s column always places its own cards). A ' +
+          'column no board has yet leaves it unset, so the type can come before its board.',
+      ),
     excludedStatuses: z
       .array(z.string())
       .optional()

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { ITEM_TYPES } from './item-types';
-import { NEW_ITEM_TYPE, applyCardTypeChanges } from './type-changes';
+import { DEFAULT_STATUS_PENDING, NEW_ITEM_TYPE, applyCardTypeChanges } from './type-changes';
 import {
   ITEM_TYPE_CATALOGUE_VERSION,
   defaultCatalogue,
@@ -128,9 +128,6 @@ describe('applyCardTypeChanges: add', () => {
     ).toMatchObject({
       code: 'type_change_invalid',
     });
-    expect(refusal({ op: 'add', name: 'X', defaultStatus: 'Doing' })).toMatchObject({
-      code: 'status_unknown',
-    });
     expect(refusal({ op: 'add', name: 'X', custom: [{ name: 'L', kind: 'card' }] })).toMatchObject({
       code: 'type_change_invalid',
     });
@@ -189,6 +186,78 @@ describe('applyCardTypeChanges: set, delete, restore', () => {
       ),
     );
     expect(cleared.catalogue!.types.find((x) => x.id === 'bug')!.defaultStatus).toBeUndefined();
+  });
+
+  // docs/specs/026-plan/plan-agents.md "Changing card types": a type is made before the board that shows it.
+  it('makes a type whose Default State names a column no board has yet, without one, and says so', () => {
+    const r = ok(
+      applyCardTypeChanges(
+        DEFAULTS,
+        [
+          {
+            op: 'add',
+            name: 'Candidate',
+            defaultStatus: 'Applied',
+            custom: [{ name: 'Role', kind: 'text' }],
+          },
+        ],
+        statuses,
+      ),
+    );
+    const made = r.catalogue!.types.find((t) => t.label === 'Candidate')!;
+    expect(made.defaultStatus).toBeUndefined();
+    expect(made.custom).toEqual([{ id: 'f-role', label: 'Role', kind: 'text' }]);
+    expect(r.applied).toEqual([
+      `+ Candidate (candidate): Role (f-role); ${DEFAULT_STATUS_PENDING('Applied')}`,
+    ]);
+    expect(DEFAULT_STATUS_PENDING('Applied')).toBe(
+      'no Default State, no board has a column "Applied" yet; set it once one does',
+    );
+    // With no board at all, the same.
+    expect(
+      ok(applyCardTypeChanges(DEFAULTS, [{ op: 'add', name: 'Y', defaultStatus: 'Doing' }], []))
+        .applied,
+    ).toEqual([`+ Y (y); ${DEFAULT_STATUS_PENDING('Doing')}`]);
+  });
+
+  // The benchmark's P4: "A compact Post card cannot show "Owner". It can show: … Owner".
+  it('shows a custom field named Owner on the card, not the Assignee', () => {
+    const r = ok(
+      applyCardTypeChanges(
+        DEFAULTS,
+        [
+          {
+            op: 'add',
+            name: 'Post',
+            custom: [{ name: 'Owner', kind: 'text', onCard: true }],
+            display: { compact: { besideTitle: ['Type'], belowTitle: ['Owner'] } },
+          },
+        ],
+        statuses,
+      ),
+    );
+    const post = r.catalogue!.types.find((t) => t.label === 'Post')!;
+    expect(JSON.stringify(post.display)).toContain('f-owner');
+    expect(JSON.stringify(post.display)).not.toContain('assignee');
+  });
+
+  it('keeps a type’s Default State when a set names a column no board has', () => {
+    const before = ok(
+      applyCardTypeChanges(
+        DEFAULTS,
+        [{ op: 'set', type: 'task', defaultStatus: 'Done' }],
+        statuses,
+      ),
+    );
+    const r = ok(
+      applyCardTypeChanges(
+        before.catalogue,
+        [{ op: 'set', type: 'task', defaultStatus: 'Shipped' }],
+        statuses,
+      ),
+    );
+    expect(r.catalogue!.types.find((t) => t.id === 'task')!.defaultStatus).toBe('done~a1');
+    expect(r.applied[0]).toMatch(/; no Default State, no board has a column "Shipped" yet/);
   });
 
   it('never removes a field a type must keep', () => {
