@@ -36,7 +36,9 @@ Six shared causes. Most element bugs are one of these showing through.
    swallowed the next local change instead.
 5. **D1 is last writer wins.** Every client PUTs whole tabs, and the api
    replaces the stored blob, so a reload or late joiner sees whichever save
-   landed last.
+   landed last. (Multi-writer fields merge since phase 3; element content is
+   written again by the saver that may have landed last, see
+   [A save that wrote over a peer's change writes again](#a-save-that-wrote-over-a-peers-change-writes-again).)
 6. **Whole-tab fallbacks.** A cleared field (Clear Timer, Clear Vote) or a
    change of more than 20 elements travels as a whole `tab` op, which
    replaces every element on receivers, wiping their unsaved presses.
@@ -309,6 +311,21 @@ A tab's writes are queued per tab (`tab-save-queue.ts`): a save holding Plan led
 the server kept the older snapshot while the client believed the newer one saved and peers received the older
 element ops last. Each save or delete of a tab now starts only once that tab's previous one has settled, landed or
 failed; different tabs never wait on each other.
+
+### A save that wrote over a peer's change writes again
+
+D1 still keeps each tab as the last PUT wrote it, and a PUT carries the saver's whole tab. When two people edit one
+tab at once, a save snapshotted before a peer's change reached the saver can land after the peer's own save, and D1
+then holds the saver's older copy of the peer's elements. Every screen showed the peer's change (the room converged),
+but a reload lost it, for good when nobody edited that tab again: in a two-person drag test it happened in five
+runs out of nine.
+
+So a save's window stays open `SAVE_RESAVE_GRACE_MS` (1.5 s) after it lands, and if a peer's element change (`el`,
+`tab` or `tab-meta`) to a tab it wrote arrived from its snapshot to the end of that window
+(`tabsChangedByPeersSince`), the tab is written again with what is on screen. The peer's change is already in the
+save baseline, so the second save sends no ops; it is the PUT alone. The grace covers a peer whose op left only after
+their own write landed, a round trip behind ours. A failed write again stays queued for the retry. It stops by itself:
+a write again sends nothing, so it starts no further one, and only a peer still editing keeps it going.
 
 ## Tab lists
 

@@ -34,7 +34,8 @@ const startEditorTiming = vi.hoisted(() => vi.fn(() => timing));
 vi.mock('@/lib/timing', () => ({ sampleSaveTiming, startEditorTiming }));
 
 const { useAutosave } = await import('./useAutosave');
-const { createRemoteOpJournal } = await import('./save-baseline');
+const { createRemoteOpJournal, foldRemoteOpIntoBaseline, SAVE_RESAVE_GRACE_MS } =
+  await import('./save-baseline');
 
 const tab = (label: string): Tab =>
   ({
@@ -473,5 +474,53 @@ describe('useAutosave Save timing', () => {
     await act(async () => vi.advanceTimersByTime(600));
     expect(timing.end).not.toHaveBeenCalled();
     expect(timing.cancel).toHaveBeenCalled();
+  });
+});
+
+// docs/specs/012-collaboration/collab-race-hardening.md "A save that wrote over a peer's change writes again".
+describe('useAutosave and a peer change during a save', () => {
+  const peerEdit = {
+    kind: 'el' as const,
+    tabId: 't1',
+    op: { kind: 'update' as const, element: tab('peer').elements[0]! },
+  };
+
+  it('writes the tab again, as it is on screen, once the save has landed', async () => {
+    const { journal, refs, useSubject } = setup();
+    let land: (rev: number | null) => void = () => {};
+    apiSaveTab.mockImplementationOnce(() => new Promise((resolve) => (land = resolve)));
+    const { rerender } = renderHook(({ tabs, n }) => useSubject(tabs, n), {
+      initialProps: { tabs: [tab('mine')], n: 0 },
+    });
+    await act(async () => vi.advanceTimersByTime(600));
+    expect(apiSaveTab).toHaveBeenCalledTimes(1);
+    // A peer's change arrives while our write is in flight: on screen and in the baseline.
+    foldRemoteOpIntoBaseline(
+      { tabs: refs.lastSavedTabsRef, name: refs.lastSavedNameRef, journal },
+      peerEdit,
+    );
+    rerender({ tabs: [tab('peer')], n: 1 });
+    await act(async () => land(null));
+    await act(async () => vi.advanceTimersByTime(SAVE_RESAVE_GRACE_MS));
+    await act(async () => vi.advanceTimersByTime(600));
+    expect(apiSaveTab).toHaveBeenCalledTimes(2);
+    expect(apiSaveTab.mock.calls[1]).toEqual(
+      expect.arrayContaining([expect.objectContaining({ elements: tab('peer').elements })]),
+    );
+    // And once is enough: nothing changed since.
+    await act(async () => vi.advanceTimersByTime(SAVE_RESAVE_GRACE_MS));
+    await act(async () => vi.advanceTimersByTime(600));
+    expect(apiSaveTab).toHaveBeenCalledTimes(2);
+  });
+
+  it('writes nothing more when no peer changed the tab', async () => {
+    const { useSubject } = setup();
+    renderHook(({ tabs, n }) => useSubject(tabs, n), {
+      initialProps: { tabs: [tab('mine')], n: 0 },
+    });
+    await act(async () => vi.advanceTimersByTime(600));
+    await act(async () => vi.advanceTimersByTime(SAVE_RESAVE_GRACE_MS));
+    await act(async () => vi.advanceTimersByTime(600));
+    expect(apiSaveTab).toHaveBeenCalledTimes(1);
   });
 });
