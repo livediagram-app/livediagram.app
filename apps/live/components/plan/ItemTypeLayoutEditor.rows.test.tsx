@@ -2,6 +2,7 @@
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { OVERVIEW_TAB_ID } from '@livediagram/items';
+import type { ComponentProps } from 'react';
 import { ItemTypeLayoutEditor } from './ItemTypeLayoutEditor';
 import { detailFields, type LayoutDraft } from './item-type-layout';
 
@@ -15,7 +16,7 @@ const draft: LayoutDraft = {
 };
 
 function editor(typeId = 'task') {
-  const onChange = vi.fn();
+  const onChange = vi.fn<ComponentProps<typeof ItemTypeLayoutEditor>['onChange']>();
   render(
     <ItemTypeLayoutEditor
       typeId={typeId}
@@ -53,7 +54,7 @@ describe('a field row', () => {
     const onChange = editor();
     fireEvent.click(within(row('Assignee')).getByRole('button', { name: 'More for Assignee' }));
     fireEvent.click(screen.getByRole('menuitem', { name: 'Move to Overview' }));
-    expect(onChange.mock.lastCall![0].tabs[0].fields).toEqual(['description', 'assignee']);
+    expect(onChange.mock.lastCall![0].tabs[0]?.fields).toEqual(['description', 'assignee']);
     fireEvent.click(within(row('Priority')).getByRole('button', { name: 'More for Priority' }));
     fireEvent.click(screen.getByRole('menuitem', { name: 'Move Up' }));
     expect(detailFields(onChange.mock.lastCall![0])).toEqual(['status', 'priority', 'assignee']);

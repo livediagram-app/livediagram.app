@@ -31,7 +31,7 @@ describe('claimReload', () => {
     const storage = memoryStorage();
     claimReload('/a', storage, 0);
     claimReload('/b', storage, RELOAD_GUARD_WINDOW_MS + 10);
-    expect(Object.keys(JSON.parse(storage.getItem(RELOAD_GUARD_KEY)!))).toEqual(['/b']);
+    expect(Object.keys(JSON.parse(storage.getItem(RELOAD_GUARD_KEY)!) as object)).toEqual(['/b']);
     storage.setItem(RELOAD_GUARD_KEY, '{not json');
     expect(claimReload('/a', storage, 1)).toBe(true);
     const throwing = {

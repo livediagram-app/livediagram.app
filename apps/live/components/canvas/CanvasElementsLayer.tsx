@@ -49,7 +49,7 @@ import {
   SheetChartsContext,
   type SheetChartsValue,
 } from '@/components/sheets/sheet-charts-context';
-import { sheetDrawnChartIds } from '@livediagram/document';
+import { sheetDrawnChartIds, type LaneGutterEdge, type LaneLike } from '@livediagram/document';
 import { GifOmit } from './GifOmit';
 
 // What a drawn arrow resolves its ends against on a board with no arrows yet.
@@ -226,7 +226,13 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     // the sibling elements are: BoxedElementView only ever sees its own.
     onSnapSeam: readOnly
       ? undefined
-      : (candidate: number, axis: 'x' | 'y', excludeId: string, edgeOf, sizeOf) =>
+      : (
+          candidate: number,
+          axis: 'x' | 'y',
+          excludeId: string,
+          edgeOf: (el: LaneLike) => LaneGutterEdge,
+          sizeOf: (el: LaneLike) => number,
+        ) =>
           snapSeamCoordinate(candidate, {
             seams: laneSeamCoordinates(elements, axis, excludeId, edgeOf, sizeOf),
             alignment: alignmentCoordinates(elements, axis, excludeId),

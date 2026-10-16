@@ -11,6 +11,11 @@ import { reportWebVital, webVitalApp } from './web-vitals-report';
 // navigation stays inside the app that served the full page load these vitals describe.
 export default function WebVitalsReporter({ track }: { track: TimingTrack }) {
   const [app] = useState(() => webVitalApp(window.location.pathname));
-  useReportWebVitals(useCallback((metric) => reportWebVital(track, metric, app), [track, app]));
+  useReportWebVitals(
+    useCallback(
+      (metric: Parameters<typeof reportWebVital>[1]) => reportWebVital(track, metric, app),
+      [track, app],
+    ),
+  );
   return null;
 }

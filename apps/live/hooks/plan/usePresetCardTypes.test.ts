@@ -28,7 +28,7 @@ const ids = (c: ItemTypeCatalogue | undefined) => c?.types.map((t) => t.id);
 
 type Props = Parameters<typeof usePresetCardTypes>[0];
 function setup(over: Partial<Props> = {}) {
-  const saveCatalogue = vi.fn();
+  const saveCatalogue = vi.fn<Props['saveCatalogue']>();
   const base: Props = {
     tabs: [tab([])],
     activeId: 't1',
