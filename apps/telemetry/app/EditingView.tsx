@@ -2,15 +2,29 @@
 
 import type { TelemetrySummary, TelemetryWindowKey } from '@livediagram/api-schema';
 import { CardColumns } from './CardColumns';
-import { ASSIGNED_ACTIONS, NOTES, ORGANISATION } from './metric-catalogue';
+import {
+  AI_ASSISTANCE,
+  ASSIGNED_ACTIONS,
+  EDITOR_CHROME,
+  EDITOR_SEARCH,
+  EXPORT_AND_IMPORT,
+  LAYERS_FEATURE,
+  NOTES,
+  ORGANISATION,
+  PHOTO_IMPORT,
+  SIDE_BY_SIDE,
+  TABLES,
+  TRASH,
+  UNDO_AND_REDO,
+} from './metric-catalogue';
 import { MetricGroups, type MetricGroup } from './MetricCards';
 import { RankCard, rank } from './RankCard';
 import { rankTrend, windowLabel } from './windows';
 
-// Editing view (docs/specs/017-telemetry/telemetry.md): the in-editor tools that organise work rather than
-// draw it: notes, assigned actions, folders. AI usage and layers moved to
-// the Dashboard as the AI Assistance and Layers Feature stacks; the AI opt-in
-// is a setting, so it lives on the Settings tab.
+// Editing section of the Features tab (docs/specs/017-telemetry/telemetry.md): the in-editor tools that
+// organise work rather than draw it: notes, assigned actions, folders. Then More editing, the
+// stacks that left the Dashboard in October 2026 so it could lead with the key metrics. The AI
+// opt-in is a setting, so it lives in the Settings section.
 //
 // Every metric here was already being emitted, validated, and stored, and none
 // of it was rendered anywhere: `AI·Used` had no card on any tab, and the whole
@@ -32,6 +46,21 @@ export const GROUPS: MetricGroup[] = [
     title: 'Editing tools',
     metrics: [NOTES, ASSIGNED_ACTIONS, ORGANISATION],
   },
+  {
+    title: 'More editing',
+    metrics: [
+      UNDO_AND_REDO,
+      EXPORT_AND_IMPORT,
+      TABLES,
+      LAYERS_FEATURE,
+      SIDE_BY_SIDE,
+      EDITOR_SEARCH,
+      EDITOR_CHROME,
+      TRASH,
+      AI_ASSISTANCE,
+      PHOTO_IMPORT,
+    ],
+  },
 ];
 
 export function EditingView({
@@ -50,8 +79,8 @@ export function EditingView({
       <p className="text-sm text-slate-500 dark:text-slate-400">
         The tools that organise the work rather than draw it, for{' '}
         <span className="font-medium">{windowLabel(active)}</span>: notes, assigned actions, and
-        folders, then which formatting controls, export formats and dialogs get used. AI Assistance
-        and Layers are stacks on the Dashboard; the AI opt-in is on Settings.
+        folders, then the rest of the editor&rsquo;s tools, then which formatting controls, export
+        formats and dialogs get used. The AI opt-in is under Settings.
       </p>
       <MetricGroups groups={GROUPS} summary={summary} active={active} />
       <div className="mt-8">

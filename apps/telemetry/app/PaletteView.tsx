@@ -7,7 +7,7 @@ import { RankCard, rank } from './RankCard';
 import { PALETTE_TYPE_ALIASES } from './palette-types';
 import { rankTrend, windowLabel } from './windows';
 
-// Palette view (docs/specs/017-telemetry/telemetry.md): what people reach for in the editor's creation
+// Palette section of the Features tab (docs/specs/017-telemetry/telemetry.md): what people reach for in the editor's creation
 // palette, most to least, broken out by the palette's own tabs. Element adds
 // (`Element·Added·<type>`) are bucketed into the catalogue categories below.
 // The canvas selection modes are a separate concept, not elements, so they

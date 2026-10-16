@@ -106,7 +106,7 @@ whether or not the document exists.
   StrictMode's dev-only double effect; in production a path can't repeat
   without a navigation in between, and a real reload starts a fresh page.
 - `Help·View·<slug>` ([Help app](../018-help/help-app.md)) stays. It predates this, is keyed by slug and
-  drives the Help tab; the two overlap for articles by design.
+  drives the Pages & Help tab's Help section; the two overlap for articles by design.
 
 ## Who emits
 

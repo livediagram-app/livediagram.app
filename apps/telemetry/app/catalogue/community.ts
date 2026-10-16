@@ -89,7 +89,7 @@ export const COMMUNITY_PUBLISHING: MetricStack = {
   blurb: 'Documents shared to the Community, listings edited, and posts taken down.',
   headline: COMMUNITY_POSTS_SHARED,
   members: [COMMUNITY_POSTS_SHARED, COMMUNITY_LISTINGS_EDITED, COMMUNITY_POSTS_REMOVED],
-  seeAlso: { view: 'community', label: 'See Each Category on the Community Tab' },
+  seeAlso: { section: 'community', label: 'See Each Category on the Community Tab' },
 };
 
 export const COMMUNITY_ENGAGEMENT: MetricStack = {
@@ -98,7 +98,7 @@ export const COMMUNITY_ENGAGEMENT: MetricStack = {
   blurb: 'Posts opened, liked and copied: whether shared documents get read and reused.',
   headline: COMMUNITY_POSTS_OPENED,
   members: [COMMUNITY_POSTS_OPENED, COMMUNITY_LIKES, COMMUNITY_UNLIKES, COMMUNITY_COPIES],
-  seeAlso: { view: 'community', label: 'See the Community Tab' },
+  seeAlso: { section: 'community', label: 'See the Community Tab' },
 };
 
 export const COMMUNITY_DISCOVERY: MetricStack = {
@@ -106,7 +106,7 @@ export const COMMUNITY_DISCOVERY: MetricStack = {
   title: 'Community Discovery',
   blurb: 'How people look for documents in the gallery: searching, and picking filters.',
   members: [COMMUNITY_SEARCHES, COMMUNITY_FILTERS],
-  seeAlso: { view: 'community', label: 'See Each Filter on the Community Tab' },
+  seeAlso: { section: 'community', label: 'See Each Filter on the Community Tab' },
 };
 
 export const COMMUNITY_MODERATION: MetricStack = {
@@ -116,5 +116,5 @@ export const COMMUNITY_MODERATION: MetricStack = {
   blurb: 'Posts reported. Enough reports hide a post; nobody moderates by hand.',
   headline: COMMUNITY_REPORTS,
   members: [COMMUNITY_REPORTS],
-  seeAlso: { view: 'community', label: 'See Each Reason on the Community Tab' },
+  seeAlso: { section: 'community', label: 'See Each Reason on the Community Tab' },
 };

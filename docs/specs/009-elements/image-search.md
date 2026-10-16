@@ -122,7 +122,7 @@ Following [Telemetry](../017-telemetry/telemetry.md):
 - `Element / Used / ImageSearch` when a picked result is attached. Not `Added`: the element already exists (it was counted as `Added / Image` when drawn), and `Added` is the element census.
 
 Failures are counted as `Error / Warning` (a failure the user sees and can retry from, not a crash),
-typed `ImageSearch.<Reason>`, so they rank in the dashboard's Exceptions view:
+typed `ImageSearch.<Reason>`, so they rank in the dashboard's Exceptions section (Health tab):
 
 | Type                            | When                                                                |
 | ------------------------------- | ------------------------------------------------------------------- |

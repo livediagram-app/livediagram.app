@@ -7,6 +7,7 @@ import { isRecovery, isServerCrash } from './error-kinds';
 import {
   CLIENT_EXCEPTIONS,
   FAILED_REQUESTS,
+  LOAD_RECOVERY,
   REALTIME_RESYNCS,
   STALE_CHUNK_RELOADS,
   SERVER_CRASHES,
@@ -14,7 +15,7 @@ import {
 import { RankCard, rank } from './RankCard';
 import { rankTrend, windowLabel } from './windows';
 
-// Exceptions view (docs/specs/017-telemetry/telemetry.md): error health, each row saying where it
+// Exceptions section of the Health tab (docs/specs/017-telemetry/telemetry.md): error health, each row saying where it
 // failed. API failures observed by the editor's api-client
 // (`Error·Api·Http<status>.<Action>`, `Network.<Method>.<Route>`), server-side
 // crashes the api worker self-reports (`Internal.<Method>.<Route>`), MCP
@@ -25,8 +26,7 @@ import { rankTrend, windowLabel } from './windows';
 // through, such as a spent AI budget failing over to the in-browser reader.
 // Every count is generic by construction (statuses, route words, pages, areas
 // and a closed list of error names), so there is nothing personal to show. An
-// empty view is the goal state.
-//
+// empty view is the goal state. Load Recovery (the repairs people ran) follows the rankings.
 export { RECOVERY_TYPES, isRecovery, isServerCrash } from './error-kinds';
 
 export const GROUPS: MetricGroup[] = [
@@ -41,6 +41,9 @@ export const GROUPS: MetricGroup[] = [
     ],
   },
 ];
+
+// After the rankings: how people got a broken load going again.
+export const RECOVERY_GROUPS: MetricGroup[] = [{ title: 'Recovery', metrics: [LOAD_RECOVERY] }];
 
 export function ExceptionsView({
   summary,
@@ -114,6 +117,7 @@ export function ExceptionsView({
           />
         </CardColumns>
       </div>
+      <MetricGroups groups={RECOVERY_GROUPS} summary={summary} active={active} />
     </div>
   );
 }

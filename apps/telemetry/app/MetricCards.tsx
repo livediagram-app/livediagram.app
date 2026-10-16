@@ -17,7 +17,7 @@ import {
   windowCount,
   type Metric,
 } from './metric-series';
-import type { ViewKey } from './view-keys';
+import type { SectionKey } from './view-keys';
 import { previousSpanLabel, windowDays, windowHighlightFrom } from './windows';
 
 export type { Metric, MetricGroup } from './metric-series';
@@ -37,13 +37,13 @@ export function MetricGroups({
   groups,
   summary,
   active,
-  onOpenView,
+  onOpenSection,
 }: {
   groups: MetricGroup[];
   summary: TelemetrySummary;
   active: TelemetryWindowKey;
   // Follows a stack's See also link. Views that host no linking stack omit it.
-  onOpenView?: (view: ViewKey) => void;
+  onOpenSection?: (section: SectionKey) => void;
 }) {
   const daily = summary.daily;
   const highlightFromIndex = daily ? windowHighlightFrom(daily, active) : null;
@@ -113,13 +113,13 @@ export function MetricGroups({
                       count={item.members.length}
                       onClose={close}
                       footer={
-                        item.seeAlso && onOpenView ? (
+                        item.seeAlso && onOpenSection ? (
                           <SeeAlsoLink
                             label={item.seeAlso.label}
                             onClick={() => {
-                              const view = item.seeAlso!.view;
+                              const section = item.seeAlso!.section;
                               close();
-                              onOpenView(view);
+                              onOpenSection(section);
                             }}
                           />
                         ) : undefined

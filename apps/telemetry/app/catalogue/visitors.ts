@@ -149,7 +149,7 @@ export const TOUR_OFFER_DISMISSED = chart(
 export const TOURS_STARTED = chart(
   'UI',
   'Started',
-  'Tours Started',
+  'Diagram Tours Started',
   'The Diagram tour (the welcome tour until October 2026) started.',
   {
     types: ['Tour'],
@@ -692,6 +692,28 @@ export const SHOW_ME_TOURS: MetricStack = {
   headline: SHOW_ME_TOURS_STARTED,
 };
 
+// Every guided tour in one Dashboard stack, one line per tour started (docs/specs/017-telemetry/telemetry.md).
+// Ten tour stacks took most of the Visitors group; each tour's own funnel is in Pages & Help's
+// Tours & Prompts section, which this links to.
+export const ONBOARDING_TOURS: MetricStack = {
+  stack: true,
+  title: 'Onboarding Tours',
+  blurb:
+    'Every guided tour started, one line per tour. How far people get through each one is in Pages & Help.',
+  members: [
+    TOURS_STARTED,
+    PLAN_TOURS_STARTED,
+    FACILITATE_TOURS_STARTED,
+    DRAW_TOURS_STARTED,
+    FORM_TOURS_STARTED,
+    AVATAR_TOURS_STARTED,
+    ILLUSTRATE_TOURS_STARTED,
+    ELEMENT_TOURS_STARTED,
+    SHOW_ME_TOURS_STARTED,
+  ],
+  seeAlso: { section: 'tours', label: 'See Each Tour in Pages & Help' },
+};
+
 // The once-ever power user mode offer (docs/specs/007-editor/power-user-mode.md), as a funnel.
 export const POWER_USER_OFFER_ACCEPTED = chart(
   'UI',
@@ -805,7 +827,7 @@ export const PAGE_VIEWS_BY_APP: MetricStack = {
   blurb:
     'Every page viewed across the site, by full load or in-app navigation, split by the app that serves it.',
   members: [MARKETING_PAGES, LIVE_PAGES, HELP_PAGES, DASHBOARD_PAGES, COMMUNITY_PAGES],
-  seeAlso: { view: 'pages', label: 'See Every Page on the Pages Tab' },
+  seeAlso: { section: 'pages', label: 'See Every Page in Pages & Help' },
 };
 
 // The landing funnel (docs/specs/019-marketing/landing-funnel.md): arrivals at /new from a public page's call
@@ -832,5 +854,5 @@ export const CALLS_TO_ACTION: MetricStack = {
     'How the public pages turn visitors into documents: arrivals from a call to action, and the documents they created.',
   members: [CTA_ARRIVALS, CTA_DOCUMENTS],
   headline: CTA_DOCUMENTS,
-  seeAlso: { view: 'pages', label: 'See the Landing Funnel on the Pages Tab' },
+  seeAlso: { section: 'pages', label: 'See the Landing Funnel in Pages & Help' },
 };
