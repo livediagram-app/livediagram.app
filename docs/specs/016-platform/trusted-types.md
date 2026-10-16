@@ -72,7 +72,10 @@ A third party that needs anything else is a bug to fix with it, never a wider `d
 into every page: it writes a script into a hidden iframe with `innerHTML`, in the iframe's own realm, where no policy
 of ours can reach. Trusted Types refuses it, so each page load logs one error from Cloudflare's snippet
 (`/cdn-cgi/challenge-platform/scripts/jsd/`) and Cloudflare gets no JavaScript-detection signal. That trade is
-accepted: no bot or firewall rule may depend on that signal, and the error is not counted as a violation of ours.
+accepted: no bot or firewall rule may depend on that signal, and the error is not counted as a violation of ours:
+the client error report (`installClientErrorTracking`) skips a TrustedHTML refusal thrown by an inline script
+(`isEdgeSnippetRefusal`), since every script of ours is a file. Before that skip, each help centre page load
+reported it as `Uncaught.Help.NonError` or `Uncaught.Help.TypeError`.
 
 ## A refusal
 

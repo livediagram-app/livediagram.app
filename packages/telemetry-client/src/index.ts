@@ -306,6 +306,28 @@ export function createPerTypeCap(cap: number = ERROR_EMIT_CAP_PER_TYPE): (type: 
 
 let errorTrackingInstalled = false;
 
+// Cloudflare's JavaScript Detections snippet, injected by the edge into every page, is refused by Trusted Types by
+// design and is not counted as ours (docs/specs/016-platform/trusted-types.md). Its throw is recognisable without
+// reading a message out: it comes from an inline script (the event's file is the page itself, where every script of
+// ours is a file under `/_next/`) and its refusal names TrustedHTML.
+export function isEdgeSnippetRefusal(
+  event: Pick<ErrorEvent, 'message' | 'filename'> | undefined,
+  pageUrl: string,
+): boolean {
+  if (!event || typeof event.message !== 'string' || typeof event.filename !== 'string')
+    return false;
+  const page = (url: string) => url.split('#')[0];
+  return event.message.includes('TrustedHTML') && page(event.filename) === page(pageUrl);
+}
+
+function currentPageUrl(): string {
+  try {
+    return String(window.location.href);
+  } catch {
+    return '';
+  }
+}
+
 function currentErrorPage(): string | null {
   try {
     return errorPageToken(pageViewPath(window.location.pathname));
@@ -332,7 +354,10 @@ export function installClientErrorTracking(
   };
   // Bubble-phase 'error' on window sees uncaught JS exceptions only
   // (resource-load errors don't bubble), which is exactly the scope.
-  window.addEventListener('error', (e: ErrorEvent) => emit('Uncaught', e?.error));
+  window.addEventListener('error', (e: ErrorEvent) => {
+    if (isEdgeSnippetRefusal(e, currentPageUrl())) return;
+    emit('Uncaught', e?.error);
+  });
   window.addEventListener('unhandledrejection', (e: PromiseRejectionEvent) =>
     emit('UnhandledRejection', e?.reason),
   );
