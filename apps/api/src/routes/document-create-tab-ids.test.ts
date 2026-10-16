@@ -5,7 +5,6 @@ import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import { linkTabToDocument, upsertTab } from '../db/tabs';
 import { makeTestRouteContext } from './test-route-context';
 import { handleDocuments } from './documents';
-import type { Tab } from '@livediagram/document';
 
 // A created document never writes into a tab another document holds
 // (docs/specs/006-document/offline-mode.md, "Shared tabs fork"): a seeded tab
@@ -66,7 +65,7 @@ function tabsOf(sql: DatabaseSync, documentId: string) {
 }
 
 async function seed(db: SqliteD1, documentId: string, id: string, name = id) {
-  await upsertTab(db.env, documentId, { id, name, elements: [] } as unknown as Tab, 0);
+  await upsertTab(db.env, documentId, { id, name, elements: [] }, 0);
 }
 
 describe('POST /api/documents with a tab id held elsewhere', () => {

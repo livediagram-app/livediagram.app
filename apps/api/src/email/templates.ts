@@ -204,10 +204,10 @@ export function week2Email(env: Env): RenderedEmail {
 export function teamInviteEmail(env: Env, teamName: string | null): RenderedEmail {
   const base = appBaseUrl(env);
   const named = !!(teamName && teamName.trim());
-  const name = named ? escapeHtml(teamName!.trim()) : 'a team';
+  const name = named ? escapeHtml(teamName.trim()) : 'a team';
   return {
     kind: 'TeamInvite',
-    subject: `You’ve been invited to ${named ? escapeText(teamName!.trim()) : 'a team'} on livediagram`,
+    subject: `You’ve been invited to ${named ? escapeText(teamName.trim()) : 'a team'} on livediagram`,
     html: shell({
       heading: `You’re invited to ${name}`,
       intro: `Someone invited you to join <strong>${name}</strong> on livediagram, a shared space for documents you and your teammates can open and edit together.`,

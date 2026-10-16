@@ -102,7 +102,7 @@ describe('handleTokens — list / create / revoke', () => {
     db.mintApiToken.mockResolvedValue(null);
     const res = await handleTokens(makeCtx('POST', '/api/tokens', { body: {} }));
     expect(res.status).toBe(409);
-    expect((await res.json()) as { error: string }).toEqual({ error: 'token_limit_reached' });
+    expect(await res.json<{ error: string }>()).toEqual({ error: 'token_limit_reached' });
   });
 
   it('revokes a token (204), 404 when nothing was flipped', async () => {
@@ -254,7 +254,7 @@ describe('/api/tokens/current (docs/specs/015-api/blueprints/cli.md "Token self-
     });
     db.getParticipant.mockResolvedValue(null);
     expect(
-      (await (await handleTokens(tokenCtx('GET'))).json()) as { accountName: null; role: string },
+      await (await handleTokens(tokenCtx('GET'))).json<{ accountName: null; role: string }>(),
     ).toMatchObject({
       accountName: null,
       role: 'full',

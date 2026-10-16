@@ -11,8 +11,16 @@ import { planRevert } from './revert-plan';
 // docs/specs/024-agents/agent-changesets.md "Revert": the inverse as a new changeset, leaving any
 // element changed since, listed as kept.
 
-const box = (id: string, label = id): Element =>
-  ({ id, type: 'shape', shape: 'square', x: 0, y: 0, width: 10, height: 10, label }) as Element;
+const box = (id: string, label = id): Element => ({
+  id,
+  type: 'shape',
+  shape: 'square',
+  x: 0,
+  y: 0,
+  width: 10,
+  height: 10,
+  label,
+});
 const fp = elementFingerprint;
 const tab = (elements: Element[]): Tab => ({ id: 't1', name: 'T', elements });
 

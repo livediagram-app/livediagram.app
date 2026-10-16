@@ -13,7 +13,6 @@ import {
   type EditOperation,
   type ReplaceBody,
 } from '@livediagram/edit-operations';
-import type { DashboardSpec } from '@livediagram/templates';
 import {
   isFinish,
   isRecord,
@@ -198,7 +197,7 @@ function replaceBodyOf(
       return typeof raw.template === 'string' ? { template: raw.template } : null;
     // Checked whole by the engine (dashboard-body.ts), which names each problem.
     case 'dashboard':
-      return isRecord(raw.dashboard) ? { dashboard: raw.dashboard as DashboardSpec } : null;
+      return isRecord(raw.dashboard) ? { dashboard: raw.dashboard } : null;
     // Read whole by the engine (readForm), as the editor reads a stored form.
     case 'form':
       return isRecord(raw.form) ? { form: raw.form } : null;

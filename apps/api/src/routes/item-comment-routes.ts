@@ -56,7 +56,7 @@ async function add(ctx: RouteContext, documentId: string, itemId: string): Promi
   console.info('[items] comment added', { documentId, agent: ctx.token !== null });
   // The comment's id, so a mention email can name the stored comment rather than carry its text.
   const answer: ItemCommentAddResponse = {
-    ...((await res.json()) as ItemResponse),
+    ...(await res.json<ItemResponse>()),
     commentId: comment.id,
   };
   return json(answer);
@@ -142,7 +142,7 @@ export async function handleItemCommentRoutes(
   if (segments.length !== 7) return null;
   if (segments[6] === 'resolve' || segments[6] === 'reopen')
     return method === 'POST'
-      ? setResolved(ctx, documentId, itemId, segments[6] as Verb)
+      ? setResolved(ctx, documentId, itemId, segments[6])
       : methodNotAllowed();
   return method === 'DELETE' ? remove(ctx, documentId, itemId, segments[6]!) : methodNotAllowed();
 }

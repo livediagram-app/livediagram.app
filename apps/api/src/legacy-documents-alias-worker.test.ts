@@ -30,8 +30,8 @@ describe('the deprecated /api/diagrams alias', () => {
     const legacy = await worker.fetch(get('/api/diagrams', headers), env());
     expect(current.status).toBe(200);
     expect(legacy.status).toBe(200);
-    expect(Object.keys((await current.json()) as object)).toContain('documents');
-    expect(Object.keys((await legacy.json()) as object)).toContain('diagrams');
+    expect(Object.keys(await current.json<object>())).toContain('documents');
+    expect(Object.keys(await legacy.json<object>())).toContain('diagrams');
     expect(legacy.headers.get('Deprecation')).toBe('true');
     expect(current.headers.get('Deprecation')).toBeNull();
   });

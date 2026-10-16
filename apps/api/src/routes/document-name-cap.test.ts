@@ -48,7 +48,7 @@ describe('POST /api/documents name cap', () => {
     const res = await call(db, 'POST', '/api/documents', { id: 'D', name: LONG });
     expect(res.status).toBe(201);
     expect(documentName(db.sql, 'D')).toBe(LONG_CAPPED);
-    expect(((await res.json()) as { document: { name: string } }).document.name).toBe(LONG_CAPPED);
+    expect((await res.json<{ document: { name: string } }>()).document.name).toBe(LONG_CAPPED);
   });
 
   it('shortens every seeded tab name', async () => {
@@ -115,7 +115,7 @@ describe('PUT /api/documents/:id/tabs/:tabId name cap', () => {
     });
     expect(res.status).toBe(200);
     expect(tabName(db.sql, 't1')).toBe(LONG_CAPPED);
-    expect(((await res.json()) as { tab: { name: string } }).tab.name).toBe(LONG_CAPPED);
+    expect((await res.json<{ tab: { name: string } }>()).tab.name).toBe(LONG_CAPPED);
   });
 
   it('leaves a pre-cap over-long tab name alone on an unchanged autosave', async () => {

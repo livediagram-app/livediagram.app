@@ -65,7 +65,7 @@ describe('handleOauthExchange — mint', () => {
     db.mintApiToken.mockResolvedValue(null);
     const res = await handleOauthExchange(makeCtx('POST', '/api/oauth/exchange', { body: {} }));
     expect(res.status).toBe(409);
-    expect((await res.json()) as { error: string }).toEqual({ error: 'token_limit_reached' });
+    expect(await res.json<{ error: string }>()).toEqual({ error: 'token_limit_reached' });
   });
 
   it('passes the read-only flag through to the mint (docs/specs/015-api/mcp-server.md)', async () => {

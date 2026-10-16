@@ -31,7 +31,7 @@ beforeEach(() => {
         status: 200,
         headers: { 'Content-Type': 'application/json' },
       }),
-  ) as typeof fetch;
+  );
 });
 afterEach(() => {
   globalThis.fetch = originalFetch;
@@ -202,7 +202,7 @@ describe('handleAi with the provider unreachable', () => {
     try {
       globalThis.fetch = vi.fn(async () => {
         throw new TypeError('fetch failed');
-      }) as typeof fetch;
+      });
       const pending = handleAi(makeCtx({ env: {} }));
       await vi.runAllTimersAsync();
       const res = await pending;

@@ -11,7 +11,7 @@ import { PLAN_TAB_BATCH } from './plan-route';
 
 let sql: SqliteD1;
 
-async function get(path = '/plan', { owner = 'owner' as string | null, code = '' } = {}) {
+async function get(path = '/plan', { owner = 'owner', code = '' } = {}) {
   const ctx = makeTestRouteContext('GET', `/api/documents/d1${path}`, {
     env: sql.env,
     owner,

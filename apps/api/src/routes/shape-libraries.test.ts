@@ -41,7 +41,7 @@ const ctx = (
     body: opts.body,
     owner: opts.owner === undefined ? 'owner-1' : opts.owner,
   });
-const errorOf = async (res: Response) => ((await res.json()) as { error: string }).error;
+const errorOf = async (res: Response) => (await res.json<{ error: string }>()).error;
 // A stored library as the db answers it, its element the raw JSON a request carries.
 const library = (over: Record<string, unknown> = {}) =>
   ({
@@ -104,9 +104,7 @@ describe('POST /api/shape-libraries', () => {
   it('suffixes a name the owner already uses', async () => {
     db.shapeLibraryNamesByOwner.mockResolvedValue(['team icons', 'Team icons (2)']);
     const res = await handleShapeLibraries(ctx('POST', '/api/shape-libraries', { body: body() }));
-    expect(((await res.json()) as { library: { name: string } }).library.name).toBe(
-      'Team icons (3)',
-    );
+    expect((await res.json<{ library: { name: string } }>()).library.name).toBe('Team icons (3)');
   });
 
   it.each([

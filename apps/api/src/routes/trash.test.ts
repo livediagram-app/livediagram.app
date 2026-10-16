@@ -98,7 +98,7 @@ describe('POST /api/trash/:id/restore', () => {
     const db = await world();
     const res = await call(db, 'POST', '/api/trash/mine/restore', me);
     expect(res.status).toBe(200);
-    expect(((await res.json()) as { document: { id: string } }).document.id).toBe('mine');
+    expect((await res.json<{ document: { id: string } }>()).document.id).toBe('mine');
     expect(trashedAt(db, 'mine')).toBeNull();
   });
 

@@ -62,7 +62,7 @@ describe('planBoardRowsFromElements', () => {
   it('orders boards as the tab holds them, names an untitled one, and skips junk', () => {
     const rows = planBoardRowsFromElements([
       board('junk', { columns: 'nope' }),
-      { id: 'r', type: 'shape', shape: 'square', x: 0, y: 0, width: 1, height: 1 } as Element,
+      { id: 'r', type: 'shape', shape: 'square', x: 0, y: 0, width: 1, height: 1 },
       board('first', { title: '  ', columns: columns('a') }),
       board('second', { title: 'Two', columns: columns('a') }),
     ]);

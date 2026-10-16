@@ -63,10 +63,10 @@ function makeCtx(
     verifiedUserId: opts.clerkUserId ?? null,
     clerkEmail: null,
     resolveOwner: () => (opts.owner === null ? null : (opts.owner ?? 'owner-anon')),
-  } as RouteContext;
+  };
 }
 
-const answer = async (res: Response) => (await res.json()) as { texts: NoteText[] };
+const answer = async (res: Response) => await res.json<{ texts: NoteText[] }>();
 
 describe('the shared gate still guards this route', () => {
   it('503 without a key — the self-host default', async () => {
@@ -101,7 +101,7 @@ describe('the shared gate still guards this route', () => {
   it('429 when the caller is over the rate limit', async () => {
     const res = await handleAiReadNotes(
       makeCtx({
-        env: { AI_RATE_LIMITER: { limit: async () => ({ success: false }) } } as Partial<Env>,
+        env: { AI_RATE_LIMITER: { limit: async () => ({ success: false }) } },
       }),
     );
     expect(res.status).toBe(429);
@@ -111,7 +111,7 @@ describe('the shared gate still guards this route', () => {
     globalThis.fetch = providerSays({ texts: [] });
     const res = await handleAiReadNotes(
       makeCtx({
-        env: { AI_RATE_LIMITER: { limit: async () => ({ success: true }) } } as Partial<Env>,
+        env: { AI_RATE_LIMITER: { limit: async () => ({ success: true }) } },
       }),
     );
     expect(res.status).toBe(200);
@@ -235,12 +235,12 @@ describe('when the provider answers', () => {
       await vi.runAllTimersAsync();
       return pending;
     };
-    globalThis.fetch = vi.fn(async () => new Response('no', { status: 500 })) as typeof fetch;
+    globalThis.fetch = vi.fn(async () => new Response('no', { status: 500 }));
     expect((await settled(handleAiReadNotes(makeCtx()))).status).toBe(502);
 
     globalThis.fetch = vi.fn(async () => {
       throw new Error('network');
-    }) as typeof fetch;
+    });
     expect((await settled(handleAiReadNotes(makeCtx()))).status).toBe(502);
 
     globalThis.fetch = vi.fn(
@@ -248,7 +248,7 @@ describe('when the provider answers', () => {
         new Response(JSON.stringify({ choices: [{ message: { content: 'not json' } }] }), {
           status: 200,
         }),
-    ) as typeof fetch;
+    );
     expect((await handleAiReadNotes(makeCtx())).status).toBe(502);
   });
 
@@ -287,7 +287,7 @@ describe('the answer shape the provider is held to', () => {
     ['google', { OPENAI_API_KEY: undefined, GOOGLE_AI_STUDIO_API_KEY: 'k' }],
     ['openai', {}],
   ])('asks %s for a strict schema of the answer', async (_name, env) => {
-    const sent = await sentBody(env as Partial<Env>);
+    const sent = await sentBody(env);
     expect(sent.response_format.type).toBe('json_schema');
     expect(sent.response_format.json_schema?.strict).toBe(true);
     expect(JSON.stringify(sent.response_format.json_schema?.schema)).toContain('legible');
@@ -368,7 +368,7 @@ describe('what the author is told when the provider says no', () => {
         new Response(JSON.stringify({ error: { code: 429, message: 'exceeded your quota' } }), {
           status: 429,
         }),
-    ) as typeof fetch;
+    );
     const res = await handleAiReadNotes(makeCtx());
     expect(res.status).toBe(429);
     expect(await res.json()).toEqual({ error: 'ai_quota' });
@@ -395,7 +395,7 @@ describe('a truncated answer says so', () => {
           }),
           { status: 200 },
         ),
-    ) as typeof fetch;
+    );
 
     expect((await handleAiReadNotes(makeCtx())).status).toBe(502);
     expect(warnings.join(' ')).toMatch(/finish_reason=length|truncated/i);

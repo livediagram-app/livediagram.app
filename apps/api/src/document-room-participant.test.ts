@@ -4,7 +4,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 // participant content rule against what D1 holds and only the rule's result reaches anyone; dots, responses and
 // ideas relay like an Editor's and reach D1 without one; everything else from a Participant is dropped.
 
-const { store } = vi.hoisted(() => ({ store: { data: '' as string | null, writes: 0 } }));
+const { store } = vi.hoisted(() => {
+  const store: { data: string | null; writes: number } = { data: '', writes: 0 };
+  return { store };
+});
 vi.mock('./db', async (orig) => ({
   ...(await orig<typeof import('./db')>()),
   getTabData: async () => store.data,
@@ -289,6 +292,6 @@ describe("DocumentRoom: a Participant's answers", () => {
     expect(ops(editor)).toEqual([expect.objectContaining({ from: 'P', op: dot })]);
     expect(store.writes).toBe(0);
     await vi.advanceTimersByTimeAsync(ANSWERS_FLUSH_MS);
-    expect(JSON.parse(store.data!)).toHaveProperty('vote.votes', { ed: ['key-P'] });
+    expect(JSON.parse(store.data)).toHaveProperty('vote.votes', { ed: ['key-P'] });
   });
 });

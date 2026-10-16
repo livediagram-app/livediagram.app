@@ -42,7 +42,7 @@ describe('chatCompletionsUrl', () => {
 describe('chatCompletions', () => {
   it('posts the body as-is, with the key as a bearer token', async () => {
     const spy = vi.fn(async () => new Response('{}', { status: 200 }));
-    globalThis.fetch = spy as unknown as typeof fetch;
+    globalThis.fetch = spy;
     await chatCompletions(provider, { model: 'm', messages: [] });
     const [url, init] = spy.mock.calls[0] as unknown as [string, RequestInit];
     expect(url).toBe(`${GOOGLE_BASE_URL}/chat/completions`);
@@ -51,7 +51,7 @@ describe('chatCompletions', () => {
   });
 
   it('hands the provider’s response back untouched, failures included', async () => {
-    globalThis.fetch = vi.fn(async () => new Response('nope', { status: 429 })) as typeof fetch;
+    globalThis.fetch = vi.fn(async () => new Response('nope', { status: 429 }));
     expect((await chatCompletions(provider, {})).status).toBe(429);
   });
 });
@@ -108,7 +108,7 @@ describe('one retry on a provider spike', () => {
       return calls === 1
         ? new Response('busy', { status: 503 })
         : new Response('{"ok":true}', { status: 200 });
-    }) as typeof fetch;
+    });
     vi.spyOn(console, 'error').mockImplementation(() => {});
     vi.useFakeTimers();
     const pending = chatCompletions(provider, {});
@@ -123,7 +123,7 @@ describe('one retry on a provider spike', () => {
     globalThis.fetch = vi.fn(async () => {
       calls += 1;
       return new Response('busy', { status: 503 });
-    }) as typeof fetch;
+    });
     vi.spyOn(console, 'error').mockImplementation(() => {});
     vi.useFakeTimers();
     const pending = chatCompletions(provider, {});
@@ -137,7 +137,7 @@ describe('one retry on a provider spike', () => {
     globalThis.fetch = vi.fn(async () => {
       calls += 1;
       return new Response('nope', { status: 400 });
-    }) as typeof fetch;
+    });
     await chatCompletions(provider, {});
     expect(calls).toBe(1);
   });
@@ -154,7 +154,7 @@ describe('one retry on a provider spike', () => {
         calls += 1;
         if (calls === 1) throw thrown;
         return new Response('{"ok":true}', { status: 200 });
-      }) as typeof fetch;
+      });
       const error = vi.spyOn(console, 'error').mockImplementation(() => {});
       const pending = chatCompletions(provider, {});
       await vi.runAllTimersAsync();

@@ -4,8 +4,16 @@ import type { Element, ElementOp } from '@livediagram/document';
 import { agentKeyFor, changesetRoomOp } from './room-op';
 
 // docs/specs/024-agents/agent-changesets.md "What the room does".
-const box = (id: string, label = id): Element =>
-  ({ id, type: 'shape', shape: 'square', x: 0, y: 0, width: 10, height: 10, label }) as Element;
+const box = (id: string, label = id): Element => ({
+  id,
+  type: 'shape',
+  shape: 'square',
+  x: 0,
+  y: 0,
+  width: 10,
+  height: 10,
+  label,
+});
 const base = {
   id: 'cs_0000000001',
   tabId: 't1',

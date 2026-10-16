@@ -47,7 +47,7 @@ export function helloPresence(
   // is optional for the same reason. Passed straight through, as before.
   session: { presenceId: string; verifiedRole?: AccessLevel; account?: boolean },
 ): ParticipantPresence {
-  const c = claimed ?? ({} as Partial<ParticipantPresence>);
+  const c = claimed ?? {};
   const presence: ParticipantPresence = {
     id: session.presenceId,
     name: typeof c.name === 'string' ? c.name.slice(0, MAX_PARTICIPANT_NAME_LEN) : '',

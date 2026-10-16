@@ -24,7 +24,7 @@ function tabOf(bytes: number, id = 't1'): Tab {
   return {
     ...base,
     elements: [{ ...base.elements[0]!, label: 'x'.repeat(pad) }],
-  } as unknown as Tab;
+  };
 }
 
 function liveDoc(db: SqliteD1, id: string, owner = 'owner') {
@@ -105,7 +105,7 @@ describe('the routes answer the named 413', () => {
       }),
     );
     expect(res?.status).toBe(413);
-    expect(((await res!.json()) as { error: string }).error).toBe('payload_too_large');
+    expect((await res.json<{ error: string }>()).error).toBe('payload_too_large');
     expect(db.sql.prepare('SELECT id FROM documents WHERE id = ?').get('d1')).toBeUndefined();
     expect(warn).toHaveBeenCalledWith(
       '[tab-size] refused',

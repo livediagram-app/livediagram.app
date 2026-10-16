@@ -14,18 +14,17 @@ import { makeTestRouteContext } from './test-route-context';
 // R23 and R26): the gates, scope, refusals, headers and the Viewed event.
 
 const OWNER = 'user_owner';
-const box = (id: string, label: string, x = 0, extra: Record<string, unknown> = {}): Element =>
-  ({
-    id,
-    type: 'shape',
-    shape: 'square',
-    x,
-    y: 0,
-    width: 120,
-    height: 60,
-    label,
-    ...extra,
-  }) as Element;
+const box = (id: string, label: string, x = 0, extra: Record<string, unknown> = {}): Element => ({
+  id,
+  type: 'shape',
+  shape: 'square',
+  x,
+  y: 0,
+  width: 120,
+  height: 60,
+  label,
+  ...extra,
+});
 const comment = {
   id: 'c1',
   text: 'Is this right?',
@@ -44,7 +43,7 @@ const ELEMENTS: Element[] = [
     width: 600,
     height: 200,
     label: 'Services',
-  } as Element,
+  },
   box('orders', 'Orders service', 0, { commentThread: { comments: [comment], resolved: false } }),
   box('payments', 'Payments', 300),
   {
@@ -53,7 +52,7 @@ const ELEMENTS: Element[] = [
     from: { kind: 'pinned', elementId: 'orders', anchor: 'e' },
     to: { kind: 'pinned', elementId: 'payments', anchor: 'w' },
     label: 'charge',
-  } as Element,
+  },
   box('0bcd0001-x', 'Ambiguous one', 0, { y: 400 }),
   box('0bcd0002-x', 'Ambiguous two', 300, { y: 400 }),
 ];
@@ -170,7 +169,7 @@ describe('tab views over REST (R23)', () => {
   it('leaves the plain tab read as it was', async () => {
     const db = await setUp();
     const res = await call(db, 'GET', '/api/documents/D/tabs/t1');
-    expect(((await res.json()) as { tab: { id: string } }).tab.id).toBe('t1');
+    expect((await res.json<{ tab: { id: string } }>()).tab.id).toBe('t1');
   });
 
   it('logs unknown kinds without dropping them', async () => {
@@ -459,7 +458,7 @@ describe('the overview over REST', () => {
   it('leaves the plain document read as it was', async () => {
     const db = await setUp();
     const res = await call(db, 'GET', '/api/documents/D');
-    expect(((await res.json()) as { document: { id: string } }).document.id).toBe('D');
+    expect((await res.json<{ document: { id: string } }>()).document.id).toBe('D');
   });
 });
 

@@ -939,7 +939,7 @@ describe('share-link scope (docs/specs/013-workspace/tab-scoped-share-links.md)'
     });
     const res = await handleDocuments(ctx);
     expect(res.status).toBe(200);
-    expect(((await res.json()) as { link: { tabId: string } }).link.tabId).toBe('t2');
+    expect((await res.json<{ link: { tabId: string } }>()).link.tabId).toBe('t2');
     expect(db.rescopeShareLink).toHaveBeenCalledWith({}, 'CODE2345', 't2');
     expect(sent).toHaveLength(1);
   });

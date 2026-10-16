@@ -187,7 +187,7 @@ export async function renderTabSvg(
     return null;
   }
   if (!stored) return null;
-  const tab = migrateStoredTab({ ...stored, elements: stored.elements ?? [] } as Tab);
+  const tab = migrateStoredTab({ ...stored, elements: stored.elements ?? [] });
   const images = await loadEmbeddedImages(env, documentId, tab);
   return renderElementsToSvg(tab, {
     resolveImageHref: (id) => images.get(id),
@@ -253,7 +253,7 @@ async function renderTabBodyToSvg(
   );
   // A Sheet draws its window of cells (docs/specs/029-sheets/sheet.md "Exports and images"); card functions in
   // its formulas read the items too.
-  const frames = sheetFramesOf(tab.elements as never);
+  const frames = sheetFramesOf(tab.elements);
   const sheetJson = frames.length
     ? await listSheets(env, liveDoc.id, {
         ids: [...new Set(frames.map((f) => f.sheetId))].slice(0, 50),
