@@ -24,7 +24,6 @@ import { upgradeLegacyPreferences } from '@livediagram/api-schema';
 import type { PageKind } from '@livediagram/document';
 import type { ElementTourKind } from './element-tours';
 import type { PlanTourTrack } from './plan-tour';
-import type { SkipLocationStep } from './skip-location-step';
 import type { SwatchOverrideStore } from './swatch-overrides';
 import type { WhiteboardShapeKey } from './whiteboard-shape-catalogue';
 import type { ShapePicks } from './whiteboard-shape-slots';
@@ -284,10 +283,6 @@ export type UserPreferences = {
   // playback and display, as one object. Read through lib/presentation-config, which trusts it only once parsed.
   // Missing === what this browser kept before they followed the account, else the defaults.
   presentation?: Record<string, unknown>;
-  // Skip the New Document wizard's Location step (docs/specs/013-workspace/default-folders.md
-  // "Skipping the Location step"): where every new document is saved. Read through
-  // lib/skip-location-step, which parses it. Missing or null === off; Turn Off writes null.
-  skipLocationStep?: SkipLocationStep | null;
 };
 
 // How many excluded ids we keep. A document id is a 36-char UUID, so 200

@@ -9,19 +9,12 @@ import { CanvasGuideOverlay } from '@/components/canvas/CanvasGuideOverlay';
 import { TimelineLanesOverlay } from '@/components/canvas/TimelineLanesOverlay';
 import { CanvasDrawPreview } from '@/components/canvas/CanvasDrawPreview';
 import { TopCenterChrome } from '@/components/chrome/TopCenterChrome';
-// Lazy-load TemplatePicker (1163 lines + its theme / share helpers)
-// the same way ExportTabDialog + ShareDialog already are. The picker
-// is gated on `showTemplatePicker`, which is false for the common
-// path (a returning user opening an existing document with tabs that
-// already have content). For first-time guests on a fresh document
-// the gate is true on first paint, but the empty canvas underneath
-// has already rendered by then, so the user sees the welcome modal
-// fade in a frame later rather than blocking the route on the
-// picker's JS. The /live/new entry keeps the static import because
-// the picker is the whole UI there.
+// Lazy-load the visitor name prompt the same way ExportTabDialog + ShareDialog already are. It is gated on
+// `showIdentityPrompt`, false on the common path (the owner opening their own document); for a visitor the empty
+// canvas underneath has already rendered, so the prompt fades in a frame later rather than blocking the route on its JS.
 import dynamic from 'next/dynamic';
-const TemplatePicker = dynamic(
-  () => import('@/components/palette/TemplatePicker').then((m) => m.TemplatePicker),
+const IdentityPrompt = dynamic(
+  () => import('@/components/palette/IdentityPrompt').then((m) => m.IdentityPrompt),
   { ssr: false },
 );
 
@@ -243,13 +236,13 @@ export function CanvasChrome(props: CanvasChromeProps) {
     commentRows,
     actionRows,
     onOpenCanvasTheme,
-    onChooseTemplate,
+    onConfirmIdentity,
     offscreenContent,
     onFitToScreen,
     onRedo,
     onIsoOrbit,
     onIsoReset,
-    onSkipTemplatePicker,
+    onCancelIdentity,
     onUndo,
     pendingDraw,
     penPoints,
@@ -259,10 +252,9 @@ export function CanvasChrome(props: CanvasChromeProps) {
     selfParticipant,
     settings,
     snapGuideStore,
-    showTemplatePicker,
+    showIdentityPrompt,
     tabThemeId,
-    templatePickerLockedName,
-    templatePickerMode,
+    identityLockedName,
     welcomeOpen,
     wrapperRef,
     zenMode,
@@ -502,15 +494,13 @@ export function CanvasChrome(props: CanvasChromeProps) {
           (EmptyCanvasBanner), rendered by EditorView alongside the sign-in /
           theme banners rather than a centre-of-canvas card. */}
 
-      {showTemplatePicker ? (
-        <TemplatePicker
-          mode={templatePickerMode}
+      {showIdentityPrompt ? (
+        <IdentityPrompt
           participant={selfParticipant}
-          currentThemeId={tabThemeId}
           documentName={documentName}
-          lockedName={templatePickerLockedName}
-          onPick={onChooseTemplate}
-          onSkip={onSkipTemplatePicker}
+          lockedName={identityLockedName}
+          onJoin={onConfirmIdentity}
+          onCancel={onCancelIdentity}
         />
       ) : null}
 

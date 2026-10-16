@@ -20,12 +20,12 @@ import {
   type MoveFolderNode,
 } from '@/components/dialogs/MoveToFolderDialog';
 import { useConfirm } from '@/hooks/ui/useConfirm';
+import { useToast } from '@/hooks/ui/useToast';
+import { offerDeleteUndo } from '@/lib/document-delete-undo';
 import { useTeamLibrary } from '@/hooks/persistence/useTeamLibrary';
 import { apiCreateFolder } from '@/lib/api-client';
-import { fetchSharedTabsNotice } from '@/lib/shared-tabs-notice';
 import { track } from '@/lib/telemetry';
 import { folderDescendants } from '@/lib/folder-tree';
-import { deleteConfirmation } from '@/lib/delete-confirmation';
 import { folderDeleteConfirmation } from '@/lib/folder-delete-confirmation';
 import { useDefaultFolderMenus } from '@/hooks/persistence/useDefaultFolderMenus';
 import { folderDefaultKeys } from '@/lib/placement-defaults/default-destination';
@@ -104,6 +104,7 @@ export function TeamSharedDocuments({
   // "+ Create" dropdown (mirrors the personal pane header): one compact
   // button instead of two, so the breadcrumb keeps its room on mobile.
   const confirm = useConfirm();
+  const toast = useToast();
   // List, card or details layout — the same device-local preference (docs/specs/006-document/document-snapshots.md) the
   // Explorer browse views use, so a card-view user gets cards here too.
   const [viewMode, setViewMode] = useExplorerViewMode();
@@ -205,18 +206,14 @@ export function TeamSharedDocuments({
     void lib.renameDocument(id, name);
   };
   const duplicateDocument = (id: string) => void lib.duplicateDocument(id);
+  // No question first (docs/specs/013-workspace/trash.md "Deleting"): it goes to the team's Trash, and the toast offers
+  // it back.
   const deleteDocument = async (id: string) => {
-    const d = lib.documents.find((x) => x.id === id);
-    const notice = await fetchSharedTabsNotice(ownerId, id, 'delete');
-    const ok = await confirm(
-      deleteConfirmation({
-        name: d?.name,
-        hasShareLinks: (d?.shareCode ?? null) !== null,
-        sharedTabsNotice: notice,
-        team: true,
-      }),
-    );
-    if (ok) void lib.deleteDocument(id);
+    if (!(await lib.deleteDocument(id))) {
+      toast.error('Could not delete the document. Please try again.');
+      return;
+    }
+    offerDeleteUndo(toast, { ownerId, id, trash: 'Team', onRestored: () => void lib.refresh() });
   };
 
   // The props the card grid and the Details view share (ExplorerViewProps), built once.

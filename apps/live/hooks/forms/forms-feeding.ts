@@ -16,8 +16,16 @@ export function formsFeeding(
   });
 }
 
-/** Delete's warning for a tab the forms send their responses to: they stop taking responses. Undefined for any other tab. */
+// A Form tab's own: deleting it deletes its form link (docs/specs/030-forms/forms.md "Publishing and the form link"),
+// which an undo does not bring back. The tab cannot tell whether it has one, so the line says "if".
+export const FORM_TAB_DELETE_WARNING =
+  'If this form has a link, the link is deleted with it: undo brings the form back, not its link.';
+
+/** What deleting a tab does that an undo cannot take back, the one case Delete still asks first
+ *  (docs/specs/007-editor/live-app.md "Confirmations"): a Form tab's link goes, and the forms sending their responses here stop taking
+ *  them. Undefined for any other tab, which is deleted at once. */
 export function deleteTabWarning(tabs: readonly Tab[], tabId: string): string | undefined {
+  if (tabs.some((t) => t.id === tabId && t.kind === 'form')) return FORM_TAB_DELETE_WARNING;
   const forms = formsFeeding(tabs, tabId);
   if (forms.length === 0) return undefined;
   return forms.length === 1

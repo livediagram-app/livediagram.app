@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { templateCreateHref } from '@livediagram/templates';
 import {
   choosePlacementAgainUrl,
-  placementContextFromSearch,
+  placementParamsFromSearch,
   wizardBypassKind,
   SEARCH_PRESET_MAX,
   wizardPresetMode,
@@ -71,15 +71,19 @@ describe('wizardPresetMode / wizardPresetQuery', () => {
   });
 });
 
-describe('placementContextFromSearch', () => {
+describe('placementParamsFromSearch', () => {
   it('reads a folder, a team, or a team folder', () => {
-    expect(placementContextFromSearch('?folder=f1')).toBe('folder:f1');
-    expect(placementContextFromSearch('?team=t1')).toBe('team:t1');
-    expect(placementContextFromSearch('?team=t1&folder=f1')).toBe('team:t1:folder:f1');
+    expect(placementParamsFromSearch('?folder=f1')).toEqual({ folderId: 'f1' });
+    expect(placementParamsFromSearch('?team=t1')).toEqual({ teamId: 't1' });
+    expect(placementParamsFromSearch('?team=t1&folder=f1')).toEqual({
+      folderId: 'f1',
+      teamId: 't1',
+    });
   });
 
-  it('is no placement without either', () => {
-    expect(placementContextFromSearch('')).toBeUndefined();
-    expect(placementContextFromSearch('?blank=1')).toBeUndefined();
+  it('is no placement without either, an empty param included', () => {
+    expect(placementParamsFromSearch('')).toEqual({});
+    expect(placementParamsFromSearch('?blank=1')).toEqual({});
+    expect(placementParamsFromSearch('?folder=&team=')).toEqual({});
   });
 });

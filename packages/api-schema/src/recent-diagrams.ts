@@ -24,7 +24,10 @@ export const TEAM_RECENT_LIMIT = RECENT_DIAGRAMS_LIMIT * 2;
 export type TeamRecentDocument = DocumentSummary & { teamName: string };
 
 // The Cache Storage cache holding each noted diagram's snapshot SVG.
-export const RECENT_THUMBS_CACHE = 'livediagram-recent-thumbs-v1';
+export const RECENT_THUMBS_CACHE = 'livediagram-recent-thumbs-v2';
+// The cache before v2, when a Local only document was cached as having no preview: dropped by the editor's
+// sync, so every browser draws those previews once (docs/specs/019-marketing/returning-visitor.md).
+export const RECENT_THUMBS_CACHE_LEGACY = 'livediagram-recent-thumbs-v1';
 
 export type RecentDiagram = {
   id: string;
@@ -128,9 +131,6 @@ function openingTag(svg: string, open: string): string | null {
   return svg.slice(start, end < 0 ? svg.length : end);
 }
 
-// Before first paint (inline in the landing page's <head>): marks <html data-returning> when the note
-// holds a diagram, so the overview's frames stay hidden and a returning visitor never sees them flash
-// before Welcome back draws. Kept tiny and dependency-free; a parse is not needed to know there is one.
-export const RETURNING_BOOT_SCRIPT = `try{var r=localStorage.getItem(${JSON.stringify(
-  RECENT_DIAGRAMS_KEY,
-)});if(r&&r.indexOf('"id"')>-1)document.documentElement.setAttribute('data-returning','')}catch(e){}`;
+// How many recent diagrams the landing hero needs before its fan shows them in place of templates
+// (docs/specs/019-marketing/returning-visitor.md).
+export const RECENT_FAN_MIN = 3;

@@ -20,17 +20,6 @@ import { usePaletteDrop } from '@/hooks/canvas/usePaletteDrop';
 import { isDarkCanvas } from '@/lib/dark-canvas';
 import { isEventStormingTab } from '@livediagram/document';
 import { CanvasSelectionToolbars } from '@/components/canvas/CanvasSelectionToolbars';
-// Lazy-load TemplatePicker (1163 lines + its theme / share helpers)
-// the same way ExportTabDialog + ShareDialog already are. The picker
-// is gated on `showTemplatePicker`, which is false for the common
-// path (a returning user opening an existing document with tabs that
-// already have content). For first-time guests on a fresh document
-// the gate is true on first paint, but the empty canvas underneath
-// has already rendered by then, so the user sees the welcome modal
-// fade in a frame later rather than blocking the route on the
-// picker's JS. The /live/new entry keeps the static import because
-// the picker is the whole UI there.
-
 // Reused as the excludeIds argument to snapResizeBounds during draw-
 // to-size: the new element doesn't exist yet, so there's nothing to
 // exclude. A module-level frozen Set keeps the snap effect from

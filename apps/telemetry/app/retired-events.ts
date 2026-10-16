@@ -48,10 +48,29 @@ const EXPERIMENTAL_SETTINGS_UI = new Set([
   'Toggled|PlanModeOff',
 ]);
 
+// The New Document wizard's Location step and the editor's Quick Start (removed 2026-10-16,
+// docs/specs/007-editor/new-document-route.md "One-step wizard"): "Always save new documents in <place> and skip this
+// step" and Settings' Turn Off, the Quick Start shelf's expand toggle and its mode filter. Templates are picked on each
+// mode's start now, whose search reaches the other modes (UI·Used·StartOtherMode).
+const LOCATION_STEP_AND_QUICK_START_UI = new Set([
+  'Toggled|SkipLocationStepOn',
+  'Toggled|SkipLocationStepOff',
+  'Toggled|TemplateShelfExpanded',
+  'Toggled|TemplateShelfCollapsed',
+  'Toggled|TemplateModeAll',
+  'Toggled|TemplateModeDiagram',
+  'Toggled|TemplateModeDraw',
+  'Toggled|TemplateModeFacilitate',
+  'Toggled|TemplateModeIllustrate',
+  'Toggled|TemplateModePlan',
+]);
+
 export function isRetiredEvent(category: string, action: string, type: string | null): boolean {
   if (category === 'Document' && action === 'Reverted') return true;
   if (category === 'UI' && PALETTE_FAVOURITES_UI.has(`${action}|${type ?? ''}`)) return true;
   if (category === 'UI' && EXPERIMENTAL_SETTINGS_UI.has(`${action}|${type ?? ''}`)) return true;
+  if (category === 'UI' && LOCATION_STEP_AND_QUICK_START_UI.has(`${action}|${type ?? ''}`))
+    return true;
   if (category === 'Help') {
     return ACTIVITY_PANEL_HELP_IDS.has(type ?? '') || type === PALETTE_FAVOURITES_HELP_ID;
   }

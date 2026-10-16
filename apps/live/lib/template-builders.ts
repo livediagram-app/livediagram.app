@@ -18,7 +18,13 @@ import {
 } from '@livediagram/templates';
 import { getTheme, recolourElementsForTheme } from './themes';
 
-export { buildTemplate, templateCanvasOverrides, templateTabs } from '@livediagram/templates';
+export {
+  buildTemplate,
+  isDefaultDocumentName,
+  templateCanvasOverrides,
+  templateTabs,
+  untitledNameForTemplate,
+} from '@livediagram/templates';
 
 export function buildTemplatedTab(
   kind: TemplateKind,

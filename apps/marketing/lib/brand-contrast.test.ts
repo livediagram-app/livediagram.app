@@ -63,8 +63,28 @@ describe('brand text contrast', () => {
     expect(contrast(DARK[fg]!, DARK[bg]!)).toBeGreaterThanOrEqual(4.5);
   });
 
+  // The promises' and the closing band's deep indigo, the same in either appearance, and every colour
+  // set on it: the copy, the eyebrows, the launcher's lines and the five promise hues.
+  const INDIGO = '#0b1026';
+  const ON_INDIGO = [
+    ['white', '#ffffff'],
+    ['slate-300 (copy)', '#cbd5e1'],
+    ['slate-400 (launcher lines)', '#94a3b8'],
+    ['sky-300 (eyebrows)', '#7dd3fc'],
+    ['emerald (Free)', '#34d399'],
+    ['amber (No Account)', '#fbbf24'],
+    ['sky (Open Source)', '#38bdf8'],
+    ['rose (Private)', '#fb7185'],
+    ['violet (Live)', '#a78bfa'],
+  ] as const;
+
+  it.each(ON_INDIGO)('%s on the indigo band is at least 4.5:1', (_name, hex) => {
+    expect(contrast(hex, INDIGO)).toBeGreaterThanOrEqual(4.5);
+  });
+
   it('keeps the CTA panels, eyebrows and FAQ links on those pairs', () => {
-    expect(read('../components/StartDrawingCta.tsx')).toMatch(/bg-brand-700 .*dark:bg-brand-700/);
+    expect(read('../components/StartDrawingCta.tsx')).toContain(`bg-[${INDIGO}]`);
+    expect(read('../components/PromisePrism.tsx')).toContain(`bg-[${INDIGO}]`);
     expect(read('../components/TryItCard.tsx')).toMatch(/bg-brand-700 .*dark:bg-brand-700/);
     expect(read('../components/eyebrow.ts')).toContain('text-brand-700');
     expect(read('../components/faq/FaqItem.tsx')).toContain('[&_a]:text-brand-700');

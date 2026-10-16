@@ -29,7 +29,7 @@ it brings its own behaviour.
   after the others; Shift+D does nothing there. Its tab menu lists no modes.
 - The kind is chosen on **Start Planning** ([Plan mode](plan-mode.md#starting-a-board)), four tiles two by two:
   **Dashboard** a Dashboard tab, **Board** (then a preset) a Board tab, **Spreadsheet** (then a start) a Sheet tab,
-  **Something Else?** the Quick Start as before. The choice sets the tab's kind and adds its element in one change, one undo step.
+  and a search reaches every template, another mode's included. The choice sets the tab's kind and adds its element in one change, one undo step.
   A Dashboard started on a tab still on its default name ("Tab 5") is named **Dashboard**; a name someone gave the tab
   stays.
 - Its tab pill leads with its **kind's glyph** rather than the Plan mode's: a kanban for a Board tab, a grid for a
@@ -65,7 +65,7 @@ A Board tab and its board, and a Sheet tab and its sheet, share **one name**:
 - **Made**: a tab still on its default name ("Tab 2", `isDefaultTabName`) takes the name of what fills it, as a
   default name names nothing. From Start Planning, a board is titled by its preset ("Bug Tracker") and a sheet by its
   start (Card Table, a sheet template's name such as Budget or Invoice, else Sheet), and the tab takes that title. A one-tab Board or Sheet template
-  from Quick Start names the tab after its board's title, else the template's own ("Bug Tracker"); a template of
+  picked on a start names the tab after its board's title, else the template's own ("Bug Tracker"); a template of
   several tabs names each, as ever. A tab with a name of its own keeps it, and gives it to the board or sheet.
 - **Tab renamed**: its board or sheet takes the name (in the same step for a board; a sheet's title is written to it,
   kept unique on the tab).

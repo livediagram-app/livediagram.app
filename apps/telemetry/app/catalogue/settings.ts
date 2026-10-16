@@ -357,16 +357,6 @@ export const AI_SETTINGS = settingsStack(
   ],
 );
 
-export const DOCUMENTS_SETTINGS = settingsStack('Documents Settings', 'Where new documents go.', [
-  toggle(
-    'UI',
-    'SkipLocationStepOn',
-    'SkipLocationStepOff',
-    'Always Save in One Place',
-    "Always Save in One Place: every new document saved without the wizard's Location step, turned on from that step and off in Settings.",
-  ),
-]);
-
 export const PRIVACY_SETTINGS = settingsStack(
   'Privacy Settings',
   'Anonymous usage events, the thing this dashboard counts.',
@@ -391,7 +381,6 @@ export const SETTINGS_STACKS: readonly MetricStack[] = [
   ACCESSIBILITY_SETTINGS,
   TOURS_SETTINGS,
   AI_SETTINGS,
-  DOCUMENTS_SETTINGS,
   PRIVACY_SETTINGS,
 ];
 

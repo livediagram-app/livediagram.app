@@ -93,11 +93,31 @@ describe('apiListDocuments', () => {
 });
 
 describe('apiListDocuments thumbnails', () => {
-  it('never asks the server for an offline document’s snapshot', async () => {
+  it('never asks the server for an offline document’s snapshot, and draws it here instead', async () => {
     // docs/specs/006-document/offline-mode.md: offline rows never trigger a server fetch.
     __setOfflineBackend(memBackend());
     await offlineCreateDocument(
-      { id: 'local', name: 'Local', tabs: [{ id: 't', name: 't', elements: [{} as never] }] },
+      {
+        id: 'local',
+        name: 'Local',
+        tabs: [
+          {
+            id: 't',
+            name: 't',
+            elements: [
+              {
+                id: 'a',
+                type: 'shape',
+                shape: 'rectangle',
+                x: 0,
+                y: 0,
+                width: 80,
+                height: 40,
+              } as never,
+            ],
+          },
+        ],
+      },
       5,
     );
     const stored = new Map<string, Response>();
@@ -118,8 +138,9 @@ describe('apiListDocuments thumbnails', () => {
     );
 
     await apiListDocuments('owner-thumbs');
-    // Both diagrams' entries land: the cloud one's snapshot, the local one remembered as having
-    // none. (An earlier list's idle pass may add its own entries; only these two are asserted.)
+    // Both diagrams' entries land: the cloud one's snapshot from the server, the local one drawn in the
+    // browser (lib/local-snapshot.ts). (An earlier list's idle pass may add its own entries; only these
+    // two are asserted.)
     const cachedFor = (id: string) => [...stored.keys()].some((url) => url.includes(id));
     await vi.waitFor(() => expect(cachedFor('cloud') && cachedFor('local')).toBe(true), {
       timeout: 5000,
@@ -128,6 +149,9 @@ describe('apiListDocuments thumbnails', () => {
     const thumbnails = seen.filter((u) => u.includes('/thumbnail'));
     expect(thumbnails).toContainEqual(expect.stringMatching(/\/documents\/cloud\/thumbnail/));
     expect(thumbnails.filter((u) => u.includes('/documents/local/'))).toEqual([]);
+    const local = [...stored.entries()].find(([url]) => url.includes('local'))![1];
+    expect(local.ok).toBe(true);
+    expect(await local.text()).toMatch(/^<svg/);
   });
 });
 

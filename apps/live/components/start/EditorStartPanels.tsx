@@ -1,10 +1,12 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { illustratePagesOf, readDashboard } from '@livediagram/document';
+import { illustratePagesOf, readDashboard, type EditorMode } from '@livediagram/document';
+import type { TemplateKind } from '@livediagram/templates';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { useSelectTab } from '@/app/document/[id]/useSelectTab';
 import { EmptyCanvasBanner } from '@/components/canvas/EmptyCanvasBanner';
+import { track } from '@/lib/telemetry';
 import { showsEmptyCanvasCard } from '@/components/canvas/empty-canvas-card';
 import { StartAgainTray } from '@/components/start/StartAgainTray';
 import { StartViewTransition } from '@/components/start/StartViewTransition';
@@ -43,7 +45,6 @@ export function EditorStartPanels() {
     hydrated,
     zenMode,
     embedMode,
-    templateGridOpen,
     pendingDraw,
     activeTab,
     isReadOnly,
@@ -52,7 +53,6 @@ export function EditorStartPanels() {
     loadAllTabs,
     deleteTab,
     renameTab,
-    openTemplatePicker,
   } = ctx;
   const selectTab = useSelectTab();
   const isOffline = useIsOfflineDocument(ctx.documentId);
@@ -63,7 +63,6 @@ export function EditorStartPanels() {
     hydrated,
     zen: zenMode,
     embed: embedMode,
-    quickStartOpen: templateGridOpen,
     drawToolArmed: !!pendingDraw,
     mode: ctx.editorMode.mode,
     elementCount: activeTab.elements.length,
@@ -83,7 +82,6 @@ export function EditorStartPanels() {
     zen: zenMode,
     embed: embedMode,
     readOnly: isReadOnly,
-    quickStartOpen: templateGridOpen,
     drawToolArmed: !!pendingDraw,
     mode: ctx.editorMode.mode,
     elementCount: activeTab.elements.length,
@@ -101,7 +99,6 @@ export function EditorStartPanels() {
     !zenMode &&
     !embedMode &&
     !isReadOnly &&
-    !templateGridOpen &&
     ctx.editorMode.mode === 'plan' &&
     (activeTab.kind === 'dashboard'
       ? !dashboardHasRows
@@ -111,6 +108,20 @@ export function EditorStartPanels() {
   // A Dashboard tab's page (docs/specs/026-plan/plan-tabs.md), for everyone who opens it; one with no rows left shows
   // Start Planning again, a new choice replacing it.
   const showDashboard = hydrated && activeTab.kind === 'dashboard' && dashboardHasRows;
+  // A template a start's search found in another mode (docs/specs/007-editor/start-diagramming.md "Found in other
+  // modes"): it lands as any pick does, and its mode comes with it (templateCanvasOverrides' opensIn), switching the
+  // tab. A blank closes its mode's start first (closeStartForBlank), as a start's own blank does, so the tab opens on
+  // the empty canvas asked for. Imported at the pick: the template catalogue it reads stays out of the editor's first
+  // load (it is in the start's own chunk, already loaded behind the panel).
+  const tabId = activeTab.id;
+  const chooseFromOtherMode = (_mode: EditorMode, kind: TemplateKind) => {
+    track('UI', 'Used', 'StartOtherMode');
+    moveOnTemplatePick(kind);
+    void import('@/components/start/close-start-for-blank').then(({ closeStartForBlank }) => {
+      closeStartForBlank(tabId, kind);
+      return ctx.chooseTemplate(kind);
+    });
+  };
   // A Form tab's page (docs/specs/030-forms/forms.md), for everyone who opens it.
   const showForm = hydrated && activeTab.kind === 'form' && !!activeTab.form;
   return (
@@ -174,8 +185,7 @@ export function EditorStartPanels() {
               );
             }}
             onDashboard={ctx.planTabs.startDashboard}
-            // Something Else: the Quick Start, on Everything.
-            onQuickStart={openTemplatePicker}
+            onOtherModeTemplate={chooseFromOtherMode}
             onTemplate={(kind) => {
               void ctx.chooseTemplate(kind);
               moveOnTemplatePick(kind);
@@ -201,7 +211,7 @@ export function EditorStartPanels() {
                 void ctx.chooseTemplate(kind);
                 moveOnTemplatePick(kind);
               }}
-              onQuickStart={openTemplatePicker}
+              onOtherModeTemplate={chooseFromOtherMode}
             />
             {/* Closed, it can be brought back from the palette tray (StartAgainTray). */}
             <StartAgainTray
@@ -218,7 +228,6 @@ export function EditorStartPanels() {
             tabName={activeTab.name}
             readOnly={isReadOnly}
             participant={ctx.can.addContent && isReadOnly}
-            onQuickStart={openTemplatePicker}
           />
         ) : null}
       </StartViewTransition>

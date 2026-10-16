@@ -156,22 +156,18 @@ export async function untilHydrated(locator: Locator): Promise<void> {
     .toBe(true);
 }
 
-// The wizard asks only for a mode (docs/specs/007-editor/new-document-route.md "Choosing a mode"): choose one, Create
-// on the Location step, and land on the editor with the mode's start screen over the canvas
+// The wizard asks only for a mode (docs/specs/007-editor/new-document-route.md "One-step wizard"): choosing one
+// creates the document there and then, and lands on the editor with the mode's start screen over the canvas
 // (docs/specs/007-editor/start-diagramming.md).
-export async function createInMode(page: Page, mode: string): Promise<void> {
-  await page.goto('/new');
+// Resolves to the new document's id; `url` carries a `/new?folder=` / `?team=` context.
+export async function createInMode(page: Page, mode: string, url = '/new'): Promise<string> {
+  await page.goto(url);
   await page.getByText('New Document', { exact: false }).waitFor();
   const card = page.locator(`[data-new-mode="${mode}"]`);
   await untilHydrated(card);
   await card.click();
-  // The Location step's primary action finishes the wizard. Anchored finish verbs: an unanchored /create/i also
-  // matched the settings step's "New Folder ... Create here" tile.
-  await page
-    .getByRole('button', { name: /^(create|start|use this|done|finish)$/i })
-    .first()
-    .click();
-  await page.locator('[data-canvas-a11y-root]').waitFor();
+  await page.locator('[data-canvas-a11y-root]').waitFor({ timeout: 30_000 });
+  return new URL(page.url()).pathname.split('/').pop()!;
 }
 
 // The start screen over a new tab, by its mode's title (Start Diagramming, ...).

@@ -7,7 +7,7 @@ import { sectionHighlights, type LandingSection } from '@/lib/landing-content';
 import { EYEBROW } from '@/components/eyebrow';
 
 // One beat of the landing page's story (docs/specs/019-marketing/marketing-site.md "Story beats"):
-// one core feature of the app. Its number and plain name above the headline, its pitch, a few
+// one core feature of the app. Its glyph in a disc and its plain name above the headline, its pitch, a few
 // highlights (each a link to its card on the category page), a link into the category page, and
 // that feature's hero scene playing beside it. Alternates the scene's side and the tinted
 // background by index so the run reads as a composed page.
@@ -21,7 +21,6 @@ const SCENE_FIRST = 'lg:grid-cols-[minmax(0,1fr)_22rem] xl:grid-cols-[minmax(0,1
 export function StoryBeat({ section, index }: { section: LandingSection; index: number }) {
   const tinted = index % 2 === 1;
   const artFirst = index % 2 === 1;
-  const number = String(index + 1).padStart(2, '0');
   const Icon = CATEGORY_ICONS[section.id];
 
   return (
@@ -36,15 +35,13 @@ export function StoryBeat({ section, index }: { section: LandingSection; index: 
         {/* Centred while the beat is one column (a phone or tablet, the scene hidden), left-aligned
             beside the scene from lg. */}
         <div className={`enter-on-scroll text-center lg:text-left ${artFirst ? 'lg:order-2' : ''}`}>
-          {/* The beat's number beside the feature's plain name, above the headline. */}
+          {/* The feature's glyph in a disc beside its plain name, above the headline. */}
           <p className={`flex items-center justify-center gap-3 lg:justify-start ${EYEBROW}`}>
-            <GlyphDisc
-              aria-hidden
-              className="h-8 w-8 bg-brand-700 text-xs font-semibold text-white tabular-nums"
-            >
-              {number}
-            </GlyphDisc>
-            {Icon ? <Icon size={16} aria-hidden /> : null}
+            {Icon ? (
+              <GlyphDisc aria-hidden className="h-8 w-8 bg-brand-700 text-white">
+                <Icon size={16} aria-hidden />
+              </GlyphDisc>
+            ) : null}
             {section.label}
           </p>
           <h2

@@ -1,7 +1,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { DrawTabIcon } from './palette-tab-icons';
+import { DrawTabIcon } from '@livediagram/ui';
 import { barLabel } from './category-flyout-groups';
 import { withSessionCategory } from './session-category';
 import type { BarCategory } from './CategoryBar';

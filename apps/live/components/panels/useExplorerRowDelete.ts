@@ -1,9 +1,8 @@
-import { useRef, useState } from 'react';
-import { fetchSharedTabsNotice } from '@/lib/shared-tabs-notice';
+import { useState } from 'react';
 import type { ExplorerProps } from './Explorer.types';
 
 // The Explorer's row-delete lifecycle (docs/specs/013-workspace/folders.md), lifted out of the
-// panel: the inline ConfirmPopover state + anchor, the slide-out
+// panel: the slide-out
 // exit-animation id set, the optimistic hide-set for team rows (their
 // library sweep can't prune in time), and the render-time pruning of
 // both sets once the lists actually drop the deleted ids. The panel
@@ -11,9 +10,8 @@ import type { ExplorerProps } from './Explorer.types';
 export function useExplorerRowDelete({
   documents: liveDocs,
   teamDocuments,
-  ownerId,
   onDeleteDocument,
-}: Pick<ExplorerProps, 'documents' | 'ownerId' | 'onDeleteDocument'> & {
+}: Pick<ExplorerProps, 'documents' | 'onDeleteDocument'> & {
   teamDocuments: NonNullable<ExplorerProps['teamDocuments']>;
 }) {
   // Documents currently mid slide-out animation. Adding the id to this
@@ -23,34 +21,12 @@ export function useExplorerRowDelete({
   // `documents` prop. Without the delay the row disappears instantly
   // and a fresh "5 with the same name" Explorer feels unresponsive.
   const [exitingDocumentIds, setExitingDocumentIds] = useState<Set<string>>(new Set());
-  // Inline delete confirmation: the row's menu hands up the id + its menu
-  // button as the anchor; we open a ConfirmPopover beside it. Confirming
-  // runs the delete (skipping the modal — the popover IS the confirm) and
-  // slides the row out first via the beforeRemove hook. `notice` is the
-  // shared-tab sentence (docs/specs/006-document/tab-document-many-to-many.md),
-  // read before the popover opens so it never grows under the pointer.
-  const [deleteConfirm, setDeleteConfirm] = useState<{
-    id: string;
-    notice: string | null;
-    anchor: HTMLElement;
-  } | null>(null);
-  // The latest row asked about: a slower answer for an earlier row is dropped.
-  const pendingDeleteRef = useRef<string | null>(null);
   // Team documents aren't in the personal `documents` prop, so the parent's
   // delete (which prunes the personal list + fires a fire-and-forget API
   // DELETE) can't drop a team row from view, and the team-library sweep
   // won't re-fetch in time. Track confirmed team deletes locally and hide
   // those rows optimistically; the set is pruned once the sweep catches up.
   const [deletedTeamIds, setDeletedTeamIds] = useState<Set<string>>(new Set());
-  const openDeleteConfirm = onDeleteDocument
-    ? async (id: string, anchor: HTMLElement | null) => {
-        pendingDeleteRef.current = id;
-        const notice = ownerId ? await fetchSharedTabsNotice(ownerId, id, 'delete') : null;
-        if (pendingDeleteRef.current !== id) return;
-        pendingDeleteRef.current = null;
-        if (anchor) setDeleteConfirm({ id, notice, anchor });
-      }
-    : undefined;
   const runDelete = (id: string) => {
     if (!onDeleteDocument) return;
     // A team document lives in the swept library, not the personal list,
@@ -74,7 +50,8 @@ export function useExplorerRowDelete({
           });
           window.setTimeout(resolve, 220);
         }),
-      { skipConfirm: true },
+      // An Undo brings a team row back: it was only hidden here.
+      { onRestored: () => setDeletedTeamIds((prev) => withoutId(prev, id)) },
     );
   };
 
@@ -99,12 +76,18 @@ export function useExplorerRowDelete({
   if (keptTeamIds !== deletedTeamIds) setDeletedTeamIds(keptTeamIds);
   return {
     exitingDocumentIds,
-    deleteConfirm,
-    setDeleteConfirm,
     deletedTeamIds,
-    openDeleteConfirm,
-    runDelete,
+    // A row's Delete: no question first (docs/specs/013-workspace/trash.md "Deleting"), the row slides out and the
+    // "Document deleted" toast offers it back.
+    deleteRow: onDeleteDocument ? runDelete : undefined,
   };
+}
+
+function withoutId(ids: Set<string>, id: string): Set<string> {
+  if (!ids.has(id)) return ids;
+  const next = new Set(ids);
+  next.delete(id);
+  return next;
 }
 
 // The ids of `ids` still in `rows`; `ids` itself when none has gone, so a caller can tell nothing changed.

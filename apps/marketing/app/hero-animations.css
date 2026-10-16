@@ -45,15 +45,6 @@
   --art-pick-text: #dcfce7;
 }
 
-/* The hero stage's track (components/HeroIllustration.tsx): the windows ride it, and its position is
-   state-driven (the centred window, advanced on a timer, a click, a dot or an arrow); this
-   transition animates the slide between them. The centred window plays its build; the peeking ones
-   render settled (.hero-static, in hero-mode-animations.css). */
-.hero-track {
-  transition: transform 0.6s ease;
-  will-change: transform;
-}
-
 /* The window fade (docs/specs/019-marketing/marketing-site.md): a light-grey veil, solid at the very start,
    clear by 3% (0.66s), clear until 94%, solid again by 100% (the last 1.3s) of the 22s cycle.
    The stage's 22s auto-advance fires at the moment the fade completes, and
@@ -138,18 +129,9 @@
   }
 }
 
-/* The hero carousel: the playing card is sharp, the others sit dimmed, scaled
-   and blurred, easing between the two as the carousel moves on. Illustration
-   motion (docs/specs/004-interface-design/motion.md), so it keeps its own pace. */
-.hero-card-dim {
-  transition-property: opacity, transform, scale, filter;
-  transition-duration: 500ms;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-}
-
 /* The hero's connector (components/HeroConnectors.tsx, docs/specs/019-marketing/marketing-site.md):
-   once, on load, an arrow draws from the headline down to the illustration, its head lands, the
-   centred window flashes a dashed selection ring, and a pulse of light runs the line: the
+   once, on load, an arrow draws from the end of the question round to the template search, its head
+   lands, the search bar flashes a dashed selection ring, and a pulse of light runs the line: the
    editor's loading-animation gesture played once. The base is the settled picture (line drawn,
    head in place, no ring or pulse), which reduced motion keeps. */
 .hero-conn-line {
@@ -235,65 +217,7 @@
   }
 }
 
-/* The headline's rotating first word (components/HeroTitleLine.tsx), a quiet ticker: the slot
-   clips at the line (hero-word-slot, a clip-path, which unlike overflow keeps the word on the
-   headline's baseline; room above and below for accents and descenders), and the leaving word
-   slides up out of it as the next slides up into place. No fade, no blur. Content pacing, and
-   nothing moves on load. The entrance fills backwards only, so the settled word holds no layer and
-   renders sharp. */
-.hero-word-slot {
-  clip-path: inset(-0.08em -0.2em -0.28em -0.2em);
-}
-.hero-word-in {
-  animation: hero-word-in 800ms cubic-bezier(0.65, 0, 0.35, 1) backwards;
-}
-.hero-word-out {
-  animation: hero-word-out 800ms cubic-bezier(0.65, 0, 0.35, 1) both;
-}
-@keyframes hero-word-in {
-  from {
-    transform: translateY(110%);
-  }
-  to {
-    transform: none;
-  }
-}
-@keyframes hero-word-out {
-  from {
-    transform: none;
-  }
-  to {
-    transform: translateY(-110%);
-  }
-}
-/* The headline line glides to stay centred on the word it shows, in step with the swap. */
-.hero-title-line {
-  transition: transform 800ms cubic-bezier(0.65, 0, 0.35, 1);
-}
-@media (prefers-reduced-motion: reduce) {
-  .hero-title-line,
-  .hero-conn-line,
-  .hero-conn-pulse {
-    transition: none;
-  }
-  .hero-word-in,
-  .hero-word-out {
-    animation: none;
-  }
-  .hero-word-out {
-    visibility: hidden;
-  }
-}
-
-/* Returning visitor (docs/specs/019-marketing/returning-visitor.md): the <head> script marks
-   <html data-returning> before first paint when this browser holds a recent-diagrams note, so the
-   overview's frames stay hidden (their space kept) until Welcome back draws in their place, and a
-   returning visitor never sees them flash. Each tile's thumbnail fades in as the cache answers. */
-[data-returning] .hero-overview-frames,
-[data-returning] .hero-overview-label {
-  visibility: hidden;
-}
-
+/* A returning visitor's document preview (components/RecentPreview.tsx) fades in as the cache answers. */
 .hero-recent-thumb {
   animation: hero-recent-thumb-in 240ms ease-out both;
 }

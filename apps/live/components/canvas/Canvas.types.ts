@@ -33,7 +33,6 @@ import type {
 } from '@livediagram/document';
 import type { ArrowEnd, DragMode, QuickConnectDirection, QuickConnectKind } from '@/lib/canvas';
 import type { PendingDraw } from '@/lib/draw-mode';
-import type { TemplateKind } from '@livediagram/templates';
 import type { UserPreferences } from '@/lib/user-preferences';
 import type { DocumentListItem, Folder, SharedWithItem } from '@/lib/api-client';
 import type { TeamFolderHandlers } from '@/components/panels/Explorer.types';
@@ -732,18 +731,17 @@ export type CanvasProps = {
   // Touch-friendly fallback for right-click: a SelectionPopover
   // ellipsis button opens the same context menu under the cursor.
   onOpenElementContextMenu?: (elementId: string, screenX: number, screenY: number) => void;
-  showTemplatePicker: boolean;
+  // The visitor name prompt (IdentityPrompt).
+  showIdentityPrompt: boolean;
   // True after the page has resolved its initial identity + document
   // fetch. Used to suppress the empty-state card during the brief
   // window between "loader dropped" and "welcome modal mounted" so
   // a fresh New Document doesn't flash the Empty Canvas message.
   hydrated: boolean;
-  templatePickerMode: 'welcome' | 'templates' | 'identity';
   // When non-null, the visitor is signed in via Clerk and their
-  // display name is fixed to their account name — TemplatePicker
-  // locks the input. Only relevant in 'identity' mode; ignored
-  // otherwise.
-  templatePickerLockedName?: string | null;
+  // display name is fixed to their account name: IdentityPrompt
+  // locks the input.
+  identityLockedName?: string | null;
   // Hides the floating chrome (palette, explorer, zoom + history dock,
   // plus buttons, selection popover) while the first-run welcome modal
   // is taking the user through identity / template / theme selection.
@@ -751,15 +749,9 @@ export type CanvasProps = {
   // blank page) but free of distracting controls.
   welcomeOpen: boolean;
   selfParticipant: import('@/lib/identity').Participant;
-  onChooseTemplate: (
-    kind: TemplateKind,
-    name: string,
-    // string, not ThemeId: the picker can hand back a custom `custom:<uuid>`
-    // theme id (docs/specs/011-theme/custom-themes.md).
-    themeId: string,
-  ) => void;
-  onSkipTemplatePicker: () => void;
-  onOpenTemplatePicker: () => void;
+  // The name prompt's Join (the name typed) and Cancel.
+  onConfirmIdentity: (name: string) => void;
+  onCancelIdentity: () => void;
   tabThemeId: import('@/lib/themes').ThemeId;
   // Set the active tab's default font (docs/specs/004-interface-design/fonts.md); null clears it.
   // Set the active tab's default text size for new palette elements.

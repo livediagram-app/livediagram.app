@@ -8,6 +8,7 @@
 
 import type { TabDef } from './hero-editor-window';
 import type { HeroMode } from './hero-mode-palette';
+import type { PlanTab } from './hero-plan-bars';
 
 export type HeroSceneKey =
   | 'diagram'
@@ -35,6 +36,8 @@ export type HeroSceneData = {
   // (docs/specs/007-editor/new-document-route.md "?mode= and ?q=").
   build: string;
   mode: HeroMode;
+  // A Plan scene's tab, whose own bar the window draws where the Palette would be.
+  planTab?: PlanTab;
   tabs: TabDef[];
   shared: boolean;
   // The landscape viewBox, when the scene reaches past the shared 600 by 400 one (LANDSCAPE_VIEWBOX):
@@ -141,6 +144,10 @@ export const HERO_SCENE_DATA: HeroSceneData[] = [
     title: 'Launch',
     label: 'Plan: move cards across a board together, with WIP limits and quick add',
     mode: 'plan',
+    planTab: 'board',
+    // To do (from x -59) to Done (to x 659) with a margin either side, so a beat's narrower canvas never
+    // clips them; Backlog stays just off the left, as on a board scrolled a little right.
+    landscapeViewBox: '-74 -60 748 400',
     tabs: [
       { name: 'Board', color: '#0ea5e9', active: true },
       { name: 'Roadmap', color: '#10b981' },
@@ -156,6 +163,7 @@ export const HERO_SCENE_DATA: HeroSceneData[] = [
     title: 'Q3 budget',
     label: 'Sheet: formulas that fill down and charts made from the cells, live for everyone',
     mode: 'plan',
+    planTab: 'sheet',
     tabs: [
       { name: 'Budget', color: '#10b981', active: true },
       { name: 'Board', color: '#0ea5e9' },
@@ -172,6 +180,7 @@ export const HERO_SCENE_DATA: HeroSceneData[] = [
     label:
       'Form: share a link, and every answer lands as a row in your sheet or a card on your board',
     mode: 'plan',
+    planTab: 'form',
     tabs: [
       { name: 'RSVP', color: '#7c3aed', active: true },
       { name: 'Responses', color: '#10b981' },

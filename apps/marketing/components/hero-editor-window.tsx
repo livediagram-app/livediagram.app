@@ -13,6 +13,7 @@ import {
 } from '@livediagram/ui';
 import { ShareGlyph, TabAvatar } from './hero-illustration-glyphs';
 import { HERO_MODE, type HeroMode } from './hero-mode-palette';
+import type { PlanTab } from './hero-plan-bars';
 import {
   CanvasCluster,
   TabBarToolbelt,
@@ -51,6 +52,7 @@ export function EditorWindow({
   veil,
   shared,
   mode,
+  planTab,
   overlay,
   canvasClassName = 'h-[460px] sm:h-[360px]',
 }: {
@@ -68,6 +70,8 @@ export function EditorWindow({
   // The editor mode the window is in (docs/specs/007-editor/editor-modes.md): its palette and the
   // glyph on its tab.
   mode: HeroMode;
+  // A Plan scene's tab: its own bar stands where the Palette would.
+  planTab?: PlanTab;
   // Drawn over the canvas, above the diagram (the Build yours button).
   overlay?: ReactNode;
   // The canvas's size: the hero's fixed heights, or an aspect ratio where the window's width
@@ -146,7 +150,7 @@ export function EditorWindow({
           {/* The Toolbar panel layout (docs/specs/007-editor/toolbar-layout.md): the Palette is a
               strip at the top centre and a menu button stands where the Explorer would float. */}
           <ToolbarMenuButton mode={mode} tab={tabs.find((t) => t.active)?.name ?? tabs[0]!.name} />
-          <ToolbarStrip mode={mode} />
+          <ToolbarStrip mode={mode} planTab={planTab} />
 
           {/* The canvas cluster (static chrome), drawn from the editor's own glyphs. */}
           <CanvasCluster mode={mode} className="absolute bottom-2 right-2 z-10 hidden sm:flex" />

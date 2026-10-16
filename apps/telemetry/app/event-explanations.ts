@@ -1836,6 +1836,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone turned on zen mode, hiding the editor's chrome for a distraction-free canvas.",
   'UI|Used|JustDraw':
     'Someone landed on the New Document page through a link that skips the wizard and goes straight into a blank document.',
+  'UI|Used|StartOtherMode':
+    "Someone searching an empty tab's start chose a template the search found in another mode, which switched the tab to that mode.",
   'UI|Used|TemplateLink':
     'Someone landed on the New Document page through a link that skips the wizard and goes straight into a specific template.',
   'UI|View|IllustrateTourStepPageName':

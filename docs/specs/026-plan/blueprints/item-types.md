@@ -270,7 +270,7 @@ hasCards)` answers `defaultCatalogue()` for a null catalogue with cards (offline
   guarded by `apps/api/src/card-types-migration.test.ts`).
 - `READY_MADE_DEFAULT_STATE_NAMES` / `readyMadeDefaultStatus` name a Default State for every ready-made type.
 - The editor: `usePresetCardTypes({ catalogue, itemsReady, saveCatalogue, ... })` applies it to boards
-  that appear on the open tab once the items are read, and `bring(elements)` (Quick Start) at once, or held until
+  that appear on the open tab once the items are read, and `bring(elements)` (a template picked on a start) at once, or held until
   they are. Nothing in the interface sets a type apart: `CardTypesPanel` is one list (`aria-label` "Card Types").
 
 `CardTypesPanel` rows are cards (stripe, tinted glyph tile, "N fields", count pill, pencil; the row opens the

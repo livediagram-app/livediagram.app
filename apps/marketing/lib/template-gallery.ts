@@ -37,9 +37,6 @@ export type ShelfId = 'popular' | TemplateCategory;
 
 export type GalleryShelf = { id: ShelfId; label: string; templates: GalleryTemplate[] };
 
-// Everything, or one editor mode (the gallery's mode filter, as the template step's).
-export type ModeChoice = 'all' | EditorMode;
-
 const POPULAR_LABEL = 'Blank Slate';
 
 const BY_KIND = new Map(TEMPLATES.map((t) => [t.kind, t]));
@@ -91,31 +88,6 @@ export function filterGallery(items: GalleryTemplate[], query: string): GalleryT
   return items.filter((t) => templateMatchesQuery(t, query));
 }
 
-// Only the templates of one mode; Everything keeps them all.
-export function byMode(items: GalleryTemplate[], choice: ModeChoice): GalleryTemplate[] {
-  return choice === 'all' ? items : items.filter((t) => t.mode === choice);
-}
-
-// How many templates each choice holds, across Popular and every category (each counted once).
-export function modeCounts(): Record<ModeChoice, number> {
-  const out: Record<ModeChoice, number> = {
-    all: 0,
-    diagram: 0,
-    draw: 0,
-    illustrate: 0,
-    plan: 0,
-    facilitate: 0,
-  };
-  const seen = new Set<string>();
-  for (const t of [...popularTemplates(), ...galleryTemplates()]) {
-    if (seen.has(t.kind)) continue;
-    seen.add(t.kind);
-    out.all += 1;
-    out[t.mode] += 1;
-  }
-  return out;
-}
-
 // The order the cards sit in on each category shelf: the catalogue's order is the order templates
 // were added, so like ones bunch together; the gallery mixes them, with a fixed seed, so the order
 // is shuffled once and the same on every build and every visit (no layout shift, nothing to
@@ -135,54 +107,21 @@ const SHELF_RANK: ReadonlyMap<string, number> = (() => {
 const byShelfRank = (a: GalleryTemplate, b: GalleryTemplate) =>
   (SHELF_RANK.get(a.kind) ?? 0) - (SHELF_RANK.get(b.kind) ?? 0);
 
-// Group in catalogue category order, each shelf in its dealt order, dropping categories the
-// filters emptied. Browsing shows a template on every category it is shown in (cross-listing); a
-// search groups each match under its primary only, so no result shows twice.
-export function groupGallery(
-  items: GalleryTemplate[],
-  { primaryOnly = false }: { primaryOnly?: boolean } = {},
-): GalleryShelf[] {
+// Group in catalogue category order, each shelf in its dealt order, dropping empty categories. A
+// template shows on every category it is listed in (cross-listing).
+export function groupGallery(items: GalleryTemplate[]): GalleryShelf[] {
   return TEMPLATE_CATEGORIES.map((c) => ({
     id: c.id as ShelfId,
     label: c.label,
-    templates: items
-      .filter((t) => (primaryOnly ? t.category === c.id : t.categories.includes(c.id)))
-      .sort(byShelfRank),
+    templates: items.filter((t) => t.categories.includes(c.id)).sort(byShelfRank),
   })).filter((g) => g.templates.length > 0);
 }
 
-// Blank Slate under a mode filter: that mode's blanks (Plan: Blank Plan and Blank Spreadsheet).
-export function popularFor(choice: ModeChoice): GalleryTemplate[] {
-  return byMode(popularTemplates(), choice);
-}
-
-// Popular and every category, under the mode filter, emptied shelves dropped.
-export function galleryShelves(choice: ModeChoice): GalleryShelf[] {
-  const popular = popularFor(choice);
+// Blank Slate, then every category. Searching lives in the hero (lib/hero-starts.ts), so the gallery
+// only browses.
+export function galleryShelves(): GalleryShelf[] {
   return [
-    ...(popular.length > 0
-      ? [{ id: 'popular' as const, label: POPULAR_LABEL, templates: popular }]
-      : []),
-    ...groupGallery(byMode(galleryTemplates(), choice)),
-  ];
-}
-
-// A search's shelves: the matching blanks under Blank Slate (the only shelf they are on), then every
-// category with a match, all under the mode filter.
-export function searchShelves(query: string, choice: ModeChoice): GalleryShelf[] {
-  const blanks = byMode(
-    filterGallery(
-      popularTemplates().filter((t) => isBlankTemplate(t.kind)),
-      query,
-    ),
-    choice,
-  );
-  return [
-    ...(blanks.length > 0
-      ? [{ id: 'popular' as const, label: POPULAR_LABEL, templates: blanks }]
-      : []),
-    ...groupGallery(byMode(filterGallery(galleryTemplates(), query), choice), {
-      primaryOnly: true,
-    }),
+    { id: 'popular' as const, label: POPULAR_LABEL, templates: popularTemplates() },
+    ...groupGallery(galleryTemplates()),
   ];
 }

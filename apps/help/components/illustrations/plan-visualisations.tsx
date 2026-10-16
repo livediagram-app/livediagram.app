@@ -198,7 +198,7 @@ export function PlanVisualisationsPickerScene() {
         Find a board, sheet or layout
       </Label>
       <line x1={10} y1={48} x2={410} y2={48} className="stroke-slate-200" strokeWidth={1} />
-      {/* The rail, Visualisations chosen, then Inspiration and Something Else under a hairline. */}
+      {/* The rail, Visualisations chosen, then Inspiration under a hairline. */}
       <line x1={106} y1={48} x2={106} y2={290} className="stroke-slate-200" strokeWidth={1} />
       {rail.map((name, i) => (
         <g key={name}>
@@ -219,9 +219,6 @@ export function PlanVisualisationsPickerScene() {
       <line x1={20} y1={170} x2={96} y2={170} className="stroke-slate-200" strokeWidth={1} />
       <Label x={24} y={184} size={8} weight={500} tone="strong">
         Inspiration
-      </Label>
-      <Label x={24} y={206} size={8} weight={500} tone="strong">
-        Something Else
       </Label>
       {/* The category's heading and its line. */}
       <Label x={118} y={62} size={10} weight={700} tone="strong">
