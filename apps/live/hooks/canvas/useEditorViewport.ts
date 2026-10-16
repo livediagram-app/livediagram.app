@@ -8,6 +8,7 @@
 // useEditorDrag so the helpers always read fresh tab elements
 // without re-creating themselves on every parent render.
 
+import { NO_SIDE_INSETS, sideChromeInsets } from '@/lib/side-chrome-insets';
 import { isFocusedOnAdd } from '@/hooks/plan/useFocusNewPlanElement';
 import { prefersReducedMotion } from '@/lib/motion-preference';
 import { createViewportStore, type ViewportStore } from '@/lib/viewport-store';
@@ -16,6 +17,7 @@ import { use, useCallback, useEffect, useEffectEvent, useRef, useState } from 'r
 import { browser } from 'react-dom';
 import { isBoxed, unionBoxedBounds, type Tab } from '@livediagram/document';
 import {
+  besideSideInsets,
   computeFitToScreen,
   FIT_TO_SCREEN_PADDING,
   computeViewportCanvasRect,
@@ -303,11 +305,18 @@ export function useEditorViewport(deps: EditorViewportDeps): EditorViewportApi {
     const inset = topChromeInset(rect, strip && strip.width > 0 ? strip : null);
     // Padded by the strip's depth on every side, not centred below it: the content stays centred (as before the
     // strip was considered) and clears both the strip and the bottom chrome of the same depth.
-    const { zoom, offset } = computeFitToScreen(
-      rect,
-      bbox,
-      undefined,
-      Math.max(FIT_TO_SCREEN_PADDING, inset),
+    // Beside Illustrate's Contents sidebar, never under it (docs/specs/007-editor/illustrate-pages.md
+    // "Contents"): the fit fills what shows beside it.
+    const node = canvasMainRef.current;
+    const sides = node ? sideChromeInsets(node) : NO_SIDE_INSETS;
+    const { zoom, offset } = besideSideInsets(
+      computeFitToScreen(
+        { width: rect.width - sides.left - sides.right, height: rect.height },
+        bbox,
+        undefined,
+        Math.max(FIT_TO_SCREEN_PADDING, inset),
+      ),
+      sides,
     );
     setViewportZoom(zoom);
     setViewportOffset(offset);

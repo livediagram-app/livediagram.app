@@ -1056,41 +1056,59 @@ swipe, with no X.
 finding your way round a long document is everyone's. It has two homes on a desktop, and the person
 chooses between them:
 
-- **Docked as a sidebar** (the default): a filmstrip down the canvas's left, the way a slide editor
-  shows its slides. It starts below the Toolbar strip, 16 px in from the canvas's left edge, 236 px
-  wide (at the panels' UI scale), and is as tall as its pages need, never past 16 px above the
-  canvas's foot (its list scrolls beyond that). Its header holds the list glyph, "Contents", the page
-  count and **Minimise** (a panel-close glyph; HoverCard "Minimise", "Tuck Contents into its button,
-  bottom right."). It stays open while the person works; the cluster has no Contents button while it
-  shows. A page framed on screen (a press here, the pages row's arrows, opening the tab) centres in
-  what shows right of it, never under it, and the left corner stacks start past it.
+- **Docked as a sidebar** (the default): a filmstrip pinned flush against the canvas's left edge,
+  the way a slide editor shows its slides. It starts below the Toolbar strip and runs down to the
+  canvas's foot, 236 px wide (at the panels' UI scale), opaque, with no gap at its edge, so no page
+  shows round or through it; only its inner top corner is rounded, and a border and a soft shadow
+  part it from the canvas. Its header holds the list glyph, "Contents" and **Minimise** (a
+  panel-close glyph facing its edge; HoverCard "Minimise", "Tuck Contents into its button, bottom
+  right."). Dragging the header carries it across the canvas, the side it would pin to outlined,
+  and it pins to the left or the right on release; there is no button for it. Its side is the
+  person's per-device choice, kept in this browser alone (`livediagram:contents-side:v1`), as the
+  corner panels' places are ([Panel docking](panel-docking.md)). It stays open while the person
+  works; the cluster has no Contents button while it shows, and the corner panels and the
+  bottom-right cluster on its side start past it.
 - **Minimised to its button**: the bottom-right cluster holds **Contents** (a list glyph, named
   beside it on a desktop), left of the Theme & canvas button. It opens the **Contents** popover
   above it, whose header adds **Dock as Sidebar** (a panel-open glyph; HoverCard "Dock as Sidebar",
-  "Keep Contents open down the left."), which closes the popover and docks the sidebar.
+  "Keep Contents open beside the canvas."), which closes the popover and docks the sidebar.
 
 Which home is the person's own, kept in their synced preferences (`contentsPlacement`,
 [User preferences](user-preferences.md)), so it follows them across devices and documents; Settings
-› Editor › Illustrate › **Contents** (Sidebar or Button) sets it too. A phone never has the
-sidebar, whatever the choice: there Contents is always the button, opening a bottom sheet. Zen mode
-and presenting hide both. The sidebar slides in from the left as it docks (a 200 ms fade and 12 px
-slide), with none under reduced motion.
+› Editor › Illustrate › **Contents** (Sidebar or Button) sets it too. The sidebar docks only while
+the tab has more than one page: a single page has nothing to find your way round, so it keeps the
+button (and its popover offers no Dock as Sidebar). A phone never has the sidebar, whatever the
+choice: there Contents is always the button, opening a bottom sheet. Zen mode and presenting hide
+both. The sidebar slides in from its side as it docks (a 200 ms fade and 12 px slide), with none
+under reduced motion.
+
+**Framing beside it**: a page framed on screen (a press in the list, the pages row's arrows,
+opening the tab) centres in what shows beside the sidebar, never under it. Docking it (from the
+popover, opening the tab, dragging it to the other side) frames the page in view again beside it;
+minimising it frames that page again across the whole canvas. **Fit** (the zoom cluster's, and
+Shift+1) frames the page nearest the middle of what shows, not the whole tab.
 
 Both show the same list:
 
-- **Header**: "Contents", the page count ("12 pages") a badge at the right of the same line; with more than six pages, a **Find a
-  Page** box under it that narrows the list by name, kind or number as you type (Escape clears it,
-  then closes).
-- **The list**: every page in row order, one row each (the sidebar lays them out as a filmstrip:
-  the number beside a picture as wide as the column, up to 124 px tall for a portrait page, the name
-  and the kind line under it, "Here · " leading the kind line of the page in view): its number, a
-  live thumbnail of the page
-  as it is (its background, motion still, and everything on it, drawn by the same renderer as the
-  Slide Deck's thumbnails, 16:9, A4 or square as the page is), its name (its own, else "Page 3"),
-  and a line saying what it is: "Infographic · A4 Portrait", "Slide · In the deck" or "Slide ·
-  Not in the deck", "Article · Its Title" (each page of an article its own row, the line naming
-  the article), "Logo". The page in view is marked: an accent bar down its row's left edge and
-  "Here" beside its number. A locked page shows the padlock.
+- **Header**: "Contents" (no page count: the list says it); with more than six pages, a **Find a
+  Page** box under it that narrows the list as you type, by a page's name, kind or number and by
+  the words on it: its elements' labels, notes, cells, items and the rest the editor's find reads,
+  and an article page's writing (Escape clears it, then closes).
+- **The list**: every page in row order, one row each: its number, a live thumbnail of the page as
+  it is (its background, motion still, and everything on it, drawn by the same renderer as the
+  Slide Deck's thumbnails, 16:9, A4 or square as the page is), and its name (its own, else "Page
+  3"), with the padlock on a locked page. Nothing more: the picture says what the page is. The
+  sidebar lays them out as a filmstrip: the number beside a picture as wide as the column, up to
+  124 px tall for a portrait page, left-aligned with the name under it. The page in view is marked
+  by its row's tint and its picture's accent ring (and, in the popover, an accent bar down the
+  row's left edge).
+- **A page's actions** (an Editor's): in the sidebar, a small toolbar at the end of the name's
+  line, shown while the row is hovered, focused or marked: **Duplicate**, **Lock** or **Unlock**,
+  and **Delete** (not on a locked page), each a glyph with its Tooltip. In the popover, one **⋯**
+  button (shown on hover or focus) opens the same as a menu, a header naming the page, with **Add
+  to Slides** first on a slide page not yet in the deck, and Delete last under its own separator.
+  Each does exactly what the page's title bar does; none glides to the page. A Participant and a
+  Viewer see neither.
 - **Going there**: a press (or Enter) glides the canvas to the page, as the pages row's arrows do,
   and marks it as here. On a desktop the popover stays open, so a reader can hop from page to page;
   on a phone the sheet closes so the page shows. Up and Down move between rows, Home and End to
@@ -1102,26 +1120,31 @@ Both show the same list:
   the move commits on release, one edit (one undo), the page's content with it, exactly as
   dragging its label along the pages row does. A page moves with its unit, so an article's pages
   move together, and a drop beside any of an article's pages is a drop beside the whole article.
-  A mouse or pen drags the whole row; a finger drags the row's grip (at its right, shown on a
-  phone and on hover on a desktop), so the list still scrolls by touch. The release is not a press
-  of the row: it does not glide there, but marks the moved page as here. While Find a Page narrows
-  the list there is no reordering (the rows shown are not the whole order). A Participant and a
-  Viewer see no grip and cannot drag. The drag is the Slide Deck's (`useRowReorderDrag`).
-- **Adding**: an Editor's footer holds **Add Page** with the four kinds as compact buttons
-  (Infographic, Slide, Article, Logo, each its glyph and name); a press adds a page of that kind
-  after the last, exactly as the row's **+** does (carrying the background, theme's Mist for a
-  new infographic), glides to it and scrolls the list to its new row, marked as here. At the page
-  limit the buttons are disabled with the limit in their tooltip. A Participant and a Viewer see
-  the list without the footer.
+  A mouse or pen drags the whole row; a finger drags the row's grip (shown on a phone and on hover
+  on a desktop), so the list still scrolls by touch. The release is not a press of the row: it
+  does not glide there, but marks the moved page as here. While Find a Page narrows the list there
+  is no reordering (the rows shown are not the whole order). A Participant and a Viewer see no grip
+  and cannot drag. The drag is the Slide Deck's (`useRowReorderDrag`).
+- **Adding**: an Editor's footer is one full-width **Add Page** button. Resting the pointer on it
+  (or pressing it, or Up from it) opens the four kinds above it in a popover as wide as the list,
+  one per row (Infographic, Slide, Article, Logo, each its glyph and name), the last page's kind
+  first and tinted; Up and Down move between them, Escape closes. A press adds a page of that kind
+  after the last, exactly as the row's **+** does (carrying the background, theme's Mist for a new
+  infographic), glides to it and scrolls the list to its new row, marked as here. The kinds close
+  150 ms after the pointer leaves the button and the popover. At the page limit the button is
+  disabled with the limit in its tooltip. A Participant and a Viewer see the list without the
+  footer.
 - **Cost**: thumbnails are drawn when the popover opens and redrawn only when the tab's elements
   or pages change while it is open, arrow labels laid out once for the tab rather than once a
   page; nothing is drawn while it is closed. The sidebar stays on screen while the person works, so
   its thumbnails redraw only once the tab has rested 250 ms, never on every frame of a drag or every
-  key typed, and the page in view is read on the view's rest, never on every frame of a pan.
+  key typed, and the page in view is read on the view's rest, never on every frame of a pan. The
+  words on the pages are read only while Find a Page holds a search.
 - **Telemetry**: `UI · Opened · PageContents` on opening; `UI · Used · PageContentsJump` on going
-  to a page; `UI · Used · PageContentsReorder` on moving one; adding a page counts as the row's + does.
-  Minimising sends `UI · Changed · ContentsPlacementButton`, docking `UI · Changed ·
-ContentsPlacementSidebar`, before the choice is kept.
+  to a page; `UI · Used · PageContentsReorder` on moving one; adding a page counts as the row's + does,
+  and a page's actions as its title bar's. Minimising sends `UI · Changed · ContentsPlacementButton`,
+  docking `UI · Changed · ContentsPlacementSidebar`, before the choice is kept; dragging the sidebar
+  across sends `UI · Changed · ContentsSideLeft` or `ContentsSideRight`.
 
 ## Slide layouts
 

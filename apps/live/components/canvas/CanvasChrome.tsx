@@ -40,7 +40,7 @@ import { useCanvasCovered, usePlanTabKind } from '@/hooks/plan/plan-cover-store'
 const COVERED_CLUSTER_INSET = { x: 16, y: 20 };
 const NO_CLUSTER_INSET = { x: 0, y: 0 };
 import { toolbarTopClearancePx } from '@/lib/canvas-chrome';
-import { contentsSidebarClearancePx } from '@/lib/contents-placement';
+import { CONTENTS_SIDEBAR_WIDTH, contentsSidebarClearancePx } from '@/lib/contents-placement';
 import { ContentsClusterSegment } from './ContentsClusterSegment';
 import { PagesClusterStrip } from './PagesClusterStrip';
 import { LayersThemeStrip } from '@/components/canvas/LayersThemeStrip';
@@ -398,6 +398,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
     contentsPopoverEl,
     contentsSidebarEl,
     contentsDocked,
+    contentsSide,
     avatarPopoverEl,
     paletteTint,
   } = useCanvasChromePanels({
@@ -420,6 +421,10 @@ export function CanvasChrome(props: CanvasChromeProps) {
   const toolbarScale = useUiScale('toolbar');
   const panelScale = useUiScale('panels');
   const cornerScale = useUiScale('cornerButtons');
+  // Beside Illustrate's Contents sidebar when it is pinned right (useContentsChrome), never under it.
+  const clusterX =
+    clusterInset.x +
+    (contentsDocked && contentsSide === 'right' ? CONTENTS_SIDEBAR_WIDTH * panelScale : 0);
   // The dock's code loads on demand, so it is drawn a moment after the chrome: the top corners
   // measure against it from the commit it is first drawn in (its onDrawn), never before, when there
   // is nothing on the page to measure. Once drawn its code is in, so a later mount is immediate.
@@ -474,8 +479,8 @@ export function CanvasChrome(props: CanvasChromeProps) {
                   ? { top: toolbarTopClearancePx(toolbarScale) }
                   : undefined),
               // Beside Illustrate's Contents sidebar, never under it.
-              ...(contentsDocked && corner.endsWith('left')
-                ? { left: contentsSidebarClearancePx(panelScale) }
+              ...(contentsDocked && corner.endsWith(contentsSide)
+                ? { [contentsSide]: contentsSidebarClearancePx(panelScale) }
                 : undefined),
             }}
             className={`pointer-events-none absolute flex gap-4 ${DOCK_CORNER_CLASS[corner]}`}
@@ -647,12 +652,12 @@ export function CanvasChrome(props: CanvasChromeProps) {
         style={
           cornerScale === 1
             ? {
-                right: atLeastInset(`${16 + clusterInset.x}px`, 'right'),
+                right: atLeastInset(`${16 + clusterX}px`, 'right'),
                 ...(clusterInset.y ? { bottom: 16 + clusterInset.y } : {}),
               }
             : {
                 ...uiScaleStyle(cornerScale),
-                right: atLeastInset(`${toSurfacePx(16 + clusterInset.x, cornerScale)}px`, 'right'),
+                right: atLeastInset(`${toSurfacePx(16 + clusterX, cornerScale)}px`, 'right'),
                 bottom: toSurfacePx(16 + clusterInset.y, cornerScale),
               }
         }

@@ -8,7 +8,12 @@ import dynamic from 'next/dynamic';
 import { useCallback, useEffect, type ReactNode } from 'react';
 import { useUiScale } from '@/components/providers/ui-scale';
 import { toolbarTopClearancePx } from '@/lib/canvas-chrome';
+import { useLocalStorageValue, writeLocalStorageValue } from '@/hooks/ui/useLocalStorageValue';
 import {
+  CONTENTS_SIDE_STORAGE_KEY,
+  CONTENTS_SIDEBAR_MIN_PAGES,
+  readContentsSide,
+  type ContentsSide,
   readContentsPlacement,
   withContentsPlacement,
   type ContentsPlacement,
@@ -33,6 +38,10 @@ const PLACEMENT_EVENT: Record<ContentsPlacement, string> = {
   sidebar: 'ContentsPlacementSidebar',
   button: 'ContentsPlacementButton',
 };
+const SIDE_EVENT: Record<ContentsSide, string> = {
+  left: 'ContentsSideLeft',
+  right: 'ContentsSideRight',
+};
 
 export function useContentsChrome({
   props,
@@ -45,8 +54,11 @@ export function useContentsChrome({
   isMobile: boolean;
   closeDockPanel: () => void;
 }): {
-  // The sidebar is on screen, so the cluster has no Contents button and the left corners make room.
+  // The sidebar is on screen, so the cluster has no Contents button and the corners on its side
+  // make room.
   contentsDocked: boolean;
+  // The side it is pinned to.
+  contentsSide: ContentsSide;
   contentsSidebarEl: ReactNode;
   contentsPopoverEl: ReactNode;
 } {
@@ -55,7 +67,13 @@ export function useContentsChrome({
   const toolbarScale = useUiScale('toolbar');
   const placement = readContentsPlacement(userPreferences);
   const shown = !!illustratePages && !chromeHidden && !props.zenMode;
-  const contentsDocked = shown && !isMobile && placement === 'sidebar';
+  // A single page keeps the button: there is nothing to find your way round.
+  const contentsDocked =
+    shown &&
+    !isMobile &&
+    placement === 'sidebar' &&
+    (illustratePages?.pages.length ?? 0) >= CONTENTS_SIDEBAR_MIN_PAGES;
+  const contentsSide = readContentsSide(useLocalStorageValue(CONTENTS_SIDE_STORAGE_KEY));
   // The popover belongs to Illustrate mode's button: leaving the mode (Shift+D, a tab switch) or
   // docking the sidebar closes it rather than leaving it floating with no button under it.
   const popoverOpen = activeDockPanel === 'contents' && shown && !contentsDocked;
@@ -74,13 +92,22 @@ export function useContentsChrome({
     [ownerId],
   );
   const onMinimise = useCallback(() => place('button'), [place]);
+  const onMoveToSide = useCallback((side: ContentsSide) => {
+    track('UI', 'Changed', SIDE_EVENT[side]);
+    writeLocalStorageValue(CONTENTS_SIDE_STORAGE_KEY, side);
+  }, []);
   const onDock = useCallback(() => {
     closeDockPanel();
     place('sidebar');
   }, [closeDockPanel, place]);
 
   if (!illustratePages) {
-    return { contentsDocked: false, contentsSidebarEl: null, contentsPopoverEl: null };
+    return {
+      contentsDocked: false,
+      contentsSide,
+      contentsSidebarEl: null,
+      contentsPopoverEl: null,
+    };
   }
   const tab: PageThumbTab = {
     id: props.activeTabId ?? '',
@@ -94,6 +121,7 @@ export function useContentsChrome({
   };
   return {
     contentsDocked,
+    contentsSide,
     contentsSidebarEl: contentsDocked ? (
       <PageContentsSidebar
         // A tab switch starts the list afresh, on the new tab's page in view.
@@ -101,6 +129,8 @@ export function useContentsChrome({
         view={illustratePages}
         tab={tab}
         top={toolbarTopClearancePx(toolbarScale)}
+        side={contentsSide}
+        onMoveToSide={onMoveToSide}
         onMinimise={onMinimise}
       />
     ) : null,
@@ -110,7 +140,10 @@ export function useContentsChrome({
         tab={tab}
         anchor={activeDockAnchor ?? undefined}
         onClose={closeDockPanel}
-        {...(isMobile ? {} : { onDock })}
+        // A phone has no sidebar, nor does a single page.
+        {...(isMobile || illustratePages.pages.length < CONTENTS_SIDEBAR_MIN_PAGES
+          ? {}
+          : { onDock })}
       />
     ) : null,
   };

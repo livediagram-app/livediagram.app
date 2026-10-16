@@ -17,10 +17,10 @@ afterEach(() => {
   vi.clearAllMocks();
 });
 
+const slide = (id: string) =>
+  ({ id, orientation: 'landscape', kind: 'slide', size: 'slide' }) as const;
 const illustratePages = {
-  pages: layOutIllustratePages([
-    { id: 'p1', orientation: 'landscape', kind: 'slide', size: 'slide' },
-  ]),
+  pages: layOutIllustratePages([slide('p1'), slide('p2')]),
   focusPage: () => {},
 };
 
@@ -58,6 +58,26 @@ describe('useContentsChrome', () => {
     expect(c.contentsPopoverEl).toBeNull();
     // A popover left open from before the sidebar docked closes.
     expect(c.closeDockPanel).toHaveBeenCalled();
+  });
+
+  it('keeps the button with a single page: nothing to find your way round', () => {
+    const one = { ...illustratePages, pages: layOutIllustratePages([slide('p1')]) };
+    const c = chrome({ illustratePages: one } as never);
+    expect(c.contentsDocked).toBe(false);
+    expect(c.contentsSidebarEl).toBeNull();
+  });
+
+  it('pins to the left until moved, the side kept in this browser alone', () => {
+    expect(chrome().contentsSide).toBe('left');
+    const docked = chrome();
+    (
+      docked.contentsSidebarEl as ReactElement<{ onMoveToSide: (side: 'right') => void }>
+    ).props.onMoveToSide('right');
+    expect(track).toHaveBeenCalledWith('UI', 'Changed', 'ContentsSideRight');
+    expect(localStorage.getItem('livediagram:contents-side:v1')).toBe('right');
+    expect(chrome().contentsSide).toBe('right');
+    // Never in the synced preferences.
+    expect(readUserPreferences()).not.toHaveProperty('contentsSide');
   });
 
   it('never docks on a phone, whatever the choice', () => {

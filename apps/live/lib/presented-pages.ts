@@ -36,6 +36,7 @@ export function presentedPages(
     // Presenting is reading: the writing takes no caret.
     ...(articles ? { articles: { ...articles, editable: false } } : {}),
     focusPage: noop,
+    fitPageInView: noop,
     readPage: noop,
     themeBackgrounds: [],
     themeAccent: themeAccent(getTheme(tab.theme)),

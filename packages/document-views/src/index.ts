@@ -16,3 +16,4 @@ export {
   type SelectionReferenceInput,
 } from './selection-reference';
 export { pagesView } from './pages';
+export { elementFindTexts, normaliseFind } from './find';

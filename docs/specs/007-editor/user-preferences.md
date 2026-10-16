@@ -330,7 +330,7 @@ type UserPreferences = {
   // anything else, is Grid (lib/whiteboard-dock-prefs).
   drawPattern?: 'blank' | 'grid' | 'graph';
   // Where Illustrate's Contents sits on a desktop (./illustrate-pages.md "Contents"):
-  // docked as a sidebar down the canvas's left, or minimised to its cluster button.
+  // docked as a sidebar beside the canvas, or minimised to its cluster button.
   // Unset, or anything but 'button', is the sidebar (lib/contents-placement).
   contentsPlacement?: 'sidebar' | 'button';
 
@@ -384,9 +384,11 @@ Missing key === undefined === default behaviour. Concretely:
   ignored: there is one panel layout ([Toolbar layout](toolbar-layout.md#one-layout)).
 - `whiteboardDockPosition` undefined → a whiteboard's dock at the top (the
   default). Only `'bottom'` moves it to the bottom.
-- `contentsPlacement` undefined → Illustrate's Contents docked as a sidebar down
-  the canvas's left on a desktop (the default). `'button'` minimises it to its
-  cluster button; a phone always has the button
+- `contentsPlacement` undefined → Illustrate's Contents docked as a sidebar
+  flush against the canvas's edge on a desktop, with more than one page (the
+  default). `'button'` minimises it to its cluster button; a phone always has
+  the button. Which edge (left or right) is per device, kept in the browser
+  alone, never here
   ([Illustrate pages](illustrate-pages.md#contents)). Written by the sidebar's
   Minimise, the popover's Dock as Sidebar and Settings › Editor › Illustrate ›
   Contents; emits `UI`/`Changed`/`ContentsPlacementSidebar` or

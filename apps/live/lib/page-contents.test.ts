@@ -89,7 +89,7 @@ describe('the Contents list', () => {
       zoom: 0.1,
       offset: { x: 500 - (b.x + b.width / 2) + 240 / (2 * 0.1), y: 400 - (b.y + b.height / 2) },
     };
-    expect(pageInView(pages, beside, screen, 240)).toBe('b');
+    expect(pageInView(pages, beside, screen, { left: 240, right: 0 })).toBe('b');
     expect(pageInView(pages, beside, screen)).toBe('a');
   });
 });

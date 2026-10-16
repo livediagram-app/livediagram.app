@@ -80,6 +80,11 @@ export const EDITOR_SETTINGS = settingsStack(
       'Contents Placement',
       "Illustrate's Contents docked as a sidebar or minimised to its button.",
     ),
+    changed(
+      'ContentsSide',
+      'Contents Side',
+      "Illustrate's Contents sidebar dragged to the canvas's left or right edge.",
+    ),
     toggle(
       'UI',
       'LogoGuidesOn',

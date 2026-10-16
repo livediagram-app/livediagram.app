@@ -3729,7 +3729,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     },
     onBringToFront: bringSelectedToFront,
     onSendToBack: sendSelectedToBack,
-    onFitToScreen: fitToScreen,
+    // In Illustrate, Fit frames the page you are nearest, not the whole tab.
+    onFitToScreen: illustratePages ? illustratePages.fitPageInView : fitToScreen,
     onCycleEditorMode: editorModeShortcut(editorMode, announce),
     facilitateMode: editorMode.mode === 'facilitate',
     onDeselect: () => {

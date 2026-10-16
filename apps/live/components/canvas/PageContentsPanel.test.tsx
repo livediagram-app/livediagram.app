@@ -32,11 +32,23 @@ function show(n: number, canEdit = true, onDock?: () => void) {
   const focusPage = vi.fn();
   const addPage = vi.fn();
   const movePageTo = vi.fn();
+  const duplicatePage = vi.fn();
   const laid = pages(n);
   const view = {
     pages: laid,
     focusPage,
-    ...(canEdit ? { edit: { addPage, movePageTo } } : {}),
+    ...(canEdit
+      ? {
+          edit: {
+            addPage,
+            movePageTo,
+            duplicatePage,
+            canDuplicate: () => true,
+            setLocked: vi.fn(),
+            removePage: vi.fn(),
+          },
+        }
+      : {}),
   } as unknown as IllustratePagesView;
   const onClose = vi.fn();
   render(
@@ -47,14 +59,15 @@ function show(n: number, canEdit = true, onDock?: () => void) {
       {...(onDock ? { onDock } : {})}
     />,
   );
-  return { focusPage, addPage, movePageTo, onClose };
+  return { focusPage, addPage, movePageTo, duplicatePage, onClose };
 }
 
 describe('PageContentsPanel', () => {
   it('lists every page and glides to the one pressed, staying open on a desktop', () => {
     const h = show(3);
     expect(screen.getAllByRole('option')).toHaveLength(3);
-    expect(screen.getByText('3 pages')).toBeTruthy();
+    // No page count: the list says it.
+    expect(screen.queryByText('3 pages')).toBeNull();
     fireEvent.click(screen.getByRole('option', { name: /Page 2/ }));
     expect(h.focusPage).toHaveBeenCalledWith('p2');
     expect(screen.getByRole('option', { name: /Page 2/ }).getAttribute('aria-selected')).toBe(
@@ -65,11 +78,13 @@ describe('PageContentsPanel', () => {
 
   it('adds a page of the kind pressed, for an Editor alone', () => {
     const h = show(2);
-    fireEvent.click(screen.getByRole('button', { name: 'Add a Slide page' }));
+    fireEvent.mouseEnter(screen.getByRole('button', { name: 'Add Page' }).parentElement!);
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Add a Slide page' }));
     expect(h.addPage).toHaveBeenCalledWith('slide');
+    expect(screen.queryByRole('menu')).toBeNull();
     cleanup();
     show(2, false);
-    expect(screen.queryByRole('button', { name: 'Add a Slide page' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Add Page' })).toBeNull();
   });
 
   it('offers Find a Page past six pages, narrowing the list', () => {
@@ -92,6 +107,17 @@ describe('PageContentsPanel', () => {
     cleanup();
     show(3);
     expect(screen.queryByRole('button', { name: 'Dock Contents as a sidebar' })).toBeNull();
+  });
+
+  it("offers each page's actions in its ⋯ menu, an Editor's alone", () => {
+    const h = show(3);
+    fireEvent.click(screen.getByRole('button', { name: 'Menu for Page 2' }));
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Duplicate' }));
+    expect(h.duplicatePage).toHaveBeenCalledWith('p2');
+    expect(h.focusPage).not.toHaveBeenCalled();
+    cleanup();
+    show(3, false);
+    expect(screen.queryByRole('button', { name: 'Menu for Page 2' })).toBeNull();
   });
 
   it('moves between rows with the arrow keys', () => {

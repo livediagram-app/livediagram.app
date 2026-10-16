@@ -27,8 +27,9 @@ import {
   type LaidOutPage,
   type Tab,
 } from '@livediagram/document';
-import { besideLeftInset, computeFitBelow, computeReadingFrame } from '@/lib/viewport';
-import { leftSidebarInset } from '@/lib/left-sidebar-inset';
+import { besideSideInsets, computeFitBelow, computeReadingFrame } from '@/lib/viewport';
+import { sideChromeInsets } from '@/lib/side-chrome-insets';
+import { pageInView } from '@/lib/page-contents';
 import { topStripInset } from '@/lib/top-strip-inset';
 import { debugLog } from '@/lib/debug-log';
 import { track } from '@/lib/telemetry';
@@ -55,6 +56,10 @@ export type IllustratePagesView = {
   rowPages?: LaidOutPage[];
   // Frames one page in the view (its label's press).
   focusPage: (pageId: string) => void;
+  // Fit (the zoom cluster's, Shift+1) in Illustrate: frames the page nearest the middle of what shows
+  // beside the Contents sidebar, not the whole tab (docs/specs/007-editor/illustrate-pages.md
+  // "Contents" "Framing beside it").
+  fitPageInView: () => void;
   // An article page framed for writing on a phone: its text column across the screen.
   readPage: (pageId: string) => void;
   // A finger's pan over an article page begun from the view now: moves it by a screen-px drag.
@@ -138,16 +143,19 @@ export function useIllustratePages(deps: {
     const canvas = deps.canvasMainRef.current;
     if (!canvas) return;
     const inset = topStripInset(canvas);
-    // Beside the docked Contents sidebar, when it is there (docs/specs/007-editor/illustrate-pages.md
-    // "Contents"): the page centres in what shows right of it.
-    const insetLeft = leftSidebarInset(canvas);
-    const size = { width: canvas.offsetWidth - insetLeft, height: canvas.offsetHeight };
+    // Beside the Contents panel, wherever it sits (docs/specs/007-editor/illustrate-pages.md
+    // "Contents"): the page centres in what shows beside it.
+    const sides = sideChromeInsets(canvas);
+    const size = {
+      width: canvas.offsetWidth - sides.left - sides.right,
+      height: canvas.offsetHeight,
+    };
     const doc = page?.flow ? articlesOf(activeTab)[page.flow] : undefined;
-    const { zoom, offset } = besideLeftInset(
+    const { zoom, offset } = besideSideInsets(
       read && page && doc
         ? computeReadingFrame(size, page.rect, inset, articleMarginPx(doc.style))
         : computeFitBelow(size, illustratePageFitBox(page), inset),
-      insetLeft,
+      sides,
     );
     glide.current?.();
     glide.current = null;
@@ -165,7 +173,7 @@ export function useIllustratePages(deps: {
       tabId,
       page: page?.id ?? 'first',
       inset,
-      insetLeft,
+      sides,
       zoom,
       glides,
     });
@@ -287,9 +295,25 @@ export function useIllustratePages(deps: {
   const theme = getTheme(activeTab.theme);
   const themeBackgrounds = themeBackgroundPresets(theme);
   const tabFont = activeTab.font;
+  const fitPageInView = () => {
+    const canvas = deps.canvasMainRef.current;
+    if (!canvas) return;
+    const id = pageInView(
+      pages,
+      deps.getViewport(),
+      { width: canvas.offsetWidth, height: canvas.offsetHeight },
+      sideChromeInsets(canvas),
+    );
+    frame(
+      pages.find((p) => p.id === id),
+      false,
+      true,
+    );
+  };
   const shared = {
     pages,
     focusPage,
+    fitPageInView,
     readPage,
     panFrom,
     themeBackgrounds,

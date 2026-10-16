@@ -3,12 +3,15 @@
 // The pieces of Illustrate's Contents (docs/specs/007-editor/illustrate-pages.md "Contents"), laid
 // out by its two homes: the popover (PageContentsPanel) and the docked sidebar
 // (PageContentsSidebar). The state behind them is usePageContents.
-import { Fragment, type CSSProperties } from 'react';
+import { Fragment, useEffect, useRef, useState, type CSSProperties } from 'react';
 import { MAX_ILLUSTRATE_PAGES, type PageKind } from '@livediagram/document';
 import {
   lucideFileText,
   lucideGripVertical,
+  lucideCopy,
   lucideLock,
+  lucideLockOpen,
+  lucideTrash2,
   lucidePanelsTopLeft,
   lucidePlus,
   lucideSearch,
@@ -17,11 +20,23 @@ import {
 import { lucideGlyph, Tooltip, trustedHtml } from '@livediagram/ui';
 import { SlideDeckIcon } from '@/components/palette/palette-icons';
 import { DropCaret } from '@/components/primitives/DropCaret';
+import { EllipsisTriggerButton } from '@/components/primitives/EllipsisTriggerButton';
+import {
+  MenuActionRow,
+  MenuGroupSeparator,
+  MenuHeader,
+  PortalMenu,
+} from '@/components/primitives/PortalMenu';
+import { useRowMenu } from '@/components/primitives/useRowMenu';
 import { CONTENTS_FIND_AFTER, type ContentsRow } from '@/lib/page-contents';
 import type { SlideThumb } from '@/lib/slide-thumb';
-import type { PageContents } from '@/hooks/ui/usePageContents';
+import type { PageActions, PageContents } from '@/hooks/ui/usePageContents';
 
 const LockIcon = lucideGlyph(lucideLock, 12);
+const LockToolIcon = lucideGlyph(lucideLock, 14);
+const UnlockIcon = lucideGlyph(lucideLockOpen, 14);
+const CopyIcon = lucideGlyph(lucideCopy, 14);
+const DeleteIcon = lucideGlyph(lucideTrash2, 14);
 const GripIcon = lucideGlyph(lucideGripVertical, 14);
 const FindIcon = lucideGlyph(lucideSearch, 14);
 const PlusIcon = lucideGlyph(lucidePlus, 14);
@@ -42,15 +57,6 @@ const ADD_KINDS: readonly { kind: PageKind; name: string; icon: () => React.Reac
   { kind: 'article', name: 'Article', icon: () => <ArticleIcon /> },
   { kind: 'logo', name: 'Logo', icon: () => <LogoIcon /> },
 ];
-
-// The page count, a badge at the right of the header line.
-export function ContentsCount({ count }: { count: number }) {
-  return (
-    <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold tabular-nums text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-      {count === 1 ? '1 page' : `${count} pages`}
-    </span>
-  );
-}
 
 // Find a Page, once the tab has more pages than fit at a glance.
 export function ContentsFind({ contents }: { contents: PageContents }) {
@@ -80,9 +86,10 @@ export function ContentsFind({ contents }: { contents: PageContents }) {
   );
 }
 
-// The rows: `list` in the popover (number, small thumbnail, name and kind side by side), `film` in
-// the sidebar (a filmstrip, as a slide editor shows its slides: the number beside a picture as wide
-// as the column, the name under it).
+// The rows: `list` in the popover (number, small thumbnail, name side by side), `film` in the
+// sidebar (a filmstrip, as a slide editor shows its slides: the number beside a picture as wide as
+// the column, the name under it). Each row's name shares its line with the page's own toolbar (an
+// Editor's), shown while the row is hovered, focused or here, and always to a finger.
 export function ContentsList({
   contents,
   variant,
@@ -97,8 +104,19 @@ export function ContentsList({
   className?: string;
   style?: CSSProperties;
 }) {
-  const { shown, query, current, list, registerRow, reorder, reorderable, go, onListKey, thumbs } =
-    contents;
+  const {
+    shown,
+    query,
+    current,
+    list,
+    registerRow,
+    reorder,
+    reorderable,
+    go,
+    onListKey,
+    thumbs,
+    actionsFor,
+  } = contents;
   const Row = variant === 'film' ? FilmRow : ListRow;
   return (
     <div
@@ -117,14 +135,20 @@ export function ContentsList({
       {shown.map((row, i) => (
         <Fragment key={row.id}>
           {reorder.caretBefore(i) ? <DropCaret /> : null}
-          <button
+          <div
             ref={(el) => registerRow(row.id, el)}
-            type="button"
             role="option"
+            tabIndex={0}
             aria-selected={row.id === current}
+            aria-label={row.name}
             data-page-row={row.id}
             data-contents-slot={i}
             onClick={(e) => go(row, e.timeStamp)}
+            onKeyDown={(e) => {
+              if (e.target !== e.currentTarget || (e.key !== 'Enter' && e.key !== ' ')) return;
+              e.preventDefault();
+              go(row);
+            }}
             // A mouse or pen drags the whole row; a finger drags its grip, so the list still scrolls.
             onPointerDown={(e) => {
               if (e.pointerType !== 'touch') reorder.beginDrag(e, row.id);
@@ -132,7 +156,7 @@ export function ContentsList({
             onPointerMove={reorder.moveDrag}
             onPointerUp={reorder.endDrag}
             onPointerCancel={reorder.endDrag}
-            className={`group relative flex w-full text-left transition focus-visible:outline-2 focus-visible:outline-brand-600 ${
+            className={`group relative flex w-full cursor-pointer text-left transition focus-visible:outline-2 focus-visible:outline-brand-600 ${
               reorder.moving && reorder.draggingId === row.id ? 'opacity-50' : ''
             } ${variant === 'film' ? FILM_ROW_CLASS(row.id === current) : LIST_ROW_CLASS(row.id === current)}`}
           >
@@ -140,6 +164,17 @@ export function ContentsList({
               row={row}
               here={row.id === current}
               thumb={thumbs.get(row.id)}
+              actions={
+                variant === 'film' ? (
+                  <PageToolbar
+                    row={row}
+                    actions={actionsFor(row)}
+                    shown={touch || row.id === current}
+                  />
+                ) : (
+                  <PageMenu row={row} actions={actionsFor(row)} />
+                )
+              }
               grip={
                 reorderable ? (
                   <span
@@ -157,7 +192,7 @@ export function ContentsList({
                 ) : null
               }
             />
-          </button>
+          </div>
         </Fragment>
       ))}
       {reorder.caretAfterLast ? <DropCaret /> : null}
@@ -180,6 +215,7 @@ type RowProps = {
   row: ContentsRow;
   here: boolean;
   thumb: SlideThumb | undefined;
+  actions: React.ReactNode;
   grip: React.ReactNode;
 };
 
@@ -222,9 +258,18 @@ function Picture({
   );
 }
 
-function NameLine({ row, small }: { row: ContentsRow; small?: boolean }) {
+// The name, the padlock on a locked page, and the page's toolbar at the line's end.
+function NameLine({
+  row,
+  small,
+  actions,
+}: {
+  row: ContentsRow;
+  small?: boolean;
+  actions: React.ReactNode;
+}) {
   return (
-    <span className="flex items-center gap-1.5">
+    <span className="flex h-6 min-w-0 items-center gap-1.5">
       <span
         className={`truncate font-medium text-slate-800 dark:text-slate-100 ${small ? 'text-xs' : 'text-sm'}`}
       >
@@ -235,11 +280,148 @@ function NameLine({ row, small }: { row: ContentsRow; small?: boolean }) {
           <LockIcon />
         </span>
       ) : null}
+      <span className="ml-auto flex shrink-0 items-center">{actions}</span>
     </span>
   );
 }
 
-function ListRow({ row, here, thumb, grip }: RowProps) {
+// A page's own toolbar: Add to Slides (a slide page not yet in the deck), Duplicate, Lock or Unlock
+// and Delete, each a glyph with its Tooltip. None for a Participant or a Viewer. Shown while the row
+// is hovered or focused, and while it is here (or always, to a finger); laid out all along, so the
+// row never shifts as it shows.
+function PageToolbar({
+  row,
+  actions,
+  shown,
+}: {
+  row: ContentsRow;
+  actions: PageActions | null;
+  shown: boolean;
+}) {
+  if (!actions) return null;
+  const tools: { key: string; label: string; icon: React.ReactNode; run: () => void }[] = [];
+  if (actions.addToSlides)
+    tools.push({
+      key: 'slides',
+      label: 'Add to Slides',
+      icon: <SlideDeckIcon />,
+      run: actions.addToSlides,
+    });
+  if (actions.duplicate)
+    tools.push({
+      key: 'duplicate',
+      label: 'Duplicate',
+      icon: <CopyIcon />,
+      run: actions.duplicate,
+    });
+  tools.push({
+    key: 'lock',
+    label: row.locked ? 'Unlock' : 'Lock',
+    icon: row.locked ? <UnlockIcon /> : <LockToolIcon />,
+    run: actions.toggleLock,
+  });
+  if (actions.remove)
+    tools.push({ key: 'delete', label: 'Delete', icon: <DeleteIcon />, run: actions.remove });
+  return (
+    <span
+      role="toolbar"
+      aria-label={`${row.name} actions`}
+      data-page-toolbar=""
+      className={`flex items-center gap-px transition-opacity duration-micro ${
+        shown ? '' : 'opacity-0 group-hover:opacity-100 group-focus-within:opacity-100'
+      }`}
+    >
+      {tools.map((tool) => (
+        <Tooltip key={tool.key} label={tool.label}>
+          <button
+            type="button"
+            aria-label={`${tool.label} ${row.name}`}
+            data-page-action={tool.key}
+            // A press here is the tool's, not the row's: no glide, no drag.
+            onPointerDown={(e) => e.stopPropagation()}
+            onClick={(e) => {
+              e.stopPropagation();
+              tool.run();
+            }}
+            onKeyDown={(e) => e.stopPropagation()}
+            className={`flex h-6 w-6 items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-900/5 hover:text-slate-800 focus-visible:outline-2 focus-visible:outline-brand-600 dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-slate-100 ${
+              tool.key === 'delete' ? 'hover:text-red-700 dark:hover:text-red-300' : ''
+            }`}
+          >
+            {tool.icon}
+          </button>
+        </Tooltip>
+      ))}
+    </span>
+  );
+}
+
+// The popover's rows are narrower to spare: one ⋯ button opens the same actions as a menu, a
+// header naming the page, Delete last under its own separator.
+function PageMenu({ row, actions }: { row: ContentsRow; actions: PageActions | null }) {
+  const menu = useRowMenu();
+  if (!actions) return null;
+  const then = (fn: () => void) => () => {
+    fn();
+    menu.close();
+  };
+  return (
+    // The menu is portalled, but its events still bubble through React to the row: none of its
+    // presses, keys or clicks are the row's (no glide, no drag).
+    <span
+      onPointerDown={(e) => e.stopPropagation()}
+      onKeyDown={(e) => e.stopPropagation()}
+      onClick={(e) => e.stopPropagation()}
+    >
+      <EllipsisTriggerButton
+        {...menu.triggerProps}
+        size="md"
+        reveal
+        label={`Menu for ${row.name}`}
+      />
+      {menu.open ? (
+        <PortalMenu anchor={menu.triggerRef.current} placement="below" onClose={menu.close}>
+          <MenuHeader title={row.name} />
+          {actions.addToSlides ? (
+            <MenuActionRow
+              plain
+              icon={<SlideDeckIcon />}
+              label="Add to Slides"
+              onClick={then(actions.addToSlides)}
+            />
+          ) : null}
+          {actions.duplicate ? (
+            <MenuActionRow
+              plain
+              icon={<CopyIcon />}
+              label="Duplicate"
+              onClick={then(actions.duplicate)}
+            />
+          ) : null}
+          <MenuActionRow
+            plain
+            icon={row.locked ? <UnlockIcon /> : <LockToolIcon />}
+            label={row.locked ? 'Unlock' : 'Lock'}
+            onClick={then(actions.toggleLock)}
+          />
+          {actions.remove ? (
+            <>
+              <MenuGroupSeparator />
+              <MenuActionRow
+                plain
+                icon={<DeleteIcon />}
+                label="Delete"
+                onClick={then(actions.remove)}
+              />
+            </>
+          ) : null}
+        </PortalMenu>
+      ) : null}
+    </span>
+  );
+}
+
+function ListRow({ row, here, thumb, actions, grip }: RowProps) {
   const w = Math.min(LIST_MAX_W, Math.round(LIST_THUMB_H * row.aspect));
   const h = Math.round(w / row.aspect);
   return (
@@ -253,11 +435,6 @@ function ListRow({ row, here, thumb, grip }: RowProps) {
         >
           {row.number}
         </span>
-        {here ? (
-          <span className="text-[9px] font-semibold uppercase tracking-wider text-brand-700 dark:text-brand-300">
-            Here
-          </span>
-        ) : null}
       </span>
       <span
         className="flex shrink-0 items-center justify-center"
@@ -266,15 +443,14 @@ function ListRow({ row, here, thumb, grip }: RowProps) {
         <Picture thumb={thumb} w={w} h={h} here={here} />
       </span>
       <span className="flex min-w-0 flex-1 flex-col">
-        <NameLine row={row} />
-        <span className="truncate text-xs text-slate-500 dark:text-slate-400">{row.line}</span>
+        <NameLine row={row} actions={actions} />
       </span>
       {grip}
     </>
   );
 }
 
-function FilmRow({ row, here, thumb, grip }: RowProps) {
+function FilmRow({ row, here, thumb, actions, grip }: RowProps) {
   const w = Math.min(FILM_MAX_W, Math.round(FILM_MAX_H * row.aspect));
   const h = Math.round(w / row.aspect);
   return (
@@ -288,27 +464,28 @@ function FilmRow({ row, here, thumb, grip }: RowProps) {
         {grip}
       </span>
       <span className="flex min-w-0 flex-1 flex-col gap-1.5">
-        <span className="flex justify-center" style={{ width: FILM_MAX_W }}>
+        <span className="flex" style={{ width: FILM_MAX_W }}>
           <Picture thumb={thumb} w={w} h={h} here={here} large />
         </span>
-        <span className="flex min-w-0 flex-col px-0.5">
-          <NameLine row={row} small />
-          <span className="truncate text-[11px] text-slate-500 dark:text-slate-400">
-            {here ? (
-              <span className="font-semibold text-brand-700 dark:text-brand-300">Here · </span>
-            ) : null}
-            {row.line}
-          </span>
+        <span className="flex min-w-0 flex-col pl-0.5" style={{ width: FILM_MAX_W }}>
+          <NameLine row={row} small actions={actions} />
         </span>
       </span>
     </>
   );
 }
 
-// An Editor's footer: Add Page, the four kinds, the last page's kind first and highlighted. Four
-// across in the popover; two by two in the narrower sidebar.
-export function ContentsAddPage({ contents, columns }: { contents: PageContents; columns: 2 | 4 }) {
+// An Editor's footer: one full-width Add Page button. Resting the pointer on it (or pressing it, or
+// Up from it) opens the four kinds in a popover above it, as wide as the list, the last page's kind
+// first and highlighted; a press adds that kind after the last page. At the page limit the button is
+// disabled, its Tooltip naming the limit.
+export function ContentsAddPage({ contents }: { contents: PageContents }) {
   const { canAdd, add, full, lastKind } = contents;
+  const [open, setOpen] = useState(false);
+  const closing = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const trigger = useRef<HTMLButtonElement>(null);
+  const menu = useRef<HTMLDivElement>(null);
+  useEffect(() => () => clearTimeout(closing.current ?? undefined), []);
   if (!canAdd) return null;
   const kinds = lastKind
     ? [
@@ -316,37 +493,102 @@ export function ContentsAddPage({ contents, columns }: { contents: PageContents;
         ...ADD_KINDS.filter((k) => k.kind !== lastKind),
       ]
     : ADD_KINDS;
+  const show = () => {
+    if (full) return;
+    clearTimeout(closing.current ?? undefined);
+    setOpen(true);
+  };
+  // A moment's grace, so the pointer can cross from the button to the popover.
+  const hide = () => {
+    clearTimeout(closing.current ?? undefined);
+    closing.current = setTimeout(() => setOpen(false), ADD_PAGE_CLOSE_MS);
+  };
+  const items = () => [...(menu.current?.querySelectorAll<HTMLElement>('[role="menuitem"]') ?? [])];
+  const button = (
+    <button
+      ref={trigger}
+      type="button"
+      disabled={full}
+      aria-haspopup="menu"
+      aria-expanded={open}
+      data-contents-add=""
+      onClick={() => (open ? setOpen(false) : show())}
+      onKeyDown={(e) => {
+        if (e.key !== 'ArrowUp' || full) return;
+        e.preventDefault();
+        show();
+        requestAnimationFrame(() => items()[0]?.focus());
+      }}
+      className={`flex w-full items-center justify-center gap-1.5 rounded-lg border px-3 py-2 text-sm font-medium transition focus-visible:outline-2 focus-visible:outline-brand-600 disabled:opacity-40 ${
+        open
+          ? 'border-brand-400 bg-brand-50 text-brand-700 dark:border-brand-400 dark:bg-brand-500/15 dark:text-brand-100'
+          : 'border-slate-200 bg-white text-slate-700 hover:border-brand-300 hover:bg-brand-50 hover:text-brand-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-brand-400/60 dark:hover:bg-brand-500/20 dark:hover:text-brand-100'
+      }`}
+    >
+      <PlusIcon />
+      Add Page
+    </button>
+  );
   return (
-    <div className="border-t border-slate-100 px-3 pb-3 pt-2.5 dark:border-slate-800">
-      <p className="mb-1.5 flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-        <PlusIcon />
-        Add Page
-      </p>
-      <div className={`grid gap-1.5 ${columns === 4 ? 'grid-cols-4' : 'grid-cols-2'}`}>
-        {kinds.map(({ kind, name, icon }) => (
-          <Tooltip
-            key={kind}
-            label={full ? `A tab holds up to ${MAX_ILLUSTRATE_PAGES} pages` : `Add a ${name} page`}
-          >
+    <div
+      className="relative border-t border-slate-100 p-3 dark:border-slate-800"
+      onMouseEnter={show}
+      onMouseLeave={hide}
+      onBlur={(e) => {
+        if (!e.currentTarget.contains(e.relatedTarget)) setOpen(false);
+      }}
+    >
+      {open ? (
+        <div
+          ref={menu}
+          role="menu"
+          aria-label="Add a page"
+          data-contents-add-menu=""
+          onKeyDown={(e) => {
+            const all = items();
+            const at = all.indexOf(document.activeElement as HTMLElement);
+            if (e.key === 'Escape') {
+              e.stopPropagation();
+              setOpen(false);
+              trigger.current?.focus();
+            } else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+              e.preventDefault();
+              const step = e.key === 'ArrowDown' ? 1 : -1;
+              all[(at + step + all.length) % all.length]?.focus();
+            }
+          }}
+          className="absolute inset-x-3 bottom-full z-10 mb-1 flex flex-col gap-0.5 rounded-xl border border-slate-200 bg-white p-1 shadow-lg shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40 motion-safe:transition-[opacity,translate] motion-safe:duration-micro motion-safe:starting:translate-y-1 motion-safe:starting:opacity-0"
+        >
+          {kinds.map(({ kind, name, icon }) => (
             <button
+              key={kind}
               type="button"
-              disabled={full}
+              role="menuitem"
               aria-label={`Add a ${name} page`}
-              onClick={() => add?.(kind)}
-              className={`flex items-center rounded-lg border text-[11px] font-medium transition hover:border-brand-300 hover:bg-brand-50 hover:text-brand-700 focus-visible:outline-2 focus-visible:outline-brand-600 disabled:opacity-40 dark:hover:border-brand-400/60 dark:hover:bg-brand-500/20 dark:hover:text-brand-100 ${
-                columns === 4 ? 'flex-col gap-1 px-1 py-2' : 'gap-1.5 px-2 py-1.5'
-              } ${
+              onClick={() => {
+                setOpen(false);
+                add?.(kind);
+              }}
+              className={`flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm font-medium transition focus-visible:outline-2 focus-visible:outline-brand-600 ${
                 kind === lastKind
-                  ? 'border-brand-400 bg-brand-50 text-brand-700 ring-2 ring-brand-400/30 dark:border-brand-400 dark:bg-brand-500/15 dark:text-brand-100'
-                  : 'border-slate-200 bg-white text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200'
+                  ? 'bg-brand-50 text-brand-700 hover:bg-brand-100 dark:bg-brand-500/15 dark:text-brand-100 dark:hover:bg-brand-500/25'
+                  : 'text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800'
               }`}
             >
               {icon()}
               {name}
             </button>
-          </Tooltip>
-        ))}
-      </div>
+          ))}
+        </div>
+      ) : null}
+      {full ? (
+        <Tooltip label={`A tab holds up to ${MAX_ILLUSTRATE_PAGES} pages`}>{button}</Tooltip>
+      ) : (
+        button
+      )}
     </div>
   );
 }
+
+// How long the kinds stay up after the pointer leaves the button and the popover, in ms.
+const ADD_PAGE_CLOSE_MS = 150;
