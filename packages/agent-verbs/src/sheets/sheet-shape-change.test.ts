@@ -9,7 +9,6 @@ import {
   emptyLayout,
   posRangeOf,
   type Sheet,
-  type SheetWrite,
 } from '@livediagram/sheets';
 import { buildSheetChange, type SheetChange } from './sheet-change-build';
 
@@ -34,7 +33,7 @@ function book() {
     const built = buildSheetChange(wb, sheet.id, change, [], rand);
     if (!built.ok) return built;
     for (const w of built.writes) {
-      const next = applySheetWrite(wb.sheet(sheet.id)!, w as SheetWrite, {
+      const next = applySheetWrite(wb.sheet(sheet.id)!, w, {
         now: 1,
         by: NOBODY,
       }).sheet;

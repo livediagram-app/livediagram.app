@@ -8,7 +8,7 @@ import {
   type ChangesetResponse,
   type TabResponse,
 } from '@livediagram/api-schema';
-import { elementFingerprint, type Element } from '@livediagram/document';
+import { elementFingerprint } from '@livediagram/document';
 import {
   CARD_FIELD_LABELS,
   SWIMLANE_BY,
@@ -131,7 +131,7 @@ export async function changeBoard(
       swimlanes = lanes.value;
     }
     const { tab } = await api.json<TabResponse>(tabPath(documentId, tabId));
-    const element = (tab.elements as Element[]).find((e) => e.id === elementId);
+    const element = tab.elements.find((e) => e.id === elementId);
     const setup =
       element?.type === 'shape' && 'planBoard' in element
         ? normaliseBoardSetup(element.planBoard)

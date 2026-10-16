@@ -10,7 +10,7 @@ const TABS = [
   { id: 't3', name: 'Notes', of: null },
 ];
 const BUG: ItemTypeDef = {
-  ...ITEM_TYPES[1]!,
+  ...ITEM_TYPES[1],
   id: 'bug',
   label: 'Bug',
   fields: ['title', 'status', 'f-sev'],

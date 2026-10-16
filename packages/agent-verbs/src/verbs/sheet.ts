@@ -276,10 +276,10 @@ function axisVerb(
       examples,
       prints: '~ sheet "<title>": <what changed>',
     },
-  }) as Verb;
+  });
 }
 
-const side = (after?: boolean) => (after ? 'after' : 'before') as 'after' | 'before';
+const side = (after?: boolean) => (after ? 'after' : 'before');
 const count = (c?: string) => (c ? Math.min(1000, Number(c)) : 1);
 
 export const sheetInsertRows = axisVerb(

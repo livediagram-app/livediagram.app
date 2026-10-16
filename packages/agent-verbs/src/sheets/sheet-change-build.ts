@@ -227,7 +227,7 @@ export function buildSheetChange(
     case 'insert_rows':
     case 'insert_cols': {
       const rows = change.op === 'insert_rows';
-      const at = rows ? (change.at as number) - 1 : columnIndex(String(change.at));
+      const at = rows ? change.at - 1 : columnIndex(String(change.at));
       const count = change.count ?? 1;
       const side = change.side ?? 'before';
       const size = rows ? rowCount : colCount;
