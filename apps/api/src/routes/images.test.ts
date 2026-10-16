@@ -380,7 +380,7 @@ describe('POST /api/images under a network budget', () => {
     await upload('owner-a', BUDGET).res;
     await upload('owner-b', BUDGET).res;
     // Both identities on one /64 resolve to the same network.
-    expect(db.networkUploadKey.mock.calls.map((c) => c[1])).toEqual([
+    expect(db.networkUploadKey.mock.calls.map((c) => c[1] as string)).toEqual([
       '2001:0db8:0000:0001::/64',
       '2001:0db8:0000:0001::/64',
     ]);
