@@ -40,6 +40,11 @@ const renderer = createPngRenderer({
 // resvg's, so resvg may have at most this much.
 const RESVG_MEMORY_CEILING = 88 * 1024 * 1024;
 
+// Building the pictures (one 48 MB raw bitmap deflated) and drawing them takes 4.3 s on main's CI under coverage, and
+// went over vitest's 5 s default on a loaded runner (5.4 s and 5.8 s, #806 2026-10-16). The draw's time is held by
+// the CPU budget below, not by this limit.
+const TIMEOUT_MS = 30_000;
+
 const concat = (parts: readonly Uint8Array[]): Uint8Array => {
   const out = new Uint8Array(parts.reduce((n, p) => n + p.length, 0));
   let at = 0;
@@ -76,54 +81,58 @@ function png(width: number, height: number, random: boolean): Uint8Array {
 }
 
 describe('the preview picture budget', () => {
-  it('draws the worst page it lets through within the memory and time a Worker has', async () => {
-    // Three random 800x800 pictures just under 2 MB each spend the byte budget; a flat 3000x2000 one brings the
-    // pixels to 7.9 million. A flat 4000x4000 one, 16 million pixels in a few kilobytes, would pass both.
-    const pictures: Record<string, Uint8Array> = {
-      noise1: png(800, 800, true),
-      noise2: png(800, 800, true),
-      noise3: png(800, 800, true),
-      flat: png(3000, 2000, false),
-      bomb: png(4000, 4000, false),
-    };
-    for (const id of ['noise1', 'noise2', 'noise3'])
-      expect(pictures[id]!.length).toBeLessThanOrEqual(PREVIEW_IMAGE_MAX_BYTES);
-    const tab: Tab = {
-      id: 't',
-      name: 'Screens',
-      elements: Object.keys(pictures).map((id, i) => ({
-        id,
-        type: 'image',
-        imageId: id,
-        x: (i % 3) * 700,
-        y: Math.floor(i / 3) * 460,
-        width: 660,
-        height: 440,
-      })),
-    };
-    const leftOut: string[] = [];
-    const embedded = await embedTabImages(
-      tab,
-      async (id) => ({ bytes: pictures[id]!.slice().buffer, contentType: 'image/png' }),
-      {
-        maxBytesPerImage: PREVIEW_IMAGE_MAX_BYTES,
-        totalBudgetBytes: PREVIEW_IMAGE_BUDGET_BYTES,
-        totalBudgetPixels: PREVIEW_IMAGE_BUDGET_PIXELS,
-        onOverLimit: (id) => leftOut.push(id),
-      },
-    );
-    expect([...embedded.keys()]).toEqual(['noise1', 'noise2', 'noise3', 'flat']);
-    expect(leftOut).toEqual(['bomb']);
+  it(
+    'draws the worst page it lets through within the memory and time a Worker has',
+    { timeout: TIMEOUT_MS },
+    async () => {
+      // Three random 800x800 pictures just under 2 MB each spend the byte budget; a flat 3000x2000 one brings the
+      // pixels to 7.9 million. A flat 4000x4000 one, 16 million pixels in a few kilobytes, would pass both.
+      const pictures: Record<string, Uint8Array> = {
+        noise1: png(800, 800, true),
+        noise2: png(800, 800, true),
+        noise3: png(800, 800, true),
+        flat: png(3000, 2000, false),
+        bomb: png(4000, 4000, false),
+      };
+      for (const id of ['noise1', 'noise2', 'noise3'])
+        expect(pictures[id]!.length).toBeLessThanOrEqual(PREVIEW_IMAGE_MAX_BYTES);
+      const tab: Tab = {
+        id: 't',
+        name: 'Screens',
+        elements: Object.keys(pictures).map((id, i) => ({
+          id,
+          type: 'image',
+          imageId: id,
+          x: (i % 3) * 700,
+          y: Math.floor(i / 3) * 460,
+          width: 660,
+          height: 440,
+        })),
+      };
+      const leftOut: string[] = [];
+      const embedded = await embedTabImages(
+        tab,
+        async (id) => ({ bytes: pictures[id]!.slice().buffer, contentType: 'image/png' }),
+        {
+          maxBytesPerImage: PREVIEW_IMAGE_MAX_BYTES,
+          totalBudgetBytes: PREVIEW_IMAGE_BUDGET_BYTES,
+          totalBudgetPixels: PREVIEW_IMAGE_BUDGET_PIXELS,
+          onOverLimit: (id) => leftOut.push(id),
+        },
+      );
+      expect([...embedded.keys()]).toEqual(['noise1', 'noise2', 'noise3', 'flat']);
+      expect(leftOut).toEqual(['bomb']);
 
-    const svg = renderElementsToSvg(tab, { resolveImageHref: (id) => embedded.get(id) });
-    let width = 0;
-    const cpuMs = await cpuMsOfAsync(async () => {
-      ({ width } = await renderer.renderPng(svg, 1, PREVIEW_MAX_SIDE_PX));
-    });
-    expect(width).toBeLessThanOrEqual(PREVIEW_MAX_SIDE_PX);
-    expect(wasmMemory!.buffer.byteLength).toBeLessThanOrEqual(RESVG_MEMORY_CEILING);
-    expect(cpuMs).toBeLessThan(cpuBudgetMs(3_000));
-  });
+      const svg = renderElementsToSvg(tab, { resolveImageHref: (id) => embedded.get(id) });
+      let width = 0;
+      const cpuMs = await cpuMsOfAsync(async () => {
+        ({ width } = await renderer.renderPng(svg, 1, PREVIEW_MAX_SIDE_PX));
+      });
+      expect(width).toBeLessThanOrEqual(PREVIEW_MAX_SIDE_PX);
+      expect(wasmMemory!.buffer.byteLength).toBeLessThanOrEqual(RESVG_MEMORY_CEILING);
+      expect(cpuMs).toBeLessThan(cpuBudgetMs(3_000));
+    },
+  );
 
   it('words the note for one picture and for several', () => {
     expect(previewLeftOutNote(1)).toMatch(/^1 picture is drawn as a placeholder/);
