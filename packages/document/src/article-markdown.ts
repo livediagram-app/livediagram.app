@@ -19,8 +19,10 @@ export function looksLikeMarkdown(text: string): boolean {
   return MARKDOWN_SIGNAL.test(text);
 }
 
+// Bold and italic at once (`***x***`, `___x___`) first, so the two marks are read together rather than as bold inside
+// two literal stars.
 const INLINE =
-  /(\*\*([^*]+)\*\*|__([^_]+)__|~~([^~]+)~~|`([^`]+)`|\[([^\]]+)\]\(([^)\s]+)\)|\*([^*\s][^*]*)\*|_([^_\s][^_]*)_)/;
+  /(\*\*\*([^*]+)\*\*\*|___([^_]+)___|\*\*([^*]+)\*\*|__([^_]+)__|~~([^~]+)~~|`([^`]+)`|\[([^\]]+)\]\(([^)\s]+)\)|\*([^*\s][^*]*)\*|_([^_\s][^_]*)_)/;
 
 // Markdown's backslash escapes (`\\*` is a literal `*`): held as private-use characters while the
 // marks are read, so an escaped character never opens or closes one, then put back as the character.
@@ -50,8 +52,9 @@ function readInline(text: string, base: Omit<ArticleRun, 'text'>): ArticleRun[] 
       break;
     }
     if (m.index > 0) runs.push({ ...base, text: rest.slice(0, m.index) });
-    const [, , bold, bold2, strike, code, linkText, href, ital, ital2] = m;
-    if (bold ?? bold2) runs.push(...readInline((bold ?? bold2)!, { ...base, b: true }));
+    const [, , both, both2, bold, bold2, strike, code, linkText, href, ital, ital2] = m;
+    if (both ?? both2) runs.push(...readInline((both ?? both2)!, { ...base, b: true, i: true }));
+    else if (bold ?? bold2) runs.push(...readInline((bold ?? bold2)!, { ...base, b: true }));
     else if (strike) runs.push(...readInline(strike, { ...base, s: true }));
     else if (code) runs.push({ ...base, text: code, code: true });
     else if (linkText && href) {

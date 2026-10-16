@@ -73,6 +73,23 @@ describe('mindMarksToMarkdown', () => {
   });
 });
 
+// Bold and italic on one run are written `***x***`: the reader split that into ** and *, closed the outer ** first and
+// dropped the open *, so a node renamed in the outline came back bold only, with a star either side of its words.
+describe('bold and italic at once', () => {
+  it('reads back as written, underlined too', () => {
+    const marks = [
+      { text: 'a ' },
+      { text: 'both', bold: true, italic: true },
+      { text: ' and ' },
+      { text: 'all', bold: true, italic: true, underline: true },
+    ];
+    const md = mindMarksToMarkdown(marks);
+    expect(md).toBe('a ***both*** and <u>***all***</u>');
+    expect(mindMarkdownToMarks(md)).toEqual(marks);
+    expect(mindMarkdownToMarks('___x___')).toEqual([{ text: 'x', bold: true, italic: true }]);
+  });
+});
+
 describe('a node and its marks', () => {
   it('reads a node made bold by its style as bold throughout', () => {
     expect(mindNodeMarks(node({ label: 'Hi', textBold: true }))).toEqual([
