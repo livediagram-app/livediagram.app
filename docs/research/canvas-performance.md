@@ -398,3 +398,33 @@ Measured 2026-10-14 on the reference board, local, calibrated 3.2x, against main
 
 - A raster snapshot of still elements during a gesture, and fewer SVG roots. Each is weighed in the spec.
   (`contain` on element wrappers was tried: see above.)
+
+## Safari, a phone, and the sticky peel
+
+Measured 2026-10-16 on the reference board, opened at fit in Playwright's WebKit (the engine iOS
+Safari runs) at an iPhone 15 Pro's size and density (393 x 852 at 3x), a 90-step pan and a 60-tick
+zoom, reading rAF frame gaps and the CPU time of WebKit's web and GPU processes (where painting and
+its replay happen). An iPhone reported stutter on pan and zoom; desktop Chrome did not.
+
+- **Before:** a pan's median frame 145-325 ms and a zoom's 40-230 ms, the GPU process burning 2.9-3.6 s
+  of CPU per pan and 7-18 s per zoom, and getting slower with each repeat.
+- **Bisected with injected CSS:** hiding SVG, text, box shadows, rounded corners, overflow clips,
+  arrows, markers, grips or the canvas pattern changed nothing; hiding the boxed element wrappers
+  removed it all. The cost was the 50 stickies' `::before` peel, `filter: blur(2px)`: with only that
+  filter off, every pan and zoom frame came in at 14-20 ms and the GPU process's CPU fell to 0.7-1.4 s
+  a pan. Safari runs a filter again on every repaint, and a transform change repaints the canvas.
+- **Tried:** `will-change: transform` on the world, in WebKit, cost more (frames 60-500 ms) and in
+  Chromium stalled input (Layerize 2.5 s), as the zoom measurements above found. A mask-built peel
+  (the exact product of the ramp and the blurred edge) held frames under 25 ms but added about
+  0.5 s of GPU-process CPU a pan.
+- **Shipped:** the peel drawn as a border-image computed from the recipe; pan and zoom frames 14-20 ms,
+  the same as no peel at all. Screenshots of the old and new peel differ by at most 6 of 255 levels.
+- **Touch pinch** (Chromium, CDP touch, CPU 4x): a touch event per move each rendered the canvas
+  synchronously and read the wrapper's layout after writing the view. One view change a frame took
+  the pinch's event dispatch from 696 ms to 31 ms over 60 moves and its main-thread total by about
+  16%.
+- **Photo memory** (a slide deck of 3200 x 2000 PNG screenshots, 16 elements over 12 pictures): on
+  macOS WebKit the web and GPU processes' footprints did not change with the pictures' resolution
+  (227-322 MB and 104-262 MB before; 249-295 MB and 95-300 MB with the display copies), so the
+  memory win on an iPhone, which closed the tab, is not shown by a local measurement; what changed
+  is the work handed to the browser: 12 URLs instead of 16, each 2048 x 1280 instead of 3200 x 2000.
