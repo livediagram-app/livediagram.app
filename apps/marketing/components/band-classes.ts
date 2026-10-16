@@ -17,8 +17,10 @@ export const BAND_LEAD = 'mt-4 text-lg leading-relaxed text-slate-600 dark:text-
 export const BAND_LABEL =
   'text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400';
 
+/** A card on the band. In dark its border is slate-700: slate-800 around a slate-900 card on the
+ *  slate-950 band barely showed its edge. */
 export const BAND_CARD =
-  'rounded-2xl border border-slate-200 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900';
+  'rounded-2xl border border-slate-200 bg-white shadow-xs dark:border-slate-700 dark:bg-slate-900';
 
 /** A card or chip that is a control: hover lifts its border to the brand. */
 export const BAND_CONTROL_HOVER =

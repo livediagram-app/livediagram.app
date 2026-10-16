@@ -75,6 +75,7 @@ const SLOT_LABELS: Record<CtaSlot, string> = {
   HeroBlankPlan: 'Hero: Blank Plan',
   HeroFan: 'Hero: Template Fan',
   Gallery: 'Template Gallery Cards',
+  Templates: 'Category Template Cards',
   GalleryDraw: 'Gallery: Blank Canvas Link',
   Closing: 'Closing Band: Start Drawing',
   Card: 'Footer Card: Start Drawing',

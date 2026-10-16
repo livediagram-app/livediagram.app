@@ -45,6 +45,8 @@ export const CTA_SOURCES = {
     'HeaderPlan',
     'HeaderSession',
     'Hero',
+    // A card in a category page's "Start from a template" band (docs/specs/019-marketing/marketing-site.md).
+    'Templates',
     'Closing',
   ],
   Compare: [
