@@ -1921,6 +1921,7 @@ export const articles: Article[] = [
       'tag tags label labels labelling categorise categorize group grouping colour color code coded organise organize project client status filter chip chips rename delete',
     category: 'Explorer',
     categorySlug: 'explorer',
+    group: 'Your Library',
   },
   {
     slug: 'drawio-import',
