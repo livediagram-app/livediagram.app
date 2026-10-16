@@ -354,6 +354,21 @@ export function headWriteStatement(
   );
 }
 
+// The document marked saved (`saved_at`) by a landed write, as a tab write marks it: a Sheet's cells are part of the
+// document, so the Explorer's "Updated" line and its snapshot (docs/specs/006-document/document-snapshots.md: a Sheet
+// draws its cells) follow them.
+export function documentSavedStatement(
+  env: Env,
+  documentId: string,
+  sheetId: string,
+  nonce: string,
+  now: number,
+): D1PreparedStatement {
+  return env.DB.prepare(
+    `UPDATE documents SET saved_at = MAX(saved_at, ?3) WHERE id = ?1 AND ${LANDED}`,
+  ).bind(documentId, sheetId, now, nonce);
+}
+
 // Keep cell_count and cell_bytes exact after a write.
 export function recountStatement(
   env: Env,

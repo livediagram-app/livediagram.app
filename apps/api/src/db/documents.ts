@@ -203,6 +203,19 @@ export async function getDocumentThumbMeta(
     : null;
 }
 
+// A document's card types alone, for a snapshot that draws its cards (a board, a Sheet's CARD formulas): the
+// thumbnail route's one read (getDocumentThumbMeta) leaves the catalogue out, as most previews are cache hits that
+// never draw. Null for a document with no catalogue, or none at all.
+export async function getDocumentItemTypes(
+  env: Env,
+  id: string,
+): Promise<ItemTypeCatalogue | null> {
+  const row = await env.DB.prepare('SELECT item_types FROM documents WHERE id = ?')
+    .bind(id)
+    .first<{ item_types: string | null }>();
+  return readItemTypeCatalogue(row?.item_types ?? null);
+}
+
 export async function getDocument(env: Env, id: string): Promise<DocumentDTO | null> {
   const row = await env.DB.prepare(
     `SELECT ${DOCUMENT_COLS} FROM documents WHERE id = ? AND trashed_at IS NULL`,

@@ -80,6 +80,9 @@ importers:
       '@livediagram/items':
         specifier: workspace:*
         version: link:../../packages/items
+      '@livediagram/plan-art':
+        specifier: workspace:*
+        version: link:../../packages/plan-art
       '@livediagram/sheets':
         specifier: workspace:*
         version: link:../../packages/sheets

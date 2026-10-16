@@ -26,6 +26,7 @@
     "@livediagram/forms": "workspace:*",
     "@livediagram/icons": "workspace:*",
     "@livediagram/items": "workspace:*",
+    "@livediagram/plan-art": "workspace:*",
     "@livediagram/sheets": "workspace:*",
     "@livediagram/templates": "workspace:*",
     "jose": "^6.2.12"

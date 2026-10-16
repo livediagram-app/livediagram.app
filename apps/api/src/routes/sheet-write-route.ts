@@ -30,6 +30,7 @@ import {
   readFormulaCells,
   readSheetHead,
   recountStatement,
+  documentSavedStatement,
   type SheetHead,
 } from '../db';
 import { forbidden, json } from '../responses';
@@ -213,6 +214,7 @@ export async function storeSheetWrite(
           );
     statements.push(...cellWriteStatements(ctx.env, documentId, sheetId, nonce, cells));
     statements.push(recountStatement(ctx.env, documentId, sheetId));
+    statements.push(documentSavedStatement(ctx.env, documentId, sheetId, nonce, now));
     const results = await ctx.env.DB.batch(statements);
     const raised = (results[0]?.results ?? []) as { rev: number }[];
     if (raised.length === 0) {

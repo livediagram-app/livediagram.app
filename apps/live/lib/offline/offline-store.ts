@@ -14,7 +14,7 @@
 import type { SheetJson } from '@livediagram/sheets';
 import type { LiveDoc, DocumentSummary, RecordedIntent, TabSummary } from '@livediagram/api-schema';
 import { utcDay } from '@livediagram/api-schema';
-import { migrateStoredTab, stampTabKind } from '@livediagram/document';
+import { drawnCount, migrateStoredTab, stampTabKind } from '@livediagram/document';
 import type { Tab } from '@livediagram/document';
 import {
   legacyCatalogue,
@@ -156,7 +156,7 @@ export function recordToSummary(rec: OfflineDocumentRecord): DocumentSummary {
     ...UNKNOWN_INTENT,
     savedAt: rec.savedAt,
     createdAt: rec.createdAt,
-    empty: (rec.tabs[0]?.elements.length ?? 0) === 0,
+    empty: drawnCount(rec.tabs[0] ?? {}) === 0,
     stats: offlineDocumentStats(rec),
   };
 }
