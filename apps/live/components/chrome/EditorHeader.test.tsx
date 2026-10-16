@@ -185,4 +185,11 @@ describe('EditorHeader Present button', () => {
     const button = screen.getByRole('button', { name: 'Starting' });
     expect(button).toHaveProperty('disabled', true);
   });
+
+  it('links the logo to the Explorer home, not the homepage', () => {
+    renderHeader();
+    expect(screen.getByRole('link', { name: 'livediagram' }).getAttribute('href')).toBe(
+      '/explorer/home',
+    );
+  });
 });

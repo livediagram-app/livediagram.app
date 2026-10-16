@@ -84,7 +84,9 @@ Its pace is listed in [Motion](./motion.md) beside the other hover stories.
 
 ## Links
 
-The header and footer logos link to the homepage. A logo link to the page already open (the footer
+The header and footer logos link to the homepage, except in the editor app, where each logo goes up
+one level: the editor header's logo opens the Explorer home (`/explorer/home`), and the Explorer
+header's logo opens the homepage. A logo link to the page already open (the footer
 on the homepage, either logo there) scrolls back to the top, smoothly unless reduced motion is on,
 rather than reloading. A modified click (new tab or window) keeps the browser's behaviour.
 
