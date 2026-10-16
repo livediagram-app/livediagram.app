@@ -39,6 +39,12 @@ For shapes, annotations, and link cards:
 
 Every effect follows the element's real outline, so a diamond pulses as a diamond, and the attention animations pause between beats so they read as deliberate rather than frantic. How far a shape travels scales with its size, so a tiny status light and a large box both look right.
 
+### Moving Any Element
+
+The Shape animations that move or fade the whole element, **Blink**, **Heartbeat**, **Breathe**, **Bounce**, **Wobble**, **Shake**, **Jelly**, **Float**, and **Swing**, work on almost anything. Sticky notes, drawings, images, videos, tables, charts, progress bars, ratings, concept graphics, and sequence diagrams all show a **Shape** section beside their own, so a photo on a slide can bounce. Icons and text already have their own Bounce and Float, so they don't need it.
+
+On a sticky note, drawing, image, video, or table, the element plays one body animation at a time: picking Bounce replaces a Ken Burns, and picking Ken Burns replaces the Bounce. On a chart, progress bar, rating, concept graphic, or sequence diagram, the motion plays alongside the element's own animation, so a pie can bounce while its slices sweep in.
+
 ## Text
 
 For the words of a text element, and for the label of a shape, sticky note, or table:
@@ -117,7 +123,7 @@ Below Speed sits a **Repeat** switch, on by default. Leave it on and the animati
 - **Shared with collaborators.** Everyone in a live session sees the same loop; nothing is broadcast frame by frame.
 - **Reduced-motion safe.** If your system asks for reduced motion, animations freeze to a tidy still frame, with everything fully shown.
 - **Frozen on export.** PNG and SVG [exports](/help/account-and-data/exporting-diagrams/) capture a static frame.
-- **Copied by the format painter.** Animation is a cosmetic property, so the [format painter](/help/selection-modes/format-painter/) carries it to other elements of the same kind, and a Text animation to anything with words.
+- **Copied by the format painter.** Animation is a cosmetic property, so the [format painter](/help/selection-modes/format-painter/) carries it to other elements of the same kind, a motion such as Bounce to anything that can move, and a Text animation to anything with words.
 
 <Tip>
   Select several elements first and each section applies to every element it fits at once, so you

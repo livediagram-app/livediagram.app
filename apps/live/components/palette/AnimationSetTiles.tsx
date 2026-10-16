@@ -10,6 +10,7 @@
 import { useState } from 'react';
 import {
   ANIMATION_SET_VALUES,
+  SHAPE_ANIMATIONS,
   animationLabel,
   keptAnimation,
   type AnimationSetId,
@@ -25,6 +26,19 @@ import { AnimationPreviewTile } from '@/components/palette/AnimationPreviewTile'
 import { AnimationSetPreview, previewFrame } from '@/components/palette/animation-set-previews';
 import { useRevertOnUnmount } from '@/components/primitives/hover-preview';
 
+// A kept value: an old Shape value the set does not offer, or, where the element is offered only part of the Shape set
+// (a boundary, a chart's motions), a Shape value outside that part.
+function keptValue(
+  set: AnimationSetId,
+  values: readonly string[] | undefined,
+  current: string | null,
+): string | undefined {
+  if (set === 'shape' && values && current && !values.includes(current)) {
+    return (SHAPE_ANIMATIONS as readonly string[]).includes(current) ? current : undefined;
+  }
+  return keptAnimation(set, current);
+}
+
 export function AnimationSetTiles({
   set,
   values,
@@ -39,7 +53,7 @@ export function AnimationSetTiles({
   onPreviewEnd,
 }: {
   set: AnimationSetId;
-  // The set's values this element is offered, when not the whole set (a boundary's container subset).
+  // The set's values this element is offered, when not the whole set (a boundary's container subset, the motions).
   values?: readonly string[];
   // The stored value, which may be a kept value the set no longer offers.
   current: string | null;
@@ -59,7 +73,7 @@ export function AnimationSetTiles({
   // Captured at open like the Speed gate, so hovering (which previews into the live tab) never
   // adds or removes the kept tile under the pointer; a real pick of anything else drops it.
   const [kept, setKept] = useState<string | undefined>(() =>
-    legacy && current ? current : keptAnimation(set, current),
+    legacy && current ? current : keptValue(set, values, current),
   );
   const { showSpeed, handleSet: gateSet } = useSpeedRowGate(current, onSet);
   // A set tile's pick drops the kept tile; the kept tile is what plays already, so it writes nothing.
