@@ -8,7 +8,7 @@
 import { isFormTemplateKind } from './form-templates';
 import { buildVirtualOffice } from './template-builders-office';
 import { buildAllHandsHall, buildCoworkingSpace, buildTeamPod } from './template-builders-spaces';
-import type { Element, Tab } from '@livediagram/document';
+import { settleChips, type Element, type Tab } from '@livediagram/document';
 import type { TemplateKind } from './templates';
 import {
   buildBrowserWireframe,
@@ -105,7 +105,14 @@ import { buildObjectivesPlanner } from './template-builders-objectives';
 
 // Build the elements for a given template, centred on the supplied canvas
 // point. Each template is intentionally small and editable; users grow them.
+// The output lands settled (docs/specs/009-elements/blueprints/badge.md "Settling"): a builder sizes a step
+// after making it, so its number is set to half the disc here, as a stored board reads back, and a
+// preview or an agent's create shows what the editor will.
 export function buildTemplate(kind: TemplateKind, cx: number, cy: number): Element[] {
+  return settleChips([], buildUnsettled(kind, cx, cy), { attachLoose: false });
+}
+
+function buildUnsettled(kind: TemplateKind, cx: number, cy: number): Element[] {
   // A form template's tab starts empty: the editor starts the form on it (form-templates.ts).
   if (isFormTemplateKind(kind)) return [];
   switch (kind) {

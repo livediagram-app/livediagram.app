@@ -12,7 +12,7 @@ import {
   type ArticleFlow,
   type ArticleRun,
 } from './article-flow';
-import { parseMarkdownBlocks } from './article-markdown';
+import { parseMarkdownBlocks, spaceWrapped } from './article-markdown';
 
 // The most Markdown one write takes: 5,000 blocks of ~80 characters, far inside a tab's row.
 export const ARTICLE_MARKDOWN_MAX = 400_000;
@@ -170,8 +170,18 @@ const escapeLineStart = (line: string) =>
     /\d/.test(mark) ? `${space}${mark}\\` : `${space}\\${mark}`,
   );
 
+// Inline code as CommonMark writes it: fenced by one more backtick than its longest backtick run,
+// and padded with a space each side when it starts or ends in a backtick, or in a space at both
+// ends (the reader strips one such pair), so any text reads back as written.
+function codeSpan(text: string): string {
+  const longest = Math.max(0, ...(text.match(/`+/g) ?? []).map((r) => r.length));
+  const fence = '`'.repeat(longest + 1);
+  const pad = /^`|`$/.test(text) || spaceWrapped(text) ? ' ' : '';
+  return fence + pad + text + pad + fence;
+}
+
 function runMarkdown(run: ArticleRun): string {
-  if (run.code) return '`' + run.text.replace(/`/g, '') + '`';
+  if (run.code) return codeSpan(run.text.replace(/\n/g, ' '));
   // A line break inside a block reads back as a space: Markdown paragraphs join their lines.
   let out = escapeText(run.text).replace(/\n/g, ' ');
   if (run.s) out = `~~${out}~~`;

@@ -118,6 +118,7 @@ order, counts summed per rule.
 | `STOCK_MIN_CHROMA`        | `0.07`                                                      | 0.05 to 0.08        | Stock teal's own light version is C 0.080; Excalidraw bronze `#846358` (C 0.046) stays a custom colour                      |
 | `STOCK_LIGHTNESS_RANGE`   | `[0.3, 0.8]`                                                | 0.25-0.4, 0.78-0.85 | Stock versions sit at L 0.47-0.68; Excalidraw orange `#f08c00` is 0.731; pastels (0.86 and over) are fills                  |
 | `STOCK_HUE_TOLERANCE_DEG` | `18`                                                        | 13 to 19            | Excalidraw orange is 12.6 deg from stock orange, pink `#c2255c` 16.5 from pink; teal `#099268` (19 from green) stays custom |
+| `IMPORT_COORD_MAX`        | `1e7` (px, either side of zero)                             | 1e6 to 1e12         | Shared with the draw.io importer; far past any real board, small enough that offsets and sums stay finite                   |
 | `SCENE_DEFAULT_TITLE`     | `'Whiteboard'`                                              | n/a                 | The whiteboard template's title                                                                                             |
 | `TEXT_SCALE_EPSILON`      | `0.005`                                                     | 0.001 to 0.02       | A scale this close to 1 is omitted (no visible difference at 64 px)                                                         |
 | `CLOSED_END_EPSILON_PX`   | `1`                                                         | 0.5 to 2            | The Excalidraw importer's closure test: ends within 1 px coincide                                                           |
@@ -285,7 +286,9 @@ rejection: 'too-many-elements', message: "This board has more than the 10,000 el
 hold." }` (the number is `MAX_ELEMENTS_PER_TAB`), logged `[board-scene] rejected`.
 2. Drop unusable items into the skipped rule "Elements without a size were skipped": a non-finite
    coordinate anywhere, a point item with no points (a connector or polyline with fewer than two),
-   a boxed item with width or height `<= 0`.
+   a boxed item with width or height `<= 0`. Then drop the rest that fail `withinImportReach`
+   (`apps/live/lib/import-coords.ts`: every point, or x, y, width and height, within
+   `IMPORT_COORD_MAX` of zero) into the skipped rule "Elements too far off the board were skipped".
 3. Placement offset; land per profile; merge notes (parser notes then landing notes, by rule and
    kind); count `landed` per scene kind of the items that produced an element.
 4. Log `[board-scene] landed` and return.
@@ -407,6 +410,7 @@ heading per the spec, `BoardSceneReportList` rows, the image placeholder sentenc
 | More items than room                         | `too-many-elements`, nothing lands                               |
 | Empty scene                                  | Lands nothing, `ok: true`; the paste notice stays silent         |
 | Non-finite coordinate / no points / zero box | Skipped, "Elements without a size were skipped"                  |
+| Coordinate or size past `IMPORT_COORD_MAX`   | Skipped, "Elements too far off the board were skipped"           |
 | Unreadable colour                            | Ink, degraded "Colours that couldn't be read were drawn in ink"  |
 | Binding to a missing or non-boxed key        | A free end                                                       |
 | Asset key with no asset                      | Request with `source: null` → `missing-bytes` placeholder        |

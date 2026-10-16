@@ -101,6 +101,16 @@ describe('readGraph', () => {
     expect(g.layerIds).toEqual([]);
     expect(g.cells.size).toBe(0);
   });
+  it('reads a number past the import reach as 0, so a child of it stays finite', () => {
+    const g = readGraph(
+      model(
+        vertex('p', '', 'x="1e308" y="-1e308" width="1e308" height="40"', 'parent="1"') +
+          vertex('c', '', 'x="1e308" y="5" width="10" height="10"', 'parent="p"'),
+      ),
+    );
+    expect(g.cells.get('p')!.geometry).toMatchObject({ x: 0, y: 0, width: 0, height: 40 });
+    expect(absoluteRect(g, 'c')).toEqual({ x: 0, y: 5, width: 10, height: 10 });
+  });
 });
 
 describe('absoluteRect', () => {

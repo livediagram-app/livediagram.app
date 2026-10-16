@@ -6,6 +6,7 @@ import {
   type Element,
 } from '@livediagram/document';
 import { LANDING_RULES } from './context';
+import { IMPORT_COORD_MAX } from '@/lib/import-coords';
 import { landBoardScene, type LandOptions } from './land';
 import type { SceneItem } from './scene';
 import { boardScene, countingIds, inkStroke, sceneText, syntheticInkBoard } from './test-scenes';
@@ -114,6 +115,20 @@ describe('landBoardScene', () => {
       { rule: LANDING_RULES.emptyText, count: 1 },
     ]);
     expect(r.report.landed).toEqual({ shape: 1 });
+  });
+
+  it('skips items placed or sized past the board, so nothing overflows to Infinity', () => {
+    const r = landed([
+      rect('far', 1e308),
+      rect('wide', 0, { width: 1e308 }),
+      rect('near', -IMPORT_COORD_MAX, { width: 10 }),
+      { key: 'ink', kind: 'ink', points: [{ x: 0, y: -1e308 }], stroke: inkStroke() },
+      rect('ok'),
+    ]);
+    expect(r.elements).toHaveLength(2);
+    expect(r.report.skipped).toEqual([{ rule: LANDING_RULES.offBoard, count: 3 }]);
+    expect(JSON.stringify(r.elements)).not.toContain('null');
+    expect(r.elements.every(isValidElement)).toBe(true);
   });
 
   it('counts what landed per kind and merges the parser’s notes with its own', () => {

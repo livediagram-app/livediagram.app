@@ -235,6 +235,10 @@ the landing writes no more than the drawing needs:
 - An item with no usable geometry (no points, a non-finite coordinate, a
   zero-sized box) is skipped and counted ("Elements without a size were
   skipped"), never thrown.
+- An item with a coordinate or size more than `IMPORT_COORD_MAX` (10,000,000)
+  from zero is skipped and counted ("Elements too far off the board were
+  skipped"): no real board reaches that far, and a larger finite number
+  overflows to Infinity once the landing moves it.
 - The landing never throws; it returns `{ ok: false, rejection }` or the
   landed result.
 - Size caps on the raw input (the clipboard's 4 MB) are the parsers', checked

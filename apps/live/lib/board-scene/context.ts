@@ -13,6 +13,7 @@ export const LANDING_RULES = {
   bentArrow: 'Bent arrows drawn as curves',
   unsafeLink: "Links that aren't web addresses were dropped",
   unsized: 'Elements without a size were skipped',
+  offBoard: 'Elements too far off the board were skipped',
   emptyText: 'Empty text boxes were skipped',
   longStroke: 'Very long strokes were simplified',
 } as const;

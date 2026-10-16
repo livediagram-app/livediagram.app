@@ -113,7 +113,9 @@ Writes an article's text from **Markdown**.
 - **`mode`**: `replace` (default) writes the article's text anew; `append` adds the blocks after its last block.
 - **The Markdown** (the editor's paste reading, `parseMarkdownBlocks`, shared): `#`, `##`, `###` headings (h1 to
   h3), paragraphs, `-` / `*` / `1.` lists by indent (five levels), `- [ ]` / `- [x]` to-dos, `>` quotes, fenced
-  code, `---` dividers; bold, italic, strikethrough, inline code and links (http, https, mailto). A line holding only
+  code, `---` dividers; bold, italic, strikethrough, inline code and links (http, https, mailto). Inline code reads and
+  is written as CommonMark has it: a fence of any number of backticks, escapes literal inside it, one edge space
+  stripped, so code holding a backtick survives the round trip. A line holding only
   `\pagebreak` is a page break. An article's text holds no tables: a Markdown table is written as a list, one item
   per row, and the answer says how many it wrote that way and points at a table element on a page instead.
 - **Front matter** sets the title and subtitle: a first line `---`, then `title: ...` and `subtitle: ...` lines, then
