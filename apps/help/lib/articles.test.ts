@@ -131,6 +131,13 @@ describe('searchArticles', () => {
     expect(searchArticles('hotkey').map((a) => a.slug)).toContain('keyboard-shortcuts');
   });
 
+  it('ranks title matches ahead of description and keyword matches (docs/specs/018-help/help-pages.md "Search")', () => {
+    const inTitle = searchArticles('share').map((a) => a.title.toLowerCase().includes('share'));
+    expect(inTitle.indexOf(false)).toBeGreaterThan(inTitle.lastIndexOf(true));
+    // A title that starts with the query leads.
+    expect(searchArticles('keyboard')[0]!.title.toLowerCase().startsWith('keyboard')).toBe(true);
+  });
+
   it('returns everything for an empty query and nothing for a non-match', () => {
     expect(searchArticles('')).toHaveLength(articles.length);
     expect(searchArticles('zzz-no-such-help-content-xyz')).toEqual([]);
