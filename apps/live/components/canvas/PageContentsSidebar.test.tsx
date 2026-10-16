@@ -92,7 +92,9 @@ describe('PageContentsSidebar', () => {
     act(() => h.store.setView(centredOn(2)));
     // Not on every frame: only once the view has rested.
     expect(screen.getAllByRole('option')[2]!.getAttribute('aria-selected')).toBe('false');
-    act(() => vi.advanceTimersByTime(CONTENTS_FOLLOW_SETTLE_MS));
+    act(() => {
+      vi.advanceTimersByTime(CONTENTS_FOLLOW_SETTLE_MS);
+    });
     expect(screen.getAllByRole('option')[2]!.getAttribute('aria-selected')).toBe('true');
   });
 

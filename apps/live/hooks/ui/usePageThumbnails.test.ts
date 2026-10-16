@@ -87,10 +87,14 @@ describe('usePageThumbnails', () => {
     // A drag: a change a frame.
     for (let x = 0; x < 5; x++) {
       rerender({ tab: tabWith([boxOn(0, 'a', `a${x}`)]) });
-      act(() => vi.advanceTimersByTime(16));
+      act(() => {
+        vi.advanceTimersByTime(16);
+      });
     }
     expect(draw).not.toHaveBeenCalled();
-    act(() => vi.advanceTimersByTime(250));
+    act(() => {
+      vi.advanceTimersByTime(250);
+    });
     expect(draw).toHaveBeenCalledTimes(1);
   });
 });
