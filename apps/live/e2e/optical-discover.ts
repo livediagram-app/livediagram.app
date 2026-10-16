@@ -68,6 +68,9 @@ export function discover(args: { attr: string; shape: typeof SHAPE; tol: number 
       el.checkVisibility({ opacityProperty: true, visibilityProperty: true })
     );
   };
+  // A shape partly outside the viewport: a viewport screenshot holds only part of its glyph.
+  const cutByViewport = (r: DOMRect) =>
+    r.top < 0 || r.left < 0 || r.bottom > innerHeight || r.right > innerWidth;
   const describe = (el: Element) => {
     const parts: string[] = [];
     for (let n: Element | null = el; n && parts.length < 3; n = n.parentElement) {
@@ -299,17 +302,21 @@ export function discover(args: { attr: string; shape: typeof SHAPE; tol: number 
         (flex && cs.flexDirection.startsWith('column') && /center/.test(cs.justifyContent)) ||
         (cs.display.includes('grid') && /center/.test(cs.alignItems)) ||
         (Math.abs(contentTop - innerTop) <= 1.5 && Math.abs(contentBottom - innerBottom) <= 1.5));
-    // Sample five points: any covered by an element outside the shape means an overlap.
-    const occluded = [
-      [0.5, 0.5],
-      [0.2, 0.5],
-      [0.8, 0.5],
-      [0.5, 0.2],
-      [0.5, 0.8],
-    ].some(([fx, fy]) => {
-      const top = document.elementFromPoint(r.left + r.width * fx!, r.top + r.height * fy!);
-      return top !== null && top !== el && !el.contains(top) && !top.contains(el);
-    });
+    // Sample five points: any covered by an element outside the shape means an overlap. A shape the viewport
+    // cuts is unmeasurable the same way: the audit reads a viewport screenshot, so it would see only part of
+    // the glyph and report the cut as an offset (a disc straddling the fold read 2.25px low).
+    const occluded =
+      cutByViewport(r) ||
+      [
+        [0.5, 0.5],
+        [0.2, 0.5],
+        [0.8, 0.5],
+        [0.5, 0.2],
+        [0.5, 0.8],
+      ].some(([fx, fy]) => {
+        const top = document.elementFromPoint(r.left + r.width * fx!, r.top + r.height * fy!);
+        return top !== null && top !== el && !el.contains(top) && !top.contains(el);
+      });
     const first = el.firstElementChild;
     const fr = first?.getBoundingClientRect();
     const leadingDisc =
@@ -369,6 +376,7 @@ export function discover(args: { attr: string; shape: typeof SHAPE; tol: number 
         tr.bottom > c.bottom + 1
       )
         continue;
+      const numeral = /^\d+$/.test((t.textContent ?? '').trim());
       probes.push({
         where: `svg disc ${describe(t)}`,
         box: { x: c.x, y: c.y, w: c.width, h: c.height },
@@ -378,15 +386,16 @@ export function discover(args: { attr: string; shape: typeof SHAPE; tol: number 
         snap: null,
         iconsOnly: true,
         vertical: true,
-        occluded: false,
+        occluded: cutByViewport(c),
         capsOnly: false,
         tailed: false,
         concentric: null,
+        // Numerals are advance-centred (optical-alignment.md): judged by the text's advance box, never its ink.
         horizontal: {
-          shortGlyph: true,
+          shortGlyph: !numeral,
           intent: 'svg disc',
           controls: null,
-          text: null,
+          text: numeral ? { left: tr.left - c.left, right: tr.right - c.left } : null,
           otherLeft: Infinity,
           otherRight: -Infinity,
         },

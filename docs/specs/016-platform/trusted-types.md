@@ -39,6 +39,18 @@ All three come from one shared module, `@livediagram/ui`'s `trusted-types`, and 
   nothing from it is inserted as markup; only its text and attributes are read.
 - **Outside the browser** (the static prerender, tests without Trusted Types) the helpers pass strings through.
 
+### Server-rendered markup
+
+Because the prerender passes strings through, a **server component** that hands `trustedHtml(...)` to
+`dangerouslySetInnerHTML` puts a plain string into the RSC payload. The first load is fine (the markup is already in
+the HTML), but a client navigation to that page makes React write the string through `innerHTML`, the `default`
+policy refuses it, and the page crashes to a blank screen. The help centre's breadcrumb and category links all did
+this through the JSON-LD block. So outside the editor (a client app end to end), a sink lives in one of three places:
+a root `app/layout.tsx` (never re-rendered on navigation), a `'use client'` module (the call mints real `TrustedHTML`
+in the browser), or an app module that only client modules import. A sink in a shared package must be a client
+module itself, since any server page may render it: `JsonLd` is one. `trusted-types-sinks.test.ts` holds every
+file to this.
+
 ## Third parties
 
 | Code                                             | Needs                                                                           | Allowed by                                       |
