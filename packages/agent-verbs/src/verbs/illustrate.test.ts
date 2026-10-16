@@ -298,7 +298,9 @@ describe('page ls and page set', () => {
           Response.json({ error: 'page_unknown', message: 'No page.', change: 0 }, { status: 400 }),
         input,
       );
-      return pageSet.run!(ctx, pageSet.input.parse({ doc: DOC_A, ...flags })).catch((e) => e);
+      return pageSet.run!(ctx, pageSet.input.parse({ doc: DOC_A, ...flags })).catch(
+        (e: unknown) => e,
+      );
     };
     expect(await run({})).toBeInstanceOf(VerbRefusal);
     expect(await run({ page: '2' })).toBeInstanceOf(VerbRefusal);

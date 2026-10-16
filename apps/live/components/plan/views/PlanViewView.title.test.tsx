@@ -7,8 +7,8 @@ import { PlanProvider, type PlanContextValue } from '../PlanContext';
 import { setPlanCover } from '@/hooks/plan/plan-cover-store';
 import { PlanViewView } from './PlanViewView';
 
-const track = vi.fn();
-vi.mock('@/lib/telemetry', () => ({ track: (...a: unknown[]) => track(...a) }));
+const track = vi.fn<typeof import('@/lib/telemetry').track>();
+vi.mock('@/lib/telemetry', () => ({ track: (...a: Parameters<typeof track>) => track(...a) }));
 
 // docs/specs/026-plan/plan-tabs.md "Names": a chart filling its Visualisation tab renames with the tab from its
 // title, for an Editor only; and docs/specs/026-plan/plan-views.md "Cards by Field": an overflowing list scrolls

@@ -20,6 +20,9 @@ export function numberField(source: object, key: string): number | null {
   return typeof value === 'number' && Number.isFinite(value) ? value : null;
 }
 
+/** A list held in a list (a table's rows of cells), or none. */
+export const listOf = (value: unknown): readonly unknown[] => (Array.isArray(value) ? value : []);
+
 export function arrayField(source: object, key: string): readonly unknown[] {
   const value = fieldOf(source, key);
   return Array.isArray(value) ? value : [];

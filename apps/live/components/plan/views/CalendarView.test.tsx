@@ -7,8 +7,8 @@ import { PlanProvider, type PlanContextValue } from '../PlanContext';
 import { PlanViewView } from './PlanViewView';
 import { calendarDayAt } from './useCalendarDrag';
 
-const track = vi.fn();
-vi.mock('@/lib/telemetry', () => ({ track: (...a: unknown[]) => track(...a) }));
+const track = vi.fn<typeof import('@/lib/telemetry').track>();
+vi.mock('@/lib/telemetry', () => ({ track: (...a: Parameters<typeof track>) => track(...a) }));
 
 // docs/specs/026-plan/plan-views.md "Moving a card on a calendar" and "Start Calendar".
 const SAM = { id: 'sam', name: 'Sam', color: '#2563eb' };

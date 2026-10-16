@@ -15,9 +15,9 @@ import {
   type ShapeElement,
 } from '@livediagram/document';
 
-const track = vi.fn();
+const track = vi.fn<typeof import('@/lib/telemetry').track>();
 vi.mock('@/lib/telemetry', () => ({
-  track: (...a: unknown[]) => track(...a),
+  track: (...a: Parameters<typeof track>) => track(...a),
   titleCaseType: (s: string) => s,
 }));
 

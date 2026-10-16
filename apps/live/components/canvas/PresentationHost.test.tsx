@@ -106,7 +106,7 @@ describe('PresentationHost', () => {
     press('Next');
     press('Next');
     press('Next');
-    expect(deck.setPresentingAt.mock.calls.map(([n]) => n)).toEqual([1, 2, 3]);
+    expect(deck.setPresentingAt.mock.calls.map(([n]): unknown => n)).toEqual([1, 2, 3]);
   });
 
   it('stops at the end state, past the last slide', () => {
@@ -114,7 +114,7 @@ describe('PresentationHost', () => {
     render(<PresentationHost />);
     press('Next');
     press('Next');
-    expect(deck.setPresentingAt.mock.calls.map(([n]) => n)).toEqual([4, 4]);
+    expect(deck.setPresentingAt.mock.calls.map(([n]): unknown => n)).toEqual([4, 4]);
   });
 
   it('takes a jump as given, and steps from it after', () => {
@@ -122,7 +122,7 @@ describe('PresentationHost', () => {
     press('Next');
     press('Jump to 4');
     press('Back');
-    expect(deck.setPresentingAt.mock.calls.map(([n]) => n)).toEqual([1, 3, 2]);
+    expect(deck.setPresentingAt.mock.calls.map(([n]): unknown => n)).toEqual([1, 3, 2]);
   });
 
   it('steps from the slide on screen again once it catches up', () => {

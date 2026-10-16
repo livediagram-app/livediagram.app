@@ -140,7 +140,7 @@ describe('relayItems and relayItemTypes', () => {
     });
     await relayItems(env, 'd1', { kind: 'items', upserts: [], removed: [], rev: 1 });
     await relayItemTypes(env, 'd1', { kind: 'item-types', itemTypes: null });
-    expect(warn.mock.calls.map((c) => c[0])).toEqual([
+    expect(warn.mock.calls.map((c): unknown => c[0])).toEqual([
       '[room-broadcast] items did not reach the room',
       '[room-broadcast] item types did not reach the room',
     ]);
@@ -297,7 +297,7 @@ describe('agent presence in the room (docs/specs/024-agents/blueprints/agent-pre
       refresh,
     );
     await refreshAgentPresence(envWith(async () => new Response('', { status: 500 })).env, refresh);
-    expect(warn.mock.calls.map((c) => c[0])).toEqual([
+    expect(warn.mock.calls.map((c): unknown => c[0])).toEqual([
       '[agent-presence] refresh refused',
       '[agent-presence] refresh failed',
     ]);

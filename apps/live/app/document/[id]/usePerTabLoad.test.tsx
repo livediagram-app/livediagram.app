@@ -210,7 +210,7 @@ describe('usePerTabLoad search sweep in a tab-scoped session', () => {
     await act(async () => {
       await hook.result.current.loadAllTabs();
     });
-    const asked = apiLoadTab.mock.calls.map((c) => c[2]);
+    const asked = apiLoadTab.mock.calls.map((c): unknown => c[2]);
     expect(new Set(asked)).toEqual(new Set(['t2']));
   });
 });

@@ -6,8 +6,8 @@ import { planPalette } from './plan-palette';
 import { ExampleCardsNotice, exampleCardIds } from './ExampleCardsNotice';
 
 // docs/specs/026-plan/plan-templates.md "Example cards", items.md "Example cards".
-const track = vi.fn();
-vi.mock('@/lib/telemetry', () => ({ track: (...a: unknown[]) => track(...a) }));
+const track = vi.fn<typeof import('@/lib/telemetry').track>();
+vi.mock('@/lib/telemetry', () => ({ track: (...a: Parameters<typeof track>) => track(...a) }));
 
 afterEach(() => {
   cleanup();

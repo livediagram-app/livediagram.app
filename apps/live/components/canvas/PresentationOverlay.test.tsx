@@ -149,7 +149,7 @@ describe('PresentationOverlay', () => {
   });
 
   it('auto-advances on time while the deck re-renders, whatever onGo it is handed', () => {
-    const onGo = vi.fn();
+    const onGo = vi.fn<(next: number, render: number) => void>();
     const deck = (n: number) => (
       <PresentationOverlay
         steps={[...STEPS]}

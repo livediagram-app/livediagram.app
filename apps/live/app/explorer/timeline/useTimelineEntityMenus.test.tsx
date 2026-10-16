@@ -91,7 +91,7 @@ describe('useTimelineEntityMenus', () => {
   });
 
   it('opens Settings on API Tokens in place rather than navigating', () => {
-    const heard = vi.fn();
+    const heard = vi.fn<(detail: string) => void>();
     const onOpen = (e: Event) => heard((e as CustomEvent<string>).detail);
     window.addEventListener(OPEN_SETTINGS_EVENT, onOpen);
     menuFor()(event({ sourceId: 'tok1' }))?.items[0]?.onClick();

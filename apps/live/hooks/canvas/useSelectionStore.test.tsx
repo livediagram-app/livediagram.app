@@ -28,7 +28,7 @@ describe('useSelectionOf', () => {
     act(() => store.setSelectedId('a'));
     act(() => store.setSelectedId('b'));
 
-    expect(renders.mock.calls.map(([id]) => id).sort()).toEqual(['a', 'a', 'b']);
+    expect(renders.mock.calls.map(([id]): unknown => id).sort()).toEqual(['a', 'a', 'b']);
   });
 
   it('returns the current slice', () => {

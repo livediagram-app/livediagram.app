@@ -73,7 +73,7 @@ describe('armLoadWatchdog', () => {
     setLoadStep('document');
     vi.advanceTimersByTime(LOAD_TIMEOUT_MS);
     expect(getLoadProgress()).toMatchObject({ timedOut: true, healing: true });
-    expect(warn.mock.calls.map((c) => c[0])).toEqual([
+    expect(warn.mock.calls.map((c): unknown => c[0])).toEqual([
       'DocumentLoad.TimedOut.Document',
       'DocumentLoad.AutoReload',
     ]);

@@ -53,11 +53,13 @@ async function boardTab(page: Page): Promise<BoardTab> {
     async ({ base, headers }) => {
       const apiBase = base;
       const id = location.pathname.split('/').filter(Boolean).pop()!;
-      const liveDoc = await (await fetch(`${apiBase}/documents/${id}`, { headers })).json();
-      const tabId = liveDoc.document.tabs[0].id;
-      const tab = await (
+      const liveDoc = (await (await fetch(`${apiBase}/documents/${id}`, { headers })).json()) as {
+        document: { tabs: { id: string }[] };
+      };
+      const tabId = liveDoc.document.tabs[0]!.id;
+      const tab = (await (
         await fetch(`${apiBase}/documents/${id}/tabs/${tabId}`, { headers })
-      ).json();
+      ).json()) as { tab: BoardTab };
       return tab.tab;
     },
     { base: apiBase, headers },

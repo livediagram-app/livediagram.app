@@ -7,7 +7,7 @@ import { isAllowedRedirectUri, registerOauthRoutes } from './oauth';
 function mockKV(): KVNamespace {
   const m = new Map<string, string>();
   return {
-    get: async (k: string, type?: string) => {
+    get: async (k: string, type?: string): Promise<unknown> => {
       const v = m.get(k);
       if (v == null) return null;
       return type === 'json' ? JSON.parse(v) : v;

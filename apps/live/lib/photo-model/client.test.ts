@@ -139,7 +139,7 @@ describe('createBoundaryClient', () => {
       ms: 7,
     });
     await pending;
-    expect(info.mock.calls.map(([line]) => line)).toEqual([
+    expect(info.mock.calls.map(([line]): unknown => line)).toEqual([
       '[photo-model] ready on wasm',
       '[photo-model] 1 notes on wasm in 7 ms',
     ]);

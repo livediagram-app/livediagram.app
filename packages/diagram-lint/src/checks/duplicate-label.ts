@@ -18,7 +18,7 @@ export const duplicateLabel: Check = (ctx) => {
     if (typeof label !== 'string' || label.trim() === '') continue;
     const esKind: unknown = Reflect.get(box, 'esKind');
     if (esKind !== undefined && esKind !== 'domain-event') continue;
-    const heads = ['pageTitle', 'pageSubtitle'].map((k) => Reflect.get(box, k) ?? '');
+    const heads = ['pageTitle', 'pageSubtitle'].map((k): unknown => Reflect.get(box, k) ?? '');
     const key = [...heads, label].map((t) => keyOf(String(t))).join('\n');
     const group = groups.get(key) ?? { label, boxes: [] };
     group.boxes.push(box);

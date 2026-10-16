@@ -150,7 +150,7 @@ describe('whiteboard keys (docs/specs/023-draw-mode/draw-mode.md "Keyboard short
     press('3');
     press('e');
     expect(wb.pickSelect).toHaveBeenCalledTimes(1);
-    expect(wb.pickPen.mock.calls.map((c) => c[0])).toEqual(['main', 'second', 'third']);
+    expect(wb.pickPen.mock.calls.map((c): unknown => c[0])).toEqual(['main', 'second', 'third']);
     expect(wb.pickEraser).toHaveBeenCalledTimes(1);
   });
 
@@ -161,7 +161,7 @@ describe('whiteboard keys (docs/specs/023-draw-mode/draw-mode.md "Keyboard short
     for (const k of ['r', 'o', 'd', 'c', 'l', 'a']) press(k);
     expect(wb.pickSticky).toHaveBeenCalledTimes(1);
     expect(wb.pickText).toHaveBeenCalledTimes(1);
-    expect(wb.pickShape.mock.calls.map((c) => c[0])).toEqual([
+    expect(wb.pickShape.mock.calls.map((c): unknown => c[0])).toEqual([
       'rectangle',
       'ellipse',
       'diamond',

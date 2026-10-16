@@ -109,6 +109,10 @@ export function centreOf(el: BoxedElement): Point {
 // O(1) `get`.
 export type ElementIndex = ReadonlyMap<ElementId, Element>;
 
+// `instanceof Map` alone narrows a ReadonlyMap to Map<any, any>.
+export const isElementIndex = (elements: Element[] | ElementIndex): elements is ElementIndex =>
+  elements instanceof Map;
+
 export function buildElementIndex(elements: Element[]): Map<ElementId, Element> {
   const index = new Map<ElementId, Element>();
   for (const el of elements) index.set(el.id, el);
@@ -139,7 +143,7 @@ export function endpointPosition(
   depth = 0,
 ): Point {
   if (endpoint.kind === 'free') return { x: endpoint.x, y: endpoint.y };
-  const index = elements instanceof Map ? elements : elementIndexFor(elements as Element[]);
+  const index = isElementIndex(elements) ? elements : elementIndexFor(elements);
   const lookup = (id: ElementId): Element | undefined => index.get(id);
   if (endpoint.kind === 'on-arrow') {
     if (depth > 4) return { x: 0, y: 0 };

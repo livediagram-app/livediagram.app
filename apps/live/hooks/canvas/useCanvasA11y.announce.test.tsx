@@ -66,7 +66,7 @@ describe('useCanvasA11y announcements', () => {
     act(() => selection.setSelection({ selectedId: null, multiSelectedIds: new Set() }));
     frame();
 
-    expect(announce.mock.calls.map(([m]) => m)).toEqual([
+    expect(announce.mock.calls.map(([m]): unknown => m)).toEqual([
       expect.stringMatching(/^Selected .*Login/),
       expect.stringMatching(/^Selected /),
       'Selection cleared',
@@ -80,7 +80,7 @@ describe('useCanvasA11y announcements', () => {
       selection.setSelectedId(b.id);
     });
     act(() => vi.runAllTimers());
-    expect(announce.mock.calls.map(([m]) => m)).toEqual([expect.stringMatching(/Home/)]);
+    expect(announce.mock.calls.map(([m]): unknown => m)).toEqual([expect.stringMatching(/Home/)]);
   });
 
   it('does not re-announce the same multi-selection in another order', () => {

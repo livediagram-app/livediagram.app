@@ -5,8 +5,8 @@ import { resetSpeechBubbles, receivePeerSay, useSpeechBubbles } from '@/lib/avat
 import { SPEECH_COOLDOWN_MS } from '@/lib/avatar-speech';
 import { useAvatarSpeech } from './useAvatarSpeech';
 
-const track = vi.fn();
-vi.mock('@/lib/telemetry', () => ({ track: (...a: unknown[]) => track(...a) }));
+const track = vi.fn<typeof import('@/lib/telemetry').track>();
+vi.mock('@/lib/telemetry', () => ({ track: (...a: Parameters<typeof track>) => track(...a) }));
 
 type Args = Parameters<typeof useAvatarSpeech>[0];
 const base: Args = {

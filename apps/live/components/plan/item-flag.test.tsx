@@ -7,8 +7,8 @@ import { toggleFlag } from './item-flag';
 import { PlanCardFace } from './PlanCardFace';
 
 // docs/specs/026-plan/items.md "Flags".
-const track = vi.fn();
-vi.mock('@/lib/telemetry', () => ({ track: (...a: unknown[]) => track(...a) }));
+const track = vi.fn<typeof import('@/lib/telemetry').track>();
+vi.mock('@/lib/telemetry', () => ({ track: (...a: Parameters<typeof track>) => track(...a) }));
 vi.mock('./PlanContext', () => ({ usePlan: () => undefined }));
 
 afterEach(cleanup);

@@ -55,10 +55,12 @@ const rulesIn = (file: keyof typeof FIXTURES) =>
 
 describe('shared oxlint config', () => {
   it('makes every rule an error and enables no category wholesale', () => {
-    const severity = (v: unknown) => (Array.isArray(v) ? v[0] : v);
+    const severity = (v: unknown): unknown => (Array.isArray(v) ? v[0] : v);
     expect(new Set(Object.values(config.rules ?? {}).map(severity))).toEqual(new Set(['error']));
     // An override turns a rule on, as an error, or off where it does not apply.
-    const overridden = (config.overrides ?? []).flatMap((o) => Object.values(o.rules ?? {}));
+    const overridden = (config.overrides ?? []).flatMap((o): unknown[] =>
+      Object.values(o.rules ?? {}),
+    );
     for (const v of overridden) expect(['error', 'off']).toContain(severity(v));
     expect(new Set(Object.values(config.categories ?? {}))).toEqual(new Set(['off']));
   });

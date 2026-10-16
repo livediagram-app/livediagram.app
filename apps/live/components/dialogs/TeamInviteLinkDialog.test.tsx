@@ -9,9 +9,9 @@ import type { TeamInviteLink } from '@livediagram/api-schema';
 import { TeamInviteLinkDialog } from './TeamInviteLinkDialog';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
-const generate = vi.fn();
+const generate = vi.fn<typeof import('@/lib/api-client').apiGenerateTeamInviteLink>();
 vi.mock('@/lib/api-client', () => ({
-  apiGenerateTeamInviteLink: (...args: unknown[]) => generate(...args),
+  apiGenerateTeamInviteLink: (...args: Parameters<typeof generate>) => generate(...args),
   apiRevokeTeamInviteLink: vi.fn(),
 }));
 

@@ -234,7 +234,7 @@ describe('apiFetch / apiDelete write signal', () => {
       action: 'delete document',
       purge: { sourceType: 'document', sourceId: 'd1' },
     });
-    expect(heard.mock.calls.map(([s]) => s)).toEqual([
+    expect(heard.mock.calls.map(([s]): unknown => s)).toEqual([
       {},
       { purge: { sourceType: 'document', sourceId: 'd1' } },
     ]);

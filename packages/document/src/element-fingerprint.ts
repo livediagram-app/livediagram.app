@@ -35,7 +35,8 @@ export function elementFingerprint(element: Element): string {
 
 function withoutTicks(items: unknown): unknown {
   if (!Array.isArray(items)) return items;
-  return items.map((item) => {
+  const list: readonly unknown[] = items;
+  return list.map((item) => {
     if (!item || typeof item !== 'object' || !('done' in item)) return item;
     const { done: _tick, ...rest } = item as Record<string, unknown>;
     return rest;

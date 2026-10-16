@@ -126,8 +126,11 @@ test.describe('quick style panel', () => {
     // Kept per user and per theme, in the synced preferences.
     const stored = await page.evaluate(
       () =>
-        JSON.parse(localStorage.getItem('livediagram:user-preferences:v1') ?? '{}')
-          .quickSwatchOverrides,
+        (
+          JSON.parse(localStorage.getItem('livediagram:user-preferences:v1') ?? '{}') as {
+            quickSwatchOverrides?: unknown;
+          }
+        ).quickSwatchOverrides,
     );
     expect(stored).toEqual([{ t: expect.any(String), s: { 4: '#ff5500' } }]);
     // Editing the palette styled nothing; choosing the swatch does.

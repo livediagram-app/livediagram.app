@@ -19,7 +19,7 @@ import {
   type Endpoint,
 } from './index';
 import { anchorClass, anchorPrimarySide } from './anchors';
-import { endpointPosition, type ElementIndex, type Point } from './geometry';
+import { endpointPosition, isElementIndex, type ElementIndex, type Point } from './geometry';
 import { connectorBox } from './shape-outline';
 
 // Gap between adjacent fanned heads, in canvas px. Clamped down when the
@@ -173,16 +173,14 @@ function computeSpreadMap(elements: Element[], index: ElementIndex): Map<string,
 // tab state is immutable, so a changed tab is a new array / index.
 const spreadCache = new WeakMap<object, Map<string, Point>>();
 
-// `instanceof Map` alone narrows a ReadonlyMap to Map<any, any>.
-const isIndex = (elements: Element[] | ElementIndex): elements is ElementIndex =>
-  elements instanceof Map;
-
 function spreadMapFor(elements: Element[] | ElementIndex): Map<string, Point> {
   const key = elements;
   const cached = spreadCache.get(key);
   if (cached) return cached;
-  const list = isIndex(elements) ? [...elements.values()] : elements;
-  const index = isIndex(elements) ? elements : new Map(list.map((el) => [el.id, el] as const));
+  const list = isElementIndex(elements) ? [...elements.values()] : elements;
+  const index = isElementIndex(elements)
+    ? elements
+    : new Map(list.map((el) => [el.id, el] as const));
   const map = computeSpreadMap(list, index);
   spreadCache.set(key, map);
   return map;

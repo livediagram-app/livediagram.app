@@ -2,9 +2,9 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { SHAPE_KINDS, type Element } from '@livediagram/document';
 import { ALL_PALETTE_TELEMETRY_TYPES } from '@livediagram/api-schema';
 
-const trackMock = vi.fn();
+const trackMock = vi.fn<typeof import('@/lib/telemetry').track>();
 vi.mock('@/lib/telemetry', () => ({
-  track: (...args: unknown[]) => trackMock(...args),
+  track: (...args: Parameters<typeof trackMock>) => trackMock(...args),
   titleCaseType: (v: string) => (v.length === 0 ? v : v[0]!.toUpperCase() + v.slice(1)),
 }));
 

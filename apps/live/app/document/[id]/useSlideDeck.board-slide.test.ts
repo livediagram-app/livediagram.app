@@ -6,8 +6,10 @@ import { useSlideDeck } from './useSlideDeck';
 
 // docs/specs/012-collaboration/presentation-mode.md "Board slides": a whole Plan board as a slide is an
 // ordinary slide naming the board, on the tab it is on.
-const track = vi.fn();
-vi.mock('@/lib/telemetry', () => ({ track: (...args: unknown[]) => track(...args) }));
+const track = vi.fn<typeof import('@/lib/telemetry').track>();
+vi.mock('@/lib/telemetry', () => ({
+  track: (...args: Parameters<typeof track>) => track(...args),
+}));
 vi.mock('@/hooks/ui/useSlideThumbnails', () => ({ useSlideThumbnails: () => new Map() }));
 
 const tabs = [{ id: 't', name: 'Tab', elements: [] }] as unknown as Tab[];

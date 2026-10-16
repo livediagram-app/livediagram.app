@@ -3,8 +3,10 @@
 import { act, renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const trackMock = vi.fn();
-vi.mock('@/lib/telemetry', () => ({ track: (...a: unknown[]) => trackMock(...a) }));
+const trackMock = vi.fn<typeof import('@/lib/telemetry').track>();
+vi.mock('@/lib/telemetry', () => ({
+  track: (...a: Parameters<typeof trackMock>) => trackMock(...a),
+}));
 
 const { useDockPopovers } = await import('./useDockPopovers');
 

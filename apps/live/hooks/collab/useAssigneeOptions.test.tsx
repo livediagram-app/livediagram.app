@@ -1,15 +1,16 @@
 // @vitest-environment jsdom
 import { renderHook, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { TeamListItem } from '@/lib/api-client';
+import type { TeamDetailResponse, TeamListItem } from '@/lib/api-client';
 import type { PickableMember } from '@/components/dialogs/AssignActionAssigneePicker';
 import { useAssigneeOptions } from './useAssigneeOptions';
 
-const apiGetTeam = vi.fn();
-const apiCheckAssigneeAccess = vi.fn();
+const apiGetTeam = vi.fn<typeof import('@/lib/api-client').apiGetTeam>();
+const apiCheckAssigneeAccess = vi.fn<typeof import('@/lib/api-client').apiCheckAssigneeAccess>();
 vi.mock('@/lib/api-client', () => ({
-  apiGetTeam: (...a: unknown[]) => apiGetTeam(...a),
-  apiCheckAssigneeAccess: (...a: unknown[]) => apiCheckAssigneeAccess(...a),
+  apiGetTeam: (...a: Parameters<typeof apiGetTeam>) => apiGetTeam(...a),
+  apiCheckAssigneeAccess: (...a: Parameters<typeof apiCheckAssigneeAccess>) =>
+    apiCheckAssigneeAccess(...a),
 }));
 
 afterEach(() => vi.clearAllMocks());
@@ -37,12 +38,13 @@ const base: Args = {
   assignee: null,
   setAssignee: vi.fn(),
 };
+// The team's answer, as far as the hook reads it: its members.
 const teamDetail = {
   members: [
     { id: 'm1', userId: 'u1', status: 'joined', name: 'Me', email: 'me@x.io' },
     { id: 'm2', userId: 'u2', status: 'joined', name: 'Mate', email: 'mate@x.io' },
   ],
-};
+} as TeamDetailResponse;
 
 // The Assign Action dialog's assignee dataset (docs/specs/012-collaboration/assigned-actions.md §2 + §4).
 describe('useAssigneeOptions members', () => {

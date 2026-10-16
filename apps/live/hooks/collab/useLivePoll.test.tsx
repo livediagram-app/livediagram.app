@@ -1,11 +1,11 @@
 // @vitest-environment jsdom
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, renderHook } from '@testing-library/react';
-import type { LivePoll } from '@livediagram/api-schema';
+import type { LivePoll, RoomOutgoing } from '@livediagram/api-schema';
 
-const trackMock = vi.fn();
+const trackMock = vi.fn<typeof import('@/lib/telemetry').track>();
 vi.mock('@/lib/telemetry', () => ({
-  track: (...args: unknown[]) => trackMock(...args),
+  track: (...args: Parameters<typeof trackMock>) => trackMock(...args),
 }));
 
 const { pollHostFor, useLivePoll } = await import('./useLivePoll');
@@ -17,6 +17,10 @@ const poll = (id: string): LivePoll => ({
   options: [],
   startedAt: 1,
 });
+
+// The ops a hook sent its room, in order.
+const sentOps = (send: { mock: { calls: [RoomOutgoing][] } }) =>
+  send.mock.calls.map(([msg]) => (msg.kind === 'op' ? msg.op : undefined));
 
 function setup() {
   const send = vi.fn();
@@ -117,7 +121,7 @@ describe('starting a collaborators poll (docs/specs/012-collaboration/live-poll.
 
 describe('surviving reconnects and refreshes (docs/specs/012-collaboration/collab-race-hardening.md)', () => {
   function withKey(key: string) {
-    const send = vi.fn();
+    const send = vi.fn<(msg: RoomOutgoing) => void>();
     const hook = renderHook(() =>
       useLivePoll({ roomRef: { current: { send } }, selfKeyRef: { current: key } }),
     );
@@ -152,8 +156,8 @@ describe('surviving reconnects and refreshes (docs/specs/012-collaboration/colla
     const { result, send } = withKey('me');
     act(() => result.current.startPoll({ question: 'Lunch?', style: 'text', options: [] }));
     act(() => result.current.answerPoll('pizza'));
-    const ops = send.mock.calls.map((c) => c[0].op);
-    expect(ops[0].poll.hostKey).toBe('me');
+    const ops = sentOps(send);
+    expect(ops[0]).toMatchObject({ poll: { hostKey: 'me' } });
     expect(ops[1]).toMatchObject({ kind: 'poll-answer', value: 'pizza', key: 'me' });
   });
 
@@ -164,12 +168,13 @@ describe('surviving reconnects and refreshes (docs/specs/012-collaboration/colla
     act(() => result.current.receivePoll(poll('p1')));
     act(() => result.current.answerPoll('pizza'));
     act(() => result.current.answerPoll('sushi'));
-    const [first, second] = send.mock.calls.map((c) => c[0].op);
-    expect(typeof first.proof).toBe('string');
-    expect(first.proof.length).toBeGreaterThan(20);
-    expect(second.proof).toBe(first.proof);
-    expect(first.proof).not.toBe('me');
-    expect(localStorage.getItem('livediagram:v2:collab-secret')).toBe(first.proof);
+    const [first, second] = sentOps(send).map((op) =>
+      op?.kind === 'poll-answer' ? op.proof : undefined,
+    );
+    expect(first?.length).toBeGreaterThan(20);
+    expect(second).toBe(first);
+    expect(first).not.toBe('me');
+    expect(localStorage.getItem('livediagram:v2:collab-secret')).toBe(first);
   });
 
   it('hosts the poll it starts, until it ends or a peer poll replaces it', () => {

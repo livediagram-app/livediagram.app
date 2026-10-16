@@ -2,9 +2,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, renderHook } from '@testing-library/react';
 
-const trackMock = vi.fn();
+const trackMock = vi.fn<typeof import('@/lib/telemetry').track>();
 vi.mock('@/lib/telemetry', () => ({
-  track: (...args: unknown[]) => trackMock(...args),
+  track: (...args: Parameters<typeof trackMock>) => trackMock(...args),
 }));
 
 const { useEditorComments } = await import('./useEditorComments');
@@ -41,7 +41,7 @@ describe('useEditorComments telemetry', () => {
       result.current.resolveThread('el');
       result.current.replaceCommentId('el', 'a', 'b');
     });
-    expect(applyElementDelta.mock.calls.map((c) => [c[0], c[1].kind])).toEqual([
+    expect(applyElementDelta.mock.calls.map((c): unknown => [c[0], c[1].kind])).toEqual([
       ['el', 'comment-add'],
       ['el', 'comment-remove'],
       ['el', 'comment-resolve'],
@@ -104,7 +104,11 @@ describe('useEditorComments telemetry', () => {
     expect(trackMock).not.toHaveBeenCalled();
     await act(flush);
     expect(trackMock.mock.calls).toEqual([['Comment', 'Resolved']]);
-    expect(applyElementDelta.mock.calls.map((c) => c[1].resolved)).toEqual([true, false, true]);
+    expect(applyElementDelta.mock.calls.map((c): unknown => c[1].resolved)).toEqual([
+      true,
+      false,
+      true,
+    ]);
     expect(warn).toHaveBeenCalledWith('[comments] thread state not saved', {
       resolved: false,
       error: 'Error: 403',
@@ -170,7 +174,9 @@ describe('useEditorComments on a Sheet cell', () => {
     });
     vi.spyOn(console, 'warn').mockImplementation(() => {});
     await act(flush);
-    expect(applyElementDelta.mock.calls.map((c) => [c[1].kind, c[1].cell, c[1].resolved])).toEqual([
+    expect(
+      applyElementDelta.mock.calls.map((c): unknown => [c[1].kind, c[1].cell, c[1].resolved]),
+    ).toEqual([
       ['comment-add', 'r1:c1', undefined],
       ['comment-resolve', 'r1:c1', true],
       ['comment-resolve', 'r1:c1', false],
