@@ -89,7 +89,8 @@ export function matrixAxes(
   plot: { x: number; y: number; w: number; h: number },
   vertical: string,
   horizontal: string,
-  colours: { stroke: string; bold: string; muted: string },
+  // `bold` is the axis names' colour; left out, they take the canvas's ink, which reads in either half.
+  colours: { stroke: string; bold?: string; muted: string },
 ): Element[] {
   const axis = (x1: number, y1: number, x2: number, y2: number): Element => ({
     ...createArrow(x1, y1, x2, y2),
@@ -114,7 +115,7 @@ export function matrixAxes(
     label,
     textSize: 'sm',
     textBold: bold,
-    textColor: bold ? colours.bold : colours.muted,
+    ...(bold ? (colours.bold ? { textColor: colours.bold } : {}) : { textColor: colours.muted }),
     textAlignX: alignX,
     ...(rotation ? { rotation } : {}),
     ...SCAFFOLD,

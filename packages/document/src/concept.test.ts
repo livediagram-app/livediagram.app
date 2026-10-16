@@ -5,7 +5,9 @@ import {
   applyShapeVariant,
   canAppendWebRow,
   conceptAnimOf,
+  conceptDiscInk,
   conceptRamp,
+  contrastRatio,
   createShape,
   chevronLayout,
   cycleLayout,
@@ -126,6 +128,34 @@ describe('concept validation and export', () => {
     const cycle = svgBoxed(make('cycle'));
     expect(cycle).toContain('>Weekly<');
     expect(cycle).toContain('>loop<');
+  });
+
+  it('writes a stage on a pale disc in an ink that reads there, not the canvas ink its centre words take', () => {
+    // A pale fill under a light ink: the light ink is right for the centre words on a dark canvas, wrong on the disc.
+    const svg = svgBoxed(
+      make('cycle', {
+        fillColor: '#eff6ff',
+        strokeColor: '#2563eb',
+        textColor: '#ffffff',
+        label: 'Momentum',
+      }),
+    );
+    const inkOf = (word: string) =>
+      new RegExp(`fill="(#[0-9a-f]{6})"[^>]*>${word}<`).exec(svg)?.[1];
+    expect(inkOf('Do')).not.toBe('#ffffff');
+    expect(contrastRatio(inkOf('Do')!, '#eff6ff')).toBeGreaterThanOrEqual(4.5);
+    expect(svg).toMatch(/fill="#ffffff"[^>]*><tspan[^>]*>Momentum</);
+    const hub = svgBoxed(make('hub', { fillColor: '#eff6ff', textColor: '#ffffff' }));
+    expect(hub).not.toMatch(/stroke-width="2"\/><text[^>]*fill="#ffffff"/);
+  });
+
+  it('keeps the element ink on a disc where it already reads', () => {
+    expect(conceptDiscInk('#0f172a', '#eff6ff')).toBe('#0f172a');
+    expect(contrastRatio(conceptDiscInk('#e2e8f0', '#eff6ff'), '#eff6ff')).toBeGreaterThanOrEqual(
+      4.5,
+    );
+    // A fill that is not a plain hex (a gradient token, transparent) leaves the ink alone.
+    expect(conceptDiscInk('#e2e8f0', 'transparent')).toBe('#e2e8f0');
   });
 });
 

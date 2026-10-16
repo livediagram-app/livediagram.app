@@ -7,17 +7,28 @@
 // Pure: (cx, cy) -> Element[]. build-template dispatches here.
 import { createArrow, createShape, createText, type Element } from '@livediagram/document';
 import { TEMPLATE_CONTENT_LAYER_ID, TEMPLATE_SCAFFOLD_LAYER_ID } from './template-layers';
+import { CANVAS_TONES } from './template-inks';
 
 const MUTED = '#64748b';
 
 type Status = 'done' | 'current' | 'next';
 
-// Each status owns a disc fill, its ring and the glyph colour inside it. The
-// colour is the meaning (keyed by the legend), so every disc locks its fill.
-const STATUS: Record<Status, { fill: string; stroke: string; glyph: string; legend: string }> = {
-  done: { fill: '#22c55e', stroke: '#15803d', glyph: '#ffffff', legend: 'Done' },
-  current: { fill: '#3b82f6', stroke: '#1d4ed8', glyph: '#ffffff', legend: 'In progress' },
-  next: { fill: '#ffffff', stroke: '#94a3b8', glyph: '#64748b', legend: 'Up next' },
+// Each status owns a disc fill, its ring, the glyph colour inside it and its date's colour. The
+// colour is the meaning (keyed by the legend), so every disc locks its fill. The date sits on the
+// canvas, so it takes a tone that reads on both halves' (In progress's deep blue ring sank into the dark one).
+const STATUS: Record<
+  Status,
+  { fill: string; stroke: string; glyph: string; date: string; legend: string }
+> = {
+  done: { fill: '#22c55e', stroke: '#15803d', glyph: '#ffffff', date: '#15803d', legend: 'Done' },
+  current: {
+    fill: '#3b82f6',
+    stroke: '#1d4ed8',
+    glyph: '#ffffff',
+    date: CANVAS_TONES.blue,
+    legend: 'In progress',
+  },
+  next: { fill: '#ffffff', stroke: '#94a3b8', glyph: '#64748b', date: MUTED, legend: 'Up next' },
 };
 
 // Plateful's 2027 product year: six milestones evenly spaced (this is the
@@ -200,7 +211,7 @@ export function buildTimeline(cx: number, cy: number): Element[] {
         textSize: 'sm',
         textBold: true,
         textAlignX: 'center',
-        textColor: style.stroke === '#94a3b8' ? MUTED : style.stroke,
+        textColor: style.date,
       },
       {
         ...createText(left, top + dateH),

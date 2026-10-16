@@ -11,6 +11,7 @@ import {
   type SessionButtonConfig,
   type ShapeElement,
 } from '@livediagram/document';
+import { PAPER_INK } from './template-inks';
 
 export const GAP = 40;
 export const TITLE_H = 52;
@@ -181,6 +182,8 @@ export function stepCards(
         height: height - 16 - disc - 8 - 12,
         label: s.hint,
         textSize: 'sm',
+        // The card keeps its pastel tint in either half, so its line of how keeps a dark ink.
+        textColor: PAPER_INK,
         textAlignX: 'left',
         textAlignY: 'top',
       },

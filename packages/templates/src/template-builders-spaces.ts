@@ -157,7 +157,6 @@ export function buildTeamPod(cx: number, cy: number): Element[] {
       label: 'Team Board',
       textSize: 'md',
       textBold: true,
-      textColor: '#0f172a',
     },
     ...TEAM_BOARD.map((label, i) => ({
       ...createSticky(bx + (i % 2) * 154, by + 44 + Math.floor(i / 2) * 154),
@@ -234,7 +233,7 @@ export function buildAllHandsHall(cx: number, cy: number): Element[] {
       textSize: 'lg',
       textBold: true,
       textAlignX: 'center',
-      textColor: '#78350f',
+      // No ink of its own: the rug under it is drawn per half, pale on light and deep brown on dark.
     },
     // The presenter's Bring Focus, so the room looks where they point.
     {

@@ -3,7 +3,10 @@
 // with them.
 
 import { mixHex } from './color-wash';
-import { labelOn } from './readable-colour';
+import { contrastRatio } from './colors';
+import { THEME_TEXT_CONTRAST, labelOn } from './readable-colour';
+
+const HEX = /^#[0-9a-f]{6}$/i;
 
 const RAMP_FLOOR = 0.22;
 
@@ -19,4 +22,13 @@ export function conceptRamp(
     const rowFill = mixHex(accent, fill, share);
     return { fill: rowFill, text: labelOn(rowFill) };
   });
+}
+
+/** The ink for words on a disc drawn in the element's own fill (a cycle's later stages, a hub's satellites): the
+ *  element's ink where it reads on that fill, else the label that reads on the fill, as the ramp's own discs take.
+ *  The ink is picked for the canvas, since it also writes a cycle's centre words there, so a pale fill on the dark
+ *  canvas sank the stage names. */
+export function conceptDiscInk(ink: string, fill: string): string {
+  if (!HEX.test(ink) || !HEX.test(fill)) return ink;
+  return contrastRatio(ink, fill) >= THEME_TEXT_CONTRAST ? ink : labelOn(fill);
 }

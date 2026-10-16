@@ -21,6 +21,7 @@ import {
   phaseBand,
 } from './template-planner-parts';
 import { meetingRoom } from './template-meeting-room';
+import { CANVAS_TONES } from './template-inks';
 
 // Plateful's weekly product sync, the meeting a team runs every Tuesday,
 // read left to right as Before / During / After (a phase band over the
@@ -41,7 +42,8 @@ import { meetingRoom } from './template-meeting-room';
 
 const PHASES = [
   { label: 'Before', hint: 'set the room', hue: '#6366f1' },
-  { label: 'During', hint: 'run it, park it, decide it', hue: '#0ea5e9' },
+  // A sky that reads on either half's canvas: its band title sits there (#0ea5e9 did not on the light one).
+  { label: 'During', hint: 'run it, park it, decide it', hue: CANVAS_TONES.sky },
   { label: 'After', hint: 'close the loop', hue: '#8b5cf6' },
 ];
 
@@ -140,7 +142,7 @@ export function buildMeetingAgenda(cx: number, cy: number): Element[] {
       headY,
       duringW,
       'clock',
-      '#0ea5e9',
+      CANVAS_TONES.sky,
       'Run of show',
       'Press a segment to start its clock',
     ),
@@ -224,7 +226,7 @@ export function buildMeetingAgenda(cx: number, cy: number): Element[] {
         width: 20,
         height: 20,
         iconId: 'check',
-        strokeColor: '#0ea5e9',
+        strokeColor: CANVAS_TONES.sky,
       },
       {
         ...createText(duringX + 30, y),
@@ -278,7 +280,8 @@ export function buildMeetingAgenda(cx: number, cy: number): Element[] {
     height: 28,
     label: 'Triaged in the last 5 minutes',
     textSize: 'sm',
-    textColor: '#d97706',
+    // On the bay's thin amber wash over the canvas: an amber that reads on either half's.
+    textColor: CANVAS_TONES.amber,
     textBold: true,
     textAlignX: 'left',
   });
