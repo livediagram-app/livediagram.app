@@ -117,7 +117,7 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
-const search = () => screen.getByRole('searchbox') as HTMLInputElement;
+const search = () => screen.getByRole<HTMLInputElement>('searchbox');
 const postCalls = () => calls.filter((c) => isPosts(c.url));
 
 describe('the gallery', () => {

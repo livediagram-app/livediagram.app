@@ -143,7 +143,7 @@ describe('diffView (R17, VW36)', () => {
     expect(
       changeLines(
         [frame, gone, odd],
-        [frame, shapeAt('square', 'new', 10, 10), { ...odd, label: 'x' } as Element],
+        [frame, shapeAt('square', 'new', 10, 10), { ...odd, label: 'x' }],
       ),
     ).toEqual(['- square gone "Gone"', '+ square new in f', '~ ? hologram odd label none → "x"']);
     expect(changeLines([], [shapeAt('square', 'top', 0, 0, 100, 50, { label: 'Top' })])).toEqual([

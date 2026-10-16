@@ -129,12 +129,12 @@ describe('what boards bring', () => {
   });
 
   it('leaves out a type whose name the document already has, and adds no more than fit', () => {
-    const renamed = [{ ...ITEM_TYPES[0]!, id: 'chore', label: 'task' }];
+    const renamed = [{ ...ITEM_TYPES[0], id: 'chore', label: 'task' }];
     expect(ids(defaultTypesToAdd(renamed))).toEqual(['project', 'note', 'idea', 'action']);
-    const story = { ...ITEM_TYPES[1]!, id: 'defect', label: 'Bug' };
+    const story = { ...ITEM_TYPES[1], id: 'defect', label: 'Bug' };
     expect(boardTypesToAdd([preset('bug-triage')], [story])).toEqual([]);
     const many = Array.from({ length: ITEM_TYPES_MAX - 2 }, (_, i) => ({
-      ...ITEM_TYPES[0]!,
+      ...ITEM_TYPES[0],
       id: `t${i}`,
       label: `T${i}`,
     }));
@@ -177,7 +177,7 @@ describe('the catalogue boards leave', () => {
   it('never grows a catalogue past its cap', () => {
     const full = {
       version: 1,
-      types: Array.from({ length: ITEM_TYPES_MAX }, (_, i) => ({ ...ITEM_TYPES[1]!, id: `t${i}` })),
+      types: Array.from({ length: ITEM_TYPES_MAX }, (_, i) => ({ ...ITEM_TYPES[1], id: `t${i}` })),
     };
     expect(catalogueWithBoardTypes(full, [board(['bug'])])).toBeNull();
     const nearly = { version: 1, types: full.types.slice(1) };

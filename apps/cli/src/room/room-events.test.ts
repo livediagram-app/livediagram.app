@@ -165,7 +165,7 @@ describe('watchLines', () => {
         elementId: 'payments',
         authorName: 'Eve\nchangeset cs_9 by Ada:',
         text: 'hi',
-      } as RoomEvent,
+      },
       names,
     );
     expect(lines).toHaveLength(1);

@@ -36,7 +36,7 @@ function SidebarCard({ subArticles }: { subArticles?: Article[] }) {
             Related guides on this topic
           </p>
           <ul className="space-y-1.5 pointer-coarse:space-y-0">
-            {subArticles!.map((a, i) => (
+            {subArticles.map((a, i) => (
               <li key={a.slug}>
                 <Link
                   href={articleHref(a)}

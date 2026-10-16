@@ -72,7 +72,7 @@ const PAGE_DRAWINGS: Element[][] = [
       height: 40,
       label: 'A heading long enough to wrap onto three or more lines in its box',
       textSize: 'lg',
-    } as Element,
+    },
   ],
   [
     {
@@ -84,11 +84,11 @@ const PAGE_DRAWINGS: Element[][] = [
       height: 120,
       label: '£4.6bn',
       textSize: 'lg',
-    } as Element,
+    },
   ],
   [
-    { id: 'a', type: 'text', x: 0, y: 0, width: 200, height: 40, label: 'One' } as Element,
-    { id: 'b', type: 'text', x: 0, y: 8, width: 200, height: 40, label: 'Two' } as Element,
+    { id: 'a', type: 'text', x: 0, y: 0, width: 200, height: 40, label: 'One' },
+    { id: 'b', type: 'text', x: 0, y: 8, width: 200, height: 40, label: 'Two' },
   ],
 ];
 

@@ -12,7 +12,6 @@ import {
   RATING_FIELD_SCALE_MAX,
   RATING_FIELD_SCALE_MIN,
   type CustomFieldDef,
-  type CustomFieldKind,
   type ItemTypeDef,
 } from './item-types';
 import type { PlanStatusName } from './plan-outline';
@@ -275,7 +274,7 @@ function customOf(
   const field: { -readonly [K in keyof CustomFieldDef]: CustomFieldDef[K] } = {
     id: newCustomFieldId(name, [...type.fields, ...(type.custom ?? []).map((f) => f.id)]),
     label: name,
-    kind: known as CustomFieldKind,
+    kind: known,
   };
   if (known === 'choice' || known === 'multichoice')
     field.options = (input.options ?? []).map((o) => o.trim());

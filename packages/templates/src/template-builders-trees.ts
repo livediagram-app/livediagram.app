@@ -9,7 +9,6 @@ import {
   createShape,
   createText,
   personCardText,
-  type ArrowElement,
   type Element,
   type ShapeElement,
 } from '@livediagram/document';
@@ -313,7 +312,7 @@ export function buildOrgChart(cx: number, cy: number): Element[] {
       { x: sales.x, y: sales.y + sales.height / 2 },
       gapX,
     ),
-  } as ArrowElement);
+  });
 
   // The key: a sample of each line and the open-role card, muted.
   const keyY = bandTop + bandH + 32;

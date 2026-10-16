@@ -1,10 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import type { Element } from '@livediagram/document';
 import { shapeAt } from './__fixtures__/build';
 import { stateAttributeOf } from './state-attribute';
 
 const state = (kind: Parameters<typeof shapeAt>[0], extra: Record<string, unknown> = {}) =>
-  stateAttributeOf({ ...shapeAt(kind, 'x', 0, 0), ...extra } as Element)
+  stateAttributeOf({ ...shapeAt(kind, 'x', 0, 0), ...extra })
     .map((a) => a.text)
     .join(' ');
 

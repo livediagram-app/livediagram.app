@@ -76,6 +76,6 @@ export function weightedCrossEntropy(yTrue: T.Tensor, yPred: T.Tensor): T.Scalar
   return tf.tidy(() => {
     const logp = tf.log(tf.clipByValue(yPred, 1e-6, 1));
     const perPixel = tf.neg(tf.sum(tf.mul(yTrue, logp), -1));
-    return tf.mean(perPixel) as T.Scalar;
+    return tf.mean<T.Scalar>(perPixel);
   });
 }

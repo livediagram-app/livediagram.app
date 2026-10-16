@@ -17,7 +17,7 @@ import { pkceChallenge, sha256Hex } from './sha256';
 //                   implicitly exercised).
 
 function bytesOf(s: string): ArrayBuffer {
-  return new TextEncoder().encode(s).buffer as ArrayBuffer;
+  return new TextEncoder().encode(s).buffer;
 }
 
 describe('sha256Hex', () => {

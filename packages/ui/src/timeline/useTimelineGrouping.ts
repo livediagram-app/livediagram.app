@@ -83,7 +83,7 @@ export function formatDay(key: string): { label: string; year: string } {
   // built it. `new Date('2026-08-05')` would be parsed as UTC and could
   // render the previous day west of Greenwich.
   const [y, m, d] = key.split('-').map(Number);
-  const date = new Date(y!, m! - 1, d!);
+  const date = new Date(y!, m! - 1, d);
   if (Number.isNaN(date.getTime())) return { label: key, year: '' };
   // Assembled from parts rather than taken from a single format call:
   // ICU 72 and below emit "Tue 5 Aug" while 73+ emit "Tue, 5 Aug", and

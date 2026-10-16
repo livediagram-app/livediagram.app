@@ -5,7 +5,7 @@ import { trustedHtml } from '@livediagram/ui';
 // hand face, and a sticker on its die-cut plate. Every path is generated from a fixed seed, so the
 // wobble is the same on every render (and in the static HTML).
 
-import type { CSSProperties, ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { stickerArt, type StickerDef } from '@livediagram/icons';
 import { seededRandom } from '@livediagram/document';
 import { at } from '@/components/art-tokens';
@@ -258,7 +258,7 @@ export function Sticker({
 }) {
   const { viewBox, markup } = stickerArt(def);
   return (
-    <g className="hm-pop" style={at(d) as CSSProperties}>
+    <g className="hm-pop" style={at(d)}>
       <g transform={`rotate(${tilt} ${x + size / 2} ${y + size / 2})`}>
         <svg
           x={x}

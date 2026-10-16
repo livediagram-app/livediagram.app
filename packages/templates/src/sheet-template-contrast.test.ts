@@ -22,7 +22,7 @@ describe.each(SHEET_TEMPLATE_IDS)('%s reads at AA', (template) => {
   it.each([false, true])('made on a dark canvas: %s, on every surface', (dark) => {
     for (const [name, surface] of Object.entries(SURFACES))
       for (const c of cellsOf(template, dark)) {
-        const { fill, ink } = cellColours(c.f as { bg?: string; fc?: string }, surface);
+        const { fill, ink } = cellColours(c.f, surface);
         const ratio = contrastRatio(ink, fill ?? surface.fill);
         expect(
           ratio,

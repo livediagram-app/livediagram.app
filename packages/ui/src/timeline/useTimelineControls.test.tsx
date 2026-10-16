@@ -72,14 +72,14 @@ describe('useTimelineControls', () => {
         title: 'Document Created',
         occurredAt: noon,
         snapshot: { documentId: 'd1', documentName: 'Payments' },
-      } as Partial<TimelineEvent>);
+      });
       const edited = event({
         id: 'e',
         eventType: 'document_edited',
         title: 'Document Updated',
         occurredAt: noon + 3 * 60 * 60 * 1000,
         snapshot: { documentId: 'd1', documentName: 'Payments' },
-      } as Partial<TimelineEvent>);
+      });
       const { result } = renderHook(() => useTimelineControls([edited, created], { viewerId: ME }));
       expect(result.current.visibleEvents.map((e) => e.id)).toEqual(['c']);
       // The calendar's marked days come from the same list, so they agree.

@@ -4,7 +4,6 @@ import {
   isPlanViewId,
   normaliseBoardSetup,
   presetSetup,
-  type PlanBoardSetup,
 } from '@livediagram/items';
 import { isValidElement, type Element } from '@livediagram/document';
 import { describe, expect, it } from 'vitest';
@@ -34,9 +33,7 @@ const everyTab = () =>
 
 const boardsOf = (els: Element[]) =>
   els.flatMap((el) =>
-    el.type === 'shape' && el.shape === 'plan-board' && el.planBoard
-      ? [el.planBoard as PlanBoardSetup]
-      : [],
+    el.type === 'shape' && el.shape === 'plan-board' && el.planBoard ? [el.planBoard] : [],
   );
 
 // A template's Dashboard elements: its plan views.

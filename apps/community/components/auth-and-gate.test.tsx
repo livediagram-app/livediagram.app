@@ -9,7 +9,7 @@ import type { CommunitySession } from '@/lib/session';
 
 const h = vi.hoisted(() => ({
   enabled: true,
-  auth: { isLoaded: true, isSignedIn: true as boolean | undefined, getToken: vi.fn() },
+  auth: { isLoaded: true, isSignedIn: true, getToken: vi.fn() },
   replace: vi.fn(),
 }));
 

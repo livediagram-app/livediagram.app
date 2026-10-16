@@ -13,7 +13,7 @@ import { ITEM_TYPES, isEmailAddress, type ItemTypeDef } from './item-types';
 
 const statuses = [{ status: 'todo~a1', name: 'To Do' }];
 const DEAL: ItemTypeDef = {
-  ...ITEM_TYPES[1]!,
+  ...ITEM_TYPES[1],
   id: 'deal',
   label: 'Deal',
   fields: ['title', 'status', 'f-value', 'f-contact'],

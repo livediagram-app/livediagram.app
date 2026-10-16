@@ -1,6 +1,5 @@
 // Feature illustrations: embeds on the canvas and the Timeline feed, split from ./structure.
 
-import type { CSSProperties } from 'react';
 import { HAIRLINE, PANEL, SHADOW, Scene, TEXT_BODY, TEXT_MUTED, TEXT_STRONG } from './canvas-marks';
 import { Frame } from './shared';
 
@@ -185,7 +184,7 @@ export function TimelineFeedArt() {
             <g
               key={r.doc}
               className={r.fresh ? 'fa-d-land' : undefined}
-              style={r.fresh ? ({ animationDelay: '0.1s' } as CSSProperties) : undefined}
+              style={r.fresh ? { animationDelay: '0.1s' } : undefined}
             >
               <circle
                 cx="43"

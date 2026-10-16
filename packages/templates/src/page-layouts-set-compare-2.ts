@@ -179,7 +179,7 @@ function pricingTiers(k: Kit): Element[] {
   const ctaH = u * 10;
   // Keep the blurb only where the features still get their room.
   const fixedH = u * 7 + u * 32 + ctaH + pad * 2;
-  const blurb = cardH - fixedH - u * 11 > PLANS[0]!.features.length * u * 8;
+  const blurb = cardH - fixedH - u * 11 > PLANS[0].features.length * u * 8;
   return [
     ...head.els,
     ...PLANS.flatMap((plan, i) => {

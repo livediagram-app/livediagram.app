@@ -5,21 +5,13 @@
 import { graphLint, renderSkill, type Verb, type VerbContext } from '@livediagram/agent-verbs';
 import { DOCUMENT_FORMAT } from '@livediagram/api-schema';
 import { resolveCredential } from './auth/credentials';
-import {
-  callApi,
-  guideOf,
-  installSkill,
-  login,
-  logout,
-  status,
-  type LoginInput,
-} from './commands/local';
+import { callApi, guideOf, installSkill, login, logout, status } from './commands/local';
 import { exportAll, type ExportInput } from './commands/export';
-import { linkInit, linkLs, linksFor, linkStatus, type LinkInitInput } from './commands/link';
+import { linkInit, linkLs, linksFor, linkStatus } from './commands/link';
 import { pullDocument, type PullInput } from './commands/pull';
 import { pullFileOf, pullFileView, type ViewInput } from './commands/pull-file-views';
 import { pushFile, type PushInput } from './commands/push';
-import { syncLinks, type SyncInput } from './commands/sync';
+import { syncLinks } from './commands/sync';
 import { waitFor, type WaitInput } from './commands/wait';
 import { watch, type WatchInput } from './commands/watch';
 import { pairWorkbench, type PairInput } from './commands/workbench-pair';
@@ -114,7 +106,7 @@ async function runOnline(
   }
   const http = transport(io, caps.apiBase, log);
   if (verb.id === 'auth.login')
-    return login(io, profile, http.forToken, input as LoginInput, caps.oauthIssuer, log);
+    return login(io, profile, http.forToken, input, caps.oauthIssuer, log);
   const credential = await resolveCredential(io, profile.name);
   log(`credential ${credential?.source ?? 'none'}`);
   if (!credential)
@@ -168,10 +160,10 @@ async function runOnline(
   if (verb.id === 'push') return pushFile(io, ctx, profile.host, input as PushInput);
   if (verb.id === 'wait') return waitFor(io, ctx, caps.apiBase, input as WaitInput);
   if (verb.id === 'watch') return watch(io, ctx, caps.apiBase, input as WatchInput, json);
-  if (verb.id === 'link.init') return linkInit(io, ctx, input as LinkInitInput);
+  if (verb.id === 'link.init') return linkInit(io, ctx, input);
   if (verb.id === 'link.status') return linkStatus(io, ctx, links, Boolean(input.all));
   if (verb.id === 'link.ls') return linkLs(io, ctx, links, input.limit as number);
-  if (verb.id === 'sync') return syncLinks(io, ctx, caps.apiBase, links, input as SyncInput);
+  if (verb.id === 'sync') return syncLinks(io, ctx, caps.apiBase, links, input);
   if (verb.id === 'workbench.pair') return pairWorkbench(io, api, input as PairInput, json, log);
   return verb.run!(ctx, input);
 }

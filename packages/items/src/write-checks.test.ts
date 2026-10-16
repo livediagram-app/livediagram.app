@@ -12,7 +12,7 @@ import {
 
 // The api's write checks, shared with an offline document (blueprint item-store.md "Interfaces and contracts").
 
-const types = [{ ...ITEM_TYPES[0]!, id: 'task', excludedStatuses: ['done'] }];
+const types = [{ ...ITEM_TYPES[0], id: 'task', excludedStatuses: ['done'] }];
 
 describe('reading a write as the api does', () => {
   it('reads places, creates and moves, refusing by name', () => {

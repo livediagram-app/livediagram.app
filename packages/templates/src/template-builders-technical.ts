@@ -192,7 +192,7 @@ export function buildSystemArchitecture(cx: number, cy: number): Element[] {
       pageSubtitle: _meta,
       tags: _tags,
       ...base
-    } = createShape('card', colX(col) - nodeW / 2, laneMid(tier) - nodeH / 2) as Node;
+    } = createShape('card', colX(col) - nodeW / 2, laneMid(tier) - nodeH / 2);
     return {
       ...base,
       width: nodeW,
@@ -302,7 +302,7 @@ export function buildSystemArchitecture(cx: number, cy: number): Element[] {
       'line:solid': 'Request: waits for the reply',
       'line:dashed': 'Event: fire and forget',
     },
-  } as Element);
+  });
 
   const content: Element[] = [
     customerApp,

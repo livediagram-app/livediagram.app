@@ -36,16 +36,15 @@ function fits(
 }
 
 // The plate as a box to test a path against, drawn in by the tolerance: a line grazing its edge does not strike it.
-const asBox = (r: Rect): BoxedElement =>
-  ({
-    id: '',
-    type: 'shape',
-    shape: 'square',
-    x: r.x + LINT_OVERLAP_TOLERANCE_PX,
-    y: r.y + LINT_OVERLAP_TOLERANCE_PX,
-    width: Math.max(1, r.width - 2 * LINT_OVERLAP_TOLERANCE_PX),
-    height: Math.max(1, r.height - 2 * LINT_OVERLAP_TOLERANCE_PX),
-  }) as BoxedElement;
+const asBox = (r: Rect): BoxedElement => ({
+  id: '',
+  type: 'shape',
+  shape: 'square',
+  x: r.x + LINT_OVERLAP_TOLERANCE_PX,
+  y: r.y + LINT_OVERLAP_TOLERANCE_PX,
+  width: Math.max(1, r.width - 2 * LINT_OVERLAP_TOLERANCE_PX),
+  height: Math.max(1, r.height - 2 * LINT_OVERLAP_TOLERANCE_PX),
+});
 
 // The axis of the run of `pts` that a point lies on: level, upright, or neither.
 function axisAt(pts: readonly Point[], c: Point): 'level' | 'upright' | null {

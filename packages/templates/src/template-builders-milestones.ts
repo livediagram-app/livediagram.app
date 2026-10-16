@@ -52,7 +52,7 @@ export function milestoneCard(
     iconId,
     textSize: 'sm',
     strokeColor: accent,
-  } as Shape;
+  };
 }
 
 export const layered = (scaffold: Element[], content: Element[]): Element[] => [

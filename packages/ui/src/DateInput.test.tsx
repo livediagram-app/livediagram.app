@@ -10,7 +10,7 @@ function partial(el: HTMLInputElement, on: boolean) {
   Object.defineProperty(el, 'validity', { value: { badInput: on }, configurable: true });
 }
 
-const field = () => screen.getByLabelText('Due') as HTMLInputElement;
+const field = () => screen.getByLabelText<HTMLInputElement>('Due');
 
 describe('isWholeDay', () => {
   it('takes a real day with a four-digit year', () => {

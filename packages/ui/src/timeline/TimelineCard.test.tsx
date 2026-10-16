@@ -21,7 +21,7 @@ function event(over: Partial<TimelineEvent> = {}): TimelineEvent {
     actorId: 'me',
     snapshot: { documentId: 'd1', documentName: 'Payments' },
     ...over,
-  } as TimelineEvent;
+  };
 }
 
 const icon = <svg data-testid="glyph" />;
