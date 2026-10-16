@@ -1,13 +1,13 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { PLAN_GLYPH_CATEGORIES } from '@livediagram/items';
+import { PLAN_GLYPH_CATEGORIES, type ItemTypeDef } from '@livediagram/items';
 import { GlyphPicker } from './GlyphPicker';
 
 // docs/specs/026-plan/item-types.md "Editing a type": the Glyph button and its popover of categories and a search.
 afterEach(cleanup);
 
-const draw = (value = 'task') => {
+const draw = (value: ItemTypeDef['glyph'] = 'task') => {
   const onChange = vi.fn();
   render(<GlyphPicker value={value} colour="#2563eb" onChange={onChange} />);
   return onChange;

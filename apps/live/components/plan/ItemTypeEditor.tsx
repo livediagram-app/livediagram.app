@@ -76,7 +76,7 @@ export function ItemTypeEditor({
   const start = type ?? template ?? NEW_TYPE;
   const [label, setLabel] = useState(start.label);
   const [color, setColor] = useState(start.color);
-  const [glyph, setGlyph] = useState(String(start.glyph));
+  const [glyph, setGlyph] = useState(start.glyph);
   // The fields, custom fields and the panel's tabs (the type's own, or its one Overview tab), as one draft.
   const [layout, setLayout] = useState<LayoutDraft>(() => ({
     fields: [...start.fields],

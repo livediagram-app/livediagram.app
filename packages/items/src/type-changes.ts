@@ -2,7 +2,7 @@
 // delete and restore changes applied in order to a document's catalogue, the way the type editor makes them. The
 // whole result is checked by validateItemTypeCatalogue before anything is saved; any refusal saves nothing.
 import { HEX_COLOUR } from './validate';
-import { PLAN_GLYPH_IDS } from './glyphs';
+import { PLAN_GLYPH_IDS, isPlanGlyphId, type PlanGlyphId } from './glyphs';
 import {
   COMMON_CURRENCIES,
   CURRENCY_CODE,
@@ -244,9 +244,9 @@ function currencyOf(input: string): string {
   );
 }
 
-function glyphOf(input: string): string {
+function glyphOf(input: string): PlanGlyphId {
   const id = input.trim().toLowerCase();
-  if ((PLAN_GLYPH_IDS as readonly string[]).includes(id)) return id;
+  if (isPlanGlyphId(id)) return id;
   throw invalid(`"${input}" is not a Plan glyph. Glyphs: ${PLAN_GLYPH_IDS.join(', ')}.`);
 }
 
