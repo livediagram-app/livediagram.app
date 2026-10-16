@@ -306,7 +306,9 @@ Every question's answer is kept on the response's card. **Answer Goes To** offer
 - A mapping whose field is later deleted, hidden from the type, or no longer fits (its kind or options changed)
   falls back to Description: the question's chip turns amber reading "Description (its field was removed)", an
   unselected question says "Goes to Description", and Answer Goes To explains, until changed.
-- New Field "<Prompt>" is offered while the type has fewer than 12 custom fields, and says so at the limit.
+- New Field "<Prompt>" is offered while the type has fewer than 12 custom fields, and says so at the limit. It makes
+  the kind the question's type makes, options included; a choice with **Other** gets a text field instead (Text for
+  Single Choice, Long Text for Multiple Choice), as its Other answer is no option of a choice field.
 - When nothing maps to Title, a card's title is the **form's heading and the response number** ("Bug Report #14").
   Answer Goes To shows a tip on a question that could be the Title while nothing is: "Tip: map one question to Title
   so cards read well on the board."

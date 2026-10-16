@@ -226,11 +226,9 @@ export function setRespondsTo(
   return null;
 }
 
-// The field New Field makes for `q`: the kind its type makes, or, for a choice with "Other" (whose answer is no option
-// of a choice field), the text kind that holds any answer. A choice or rating field is drawn on the card face, as a
-// starter's are, so it reads at a glance on the board.
+// The field New Field makes for `q` (newFieldFor: a choice with "Other" gets a text kind). A choice or rating field
+// is drawn on the card face, as a starter's are, so it reads at a glance on the board.
 function newFieldOf(q: FormQuestion, id: string, label: string): CustomFieldDef {
-  if (q.other) return { id, label, kind: MAPPABLE_KINDS[q.type][1]! };
   const field = newFieldFor(q, id, label);
   return ['choice', 'multichoice', 'rating'].includes(field.kind)
     ? { ...field, onCard: true }

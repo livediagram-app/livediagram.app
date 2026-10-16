@@ -150,4 +150,29 @@ describe('newFieldFor', () => {
     expect(newFieldFor(Q('rating', { scale: 10 }), 'f-a', 'A').scale).toBe(10);
     expect(newFieldFor(Q('rating'), 'f-a', 'A')).not.toHaveProperty('scale');
   });
+
+  it('gives a choice with Other a text field, as no choice field takes an Other answer', () => {
+    const opts: Partial<FormQuestion> = { options: ['X', 'Y'], other: true };
+    expect(newFieldFor(Q('single', opts), 'f-a', 'A')).toEqual({
+      id: 'f-a',
+      label: 'A',
+      kind: 'text',
+    });
+    expect(newFieldFor(Q('multi', opts), 'f-a', 'A')).toEqual({
+      id: 'f-a',
+      label: 'A',
+      kind: 'longtext',
+    });
+  });
+
+  // The field New Field makes is mapped at once, so it must never read as broken (the amber chip).
+  it.each(
+    QUESTION_TYPES.flatMap((t): [FormQuestion['type'], Partial<FormQuestion>][] => [
+      [t, {}],
+      [t, { options: ['X', 'Y'], other: true, scale: 10 }],
+    ]),
+  )('makes a field a %s question takes (%o)', (type, extra) => {
+    const q = Q(type, extra);
+    expect(fieldTakes(q, newFieldFor(q, 'f-a', 'A'))).toBe(true);
+  });
 });

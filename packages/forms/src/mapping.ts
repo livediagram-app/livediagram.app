@@ -93,8 +93,12 @@ export function titleTakenBy(
   return questionsOf(form).find((o) => o.id !== q?.id && o.goesTo?.to === 'title');
 }
 
-// The new field New Field "<Prompt>" makes for `q` (its id given by the caller, unique on the type).
+// The new field New Field "<Prompt>" makes for `q` (its id given by the caller, unique on the type): the kind its type
+// makes, or, for a choice with Other (whose answer is no option of a choice field, so fieldTakes refuses one), the
+// text kind that holds any answer.
 export function newFieldFor(q: FormQuestion, id: string, label: string): CustomFieldDef {
+  if (q.other && (q.type === 'single' || q.type === 'multi'))
+    return { id, label, kind: MAPPABLE_KINDS[q.type][1]! };
   const kind = NEW_FIELD_KIND[q.type];
   const field: CustomFieldDef = { id, label, kind };
   if (kind === 'choice' || kind === 'multichoice')
