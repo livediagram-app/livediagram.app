@@ -163,7 +163,7 @@ export default async function AlternativePage({ params }: { params: Promise<{ sl
                     ))}
                   </ul>
                 </div>
-                <div className="rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
+                <div className="rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-900">
                   <h3 className="flex items-center gap-2.5 font-semibold text-slate-900 dark:text-slate-100">
                     <span
                       className={`flex size-8 items-center justify-center rounded-lg bg-slate-100 ring-1 ring-slate-200 dark:bg-slate-800 dark:ring-slate-700 ${look?.glyph ?? 'text-slate-500'}`}

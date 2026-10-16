@@ -10,7 +10,7 @@ export function StarterPrompts() {
       {STARTER_PROMPTS.map(({ title, prompt }) => (
         <li
           key={title}
-          className="flex flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-xs transition hover:border-brand-300 hover:shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:hover:border-brand-500/50"
+          className="flex flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-xs transition hover:border-brand-300 hover:shadow-sm dark:border-slate-700 dark:bg-slate-900 dark:hover:border-brand-500/50"
         >
           <h3 className="font-semibold text-slate-900 dark:text-slate-100">{title}</h3>
           <p className="mt-2 flex-1 text-sm leading-relaxed text-slate-600 dark:text-slate-300">

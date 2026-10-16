@@ -10,7 +10,7 @@ export function FaqItem({ q, open, children }: { q: string; open?: boolean; chil
   return (
     <details
       open={open}
-      className="group rounded-xl border border-slate-200 bg-white shadow-xs transition open:border-brand-200 open:shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:open:border-brand-500/30"
+      className="group rounded-xl border border-slate-200 bg-white shadow-xs transition open:border-brand-200 open:shadow-sm dark:border-slate-700 dark:bg-slate-900 dark:open:border-brand-500/30"
     >
       <summary className="flex cursor-pointer list-none items-center gap-4 px-5 py-4 text-left font-medium text-slate-900 marker:hidden focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 dark:text-slate-100 [&::-webkit-details-marker]:hidden">
         <span className="flex-1">{q}</span>

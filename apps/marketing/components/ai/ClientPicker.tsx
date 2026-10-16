@@ -185,7 +185,7 @@ function ClientPanel({ client, hidden }: { client: AiClient; hidden: boolean }) 
       aria-labelledby={`tab-${client.id}`}
       hidden={hidden}
       tabIndex={0}
-      className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 sm:p-8 dark:border-slate-800 dark:bg-slate-900"
+      className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 sm:p-8 dark:border-slate-700 dark:bg-slate-900"
     >
       <h3 className="text-xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">
         Connect {client.name}
