@@ -116,6 +116,7 @@ export function useCanvasChromePanels({
   contentsPopoverEl: ReactNode;
   contentsSidebarEl: ReactNode;
   contentsDocked: boolean;
+  contentsSide: import('@/lib/contents-placement').ContentsSide;
   // The Avatar panel over its button (docs/specs/008-canvas/avatar-mode.md "The Avatar Panel").
   avatarPopoverEl: ReactNode;
   paletteTint: ReturnType<typeof usePaletteChrome>['paletteTint'];
@@ -260,7 +261,7 @@ export function useCanvasChromePanels({
     if (activeDockPanel === 'slides' && !props.illustratePages) closeDockPanel();
   }, [activeDockPanel, props.illustratePages, closeDockPanel]);
   // Contents, likewise, belongs to Illustrate mode: its popover, or the sidebar docked in its place.
-  const { contentsDocked, contentsSidebarEl, contentsPopoverEl } = useContentsChrome({
+  const { contentsDocked, contentsSide, contentsSidebarEl, contentsPopoverEl } = useContentsChrome({
     props,
     chromeHidden,
     isMobile,
@@ -572,6 +573,7 @@ export function useCanvasChromePanels({
     contentsPopoverEl,
     contentsSidebarEl,
     contentsDocked,
+    contentsSide,
     tidyUpPopoverEl:
       tidyUpOpen && tidyUp ? (
         <TidyUpPopover

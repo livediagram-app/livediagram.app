@@ -630,7 +630,9 @@ export function EditorCanvasHost() {
               isPinchingRef={isPinchingRef}
               setViewportZoom={setViewportZoom}
               onFitToScreen={() => {
-                fitToScreen();
+                // In Illustrate, Fit frames the page you are nearest, not the whole tab.
+                if (illustratePages) illustratePages.fitPageInView();
+                else fitToScreen();
                 track('Canvas', 'Zoomed', 'Fit');
               }}
               setViewportOffset={setViewportOffset}

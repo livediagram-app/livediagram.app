@@ -3,7 +3,7 @@ import type { Element } from '@livediagram/document';
 import { arrowBetween, shapeAt } from './__fixtures__/build';
 import { CHECKOUT_REV, checkoutTab } from './__fixtures__/checkout-tab';
 import { golden } from './__fixtures__/golden-path';
-import { findView } from './find';
+import { elementFindTexts, findView } from './find';
 import { buildViewModel } from './model';
 
 const checkout = () => buildViewModel(checkoutTab(), { rev: CHECKOUT_REV });
@@ -124,5 +124,12 @@ describe('find on odd shapes', () => {
     const { json } = findView(model, 'budget');
     expect(json.matches.map((m) => [m.ref, m.field])).toHaveLength(1);
     expect(json.matches[0]!.field).toBe('node');
+  });
+});
+
+describe('elementFindTexts', () => {
+  it('lists every text find searches on one element, for a caller without the view', () => {
+    const el = { ...shapeAt('square', 's1', 0, 0), label: 'Pay now', note: 'by card' } as Element;
+    expect(elementFindTexts(el)).toEqual(['Pay now', 'by card']);
   });
 });

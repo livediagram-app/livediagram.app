@@ -18,7 +18,7 @@ import type { IllustratePagesView } from '@/hooks/editor/useIllustratePages';
 import { usePageContents } from '@/hooks/ui/usePageContents';
 import { pageInView } from '@/lib/page-contents';
 import { useViewportStoreIfAny } from '@/hooks/canvas/useViewportStore';
-import { ContentsAddPage, ContentsCount, ContentsFind, ContentsList } from './PageContentsList';
+import { ContentsAddPage, ContentsFind, ContentsList } from './PageContentsList';
 
 const DockIcon = lucideGlyph(lucidePanelLeftOpen, 14);
 
@@ -64,7 +64,6 @@ export function PageContentsPanel({
     return () => window.removeEventListener('keydown', onKey);
   }, [mobile, onClose]);
 
-  const count = <ContentsCount count={contents.pages.length} />;
   const body = (
     <div className="flex min-h-0 flex-col" data-page-contents="">
       <ContentsFind contents={contents} />
@@ -75,16 +74,11 @@ export function PageContentsPanel({
         className="gap-0.5 px-2 pb-2"
         style={{ maxHeight: mobile ? '55vh' : 'min(calc(100vh - 360px), 480px)' }}
       />
-      <ContentsAddPage contents={contents} columns={4} />
+      <ContentsAddPage contents={contents} />
     </div>
   );
 
-  if (mobile)
-    return (
-      <ContentsSheet onClose={onClose} count={count}>
-        {body}
-      </ContentsSheet>
-    );
+  if (mobile) return <ContentsSheet onClose={onClose}>{body}</ContentsSheet>;
   return (
     <MovablePanel
       title="Contents"
@@ -99,9 +93,8 @@ export function PageContentsPanel({
       onPopoverClose={onClose}
       headerActions={
         <>
-          {count}
           {onDock ? (
-            <HoverCard title="Dock as Sidebar" description="Keep Contents open down the left.">
+            <HoverCard title="Dock as Sidebar" description="Keep Contents open beside the canvas.">
               <button
                 type="button"
                 onClick={onDock}
@@ -124,15 +117,7 @@ export function PageContentsPanel({
 const NO_MOVE = () => {};
 
 // On a phone: the list in a bottom sheet, named, closed by a swipe down, an outside press or Escape.
-function ContentsSheet({
-  onClose,
-  count,
-  children,
-}: {
-  onClose: () => void;
-  count: React.ReactNode;
-  children: React.ReactNode;
-}) {
+function ContentsSheet({ onClose, children }: { onClose: () => void; children: React.ReactNode }) {
   useEscape(onClose, { capture: true, stopPropagation: true });
   return (
     <BottomSheet
@@ -143,7 +128,6 @@ function ContentsSheet({
     >
       <div className="flex items-center justify-between px-4 pb-2 pt-0.5">
         <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">Contents</p>
-        {count}
       </div>
       {children}
     </BottomSheet>

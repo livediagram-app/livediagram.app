@@ -20,15 +20,30 @@ export function withContentsPlacement(
   return { ...prefs, contentsPlacement: placement };
 }
 
-// The docked sidebar, for what measures it (the page framing, the left corner stacks).
+// The docked sidebar, for what measures it (the page framing, Zoom to Fit).
 export const CONTENTS_SIDEBAR_SELECTOR = '[data-contents-sidebar]';
-// Its width in px, and the gap it keeps from the canvas's left edge (the corner panels' resting inset).
+// Its width in px, at the panels' UI scale. It sits flush against the canvas's edge, no gap.
 export const CONTENTS_SIDEBAR_WIDTH = 236;
-export const CONTENTS_SIDEBAR_INSET = 16;
+// The resting inset the corner panels and the bottom-right cluster keep from what is beside them.
+export const CONTENTS_SIDEBAR_GAP = 16;
 
-// Where the left corner stacks start while the sidebar is docked: past it, with the same inset again.
-// The sidebar is drawn at the panels' UI scale (docs/specs/007-editor/ui-scale.md), so its width
-// scales and its insets do not.
+// The sidebar is docked with more than one page: a single page has nothing to find its way round,
+// and keeps the button.
+export const CONTENTS_SIDEBAR_MIN_PAGES = 2;
+
+// Which side of the canvas the sidebar is pinned to: the left until the person drags it right. Like
+// the corner panels' places (lib/panel-layout.ts), a per-device ergonomic choice, kept in this
+// browser only and never synced.
+export const CONTENTS_SIDES = ['left', 'right'] as const;
+export type ContentsSide = (typeof CONTENTS_SIDES)[number];
+export const CONTENTS_SIDE_STORAGE_KEY = 'livediagram:contents-side:v1';
+
+export function readContentsSide(stored: string | null): ContentsSide {
+  return stored === 'right' ? 'right' : 'left';
+}
+
+// How far the corner stacks and the bottom-right cluster on the sidebar's side start from the
+// canvas's edge while it is docked: past it, with their usual inset.
 export function contentsSidebarClearancePx(panelScale: number): number {
-  return CONTENTS_SIDEBAR_INSET * 2 + CONTENTS_SIDEBAR_WIDTH * panelScale;
+  return CONTENTS_SIDEBAR_WIDTH * panelScale + CONTENTS_SIDEBAR_GAP;
 }

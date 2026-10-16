@@ -82,20 +82,22 @@ export function computeFitBelow(
   };
 }
 
-// A frame computed for the canvas less `insetLeft` screen px at its left (a docked sidebar laid over
-// it: docs/specs/007-editor/illustrate-pages.md "Contents"), moved so it lands in that band rather than
-// in the whole canvas. Compute the frame on `{ width: w - insetLeft, height }`; with the centred
-// transform a canvas x lands at `w/2 + z(x + offset.x - w/2)`, so the band's middle (`insetLeft/2`
-// right of the canvas's) adds `insetLeft/2` for the narrower width's centre and `insetLeft / 2z`.
-export function besideLeftInset(
+// A frame computed for the canvas less `insets.left` and `insets.right` screen px at its sides (the
+// Contents panel laid over it: docs/specs/007-editor/illustrate-pages.md "Contents"), moved so it lands
+// in the band between them rather than in the whole canvas. Compute the frame on `{ width: w - left -
+// right, height }`; with the centred transform a canvas x lands at `w/2 + z(x + offset.x - w/2)`, so
+// the band's middle (`(left - right)/2` right of the canvas's) adds `(left + right)/2` for the
+// narrower width's centre and `(left - right) / 2z`.
+export function besideSideInsets(
   frame: { zoom: number; offset: Offset },
-  insetLeft: number,
+  insets: { left: number; right: number },
 ): { zoom: number; offset: Offset } {
-  if (insetLeft <= 0) return frame;
+  const { left, right } = insets;
+  if (left <= 0 && right <= 0) return frame;
   return {
     zoom: frame.zoom,
     offset: {
-      x: frame.offset.x + insetLeft / 2 + insetLeft / (2 * frame.zoom),
+      x: frame.offset.x + (left + right) / 2 + (left - right) / (2 * frame.zoom),
       y: frame.offset.y,
     },
   };
