@@ -12,19 +12,26 @@ import {
   ArticleWrapArt,
   AssignedActionsArt,
   AvatarModeArt,
+  BoardCsvArt,
   BoardImportArt,
   BoardWidgetsArt,
   BorderStyleArt,
   BringFocusArt,
   CanvasBackdropArt,
   CanvasChartsArt,
+  CardCommentsArt,
+  CardDetailArt,
   CardTypesArt,
+  CellCommentsArt,
   CodeBlockArt,
   CommentsArt,
   ComponentsArt,
+  ConditionalFormatArt,
+  ContentsSidebarArt,
   CustomThemesArt,
   DashboardArt,
   DragDuplicateArt,
+  DrawDockArt,
   EmbedArt,
   EntityArt,
   ErasersArt,
@@ -33,11 +40,14 @@ import {
   ExportArt,
   FacilitateModeArt,
   FacilitatorArt,
+  FindCardArt,
   FlowingArrowsArt,
   FollowAlongArt,
   FontsArt,
+  FormAlertsArt,
   FormBuilderArt,
   FormResponsesArt,
+  FormSectionsArt,
   FormShareArt,
   FormatPainterArt,
   FullScreenSlideArt,
@@ -66,6 +76,7 @@ import {
   MermaidArt,
   MindMapArt,
   NotesArt,
+  PagesGifArt,
   PalmRejectionArt,
   PathToolArt,
   PencilArt,
@@ -86,21 +97,26 @@ import {
   ShapesArt,
   ShareLinksArt,
   SharedItemsArt,
+  SheetTogetherArt,
+  SheetValidationArt,
   SheetsArt,
   ShortcutsArt,
   SideBySideArt,
   SlideDeckArt,
   SlideLayoutsArt,
+  SlideTimingArt,
   SpotlightArt,
   StickyPhotoArt,
   TabCopyArt,
   TabFoldersArt,
+  TabWindowArt,
   TablesArt,
   TabsArt,
   TeamsArt,
   TechIconsArt,
   TemplatesArt,
   ThemesArt,
+  TidyPageArt,
   TimelineFeedArt,
   UndoRedoArt,
   UnlimitedTabsArt,
@@ -813,6 +829,13 @@ export const LANDING_SECTIONS: LandingSection[] = [
           'Keys 1, 2 and 3 pick up three markers, each in six widths from Fine to Broad. Marker 1 is ink; the other two take any of nine stock colours or a colour of your own.',
       },
       {
+        art: <DrawDockArt />,
+        href: '/help/canvas/draw-mode/',
+        title: 'Shapes and text in the dock',
+        description:
+          'Draw mode swaps the palette for a dock across the top: select, the three markers, text, the Path tool and the eraser, each on its own key, then the shapes you use. Pin up to seven favourites, an arrow and a rectangle to start, and the Shapes button offers the ones you pick most.',
+      },
+      {
         art: <PressureArt />,
         href: '/help/canvas/draw-mode/',
         title: 'Pressure-sensitive pens',
@@ -888,6 +911,13 @@ export const LANDING_SECTIONS: LandingSection[] = [
           'Ninety-two ready-made pages in eight categories, from a magazine cover and a gig poster to a KPI dashboard, a SWOT and a cheat sheet. Hover one to preview it on your page, press it to place it, then make it yours.',
       },
       {
+        art: <TidyPageArt />,
+        href: '/help/canvas/illustrate/',
+        title: 'Tidy a page in one press',
+        description:
+          'Press the broom on a page and it straightens itself: anything poking past the margins comes back inside, edges that nearly line up do, and gaps that are nearly even become even. It keeps your layout and never moves anything far.',
+      },
+      {
         art: <IllustrateBackgroundsArt />,
         href: '/help/canvas/illustrate/',
         title: 'Backgrounds from your theme',
@@ -902,6 +932,13 @@ export const LANDING_SECTIONS: LandingSection[] = [
           'Switch a diagram, mind map or sketch to Illustrate mode and it lands on a page made around it, nothing moved or shrunk. Split it into a page for each part whenever you like.',
       },
       {
+        art: <TabWindowArt />,
+        href: '/help/canvas/illustrate/tab-windows/',
+        title: 'A live window onto another tab',
+        description:
+          'Draw the diagram on its own tab, then put a window onto it on a slide or a poster. The window follows every change you or a collaborator make, so there is never a stale copy to paste again. Open jumps straight to the tab.',
+      },
+      {
         art: <LogoPageArt />,
         href: '/help/canvas/illustrate/logo-pages/',
         title: 'Design a logo',
@@ -914,6 +951,13 @@ export const LANDING_SECTIONS: LandingSection[] = [
         title: 'Every page, print-ready',
         description:
           'Export every page as one PDF at true print size, or one page as a PNG or SVG. Add pages to a slide deck and present them full screen, one page at a time.',
+      },
+      {
+        art: <PagesGifArt />,
+        href: '/help/canvas/illustrate/exporting-pages/',
+        title: 'Pages as an animated GIF',
+        description:
+          'Export the pages as one animated GIF for a chat, an email, a README or a social post. Every animation on a page plays in it, each page holds for 1 to 20 seconds, and it comes in three sizes up to 1440 pixels.',
       },
     ],
   },
@@ -963,6 +1007,13 @@ export const LANDING_SECTIONS: LandingSection[] = [
           'Write what you mean to say over each slide. During the presentation they sit behind a button in the corner, so nothing about your script is on screen until you ask for it. Clicking any element shows its note, comments and assigned action too, for the question you did not plan for.',
       },
       {
+        art: <SlideTimingArt />,
+        href: '/help/selection-modes/slide-deck/presenter-controls/',
+        title: 'Keep the talk on time',
+        description:
+          'Give each slide a few minutes when you build the deck. While you present, an elapsed clock counts up and the slide\u2019s budget turns amber when you run over, on your screen only. Both are off until you want them, and running over never moves the deck on for you.',
+      },
+      {
         art: <PresentLocallyArt />,
         href: '/help/selection-modes/slide-deck/',
         title: 'Your screen, not everyone else’s',
@@ -1010,6 +1061,13 @@ export const LANDING_SECTIONS: LandingSection[] = [
         title: 'Pages that grow',
         description:
           'Writing flows onto a new page as it grows, and empty pages tidy themselves away. A heading never strands alone at the foot of a page, and a page break is there when you want one.',
+      },
+      {
+        art: <ContentsSidebarArt />,
+        href: '/help/canvas/illustrate/',
+        title: 'Every page in the Contents',
+        description:
+          'A Contents sidebar lists every page with a picture of it, its number and its name, and highlights the one you are reading. Press a row to glide there, or type to find a page by its name or any words on it.',
       },
       {
         art: <ArticleWrapArt />,
@@ -1069,6 +1127,20 @@ export const LANDING_SECTIONS: LandingSection[] = [
           'A card is one item, not a copy, so the same card can sit on the sprint board and the roadmap. Move it on one and it moves on both.',
       },
       {
+        art: <CardDetailArt />,
+        href: '/help/canvas/plan-mode/cards/',
+        title: 'Cards that hold the detail',
+        description:
+          'Open a card for everything about it: a rich-text description, a checklist that counts down to done, status, assignee, priority, labels and dates, and the project it belongs to. Flag one for attention, and follow the trail between a project and its tasks without losing your place.',
+      },
+      {
+        art: <CardCommentsArt />,
+        href: '/help/canvas/plan-mode/cards/',
+        title: 'Talk it through on the card',
+        description:
+          'Every card has its own thread. @mention a teammate and they get an email that opens the card, resolve the thread when it is settled, and see the comment count on the card from the board.',
+      },
+      {
         art: <CardTypesArt />,
         href: '/help/canvas/plan-mode/card-types/',
         title: 'Card types and fields of your own',
@@ -1102,6 +1174,20 @@ export const LANDING_SECTIONS: LandingSection[] = [
         title: 'Widgets that narrow the board',
         description:
           'Pin widgets to a board header (Completion, Due Soon, WIP Alerts, Top Voted, Stale Cards and more) and press one to narrow the board to just those cards.',
+      },
+      {
+        art: <FindCardArt />,
+        href: '/help/canvas/plan-mode/cards/',
+        title: 'Find any card',
+        description:
+          'The Cards list searches every card in the document by number, title or description, newest change first. Add up to eight filters, such as Type: Bug or Assignee: No assignee, or show only the cards no board is showing.',
+      },
+      {
+        art: <BoardCsvArt />,
+        href: '/help/canvas/plan-mode/boards/',
+        title: 'Boards in and out as CSV',
+        description:
+          'Import a CSV or TSV and each row becomes a card, landing in the column its Status names and with the person its Assignee names; only a title is required, and one undo takes it all back. Export any board as CSV, an image, a PDF or a Markdown outline.',
       },
       {
         art: <HiddenVotesArt />,
@@ -1165,6 +1251,34 @@ export const LANDING_SECTIONS: LandingSection[] = [
           'Select some cells and chart them as bars, lines or a pie that sits in the Sheet over its cells, redrawn the moment a number changes.',
       },
       {
+        art: <SheetValidationArt />,
+        href: '/help/canvas/plan-mode/sheets/',
+        title: 'Dropdowns and checkboxes',
+        description:
+          'Turn cells into coloured dropdown chips, a list from other cells, or tick boxes a formula can count. Number, date and text rules refuse a value that does not fit, or only warn, and say why in the cell.',
+      },
+      {
+        art: <ConditionalFormatArt />,
+        href: '/help/canvas/plan-mode/sheets/',
+        title: 'Colour cells by their values',
+        description:
+          'Conditional formatting paints a cell when it meets a rule (text contains, greater than, a date before, or a formula of your own) or shades a whole column on a colour scale. You see each rule on the cells while you set it.',
+      },
+      {
+        art: <CellCommentsArt />,
+        href: '/help/canvas/plan-mode/sheets/',
+        title: 'Named ranges and cell comments',
+        description:
+          'Name a cell TaxRate and write =B2*TaxRate in any row. Leave a comment on a single cell: it carries an amber corner, opens as a thread, and is listed with every other open thread in the document.',
+      },
+      {
+        art: <SheetTogetherArt />,
+        href: '/help/canvas/plan-mode/sheets/',
+        title: 'Edit together, cell by cell',
+        description:
+          'Everyone sees each change as it is made, with each person\u2019s selection outlined in their colour and name. Two people typing in different cells never overwrite each other, and a participant link can fill in cells without changing the rules.',
+      },
+      {
         art: <TemplatesArt />,
         href: '/help/canvas/plan-mode/#plan-templates',
         title: 'Twelve ready-made spreadsheets',
@@ -1205,6 +1319,13 @@ export const LANDING_SECTIONS: LandingSection[] = [
           'Click a question to word it, pick its type (short answer, paragraph, number, email, link, date, choices, rating or a checkbox) and mark it required, right in the form. Sections can show only on an earlier answer.',
       },
       {
+        art: <FormSectionsArt />,
+        href: '/help/canvas/plan-mode/forms/',
+        title: 'Pages, a cover and your look',
+        description:
+          'Split a form into sections people answer a page at a time, with Next, Back and a progress bar, and show a section only to those who answered a certain way. Add a cover band, and the form wears its tab\u2019s theme and font on its link too.',
+      },
+      {
         art: <FormShareArt />,
         href: '/help/canvas/plan-mode/forms/',
         title: 'One link to share',
@@ -1217,6 +1338,13 @@ export const LANDING_SECTIONS: LandingSection[] = [
         title: 'Every answer lands',
         description:
           'Each response becomes a row in a sheet, a column per question, or a card on a board with its answers in the card’s fields, ready to move along. The count on the form says how many are new.',
+      },
+      {
+        art: <FormAlertsArt />,
+        href: '/help/canvas/plan-mode/forms/',
+        title: 'New answers find you',
+        description:
+          'Each response shows New until you open it, the form counts what is new to you, and your Inbox lists every form with fresh answers. The owner also gets an email, at most one every 15 minutes per form, and can switch it off in Settings.',
       },
       {
         art: <TemplatesArt />,

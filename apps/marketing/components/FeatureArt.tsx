@@ -54,3 +54,10 @@ export * from './feature-art/imports';
 export * from './feature-art/storming';
 export * from './feature-art/canvas-data';
 export * from './feature-art/reach';
+// Plan cards beyond the board, Sheets beyond formulas, Forms beyond the build, Illustrate pages beyond
+// layouts, and Draw's dock.
+export * from './feature-art/plan-more';
+export * from './feature-art/sheet-more';
+export * from './feature-art/forms-more';
+export * from './feature-art/pages-more';
+export * from './feature-art/whiteboard-dock';
