@@ -22,7 +22,7 @@ vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 const { PlanViewView } = await import('./PlanViewView');
 
 const SAM = { id: 'sam', name: 'Sam', color: '#2563eb' };
-// About 150 cards over October 2026's 42-day grid (six weeks: the view is drawn tall enough for compact cards).
+// About 150 cards over October 2026's 42-day grid (six weeks: the view is drawn tall enough for minimal cards).
 const CARDS: Item[] = Array.from({ length: 150 }, (_, i) => ({
   id: `c${i}`,
   type: 'task',

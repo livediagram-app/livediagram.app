@@ -1,7 +1,7 @@
 'use client';
 
 // A calendar's day and its entries (docs/specs/026-plan/plan-views.md "Due Calendar"): the date, then the cards
-// placed that day as compact cards where there is room, else a type dot and title each, as many as fit and then
+// placed that day as minimal cards where there is room, else a type dot and title each, as many as fit and then
 // "+N more". Pressing an entry opens its card; someone who may move cards drags it to another day, or moves it
 // with Alt+Arrows while it has focus (CalendarView's moveBy).
 import { memo } from 'react';
@@ -15,7 +15,9 @@ import type { PlanViewProps } from './PlanViewView';
 // A day's entry height, and the room its date takes.
 export const ENTRY_H = 16;
 export const DATE_H = 18;
-// A card drawn at Compact size (a board's face), and the gap under it: a day tall enough for one shows cards so.
+// A day's room for a card drawn at Minimal size (a board's face: its title, up to two lines, between its type dot
+// and fields), and the gap under it: a day tall enough for one shows cards so. A two-line Minimal card measures
+// 58 px in a 193 px day, so two of them still fit a maximised month's 139 px day.
 export const CARD_H = 50;
 export const CARD_GAP = 4;
 
@@ -152,7 +154,7 @@ export function CalendarGhost({
   );
 }
 
-// What an entry shows: a compact card face, or a type dot and title. Shared by the lifted copy a drag carries.
+// What an entry shows: a minimal card face, or a type dot and title. Shared by the lifted copy a drag carries.
 export function CalendarEntryFace({
   item,
   done,
@@ -167,7 +169,7 @@ export function CalendarEntryFace({
   colour: string;
 }) {
   if (asCards)
-    return <PlanCardFace item={item} palette={palette} fields={CARD_FIELDS} size="compact" />;
+    return <PlanCardFace item={item} palette={palette} fields={CARD_FIELDS} size="minimal" />;
   return (
     <>
       <span
