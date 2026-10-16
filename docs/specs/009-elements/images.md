@@ -251,6 +251,31 @@ Image uploads / deletes don't go through the realtime room. The element's `image
 
 Setting or clearing an image is one undoable step. Undo restores the prior `imageId` (which may resolve to a still-live image, a deleted one rendering broken, or `null`). Clearing the image doesn't delete the gallery row — gallery management is a separate gesture in the picker modal.
 
+## Agents
+
+An assistant places the user's own pictures through the MCP and the CLI; it never uploads them.
+
+- **Finding a picture.** `list_images` (MCP, [MCP server §4.5b](../015-api/mcp-server.md#45b-list_images)) and
+  `image ls` (CLI, [CLI](../015-api/cli.md)) list the caller's gallery (`GET /api/images`): each image's id, name,
+  width, height, size and upload time, newest first, filtered by name. The MCP's `image: true` adds a contact sheet
+  of the listed images, so an assistant can tell which screenshot is which without names that say so.
+- **Placing it.** An `image` element takes the id as `imageId`, with optional `alt` and `objectFit`, on any write
+  that takes elements (`create_document`, `add_tab`, `update_document`, a changeset). Before writing, the MCP checks
+  every `imageId` the elements carry against the caller's gallery, in one gallery read for the whole call, and
+  refuses one that is not there, naming the element and `list_images` (`imageId "…" on element "hero" is not in
+your image gallery: list_images lists the pictures you can place`). That keeps the [placement
+  grant](#placement-grants) rule honest: an id read from someone else's document would only draw a placeholder for
+  everyone, so it is refused where it was typed rather than discovered later as a dashed box.
+- **A placeholder on purpose.** An `image` element without `imageId` is the empty "pick an image" placeholder, which
+  the user fills in the editor. An assistant laying out a page before the user has uploaded anything places
+  captioned placeholders and says so.
+- **Seeing it.** The MCP's preview embeds placed images ([Preview / live
+  image](#preview--live-image-server-rendered-svg)), so the assistant's own picture of the page shows the
+  screenshot, not a box.
+- **Why no upload.** A chat assistant cannot hand an attachment's bytes to a tool, and a fetch from a URL would bring
+  server-side requests to arbitrary hosts and pictures the user never chose. Pictures reach the gallery through the
+  editor (upload, paste, drop or Image search), where the user chooses them.
+
 ## Out of scope
 
 - **EXIF on non-JPEG formats.** PNG / WebP / GIF can technically embed XMP / EXIF chunks too. Only JPEG metadata is stripped, because that's where ~all real-world leaks come from (phone-camera output). Stripping the other formats would require per-format chunk parsers; revisit if a leak case surfaces.
