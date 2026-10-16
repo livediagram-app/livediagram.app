@@ -43,7 +43,9 @@ describe('a fresh response', () => {
     );
     for (let i = 0; i <= FRESH_OPENED_MAX; i += 1) markResponseOpened(card(`c${i}`));
     markResponseOpened(card('c1'));
-    const kept = JSON.parse(localStorage.getItem('livediagram:form-responses-opened') ?? '[]');
+    const kept: unknown = JSON.parse(
+      localStorage.getItem('livediagram:form-responses-opened') ?? '[]',
+    );
     expect(kept).toHaveLength(FRESH_OPENED_MAX);
     expect(kept).not.toContain('c0');
   });

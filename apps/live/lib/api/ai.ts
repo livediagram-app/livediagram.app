@@ -330,7 +330,7 @@ export async function apiAiReadNotes(
         return;
       }
       unread += slice[at]!.length;
-      const reason = answer.reason;
+      const reason: unknown = answer.reason;
       failure ??= reason instanceof Error ? reason.message : 'ai_error';
     });
     // Report batch-by-batch, so the author watching the bar sees the run

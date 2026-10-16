@@ -45,7 +45,7 @@ function useFeatured(near: boolean): State {
     fetch(`${API_BASE}/community/featured`, { signal: controller.signal })
       .then(async (res) => {
         if (res.status === 404) return setState({ status: 'off' });
-        const body: Partial<CommunityFeaturedResponse> = res.ok ? await res.json() : {};
+        const body = (res.ok ? await res.json() : {}) as Partial<CommunityFeaturedResponse>;
         setState({ status: 'ready', posts: body.posts ?? [] });
       })
       .catch((err: unknown) => {

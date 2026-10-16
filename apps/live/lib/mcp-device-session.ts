@@ -16,7 +16,7 @@ export async function fetchDeviceSession(userCode: string): Promise<{ clientName
     const res = await fetch(`${MCP_ORIGIN}/oauth/device/session/${encodeURIComponent(userCode)}`);
     if (!res.ok) return null;
     const body: unknown = await res.json();
-    const clientName =
+    const clientName: unknown =
       typeof body === 'object' && body !== null ? Reflect.get(body, 'clientName') : undefined;
     return typeof clientName === 'string' && clientName ? { clientName } : null;
   } catch {

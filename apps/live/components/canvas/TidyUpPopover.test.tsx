@@ -150,7 +150,9 @@ describe('TidyUpPopover', () => {
       },
     });
     await judgeAll();
-    const byKind = Object.fromEntries(tiles().map((t) => [t.kind, t.disabled]));
+    const byKind = Object.fromEntries(
+      tiles().map((t): [string, boolean] => [t.kind ?? '', t.disabled]),
+    );
     expect(byKind).toMatchObject({
       smart: false,
       'flow-down': false,

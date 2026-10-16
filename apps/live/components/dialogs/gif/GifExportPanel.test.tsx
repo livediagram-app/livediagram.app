@@ -144,7 +144,8 @@ describe('the GIF panel', () => {
         fireEvent.click(screen.getByRole('button', { name: 'Download GIF' }));
       });
       await waitFor(() => expect(onDone).toHaveBeenCalled(), MAKE_WAIT);
-      const [blob, name] = h.download.mock.calls[0]!;
+      const download: unknown[] = h.download.mock.calls[0]!;
+      const [blob, name] = download;
       expect(name).toBe('Doc - Deck.gif');
       expect((blob as Blob).type).toBe('image/gif');
       expect(h.track).toHaveBeenCalledWith('Document', 'Exported', 'IllustrateGIFPages');

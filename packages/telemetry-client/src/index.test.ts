@@ -66,7 +66,8 @@ describe('createTelemetryEmitter', () => {
     expect(fetchMock).not.toHaveBeenCalled(); // buffered, not sent per-call
     vi.advanceTimersByTime(10_000);
     expect(fetchMock).toHaveBeenCalledTimes(1);
-    const [url, init] = fetchMock.mock.calls[0]!;
+    const sent: unknown[] = fetchMock.mock.calls[0]!;
+    const [url, init] = sent;
     expect(url).toBe('/api/events');
     expect((init as { keepalive: boolean }).keepalive).toBe(true);
     expect(sentEvents(fetchMock.mock.calls[0]!)).toEqual([

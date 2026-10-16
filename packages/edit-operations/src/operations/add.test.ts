@@ -45,12 +45,16 @@ describe('add with an element', () => {
   });
 
   it('refuses a prototype key as unknown_field', () => {
-    const element = JSON.parse('{"__proto__": {"x": 1}, "id": "p", "type": "sticky"}');
+    // JSON.parse makes `__proto__` an own key, which an object literal cannot.
+    const element = JSON.parse('{"__proto__": {"x": 1}, "id": "p", "type": "sticky"}') as Record<
+      string,
+      unknown
+    >;
     expect(refused(run([{ op: 'add', element }]))).toMatchObject({
       code: 'unknown_field',
       details: ['sticky has no field "__proto__"', expect.stringContaining('fields: id type')],
     });
-    const untyped = JSON.parse('{"constructor": 1}');
+    const untyped = JSON.parse('{"constructor": 1}') as Record<string, unknown>;
     expect(refused(run([{ op: 'add', element: untyped }])).details[0]).toBe(
       'element has no field "constructor"',
     );

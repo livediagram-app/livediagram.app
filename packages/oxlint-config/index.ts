@@ -212,6 +212,7 @@ export default defineConfig({
         'typescript/no-redundant-type-constituents': 'error',
         'typescript/no-unnecessary-type-assertion': 'error',
         'typescript/no-unsafe-argument': 'error',
+        'typescript/no-unsafe-assignment': 'error',
         'typescript/no-unsafe-call': 'error',
         'typescript/no-unsafe-enum-comparison': 'error',
         'typescript/no-unsafe-member-access': 'error',
@@ -226,10 +227,13 @@ export default defineConfig({
       },
     },
     {
-      // Source only: a test stubs and restores methods by reference (`Storage.prototype.getItem`,
-      // `element.scrollIntoView`), which is what the rule refuses.
+      // Source only. A test stubs and restores methods by reference (`Storage.prototype.getItem`,
+      // `element.scrollIntoView`), which is what unbound-method refuses; and vitest types its
+      // asymmetric matchers (`expect.any`, `expect.objectContaining`) as `any`, which is what
+      // no-unsafe-assignment refuses.
       files: TEST_FILES,
       rules: {
+        'typescript/no-unsafe-assignment': 'off',
         'typescript/unbound-method': 'off',
       },
     },

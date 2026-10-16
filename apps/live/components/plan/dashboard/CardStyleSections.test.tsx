@@ -91,7 +91,8 @@ describe('a Utility’s Style row', () => {
       fireEvent.click(tile);
     });
     expect(changeDashboard).toHaveBeenCalledTimes(1);
-    const [change, kind] = changeDashboard.mock.calls[0]!;
+    const changed: unknown[] = changeDashboard.mock.calls[0]!;
+    const [change, kind] = changed;
     expect(kind).toBe('DashboardCardStyle');
     const before = readDashboard({
       rows: [{ id: 'r', height: 320, slots: [{ id: 's', span: 12, content: status }] }],

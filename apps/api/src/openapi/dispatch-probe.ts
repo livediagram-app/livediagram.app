@@ -40,7 +40,8 @@ export const PARAM = 'probe-param';
 async function errorOf(res: Response): Promise<string | null> {
   try {
     const body: unknown = await res.clone().json();
-    const error = typeof body === 'object' && body !== null ? Reflect.get(body, 'error') : null;
+    const error: unknown =
+      typeof body === 'object' && body !== null ? Reflect.get(body, 'error') : null;
     return typeof error === 'string' ? error : null;
   } catch {
     return null;

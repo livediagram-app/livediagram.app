@@ -73,7 +73,7 @@ const states: unknown[] = [];
 vi.mock('./offline-store', () => ({
   offlineCreateDocument: vi.fn(),
   offlineDeleteIfUnchanged: vi.fn(async (_id: string, unchanged: (r: unknown) => boolean) => {
-    const rec = states.length
+    const rec: unknown = states.length
       ? states.shift()
       : await vi.mocked(store.offlineGetRecord).mock.results.at(-1)?.value;
     if (!unchanged(rec)) return { outcome: 'changed', rec };

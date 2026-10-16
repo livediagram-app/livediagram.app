@@ -189,7 +189,7 @@ describe('useWhiteboard', () => {
     act(() => hook.result.current.setEraserMode('partial'));
     expect(track).toHaveBeenCalledWith('Draw', 'Toggled', 'RecognitionOn');
     expect(track).toHaveBeenCalledWith('Draw', 'Changed', 'EraserPartial');
-    const stored = JSON.parse(localStorage.getItem('livediagram:v2:whiteboard-pens')!);
+    const stored: unknown = JSON.parse(localStorage.getItem('livediagram:v2:whiteboard-pens')!);
     expect(stored).toMatchObject({ recognise: true, eraserMode: 'partial' });
   });
 

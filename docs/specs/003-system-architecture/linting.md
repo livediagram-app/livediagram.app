@@ -40,6 +40,7 @@ is the whole of what the repo enforces.
   - `no-redundant-type-constituents`
   - `no-unnecessary-type-assertion`
   - `no-unsafe-argument`
+  - `no-unsafe-assignment`, in source only
   - `no-unsafe-call`
   - `no-unsafe-enum-comparison`
   - `no-unsafe-member-access`
@@ -94,10 +95,12 @@ is the whole of what the repo enforces.
   by default, and `prefer-promise-reject-errors` is set to allow rejecting with it
   (`allowThrowingUnknown`). Wrapping it would lose what was caught. A value typed `any` is still
   refused, so a forwarded reason is given `unknown` where it is read.
-- `unbound-method` runs on source only, not on tests (`*.test.*`, `*.spec.*` and the `e2e/` suites):
-  a test stubs and restores a method by reference (`Storage.prototype.getItem`,
-  `element.scrollIntoView`), which is what the rule refuses. In source, a member that reads no
-  `this` and is passed on as a callback is declared as a function property, not a method.
+- `unbound-method` and `no-unsafe-assignment` run on source only, not on tests (`*.test.*`,
+  `*.spec.*` and the `e2e/` suites). A test stubs and restores a method by reference
+  (`Storage.prototype.getItem`, `element.scrollIntoView`), which is what `unbound-method` refuses;
+  in source, a member that reads no `this` and is passed on as a callback is declared as a function
+  property, not a method. Vitest types its asymmetric matchers (`expect.any`,
+  `expect.objectContaining`) as `any`, which is what `no-unsafe-assignment` refuses.
 - A finding is fixed where it arises (a truer signature, a handled promise), never cast or
   suppressed away. A value that crosses into the program untyped (parsed JSON, a library's `any`)
   is given its type once, where it enters, with a comment when the library's own type is wrong.

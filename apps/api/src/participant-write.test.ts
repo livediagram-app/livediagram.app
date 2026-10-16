@@ -43,7 +43,8 @@ describe('writeParticipantOp', () => {
       req({ kind: 'add', element: sticky('s2'), at: 1 }),
     );
     expect(out).toMatchObject({ ok: true, outcome: { result: 'applied', changed: true } });
-    const [, documentId, tabId, expected, next, stats] = db.swapTabData.mock.calls[0]!;
+    const swap: unknown[] = db.swapTabData.mock.calls[0]!;
+    const [, documentId, tabId, expected, next, stats] = swap;
     expect([documentId, tabId, expected]).toEqual(['d1', 't1', before]);
     // The stats handed over are the next body's, counted as every write counts them.
     expect(stats).toEqual(tabStatsOfData(next as string).stats);

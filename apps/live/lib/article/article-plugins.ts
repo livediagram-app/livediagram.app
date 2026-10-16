@@ -6,7 +6,7 @@ import { Plugin, PluginKey, type EditorState, type Transaction } from 'prosemirr
 import { Decoration, DecorationSet, type EditorView } from 'prosemirror-view';
 import type { Node as PMNode } from 'prosemirror-model';
 import { articleListMarkers, nextArticleBlockId } from '@livediagram/document';
-import { articleSchema } from './article-schema';
+import { articleSchema, listAttr, numberAttr } from './article-schema';
 
 /** Every top-level block with an id of its own: a missing or repeated id is given a fresh one. */
 export const blockIdsPlugin = new Plugin({
@@ -58,7 +58,12 @@ function decorations(state: EditorState, editable: boolean): DecorationSet {
     positions.set(id, offset);
     blocks.push(
       node.type === articleSchema.nodes.list_item
-        ? { id, type: 'list', list: node.attrs.list, level: node.attrs.level }
+        ? {
+            id,
+            type: 'list',
+            list: listAttr(node.attrs),
+            level: numberAttr(node.attrs, 'level'),
+          }
         : { id, type: node.type.name },
     );
   });

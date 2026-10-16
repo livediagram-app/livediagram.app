@@ -3,7 +3,7 @@
 // list), every one carrying its block id, so the writing converts to and from `ArticleBlock`s one to
 // one (article-convert.ts). The DOM each node draws carries the classes the writing's stylesheet
 // (article-styles.ts) styles; nothing here is user HTML.
-import { Schema, type DOMOutputSpec, type Mark } from 'prosemirror-model';
+import { Schema, type Attrs, type DOMOutputSpec, type Mark } from 'prosemirror-model';
 import {
   ARTICLE_ALIGNS,
   ARTICLE_LIST_KINDS,
@@ -44,6 +44,19 @@ const tagStyle = (tag: string): ArticleParagraphStyle | null =>
           ? 'quote'
           : null;
 
+// A node's or mark's attribute, read as the schema declares it: ProseMirror types every attribute
+// `any`. Anything else reads as absent, which ProseMirror fills with the attribute's default.
+export const textAttr = (attrs: Attrs, key: string): string | undefined => {
+  const value: unknown = attrs[key];
+  return typeof value === 'string' ? value : undefined;
+};
+export const listAttr = (attrs: Attrs): ArticleListKind | undefined =>
+  ARTICLE_LIST_KINDS.find((kind) => kind === attrs.list);
+export const numberAttr = (attrs: Attrs, key: string): number | undefined => {
+  const value: unknown = attrs[key];
+  return typeof value === 'number' ? value : undefined;
+};
+
 export const articleSchema = new Schema({
   nodes: {
     doc: { content: 'block+' },
@@ -78,7 +91,7 @@ export const articleSchema = new Schema({
           {
             class: `article-block article-${style}`,
             'data-article-style': style,
-            'data-block-id': node.attrs.id,
+            'data-block-id': textAttr(node.attrs, 'id'),
             ...alignAttr(node.attrs.align as ArticleAlign),
           },
           0,
@@ -138,7 +151,7 @@ export const articleSchema = new Schema({
           'li',
           {
             class: `article-block article-list article-list-${list}${checked ? ' article-done' : ''}`,
-            'data-block-id': node.attrs.id,
+            'data-block-id': textAttr(node.attrs, 'id'),
             'data-article-list': list,
             'data-level': String(level),
             'data-checked': String(checked),
@@ -162,7 +175,7 @@ export const articleSchema = new Schema({
           'pre',
           {
             class: 'article-block article-code',
-            'data-block-id': node.attrs.id,
+            'data-block-id': textAttr(node.attrs, 'id'),
             spellcheck: 'false',
           },
           ['code', 0],
@@ -178,7 +191,7 @@ export const articleSchema = new Schema({
       toDOM(node): DOMOutputSpec {
         return [
           'div',
-          { class: 'article-block article-divider', 'data-block-id': node.attrs.id },
+          { class: 'article-block article-divider', 'data-block-id': textAttr(node.attrs, 'id') },
           ['hr'],
         ];
       },
@@ -195,7 +208,7 @@ export const articleSchema = new Schema({
           {
             class: 'article-block article-page-break',
             'data-page-break': '',
-            'data-block-id': node.attrs.id,
+            'data-block-id': textAttr(node.attrs, 'id'),
             contenteditable: 'false',
           },
           ['span', 'Page break'],
@@ -225,7 +238,7 @@ export const articleSchema = new Schema({
           'div',
           {
             class: `article-block article-zone article-zone-${wrap} article-zone-align-${align}`,
-            'data-block-id': node.attrs.id,
+            'data-block-id': textAttr(node.attrs, 'id'),
             'data-zone': zone,
             contenteditable: 'false',
             style: `width: ${width}px; height: ${height}px`,
@@ -258,7 +271,11 @@ export const articleSchema = new Schema({
       ],
       toDOM: (mark: Mark): DOMOutputSpec => [
         'a',
-        { href: mark.attrs.href, class: 'article-link', rel: 'noopener noreferrer nofollow' },
+        {
+          href: textAttr(mark.attrs, 'href'),
+          class: 'article-link',
+          rel: 'noopener noreferrer nofollow',
+        },
         0,
       ],
     },
@@ -329,7 +346,7 @@ export const articleSchema = new Schema({
         'span',
         {
           class: `article-note article-note-${mark.attrs.kind === 'action' ? 'action' : 'comment'}`,
-          'data-note-id': mark.attrs.id,
+          'data-note-id': textAttr(mark.attrs, 'id'),
         },
         0,
       ],

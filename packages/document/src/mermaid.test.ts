@@ -507,7 +507,9 @@ describe('mermaidFromTab', () => {
     if (!back.ok) return;
     expect(back.graph.clusters).toHaveLength(1);
     expect(back.graph.clusters![0]!.members).toHaveLength(2);
-    const labels = Object.fromEntries(back.graph.nodes.map((n) => [n.label, n.shape]));
+    const labels = Object.fromEntries(
+      back.graph.nodes.map((n): [string, unknown] => [n.label ?? '', n.shape]),
+    );
     expect(labels).toMatchObject({ Api: 'square', Db: 'cylinder', Client: 'stadium' });
     expect(back.graph.edges).toHaveLength(3);
     expect(back.graph.edges.find((e) => e.line === 'dashed')).toBeTruthy();

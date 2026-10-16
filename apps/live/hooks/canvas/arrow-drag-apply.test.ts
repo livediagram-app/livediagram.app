@@ -223,7 +223,7 @@ describe('sliding an angled segment', () => {
   const slide = (noSnap: boolean) => {
     const els: Element[] = [a, b];
     let out = els;
-    const scheduleGuides = vi.fn();
+    const scheduleGuides = vi.fn<ArrowDragMoveArgs['scheduleGuides']>();
     applyArrowDragMove({
       drag: {
         kind: 'arrow-bend',
