@@ -20,15 +20,12 @@ beforeAll(() => {
 
 const pages = (n: number) =>
   layOutIllustratePages(
-    Array.from(
-      { length: n },
-      (_, i): IllustratePage => ({
-        id: `p${i + 1}`,
-        orientation: 'portrait',
-        kind: i % 2 ? 'slide' : 'infographic',
-        ...(i % 2 ? { size: 'slide' } : {}),
-      }),
-    ),
+    Array.from({ length: n }, (_, i): IllustratePage => ({
+      id: `p${i + 1}`,
+      orientation: 'portrait',
+      kind: i % 2 ? 'slide' : 'infographic',
+      ...(i % 2 ? { size: 'slide' } : {}),
+    })),
   );
 
 function show(n: number, canEdit = true) {
