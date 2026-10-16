@@ -99,17 +99,8 @@ export type RoomMerge = {
   commentAuthors: Map<string, { authorName: string; authorColor: string }>;
 };
 
-export async function mergeRoomLedger(
-  env: Env,
-  documentId: string,
-  tab: Tab,
-  cursorHeader: string | null,
-): Promise<RoomMerge> {
-  return applyRoomLedger(tab, await fetchRoomLedger(env, documentId, tab.id, cursorHeader));
-}
-
-// The ledger fetch alone: it needs only the tab's id and the cursor, so a save asks for it alongside
-// its own reads instead of after them (applyRoomLedger merges it once the tab is ready).
+// The ledger fetch needs only the tab's id and the cursor, so a save asks for it alongside its own
+// reads instead of after them (applyRoomLedger merges it once the tab is ready).
 export type FetchedRoomLedger = { ledger: TabLedger; seq: number } | null;
 
 export async function fetchRoomLedger(

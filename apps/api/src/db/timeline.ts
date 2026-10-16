@@ -128,25 +128,6 @@ export async function emitTimelineEvent(
   await env.DB.batch([upsert, attach]);
 }
 
-// Add scope memberships for an existing event. Split out because the
-// team-invite flow needs it on its own: an invite is created against an
-// email address, so at emit time there is nobody to scope it to. The
-// membership lands later, in the lazy email-claim step that fills in
-// the invitee's user_id (docs/specs/013-workspace/timeline.md §4.4).
-export async function attachEventToScopes(
-  env: Env,
-  eventId: string,
-  scopes: TimelineScopeRef[],
-  at = Date.now(),
-): Promise<void> {
-  if (scopes.length === 0) return;
-  const stmt = env.DB.prepare(
-    `INSERT OR IGNORE INTO timeline_event_scopes (event_id, scope_type, scope_id, added_at)
-     VALUES (?1, ?2, ?3, ?4)`,
-  );
-  await env.DB.batch(scopes.map((s) => stmt.bind(eventId, s.scopeType, s.scopeId, at)));
-}
-
 type TimelineRow = {
   id: string;
   actor_id: string | null;
@@ -538,8 +519,8 @@ export function documentsTimelineSweepStatement(env: Env, ids: string[]): D1Prep
 // Per-entry dismissal (docs/specs/013-workspace/timeline.md §2.9): take one event off ONE scope's
 // feed. Soft, on the membership row rather than the event, because the
 // event is shared by everyone it was scoped to — a teammate tidying
-// their feed must not tidy yours — and because `attachEventToScopes` is
-// INSERT OR IGNORE, so a soft-deleted row is exactly what stops a
+// their feed must not tidy yours — and because an emit attaches its scopes
+// with INSERT OR IGNORE, so a soft-deleted row is exactly what stops a
 // re-emit (the coalesced editing event re-attaches on every save) from
 // bringing the card back.
 //

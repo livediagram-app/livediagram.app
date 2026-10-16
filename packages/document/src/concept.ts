@@ -17,7 +17,6 @@ export const PYRAMID_VARIANTS: readonly PyramidVariant[] = ['pyramid', 'inverted
 export const CONCEPT_ANIMS: readonly ConceptAnim[] = ['build', 'pulse', 'flow'];
 export const CONCEPT_LABEL_MAX = 60;
 export const CONCEPT_NOTE_MAX = 40;
-export const CONCEPT_ROWS_MAX = 8;
 
 export const CONCEPT_ROWS: Readonly<
   Record<ConceptShape, { min: number; max: number; noun: string }>

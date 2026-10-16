@@ -49,7 +49,6 @@ export {
 } from './badges';
 export {
   EDITOR_MODE_ICONS,
-  EverythingIcon,
   FlowchartIcon,
   IllustrateIcon,
   PlanCardsIcon,

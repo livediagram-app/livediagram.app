@@ -39,7 +39,6 @@ import {
   lucideSquareChevronDown,
   lucideShieldCheck,
   lucideHighlighter,
-  lucideHash,
 } from '@livediagram/icons/lucide';
 import type { FunctionFamily } from '@livediagram/sheets';
 
@@ -235,4 +234,3 @@ export const CheckboxIcon = prims(lucideSquareCheck);
 export const DropdownIcon = prims(lucideSquareChevronDown);
 export const ValidationIcon = prims(lucideShieldCheck);
 export const ConditionalFormatIcon = prims(lucideHighlighter);
-export const CustomFormatIcon = prims(lucideHash);

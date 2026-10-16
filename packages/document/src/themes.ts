@@ -141,14 +141,6 @@ export function defaultScheme(appearance: Appearance = 'light'): ThemeDefinition
   return appearance === 'dark' ? DEFAULT_SCHEME_DARK : DEFAULT_SCHEME_LIGHT;
 }
 
-/** The colours a scheme paints the canvas with (its backdrop, minus the layout). */
-export function schemeBackdrop(scheme: ThemeDefinition): {
-  backgroundColor: string;
-  patternColor: string;
-} {
-  return { backgroundColor: scheme.backgroundColor, patternColor: scheme.patternColor };
-}
-
 // Is this canvas still one the DEFAULT scheme painted — either half of it —
 // rather than one somebody chose? Both halves count, because a tab saved by a
 // viewer in dark chrome carries the dark half and is no less untouched for it.

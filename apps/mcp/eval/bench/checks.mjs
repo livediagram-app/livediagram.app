@@ -183,14 +183,10 @@ export function typesOf(snap) {
   return (snap.documents ?? []).flatMap((d) => d.items?.types ?? []);
 }
 
-// A card type (by name) and its custom fields' names, lowercase.
+// A card type, by name.
 export function typeNamed(snap, word) {
   const re = asRegex(word);
   return typesOf(snap).find((t) => re.test(t.name)) ?? null;
-}
-
-export function customFieldNames(type) {
-  return (type?.custom ?? []).map((f) => lc(f.name));
 }
 
 export function hasField(type, word) {

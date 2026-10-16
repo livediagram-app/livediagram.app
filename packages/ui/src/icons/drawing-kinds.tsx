@@ -1,4 +1,4 @@
-import { lucideLayoutGrid, lucideWorkflow } from '@livediagram/icons/lucide';
+import { lucideWorkflow } from '@livediagram/icons/lucide';
 import type { EditorMode } from '@livediagram/document';
 import type { ComponentType } from 'react';
 
@@ -85,6 +85,3 @@ export const EDITOR_MODE_ICONS: Readonly<Record<EditorMode, ComponentType<IconPr
   plan: PlanIcon,
   facilitate: FlipchartIcon,
 };
-
-// "Everything", every mode at once, in the template mode filter: a grid.
-export const EverythingIcon = lucideGlyph(lucideLayoutGrid, 16);
