@@ -63,10 +63,13 @@ is the whole of what the repo enforces.
 - A type-aware rule needs the type of an expression, not only its syntax. oxlint hands those rules
   to `oxlint-tsgolint` (`options.typeAware` in the shared config), which is built on typescript-go:
   the same TypeScript 7 the repo type-checks with, so no second compiler is involved.
-- A file is typed through the `tsconfig.json` that includes it. Scripts belong in their workspace's
-  tsconfig (`apps/live`'s `.mts` scripts, marketing's `.well-known` route), so they are
-  type-checked and linted with the workspace's paths; a file no tsconfig includes is typed on its
-  own, as an inferred project, where an aliased import has no type.
+- A file is typed through the nearest `tsconfig.json` that includes it. Every source file, script
+  and test is in one, so what the lint reads is what `pnpm typecheck` checks: `apps/live`'s `.mts`
+  scripts and marketing's `.well-known` route are named in their app's tsconfig, and a folder of
+  Node scripts beside browser code has its own, which adds Node's types
+  (`packages/sticky-vision/scripts/tsconfig.json`). A file no tsconfig includes is typed on its own,
+  as an inferred project, without the workspace's options and paths; only the tool configs
+  (`oxlint.config.ts`, `vitest.config.ts`) are.
 - `oxlint-tsgolint` is a root dev dependency, so every workspace's `oxlint` resolves it as its peer,
   and a dependency of `@livediagram/oxlint-config`, whose tests run it.
 - A finding is fixed where it arises (a truer signature, a handled promise), never cast or

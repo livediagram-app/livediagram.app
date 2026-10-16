@@ -27,7 +27,8 @@ export type { Truth, TruthNote } from '../src/truth';
 
 export type ScoredBox = { x: number; y: number; w: number; h: number; kind: string };
 
-export type Score = {
+// A score keeps the caller's own boxes: `spurious` holds the detector's boxes, confidence and all.
+export type Score<B extends ScoredBox = ScoredBox> = {
   truth: number;
   detected: number;
   matched: number;
@@ -36,7 +37,7 @@ export type Score = {
   f1: number;
   kindsRight: number;
   missed: TruthNote[];
-  spurious: ScoredBox[];
+  spurious: B[];
   // Boxes holding the centres of TWO OR MORE labelled notes: stickies merged
   // into one. The bar allows none.
   merged: number;
@@ -103,7 +104,12 @@ export function truthFor(photo: string): Truth | null {
 const CENTRE_TOLERANCE = 0.5;
 const AREA_RATIO = 2;
 
-export function score(truth: Truth, boxes: ScoredBox[], width: number, height: number): Score {
+export function score<B extends ScoredBox>(
+  truth: Truth,
+  boxes: B[],
+  width: number,
+  height: number,
+): Score<B> {
   const labels = truth.notes.map((n) => ({
     ...n,
     cx: (n.x + n.w / 2) * width,

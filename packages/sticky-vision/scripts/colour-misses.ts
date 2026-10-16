@@ -16,7 +16,7 @@ import { photoDir, score, truthFor } from './truth';
 //
 // Numbers only: nothing derived from the photographs is written anywhere.
 
-const KIND_ID = new Map(EVENT_STORMING_NOTES.map((n, i) => [n.kind, i + 1]));
+const KIND_ID = new Map<string, number>(EVENT_STORMING_NOTES.map((n, i) => [n.kind, i + 1]));
 const PAPER_FRACTION_FOR_COLOUR_OK = 0.5;
 
 // No pixels prints as NaN, a visible gap, where the shared median's 0 would
