@@ -144,6 +144,7 @@ export function ExplorerPane() {
     moveTeamDests,
     moveDocumentTo,
     timelineUnread,
+    refreshAfterTeamPage,
   } = useExplorer();
   // The shared rows the pane's documents still show, by id: a scan of the documents per shared row was
   // quadratic, rerun on every keystroke in the lens (63 ms at 1,000 rows).
@@ -313,6 +314,8 @@ export function ExplorerPane() {
             // cross-scope pick from the document's current placement.
             moveDests={{ personalFolders: movePersonalFolders, teams: moveTeamDests }}
             onMoveDocumentTo={moveDocumentTo}
+            // What the team page changes, the sidebar, search and every move picker show at once.
+            onLibraryChange={refreshAfterTeamPage}
             // The team library reads its own rows, so it narrows them itself.
             lens={{
               active: lensResult.active,

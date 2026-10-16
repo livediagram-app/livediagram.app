@@ -38,6 +38,7 @@ export function TeamPane({
   moveDests,
   onMoveDocumentTo,
   lens,
+  onLibraryChange,
 }: {
   ownerId: string;
   teamId: string;
@@ -60,6 +61,8 @@ export function TeamPane({
   onMoveDocumentTo?: ComponentProps<typeof TeamSharedDocuments>['onMoveDocumentTo'];
   // The Explorer's lens (docs/specs/013-workspace/explorer-filters.md), passed straight through.
   lens?: ComponentProps<typeof TeamSharedDocuments>['lens'];
+  // Passed straight through: a library this page changed, for the Explorer's own lists.
+  onLibraryChange?: ComponentProps<typeof TeamSharedDocuments>['onLibraryChange'];
 }) {
   const [detail, setDetail] = useState<TeamDetailResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -342,6 +345,7 @@ export function TeamPane({
         moveDests={moveDests}
         onMoveDocumentTo={onMoveDocumentTo}
         lens={lens}
+        onLibraryChange={onLibraryChange}
       />
 
       <TeamFormModal
