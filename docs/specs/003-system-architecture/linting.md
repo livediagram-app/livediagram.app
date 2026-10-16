@@ -37,6 +37,7 @@ is the whole of what the repo enforces.
   - `no-implied-eval`
   - `no-redundant-type-constituents`
   - `no-unsafe-argument`
+  - `no-unsafe-call`
   - `no-unsafe-enum-comparison`
   - `no-unsafe-unary-minus`
   - `only-throw-error`
