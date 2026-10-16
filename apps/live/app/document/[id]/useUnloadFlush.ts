@@ -7,9 +7,11 @@
 // alive past the page while they fit the browser's keepalive budget. One flush per distinct content: the
 // events can fire in pairs on the way out.
 import { useEffect, useRef, type MutableRefObject, type RefObject } from 'react';
+import { flushSync } from 'react-dom';
 import type { Tab } from '@livediagram/document';
 import { flushDocumentSavesBeacon, type connectRoom } from '@/lib/api-client';
 import { isDocumentDeleted } from '@/lib/document-tombstones';
+import { commitOpenEdit } from '@/lib/open-edit';
 import { useLatest } from '@/hooks/ui/useLatest';
 import { computeTabSaveDiff } from './editor-page-helpers';
 import { relayParticipantChanges } from './tab-save-flow';
@@ -77,11 +79,18 @@ export function useUnloadFlush(opts: {
         changesetSeen: o.changesetSeen,
       });
     };
-    window.addEventListener('beforeunload', flush);
-    window.addEventListener('pagehide', flush);
+    // The page going: a label still being typed commits on blur, which this never fires, so commit it first, and
+    // synchronously, so the tabs the flush reads hold it (lib/open-edit.ts). Not on unmount below: that runs inside
+    // React's commit, where flushSync cannot, and a click away from the editor has already blurred it.
+    const leave = () => {
+      flushSync(() => commitOpenEdit());
+      flush();
+    };
+    window.addEventListener('beforeunload', leave);
+    window.addEventListener('pagehide', leave);
     return () => {
-      window.removeEventListener('beforeunload', flush);
-      window.removeEventListener('pagehide', flush);
+      window.removeEventListener('beforeunload', leave);
+      window.removeEventListener('pagehide', leave);
       // Unmounted (another page of the app): what the debounce still held goes now.
       flush();
     };

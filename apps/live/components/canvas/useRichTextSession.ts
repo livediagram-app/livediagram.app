@@ -15,6 +15,7 @@ import { fitMultilineFontPx } from '@/lib/fit-multiline-text';
 import { effectiveRunStyle, elementRunDefaults, labelBasePx, labelRunPx } from './label-style';
 import { offsetsToDomRange, selectRange } from '@/components/rich-text/rich-text-dom';
 import { useRichTextDocument } from '@/components/rich-text/useRichTextDocument';
+import { useCommitOnLeave } from '@/hooks/ui/useCommitOnLeave';
 import { track } from '@/lib/telemetry';
 import type { RichTextEditorProps } from './RichTextEditor.types';
 
@@ -232,6 +233,9 @@ export function useRichTextSession({
     onCommit(runsPlainText(runs), runs);
   });
   useEffect(() => () => commitOnUnmount(), []);
+
+  // The page going (a reload, a closed tab) fires no blur: commit what was typed before the unload flush reads it.
+  useCommitOnLeave(true, commitNow);
 
   const handleCancel = () => {
     settledRef.current = true;
