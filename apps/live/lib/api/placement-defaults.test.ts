@@ -53,7 +53,9 @@ describe('placement default calls', () => {
 
   it('surfaces a refusal by its token', async () => {
     reply = new Response(JSON.stringify({ error: 'folder_not_found' }), { status: 404 });
-    const error = await apiSetPlacementDefault('owner-1', 'mode:draw', 'gone').catch((e) => e);
+    const error = await apiSetPlacementDefault('owner-1', 'mode:draw', 'gone').catch(
+      (e: unknown) => e,
+    );
     expect(error).toBeInstanceOf(ApiError);
     expect(error).toMatchObject({ status: 404, code: 'folder_not_found' });
   });

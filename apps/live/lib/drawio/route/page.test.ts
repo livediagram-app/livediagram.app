@@ -16,8 +16,10 @@ function pagesOf(name: string): Element[] {
 }
 
 type Goldens = Record<string, Record<string, [number, number][]>>;
-const goldensOf = (name: string): Goldens =>
-  JSON.parse(readFileSync(join(FIXTURES, 'routes', name.replace('.drawio', '.json')), 'utf8'));
+const goldensOf = (name: string) =>
+  JSON.parse(
+    readFileSync(join(FIXTURES, 'routes', name.replace('.drawio', '.json')), 'utf8'),
+  ) as Goldens;
 
 // draw.io writes its SVG paths to two decimals.
 const TOLERANCE = 0.02;

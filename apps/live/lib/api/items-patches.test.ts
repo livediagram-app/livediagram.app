@@ -81,11 +81,12 @@ describe('writeItem patches refused part way', () => {
         );
       }),
     );
-    const failure = await writeItem(scope, { kind: 'patches', patches }, by).catch((e) => e);
+    const failure = await writeItem(scope, { kind: 'patches', patches }, by).catch(
+      (e: unknown) => e,
+    );
     expect(failure).toBeInstanceOf(ItemWritePartlyLanded);
-    expect(failure.code).toBe('item_busy');
-    expect(failure.landed.upserts).toHaveLength(ITEM_BULK_MAX + 1);
-    expect(failure.landed.rev).toBe(5);
+    expect(failure).toMatchObject({ code: 'item_busy', landed: { rev: 5 } });
+    expect(failure).toHaveProperty('landed.upserts.length', ITEM_BULK_MAX + 1);
   });
 
   it('throws the plain refusal when nothing landed', async () => {
@@ -93,8 +94,10 @@ describe('writeItem patches refused part way', () => {
       'fetch',
       vi.fn(async () => Response.json({ error: 'item_busy' }, { status: 409 })),
     );
-    const failure = await writeItem(scope, { kind: 'patches', patches }, by).catch((e) => e);
+    const failure = await writeItem(scope, { kind: 'patches', patches }, by).catch(
+      (e: unknown) => e,
+    );
     expect(failure).not.toBeInstanceOf(ItemWritePartlyLanded);
-    expect(failure.code).toBe('item_busy');
+    expect(failure).toMatchObject({ code: 'item_busy' });
   });
 });

@@ -1,7 +1,8 @@
 // @vitest-environment jsdom
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi, type Mock } from 'vitest';
 import { createShape, type MindOutlineSummary, type ShapeElement } from '@livediagram/document';
+import type { ComponentProps } from 'react';
 import { MindOutlineDialog } from './MindOutlineDialog';
 
 // The Edit Outline dialog (docs/specs/009-elements/mind-node.md "Edit Outline").
@@ -9,8 +10,10 @@ import { MindOutlineDialog } from './MindOutlineDialog';
 const node = (label: string) => ({ ...createShape('mind-node', 0, 0), label }) as ShapeElement;
 const none: MindOutlineSummary = { added: 0, renamed: 0, restyled: 0, moved: 0, removed: [] };
 
+type OnSave = ComponentProps<typeof MindOutlineDialog>['onSave'];
+
 function open(summary: MindOutlineSummary = none, initialText = 'Root\n- A\n- B') {
-  const onSave = vi.fn();
+  const onSave = vi.fn<OnSave>();
   const onClose = vi.fn();
   render(
     <MindOutlineDialog
@@ -35,7 +38,7 @@ const press = (row: HTMLElement, init: Parameters<typeof fireEvent.keyDown>[1]) 
   fireEvent.keyDown(row, init);
 };
 // The outline Save would read, written out by ⌘Enter.
-const saved = (onSave: ReturnType<typeof vi.fn>) => {
+const saved = (onSave: Mock<OnSave>) => {
   press(screen.getByRole('textbox', { name: 'Root' }), { key: 'Enter', metaKey: true });
   return onSave.mock.calls.at(-1)?.[0];
 };

@@ -114,7 +114,7 @@ describe('PUT presence', () => {
       vi
         .mocked(console.warn)
         .mock.calls.filter((c) => c[0] === '[agent-presence] refused')
-        .map((c) => c[1]),
+        .map((c): unknown => c[1]),
     ).toEqual([
       {
         documentId: 'd1',

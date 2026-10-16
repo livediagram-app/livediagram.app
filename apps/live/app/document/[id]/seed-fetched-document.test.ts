@@ -2,9 +2,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { LiveDoc } from '@livediagram/api-schema';
 
-const apiLoadTab = vi.fn();
+const apiLoadTab = vi.fn<typeof import('@/lib/api-client').apiLoadTabRevisioned>();
 vi.mock('@/lib/api-client', () => ({
-  apiLoadTabRevisioned: (...a: unknown[]) => apiLoadTab(...a),
+  apiLoadTabRevisioned: (...a: Parameters<typeof apiLoadTab>) => apiLoadTab(...a),
 }));
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 

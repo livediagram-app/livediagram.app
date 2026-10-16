@@ -18,7 +18,7 @@ import {
 // adds one from an existing status or a new name, at the end (before a done column that ends the board).
 const plan: Record<string, unknown> = {};
 vi.mock('./PlanContext', () => ({ usePlan: () => plan }));
-const track = vi.fn();
+const track = vi.fn<typeof import('./track-board-setup').trackSetup>();
 vi.mock('./track-board-setup', () => ({ trackSetup: (part: string) => track(part) }));
 afterEach(() => {
   cleanup();

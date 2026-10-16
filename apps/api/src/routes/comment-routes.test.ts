@@ -408,7 +408,9 @@ describe('the thread listing', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     await list('?status=closed');
     await call({ path: '/tabs/t1/comments/nope/resolve', token: 'tok_1' });
-    expect(warn.mock.calls.filter((c) => c[0] === '[comments] refused').map((c) => c[1])).toEqual([
+    expect(
+      warn.mock.calls.filter((c) => c[0] === '[comments] refused').map((c): unknown => c[1]),
+    ).toEqual([
       {
         documentId: 'd1',
         tabId: null,

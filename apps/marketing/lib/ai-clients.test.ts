@@ -53,7 +53,7 @@ describe('Build with AI clients', () => {
   it('writes valid JSON for every config snippet', () => {
     for (const c of AI_CLIENTS) {
       for (const s of c.steps) {
-        if (s.code?.lang === 'json') expect(() => JSON.parse(s.code!.code)).not.toThrow();
+        if (s.code?.lang === 'json') expect(() => void JSON.parse(s.code!.code)).not.toThrow();
       }
     }
   });

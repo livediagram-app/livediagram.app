@@ -168,7 +168,7 @@ describe('team and account cards', () => {
   });
 
   it('opens a token card in Settings, in place', () => {
-    const heard = vi.fn();
+    const heard = vi.fn<(detail: string) => void>();
     const onOpen = (e: Event) => heard((e as CustomEvent<string>).detail);
     window.addEventListener(OPEN_SETTINGS_EVENT, onOpen);
     render(

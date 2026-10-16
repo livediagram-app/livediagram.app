@@ -13,8 +13,8 @@ import type { UserPreferences } from '@/lib/user-preferences';
 // The offer wiring (docs/specs/007-editor/power-user-mode.md): record, evaluate, show once, and
 // apply the answer.
 
-const track = vi.fn();
-vi.mock('@/lib/telemetry', () => ({ track: (...a: unknown[]) => track(...a) }));
+const track = vi.fn<typeof import('@/lib/telemetry').track>();
+vi.mock('@/lib/telemetry', () => ({ track: (...a: Parameters<typeof track>) => track(...a) }));
 
 function setup(overrides: Partial<PowerUserOfferDeps> = {}) {
   let prefs: UserPreferences = {};

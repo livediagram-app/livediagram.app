@@ -22,7 +22,7 @@ const card = (planCard: PlanCardRef) =>
 function show(planCard: PlanCardRef, canEdit = true, open = true) {
   for (const key of Object.keys(plan)) delete plan[key];
   Object.assign(plan, { canEdit, updateCard: vi.fn() });
-  const onToggle = vi.fn();
+  const onToggle = vi.fn<(id: string) => void>();
   const view = render(
     <PlanCardMenuSection
       element={card(planCard)}

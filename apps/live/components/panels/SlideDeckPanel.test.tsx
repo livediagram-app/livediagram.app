@@ -172,6 +172,6 @@ describe('the Slide Deck popover', () => {
       ],
     );
     fireEvent.click(screen.getByRole('button', { name: /Add All 2 Slide Pages/ }));
-    expect(newPageSlide.mock.calls.map((c) => c[0])).toEqual(['p2', 'p3']);
+    expect(newPageSlide.mock.calls.map((c): unknown => c[0])).toEqual(['p2', 'p3']);
   });
 });

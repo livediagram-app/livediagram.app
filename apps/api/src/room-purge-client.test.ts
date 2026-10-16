@@ -1,7 +1,9 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-const roomFetch = vi.fn();
-vi.mock('./room-client', () => ({ roomFetch: (...args: unknown[]) => roomFetch(...args) }));
+const roomFetch = vi.fn<typeof import('./room-client').roomFetch>();
+vi.mock('./room-client', () => ({
+  roomFetch: (...args: Parameters<typeof roomFetch>) => roomFetch(...args),
+}));
 const { purgeRooms, ROOM_PURGE_CONCURRENCY } = await import('./room-purge-client');
 
 afterEach(() => {

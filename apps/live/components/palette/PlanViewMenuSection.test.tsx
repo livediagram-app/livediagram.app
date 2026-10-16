@@ -24,7 +24,7 @@ const chart = (planView: PlanViewRef) =>
 function show(planView: PlanViewRef, overrides: Record<string, unknown> = {}, open = true) {
   for (const key of Object.keys(plan)) delete plan[key];
   Object.assign(plan, { canEdit: true, types: ITEM_TYPES, updateView: vi.fn() }, overrides);
-  const onToggle = vi.fn();
+  const onToggle = vi.fn<(id: string) => void>();
   render(
     <PlanViewMenuSection
       element={chart(planView)}

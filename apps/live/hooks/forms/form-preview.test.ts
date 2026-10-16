@@ -8,8 +8,8 @@ import {
   sendPreview,
 } from './form-preview';
 
-const track = vi.fn();
-vi.mock('@/lib/telemetry', () => ({ track: (...a: unknown[]) => track(...a) }));
+const track = vi.fn<typeof import('@/lib/telemetry').track>();
+vi.mock('@/lib/telemetry', () => ({ track: (...a: Parameters<typeof track>) => track(...a) }));
 
 // Submit in the builder's Preview (docs/specs/030-forms/forms.md "Preview").
 

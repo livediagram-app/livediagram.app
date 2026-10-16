@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { CARD_TYPE_TOUR_STEPS } from './card-type-tour-steps';
+import { CARD_TYPE_TOUR_STEPS, type CardTypeTourApi } from './card-type-tour-steps';
 import { CardTypeShowMeButton, CardTypeTourStage, useCardTypeTour } from './CardTypeTour';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
@@ -67,7 +67,7 @@ describe('Show Me', () => {
 
   it('opens each step’s tab, and ends on a closing card', () => {
     const tabs = CARD_TYPE_TOUR_STEPS.map((s) => {
-      const showTab = vi.fn();
+      const showTab = vi.fn<CardTypeTourApi['showTab']>();
       void s.prepare?.({ showTab });
       return showTab.mock.calls[0]?.[0];
     });

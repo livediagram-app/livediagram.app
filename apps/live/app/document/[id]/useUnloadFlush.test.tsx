@@ -4,8 +4,10 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Tab } from '@livediagram/document';
 
 // docs/specs/006-document/per-tab-storage.md "Saving": the edits still inside the debounce go when the editor goes.
-const flush = vi.fn();
-vi.mock('@/lib/api-client', () => ({ flushDocumentSavesBeacon: (a: unknown) => flush(a) }));
+const flush = vi.fn<typeof import('@/lib/api-client').flushDocumentSavesBeacon>();
+vi.mock('@/lib/api-client', () => ({
+  flushDocumentSavesBeacon: (...a: Parameters<typeof flush>) => flush(...a),
+}));
 vi.mock('@/lib/document-tombstones', () => ({ isDocumentDeleted: () => false }));
 
 const { useUnloadFlush } = await import('./useUnloadFlush');

@@ -112,7 +112,7 @@ describe('attachImportImages', () => {
       session,
       progress,
     );
-    expect(progress.mock.calls.map(([p]) => p)).toEqual([
+    expect(progress.mock.calls.map(([p]): unknown => p)).toEqual([
       { done: 0, total: 2 },
       { done: 1, total: 2 },
       { done: 2, total: 2 },

@@ -7,8 +7,10 @@ import { pageSlideLabels, useSlideDeck } from './useSlideDeck';
 // docs/specs/007-editor/illustrate-pages.md "Slides": a page slide is its page. Its row names the
 // page from the slide's own tab, pressing it frames the page, and a copy of it counts as a page
 // slide.
-const track = vi.fn();
-vi.mock('@/lib/telemetry', () => ({ track: (...args: unknown[]) => track(...args) }));
+const track = vi.fn<typeof import('@/lib/telemetry').track>();
+vi.mock('@/lib/telemetry', () => ({
+  track: (...args: Parameters<typeof track>) => track(...args),
+}));
 vi.mock('@/hooks/ui/useSlideThumbnails', () => ({ useSlideThumbnails: () => new Map() }));
 
 const tabs = [

@@ -353,7 +353,7 @@ describe('DELETE /api/documents/:id/share — revoking every link', () => {
     const { env, broadcasts } = roomEnv();
     const { ctx } = ctxFor('DELETE', '/api/documents/d_1/share', { env });
     const res = await handleDocumentShareRoutes(ctx);
-    expect(db.deleteShareLink.mock.calls.map((c) => c[1])).toEqual(['c1', 'c2']);
+    expect(db.deleteShareLink.mock.calls.map((c): unknown => c[1])).toEqual(['c1', 'c2']);
     // Connected holders of each code are sent out of the room.
     expect(broadcasts).toEqual([
       { op: { kind: 'share-revoked', code: 'c1' } },

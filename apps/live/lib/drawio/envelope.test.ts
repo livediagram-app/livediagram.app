@@ -6,6 +6,7 @@ import { describe, expect, it } from 'vitest';
 import { cpuBudgetMs, cpuMsOf } from '@livediagram/vitest-config/cpu-time';
 import { readDrawioSource, sniffDrawio } from './envelope';
 import { ByteBudget } from './inflate';
+import { DrawioRefused } from './refusals';
 
 const fixture = (name: string) => readFileSync(join(__dirname, '__fixtures__', name));
 const text = (t: string) => ({ kind: 'text' as const, text: t });
@@ -91,7 +92,7 @@ describe('readDrawioSource', () => {
     const refusal = (p: Promise<unknown>) =>
       p.then(
         () => 'accepted',
-        (e) => e.reason,
+        (e: unknown) => (e instanceof DrawioRefused ? e.reason : e),
       );
     expect(await refusal(readDrawioSource(text('   '), budget()))).toBe('not-xml');
     expect(await refusal(readDrawioSource(text('{"type":"excalidraw"}'), budget()))).toBe(
@@ -115,7 +116,7 @@ describe('readDrawioSource', () => {
     const error = await readDrawioSource(
       text('<mxfile><diagram name="Network">!!!notbase64</diagram></mxfile>'),
       budget(),
-    ).catch((e) => e);
+    ).catch((e: unknown) => e);
     expect(error).toMatchObject({ reason: 'page-unreadable', detail: 'Network' });
   });
 
@@ -124,7 +125,7 @@ describe('readDrawioSource', () => {
     const error = await readDrawioSource(
       text(`<mxfile><diagram>${payload}</diagram></mxfile>`),
       budget(),
-    ).catch((e) => e);
+    ).catch((e: unknown) => e);
     expect(error).toMatchObject({ reason: 'page-unreadable', detail: 'Page 1' });
   });
 
@@ -135,7 +136,7 @@ describe('readDrawioSource', () => {
     const error = await readDrawioSource(
       text(`<mxfile><diagram>${payload}</diagram></mxfile>`),
       new ByteBudget(1_000),
-    ).catch((e) => e);
+    ).catch((e: unknown) => e);
     expect(error).toMatchObject({ reason: 'too-large' });
   });
 });
