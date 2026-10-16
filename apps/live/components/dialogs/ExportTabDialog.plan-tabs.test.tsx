@@ -64,20 +64,20 @@ const cardTitles = () =>
   screen
     .getAllByRole('button')
     .map((b) => b.querySelector('h3, .font-semibold')?.textContent ?? b.textContent ?? '')
-    .filter((t) => /^(JSON|Mermaid|Markdown|Excalidraw|PNG|SVG|PDF)/.test(t.trim()))
+    .filter((t) => /^(JSON|Mermaid|Markdown|CSV|Excalidraw|PNG|SVG|PDF)/.test(t.trim()))
     .map((t) => t.trim().split(/\s/)[0]);
 
 afterEach(cleanup);
 
 describe('ExportTabDialog on a Plan tab', () => {
-  it('offers a Board tab PNG, SVG, PDF and Markdown, and draws its board alone', async () => {
+  it('offers a Board tab PNG, SVG, PDF, Markdown and CSV, and draws its board alone', async () => {
     const stray = {
       ...createShape('square', 0, 0),
       id: 'stray',
       label: 'Hidden Under',
     } as BoxedElement;
     open({ id: 'b', name: 'Roadmap', kind: 'board', elements: [stray, board] });
-    expect(cardTitles()).toEqual(['Markdown', 'PNG', 'SVG', 'PDF']);
+    expect(cardTitles()).toEqual(['Markdown', 'CSV', 'PNG', 'SVG', 'PDF']);
     fireEvent.click(screen.getByRole('button', { name: /PNG/ }));
     await waitFor(() => expect(document.body.innerHTML).toContain('Write the spec'));
     expect(document.body.innerHTML).not.toContain('Hidden Under');
@@ -88,7 +88,7 @@ describe('ExportTabDialog on a Plan tab', () => {
 
   it('offers a Sheet tab its picture alone', () => {
     open({ id: 's', name: 'Budget', kind: 'sheet', elements: [] });
-    expect(cardTitles()).toEqual(['PNG', 'SVG', 'PDF']);
+    expect(cardTitles()).toEqual(['CSV', 'PNG', 'SVG', 'PDF']);
   });
 
   it('offers a Dashboard JSON and its picture, drawing its page', async () => {
@@ -118,7 +118,9 @@ describe('ExportTabDialog on a Plan tab', () => {
     expect(document.body.innerHTML).toContain('Not Started');
   });
 
-  it('draws a plan view on any other tab as its chart, with every format offered', async () => {
+  // CSV carries a Board's cards or a Sheet's cells (docs/specs/026-plan/plan-tabs.md "Export"); any other tab has
+  // neither, so it is not offered there: it was, and downloaded an empty file.
+  it('draws a plan view on any other tab as its chart, with every format but CSV offered', async () => {
     open({ id: 'c', name: 'Canvas', elements: [view] });
     expect(cardTitles()).toEqual([
       'JSON',

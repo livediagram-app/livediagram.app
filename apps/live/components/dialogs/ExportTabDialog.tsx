@@ -321,11 +321,11 @@ export function ExportTabDialog({
         return { ...card, description: ILLUSTRATE_CARD_COPY[kind] ?? card.description };
       })
     : // Off Illustrate there are no pages, so no logo page and no GIF: never the Logo Kit or GIF. A Plan tab offers
-      // its own formats.
+      // its own formats, CSV among them; any other tab has no cards or cells, so its CSV was an empty file.
       CARDS.filter((c) =>
         planImage.formats
           ? planImage.formats.includes(c.kind)
-          : c.kind !== 'logo-kit' && c.kind !== 'gif',
+          : c.kind !== 'logo-kit' && c.kind !== 'gif' && c.kind !== 'csv',
       );
 
   const isSelection = scope === 'selection';

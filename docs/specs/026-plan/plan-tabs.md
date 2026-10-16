@@ -324,11 +324,12 @@ laid out, never the canvas hidden under it:
 | Board tab     | PNG, SVG, PDF, Markdown, CSV |
 | Sheet tab     | PNG, SVG, PDF, CSV           |
 | Dashboard tab | PNG, SVG, PDF, JSON          |
-| Any other tab | every format, as ever        |
+| Any other tab | every format but CSV         |
 
 **CSV** opens a text panel like JSON's and Markdown's (view, copy, **Download .csv**): a Board tab's cards the board
 shows, a Sheet tab's cells as shown, both safe to open (a field a spreadsheet would run as a formula made inert).
-Taking it counts as the board's or Sheet's own CSV export (`Plan · Exported · Csv`, `Sheet · Exported · Csv`).
+Taking it counts as the board's or Sheet's own CSV export (`Plan · Exported · Csv`, `Sheet · Exported · Csv`). Any other tab has neither, so
+it is not offered CSV: it used to be, and copied or downloaded an empty file.
 
 - **Images** (PNG, SVG, PDF) of a **Board tab** draw its board alone (header, columns, counts and card faces, from the
   document's items) at the board's size, in the viewer's appearance; of a **Sheet tab**, its Sheet alone with its
