@@ -137,7 +137,9 @@ describe('BoardColumnsSection', () => {
       redraw();
       const row = () => screen.getByRole('button', { name: 'Open Review settings' });
       expect(row().className).toContain('bg-brand-50');
-      act(() => vi.advanceTimersByTime(ADDED_TINT_MS));
+      act(() => {
+        vi.advanceTimersByTime(ADDED_TINT_MS);
+      });
       expect(row().className).not.toContain('bg-brand-50');
     } finally {
       vi.useRealTimers();

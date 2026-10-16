@@ -62,7 +62,7 @@ export function usePlanBoardDrop(opts: {
     // status kept for when it comes back; its own cards stay in their order.
     if (setup.archive) {
       if (!item || isArchived(item)) return;
-      plan.patchItem(itemId, { set: { archived: true } });
+      void plan.patchItem(itemId, { set: { archived: true } });
       plan.announce('Card archived');
       track('Plan', 'Moved', 'Archive');
       return;
@@ -135,7 +135,7 @@ export function usePlanBoardDrop(opts: {
       const lane = projection.lanes.find((l) => l.key === slot.laneKey);
       const set = projection.swimlanes ? laneMove(lane) : {};
       const id = newItemId();
-      plan.addItem({
+      void plan.addItem({
         id,
         type: def.id,
         fields: { title: def.newTitle, ...(set.set ?? {}) },

@@ -22,7 +22,9 @@ describe('ItemKeyTag', () => {
     expect(writeText).toHaveBeenCalledWith('#12');
     await act(async () => {});
     expect(screen.getByRole('button', { name: 'Copied #12' })).toBeTruthy();
-    act(() => vi.advanceTimersByTime(KEY_COPIED_MS));
+    act(() => {
+      vi.advanceTimersByTime(KEY_COPIED_MS);
+    });
     expect(screen.getByRole('button', { name: 'Copy card number #12' })).toBeTruthy();
   });
 

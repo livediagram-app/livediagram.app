@@ -86,16 +86,22 @@ describe('usePlanTourLeftovers', () => {
       expect(t.tabs()[0]!.elements).toHaveLength(1);
       expect(readLeftover()).not.toBeNull();
       // Still no Sheet: tried again, warned once.
-      act(() => vi.advanceTimersByTime(LEFTOVER_SHEET_RETRY_MS));
+      act(() => {
+        vi.advanceTimersByTime(LEFTOVER_SHEET_RETRY_MS);
+      });
       expect(t.props.releaseSheets).toHaveBeenCalledTimes(2);
       expect(warn).toHaveBeenCalledTimes(1);
       expect(t.tabs()[0]!.elements).toHaveLength(1);
       // A Sheet draws: the next try takes the sheet and its element, and the record goes.
       t.props.releaseSheets.mockReturnValue(true);
-      act(() => vi.advanceTimersByTime(LEFTOVER_SHEET_RETRY_MS));
+      act(() => {
+        vi.advanceTimersByTime(LEFTOVER_SHEET_RETRY_MS);
+      });
       expect(t.tabs()[0]!.elements).toEqual([]);
       expect(readLeftover()).toBeNull();
-      act(() => vi.advanceTimersByTime(LEFTOVER_SHEET_RETRY_MS * 3));
+      act(() => {
+        vi.advanceTimersByTime(LEFTOVER_SHEET_RETRY_MS * 3);
+      });
       expect(t.props.releaseSheets).toHaveBeenCalledTimes(3);
       warn.mockRestore();
     } finally {

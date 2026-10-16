@@ -10,6 +10,6 @@ export function duplicateItem(
   const { votes: _votes, ...fields } = item.fields;
   void _votes;
   const status = typeof item.fields['status'] === 'string' ? item.fields['status'] : '';
-  plan.addItem({ type: item.type, fields, status, after: item.id });
+  void plan.addItem({ type: item.type, fields, status, after: item.id });
   plan.announce('Card duplicated');
 }

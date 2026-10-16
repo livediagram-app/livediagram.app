@@ -130,7 +130,7 @@ export function GanttView({
     model: view,
     trackRef,
     onCommit: (itemId, patch) => {
-      plan?.patchItem(itemId, patch);
+      void plan?.patchItem(itemId, patch);
       track('Plan', 'Changed', 'GanttDates');
     },
     onBegin: timeline.pin,
@@ -301,7 +301,7 @@ export function GanttView({
                     trackRef={trackRef}
                     colour={colourOf(row)}
                     onCommit={(itemId, patch) => {
-                      plan?.patchItem(itemId, patch);
+                      void plan?.patchItem(itemId, patch);
                       track('Plan', 'Changed', 'GanttDrawn');
                     }}
                     onBegin={timeline.pin}

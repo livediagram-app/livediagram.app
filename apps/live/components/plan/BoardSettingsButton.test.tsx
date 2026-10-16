@@ -31,10 +31,14 @@ describe('a board’s settings cog', () => {
     renderHook(() => useElementMenuOpener(setMenu as never, true, select));
     render(<BoardSettingsButton element={element} palette={planPalette('light')} />);
     const cog = screen.getByRole('button', { name: 'Board Settings' });
-    act(() => fireEvent.click(cog));
+    act(() => {
+      fireEvent.click(cog);
+    });
     expect(select).toHaveBeenCalledWith('b1');
     expect(menu).toMatchObject({ mode: 'element', elementId: 'b1' });
-    act(() => fireEvent.click(cog));
+    act(() => {
+      fireEvent.click(cog);
+    });
     expect(menu).toBeNull();
   });
 
@@ -42,7 +46,9 @@ describe('a board’s settings cog', () => {
     const setMenu = vi.fn();
     renderHook(() => useElementMenuOpener(setMenu, true, () => false));
     render(<BoardSettingsButton element={element} palette={planPalette('light')} />);
-    act(() => fireEvent.click(screen.getByRole('button', { name: 'Board Settings' })));
+    act(() => {
+      fireEvent.click(screen.getByRole('button', { name: 'Board Settings' }));
+    });
     expect(setMenu).not.toHaveBeenCalled();
   });
 });

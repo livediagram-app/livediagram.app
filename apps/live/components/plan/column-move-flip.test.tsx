@@ -97,7 +97,9 @@ describe('useColumnMoveFlip', () => {
         'translateX(-260px)',
       );
       expect(handle.current.isMoving()).toBe(true);
-      act(() => vi.advanceTimersByTime(COLUMN_MOVE_MS));
+      act(() => {
+        vi.advanceTimersByTime(COLUMN_MOVE_MS);
+      });
       expect(handle.current.isMoving()).toBe(false);
     } finally {
       vi.useRealTimers();

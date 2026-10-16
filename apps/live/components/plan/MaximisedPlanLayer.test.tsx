@@ -177,7 +177,9 @@ describe('restoring while it is still growing', () => {
     act(() => maximisePlanElement('el'));
     // Mid-grow: still the empty frame, the body on the canvas.
     expect(inSlot()).toBe(true);
-    act(() => vi.advanceTimersByTime(MOTION_MS.long - 120));
+    act(() => {
+      vi.advanceTimersByTime(MOTION_MS.long - 120);
+    });
     expect(inOverlay()).toBe(true);
   });
 
@@ -190,11 +192,15 @@ describe('restoring while it is still growing', () => {
     const moved = vi.spyOn(box, 'appendChild');
     expect(inSlot()).toBe(true);
     // Past the opening's reveal and its settle: neither runs.
-    act(() => vi.advanceTimersByTime(MOTION_MS.long));
+    act(() => {
+      vi.advanceTimersByTime(MOTION_MS.long);
+    });
     expect(inSlot()).toBe(true);
     expect(moved).not.toHaveBeenCalled();
     expect(isMaximisedPlanClosing()).toBe(true);
-    act(() => vi.advanceTimersByTime(MOTION_MS.long));
+    act(() => {
+      vi.advanceTimersByTime(MOTION_MS.long);
+    });
     expect(overlay()).toBeNull();
     expect(inSlot()).toBe(true);
     expect(moved).not.toHaveBeenCalled();
@@ -204,11 +210,15 @@ describe('restoring while it is still growing', () => {
     withBoxes();
     render(<Slot />);
     act(() => maximisePlanElement('el'));
-    act(() => vi.advanceTimersByTime(MOTION_MS.long * 2));
+    act(() => {
+      vi.advanceTimersByTime(MOTION_MS.long * 2);
+    });
     act(() => restorePlanElement());
     expect(inSlot()).toBe(true);
     act(() => maximisePlanElement('el'));
-    act(() => vi.advanceTimersByTime(MOTION_MS.long * 2));
+    act(() => {
+      vi.advanceTimersByTime(MOTION_MS.long * 2);
+    });
     expect(isMaximisedPlanClosing()).toBe(false);
     expect(inOverlay()).toBe(true);
   });

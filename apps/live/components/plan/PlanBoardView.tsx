@@ -611,7 +611,7 @@ export function PlanBoardView({
                                 onAdd={({ type, fields }) => {
                                   // Opened at once to be named (plan-board.md "Open an item").
                                   const id = newItemId();
-                                  plan?.addItem({
+                                  void plan?.addItem({
                                     id,
                                     type,
                                     fields: {
