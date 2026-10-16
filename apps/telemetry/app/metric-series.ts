@@ -137,11 +137,11 @@ export function windowCount(
 
 // Element-wise sum of the 30-day series for every event in the metric.
 export function dailySeries(daily: TelemetryDaily, m: Metric): number[] {
-  const out = new Array(daily.days.length).fill(0);
+  let out = daily.days.map(() => 0);
   for (const [key, series] of Object.entries(daily.byMetric)) {
     const [category = '', action = '', rawType = ''] = key.split('|');
     if (!matches(m, category, action, rawType === '' ? null : rawType)) continue;
-    for (let i = 0; i < out.length; i++) out[i] += series[i] ?? 0;
+    out = out.map((sum, i) => sum + (series[i] ?? 0));
   }
   return out;
 }
