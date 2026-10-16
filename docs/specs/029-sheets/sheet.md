@@ -445,7 +445,7 @@ A finger has no hover and no right button, and its drag pans the cells, so selec
   **Show Rows 2 to 3**, with the shared tooltip), which unhides them; a sheet without headers draws the arrows at the
   grid's own edge, so hidden lines can always come back. Rows a filter leaves out are not hidden lines and draw no
   arrow ([Filter](#filter)).
-- Rows and columns can be dragged by their selected headers to a new place.
+- Rows and columns can be dragged by their selected headers to a new place. A drag that would split a merge (moving part of one, or dropping into the middle of one) is refused with "Unmerge the cells first: moving these rows would split merged cells." (columns likewise).
 - Inserting, deleting and moving keep every formula right: references move with their cells, a reference to a
   deleted cell becomes `#REF!`, and a range shrinks or grows with what is inside it.
 
@@ -569,6 +569,10 @@ coloured in one theme reads in the other (`@livediagram/document` `cellColours`)
   ways.
 - A sort moves whole rows, formats with them. A formula moved with its row keeps pointing at its own row's cells.
 - A sort is one change, undone in one step.
+- A sort over rows a merge spans (a merge of more than one row: Merge Cells down, not Merge Across) is refused, as in
+  Google Sheets and Excel, with "Unmerge the cells that span rows before sorting.": moving its rows apart would
+  stretch the merge over whatever lands between them. Sort Range refuses only for a merge inside its range; an
+  agent's sort is refused the same way (`merge_split`).
 
 ### Filter
 

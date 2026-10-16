@@ -29,6 +29,7 @@ import {
   toggleFilter,
 } from './commands-axis';
 import { applySheetWrite, type SheetWrite } from './store';
+import type { MergeRefusal } from './merge-guards';
 import { cellKey, type Sheet } from './sheet';
 import { renderFormula } from './formula/stored';
 import type { Grid } from './selection';
@@ -40,8 +41,9 @@ const seeded = () => {
 };
 
 // Apply a write to the book's first sheet and keep the workbook in step; returns the new sheet.
-function run(b: ReturnType<typeof book>, w: SheetWrite | null, i = 0): Sheet {
+function run(b: ReturnType<typeof book>, w: SheetWrite | MergeRefusal | null, i = 0): Sheet {
   if (!w) throw new Error('no write');
+  if ('refused' in w) throw new Error(w.refused);
   const r = applySheetWrite(b.sheets[i]!, w, ctx);
   b.sheets[i] = r.sheet;
   b.wb.updateSheet(r.sheet, w.kind === 'cells' ? r.touched : undefined);

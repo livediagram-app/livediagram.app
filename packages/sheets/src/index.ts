@@ -22,6 +22,7 @@ export * from './clipboard';
 export * from './selection';
 export * from './commands';
 export * from './commands-axis';
+export * from './merge-guards';
 export * from './commands-paste';
 export * from './commands-shift';
 export * from './store';

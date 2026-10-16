@@ -87,7 +87,10 @@ export function shrinkRange(
       if (first === null) first = id;
       last = id;
     }
-    return first === null ? null : ([first, last!] as const);
+    if (first === null) return null;
+    // Each corner keeps its side: a range whose rows a sort turned upside down stays as it was stored, so a
+    // deletion beside it leaves its ids exactly as they were (an unmerge or undo names it by those ids).
+    return ia <= ib ? ([first, last!] as const) : ([last!, first] as const);
   };
   const rows = pick(before.rows, range.r1, range.r2, goneRows);
   const cols = pick(before.cols, range.c1, range.c2, goneCols);
@@ -312,6 +315,8 @@ export function applyLayoutChange(layout: SheetLayout, ch: LayoutChange): SheetL
     case 'merge': {
       const ix = layoutIndex(layout);
       const r = ch.range;
+      // One cell is no merge: a deletion drops a merge it shrinks to one cell, so one never starts as one.
+      if (r.r1 === r.r2 && r.c1 === r.c2) return layout;
       if (
         ![r.r1, r.r2].every((id) => ix.rowPos.has(id)) ||
         ![r.c1, r.c2].every((id) => ix.colPos.has(id))
