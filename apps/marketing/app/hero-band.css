@@ -25,7 +25,8 @@
 
 :where(.dark, .dark *):not(:where(.light, .light *)) .hero-band,
 .hero-band:where(.dark, .dark *):not(:where(.light, .light *)) {
-  --hero-bg: #020617;
+  /* The theme token, not a literal: the Steel palette repaints slate-950, and the header sits on it. */
+  --hero-bg: var(--color-slate-950);
   --hero-dots: #1e293b;
   --hero-ink: #ffffff;
   --hero-muted: #cbd5e1;
