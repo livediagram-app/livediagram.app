@@ -40,9 +40,14 @@ const releaseEscapes = (text: string) =>
 // text is not all spaces.
 const releaseLiteral = (text: string) =>
   text.replace(/[\ue000-\ue00f]/g, (c) => '\\' + ESCAPABLE[c.charCodeAt(0) - HELD]!);
+// A space at both ends round text that is not all spaces: the pair CommonMark strips from a code span. Checked by
+// hand, not a regex: `^ .*[^ ].* $` backtracks quadratically on a long run of spaces.
+export const spaceWrapped = (text: string): boolean =>
+  text.length > 2 && text[0] === ' ' && text[text.length - 1] === ' ' && /[^ ]/.test(text);
+
 function codeText(held: string): string {
   const text = releaseLiteral(held);
-  return /^ [\s\S]*[^ ][\s\S]* $/.test(text) ? text.slice(1, -1) : text;
+  return spaceWrapped(text) ? text.slice(1, -1) : text;
 }
 
 /** One line's inline Markdown as runs. */

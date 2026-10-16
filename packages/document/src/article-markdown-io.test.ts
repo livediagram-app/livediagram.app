@@ -265,6 +265,19 @@ describe('worst case', () => {
     expect(performance.now() - started).toBeLessThan(250);
   });
 
+  it('writes and reads inline code of a long run of spaces in budget', () => {
+    const code = ' ' + '!'.repeat(15_000) + ' !';
+    const started = performance.now();
+    const back = articleFromMarkdown(
+      articleToMarkdown({
+        blocks: [{ id: 'p', type: 'paragraph', runs: [{ text: code, code: true }] }],
+      }),
+    );
+    // CodeQL's case for the edge-space check this replaced: quadratic as a regex.
+    expect(performance.now() - started).toBeLessThan(250);
+    expect('blocks' in back).toBe(true);
+  });
+
   it('stays linear on a long run of spaces (no regex backtracking)', () => {
     const spaces = ' '.repeat(50_000);
     const started = performance.now();
