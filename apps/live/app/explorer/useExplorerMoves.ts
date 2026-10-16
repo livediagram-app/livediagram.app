@@ -10,6 +10,7 @@ import {
   type TeamListItem,
 } from '@/lib/api-client';
 import { logMoveFailure } from '@/lib/move-failure';
+import { DOCUMENT_FAILURE, FOLDER_FAILURE } from '@/lib/write-failure-copy';
 import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
 import { track } from '@/lib/telemetry';
 import type { TeamDocumentRow, TeamFolderRow } from '@/hooks/persistence/useTeamLibrariesSweep';
@@ -82,7 +83,7 @@ export function useExplorerMoves({
       })
       .catch((err: unknown) => {
         logMoveFailure('folder', ` folder=${id}`, err);
-        toast.error('Could not move the folder. Please try again.');
+        toast.error(FOLDER_FAILURE.move);
       });
   };
 
@@ -127,7 +128,7 @@ export function useExplorerMoves({
       })
       .catch((err: unknown) => {
         logMoveFailure('team-document', ` document=${id}`, err);
-        toast.error('Could not move the document. Please try again.');
+        toast.error(DOCUMENT_FAILURE.move);
       });
   };
 
@@ -225,7 +226,7 @@ export function useExplorerMoves({
     } catch (err) {
       // The tile keeps the name typed, for another try.
       logMoveFailure('new-folder', '', err);
-      toast.error('Could not create the folder. Please try again.');
+      toast.error(FOLDER_FAILURE.create);
       return null;
     }
     if (teamId) refreshTeamLibraries();

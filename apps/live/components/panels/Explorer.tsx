@@ -8,6 +8,9 @@ import { MovablePanel } from '@/components/primitives/MovablePanel';
 import { MoveToFolderDialog } from '@/components/dialogs/MoveToFolderDialog';
 import { apiCreateFolder } from '@/lib/api-client';
 import { track } from '@/lib/telemetry';
+import { useToast } from '@/hooks/ui/useToast';
+import { logMoveFailure } from '@/lib/move-failure';
+import { FOLDER_FAILURE } from '@/lib/write-failure-copy';
 import { useMinimalChrome } from '@/components/providers/minimal-chrome';
 import { SignInPrompt } from '@/components/chrome/SignInPrompt';
 import { ExplorerHeaderMenu } from '@/components/panels/ExplorerHeaderMenu';
@@ -81,6 +84,7 @@ function ExplorerImpl({
   onToggleFavourite,
   onLibraryChanged,
 }: ExplorerProps) {
+  const toast = useToast();
   const minimalChrome = useMinimalChrome();
   // Mobile viewport ⇒ render nothing. Mobile users reach the
   // Explorer from the AuthControls "Explorer" menu item (docs/specs/007-editor/live-app.md)
@@ -489,7 +493,10 @@ function ExplorerImpl({
                     });
                     track('Folder', 'Created', 'Team');
                     return { id: folder.id, name: folder.name, parentId: folder.parentId };
-                  } catch {
+                  } catch (err) {
+                    // The tile keeps the name typed, for another try.
+                    logMoveFailure('new-folder', '', err);
+                    toast.error(FOLDER_FAILURE.create);
                     return null;
                   }
                 }}

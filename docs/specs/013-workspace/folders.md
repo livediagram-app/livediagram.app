@@ -456,6 +456,24 @@ it stays in view as the dashboard scrolls; Settings opens the same synced
   - Each failure logs
     `[explorer-move] <document|document-to-team|team-document|team-document-out|folder|new-folder> failed`
     with the subject's id and the error.
+- **A write that fails says so.** The same holds for every other folder and
+  document write the Explorer page, the editor's Explorer panel and a team's
+  library make: it lands or ends in an error toast, and a change shown at
+  once is put back. One wording per verb (`lib/write-failure-copy.ts`), so
+  a failure reads the same wherever it happened:
+  - A new folder (New Folder, New Subfolder, a picker's New Folder tile in
+    any scope): "Could not create the folder. Please try again."
+  - A folder rename: "Could not rename the folder. Please try again.", the
+    old name back.
+  - A folder delete: "Could not delete the folder. Try again."
+  - A team document's rename: "Could not rename the document. Please try
+    again."; its duplicate: "Couldn't duplicate that document. Try again."
+  - Within a team's library, a folder or document move says what the
+    Explorer's own moves say (above), with the same log line.
+  - Each other failure logs `[folders] <verb> failed`,
+    `[team-folders] <verb> failed` or `[team-library] <what> failed` with
+    the error. These used to fail silently: a New Folder that did nothing, a
+    rename that snapped back.
 - **Selection state**: the selected sidebar row is the current route;
   which branches are expanded is session-local state that doesn't
   survive reload ([Explorer structure](explorer-structure.md#expansion)).

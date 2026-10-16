@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import type { TeamFolderRow } from '@/hooks/persistence/useTeamLibrariesSweep';
 import type { TeamFolderHandlers } from '@/components/panels/Explorer.types';
 import { apiCreateFolder, apiDeleteFolder, apiUpdateFolder } from '@/lib/api-client';
@@ -7,6 +7,8 @@ import { track } from '@/lib/telemetry';
 import { folderDeleteConfirmation } from '@/lib/folder-delete-confirmation';
 import { folderDefaultKeys } from '@/lib/placement-defaults/default-destination';
 import { placementDefaultsSnapshot } from '@/lib/placement-defaults/placement-defaults-store';
+import { useToast } from '@/hooks/ui/useToast';
+import { FOLDER_FAILURE } from '@/lib/write-failure-copy';
 
 // Team-library folder mutations for the Explorer panel's team tree
 // (docs/specs/013-workspace/team-shared-documents.md), lifted out of EditorCanvasHost. Straight api calls plus a
@@ -29,6 +31,15 @@ export function useTeamFolderActions({
   refreshTeamLibraries: () => void;
   confirm: ReturnType<typeof useConfirm>;
 }): TeamFolderHandlers | undefined {
+  const toast = useToast();
+  // A refused write says so (docs/specs/013-workspace/folders.md "A write that fails says so"), and logs why.
+  const failed = useCallback(
+    (verb: keyof typeof FOLDER_FAILURE, err: unknown) => {
+      console.warn(`[team-folders] ${verb} failed`, { message: (err as Error).message });
+      toast.error(FOLDER_FAILURE[verb]);
+    },
+    [toast],
+  );
   return useMemo<TeamFolderHandlers | undefined>(() => {
     if (!clerkUserId || !viewerId) return undefined;
     return {
@@ -43,7 +54,8 @@ export function useTeamFolderActions({
           track('Folder', 'Created', 'Team');
           refreshTeamLibraries();
           return folder;
-        } catch {
+        } catch (err) {
+          failed('create', err);
           return undefined;
         }
       },
@@ -55,7 +67,7 @@ export function useTeamFolderActions({
             track('Folder', 'Renamed', 'Team');
             refreshTeamLibraries();
           })
-          .catch(() => {});
+          .catch((err: unknown) => failed('rename', err));
       },
       delete: (id) => {
         const folder = teamFolders.find((f) => f.id === id);
@@ -75,9 +87,9 @@ export function useTeamFolderActions({
               track('Folder', 'Deleted', 'Team');
               refreshTeamLibraries();
             })
-            .catch(() => {});
+            .catch((err: unknown) => failed('delete', err));
         });
       },
     };
-  }, [clerkUserId, viewerId, refreshTeamLibraries, confirm, teamFolders]);
+  }, [clerkUserId, viewerId, refreshTeamLibraries, confirm, teamFolders, failed]);
 }
