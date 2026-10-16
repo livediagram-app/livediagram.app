@@ -13,7 +13,7 @@ export function AiChatArt() {
     <div
       role="img"
       aria-label="An AI chat asks livediagram for a diagram, and the diagram draws itself"
-      className="relative w-full max-w-md rounded-2xl border border-slate-200 bg-white/90 shadow-xl shadow-brand-900/5 backdrop-blur dark:border-slate-800 dark:bg-slate-900/90 dark:shadow-black/30"
+      className="relative w-full max-w-md rounded-2xl border border-slate-200 bg-white/90 shadow-xl shadow-brand-900/5 backdrop-blur dark:border-slate-700 dark:bg-slate-900/90 dark:shadow-black/30"
     >
       <div
         aria-hidden

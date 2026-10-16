@@ -21,7 +21,7 @@ const ISSUES = [
 
 export function AiTroubleshooting() {
   return (
-    <div className="divide-y divide-slate-200 rounded-2xl border border-slate-200 bg-white dark:divide-slate-800 dark:border-slate-800 dark:bg-slate-900">
+    <div className="divide-y divide-slate-200 rounded-2xl border border-slate-200 bg-white dark:divide-slate-800 dark:border-slate-700 dark:bg-slate-900">
       {ISSUES.map(({ q, a }) => (
         <details key={q} className="group px-5 py-4 [&_summary::-webkit-details-marker]:hidden">
           <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-slate-900 dark:text-slate-100">

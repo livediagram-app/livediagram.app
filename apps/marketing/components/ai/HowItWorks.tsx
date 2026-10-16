@@ -35,7 +35,7 @@ export function HowItWorks() {
       {STEPS.map(({ icon: Icon, title, body }, i) => (
         <li
           key={title}
-          className="relative rounded-2xl border border-slate-200 bg-white p-6 text-center shadow-xs dark:border-slate-800 dark:bg-slate-900"
+          className="relative rounded-2xl border border-slate-200 bg-white p-6 text-center shadow-xs dark:border-slate-700 dark:bg-slate-900"
         >
           <span className="relative mx-auto flex size-12 items-center justify-center rounded-2xl bg-brand-700 text-white shadow-sm ring-4 ring-white dark:bg-brand-500 dark:text-slate-950 dark:ring-slate-900">
             <Icon aria-hidden />

@@ -113,7 +113,7 @@ export default function StatusPage() {
           </div>
         </div>
 
-        <ul className="mt-8 divide-y divide-slate-200 rounded-xl border border-slate-200 bg-white dark:divide-slate-800 dark:border-slate-800 dark:bg-slate-900">
+        <ul className="mt-8 divide-y divide-slate-200 rounded-xl border border-slate-200 bg-white dark:divide-slate-800 dark:border-slate-700 dark:bg-slate-900">
           {COMPONENTS.map((c) => (
             <li key={c.name} className="flex items-center justify-between gap-4 px-5 py-4">
               {/* min-w-0 + break-words: a long host in a description wraps instead of pushing the
