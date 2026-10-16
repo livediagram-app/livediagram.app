@@ -50,6 +50,14 @@ vi.mock('../server-telemetry', () => ({
   reportServerEvent: vi.fn(async () => {}),
 }));
 
+// Link previews (docs/specs/013-workspace/share-link-previews.md) are their own module, tested in
+// share-preview.test.ts; here only that the share router hands them their paths.
+vi.mock('./share-preview', () => ({
+  handleSharePreview: vi.fn(async (ctx: RouteContext) =>
+    ctx.segments[3] === 'card' ? new Response('preview') : null,
+  ),
+}));
+
 vi.mock('../thumbnail', () => ({
   getDocumentThumbnailSvg: vi.fn(),
   getDocumentTabImageSvg: vi.fn(),
@@ -201,6 +209,18 @@ describe('passwordGate (docs/specs/013-workspace/share-password.md status-code m
     const result = await passwordGate(FAKE_ENV, 'diag-7', { value: 'hunter2', rateKey: 'net-1' });
     expect(result).not.toBeNull();
     expect(result!.status).toBe(403);
+  });
+});
+
+describe('the share router and link previews', () => {
+  it('answers with the preview module when it owns the path', async () => {
+    const url = new URL('https://api.test/api/share/C/card');
+    const res = await handleShare({
+      ...imageCtx('C'),
+      url,
+      segments: ['api', 'share', 'C', 'card'],
+    });
+    expect(await res.text()).toBe('preview');
   });
 });
 

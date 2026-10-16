@@ -11,6 +11,8 @@ import { ConfirmProvider } from '@/hooks/ui/useConfirm';
 import { DriveMirrorProvider } from '@/components/drive/DriveMirrorProvider';
 import { ToastProvider } from '@/hooks/ui/useToast';
 import { googleFontsHref } from '@livediagram/document';
+import { BRAND_OG_IMAGE, BRAND_TWITTER_IMAGE } from '@livediagram/ui/seo';
+import { SITE_NAME } from '@livediagram/ui/site';
 import {
   APPEARANCE_BOOT_SCRIPT,
   BRAND_ICONS,
@@ -44,9 +46,28 @@ const TRUSTED_TYPES_BOOT = trustedTypesBootScript(
   }),
 );
 
+const TITLE = 'livediagram';
+const DESCRIPTION = 'Diagrams, whiteboards, illustrations and documents. Multiplayer canvas.';
+
 export const metadata: Metadata = {
-  title: 'livediagram',
-  description: 'Diagrams, whiteboards, illustrations and documents. Multiplayer canvas.',
+  title: TITLE,
+  description: DESCRIPTION,
+  // Link previews (docs/specs/013-workspace/share-link-previews.md): every editor address previews with the brand
+  // card rather than an empty box, and the live worker (src/share-page.ts) rewrites these same tags to name the
+  // document on a share link's page, so they must stay declared here.
+  openGraph: {
+    type: 'website',
+    siteName: SITE_NAME,
+    title: TITLE,
+    description: DESCRIPTION,
+    images: [BRAND_OG_IMAGE],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: TITLE,
+    description: DESCRIPTION,
+    images: [BRAND_TWITTER_IMAGE],
+  },
   // PWA install affordances. The editor is what users add to their home
   // screen, but only its app/icon.svg favicon was linked, so an installed
   // editor PWA showed no icon. livediagram.app is one origin (the router

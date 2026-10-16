@@ -140,7 +140,7 @@ pnpm --filter @livediagram/router exec wrangler deploy   # last, depends on the 
 
 Deploying by hand, give the editor build and the api the same build id so an open tab knows when a newer build is live ([Stale builds](../specs/016-platform/stale-builds.md)): `NEXT_PUBLIC_BUILD_ID=$(git rev-parse HEAD) pnpm build`, then `--var "BUILD_ID:$(git rev-parse HEAD)"` on the api's `wrangler deploy`. The workflow does this for you; leaving both unset only turns that detection off.
 
-Deploy order matters: the router's service bindings reference six other workers, so it can't deploy until they exist; the optional `mcp` worker deploys after `api` (it binds to it). The GitHub Actions deploy workflow encodes this as job dependencies.
+Deploy order matters: the router's service bindings reference six other workers, so it can't deploy until they exist; `live`, `community` and the optional `mcp` worker deploy after `api` (each binds to it; `live` and `community` only for link previews and work without it). The GitHub Actions deploy workflow encodes this as job dependencies.
 
 Or just push to `main` and use the bundled GitHub Actions workflows:
 

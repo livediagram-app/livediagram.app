@@ -492,9 +492,24 @@ export function communityThumbnailKey(documentId: string): string {
   return `thumb-community/${documentId}`;
 }
 
+// The share card a link preview shows (docs/specs/013-workspace/share-link-previews.md): the first-tab snapshot drawn
+// as a 1200 x 630 PNG, and the Community's own, drawn from its redacted snapshot.
+export function shareCardKey(documentId: string): string {
+  return `og/${documentId}`;
+}
+
+export function communityShareCardKey(documentId: string): string {
+  return `og-community/${documentId}`;
+}
+
 // Every cached snapshot a document can have, for the paths that delete it.
 export function snapshotKeys(documentId: string): string[] {
-  return [thumbnailKey(documentId), communityThumbnailKey(documentId)];
+  return [
+    thumbnailKey(documentId),
+    communityThumbnailKey(documentId),
+    shareCardKey(documentId),
+    communityShareCardKey(documentId),
+  ];
 }
 
 // When the cached snapshot was last rendered (docs/specs/006-document/document-snapshots.md), or null when it

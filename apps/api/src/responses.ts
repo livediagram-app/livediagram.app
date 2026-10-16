@@ -88,6 +88,16 @@ export function svgImage(body: string, cacheControl: string): Response {
   return new Response(body, { headers });
 }
 
+// A PNG image body (the share card, docs/specs/013-workspace/share-link-previews.md), with `svgImage`'s CORS and the
+// caller's `Cache-Control`. A raster runs no script, so it needs no CSP.
+export function pngImage(body: Uint8Array | ReadableStream, cacheControl: string): Response {
+  const headers = new Headers(CORS_HEADERS);
+  headers.set('Content-Type', 'image/png');
+  headers.set('Cache-Control', cacheControl);
+  headers.set('X-Content-Type-Options', 'nosniff');
+  return new Response(body, { headers });
+}
+
 // 204 No Content with the CORS header set. The canonical reply for a
 // successful write that returns no body (DELETE, folder assignment,
 // etc.); replaces the `new Response(null, { status: 204, headers:

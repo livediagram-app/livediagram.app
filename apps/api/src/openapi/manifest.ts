@@ -1796,6 +1796,33 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     responseMediaType: 'image/svg+xml',
     statuses: [200, 404, 410],
   },
+  {
+    method: 'GET',
+    path: '/share/{code}/card',
+    segment: 'share',
+    tag: 'Sharing',
+    summary:
+      "A link preview's text: the shared document's name. 404 wherever the live image is (a dead code, a share password, a Community post that is not public).",
+    auth: 'public',
+    responseSchema: {
+      type: 'object',
+      properties: { name: { type: 'string' } },
+      required: ['name'],
+    },
+    statuses: [200, 404],
+  },
+  {
+    method: 'GET',
+    path: '/share/{code}/image.png',
+    segment: 'share',
+    tag: 'Sharing',
+    summary:
+      "A link preview's picture: the live image's drawing on a 1200 x 630 PNG card. Redirects to the brand card when there is nothing to draw.",
+    auth: 'public',
+    responseSchema: { type: 'string' },
+    responseMediaType: 'image/png',
+    statuses: [200, 302, 404],
+  },
 
   // ---- Participants ----
   {
