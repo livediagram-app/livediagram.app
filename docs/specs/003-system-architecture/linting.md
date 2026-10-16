@@ -36,6 +36,7 @@ is the whole of what the repo enforces.
   - `no-implied-eval`
   - `no-unsafe-enum-comparison`
   - `no-unsafe-unary-minus`
+  - `only-throw-error`
   - `restrict-plus-operands`
   - `restrict-template-expressions`
 - **Known gap**: `no-useless-assignment` in the oxlint release the repo uses does not report a value

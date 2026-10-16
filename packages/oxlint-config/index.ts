@@ -144,6 +144,7 @@ export default defineConfig({
     'typescript/no-implied-eval': 'error',
     'typescript/no-unsafe-enum-comparison': 'error',
     'typescript/no-unsafe-unary-minus': 'error',
+    'typescript/only-throw-error': 'error',
     'typescript/restrict-plus-operands': 'error',
     'typescript/restrict-template-expressions': 'error',
 

@@ -142,7 +142,8 @@ describe('one retry on a provider spike', () => {
     expect(calls).toBe(1);
   });
 
-  it.each([
+  // Whatever fetch throws, an Error or not.
+  it.each<[string, unknown, string]>([
     ['an Error', new Error('socket hang up'), 'socket hang up'],
     ['a bare value', 'dropped', 'dropped'],
   ])('retries a network drop thrown as %s once, and says why', async (_kind, thrown, reason) => {

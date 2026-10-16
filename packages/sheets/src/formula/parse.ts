@@ -37,10 +37,13 @@ const CELL_RE = /^(\$?)([A-Za-z]{1,4})(\$?)([0-9]{1,7})$/;
 const COL_RE = /^(\$?)([A-Za-z]{1,4})$/;
 const NAME_RE = /^[A-Za-z_][A-Za-z0-9_.]*$/;
 
-class Fail {
+// Thrown from anywhere in the descent and caught once, in parseFormula, which answers it as a refusal.
+class Fail extends Error {
+  override readonly name = 'FormulaParseFailure';
   readonly reason: ParseFailure;
   readonly at: number;
   constructor(reason: ParseFailure, at: number) {
+    super(`${reason} at ${at}`);
     this.reason = reason;
     this.at = at;
   }
