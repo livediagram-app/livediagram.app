@@ -54,6 +54,10 @@ Every write takes what a person would say, and stores the ids:
 - **A card type** is its id or its name ("Bug", "bug").
 - **A custom field** is its id (`f-severity`) or its name ("Severity") on the item's type; a Choice takes one of
   its options, by name, case aside.
+- **A built-in field** is its id (`assignee`, `due`) or a name the interface gives it ("Due Date", "Assigned To",
+  "Owner"). A name a type's own custom field has wins over a built-in's other name: on a Post type with a custom
+  "Owner" field, "Owner" is that field, not the Assignee; elsewhere it is the Assignee. A built-in's id always means
+  the built-in.
 - **An assignee** is a person object `{ id, name, color }` or a name. A name matches a person already assigned on
   the document (case aside); otherwise it makes a named person (`n-` and a slug of the name, a Plan swatch chosen
   from the name), so "Sam" is the same person on every card.
@@ -159,6 +163,17 @@ defaultStatus?, excludedStatuses? }`: edit a type. Statuses here are named as ab
     Display.
   - A type renamed earlier in the same call still answers to its former name, so a later change can name it either
     way.
+  - A `defaultStatus` naming a column no board has yet leaves the type without a Default State instead of refusing
+    the change, since a card added to a board takes that board's column anyway (the Default State only places a card
+    made off every board). An assistant makes a card type before the board that will show it, so the column it means
+    is usually about to exist. The change's line says so (`+ Candidate (candidate): no Default State, no board has a
+column "Applied" yet; set it once one does`), and a later `set` gives it one. A `defaultStatus` naming a column
+    that exists is resolved as before.
+
+    In the first benchmark round, 17 of 18 refused `change_card_types` calls were this case: the type was refused
+    whole, so the board that named it was refused next ("No card type"), and every run spent two or three calls
+    getting out of the loop.
+
   - `add` and `set` also take the type's **card face and panel**, as the type editor's Display and Configuration
     tabs set them, every field named as people say it:
     - `display`: per card size, which fields sit in which slot, in order: `{ minimal: { beforeTitle, afterTitle },

@@ -302,6 +302,20 @@ function customOf(
   return field;
 }
 
+// What a change's line adds when its Default State names a column no board has yet (docs/specs/026-plan/plan-agents.md
+// "Changing card types"): the type is made or kept without one, since a board's column places its cards anyway.
+export const DEFAULT_STATUS_PENDING = (name: string) =>
+  `no Default State, no board has a column ${JSON.stringify(name)} yet; set it once one does`;
+
+// A Default State by column name: the status id when a board has that column, else the note saying it was left out.
+function defaultStatusOf(
+  name: string,
+  statuses: readonly PlanStatusName[],
+): { status: string } | { pending: string } {
+  const named = resolveStatus(name, statuses);
+  return named.ok ? { status: named.status } : { pending: DEFAULT_STATUS_PENDING(name) };
+}
+
 function statusesOf(names: readonly string[], statuses: readonly PlanStatusName[]): string[] {
   return names.map((n) => must(resolveStatus(n, statuses)).status);
 }
@@ -354,8 +368,8 @@ export function applyCardTypeChanges(
         }
         if (c.excludedStatuses)
           type = { ...type, excludedStatuses: statusesOf(c.excludedStatuses, statuses) };
-        if (c.defaultStatus)
-          type = { ...type, defaultStatus: must(resolveStatus(c.defaultStatus, statuses)).status };
+        const start = c.defaultStatus ? defaultStatusOf(c.defaultStatus, statuses) : null;
+        if (start && 'status' in start) type = { ...type, defaultStatus: start.status };
         type = withFace(type, c);
         type = withOnCardShown(
           type,
@@ -363,7 +377,10 @@ export function applyCardTypeChanges(
         );
         types = [...types, type];
         const made = (type.custom ?? []).map((f) => `${f.label} (${f.id})`);
-        applied.push(`+ ${type.label} (${type.id})${made.length ? `: ${made.join(', ')}` : ''}`);
+        applied.push(
+          `+ ${type.label} (${type.id})${made.length ? `: ${made.join(', ')}` : ''}` +
+            (start && 'pending' in start ? `; ${start.pending}` : ''),
+        );
       } else if (c.op === 'set') {
         let type = typeNamed(c.type);
         const id = type.id;
@@ -421,14 +438,17 @@ export function applyCardTypeChanges(
         if (c.defaultStatus === null) {
           const { defaultStatus: _gone, ...rest } = type;
           type = rest;
-        } else if (c.defaultStatus) {
-          type = { ...type, defaultStatus: must(resolveStatus(c.defaultStatus, statuses)).status };
         }
+        const start = c.defaultStatus ? defaultStatusOf(c.defaultStatus, statuses) : null;
+        if (start && 'status' in start) type = { ...type, defaultStatus: start.status };
         type = withFace(type, c);
         // The fields this change ticked Show on Card: placed on a type whose Display is its own.
         type = withOnCardShown(type, ticked);
         replace(type);
-        applied.push(`~ ${type.label} (${type.id})`);
+        applied.push(
+          `~ ${type.label} (${type.id})` +
+            (start && 'pending' in start ? `; ${start.pending}` : ''),
+        );
       } else if (c.op === 'delete') {
         const type = typeNamed(c.type);
         types = types.filter((t) => t.id !== type.id);

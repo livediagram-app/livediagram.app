@@ -3,6 +3,7 @@ import { ITEM_TYPES, type ItemTypeDef } from './item-types';
 import {
   assignedPeople,
   choiceOption,
+  fieldKeyOf,
   personNamed,
   resolveFields,
   resolveItem,
@@ -195,5 +196,36 @@ describe('resolveFields', () => {
   it('names an ambiguous item', () => {
     const items = [item({ title: 'a' }, { id: 'abc1' }), item({ title: 'b' }, { id: 'abc2' })];
     expect(resolveItem('abc', items)).toMatchObject({ ok: false, code: 'item_unknown' });
+  });
+});
+
+// docs/specs/026-plan/plan-agents.md "Naming things as people do": a type's own field name wins over a built-in's
+// other name.
+describe('fieldKeyOf', () => {
+  const post: ItemTypeDef = {
+    ...ITEM_TYPES[1],
+    id: 'post',
+    label: 'Post',
+    fields: ['title', 'status', 'assignee', 'f-owner'],
+    custom: [{ id: 'f-owner', label: 'Owner', kind: 'text' }],
+  };
+
+  it('reads "Owner" as the type’s own Owner field where it has one, else the Assignee', () => {
+    expect(fieldKeyOf('Owner', post)).toEqual({ ok: true, key: 'f-owner' });
+    expect(fieldKeyOf('owner', post)).toEqual({ ok: true, key: 'f-owner' });
+    expect(fieldKeyOf('Owner', bug)).toEqual({ ok: true, key: 'assignee' });
+    expect(fieldKeyOf('Assigned To', post)).toEqual({ ok: true, key: 'assignee' });
+  });
+
+  it('always reads a built-in’s id as the built-in', () => {
+    expect(fieldKeyOf('assignee', post)).toEqual({ ok: true, key: 'assignee' });
+    expect(fieldKeyOf('Due', post)).toEqual({ ok: true, key: 'due' });
+  });
+
+  it('writes a value named "Owner" to the custom field', () => {
+    expect(resolveFields({ Owner: 'Ana' }, post, { statuses, items: [] })).toEqual({
+      ok: true,
+      fields: { 'f-owner': 'Ana' },
+    });
   });
 });
