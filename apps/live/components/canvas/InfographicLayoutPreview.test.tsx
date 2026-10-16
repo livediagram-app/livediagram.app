@@ -10,7 +10,10 @@ import { InfographicLayoutPreview } from './InfographicLayoutPreview';
 import { PageImageAccessProvider } from './page-image-access';
 
 const fetched = vi.hoisted(() => vi.fn(async (_owner: string, id: string) => `blob:${id}`));
-vi.mock('@/lib/api-client', () => ({ apiFetchImageBlobUrl: fetched }));
+vi.mock('@/lib/api-client', () => ({
+  apiFetchImageBlobUrl: fetched,
+  releaseImageBlobUrl: () => {},
+}));
 
 afterEach(cleanup);
 
