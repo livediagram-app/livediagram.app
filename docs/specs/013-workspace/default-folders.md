@@ -80,8 +80,8 @@ order:
 - **Sent on the create** as `intent: { mode, tabKind?, templateFamily? }` beside the placement
   ([Placement on create](folders.md#placement-on-create)).
 - **Who sends it:**
-  - every create that makes something new: the New Document wizard and its bypasses (Quick Start,
-    `/new?blank=1`, `/new?template=`), imports into the account (board and draw.io imports, Google
+  - every create that makes something new: the New Document wizard and its bypasses
+    (`/new?blank=1`, `/new?template=`), imports into the account (board and draw.io imports, Google
     Drive **Import a copy**) and the MCP `create_document` tool, which sends the intent of the first
     tab it built and the template it used;
   - **Duplicate**, which sends the source's **recorded** intent unchanged, together with an explicit
@@ -150,11 +150,9 @@ A create's place is decided in this order; the first that answers wins:
 - **An explicit root is a choice.** `folderId: null`, present in the body, is the root of the chosen
   space, chosen on purpose; with no team it is the explicit root of My documents, and it always wins
   over a default. ([Placement on create](folders.md#placement-on-create) names the wire shape.)
-- **The wizard** sends the place the person picked (its root tile included), a `/new?folder=` /
-  `?team=` context, or the default it pre-selected, each as an explicit placement. The root it shows
-  only because nothing else resolved is no choice, and neither is a create made without the picker
-  ever being shown (Quick Start, "Start blank" from the template step, a bypass link without
-  context): they send no placement ([The New Document wizard](#the-new-document-wizard)).
+- **The wizard** sends a `/new?folder=` / `?team=` context as an explicit placement. Every other create from
+  `/new` (a mode chosen, **Create**, **Skip**, a bypass link without context) sends no placement, so these
+  defaults decide ([The New Document wizard](#the-new-document-wizard)).
 - A re-commit of an id the person already owns keeps its stored place; defaults are not consulted.
 
 ## What a default may point at
@@ -218,8 +216,8 @@ A create's place is decided in this order; the first that answers wins:
 ## Surfaces
 
 Every surface reads one copy of the person's defaults, loaded once per page and updated in place by
-any surface that sets or clears one, so a change made in a menu shows at once in the markers, the
-wizard and Settings.
+any surface that sets or clears one, so a change made in a menu shows at once in the markers and
+Settings.
 
 ### Entry names
 
@@ -279,47 +277,18 @@ Each key has a label, the plural a sentence uses, and an icon, in list order:
 
 ### The New Document wizard
 
-The Location step ([Save locations](../006-document/save-locations.md)) shows where the new
-document will go and why.
+The wizard never asks where a document goes ([New document route](../007-editor/new-document-route.md#one-step-wizard)):
+it has no Location step and shows no folder browser.
 
-- **It pre-selects the resolved default.** The wizard resolves the precedence itself, for the
-  intent of the mode's blank chosen on the first step (the wizard asks only for a mode, [New document
-  route](../007-editor/new-document-route.md) "Choosing a mode"), over the reader's defaults and the folders it
-  has loaded; a default whose folder it cannot see (deleted, or in a team not listed) is skipped, as
-  the server skips it.
-- **It shows the pre-selection.** The folder browser opens at the level that lists the selected
-  folder, that folder's card checked ("Workshops" inside "My documents › Projects"), never on a
-  space card that only holds it ([Save locations](../006-document/save-locations.md), "It opens
-  where its selection is"). A `/new?folder=` context opens the same way.
-- **At the My documents root the default wins; inside a real folder or team, that folder wins.**
-  A `/new?folder=` or `?team=` context is pre-selected as it always was; with no context, the
-  resolved default is.
-- **It says why.** While the pre-selected default is the selection, a line under the folder browser
-  reads "**Whiteboards** go to **Workshops** by default", the entry's label and the folder's name,
-  with a **Change default** button that opens the [default folder picker](#the-default-folder-picker)
-  for that key. A new default chosen there is pre-selected at once.
-  - The line and the Always save switch below never show together, so they share one slot
-    under the browser, kept whenever the folder step shows: neither moves the browser as it appears.
-- **Changing mode re-resolves** the pre-selection, unless the reader has picked a place
-  themselves: their pick stands.
-- **What is sent:**
-  - a place the reader picked, the root tile ("My documents") included, is explicit, so choosing
-    the root on purpose sends `folderId: null`, the explicit root;
-  - a `/new` context is explicit;
-  - a pre-selected default is sent as that folder, explicitly;
-  - the root shown only because nothing else resolved is **no choice**: the create carries no
-    placement and the server's precedence decides, so a default the wizard could not yet see is
-    still honoured.
-- **Always save <these> here.** A switch row (`SwitchRow`, the house iOS-style switch) under the folder browser, worded for the intent's most
-  specific key ("Always save whiteboards here", "Always save Event Storming boards here"), offers
-  to make the selection that key's default.
-  - It shows only when the selection could be a default (a personal folder, a team folder, or the
-    My documents root) and is not already where those documents go.
-  - It starts off each time it appears.
-  - On, Create sets the key's default to the selected folder (or clears it, at the My documents
-    root) before creating. A failed write is logged and never stops the create.
-- None of this applies to **Local Browser**: an offline document has no folder step
-  ([Non-goals](#non-goals)).
+- **No context, no placement.** A document made from `/new` without a `/new?folder=` or `?team=` context carries no
+  placement, only its intent, so the server's [precedence](#precedence) files it: the default for its kind, template
+  or mode, else the root of My documents. A default the browser has not loaded yet is still honoured, as the server
+  resolves it.
+- **A context is explicit.** A `/new?folder=` or `?team=` link files the document there, in livediagram, ahead of
+  any default.
+- **Where to change it.** Settings > Documents > Default Folders ([Settings](#settings)), the folder menus' **Use as
+  default for** and My documents' own menu. The wizard itself sets nothing.
+- None of this applies to **Local Browser**: an offline document has no folder ([Non-goals](#non-goals)).
 
 ### A template picked after creation
 
@@ -328,17 +297,17 @@ The wizard makes the chosen mode's blank, and the template is picked afterwards 
 `kind:event-storming`) can only answer then.
 
 - **The wizard leaves a note** (`lib/placement-defaults/template-pick-handoff.ts`, this browser tab only): the
-  document it made, its first tab, and whether the person chose the folder themselves (a place picked on the
-  Location step, a `/new?folder=` / `?team=` context, or their saved "skip this step" place). It is written for a
+  document it made, its first tab, and whether the person chose the folder themselves (a `/new?folder=` / `?team=`
+  context). It is written for a
   cloud document made from a mode's blank, never for Local Browser or a template link (`/new?template=`), which is
   filed by its template at creation.
 - **The first template picked from a start screen** (Start Diagramming, Drawing, Facilitating, Illustrating, or
   Start Planning's templates) on that first tab takes the note. When the person did not choose the folder, the
-  precedence is resolved again for the template's intent, as the wizard resolves it (kind, then template, then mode
+  precedence is resolved again for the template's intent, as the server resolves it (kind, then template, then mode
   default, `templatePickMoveTarget`), and the document **moves** to the default that answers, when it is somewhere
   else. A toast says so: "Moved to **Boards**, your default folder for Kanban boards."
 - **Once per document:** the note is taken at the first pick, and dropped when the tab gains content any other
-  way first. A Quick Start on an existing document never moves it.
+  way first.
 - **Only an Editor** picks from a start screen, so only an Editor's pick moves a document.
 - **The recorded intent stays as created** ([Recorded intent](#recorded-intent)): the mode's blank. The move does
   not rewrite `templateFamily`, so the Explorer's **Template** filter does not see a template picked after
@@ -346,56 +315,9 @@ The wizard makes the chosen mode's blank, and the template is picked afterwards 
 - A failure (a list that cannot be read, a refused move) leaves the document where it is, logged
   (`[default-folders] template pick move failed`); a move logs `[default-folders] moved on template pick key=<key>`.
 
-### Skipping the Location step
-
-A reader who always files new documents in one place can tell the wizard so once, and stop being
-asked. It is a [user preference](../007-editor/user-preferences.md) (`skipLocationStep`), off by
-default, synced like the others; it is about the wizard, not a default folder, so it never touches
-the defaults above.
-
-- **What it holds:** the whole Location-step selection at the moment it was set: the save location
-  (livediagram or Local Browser, [Save locations](../006-document/save-locations.md)), the place
-  (`unsorted`, a personal folder, a team's root or a team folder; always `unsorted` for Local
-  Browser), and the place's name as shown then, for the lines below. Off is `null`, written
-  explicitly so a cleared value wins the merge over another device's cache.
-- **The switch.** At the bottom of the Location step, below everything else, a switch row (`SwitchRow`) reads
-  "Always save new documents in **<place>** and skip this step". `<place>` is the current selection
-  as the reader sees it: a folder's name, **My documents**, a team's name, a team folder with its
-  team ("Workshops · Design team"), or **Local Browser** when that save location is chosen. It
-  follows the selection while on.
-  - It starts off each time the Location step shows.
-  - It sits in its own row under the per-key [Always save](#the-new-document-wizard) slot, so the
-    two can both show and neither moves the other.
-  - On, Create saves the preference (telemetry first), then creates as usual; a double-click
-    commit on a destination card saves that destination.
-- **While it is on, the wizard has one step.** On `/new` the step rail is not shown, the template
-  step's primary button reads **Create**, and choosing a template card (a click or a double-click
-  that would have moved to Location) creates at once, in the saved place, with the template's
-  default name. **Skip** saves its blank document there too.
-- **It says where.** A quiet line above the footer reads "Saving in **<place>**" with a **Change**
-  button. Change opens the Location step, pre-selected on the saved place, for this one document:
-  the preference stays on, and the wizard is the normal two-step wizard for the rest of the visit.
-- **The saved place is explicit.** It is sent as a chosen place (the My documents root as the
-  explicit root), so it wins over the reader's default folders, as a pick on the Location step
-  would.
-- **A context still wins.** A `/new?folder=` or `?team=` link files the document there, in
-  livediagram, and still skips the step; the line names the context folder.
-- **A place that has gone falls back.** When the folders and teams have loaded and the saved folder
-  or team is not among them (deleted, or a team the reader has left), the visit shows the normal
-  Location step, so the reader picks again; the preference is kept. Until they load, the saved
-  place stands, and a create the server refuses takes the existing "choose another place" path.
-- It never applies to the in-editor **Quick Start**, which has no Location step.
-
 ### Settings
 
-- Settings holds a **Documents** category with two sections, for guests and accounts alike.
-- **New Documents** holds one row, **Always Save in One Place** ([Skipping the Location
-  step](#skipping-the-location-step)), with an **On** / **Off** pill beside it. On, it reads "New
-  documents go straight to **<place>**, without the wizard asking where." with a **Turn Off**
-  button, which clears the preference and restores the two-step wizard. Off, it says the wizard asks
-  where each document goes and how to skip that (tick "Always save new documents in…" on its
-  Location step), with no button: it is turned on from the wizard, where the place is
-  chosen.
+- Settings holds a **Documents** category, for guests and accounts alike, led by **Default Folders**.
 - **Default Folders** has one row per entry, in list order, under one line saying what they share
   ("Where each kind of new document is saved when you create it without choosing a place.") and the
   article's **Learn more**, said once rather than under every row.
@@ -418,7 +340,7 @@ the defaults above.
 ### The default folder picker
 
 A dialog around the shared placement browser ([Folders](folders.md)), titled "Default folder for
-new <these>", opened by Settings' Change and the wizard's Change default.
+new <these>", opened by Settings' Change.
 
 - It opens with the key's current default selected, else the My documents root.
 - Choosing the **My documents root** clears the default. A team's root cannot be chosen: with it
@@ -445,8 +367,8 @@ new <these>", opened by Settings' Change and the wizard's Change default.
 - `Folder` · `Cleared` · the same values, fired by the surface that clears one, before the write.
 - The value is closed: one per key, derived from it (`placementDefaultTelemetryType`), never a
   folder name or id.
-- `UI` · `Toggled` · `SkipLocationStepOn` when Create saves the skip preference from the wizard,
-  and `SkipLocationStepOff` when Settings' Turn Off clears it, each before the write.
+- `UI` · `Toggled` · `SkipLocationStepOn` / `SkipLocationStepOff` are retired with the wizard's Location step
+  ([Telemetry → Retired features](../017-telemetry/telemetry.md#retired-features)).
 
 ## Observability
 
@@ -460,12 +382,8 @@ new <these>", opened by Settings' Change and the wizard's Change default.
 - `[duplicate] placement refused reason=<code>, filed at the root` when a Duplicate cannot sit
   beside its source.
 - In the browser, `[default-folders]` lines: `loaded count=<n>`, `load failed status=<n>`,
-  `set key=<key> surface=<menu|wizard|settings>`, `cleared key=<key> surface=<…>`,
-  `write failed key=<key> code=<code>, rolled back`, and the wizard's
-  `pre-selected key=<key>` and `default-skipped key=<key> reason=folder_unknown`.
-- `[skip-location]` lines in the browser: `saved location=<livediagram|browser> scope=<root|personal|team>`,
-  `cleared`, and `place-unavailable scope=<personal|team>, showing the Location step` for the
-  fallback.
+  `set key=<key> surface=<menu|settings>`, `cleared key=<key> surface=<…>` and
+  `write failed key=<key> code=<code>, rolled back`.
 
 ## Non-goals
 

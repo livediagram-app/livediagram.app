@@ -19,6 +19,18 @@ import {
 
 export type TemplateStartMode = 'diagram' | 'draw' | 'facilitate' | 'illustrate';
 
+const TEMPLATE_START_MODES: ReadonlySet<string> = new Set([
+  'diagram',
+  'draw',
+  'facilitate',
+  'illustrate',
+]);
+
+/** Whether a mode's empty tab offers a template start (Plan has Start Planning instead). */
+export function isTemplateStartMode(mode: string): mode is TemplateStartMode {
+  return TEMPLATE_START_MODES.has(mode);
+}
+
 export type TemplateStartGroup = {
   id: string;
   name: string;

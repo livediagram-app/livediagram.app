@@ -54,14 +54,12 @@ export function choosePlacementAgainUrl(search: string): string {
 
 /**
  * The placement context a /new URL carries (docs/specs/013-workspace/team-shared-documents.md): `?folder=<id>`,
- * `?team=<id>` or both pre-select the Save In picker; neither is no placement (the Location step then pre-selects
- * the reader's default folder).
+ * `?team=<id>` or both file the new document there. A missing param is absent, never the root: neither is no
+ * placement, which leaves room for a default folder (docs/specs/013-workspace/default-folders.md "Precedence").
  */
-export function placementContextFromSearch(search: string): string | undefined {
+export function placementParamsFromSearch(search: string): { folderId?: string; teamId?: string } {
   const params = new URLSearchParams(search);
-  const folderId = params.get('folder');
-  const teamId = params.get('team');
-  if (teamId) return folderId ? `team:${teamId}:folder:${folderId}` : `team:${teamId}`;
-  if (folderId) return `folder:${folderId}`;
-  return undefined;
+  const folderId = params.get('folder') || undefined;
+  const teamId = params.get('team') || undefined;
+  return { ...(folderId ? { folderId } : {}), ...(teamId ? { teamId } : {}) };
 }

@@ -347,7 +347,7 @@ of every template, so a tab read back as JSON writes again unchanged.
 ### 4.5 `list_templates`
 
 Browse the template library — the same hand-tuned catalogue the editor's
-Quick Start picker ships ([Canvas and palette](../008-canvas/canvas-and-palette.md)), served from the shared
+template starts ship ([Canvas and palette](../008-canvas/canvas-and-palette.md)), served from the shared
 `@livediagram/templates` package so the worker and the editor can't drift.
 No input. Returns the categories plus one row per template:
 `{ kind, title, description, category }` — enough for the model to pick a

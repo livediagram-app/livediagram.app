@@ -1,10 +1,10 @@
 'use client';
 
 // The start panel (docs/specs/026-plan/plan-mode.md "Starting a board", docs/specs/007-editor/start-diagramming.md):
-// an empty tab's one wide panel. A rail of categories beside a grid of large cards, each a picture of what it makes
-// over its name and line; a search across all of them. Choosing a card acts at once. Shared by Start Planning and
-// Start Diagramming, which say what the categories and cards are; this draws them, in the tab's own light or dark look
-// (the palette).
+// an empty tab's one wide panel. A rail of categories beside a grid of large cards (StartCard), each a picture of what
+// it makes over its name and line; a search across all of them, and across every other mode's templates
+// (StartOtherModes). Choosing a card acts at once. Shared by Start Planning and Start Diagramming, which say what the
+// categories and cards are; this draws them, in the tab's own light or dark look (the palette).
 import {
   useEffect,
   useRef,
@@ -24,21 +24,16 @@ import {
   SheetHandle,
   useSheetDrag,
 } from '@livediagram/ui';
-import {
-  lucideArrowUpRight,
-  lucideSearch,
-  lucideSparkles,
-  lucideX,
-} from '@livediagram/icons/lucide';
+import { lucideSearch, lucideX } from '@livediagram/icons/lucide';
+import type { EditorMode } from '@livediagram/document';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import type { HelpArticleKey } from '@/lib/help-articles';
 import type { PlanPalette } from '@/components/plan/plan-palette';
-import { tint } from '@/components/plan/plan-card-parts';
+import { StartCardGrid, startTint, type StartPanelCard } from './StartCard';
+import { StartOtherModes, type StartPanelElsewhere } from './StartOtherModes';
 import { takeStartQuery } from './start-query';
 import { noteStartPanelLeft, startPanelJustLeft } from './start-panel-open';
 
-const TemplatesGlyph = lucideGlyph(lucideSparkles, 16);
-const OutGlyph = lucideGlyph(lucideArrowUpRight, 14);
 const SearchGlyph = lucideGlyph(lucideSearch, 15);
 const ClearGlyph = lucideGlyph(lucideX, 13);
 const CloseGlyph = lucideGlyph(lucideX, 16);
@@ -54,87 +49,7 @@ export type StartPanelCategory<C extends string> = {
   below?: boolean;
 };
 
-export type StartPanelCard = {
-  id: string;
-  name: string;
-  line: string;
-  picture: ReactNode;
-  // One badge at most, beside the name (a kind where kinds mix, For You).
-  badge?: string;
-  // A count on the right of the name row (a template's tabs).
-  tag?: string;
-  // What a screen reader hears after the name (its kind).
-  ariaKind?: string;
-  // Under the line (a board's card-type chips).
-  footer?: ReactNode;
-};
-
-// The accent at a strength, as a Plan card's tints are (plan-card-parts).
-const startTint = (palette: PlanPalette, pct: number) => tint(palette.focus, pct);
-
-function StartCard({
-  card,
-  palette,
-  onChoose,
-}: {
-  card: StartPanelCard;
-  palette: PlanPalette;
-  onChoose: () => void;
-}) {
-  return (
-    // A cell of its own: the cascade moves the cell, the card keeps its hover lift.
-    <div className="flex">
-      <button
-        type="button"
-        data-start-card={card.id}
-        onClick={onChoose}
-        aria-label={`${card.name}${card.ariaKind ? ` ${card.ariaKind}` : ''}: ${card.line}`}
-        // On a phone a row: the picture small at the left, the words beside it, so a screen holds several.
-        className="group flex w-full cursor-pointer flex-col rounded-2xl border p-2 text-left max-sm:flex-row max-sm:items-center max-sm:gap-1 max-sm:rounded-xl transition duration-micro ease-out hover:-translate-y-0.5 hover:border-[var(--start-accent)] hover:shadow-lg focus-visible:-translate-y-0.5 focus-visible:border-[var(--start-accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--start-accent)] motion-reduce:transition-none motion-reduce:hover:translate-y-0"
-        style={{ borderColor: palette.border, backgroundColor: palette.surface }}
-      >
-        {/* The picture, larger than it draws elsewhere, on a soft panel of the board's column colour. */}
-        <span
-          className="flex h-28 w-full items-center justify-center overflow-hidden rounded-xl p-3 max-sm:h-[4.5rem] max-sm:w-24 max-sm:shrink-0 max-sm:rounded-lg max-sm:p-1.5 [&>*]:!h-full"
-          style={{ backgroundColor: palette.column }}
-        >
-          {card.picture}
-        </span>
-        <span className="flex min-w-0 flex-col gap-1 px-1.5 pb-1 pt-2.5 max-sm:flex-1 max-sm:py-0.5">
-          <span className="flex min-w-0 items-center gap-2">
-            <span className="truncate text-[14px] font-semibold" style={{ color: palette.text }}>
-              {card.name}
-            </span>
-            {card.badge ? (
-              <span
-                className="shrink-0 rounded-full px-1.5 py-px text-[10px] font-semibold uppercase tracking-wide"
-                style={{ backgroundColor: startTint(palette, 14), color: palette.focus }}
-              >
-                {card.badge}
-              </span>
-            ) : null}
-            {card.tag ? (
-              <span
-                className="ml-auto shrink-0 rounded-full border px-1.5 py-px text-[10px] font-semibold tabular-nums"
-                style={{ borderColor: palette.border, color: palette.muted }}
-              >
-                {card.tag}
-              </span>
-            ) : null}
-          </span>
-          <span
-            // In full, on a phone too: a card's line is short, and cut it misleads.
-            className="text-[12.5px] leading-snug"
-            style={{ color: palette.muted }}
-          >
-            {card.line}
-          </span>
-          {card.footer ? <span className="max-sm:hidden">{card.footer}</span> : null}
-        </span>
-      </button>
-    </div>
-  );
-}
+export type { StartPanelCard } from './StartCard';
 
 export function StartPanel<C extends string>({
   titleId,
@@ -149,7 +64,8 @@ export function StartPanel<C extends string>({
   cardsIn,
   search,
   onChoose,
-  onQuickStart,
+  elsewhere,
+  onChooseElsewhere,
   onClose,
   lead,
 }: {
@@ -169,8 +85,10 @@ export function StartPanel<C extends string>({
   // Every match, grouped by category, in rail order.
   search: (query: string) => readonly { category: C; cards: readonly StartPanelCard[] }[];
   onChoose: (cardId: string) => void;
-  // Absent where there is no Quick Start: Something Else is left out.
-  onQuickStart?: (() => void) | undefined;
+  // Found in other modes (start-diagramming.md): the other modes' matches for a search, and choosing one, which
+  // switches the tab to that mode. Absent where the tab's mode may not change: the search keeps to its own mode.
+  elsewhere?: ((query: string) => readonly StartPanelElsewhere[]) | undefined;
+  onChooseElsewhere?: ((mode: EditorMode, cardId: string) => void) | undefined;
   // Absent where the panel cannot be closed: no × in its header.
   onClose?: (() => void) | undefined;
   // Leading the rail, over a hairline: the mode switch.
@@ -198,6 +116,7 @@ export function StartPanel<C extends string>({
   const sheet = useSheetDrag(onClose ?? (() => {}));
   const searching = query.trim().length > 0;
   const results = searching ? search(query) : [];
+  const others = searching && elsewhere && onChooseElsewhere ? elsewhere(query) : [];
   const nameOf = (id: C) => categories.find((c) => c.id === id)?.name ?? id;
   // The cards' scroller: a category picked opens at its top, never part way down the last one's cards.
   const cardsScroller = useRef<HTMLDivElement>(null);
@@ -264,16 +183,9 @@ export function StartPanel<C extends string>({
   const below = categories.filter((c) => c.below);
   // The cards cascade in as the panel arrives, and again each time the category or search changes them (the
   // grid is keyed by what it shows, so a change remounts it).
-  const cascade = calm ? '' : ' lvd-cascade';
   const shown = categories.find((c) => c.id === category) ?? categories[0]!;
-  // One a row on a phone (each card a row of its own), two on a narrow panel, three on a wide one.
-  const grid = 'grid grid-cols-1 gap-3 max-sm:gap-2 sm:grid-cols-2 lg:grid-cols-3';
   const cards = (list: readonly StartPanelCard[]) => (
-    <div className={`${grid}${cascade}`}>
-      {list.map((card) => (
-        <StartCard key={card.id} card={card} palette={palette} onChoose={() => onChoose(card.id)} />
-      ))}
-    </div>
+    <StartCardGrid cards={list} palette={palette} cascade={!calm} onChoose={onChoose} />
   );
   return (
     // Clear of the top chrome (the menu button and the palette strip, 8.5rem down) and the bottom clusters. On a phone,
@@ -344,6 +256,15 @@ export function StartPanel<C extends string>({
                   e.stopPropagation();
                   setQuery('');
                 }
+                // Down moves to the first card the search found (its own, else another mode's).
+                if (e.key === 'ArrowDown' && searching) {
+                  const first =
+                    cardsScroller.current?.querySelector<HTMLElement>('[data-start-card]');
+                  if (first) {
+                    e.preventDefault();
+                    first.focus();
+                  }
+                }
               }}
               className="min-w-0 flex-1 bg-transparent text-[13px] outline-none"
               style={{ color: palette.text }}
@@ -405,8 +326,8 @@ export function StartPanel<C extends string>({
               >
                 {above.map(railButton)}
               </div>
-              {/* Below a hairline: the ways in that bring a whole way of working, then Something Else. */}
-              {below.length || onQuickStart ? (
+              {/* Below a hairline: the ways in that bring a whole way of working. */}
+              {below.length ? (
                 <span
                   aria-hidden
                   className="my-2 h-px shrink-0 max-sm:hidden"
@@ -418,22 +339,6 @@ export function StartPanel<C extends string>({
                   {below.map(railButton)}
                 </div>
               ) : null}
-              {onQuickStart ? (
-                <button
-                  type="button"
-                  onClick={onQuickStart}
-                  className="flex shrink-0 cursor-pointer items-center gap-2.5 rounded-xl px-3 py-2 text-left text-[13px] font-medium transition duration-micro hover:bg-[var(--start-hover)] motion-reduce:transition-none"
-                  style={
-                    { color: palette.text, '--start-hover': startTint(palette, 7) } as CSSProperties
-                  }
-                >
-                  <TemplatesGlyph />
-                  <span className="flex-1 whitespace-nowrap">Something Else</span>
-                  <span style={{ color: palette.muted }}>
-                    <OutGlyph />
-                  </span>
-                </button>
-              ) : null}
             </nav>
           </div>
           <div
@@ -441,7 +346,7 @@ export function StartPanel<C extends string>({
             className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-4 sm:p-6 max-sm:p-3"
           >
             {searching ? (
-              results.length === 0 ? (
+              results.length === 0 && others.length === 0 ? (
                 // The shared empty state in the board's colours (docs/specs/004-interface-design/empty-states.md).
                 <CompactEmptyState
                   role="status"
@@ -449,40 +354,54 @@ export function StartPanel<C extends string>({
                   ink={palette}
                   icon={<SearchIcon />}
                   title={noMatchTitle(noMatchNoun, query)}
-                  description={
-                    onQuickStart
-                      ? 'Try another word, or browse every template.'
-                      : 'Try another word.'
-                  }
-                  action={
-                    onQuickStart ? (
-                      <button
-                        type="button"
-                        onClick={onQuickStart}
-                        className="cursor-pointer rounded-xl border px-3 py-1.5 text-[13px] font-medium transition hover:border-[var(--start-accent)]"
-                        style={{ borderColor: palette.border, color: palette.text }}
-                      >
-                        Browse More Templates
-                      </button>
-                    ) : undefined
-                  }
+                  description="Try another word."
                 />
               ) : (
-                results.map((g) => (
-                  <section
-                    key={g.category}
-                    aria-label={nameOf(g.category)}
-                    className="mb-6 last:mb-0"
-                  >
-                    <h3
-                      className="mb-3 text-[12px] font-semibold uppercase tracking-wider"
-                      style={{ color: palette.muted }}
+                <>
+                  {results.length === 0 ? (
+                    // Nothing of this mode, something of another's: one line, then the other modes' blocks.
+                    <p
+                      role="status"
+                      className="mb-5 flex items-start gap-2.5 rounded-xl px-3 py-2.5 text-[13px]"
+                      style={{ backgroundColor: palette.column }}
                     >
-                      {nameOf(g.category)}
-                    </h3>
-                    {cards(g.cards)}
-                  </section>
-                ))
+                      <span aria-hidden className="mt-px shrink-0" style={{ color: palette.muted }}>
+                        <SearchGlyph />
+                      </span>
+                      <span>
+                        <span className="font-semibold">{noMatchTitle(noMatchNoun, query)}.</span>{' '}
+                        <span style={{ color: palette.muted }}>Found in other modes.</span>
+                      </span>
+                    </p>
+                  ) : (
+                    results.map((g) => (
+                      <section
+                        key={g.category}
+                        aria-label={nameOf(g.category)}
+                        className="mb-6 last:mb-0"
+                      >
+                        <h3
+                          className="mb-3 text-[12px] font-semibold uppercase tracking-wider"
+                          style={{ color: palette.muted }}
+                        >
+                          {nameOf(g.category)}
+                        </h3>
+                        {cards(g.cards)}
+                      </section>
+                    ))
+                  )}
+                  {others.length && onChooseElsewhere ? (
+                    <StartOtherModes
+                      // A new search starts folded.
+                      key={query.trim().toLowerCase()}
+                      groups={others}
+                      palette={palette}
+                      divided={results.length > 0}
+                      cascade={!calm}
+                      onChoose={onChooseElsewhere}
+                    />
+                  ) : null}
+                </>
               )
             ) : (
               <section key={shown.id} aria-label={shown.name}>

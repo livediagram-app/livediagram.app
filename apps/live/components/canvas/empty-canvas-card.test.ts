@@ -7,7 +7,6 @@ const empty = {
   hydrated: true,
   zen: false,
   embed: false,
-  quickStartOpen: false,
   drawToolArmed: false,
   mode: 'diagram' as const,
   elementCount: 0,
@@ -19,12 +18,11 @@ describe('the empty-canvas card', () => {
     expect(shown).toEqual(['diagram', 'facilitate']);
   });
 
-  it('hides once there is content, in zen or embed, with a draw tool armed or Quick Start open', () => {
+  it('hides once there is content, in zen or embed, or with a draw tool armed', () => {
     expect(showsEmptyCanvasCard({ ...empty, elementCount: 1 })).toBe(false);
     expect(showsEmptyCanvasCard({ ...empty, zen: true })).toBe(false);
     expect(showsEmptyCanvasCard({ ...empty, embed: true })).toBe(false);
     expect(showsEmptyCanvasCard({ ...empty, drawToolArmed: true })).toBe(false);
-    expect(showsEmptyCanvasCard({ ...empty, quickStartOpen: true })).toBe(false);
     expect(showsEmptyCanvasCard({ ...empty, hydrated: false })).toBe(false);
   });
 });

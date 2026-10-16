@@ -320,11 +320,6 @@ export type SettingsPlacementDefaultRowSpec = RowBase & {
   placementKey: PlacementDefaultKey;
 };
 
-// Skip the Location step (docs/specs/013-workspace/default-folders.md "Skipping the Location
-// step"): where new documents go without asking, and Turn Off. Turned on from the wizard, where the
-// place is chosen, so the row reads and clears the preference rather than toggling it.
-export type SettingsSkipLocationRowSpec = RowBase & { kind: 'skipLocationStep' };
-
 export type SettingsRowSpec =
   | SettingsToggleRowSpec
   | SettingsToggleGroupRowSpec
@@ -341,8 +336,7 @@ export type SettingsRowSpec =
   | SettingsTrashRowSpec
   | SettingsPresetSummaryRowSpec
   | SettingsCloudSyncRowSpec
-  | SettingsPlacementDefaultRowSpec
-  | SettingsSkipLocationRowSpec;
+  | SettingsPlacementDefaultRowSpec;
 
 export type SettingsCategorySpec = {
   id: SettingsCategoryId;
@@ -1408,17 +1402,6 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
       },
     },
     rows: [
-      {
-        kind: 'skipLocationStep',
-        key: 'skipLocationStep',
-        section: 'New Documents',
-        label: 'Always Save in One Place',
-        keywords:
-          'skip location step new document wizard always save every new document same place folder ask where',
-        description:
-          'Skips the Location step of the New Document wizard and saves every new document in one place.',
-        helpArticle: 'defaultFolders',
-      },
       // One row per default folder entry, in list order: guests have defaults too.
       ...DEFAULT_KEY_ENTRIES.map((entry): SettingsPlacementDefaultRowSpec => ({
         kind: 'placementDefault',

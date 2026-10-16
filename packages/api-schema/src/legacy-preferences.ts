@@ -18,6 +18,9 @@ const RETIRED: ReadonlySet<string> = new Set([
   'illustrateModeEnabled',
   'infographicModeEnabled',
   'planModeEnabled',
+  // "Always save new documents in <place> and skip this step": the New Document wizard has no Location step to skip
+  // (docs/specs/007-editor/new-document-route.md "One-step wizard").
+  'skipLocationStep',
 ]);
 
 export function upgradeLegacyPreferences<T extends Record<string, unknown>>(prefs: T): T {

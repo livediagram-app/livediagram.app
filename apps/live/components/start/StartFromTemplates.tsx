@@ -2,9 +2,9 @@
 
 // An empty tab's template start (docs/specs/007-editor/start-diagramming.md): Start Diagramming on a Diagram tab, Start
 // Facilitating on a Facilitate tab, Start Illustrating on an Illustrate tab, each a start panel (StartPanel) as Start
-// Planning is Plan's. Recommended (the mode's blank first) and its groups beside a grid of the mode's templates, each its preview over its name and line; a
-// search across them; Something Else opens the Quick Start on every mode, and the × starts from nothing. Choosing a
-// template lands it on the tab at once.
+// Planning is Plan's. Recommended (the mode's blank first) and its groups beside a grid of the mode's templates, each its
+// preview over its name and line; a search across them and every other mode's templates (otherModeMatches); the × starts
+// from nothing. Choosing a template lands it on the tab at once, another mode's switching the tab to that mode.
 import { useEffect, useMemo } from 'react';
 import { lucideGlyph } from '@livediagram/ui';
 import {
@@ -31,15 +31,18 @@ import {
   lucideVote,
   lucideWorkflow,
 } from '@livediagram/icons/lucide';
-import { TemplatePreview } from '@livediagram/template-previews';
+import type { EditorMode } from '@livediagram/document';
 import type { TemplateKind } from '@livediagram/templates';
+import { useEditorModeState } from '@/components/chrome/editor-mode/editor-mode-context';
 import { dismissEmptyCard } from '@/components/canvas/empty-card-dismissed';
 import { useEmptyCardDismissed } from '@/components/canvas/useEmptyCardDismissed';
 import type { HelpArticleKey } from '@/lib/help-articles';
-import { StartPanel, type StartPanelCard } from './StartPanel';
+import { StartPanel } from './StartPanel';
+import { otherModeMatches } from './other-mode-matches';
+import { templateCard } from './template-card';
 import { setStartPanelOpen } from './start-panel-open';
 import { startClosedKey } from './start-closed-key';
-import { TEMPLATE_STARTS, templateOf, type TemplateStartMode } from './start-template-items';
+import { TEMPLATE_STARTS, type TemplateStartMode } from './start-template-items';
 import { StartModeSwitch } from '@/components/start/StartModeSwitch';
 import { useStartPalette } from '@/components/start/useStartPalette';
 
@@ -104,34 +107,22 @@ const COPY: Record<
   },
 };
 
-// A template as the panel's card: its preview, light-canvas art on a re-lit tile, as the Quick Start draws it.
-const toCard = (kind: TemplateKind): StartPanelCard => {
-  const t = templateOf(kind);
-  return {
-    id: t.kind,
-    name: t.title,
-    line: t.description,
-    picture: (
-      <span className="preview-art-tile flex h-full w-full items-center justify-center rounded-lg bg-slate-50 [&>svg]:h-full [&>svg]:w-auto">
-        <TemplatePreview kind={t.kind} />
-      </span>
-    ),
-  };
-};
-
 export function StartFromTemplates({
   mode,
   tabId,
   onTemplate,
-  onQuickStart,
+  onOtherModeTemplate,
 }: {
   mode: TemplateStartMode;
   tabId: string;
   onTemplate: (kind: TemplateKind) => void;
-  onQuickStart: () => void;
+  // A template found in another mode (start-diagramming.md "Found in other modes"): it lands, switching the tab there.
+  onOtherModeTemplate: (mode: EditorMode, kind: TemplateKind) => void;
 }) {
   // The tab's own colours (start-palette.ts).
   const palette = useStartPalette();
+  // Other modes are searched only where the tab's mode may change.
+  const canSwitch = useEditorModeState()?.canSwitch === true;
   const start = TEMPLATE_STARTS[mode];
   const copy = COPY[mode];
   const categories = useMemo(
@@ -170,16 +161,25 @@ export function StartFromTemplates({
       palette={palette}
       categories={categories}
       initialCategory="recommended"
-      cardsIn={(id) => (start.groups.find((g) => g.id === id)?.kinds ?? []).map(toCard)}
+      cardsIn={(id) => (start.groups.find((g) => g.id === id)?.kinds ?? []).map(templateCard)}
       search={(query) =>
-        start.search(query).map((g) => ({ category: g.group, cards: g.kinds.map(toCard) }))
+        start.search(query).map((g) => ({ category: g.group, cards: g.kinds.map(templateCard) }))
       }
       onChoose={(kind) => {
         // The blank leaves the tab empty, so it closes the panel as the × does.
         if (kind === start.blank) close();
         onTemplate(kind as TemplateKind);
       }}
-      onQuickStart={onQuickStart}
+      elsewhere={
+        canSwitch
+          ? (query) =>
+              otherModeMatches(mode, query).map((m) => ({
+                mode: m.mode,
+                cards: m.kinds.map(templateCard),
+              }))
+          : undefined
+      }
+      onChooseElsewhere={(m, kind) => onOtherModeTemplate(m, kind as TemplateKind)}
       lead={<StartModeSwitch />}
       onClose={close}
     />

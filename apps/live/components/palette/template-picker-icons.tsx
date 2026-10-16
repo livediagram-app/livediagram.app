@@ -1,15 +1,6 @@
 import { Glyph } from '@livediagram/ui';
-// Inline SVG icons for the template picker (create-document CTA,
-// folder-open, spinner, sparkle). Pure presentational; split out
-// of TemplatePicker.tsx.
-export function ArrowRightIcon() {
-  return (
-    <Glyph size={13} units={16}>
-      <path d="M3.5 8h9M9 4.5 12.5 8 9 11.5" />
-    </Glyph>
-  );
-}
-
+// Inline SVG icons for the New Document wizard and its neighbours (folder-open, spinner, sparkle). Pure
+// presentational.
 export function FolderOpenIcon() {
   return (
     <Glyph size={14} units={16}>

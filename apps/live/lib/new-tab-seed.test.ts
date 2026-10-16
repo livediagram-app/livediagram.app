@@ -6,18 +6,18 @@ import { newTabOpening, newTabSeed } from './new-tab-seed';
 describe('newTabOpening', () => {
   it('opens a tab added from any mode but Diagram in that mode, with no Quick Start', () => {
     for (const mode of ['draw', 'facilitate', 'illustrate', 'plan'] as const)
-      expect(newTabOpening(mode)).toEqual({ opensIn: mode, quickStart: false });
+      expect(newTabOpening(mode)).toEqual({ opensIn: mode });
   });
 
   it('opens a tab added from Diagram in Diagram, on Start Diagramming, writing no opening mode', () => {
-    expect(newTabOpening('diagram')).toEqual({ quickStart: false });
+    expect(newTabOpening('diagram')).toEqual({});
   });
 
   it('opens a tab asked for in a mode in that mode, on its own start, never the Quick Start', () => {
     for (const creator of ['plan', 'diagram'] as const) {
-      expect(newTabOpening(creator, 'diagram')).toEqual({ quickStart: false });
+      expect(newTabOpening(creator, 'diagram')).toEqual({});
       for (const mode of ['draw', 'facilitate', 'illustrate', 'plan'] as const)
-        expect(newTabOpening(creator, mode)).toEqual({ opensIn: mode, quickStart: false });
+        expect(newTabOpening(creator, mode)).toEqual({ opensIn: mode });
     }
   });
 });

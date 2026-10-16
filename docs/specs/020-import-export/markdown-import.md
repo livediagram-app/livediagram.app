@@ -77,8 +77,8 @@ dialog**, the mirror of the Export dialog. The user picks the format:
 Every format is text, so each card opens the **same two-step panel**
 (`TextImportPanel`, [Mermaid import & export](mermaid.md)): **paste or write** the
 content, or **import a file instead**. The way back to the format grid is the
-shared **`BackBar`** across the top of that step (the same control the New
-Document wizard's location step uses), carrying the chosen format as its chip -
+shared **`BackBar`** across the top of that step (the same control the placement
+browser uses), carrying the chosen format as its chip -
 not a small text link in the footer, which put the way back beside the way
 forward. The export dialog's two second screens (`TextExportPanel`,
 `ImageExportPanel`) use the same bar, so every second screen in both dialogs

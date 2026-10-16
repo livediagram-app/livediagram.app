@@ -478,10 +478,6 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     values: TEMPLATES,
     open: TEMPLATE_WHY,
   },
-  'apps/live/app/document/[id]/useTemplateFlow.ts Theme·Changed': {
-    values: THEMES,
-    open: THEME_WHY,
-  },
   'apps/live/app/explorer/useTimelineFeed.ts Timeline·Selected': {
     values: [
       'comments',

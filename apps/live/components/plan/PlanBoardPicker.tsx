@@ -1,9 +1,8 @@
 'use client';
 
 // A Plan tab with nothing on it (docs/specs/026-plan/plan-mode.md "Starting a board"): Start Planning, in the middle
-// of the canvas, first asks what to start with (PlanStartChooser: Boards, Spreadsheets, or Other, the Quick Start);
-// Boards and Spreadsheets then open their step, a breadcrumb leading back. Boards offers the board types, as a new
-// infographic page offers its layouts. Each is a picture of the board
+// of the canvas (StartPlanning), its search reaching every other mode's templates too. Boards offers the board types,
+// as a new infographic page offers its layouts. Each is a picture of the board
 // itself, drawn as what sets it apart (board-previews.tsx) over its name and what it is
 // for, in the tab's own light or dark look. Blank comes first; the Archive board, never a first board, is
 // left to the palette. Choosing one places that board, empty, in the
@@ -21,8 +20,8 @@ import {
 import { accentOn, type PlanPalette } from './plan-palette';
 import { BOARD_PREVIEWS } from './board-previews';
 import { StartPlanning } from './start/StartPlanning';
-import type { PlanTemplateKind } from '@livediagram/templates';
-import type { Tab } from '@livediagram/document';
+import type { PlanTemplateKind, TemplateKind } from '@livediagram/templates';
+import type { EditorMode, Tab } from '@livediagram/document';
 import type { SuggestedDashboard } from '@/lib/suggested-dashboards';
 import type { PlanVisualisation } from '@livediagram/items';
 
@@ -125,7 +124,7 @@ function GenericPreview({ preset, palette }: { preset: PlanBoardPresetId; palett
 export function PlanBoardPicker({
   onPick,
   onPickSheet,
-  onQuickStart,
+  onOtherModeTemplate,
   onDashboard,
   onTemplate,
   tabs,
@@ -149,8 +148,8 @@ export function PlanBoardPicker({
   onDashboard?: (presetId: string) => void;
   // An empty sheet, or one of Start Planning's sheet types (Setup Sheet then opens on it).
   onPickSheet?: (start?: PlacedSheetStart) => void;
-  // Opens the regular Quick Start for this tab (a diagram template or another kind of tab instead).
-  onQuickStart?: () => void;
+  // A template found in another mode (start-diagramming.md "Found in other modes"): it lands, switching the tab there.
+  onOtherModeTemplate?: (mode: EditorMode, kind: TemplateKind) => void;
 }) {
   // What Start Planning makes fills the tab: its view's chunk is fetched while the panel is read, so the choice
   // opens on the view rather than its loading cover (FillTabPending). Idle, so the panel's own paint is first.
@@ -172,7 +171,7 @@ export function PlanBoardPicker({
       onPickBoard={onPick}
       onPickSheet={onPickSheet}
       onDashboard={onDashboard}
-      onQuickStart={onQuickStart}
+      onOtherModeTemplate={onOtherModeTemplate}
       onTemplate={onTemplate}
       tabs={tabs}
       loadTabs={loadTabs}

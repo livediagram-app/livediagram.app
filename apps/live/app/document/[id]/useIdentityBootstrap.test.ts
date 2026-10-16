@@ -129,7 +129,7 @@ describe('useIdentityBootstrap in a workbench', () => {
     expect(set.setIsOwner).toHaveBeenCalledWith(true);
     expect(set.setSessionRole).toHaveBeenCalledWith('edit');
     expect(set.setNameConfirmed).toHaveBeenCalledWith(true);
-    expect(set.setTemplatePickerMode).not.toHaveBeenCalled();
+    expect(set.setIdentityPromptOpen).not.toHaveBeenCalled();
     expect(set.setSessionShareCode).not.toHaveBeenCalled();
     expect(set.setLoadingDocument).toHaveBeenCalledWith(false);
     expect(seed).toHaveBeenCalledWith('user_1', DOC, null, null);

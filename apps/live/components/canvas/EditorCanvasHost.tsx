@@ -179,7 +179,8 @@ export function EditorCanvasHost() {
     canvasMainRef,
     canvasTool,
     castVote,
-    chooseTemplate,
+    confirmIdentity,
+    cancelIdentity,
     clearTimer,
     clearVote,
     clerkDisplayName,
@@ -220,7 +221,6 @@ export function EditorCanvasHost() {
     stackSelectedBack,
     editCursorAtEnd,
     editingId,
-    effectiveTemplatePickerMode,
     embedMode,
     workbenchMode,
     endVote,
@@ -260,7 +260,6 @@ export function EditorCanvasHost() {
     openComments,
     openDocument,
     openNote,
-    openTemplatePicker,
     pauseTimer,
     pendingDraw,
     redo,
@@ -334,7 +333,6 @@ export function EditorCanvasHost() {
     setViewportZoom,
     sharedDocuments,
     shiftDupGhostIds,
-    skipTemplatePicker,
     snapGuideStore,
     spawnConnectSelected,
     startTimer,
@@ -344,7 +342,6 @@ export function EditorCanvasHost() {
     teamFolders,
     teams,
     refreshTeamLibraries,
-    templateGridOpen,
     toggleAspectLockSelected,
     toggleInMultiSelect,
     toggleLockMultiSelected,
@@ -1221,31 +1218,19 @@ export function EditorCanvasHost() {
               onEditLink={isReadOnly ? undefined : setLinkPickerOpenForId}
               onOpenEditDialog={isReadOnly ? undefined : openEditDialog}
               imageContext={imageContext}
-              showTemplatePicker={
-                // The identity / join card (name entry) shows for EVERYONE
-                // including view-role visitors: it only writes their own
-                // participant row, so there's no 403, and they should set a
-                // name before others see them in presence.
-                identityOnlyScreenOpen ||
-                // The template-CHOOSING variant (Quick Start) stays editor-only: a
-                // viewer can't commit a template (every write 403s). It opens only on
-                // an explicit request (adding a tab or the empty-canvas button, both
-                // of which set templatePickerMode='templates' -> templateGridOpen),
-                // never automatically just because a tab is empty.
-                (!isReadOnly && hydrated && templateGridOpen)
-              }
+              // The visitor name prompt shows for EVERYONE, view-role visitors included: it only writes their own
+              // participant row, so there's no 403, and they should set a name before others see them in presence.
+              showIdentityPrompt={identityOnlyScreenOpen}
               hydrated={hydrated}
-              templatePickerMode={effectiveTemplatePickerMode}
               // Visitor on someone else's document + signed in → lock the
               // identity input to their Clerk name. Owner branch never
               // shows the identity prompt so `lockedName` is moot there;
               // pure guests pass null and keep the editable name field.
-              templatePickerLockedName={!isOwner && clerkUserId ? clerkDisplayName : null}
+              identityLockedName={!isOwner && clerkUserId ? clerkDisplayName : null}
               welcomeOpen={anyWelcomeOpen}
               selfParticipant={selfParticipant}
-              onChooseTemplate={(kind) => void chooseTemplate(kind)}
-              onSkipTemplatePicker={skipTemplatePicker}
-              onOpenTemplatePicker={openTemplatePicker}
+              onConfirmIdentity={confirmIdentity}
+              onCancelIdentity={cancelIdentity}
               tabThemeId={(activeTab.theme as ThemeId | undefined) ?? 'brand'}
               tabTimer={activeTab.timer}
               tabVote={activeTab.vote}

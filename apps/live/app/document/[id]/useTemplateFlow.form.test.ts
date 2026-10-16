@@ -8,15 +8,13 @@ import { useTemplateFlow } from './useTemplateFlow';
 // Start Planning's Forms do, and lays no template elements.
 
 describe('chooseTemplate with a form template', () => {
-  it('starts the form on the tab and closes the picker', async () => {
+  it('starts the form on the tab', async () => {
     let tabs: Tab[] = [{ id: 't1', name: '', elements: [] }];
     const startForm = vi.fn();
-    const setTemplatePickerMode = vi.fn();
     const { result } = renderHook(() =>
       useTemplateFlow({
         activeId: 't1',
         tabs,
-        templatePickerMode: 'templates',
         selfParticipant: { id: 'me', name: 'Me', color: '#000' } as never,
         getViewportCenter: () => ({ x: 0, y: 0 }),
         commitTabs: (update) => {
@@ -26,7 +24,7 @@ describe('chooseTemplate with a form template', () => {
         setSelectedId: vi.fn(),
         setEditingId: vi.fn(),
         setSelfParticipant: vi.fn(),
-        setTemplatePickerMode,
+        setIdentityPromptOpen: vi.fn(),
         requestFit: vi.fn(),
         markTabLoaded: vi.fn(),
         bringCardTypes: vi.fn(),
@@ -38,7 +36,6 @@ describe('chooseTemplate with a form template', () => {
       await result.current.chooseTemplate('rsvp-form');
     });
     expect(startForm).toHaveBeenCalledWith('rsvp');
-    expect(setTemplatePickerMode).toHaveBeenCalledWith('welcome');
     expect(tabs[0]!.elements).toEqual([]);
   });
 });

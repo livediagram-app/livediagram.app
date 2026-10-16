@@ -2,7 +2,7 @@
 
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { useState } from 'react';
-import { Button, Tooltip, lucideGlyph } from '@livediagram/ui';
+import { Tooltip, lucideGlyph } from '@livediagram/ui';
 import { lucideX } from '@livediagram/icons/lucide';
 import { useEditorModeState } from '@/components/chrome/editor-mode/editor-mode-context';
 import { EmptyCanvasArt } from './EmptyCanvasArt';
@@ -12,24 +12,23 @@ const CloseGlyph = lucideGlyph(lucideX, 16);
 
 // The empty-canvas card (docs/specs/007-editor/new-document-route.md "The empty-canvas hint"), shown while the active
 // tab has no elements: a calm card in the middle of the canvas, as Start Planning and an empty page's own start sit
-// in theirs, saying the tab is empty and offering Quick Start (an Editor's) and Help. Only the card takes presses: the
-// canvas around it still pans, and a palette tool still places. It goes once the tab has content (or a draw tool or
-// Quick Start is engaged), and its × closes it for good on that tab, for this person (empty-card-dismissed.ts). A
-// viewer reads a passive line instead; a Participant is pointed at what they may add.
+// in theirs, saying the tab is empty and offering Help (an Editor's, on a desktop). Only the card takes presses: the
+// canvas around it still pans, and a palette tool still places. It goes once the tab has content (or a draw tool is
+// engaged), and its × closes it for good on that tab, for this person (empty-card-dismissed.ts). A viewer reads a
+// passive line instead; a Participant is pointed at what they may add. An Editor's empty tab shows its mode's start
+// instead (start-diagramming.md), where its templates are.
 
 export function EmptyCanvasBanner({
   tabId,
   tabName,
   readOnly,
   participant = false,
-  onQuickStart,
 }: {
   tabId: string;
   tabName: string;
   readOnly: boolean;
   // A Participant (docs/specs/013-workspace/share-roles.md): read-only, yet it adds stickies, text and images.
   participant?: boolean;
-  onQuickStart: () => void;
 }) {
   // The picture is of what the tab's mode makes (Diagram when no mode is known).
   const mode = useEditorModeState()?.mode ?? 'diagram';
@@ -72,18 +71,13 @@ export function EmptyCanvasBanner({
               ? 'Nothing here yet. Add a sticky, text or an image from the Palette to get it going.'
               : readOnly
                 ? 'Nothing here yet. The owner can build it out, and your view updates live.'
-                : 'Add an element from the Palette, or start from a template.'}
+                : 'Add an element from the Palette to get it going.'}
           </p>
         </div>
         {readOnly ? null : (
-          <div className="mt-1 flex items-center gap-2">
-            <Button variant="primary" size="sm" onClick={onQuickStart}>
-              Quick Start
-            </Button>
-            {/* Help is a desktop's: on a phone the help centre is a tap away in the Explorer. */}
-            <span className="contents phone:hidden">
-              <HelpArticleLink article="yourFirstDiagram" variant="button" />
-            </span>
+          // Help is a desktop's: on a phone the help centre is a tap away in the Explorer.
+          <div className="mt-1 flex items-center gap-2 phone:hidden">
+            <HelpArticleLink article="yourFirstDiagram" variant="button" />
           </div>
         )}
       </div>

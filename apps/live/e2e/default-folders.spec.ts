@@ -1,20 +1,19 @@
 import type { Page } from '@playwright/test';
 import { apiBase } from './audit-screens';
 import {
+  createInMode,
   expect,
   expectNoPageErrors,
   guestSigFor,
   mintSignedGuest,
   ownerHeaders,
   test,
-  untilHydrated,
 } from './fixtures';
 
 // Default folders for a guest, in dark mode (docs/specs/013-workspace/default-folders.md
 // "Surfaces"; folders.md "Deleting a folder"): set from the folder menu and shown by the marker,
-// pre-selected and explained by the New Document wizard, made from Always save, listed in
-// Settings, and left dangling (and said so) when the folder is deleted, its contents moving up to
-// its parent.
+// where the New Document wizard files a new document without asking, listed in Settings, and left
+// dangling (and said so) when the folder is deleted, its contents moving up to its parent.
 
 type Seeded = { owner: string; headers: Record<string, string> };
 
@@ -70,28 +69,6 @@ async function documentFolder(page: Page, s: Seeded, id: string): Promise<string
   return body.documents.find((d) => d.id === id)?.folderId ?? null;
 }
 
-// The wizard on its Location step for a whiteboard.
-async function newWhiteboard(page: Page) {
-  await page.goto('/new');
-  // The Mode step (docs/specs/007-editor/new-document-route.md "Choosing a mode"): Draw makes a Blank Whiteboard.
-  const draw = page.locator('[data-new-mode="draw"]');
-  await untilHydrated(draw);
-  await draw.click();
-  await expect(page.getByText('Choose livediagram Folder')).toBeVisible();
-}
-
-async function create(page: Page): Promise<string> {
-  await page.getByRole('button', { name: 'Create', exact: true }).click();
-  await expect(page).toHaveURL(/\/document\/[0-9a-f-]{36}$/, { timeout: 30_000 });
-  return page.url().split('/').pop()!;
-}
-
-// The one checked radio of the wizard's folder browser: where the document will go.
-const checkedFolder = (page: Page) =>
-  page
-    .getByRole('radiogroup', { name: 'Choose livediagram Folder' })
-    .locator('[role="radio"][aria-checked="true"]');
-
 const nav = (page: Page) => page.getByRole('navigation', { name: 'Explorer' }).first();
 
 test.describe('default folders', () => {
@@ -143,7 +120,7 @@ test.describe('default folders', () => {
     expectNoPageErrors(pageErrors);
   });
 
-  test('the wizard pre-selects the default, and the root chosen on purpose wins', async ({
+  test('the wizard files a new document in its default folder without asking, else at the root', async ({
     page,
     pageErrors,
     baseURL,
@@ -153,50 +130,12 @@ test.describe('default folders', () => {
     const workshops = await folder(page, s, 'Workshops', projects);
     await setDefault(page, s, 'mode:draw', workshops);
 
-    await newWhiteboard(page);
-    await expect(page.getByRole('note').filter({ hasText: 'by default' })).toHaveText(
-      'Whiteboards go to Workshops by default. Change default',
-    );
-    // The browser opens where the document will go: inside Projects, Workshops checked.
-    await expect(checkedFolder(page)).toHaveCount(1);
-    await expect(checkedFolder(page)).toHaveAccessibleName(/^Workshops/);
-    await expect(page.getByRole('button', { name: /^My documents/ })).toContainText('Projects');
-    const first = await create(page);
-    expect(await documentFolder(page, s, first)).toBe(workshops);
-
-    // Back out to the root of My documents and choose it on purpose.
-    await newWhiteboard(page);
-    await page.getByRole('button', { name: /^My documents/ }).click();
-    await page
-      .getByRole('radio', { name: /^My documents/ })
-      .first()
-      .click();
-    await expect(checkedFolder(page)).toHaveAccessibleName(/^My documents/);
-    await expect(page.getByRole('note').filter({ hasText: 'by default' })).toHaveCount(0);
-    const second = await create(page);
-    expect(await documentFolder(page, s, second)).toBeNull();
-    expectNoPageErrors(pageErrors);
-  });
-
-  test('Always save makes the chosen folder the default', async ({ page, pageErrors, baseURL }) => {
-    const s = await guest(page, baseURL!);
-    const workshops = await folder(page, s, 'Workshops');
-    const retros = await folder(page, s, 'Retros');
-    await setDefault(page, s, 'mode:draw', workshops);
-
-    await newWhiteboard(page);
-    await page
-      .getByRole('radio', { name: /My documents/ })
-      .first()
-      .click();
-    await page.getByRole('radio', { name: /Retros/ }).click();
-    const toggle = page.getByRole('switch', { name: 'Always save whiteboards here' });
-    await expect(toggle).toHaveAttribute('aria-checked', 'false');
-    await toggle.click();
-    await expect(toggle).toHaveAttribute('aria-checked', 'true');
-    const id = await create(page);
-    expect(await documentFolder(page, s, id)).toBe(retros);
-    expect(await defaults(page, s)).toEqual({ 'mode:draw': retros });
+    // No Location step: choosing Draw makes the whiteboard, in the whiteboards' default folder.
+    const whiteboard = await createInMode(page, 'draw');
+    expect(await documentFolder(page, s, whiteboard)).toBe(workshops);
+    // Diagrams have no default: the root of My documents.
+    const diagram = await createInMode(page, 'diagram');
+    expect(await documentFolder(page, s, diagram)).toBeNull();
     expectNoPageErrors(pageErrors);
   });
 
@@ -240,7 +179,7 @@ test.describe('default folders', () => {
     expectNoPageErrors(pageErrors);
   });
 
-  test('a /new?folder= context opens where it is, as the default does', async ({
+  test('a /new?folder= context files the document there, ahead of the default', async ({
     page,
     pageErrors,
     baseURL,
@@ -248,26 +187,10 @@ test.describe('default folders', () => {
     const s = await guest(page, baseURL!);
     const projects = await folder(page, s, 'Projects');
     const sprints = await folder(page, s, 'Sprints', projects);
-    await page.goto(`/new?folder=${sprints}`);
-    const draw = page.locator('[data-new-mode="draw"]');
-    await untilHydrated(draw);
-    await draw.click();
-    await expect(checkedFolder(page)).toHaveAccessibleName(/^Sprints/);
-    const id = await create(page);
-    expect(await documentFolder(page, s, id)).toBe(sprints);
-    expectNoPageErrors(pageErrors);
-  });
-
-  test('on a phone the wizard says why too', async ({ page, pageErrors, baseURL }) => {
-    await page.setViewportSize({ width: 390, height: 844 });
-    const s = await guest(page, baseURL!);
-    const projects = await folder(page, s, 'Projects');
-    const workshops = await folder(page, s, 'Workshops', projects);
+    const workshops = await folder(page, s, 'Workshops');
     await setDefault(page, s, 'mode:draw', workshops);
-    await newWhiteboard(page);
-    await expect(page.getByRole('note').filter({ hasText: 'by default' })).toBeVisible();
-    await expect(checkedFolder(page)).toHaveAccessibleName(/^Workshops/);
-    await expect(checkedFolder(page)).toBeInViewport();
+    const id = await createInMode(page, 'draw', `/new?folder=${sprints}`);
+    expect(await documentFolder(page, s, id)).toBe(sprints);
     expectNoPageErrors(pageErrors);
   });
 });

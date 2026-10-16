@@ -11,13 +11,12 @@ import { useTemplateFlow } from './useTemplateFlow';
 
 const CENTRE = { x: 0, y: 0 };
 
-async function land(tab: Tab, themeId?: string): Promise<Tab> {
+async function land(tab: Tab): Promise<Tab> {
   let tabs: Tab[] = [tab];
   const { result } = renderHook(() =>
     useTemplateFlow({
       activeId: tab.id,
       tabs,
-      templatePickerMode: 'templates',
       selfParticipant: { id: 'me', name: 'Me', color: '#000' } as never,
       getViewportCenter: () => CENTRE,
       commitTabs: (update) => {
@@ -27,7 +26,7 @@ async function land(tab: Tab, themeId?: string): Promise<Tab> {
       setSelectedId: vi.fn(),
       setEditingId: vi.fn(),
       setSelfParticipant: vi.fn(),
-      setTemplatePickerMode: vi.fn(),
+      setIdentityPromptOpen: vi.fn(),
       requestFit: vi.fn(),
       markTabLoaded: vi.fn(),
       bringCardTypes: vi.fn(),
@@ -35,7 +34,7 @@ async function land(tab: Tab, themeId?: string): Promise<Tab> {
     }),
   );
   await act(async () => {
-    await result.current.chooseTemplate('flowchart', undefined, themeId);
+    await result.current.chooseTemplate('flowchart');
   });
   return tabs[0]!;
 }
@@ -67,13 +66,9 @@ describe('chooseTemplate theme', () => {
     expect(landed.backgroundColor).toBe('#123456');
   });
 
-  it("paints a Quick Start pick in the picked theme and takes that theme's backdrop", async () => {
-    const landed = await land(empty, 'rainbow');
-    expect(landed.theme).toBe('rainbow');
-    const expected = recolourElementsForTheme(
-      templateTabs('flowchart')[0]!.build(CENTRE.x, CENTRE.y),
-      getTheme('rainbow'),
-    );
-    expect(strokes(landed)).toEqual(strokes({ ...empty, elements: expected }));
+  it('leaves a tab that already has work on it untouched', async () => {
+    const drawn: Tab = { ...empty, elements: templateTabs('mindmap')[0]!.build(0, 0) };
+    const landed = await land(drawn);
+    expect(landed).toEqual(drawn);
   });
 });

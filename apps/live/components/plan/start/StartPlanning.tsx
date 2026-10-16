@@ -1,9 +1,9 @@
 'use client';
 
 // Start Planning (docs/specs/026-plan/plan-mode.md "Starting a board"): an empty Plan tab's start panel (StartPanel). A rail of
-// categories (Recommended, Boards, Spreadsheets, Dashboards, and Something Else, the Quick Start) beside a grid of
-// large cards, each a picture of what it makes over its name, line and (a board's) card types; a search across all of
-// them. Choosing a card acts at once. In the tab's own light or dark look (planPalette).
+// categories (Recommended, Boards, Spreadsheets, Dashboards, Inspiration) beside a grid of large cards, each a picture
+// of what it makes over its name, line and (a board's) card types; a search across all of them, and across every other
+// mode's templates (otherModeMatches). Choosing a card acts at once. In the tab's own light or dark look (planPalette).
 import { useEffect, useMemo, type ReactNode } from 'react';
 import { DASHBOARD_PRESETS } from '@livediagram/document';
 import { lucideGlyph } from '@livediagram/ui';
@@ -17,9 +17,11 @@ import {
   lucideStar,
 } from '@livediagram/icons/lucide';
 import { StartPanel, type StartPanelCard } from '@/components/start/StartPanel';
-import { TemplatePreview } from '@livediagram/template-previews';
-import type { PlanTemplateKind } from '@livediagram/templates';
-import type { Tab } from '@livediagram/document';
+import type { PlanTemplateKind, TemplateKind } from '@livediagram/templates';
+import type { EditorMode, Tab } from '@livediagram/document';
+import { useEditorModeState } from '@/components/chrome/editor-mode/editor-mode-context';
+import { otherModeMatches } from '@/components/start/other-mode-matches';
+import { TemplatePicture, templateCard } from '@/components/start/template-card';
 import { suggestedDashboards, type SuggestedDashboard } from '@/lib/suggested-dashboards';
 import type { PlacedSheetStart } from '@/lib/sheet-seeds';
 import { usePlan } from '../PlanContext';
@@ -56,13 +58,8 @@ const CHIPS_MAX = 3;
 
 function Picture({ item, palette }: { item: StartItem; palette: PlanPalette }) {
   if (item.kind === 'board') return <BoardPreview preset={item.preset} palette={palette} />;
-  // A template's preview is light-canvas art: on a re-lit tile, as the Quick Start draws it.
-  if (item.kind === 'template')
-    return (
-      <span className="preview-art-tile flex h-full w-full items-center justify-center rounded-lg bg-slate-50 [&>svg]:h-full [&>svg]:w-auto">
-        <TemplatePreview kind={item.template} />
-      </span>
-    );
+  // A template's preview is light-canvas art, on a re-lit tile, as every start draws one.
+  if (item.kind === 'template') return <TemplatePicture kind={item.template} />;
   if (item.kind === 'visualisation')
     return <VisualisationPreview view={item.view} palette={palette} />;
   if (item.kind === 'form') return <FormStarterPicture starter={item.starter} palette={palette} />;
@@ -144,7 +141,7 @@ export function StartPlanning({
   onPickBoard,
   onPickSheet,
   onDashboard,
-  onQuickStart,
+  onOtherModeTemplate,
   onTemplate,
   tabs,
   loadTabs,
@@ -157,8 +154,9 @@ export function StartPlanning({
   onPickSheet?: ((start?: PlacedSheetStart) => void) | undefined;
   // Absent where the tab cannot become a Dashboard: Dashboards is left out.
   onDashboard?: ((presetId: string) => void) | undefined;
-  // Absent where there is no Quick Start: Something Else is left out.
-  onQuickStart?: (() => void) | undefined;
+  // A template found in another mode (start-diagramming.md "Found in other modes"): it lands, switching the tab there.
+  // Absent, the search keeps to Plan.
+  onOtherModeTemplate?: ((mode: EditorMode, kind: TemplateKind) => void) | undefined;
   // Applies a Plan template to this tab (Inspiration); absent, Inspiration is left out.
   onTemplate?: ((kind: PlanTemplateKind) => void) | undefined;
   // The document's tabs, read for Dashboards built from its own work (suggested-dashboards.ts), and the fetch of
@@ -173,6 +171,8 @@ export function StartPlanning({
 }) {
   // The tab's own colours (start-palette.ts).
   const palette = useStartPalette();
+  // Other modes are searched only where the tab's mode may change (a Board or Sheet tab is always Plan).
+  const canSwitch = useEditorModeState()?.canSwitch === true;
   const plan = usePlan();
   const hasCards = (plan?.items.size ?? 0) > 0;
   // Fetched as the panel opens; the effect returns nothing (the fetch is a promise).
@@ -233,7 +233,18 @@ export function StartPlanning({
         }))
       }
       onChoose={choose}
-      onQuickStart={onQuickStart}
+      elsewhere={
+        canSwitch && onOtherModeTemplate
+          ? (query) =>
+              otherModeMatches('plan', query).map((m) => ({
+                mode: m.mode,
+                cards: m.kinds.map(templateCard),
+              }))
+          : undefined
+      }
+      onChooseElsewhere={
+        onOtherModeTemplate ? (m, kind) => onOtherModeTemplate(m, kind as TemplateKind) : undefined
+      }
       lead={<StartModeSwitch />}
     />
   );
