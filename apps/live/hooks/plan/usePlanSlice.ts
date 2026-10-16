@@ -31,7 +31,11 @@ import {
 const NO_PHASES: ReadonlyMap<string, StatusPhase> = new Map();
 const NO_STATUS_TYPES: BoardStatusTypes = new Map();
 import { stepTrail, type ItemOpenVia } from '@/components/plan/item-trail';
-import type { PlanCardPresence, PlanContextValue } from '@/components/plan/PlanContext';
+import type {
+  ItemTypeEditing,
+  PlanCardPresence,
+  PlanContextValue,
+} from '@/components/plan/PlanContext';
 import { titleCaseType, track } from '@/lib/telemetry';
 import type { PlanItems } from './usePlanItems';
 import type { ItemCommentAction } from '@/lib/api/items';
@@ -133,17 +137,17 @@ export function usePlanSlice(opts: {
   // The cards opened from inside the item panel, ending on the open one (docs/specs/026-plan/plan-board.md
   // "Breadcrumb"): a card opened any other way starts it afresh.
   const [itemTrail, setItemTrail] = useState<readonly string[]>([]);
-  // The type the type editor is open on, or 'new' (docs/specs/026-plan/item-types.md "Editing a type").
-  const [editingTypeId, setEditingTypeId] = useState<string | 'new' | null>(null);
+  // What the type editor is open on (docs/specs/026-plan/item-types.md "Editing a type"), or null.
+  const [editingType, setEditingType] = useState<ItemTypeEditing | null>(null);
   // A new type filled from this one (Duplicate), or none.
   const [typeTemplateId, setTypeTemplateId] = useState<string | null>(null);
   // Add New Card Type from a board's Add a Card menu: the board the new type is for (useTypeForBoard).
   const forBoard = useTypeForBoard(commitOn);
   const { setTypeForBoard } = forBoard;
   const editType = useCallback(
-    (typeId: string | 'new', fromId?: string) => {
-      setEditingTypeId(typeId);
-      setTypeTemplateId(typeId === 'new' && fromId ? fromId : null);
+    (target: ItemTypeEditing, fromId?: string) => {
+      setEditingType(target);
+      setTypeTemplateId(target === 'new' && fromId ? fromId : null);
       setTypeForBoard(null);
     },
     [setTypeForBoard],
@@ -152,7 +156,7 @@ export function usePlanSlice(opts: {
   const [setupBoardId, openBoardSetup] = useState<string | null>(null);
   const createTypeForBoard = useCallback(
     (boardId: string, statuses: readonly string[]) => {
-      setEditingTypeId('new');
+      setEditingType('new');
       setTypeTemplateId(null);
       setTypeForBoard({ boardId, statuses });
     },
@@ -161,7 +165,7 @@ export function usePlanSlice(opts: {
   // A Gantt chart's Add New Card Type: a new type with Start and Due, so it draws on the chart once saved.
   const createTypeForView = useCallback(
     (viewId: string) => {
-      setEditingTypeId('new');
+      setEditingType('new');
       setTypeTemplateId(null);
       setTypeForBoard({ viewId, fields: ['start', 'due'] });
     },
@@ -610,13 +614,13 @@ export function usePlanSlice(opts: {
     },
     // Opens an item without counting it as the person's (the Plan tour's card panel step).
     showItem: setOpenItemId,
-    editingTypeId,
+    editingType,
     typeTemplateId,
     typeForBoard: forBoard.typeForBoard,
     addTypeToBoard: forBoard.addTypeToBoard,
     addTypeToView: forBoard.addTypeToView,
     closeTypeEditor: () => {
-      setEditingTypeId(null);
+      setEditingType(null);
       setTypeTemplateId(null);
       setTypeForBoard(null);
     },

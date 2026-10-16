@@ -203,7 +203,7 @@ function BoardDestination({ tabs, onLeave }: { tabs: readonly Tab[]; onLeave?: (
                 aria-label={`Edit card type ${b.type.label}`}
                 onClick={() => {
                   onLeave?.();
-                  plan.editType(b.type!.id);
+                  plan.editType({ id: b.type!.id });
                 }}
                 className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
               >

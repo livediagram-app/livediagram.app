@@ -27,7 +27,7 @@ export type LaserEffect = 'beam' | 'glow' | 'comet' | 'spark';
 // Otherwise a standard colour by name (drawn in its version for the canvas,
 // docs/specs/004-interface-design/colour-picker.md) or a custom `#rrggbb`.
 export const LASER_PRESENCE = 'presence';
-export type LaserColour = typeof LASER_PRESENCE | StandardColourName | string;
+export type LaserColour = string;
 
 export type LaserConfig = {
   width: LaserWidth;

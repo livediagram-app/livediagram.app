@@ -190,7 +190,7 @@ export function PlanCardMenuHost({
         )
         .map((c) => ({ status: c.status, name: c.name, ...(c.color ? { color: c.color } : {}) }))}
       onOpen={() => plan.openItem(item.id)}
-      onEditType={() => plan.editType(item.type)}
+      onEditType={() => plan.editType({ id: item.type })}
       {...(plan.addItemSlide
         ? {
             onAddSlide: () => {

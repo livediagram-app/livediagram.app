@@ -16,7 +16,11 @@ import { customDefinitionFromTheme } from '@/lib/custom-theme-registry';
 import { type ThemeDefinition } from '@/lib/themes';
 import { useConfirm } from '@/hooks/ui/useConfirm';
 import { useCustomThemes } from '@/components/primitives/CustomThemeProvider';
-import { CustomThemeBuilder, type CustomThemeDraft } from '@/components/palette/CustomThemeBuilder';
+import {
+  CustomThemeBuilder,
+  type CustomThemeDraft,
+  type ThemeBuilding,
+} from '@/components/palette/CustomThemeBuilder';
 import { ThemeBrowser } from '@/components/palette/ThemeBrowser';
 
 export function CustomThemePicker({
@@ -52,8 +56,8 @@ export function CustomThemePicker({
     writable,
   } = useCustomThemes();
   const confirm = useConfirm();
-  // null = browsing; 'new' = building a fresh theme; an id = editing it.
-  const [building, setBuilding] = useState<null | 'new' | string>(null);
+  // null = browsing; else the builder is open on a fresh theme or a saved one.
+  const [building, setBuilding] = useState<ThemeBuilding | null>(null);
   // Prefill draft for a copied built-in theme (used only while building 'new').
   const [copySeed, setCopySeed] = useState<CustomThemeDraft | null>(null);
   const [saving, setSaving] = useState(false);
@@ -64,9 +68,11 @@ export function CustomThemePicker({
   }, [building, onBuildingChange]);
 
   const editingTheme =
-    typeof building === 'string' ? customThemes.find((t) => t.id === building) : undefined;
+    building !== null && building !== 'new'
+      ? customThemes.find((t) => t.id === building.id)
+      : undefined;
 
-  const openBuilder = (target: 'new' | string) => {
+  const openBuilder = (target: ThemeBuilding) => {
     setSaveError(null);
     setCopySeed(null);
     setBuilding(target);
@@ -157,7 +163,7 @@ export function CustomThemePicker({
         customThemes={customThemes}
         // Without writes (a workbench) there is no builder: no custom themes, no Copy.
         onNewCustomTheme={writable ? () => openBuilder('new') : undefined}
-        onEditCustomTheme={writable ? (id) => openBuilder(id) : undefined}
+        onEditCustomTheme={writable ? (id) => openBuilder({ id }) : undefined}
         onDeleteCustomTheme={writable ? confirmDelete : undefined}
         onCopyTheme={writable ? copyTheme : undefined}
       />

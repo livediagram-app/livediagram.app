@@ -28,6 +28,9 @@ import type { ItemTypesSlice } from '@/hooks/plan/useItemTypes';
 // Someone else's hands on a card: dragging it or reading it.
 export type PlanCardPresence = { name: string; color: string; state: 'drag' | 'view' };
 
+// What the type editor is open on: a new type, or a saved one by its id.
+export type ItemTypeEditing = 'new' | { id: string };
+
 export type PlanContextValue = {
   items: ReadonlyMap<string, Item>;
   // The document's item types, in order (docs/specs/026-plan/item-types.md).
@@ -35,7 +38,7 @@ export type PlanContextValue = {
   // Their changes (the Card Types panel and the type editor).
   itemTypes: ItemTypesSlice;
   // Opens the type editor on a type, or on a new one (filled from `fromId` when duplicating).
-  editType: (typeId: string | 'new', fromId?: string) => void;
+  editType: (target: ItemTypeEditing, fromId?: string) => void;
   // Add New Card Type from a board's Add a Card menu: a new type with only the board's statuses on, added to the
   // board once saved (docs/specs/026-plan/plan-board.md "Add New Card Type").
   createTypeForBoard: (boardId: string, statuses: readonly string[]) => void;

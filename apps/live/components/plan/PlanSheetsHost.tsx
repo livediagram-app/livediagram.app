@@ -45,10 +45,10 @@ export function PlanSheetsHost({ plan }: { plan: PlanSlice }) {
     return open ? linkedCardsOf(open, ctx.items, ctx.types) : [];
   }, [openId, ctx.items, ctx.types]);
   // The type editor (docs/specs/026-plan/item-types.md "Editing a type").
-  if (plan.editingTypeId && ctx.canEdit) {
-    const editing =
-      plan.editingTypeId === 'new' ? null : ctx.types.find((t) => t.id === plan.editingTypeId);
-    if (plan.editingTypeId === 'new' || editing) {
+  const target = plan.editingType;
+  if (target && ctx.canEdit) {
+    const editing = target === 'new' ? null : ctx.types.find((t) => t.id === target.id);
+    if (target === 'new' || editing) {
       // The type's cards out of the Trash: a delete moves them there with it.
       const ofType = editing
         ? [...ctx.items.values()].filter((i) => i.type === editing.id && !isTrashed(i))
@@ -67,7 +67,7 @@ export function PlanSheetsHost({ plan }: { plan: PlanSlice }) {
             : undefined;
       return (
         <ItemTypeEditor
-          key={`${plan.editingTypeId}:${plan.typeTemplateId ?? ''}:${forBoard?.boardId ?? ''}`}
+          key={`${editing?.id ?? 'new'}:${plan.typeTemplateId ?? ''}:${forBoard?.boardId ?? ''}`}
           type={editing ?? null}
           {...(template ? { template } : {})}
           types={ctx.types}
@@ -154,7 +154,7 @@ export function PlanSheetsHost({ plan }: { plan: PlanSlice }) {
         onClose={plan.closeItem}
         onEditType={() => {
           plan.closeItem();
-          ctx.editType(item.type);
+          ctx.editType({ id: item.type });
         }}
         comments={{
           canComment: ctx.canVote,

@@ -44,6 +44,9 @@ import { RANGE_SLIDER } from '@/components/primitives/surface-classes';
 
 export type CustomThemeDraft = { name: string; definition: CustomThemeDefinition };
 
+// What the builder is open on: a new theme, or a saved one by its id.
+export type ThemeBuilding = 'new' | { id: string };
+
 // The pattern colour is derived from the BACKGROUND base colour (there's
 // no separate control): a subtle darker shade on a light backdrop, a
 // lighter tint on a dark one, so the grid / lines read against it without

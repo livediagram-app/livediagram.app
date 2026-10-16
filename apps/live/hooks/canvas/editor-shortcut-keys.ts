@@ -36,7 +36,7 @@ export type EditorKeyboardShortcutsDeps = {
   // draw is pending. The hook only needs to know "is something
   // pending" so we accept the opaque truthiness rather than the
   // discriminated union type itself.
-  pendingDraw: unknown | null;
+  pendingDraw: unknown;
   onCancelDraw: () => void;
   // Selection state. Delete / Backspace acts on whichever is
   // populated (multi wins).
