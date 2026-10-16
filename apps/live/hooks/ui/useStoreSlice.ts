@@ -7,7 +7,7 @@
 
 import { useRef, useSyncExternalStore } from 'react';
 
-type Store<S> = { get(): S; subscribe(listener: () => void): () => void };
+type Store<S> = { get: () => S; subscribe: (listener: () => void) => () => void };
 
 export function useStoreSlice<S, T>(
   store: Store<S>,

@@ -17,11 +17,11 @@ export const EMPTY_SELECTION: Selection = Object.freeze({
 });
 
 export type SelectionStore = {
-  get(): Selection;
-  subscribe(listener: () => void): () => void;
-  setSelectedId(next: SetStateAction<string | null>): void;
-  setMultiSelectedIds(next: SetStateAction<Set<string>>): void;
-  setSelection(next: Selection): void;
+  get: () => Selection;
+  subscribe: (listener: () => void) => () => void;
+  setSelectedId: (next: SetStateAction<string | null>) => void;
+  setMultiSelectedIds: (next: SetStateAction<Set<string>>) => void;
+  setSelection: (next: Selection) => void;
 };
 
 // The selection as one set: the multi-selection when there is one, else the single selected id.

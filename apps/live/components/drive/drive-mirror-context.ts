@@ -25,11 +25,11 @@ export type DriveMirrorContextValue = {
   // A check the Cloud Sync row asked for is running.
   checking: boolean;
   // The Cloud Sync row came into view: check, unless one ran moments ago.
-  requestCheck(): void;
-  connect(): Promise<void>;
-  resume(): Promise<void>;
-  disconnect(): Promise<void>;
-  adopt(notice: DriveMirrorNotice): Promise<void>;
+  requestCheck: () => void;
+  connect: () => Promise<void>;
+  resume: () => Promise<void>;
+  disconnect: () => Promise<void>;
+  adopt: (notice: DriveMirrorNotice) => Promise<void>;
 };
 
 export const DRIVE_STATUS_INITIAL: DriveMirrorStatus = {

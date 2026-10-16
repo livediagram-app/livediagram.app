@@ -23,10 +23,10 @@ export type PlacementFolder = { ownerId: string; teamId: string | null };
 
 /** The reads the resolver needs, injected so it stays free of `env`. */
 export type PlacementLookups = {
-  isJoinedMember(teamId: string, userId: string): Promise<boolean>;
-  getFolder(folderId: string): Promise<PlacementFolder | null>;
+  isJoinedMember: (teamId: string, userId: string) => Promise<boolean>;
+  getFolder: (folderId: string) => Promise<PlacementFolder | null>;
   /** The owner's default folders, by key in force. */
-  getPlacementDefaults(ownerId: string): Promise<ReadonlyMap<PlacementDefaultKey, string>>;
+  getPlacementDefaults: (ownerId: string) => Promise<ReadonlyMap<PlacementDefaultKey, string>>;
 };
 
 /** Why a default was passed over: it dangles. */

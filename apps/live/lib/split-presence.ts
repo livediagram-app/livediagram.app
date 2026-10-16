@@ -14,12 +14,12 @@ function createStore<T>(initial: T) {
   const listeners = new Set<Listener>();
   return {
     get: () => value,
-    set(next: T) {
+    set: (next: T) => {
       if (Object.is(next, value)) return;
       value = next;
       for (const l of listeners) l();
     },
-    subscribe(l: Listener) {
+    subscribe: (l: Listener) => {
       listeners.add(l);
       return () => listeners.delete(l);
     },

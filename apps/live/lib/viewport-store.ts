@@ -10,11 +10,11 @@ export type Point = { x: number; y: number };
 export type View = { readonly zoom: number; readonly offset: Point };
 
 export type ViewportStore = {
-  get(): View;
-  subscribe(listener: () => void): () => void;
-  setZoom(next: SetStateAction<number>): void;
-  setOffset(next: SetStateAction<Point>): void;
-  setView(next: View): void;
+  get: () => View;
+  subscribe: (listener: () => void) => () => void;
+  setZoom: (next: SetStateAction<number>) => void;
+  setOffset: (next: SetStateAction<Point>) => void;
+  setView: (next: View) => void;
 };
 
 export function createViewportStore(zoom: number): ViewportStore {

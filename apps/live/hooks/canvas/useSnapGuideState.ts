@@ -29,10 +29,10 @@ export type SnapGuides = {
 };
 
 export type SnapGuideStore = {
-  get(): SnapGuides;
-  subscribe(cb: () => void): () => void;
+  get: () => SnapGuides;
+  subscribe: (cb: () => void) => () => void;
   // Each part is kept when the new set matches it, and nothing is told when no part changed.
-  set(next: Partial<SnapGuides>): void;
+  set: (next: Partial<SnapGuides>) => void;
 };
 
 const NO_GUIDES: SnapGuides = { snapGuides: [], distGuides: [], snapTargets: [] };
