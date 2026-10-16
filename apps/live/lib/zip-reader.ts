@@ -1,6 +1,7 @@
 // Reading a Zip (docs/specs/020-import-export/blueprints/ms-whiteboard-import.md): stored and
 // deflated entries, the latter inflated by `DecompressionStream('deflate-raw')` under a byte
 // budget shared by the whole import. Every offset is bounds-checked: the file is untrusted.
+import { BudgetExceeded, inflateBytes, type ByteBudget } from '@/lib/inflate';
 
 type ZipEntry = {
   name: string;
@@ -25,25 +26,6 @@ const METHOD_STORED = 0;
 const METHOD_DEFLATE = 8;
 const FLAG_ENCRYPTED = 0x0001;
 const FLAG_UTF8 = 0x0800;
-
-/** What one import may still inflate; `take` throws `BudgetExceeded` past it. */
-export class ByteBudget {
-  #remaining: number;
-  constructor(bytes: number) {
-    this.#remaining = bytes;
-  }
-  take(bytes: number): void {
-    this.#remaining -= bytes;
-    if (this.#remaining < 0) throw new BudgetExceeded();
-  }
-}
-
-export class BudgetExceeded extends Error {
-  constructor() {
-    super('Inflate budget exceeded');
-    this.name = 'BudgetExceeded';
-  }
-}
 
 const damaged = { ok: false, refusal: 'zip-damaged' } as const;
 
@@ -98,40 +80,6 @@ export function listZip(
   return { ok: true, entries };
 }
 
-async function inflateRaw(
-  data: Uint8Array<ArrayBuffer>,
-  budget: ByteBudget,
-): Promise<Uint8Array<ArrayBuffer>> {
-  const stream = new ReadableStream<Uint8Array<ArrayBuffer>>({
-    start(controller) {
-      controller.enqueue(data);
-      controller.close();
-    },
-  }).pipeThrough(new DecompressionStream('deflate-raw'));
-  const chunks: Uint8Array[] = [];
-  let total = 0;
-  const reader = stream.getReader();
-  try {
-    for (;;) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      budget.take(value.byteLength);
-      chunks.push(value);
-      total += value.byteLength;
-    }
-  } finally {
-    // Stop inflating the moment the budget runs out; the rest is never read.
-    reader.cancel().catch(() => {});
-  }
-  const out = new Uint8Array(total);
-  let offset = 0;
-  for (const chunk of chunks) {
-    out.set(chunk, offset);
-    offset += chunk.byteLength;
-  }
-  return out;
-}
-
 /** One entry's bytes, inflated if deflated, or a named refusal. */
 export async function readZipEntry(
   bytes: Uint8Array<ArrayBuffer>,
@@ -156,7 +104,7 @@ export async function readZipEntry(
   }
   if (entry.method !== METHOD_DEFLATE) return damaged;
   try {
-    return { ok: true, bytes: await inflateRaw(data, budget) };
+    return { ok: true, bytes: await inflateBytes(data, 'deflate-raw', budget) };
   } catch (error) {
     return error instanceof BudgetExceeded ? { ok: false, refusal: 'too-large' } : damaged;
   }

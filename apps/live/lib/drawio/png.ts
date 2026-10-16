@@ -2,7 +2,8 @@
 // (docs/specs/020-import-export/blueprints/drawio-import.md step 4): a tEXt,
 // zTXt or iTXt chunk keyed `mxfile` or `mxGraphModel`, placed before IDAT.
 
-import { BudgetExceeded, inflateBytes, latin1, type ByteBudget } from './inflate';
+import { BudgetExceeded, inflateBytes, type ByteBudget } from '@/lib/inflate';
+import { latin1 } from './inflate';
 
 const SIGNATURE = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
 const KEYWORDS = new Set(['mxfile', 'mxGraphModel']);

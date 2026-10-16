@@ -4,7 +4,8 @@
 // an SVG carrying one in `content`, or a PNG carrying one in a text chunk.
 
 import { parseInert } from '@livediagram/ui/trusted-types';
-import { BudgetExceeded, base64Bytes, decompressDiagram, type ByteBudget } from './inflate';
+import { BudgetExceeded, type ByteBudget } from '@/lib/inflate';
+import { base64Bytes, decompressDiagram } from './inflate';
 import { extractPngDiagram, isPng } from './png';
 import { DrawioRefused } from './refusals';
 

@@ -1,6 +1,6 @@
 import { crc32, deflateRawSync, deflateSync } from 'node:zlib';
 import { describe, expect, it } from 'vitest';
-import { ByteBudget } from './inflate';
+import { ByteBudget } from '@/lib/inflate';
 import { extractPngDiagram, isPng } from './png';
 
 function chunk(type: string, data: Buffer): Buffer {

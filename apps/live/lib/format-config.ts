@@ -9,7 +9,7 @@
 //
 // Device-local, like the other tool panels. Never sent to the api.
 
-import { readLocalStorageSafe, safeJson, writeLocalStorageSafe } from './local-storage-safe';
+import { readLocalStorageSafe, storedRecord, writeLocalStorageSafe } from './local-storage-safe';
 
 export type FormatGroup = 'fill' | 'border' | 'text' | 'effects' | 'size';
 export type FormatMode = 'keep' | 'once';
@@ -138,9 +138,8 @@ export function formatCopiesSummary(config: FormatConfig): string {
 // --- Parsing ----------------------------------------------------------------
 
 export function parseFormatConfig(raw: unknown): FormatConfig {
-  const parsed: unknown = typeof raw === 'string' ? safeJson(raw) : raw;
-  if (!parsed || typeof parsed !== 'object') return structuredCopy(DEFAULT_FORMAT_CONFIG);
-  const o = parsed as { copies?: unknown; mode?: unknown };
+  const o = storedRecord(raw);
+  if (!o) return structuredCopy(DEFAULT_FORMAT_CONFIG);
   const copies = { ...DEFAULT_FORMAT_CONFIG.copies };
   if (o.copies && typeof o.copies === 'object') {
     for (const group of FORMAT_GROUPS) {

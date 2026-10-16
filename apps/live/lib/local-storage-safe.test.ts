@@ -15,8 +15,10 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import {
+  pickOption,
   readLocalStorageSafe,
   removeLocalStorageSafe,
+  storedRecord,
   writeLocalStorageSafe,
 } from './local-storage-safe';
 
@@ -165,5 +167,24 @@ describe('removeLocalStorageSafe', () => {
     };
     mockWindow(throwing);
     expect(() => removeLocalStorageSafe('k')).not.toThrow();
+  });
+});
+
+describe('storedRecord', () => {
+  it('reads JSON text or a value as a record, and anything else as null', () => {
+    expect(storedRecord('{"a":1}')).toEqual({ a: 1 });
+    expect(storedRecord({ b: 2 })).toEqual({ b: 2 });
+    expect(storedRecord('not json')).toBeNull();
+    expect(storedRecord('3')).toBeNull();
+    expect(storedRecord(null)).toBeNull();
+  });
+});
+
+describe('pickOption', () => {
+  const options = [{ id: 'a' }, { id: 'b' }] as const;
+  it('keeps a listed option and falls back for anything else', () => {
+    expect(pickOption('b', options, 'a')).toBe('b');
+    expect(pickOption('z', options, 'a')).toBe('a');
+    expect(pickOption(7, options, 'a')).toBe('a');
   });
 });
