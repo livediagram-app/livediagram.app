@@ -68,7 +68,8 @@ function refusedView(err: unknown): ToolResult | null {
         : `${body.message}. Candidates: ${candidates.join('; ')}`,
     );
   }
-  const message = typeof body === 'object' && body !== null ? Reflect.get(body, 'message') : null;
+  const message: unknown =
+    typeof body === 'object' && body !== null ? Reflect.get(body, 'message') : null;
   return typeof message === 'string' ? errorResult(message) : null;
 }
 

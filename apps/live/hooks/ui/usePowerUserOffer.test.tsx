@@ -50,7 +50,7 @@ describe('usePowerUserOffer', () => {
   it('records today as an editing session, once', () => {
     const { hook, deps } = setup();
     hook.rerender({ ...deps });
-    const stored = JSON.parse(localStorage.getItem(OFFER_COUNTERS_KEY)!);
+    const stored: unknown = JSON.parse(localStorage.getItem(OFFER_COUNTERS_KEY)!);
     expect(stored).toMatchObject({ days: 1, lastDay: localDayKey(new Date()) });
   });
 

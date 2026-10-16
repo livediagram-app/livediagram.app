@@ -216,7 +216,7 @@ test('an editor whose room join is refused is told too', async ({ page, baseURL 
               this.readyState = ws.readyState;
               const copy =
                 type === 'message'
-                  ? new MessageEvent('message', { data: (e as MessageEvent).data })
+                  ? new MessageEvent('message', { data: (e as MessageEvent<unknown>).data })
                   : type === 'close'
                     ? new CloseEvent('close', {
                         code: (e as CloseEvent).code,

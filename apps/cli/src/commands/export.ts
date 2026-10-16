@@ -166,7 +166,7 @@ export async function exportAll(
   const slugs = uniqueSlugs(documents);
   await io.files.mkdir(input.to);
   ctx.log(`export ${documents.length} documents as ${formats.join(',')}`);
-  const results: (string[] | null)[] = new Array(documents.length).fill(null);
+  const results = new Array<string[] | null>(documents.length).fill(null);
   let exit: ExitCode = EXIT.done;
   let next = 0;
   const worker = async () => {

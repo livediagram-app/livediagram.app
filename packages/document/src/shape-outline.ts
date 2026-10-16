@@ -49,11 +49,12 @@ const POLYGON_KINDS: readonly ShapeKind[] = [
 ];
 // Shapes drawn as one curved path, sampled into a polygon (0..100 box).
 const PATH_KINDS: readonly ShapeKind[] = ['cloud', 'document'];
-const POLYGONS: Partial<Record<ShapeKind, readonly [number, number][]>> = Object.fromEntries([
-  ...POLYGON_KINDS.map((kind) => [kind, shapePolygonVertices(kind)!]),
-  ...PATH_KINDS.flatMap((kind) => {
+type Polygon = readonly (readonly [number, number])[];
+const POLYGONS: Partial<Record<ShapeKind, Polygon>> = Object.fromEntries([
+  ...POLYGON_KINDS.map((kind): [ShapeKind, Polygon] => [kind, shapePolygonVertices(kind)!]),
+  ...PATH_KINDS.flatMap((kind): [ShapeKind, Polygon][] => {
     const points = sampleSvgPath(shapePathData(kind) ?? '');
-    return points ? [[kind, points.map((p) => [p.x, p.y])]] : [];
+    return points ? [[kind, points.map((p): [number, number] => [p.x, p.y])]] : [];
   }),
 ]);
 

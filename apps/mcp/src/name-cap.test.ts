@@ -24,7 +24,11 @@ async function connect() {
   const client = await connectTestClient(async (request) => {
     const path = new URL(request.url).pathname.replace(/^\/api/, '');
     const text = await request.text();
-    sent.push({ method: request.method, path, body: text ? JSON.parse(text) : null });
+    sent.push({
+      method: request.method,
+      path,
+      body: text ? (JSON.parse(text) as Record<string, unknown>) : null,
+    });
     if (/\/tabs\/[^/]+$/.test(path) && request.method === 'GET') {
       return Response.json({ tab: { id: 't1', name: 'Tab', rev: 1, elements: [] } });
     }

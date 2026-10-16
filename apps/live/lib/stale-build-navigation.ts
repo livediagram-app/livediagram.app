@@ -157,7 +157,8 @@ export function installStaleBuildNavigation(deps: NavigationDeps): () => void {
       // Unsaved work: hand the back or forward to the client router after all.
       replaying = true;
       try {
-        win.dispatchEvent(new PopStateEvent('popstate', { state: event.state }));
+        const state: unknown = event.state;
+        win.dispatchEvent(new PopStateEvent('popstate', { state }));
       } finally {
         replaying = false;
       }

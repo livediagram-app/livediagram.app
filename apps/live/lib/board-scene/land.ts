@@ -169,7 +169,7 @@ export function landBoardScene(scene: BoardScene, options: LandOptions): LandRes
   const placed = items.map((item) => translateItem(item, dx, dy));
 
   // Boxes first, so arrows can pin to them; every slot keeps the scene's order.
-  const slots: (Element | null)[] = new Array(placed.length).fill(null);
+  const slots = new Array<Element | null>(placed.length).fill(null);
   const byKey = new Map<string, Element>();
   const imageRequests: ImportImageRequest[] = [];
   const landedKinds = new Array<SceneItemKind | null>(placed.length).fill(null);

@@ -31,10 +31,14 @@ export function claimReloadIn(
   } catch {
     return false;
   }
-  let seen: Record<string, number>;
+  // Stored by an earlier page, so read as anything: an entry counts only when it holds a time.
+  let seen: Readonly<Record<string, unknown>>;
   try {
-    const parsed = JSON.parse(raw || '{}');
-    seen = parsed && typeof parsed === 'object' ? parsed : {};
+    const parsed: unknown = JSON.parse(raw || '{}');
+    seen =
+      typeof parsed === 'object' && parsed !== null
+        ? Object.fromEntries(Object.entries(parsed))
+        : {};
   } catch {
     seen = {};
   }

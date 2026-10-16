@@ -136,7 +136,7 @@ describe('Swimlanes by a field', () => {
     Object.assign(plan, { canEdit: true, updateBoard, announce: vi.fn(), types });
     render(<PlanSwimlaneSettings element={laned} />);
     fireEvent.click(screen.getByRole('radio', { name: 'Assignee' }));
-    const next = updateBoard.mock.calls[0]![1];
+    const next: unknown = updateBoard.mock.calls[0]![1];
     expect(next).toMatchObject({ swimlaneBy: 'assignee' });
     expect(next).toEqual(expect.not.objectContaining({ swimlaneField: expect.anything() }));
   });

@@ -223,15 +223,15 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
       const seedItemCreates = readSeedItems(body.items, owner);
       if (seedItemCreates instanceof Response) return seedItemCreates;
       // Seed sheets (docs/specs/029-sheets/sheet-store.md "Offline documents", "Copies"), validated the same way.
-      const seedSheetCreates = readSeedSheets(
-        templateSheets.length === 0
-          ? body.sheets
-          : body.sheets === undefined
-            ? templateSheets
-            : Array.isArray(body.sheets)
-              ? [...body.sheets, ...templateSheets]
-              : body.sheets,
-      );
+      // The request's own sheets, then the template's; anything that is not a list is refused below.
+      const withTemplate = (asked: unknown): unknown => {
+        if (templateSheets.length === 0) return asked;
+        if (asked === undefined) return templateSheets;
+        if (!Array.isArray(asked)) return asked;
+        const own: readonly unknown[] = asked;
+        return [...own, ...templateSheets];
+      };
+      const seedSheetCreates = readSeedSheets(withTemplate(body.sheets));
       if (seedSheetCreates instanceof Response) return seedSheetCreates;
       // Ownership guard (security): upsertDocumentMeta is INSERT ... ON
       // CONFLICT(id) DO UPDATE owner_id = excluded.owner_id, so a POST with an

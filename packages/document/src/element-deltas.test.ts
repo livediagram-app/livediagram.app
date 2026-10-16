@@ -120,10 +120,10 @@ describe('applyElementDelta (docs/specs/012-collaboration/collab-race-hardening.
       card({
         shape: 'idea-box',
         ideaCards: [
-          ...Array(IDEA_MAX_CARDS - own.length).fill('x'),
+          ...Array<string>(IDEA_MAX_CARDS - own.length).fill('x'),
           ...own.map((id) => `own ${id}`),
         ],
-        ideaCardIds: [...Array(IDEA_MAX_CARDS - own.length).fill(''), ...own],
+        ideaCardIds: [...Array<string>(IDEA_MAX_CARDS - own.length).fill(''), ...own],
       });
     const peer: ElementDelta = { kind: 'idea', text: 'peer', id: 'p' };
 

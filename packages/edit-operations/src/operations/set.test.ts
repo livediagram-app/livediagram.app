@@ -148,7 +148,10 @@ describe('set', () => {
   });
 
   it('refuses prototype keys as unknown_field', () => {
-    const fields = JSON.parse('{"__proto__": "x"}');
+    const fields = JSON.parse('{"__proto__": "x"}') as Extract<
+      EditOperation,
+      { op: 'set' }
+    >['fields'];
     expect(refused(run([{ op: 'set', target: 'n3', fields }])).details[0]).toBe(
       'square has no field "__proto__"',
     );

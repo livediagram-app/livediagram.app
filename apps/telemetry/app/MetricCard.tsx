@@ -75,7 +75,7 @@ export function MetricCard({
         <div className="mt-auto pt-4">
           <TrendChart
             days={days}
-            values={series ?? new Array(days.length).fill(0)}
+            values={series ?? days.map(() => 0)}
             color={color}
             highlightFromIndex={highlightFromIndex}
             heightClassName="h-20"

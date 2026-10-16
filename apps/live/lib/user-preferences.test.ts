@@ -176,7 +176,7 @@ describe('readUserPreferences (with localStorage)', () => {
     };
     expect(read.futureFlag).toBe('yes');
     writeUserPreferences(read);
-    const stored = JSON.parse(storage.getItem(STORAGE_KEY)!);
+    const stored: unknown = JSON.parse(storage.getItem(STORAGE_KEY)!);
     expect(stored).toEqual({ autoRebindArrows: false, futureFlag: 'yes' });
   });
 

@@ -213,7 +213,7 @@ export function createLayerPreviewStore(): LayerPreviewStore {
       lastOverlay = overlay;
       lastInputs = inputs;
       const prev = entries;
-      entries = overlay ? derive(overlay, inputs) : new Map();
+      entries = overlay ? derive(overlay, inputs) : new Map<string, PreviewEntry>();
       for (const [id, entry] of entries) entries.set(id, steadyEntry(prev.get(id), entry));
       const nextStructure: PreviewStructure | null =
         overlay && (overlay.removed.size > 0 || overlay.added.length > 0)

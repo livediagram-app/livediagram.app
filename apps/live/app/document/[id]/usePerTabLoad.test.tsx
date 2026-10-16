@@ -3,9 +3,10 @@ import { act, renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Tab } from '@livediagram/document';
 
-const apiLoadTab = vi.fn();
+const apiLoadTab =
+  vi.fn<(owner: string, documentId: string, tabId: string) => Promise<Tab | null>>();
 vi.mock('@/lib/api-client', () => ({
-  apiLoadTabRevisioned: async (...a: unknown[]) => {
+  apiLoadTabRevisioned: async (...a: Parameters<typeof apiLoadTab>) => {
     const tab = await apiLoadTab(...a);
     return tab ? { tab, rev: 3 } : null;
   },

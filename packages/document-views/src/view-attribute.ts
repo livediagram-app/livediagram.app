@@ -12,6 +12,6 @@ export function countAttribute(key: string, value: string | number): ViewAttribu
 }
 
 export function shapeKindOf(el: { type: string }): string {
-  const shape = Reflect.get(el, 'shape');
+  const shape: unknown = Reflect.get(el, 'shape');
   return el.type === 'shape' && typeof shape === 'string' ? shape : el.type;
 }
