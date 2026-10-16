@@ -177,7 +177,7 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
   // The canvas going away mid-gesture writes nothing.
   useEffect(() => () => cancelPreview(), []);
 
-  const { beginDrag, beginAnchorDrag } = useBoxedDragHandlers({
+  const { beginDrag, beginAnchorDrag, pressArmedAction } = useBoxedDragHandlers({
     depsRef,
     setDrag,
     checkpointPendingRef,
@@ -957,6 +957,7 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
     snapGuideStore,
     beginDrag,
     beginAnchorDrag,
+    pressArmedAction,
     beginArrowTranslate,
     beginEndpointDrag,
     beginArrowCurveDrag,

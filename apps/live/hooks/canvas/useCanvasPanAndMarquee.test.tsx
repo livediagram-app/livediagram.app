@@ -211,3 +211,71 @@ describe('useCanvasPanAndMarquee gestures', () => {
     expect(canvasGestureNow()).toBe('idle');
   });
 });
+
+// A press that never moved is a tap: it runs the pan's own tap when it has one (docs/specs/008-canvas/avatar-mode.md
+// "Walking"), and otherwise deselects. A pinch is never a tap.
+describe('useCanvasPanAndMarquee tap', () => {
+  function tapSetup(pinching = false) {
+    const onDeselect = vi.fn();
+    const onTap = vi.fn();
+    const view = renderHook(() =>
+      useCanvasPanAndMarquee({
+        viewportZoom: 1,
+        setViewportOffset: vi.fn(),
+        elements: [],
+        wrapperRef: { current: null },
+        onDeselect,
+        onSelectMarquee: vi.fn(),
+        isPinchingRef: { current: pinching },
+      }),
+    );
+    const begin = (withTap: boolean) =>
+      act(() =>
+        view.result.current.setPan({
+          startClientX: 10,
+          startClientY: 10,
+          startOffsetX: 0,
+          startOffsetY: 0,
+          movedRef: { current: false },
+          ...(withTap ? { onTap } : {}),
+        }),
+      );
+    const pointer = (type: string, x = 10) =>
+      act(() => {
+        window.dispatchEvent(Object.assign(new Event(type), { clientX: x, clientY: 10 }));
+      });
+    return { begin, pointer, onDeselect, onTap };
+  }
+
+  it('runs the tap instead of deselecting', () => {
+    const t = tapSetup();
+    t.begin(true);
+    t.pointer('pointerup');
+    expect(t.onTap).toHaveBeenCalledTimes(1);
+    expect(t.onDeselect).not.toHaveBeenCalled();
+  });
+
+  it('deselects on a tap with no tap of its own', () => {
+    const t = tapSetup();
+    t.begin(false);
+    t.pointer('pointerup');
+    expect(t.onDeselect).toHaveBeenCalledTimes(1);
+  });
+
+  it('is no tap once the press moved', () => {
+    const t = tapSetup();
+    t.begin(true);
+    t.pointer('pointermove', 60);
+    t.pointer('pointerup', 60);
+    expect(t.onTap).not.toHaveBeenCalled();
+  });
+
+  it('is no tap once a second finger made it a pinch', () => {
+    const t = tapSetup(true);
+    t.begin(true);
+    t.pointer('pointermove', 11);
+    t.pointer('pointerup', 11);
+    expect(t.onTap).not.toHaveBeenCalled();
+    expect(t.onDeselect).not.toHaveBeenCalled();
+  });
+});

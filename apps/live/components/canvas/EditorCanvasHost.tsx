@@ -151,6 +151,7 @@ export function EditorCanvasHost() {
     beginArrowLabelDrag,
     beginArrowTranslate,
     beginDrag,
+    pressArmedAction,
     beginEdit,
     beginEndpointDrag,
     beginErase,
@@ -1179,6 +1180,7 @@ export function EditorCanvasHost() {
                       })
               }
               onBeginDrag={beginDrag}
+              onPressArmedAction={pressArmedAction}
               onBeginEdit={beginEdit}
               onCommitLabel={commitLabel}
               onCommitTable={commitTable}

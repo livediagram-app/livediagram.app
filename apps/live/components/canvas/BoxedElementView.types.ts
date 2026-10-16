@@ -37,6 +37,8 @@ export type BoxedElementViewProps = {
   showHandles: boolean;
   showAnchors: boolean;
   onBeginDrag: (id: string, mode: DragMode, e: ReactPointerEvent) => void;
+  // The armed action a tap takes instead of selecting (Canvas.types.ts): true when it took it.
+  onPressArmedAction?: (id: string) => boolean;
   // Shift-click on an element fires this with the element id so the
   // page can toggle membership in the marquee multi-selection.
   onShiftSelect?: (id: string) => void;
