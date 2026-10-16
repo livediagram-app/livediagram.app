@@ -205,6 +205,7 @@ export default defineConfig({
         'typescript/no-duplicate-type-constituents': 'error',
         'typescript/no-for-in-array': 'error',
         'typescript/no-implied-eval': 'error',
+        'typescript/no-misused-promises': 'error',
         'typescript/no-redundant-type-constituents': 'error',
         'typescript/no-unsafe-argument': 'error',
         'typescript/no-unsafe-call': 'error',
