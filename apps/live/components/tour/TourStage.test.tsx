@@ -147,4 +147,37 @@ describe('TourStage', () => {
     expect(ring?.style.left).toBe('6px');
     expect(ring?.style.width).toBe('128px');
   });
+
+  // Keyboard (docs/specs/007-editor/editor-tour.md): Escape is each card's way out, as its own button is.
+  it('declines the offer, skips from a step and finishes from the last card on Escape', () => {
+    const offer = engine({ id: 'welcome', card: 'welcome', title: 'Welcome', body: '' });
+    const { unmount } = render(<TourStage engine={offer} />);
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(offer.skip).toHaveBeenCalledOnce();
+    unmount();
+    const step = engine({ id: 'a', title: 'A', body: '' });
+    const second = render(<TourStage engine={step} />);
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(step.skip).toHaveBeenCalledOnce();
+    second.unmount();
+    const outro = engine({ id: 'outro', card: 'outro', title: 'Done', body: '' });
+    render(<TourStage engine={outro} />);
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(outro.next).toHaveBeenCalledOnce();
+    expect(outro.skip).not.toHaveBeenCalled();
+  });
+
+  it('leaves Escape to a field being edited, and to whatever already took it', () => {
+    const e = engine({ id: 'a', title: 'A', body: '' });
+    render(<TourStage engine={e} />);
+    const field = document.createElement('input');
+    document.body.append(field);
+    fireEvent.keyDown(field, { key: 'Escape' });
+    const taken = new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true });
+    taken.preventDefault();
+    document.dispatchEvent(taken);
+    fireEvent.keyDown(document, { key: 'Enter' });
+    expect(e.skip).not.toHaveBeenCalled();
+    field.remove();
+  });
 });
