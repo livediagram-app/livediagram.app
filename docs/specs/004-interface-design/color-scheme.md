@@ -103,6 +103,12 @@ A blue-slate, one hue with the canvas (`#0d121a`) so chrome and paper read as on
 
 The lighter stops (`slate-50`…`slate-700`) keep Tailwind's values: they carry dark-mode text and borders.
 
+**slate-800 is a surface, not an edge.** It sits one step off slate-900, so a slate-900 card outlined in
+slate-800 shows no edge in dark. A card on a slate-900 or slate-950 band takes a **slate-700** border; slate-800 stays
+for hover surfaces, inputs and rules inside a card. On the marketing site `apps/marketing/lib/dark-card-borders.test.ts`
+fails on a rounded, bordered slate-900 card outlined in slate-800 (the hero's editor mocks and the feature-card art are
+exempt: they draw the editor's own chrome).
+
 ### Accent: the Steel ramp
 
 In dark mode the brand ramp is **Steel**, an accent drawn from the surface hue itself, so a filled button reads as
