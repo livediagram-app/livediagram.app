@@ -53,9 +53,9 @@ describe('own element writes', () => {
         op: { kind: 'add', element: el('a'), at: 0 },
       }),
     ).toBe(false);
-    expect(
-      isSupersededByOwnWrite(writes, { kind: 'tab-meta', tabId: 't1', patch: {} }),
-    ).toBe(false);
+    expect(isSupersededByOwnWrite(writes, { kind: 'tab-meta', tabId: 't1', patch: {} })).toBe(
+      false,
+    );
   });
 
   it('counts overlapping saves, and a release twice frees once', () => {
