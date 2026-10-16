@@ -42,10 +42,6 @@ import { WorkbenchOpenLink, WorkbenchReconnectLine } from '@/components/chrome/W
 import { TabBar } from '@/components/chrome/TabBar';
 import { SplitViewFrame } from '@/components/split/SplitViewFrame';
 import { SignInBanner, SIGNIN_BANNER_DISMISS_KEY } from '@/components/chrome/SignInBanner';
-import { EmptyCanvasBanner } from '@/components/canvas/EmptyCanvasBanner';
-import { StartAgainTray } from '@/components/start/StartAgainTray';
-import { StartViewTransition } from '@/components/start/StartViewTransition';
-import { showsEmptyCanvasCard } from '@/components/canvas/empty-canvas-card';
 import { BoardSceneNotice } from '@/components/canvas/BoardSceneNotice';
 import { EditorModals } from '@/components/dialogs/EditorModals';
 import { PollPromptSheet } from '@/components/panels/PollPromptSheet';
@@ -54,17 +50,11 @@ import { EditorTabDialogs } from '@/components/dialogs/EditorTabDialogs';
 import { CollaboratorsHost } from '@/components/dialogs/CollaboratorsHost';
 import { EditorElementDialogs } from '@/components/dialogs/EditorElementDialogs';
 import { EditorContextMenuHost } from '@/components/palette/EditorContextMenuHost';
-import { TourHost } from '@/components/tour/TourHost';
-import { useEverTrue } from '@/hooks/ui/useEverTrue';
+import { EditorTours } from '@/components/tour/EditorTours';
 import { EditorAnchoredPopovers } from '@/components/panels/EditorAnchoredPopovers';
 import { ModifierHint } from '@/components/chrome/ModifierHintBanner';
-import { PhotoDraftBar } from '@/components/chrome/PhotoDraftBar';
-import { PhotoImportProgress } from '@/components/chrome/PhotoImportProgress';
-import { PHOTO_ACCEPT_ATTR } from '@/lib/photo-accept';
 import { loadEditorSearchPanel } from '@/lib/editor-deferred-code';
-import { usePhotoDraftView } from '@/lib/photo-draft-preview';
-import { draftNotesOf, illustratePagesOf, readDashboard } from '@livediagram/document';
-import { templateStartMode } from '@/components/start/template-start-mode';
+import { EditorPhotoImport } from '@/components/chrome/EditorPhotoImport';
 import { clerkEnabled } from '@/lib/clerk-config';
 import { useDismissibleBanner } from '@/hooks/ui/useDismissibleBanner';
 import { useIsOfflineDocument } from '@/hooks/persistence/useIsOfflineDocument';
@@ -85,80 +75,15 @@ import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { AreaErrorBoundary } from '@/components/primitives/AreaErrorBoundary';
 import { QuickStyleHost } from '@/components/canvas/QuickStyleHost';
 import { panelEnabled } from '@/lib/user-preferences';
-import { BLANK_SHEET_CHOICE } from '@/lib/sheet-seeds';
-import { useTemplatePickMove } from '@/components/start/useTemplatePickMove';
-import { PendingFormStart } from '@/components/forms/PendingFormStart';
+import { EditorStartPanels } from '@/components/start/EditorStartPanels';
 
+// Loaded when first drawn (docs/specs/016-platform/web-performance.md): search while it is open. Its code is
+// fetched once the editor is idle (EDITOR_SURFACE_CODE), so opening it does not wait.
+const EditorSearchPanel = dynamic(loadEditorSearchPanel, { ssr: false });
 // Plan's UI loads only when it is drawn (docs/specs/026-plan/plan-mode.md "Cost"), so a document without
 // Plan pays nothing for it.
-// The template starts (docs/specs/007-editor/start-diagramming.md) carry every template's preview: loaded the first time
-// an empty tab offers one, never on the editor's first load.
-// Loaded when first drawn (docs/specs/016-platform/web-performance.md): search while it is open, the photo
-// review once a wall photo is picked. The search panel's code is fetched once the editor is idle
-// (EDITOR_SURFACE_CODE), so opening it does not wait.
-const EditorSearchPanel = dynamic(loadEditorSearchPanel, { ssr: false });
-const PhotoReviewOverlay = dynamic(
-  () => import('@/components/chrome/PhotoReviewOverlay').then((m) => m.PhotoReviewOverlay),
-  { ssr: false },
-);
-const StartFromTemplates = dynamic(
-  () => import('@/components/start/StartFromTemplates').then((m) => m.StartFromTemplates),
-  { ssr: false },
-);
-const PlanBoardPicker = dynamic(
-  () => import('@/components/plan/PlanBoardPicker').then((m) => m.PlanBoardPicker),
-  { ssr: false },
-);
-// A Form tab's page (docs/specs/030-forms/forms.md), fetched only when one is opened.
-const FormPage = dynamic(() => import('@/components/forms/FormPage').then((m) => m.FormPage), {
-  ssr: false,
-});
-// A Dashboard tab's page (docs/specs/026-plan/plan-tabs.md "Dashboard tab"): only a Dashboard tab draws it.
-const DashboardPage = dynamic(
-  () => import('@/components/plan/dashboard/DashboardPage').then((m) => m.DashboardPage),
-  { ssr: false },
-);
 const PlanSheetsHost = dynamic(
   () => import('@/components/plan/PlanSheetsHost').then((m) => m.PlanSheetsHost),
-  { ssr: false },
-);
-// The Plan tour (docs/specs/026-plan/plan-tour.md) loads the first time the person enters Plan, and stays
-// mounted after, so leaving Plan mid-tour still runs its clean-up.
-const PlanTourHost = dynamic(
-  () => import('@/components/tour/PlanTourHost').then((m) => m.PlanTourHost),
-  { ssr: false },
-);
-// The Facilitate tour (docs/specs/012-collaboration/facilitate-tour.md) loads the first time the person
-// enters Facilitate, and stays mounted after, as the Plan tour does.
-const FacilitateTourHost = dynamic(
-  () => import('@/components/tour/FacilitateTourHost').then((m) => m.FacilitateTourHost),
-  { ssr: false },
-);
-// The Forms tour (docs/specs/030-forms/forms.md "The Forms tour"): the first time an Editor opens a Form tab.
-const FormTourHost = dynamic(
-  () => import('@/components/tour/FormTourHost').then((m) => m.FormTourHost),
-  { ssr: false },
-);
-// The Draw tour (docs/specs/023-draw-mode/draw-tour.md): the same, the first time the person enters Draw.
-const DrawTourHost = dynamic(
-  () => import('@/components/tour/DrawTourHost').then((m) => m.DrawTourHost),
-  { ssr: false },
-);
-// Element tours (docs/specs/007-editor/element-tours.md): offered beside the selection toolbar of a toured element
-// kind, so mounted with the editor; its chunk stays out of the first load.
-const ElementTourHost = dynamic(
-  () => import('@/components/tour/ElementTourHost').then((m) => m.ElementTourHost),
-  { ssr: false },
-);
-// The Avatar tour (docs/specs/008-canvas/avatar-tour.md): the same, the first time the person walks as an avatar.
-const AvatarTourHost = dynamic(
-  () => import('@/components/tour/AvatarTourHost').then((m) => m.AvatarTourHost),
-  { ssr: false },
-);
-// The Illustrate tour (docs/specs/007-editor/illustrate-tour.md): the same, the first time the person enters
-// Illustrate.
-const IllustrateTourHost = dynamic(
-  () => import('@/components/tour/IllustrateTourHost').then((m) => m.IllustrateTourHost),
   { ssr: false },
 );
 
@@ -203,10 +128,6 @@ export function EditorView() {
     canvasTool,
     drag,
     esBoard,
-    photoDraft,
-    photoImportAvailable,
-    onPhotoPicked,
-    photoPickerRef,
     clearTabContent,
     clerkUserId,
     closeContextMenu,
@@ -220,7 +141,6 @@ export function EditorView() {
     documentShareable,
     documentTeamId,
     duplicateTab,
-    templateGridOpen,
     formatSourceId,
     hydrated,
     setImportOpen,
@@ -232,7 +152,6 @@ export function EditorView() {
     linkActiveTabTo,
     loadAllTabs,
     makeCopy,
-    openTemplatePicker,
     participantsByTab,
     pendingDraw,
     renameTab,
@@ -306,12 +225,6 @@ export function EditorView() {
   // theme so the editor chrome matches the document (docs/specs/011-theme/canvas-and-theme-dialog.md).
   // One look in both editor modes (docs/specs/007-editor/editor-modes.md "One look"), so the accent
   // follows the tab's theme in Draw mode too.
-  const mountPlanTour = useEverTrue(ctx.editorMode.mode === 'plan');
-  const mountFacilitateTour = useEverTrue(ctx.editorMode.mode === 'facilitate');
-  const mountDrawTour = useEverTrue(ctx.editorMode.mode === 'draw');
-  const mountFormTour = useEverTrue(activeTab.kind === 'form');
-  const mountAvatarTour = useEverTrue(canvasTool === 'avatar');
-  const mountIllustrateTour = useEverTrue(ctx.editorMode.mode === 'illustrate');
   useEditorAccent(activeTab.theme);
   // The viewer's own light / dark chrome (docs/specs/007-editor/live-app.md). Read here because the
   // Default theme resolves through it — see the canvas surface below.
@@ -327,67 +240,6 @@ export function EditorView() {
   const signInTimerEnabled = clerkEnabled && !clerkUserId && appChrome && !signInDismissed;
   const signInDelayElapsed = useDelayedReveal(SIGNIN_BANNER_DELAY_MS, signInTimerEnabled);
   const showSignInBanner = signInTimerEnabled && !zenMode && signInDelayElapsed;
-  // Empty-canvas hint (docs/specs/007-editor/new-document-route.md "The empty-canvas hint"): a card in the middle of
-  // the canvas while the active tab has no elements. Not dismissible: it goes once there's content. The sign-in nudge
-  // sits at the bottom, clear of it, so the two show together.
-  const showEmptyCanvasBanner = showsEmptyCanvasCard({
-    hydrated,
-    zen: zenMode,
-    embed: embedMode,
-    quickStartOpen: templateGridOpen,
-    drawToolArmed: !!pendingDraw,
-    mode: ctx.editorMode.mode,
-    elementCount: activeTab.elements.length,
-  });
-  // An editor's empty Diagram, Facilitate or Illustrate tab: its template start (docs/specs/007-editor/start-diagramming.md).
-  // A template picked from a start screen on a document /new just made goes to its default folder
-  // (docs/specs/013-workspace/default-folders.md "A template picked after creation").
-  const moveOnTemplatePick = useTemplatePickMove({
-    ownerId: ctx.selfParticipant.id,
-    documentId: ctx.documentId,
-    tabId: activeTab.id,
-    signedIn: !!clerkUserId,
-    tabHasContent: activeTab.elements.length > 0,
-  });
-  const templateStart = templateStartMode({
-    hydrated,
-    zen: zenMode,
-    embed: embedMode,
-    readOnly: isReadOnly,
-    quickStartOpen: templateGridOpen,
-    drawToolArmed: !!pendingDraw,
-    mode: ctx.editorMode.mode,
-    elementCount: activeTab.elements.length,
-    // Read only for an empty Illustrate tab: EditorView renders often, and a tab with content shows no start.
-    pages:
-      ctx.editorMode.mode === 'illustrate' && activeTab.elements.length === 0
-        ? illustratePagesOf(activeTab)
-        : [],
-  });
-  // An empty Plan tab: the board types, in the middle of the canvas. Anything already drawn (a board, a shape, a
-  // view) hides it; the palette's Boards still add one.
-  const dashboardHasRows = (readDashboard(activeTab.dashboard)?.rows.length ?? 0) > 0;
-  const showPlanBoardPicker =
-    hydrated &&
-    !zenMode &&
-    !embedMode &&
-    !isReadOnly &&
-    !templateGridOpen &&
-    ctx.editorMode.mode === 'plan' &&
-    (activeTab.kind === 'dashboard'
-      ? !dashboardHasRows
-      : activeTab.kind === 'form'
-        ? !activeTab.form
-        : activeTab.elements.length === 0);
-  // A Dashboard tab's page (docs/specs/026-plan/plan-tabs.md), for everyone who opens it; one with no rows left shows
-  // Start Planning again, a new choice replacing it.
-  const showDashboard = hydrated && activeTab.kind === 'dashboard' && dashboardHasRows;
-  // A Form tab's page (docs/specs/030-forms/forms.md), for everyone who opens it.
-  const showForm = hydrated && activeTab.kind === 'form' && !!activeTab.form;
-  // The photo draft awaiting a decision, and the session-local view state
-  // that goes with it (docs/specs/021-event-storming/event-storming.md Phase 8).
-  const draftNotes = draftNotesOf(activeTab.elements);
-  const draftView = usePhotoDraftView();
   const backdrop = resolveViewBackdrop(
     activeTab,
     { mode: ctx.editorMode.mode, drawPattern: readDrawPattern(userPreferences) },
@@ -760,20 +612,7 @@ export function EditorView() {
                                   {/* Interactive editor tour (docs/specs/007-editor/editor-tour.md): renders nothing unless the /new
           wizard's "Show me around" handoff flag is pending. */}
                                   <AreaErrorBoundary area="Tour">
-                                    <TourHost />
-                                    {/* The Plan tour (docs/specs/026-plan/plan-tour.md): the first time a person works in Plan. */}
-                                    {mountPlanTour ? <PlanTourHost /> : null}
-                                    {/* The Facilitate tour (docs/specs/012-collaboration/facilitate-tour.md): the first time a person works in Facilitate. */}
-                                    {mountFacilitateTour ? <FacilitateTourHost /> : null}
-                                    {mountDrawTour ? <DrawTourHost /> : null}
-                                    {/* The Forms tour (docs/specs/030-forms/forms.md "The Forms tour"): the first time an Editor opens a Form tab. */}
-                                    {mountFormTour ? <FormTourHost /> : null}
-                                    {/* A form template's form, started once its tab opens (lib/pending-form-start.ts). */}
-                                    <PendingFormStart />
-                                    {/* The Avatar tour (docs/specs/008-canvas/avatar-tour.md): the first time a person walks as an avatar. */}
-                                    {mountAvatarTour ? <AvatarTourHost /> : null}
-                                    {mountIllustrateTour ? <IllustrateTourHost /> : null}
-                                    <ElementTourHost />
+                                    <EditorTours />
                                   </AreaErrorBoundary>
 
                                   {/* Guest sign-in nudge (docs/specs/014-identity/sign-in-encouragement.md), delayed ~5 min. Lifted above
@@ -790,113 +629,7 @@ export function EditorView() {
                                     notice={boardSceneInsert.notice}
                                     onClose={boardSceneInsert.dismissNotice}
                                   />
-                                  {showDashboard ? (
-                                    <DashboardPage
-                                      // One page per Dashboard: opening another draws it still (useSlotEnter).
-                                      key={activeTab.id}
-                                      tab={activeTab}
-                                      tabs={tabs}
-                                      // A locked tab's Dashboard reads as a Viewer's does (plan-tabs.md "Dashboard tab").
-                                      canEdit={ctx.can.level === 'edit' && !ctx.activeTabLocked}
-                                      actions={ctx.planTabs}
-                                      openTab={selectTab}
-                                      loadTabs={loadAllTabs}
-                                      loadedTabIds={ctx.loadedTabIds}
-                                      deleteTab={deleteTab}
-                                      releaseSheets={ctx.releaseSheets}
-                                      renameTab={renameTab}
-                                    />
-                                  ) : null}
-                                  {showForm ? (
-                                    <FormPage
-                                      key={activeTab.id}
-                                      tab={activeTab}
-                                      tabs={tabs}
-                                      // A locked tab's form reads as a Viewer's does.
-                                      canEdit={ctx.can.level === 'edit' && !ctx.activeTabLocked}
-                                      actions={ctx.forms}
-                                      openTab={selectTab}
-                                      loadTabs={loadAllTabs}
-                                      documentId={ctx.documentId}
-                                      ownerId={ctx.selfParticipant.id}
-                                      share={ctx.sessionShareCode}
-                                      online={!isOffline}
-                                    />
-                                  ) : null}
-                                  {/* One View Transition around every start, so a mode change turns the panel in place. */}
-                                  <StartViewTransition>
-                                    {showPlanBoardPicker ? (
-                                      <PlanBoardPicker
-                                        // Each choice makes the tab its kind (docs/specs/026-plan/plan-tabs.md).
-                                        onPick={(preset) => {
-                                          const c = ctx.getViewportCenter();
-                                          ctx.planTabs.startElementTab('board', () =>
-                                            ctx.dropPaletteItem('plan-board', c.x, c.y, {
-                                              choice: preset,
-                                            }),
-                                          );
-                                        }}
-                                        onPickSheet={(start) => {
-                                          const c = ctx.getViewportCenter();
-                                          ctx.planTabs.startElementTab('sheet', () =>
-                                            ctx.dropPaletteItem(
-                                              'plan-sheet',
-                                              c.x,
-                                              c.y,
-                                              // Empty Sheet: a blank grid, with no Setup Sheet (plan-tabs.md "Names").
-                                              { choice: start ?? BLANK_SHEET_CHOICE },
-                                            ),
-                                          );
-                                        }}
-                                        onDashboard={ctx.planTabs.startDashboard}
-                                        // Something Else: the Quick Start, on Everything.
-                                        onQuickStart={openTemplatePicker}
-                                        onTemplate={(kind) => {
-                                          void ctx.chooseTemplate(kind);
-                                          moveOnTemplatePick(kind);
-                                        }}
-                                        tabs={tabs}
-                                        loadTabs={loadAllTabs}
-                                        onSuggestedDashboard={ctx.planTabs.startSuggestedDashboard}
-                                        onVisualisation={ctx.planTabs.startVisualisationTab}
-                                        onForm={ctx.forms.startForm}
-                                      />
-                                    ) : null}
-                                    {/* Empty-canvas hint (docs/specs/007-editor/new-document-route.md): a calm card in the
-          middle of an empty canvas, so a blank document reads as intentionally blank. */}
-                                    {/* An editor's empty Diagram, Facilitate or Illustrate tab offers its template start, in
-          the card's place (docs/specs/007-editor/start-diagramming.md). */}
-                                    {templateStart ? (
-                                      <>
-                                        <StartFromTemplates
-                                          key={`${activeTab.id}:${templateStart}`}
-                                          mode={templateStart}
-                                          tabId={activeTab.id}
-                                          onTemplate={(kind) => {
-                                            void ctx.chooseTemplate(kind);
-                                            moveOnTemplatePick(kind);
-                                          }}
-                                          onQuickStart={openTemplatePicker}
-                                        />
-                                        {/* Closed, it can be brought back from the palette tray (StartAgainTray). */}
-                                        <StartAgainTray
-                                          key={`tray:${activeTab.id}:${templateStart}`}
-                                          mode={templateStart}
-                                          tabId={activeTab.id}
-                                          tabName={activeTab.name}
-                                        />
-                                      </>
-                                    ) : showEmptyCanvasBanner ? (
-                                      <EmptyCanvasBanner
-                                        key={activeTab.id}
-                                        tabId={activeTab.id}
-                                        tabName={activeTab.name}
-                                        readOnly={isReadOnly}
-                                        participant={ctx.can.addContent && isReadOnly}
-                                        onQuickStart={openTemplatePicker}
-                                      />
-                                    ) : null}
-                                  </StartViewTransition>
+                                  <EditorStartPanels />
 
                                   {/* Modifier hint (docs/specs/008-canvas/canvas-and-palette.md, docs/specs/021-event-storming/event-storming.md): names what holding Shift does
           right now, and offers the Alt insert-between gesture while a note is
@@ -916,73 +649,7 @@ export function EditorView() {
                                     />
                                   )}
 
-                                  {/* What a photo import is doing BEFORE the draft lands: a progress
-            strip from the moment the file is picked, with Cancel. */}
-                                  <PhotoImportProgress
-                                    state={photoDraft.state}
-                                    onCancel={photoDraft.cancelReading}
-                                  />
-
-                                  {/* Step 1 + 2 of the wizard (docs/specs/021-event-storming/event-storming.md Phase 9): the photo with every
-            box, tickable, and the words editable. Nothing lands until Add. */}
-                                  {photoDraft.state.stage === 'review' && photoDraft.review ? (
-                                    <PhotoReviewOverlay
-                                      review={photoDraft.review}
-                                      reading={
-                                        photoDraft.state.readSoFar < photoDraft.state.found &&
-                                        !photoDraft.review.readError
-                                      }
-                                      modelDownload={photoDraft.state.modelDownload}
-                                      readSoFar={photoDraft.state.readSoFar}
-                                      readTotal={photoDraft.state.found}
-                                      readerBackend={photoDraft.state.readerBackend}
-                                      readerWhy={photoDraft.state.readerWhy}
-                                      readerFallback={photoDraft.state.readerFallback}
-                                      rereading={photoDraft.rereading}
-                                      onReread={photoDraft.reread}
-                                      onConfirm={photoDraft.confirm}
-                                      onCancel={photoDraft.cancelReview}
-                                      // "Try another photo": leave this review and open the picker
-                                      // again, inside the same click, so the browser allows the dialog.
-                                      onRetake={() => {
-                                        photoDraft.cancelReview();
-                                        photoPickerRef.current?.click();
-                                      }}
-                                    />
-                                  ) : null}
-
-                                  {/* A photo import awaiting Add or Discard (docs/specs/021-event-storming/event-storming.md Phase 8). Derived
-            from the tab's own draft notes, so a reload mid-import comes back to
-            the same decision rather than to a board full of strays. Hidden
-            while the words are still being read: that moment belongs to the
-            progress strip above. */}
-                                  {photoDraft.state.stage !== 'detecting' ? (
-                                    <PhotoDraftBar
-                                      draftCount={draftNotes.length}
-                                      read={draftView?.read ?? null}
-                                      readError={draftView?.readError}
-                                      matchedCount={draftView ? draftView.matchedIds.size : null}
-                                      busy={photoDraft.state.stage === 'committing'}
-                                      onAccept={photoDraft.accept}
-                                      onDiscard={photoDraft.discard}
-                                    />
-                                  ) : null}
-
-                                  {/* The one file input behind "Add from Photo". Hidden, opened by the
-            palette row and the command palette; `capture` makes a phone open
-            the camera straight away, because the act is "photograph this wall". */}
-                                  {photoImportAvailable ? (
-                                    <input
-                                      ref={photoPickerRef}
-                                      type="file"
-                                      accept={PHOTO_ACCEPT_ATTR}
-                                      capture="environment"
-                                      className="hidden"
-                                      aria-hidden
-                                      tabIndex={-1}
-                                      onChange={onPhotoPicked}
-                                    />
-                                  ) : null}
+                                  <EditorPhotoImport />
 
                                   {/* An editor older than the server's document format offers a reload, once its edits
             are saved (docs/specs/016-platform/new-version-prompt.md). */}

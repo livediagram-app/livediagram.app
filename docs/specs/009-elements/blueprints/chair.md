@@ -21,7 +21,7 @@ Scope, by file:
 | `apps/live/components/canvas/BoxedElementView.tsx`        | Mounts `FurnitureView`; the ordinary label under it                      |
 | `apps/live/components/palette/palette-tile-defs.tsx`      | `tools:chair` in the **Navigate** accordion (`tileGroup: 'move'`)        |
 | `apps/live/components/canvas/useBoxedElementAnimation.ts` | Silhouette animations on the drawing                                     |
-| `apps/live/components/canvas/Canvas.tsx`                  | `onWalkIntoChair` → `sitOn`; `chairSitters` from presence                |
+| `apps/live/components/canvas/useCanvasAvatar.tsx`         | `onWalkIntoChair` → `sitOn`; `chairSitters` from presence                |
 | `apps/live/hooks/canvas/useAvatarWalk.ts`                 | `sitOn`, `standUp`, seated guards, arrival hook, presence packet         |
 | `apps/live/hooks/canvas/useCanvasSurfaceGestures.ts`      | Double-click stands up                                                   |
 | `apps/live/components/canvas/AvatarWalker.tsx`            | Seated pose and the **Stand** press                                      |
