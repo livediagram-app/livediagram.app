@@ -16,16 +16,16 @@ import { useLatest } from '@/hooks/ui/useLatest';
 export type SheetPeer = { id: string; name: string; color: string };
 
 export type SheetsHandlers = {
-  receive(op: SheetsRoomOp): void;
+  receive: (op: SheetsRoomOp) => void;
   // A loaded sheet's title (the delete dialog names it).
-  title(sheetId: string): string | undefined;
+  title: (sheetId: string) => string | undefined;
   // Delete sheets with their elements, kept for Undo (sheet-store.md "Deleting a sheet").
-  release(sheetIds: readonly string[]): void;
+  release: (sheetIds: readonly string[]) => void;
   // Renames each of `sheetIds` still titled `from` to `to` (a tab renamed from its default name).
-  retitle(sheetIds: readonly string[], from: string, to: string): void;
-  presence(from: string, op: SheetPresenceOp): void;
-  resync(): void;
-  reannounce(): void;
+  retitle: (sheetIds: readonly string[], from: string, to: string) => void;
+  presence: (from: string, op: SheetPresenceOp) => void;
+  resync: () => void;
+  reannounce: () => void;
 };
 
 export type SheetsBridge = {
@@ -38,31 +38,31 @@ export type SheetsBridge = {
   canShape: boolean;
   locale: string;
   peers: readonly SheetPeer[];
-  pushUndo(step: ItemUndoStep): void;
+  pushUndo: (step: ItemUndoStep) => void;
   // A refusal or failure (error toast), and plain news ("Replaced 3 cells").
-  toast(message: string): void;
-  notify(message: string): void;
-  sendPresence(op: SheetPresenceOp): void;
+  toast: (message: string) => void;
+  notify: (message: string) => void;
+  sendPresence: (op: SheetPresenceOp) => void;
   // Change the open tab's elements (a Sheet dropping its copy mark once its copy is made), as an edit.
-  commitElements(map: (els: Element[]) => Element[]): void;
+  commitElements: (map: (els: Element[]) => Element[]) => void;
   // Change the open tab's elements quietly: saved and sent, but no undo step (a chart keeping its last read).
-  tickElements(map: (els: Element[]) => Element[]): void;
+  tickElements: (map: (els: Element[]) => Element[]) => void;
   // Place a new element centred on a canvas point, styled by the theme and selected (unless `select` is false), as a
   // palette drop is (a chart made from a sheet's cells, selected in its Sheet instead). One undo step.
-  placeElement(
+  placeElement: (
     at: { x: number; y: number },
     make: (x: number, y: number) => BoxedElement,
     opts?: { select?: boolean },
-  ): void;
+  ) => void;
   // Switch this person to Plan mode (a Sheet double-clicked in another mode offers it).
-  switchToPlan(): void;
+  switchToPlan: () => void;
   // Select an element on the canvas (Escape out of a Sheet's grid selects the Sheet).
-  selectElement(id: string): void;
+  selectElement: (id: string) => void;
   // A sheet's title changed (renamed here, by a collaborator, an agent or an undo): a Sheet tab it fills takes the
   // same name (docs/specs/026-plan/plan-tabs.md "Names").
-  sheetRetitled(sheetId: string, title: string): void;
+  sheetRetitled: (sheetId: string, title: string) => void;
   // The sheet chunk attaches its handlers; the returned function detaches them.
-  attach(handlers: SheetsHandlers): () => void;
+  attach: (handlers: SheetsHandlers) => () => void;
 };
 
 export const SheetsBridgeContext = createContext<SheetsBridge | null>(null);

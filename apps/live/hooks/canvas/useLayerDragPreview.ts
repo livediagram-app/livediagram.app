@@ -46,12 +46,12 @@ export type LayerPreviewInputs = {
 };
 
 export type LayerPreviewStore = {
-  subscribe(id: string, cb: () => void): () => void;
-  entryOf(id: string): PreviewEntry | undefined;
-  subscribeStructure(cb: () => void): () => void;
-  structure(): PreviewStructure | null;
+  subscribe: (id: string, cb: () => void) => () => void;
+  entryOf: (id: string) => PreviewEntry | undefined;
+  subscribeStructure: (cb: () => void) => () => void;
+  structure: () => PreviewStructure | null;
   // Re-derives from the latest preview and inputs, notifying only the elements whose entry changed.
-  update(inputs: LayerPreviewInputs): void;
+  update: (inputs: LayerPreviewInputs) => void;
 };
 
 // `ordered` with the preview laid over it: changed elements swapped in, removed ones dropped, added ones in the order

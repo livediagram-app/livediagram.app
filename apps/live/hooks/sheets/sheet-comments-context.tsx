@@ -21,7 +21,7 @@ export function cellCommentAnchorSelector(elementId: string, cell: string): stri
 
 export type SheetComments = {
   // Opens (or, pressed again, closes) the thread of `cell` on Sheet `elementId`.
-  open(elementId: string, cell: string): void;
+  open: (elementId: string, cell: string) => void;
   // The thread open now, when it is a cell's.
   openCell: { elementId: string; cell: string } | null;
   // An Editor or a Participant (docs/specs/013-workspace/share-roles.md): may start a thread. A Viewer reads.

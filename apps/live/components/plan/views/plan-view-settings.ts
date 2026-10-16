@@ -58,7 +58,7 @@ export function planViewSettingsModel(
     selectedStatuses: storedStatuses
       ? storedStatuses.filter((id) => optionIds.has(id))
       : statusOptions.map((o) => o.id),
-    setStatuses(picked: string[]) {
+    setStatuses: (picked: string[]) => {
       const { statuses: _statuses, ...rest } = settings;
       // A named status no card holds just now is not listed, but stays named while a board's column still names it
       // (it comes back with its cards); one no column names any more is gone, and dropped.
@@ -75,7 +75,7 @@ export function planViewSettingsModel(
       );
       track('Plan', 'Changed', 'ViewStatuses');
     },
-    setTypes(picked: string[]) {
+    setTypes: (picked: string[]) => {
       const { types: _types, ...rest } = settings;
       // A named type that has lost a field the view needs is not listed, but the view keeps naming it (it comes back
       // when the type has it again): the toggle keeps it alongside what was picked.
@@ -87,7 +87,7 @@ export function planViewSettingsModel(
       plan.updateView(elementId, isDefault ? rest : { ...rest, types: next });
       track('Plan', 'Changed', gantt ? 'GanttTypes' : 'ViewTypes');
     },
-    setGrouping(by: SwimlaneBy, field: string | undefined) {
+    setGrouping: (by: SwimlaneBy, field: string | undefined) => {
       const { swimlaneBy: _by, swimlaneField: _field, ...rest } = settings;
       plan.updateView(
         elementId,
@@ -97,7 +97,7 @@ export function planViewSettingsModel(
       );
       track('Plan', 'Changed', 'ViewGrouping');
     },
-    setSwimlanes(by: SwimlaneBy, field: string | undefined) {
+    setSwimlanes: (by: SwimlaneBy, field: string | undefined) => {
       const { swimlaneBy: _by, swimlaneField: _field, ...rest } = settings;
       plan.updateView(
         elementId,
@@ -107,7 +107,7 @@ export function planViewSettingsModel(
       );
       track('Plan', 'Changed', 'GanttSwimlanes');
     },
-    sortByDate() {
+    sortByDate: () => {
       const { rowOrder: _order, ...rest } = settings;
       plan.updateView(elementId, rest);
       track('Plan', 'Changed', 'GanttRowOrder');

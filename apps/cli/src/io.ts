@@ -2,25 +2,25 @@
 // environment, files, the network and the clock, injected so every command runs on fakes in tests.
 
 export type CliFiles = {
-  read(path: string): Promise<string | null>;
+  read: (path: string) => Promise<string | null>;
   // Written to a temporary file in the same directory, then renamed; `mode` for secrets (0o600).
-  write(path: string, data: string, mode?: number): Promise<void>;
+  write: (path: string, data: string, mode?: number) => Promise<void>;
   // Bytes, written the same way (a PNG).
-  writeBytes(path: string, data: Uint8Array): Promise<void>;
-  mkdir(path: string, mode?: number): Promise<void>;
+  writeBytes: (path: string, data: Uint8Array) => Promise<void>;
+  mkdir: (path: string, mode?: number) => Promise<void>;
   // The file's permission bits, or null when it does not exist.
-  mode(path: string): Promise<number | null>;
-  chmod(path: string, mode: number): Promise<void>;
+  mode: (path: string) => Promise<number | null>;
+  chmod: (path: string, mode: number) => Promise<void>;
   // A file, or an empty directory.
-  remove(path: string): Promise<void>;
+  remove: (path: string) => Promise<void>;
   // Entries of a directory, or null when it is not one; symbolic links reported as 'link' and never followed.
   list(path: string): Promise<{ name: string; kind: 'file' | 'dir' | 'link' }[] | null>;
   // rename(2); parent directories created.
-  move(from: string, to: string): Promise<void>;
+  move: (from: string, to: string) => Promise<void>;
   // An O_EXCL create; false when the path exists.
-  createExclusive(path: string, data: string): Promise<boolean>;
+  createExclusive: (path: string, data: string) => Promise<boolean>;
   // The path with every symbolic link resolved, or null when nothing is there.
-  realpath(path: string): Promise<string | null>;
+  realpath: (path: string) => Promise<string | null>;
 };
 
 // The room socket `wait` and `watch` listen on (blueprint "The room stream"): text frames in, a close code out.

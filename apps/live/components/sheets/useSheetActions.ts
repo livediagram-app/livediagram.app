@@ -121,18 +121,18 @@ export function useSheetActions() {
     const announceCell = (r: number, col: number) => c.announce(formatA1(r, col));
     return {
       // ---- Editing ----
-      startEdit(origin: 'type' | 'cell' | 'bar', text?: string) {
+      startEdit: (origin: 'type' | 'cell' | 'bar', text?: string) => {
         if (!c.canEdit) return;
         const { r, c: col } = sel().active;
         c.setEditing({ r, c: col, origin, draft: text ?? inputTextAt(c, r, col) });
       },
-      cancelEdit() {
+      cancelEdit: () => {
         c.setEditing(null);
         c.focusGrid();
       },
       // Save the draft, then move (Enter down, Tab right, ...). `all` is Ctrl+Enter: into every selected cell.
       // `draft`: what to save in place of the editor's draft (a dropdown option picked while typing).
-      commitEdit(move: Dir | 'none', all = false, draft?: string): EditResult {
+      commitEdit: (move: Dir | 'none', all = false, draft?: string): EditResult => {
         const e = c.editing && draft !== undefined ? { ...c.editing, draft } : c.editing;
         if (!e) return { ok: true };
         const result = all
@@ -171,14 +171,14 @@ export function useSheetActions() {
         return { ok: true };
       },
       // ---- Moving ----
-      move(dir: Dir, jump = false, extend = false) {
+      move: (dir: Dir, jump = false, extend = false) => {
         const next = extend
           ? extendSelection(sel(), dir, c.grid, jump)
           : moveSelection(sel(), dir, c.grid, jump);
         go(next);
         announceCell(next.active.r, next.active.c);
       },
-      goTo(range: GridRange) {
+      goTo: (range: GridRange) => {
         go({
           ranges: [range],
           active: { r: range.r1, c: range.c1 },
@@ -186,7 +186,7 @@ export function useSheetActions() {
         });
       },
       // ---- Clearing and formats ----
-      clear(what: 'inputs' | 'formats' | 'all') {
+      clear: (what: 'inputs' | 'formats' | 'all') => {
         const w = clearRanges(c.sheet, ranges(), what);
         // Clear Formatting with nothing to clear says so, rather than meet the press with silence (Delete on an
         // empty cell stays quiet).
@@ -197,13 +197,13 @@ export function useSheetActions() {
         c.write(w, what === 'formats' ? 'Format' : 'Clear');
       },
       format: fmt,
-      toggle(flag: 'b' | 'i' | 'u' | 'st') {
+      toggle: (flag: 'b' | 'i' | 'u' | 'st') => {
         fmt({ [flag]: activeFormat(c)?.[flag] ? null : true });
       },
-      numberFormat(nf: NumberFormatKind, cur?: string) {
+      numberFormat: (nf: NumberFormatKind, cur?: string) => {
         fmt({ nf: nf === 'auto' ? null : nf, dp: null, nc: null, ...(cur ? { cur } : {}) });
       },
-      decimals(delta: 1 | -1) {
+      decimals: (delta: 1 | -1) => {
         const f = activeFormat(c);
         const v = c.workbook.value(c.sheet.id, sel().active.r, sel().active.c);
         fmt({
@@ -215,33 +215,33 @@ export function useSheetActions() {
           ),
         });
       },
-      borders(mode: BorderMode, border: Border) {
+      borders: (mode: BorderMode, border: Border) => {
         const w = borderRange(c.workbook, c.sheet.id, primary(c), mode, border);
         if (w) c.write(w, 'Format');
       },
       // Merge: asks first (through `confirm`) when it would clear inputs.
-      merge(mode: 'all' | 'across', confirm: () => boolean) {
+      merge: (mode: 'all' | 'across', confirm: () => boolean) => {
         const m = mergeRange(c.sheet, primary(c), mode);
         if (!m) return;
         if (m.needsConfirm && !confirm()) return;
         c.write(m.write, 'Merge');
       },
-      unmerge() {
+      unmerge: () => {
         const w = unmergeRange(c.sheet, primary(c));
         if (w) c.write(w, 'Merge');
       },
       activeFormat: () => activeFormat(c),
       // ---- Fill ----
-      fill(source: GridRange, target: GridRange, copy: boolean) {
+      fill: (source: GridRange, target: GridRange, copy: boolean) => {
         const w = fillRange(c.workbook, c.sheet.id, source, target, copy);
         if (w) c.write(w, 'Fill');
       },
-      fillEdge(dir: 'down' | 'right') {
+      fillEdge: (dir: 'down' | 'right') => {
         const w = fillFromEdge(c.workbook, c.sheet.id, primary(c), dir);
         if (w) c.write(w, 'Fill');
       },
       // ---- Rows and columns ----
-      insert(axis: 'r' | 'c', side: 'before' | 'after') {
+      insert: (axis: 'r' | 'c', side: 'before' | 'after') => {
         const g = primary(c);
         const [a, b] = axis === 'r' ? [g.r1, g.r2] : [g.c1, g.c2];
         const w = insertAxis(c.sheet, axis, side === 'before' ? a : b, b - a + 1, side);
@@ -249,15 +249,15 @@ export function useSheetActions() {
         c.announce(`${b - a + 1} ${axis === 'r' ? 'row' : 'column'}${b > a ? 's' : ''} inserted`);
       },
       // Insert Cells / Delete Cells: the cells beside the selection move to make room or close the gap.
-      shift(mode: ShiftMode) {
+      shift: (mode: ShiftMode) => {
         const res = shiftCells(c.workbook, c.sheet.id, primary(c), mode);
         if (res) c.writeAll(res.edits, 'Shift');
       },
-      appendRows(count: number) {
+      appendRows: (count: number) => {
         const w = appendAxis(c.sheet, 'r', count);
         if (w) c.write(w, 'Rows');
       },
-      remove(axis: 'r' | 'c') {
+      remove: (axis: 'r' | 'c') => {
         const g = primary(c);
         const w =
           axis === 'r'
@@ -274,19 +274,19 @@ export function useSheetActions() {
           }),
         );
       },
-      hide(axis: 'r' | 'c', hidden: boolean, from?: number, to?: number) {
+      hide: (axis: 'r' | 'c', hidden: boolean, from?: number, to?: number) => {
         const g = primary(c);
         const [a, b] =
           from !== undefined ? [from, to ?? from] : axis === 'r' ? [g.r1, g.r2] : [g.c1, g.c2];
         const w = hideAxis(c.sheet, axis, a, b, hidden);
         if (w) c.write(w, axis === 'r' ? 'Rows' : 'Columns');
       },
-      resize(axis: 'r' | 'c', positions: number[], px: number | null) {
+      resize: (axis: 'r' | 'c', positions: number[], px: number | null) => {
         const w = resizeAxis(c.sheet, axis, positions, px);
         if (w) c.write(w, axis === 'r' ? 'Rows' : 'Columns');
       },
       // Double-click a header edge: the widest (tallest) value of the lines, measured roughly from their text.
-      autofit(axis: 'r' | 'c', positions: number[]) {
+      autofit: (axis: 'r' | 'c', positions: number[]) => {
         const ext = c.workbook.extent(c.sheet.id);
         for (const p of positions) {
           let best = axis === 'c' ? 24 : 18;
@@ -310,18 +310,18 @@ export function useSheetActions() {
         }
       },
       // Dragged headers: lines from..to moved to before position `before`.
-      moveAxis(axis: 'r' | 'c', from: number, to: number, before: number) {
+      moveAxis: (axis: 'r' | 'c', from: number, to: number, before: number) => {
         const w = moveAxis(c.sheet, axis, from, to, before);
         if (w && 'refused' in w) c.toast(w.refused);
         else if (w) c.write(w, axis === 'r' ? 'Rows' : 'Columns');
       },
-      sizeOf(axis: 'r' | 'c', p: number) {
+      sizeOf: (axis: 'r' | 'c', p: number) => {
         return axis === 'r'
           ? rowHeight(c.sheet.layout, c.sheet.layout.rows[p]!)
           : colWidth(c.sheet.layout, c.sheet.layout.cols[p]!);
       },
       // ---- Sort, filter, freeze ----
-      sortColumn(ascending: boolean) {
+      sortColumn: (ascending: boolean) => {
         const w = sortSheet(c.workbook, c.sheet.id, sel().active.c, ascending);
         if (w && 'refused' in w) c.toast(w.refused);
         else if (w) {
@@ -330,7 +330,7 @@ export function useSheetActions() {
         }
       },
       // A filter column's own sort: the filter's rows under its header, by that column (not the active cell's).
-      sortFilter(colId: string, ascending: boolean) {
+      sortFilter: (colId: string, ascending: boolean) => {
         const w = sortFilter(c.workbook, c.sheet.id, colId, ascending);
         if (w && 'refused' in w) c.toast(w.refused);
         else if (w) {
@@ -338,20 +338,20 @@ export function useSheetActions() {
           c.announce(ascending ? 'Sorted A to Z' : 'Sorted Z to A');
         }
       },
-      sortRange(keys: SortKey[], header: boolean) {
+      sortRange: (keys: SortKey[], header: boolean) => {
         const w = sortRange(c.workbook, c.sheet.id, primary(c), keys, header);
         if (w && 'refused' in w) c.toast(w.refused);
         else if (w) c.write(w, 'Sort');
       },
-      toggleFilter() {
+      toggleFilter: () => {
         const w = toggleFilter(c.workbook, c.sheet.id, primary(c), c.grid);
         if (w) c.write(w, 'Filter');
       },
-      setFilter(colId: string, cond: FilterCondition | null) {
+      setFilter: (colId: string, cond: FilterCondition | null) => {
         c.write(setFilterCondition(colId, cond), 'Filter');
       },
       // Insert Chart: the selection (or the data around the cell) as a chart in the Sheet, beside it, in view.
-      insertChart(type: ChartType) {
+      insertChart: (type: ChartType) => {
         const pick = chartRangeOf(c.workbook, c.sheet, c.selectionNow());
         if (!pick) return c.toast(NOTHING_TO_CHART);
         const view = {
@@ -366,7 +366,7 @@ export function useSheetActions() {
       },
       // Clear Sheet: the sheet back to how a placed one starts (Setup Sheet shows again), its charts taken with it (a
       // set-up-again sheet would otherwise show them twice), one change and one undo.
-      clearSheet() {
+      clearSheet: () => {
         const charts = c.chartsRemoval?.() ?? null;
         if (c.write(resetSheetWrite(c.sheet), 'Clear', charts ?? undefined)) charts?.redo();
       },
@@ -380,7 +380,7 @@ export function useSheetActions() {
         c.write({ kind: 'layout', changes: [{ k: 'options', ...options }] }, 'Settings');
       },
       // Clamped to the freeze limits, so Up to Row 300 freezes what it may rather than being refused.
-      freeze(rows?: number, cols?: number) {
+      freeze: (rows?: number, cols?: number) => {
         const most = (n: number | undefined, max: number, lines: number) =>
           n === undefined ? n : Math.min(n, max, lines - 1);
         c.write(
@@ -392,7 +392,7 @@ export function useSheetActions() {
         );
       },
       // ---- Dates ----
-      typeNow(what: 'date' | 'time') {
+      typeNow: (what: 'date' | 'time') => {
         const now = new Date();
         const serial = serialFromMs(now.getTime() - now.getTimezoneOffset() * 60_000);
         const { r, c: col } = sel().active;
@@ -405,7 +405,7 @@ export function useSheetActions() {
         );
       },
       // ---- Custom number format (sheet.md "Formatting") ----
-      customFormat(code: string) {
+      customFormat: (code: string) => {
         fmt({ nf: 'custom', nc: code, dp: null });
       },
       // ---- Rules: dropdowns, checkboxes, validation and format rules, Paint Format ----

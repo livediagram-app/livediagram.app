@@ -27,11 +27,11 @@ export type Geometry = {
   merges: Map<string, GridRange>;
   covered: Map<string, string>;
   // Drawn at no height: hidden by someone, or left out by the filter.
-  hiddenRow(r: number): boolean;
-  hiddenCol(c: number): boolean;
+  hiddenRow: (r: number) => boolean;
+  hiddenCol: (c: number) => boolean;
   // Hidden by someone (Hide Rows), so Show Rows brings it back. A row only the filter leaves out is not: its gap in
   // the row numbers shows it, and the filter brings it back (sheet.md "Filter").
-  userHiddenRow(r: number): boolean;
+  userHiddenRow: (r: number) => boolean;
   // The row numbers' width and the column letters' height: ROW_HEADER_PX and COL_HEADER_PX, or 0 when the sheet
   // hides its headers (Sheet Settings).
   headW: number;
