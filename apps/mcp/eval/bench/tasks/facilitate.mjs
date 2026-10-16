@@ -1,8 +1,22 @@
 // The facilitate tasks of the benchmark (docs/instructions/evaluate-mcp-output.md). Each prompt is what a user would type;
 // `checks` judge what the run made from the prompt's own requirements (see checks.mjs).
-import { arrows, atLeast, find, mentionsAll, shapes, sketched, tabsOf } from '../checks.mjs';
+import {
+  arrows,
+  atLeast,
+  elementsFor,
+  itemsOf,
+  mentionsAll,
+  shapes,
+  sketched,
+  tabsOf,
+} from '../checks.mjs';
 
 const stickies = (snap) => shapes(snap, 'sticky').filter((s) => (s.label ?? '').trim());
+// A note people add to a board: a sticky on the canvas, or a card on a Plan board (a retro or Q&A board's own way).
+const notes = (snap) => [
+  ...stickies(snap).map((s) => s.label),
+  ...itemsOf(snap).map((i) => i.title ?? ''),
+];
 
 export default [
   {
@@ -16,7 +30,7 @@ export default [
         ({ snap }) =>
           mentionsAll(snap, [/well|keep|liked|glad/i, /improve|better|wrong|stop|sad|lacked/i]),
       ],
-      ['a few seeded notes', ({ snap }) => atLeast(6, stickies(snap).length, 'stickies')],
+      ['a few seeded notes', ({ snap }) => atLeast(6, notes(snap).length, 'notes')],
     ],
   },
   {
@@ -85,8 +99,7 @@ export default [
       ['for the all-hands town hall', ({ snap }) => mentionsAll(snap, [/town hall|all.?hands/i])],
       [
         '5 seeded questions',
-        ({ snap }) =>
-          atLeast(5, stickies(snap).filter((s) => /\?/.test(s.label)).length, 'question stickies'),
+        ({ snap }) => atLeast(5, notes(snap).filter((n) => /\?/.test(n)).length, 'questions'),
       ],
     ],
   },
@@ -104,23 +117,20 @@ export default [
   {
     id: 'W2',
     level: 'medium',
+    // Every fact the sketchnote needs is in the prompt: an assistant rightly declines to invent a real talk's quotes.
     prompt:
-      'A sketchnote summarising a talk on remote work: the big idea, three key points and a couple of quotes.',
+      "Make a sketchnote of a talk I went to on remote work. The big idea: async-first beats office-first. Three key points: write things down, overlap hours on purpose, and measure outcomes not hours. Two quotes I liked: 'Meetings are the exception, not the default' and 'Trust is built in writing'.",
     checks: [
       ['drawn by hand', ({ snap }) => tabsOf(snap).some(sketched)],
-      ['about remote work', ({ snap }) => mentionsAll(snap, [/remote/i])],
+      ['the big idea', ({ snap }) => mentionsAll(snap, [/async/i])],
       [
-        'the big idea, three key points',
-        ({ snap }) => mentionsAll(snap, [/idea/i, /1|one|first/i]),
+        'the three key points',
+        ({ snap }) => elementsFor(snap, [/write|writing it down/i, /overlap/i, /outcome/i]),
       ],
       [
-        'a couple of quotes',
+        'both quotes, in their words',
         ({ snap }) =>
-          atLeast(
-            2,
-            find(snap, /["“”]|—\s*\w|quote/i).length + shapes(snap, 'speech-bubble').length,
-            'quotes',
-          ),
+          mentionsAll(snap, [/exception, not the default/i, /trust is built in writing/i]),
       ],
     ],
   },
