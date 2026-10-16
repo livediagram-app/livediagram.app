@@ -40,6 +40,7 @@ is the whole of what the repo enforces.
   - `no-unsafe-argument`
   - `no-unsafe-call`
   - `no-unsafe-enum-comparison`
+  - `no-unsafe-member-access`
   - `no-unsafe-return`
   - `no-unsafe-unary-minus`
   - `only-throw-error`
