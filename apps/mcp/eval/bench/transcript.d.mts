@@ -5,6 +5,8 @@ export interface Call {
   isError: boolean;
   error: string | null;
   resultChars: number;
+  /** The result's text when it succeeded and is at most 20,000 characters; else null. */
+  result: string | null;
   images: number;
 }
 

@@ -30,6 +30,36 @@ const noProblems = [
   },
 ];
 
+// The test responses a run sent with try_form, and the "Preview: ..." cards they made.
+const tries = (run) => (run.calls ?? []).filter((c) => c.tool === 'try_form' && !c.isError);
+// What each try answered: { made, where, title, number, ... } (the card may since have been deleted).
+const triedResults = (run) =>
+  tries(run).flatMap((c) => {
+    try {
+      return [JSON.parse(c.result ?? '')];
+    } catch {
+      return [];
+    }
+  });
+const tried = [
+  'it was tried with try_form',
+  ({ run }) => ({
+    pass: tries(run).length > 0,
+    detail: `${(run.calls ?? []).filter((c) => c.tool === 'try_form').length} try_form calls`,
+  }),
+];
+// The answer a try given to a question about `word`, by the key the run named it with (an id or a prompt).
+const answerAbout = (run, snap, word) => {
+  const f = form(snap);
+  for (const call of tries(run)) {
+    for (const [key, value] of Object.entries(call.input?.answers ?? {})) {
+      const q = (f?.sections ?? []).flatMap((s) => s.questions ?? []).find((x) => x.id === key);
+      if (word.test(key) || (q && word.test(q.prompt))) return value;
+    }
+  }
+  return undefined;
+};
+
 export default [
   {
     id: 'Q1',
@@ -271,6 +301,88 @@ export default [
         ({ snap }) => asks(snap, [/name/i, /coming|attend|join/i, /plus.?one|guest/i]),
       ],
       noProblems,
+    ],
+  },
+  {
+    id: 'Q6',
+    level: 'medium',
+    prompt:
+      'Make a contact form for our website: name, email and their message, each message landing as a card on a board. Test it with a sample message before you give me the link, so I know messages actually arrive.',
+    checks: [
+      ['asks name, email and message', ({ snap }) => asks(snap, [/name/i, /email/i, /message/i])],
+      tried,
+      [
+        'the test made a card on a board',
+        ({ run }) => ({
+          pass: triedResults(run).some((r) => r.made === 'card' && /board/.test(r.where ?? '')),
+          detail:
+            triedResults(run)
+              .map((r) => `${r.made} in ${r.where}`)
+              .join('; ') || 'no try',
+        }),
+      ],
+      [
+        'the test filled name, email and message',
+        ({ run, snap }) =>
+          [/name/i, /email/i, /message/i].every((w) => {
+            const v = answerAbout(run, snap, w);
+            return typeof v === 'string' && v.trim() !== '';
+          }),
+      ],
+      [
+        'it is published and the reply gives the link',
+        ({ run, snap }) => {
+          const link = form(snap)?.link;
+          return {
+            pass:
+              form(snap)?.state === 'accepting' && !!link && replied(run, link.split('/').at(-1)),
+            detail: `${form(snap)?.state}, ${link ? 'link made' : 'no link'}`,
+          };
+        },
+      ],
+      noProblems,
+    ],
+  },
+  {
+    id: 'Q7',
+    level: 'edit',
+    after: 'Q2',
+    prompt:
+      'Send a test bug report through the form to check reports land on the Bugs board the way we wanted.',
+    checks: [
+      tried,
+      [
+        'the test made a card on the Bugs board',
+        ({ run }) => ({
+          pass: triedResults(run).some(
+            (r) => r.made === 'card' && /"Bugs" board/.test(r.where ?? ''),
+          ),
+          detail:
+            triedResults(run)
+              .map((r) => r.where)
+              .join('; ') || 'no try',
+        }),
+      ],
+      [
+        'its title is the summary',
+        ({ run, snap }) => {
+          const summary = answerAbout(run, snap, /summary|title/i);
+          return {
+            pass:
+              typeof summary === 'string' &&
+              triedResults(run).some((r) => r.title === `Preview: ${summary.trim()}`),
+            detail: `summary ${JSON.stringify(summary)}`,
+          };
+        },
+      ],
+      [
+        'the test answered severity and browser',
+        ({ run, snap }) =>
+          [/severity/i, /browser/i].every((w) => {
+            const v = answerAbout(run, snap, w);
+            return v != null && v !== '';
+          }),
+      ],
     ],
   },
 ];
