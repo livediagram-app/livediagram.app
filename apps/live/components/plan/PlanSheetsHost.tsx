@@ -115,8 +115,8 @@ export function PlanSheetsHost({ plan }: { plan: PlanSlice }) {
             value === undefined ? { clear: [field] } : { set: { [field]: value } },
           )
         }
-        onPatch={(patch) => ctx.patchItem(item.id, patch)}
-        onType={(type) => ctx.patchItem(item.id, { type })}
+        onPatch={(patch) => void ctx.patchItem(item.id, patch)}
+        onType={(type) => void ctx.patchItem(item.id, { type })}
         onOpenItem={(id, via) => ctx.openItem(id, via)}
         fresh={plan.freshItemId === item.id}
         trail={trail}

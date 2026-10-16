@@ -164,7 +164,7 @@ export function StartPlanning({
   // The document's tabs, read for Dashboards built from its own work (suggested-dashboards.ts), and the fetch of
   // their content, asked for as the panel opens so every board is read.
   tabs?: readonly Tab[] | undefined;
-  loadTabs?: (() => void) | undefined;
+  loadTabs?: (() => Promise<unknown>) | undefined;
   onSuggestedDashboard?: ((s: SuggestedDashboard) => void) | undefined;
   // Makes the tab one chart filling the page (Visualisations); absent, Visualisations is left out.
   onVisualisation?: ((view: PlanVisualisation, name: string) => void) | undefined;

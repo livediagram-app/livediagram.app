@@ -106,7 +106,7 @@ export function ItemFieldEditor({ f, ctx }: { f: string; ctx: ItemFieldContext }
         items={items}
         types={types}
         disabled={disabled}
-        onSave={(v) => onSave(f, v)}
+        onSave={(v) => void onSave(f, v)}
         onOpen={(target) => ctx.onOpenItem(target, 'Parent')}
       />
     );
@@ -118,7 +118,7 @@ export function ItemFieldEditor({ f, ctx }: { f: string; ctx: ItemFieldContext }
         field={custom}
         value={value}
         disabled={disabled}
-        onSave={(v) => onSave(f, v)}
+        onSave={(v) => void onSave(f, v)}
       />
     );
   }
@@ -156,7 +156,7 @@ export function ItemFieldEditor({ f, ctx }: { f: string; ctx: ItemFieldContext }
             selectClassName={`text-[13px] font-medium ${phase ? 'pl-6' : ''}`}
             disabled={disabled}
             value={status}
-            onChange={(e) => onSave('status', e.target.value || undefined)}
+            onChange={(e) => void onSave('status', e.target.value || undefined)}
           >
             <option value="">No status</option>
             {options.map((s) => (
@@ -175,12 +175,17 @@ export function ItemFieldEditor({ f, ctx }: { f: string; ctx: ItemFieldContext }
           value={value}
           people={ctx.people}
           disabled={disabled}
-          onSave={(v) => onSave(f, v)}
+          onSave={(v) => void onSave(f, v)}
         />
       );
     case 'priority':
       return (
-        <PriorityPicker id={id} value={value} disabled={disabled} onSave={(v) => onSave(f, v)} />
+        <PriorityPicker
+          id={id}
+          value={value}
+          disabled={disabled}
+          onSave={(v) => void onSave(f, v)}
+        />
       );
     case 'labels':
       return (
@@ -189,7 +194,7 @@ export function ItemFieldEditor({ f, ctx }: { f: string; ctx: ItemFieldContext }
           value={value}
           disabled={disabled}
           suggestions={ctx.labels}
-          onSave={(v) => onSave(f, v)}
+          onSave={(v) => void onSave(f, v)}
         />
       );
     case 'color':
@@ -207,7 +212,12 @@ export function ItemFieldEditor({ f, ctx }: { f: string; ctx: ItemFieldContext }
       );
     case 'estimate':
       return (
-        <EstimateSelect id={id} value={value} disabled={disabled} onSave={(v) => onSave(f, v)} />
+        <EstimateSelect
+          id={id}
+          value={value}
+          disabled={disabled}
+          onSave={(v) => void onSave(f, v)}
+        />
       );
     case 'start': {
       // A start after its due date is kept, and said gently (docs/specs/026-plan/items.md "Fields").
@@ -215,7 +225,7 @@ export function ItemFieldEditor({ f, ctx }: { f: string; ctx: ItemFieldContext }
       const late = typeof value === 'string' && typeof due === 'string' && value > due;
       return (
         <div className="flex flex-col gap-1">
-          <DateField id={id} value={value} disabled={disabled} onSave={(v) => onSave(f, v)} />
+          <DateField id={id} value={value} disabled={disabled} onSave={(v) => void onSave(f, v)} />
           {late ? (
             <span className="text-[12px] text-amber-700 dark:text-amber-300" role="note">
               Starts after it is due
@@ -225,9 +235,13 @@ export function ItemFieldEditor({ f, ctx }: { f: string; ctx: ItemFieldContext }
       );
     }
     case 'due':
-      return <DateField id={id} value={value} disabled={disabled} onSave={(v) => onSave(f, v)} />;
+      return (
+        <DateField id={id} value={value} disabled={disabled} onSave={(v) => void onSave(f, v)} />
+      );
     case 'checklist':
-      return <ChecklistEditor value={value} disabled={disabled} onSave={(v) => onSave(f, v)} />;
+      return (
+        <ChecklistEditor value={value} disabled={disabled} onSave={(v) => void onSave(f, v)} />
+      );
     case 'description':
       return <ItemDescription item={item} canEdit={canEdit} onPatch={ctx.onPatch} />;
     case 'comments':

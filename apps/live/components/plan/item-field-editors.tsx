@@ -122,7 +122,7 @@ export function DebouncedText({
       setDraft(text);
       pending.current = text;
       if (timer.current) clearTimeout(timer.current);
-      timer.current = setTimeout(() => flush(text), ITEM_EDIT_DEBOUNCE_MS);
+      timer.current = setTimeout(() => void flush(text), ITEM_EDIT_DEBOUNCE_MS);
     },
     onBlur: () => void flush(draft),
     onKeyDown:
@@ -231,7 +231,7 @@ export function PriorityPicker({
       selectClassName="text-[13px]"
       disabled={disabled}
       value={typeof value === 'string' ? value : ''}
-      onChange={(e) => onSave(e.target.value || undefined)}
+      onChange={(e) => void onSave(e.target.value || undefined)}
     >
       <option value="">None</option>
       {PRIORITIES.map((p) => (
@@ -351,7 +351,7 @@ export function EstimateSelect({
       selectClassName="text-[13px]"
       disabled={disabled}
       value={current === undefined ? '' : String(current)}
-      onChange={(e) => onSave(e.target.value === '' ? undefined : Number(e.target.value))}
+      onChange={(e) => void onSave(e.target.value === '' ? undefined : Number(e.target.value))}
     >
       <option value="">None</option>
       {sizes.map((s) => (
@@ -381,7 +381,7 @@ export function DateField({
       disabled={disabled}
       compact
       value={typeof value === 'string' ? value : undefined}
-      onCommit={onSave}
+      onCommit={(v) => void onSave(v)}
     />
   );
 }
@@ -437,7 +437,7 @@ export function ChecklistEditor({
               aria-checked={r.done}
               aria-label={r.text}
               disabled={disabled}
-              onClick={() => save(rows.map((x, j) => (j === i ? { ...x, done: !x.done } : x)))}
+              onClick={() => void save(rows.map((x, j) => (j === i ? { ...x, done: !x.done } : x)))}
               className={`flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-[5px] border-2 transition enabled:cursor-pointer ${
                 r.done
                   ? 'border-brand-700 bg-brand-700 text-white dark:border-brand-600 dark:bg-brand-600'
@@ -475,7 +475,7 @@ export function ChecklistEditor({
                 type="button"
                 aria-label={`Remove ${r.text}`}
                 className="flex h-6 w-6 shrink-0 items-center justify-center rounded text-slate-400 opacity-0 transition hover:bg-slate-200 hover:text-slate-700 focus:opacity-100 group-hover:opacity-100 dark:hover:bg-slate-700 dark:hover:text-slate-200 [@media(pointer:coarse)]:opacity-100"
-                onClick={() => save(rows.filter((_, j) => j !== i))}
+                onClick={() => void save(rows.filter((_, j) => j !== i))}
               >
                 <CloseIcon size={10} />
               </button>
