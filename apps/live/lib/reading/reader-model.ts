@@ -45,6 +45,8 @@ type Processor = Awaited<ReturnType<Transformers['AutoProcessor']['from_pretrain
 type VisionModel = Awaited<ReturnType<Transformers['AutoModelForVision2Seq']['from_pretrained']>>;
 
 type Loaded = { processor: Processor; model: VisionModel; backend: ReaderBackend };
+// What the processor answers: the model's input tensors by name. Its published type says `any`.
+type ProcessorInputs = Record<string, Tensor> & { input_ids: Tensor };
 
 export type LoadedReader = Loaded;
 
@@ -129,17 +131,24 @@ export async function readOne(
   // No image splitting: it tiles the crop at higher resolution, and while that
   // helped this model slightly it costs about four times the time — too slow
   // for the WASM path, which is the one that has to work everywhere.
-  const inputs = await loaded.processor(prompt, [image], { do_image_splitting: false });
+  const inputs = (await loaded.processor(prompt, [image], {
+    do_image_splitting: false,
+  })) as ProcessorInputs;
+  // generate takes the input tensors and the generation settings as keyword arguments, which its
+  // published parameters type does not list. The cast is that gap, as for the messages above.
   const generated = await loaded.model.generate({
     ...inputs,
     max_new_tokens: MAX_NEW_TOKENS,
     do_sample: false,
-  });
+  } as Parameters<VisionModel['generate']>[0]);
   // `generate` is typed as the union of every shape it can return; asking for
   // plain token ids (no scores, no dict) always yields the tensor.
   const tokens = generated as Tensor;
   // Drop the prompt's own tokens: what was asked is not what was read.
-  const answerTokens = tokens.slice(null, [inputs.input_ids.dims.at(-1), null]);
+  const answerTokens = tokens.slice(null, [
+    inputs.input_ids.dims.at(-1) ?? 0,
+    tokens.dims.at(-1) ?? 0,
+  ]);
   const decoded = loaded.processor.batch_decode(answerTokens, {
     skip_special_tokens: true,
   })[0] as string;
