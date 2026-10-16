@@ -352,7 +352,7 @@ Quick Start picker ships ([Canvas and palette](../008-canvas/canvas-and-palette.
 No input. Returns the categories plus one row per template:
 `{ kind, title, description, category }` — enough for the model to pick a
 `kind` and pass it as `template` on `create_document` / `add_tab` (a template of several tabs, such as the
-Plan templates, adds them all on `create_document`, the first named as given; `add_tab` takes its first;
+Plan templates and the three with a companion Sheet, adds them all on `create_document`, the first named as given; `add_tab` takes its first;
 [Plan templates](../026-plan/plan-templates.md)). Deliberately
 metadata-only (no elements): the scaffold materialises server-side on create,
 so the model never has to re-emit — or accidentally mangle — a curated layout.
