@@ -49,3 +49,5 @@ Add the scripts:
 - `@livediagram/vitest-config/cpu-time`: CPU-time measures and budgets for speed tests.
 - `@livediagram/vitest-config/inline-script`: `runInlineScript(source, globals)`, which runs an
   inline `<script>`'s source as a browser would, against stub globals.
+- `@livediagram/vitest-config/sent-request`: `sentJson`, `sentText`, `sentForm` and `sentUrl`,
+  which read what a stubbed `fetch` was sent.
