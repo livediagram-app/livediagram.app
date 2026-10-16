@@ -2,18 +2,23 @@
 
 import type { TelemetrySummary, TelemetryWindowKey } from '@livediagram/api-schema';
 import { PAGE_VIEW_APPS, pageViewRows } from './page-views';
+import { CALLS_TO_ACTION } from './metric-catalogue';
+import { MetricGroups, type MetricGroup } from './MetricCards';
 import { CardColumns } from './CardColumns';
 import { LandingFunnel } from './LandingFunnel';
 import { RankCard } from './RankCard';
 import { rankTrend, windowLabel } from './windows';
 
-// Pages view (docs/specs/017-telemetry/page-view-telemetry.md): which pages across the site get viewed, broken down
+// Pages section of the Pages & Help tab (docs/specs/017-telemetry/page-view-telemetry.md): which pages across the site get viewed, broken down
 // by the app that serves them, opening with the landing funnel (docs/specs/019-marketing/landing-funnel.md):
 // how the public pages turn views into documents. Every frontend emits
 // `Page·View·<path>` on
 // each path change (full load or in-app navigation), with ids and query
 // strings stripped in the browser: the ten most-viewed pages overall and
 // each app's own top ten.
+
+// The landing funnel's own stack, beside it (it left the Dashboard in October 2026).
+export const GROUPS: MetricGroup[] = [{ title: 'Calls to action', metrics: [CALLS_TO_ACTION] }];
 
 // Each ranking card shows its top ten.
 const TOP = 10;
@@ -57,6 +62,7 @@ export function PagesView({
       </p>
 
       <LandingFunnel summary={summary} active={active} />
+      <MetricGroups groups={GROUPS} summary={summary} active={active} />
 
       <section className="mt-12">
         <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">

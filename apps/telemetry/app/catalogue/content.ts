@@ -522,7 +522,7 @@ export const ELEMENTS_ADDED: MetricStack = {
     ICONS_ADDED,
     OTHER_ELEMENTS_ADDED,
   ],
-  seeAlso: { view: 'palette', label: 'See Each Element on the Palette Tab' },
+  seeAlso: { section: 'palette', label: 'See Each Element in Features › Palette' },
 };
 
 // ---- Every other event, so nothing lands only in Search (docs/specs/017-telemetry/telemetry.md) ----------
@@ -684,7 +684,7 @@ export const ELEMENT_EDITING: MetricStack = {
     LINKS_ADDED,
     LINKS_REMOVED,
   ],
-  seeAlso: { view: 'editing', label: 'See Each Formatting Control on the Editing Tab' },
+  seeAlso: { section: 'editing', label: 'See Each Formatting Control in Features › Editing' },
 };
 
 // Tables: the row and column edits inside a table element. They are sent as
@@ -777,7 +777,7 @@ export const EXPORT_AND_IMPORT: MetricStack = {
   blurb:
     'Diagrams leaving livediagram as files and text, and tabs and drawings coming in from other tools.',
   members: [EXPORTS, EXPORT_OPTIONS, TAB_IMPORTS, PASTES_FROM_EXCALIDRAW],
-  seeAlso: { view: 'editing', label: 'See Each Export Format on the Editing Tab' },
+  seeAlso: { section: 'editing', label: 'See Each Export Format in Features › Editing' },
 };
 
 // Plan mode (docs/specs/026-plan/plan-mode.md "Telemetry"): items made, moved, opened, voted on and

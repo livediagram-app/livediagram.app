@@ -811,7 +811,7 @@ export const PALETTE_USE: MetricStack = {
   title: 'Palette Use',
   blurb: 'How the palette gets used beyond adding elements: searches, groups, and the toolbar.',
   members: [PALETTE_SEARCHES, PALETTE_GROUPS_OPENED, TOOLBAR_CATEGORY],
-  seeAlso: { view: 'palette', label: 'See Each Element on the Palette Tab' },
+  seeAlso: { section: 'palette', label: 'See Each Element in Features › Palette' },
 };
 
 // The canvas selection modes, one chart per mode, and the options set inside
@@ -861,7 +861,7 @@ export const CANVAS_MODES: MetricStack = {
   members: [...MODE_METRICS, OFFICE_DRINKS, AVATAR_MESSAGES, MODE_OPTIONS],
   // Modes switched into; tweaking an option inside one is not another use.
   headline: [...MODE_METRICS],
-  seeAlso: { view: 'modes', label: 'See Each Mode on the Modes Tab' },
+  seeAlso: { section: 'modes', label: 'See Each Mode in Features › Modes' },
 };
 
 // Editor chrome: layout and navigation.
@@ -1109,7 +1109,7 @@ export const PANELS_OPENED: MetricStack = {
     MIND_OUTLINE_OPENED,
     OTHER_OPENED,
   ],
-  seeAlso: { view: 'editing', label: 'See Each Dialog on the Editing Tab' },
+  seeAlso: { section: 'editing', label: 'See Each Dialog in Features › Editing' },
 };
 
 // Look and feel (Look & Feel tab has the rankings).
@@ -1198,5 +1198,5 @@ export const LOOK_AND_FEEL: MetricStack = {
     HIGHLIGHTER_SETTINGS,
   ],
   headline: [THEMES_CHOSEN, CANVAS_STYLES_PICKED],
-  seeAlso: { view: 'lookfeel', label: 'See Each Preset on the Look & Feel Tab' },
+  seeAlso: { section: 'lookfeel', label: 'See Each Preset in Features › Look & Feel' },
 };

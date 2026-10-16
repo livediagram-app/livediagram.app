@@ -3,84 +3,56 @@
 import type { TelemetrySummary, TelemetryWindowKey } from '@livediagram/api-schema';
 import {
   ACCOUNT_ACTIVITY,
-  CANVAS_MODES,
-  AI_ASSISTANCE,
+  AGENT_VIEWED,
   ALL_VISITORS,
-  API_TOKEN_ACTIVITY,
-  CALLS_TO_ACTION,
-  COMMUNITY_DISCOVERY,
+  CANVAS_MODES,
+  CLI_COMMANDS_STACK,
   COMMUNITY_ENGAGEMENT,
-  COMMUNITY_MODERATION,
-  COMMUNITY_PUBLISHING,
-  COUNTDOWNS,
   DOCUMENT_ACTIONS,
-  TRASH,
-  PLAN_BOARDS,
-  SHEETS,
-  FORMS,
-  DISCUSSION,
-  EDITOR_CHROME,
-  EDITOR_SEARCH,
+  DOCUMENTS_CREATED,
   ELEMENT_EDITING,
   ELEMENTS_ADDED,
   EMAILS_SENT,
   EXCEPTIONS,
-  EXPORT_AND_IMPORT,
+  FAILED_REQUESTS,
+  FORMS,
   HELP_CENTRE,
-  LOAD_RECOVERY,
-  LAYERS_FEATURE,
   LIVE_TOGETHER,
   LOOK_AND_FEEL,
   MCP_TOOL_CALLS,
-  CLI_COMMANDS_STACK,
-  DRIVE_MIRROR,
-  AGENT_CHANGESETS,
-  AGENT_VIEWED,
+  MULTIPLAYER_SESSIONS,
+  NEW_VISITORS,
   OFFLINE_MODE,
+  ONBOARDING_TOURS,
   PAGE_VIEWS_BY_APP,
   PALETTE_USE,
   PANELS_OPENED,
-  PHOTO_IMPORT,
-  POLLS,
-  WHITEBOARDS,
+  PLAN_BOARDS,
   PRESENTATIONS,
-  SETTINGS_CHANGED,
+  RETURNING_VISITORS,
   SHARING_AND_JOINING,
+  SHEETS,
   SIGN_IN_PROMPTS,
-  STOPWATCHES,
+  SIGN_UPS,
   TAB_ACTIONS,
-  SIDE_BY_SIDE,
-  TABLES,
-  TEAM_ACTIVITY,
   TIMELINE_AND_ACTIVITY,
-  UNDO_AND_REDO,
   VOTING,
-  WELCOME_TOUR,
-  PLAN_TOUR,
-  FACILITATE_TOUR,
-  SHOW_ME_TOURS,
-  DRAW_TOUR,
-  FORM_TOUR,
-  AVATAR_TOUR,
-  ILLUSTRATE_TOUR,
-  ELEMENT_TOURS,
-  POWER_USER_OFFER,
-  NEW_VERSION_PROMPT,
+  WHITEBOARDS,
 } from './metric-catalogue';
 import { MetricGroups, type MetricGroup } from './MetricCards';
-import type { ViewKey } from './view-keys';
+import type { SectionKey } from './view-keys';
 import { windowLabel } from './windows';
 
-// The Dashboard view (docs/specs/017-telemetry/telemetry.md, default tab): every event the product sends,
-// as chart stacks grouped by the question they answer, each a combined chart
-// that opens into its members' cards. Charts come from the shared catalogue,
-// so a stack only references them. Every emitted event lands in some chart
-// (metric-emitters.test), so nothing is visible only in Search.
+// The Dashboard view (docs/specs/017-telemetry/telemetry.md, default tab): the key metrics, most
+// important first. At a Glance answers "is it working?" in six plain cards, then chart stacks
+// grouped by the question they answer, each a combined chart that opens into its members' cards.
+// Charts come from the shared catalogue, so a stack or card only references them.
 //
-// Groups run as a funnel: who arrives, what they make, which features carry
-// the work, how they work together, what they share with everyone, how
-// machines connect, then health and the email behind it all. A stack that
-// goes deeper than it can links to its Detail tab.
+// Groups run as a funnel: who arrives, what they make, which features carry the work, how they
+// work together, how machines connect, then health. Until October 2026 this charted every event
+// (63 stacks, ten of them tours); everything else now sits in the Detail tab that goes deeper,
+// and every emitted event still lands in some chart there (metric-emitters.test). A stack that
+// goes deeper than it can links to its section.
 //
 // Deliberately a FIXED list, not "top by volume": a first-time visitor
 // (`Participant·Created`) is low volume but high signal, so it must always be
@@ -89,125 +61,86 @@ import { windowLabel } from './windows';
 
 export const GROUPS: MetricGroup[] = [
   {
-    title: 'Visitors',
+    title: 'At a glance',
     metrics: [
-      ALL_VISITORS,
-      ACCOUNT_ACTIVITY,
-      PAGE_VIEWS_BY_APP,
-      CALLS_TO_ACTION,
-      SIGN_IN_PROMPTS,
-      WELCOME_TOUR,
-      PLAN_TOUR,
-      FACILITATE_TOUR,
-      SHOW_ME_TOURS,
-      DRAW_TOUR,
-      FORM_TOUR,
-      AVATAR_TOUR,
-      ILLUSTRATE_TOUR,
-      ELEMENT_TOURS,
-      POWER_USER_OFFER,
-      NEW_VERSION_PROMPT,
+      NEW_VISITORS,
+      RETURNING_VISITORS,
+      SIGN_UPS,
+      DOCUMENTS_CREATED,
+      MULTIPLAYER_SESSIONS,
+      FAILED_REQUESTS,
     ],
+  },
+  {
+    title: 'Visitors',
+    metrics: [ALL_VISITORS, ACCOUNT_ACTIVITY, PAGE_VIEWS_BY_APP, SIGN_IN_PROMPTS, ONBOARDING_TOURS],
   },
   {
     title: 'Content',
     metrics: [
       DOCUMENT_ACTIONS,
-      TRASH,
+      TAB_ACTIONS,
+      ELEMENTS_ADDED,
+      ELEMENT_EDITING,
       PLAN_BOARDS,
       SHEETS,
       FORMS,
-      TAB_ACTIONS,
-      SIDE_BY_SIDE,
-      ELEMENTS_ADDED,
-      ELEMENT_EDITING,
-      TABLES,
-      UNDO_AND_REDO,
-      EXPORT_AND_IMPORT,
     ],
   },
   {
     title: 'Features',
-    metrics: [
-      AI_ASSISTANCE,
-      PHOTO_IMPORT,
-      WHITEBOARDS,
-      OFFLINE_MODE,
-      LAYERS_FEATURE,
-      PALETTE_USE,
-      CANVAS_MODES,
-      LOOK_AND_FEEL,
-      EDITOR_SEARCH,
-      PANELS_OPENED,
-      EDITOR_CHROME,
-      SETTINGS_CHANGED,
-    ],
+    metrics: [WHITEBOARDS, PALETTE_USE, CANVAS_MODES, LOOK_AND_FEEL, PANELS_OPENED, OFFLINE_MODE],
   },
   // Live Together is the only stack that counts two people on one canvas at
   // the same moment; the rest of Collaboration counts invitations to be there,
   // so read them against it.
   {
     title: 'Collaboration',
-    metrics: [LIVE_TOGETHER, SHARING_AND_JOINING, DISCUSSION, TIMELINE_AND_ACTIVITY],
-  },
-  {
-    title: 'Teams & facilitation',
-    metrics: [TEAM_ACTIVITY, VOTING, POLLS, COUNTDOWNS, STOPWATCHES, PRESENTATIONS],
-  },
-  // The public gallery (docs/specs/025-community/community.md): boards shared into it from the
-  // editor, then read, liked, copied and reported in the Community app. Each stack links to the
-  // Community tab, which ranks the categories, report reasons and filters.
-  {
-    title: 'Community',
     metrics: [
-      COMMUNITY_PUBLISHING,
+      LIVE_TOGETHER,
+      SHARING_AND_JOINING,
+      TIMELINE_AND_ACTIVITY,
+      PRESENTATIONS,
+      VOTING,
       COMMUNITY_ENGAGEMENT,
-      COMMUNITY_DISCOVERY,
-      COMMUNITY_MODERATION,
     ],
   },
   {
     title: 'Connections',
-    metrics: [
-      API_TOKEN_ACTIVITY,
-      MCP_TOOL_CALLS,
-      CLI_COMMANDS_STACK,
-      AGENT_CHANGESETS,
-      AGENT_VIEWED,
-      DRIVE_MIRROR,
-    ],
+    metrics: [MCP_TOOL_CALLS, CLI_COMMANDS_STACK, AGENT_VIEWED],
   },
+  // Emails Sent is written server-side by the api worker: nothing about a send
+  // reaches a browser, so this is the only place it can be counted. The
+  // onboarding series exists to bring people back, so read it against All
+  // Visitors. Failures land on Exceptions as Error·Api·Http*.SendEmail.
   {
     title: 'Health & support',
-    metrics: [EXCEPTIONS, LOAD_RECOVERY, HELP_CENTRE],
-  },
-  {
-    // Written server-side by the api worker: nothing about a send reaches a
-    // browser, so this is the only place it can be counted. The onboarding
-    // series exists to bring people back, so read it against All Visitors.
-    // Failures aren't here; they land on Exceptions as
-    // Error·Api·Http*.SendEmail.
-    title: 'Email',
-    metrics: [EMAILS_SENT],
+    metrics: [EXCEPTIONS, HELP_CENTRE, EMAILS_SENT],
   },
 ];
 
 export function DashboardView({
   summary,
   active,
-  onOpenView,
+  onOpenSection,
 }: {
   summary: TelemetrySummary;
   active: TelemetryWindowKey;
-  onOpenView: (view: ViewKey) => void;
+  onOpenSection: (section: SectionKey) => void;
 }) {
   return (
     <div className="mt-8">
       <p className="text-sm text-slate-500 dark:text-slate-400">
         The key metrics we watch, for <span className="font-medium">{windowLabel(active)}</span>.
-        Each card&rsquo;s line is the last 30 days; the selected window is highlighted.
+        Each card&rsquo;s line is the last 30 days; the selected window is highlighted. Every other
+        event is on the Detail tabs.
       </p>
-      <MetricGroups groups={GROUPS} summary={summary} active={active} onOpenView={onOpenView} />
+      <MetricGroups
+        groups={GROUPS}
+        summary={summary}
+        active={active}
+        onOpenSection={onOpenSection}
+      />
     </div>
   );
 }

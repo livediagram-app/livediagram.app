@@ -16,7 +16,7 @@ import { CardColumns } from './CardColumns';
 import { RankCard, rank } from './RankCard';
 import { rankTrend, windowLabel } from './windows';
 
-// Look & Feel view (docs/specs/017-telemetry/telemetry.md): which visual presets get picked, most to
+// Look & Feel section of the Features tab (docs/specs/017-telemetry/telemetry.md): which visual presets get picked, most to
 // least, plus how much the custom-theme builder gets used. The presets
 // are ranked usage lists (templates `Template·Used·<id>`, built-in themes
 // `Theme·Changed·<name>`, canvas patterns `Canvas·Changed·<pattern>`), the top

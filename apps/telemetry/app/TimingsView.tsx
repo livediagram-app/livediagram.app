@@ -7,7 +7,7 @@ import { TimingCard } from './TimingCard';
 import { VitalsCard } from './VitalsCard';
 import { windowLabel } from './windows';
 
-// Timings view (docs/specs/017-telemetry/timing-telemetry.md): how fast the experience is. The
+// Timings section of the Health tab (docs/specs/017-telemetry/timing-telemetry.md): how fast the experience is. The
 // editor's own timings as distributions, then every app's Core Web Vitals rated against Google's
 // thresholds. Every number is an estimate from the buckets the browser sent, never a raw timing.
 

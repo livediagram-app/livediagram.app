@@ -9,7 +9,10 @@ import {
 } from '@livediagram/api-schema';
 import {
   COMMUNITY_COPIES,
+  COMMUNITY_DISCOVERY,
   COMMUNITY_FILTERS,
+  COMMUNITY_MODERATION,
+  COMMUNITY_PUBLISHING,
   COMMUNITY_LIKES,
   COMMUNITY_POSTS_OPENED,
   COMMUNITY_POSTS_SHARED,
@@ -40,6 +43,11 @@ export const GROUPS: MetricGroup[] = [
       COMMUNITY_FILTERS,
       COMMUNITY_REPORTS,
     ],
+  },
+  // The stacks the Dashboard leaves out (it keeps Community Engagement).
+  {
+    title: 'Publishing, discovery and reports',
+    metrics: [COMMUNITY_PUBLISHING, COMMUNITY_DISCOVERY, COMMUNITY_MODERATION],
   },
 ];
 

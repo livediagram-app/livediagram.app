@@ -99,9 +99,9 @@ product. Every timing is also skipped when it ends in failure; failures are alre
   sends any event tracked while the page is hidden straight away by beacon, rather than buffering it
   behind a flush that has already run.
 
-## Dashboard: the Timings tab
+## Dashboard: the Timings section
 
-A **Timings** tab in the dashboard's Detail bar, after Exceptions.
+A **Timings** section on the dashboard's Health tab, after Exceptions.
 
 - **Editor timings**: one card per editor metric (Document Load, Tab Switch, Save, Live Connect, Live
   Reconnect). Each card's big number is the **p75** for the selected window, with the median (p50) and

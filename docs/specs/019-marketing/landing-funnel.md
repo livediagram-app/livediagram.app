@@ -125,9 +125,9 @@ the visit counts as an ordinary `/new`.
 
 ## Dashboard
 
-### The Pages tab's funnel
+### The Pages section's funnel
 
-The Pages tab ([Page view telemetry](../017-telemetry/page-view-telemetry.md)) opens with a **Landing Funnel** section above the top
+The Pages section of the Pages & Help tab ([Page view telemetry](../017-telemetry/page-view-telemetry.md)) opens with a **Landing Funnel** section above the top
 pages, for the selected window:
 
 - **A headline strip** across the whole public site: page views of the
@@ -156,9 +156,9 @@ The helpers (`cta-funnel.ts`) are pure and tested apart from the view, like
 
 ### The Dashboard tab
 
-The Visitors group gains a **Calls to Action** chart stack: CTA Arrivals and
-Documents from CTAs, headed by Documents from CTAs, with a See also link to the
-Pages tab's funnel.
+A **Calls to Action** chart stack (CTA Arrivals and Documents from CTAs, headed by
+Documents from CTAs) sits beside the funnel in the Pages section; it left the
+Dashboard's Visitors group in October 2026.
 
 ## Out of scope
 
