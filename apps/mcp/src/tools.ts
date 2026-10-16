@@ -29,6 +29,7 @@ import {
   templateFamilyOf,
   templateTabs,
   validTemplateKinds,
+  closestTemplatesHint,
   type TemplateKind,
 } from '@livediagram/templates';
 import {
@@ -185,8 +186,8 @@ export function registerTools(server: McpServer, env: Env): void {
         const kind = resolveTemplate(t.template);
         if (!kind) {
           return errorResult(
-            `Unknown template "${t.template}" in tab "${t.name}". Valid kinds: ` +
-              `${validTemplateKinds()}.`,
+            `Unknown template "${t.template}" in tab "${t.name}". ${closestTemplatesHint(t.template)}` +
+              `Valid kinds: ${validTemplateKinds()}.`,
           );
         }
         if (tabs.length === 0) firstTemplate = kind;
@@ -316,7 +317,7 @@ export function registerTools(server: McpServer, env: Env): void {
     // fails before any network round trip.
     if (args.template && !resolveTemplate(args.template)) {
       return errorResult(
-        `Unknown template "${args.template}". Valid kinds: ${validTemplateKinds()}.`,
+        `Unknown template "${args.template}". ${closestTemplatesHint(args.template)}Valid kinds: ${validTemplateKinds()}.`,
       );
     }
     const input = resolveGraphInput(args);

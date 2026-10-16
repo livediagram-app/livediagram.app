@@ -32,7 +32,7 @@ src/slug.ts            slugText, cutSlug, uniqueSlug (accents folded, `-2`, `-3`
   `ITEM_TYPE_PATTERN` and is not `item`; `label` 1 to 32 characters, unique ignoring case; `color` `#rrggbb`;
   `glyph` in the set; `custom` up to 12 (`customFieldCount`, which never counts Parent), ids
   `CUSTOM_FIELD_ID_PATTERN` (`f-` and a slug, or the reserved `parent`) and unique, labels 1 to 32, kind known,
-  Choice 1 to 20 unique options of up to 40 characters; Card a `linkType` matching `ITEM_TYPE_PATTERN` (a type the
+  Choice 1 to 20 unique options of up to 100 characters; Card a `linkType` matching `ITEM_TYPE_PATTERN` (a type the
   catalogue lacks is kept); `fields` only built-in or own custom ids, deduplicated (a stored type naming `parent` without defining it gains
   `PARENT_FIELD`),
   `title` and `status` put first, at most 24; `newTitle` defaults to "New <name>"; JSON at most
@@ -244,7 +244,7 @@ statusName)` ("{Type} cards can't be {Status}") live beside it.
 | `ITEM_TYPE_CUSTOM_MAX`                                 | 12     | Spec                                                                           |
 | `ITEM_TYPE_LABEL_MAX`                                  | 32     | Spec                                                                           |
 | `CUSTOM_CHOICE_OPTIONS_MAX`                            | 20     | Spec                                                                           |
-| `CUSTOM_CHOICE_OPTION_MAX`                             | 40     | D11                                                                            |
+| `CUSTOM_CHOICE_OPTION_MAX`                             | 100    | Spec "Custom field kinds" (was D11)                                            |
 | `ITEM_TYPES_BYTES`                                     | 32,768 | Spec "Limits and validation"                                                   |
 | `ITEM_TYPES_SAVE_ATTEMPTS`, `CARD_TYPES_SAVE_ATTEMPTS` | 3      | Spec "Storage and sync": a change made again a few times, then refused; 1 to 5 |
 | `ITEM_TYPE_EXCLUDED_STATUSES_MAX`                      | 64     | Far more than a board's columns; keeps the catalogue small                     |

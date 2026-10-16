@@ -122,6 +122,9 @@ export function applyPageChanges(
   try {
     // The pages this call has added, which a later add never takes as a blank.
     const madeHere = new Set<string>();
+    // The pages an add took as its blank (the fresh tab's empty first page, a blank deck's one slide), each to that
+    // change's number: a later delete naming one means the empty page, which is gone already.
+    const tookBlank = new Map<string, number>();
     changes.forEach((change, i) => {
       const stop = (code: IllustrateRefusal['code'], message: string): never => {
         throw new Stop({ code, message, change: i });
@@ -203,6 +206,7 @@ export function applyPageChanges(
             // The fresh tab's empty, unchosen first page becomes the page asked for.
             current = withPageKindChosen(current, first.id, change.kind, newFlowId())!;
             page = pages()[0]!;
+            tookBlank.set(page.id, i + 1);
           } else if (
             ps.length === 1 &&
             !madeHere.has(first.id) &&
@@ -213,6 +217,7 @@ export function applyPageChanges(
             // A blank of that kind (the Blank Slide Deck's one empty slide) becomes the page asked for, so a deck made
             // from it does not open on an empty slide.
             page = first;
+            tookBlank.set(page.id, i + 1);
           } else {
             const id = newPageId();
             current = take(pageAdded(current, change.kind, id, newFlowId()));
@@ -289,6 +294,13 @@ export function applyPageChanges(
             return;
           }
           const page = pageOf(change);
+          const took = tookBlank.get(page.id);
+          if (took !== undefined) {
+            lines.push(
+              `Page ${placeOf(page.id)} was the empty first page, which change ${took} made the page it added; nothing deleted.`,
+            );
+            return;
+          }
           // An article's pages go together.
           const gone = page.flow ? pages().filter((p) => p.flow === page.flow) : [page];
           const at = placeOf(page.id);

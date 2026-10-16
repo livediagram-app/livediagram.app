@@ -361,6 +361,33 @@ describe('laying out, moving, duplicating, deleting', () => {
     );
   });
 
+  // The benchmark's I4: an agent replacing a starter page wrote [add, delete 1], and the add had taken that page.
+  it('takes a delete of the blank an earlier add took as done, deleting nothing', () => {
+    const fresh = run(tabOf(), [
+      { op: 'add', kind: 'logo', name: 'Badge' },
+      { op: 'delete', page: 1 },
+    ]);
+    expect(illustratePagesOf(fresh.tab).map((p) => [p.kind, p.name])).toEqual([['logo', 'Badge']]);
+    expect(fresh.lines[1]).toBe(
+      'Page 1 was the empty first page, which change 1 made the page it added; nothing deleted.',
+    );
+    // With a second page added, the first is kept too, by place or by the blank's id.
+    for (const ref of [1, 'p1'] as const) {
+      const deck = run(tabOf({ pages: [page('p1', { kind: 'slide' })] }), [
+        { op: 'add', kind: 'slide', name: 'Cover' },
+        { op: 'add', kind: 'slide', name: 'Problem' },
+        { op: 'delete', page: ref },
+      ]);
+      expect(illustratePagesOf(deck.tab).map((p) => p.name)).toEqual(['Cover', 'Problem']);
+    }
+    // A page the call appended is deleted as asked.
+    const appended = run(tabOf({ pages: [page('p1', { name: 'One' })] }), [
+      { op: 'add', kind: 'infographic', name: 'Two' },
+      { op: 'delete', page: 2 },
+    ]);
+    expect(illustratePagesOf(appended.tab).map((p) => p.id)).toEqual(['p1']);
+  });
+
   it('takes a delete of a page an earlier delete took with its article as done', () => {
     const pages = [
       page('s1'),

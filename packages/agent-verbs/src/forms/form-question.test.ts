@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { blankQuestion } from '@livediagram/forms';
+import { blankQuestion, OPTION_MAX } from '@livediagram/forms';
 import { applyQuestionSet, questionFrom } from './form-question';
 
 // An agent's question (docs/specs/030-forms/forms.md "Agents", blueprint §15 "Question input"): made as the builder
@@ -122,12 +122,20 @@ describe('the settings each type takes', () => {
     expect(!made.ok && made.message).toContain('none beyond prompt, help and required');
   });
 
+  // The benchmark's Q4: an answer a model wrote, refused at the old 40 characters.
+  it('takes an option of a full answer', () => {
+    const option = "No, I'm in the process of obtaining work authorisation";
+    expect(
+      questionFrom({ type: 'single', prompt: 'Right to work?', options: ['Yes', option] }, 'q'),
+    ).toMatchObject({ ok: true, question: { options: ['Yes', option] } });
+  });
+
   it('refuses an empty or over-long option, a number that is none, and help past its limit', () => {
     expect(questionFrom({ type: 'single', prompt: 'P', options: ['A', ' '] }, 'q')).toMatchObject({
       code: 'option_empty',
     });
     expect(
-      questionFrom({ type: 'single', prompt: 'P', options: ['x'.repeat(41)] }, 'q'),
+      questionFrom({ type: 'single', prompt: 'P', options: ['x'.repeat(OPTION_MAX + 1)] }, 'q'),
     ).toMatchObject({ code: 'too_long' });
     expect(questionFrom({ type: 'number', prompt: 'P', min: Number.NaN }, 'q')).toMatchObject({
       code: 'invalid_value',
