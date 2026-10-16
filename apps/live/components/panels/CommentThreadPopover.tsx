@@ -7,6 +7,7 @@ import type { CommentMention, CommentThread } from '@livediagram/document';
 import { isMobileViewportSync } from '@/lib/responsive';
 import { VIEWPORT_EDGE_MARGIN as EDGE_MARGIN } from '@/lib/clamp-to-viewport';
 import { CommentComposer, CommentResolveToggle, CommentThreadList } from './comment-thread-parts';
+import { elementSelector } from '@/lib/canvas-selectors';
 
 type CommentThreadPopoverProps = {
   // Element this thread belongs to. The popover anchors itself by querying
@@ -92,7 +93,7 @@ export function CommentThreadPopover({
   // been applied), then place the popover just to the right with a small
   // gap. Re-measures on resize / scroll so it stays attached during pans.
   const reposition = useCallback(() => {
-    const node = document.querySelector(anchorSelector ?? `[data-element-id="${elementId}"]`);
+    const node = document.querySelector(anchorSelector ?? elementSelector(elementId));
     if (!node) return;
     const rect = node.getBoundingClientRect();
     let left = rect.right + GAP;

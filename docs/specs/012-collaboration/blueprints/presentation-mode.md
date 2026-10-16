@@ -5,15 +5,15 @@ Transitions) and "Full screen" (refusals logged). The rest of presentation mode 
 
 ## Domain and naming
 
-| Term             | Identifier                                           | Meaning                                                            |
-| ---------------- | ---------------------------------------------------- | ------------------------------------------------------------------ |
-| Slide surface    | `SLIDE_SURFACE_SELECTOR` (`[data-canvas-a11y-root]`) | The canvas `<main>`, the one element a slide transition captures   |
-| Surface boundary | `<ViewTransition>` around `<main>` in `Canvas.tsx`   | `default="none"`, `update` keyed by `SLIDE_VIEW_TRANSITION_UPDATE` |
-| Slide type       | `SlideTransitionType`                                | `slide-in`, `slide-forward`, `slide-back`, `slide-fade`            |
-| Move type        | `slideTransitionType(transition, from, to)`          | The type a move runs as, or `null` for None or no move             |
-| Asked-for slide  | `asked` (ref in `PresentationHost`)                  | The slide last asked for, while React holds the transition         |
-| Pending          | `data-slide-move="pending"` on `<html>`              | The first slide held hidden until the screen settles               |
-| Settle           | `whenScreenSettles(ready)`                           | Waits for fullscreen (or its refusal, or 600 ms) and two frames    |
+| Term             | Identifier                                                                    | Meaning                                                            |
+| ---------------- | ----------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| Slide surface    | `CANVAS_ROOT_SELECTOR` (`[data-canvas-a11y-root]`, `lib/canvas-selectors.ts`) | The canvas `<main>`, the one element a slide transition captures   |
+| Surface boundary | `<ViewTransition>` around `<main>` in `Canvas.tsx`                            | `default="none"`, `update` keyed by `SLIDE_VIEW_TRANSITION_UPDATE` |
+| Slide type       | `SlideTransitionType`                                                         | `slide-in`, `slide-forward`, `slide-back`, `slide-fade`            |
+| Move type        | `slideTransitionType(transition, from, to)`                                   | The type a move runs as, or `null` for None or no move             |
+| Asked-for slide  | `asked` (ref in `PresentationHost`)                                           | The slide last asked for, while React holds the transition         |
+| Pending          | `data-slide-move="pending"` on `<html>`                                       | The first slide held hidden until the screen settles               |
+| Settle           | `whenScreenSettles(ready)`                                                    | Waits for fullscreen (or its refusal, or 600 ms) and two frames    |
 
 ## Behaviour and state
 

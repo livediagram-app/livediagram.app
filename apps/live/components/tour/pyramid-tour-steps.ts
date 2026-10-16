@@ -2,12 +2,12 @@ import type { ElementTourApi } from './element-tour-api';
 import {
   addRowStep,
   conceptOutro,
-  inElement,
   inTheMenu,
   onGraphic,
   type ConceptTourContext,
 } from './concept-element-tour-steps';
 import type { TourStepOf } from './tour-step';
+import { elementSelector } from '@/lib/canvas-selectors';
 
 // The Pyramid tour (docs/specs/007-editor/element-tours.md "The Pyramid tour"), on a Pyramid or an Inverted pyramid:
 // its tiers cut from one triangle, the apex first, the three shapes it switches between, and Build from the base.
@@ -25,13 +25,13 @@ export function pyramidTourSteps(
       'tiers',
       'Tiers Cut From One Triangle',
       `${apex}. Every tier is cut from one triangle, so their edges line up as one silhouette however many there are.`,
-      inElement(id),
+      elementSelector(id),
     ),
     onGraphic(
       'edit',
       'Type Over a Tier',
       `${click} a tier's name to type over it. A name too long for its tier is shortened, never spilling out.`,
-      inElement(id, '[data-concept-row="0"]'),
+      elementSelector(id, '[data-concept-row="0"]'),
     ),
     addRowStep(
       'add',
@@ -52,13 +52,13 @@ export function pyramidTourSteps(
       'colours',
       'From the Accent Down',
       `The ${ctx.inverted ? 'top' : 'apex'} takes the accent and each tier after it steps toward the fill, its words kept readable.`,
-      inElement(id, `[data-concept-row="${Math.max(0, base)}"]`),
+      elementSelector(id, `[data-concept-row="${Math.max(0, base)}"]`),
     ),
     onGraphic(
       'animate',
       ctx.inverted ? 'Build It Down' : 'Build It Up',
       `Animation, then Concept: Build lays the tiers ${ctx.inverted ? 'from the top down' : 'from the base up'}, as here. Pulse lights each in turn.`,
-      inElement(id),
+      elementSelector(id),
       'build',
     ),
     conceptOutro(

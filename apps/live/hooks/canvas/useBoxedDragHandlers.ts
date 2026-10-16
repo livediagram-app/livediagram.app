@@ -15,6 +15,7 @@ import { getTheme } from '@/lib/themes';
 import { track } from '@/lib/telemetry';
 import { type DragMode, type DragState, type ShapeBounds } from '@/lib/canvas';
 import type { EditorDragDeps } from './useEditorDrag.types';
+import { elementSelector } from '@/lib/canvas-selectors';
 
 type BoxedDragHandlerDeps = {
   depsRef: RefObject<EditorDragDeps>;
@@ -223,7 +224,7 @@ export function useBoxedDragHandlers({
     let startClientX = e.clientX;
     let startClientY = e.clientY;
     if (opts?.clickToPlace && element.width > 0 && element.height > 0) {
-      const node = document.querySelector(`[data-element-id="${elementId}"]`);
+      const node = document.querySelector(elementSelector(elementId));
       if (node) {
         const r = node.getBoundingClientRect();
         startClientX = r.left + ((start.x - element.x) / element.width) * r.width;

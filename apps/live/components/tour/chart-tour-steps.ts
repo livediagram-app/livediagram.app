@@ -1,8 +1,9 @@
 import { CHART_TYPE_LABELS, type ChartType } from '@livediagram/document';
-import { conceptOutro, inElement, onGraphic } from './concept-element-tour-steps';
+import { conceptOutro, onGraphic } from './concept-element-tour-steps';
 import type { ElementTourApi } from './element-tour-api';
 import { menuStep, type MenuTourEnv } from './menu-tour-step';
 import type { TourStepOf } from './tour-step';
+import { elementSelector } from '@/lib/canvas-selectors';
 
 // The Chart tour (docs/specs/007-editor/element-tours.md "The Chart tour"), on a selected data chart of any of the
 // seven types: how it reads, a mark's readout, Grow previewed on it, its menu, and for a line, area or scatter chart its
@@ -77,7 +78,7 @@ export function chartTourSteps(ctx: ChartTourContext): Step[] {
         'chart',
         'Sized by Value',
         `Every ${one} is drawn from a number: change the number and the chart redraws. This is a ${typeName} chart, one of seven it can be.`,
-        inElement(id),
+        elementSelector(id),
       ),
     ),
     ...(ctx.touch
@@ -88,7 +89,7 @@ export function chartTourSteps(ctx: ChartTourContext): Step[] {
               'readout',
               'Point for the Number',
               `Point at a ${one} to read its label and value, with the legend on or off.`,
-              inElement(id),
+              elementSelector(id),
             ),
           ),
         ]),
@@ -97,7 +98,7 @@ export function chartTourSteps(ctx: ChartTourContext): Step[] {
         'animate',
         'Make It Grow',
         `Under Animation: Grow and Pop play once as it appears, Spin and Pulse loop. Grow brings the ${many} in, as here.`,
-        inElement(id),
+        elementSelector(id),
         'grow',
       ),
     ),

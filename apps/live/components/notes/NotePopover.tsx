@@ -6,6 +6,7 @@ import type { TextRun } from '@livediagram/document';
 import { NoteRichText, noteRuns } from '@/components/notes/NoteRichText';
 import { NoteRichTextEditor } from '@/components/notes/NoteRichTextEditor';
 import { VIEWPORT_EDGE_MARGIN as EDGE_MARGIN } from '@/lib/clamp-to-viewport';
+import { elementSelector } from '@/lib/canvas-selectors';
 
 // Per-element note popover. Distinct from CommentThreadPopover: notes are a
 // SINGLE small document (no author, no thread, no resolve / replies),
@@ -73,7 +74,7 @@ export function NotePopover({
   // approach as CommentThreadPopover.
   useLayoutEffect(() => {
     const update = () => {
-      const node = document.querySelector(`[data-element-id="${elementId}"]`);
+      const node = document.querySelector(elementSelector(elementId));
       if (!node) return;
       const rect = node.getBoundingClientRect();
       // Anchor at the bottom-centre of the element, then the popover

@@ -1,8 +1,9 @@
-import { inElement, conceptOutro, inTheMenu, onGraphic } from './concept-element-tour-steps';
+import { conceptOutro, inTheMenu, onGraphic } from './concept-element-tour-steps';
 import type { ElementTourApi } from './element-tour-api';
 import { waitForSelector } from './tour-dom';
 import type { TourStepOf } from './tour-step';
 import { TARGET_WAIT_MS } from './useTourEngine';
+import { elementSelector } from '@/lib/canvas-selectors';
 
 // The Sequence tour (docs/specs/007-editor/element-tours.md "The Sequence tour"), on a selected sequence diagram: how it
 // reads on the canvas, then its Sequence dialog, opened by the tour, where every step rings a real control: the
@@ -56,7 +57,7 @@ export function sequenceTourSteps(ctx: SequenceTourContext): Step[] {
       'diagram',
       'Who Calls Whom',
       'Each participant has a lifeline; each message is a row, top to bottom. A call that gets a reply shows a bar while it is busy.',
-      inElement(id),
+      elementSelector(id),
     ),
     ...(ctx.hasMore
       ? [
@@ -74,7 +75,7 @@ export function sequenceTourSteps(ctx: SequenceTourContext): Step[] {
       'write',
       'Write It as a List',
       `${ctx.touch ? 'Double-tap' : 'Double-click'} the diagram to write it: a row a message, and it lays itself out. Next opens it for you.`,
-      inElement(id),
+      elementSelector(id),
     ),
     inDialog(
       'participants',
