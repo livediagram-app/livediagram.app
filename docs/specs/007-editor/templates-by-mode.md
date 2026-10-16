@@ -224,6 +224,12 @@ unchanged; only the mode they open in moved from Diagram.
   template's, or the legacy "Untitled diagram"). A name someone gave it, or the first element's label the editor
   named it after ([Name length](../006-document/name-length.md)), is kept.
 - Only for the document's **first** tab: a template filling a later tab names that tab, not the document.
+- **Start Planning's own picks name it too**: a board preset, a sheet start, a form, a dashboard layout or a
+  visualisation picked for the first tab names a still-untitled document after the title that tab takes ("Untitled
+  Bug Tracker", "Untitled Gantt Chart"), read once the tab has changed (`usePlanStartDocumentName`). Before, only
+  Start Planning's template cards did, so most new Plan documents stayed "Untitled Plan". Only a change seen in the
+  session counts (opening a document on a Plan tab is not a start), only for someone who can edit, and a name the
+  start gave the document itself (a template's) is kept.
 - It is the document's name like any other: saved with it, shown in the header and the Explorer at once, and changed
   by renaming. No telemetry: it is not a person's rename.
 
