@@ -108,6 +108,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onBeginArrowLabelDrag,
     onBeginArrowTranslate,
     onBeginDrag,
+    onPressArmedAction,
     onBeginEdit,
     onBeginEndpointDrag,
     onCancelEdit,
@@ -215,6 +216,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onBeginArrowElbowDrag,
     onBeginArrowLabelDrag,
     onBeginDrag,
+    onPressArmedAction,
     onShiftSelect,
     // Voting is taking part: a Participant's as well as an Editor's (docs/specs/013-workspace/share-roles.md).
     onCastVote: readOnly && !takePart ? undefined : onCastVote,
@@ -387,6 +389,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
       tabSummaries,
       readOnly,
       onBeginDrag: h.onBeginDrag,
+      onPressArmedAction: h.onPressArmedAction,
       onShiftSelect: h.onShiftSelect,
       vote: tabVote,
       selfId,

@@ -1,10 +1,12 @@
 import { useRightClickRelease } from '@/hooks/canvas/useRightClickRelease';
-import type { PointerEvent as ReactPointerEvent, RefObject } from 'react';
+import { useRef, type PointerEvent as ReactPointerEvent, type RefObject } from 'react';
 import { opensInlineLabelEditor, voteKeyOf } from '@livediagram/document';
 import { elementMenuAnchor } from '@/lib/context-menu-anchor';
 import { useLongPress } from '@/hooks/ui/useLongPress';
 import { pressLedger } from '@/lib/double-press';
 import { armPlainClick } from '@/lib/selection-click';
+import { fitsOnCanvas } from '@/lib/fits-on-screen';
+import { markPanThrough } from '@/hooks/canvas/pan-through';
 import type { BoxedElementViewProps } from './BoxedElementView.types';
 
 // The boxed element's press / double-click / context-menu routing,
@@ -28,6 +30,7 @@ export function useBoxedElementGestures({
   onCastVote,
   onShiftSelect,
   onPlainClick,
+  onPressArmedAction,
   onBeginDrag,
   onBeginEdit,
   onEditLink,
@@ -44,6 +47,7 @@ export function useBoxedElementGestures({
   | 'onCastVote'
   | 'onShiftSelect'
   | 'onPlainClick'
+  | 'onPressArmedAction'
   | 'onBeginDrag'
   | 'onBeginEdit'
   | 'onEditLink'
@@ -69,6 +73,8 @@ export function useBoxedElementGestures({
   // select a multi-selection member alone), and reselects on a double-click's second press.
   // A selected table takes a click as a cell pick (TableCellView), never as a click on the table.
   const settlesClick = !isPaintMode && onPlainClick !== undefined && element.type !== 'table';
+  // The touch long-press opened the menu on this press, so its release is not also a tap.
+  const heldRef = useRef(false);
   const handleShapeDown = (e: ReactPointerEvent) => {
     if (isEditing) return;
     // Secondary / middle button: not a select, not a drag. The right button
@@ -86,12 +92,14 @@ export function useBoxedElementGestures({
       e.stopPropagation();
       return;
     }
-    e.stopPropagation();
+    heldRef.current = false;
+    // Every press below is the element's, so it stops here, except one that pans through to the canvas.
     // Dot-voting (docs/specs/012-collaboration/session-tools.md): while a vote is open, pressing a votable
     // element casts one of your dots instead of selecting / dragging it.
     // Non-votable elements (text / frame / arrow / …) still select, so
     // the facilitator can keep arranging the canvas.
     if (vote?.active && onCastVote && votableInVote) {
+      e.stopPropagation();
       // A Plan card element votes on its card (voteKeyOf).
       onCastVote(voteKeyOf(element));
       return;
@@ -107,6 +115,7 @@ export function useBoxedElementGestures({
       wasSelected: isSelected,
     });
     if (verdict.pairs) {
+      e.stopPropagation();
       // A path opens its edit mode on the pair itself: a double-tap brings no reliable dblclick
       // (docs/specs/023-draw-mode/path-tool.md "Editing").
       if (element.type === 'path') onBeginEdit(element.id);
@@ -124,6 +133,7 @@ export function useBoxedElementGestures({
     // true shift-CLICK) apply the toggle on release. A real shift-drag
     // moves the selection and the drag's release duplicates it.
     if (e.shiftKey) {
+      e.stopPropagation();
       if (!(isSelected || isMultiSelected)) {
         onShiftSelect?.(element.id);
         return;
@@ -132,6 +142,18 @@ export function useBoxedElementGestures({
       onBeginDrag(element.id, 'move', e);
       return;
     }
+    // A finger on an element that runs off the screen pans (docs/specs/008-canvas/canvas-and-palette.md "Touch (iOS / iPad)"):
+    // a drag across a big frame is far more often "show me the rest" than "move this", and zooming out until it
+    // fits is the way to move it. A tap still selects it (or settles the click on it), the long-press menu
+    // still opens, and the format painter keeps every press its own.
+    if (e.pointerType === 'touch' && !isPaintMode && !fitsOnCanvas(wrapperRef.current)) {
+      markPanThrough(e, () => {
+        if (heldRef.current || onPressArmedAction?.(element.id)) return;
+        if (settlesClick || !isSelected) onPlainClick?.(element.id);
+      });
+      return;
+    }
+    e.stopPropagation();
     // A plain press selects and drags. Outside a multi-selection it selects
     // this element alone (the drag starter drops the set); on a member it
     // drags the whole set. On an element already selected, a release without
@@ -241,6 +263,7 @@ export function useBoxedElementGestures({
   // guards as handleContextMenu; a press that moves becomes a drag instead.
   const longPress = useLongPress(() => {
     if (isEditing) return;
+    heldRef.current = true;
     openContextMenuBesideElement();
   });
 

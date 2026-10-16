@@ -618,6 +618,10 @@ export type CanvasProps = {
   // for the single-element ellipsis).
   onOpenMultiContextMenu?: (screenX: number, screenY: number) => void;
   onBeginDrag: (id: string, mode: DragMode, e: ReactPointerEvent) => void;
+  // The armed action a press on an element takes instead of selecting it (an arrow armed to connect, the
+  // format painter): true when it took it. For a touch press that panned instead of dragging, whose tap
+  // must still connect or paint (docs/specs/008-canvas/canvas-and-palette.md "Touch (iOS / iPad)").
+  onPressArmedAction?: (id: string) => boolean;
   onBeginEdit: (id: string) => void;
   onCommitLabel: (id: string, label: string, runs?: TextRun[]) => void;
   // Inline label-editor (rich-text) alignment control, threaded through

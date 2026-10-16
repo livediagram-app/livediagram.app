@@ -127,6 +127,8 @@ export type EditorDragApi = {
   // renders only the chrome that draws it (useSnapGuideState).
   snapGuideStore: SnapGuideStore;
   beginDrag: (elementId: string, mode: DragMode, e: ReactPointerEvent) => void;
+  // The armed action (connect an arrow, the format painter) a press on an element takes instead of selecting it.
+  pressArmedAction: (elementId: string) => boolean;
   beginAnchorDrag: (
     elementId: string,
     anchor: Anchor,

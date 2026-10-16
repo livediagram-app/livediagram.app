@@ -15,7 +15,7 @@ import { isHeldPenIntent } from '@/lib/draw-mode';
 import { markPenSeen, penSeen } from '@/lib/pen-seen';
 import { whiteboardPointerRoute } from '@/lib/whiteboard-tool';
 import { debugLog } from '@/lib/debug-log';
-import { isPanThrough } from '@/hooks/canvas/pan-through';
+import { isPanThrough, panThroughTap } from '@/hooks/canvas/pan-through';
 
 type PanAndMarquee = ReturnType<typeof useCanvasPanAndMarquee>;
 
@@ -136,13 +136,14 @@ export function useCanvasSurfaceGestures({
   //    Falls through so pointermove on <main> keeps broadcasting laser
   //    samples.
   //  - Select tool → drag draws a marquee for multi-select.
-  const startPan = (e: ReactPointerEvent) =>
+  const startPan = (e: ReactPointerEvent, onTap?: () => void) =>
     setPan({
       startClientX: e.clientX,
       startClientY: e.clientY,
       startOffsetX: viewportOffset.x,
       startOffsetY: viewportOffset.y,
       movedRef: { current: false },
+      ...(onTap ? { onTap } : {}),
     });
 
   const routePanOrMarquee = (e: ReactPointerEvent) => {
@@ -256,22 +257,29 @@ export function useCanvasSurfaceGestures({
       // is (male / female), and a right-click anywhere else is swallowed —
       // the context menu stays shut in this mode either way.
       if (e.button === 0) {
-        // Seated (docs/specs/009-elements/chair.md): a double-click is one of the two deliberate ways
-        // out of a chair. A single click deliberately does nothing — walkTo
-        // refuses while seated, so you cannot be dragged out by a stray click
-        // — which left no pointer-only way out at all until this.
-        if (avatar.seatedOn && e.detail >= 2) {
-          avatar.standUp();
-          return;
-        }
-        // Clicking someone ELSE's character walks over and pushes them
-        // (docs/specs/008-canvas/avatar-mode.md), rather than walking to the spot they're standing on.
-        const peer = peerAvatarAt(point);
-        if (peer) {
-          avatar.walkTo(peer.standAt, () => onPushPeer?.(peer.id, peer.dx, peer.dy));
-        } else {
-          avatar.walkTo(point);
-        }
+        const detail = e.detail;
+        const walk = () => {
+          // Seated (docs/specs/009-elements/chair.md): a double-click is one of the two deliberate ways
+          // out of a chair. A single click deliberately does nothing — walkTo
+          // refuses while seated, so you cannot be dragged out by a stray click
+          // — which left no pointer-only way out at all until this.
+          if (avatar.seatedOn && detail >= 2) {
+            avatar.standUp();
+            return;
+          }
+          // Clicking someone ELSE's character walks over and pushes them
+          // (docs/specs/008-canvas/avatar-mode.md), rather than walking to the spot they're standing on.
+          const peer = peerAvatarAt(point);
+          if (peer) {
+            avatar.walkTo(peer.standAt, () => onPushPeer?.(peer.id, peer.dx, peer.dy));
+          } else {
+            avatar.walkTo(point);
+          }
+        };
+        // A finger has no middle button or Space to pan with (docs/specs/008-canvas/avatar-mode.md "Walking"):
+        // its drag pans, and only a press that never moved, a tap, walks.
+        if (e.pointerType === 'touch') startPan(e, walk);
+        else walk();
       } else if (e.button === 2) avatar.toggleLookAt(point);
       return;
     }
@@ -424,10 +432,10 @@ export function useCanvasSurfaceGestures({
   const onContextMenuPointerUp = rightClick.onPointerUp;
 
   const onPointerDown = (e: ReactPointerEvent) => {
-    // A finger on a board's empty space pans, whatever the tool, and never opens the canvas menu
-    // (hooks/canvas/pan-through.ts).
+    // A finger on a board's empty space, or on an element too big for the screen, pans, whatever the tool, and
+    // never opens the canvas menu (hooks/canvas/pan-through.ts).
     if (isPanThrough(e)) {
-      startPan(e);
+      startPan(e, panThroughTap(e));
       return;
     }
     // Touch press-and-hold on the empty canvas opens the context menu

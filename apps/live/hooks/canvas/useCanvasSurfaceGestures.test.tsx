@@ -270,3 +270,94 @@ describe('a press on the canvas cover', () => {
     expect(interceptPress).toHaveBeenCalledTimes(1);
   });
 });
+
+// docs/specs/008-canvas/avatar-mode.md "Walking": a finger's drag pans, and only its tap walks.
+describe('Avatar mode presses', () => {
+  function avatarSetup() {
+    const walkTo = vi.fn();
+    const setPan = vi.fn();
+    const wrapper = document.createElement('div');
+    wrapper.getBoundingClientRect = () =>
+      ({
+        left: 0,
+        top: 0,
+        right: 400,
+        bottom: 800,
+        x: 0,
+        y: 0,
+        width: 400,
+        height: 800,
+      }) as DOMRect;
+    const { result } = renderHook(() =>
+      useCanvasSurfaceGestures({
+        canvasTool: 'avatar',
+        middleMousePan: true,
+        pendingDraw: null,
+        viewportOffset: { x: 0, y: 0 },
+        viewportZoom: 1,
+        mainRef: { current: null },
+        wrapperRef: { current: wrapper },
+        spaceHeldRef: { current: false },
+        setPan,
+        setMarquee: vi.fn(),
+        spotlight: {},
+        avatar: { walkTo, pos: { x: 0, y: 0 }, seatedOn: null },
+        peerAvatars: [],
+        isoCamera: {},
+        beginPendingDrawGesture: () => false,
+        onDeselect: vi.fn(),
+        onCanvasDoubleClick: vi.fn(),
+      } as never),
+    );
+    const press = (pointerType: string) =>
+      result.current.onPointerDownCapture({
+        target: document.createElement('div'),
+        button: 0,
+        detail: 1,
+        clientX: 120,
+        clientY: 240,
+        pointerType,
+        preventDefault: vi.fn(),
+        stopPropagation: vi.fn(),
+      } as unknown as ReactPointerEvent);
+    return { press, walkTo, setPan };
+  }
+
+  it('pans on a finger, walking only when the press turns out a tap', () => {
+    const { press, walkTo, setPan } = avatarSetup();
+    press('touch');
+    expect(walkTo).not.toHaveBeenCalled();
+    const pan = setPan.mock.calls[0]?.[0] as { startClientX: number; onTap?: () => void };
+    expect(pan.startClientX).toBe(120);
+    pan.onTap?.();
+    expect(walkTo).toHaveBeenCalledWith({ x: 120, y: 240 });
+  });
+
+  it('walks at once on a mouse click, starting no pan', () => {
+    const { press, walkTo, setPan } = avatarSetup();
+    press('mouse');
+    expect(walkTo).toHaveBeenCalledWith({ x: 120, y: 240 });
+    expect(setPan).not.toHaveBeenCalled();
+  });
+});
+
+// docs/specs/008-canvas/canvas-and-palette.md "Touch (iOS / iPad)": a press panning through an element hands its tap to the pan.
+describe('a pan-through press with a tap', () => {
+  it('carries the tap into the pan', async () => {
+    const { markPanThrough } = await import('./pan-through');
+    const { result, setPan } = setup('pan');
+    const onTap = vi.fn();
+    const press = {
+      button: 0,
+      pointerType: 'touch',
+      clientX: 1,
+      clientY: 2,
+      target: document.createElement('div'),
+      currentTarget: document.createElement('main'),
+      nativeEvent: new Event('pointerdown'),
+    } as unknown as ReactPointerEvent;
+    markPanThrough(press, onTap);
+    result.current.onPointerDown(press);
+    expect(setPan).toHaveBeenCalledWith(expect.objectContaining({ onTap }));
+  });
+});
