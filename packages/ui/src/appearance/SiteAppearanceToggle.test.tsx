@@ -35,16 +35,22 @@ describe('SiteAppearanceToggle', () => {
 
   it('cycles Light, Dark, System, painting and persisting each pick', () => {
     render(<SiteAppearanceToggle />);
-    act(() => fireEvent.click(toggle()));
+    act(() => {
+      fireEvent.click(toggle());
+    });
     expect(localStorage.getItem(APPEARANCE_STORAGE_KEY)).toBe('light');
     expect(document.documentElement.classList.contains('dark')).toBe(false);
     expect(toggle()).toHaveProperty('ariaLabel', 'Appearance: Light. Switch to Dark.');
 
-    act(() => fireEvent.click(toggle()));
+    act(() => {
+      fireEvent.click(toggle());
+    });
     expect(localStorage.getItem(APPEARANCE_STORAGE_KEY)).toBe('dark');
     expect(document.documentElement.classList.contains('dark')).toBe(true);
 
-    act(() => fireEvent.click(toggle()));
+    act(() => {
+      fireEvent.click(toggle());
+    });
     expect(localStorage.getItem(APPEARANCE_STORAGE_KEY)).toBe('system');
     expect(toggle()).toHaveProperty('ariaLabel', 'Appearance: System. Switch to Light.');
   });
