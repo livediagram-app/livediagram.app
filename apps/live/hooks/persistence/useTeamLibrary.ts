@@ -152,14 +152,17 @@ export function useTeamLibrary(
     [ownerId, teamId, refresh, onChange],
   );
 
-  // Hard-delete a team document. Any joined member may delete it
+  // Delete a team document, to the team's Trash. Any joined member may delete it
   // (docs/specs/013-workspace/team-shared-documents.md), gated server-side by the team-member delete check.
+  // Whether the delete landed, so the caller offers its Undo only then.
   const deleteDocument = useCallback(
-    async (documentId: string) => {
-      if (!ownerId) return;
-      if (await accepted(apiDeleteDocument(ownerId, documentId))) track('Document', 'Deleted');
+    async (documentId: string): Promise<boolean> => {
+      if (!ownerId) return false;
+      const ok = await accepted(apiDeleteDocument(ownerId, documentId));
+      if (ok) track('Document', 'Deleted');
       await refresh();
       onChange.current?.();
+      return ok;
     },
     [ownerId, refresh, onChange],
   );

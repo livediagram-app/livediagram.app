@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Tab } from '@livediagram/document';
-import { deleteTabWarning, formsFeeding } from './forms-feeding';
+import { FORM_TAB_DELETE_WARNING, deleteTabWarning, formsFeeding } from './forms-feeding';
 
 // Deleting a board or sheet a form sends to says first that it pauses the form
 // (docs/specs/030-forms/forms.md "Publishing and the form link").
@@ -38,7 +38,7 @@ describe('formsFeeding', () => {
     expect(formsFeeding(tabs, 'f1')).toEqual([]);
   });
 
-  it('warns in Delete’s confirmation, one form or several, and not for any other tab', () => {
+  it('warns in Delete’s confirmation, one form or several, and not for a tab nothing sends to', () => {
     expect(deleteTabWarning(tabs, 'board')).toBe(
       '“Bugs” sends its responses here: it stops taking them, keeping its link, until it has somewhere to send them.',
     );
@@ -46,7 +46,12 @@ describe('formsFeeding', () => {
     expect(deleteTabWarning(two, 'board')).toBe(
       '2 forms send their responses here: they stop taking them, keeping their links, until they have somewhere to send them.',
     );
-    expect(deleteTabWarning(tabs, 'f1')).toBeUndefined();
+    expect(deleteTabWarning(tabs, 'nope')).toBeUndefined();
+  });
+
+  // Deleting a Form tab deletes its link, which an undo does not bring back.
+  it('warns that a Form tab’s link goes with it', () => {
+    expect(deleteTabWarning(tabs, 'f1')).toBe(FORM_TAB_DELETE_WARNING);
   });
 
   // The tab bar asks for every tab on every render: 200 tabs, 50 of them forms, stay well inside a frame.
