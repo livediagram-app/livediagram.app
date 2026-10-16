@@ -214,6 +214,10 @@ export async function apiCreateDocument(
       ...(d.presentation ? { presentation: d.presentation } : {}),
       ...(d.markUsed === false ? { markUsed: false } : {}),
       ...(d.items && d.items.length ? { items: d.items } : {}),
+      // The sheet store (docs/specs/029-sheets/sheet-store.md "Offline documents", "Copies"): typed since Sheets
+      // shipped but never sent, so a sync came up short of its sheets and kept the local copy, and a duplicate or
+      // a Drive import landed without them.
+      ...(d.sheets && d.sheets.length ? { sheets: d.sheets } : {}),
       // The type catalogue rides the create (a copy's, a Plan template's card types); absent is the default types.
       ...(d.itemTypes ? { itemTypes: d.itemTypes } : {}),
     }),
