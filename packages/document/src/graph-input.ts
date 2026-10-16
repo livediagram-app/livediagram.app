@@ -421,7 +421,24 @@ export function sequenceFromGraph(input: GraphInput): SequenceDiagram {
 // What a graph asks that it cannot be drawn as, said rather than dropped: an id naming both a node and a group, a group listed as another's member (groups
 // do not nest, and the member was silently left out), and a node in no lane on a lanes graph (it went to an
 // unlabelled lane of its own).
+// The first id given twice in `ids`, or undefined.
+function repeatedId(ids: readonly string[]): string | undefined {
+  const seen = new Set<string>();
+  for (const id of ids) {
+    if (seen.has(id)) return id;
+    seen.add(id);
+  }
+  return undefined;
+}
+
 export function graphShapeError(graph: GraphInput): string | undefined {
+  // Each node and each group becomes an element of its id, so no id can name two of either.
+  const twiceNode = repeatedId(graph.nodes.map((n) => n.id));
+  if (twiceNode !== undefined)
+    return `node id "${twiceNode}" is used twice: give each node its own id`;
+  const twiceGroup = repeatedId((graph.groups ?? []).map((g) => g.id));
+  if (twiceGroup !== undefined)
+    return `group id "${twiceGroup}" is used twice: give each group its own id`;
   const groupIds = new Set((graph.groups ?? []).map((g) => g.id));
   // Each node and each group becomes an element of its id, so one id cannot name both.
   const nodeIds = new Set(graph.nodes.map((n) => n.id));
@@ -436,7 +453,17 @@ export function graphShapeError(graph: GraphInput): string | undefined {
       return `group "${g.id}" lists group "${nested}" as a member: groups do not nest; list nodes, one group each`;
   }
   if (graph.style !== 'lanes') return undefined;
-  const laned = new Set((withNodeGroups(graph) ?? []).flatMap((g) => g.members));
+  // A lane draws its own copy of each node it lists, so a node in two lanes would be drawn twice under one id.
+  const laneOf = new Map<string, string>();
+  for (const g of withNodeGroups(graph) ?? []) {
+    for (const m of new Set(g.members)) {
+      const other = laneOf.get(m);
+      if (other !== undefined)
+        return `node "${m}" is in two lanes, "${other}" and "${g.id}": a lanes graph puts each node in one lane`;
+      laneOf.set(m, g.id);
+    }
+  }
+  const laned = new Set(laneOf.keys());
   const loose = graph.nodes.filter((n) => !laned.has(n.id)).map((n) => `"${n.id}"`);
   return loose.length
     ? `a lanes graph puts every node in a lane: ${loose.slice(0, 5).join(', ')}${loose.length > 5 ? ` and ${loose.length - 5} more` : ''} in no group`
