@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
+import { cpuBudgetMs } from '@livediagram/vitest-config/cpu-time';
 import { ROUTE_MANIFEST } from './manifest';
 import {
   candidatePaths,
@@ -33,6 +34,11 @@ const show = (r: Pick<ProbeResult, 'method' | 'path'>) => `${r.method} /${r.path
 
 let results: ProbeResult[] = [];
 
+// The sweep is about 35,000 paths in five methods each: some 175,000 dispatches. They take 5 s on a
+// developer's machine and 15 s under coverage, and CI's shared runners, under coverage beside another
+// package, took 19 to 62 s for the same work. 40 s here, three times that on CI or under coverage.
+const PROBE_BUDGET_MS = cpuBudgetMs(40_000);
+
 beforeAll(async () => {
   // Trapped requests end in index.ts's catch-all, which logs each one.
   vi.spyOn(console, 'error').mockImplementation(() => undefined);
@@ -52,9 +58,7 @@ beforeAll(async () => {
     candidates.push(...candidatePaths(segment, byPosition, maxLength));
   }
   results = await probeDispatch(candidates);
-  // Over a thousand dispatches: about a second alone, past the 10 s hook default on a runner shared by two
-  // packages under coverage.
-}, 60_000);
+}, PROBE_BUDGET_MS);
 
 afterAll(() => {
   vi.restoreAllMocks();
