@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { migrateIncomingElements, migrateIncomingTab, migrateStoredTab } from './stored-tab';
-import type { Element, Tab } from './index';
+import type { Tab } from './index';
 
 // Every tab-level migration on the way in, in one call (docs/specs/011-theme/retired-schemes.md): the api's
 // tab read, the thumbnail render, the offline store and a file import all run this.
@@ -37,7 +37,7 @@ describe('migrateStoredTab', () => {
     const tab: Tab = {
       id: 't',
       name: 'T',
-      elements: [{ id: 'a', type: 'sticky', x: 0, y: 0, width: 1, height: 1 } as Element],
+      elements: [{ id: 'a', type: 'sticky', x: 0, y: 0, width: 1, height: 1 }],
     };
     expect(migrateStoredTab(tab)).toBe(tab);
   });
@@ -102,7 +102,7 @@ describe('migrating untrusted input', () => {
 
   it('still migrates input it can read', () => {
     const step = { ...badStep, label: '' };
-    const [, settled] = migrateIncomingElements([box, step]) as Element[];
+    const [, settled] = migrateIncomingElements([box, step]);
     expect(settled).not.toBe(step);
     expect((settled as { label?: string }).label).toBe('1');
   });

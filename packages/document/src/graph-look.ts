@@ -198,7 +198,7 @@ export function routeLoops(
   flat: ReadonlySet<string>,
   routes: Routes,
 ): Element[] {
-  const boxes = new Map(elements.filter(isBoxed).map((b) => [b.id, b as BoxedElement] as const));
+  const boxes = new Map(elements.filter(isBoxed).map((b) => [b.id, b] as const));
   const solid = [...boxes.values()].filter((b) => !isBackdrop(b));
   // The solid boxes by place, so each arrow is tested against the boxes near its path, not every box.
   const solidGrid = rectGrid(solid, 0);
@@ -541,7 +541,7 @@ export function straightenSpine(
   flat: ReadonlySet<string>,
   axis: 'TB' | 'LR',
 ): Element[] {
-  const boxes = new Map(elements.filter(isBoxed).map((b) => [b.id, b as BoxedElement] as const));
+  const boxes = new Map(elements.filter(isBoxed).map((b) => [b.id, b] as const));
   const main = (id: string) => {
     const b = boxes.get(id)!;
     return axis === 'TB' ? b.y + b.height / 2 : b.x + b.width / 2;
@@ -610,7 +610,7 @@ export function straightenSpine(
 // beside the spine down to a later spine node leaves the source's bottom (TB) and enters the target's facing side,
 // one bend, instead of fanning into the target's top beside the spine's own arrow.
 export function sideRejoins(elements: Element[], axis: 'TB' | 'LR', routes: Routes): Element[] {
-  const boxes = new Map(elements.filter(isBoxed).map((b) => [b.id, b as BoxedElement] as const));
+  const boxes = new Map(elements.filter(isBoxed).map((b) => [b.id, b] as const));
   let next = elements;
   for (const el of elements) {
     if (el.type !== 'arrow') continue;

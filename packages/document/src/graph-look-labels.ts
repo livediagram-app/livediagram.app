@@ -255,7 +255,7 @@ export function placeElbowLabels(elements: Element[]): Element[] {
   return elements.map((el) => {
     if (!unlabelled.has(el.id)) return placed.get(el.id) ?? el;
     const { label: _label, ...rest } = el as ArrowElement;
-    return rest as ArrowElement;
+    return rest;
   });
 }
 

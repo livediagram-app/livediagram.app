@@ -1,7 +1,6 @@
 // A document for the form verb suites (docs/specs/030-forms/forms.md "Agents"): a Board tab "Bugs" whose board takes
 // only Bug cards, a Sheet tab "Budget", and a Form tab "Bug Report" sending Bug cards to New, its Severity a field.
 import type { PlanResponse } from '@livediagram/api-schema';
-import type { Tab } from '@livediagram/document';
 import type { FormDefinition } from '@livediagram/forms';
 import {
   ITEM_TYPES,
@@ -72,16 +71,15 @@ export function formPlan(): PlanResponse {
 
 export const formWorld = (): FormWorld => worldOf('doc', formPlan());
 
-export const formTabBody = (form: FormDefinition = bugForm()): FormTabBody =>
-  ({
-    id: 'form',
-    name: form.heading,
-    kind: 'form',
-    opensIn: 'plan',
-    elements: [],
-    form,
-    rev: 7,
-  }) as Tab & FormTabBody;
+export const formTabBody = (form: FormDefinition = bugForm()): FormTabBody => ({
+  id: 'form',
+  name: form.heading,
+  kind: 'form',
+  opensIn: 'plan',
+  elements: [],
+  form,
+  rev: 7,
+});
 
 let ids = 0;
 export function formDraft(

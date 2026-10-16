@@ -94,7 +94,7 @@ export async function readFormTabBody(
   documentId: string,
   tabId: string,
 ): Promise<FormTabBody> {
-  return (await api.json<TabResponse>(tabPath(documentId, tabId))).tab as FormTabBody;
+  return (await api.json<TabResponse>(tabPath(documentId, tabId))).tab;
 }
 
 // The link of a Form tab as its reader may see it (the code only for an Editor); null when the api will not say.

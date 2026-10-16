@@ -413,7 +413,7 @@ describe('the calls’ every path', () => {
     expect(bug.ok && bug.reading.respondsTo).toMatchObject({ board: 'Bugs', cardType: 'Bug' });
     const blank = await addForm(
       client,
-      { documentId: 'doc', starter: 'blank' as never, theme: 'forest' },
+      { documentId: 'doc', starter: 'blank', theme: 'forest' },
       'mcp',
     );
     expect(blank.ok && blank.reading.respondsTo).toEqual({ to: 'nowhere' });
@@ -547,7 +547,7 @@ describe('the calls’ every path', () => {
 
   it('makes a new document with no card types to bring when its form needs none', async () => {
     const { client, writes } = api();
-    const r = await addForm(client, { name: 'Blank', starter: 'blank' as never }, 'mcp');
+    const r = await addForm(client, { name: 'Blank', starter: 'blank' }, 'mcp');
     expect(r.ok).toBe(true);
     expect(writes[0]!.body).not.toHaveProperty('itemTypes');
   });
@@ -718,7 +718,7 @@ describe('a sheet the form makes or switches to', () => {
                   );
                 return Response.json({ changeset: { id: 'cs_0000000002', rev: 1 } });
               }
-            : (t as Record<string, unknown>)[k],
+            : t[k],
     });
     const { client } = api(
       null,

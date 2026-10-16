@@ -4,14 +4,7 @@
 import { z } from 'zod';
 import { STARTER_IDS, type StarterId } from '@livediagram/forms';
 import { defineVerb, VerbRefusal, type Verb, type VerbContext } from '../define';
-import {
-  addForm,
-  changeForm,
-  readForm,
-  shareForm,
-  type FormCallResult,
-  type ShareAction,
-} from '../forms/form-calls';
+import { addForm, changeForm, readForm, shareForm, type FormCallResult } from '../forms/form-calls';
 import type { FormChange } from '../forms/form-changes';
 import type { FormReading } from '../forms/form-read';
 import type { QuestionInput } from '../forms/form-question';
@@ -55,7 +48,7 @@ function outputOf(ctx: VerbContext, result: FormCallResult): ReadingOutput {
     state: r.state,
     link: r.code ? `${ctx.host}/form/${r.code}` : null,
     responses: r.responses,
-    respondsTo: r.respondsTo as Record<string, string>,
+    respondsTo: r.respondsTo,
     problems: r.problems,
     sections: r.sections,
     lines: result.lines,
@@ -214,10 +207,7 @@ export const formShare = defineVerb({
   output: readingOutput,
   run: async (ctx, input) => {
     const document = await documentOf(ctx, input.doc);
-    return outputOf(
-      ctx,
-      await shareForm(ctx.api, document.id, input.tab, input.action as ShareAction),
-    );
+    return outputOf(ctx, await shareForm(ctx.api, document.id, input.tab, input.action));
   },
   text: textOf,
   quiet: (o) => (o.link ? [o.link] : []),

@@ -134,9 +134,7 @@ describe('ConceptRowsEditor', () => {
       />,
     );
     expect(screen.queryByRole('textbox', { name: 'Tier 1 note' })).toBeNull();
-    expect((screen.getByRole('button', { name: 'Add Tier' }) as HTMLButtonElement).disabled).toBe(
-      true,
-    );
+    expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Add Tier' }).disabled).toBe(true);
     expect(
       (screen.getAllByRole('button', { name: 'Remove tier' })[0] as HTMLButtonElement).disabled,
     ).toBe(true);
