@@ -14,6 +14,10 @@
     "./cpu-time": {
       "types": "./cpu-time.d.ts",
       "default": "./cpu-time.js"
+    },
+    "./inline-script": {
+      "types": "./inline-script.d.ts",
+      "default": "./inline-script.js"
     }
   },
   "scripts": {
