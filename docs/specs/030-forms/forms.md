@@ -224,7 +224,12 @@ so text contrast never depends on the theme.
   every box (cards, fields, choices, ratings, buttons) by hand: a wandering outline at a marker's 2 px in ink
   (slate 700 light, slate 300 dark), neighbours wobbling differently, with a pencil-offset shadow. Focus, a pick and
   an error keep their own outline colours.
-- **Backdrop**: the theme's canvas colour, its light or dark half following the viewer.
+- **Backdrop**: the theme's canvas colour, its light or dark half following the viewer, with the tab's **canvas
+  style** over it when someone picked one in Tab Style's Canvas (a Form tab is in Plan, whose own canvas is plain):
+  a static pattern or an animated one moving behind the form (still under reduced motion), at the tab's pattern
+  colour (a colour the theme painted follows the viewer's half), size, speed and strength. In the builder and
+  Preview it is the canvas's own style; on the form link's page it comes with the look (`look.canvas`) and stays put
+  as the form scrolls.
 - A custom theme draws as Default, on the page and in the builder alike: the form link's page cannot read its
   owner's themes, and the builder shows what respondents will see.
 - The look dresses the form alone: the builder's status bar and the cog's panel are the editor's and keep its look.

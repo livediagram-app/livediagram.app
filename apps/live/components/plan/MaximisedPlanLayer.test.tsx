@@ -12,6 +12,7 @@ import {
   useMaximisedPlanId,
 } from '@/hooks/plan/maximised-plan';
 import { MOTION_MS } from '@livediagram/tailwind-config/motion';
+import { CanvasPatternContext } from '@/components/canvas/canvas-pattern-context';
 import {
   CanvasCover,
   MaximisableSlot,
@@ -264,6 +265,38 @@ describe('where a maximised element grows from and shrinks to', () => {
 // docs/specs/026-plan/plan-board.md "The header holds the top row": the cover hands the band to the element's header.
 describe('the canvas cover', () => {
   const insets = { top: 0, right: 0, bottom: 0, left: 0 };
+  // docs/specs/008-canvas/canvas-and-palette.md "Canvas": a cover inherits the canvas's colour and static pattern, but an
+  // animated style is a layer of the canvas's own, so the cover draws it again, under what it holds.
+  it('draws the canvas’s animated style, under the element, and no other', () => {
+    const cover = (pattern: 'aurora' | 'graph' | null) =>
+      render(
+        <CanvasPatternContext.Provider
+          value={pattern ? { pattern, color: '#123456', scale: 1.5, speed: 2, opacity: 0.5 } : null}
+        >
+          <CanvasCover layout={{ insets, band: null }} marker={{ 'data-x': '' }}>
+            <span />
+          </CanvasCover>
+        </CanvasPatternContext.Provider>,
+      ).container;
+    const moving = cover('aurora');
+    const layer = moving.querySelector<HTMLElement>('[data-animated-pattern="aurora"]')!;
+    expect(layer.style.opacity).toBe('0.5');
+    expect(layer.style.getPropertyValue('--lvd-pat')).toBe('#123456');
+    expect(layer.style.getPropertyValue('--lvd-bg-speed')).toBe('2');
+    // First in the cover, so the element (a later positioned sibling) paints over it.
+    expect(
+      moving
+        .querySelector('[data-canvas-cover] > :first-child')!
+        .hasAttribute('data-tab-pattern-layer'),
+    ).toBe(true);
+    expect(moving.querySelector('[data-canvas-cover] > [data-x]')).not.toBeNull();
+    cleanup();
+    // A static pattern rides the inherited background; nothing is drawn twice.
+    expect(cover('graph').querySelector('[data-tab-pattern-layer]')).toBeNull();
+    cleanup();
+    expect(cover(null).querySelector('[data-tab-pattern-layer]')).toBeNull();
+  });
+
   it('sets the header band for the element it holds, and none without one', () => {
     // The cover sits in the canvas, as it is portalled there; the strip's place is set on the canvas.
     const main = document.createElement('main');

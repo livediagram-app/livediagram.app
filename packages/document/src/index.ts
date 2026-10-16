@@ -251,6 +251,38 @@ export function isSeasonalPattern(pattern: BackgroundPattern): boolean {
   return (SEASONAL_BACKGROUND_PATTERNS as readonly string[]).includes(pattern);
 }
 
+// Every BackgroundPattern, so a pattern read from stored or sent data can be checked (the Record keeps it whole).
+const BACKGROUND_PATTERN_SET: Readonly<Record<BackgroundPattern, true>> = {
+  grid: true,
+  blank: true,
+  lines: true,
+  crosshatch: true,
+  graph: true,
+  confetti: true,
+  stripes: true,
+  diagonal: true,
+  waves: true,
+  bricks: true,
+  isometric: true,
+  hexagonal: true,
+  engineering: true,
+  checkerboard: true,
+  sparkles: true,
+  eggs: true,
+  cobwebs: true,
+  snowflakes: true,
+  'candy-stripes': true,
+  flow: true,
+  drift: true,
+  aurora: true,
+  ripple: true,
+  ribbons: true,
+};
+
+export function isBackgroundPattern(value: unknown): value is BackgroundPattern {
+  return typeof value === 'string' && Object.hasOwn(BACKGROUND_PATTERN_SET, value);
+}
+
 export function isAnimatedPattern(
   pattern: BackgroundPattern,
 ): pattern is AnimatedBackgroundPattern {

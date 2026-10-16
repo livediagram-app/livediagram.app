@@ -28,6 +28,9 @@ import {
   type MaximisedKind,
 } from '@/hooks/plan/maximised-plan';
 import { MOTION_MS } from '@livediagram/tailwind-config/motion';
+import { isAnimatedPattern } from '@livediagram/document';
+import { TabPatternLayer } from '@/components/canvas/TabPatternLayer';
+import { useCanvasPattern } from '@/components/canvas/canvas-pattern-context';
 import { prefersReducedMotion } from '@/lib/motion-preference';
 import { useCanvasLayerInsets } from '@/hooks/ui/useCanvasLayerInsets';
 import type { CanvasLayout, PhoneRow } from '@/lib/canvas-layer-insets';
@@ -67,6 +70,9 @@ export function CanvasCover({
   children: ReactNode;
 }) {
   const { insets, band, row } = layout;
+  // An animated canvas style is a layer of the canvas's own, under this cover: drawn again here, as the inherited
+  // background carries only the colour and a static pattern (the canvas's copy stops meanwhile: canvas-motion.css).
+  const pattern = useCanvasPattern();
   // The menu box is drawn at the toolbar's UI scale; the band's cards take its height (band-controls BAND_CARD_PX).
   const toolbarScale = useUiScale('toolbar');
   // The element's name moves to the menu box while there is a band, and back when it goes (menu-name-slot).
@@ -114,8 +120,8 @@ export function CanvasCover({
       data-canvas-cover=""
       // The default cursor: it takes every press, so the canvas's pan hand (inherited from `main`) never shows over it.
       className={`absolute inset-0 cursor-default ${CANVAS_LAYER_Z}`}
-      // An opaque backdrop: the canvas's own background (colour and pattern, from the canvas `main` it sits in), so
-      // nothing on the canvas shows through around the element, yet it still reads as the canvas.
+      // An opaque backdrop: the canvas's own background (colour and static pattern, from the canvas `main` it sits in),
+      // so nothing on the canvas shows through around the element, yet it still reads as the canvas.
       style={{ background: 'inherit' }}
       onPointerDown={stop}
       onDoubleClick={stop}
@@ -125,6 +131,7 @@ export function CanvasCover({
       }}
       onWheel={stop}
     >
+      {pattern && isAnimatedPattern(pattern.pattern) ? <TabPatternLayer {...pattern} /> : null}
       <div
         {...marker}
         {...(band ? { 'data-header-band': '' } : {})}
