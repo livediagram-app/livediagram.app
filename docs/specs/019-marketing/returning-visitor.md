@@ -57,14 +57,16 @@ on the same origin (the router serves `/` and `/explorer` from one host).
 - **Cards:** the fan's own cards (`components/HeroFanMine.tsx`), in its fan of poses (four cards for three
   documents and Explorer Home, five for four): each document's name, its **preview** (`components/RecentPreview.tsx`:
   its snapshot from this browser's cache, the one the editor leaves on each save, on the diagram's own background
-  colour, as the Explorer's cards draw it; with no snapshot, its mode glyph on a quiet tint) and how long since it was
-  saved ("2 hours ago"). Pressing one opens the document (`/document/<id>`).
-- **Explorer Home**, the last card: "Explorer Home" over a tinted panel ("All your documents") and "Open", to
-  `/explorer/home`.
+  colour, as the Explorer's cards draw it; with no snapshot, its mode glyph on a quiet tint), and under the preview,
+  right-aligned at the card's foot, how long since it was saved ("2 hours ago"). The foot runs off the band, so the
+  time is out of sight at rest; pointing at (or focusing) a card straightens it and lifts it 4.25rem, enough to bring
+  the time into view (the fan clips only its foot, so the lifted card keeps its title). Pressing one opens the
+  document (`/document/<id>`).
+- **Explorer Home**, the last card: "Explorer Home" with "Open" at the top right, over a tinted panel ("All your
+  documents"), to `/explorer/home`.
 - **On a phone** the fan shows three cards: the two most recent documents and Explorer Home.
 - **They stay put.** The template fan deals a new card every few seconds; a returning visitor came for these, so
-  nothing is swapped. Each card springs in a beat after the one before it when the fan deals, and hovering or
-  focusing one straightens and lifts it, as on the template fan.
+  nothing is swapped. Each card springs in a beat after the one before it when the fan deals.
 - **Keyboard and screen readers:** real links, in reading order.
 
 ## No flash, no shift
