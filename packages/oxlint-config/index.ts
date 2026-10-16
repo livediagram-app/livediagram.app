@@ -199,6 +199,7 @@ export default defineConfig({
     {
       // Type-aware rules (typescript-eslint's recommended type-checked set), through oxlint-tsgolint.
       // TypeScript only: a JavaScript file carries no types, so every value in it reads as `any`.
+      // `require-await` stays off (docs/specs/003-system-architecture/linting.md "Type-aware rules").
       files: TS_FILES,
       rules: {
         'typescript/await-thenable': 'error',
