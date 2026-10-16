@@ -109,7 +109,11 @@ describe('createApiClient', () => {
       baseUrl: base,
       fetch: (request) =>
         new Promise((_, reject) =>
-          request.signal.addEventListener('abort', () => reject(request.signal.reason)),
+          // As fetch does, it rejects with the signal's reason: whatever the abort was given.
+          request.signal.addEventListener('abort', () => {
+            const reason: unknown = request.signal.reason;
+            reject(reason);
+          }),
         ),
       headers: () => ({}),
       timeoutMs: 5,
