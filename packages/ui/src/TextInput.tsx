@@ -15,9 +15,11 @@ import { forwardRef, type InputHTMLAttributes, type TextareaHTMLAttributes } fro
 // and ring) rather than stacking a second border colour on top.
 // `compact` is the denser form rhythm (Plan's card and type editors): smaller
 // padding and 13px type, the same border, focus ring and colours.
+// A disabled field reads as one (a quieter fill and text, the not-allowed cursor): a Participant or Viewer meets
+// them in panels they may read but not change (Sheet Settings' Title), where a white field looked editable.
 
 const SHAPE =
-  'w-full rounded-md border bg-white text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-brand-400 focus:ring-2 focus:ring-brand-100 dark:bg-slate-900 dark:text-slate-100';
+  'w-full rounded-md border bg-white text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-brand-400 focus:ring-2 focus:ring-brand-100 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500 dark:bg-slate-900 dark:text-slate-100 dark:disabled:bg-slate-800/60 dark:disabled:text-slate-400';
 const PAD = 'px-3 py-2 text-sm';
 const PAD_COMPACT = 'px-2 py-1.5 text-[13px]';
 const BORDER = 'border-slate-200 dark:border-slate-700';
