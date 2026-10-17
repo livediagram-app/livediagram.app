@@ -67,8 +67,8 @@ board of the template shows some, and every plan view on its Dashboard has somet
 - **Every Plan template but Blank Plan and the spreadsheet templates makes several tabs**, in the order below; those
   make one. Every template of another mode makes one tab, except the three with a **companion Sheet**.
 - **A companion Sheet** is a Sheet tab that follows a Diagram template's tab, holding the live numbers behind the
-  drawing: the **Threat model** (its Threat Model tab, then **Threat Register**), the **Metric tree** (Metric Tree,
-  then **Driver Model**) and the **Value stream map** (Value Stream, then **Flow Data**), each the sheet template of
+  drawing: the **Threat Model** (its Threat Model tab, then **Threat Register**), the **Metric Tree** (Metric Tree,
+  then **Driver Model**) and the **Value Stream Map** (Value Stream, then **Flow Data**), each the sheet template of
   that kind ([Sheet templates](../029-sheets/sheet.md#sheet-templates)) filling its tab and opening in Plan. The first
   tab is the template's as ever (its mode, pattern and layers); the companion takes the theme and nothing else of the
   template's canvas (no pattern, layers or mode of the diagram's), so it is the same Sheet tab Start Planning would

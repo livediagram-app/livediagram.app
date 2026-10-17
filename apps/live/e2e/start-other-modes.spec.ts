@@ -43,7 +43,7 @@ test('Start Diagramming finds a Facilitate template and switches the tab to it',
   const facilitate = start
     .getByRole('region', { name: 'In Other Modes' })
     .getByRole('region', { name: 'Facilitate' });
-  const card = facilitate.getByRole('button', { name: /^Sailboat retrospective in Facilitate:/ });
+  const card = facilitate.getByRole('button', { name: /^Sailboat Retrospective in Facilitate:/ });
   await expect(card).toContainText('Opens in Facilitate');
   await card.click();
   await expect(start).toBeHidden();

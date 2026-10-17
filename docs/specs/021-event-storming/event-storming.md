@@ -36,7 +36,7 @@ is still invisible to the editor once its elements are on the canvas.
 
 ## Phase 1 (shipped): the starter
 
-- `TemplateKind` `'event-storming'`, title **Event storming**, an
+- `TemplateKind` `'event-storming'`, title **Event Storming**, an
   `extra` in the **Technical** category.
 - The seed is the method's opening move and nothing else: ONE orange
   domain-event sticky reading **"Board Created"**, gently tilted so it

@@ -210,8 +210,8 @@ whole chart is laid out by the flowchart layout, so Tab and Enter grow any templ
 - **Flowchart**: the checkout flow, flowing down; its key stays an ordinary group of shapes beside
   it.
 - **Swimlane**: a laned chart, flowing right.
-- **Approval workflow**: a laned chart, flowing right.
-- **Decision tree**: a chart of Decisions with Yes / No exits, flowing down.
+- **Approval Workflow**: a laned chart, flowing right.
+- **Decision Tree**: a chart of Decisions with Yes / No exits, flowing down.
 
 The **Data flow** template keeps its own notation (a DFD's entities, processes and stores are not
 flowchart steps) and is unchanged.
