@@ -51,6 +51,8 @@ export function useToolbarBox(selector: string, active = true): StripBox | null 
     let watchedParent: HTMLElement | null = null;
     const observer =
       typeof ResizeObserver !== 'undefined' ? new ResizeObserver(() => update()) : null;
+    const arrival =
+      typeof MutationObserver !== 'undefined' ? new MutationObserver(() => update()) : null;
     const update = () => {
       const card = document.querySelector<HTMLElement>(selector);
       if (card !== watched) {
@@ -69,11 +71,17 @@ export function useToolbarBox(selector: string, active = true): StripBox | null 
       }
       const next = measure(selector);
       setBox((prev) => (same(prev, next) ? prev : next));
+      // Not on screen yet (Draw's dock mounts a beat after an empty tab's pill asks for it): watch for it to
+      // arrive, and stop watching once it has. Only a resize re-measured it before, so the pill kept its no-dock
+      // place and sat on the dock's tools.
+      if (card) arrival?.disconnect();
+      else arrival?.observe(document.body, { childList: true, subtree: true });
     };
     update();
     window.addEventListener('resize', update);
     return () => {
       observer?.disconnect();
+      arrival?.disconnect();
       window.removeEventListener('resize', update);
     };
   }, [active, selector]);
