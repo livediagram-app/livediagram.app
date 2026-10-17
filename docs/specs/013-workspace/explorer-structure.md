@@ -114,6 +114,36 @@ reached from Home's What Happened (**See Timeline**). The retired `/explorer/act
 
 The group's title is **More**.
 
+## Dragging to the Trash
+
+The sidebar's **Trash** row takes a document or a folder dragged onto it, the way Plan mode's Trash takes a card
+([Plan items: Trash](../026-plan/items.md)).
+
+- **What drags.** Every document that drags to a folder today (its own, a team's, one in this browser; never one shared
+  with the reader, nor one being renamed), and the reader's own folders: a folder card or folder row in the pane, and
+  a folder row in the sidebar. A folder carries its own drag type, so a folder dropped on a folder is no drop: folders
+  are not moved by dragging.
+- **The Trash wakes while anything drags.** As soon as a document or folder is picked up, the Trash row becomes a
+  target: a dashed sky edge round the row and its label reads **Drop to Trash**, so it can be found mid-drag.
+- **Over it, it opens up.** With the drag over it, the row fills with the solid brand colour, its label turns white
+  and reads **Let go to trash it**, and its bin tips its lid (a small turn and grow). Never red: putting something in
+  the Trash is undoable, not a warning.
+- **Let go, it swallows.** The bin gives one short bounce, and the drop goes through the same action as the item's own
+  Delete: a document moves to the Trash with the **Document deleted** toast and its **Undo**
+  ([Trash](trash.md)); a folder goes through **Delete Folder**, with its confirmation, and its contents move up to its
+  parent ([Folders](folders.md)).
+- **Leaving it, or letting go elsewhere**, puts the row back as it was. A drag of anything else (text, a file from the
+  desktop) never wakes it.
+- **Motion** stays inside the budget: each change settles within 250 ms; under reduced motion the colours and words
+  change but nothing turns, grows or bounces.
+- **Assistive technology** hears the target's words through a polite status line as they change; the row keeps its
+  name, **Trash**, and its keyboard behaviour (dragging is a pointer gesture; the menus' Delete stays the keyboard
+  path).
+- **Phone**: the drawer's Trash row takes no drops (touch has no HTML drag).
+- The editor's Explorer panel is unchanged.
+- **Telemetry**: `UI·Selected·Sidebar.TrashDropDocument` / `Sidebar.TrashDropFolder` on a drop, beside the delete's own
+  `Document·Deleted` / `Folder·Deleted`.
+
 ## Page titles follow the rows
 
 A view is named by its row, everywhere it is named: the page heading, the document title (`<label> | livediagram`),

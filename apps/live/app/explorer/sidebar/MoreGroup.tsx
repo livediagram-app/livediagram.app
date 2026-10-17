@@ -1,6 +1,6 @@
 'use client';
 
-import { LibraryIcon, ThisBrowserIcon, TrashIcon } from '@/components/primitives/explorer-icons';
+import { LibraryIcon, ThisBrowserIcon } from '@/components/primitives/explorer-icons';
 import { useExplorer } from '../ExplorerContext';
 import {
   LIBRARY_EXPAND_KEY,
@@ -13,6 +13,7 @@ import { LIBRARY_PAGES } from './library-pages';
 import { SidebarGroup } from './SidebarGroup';
 import { SidebarRow } from './SidebarRow';
 import { TagsSidebarRow } from './TagRows';
+import { TrashSidebarRow } from './TrashSidebarRow';
 
 // More (docs/specs/013-workspace/explorer-structure.md): This browser (offline documents,
 // docs/specs/006-document/offline-mode.md), Library (Tags, docs/specs/013-workspace/tags.md, then the Library
@@ -75,17 +76,8 @@ export function MoreGroup({
           />
         ))}
       </SidebarRow>
-      <SidebarRow
-        icon={<TrashIcon />}
-        label={SIDEBAR_LABELS.trash}
-        textLabel={SIDEBAR_LABELS.trash}
-        selected={selected.kind === 'trash'}
-        onActivate={() => {
-          trackSidebar('Trash');
-          go({ kind: 'trash' });
-        }}
-        depth={0}
-      />
+      {/* Also a drop target for a dragged document or folder (explorer-structure.md "Dragging to the Trash"). */}
+      <TrashSidebarRow />
     </SidebarGroup>
   );
 }
