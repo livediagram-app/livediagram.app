@@ -19,6 +19,7 @@ function toastAfter(status: SaveStatus): string[] {
   const toast = {
     error: vi.fn(),
     success: vi.fn(),
+    warning: vi.fn(),
     info: vi.fn(),
     offer: vi.fn(),
     action: vi.fn(),
@@ -36,9 +37,7 @@ describe('useEditorPersistence save toast', () => {
 
   it('names the sign-in, not the connection, for an unauthenticated save', () => {
     const [message] = toastAfter('unauthenticated');
-    expect(message).toBe(
-      'Couldn’t confirm you’re signed in, so your changes aren’t saving. Sign in again to keep them.',
-    );
+    expect(message).toBe('Your sign-in has lapsed, so changes aren’t saving. Sign in again.');
     expect(message).not.toMatch(/connection/i);
   });
 

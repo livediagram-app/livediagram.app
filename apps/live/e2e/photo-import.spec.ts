@@ -766,7 +766,7 @@ test('a spent budget reads on this device instead, and says so', async ({ page, 
   );
   await expect(page.getByTestId('photo-reader-unavailable')).toBeVisible({ timeout: 90_000 });
   // The quota toast is not shown: the author was carried through, not stopped.
-  await expect(page.getByText(/used up its quota/i)).toHaveCount(0);
+  await expect(page.getByText(/out of quota/i)).toHaveCount(0);
   expectNoPageErrors(pageErrors);
 });
 

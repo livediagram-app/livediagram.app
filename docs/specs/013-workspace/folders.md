@@ -442,17 +442,16 @@ it stays in view as the dashboard scrolls; Settings opens the same synced
   either lands or ends in an error toast; none fails silently. A move that
   took the row away first puts it back.
   - A document into a folder of My documents: the row goes back to its
-    folder; "Could not move the document. Please try again."
-  - A document into a team: the row comes back to My documents; "Could not
-    move the document to the team. Please try again."
+    folder; "Could not move the document. Try again."
+  - A document into a team: the row comes back to My documents; "Couldn’t
+    move the document to the team. Try again."
   - A team document to another folder of its team: "Could not move the
-    document. Please try again."
-  - A team document out of its team, to My documents or another team: "Could
-    not move the document out of the team. Please try again."
-  - A folder under another folder: "Could not move the folder. Please try
-    again."
+    document. Try again."
+  - A team document out of its team, to My documents or another team:
+    "Couldn’t move the document out of the team. Try again."
+  - A folder under another folder: "Could not move the folder. Try again."
   - A folder made from the picker's New Folder tile: "Could not create the
-    folder. Please try again.", the tile keeping the name typed.
+    folder. Try again.", the tile keeping the name typed.
   - Each failure logs
     `[explorer-move] <document|document-to-team|team-document|team-document-out|folder|new-folder> failed`
     with the subject's id and the error.
@@ -462,8 +461,8 @@ it stays in view as the dashboard scrolls; Settings opens the same synced
   once is put back. One wording per verb (`lib/write-failure-copy.ts`), so
   a failure reads the same wherever it happened:
   - A new folder (New Folder, New Subfolder, a picker's New Folder tile in
-    any scope): "Could not create the folder. Please try again."
-  - A folder rename: "Could not rename the folder. Please try again.", the
+    any scope): "Could not create the folder. Try again."
+  - A folder rename: "Could not rename the folder. Try again.", the
     old name back.
   - A folder delete: "Could not delete the folder. Try again."
   - A team document's rename: "Could not rename the document. Please try

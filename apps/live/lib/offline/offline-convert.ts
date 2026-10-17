@@ -186,10 +186,10 @@ export function syncFailureMessage(e: unknown): string {
   if (e instanceof SyncStillSavingError) return e.message;
   if (e instanceof OfflineSyncIncompleteError)
     return e.reason === 'kept_changing'
-      ? 'This document kept changing while it synced. Your local copy is safe; try again when you finish editing.'
-      : 'The cloud copy came up short of cards or sheets, so your local copy was kept. Try again.';
+      ? 'This document kept changing while syncing. Your copy is safe: try again soon.'
+      : 'The cloud copy was missing cards or sheets, so yours was kept. Try again.';
   return e instanceof ApiError && e.status === 413
-    ? 'This document is too large to sync: a tab exceeds the server size limit, usually a big embedded image. Remove or shrink it and try again.'
+    ? 'Too large to sync, usually a big image on a tab. Shrink it and try again.'
     : 'Could not sync this document. Check your connection and try again.';
 }
 

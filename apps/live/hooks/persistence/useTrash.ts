@@ -42,7 +42,7 @@ export function useTrash(
     (next: TrashListing) => {
       setListing(next);
       if (next.cloud === null)
-        toast.error('Could not reach your Trash. Showing this browser only.');
+        toast.warning('Couldn’t reach your Trash. Showing this browser only.');
     },
     [toast],
   );
@@ -79,7 +79,7 @@ export function useTrash(
         toast.success('Document restored');
         onChanged();
       } catch {
-        toast.error('Could not restore that document. Please try again.');
+        toast.error('Could not restore that document. Try again.');
         load();
       }
     },
@@ -94,7 +94,7 @@ export function useTrash(
         drop([id]);
         track('Trash', 'Deleted', group.telemetryType);
       } catch {
-        toast.error('Could not delete that document. Please try again.');
+        toast.error('Could not delete that document. Try again.');
         load();
       }
     },
@@ -109,7 +109,7 @@ export function useTrash(
         drop(group.rows.map((r) => r.id));
         track('Trash', 'Cleared', group.telemetryType);
       } catch {
-        toast.error('Could not empty the Trash. Please try again.');
+        toast.error('Could not empty the Trash. Try again.');
       }
       // Re-read either way: a teammate may have binned something meanwhile.
       load();

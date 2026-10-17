@@ -202,8 +202,8 @@ toasting "Check your connection" on a wired fibre line.
 So it gets its own `unauthenticated` save status (`saveFailureStatus` in
 `save-failure.ts` maps every failure to exactly one status):
 
-- The toast reads "Couldn't confirm you're signed in, so your changes aren't
-  saving. Sign in again to keep them."
+- The toast reads "Your sign-in has lapsed, so changes aren't saving. Sign in
+  again."
 - The autosave keeps retrying on the next edit, unlike `forbidden`: the
   session can come back, and when it does the next save lands.
 

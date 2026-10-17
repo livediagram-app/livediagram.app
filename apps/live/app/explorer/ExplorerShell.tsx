@@ -242,7 +242,11 @@ function ShellChrome({ children }: { children: ReactNode }) {
           the tabs — the shared right-hand control cluster (search / GitHub /
           settings / dark-mode). Sticky so it stays in view while the dashboard
           scrolls; the sign-in banner is nudged up to clear it. */}
-      <div className="sticky bottom-0 z-[var(--z-chrome)] flex h-12 shrink-0 items-center justify-end gap-2 border-t border-slate-200 bg-white px-3 dark:border-slate-800 dark:bg-slate-900">
+      <div
+        // The toasts stand on it (docs/specs/004-interface-design/toasts.md "Placement").
+        data-toast-floor=""
+        className="sticky bottom-0 z-[var(--z-chrome)] flex h-12 shrink-0 items-center justify-end gap-2 border-t border-slate-200 bg-white px-3 dark:border-slate-800 dark:bg-slate-900"
+      >
         <ChromeControls
           onOpenSearch={() => setSearchOpen(true)}
           onOpenSettings={() => setSettingsOpen(true)}

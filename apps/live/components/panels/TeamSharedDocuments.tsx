@@ -212,7 +212,7 @@ export function TeamSharedDocuments({
   // it back.
   const deleteDocument = async (id: string) => {
     if (!(await lib.deleteDocument(id))) {
-      toast.error('Could not delete the document. Please try again.');
+      toast.error('Could not delete the document. Try again.');
       return;
     }
     offerDeleteUndo(toast, { ownerId, id, trash: 'Team', onRestored: () => void lib.refresh() });

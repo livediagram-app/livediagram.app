@@ -8,22 +8,34 @@ vi.mock('@/components/chrome/auth-shared', () => ({
 vi.mock('@/components/chrome/AuthControls', () => ({ SignInIcon: () => null }));
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
-const { SignInBanner, SIGNIN_BANNER_VAR } = await import('./SignInBanner');
+const { SignInBanner } = await import('./SignInBanner');
+const { TOAST_FLOOR_CHANGED_EVENT, TOAST_FLOOR_SELECTOR } =
+  await import('@/components/toast/toast-floor');
 
 afterEach(cleanup);
 
-// docs/specs/014-identity/sign-in-encouragement.md: the toasts stand on the banner while it shows, rather than
-// landing on its words ("Document deleted · Undo" did). It says how far up its top sits, and stops saying so when it goes.
 describe('SignInBanner', () => {
-  it('publishes how far its top sits above the bottom of the screen, and clears it on leaving', () => {
-    const root = document.documentElement;
-    const top = vi
-      .spyOn(HTMLElement.prototype, 'getBoundingClientRect')
-      .mockReturnValue({ top: window.innerHeight - 180 } as DOMRect);
+  // docs/specs/014-identity/sign-in-encouragement.md: the headline names what an account opens up.
+  it('invites a sign-in for Teams & AI, in one short line of reasons', () => {
     const view = render(<SignInBanner surface="Explorer" onDismiss={() => {}} />);
-    expect(root.style.getPropertyValue(SIGNIN_BANNER_VAR)).toBe('180px');
+    expect(view.getByText('Sign in to access Teams & AI')).toBeTruthy();
+    expect(
+      view.getByText('Share with your team, build with AI, sync across devices.'),
+    ).toBeTruthy();
+  });
+
+  // docs/specs/004-interface-design/toasts.md "Placement": the toasts stand on the banner while it shows, rather
+  // than landing on its words ("Document deleted · Undo" did). Its card is bottom chrome, and it says when it comes
+  // and goes so a toast already up moves with it.
+  it('is bottom chrome the toasts stand on, and says when it comes and goes', () => {
+    const heard = vi.fn();
+    window.addEventListener(TOAST_FLOOR_CHANGED_EVENT, heard);
+    const view = render(<SignInBanner surface="Explorer" onDismiss={() => {}} />);
+    const card = document.querySelector(TOAST_FLOOR_SELECTOR);
+    expect(card?.textContent).toContain('Sign in to access Teams & AI');
+    expect(heard).toHaveBeenCalledTimes(1);
     view.unmount();
-    expect(root.style.getPropertyValue(SIGNIN_BANNER_VAR)).toBe('');
-    top.mockRestore();
+    expect(heard).toHaveBeenCalledTimes(2);
+    window.removeEventListener(TOAST_FLOOR_CHANGED_EVENT, heard);
   });
 });

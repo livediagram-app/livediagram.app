@@ -230,6 +230,6 @@ export function verdictNotice(name: string, v: CleanupVerdict): string | null {
     case 'rearranges-lanes':
       return `${name} would rearrange your lanes, so nothing moved.`;
     case 'unsuited':
-      return `${name} suits ideas that branch out from a centre; these arrows loop back, so nothing moved.`;
+      return `${name} needs a centre to branch from; these arrows loop, so nothing moved.`;
   }
 }

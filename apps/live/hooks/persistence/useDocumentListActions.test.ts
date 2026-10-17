@@ -95,7 +95,7 @@ describe('deleteDocument from a list', () => {
     await actions.deleteDocument('b');
     expect(ids()).toEqual(['a', 'b', 'c']);
     expect(toast.action).not.toHaveBeenCalled();
-    expect(toast.error).toHaveBeenCalledWith('Could not delete the document. Please try again.');
+    expect(toast.error).toHaveBeenCalledWith('Could not delete the document. Try again.');
     expect(track).not.toHaveBeenCalled();
     // Its editor may save it again.
     expect(isDocumentDeleted('b')).toBe(false);
@@ -118,7 +118,7 @@ describe('moveDocumentToFolder', () => {
     actions.moveDocumentToFolder('b', 'f1');
     expect(folderOf('b')).toBe('f1');
     await vi.waitFor(() =>
-      expect(toast.error).toHaveBeenCalledWith('Could not move the document. Please try again.'),
+      expect(toast.error).toHaveBeenCalledWith('Could not move the document. Try again.'),
     );
     expect(folderOf('b')).toBeNull();
     expect(track).not.toHaveBeenCalled();

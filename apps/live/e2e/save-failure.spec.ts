@@ -30,7 +30,7 @@ test('a save refused as unauthenticated says so, then recovers', async ({ page, 
 
   // Next's route announcer is an alert too; the toast is the other one.
   const alert = page.locator('[role="alert"]:not(#__next-route-announcer__)');
-  await expect(alert).toContainText('Couldn’t confirm you’re signed in');
+  await expect(alert).toContainText('Your sign-in has lapsed');
   await expect(alert).not.toContainText(/connection/i);
 
   await page.unroute(tabWrites);

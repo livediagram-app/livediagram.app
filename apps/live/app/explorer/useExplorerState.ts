@@ -257,7 +257,7 @@ export function useExplorerState() {
         if (sharedList === null) console.warn('[explorer] list read failed list=shared');
         // Only the shared read failed: the other views still list their rows, so say what is missing.
         if (list !== null && sharedList === null) {
-          toast.error('Couldn’t load the documents shared with you. Try again in a moment.');
+          toast.error('Couldn’t load documents shared with you. Try again soon.');
         }
         setLoading(false);
       }),

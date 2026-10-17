@@ -82,7 +82,7 @@ describe('moving a folder', () => {
     const { moves, toast, refreshFolders } = setup();
     moves.moveFolderToParent('f1', 'f2');
     await vi.waitFor(() =>
-      expect(toast.error).toHaveBeenCalledWith('Could not move the folder. Please try again.'),
+      expect(toast.error).toHaveBeenCalledWith('Could not move the folder. Try again.'),
     );
     expect(refreshFolders).not.toHaveBeenCalled();
     expect(track).not.toHaveBeenCalled();
@@ -98,7 +98,7 @@ describe('moving a document into a team', () => {
     expect(ids()).toEqual(['a']);
     await vi.waitFor(() =>
       expect(toast.error).toHaveBeenCalledWith(
-        'Could not move the document to the team. Please try again.',
+        'Couldn’t move the document to the team. Try again.',
       ),
     );
     expect(ids()).toEqual(['b', 'a']);
@@ -121,7 +121,7 @@ describe('moving a team document within its team', () => {
     const { moves, toast, refreshTeamLibraries } = setup();
     moves.moveDocumentTo('t1', { teamId: 'team-1', folderId: 'tf1' });
     await vi.waitFor(() =>
-      expect(toast.error).toHaveBeenCalledWith('Could not move the document. Please try again.'),
+      expect(toast.error).toHaveBeenCalledWith('Could not move the document. Try again.'),
     );
     expect(refreshTeamLibraries).not.toHaveBeenCalled();
     expect(track).not.toHaveBeenCalled();
@@ -148,7 +148,7 @@ describe('moving a team document out of its team', () => {
     moves.moveDocumentTo('t1', { teamId, folderId: null });
     await vi.waitFor(() =>
       expect(toast.error).toHaveBeenCalledWith(
-        'Could not move the document out of the team. Please try again.',
+        'Couldn’t move the document out of the team. Try again.',
       ),
     );
     expect(refreshPersonal).not.toHaveBeenCalled();
@@ -177,7 +177,7 @@ describe('making a folder from the picker', () => {
     vi.mocked(apiCreateFolder).mockRejectedValueOnce(new Error('offline'));
     const { moves, toast } = setup();
     await expect(moves.createMoveFolder('New', null, null)).resolves.toBeNull();
-    expect(toast.error).toHaveBeenCalledWith('Could not create the folder. Please try again.');
+    expect(toast.error).toHaveBeenCalledWith('Could not create the folder. Try again.');
     expect(warned()).toEqual(['[explorer-move] new-folder failed: offline']);
   });
 });

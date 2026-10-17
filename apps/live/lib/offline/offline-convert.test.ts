@@ -479,7 +479,7 @@ describe('syncFailureMessage', () => {
       /kept changing/i,
     );
     expect(syncFailureMessage(new OfflineSyncIncompleteError('stores_short'))).toMatch(
-      /local copy was kept/i,
+      /yours was kept/i,
     );
   });
 

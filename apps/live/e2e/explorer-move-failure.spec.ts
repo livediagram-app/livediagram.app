@@ -39,7 +39,7 @@ test('a folder move the api refuses says so', async ({ page, pageErrors, baseURL
   );
   await dialog.getByRole('button', { name: 'Move here' }).click();
 
-  await expect(page.getByText('Could not move the folder. Please try again.')).toBeVisible();
+  await expect(page.getByText('Could not move the folder. Try again.')).toBeVisible();
   await expect
     .poll(() => moves)
     .toEqual([expect.stringMatching(/^\[explorer-move\] folder failed folder=/)]);
