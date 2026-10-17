@@ -1250,7 +1250,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   });
 
   useRoomConnection({
-    participant: participant.participating,
     onAdderKey: participant.setAdderKey,
     hydrated,
     documentId,

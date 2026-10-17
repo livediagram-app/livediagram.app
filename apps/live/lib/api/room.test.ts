@@ -11,33 +11,21 @@ import {
   roomQueryString,
 } from './room';
 
-describe('roomQueryString (realtime auth params, docs/specs/014-identity/auth-and-guest-access.md + docs/specs/013-workspace/share-password.md)', () => {
-  it('maps each identifier to its short key', () => {
-    expect(roomQueryString({ shareCode: 'C', ownerId: 'O', ticket: 'T' }, 'P')).toBe(
-      't=T&s=C&o=O&p=P',
-    );
+// docs/specs/015-api/api.md "Realtime model": the upgrade URL is logged, so it carries the spent-on-use
+// ticket and nothing else; the share code, the owner id, its signature and the share password go to the
+// ticket mint as headers.
+describe('roomQueryString (the room upgrade carries only the ticket)', () => {
+  it('carries the ticket as `t`', () => {
+    expect(roomQueryString('T')).toBe('t=T');
   });
 
-  it('returns an empty string when nothing is set', () => {
-    expect(roomQueryString({}, null)).toBe('');
+  it('is empty without a ticket', () => {
+    expect(roomQueryString(null)).toBe('');
+    expect(roomQueryString('')).toBe('');
   });
 
-  it('strips null / undefined / empty values so the URL stays clean', () => {
-    expect(roomQueryString({ shareCode: null, ownerId: 'O', ticket: undefined }, null)).toBe('o=O');
-    expect(roomQueryString({ shareCode: '' }, '')).toBe('');
-  });
-
-  it('carries the session share password independently of the options', () => {
-    expect(roomQueryString({}, 'secret')).toBe('p=secret');
-  });
-
-  it('carries the owner signature beside the owner id, and never on its own', () => {
-    expect(roomQueryString({ ownerId: 'O', ownerSig: 'G' }, null)).toBe('o=O&os=G');
-    expect(roomQueryString({ ownerSig: 'G' }, null)).toBe('');
-  });
-
-  it('url-encodes values', () => {
-    expect(roomQueryString({ ownerId: 'a b&c' }, null)).toBe('o=a+b%26c');
+  it('url-encodes the ticket', () => {
+    expect(roomQueryString('a b&c')).toBe('t=a+b%26c');
   });
 });
 
@@ -292,19 +280,107 @@ describe('connectRoom outbox (docs/specs/012-collaboration/collab-race-hardening
     expect(FakeSocket.all[1]!.url).toContain('t=second');
   });
 
-  it('mints nothing for a session that came in without a ticket', async () => {
-    const mintTicket = vi.fn(async () => 'x');
+  it('mints its first ticket itself when it starts without one', async () => {
+    const mintTicket = vi.fn(async () => 'first');
     connectRoom(
       'd1',
       { id: 'me', name: 'Me', color: '#000' },
       { onPresence() {}, onOp() {} },
-      { ownerId: 'me', mintTicket },
+      { mintTicket },
     );
-    FakeSocket.all[0]!.fire('open');
+    // No socket until the ticket is in hand: an upgrade without one is refused.
+    expect(FakeSocket.all).toHaveLength(0);
+    await vi.runOnlyPendingTimersAsync();
+    expect(mintTicket).toHaveBeenCalledOnce();
+    expect(FakeSocket.all[0]!.url).toContain('t=first');
+  });
+
+  it('mints again on reconnect after a mint that failed', async () => {
+    // A failed mint leaves no ticket: that upgrade is refused, and the next attempt must not give up on tickets.
+    const mintTicket = vi.fn(async () => 'second');
+    connectRoom(
+      'd1',
+      { id: 'me', name: 'Me', color: '#000' },
+      { onPresence() {}, onOp() {} },
+      { ticket: '', mintTicket },
+    );
+    expect(FakeSocket.all[0]!.url).not.toContain('?');
     FakeSocket.all[0]!.fire('close');
     await vi.runOnlyPendingTimersAsync();
-    expect(mintTicket).not.toHaveBeenCalled();
-    expect(FakeSocket.all).toHaveLength(2);
+    expect(mintTicket).toHaveBeenCalledOnce();
+    expect(FakeSocket.all[1]!.url).toContain('t=second');
+  });
+
+  // docs/specs/024-agents/agent-changesets.md "Held elements": the room holds an element from an agent only
+  // while it knows the selection, and a new socket is a session it knows nothing about.
+  it('says the selection and tab made before the first socket opened, once it opens', async () => {
+    let release: (t: string) => void = () => {};
+    const mintTicket = vi.fn(() => new Promise<string>((r) => (release = r)));
+    const room = connectRoom(
+      'd1',
+      { id: 'me', name: 'Me', color: '#000' },
+      { onPresence() {}, onOp() {} },
+      { mintTicket },
+    );
+    room.send({ kind: 'op', op: { kind: 'tab-focus', tabId: 't1' } });
+    room.send({ kind: 'op', op: { kind: 'select', elementId: 'old', tabId: 't1' } });
+    room.send({ kind: 'op', op: { kind: 'select', elementId: 'api', tabId: 't1' } });
+    release('first');
+    await vi.runOnlyPendingTimersAsync();
+    const socket = FakeSocket.all[0]!;
+    socket.fire('open');
+    const ops = socket.sent.filter((m) => (m as { kind: string }).kind === 'op');
+    expect(ops).toEqual([
+      { kind: 'op', op: { kind: 'tab-focus', tabId: 't1' } },
+      { kind: 'op', op: { kind: 'select', elementId: 'api', tabId: 't1' } },
+    ]);
+    expect((socket.sent[0] as { kind: string }).kind).toBe('hello');
+  });
+
+  it('says the latest selection again on a reconnect', async () => {
+    const room = connectRoom(
+      'd1',
+      { id: 'me', name: 'Me', color: '#000' },
+      { onPresence() {}, onOp() {} },
+      { ticket: 'first', mintTicket: async () => 'second' },
+    );
+    const first = FakeSocket.all[0]!;
+    first.fire('open');
+    room.send({ kind: 'op', op: { kind: 'select', elementId: 'api', tabId: 't1' } });
+    first.fire('close');
+    await vi.runOnlyPendingTimersAsync();
+    const second = FakeSocket.all[1]!;
+    second.fire('open');
+    expect(second.sent).toContainEqual({
+      kind: 'op',
+      op: { kind: 'select', elementId: 'api', tabId: 't1' },
+    });
+  });
+
+  it('closes cleanly while its first ticket is still being minted', async () => {
+    let release: (t: string) => void = () => {};
+    const room = connectRoom(
+      'd1',
+      { id: 'me', name: 'Me', color: '#000' },
+      { onPresence() {}, onOp() {} },
+      { mintTicket: () => new Promise<string>((r) => (release = r)) },
+    );
+    room.close();
+    release('late');
+    await vi.runOnlyPendingTimersAsync();
+    expect(FakeSocket.all).toHaveLength(0);
+  });
+
+  it('never puts a credential other than the ticket on the upgrade URL', async () => {
+    connectRoom(
+      'd1',
+      { id: 'owner-secret', name: 'Me', color: '#000' },
+      { onPresence() {}, onOp() {} },
+      { ticket: 'first', mintTicket: async () => 'second' },
+    );
+    const url = new URL(FakeSocket.all[0]!.url);
+    expect([...url.searchParams.keys()]).toEqual(['t']);
+    expect(url.href).not.toContain('owner-secret');
   });
 
   it("never sends a comment's author id", () => {
