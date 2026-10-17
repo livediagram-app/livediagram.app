@@ -4,15 +4,15 @@ import { ctaHref } from '@livediagram/api-schema';
 import { editorModeLabel } from '@livediagram/document';
 import { TemplatePreview } from '@livediagram/template-previews';
 import { templateCreateHref, type TemplateKind } from '@livediagram/templates';
-import { EDITOR_MODE_ICONS, Glyph, StartBlankMenu } from '@livediagram/ui';
+import { EDITOR_MODE_ICONS, Glyph, START_BLANK_HREF } from '@livediagram/ui';
 import { useDeferredValue, useId, useRef, useState, type KeyboardEvent } from 'react';
 import { heroSearch } from '@/lib/hero-starts';
 
 // The hero's template search (docs/specs/019-marketing/marketing-site.md "Hero"): a search form whose
 // best matches list under the bar as real links, each creating its template. Enter opens the top
 // match, Down moves into the list (Up and Down walk it, Up off the top returns to the box), Escape
-// clears the box. The list shows while focus is inside the search and the box holds a query. The
-// header's Start Blank menu sits inside the bar, its rows reported as the hero's own funnel slots.
+// clears the box. The list shows while focus is inside the search and the box holds a query. Start
+// Blank sits inside the bar, a plain link to the wizard: the mode picked there opens with no start screen.
 
 const createHref = (kind: TemplateKind) => ctaHref(templateCreateHref(kind), 'Home.HeroSearch');
 
@@ -32,7 +32,7 @@ export function HeroSearch() {
     ...(rootRef.current?.querySelectorAll<HTMLAnchorElement>('[data-hero-result]') ?? []),
   ];
   const onKeyDown = (e: KeyboardEvent) => {
-    // Only the box and the results: the Start Blank menu in the bar keeps its own keys.
+    // Only the box and the results: Start Blank in the bar keeps its own keys.
     const target = e.target as HTMLElement;
     if (target !== inputRef.current && !target.hasAttribute('data-hero-result')) return;
     if (e.key === 'Escape') {
@@ -61,8 +61,8 @@ export function HeroSearch() {
         if (top) window.location.assign(createHref(top.kind));
       }}
       onKeyDown={onKeyDown}
-      // The results are for the box and the list: focus moving to the Start Blank menu in the bar
-      // closes them, so picking a blank never shows the matches for what was typed.
+      // The results are for the box and the list: focus moving to Start Blank in the bar closes
+      // them, so it never shows the matches for what was typed.
       onFocus={(e) => setFocused(!(e.target as HTMLElement).closest('[data-hero-blank]'))}
       onBlur={(e) => {
         if (!rootRef.current?.contains(e.relatedTarget)) setFocused(false);
@@ -92,13 +92,13 @@ export function HeroSearch() {
           aria-describedby={statusId}
           className="min-w-0 flex-1 bg-transparent text-base text-slate-900 outline-none placeholder:text-slate-500 sm:text-lg [&::-webkit-search-cancel-button]:hidden"
         />
-        <span data-hero-blank="" className="contents">
-          <StartBlankMenu
-            ctaSurface="Home"
-            place="HeroBlank"
-            triggerClassName="inline-flex h-12 cursor-pointer items-center gap-2 rounded-xl bg-(--hero-cta) px-4 text-sm font-semibold text-white transition-colors hover:bg-(--hero-cta-hover) sm:px-5 sm:text-base"
-          />
-        </span>
+        <a
+          href={ctaHref(START_BLANK_HREF, 'Home.HeroBlank')}
+          data-hero-blank=""
+          className="inline-flex h-12 shrink-0 items-center rounded-xl bg-(--hero-cta) px-4 text-sm font-semibold text-white transition-colors hover:bg-(--hero-cta-hover) sm:px-5 sm:text-base"
+        >
+          <span className="text-optical-centre">Start Blank</span>
+        </a>
       </div>
 
       {/* Said once the list settles, for a screen reader: how many matched, or that none did. */}
@@ -144,8 +144,8 @@ export function HeroSearch() {
           </ul>
         ) : (
           <p className="px-3 py-3 text-[15px] text-slate-700">
-            Nothing matches &ldquo;{shown.trim()}&rdquo;. Start from a blank, or browse every
-            template below.
+            Nothing matches &ldquo;{shown.trim()}&rdquo;. Start blank, or browse every template
+            below.
           </p>
         )}
         <a

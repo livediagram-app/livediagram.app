@@ -5,13 +5,13 @@ import { BuildWithAiLink } from './BuildWithAiLink';
 import { HeaderPrimaryCta } from './HeaderPrimaryCta';
 import { ProductNav, type ProductNavKey } from './ProductNav';
 import { ShareRail } from './ShareRail';
-import { StartBlankMenu } from './StartBlankMenu';
+import { StartBlankLink } from './StartBlankLink';
 
 // The public site header shared by the marketing landing page, the telemetry
 // dashboard and the help centre so the three read as one product. Brand +
 // apps-menu dropdown on the left, the CTA pair on the right (a secondary
-// "Start Blank", a menu of one blank per editor mode (StartBlankMenu), beside the
-// primary "Choose Template", /new, the encouraged wizard path), with the
+// "Start Blank", a plain link to the wizard whose chosen mode opens with no start
+// screen (StartBlankLink), beside the primary "Choose Template", /new), with the
 // ShareRail pinned to the page edge below. Cross-surface navigation (Help,
 // Explorer, Telemetry, ...) lives in the apps menu, so the header itself
 // carries just those CTAs. The Appearance toggle is never here
@@ -32,7 +32,7 @@ import { StartBlankMenu } from './StartBlankMenu';
 // bar, `top-18`) can rely on the number at every breakpoint.
 //
 // `ctaSurface` names the page for the landing funnel (docs/specs/019-marketing/landing-funnel.md): the default
-// pair's hrefs carry `via=<surface>.Header` / `.HeaderDraw` so the editor can
+// pair's hrefs carry `via=<surface>.Header` / `.HeaderBlank` so the editor can
 // count which page's header brought somebody in. A surface passing its own
 // `actions` tags those links itself.
 //
@@ -92,17 +92,14 @@ export function SiteHeader({
   );
 }
 
-// The default CTA pair. The Start Blank menu is hidden on mobile: Brand + dropdown + the
-// primary already fill a narrow bar, and the wizard's own Skip covers the
-// escape. `max-sm:hidden` (a variant, so it wins over the base inline-flex). Beside a centre slot (help's
-// search) it waits for `md`, so the search box keeps room to read on a small tablet. Brand + dropdown +
-// "Choose Template" need about 367px, so below 380px (a 360px Android phone ran 7px past its screen,
-// a 320px one ~35px) the primary drops its verb; the aria-label keeps its full name. Signed in, the
-// primary is Open Explorer instead (HeaderPrimaryCta).
+// The default CTA pair. Start Blank is hidden on mobile: Brand + dropdown + the primary already fill a
+// narrow bar, and the wizard's own Skip covers the escape. `max-sm:hidden` (a variant, so it wins over the base
+// inline-flex). Beside a centre slot (help's search) it waits for `md`, so the search box keeps room to read on a
+// small tablet. Signed in, the primary is Open Explorer instead (HeaderPrimaryCta).
 function DefaultActions({ ctaSurface, roomy }: { ctaSurface?: CtaSurface; roomy: boolean }) {
   return (
     <>
-      <StartBlankMenu
+      <StartBlankLink
         ctaSurface={ctaSurface}
         className={roomy ? 'max-sm:hidden' : 'max-md:hidden'}
       />
