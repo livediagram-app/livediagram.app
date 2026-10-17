@@ -773,7 +773,7 @@ export function SharedWithMeTable() {
 }
 
 /** The sidebar's Spaces group when signed in: My Documents, each team (expandable to its shared
- *  folders, with a member count), Invites while one waits, and New team. */
+ *  folders, with a member count), Invites while one waits, and New Team. */
 export function TeamSpacesSidebar() {
   const x = 100;
   const w = 220;

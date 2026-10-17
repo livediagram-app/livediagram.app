@@ -16,7 +16,7 @@ on the `nav`.
 | `apps/live/app/explorer/sidebar/SidebarRow.tsx`                          | `SidebarRow`: one `treeitem` with the chevron gutter (the row's end on a touch screen), icon, label, badge, trailing slot and child `group`                                                                                                                                          |
 | `apps/live/app/explorer/sidebar/OverviewGroup.tsx`                       | Home, Inbox, Timeline, Shared With Me                                                                                                                                                                                                                                                |
 | `apps/live/app/explorer/sidebar/inbox-badge.ts`                          | `inboxBadge(feed)`: the Inbox pill, 0 included, nothing while loading or failed                                                                                                                                                                                                      |
-| `apps/live/app/explorer/sidebar/SpacesGroup.tsx`                         | My Documents (its root folders), teams, Invites, New team, the sign-in nudge                                                                                                                                                                                                         |
+| `apps/live/app/explorer/sidebar/SpacesGroup.tsx`                         | My Documents (its root folders), teams, Invites, New Team, the sign-in nudge                                                                                                                                                                                                         |
 | `apps/live/app/explorer/sidebar/TeamRows.tsx`                            | `TeamRows`, one `TeamRow` per team: a drop target opening its folders on a resting drag                                                                                                                                                                                              |
 | `apps/live/app/explorer/sidebar/MoreGroup.tsx`                           | This browser, Library (Tags with one row per tag, `TagRows.tsx`, then Image Gallery, Themes, Shape Libraries), Trash                                                                                                                                                                 |
 | `apps/live/app/explorer/sidebar/SidebarFolderSubtree.tsx`                | A personal folder row, its menu, and its subfolders                                                                                                                                                                                                                                  |
@@ -222,7 +222,7 @@ shadow-none`, label `text-white`, tile `bg-sky-500 text-white`. Every other row 
   title row (the brand prism mark at 18 px, `text-sm font-semibold text-white`), the line `text-[12.5px] leading-normal
 text-[#a9b8d0]`; focus ring `outline-sky-400`.
 - Container: the `aside`'s sticky box has no border, background, shadow or padding beyond `px-1 py-1`.
-- New team: a row with `PlusIcon`, label "New Team".
+- New Team: a row with `PlusIcon`, label "New Team".
 - Header search: the lens field left of the account control; below `sm` its own row under the header.
 
 ## Accessibility

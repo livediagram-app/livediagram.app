@@ -46,7 +46,7 @@ test.describe('explorer sidebar', () => {
       'Timeline',
       'Shared With Me',
     ]);
-    // A guest on a deployment without sign-in: My Documents only, no teams, no New team.
+    // A guest on a deployment without sign-in: My Documents only, no teams, no New Team.
     expect((await rowNames(page, 'Spaces'))[0]).toBe('My Documents');
     await expect(row(page, 'New Team')).toHaveCount(0);
     // This browser holds nothing yet, so it is hidden.

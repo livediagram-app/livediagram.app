@@ -35,7 +35,7 @@ The sidebar shares Home's front-page language ([Explorer Home](explorer-home.md#
   slate wash.
 - **Tiles.** Every top-level row of Overview and Spaces carries its icon on a small rounded **tile** (24 px, radius
   8 px) tinted in the row's **tone**: Home and My Documents sky, Inbox violet, Timeline amber, Shared With Me emerald,
-  a team indigo, Invites rose. New team and the rows of More (This browser, Tags, Library, Trash) keep a bare slate
+  a team indigo, Invites rose. New Team and the rows of More (This browser, Tags, Library, Trash) keep a bare slate
   icon, so the places and views people go to most read first. Nested rows (folders, a team's folders, the Library
   pages, tags) keep a bare icon too.
 - **The current row** is a raised pill: white, a hairline sky edge and a soft sky shadow, its label in semibold deep
@@ -175,7 +175,7 @@ nothing moves on its own.
 
 Every row reserves a fixed **chevron gutter** before its icon, whether or not it can expand. So every top-level row's
 icon sits on one column, and an expandable row (My Documents, a team, Library) lines up with a plain one (Home, Trash,
-New team). Each level of nesting indents the whole row (gutter, icon and label) by one step.
+New Team). Each level of nesting indents the whole row (gutter, icon and label) by one step.
 
 On a touch screen the chevron moves to the row's far end instead, after any trailing action, as a disclosure the full
 row's height and 44 px wide, and no row reserves a gutter. Every icon at a level then sits on the column of its
