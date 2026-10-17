@@ -17,7 +17,7 @@
   },
   "devDependencies": {
     "@livediagram/vitest-config": "workspace:*",
-    "vitest": "^5.0.3"
+    "vitest": "^5.0.4"
   },
   "peerDependencies": {
     "next": "^16.4.1"

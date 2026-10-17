@@ -23,10 +23,10 @@
   "devDependencies": {
     "@livediagram/oxlint-config": "workspace:*",
     "@livediagram/vitest-config": "workspace:*",
-    "@playwright/test": "^1.63.0",
-    "@types/node": "^26.6.4",
+    "@playwright/test": "^1.64.1",
+    "@types/node": "^26.6.5",
     "oxlint": "^1.88.0",
     "typescript": "^7.0.2",
-    "vitest": "^5.0.3"
+    "vitest": "^5.0.4"
   }
 }

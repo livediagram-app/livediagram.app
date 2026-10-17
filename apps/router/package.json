@@ -14,15 +14,15 @@
     "clean": "rm -rf dist .wrangler node_modules .turbo"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^5.20261007.1",
+    "@cloudflare/workers-types": "^5.20261014.1",
     "@livediagram/api-schema": "workspace:*",
     "@livediagram/help-registry": "workspace:*",
     "@livediagram/oxlint-config": "workspace:*",
     "@livediagram/vitest-config": "workspace:*",
-    "@types/node": "^26.6.4",
+    "@types/node": "^26.6.5",
     "oxlint": "^1.88.0",
     "typescript": "^7.0.2",
-    "vitest": "^5.0.3",
-    "wrangler": "^4.148.0"
+    "vitest": "^5.0.4",
+    "wrangler": "^4.151.0"
   }
 }
