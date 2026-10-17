@@ -5,8 +5,10 @@
 // with the reason, while responses have nowhere to go or the form is not ready: each problem listed with Show). Published, it shows the link to copy or open, Accepting
 // Responses, and Delete Link, which asks first.
 import { useId, useState } from 'react';
-import { Button, Dialog, DialogCloseButton, DialogHeader } from '@livediagram/ui';
+import { Button, DialogCloseButton, DialogHeader } from '@livediagram/ui';
 import type { DestinationProblem, PublishProblem } from '@livediagram/forms';
+// The editor's Dialog, so the modal guard counts it (shortcuts behind it go quiet, and the tours wait for it).
+import { Dialog } from '@/components/dialogs/Dialog';
 import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
 import { SwitchRow } from '@/components/primitives/SwitchRow';
 import type { FormLinkState } from '@/hooks/forms/useFormLink';

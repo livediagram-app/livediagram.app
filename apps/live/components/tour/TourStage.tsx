@@ -34,7 +34,8 @@ export function TourStage<Api>({
 }) {
   const palette = useStartPalette();
   const { step, stepIndex, targetRect } = engine;
-  if (!engine.active || !step) return null;
+  // Stepped aside for a dialog that is not the tour's (useTourEngine): back on the same step once it closes.
+  if (!engine.active || !step || engine.yielded) return null;
   const ringLayer = step.layer ?? layer;
   return (
     <Portal>

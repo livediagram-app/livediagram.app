@@ -5,6 +5,7 @@
 
 import { act, cleanup, render } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { anyModalOpen, modalClosed, modalOpened } from '@/lib/modal-guard';
 import { createShape, type Element } from '@livediagram/document';
 import { SelectionStoreProvider } from '@/hooks/canvas/useSelectionStore';
 import { elementTourOffer } from '@/lib/element-tour-offer';
@@ -84,6 +85,7 @@ afterEach(() => {
   setActiveTour('draw', false);
   setActiveTour('element', false);
   setStartPanelOpen(false);
+  while (anyModalOpen()) modalClosed();
 });
 
 describe('ElementTourHost offer', () => {
@@ -138,6 +140,18 @@ describe('ElementTourHost offer', () => {
     act(() => store.setSelectedId('sk1'));
     expect(elementTourOffer()).toBeNull();
     act(() => setActiveTour('draw', false));
+    expect(elementTourOffer()?.elementId).toBe('sk1');
+  });
+
+  // docs/specs/007-editor/editor-tour.md "Dialogs come first".
+  it('goes while a dialog is open, and comes back once it closes', () => {
+    editor();
+    mount();
+    act(() => store.setSelectedId('sk1'));
+    expect(elementTourOffer()?.elementId).toBe('sk1');
+    act(() => modalOpened());
+    expect(elementTourOffer()).toBeNull();
+    act(() => modalClosed());
     expect(elementTourOffer()?.elementId).toBe('sk1');
   });
 

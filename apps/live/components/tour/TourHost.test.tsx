@@ -7,6 +7,7 @@
 
 import { act, cleanup, render } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { anyModalOpen, modalClosed, modalOpened } from '@/lib/modal-guard';
 import { hasTourPending, markTourPending, requestTourRelaunch } from '@/lib/tour-pending';
 import { setActiveTour } from '@/lib/tour-active';
 import { TourHost } from './TourHost';
@@ -70,6 +71,7 @@ afterEach(() => {
   cleanup();
   vi.useRealTimers();
   setActiveTour('plan', false);
+  while (anyModalOpen()) modalClosed();
 });
 
 describe('TourHost offer', () => {
@@ -153,6 +155,48 @@ describe('TourHost offer', () => {
       vi.advanceTimersByTime(2000);
     });
     expect(offered()).toBe(false);
+  });
+});
+
+// docs/specs/007-editor/editor-tour.md "Dialogs come first".
+describe('TourHost with a dialog open', () => {
+  it('holds the offer until the last dialog closes, then offers', () => {
+    markTourPending();
+    editor();
+    act(() => {
+      modalOpened();
+      modalOpened();
+    });
+    render(<TourHost />);
+    act(() => {
+      vi.advanceTimersByTime(2000);
+    });
+    expect(offered()).toBe(false);
+    act(() => modalClosed());
+    act(() => {
+      vi.advanceTimersByTime(2000);
+    });
+    expect(offered()).toBe(false);
+    act(() => modalClosed());
+    act(() => {
+      vi.advanceTimersByTime(800);
+    });
+    expect(offered()).toBe(true);
+    // Waiting was not an answer: the handoff stays owed until the offer is.
+    expect(hasTourPending()).toBe(true);
+  });
+
+  it('holds a Settings rerun while a dialog is still open', () => {
+    editor();
+    act(() => modalOpened());
+    render(<TourHost />);
+    act(() => requestTourRelaunch());
+    expect(offered()).toBe(false);
+    act(() => modalClosed());
+    act(() => {
+      vi.advanceTimersByTime(800);
+    });
+    expect(offered()).toBe(true);
   });
 });
 

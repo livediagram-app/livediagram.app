@@ -16,6 +16,7 @@ import {
 } from '@/lib/search';
 import { titleCaseType, track } from '@/lib/telemetry';
 import { SearchResultIcon } from './search-panel-icons';
+import { useModalGuard } from '@/hooks/ui/useModalGuard';
 import type {
   SearchPanelDocument,
   SearchPanelFolder,
@@ -139,6 +140,10 @@ export function SearchPanel({
     openedRef.current = true;
     track('Search', 'Opened');
   }, []);
+
+  // A full-screen modal that does not use the Dialog shell, so it registers with the modal guard itself: the
+  // canvas shortcuts behind it go quiet and the tours wait for it (docs/specs/007-editor/editor-tour.md).
+  useModalGuard(true);
 
   // Esc closes. Capture phase + stopPropagation so the modal owns
   // the key even when the editor's global shortcuts are listening.
