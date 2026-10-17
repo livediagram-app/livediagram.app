@@ -97,9 +97,7 @@ describe('moving a document into a team', () => {
     moves.moveDocumentToTeam('b', 'team-1');
     expect(ids()).toEqual(['a']);
     await vi.waitFor(() =>
-      expect(toast.error).toHaveBeenCalledWith(
-        'Couldn’t move the document to the team. Try again.',
-      ),
+      expect(toast.error).toHaveBeenCalledWith('Couldn’t move “b” to the team. Try again.'),
     );
     expect(ids()).toEqual(['b', 'a']);
     expect(warned()).toEqual(['[explorer-move] document-to-team failed document=b: offline']);
@@ -130,7 +128,7 @@ describe('moving a team document within its team', () => {
 });
 
 describe('moving a team document out of its team', () => {
-  it('re-sweeps the teams and My documents once the move landed', async () => {
+  it('re-sweeps the teams and My Documents once the move landed', async () => {
     vi.mocked(apiSetDocumentFolder).mockResolvedValueOnce(undefined);
     const { moves, refreshTeamLibraries, refreshPersonal } = setup();
     moves.moveDocumentTo('t1', { teamId: null, folderId: null });
@@ -140,7 +138,7 @@ describe('moving a team document out of its team', () => {
   });
 
   it.each([
-    ['to My documents', null],
+    ['to My Documents', null],
     ['to another team', 'team-2'],
   ])('says so, and logs it, when the move %s fails', async (_, teamId) => {
     vi.mocked(apiSetDocumentFolder).mockRejectedValueOnce(new Error('offline'));
@@ -177,7 +175,7 @@ describe('making a folder from the picker', () => {
     vi.mocked(apiCreateFolder).mockRejectedValueOnce(new Error('offline'));
     const { moves, toast } = setup();
     await expect(moves.createMoveFolder('New', null, null)).resolves.toBeNull();
-    expect(toast.error).toHaveBeenCalledWith('Could not create the folder. Try again.');
+    expect(toast.error).toHaveBeenCalledWith('Could not create “New”. Try again.');
     expect(warned()).toEqual(['[explorer-move] new-folder failed: offline']);
   });
 });

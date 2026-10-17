@@ -13,7 +13,8 @@ import { SIDEBAR_LABELS, TAGS_EXPAND_KEY } from './sidebar-structure';
 import { trackSidebar } from './sidebar-telemetry';
 import { SidebarRow } from './SidebarRow';
 
-export function TagsSidebarRow() {
+/** `depth`: Tags sits inside Library (tags.md "The sidebar"), one level down; its tag rows one below it. */
+export function TagsSidebarRow({ depth = 1 }: { depth?: number }) {
   const { selected, go, expanded, toggleExpand } = useExplorer();
   const { tags } = useDocumentTags();
   const toggle = () => toggleExpand(TAGS_EXPAND_KEY);
@@ -27,7 +28,7 @@ export function TagsSidebarRow() {
         trackSidebar('Tags');
         go({ kind: 'tags' });
       }}
-      depth={0}
+      depth={depth}
       expandable={tags.length > 0}
       expanded={expanded.has(TAGS_EXPAND_KEY)}
       onToggleExpand={toggle}
@@ -36,6 +37,7 @@ export function TagsSidebarRow() {
         <TagSidebarRow
           key={tag.id}
           tag={tag}
+          depth={depth + 1}
           selected={selected.kind === 'tags' && selected.id === tag.id}
           onOpen={() => {
             trackSidebar('Tag');
@@ -49,10 +51,12 @@ export function TagsSidebarRow() {
 
 function TagSidebarRow({
   tag,
+  depth,
   selected,
   onOpen,
 }: {
   tag: Tag;
+  depth: number;
   selected: boolean;
   onOpen: () => void;
 }) {
@@ -77,7 +81,7 @@ function TagSidebarRow({
       textLabel={tag.name}
       selected={selected}
       onActivate={onOpen}
-      depth={1}
+      depth={depth}
       badge={documentsFor(tag.id).size || undefined}
       onContextMenu={menu.onContextMenu}
       trailing={

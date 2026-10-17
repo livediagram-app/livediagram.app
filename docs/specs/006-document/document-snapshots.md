@@ -216,8 +216,8 @@ choice is document-wide, applying to every share link's image.
 ### Where thumbnails appear
 
 The thumbnail shows on **every** Explorer surface that lists a document:
-the full-page `/explorer` rows (Recent / My documents / folders / Search results /
-This browser), the team library page, the "Shared with me" list, and the
+the full-page `/explorer` rows (Recent / My Documents / folders / Search results /
+This browser), the team library page, the "Shared With Me" list, and the
 in-editor Explorer. A single shared `DocumentThumbnail`
 component (`components/panels/DocumentThumbnail.tsx`) backs them all, fed
 the **viewer's** owner id (never the document's) plus, for a shared row,
@@ -227,7 +227,7 @@ of those gets a 404 and the row falls back to its icon.
 
 ### List / card view
 
-The browse views (Recent / My documents / folders / Search results / This browser)
+The browse views (Recent / My Documents / folders / Search results / This browser)
 have a **List / Card / Details** toggle at the far right of the header (device-
 local preference, `livediagram:explorer-view`). **Card is the default**:
 a diagram is a picture, and a wall of names in one typeface makes you read
@@ -297,7 +297,7 @@ document, so a per-card badge is noise — the team list omits it as well).
 - **No PNG.** SVG only — vector, tiny, headless-renderable. A rasterised
   variant is out of scope.
 - The List/Card toggle covers the main browse views and the team
-  library; the "Shared with me" page keeps its fixed layout (it already
+  library; the "Shared With Me" page keeps its fixed layout (it already
   shows the thumbnail).
 
 ## Self-hosting

@@ -43,7 +43,7 @@ export async function seedOpenedDocument(
 
 // The opened document's thumbnail in Home's Jump Back In, and its row on a listing view.
 export const jumpBackIn = (page: Page, name: string) =>
-  page.getByRole('list', { name: 'Jump Back In' }).getByRole('link', { name });
+  page.getByRole('region', { name: 'Jump Back In' }).getByRole('link', { name });
 export const documentRow = (page: Page, name: string) =>
   page.locator('main section').getByRole('link', { name, exact: true });
 

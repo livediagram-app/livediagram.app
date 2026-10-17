@@ -41,7 +41,7 @@ export function paneFolderParent(
 const NO_DOCUMENTS: DocumentListItem[] = [];
 
 // The rows of one of the editor's Explorer sections that hold documents (docs/specs/013-workspace/explorer-structure.md
-// "The pane"): My documents' and a team's folders then documents, opening a folder in place under a breadcrumb back
+// "The pane"): My Documents' and a team's folders then documents, opening a folder in place under a breadcrumb back
 // to the space's root; This browser's documents; what is shared with the reader. Each empty place says so in the
 // Explorer's own empty state.
 export function PanelExplorerTree({

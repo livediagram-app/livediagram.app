@@ -274,32 +274,35 @@ export function ExplorerPane() {
     <>
       {imports.dialogs}
       {tagsPage.dialog}
-      <PaneHeader
-        title={hideTeamTitle ? '' : (tagsPage.title ?? paneTitle)}
-        crumbs={hideTeamTitle ? [] : (tagsPage.crumbs ?? paneCrumbs)}
-        onOpenNav={() => setMobileNavOpen(true)}
-        helpArticle={sectionHelp}
-        headerActions={
-          selected.kind === 'timeline' || offers.importFrom || tagsPage.headerActions ? (
-            <>
-              {selected.kind === 'timeline' ? (
-                <TimelineControls controls={timeline.controls} />
-              ) : null}
-              {offers.importFrom ? imports.toolbar : null}
-              {tagsPage.headerActions}
-            </>
-          ) : undefined
-        }
-        viewMode={isBrowse ? viewMode : undefined}
-        onSetViewMode={isBrowse ? setViewMode : undefined}
-        onCreateDocument={newDocument}
-        onCreateFolder={
-          offers.newFolder
-            ? () => void createFolder(selected.kind === 'folder' ? selected.id : null)
-            : undefined
-        }
-        folderLabel={selected.kind === 'folder' ? 'New Subfolder' : 'New Folder'}
-      />
+      {/* Home's hero is its page header (docs/specs/013-workspace/explorer-home.md "The hero"). */}
+      {selected.kind === 'home' ? null : (
+        <PaneHeader
+          title={hideTeamTitle ? '' : (tagsPage.title ?? paneTitle)}
+          crumbs={hideTeamTitle ? [] : (tagsPage.crumbs ?? paneCrumbs)}
+          onOpenNav={() => setMobileNavOpen(true)}
+          helpArticle={sectionHelp}
+          headerActions={
+            selected.kind === 'timeline' || offers.importFrom || tagsPage.headerActions ? (
+              <>
+                {selected.kind === 'timeline' ? (
+                  <TimelineControls controls={timeline.controls} />
+                ) : null}
+                {offers.importFrom ? imports.toolbar : null}
+                {tagsPage.headerActions}
+              </>
+            ) : undefined
+          }
+          viewMode={isBrowse ? viewMode : undefined}
+          onSetViewMode={isBrowse ? setViewMode : undefined}
+          onCreateDocument={newDocument}
+          onCreateFolder={
+            offers.newFolder
+              ? () => void createFolder(selected.kind === 'folder' ? selected.id : null)
+              : undefined
+          }
+          folderLabel={selected.kind === 'folder' ? 'New Subfolder' : 'New Folder'}
+        />
+      )}
 
       {/* A view the app gathers explains itself under the breadcrumb. */}
       <ViewInfo selected={selected} />
@@ -324,6 +327,7 @@ export function ExplorerPane() {
             onSeeTimeline={() => go({ kind: 'timeline' })}
             recentHref={explorerPathFor({ kind: 'recent' })}
             onSeeMore={() => go({ kind: 'recent' })}
+            importToolbar={imports.toolbar}
           />
         ) : null
       ) : selected.kind === 'timeline' ? (

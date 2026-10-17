@@ -113,7 +113,7 @@ describe('judgeFolder', () => {
     );
   });
 
-  it('names a mismatch for a joined team folder asked for in My documents', () => {
+  it('names a mismatch for a joined team folder asked for in My Documents', () => {
     expect(judgeFolder({ ownerId: 'user_bob', teamId: 't2' }, personal, alice, true)).toBe(
       'folder_scope_mismatch',
     );
@@ -381,7 +381,7 @@ describe('resolvePlacement with default folders', () => {
     });
   });
 
-  it('files at an explicit root of My documents without reading the defaults', async () => {
+  it('files at an explicit root of My Documents without reading the defaults', async () => {
     const l = lookups({ getPlacementDefaults: defaults([['mode:diagram', 'f-diagrams']]) });
     const explicitRoot = { teamId: null, folderId: null, chosen: true };
     expect(await resolvePlacement(explicitRoot, alice, l, diagram)).toEqual({

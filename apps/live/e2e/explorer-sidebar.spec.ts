@@ -44,15 +44,15 @@ test.describe('explorer sidebar', () => {
       'Home',
       'Inbox',
       'Timeline',
-      'Shared with me',
+      'Shared With Me',
     ]);
-    // A guest on a deployment without sign-in: My documents only, no teams, no New Team.
-    expect((await rowNames(page, 'Spaces'))[0]).toBe('My documents');
+    // A guest on a deployment without sign-in: My Documents only, no teams, no New team.
+    expect((await rowNames(page, 'Spaces'))[0]).toBe('My Documents');
     await expect(row(page, 'New Team')).toHaveCount(0);
     // This browser holds nothing yet, so it is hidden.
-    expect(await rowNames(page, 'More')).toEqual(['Tags', 'Library', 'Trash']);
-    // My documents starts open on its root folders: no Unsorted or Generated bucket.
-    const myDocuments = row(page, 'My documents');
+    expect(await rowNames(page, 'More')).toEqual(['Library', 'Trash']);
+    // My Documents starts open on its root folders: no Unsorted or Generated bucket.
+    const myDocuments = row(page, 'My Documents');
     await expect(row(page, 'Projects')).toBeVisible();
     await expect(myDocuments).toHaveAttribute('aria-expanded', 'true');
     const children = await myDocuments
@@ -91,11 +91,14 @@ test.describe('explorer sidebar', () => {
     await expect(row(page, 'Library')).toBeFocused();
     await page.keyboard.press('ArrowRight');
     await expect(row(page, 'Library')).toHaveAttribute('aria-expanded', 'true');
+    // Library's first row is Tags (tags.md "The sidebar"), then its pages.
     await page.keyboard.press('ArrowRight');
-    await expect(row(page, 'Image gallery')).toBeFocused();
+    await expect(row(page, 'Tags')).toBeFocused();
+    await page.keyboard.press('ArrowDown');
+    await expect(row(page, 'Image Gallery')).toBeFocused();
     await page.keyboard.press('Enter');
     await expect(page).toHaveURL(/\/explorer\/images\/?$/);
-    await expect(row(page, 'Image gallery')).toHaveAttribute('aria-selected', 'true');
+    await expect(row(page, 'Image Gallery')).toHaveAttribute('aria-selected', 'true');
     // Only one row is in the tab order.
     expect(await nav(page).locator('[role="treeitem"][tabindex="0"]').count()).toBe(1);
     expectNoPageErrors(pageErrors);
@@ -116,7 +119,7 @@ test.describe('explorer sidebar', () => {
     expectNoPageErrors(pageErrors);
   });
 
-  test('shows This browser while it holds a document', async ({ page, pageErrors }) => {
+  test('shows This Browser while it holds a document', async ({ page, pageErrors }) => {
     await darkVisitor(page, await mintSignedGuest(page.request));
     // Seeded through the store the app upgrades on load (e2e/legacy-offline-store.spec.ts).
     await page.goto('/icon.svg');
@@ -149,8 +152,8 @@ test.describe('explorer sidebar', () => {
         }),
     );
     await openExplorer(page);
-    await expect(row(page, 'This browser (1)')).toBeVisible();
-    expect(await rowNames(page, 'More')).toEqual(['This browser', 'Tags', 'Library', 'Trash']);
+    await expect(row(page, 'This Browser (1)')).toBeVisible();
+    expect(await rowNames(page, 'More')).toEqual(['This Browser', 'Library', 'Trash']);
     expectNoPageErrors(pageErrors);
   });
 
@@ -219,14 +222,14 @@ test.describe('editor Explorer panel', () => {
     const rail = page.getByRole('navigation', { name: 'Explorer sections' });
     await expect(rail.getByRole('button', { name: 'Home' })).toBeVisible({ timeout: 30_000 });
     await expect(rail.getByRole('heading')).toHaveText(['Overview', 'Spaces', 'More']);
-    // Opens on Home; My documents lists its documents as rows, the open one current.
+    // Opens on Home; My Documents lists its documents as rows, the open one current.
     await expect(rail.getByRole('button', { name: 'Home' })).toHaveAttribute(
       'aria-current',
       'true',
     );
-    await rail.getByRole('button', { name: 'My documents' }).click();
+    await rail.getByRole('button', { name: 'My Documents' }).click();
     // The pane's list (the header's title is a button of the same name).
-    const list = page.getByRole('list', { name: 'My documents' });
+    const list = page.getByRole('list', { name: 'My Documents' });
     await expect(list.getByRole('button', { name: 'Another', exact: true })).toBeVisible();
     await expect(list.getByRole('button', { name: 'Open one', exact: true })).toHaveAttribute(
       'aria-current',

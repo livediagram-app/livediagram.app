@@ -117,9 +117,10 @@ export function DocumentIcon({ size = 13 }: IconProps) {
 export function InboxIcon({ size = 13 }: IconProps) {
   return (
     <G16 size={size}>
-      <path d="M2 9.5V12a1.5 1.5 0 0 0 1.5 1.5h9A1.5 1.5 0 0 0 14 12V9.5" />
-      <path d="M2 9.5h3.2l1 1.8h3.6l1-1.8H14" />
-      <path d="M5.5 5.2 7.2 7l3.3-3.6" />
+      {/* Drawn half a unit high of the grid's middle, so its ink centres in a tile (optical-alignment.md). */}
+      <path d="M2 9V11.5a1.5 1.5 0 0 0 1.5 1.5h9A1.5 1.5 0 0 0 14 11.5V9" />
+      <path d="M2 9h3.2l1 1.8h3.6l1-1.8H14" />
+      <path d="M5.5 4.7 7.2 6.5l3.3-3.6" />
     </G16>
   );
 }

@@ -32,7 +32,7 @@ import { folderDefaultKeys } from '@/lib/placement-defaults/default-destination'
 import { placementDefaultsSnapshot } from '@/lib/placement-defaults/placement-defaults-store';
 import { LIST_CARD } from '@/components/primitives/surface-classes';
 import { logMoveFailure } from '@/lib/move-failure';
-import { FOLDER_FAILURE } from '@/lib/write-failure-copy';
+import { DOCUMENT_FAILURE, FOLDER_FAILURE } from '@/lib/write-failure-copy';
 
 const NO_FOLDERS: readonly Folder[] = [];
 
@@ -73,7 +73,7 @@ export function TeamSharedDocuments({
   // `moveDocumentTo`, which picks the right API call from the document's
   // current placement. Same-team picks keep using lib.moveDocument.
   onMoveDocumentTo?: (id: string, dest: MoveDestination) => void;
-  // A library changed from this page: this team's (null for My documents, from the move picker's New Folder), so the
+  // A library changed from this page: this team's (null for My Documents, from the move picker's New Folder), so the
   // Explorer's own lists (the sidebar, search, every other move picker) follow without a reload.
   onLibraryChange?: (teamId: string | null) => void;
   // The Explorer's lens (docs/specs/013-workspace/explorer-filters.md): while it is set, the
@@ -211,11 +211,18 @@ export function TeamSharedDocuments({
   // No question first (docs/specs/013-workspace/trash.md "Deleting"): it goes to the team's Trash, and the toast offers
   // it back.
   const deleteDocument = async (id: string) => {
+    const name = lib.documents.find((d) => d.id === id)?.name;
     if (!(await lib.deleteDocument(id))) {
-      toast.error('Could not delete the document. Try again.');
+      toast.error(DOCUMENT_FAILURE.delete(name));
       return;
     }
-    offerDeleteUndo(toast, { ownerId, id, trash: 'Team', onRestored: () => void lib.refresh() });
+    offerDeleteUndo(toast, {
+      ownerId,
+      id,
+      name,
+      trash: 'Team',
+      onRestored: () => void lib.refresh(),
+    });
   };
 
   // The props the card grid and the Details view share (ExplorerViewProps), built once.
@@ -346,7 +353,7 @@ export function TeamSharedDocuments({
       {/* ---------- Move picker ---------- */}
       {/* Same shared move modal as the personal surfaces (docs/specs/013-workspace/folders.md). With
           `moveDests` (the explorer page supplies it) a DOCUMENT move offers
-          every space — My documents plus each team — so a team document can be
+          every space — My Documents plus each team — so a team document can be
           re-homed back to the personal tree or on to another team from
           right here; the space overview + back bar come with it. This
           team's own folders come from the live lib (fresher than the
@@ -401,7 +408,7 @@ export function TeamSharedDocuments({
             } catch (err) {
               // The tile keeps the name typed, for another try.
               logMoveFailure('new-folder', '', err);
-              toast.error(FOLDER_FAILURE.create);
+              toast.error(FOLDER_FAILURE.create(name));
               return null;
             }
           }}
@@ -414,7 +421,7 @@ export function TeamSharedDocuments({
               void lib.moveDocument(moveTarget.id, dest.folderId);
               return;
             }
-            // Leaving this team (to My documents or another team): route via the
+            // Leaving this team (to My Documents or another team): route via the
             // explorer's placement-aware mover, then refresh this library so
             // the row disappears once the move lands.
             void Promise.resolve(onMoveDocumentTo?.(moveTarget.id, dest)).then(() => lib.refresh());

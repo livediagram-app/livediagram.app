@@ -12,22 +12,22 @@ export const SIDEBAR_GROUP_TITLES = {
 
 export type SidebarGroupId = keyof typeof SIDEBAR_GROUP_TITLES;
 
-// Sentence-case copy for every fixed row. Read by the sidebar and by the
+// Title Case copy for every fixed row. Read by the sidebar and by the
 // floating Explorer panel, which names its spaces with the same words.
 export const SIDEBAR_LABELS = {
   home: 'Home',
   inbox: 'Inbox',
   timeline: 'Timeline',
-  shared: 'Shared with me',
-  myDocuments: 'My documents',
+  shared: 'Shared With Me',
+  myDocuments: 'My Documents',
   invites: 'Invites',
   newTeam: 'New Team',
-  thisBrowser: 'This browser',
+  thisBrowser: 'This Browser',
   tags: 'Tags',
   library: 'Library',
-  gallery: 'Image gallery',
+  gallery: 'Image Gallery',
   themes: 'Themes',
-  shapeLibraries: 'Shape libraries',
+  shapeLibraries: 'Shape Libraries',
   trash: 'Trash',
 } as const;
 
@@ -43,7 +43,6 @@ export type SidebarRowKind =
   | 'newTeam'
   | 'signInNudge'
   | 'thisBrowser'
-  | 'tags'
   | 'library'
   | 'trash';
 
@@ -78,7 +77,8 @@ export function sidebarGroups(input: SidebarLayoutInput): SidebarGroupLayout[] {
   const more: SidebarRowKind[] = [];
   if (offlineDocuments > 0 || selected === 'offline') more.push('thisBrowser');
   // Tags always shows, so it can be found before the first tag (docs/specs/013-workspace/tags.md "The sidebar").
-  more.push('tags', 'library', 'trash');
+  // Tags lives inside Library (docs/specs/013-workspace/tags.md "The sidebar"), always shown there.
+  more.push('library', 'trash');
   return [
     { id: 'overview', rows: ['home', 'inbox', 'timeline', 'shared'] },
     { id: 'spaces', rows: spaces },
@@ -112,6 +112,10 @@ export const TAGS_EXPAND_KEY = 'more:tags';
 export function initialExpanded(selected: SelectedNode): Set<string> {
   const keys = new Set([MY_DOCUMENTS_EXPAND_KEY]);
   if (isLibraryView(selected.kind)) keys.add(LIBRARY_EXPAND_KEY);
-  if (selected.kind === 'tags') keys.add(TAGS_EXPAND_KEY);
+  // A Tags page opens Library, where Tags lives, and Tags itself.
+  if (selected.kind === 'tags') {
+    keys.add(LIBRARY_EXPAND_KEY);
+    keys.add(TAGS_EXPAND_KEY);
+  }
   return keys;
 }

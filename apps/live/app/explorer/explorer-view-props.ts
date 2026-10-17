@@ -107,7 +107,7 @@ export type DocumentEntryProps = {
   onDuplicate: () => void;
   onDelete: () => void;
   onMove: (anchor: HTMLElement | null) => void;
-  // Shared-row menu action (docs/specs/013-workspace/team-shared-documents.md): drop it from "Shared with me".
+  // Shared-row menu action (docs/specs/013-workspace/team-shared-documents.md): drop it from "Shared With Me".
   onDismiss?: () => void;
   // Per-user star (docs/specs/013-workspace/favourites.md).
   favourite?: boolean;

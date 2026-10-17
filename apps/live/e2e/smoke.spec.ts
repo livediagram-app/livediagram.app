@@ -43,7 +43,7 @@ test('the explorer renders for a guest', async ({ page, pageErrors }) => {
   // The sidebar's Overview rows are always present for a guest
   // (docs/specs/013-workspace/explorer-structure.md).
   await expect(page.getByRole('treeitem', { name: /^Home/ })).toBeVisible();
-  await expect(page.getByRole('treeitem', { name: /^Shared with me/ })).toBeVisible();
+  await expect(page.getByRole('treeitem', { name: /^Shared With Me/ })).toBeVisible();
   expectNoPageErrors(pageErrors);
 });
 

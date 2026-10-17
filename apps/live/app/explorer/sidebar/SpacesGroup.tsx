@@ -17,8 +17,8 @@ import { TeamRows } from './TeamRows';
 import { useMyDocumentsMenu } from './useMyDocumentsMenu';
 import { useExplorerDropTarget } from '../useExplorerDropTarget';
 
-// Spaces (docs/specs/013-workspace/explorer-structure.md): My documents and each team as
-// root folders, then Invites and New Team, or the guest's sign-in nudge.
+// Spaces (docs/specs/013-workspace/explorer-structure.md): My Documents and each team as
+// root folders, then Invites and New team, or the guest's sign-in nudge.
 // `rows` (from sidebarGroups) decides which show.
 export function SpacesGroup({
   rows,
@@ -63,6 +63,7 @@ export function SpacesGroup({
     >
       <SidebarRow
         icon={<MyDocumentsIcon />}
+        tone="sky"
         label={SIDEBAR_LABELS.myDocuments}
         textLabel={SIDEBAR_LABELS.myDocuments}
         selected={selected.kind === 'all'}
@@ -100,6 +101,7 @@ export function SpacesGroup({
       {has('invites') ? (
         <SidebarRow
           icon={<InviteIcon />}
+          tone="rose"
           label={SIDEBAR_LABELS.invites}
           textLabel={SIDEBAR_LABELS.invites}
           selected={selected.kind === 'invites'}

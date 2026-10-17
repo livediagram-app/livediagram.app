@@ -164,6 +164,38 @@ The wordmark's "live" half is the one vivid note: **sky-400 `#38bdf8`** in dark 
   not a literal, so it follows the dark palette and a themed tab's tint.
 - **Light mode is untouched.** No light token, class or colour changes with the dark palette.
 
+### Explorer: Midnight
+
+In dark mode the Explorer pages (`/explorer/*`) wear **Midnight**, the marketing site's night section, instead of
+Steel: a deep navy ground and the vivid sky accent, so the Explorer reads as the front of the product. The editor,
+its Explorer panel and every other page keep Steel.
+
+- **How.** While the Explorer is mounted, the document root carries `data-palette="midnight"`; under `.dark` that
+  attribute retargets the same tokens Steel does (selector `.dark[data-palette='midnight']`, which outranks `.dark`).
+  Menus, dialogs and tooltips opened from the Explorer portal to the body and so follow it too. The attribute is set
+  before the first paint and removed when the Explorer unmounts.
+- **Surfaces**
+
+  | Token       | Midnight  | Usage                                              |
+  | ----------- | --------- | -------------------------------------------------- |
+  | `slate-950` | `#070b1a` | Deepest wells, segment tracks                      |
+  | `slate-900` | `#0a0f24` | The page, header, bottom bar                       |
+  | `slate-800` | `#111833` | Cards, panels, inputs, the sidebar's current pill  |
+  | `slate-700` | `#1f2a55` | Edges of cards on the page, hover surfaces         |
+  | `slate-600` | `#2e3b6e` | Stronger edges                                     |
+  | `slate-500` | `#56658f` | Non-text only, as in Steel                         |
+  | `slate-400` | `#8f9cc4` | Secondary text: 7.0:1 on the page, 6.4:1 on a card |
+  | `slate-300` | `#c3cde6` | Body text on cards                                 |
+  | `slate-200` | `#dde4f3` | Emphasised text                                    |
+  | `slate-100` | `#eef2fb` | Headings                                           |
+
+- **Accent.** The brand ramp is Tailwind's sky, as in light mode (`brand-50` `#f0f9ff` to `brand-950` `#082f49`),
+  except `brand-600` `#0369a1`, `brand-700` `#075985`, `brand-800` `#0c4a6e` and `brand-900` `#0b3a5a`, so the
+  Steel rules hold with their own numbers: a solid fill under white text is `brand-600` (5.9:1), it hovers to
+  `brand-700`; brand text is `brand-400` (8.9:1 on the page) or lighter; a selected segment on the `slate-950` track
+  is 3.3:1.
+- Every Steel rule above applies unchanged; only the values differ.
+
 ## Accessibility
 
 - All text/background pairings must meet **WCAG AA** contrast (4.5:1 for body, 3:1 for large text and UI controls).

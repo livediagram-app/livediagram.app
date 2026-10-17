@@ -13,7 +13,7 @@ Derived from [Shape libraries](../shape-libraries.md). Modelled on custom themes
 | `apps/api/src/routes/shape-libraries.ts`                   | `handleShapeLibraries`: the four routes                                                                                                                             |
 | `apps/api/src/db/account.ts`                               | Account deletion deletes the rows; `migrateOwnerId` moves them, renaming clashes                                                                                    |
 | `apps/api/src/auth/guest-rest.ts`                          | `shape-libraries` in `OWNER_SCOPED_SEGMENTS`                                                                                                                        |
-| `apps/api/src/openapi/manifest.ts`                         | The four operations, tag `Shape libraries`                                                                                                                          |
+| `apps/api/src/openapi/manifest.ts`                         | The four operations, tag `Shape Libraries`                                                                                                                          |
 | `apps/live/lib/api/shape-libraries.ts`                     | `apiListShapeLibraries` (deduped), `apiCreateShapeLibrary`, `apiUpdateShapeLibrary`, `apiDeleteShapeLibrary`                                                        |
 | `apps/live/components/primitives/ShapeLibraryProvider.tsx` | `ShapeLibraryProvider`, `useShapeLibraries`: the owner's list and its changes                                                                                       |
 | `apps/live/lib/drawio/library-store.ts`                    | `importShapeLibraries`: each imported library's pictures stored, items given ids and titles, then created; `withLibraries`: an outcome with its libraries folded in |
@@ -156,7 +156,7 @@ CREATE INDEX shape_libraries_owner_created_idx ON shape_libraries (owner_id, cre
 
 - Palette: category label **My shapes**, blurb "Shapes from your imported libraries, ready to place.", icon a stacked-shapes glyph. A search input labelled "Search my shapes" (placeholder "Search my shapes"). A section per library: heading the name, then a grid of tiles (the same tile size as Icons). Tile: the thumbnail (contain-fit) over the title, one line, truncated; untitled "Shape n". No matches: "No shapes match “<words>”" (the shared empty state, with Clear Search).
 - Report: under the documents block, "New shape library:" / "2 new shape libraries:", each name a link to `/explorer/shape-libraries/`.
-- Explorer page: header "Shape libraries"; the article link "Learn more" (`shapeLibraries`) above the
+- Explorer page: header "Shape Libraries"; the article link "Learn more" (`shapeLibraries`) above the
   cards and in the empty state; cards in a column. Card: the name (heading), "14 shapes", a row of up to 8 thumbnails, buttons **Rename**, **Delete**, **Show shapes** / **Hide shapes**. Expanded: a grid of items, each thumbnail, title and **Delete**. Empty, loading and error copy as the spec.
 
 ## Accessibility

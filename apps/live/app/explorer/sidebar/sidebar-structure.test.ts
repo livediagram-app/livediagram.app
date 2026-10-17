@@ -34,12 +34,12 @@ describe('sidebarGroups', () => {
     expect(SIDEBAR_GROUP_TITLES).toEqual({ overview: 'Overview', spaces: 'Spaces', more: 'More' });
   });
 
-  it('shows Home, Inbox, Timeline and Shared with me to everyone', () => {
+  it('shows Home, Inbox, Timeline and Shared With Me to everyone', () => {
     expect(rowsOf(GUEST, 'overview')).toEqual(['home', 'inbox', 'timeline', 'shared']);
     expect(rowsOf(SIGNED_IN, 'overview')).toEqual(['home', 'inbox', 'timeline', 'shared']);
   });
 
-  it('gives a signed-in reader My documents, teams and New Team last', () => {
+  it('gives a signed-in reader My Documents, teams and New Team last', () => {
     expect(rowsOf(SIGNED_IN, 'spaces')).toEqual(['myDocuments', 'teams', 'newTeam']);
   });
 
@@ -68,26 +68,25 @@ describe('sidebarGroups', () => {
     expect(rowsOf({ ...GUEST, pendingInvites: 3 }, 'spaces')).not.toContain('invites');
   });
 
-  it('hides This browser while it holds no documents', () => {
-    expect(rowsOf(GUEST, 'more')).toEqual(['tags', 'library', 'trash']);
+  it('hides This Browser while it holds no documents', () => {
+    expect(rowsOf(GUEST, 'more')).toEqual(['library', 'trash']);
   });
 
-  it('shows This browser first in More while it holds documents', () => {
+  it('shows This Browser first in More while it holds documents', () => {
     expect(rowsOf({ ...GUEST, offlineDocuments: 1 }, 'more')).toEqual([
       'thisBrowser',
-      'tags',
       'library',
       'trash',
     ]);
   });
 
   // docs/specs/013-workspace/tags.md "The sidebar": always shown, so it can be found before the first tag.
-  it('always shows Tags, before Library', () => {
-    expect(rowsOf(GUEST, 'more')).toContain('tags');
-    expect(rowsOf(SIGNED_IN, 'more')).toContain('tags');
+  it('holds Tags inside Library, not as a row of More (tags.md "The sidebar")', () => {
+    expect(rowsOf(GUEST, 'more')).not.toContain('tags' as never);
+    expect(rowsOf(SIGNED_IN, 'more')).toContain('library');
   });
 
-  it('keeps This browser while its view is current, even when empty', () => {
+  it('keeps This Browser while its view is current, even when empty', () => {
     expect(rowsOf({ ...GUEST, selected: 'offline' }, 'more')).toContain('thisBrowser');
   });
 });
@@ -108,10 +107,9 @@ describe('sidebarGroups in the floating Explorer panel', () => {
     expect(rowsOf({ ...GUEST, surface: 'panel' }, 'spaces')).toEqual(['myDocuments']);
   });
 
-  it('shows This browser while it holds documents', () => {
+  it('shows This Browser while it holds documents', () => {
     expect(rowsOf({ ...PANEL, offlineDocuments: 1 }, 'more')).toEqual([
       'thisBrowser',
-      'tags',
       'library',
       'trash',
     ]);
@@ -142,7 +140,7 @@ describe('isLibraryView', () => {
 });
 
 describe('initialExpanded', () => {
-  it('opens My documents by default', () => {
+  it('opens My Documents by default', () => {
     expect([...initialExpanded({ kind: 'timeline' })]).toEqual([MY_DOCUMENTS_EXPAND_KEY]);
   });
 
@@ -152,6 +150,8 @@ describe('initialExpanded', () => {
 
   it('opens Tags when a Tags page is the current view, and only then', () => {
     expect(initialExpanded({ kind: 'tags', id: 't1' }).has(TAGS_EXPAND_KEY)).toBe(true);
+    // Tags lives inside Library, so a Tags page opens Library too.
+    expect(initialExpanded({ kind: 'tags', id: 't1' }).has(LIBRARY_EXPAND_KEY)).toBe(true);
     expect(initialExpanded({ kind: 'all' }).has(TAGS_EXPAND_KEY)).toBe(false);
   });
 

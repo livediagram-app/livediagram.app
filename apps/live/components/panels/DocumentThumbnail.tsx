@@ -12,7 +12,7 @@ import { ThumbnailLoader } from './ThumbnailLoader';
 
 // A cached SVG snapshot of a document (docs/specs/006-document/document-snapshots.md) so you can recognise it
 // without opening it. Shared by every Explorer surface that lists
-// documents: the full-page rows, the "Shared with me" list, the team
+// documents: the full-page rows, the "Shared With Me" list, the team
 // library, and the floating in-editor panel.
 //
 // The bytes come from the api worker's render-cache fetched through the

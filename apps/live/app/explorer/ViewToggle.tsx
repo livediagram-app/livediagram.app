@@ -96,9 +96,10 @@ function ToggleButton({
   );
 }
 
+// The three icons are 14 px, so the 28 px buttons centre them on whole pixels (optical-alignment.md).
 function ListIcon() {
   return (
-    <Glyph size={15} units={16} strokeLinejoin="miter">
+    <Glyph size={14} units={16} strokeLinejoin="miter">
       <path d="M5 4h8M5 8h8M5 12h8" />
       <circle cx="2.5" cy="4" r="0.6" fill="currentColor" stroke="none" />
       <circle cx="2.5" cy="8" r="0.6" fill="currentColor" stroke="none" />
@@ -109,7 +110,7 @@ function ListIcon() {
 
 function GridIcon() {
   return (
-    <Glyph size={15} units={16} strokeLinecap="butt">
+    <Glyph size={14} units={16} strokeLinecap="butt">
       <rect x="2.5" y="2.5" width="4.5" height="4.5" rx="1" />
       <rect x="9" y="2.5" width="4.5" height="4.5" rx="1" />
       <rect x="2.5" y="9" width="4.5" height="4.5" rx="1" />
@@ -121,7 +122,7 @@ function GridIcon() {
 // A table: a header band over rows split into columns.
 function DetailsIcon() {
   return (
-    <Glyph size={15} units={16} strokeLinecap="butt">
+    <Glyph size={14} units={16} strokeLinecap="butt">
       <rect x="2" y="2.5" width="12" height="11" rx="1.5" />
       <path d="M2 6h12M2 9.5h12M6.5 6v7.5" />
     </Glyph>

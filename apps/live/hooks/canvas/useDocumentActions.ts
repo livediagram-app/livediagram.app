@@ -23,6 +23,8 @@ import type { useConfirm } from '@/hooks/ui/useConfirm';
 import { useDocumentListActions } from '@/hooks/persistence/useDocumentListActions';
 import type { FolderNode } from '@/hooks/persistence/useDocumentListActions';
 import { useToast } from '@/hooks/ui/useToast';
+import { documentMovedMessage } from '@/lib/document-toast-copy';
+import { DOCUMENT_FAILURE } from '@/lib/write-failure-copy';
 
 type DocumentActionsDeps = {
   documentId: string | null;
@@ -47,7 +49,7 @@ type DocumentActionsDeps = {
   sessionShareCode: string | null;
   // Post-move refreshes for the scope-aware mover below: the team
   // libraries sweep (a row moved within / left a team) and the personal
-  // list (a document landed in — or left — My documents).
+  // list (a document landed in — or left — My Documents).
   refreshTeamLibraries: () => void;
   refreshDocumentList: () => Promise<void> | void;
   // Fired after a successful scope-aware move so the editor can sync any
@@ -122,17 +124,19 @@ export function useDocumentActions(deps: DocumentActionsDeps) {
     dest: { teamId: string | null; folderId: string | null },
     fromTeamId?: string | null,
   ) => {
+    // Named in the toast when this editor knows it: the open document, or a row of the personal list.
+    const name = id === documentId ? documentName : documentList.find((d) => d.id === id)?.name;
     void apiSetDocumentFolder(ownerId, id, dest.folderId, dest.teamId)
       .then(() => {
         refreshTeamLibraries();
         void refreshDocumentList();
         onDocumentScopeChanged?.(id, dest.teamId);
-        toast.success(dest.teamId ? 'Moved to the team library' : 'Moved to My documents');
+        toast.success(documentMovedMessage(name, dest.teamId ? { team: '' } : 'my-documents'));
         if (fromTeamId === null && dest.teamId) track('Team', 'Added', 'Document');
         else track('Team', 'Moved', 'Document');
       })
       .catch(() => {
-        toast.error('Could not move the document. Try again.');
+        toast.error(DOCUMENT_FAILURE.move(name));
       });
   };
 

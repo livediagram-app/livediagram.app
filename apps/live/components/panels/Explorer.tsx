@@ -266,7 +266,7 @@ function ExplorerImpl({
           openFolder.id,
         )
       : null;
-  // New Folder in the folder open in the pane, or at the root of My documents or of the team shown.
+  // New Folder in the folder open in the pane, or at the root of My Documents or of the team shown.
   const newFolder =
     section.kind === 'mine' && onCreateFolder
       ? () =>
@@ -439,7 +439,7 @@ function ExplorerImpl({
       {/* Move-destination modal (docs/specs/013-workspace/folders.md), the same shared placement
           browser as the /explorer page. With the scope-aware
           onMoveDocumentTo wired (signed-in sessions with teams), the picker
-          offers every space — My documents plus each team — so a team document
+          offers every space — My Documents plus each team — so a team document
           can be re-homed to the personal tree (and vice versa) right from
           the editor. Purely personal picks keep the optimistic
           onMoveDocumentToFolder path. */}
@@ -496,7 +496,7 @@ function ExplorerImpl({
                   } catch (err) {
                     // The tile keeps the name typed, for another try.
                     logMoveFailure('new-folder', '', err);
-                    toast.error(FOLDER_FAILURE.create);
+                    toast.error(FOLDER_FAILURE.create(name));
                     return null;
                   }
                 }}

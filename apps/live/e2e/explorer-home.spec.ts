@@ -14,10 +14,11 @@ import {
 } from './home-seed';
 
 // Explorer Home (docs/specs/013-workspace/explorer-home.md), end to end against the real build and
-// api worker, as a guest, in dark mode: the Explorer lands on Home, one column of Jump Back In then
-// What Happened, each opened by a heading with a rule; Jump Back In is a Within reach set (4 most
-// used on top, 4 recent below, none twice) as a 4 by 2 grid, or a phone strip that alternates,
-// holds eight and ends in See More; See More opens Recent, under Home; nothing shifts as Home lands.
+// api worker, as a guest, in dark mode: the Explorer lands on Home, its hero then one column of Jump
+// back in and What Happened, each opened by a display heading; Jump Back In is a Within reach set (4
+// most used cards under Most Used, 4 recent under Recent, none twice), or a phone strip that
+// alternates, holds eight and ends in See More; See More opens Recent, under Home; nothing shifts as
+// Home lands.
 
 test.use({ colorScheme: 'dark' });
 
@@ -39,7 +40,9 @@ async function layoutShift(page: Page): Promise<number> {
   );
 }
 
-const jumpBackIn = (page: Page) => page.getByRole('list', { name: 'Jump Back In' });
+// Jump Back In's documents: the Most Used and Recent lists on a wide screen, the strip on a phone.
+const jumpBackIn = (page: Page) =>
+  page.getByRole('region', { name: 'Jump Back In' }).getByRole('listitem');
 const names = async (list: Locator) =>
   list.getByRole('link').evaluateAll((links) => links.map((l) => l.getAttribute('aria-label')));
 
@@ -55,7 +58,14 @@ test('the Explorer lands on Home: Jump Back In, then What Happened, no Timeline'
 
   await page.goto('/explorer');
   await expect(page).toHaveURL(/\/explorer\/home\/?$/);
-  await expect(page.getByRole('heading', { level: 1, name: 'Home' })).toBeVisible();
+  // The hero is Home's header: the greeting is the page's heading; the field and New Document sit in it.
+  const hero = page.getByRole('region', { name: /What are we picking up\?$/ });
+  await expect(hero.getByRole('heading', { level: 1 })).toHaveText(
+    /^Good (morning|afternoon|evening)\. What are we picking up\?$/,
+  );
+  await expect(hero.getByRole('combobox', { name: 'Filter documents' })).toBeVisible();
+  await expect(page.getByRole('combobox', { name: 'Filter documents' })).toHaveCount(1);
+  await expect(hero.getByRole('button', { name: 'New Document' })).toBeVisible();
   await expect(page).toHaveTitle('Home | livediagram');
 
   const jump = page.getByRole('region', { name: 'Jump Back In' });
@@ -64,10 +74,10 @@ test('the Explorer lands on Home: Jump Back In, then What Happened, no Timeline'
   await expect(
     jumpBackIn(page).getByRole('link', { name: 'Payments architecture' }),
   ).toHaveAttribute('href', `/document/${payments}`);
-  // No Timeline column, no switch, no group titles.
+  // No Timeline column, no switch; the groups are labelled.
   await expect(page.getByRole('region', { name: 'Timeline' })).toHaveCount(0);
   await expect(page.getByRole('tablist')).toHaveCount(0);
-  await expect(jump.getByText(/most used/i)).toHaveCount(0);
+  await expect(jump.getByRole('heading', { level: 3 }).first()).toBeVisible();
 
   // One column: What Happened sits under Jump Back In, the same width.
   const [a, b] = [await jump.boundingBox(), await happened.boundingBox()];
@@ -79,7 +89,7 @@ test('the Explorer lands on Home: Jump Back In, then What Happened, no Timeline'
     name: /^(Sam and Priya|Priya and Sam) commented and edited in Payments architecture/,
   });
   await expect(summary).toHaveAttribute('aria-expanded', 'false');
-  await expect(summary).toContainText('My documents');
+  await expect(summary).toContainText('My Documents');
   await summary.click();
   await expect(summary).toHaveAttribute('aria-expanded', 'true');
   const actions = page.locator(`#${await summary.getAttribute('aria-controls')}`);
@@ -101,7 +111,7 @@ test('the Explorer lands on Home: Jump Back In, then What Happened, no Timeline'
   expectNoPageErrors(pageErrors);
 });
 
-test('each section opens with a heading with a rule, in dark and light', async ({
+test('each section opens with a display heading and no rule, in dark and light', async ({
   page,
   baseURL,
   pageErrors,
@@ -129,8 +139,9 @@ test('each section opens with a heading with a rule, in dark and light', async (
         const s = getComputedStyle(el);
         return { width: s.borderBottomWidth, style: s.borderBottomStyle };
       });
-      expect(style, `${scheme} ${name} rule`).toEqual({ width: '1px', style: 'solid' });
-      // The rule spans the section; the link sits at the row's right end.
+      // Every element carries the base style's solid border at no width; a rule would have width.
+      expect(style.width, `${scheme} ${name} has no rule`).toBe('0px');
+      // The row spans the section; the link sits at its right end.
       const section = page.getByRole('region', { name });
       expect(Math.round((await row.boundingBox())!.width)).toBe(
         Math.round((await section.boundingBox())!.width),
@@ -139,14 +150,14 @@ test('each section opens with a heading with a rule, in dark and light', async (
       const rowBox = await row.boundingBox();
       expect(Math.round(linkBox!.x + linkBox!.width)).toBe(Math.round(rowBox!.x + rowBox!.width));
       expect(await heading.evaluate((el) => Number.parseFloat(getComputedStyle(el).fontSize))).toBe(
-        16,
+        24,
       );
     }
   }
   expectNoPageErrors(pageErrors);
 });
 
-test('Jump Back In is 4 most used on top and 4 recent below, none twice', async ({
+test('Jump Back In is 4 most used cards, then 4 recent, none twice', async ({
   page,
   baseURL,
   pageErrors,
@@ -159,11 +170,13 @@ test('Jump Back In is 4 most used on top and 4 recent below, none twice', async 
 
   const list = jumpBackIn(page);
   await expect(list.getByRole('link')).toHaveCount(8);
-  expect(await names(list)).toEqual([
+  expect(await names(page.getByRole('list', { name: 'Most Used' }))).toEqual([
     'Atlas, Local only',
     'Beacon, Local only',
     'Compass, Local only',
     'Delta, Local only',
+  ]);
+  expect(await names(page.getByRole('list', { name: 'Recent' }))).toEqual([
     'Server two',
     'Server one',
     'Echo, Local only',
@@ -172,14 +185,15 @@ test('Jump Back In is 4 most used on top and 4 recent below, none twice', async 
   // Atlas is both the most used and the newest: it shows once, under most used.
   await expect(list.getByRole('link', { name: /^Atlas/ })).toHaveCount(1);
 
-  // Two rows of four; no sideways scrolling.
-  const tops = await list
-    .getByRole('listitem')
-    .evaluateAll((items) => items.map((i) => Math.round(i.getBoundingClientRect().top)));
+  // Four across in each group; no sideways scrolling.
+  const tops = await list.evaluateAll((items) =>
+    items.map((i) => Math.round(i.getBoundingClientRect().top)),
+  );
   expect(new Set(tops.slice(0, 4)).size).toBe(1);
   expect(new Set(tops.slice(4)).size).toBe(1);
   expect(tops[4]!).toBeGreaterThan(tops[0]!);
-  expect(await list.evaluate((el) => el.scrollWidth <= el.clientWidth)).toBe(true);
+  const region = page.getByRole('region', { name: 'Jump Back In' });
+  expect(await region.evaluate((el) => el.scrollWidth <= el.clientWidth)).toBe(true);
 
   // See More: the Recent page, under Home in the breadcrumb.
   await page
@@ -217,9 +231,9 @@ test('on a phone the strip alternates, holds eight and ends in See More', async 
     'Foxtrot, Local only',
   ]);
   // One row, sideways.
-  const tops = await list
-    .getByRole('listitem')
-    .evaluateAll((items) => items.map((i) => Math.round(i.getBoundingClientRect().top)));
+  const tops = await list.evaluateAll((items) =>
+    items.map((i) => Math.round(i.getBoundingClientRect().top)),
+  );
   expect(new Set(tops).size).toBe(1);
 
   // The strip ends in See More, the only one (no heading-row link on a phone).
@@ -228,7 +242,7 @@ test('on a phone the strip alternates, holds eight and ends in See More', async 
   await expect(seeMore).toHaveCount(1);
   await seeMore.scrollIntoViewIfNeeded();
   const tile = await seeMore.boundingBox();
-  const last = await list.getByRole('listitem').last().boundingBox();
+  const last = await list.last().boundingBox();
   expect(tile!.x).toBeGreaterThan(last!.x);
   await seeMore.click();
   await expect(page).toHaveURL(/\/explorer\/recent\/?$/);
@@ -270,9 +284,10 @@ test('with fewer than eight, only what exists shows, and nothing shifts', async 
   await page.goto('/explorer/home');
 
   const list = jumpBackIn(page);
-  await expect(list.getByRole('listitem')).toHaveCount(1);
-  // The grid keeps its two rows' height: What Happened never moves.
-  expect(Math.round((await list.boundingBox())!.height)).toBe(212);
+  await expect(list).toHaveCount(1);
+  // Jump Back In keeps both groups' height at lg: a label and a row of each. What Happened never moves.
+  const groups = page.locator('[data-jump-back-in-group]').first().locator('..');
+  expect(Math.round((await groups.boundingBox())!.height)).toBe(330);
   expect(await layoutShift(page)).toBe(0);
   expectNoPageErrors(pageErrors);
 });
@@ -285,9 +300,15 @@ test('a document stored only in this browser joins Jump Back In with its pill', 
   await asGuest(page, owner);
   await page.setViewportSize({ width: 1280, height: 800 });
   await page.goto('/explorer/home');
-  await expect(
-    page.getByText('The documents you use most and last will gather here.'),
-  ).toBeVisible();
+  // Nothing yet: the first run's starts (explorer-home.md "First run"), not an empty Jump Back In.
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText(
+    'Welcome to livediagram. What are you making first?',
+  );
+  await expect(page.getByRole('region', { name: 'Start Blank' })).toBeVisible();
+  await expect(page.getByRole('link', { name: /Blank Diagram/ })).toHaveAttribute(
+    'href',
+    '/new?template=blank',
+  );
 
   await seedLocalDocuments(page, [{ name: 'Kept on this laptop', daysAgo: [0], lastOpenedIn: 0 }]);
   await page.reload();
@@ -308,7 +329,8 @@ test('a failed read says so, and Try again reads again', async ({ page, pageErro
   await page.unroute('**/api/home?*');
   await page.getByRole('button', { name: 'Try again' }).click();
   await expect(failed).toHaveCount(0);
-  await expect(page.getByRole('region', { name: 'Jump Back In' })).toBeVisible();
+  // A guest with nothing yet: the read in, Home is the first run's starts (explorer-home.md "First run").
+  await expect(page.getByRole('region', { name: 'Start Blank' })).toBeVisible();
   expectNoPageErrors(pageErrors);
 });
 
@@ -319,9 +341,11 @@ test('what others did since the last look is marked New', async ({ page, baseURL
   const code = await editLink(page.request, owner, origin, doc.id);
   await asGuest(page, owner);
 
-  // The first look sets the mark; nothing is new to someone who never looked.
+  // The first look sets the mark; nothing is new to someone who never looked. With nothing from anyone
+  // yet, What Happened is left out (explorer-home.md "What happened").
   await page.goto('/explorer/home');
-  await expect(page.getByText('No updates yet')).toBeVisible();
+  await expect(page.getByRole('region', { name: 'Jump Back In' })).toBeVisible();
+  await expect(page.getByRole('region', { name: 'What Happened' })).toHaveCount(0);
 
   const lee = await person(page.request, 'Lee', '#14b8a6');
   await visitorSaves(page.request, lee, code, doc, [box('a', 'Launch day', 40, 40)]);

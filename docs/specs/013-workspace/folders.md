@@ -16,7 +16,7 @@ by project / customer / topic.
 Folders give a lightweight organisational layer. Nested folders let
 people build a "Projects / Customer / Engagement" hierarchy when
 they want it; for users who don't, everything sits at the root of
-My documents. Expand-on-demand so the Explorer stays compact.
+My Documents. Expand-on-demand so the Explorer stays compact.
 
 ## Scope
 
@@ -35,7 +35,7 @@ In scope:
   browser** — the same two-level space -> folder tile-grid browse as
   the New Document wizard's Save In step ([Offline Mode](../006-document/offline-mode.md),
   `components/placement/PlacementBrowser`), so the product has exactly
-  one way to choose where a document lives. Spaces first (My documents +
+  one way to choose where a document lives. Spaces first (My Documents +
   each team, [Team shared documents](team-shared-documents.md), on an overview that is shown even when My
   documents is the only space, so the choice is deliberate and the screen has
   room for a create-team option; only team-scoped surfaces skip it and
@@ -56,7 +56,7 @@ In scope:
   stays disabled until the choice changes, and double-clicking a
   destination card commits the move in one gesture. Shared by the
   /explorer page, the editor's Explorer, and the team library —
-  and every document-move surface offers every space (My documents + each
+  and every document-move surface offers every space (My Documents + each
   team, [Team shared documents](team-shared-documents.md)), so a document is never trapped in a scope; only folder
   moves stay scoped to their own tree. It replaced the earlier
   filterable indented-tree modal, which itself outgrew an anchored
@@ -71,10 +71,10 @@ Every Explorer section is its own page under `/explorer` (the chrome — header,
 | Home ([Explorer Home](explorer-home.md))                       | `/explorer/home` (default)                                         |
 | Inbox ([Inbox](inbox.md))                                      | `/explorer/inbox`                                                  |
 | Timeline ([Timeline](timeline.md))                             | `/explorer/timeline`                                               |
-| Shared with me                                                 | `/explorer/shared`                                                 |
+| Shared With Me                                                 | `/explorer/shared`                                                 |
 | Recent documents                                               | `/explorer/recent` (no sidebar row)                                |
 | Favourites ([Favourite documents](favourites.md))              | `/explorer/favourites` (no sidebar row)                            |
-| My documents, the root of the personal tree                    | `/explorer/all`                                                    |
+| My Documents, the root of the personal tree                    | `/explorer/all`                                                    |
 | Search results ([Explorer filters](explorer-filters.md#views)) | `/explorer/search` (no sidebar row)                                |
 | Retired: Unsorted and Dynamic                                  | `/explorer/unsorted`, `/explorer/dynamic`, opening `/explorer/all` |
 | Retired: Generated                                             | `/explorer/generated`, opening `/explorer/search?q=made-by:ai`     |
@@ -117,7 +117,7 @@ diagrams
 ```
 
 - `folder_id IS NULL` means the document sits at the root of its space
-  (My documents, or its team). The root has no row in the folders
+  (My Documents, or its team). The root has no row in the folders
   table, so it can't be renamed or deleted.
 - `source` records how the document came to exist (migration 0028): NULL
   for one a person made in the editor; `'mcp'` for one an external AI tool
@@ -184,7 +184,7 @@ the `folder_id` column.
 - The same rule holds for personal and team folders.
 - The delete confirmation names where the contents go: "Its documents
   and subfolders move to <parent>.", <parent> being the parent
-  folder's name, "My documents", or "the team's root". When the folder
+  folder's name, "My Documents", or "the team's root". When the folder
   is one of the reader's [default folders](default-folders.md), it adds
   the default-folder line ([Deleting a default
   folder](default-folders.md#deleting-a-default-folder)).
@@ -212,7 +212,7 @@ All endpoints continue the existing `X-Owner-Id` convention.
 ### Placement on create
 
 A document is placed by the write that creates it. `POST /api/documents` carries the
-**placement** beside `id` and `name`: `teamId` (absent or null = My documents, a string =
+**placement** beside `id` and `name`: `teamId` (absent or null = My Documents, a string =
 that team's library) and `folderId` (a string = that folder; `null` = the root of that space,
 chosen on purpose; absent = no folder chosen). There is no second placement request
 after a create, so a document never exists, even for a moment, in a place the caller did not ask
@@ -220,13 +220,13 @@ for.
 
 - **Chosen or not.** A placement is **chosen** when the body names a team or carries the
   `folderId` key at all, `null` included. `folderId: null` with no team is the **explicit root**
-  of My documents. A body with neither is **no choice**: the document lands at the root of My
+  of My Documents. A body with neither is **no choice**: the document lands at the root of My
   documents unless a [default folder](default-folders.md) answers for its `intent`. A `teamId: null`
   alone is no choice, like an absent one.
 
 - **Resolution order.** The space first, then the folder: a chosen placement (a folder, or a
   space's root chosen on purpose), else the person's [default folder](default-folders.md) for the
-  create's `intent`, else the root of My documents. The resolver (`apps/api/src/placement/`) is an
+  create's `intent`, else the root of My Documents. The resolver (`apps/api/src/placement/`) is an
   ordered list of folder steps (`explicitFolder`, `defaultFolder`), the root answering when none
   does.
 - **Defaults.** Only a create that carries an `intent` and whose placement is no choice consults
@@ -236,7 +236,7 @@ for.
   into a team, and only when it is a **joined** member of that team. The guest `X-Owner-Id`
   header never counts. A guest, an invited-but-not-joined member, or an unknown team is
   refused with `team_forbidden`.
-- **Folder.** The folder must exist and belong to the resolved space: in My documents the
+- **Folder.** The folder must exist and belong to the resolved space: in My Documents the
   caller's own personal folder, in a team a folder of that team.
   - A folder that does not exist, or one the caller cannot see (another person's personal
     folder, a folder of a team the caller has not joined), is `folder_not_found`: the answer
@@ -256,7 +256,7 @@ for.
   | `intent_invalid`        | 400    | `intent` is present but not `{ mode, tabKind?, templateFamily? }` of known values |
 
 - **One write.** `folder_id` and `team_id` are written by the same `INSERT` that creates the
-  row; the caller is the owner, in a team as in My documents.
+  row; the caller is the owner, in a team as in My Documents.
 - **A re-commit keeps its place.** A create naming an id the caller already owns is the editor
   re-committing it: the stored placement stands and the body's placement is not applied
   (moving is `PUT /api/documents/:id/folder`'s job). A malformed placement is still
@@ -274,7 +274,7 @@ for.
 
 What a caller does with a rejection is its own: the New Document wizard shows it
 ([Dedicated route for new-document creation](../007-editor/new-document-route.md)), an Offline
-Mode sync files the document at the root of My documents on a refused folder, saying so in its log
+Mode sync files the document at the root of My Documents on a refused folder, saying so in its log
 ([Offline Mode](../006-document/offline-mode.md)).
 
 ## Explorer UI — two surfaces
@@ -313,7 +313,7 @@ link.
 - A "Current Document" card sits at the top. Beneath it, the panel shows
   the sidebar's three groups, Overview, Spaces and More, built from the
   same rows ([Explorer structure: the editor's Explorer](explorer-structure.md#the-editors-explorer)).
-  In the panel, My documents, each folder and each team expand to show
+  In the panel, My Documents, each folder and each team expand to show
   their folders, then their documents, as rows; expansion is local state
   (not persisted) and starts collapsed so the panel stays compact.
 - A folder with nothing inside shows no expand chevron (its gutter stays,
@@ -339,7 +339,7 @@ link.
   and teams with their folders — see the move-picker note above).
   Picking one calls `PUT /api/documents/:id/folder`.
 - **Drag-and-drop**: document rows are HTML5-draggable. Drop targets
-  are personal folder rows (any nested depth) and the My documents
+  are personal folder rows (any nested depth) and the My Documents
   row, which files the document at the root. Drag-over highlights the target with a brand-blue ring so
   the user sees where the document will land. Drop fires the same
   `onMoveDocumentToFolder(documentId, targetFolderId)` callback the
@@ -377,14 +377,14 @@ it stays in view as the dashboard scrolls; Settings opens the same synced
 `UserPreferences` dialog the editor uses ([User preferences](../007-editor/user-preferences.md)).
 
 - **Sidebar (left, fixed width):** the navigation tree of [Explorer structure](explorer-structure.md):
-  Overview (Home, Inbox, Timeline, Shared with me), Spaces (My documents with
+  Overview (Home, Inbox, Timeline, Shared With Me), Spaces (My Documents with
   its root folders beneath it, each team with its
   folders, New Team), and More (This browser, Tags, Library, Trash). Each folder
   row carries an ellipsis menu with Rename, New subfolder, Change Folder,
   Use as default for ([Default folders](default-folders.md#use-as-default-for)), Delete. The Image gallery (under Library) degrades to an empty state
   when the api worker reports 503, e.g. a self-host without R2.
 - **Right pane:**
-  - Breadcrumb showing the path from "My documents" through every
+  - Breadcrumb showing the path from "My Documents" through every
     ancestor of the focused folder. Each segment is a button that
     jumps the focus.
   - List view with four columns: Name, Updated, Visibility, action.
@@ -393,7 +393,7 @@ it stays in view as the dashboard scrolls; Settings opens the same synced
     the mobile breakpoint to keep rows readable. Direct subfolders and
     direct documents render in the same list (Windows Explorer pattern).
     Folder rows open the folder; document rows open the document.
-  - "Shared with me" replaces the list with a Role + Updated table
+  - "Shared With Me" replaces the list with a Role + Updated table
     of accepted shares; each row is a link into the shared document.
   - "Image Gallery" replaces the list with a drop-zone (upload via
     drag, paste, or click) above a grid of thumbnails. Each tile
@@ -424,7 +424,7 @@ it stays in view as the dashboard scrolls; Settings opens the same synced
 - **Drag-and-drop:** any document the reader can move (their own, a
   team's, one in this browser) drags from its list row or card; a
   document shared with them does not, nor one being renamed. It drops on
-  a sidebar folder, My documents (the root), a team or team folder, or a
+  a sidebar folder, My Documents (the root), a team or team folder, or a
   folder row or card in the pane. The drop takes the move picker's path
   (`moveDocumentTo`), so it moves within a space or across spaces exactly
   as a pick does, with the same toast, rollback and telemetry. Dropping
@@ -441,32 +441,35 @@ it stays in view as the dashboard scrolls; Settings opens the same synced
 - **A move that fails says so.** Every move the picker or a drop starts
   either lands or ends in an error toast; none fails silently. A move that
   took the row away first puts it back.
-  - A document into a folder of My documents: the row goes back to its
-    folder; "Could not move the document. Try again."
-  - A document into a team: the row comes back to My documents; "Couldn’t
-    move the document to the team. Try again."
-  - A team document to another folder of its team: "Could not move the
-    document. Try again."
-  - A team document out of its team, to My documents or another team:
-    "Couldn’t move the document out of the team. Try again."
-  - A folder under another folder: "Could not move the folder. Try again."
-  - A folder made from the picker's New Folder tile: "Could not create the
-    folder. Try again.", the tile keeping the name typed.
+  - Each names the document or folder it failed on, quoted and cut to fit
+    ([Toasts](../004-interface-design/toasts.md#naming-what-it-acted-on));
+    "the document" / "the folder" stands in for a blank or unknown name.
+  - A document into a folder of My Documents: the row goes back to its
+    folder; "Could not move “Roadmap”. Try again."
+  - A document into a team: the row comes back to My Documents; "Couldn’t
+    move “Roadmap” to the team. Try again."
+  - A team document to another folder of its team: "Could not move
+    “Roadmap”. Try again."
+  - A team document out of its team, to My Documents or another team:
+    "Couldn’t move “Roadmap” out of the team. Try again."
+  - A folder under another folder: "Could not move “Plans”. Try again."
+  - A folder made from the picker's New Folder tile: "Could not create
+    “Plans”. Try again.", the tile keeping the name typed.
   - Each failure logs
     `[explorer-move] <document|document-to-team|team-document|team-document-out|folder|new-folder> failed`
     with the subject's id and the error.
 - **A write that fails says so.** The same holds for every other folder and
   document write the Explorer page, the editor's Explorer panel and a team's
   library make: it lands or ends in an error toast, and a change shown at
-  once is put back. One wording per verb (`lib/write-failure-copy.ts`), so
-  a failure reads the same wherever it happened:
+  once is put back. One wording per verb (`lib/write-failure-copy.ts`), each
+  naming its subject, so a failure reads the same wherever it happened:
   - A new folder (New Folder, New Subfolder, a picker's New Folder tile in
-    any scope): "Could not create the folder. Try again."
-  - A folder rename: "Could not rename the folder. Try again.", the
+    any scope): "Could not create “New folder”. Try again."
+  - A folder rename: "Could not rename “Plans”. Try again.", the
     old name back.
-  - A folder delete: "Could not delete the folder. Try again."
-  - A team document's rename: "Could not rename the document. Please try
-    again."; its duplicate: "Couldn't duplicate that document. Try again."
+  - A folder delete: "Could not delete “Plans”. Try again."
+  - A document's rename: "Could not rename “Roadmap”. Try again."; its
+    duplicate: "Could not duplicate “Roadmap”. Try again."
   - Within a team's library, a folder or document move says what the
     Explorer's own moves say (above), with the same log line.
   - Each other failure logs `[folders] <verb> failed`,
@@ -480,7 +483,7 @@ it stays in view as the dashboard scrolls; Settings opens the same synced
 
 Empty states:
 
-- No folders and no documents: My documents shows its empty state.
+- No folders and no documents: My Documents shows its empty state.
   With documents but no folders, it lists the documents.
 
 ## Non-goals for V1

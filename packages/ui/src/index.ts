@@ -52,7 +52,7 @@ export { SnapCarousel } from './SnapCarousel';
 export { DiagramBuildAnimation } from './DiagramBuildAnimation';
 export { SheetBuildAnimation } from './SheetBuildAnimation';
 export { LoadingSweep } from './LoadingSweep';
-export { EmptyState } from './EmptyState';
+export { EmptyState, EmptyStateArt } from './EmptyState';
 export { CompactEmptyState, NoMatches, noMatchHint, noMatchTitle } from './CompactEmptyState';
 export { BreadcrumbTrail, type BreadcrumbItem } from './Breadcrumb';
 export { JsonLd } from './JsonLd';

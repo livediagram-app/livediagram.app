@@ -14,7 +14,7 @@ file adds engineering precision. Defaults are ledgered in [DEFAULTS.md](DEFAULTS
 
 ## Domain and naming
 
-- **Parent**: the deleted folder's `parent_id`; null is the root of its space (My documents, or the
+- **Parent**: the deleted folder's `parent_id`; null is the root of its space (My Documents, or the
   team's root). "Move up" in copy, never "promote" or "fall to Unsorted".
 
 ## Behaviour and state
@@ -70,7 +70,7 @@ Two indexed updates (`folders.parent_id`, `documents.folder_id`) and two point d
 ## Presentation and UX
 
 Confirmation: title `Delete "<name>"?`; message "Its documents and subfolders move to <parent>.",
-<parent> = the parent folder's name in quotes, "My documents", or "the team's root" (`D122`); plus the
+<parent> = the parent folder's name in quotes, "My Documents", or "the team's root" (`D122`); plus the
 default-folder line when the folder is one of the reader's defaults; confirm label **Delete folder**.
 
 ## Observability

@@ -37,9 +37,9 @@ export function rowLocation(
   // personal folders) doesn't index: the chip names the TEAM and opens its library.
   if (d.team) return { label: d.team.name, opens: { kind: 'team', id: d.team.id } };
   // A document in this browser lives there (docs/specs/013-workspace/explorer-structure.md "Places"), not in My
-  // documents, which does not list it: its chip said My documents and opened a list it was not in.
+  // documents, which does not list it: its chip said My Documents and opened a list it was not in.
   if (isLocalOnly(d)) return { label: VIEW_TITLES.offline, opens: { kind: 'offline' } };
-  // The root is a location too: My documents.
+  // The root is a location too: My Documents.
   if (!d.folderId) return { label: VIEW_TITLES.all, opens: { kind: 'all' } };
   const folder = folderById.get(d.folderId);
   if (!folder) return null;

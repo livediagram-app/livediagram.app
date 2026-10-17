@@ -11,7 +11,7 @@ import type {
   TemplateValue,
 } from './dimensions';
 
-/** A space as the lens names it: My documents, Shared with me, or one team by id. */
+/** A space as the lens names it: My Documents, Shared With Me, or one team by id. */
 export type SpaceValue = 'mine' | 'shared' | `team:${string}`;
 
 /** The value type of each dimension. */

@@ -80,7 +80,7 @@ export function TrashPane({ trash }: { trash: TrashController }) {
                       <span className="truncate text-sm font-medium text-slate-800 dark:text-slate-100">
                         {row.name || 'Untitled document'}
                       </span>
-                      {/* This browser's Trash (docs/specs/006-document/offline-mode.md#local-only-pill). */}
+                      {/* This Browser's Trash (docs/specs/006-document/offline-mode.md#local-only-pill). */}
                       {group.scope.kind === 'local' ? <LocalOnlyPill /> : null}
                     </p>
                     <p className="text-xs text-slate-500 dark:text-slate-400">

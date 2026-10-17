@@ -716,11 +716,19 @@ export const HOME_VISITS = chart(
   { types: ['Nav'] },
 );
 
+export const HOME_WELCOMES = chart(
+  'Home',
+  'Opened',
+  'First-Run Homes',
+  'Home shown to someone with no documents yet, offering blanks and popular templates to start from.',
+  { types: ['Welcome'] },
+);
+
 export const HOME_DOCUMENTS_OPENED = chart(
   'Home',
   'Selected',
   'Documents Opened from Home',
-  'A document opened from Jump Back In (most used or recent) or What Happened, or See More followed.',
+  'A document opened from Jump Back In (most used or recent) or What Happened, See More followed, or a start taken from the first-run Home.',
 );
 
 export const HOME_GROUPS_EXPANDED = chart(
@@ -741,6 +749,7 @@ export const TIMELINE_AND_ACTIVITY: MetricStack = {
   members: [
     HOME_LANDINGS,
     HOME_VISITS,
+    HOME_WELCOMES,
     HOME_DOCUMENTS_OPENED,
     HOME_GROUPS_EXPANDED,
     HOME_LOADS,

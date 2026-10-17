@@ -19,13 +19,13 @@ const tags: SelectedNode = { kind: 'tags' };
 describe('rowLocation', () => {
   it('names a document kept in this browser by that place, and opens it', () => {
     expect(rowLocation(doc({ ownerId: OFFLINE_OWNER_ID }), on(tags))).toEqual({
-      label: 'This browser',
+      label: 'This Browser',
       opens: { kind: 'offline' },
     });
   });
 
-  it('names My documents for a cloud document at the root, its folder or its team otherwise', () => {
-    expect(rowLocation(doc(), on(tags))).toEqual({ label: 'My documents', opens: { kind: 'all' } });
+  it('names My Documents for a cloud document at the root, its folder or its team otherwise', () => {
+    expect(rowLocation(doc(), on(tags))).toEqual({ label: 'My Documents', opens: { kind: 'all' } });
     expect(rowLocation(doc({ folderId: 'f1' }), on(tags))).toEqual({
       label: 'Plans',
       opens: { kind: 'folder', id: 'f1' },

@@ -12,7 +12,7 @@ describe('paneHeaderActions', () => {
     }
   });
 
-  it('shows Import from on Shape libraries, where its empty state points to it', () => {
+  it('shows Import from on Shape Libraries, where its empty state points to it', () => {
     // docs/specs/013-workspace/shape-libraries.md: the Import from group shows on that page.
     expect(paneHeaderActions('shape-libraries')).toEqual({
       newDocument: false,

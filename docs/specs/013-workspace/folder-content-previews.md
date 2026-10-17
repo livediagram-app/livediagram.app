@@ -31,8 +31,11 @@ the list view is recognition-by-sight, and folders were exempt from it.
 - **More than four items** turns the last tile into a muted `+N`, counting
   everything not shown. Silently truncating would make a 30-document folder
   look like a 4-document one.
-- **An empty folder keeps the plain folder glyph.** There is nothing to
-  preview, and the glyph is the honest answer.
+- **An empty folder shows the empty state's art.** There is nothing to preview, so the card shows the folder on
+  the [empty state](../004-interface-design/empty-states.md)'s floating badge over its pulsing rings and faint
+  diagram motif, at the compact size, as the editor's Explorer shows an empty folder: the card reads as waiting
+  for its first document rather than as a broken preview. The art's motion is the empty state's own, looping on the
+  compositor (transform and opacity only) and still under reduced motion.
 
 Document tiles reuse `DocumentThumbnail` unchanged, so a folder tile is the
 same cached SVG snapshot as the document card's — same lazy

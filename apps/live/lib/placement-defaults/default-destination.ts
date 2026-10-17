@@ -109,7 +109,7 @@ export type DefaultDestination =
       /** From this browser's memory; null when it never saw the folder. */
       name: string | null;
       reason: 'deleted' | 'unavailable';
-      /** Where these documents go instead; null = My documents. */
+      /** Where these documents go instead; null = My Documents. */
       fallback: IndexedFolder | null;
     };
 
