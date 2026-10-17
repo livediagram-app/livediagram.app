@@ -12,31 +12,42 @@ import { collectingBoard, type LinkedRecordChange, type PlanBoardSetup } from '@
 export type PlacedAction = { tabId: string; elementId: string; action: ElementAction };
 export type CollectingBoard = { tabId: string; elementId: string; setup: PlanBoardSetup };
 
+// Each tab's actions and boards, kept by its elements array: a change rewrites only the tabs it touches, so a drag on
+// one tab re-reads that tab alone (blueprint linked-boards.md "Performance and limits").
+type TabScan = { actions: PlacedAction[]; boards: CollectingBoard[] };
+const scans = new WeakMap<readonly Element[], Map<string, TabScan>>();
+
+function scanOf(tab: Tab): TabScan {
+  let byTab = scans.get(tab.elements);
+  const hit = byTab?.get(tab.id);
+  if (hit) return hit;
+  const scan: TabScan = { actions: [], boards: [] };
+  for (const el of tab.elements) {
+    if (el.type === 'shape' && el.shape === 'plan-board' && el.planBoard)
+      scan.boards.push({ tabId: tab.id, elementId: el.id, setup: el.planBoard });
+    if (!isBoxed(el)) continue;
+    for (const action of elementActions(el))
+      scan.actions.push({ tabId: tab.id, elementId: el.id, action });
+  }
+  if (!byTab) scans.set(tab.elements, (byTab = new Map<string, TabScan>()));
+  byTab.set(tab.id, scan);
+  return scan;
+}
+
 // Every action on the loaded tabs, in tab order. A tab not loaded yet holds an empty placeholder, so it is skipped
 // rather than read as having none.
 export function placedActions(tabs: readonly Tab[], loaded: ReadonlySet<string>): PlacedAction[] {
-  const out: PlacedAction[] = [];
-  for (const tab of tabs) {
-    if (!loaded.has(tab.id)) continue;
-    for (const el of tab.elements) {
-      if (!isBoxed(el)) continue;
-      for (const action of elementActions(el))
-        out.push({ tabId: tab.id, elementId: el.id, action });
-    }
-  }
-  return out;
+  return tabs.flatMap((tab) => (loaded.has(tab.id) ? scanOf(tab).actions : []));
 }
 
 // The document's Actions board: the first board, in tab order, that collects actions.
 export function actionsBoardIn(tabs: readonly Tab[]): CollectingBoard | null {
-  const boards = tabs.flatMap((tab) =>
-    tab.elements.flatMap((el) =>
-      el.type === 'shape' && el.shape === 'plan-board' && el.planBoard
-        ? [{ tabId: tab.id, elementId: el.id, setup: el.planBoard }]
-        : [],
-    ),
+  return (
+    collectingBoard(
+      tabs.flatMap((tab) => scanOf(tab).boards),
+      'actions',
+    ) ?? null
   );
-  return collectingBoard(boards, 'actions') ?? null;
 }
 
 // Tabs whose content is not here yet, and so could hold the Actions board: what is fetched before deciding there is

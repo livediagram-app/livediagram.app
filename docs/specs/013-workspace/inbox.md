@@ -321,6 +321,8 @@ are never listed). An All Cards board writes one `'*'` row, never Done.
 A card is listed when, in a document the reader can open (§4):
 
 - its `assignee.id` is the hash of an identity in `me`;
+- it is not a linked card (`linked` is absent): a linked card's action is listed already
+  ([Linked boards](../026-plan/linked-boards.md) "The Inbox");
 - it is not archived (`archived` is not `true`) and not in the Trash
   (`status` is not `trash`);
 - no board on any tab of its document marks its status Done. A card

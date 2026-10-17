@@ -8,6 +8,7 @@ import {
   LINKED_FIELD,
   LINKED_GONE_FIELD,
   LINKED_REV_FIELD,
+  itemPersonId,
   linkedCardId,
   type Item,
   type ItemStoreState,
@@ -227,6 +228,20 @@ describe('useLinkedActionCards', () => {
       },
       { silent: true },
     );
+  });
+
+  it('waits for an assignee to be named as Plan names people, then gives the card that person', async () => {
+    const sam = action('a1', { assignee: { userId: 'u-sam', name: 'Sam' } });
+    const h = setUp({ tabs: [canvas([sam]), boardTab] });
+    await act(async () => {
+      await vi.runAllTimersAsync();
+    });
+    h.rerenderWith([]);
+    await settle();
+    const create = h.spies.writeQuiet.mock.calls.find(([w]) => w.kind === 'create')?.[0];
+    expect(create).toMatchObject({
+      creates: [{ fields: { assignee: { id: await itemPersonId('u-sam'), name: 'Sam' } } }],
+    });
   });
 
   it('heals nothing for a session that may not', async () => {

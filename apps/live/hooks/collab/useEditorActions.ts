@@ -28,6 +28,7 @@ import {
   isBoxed,
   type ElementAction,
   type ElementActionAssignee,
+  type ElementActionStatus,
 } from '@livediagram/document';
 import type { Tab } from '@livediagram/document';
 import { track } from '@/lib/telemetry';
@@ -42,6 +43,8 @@ export type SaveActionInput = {
   // The dialog's "Email {name} about this action" checkbox. Only consulted
   // when it can matter: on create, and on an edit that changes the assignee.
   notifyEmail: boolean;
+  // An edit's new status, when the dialog's Status changed it (docs/specs/026-plan/linked-boards.md "On the canvas").
+  status?: ElementActionStatus;
 };
 
 type EditorActionsDeps = {
@@ -236,9 +239,14 @@ export function useEditorActions(deps: EditorActionsDeps): EditorActionsApi {
         description: input.description.trim(),
         assignee: input.assignee,
         teamId: input.teamId,
+        ...(input.status ? { status: input.status } : {}),
         updatedAt: Date.now(),
       }));
       track('Action', 'Changed', reassigned ? 'Reassigned' : 'Edited');
+      // A status picked in the dialog counts as the popover's buttons do.
+      if (input.status === 'done') track('Action', 'Resolved');
+      else if (input.status === 'wont-do') track('Action', 'Resolved', 'WontDo');
+      else if (input.status === 'open') track('Action', 'Unresolved');
       // Only a NEW assignee gets the email offer (docs/specs/012-collaboration/assigned-actions.md §3): an edit
       // that keeps the assignee sends nothing, and a self-assignment
       // has no team context to email through.

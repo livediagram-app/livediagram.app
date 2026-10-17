@@ -238,22 +238,6 @@ export function EditorAnchoredPopovers() {
                     ? () => deleteAction(target.id, assignActionId)
                     : undefined
                 }
-                onWontDo={
-                  cardTarget && assignActionId && !isReadOnly
-                    ? () => {
-                        wontDoAction(target.id, assignActionId);
-                        closeAssignActionDialog();
-                      }
-                    : undefined
-                }
-                onReopen={
-                  cardTarget && assignActionId && !isReadOnly
-                    ? () => {
-                        reopenAction(target.id, assignActionId);
-                        closeAssignActionDialog();
-                      }
-                    : undefined
-                }
                 onClose={closeAssignActionDialog}
               />
             );

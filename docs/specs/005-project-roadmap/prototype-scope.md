@@ -42,6 +42,9 @@ The editor is real:
   types and sections, each answer mapped to the card's title, description or a field (Multiple Choice and Rating
   joined the card field kinds), published as a public link anyone can fill in without an account; every response
   becomes a card in the board column the form names, with the Inbox, a New mark and an email to hear of it.
+- **Actions board** ([Linked boards](../026-plan/linked-boards.md)): the first action added to a document makes an
+  Actions board tab (New, Done, Won't Do) where every action in the document has a card, kept in step both ways: tick
+  an action and its card moves, move a card and its action follows. Actions gain a Won't Do status.
 - **Snap colours**: on a whiteboard, one option converts every custom colour into the board's stock colours, so an imported or hand-coloured board adapts to light and dark like everything drawn in stock colours ([Draw mode](../023-draw-mode/draw-mode.md#snap-colours)).
 - **Packed pen strokes**: every freehand stroke is stored as one compact binary block of points and pressures, so a board of thousands of strokes fits its tab; an editor left open across a format change asks calmly to be reloaded. See [Stroke points](../006-document/stroke-points.md) and [New version prompt](../016-platform/new-version-prompt.md).
 - **Corners that scale down**: a corner preset is drawn at most a quarter of a shape's shorter side, so a small rounded square stays a rounded square ([Corner radius](../008-canvas/corner-radius.md)).

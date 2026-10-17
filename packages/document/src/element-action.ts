@@ -24,7 +24,8 @@ export type ElementActionAssignee = {
   name: string | null;
 };
 
-export type ElementActionStatus = 'open' | 'done' | 'wont-do';
+export const ACTION_STATUSES = ['open', 'done', 'wont-do'] as const;
+export type ElementActionStatus = (typeof ACTION_STATUSES)[number];
 
 export type ElementAction = {
   id: string;

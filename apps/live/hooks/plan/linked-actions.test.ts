@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { cpuMsOf } from '@livediagram/vitest-config/cpu-time';
 import type { ElementAction, Element, Tab } from '@livediagram/document';
 import type { PlanBoardSetup } from '@livediagram/items';
 import {
@@ -175,5 +176,30 @@ describe('goneActionIds', () => {
     );
     expect(goneActionIds(new Set(['a1', 'a2']), now)).toEqual(['a2']);
     expect(goneActionIds(new Set(), now)).toEqual([]);
+  });
+});
+
+// docs/specs/026-plan/blueprints/linked-boards.md "Performance and limits": the walks run on every tabs change, so a
+// big document (40 tabs of 500 elements, 40 full Action panels) stays well inside a frame.
+describe('budget', () => {
+  it('finds every action and the board in a big document within budget', () => {
+    const tabs = Array.from({ length: 40 }, (_, t) =>
+      tab(`t${t}`, [
+        ...Array.from({ length: 499 }, (_, i) => shape(`s${t}-${i}`)),
+        panel(
+          `p${t}`,
+          Array.from({ length: 50 }, (_, i) => action(`a${t}-${i}`)),
+        ),
+      ]),
+    );
+    tabs.push(tab('tb', [board('b', 'actions')]));
+    const loaded = new Set(tabs.map((t) => t.id));
+    let found = 0;
+    const ms = cpuMsOf(() => {
+      for (let i = 0; i < 10; i++)
+        found = placedActions(tabs, loaded).length + (actionsBoardIn(tabs) ? 1 : 0);
+    });
+    expect(found).toBe(2001);
+    expect(ms / 10).toBeLessThan(16);
   });
 });

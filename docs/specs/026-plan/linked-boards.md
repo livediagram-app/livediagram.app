@@ -42,8 +42,14 @@ action, so nobody re-types it and neither place lies.
 ### When it appears
 
 - The **first time an action is added** to a document that has no Actions board, the Actions board tab is made after
-  the last tab, in the same moment, and every action already in the document (on any loaded tab) gets its card. The
-  person who added the action sees one notice: **Added to Your Actions Board** with **Open Board**.
+  the last tab, and the person who added the action sees one notice: **Added to Your Actions Board** with **Open
+  Board**. Its making is one undo step.
+- Before deciding there is none, the editor reads the document's tabs it has not opened yet (a document's summary does
+  not say which tabs are Board tabs), so a board on a tab nobody opened this session is found, never doubled.
+- Making the board brings the **Action** card type into the document's types, as placing any board brings the types
+  it takes ([Item types](item-types.md)).
+- Every action already in the document gets its card as its tab loads: a document with a board reads its tabs once
+  (the Plan sweep, up to 12 tabs), and a longer one fills in as tabs are opened.
 - It is made once. Every later action, on any tab, goes to the same board.
 - Deleting the Actions board tab stops nothing permanently: the next action added makes it again. Undo of that
   delete brings the tab back with its cards, which were never removed (cards outlive their boards).
@@ -59,13 +65,13 @@ Each action has exactly one linked card, made of the **Action** type:
   is the key; the tab and element are a hint for finding it, kept current when an element moves to another tab.
 - What each side owns:
 
-| What                 | Owned by   | Edited on the card?                                                                      |
-| -------------------- | ---------- | ---------------------------------------------------------------------------------------- |
-| Name / title         | both       | Yes. Either edit reaches the other                                                       |
-| Description          | both       | Yes. Either edit reaches the other                                                       |
-| Status               | both       | Yes. Moving the card changes the action; ticking the action moves the card               |
-| Assignee             | the action | No. The card shows who has it; the item panel says **Change on the Action** and opens it |
-| Due, checklist, etc. | the card   | Yes. They are the board's, and the canvas does not show them                             |
+| What                 | Owned by   | Edited on the card?                                                               |
+| -------------------- | ---------- | --------------------------------------------------------------------------------- |
+| Name / title         | both       | Yes. Either edit reaches the other                                                |
+| Description          | both       | Yes. Either edit reaches the other                                                |
+| Status               | both       | Yes. Moving the card changes the action; ticking the action moves the card        |
+| Assignee             | the action | No. The card shows who has it; the item panel says **Set on the action** under it |
+| Due, checklist, etc. | the card   | Yes. They are the board's, and the canvas does not show them                      |
 
 - **Status**, card to action: a column before the done column is **open**, the done column is **done**, a column
   after it is **Won't Do**. Action to card: open goes to the board's first column (unless the card is already in an
@@ -73,22 +79,32 @@ Each action has exactly one linked card, made of the **Action** type:
   that has no column after it).
 - A card in a status the Actions board does not show (moved there on another board, or in the Trash) does not change
   its action.
-- **Deleting** the action deletes its card. **Deleting the card** (Delete, not Trash) deletes its action too, since
-  they are one thing; the notice says **Deleted the Card and Its Action**. Trashing or archiving the card leaves the
-  action where it is.
+- **The action goes, its card goes to the Trash**: deleting the action, or the element or tab holding it, trashes its
+  card, marked as the link's doing. If the action comes back (an undo), the card comes back from the Trash with it.
+- **The card goes to the Trash, its action leaves the canvas**: every way of deleting a card trashes it
+  ([Items](items.md) "Trash"), and a person trashing a linked card takes its action off the canvas. Restoring the card,
+  or undoing the trash, in the same session puts the action back on its element. Archiving a card leaves its action.
+- A card deleted for good from the Trash leaves nothing behind; a card restored after the session that trashed it
+  comes back as a card of its own, its action gone.
+- **Duplicate** makes a card of its own: the copy carries no link.
 - Copying, duplicating or pasting an element never carries its actions ([Assigned actions](../012-collaboration/assigned-actions.md)
   §1), so it never carries a card.
 
 ### Keeping them together
 
-- The person who changes either side writes both at once, so the board and the canvas move together for everyone in
-  the room.
-- Every Editor's editor also **heals** what it can see, a moment after things settle: an action with no card gets one;
-  a card and action that disagree are put right by whichever changed last (each side keeps when it was last changed).
-  This catches what no person's click did: a Participant moving a card (they may not change the canvas), an agent's
+- Every Editor's editor **heals** what it can see, a moment after things settle (0.6 s): an action with no card gets
+  one; a card and action that disagree (title, description, status) are put right by the side that changed since they
+  last agreed. So ticking an action moves its card, and moving a card ticks its action, for everyone in the room.
+- Each card keeps that **baseline**: the action's stamp and the card's own revision as of the last time they agreed.
+  The two clocks are never compared with each other (the server stamps cards, browsers stamp actions), so a browser
+  whose clock runs fast cannot win every disagreement. Only when both sides changed since they agreed does the later
+  stamp settle it.
+- Healing catches what no person's click did: a Participant moving a card (they may not change the canvas), an agent's
   change, a card made before the board existed, a write that failed.
 - Healing only ever **adds cards and changes fields**. It never deletes, because an action on a tab not loaded yet is
   not a missing action.
+- Two editors healing at once write the same thing; a card both make is refused the second time (its id is taken),
+  quietly.
 
 ## On the canvas
 
@@ -97,18 +113,20 @@ Each action has exactly one linked card, made of the **Action** type:
   the Inbox (never listed), the badge, the export.
 - **Action panel rows**: the round check still completes and reopens. A Won't Do row shows a grey slashed circle in
   place of the check (pressing it reopens), its name struck through and muted, and **Won't Do** beside the assignee.
-- **The action popover** and the **Assign Action dialog** (editing) offer **Won't Do** beside Mark Done; a closed
-  action offers **Reopen**.
-- **Where it went**: an Action panel on a document with an Actions board shows a small **Actions Board** chip in its
-  header (the board's glyph and an arrow), and the popover a **View on Board** link. Both open the Actions board tab
-  and open the action's card.
+- **The action popover** offers **Won't Do** beside Complete; a closed action offers **Reopen**. Editing an action in
+  the **Assign Action dialog** shows a **Status** row (Open, Done, Won't Do, a segmented choice) between Description
+  and Assignee, saved with the rest: the way an Action panel's action, which has no popover, is closed as Won't Do.
+- **Where it went**: an Action panel holding actions, on a document with an Actions board, shows a small **Board ↗**
+  chip in its header beside its count (the board's glyph; named "Open the Actions board" for assistive technology). The
+  popover shows **View on Board**, which opens the board on the action's card; the chip opens the board.
 
 ## On the board
 
 - A linked card's item panel opens with a quiet banner: the action glyph, **Linked to an action on <tab name>**, and
-  **Show on Canvas**, which opens that tab with the element selected and its action shown (the popover, or the panel
-  scrolled to the row), as the Inbox's links do ([Inbox](../013-workspace/inbox.md) §1).
-- Its Assignee field is read-only, with **Change on the Action** opening the Assign Action dialog for it.
+  **Show on Canvas**, which closes the panel and opens that tab with the element selected and in view, its action shown
+  (the popover; an Action panel shows its actions on its face), as the Inbox's links do
+  ([Inbox](../013-workspace/inbox.md) §1).
+- Its Assignee field is read-only, with **Set on the action** under it.
 - The card face is an ordinary Action card.
 
 ## The Inbox
@@ -119,11 +137,11 @@ assignee lanes work.
 
 ## Share roles
 
-| Role        | Actions board                                                                                                                                                                                         |
-| ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Editor      | Everything above. Adding the first action makes the board. Their editor heals.                                                                                                                        |
-| Participant | Works the cards as any Plan card (move, edit title and description, comment). They may not change actions, so their card moves reach the canvas when an Editor's editor heals. Never makes the board. |
-| Viewer      | Sees the board and the banner; Show on Canvas works; nothing is changed.                                                                                                                              |
+| Role        | Actions board                                                                                                                                                                                                                                                        |
+| ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Editor      | Everything above. Adding the first action makes the board. Their editor heals.                                                                                                                                                                                       |
+| Participant | Works the cards as any Plan card (move, edit the title and description, comment). They may not change actions, so their card moves reach the canvas when an Editor's editor heals. Sees no Board chip; View on Board and Show on Canvas work. Never makes the board. |
+| Viewer      | Sees the board, the banner and the panel; View on Board and Show on Canvas work; changes nothing.                                                                                                                                                                    |
 
 ## Agents
 
@@ -135,11 +153,10 @@ An agent sees linked cards as ordinary cards (`list_items`) carrying their `link
 - `Action` `Linked` `Board`: the Actions board was made.
 - `Action` `Resolved` `WontDo`: an action was set to Won't Do (from the panel, popover or dialog).
 - `Action` `Opened` `Board`: Actions Board chip or View on Board.
-- `Card` `Opened` `Canvas`: Show on Canvas.
+- `Action` `Opened` `Canvas`: Show on Canvas.
 
 ## Not in scope
 
 - Picking which board collects actions, or more than one Actions board. The first one collects.
 - Assigning from the card. Choosing an assignee needs the action's team picker and email toggle.
-- Offline Mode documents: they have no item store sync to heal against; their actions and cards link the same way while
-  the editor is open.
+- Offline Mode documents link the same way while the editor is open; nothing more is promised for them.

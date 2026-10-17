@@ -55,12 +55,27 @@ Completing an action (or resolving a thread) moves it to the Resolved filter and
 Click an action's badge to open its popover:
 
 - **Complete** marks it done. The action stays on the element as a record, and the button becomes **Reopen** if the work turns out not to be finished.
-- **Edit** reopens the dialog to change the name, description, or assignee, then **Save action**. Handing the action to a new person offers the email switch again, for the new assignee.
+- **Won’t Do** closes it without it being done: you decided against it. It is struck through and greyed, counts as closed everywhere, and **Reopen** brings it back.
+- **Edit** reopens the dialog to change the name, description, status or assignee, then **Save action**. Handing the action to a new person offers the email switch again, for the new assignee.
 - The bin removes the action from the element entirely: press it, then **Confirm**. **Delete Action** in the edit dialog does the same, with **Confirm Delete**.
 
 Someone on a Participant or Viewer share link can read actions but not complete, edit or delete them.
 
 Actions are deliberately not undoable: pressing undo after assigning, completing, or deleting an action will not silently reverse it, the same way comments are protected.
+
+## The Actions board
+
+The first time you add an action to a document, livediagram makes an **Actions** board tab at the end of your tabs and tells you so: **Added to Your Actions Board**, with **Open Board**. From then on every action in the document, from every tab, has a card there, in one of three columns: **New**, **Done** and **Won’t Do**.
+
+The card and the action are the same piece of work, seen in two places:
+
+- Tick an action on the canvas and its card moves to **Done**; drag a card to **Won’t Do** and the action on the canvas is closed as Won’t Do. Renaming or describing either one changes the other.
+- Give the card a due date, a checklist, labels or comments: those belong to the board.
+- Who an action is for is set on the action, so the card's assignee reads **Set on the action**.
+- Open a card and its banner says which tab its action is on; **Show on Canvas** takes you there. Going the other way, an action's popover has **View on Board**, and an action panel shows a **Board** chip.
+- Delete an action (or the element it sits on) and its card goes to the board's Trash; undo brings both back. Send a card to the Trash and its action leaves the canvas; restore the card and the action comes back.
+
+The board is an ordinary board otherwise: add columns, filter, lane by person. A column before **Done** is another open column; one after it closes an action as Won’t Do. Your Inbox lists each action once, never its card as well.
 
 ## Email notifications
 

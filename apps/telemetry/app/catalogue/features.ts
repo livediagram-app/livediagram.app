@@ -609,9 +609,28 @@ export const ACTIONS_EMAILED: Metric = {
 export const ACTIONS_COMPLETED: Metric = {
   category: 'Action',
   action: 'Resolved',
-  type: null,
+  // Won't Do closes an action without it being done: its own card, below.
+  typeIn: (type) => type !== 'WontDo',
   title: 'Actions Completed',
   blurb: 'Read against actions assigned: the follow-through rate on the feature.',
+};
+
+export const ACTIONS_WONT_DO: Metric = {
+  category: 'Action',
+  action: 'Resolved',
+  type: 'WontDo',
+  title: 'Actions Closed as Won’t Do',
+  blurb:
+    'Actions someone decided against: closed without being done, from the canvas or the Actions board.',
+};
+
+export const ACTIONS_BOARDS_MADE: Metric = {
+  category: 'Action',
+  action: 'Linked',
+  type: 'Board',
+  title: 'Actions Boards Made',
+  blurb:
+    'Documents that got an Actions board: a board tab where every action in the document has a card, kept in step with the canvas.',
 };
 
 export const FOLDERS_CREATED: Metric = {
@@ -673,6 +692,8 @@ export const ASSIGNED_ACTIONS: MetricStack = {
     ACTIONS_ASSIGNED,
     ACTIONS_EMAILED,
     ACTIONS_COMPLETED,
+    ACTIONS_WONT_DO,
+    ACTIONS_BOARDS_MADE,
     ACTIONS_EDITED,
     ACTIONS_OPENED,
     ACTIONS_DELETED,
