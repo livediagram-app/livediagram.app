@@ -45,4 +45,18 @@ describe('brand icon', () => {
         `${app} ${REGENERATE}`,
       ).toBe(true);
   });
+
+  // The api's emails load the mark from the site (docs/specs/014-identity/transactional-email.md "Branding"), so the
+  // copy marketing serves for them must be the transparent 64px PNG the generator renders.
+  it('serves the emails the transparent 64px mark', () => {
+    const mark = readFileSync(
+      fileURLToPath(new URL('marketing/media/icons/livediagram-icon-transparent-64.png', REPO)),
+    );
+    expect(
+      readFileSync(
+        fileURLToPath(new URL('apps/marketing/public/email/livediagram-mark-64.png', REPO)),
+      ).equals(mark),
+      REGENERATE,
+    ).toBe(true);
+  });
 });
