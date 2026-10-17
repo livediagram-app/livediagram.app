@@ -200,8 +200,9 @@ the server, which the rest of this spec covers.
   reconnect." for someone who can edit, "You're offline. You'll see changes
   when you reconnect." for a viewer. Changes are held in memory only, so the
   banner says "in this tab": closing it while offline loses them. The save
-  failure toast reads "You're offline. Your changes will save when you
-  reconnect. Keep this tab open." instead of the connection message.
+  failure toast reads "You're offline. Keep this tab open to save when you
+  reconnect." instead of the connection message: one line, as every toast is
+  ([Toasts](../004-interface-design/toasts.md)).
 - **A document that did not load is never written.** The load-error and Not
   found paths still hand the editor the document id, and its empty default tab
   used to look like an unsaved change: on reconnect it was saved into the real
