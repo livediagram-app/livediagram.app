@@ -153,6 +153,8 @@ export const SHAPE_KINDS = new Set<string>([
   'chair',
   // Fence (docs/specs/009-elements/fence.md): Avatar-mode characters cannot walk through one.
   'fence',
+  // Avatar Pad (docs/specs/009-elements/avatar-pad.md): where Avatar-mode characters start.
+  'avatar-pad',
   // Desk and sofa (docs/specs/009-elements/chair.md "Desk and sofa").
   'desk',
   'sofa',

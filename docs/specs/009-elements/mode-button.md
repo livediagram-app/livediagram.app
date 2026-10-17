@@ -22,10 +22,10 @@ It also gives a presenter somewhere to put a control bar — a row of buttons th
 ## Pressing it
 
 - A **left-click presses it**, switching the clicker's own canvas tool. Nobody else's mode changes: it is a control for the person who clicked, not a broadcast. The hover card says so.
-- **It hands out its mode in any editor mode**, including Avatar outside Facilitate, where the palette picker and the `W` key leave Avatar out ([Avatar mode](../008-canvas/avatar-mode.md) "Where it is offered").
+- **It hands out its mode in any editor mode.** For Avatar it is the only way in: the palette picker, the keyboard and search do not offer Avatar ([Avatar mode](../008-canvas/avatar-mode.md) "Where it lives").
 - It routes through the **same tool setter the palette picker uses**, so the mode's own rules all still apply: telemetry, the selection clear on entering Avatar / Spotlight, and the empty-canvas guard.
 - **Dragging it moves it, and does NOT press it.** The face fires on `click`, never on pointer-down — and swallows that click when the pointer travelled more than a wobble between press and release (`usePressWithoutDrag`), because a drag on an element still ends in a browser `click` event.
-- **A button that hands out Avatar mode spawns the character at the button**, just below it, rather than at the viewport centre: you pressed a thing on the canvas, so the character should appear where you pressed it.
+- **A button that hands out Avatar mode spawns the character at the button**, just below it, rather than at the viewport centre: you pressed a thing on the canvas, so the character should appear where you pressed it. An [Avatar Pad](avatar-pad.md) on the tab wins over the button: everyone starts on the pad.
 - **It stays pressable inside a pointer-inert mode.** Avatar, Spotlight, and Isometric all make the canvas layer ignore pointers; a mode button keeps `pointer-events: auto` so it still works. Without that, a button offering "Select" would be unreachable from the very mode a user most wants out of, and a presenter's control bar would be a one-way door. Right-clicking a button in those modes likewise still opens its element menu (the canvas / tab menu stays suppressed), so it can be reconfigured mid-walk.
 - **Read-only surfaces**: the embed ([Read-only embeds (`/embed`)](../013-workspace/embeds.md)) has no tool picker to drive, so it renders the face inert rather than pretending.
 

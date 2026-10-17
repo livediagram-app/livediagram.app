@@ -3633,6 +3633,21 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             },
             "type": "object"
           },
+          "avatar-pad": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
           "badge": {
             "additionalProperties": false,
             "properties": {
@@ -13812,6 +13827,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "done-check",
       "chair",
       "fence",
+      "avatar-pad",
       "desk",
       "sofa",
       "room",

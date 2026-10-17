@@ -12,12 +12,13 @@ import {
 } from '@/components/palette/palette-icons';
 import type { PaletteDropdownOption } from '@/components/palette/PaletteDropdown';
 
-// The tools only Facilitate offers (docs/specs/008-canvas/avatar-mode.md "Where it is offered"): the dropdown, the
-// W key and search leave them out elsewhere, while a Selection Mode button still hands them out in any mode.
-const FACILITATE_ONLY_TOOLS: ReadonlySet<string> = new Set(['avatar']);
+// The modes only a Selection Mode button on the board hands out (docs/specs/008-canvas/avatar-mode.md "Where it
+// lives"): the dropdown lists one only while you are in it, so the picker names the mode you are in and any other
+// pick leaves it. No key and no search command enters them either.
+const BOARD_ONLY_TOOLS: ReadonlySet<string> = new Set(['avatar']);
 
 // The canvas-tool dropdown's option set (Select / Hand / Eraser / Format /
-// Laser / Spotlight / Avatar / Isometric / Zen), grouped (group index drives
+// Laser / Spotlight / Isometric / Zen, plus Avatar while in it), grouped (group index drives
 // the menu dividers): editing tools, then presenter tools, then the view modes.
 // Eraser and everything after act on existing content, so they disable on an
 // empty canvas; Spotlight and Slide Deck are desktop-only. Zen is an ACTION, not a persistent
@@ -30,18 +31,18 @@ export function buildCanvasToolOptions({
   isMobile,
   includeZen,
   planMode,
-  facilitateMode,
+  currentTool,
 }: {
   canvasEmpty?: boolean;
   isMobile: boolean;
   includeZen?: boolean;
   // Plan mode leaves Eraser and Format out (docs/specs/026-plan/plan-mode.md).
   planMode?: boolean;
-  // Avatar is a Facilitate tool (docs/specs/008-canvas/avatar-mode.md): every other mode leaves it out.
-  facilitateMode?: boolean;
+  // The tool in force: a board-only mode (Avatar) is listed only while it is the one in force.
+  currentTool?: string;
 }): PaletteDropdownOption[] {
   const options = buildAll(canvasEmpty, isMobile, includeZen).filter(
-    (o) => facilitateMode || !FACILITATE_ONLY_TOOLS.has(o.id),
+    (o) => !BOARD_ONLY_TOOLS.has(o.id) || o.id === currentTool,
   );
   return planMode ? options.filter((o) => o.id !== 'eraser' && o.id !== 'format') : options;
 }
@@ -97,15 +98,13 @@ function buildAll(
           },
         ]),
     // Avatar mode (docs/specs/008-canvas/avatar-mode.md): a walking character you steer to whatever
-    // you're narrating. A presenter tool like Laser / Spotlight, but it
-    // works on touch too (tap-to-walk), so no mobile carve-out.
+    // you're narrating. Entered only from a Selection Mode button on the board, so it is listed only while in
+    // force (see BOARD_ONLY_TOOLS), never disabled, and has no key.
     {
       id: 'avatar',
       label: 'Avatar',
-      shortcut: 'W',
       icon: <AvatarModeIcon />,
       group: 1,
-      disabled: canvasEmpty,
     },
     // Slide Deck (docs/specs/012-collaboration/presentation-mode.md). In the Present band with the Laser and Spotlight:
     // like them it is a tool for showing a document to somebody rather than

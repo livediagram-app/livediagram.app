@@ -482,6 +482,7 @@ export const PARTICIPANT_CANVAS_TOOLS: readonly string[] = [
   'pan',
   'laser',
   'spotlight',
+  // Avatar is listed by the picker only while in force (canvas-tool-options), for every role alike.
   'avatar',
   'isometric',
   'zen',

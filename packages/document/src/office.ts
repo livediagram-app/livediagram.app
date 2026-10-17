@@ -27,9 +27,10 @@ export function isOfficeShape(kind: string): kind is OfficeKind {
   return (OFFICE_KINDS as readonly string[]).includes(kind);
 }
 
-// The floor pieces: placed behind everything, never blocking, never a destination.
-export function isFloorShape(kind: string): kind is 'room' | 'rug' {
-  return kind === 'room' || kind === 'rug';
+// The floor pieces: placed behind everything, never blocking, never a destination. An Avatar Pad
+// (docs/specs/009-elements/avatar-pad.md) lies on the floor too: characters stand on it, furniture over it.
+export function isFloorShape(kind: string): kind is 'room' | 'rug' | 'avatar-pad' {
+  return kind === 'room' || kind === 'rug' || kind === 'avatar-pad';
 }
 
 // Where you get a drink, and which.

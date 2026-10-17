@@ -18,7 +18,9 @@ export const metadata = helpMetadata({
   subArticles={getSubArticles("avatar-mode")}
 >
 
-Avatar mode drops a small pixel character onto the canvas and lets you walk it around. Instead of waving a cursor at the part of the canvas you are describing, you walk over to it, so the room follows a character moving between places. In [Facilitate mode](/help/canvas/facilitate-mode/), choose **Avatar** from the tool picker at the start of the palette strip, or press **`W`**. In the other modes Avatar is not in the picker; a [Mode Button](/help/palette/behaviour/mode-buttons/) set to Avatar still starts the walk in any mode.
+Avatar mode drops a small pixel character onto the canvas and lets you walk it around. Instead of waving a cursor at the part of the canvas you are describing, you walk over to it, so the room follows a character moving between places. You go into Avatar mode by pressing a [Selection Mode button](/help/palette/behaviour/mode-buttons/) set to Avatar on the board. It is not in the Selection Mode menu and has no keyboard shortcut: whoever builds the board decides whether it is a place to walk round, by putting a button on it. The button works in every mode, and while you walk the Selection Mode menu shows **Avatar**, so you can see where you are and pick another mode to leave.
+
+If the board has an [Avatar Pad](/help/palette/avatar-pads/), you start on the pad, beamed in, instead of beside the button.
 
 ## Walking
 
@@ -28,7 +30,7 @@ Avatar mode drops a small pixel character onto the canvas and lets you walk it a
 
 When the character ends up standing on an element, that element gets a soft ring around it, so your audience can see exactly which box you have arrived at. The canvas scrolls to follow the character when it gets close to the edge of the view, and the zoom is left alone.
 
-<Figure caption="The palette's tool picker set to Avatar; the character has walked over to the shape being discussed, which is ringed.">
+<Figure caption="The Selection Mode menu showing Avatar while you walk; the character has walked over to the shape being discussed, which is ringed.">
   <AvatarMode />
 </Figure>
 
@@ -115,7 +117,7 @@ Press **`Esc`** (or pick another mode) to put the character away. Panning still 
 
 ## Availability
 
-Avatar mode is disabled on an empty canvas: add something to walk to first. It is available on desktop and touch, and to view-only visitors (press `W`), since it changes nothing. In [Draw mode](/help/canvas/draw-mode/) the palette shows Draw's own tools and `W` is not a shortcut there.
+Avatar mode is available on desktop and touch, and to view-only visitors, since it changes nothing: anyone can press a board's Avatar button.
 
 The first time you walk as an avatar, you're offered a short [Avatar Tour](/help/selection-modes/avatar-mode/avatar-tour/) of all this.
 
@@ -124,9 +126,10 @@ The first time you walk as an avatar, you're offered a short [Avatar Tour](/help
   characters. See [Walking Together](/help/selection-modes/walking-together/).
 </Tip>
 
-To invite people in without explaining where the tool picker is, drop an **Avatar** mode button on
-the canvas (the palette's **Selection Mode** category, in Facilitate mode). It reads "Switch to Avatar", so one click puts a visitor in
-the mode, and the character appears right at the button they pressed. Pressing it again while in the
+To make a board a place to walk round, drop an **Avatar** mode button on the canvas (the palette's
+**Selection Mode** category, in Facilitate mode). It reads "Switch to Avatar", so one click puts a visitor in
+the mode, and the character appears right at the button they pressed, or on the board's
+[Avatar Pad](/help/palette/avatar-pads/) when it has one. Pressing it again while in the
 mode hands them back the tool they were using. See [Selection Mode Buttons](/help/palette/behaviour/mode-buttons/).
 
 Portals work here too: walk your character into a [Portal](/help/palette/tools/portals/) and you come

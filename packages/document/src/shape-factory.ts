@@ -35,6 +35,7 @@ import {
 import { QUIZ_DEFAULT_SECONDS } from './quiz';
 import { DEFAULT_SEATING_FACING } from './seating';
 import { FENCE_DEFAULT_SIZE } from './fence';
+import { AVATAR_PAD_DEFAULT_SIZE } from './avatar-pad';
 import { SANKEY_DEFAULT_FLOWS } from './sankey-model';
 import { NAV_DEFAULT_LINKS, PROCESS_DEFAULT_STEPS, STAT_DEFAULTS } from './web-components';
 import type { ShapeElement, ShapeKind } from './index';
@@ -193,6 +194,8 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   chair: { width: 76, height: 84 },
   // Fence (docs/specs/009-elements/fence.md): a short run across, thin enough to read as a barrier.
   fence: { ...FENCE_DEFAULT_SIZE },
+  // Avatar Pad (docs/specs/009-elements/avatar-pad.md): its pixel grid at four canvas px a pixel.
+  'avatar-pad': { ...AVATAR_PAD_DEFAULT_SIZE },
   // Desk and sofa (docs/specs/009-elements/chair.md "Desk and sofa"): their drawings' grids, at the
   // chair's scale, so a character fits the seat.
   desk: { width: 120, height: 112 },
@@ -383,6 +386,10 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
   }
   // Desk and sofa (docs/specs/009-elements/chair.md "Desk and sofa"): furniture like the chair, each
   // with the facing it is drawn at, its label under it, and its proportions held.
+  // Avatar Pad (docs/specs/009-elements/avatar-pad.md): pixels and no words, its grid kept square.
+  if (kind === 'avatar-pad') {
+    return { ...base, label: '', aspectLocked: true };
+  }
   if (kind === 'desk' || kind === 'sofa') {
     return {
       ...base,

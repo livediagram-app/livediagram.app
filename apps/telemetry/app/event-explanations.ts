@@ -130,6 +130,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone said something in Avatar mode, typing a message in the bubble above their character (Enter). Never the words.',
   'Canvas|Used|AvatarMessagePanel':
     "Someone said something in Avatar mode from the Avatar panel's Send a Message. Never the words.",
+  'Canvas|Used|AvatarPadArrival':
+    'Someone went into Avatar mode on a board with an Avatar Pad, so their character beamed in on the pad.',
   'Canvas|Used|AvatarMode':
     'Someone switched to Avatar mode, steering a small walking character around the canvas instead of the usual pointer.',
   'Canvas|Used|ChangeNoteKind':

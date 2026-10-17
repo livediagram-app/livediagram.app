@@ -71,6 +71,8 @@ describe('the self-drawing shape family', () => {
     fromMembers.add('chevrons');
     // docs/specs/009-elements/fence.md: a fence is posts and rails, with nothing to write on.
     fromMembers.add('fence');
+    // docs/specs/009-elements/avatar-pad.md: an Avatar Pad is pixels, with nothing to write on.
+    fromMembers.add('avatar-pad');
     // docs/specs/009-elements/office.md: the scenery and machines have nothing to write on.
     for (const k of ['plant', 'bookshelf', 'water-cooler', 'coffee-machine', 'rug'] as const)
       fromMembers.add(k);

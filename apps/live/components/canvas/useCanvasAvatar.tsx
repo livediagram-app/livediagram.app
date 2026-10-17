@@ -17,6 +17,7 @@ import { useSpeechBubbles } from '@/lib/avatar-speech-store';
 import { avatarScale } from '@/lib/avatar-config';
 import { useAvatarActionKeys } from '@/hooks/canvas/useAvatarActionKeys';
 import { useAvatarWalk } from '@/hooks/canvas/useAvatarWalk';
+import { useAvatarPadArrivals } from '@/hooks/canvas/useAvatarPadArrivals';
 import { avatarSpawnFromButton, type AvatarPoint } from '@/lib/avatar-walk';
 import {
   CHAIR_SITTER_FACING,
@@ -163,6 +164,13 @@ export function useCanvasAvatar({
     onSay: props.onAvatarSay,
   });
   const speechBubbles = useSpeechBubbles();
+  // Arrival beams on an Avatar Pad (docs/specs/009-elements/avatar-pad.md "The arrival"), yours and every peer's.
+  const padArrivals = useAvatarPadArrivals({
+    self: avatar.pos,
+    selfColor: props.selfParticipant.color,
+    peers: props.remoteAvatars,
+    elements: walkElements,
+  });
   // The composer's code fetched as soon as someone who may speak is in the mode, so the first Enter finds it in and
   // the words typed straight after it land in its box, not on the editor's shortcuts.
   useEffect(() => {
@@ -239,6 +247,7 @@ export function useCanvasAvatar({
     avatarLook,
     avatarStandingOn,
     avatarStatus,
+    padArrivals,
     playAvatarBurst,
     pressModeButton,
     resolvePortal,
