@@ -56,8 +56,8 @@ AI_ALLOWED_ORIGINS = "https://www.livediagram.app,https://livediagram.app"
 # 12:00:00Z is the latest instant at which every existing id was unsigned. An id
 # whose participant row is older may still run its one-time upgrade unsigned.
 #
-# GUEST_SIG_ENFORCE_AFTER: from this instant, owner-scoped routes, the room's
-# owner leg and the legacy upgrade require a valid guest signature. Blank: not
+# GUEST_SIG_ENFORCE_AFTER: from this instant, owner-scoped routes (the room's
+# ticket mint among them) and the legacy upgrade require a valid guest signature. Blank: not
 # armed. Every entry path now resolves a signed id before its first api call,
 # and every e2e stack runs with enforcement on (scripts/e2e-stack.mjs), so a
 # regression fails the suite; re-arming production is Tom's or Webber's call

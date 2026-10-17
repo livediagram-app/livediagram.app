@@ -75,9 +75,7 @@ closed the escalation. The fix is [§4](#4-x-owner-id-trust-change).
   [API app](api.md) "Realtime model"), which every editor session now uses, so no
   owner id, guest signature, share code or share password rides the upgrade URL.
   The legacy legs, a personal document's owner id or a share code with the share
-  password where one is set (`o` / `os` / `s` / `p`), still admit an editor from
-  before 2026-10-17 and log `[room-upgrade] legacy leg admitted` until they are
-  retired.
+  password where one is set (`o` / `os` / `s` / `p`), are retired and admit nobody.
 - **Presence carries no owner id.** The room mints a random presence id per
   socket and builds each presence entry itself (`helloPresence`,
   `document-room-rules.ts`); a client never supplies or learns one.
@@ -470,10 +468,10 @@ segment, before the signature gate and independent of
 because nothing legitimate ever had this shape, so there is no window to bound
 and nothing for an operator to arm.
 
-The realtime room's upgrade refuses the same shape on its owner leg (`?o=`, `routes/document-room-routes.ts`):
-a signed-in owner of a personal document joins through the one-time room ticket, as a team owner does, and an
-account id presented as `?o=` admits nobody. Once the guest signature gate is armed, a guest owner id on `?o=`
-needs its signature on `?os=` (the same value REST carries as `X-Owner-Sig`); without it the leg admits nobody.
+The realtime room's upgrade takes no owner id at all (`routes/document-room-routes.ts`): every session joins
+through the one-time room ticket, so the account-id refusal and the guest signature gate above apply at the
+ticket mint, which is an owner-scoped REST route like any other. The old `?o=` / `?os=` owner leg is retired and
+admits nobody ([API app](api.md) "Realtime model").
 
 `GET /api/share/<code>` also refuses an account id as `X-Owner-Id`, because its resolver compares that header with
 the document's owner. It never returns the document's primary `shareCode`, to anyone: the visitor already holds the

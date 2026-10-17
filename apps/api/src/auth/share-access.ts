@@ -12,7 +12,7 @@ import type { Env } from '../types';
 import { hashSharePassword, verifySharePassword } from './share-password-hash';
 
 // The personal-document owner rule. The hybrid `owner` id (Clerk sub OR the
-// unsigned X-Owner-Id guest header, or the room's `?o=`) is trusted ONLY on a
+// unsigned X-Owner-Id guest header) is trusted ONLY on a
 // personal document, where a guest id is an unguessable UUID. A TEAM document's
 // owner id is a Clerk id deliberately visible to every teammate, so a removed
 // member could present it; team access goes through verified membership.
