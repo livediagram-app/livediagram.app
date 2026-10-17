@@ -99,7 +99,7 @@ test('a teammate’s work on a team document reaches Home, named and placed', as
 
   await expect(
     page
-      .getByRole('list', { name: 'Jump Back In' })
+      .getByRole('region', { name: 'Jump Back In' })
       .getByRole('link', { name: 'Payments architecture' }),
   ).toHaveAttribute('href', `/document/${doc}`);
   const happened = page.getByRole('region', { name: 'What Happened' });
@@ -119,7 +119,7 @@ test('a teammate’s work on a team document reaches Home, named and placed', as
   await page.setViewportSize({ width: 390, height: 844 });
   await expect(
     page
-      .getByRole('list', { name: 'Jump Back In' })
+      .getByRole('region', { name: 'Jump Back In' })
       .getByRole('link', { name: 'Payments architecture' }),
   ).toBeVisible();
   await page

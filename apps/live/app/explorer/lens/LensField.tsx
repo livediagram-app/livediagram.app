@@ -8,6 +8,7 @@ import {
   useState,
   type ChangeEvent,
   type KeyboardEvent,
+  type ReactNode,
 } from 'react';
 import {
   acceptSuggestion,
@@ -20,20 +21,73 @@ import {
 import { CloseIcon, HoverCard, SearchIcon } from '@livediagram/ui';
 import type { ExplorerLens } from './useExplorerLens';
 import { composeField, removePill, settleField, splitField, writeDraft } from './field-model';
+import { requestBarFocus, takeBarFocus } from './lens-focus-handoff';
 
 // The Explorer's top-bar search, the lens field (docs/specs/013-workspace/explorer-filters.md
 // "The field"): the lens string's tokens as removable pills, then the draft in a WAI-ARIA combobox
-// with a listbox of suggestions. One line high; pills and text scroll sideways inside it.
+// with a listbox of suggestions. One line high; pills and text scroll sideways inside it. On Home it is drawn large in
+// the hero (`size="hero"`, explorer-home.md "The hero"), with New document as its `trailing` button.
 
 const FIELD_PLACEHOLDER = 'Search or filter documents';
+
+const SIZES = {
+  bar: {
+    wrap: 'relative w-full sm:w-64 lg:w-[22rem]',
+    box: 'h-9 gap-1.5 rounded-lg border border-slate-300 bg-white pl-2.5 pr-1 text-sm focus-within:border-brand-500 focus-within:ring-2 focus-within:ring-brand-500/40 dark:border-slate-600 dark:bg-slate-900',
+    glyph: 14,
+    input: 'text-sm',
+  },
+  hero: {
+    wrap: 'relative w-full',
+    box: 'h-[60px] gap-3 rounded-[18px] border-2 border-sky-200 bg-white pl-[18px] pr-2 text-base shadow-[0_0_0_6px_rgba(125,211,252,0.22),0_18px_40px_-20px_rgba(2,132,199,0.45)] focus-within:border-sky-400 dark:border-sky-400/40 dark:bg-slate-800 dark:shadow-[0_0_0_6px_rgba(56,189,248,0.12)] dark:focus-within:border-sky-400',
+    glyph: 18,
+    input: 'text-base',
+  },
+} as const;
+
+/** The hero field's box and its glyph's size, for a field that looks the same and searches something else (the
+ *  first run's template search, explorer-home.md "First run"). */
+export const HERO_FIELD_LOOK = SIZES.hero;
+
+/** The field's look with nothing live in it: Home's hero while it folds away, so the page never holds two fields. */
+export function LensFieldStill({
+  size = 'bar',
+  trailing,
+}: {
+  size?: keyof typeof SIZES;
+  trailing?: ReactNode;
+}) {
+  const look = SIZES[size];
+  return (
+    <div aria-hidden className={look.wrap} data-lens-still="">
+      <div className={`flex items-center overflow-hidden ${look.box}`}>
+        <span className="shrink-0 text-slate-500 dark:text-slate-400">
+          <SearchIcon size={look.glyph} />
+        </span>
+        <span
+          className={`min-w-[8rem] flex-1 truncate text-slate-500 dark:text-slate-400 ${look.input}`}
+        >
+          {FIELD_PLACEHOLDER}
+        </span>
+        {trailing}
+      </div>
+    </div>
+  );
+}
 
 export function LensField({
   lens,
   subjects,
+  size = 'bar',
+  trailing,
 }: {
   lens: ExplorerLens;
   /** The rows the current view's lens reads, for marking a suggestion that matches nothing. */
   subjects: readonly LensSubject[];
+  /** The header's field, or Home's hero field. */
+  size?: keyof typeof SIZES;
+  /** A control inside the field's end (the hero's New document). */
+  trailing?: ReactNode;
 }) {
   const { input, caret, context, now, setField, setInput, blur } = lens;
   const id = useId();
@@ -49,6 +103,17 @@ export function LensField({
   const [active, setActive] = useState(-1);
   // Backspace at the start selects the last pill first; a second press removes it.
   const [selectedPill, setSelectedPill] = useState(false);
+  const look = SIZES[size];
+
+  // The header field mounting on Search results after typing in the hero takes the focus, caret at the end. A
+  // layout effect: it runs in the commit that removes the hero's field, so no keystroke lands on the page between.
+  useLayoutEffect(() => {
+    if (size !== 'bar' || !takeBarFocus()) return;
+    const el = field.current;
+    if (!el) return;
+    el.focus();
+    el.setSelectionRange(el.value.length, el.value.length);
+  }, [size]);
 
   const suggestions = useMemo<LensSuggestion[]>(
     () => (caret === null ? [] : suggestTokens(input, caret, { ...context, subjects, now })),
@@ -75,6 +140,8 @@ export function LensField({
   const onChange = (e: ChangeEvent<HTMLInputElement>) => {
     const next = writeDraft(parts.tokens, e.target.value, caretOf(e.target), context);
     moveCaret.current = true;
+    // From the hero, a first word opens Search results: the header's field there carries the typing on.
+    if (size === 'hero' && lens.view === null && next.input.trim() !== '') requestBarFocus();
     setField(next.input, next.caret);
     setOpen(true);
     setActive(-1);
@@ -144,9 +211,9 @@ export function LensField({
   };
 
   return (
-    <div className="relative w-full sm:w-64 lg:w-[22rem]">
+    <div className={look.wrap}>
       <div
-        className="flex h-9 items-center gap-1.5 overflow-x-auto rounded-lg border border-slate-300 bg-white pl-2.5 pr-1 text-sm focus-within:border-brand-500 focus-within:ring-2 focus-within:ring-brand-500/40 dark:border-slate-600 dark:bg-slate-900"
+        className={`flex items-center overflow-x-auto ${look.box}`}
         onMouseDown={(e) => {
           // A press on the box's padding puts the caret in the field.
           if (e.target === e.currentTarget) {
@@ -156,7 +223,7 @@ export function LensField({
         }}
       >
         <span aria-hidden className="shrink-0 text-slate-500 dark:text-slate-400">
-          <SearchIcon size={14} />
+          <SearchIcon size={look.glyph} />
         </span>
         {pills.map((pill, index) => {
           const muted = pill.state === 'inert';
@@ -224,8 +291,10 @@ export function LensField({
             setSelectedPill(false);
             blur();
           }}
-          className="h-full min-w-[8rem] flex-1 bg-transparent text-sm text-slate-900 placeholder:text-slate-500 focus:outline-none dark:text-slate-100 dark:placeholder:text-slate-400"
+          data-lens-input={size}
+          className={`h-full min-w-[8rem] flex-1 bg-transparent ${look.input} text-slate-900 placeholder:text-slate-500 focus:outline-none dark:text-slate-100 dark:placeholder:text-slate-400`}
         />
+        {trailing}
       </div>
       <div
         id={listId}

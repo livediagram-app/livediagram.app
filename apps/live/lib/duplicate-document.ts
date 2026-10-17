@@ -38,7 +38,7 @@ import { storeAsCreates } from '@livediagram/items';
 import { fetchAllSheets, sheetAsCreate } from './api/sheets';
 
 // The refusals that mean "not beside the source for this person", where the copy is filed at the
-// explicit root of My documents instead (docs/specs/013-workspace/default-folders.md "Duplicate").
+// explicit root of My Documents instead (docs/specs/013-workspace/default-folders.md "Duplicate").
 const PLACE_REFUSALS: ReadonlySet<string> = new Set([
   'team_forbidden',
   'folder_not_found',

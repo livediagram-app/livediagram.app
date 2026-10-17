@@ -2,13 +2,13 @@ import { describe, expect, it } from 'vitest';
 import { carriedHref, lensHref, lensViewOf, SEARCH_RESULTS_PATH } from './lens-views';
 
 describe('lensViewOf', () => {
-  it('reads My documents, its folders, a team and This browser as scoped', () => {
+  it('reads My Documents, its folders, a team and This Browser as scoped', () => {
     for (const kind of ['all', 'folder', 'team', 'offline'] as const) {
       expect(lensViewOf(kind)).toBe('scoped');
     }
   });
 
-  it('reads Recent, Favourites, Search results and Shared with me as aggregate', () => {
+  it('reads Recent, Favourites, Search results and Shared With Me as aggregate', () => {
     for (const kind of ['recent', 'favourites', 'search', 'shared'] as const) {
       expect(lensViewOf(kind)).toBe('aggregate');
     }

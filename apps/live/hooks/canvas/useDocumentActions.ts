@@ -49,7 +49,7 @@ type DocumentActionsDeps = {
   sessionShareCode: string | null;
   // Post-move refreshes for the scope-aware mover below: the team
   // libraries sweep (a row moved within / left a team) and the personal
-  // list (a document landed in — or left — My documents).
+  // list (a document landed in — or left — My Documents).
   refreshTeamLibraries: () => void;
   refreshDocumentList: () => Promise<void> | void;
   // Fired after a successful scope-aware move so the editor can sync any

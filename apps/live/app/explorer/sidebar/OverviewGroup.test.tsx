@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 // The sidebar's Overview group (docs/specs/013-workspace/explorer-structure.md#overview): Home, Inbox,
-// Timeline and Shared with me, each opening its view, with the Inbox's badge counting what is
+// Timeline and Shared With Me, each opening its view, with the Inbox's badge counting what is
 // assigned to the reader and the Timeline's unread count staying on Home.
 
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
@@ -60,9 +60,9 @@ beforeEach(() => {
 afterEach(cleanup);
 
 describe('OverviewGroup', () => {
-  it('lists Home, Inbox, Timeline and Shared with me, in that order', () => {
+  it('lists Home, Inbox, Timeline and Shared With Me, in that order', () => {
     renderGroup();
-    expect(rows()).toEqual(['Home', 'Inbox', 'Timeline', 'Shared with me']);
+    expect(rows()).toEqual(['Home', 'Inbox', 'Timeline', 'Shared With Me']);
   });
 
   it('opens the Inbox and reports Sidebar.Inbox', () => {

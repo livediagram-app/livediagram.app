@@ -24,7 +24,7 @@ function contents(documentIds: string[], folderIds: string[] = []): FolderPrevie
 }
 
 describe('folderPreviewTiles', () => {
-  it('previews nothing for an empty folder (the card falls back to its glyph)', () => {
+  it('previews nothing for an empty folder (the card shows the empty state art)', () => {
     expect(folderPreviewTiles(contents([]))).toEqual({ tiles: [], hidden: 0 });
   });
 

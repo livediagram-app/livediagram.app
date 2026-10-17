@@ -62,7 +62,7 @@ export function ExplorerPanelPane({
   // The rows of a section that holds documents (PanelExplorerTree), rendered by the host which owns their state.
   tree: ReactNode;
   onPick: (s: PanelSection) => void;
-  // My documents' or a team's New Folder; absent where the session may not make one.
+  // My Documents' or a team's New Folder; absent where the session may not make one.
   onNewFolder?: () => void;
   // A folder is open in the pane, so New Folder makes one inside it and says so.
   inFolder?: boolean;

@@ -2,7 +2,7 @@
 
 // The editor's Explorer rail (docs/specs/013-workspace/explorer-structure.md "The rail"): every section as an entry,
 // the picked one marked. A column of rows on a desktop, a sideways-scrolling row of chips on a phone. Up and Down (Left
-// and Right on a phone) move between entries; Enter or Space picks one. My documents takes a dragged document, filing
+// and Right on a phone) move between entries; Enter or Space picks one. My Documents takes a dragged document, filing
 // it at the root.
 import { useEffect, useRef, type KeyboardEvent, type ReactNode } from 'react';
 import {
@@ -59,7 +59,7 @@ export function ExplorerRail({
   groups: PanelSectionGroup[];
   selected: PanelSection;
   onPick: (s: PanelSection) => void;
-  // A count beside an entry (Shared with me, This browser), by section key.
+  // A count beside an entry (Shared With Me, This browser), by section key.
   badges: Record<string, number | undefined>;
   teamName: (id: string) => string | undefined;
   divider: SidebarDivider;

@@ -627,6 +627,25 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Home|Opened|Landing':
     'Someone arrived at the Explorer with Home as the very section that loaded.',
   'Home|Opened|Nav': 'Someone went to Home from another section of the Explorer.',
+  'Home|Opened|Welcome':
+    'Someone with no documents yet saw the first-run Home, with its blanks and popular templates to start from.',
+  'Home|Selected|Welcome.AllTemplates':
+    'Someone with no documents yet followed Browse All Templates from the first-run Home.',
+  'Home|Selected|Welcome.Blank':
+    'Someone with no documents yet started a blank from the first-run Home.',
+  'Home|Selected|Welcome.Search':
+    'Someone with no documents yet searched the templates from the field at the top of the first-run Home.',
+  'Home|Selected|Welcome.SignIn':
+    'Someone signed out with no documents followed Sign In from the first-run Home, to find their work.',
+  'Home|Selected|Welcome.StartBlank':
+    'Someone with no documents yet started a blank diagram from the field at the top of the first-run Home.',
+  'Home|Selected|Welcome.Template':
+    'Someone with no documents yet started a popular template from the first-run Home.',
+  'Home|Selected|Hero.Documents':
+    'Someone followed the documents pill at the top of Home to My Documents.',
+  'Home|Selected|Hero.Inbox': 'Someone followed the Inbox pill at the top of Home to their Inbox.',
+  'Home|Selected|Hero.NewDocument':
+    'Someone started a new document from the New document button in the search field at the top of Home.',
   'Home|Selected|JumpBackIn.MostUsed':
     "Someone opened a document from Home's Jump Back In that was among the ones they used on the most days.",
   'Home|Selected|JumpBackIn.Recent':
@@ -1085,7 +1104,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Explorer|Deleted|Tag':
     'Someone deleted one of their tags, which takes it off every document it was on.',
   'Explorer|Selected|Space':
-    'Someone filtered an aggregate Explorer list by where documents live (My documents, Shared with me, a team).',
+    'Someone filtered an aggregate Explorer list by where documents live (My Documents, Shared With Me, a team).',
   'Token|Created|MCP':
     'An AI tool was connected to the account over MCP, which creates an API token for it to use.',
   'Token|Created|Manual':
@@ -2511,13 +2530,13 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Timeline|Selected':
     "Someone changed a Timeline filter: turned a category chip (such as Comments, Renames, or Sharing) off, or switched between seeing everyone's activity and just their own.",
   'Drive|Linked':
-    'Someone connected Google Drive, so My documents is mirrored to their own Drive. The type says how: through the server (Broker) or with browser-only access (Browser).',
+    'Someone connected Google Drive, so My Documents is mirrored to their own Drive. The type says how: through the server (Broker) or with browser-only access (Browser).',
   'Drive|Unlinked':
     'Someone disconnected Google Drive. livediagram stops updating it, and the files stay in their Drive.',
   'Drive|Changed':
     "Google stopped accepting a mirror's access (revoked, or unused for six months), so the mirror asks to be reconnected. Nothing is deleted.",
   'Drive|Created':
-    'A newly connected mirror finished copying every document in My documents into Google Drive for the first time.',
+    'A newly connected mirror finished copying every document in My Documents into Google Drive for the first time.',
   'Drive|Applied':
     'A change someone made in Google Drive reached livediagram: a rename, a move (or a move into a folder livediagram cannot see), a bin, a restore, or a permanent delete.',
   'Drive|Opened':
@@ -2525,7 +2544,7 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Folder|Changed':
     'Someone chose a default folder: where new documents of one kind (diagrams, whiteboards, Event Storming boards, retrospectives or Kanban boards) land when they pick no place.',
   'Folder|Cleared':
-    'Someone cleared a default folder, so new documents of that kind land in My documents again.',
+    'Someone cleared a default folder, so new documents of that kind land in My Documents again.',
   'Trash|Opened': 'Someone opened the Trash, where deleted documents wait for 30 days.',
   'Explorer|Created': 'Someone made something in the Explorer (a tag).',
   'Explorer|Added': 'Someone put one of their tags on a document.',

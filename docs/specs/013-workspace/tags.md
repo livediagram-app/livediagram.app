@@ -31,7 +31,7 @@ anything.
 
 ## Which documents take tags
 
-The reader's own documents (My documents, This browser) and their teams' documents. A document **shared with you**
+The reader's own documents (My Documents, This browser) and their teams' documents. A document **shared with you**
 takes none: it lives in the sharer's library, its menu offers Open and Dismiss only, the same rule as Favourites.
 
 ## Putting tags on a document
@@ -110,10 +110,10 @@ At `/explorer/tags?id=<id>`, reached from a tag's sidebar row, a chip, or a sect
 
 ## The sidebar
 
-**Tags** sits in More, after This browser and before Library, always shown (so it can be found before the first tag).
-It opens the Tags page and expands to one child row per tag: a dot of the tag's colour, its name, and its document count
-as the badge. A tag's row opens its page. Tags starts collapsed unless a Tags page is the current view. Its expanded
-state is the sidebar's (`more:tags`).
+**Tags** is the first row inside **Library** (before Image Gallery, Themes and Shape Libraries), always shown (so it
+can be found before the first tag). It opens the Tags page and expands to one child row per tag: a dot of the tag's
+colour, its name, and its document count as the badge. A tag's row opens its page. Library and Tags start collapsed
+unless a Tags page is the current view, which opens both. Tags' expanded state is the sidebar's (`more:tags`).
 
 ## The editor's Explorer panel
 

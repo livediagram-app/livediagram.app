@@ -78,13 +78,13 @@ Scope, by file:
 
 | Term           | Identifier                                        | Meaning                                                                         |
 | -------------- | ------------------------------------------------- | ------------------------------------------------------------------------------- |
-| Mirror         | `drive-mirror`                                    | The copy of My documents in the user's Drive                                    |
+| Mirror         | `drive-mirror`                                    | The copy of My Documents in the user's Drive                                    |
 | Connection     | `drive_connections` row, `DriveConnection`        | One user's grant and mirror state                                               |
 | Mode           | `DriveMode`: `off` \| `browser` \| `broker`       | How the deployment gets Google access tokens                                    |
 | Status         | `DriveConnectionStatus`                           | `connected` \| `needs_reconnect`                                                |
 | Item           | `drive_items` row, `DriveItem`                    | One mirrored document or folder and the Drive state livediagram last wrote      |
 | Item kind      | `DriveItemKind`: `document` \| `folder`           |                                                                                 |
-| Root           | `root_folder_id`                                  | The mirror's root folder, named `driveRootName(host)`; the root of My documents |
+| Root           | `root_folder_id`                                  | The mirror's root folder, named `driveRootName(host)`; the root of My Documents |
 | Document file  | `.livediagram` file                               | A document's mirror                                                             |
 | Envelope       | `DocumentEnvelope`, `livediagram.document`        | The file's contents                                                             |
 | Drive state    | `fileState(file)`                                 | `{ name, parentId, trashed, md5, headRevisionId }` of one Drive file            |
@@ -205,7 +205,7 @@ stops the pass on a rate-limit error. `expectedParent(folderId)` is the folder's
      `now - savedAt >= DRIVE_WRITE_IDLE_MS` and `now - lastContentWrite(id) >= DRIVE_WRITE_MIN_INTERVAL_MS` x back-off.
      A deferred upload schedules a `write` pass for the moment it becomes due.
 3. **Trashed personal documents** with an item not trashed: `updateFile { trashed: true }`.
-4. **Items of documents neither live nor trashed in My documents** (moved into a team) not trashed:
+4. **Items of documents neither live nor trashed in My Documents** (moved into a team) not trashed:
    `updateFile { trashed: true }`; the row stays, so a move back out restores it (step 2).
 5. **Tombstones:** for each: `getFile`; 404 or already gone: drop. Document: `trashed` then `deleteFile`, else
    `updateFile { trashed: true }`. Folder: `updateFile { trashed: true }` (its contents moved in steps 1 and 2: the api re-parented them to the
@@ -232,7 +232,7 @@ returns one `InboundDecision`:
 | No item, `ldDocumentId` names a known document                                         | `ignore` (`unrecorded-document`); adopted only by the reconnect listing       |
 | `removed`, document item, document in the personal Trash                               | `purge`                                                                       |
 | `removed`, document item, document live                                                | `forget-file` (item dropped; outbound re-creates)                             |
-| `removed`, document item, document outside My documents                                | `forget-file`                                                                 |
+| `removed`, document item, document outside My Documents                                | `forget-file`                                                                 |
 | `removed`, folder item                                                                 | `forget-file` (outbound re-creates it while the folder lives)                 |
 | No foreign field                                                                       | `echo`                                                                        |
 | Folder item, `trashed` became true                                                     | `bin-folder`                                                                  |
@@ -240,8 +240,8 @@ returns one `InboundDecision`:
 | Document item, `trashed` became false, document in the personal Trash                  | `restore` then placement by Drive parent                                      |
 | Name changed, livediagram name unchanged since sync (`name === ldName`) or Drive later | `rename` to `stripDriveName(file.name)`; empty keeps the old                  |
 | Parent changed, livediagram parent unchanged or Drive later, parent a mirrored folder  | `move` to that folder                                                         |
-| Parent changed, same, parent the root                                                  | `move` to the root of My documents                                            |
-| Parent changed, same, parent unknown or none                                           | `move` to the root of My documents (document) or top level (folder), `notice` |
+| Parent changed, same, parent the root                                                  | `move` to the root of My Documents                                            |
+| Parent changed, same, parent unknown or none                                           | `move` to the root of My Documents (document) or top level (folder), `notice` |
 | Only `md5` / `headRevisionId` changed                                                  | `rewrite` (item `mirroredSavedAt` set to 0)                                   |
 | The value livediagram already holds                                                    | recorded only                                                                 |
 

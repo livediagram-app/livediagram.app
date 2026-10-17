@@ -128,7 +128,7 @@ describe('moving a team document within its team', () => {
 });
 
 describe('moving a team document out of its team', () => {
-  it('re-sweeps the teams and My documents once the move landed', async () => {
+  it('re-sweeps the teams and My Documents once the move landed', async () => {
     vi.mocked(apiSetDocumentFolder).mockResolvedValueOnce(undefined);
     const { moves, refreshTeamLibraries, refreshPersonal } = setup();
     moves.moveDocumentTo('t1', { teamId: null, folderId: null });
@@ -138,7 +138,7 @@ describe('moving a team document out of its team', () => {
   });
 
   it.each([
-    ['to My documents', null],
+    ['to My Documents', null],
     ['to another team', 'team-2'],
   ])('says so, and logs it, when the move %s fails', async (_, teamId) => {
     vi.mocked(apiSetDocumentFolder).mockRejectedValueOnce(new Error('offline'));

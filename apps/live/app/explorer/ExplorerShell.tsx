@@ -26,6 +26,9 @@ import { DocumentTagsProvider } from '@/components/tags/DocumentTagsProvider';
 import { AreaErrorBoundary } from '@/components/primitives/AreaErrorBoundary';
 import { ExplorerProvider, useExplorer } from './ExplorerContext';
 import { ExplorerSidebar } from './sidebar/ExplorerSidebar';
+import { HomeHero } from '@/components/panels/home/HomeHero';
+import { useHeroPresence } from '@/components/panels/home/useHeroPresence';
+import { useMidnightPalette } from './useMidnightPalette';
 import { useExplorerState } from './useExplorerState';
 import { teamFolderPath } from './routes';
 import { searchPanelSources } from '@/components/panels/search-panel-sources';
@@ -62,6 +65,8 @@ const SIDEBAR_WIDTH = 256;
 // only the right pane (children) changes.
 export function ExplorerShell({ children }: { children: ReactNode }) {
   const state = useExplorerState();
+  // Dark mode's Midnight palette, before the first paint (docs/specs/004-interface-design/color-scheme.md).
+  useMidnightPalette();
   // Wait for Clerk to settle so a signed-in user never momentarily
   // reads the localStorage guest id and refreshes against the wrong
   // owner. After this gate, `ownerId` is either the Clerk userId or
@@ -132,6 +137,8 @@ function ShellChrome({ children }: { children: ReactNode }) {
   } = useExplorer();
   // Navigating to another section clears a crashed pane's notice.
   const pathname = usePathname();
+  // Home's hero folds away when the reader leaves Home and unfolds when they return.
+  const hero = useHeroPresence(selected.kind === 'home');
   // Cmd/Ctrl+K and Cmd/Ctrl+. open search here as in the editor (docs/specs/007-editor/command-palette.md).
   useSearchShortcut(() => setSearchOpen(true));
 
@@ -165,23 +172,43 @@ function ShellChrome({ children }: { children: ReactNode }) {
           <Brand href="/" size="md" />
           <ProductNav current="explorer" showOnMobile />
         </div>
-        <div className="order-last w-full pb-2 pr-4 sm:order-none sm:ml-auto sm:w-auto sm:pb-0 sm:pr-0">
-          <LensField lens={lens} subjects={lensResult.subjects} />
-          {/* Counts what the lens left once typing settles; the team library counts its own. */}
-          <LensAnnouncer
-            input={lens.input}
-            shown={lensResult.shown}
-            total={lensResult.total}
-            muted={lens.view === null || selected.kind === 'team'}
-          />
-        </div>
+        {/* On Home the field sits in the hero instead (docs/specs/013-workspace/explorer-filters.md "The field"). */}
+        {selected.kind === 'home' ? null : (
+          <div className="order-last w-full pb-2 pr-4 sm:order-none sm:ml-auto sm:w-auto sm:pb-0 sm:pr-0">
+            <LensField lens={lens} subjects={lensResult.subjects} />
+            {/* Counts what the lens left once typing settles; the team library counts its own. */}
+            <LensAnnouncer
+              input={lens.input}
+              shown={lensResult.shown}
+              total={lensResult.total}
+              muted={lens.view === null || selected.kind === 'team'}
+            />
+          </div>
+        )}
         <div className="flex h-14 items-stretch">
           <AuthControls onOpenAccount={() => openSettingsOn('account')} />
         </div>
       </header>
 
+      {/* Home's front-page band (docs/specs/013-workspace/explorer-home.md "The hero"), above the sidebar. */}
+      {hero.mounted ? (
+        <div
+          data-home-hero-fold={hero.open ? 'open' : 'closed'}
+          // Folded, it takes no focus and says nothing: the page it folds away from is gone.
+          inert={!hero.open}
+          aria-hidden={!hero.open || undefined}
+          className={`grid transition-[grid-template-rows,opacity] duration-long ease-out ${
+            hero.open ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
+          }`}
+        >
+          <div className="min-h-0 overflow-hidden">
+            <HomeHero active={selected.kind === 'home'} />
+          </div>
+        </div>
+      ) : null}
+
       <main
-        className={`mx-auto flex w-full max-w-7xl flex-1 gap-6 px-4 pt-6 sm:px-6 ${
+        className={`mx-auto flex w-full max-w-7xl flex-1 gap-8 px-4 pt-8 sm:px-6 ${
           showSignInBanner ? 'pb-44 sm:pb-28' : 'pb-16'
         }`}
       >
@@ -195,7 +222,8 @@ function ShellChrome({ children }: { children: ReactNode }) {
           style={{ width: SIDEBAR_WIDTH }}
           aria-label="Sections"
         >
-          <div className="sticky top-20 rounded-xl border border-slate-200 bg-white px-3 py-5 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+          {/* No box: the tree sits on the page (docs/specs/013-workspace/explorer-structure.md "Look"). */}
+          <div className="sticky top-20 px-1 py-1">
             <AreaErrorBoundary area="ExplorerSidebar" fallback="panel">
               <ExplorerSidebar />
             </AreaErrorBoundary>
@@ -260,7 +288,7 @@ function ShellChrome({ children }: { children: ReactNode }) {
       {/* Move-destination modal (docs/specs/013-workspace/folders.md + docs/specs/013-workspace/team-shared-documents.md): the shared
           placement browser (docs/specs/006-document/offline-mode.md's Save In UI) for every document
           (personal or team) and for folder re-parenting. It offers
-          "My documents" plus each team as a space (for document moves);
+          "My Documents" plus each team as a space (for document moves);
           `moveDocumentTo` routes the pick from the subject's current
           placement. Folder moves are personal-only, so they pass no
           teams. The New Folder tile creates in the picked scope. */}

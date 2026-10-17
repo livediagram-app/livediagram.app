@@ -12,7 +12,7 @@ import {
   type HomeJumpBackInItem,
   type WithinReach,
 } from '@livediagram/api-schema';
-import { dateKey, formatDay } from '@livediagram/ui';
+import { dateKey, formatDay, relativeSince } from '@livediagram/ui';
 import type { LocalOpenDocument } from '@/lib/offline/offline-opens';
 
 /** One document of Jump Back In: a server document or one stored only in this browser. */
@@ -32,7 +32,7 @@ export type JumpBackInItem = {
   localOnly: boolean;
 };
 
-/** Which half of the set an item came from; never shown, only tracked. */
+/** Which half of the set an item came from: labelled on a wide screen, and tracked. */
 export type JumpBackInGroup = 'mostUsed' | 'recent';
 
 export type JumpBackInSet = WithinReach<JumpBackInItem>;
@@ -81,6 +81,14 @@ export function jumpBackInSet(
   ];
   items.sort((a, b) => (a.documentId < b.documentId ? -1 : a.documentId > b.documentId ? 1 : 0));
   return withinReach(items, n, (d) => ({ uses: d.useDays, lastUsedAt: d.lastUsedAt }));
+}
+
+/** The quiet line under a card's name (explorer-home.md "Jump Back In"): why the document is there. A most used one
+ *  counts its use days; a recent one says when the person last used it. */
+export function jumpBackInLine(item: JumpBackInItem, group: JumpBackInGroup, now: number): string {
+  if (group === 'mostUsed')
+    return item.useDays === 1 ? 'Used on 1 day' : `Used on ${item.useDays} days`;
+  return `Used ${relativeSince(item.lastUsedAt, now)}`;
 }
 
 /** The editor pane's Jump Back In: the set as one list, most used then recent, each document once, less the

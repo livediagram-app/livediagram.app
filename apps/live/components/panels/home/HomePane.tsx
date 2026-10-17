@@ -2,17 +2,24 @@
 
 // Explorer Home (docs/specs/013-workspace/explorer-home.md; blueprint
 // docs/specs/013-workspace/blueprints/explorer-home-view.md). One column at every width: Jump back
-// in, then What Happened, each its own section opened by a heading with a rule, generous space
-// between them, no cards.
+// in, then What Happened, each its own section opened by a display heading, generous space between
+// them. The hero above it is the shell's (HomeHero).
 
-import { useEffect } from 'react';
+import { lazy, Suspense, useEffect, type ReactNode } from 'react';
 import { track } from '@/lib/telemetry';
 import { ARRIVED_ON_HOME } from '@/app/explorer/entry-path';
 import { HOME_COPY } from '@/app/explorer/home/home-copy';
 import { useHome } from '@/app/explorer/home/useHome';
+import { useFirstRun } from '@/app/explorer/home/useFirstRun';
 import { JumpBackIn } from './JumpBackIn';
 import { WhatHappened } from './WhatHappened';
 import { FOCUS_RING, MUTED } from './home-styles';
+import { GridSkeleton } from './HomeSkeletons';
+
+// The first run's starts (explorer-home.md "First run"), fetched only when a first run draws them: their template
+// previews would otherwise weigh on every Home. React.lazy rather than next/dynamic, which registers its module for
+// preloading and so would fetch it for everyone.
+const HomeWelcome = lazy(() => import('./HomeWelcome').then((m) => ({ default: m.HomeWelcome })));
 
 export function HomePane({
   ownerId,
@@ -21,6 +28,7 @@ export function HomePane({
   onSeeTimeline,
   recentHref,
   onSeeMore,
+  importToolbar,
 }: {
   ownerId: string;
   /** Home's read moved the Timeline feed's unread mark: clear the sidebar badge. */
@@ -29,8 +37,11 @@ export function HomePane({
   onSeeTimeline: () => void;
   recentHref: string;
   onSeeMore: () => void;
+  /** The Explorer's Import From control, for the first run's Bring It With You. */
+  importToolbar?: ReactNode;
 }) {
   const home = useHome(ownerId, onSeen);
+  const { firstRun, offerSignIn } = useFirstRun();
 
   // Once per visit: Home as the page the Explorer opened on, or reached from elsewhere.
   useEffect(() => {
@@ -52,9 +63,18 @@ export function HomePane({
     );
   }
 
+  // Nothing yet: starts in place of Jump Back In and What Happened, which would only be empty.
+  if (firstRun) {
+    return (
+      <Suspense fallback={<GridSkeleton />}>
+        <HomeWelcome offerSignIn={offerSignIn} importToolbar={importToolbar} />
+      </Suspense>
+    );
+  }
+
   const loading = home.status === 'loading';
   return (
-    <div className="flex flex-col gap-7">
+    <div className="flex flex-col gap-10">
       <JumpBackIn
         ownerId={ownerId}
         set={home.jumpBackIn}

@@ -254,6 +254,34 @@
   --color-brand-950: #142538;
 }
 
+/* Explorer: Midnight (docs/specs/004-interface-design/color-scheme.md "Explorer: Midnight"). The Explorer pages set
+ * `data-palette="midnight"` on the root while mounted; in dark mode it retargets Steel's tokens to the marketing
+ * site's night section: a deep navy ground and the sky accent. The compound selector outranks `.dark`. */
+.dark[data-palette='midnight'] {
+  --color-slate-950: #070b1a;
+  --color-slate-900: #0a0f24;
+  --color-slate-800: #111833;
+  --color-slate-700: #1f2a55;
+  --color-slate-600: #2e3b6e;
+  --color-slate-500: #56658f;
+  --color-slate-400: #8f9cc4;
+  --color-slate-300: #c3cde6;
+  --color-slate-200: #dde4f3;
+  --color-slate-100: #eef2fb;
+
+  --color-brand-50: #f0f9ff;
+  --color-brand-100: #e0f2fe;
+  --color-brand-200: #bae6fd;
+  --color-brand-300: #7dd3fc;
+  --color-brand-400: #38bdf8;
+  --color-brand-500: #0ea5e9;
+  --color-brand-600: #0369a1;
+  --color-brand-700: #075985;
+  --color-brand-800: #0c4a6e;
+  --color-brand-900: #0b3a5a;
+  --color-brand-950: #082f49;
+}
+
 @keyframes empty-float {
   0%,
   100% {

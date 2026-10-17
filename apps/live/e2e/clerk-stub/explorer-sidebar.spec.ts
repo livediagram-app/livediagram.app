@@ -37,7 +37,7 @@ async function asMember(page: Page, userId: string, path: string, data: unknown)
   expect(res.ok(), `${path} failed: ${res.status()}`).toBe(true);
 }
 
-test('a signed-in member sees teams as root folders and New team last', async ({
+test('a signed-in member sees teams as root folders and New Team last', async ({
   page,
   pageErrors,
 }) => {
@@ -57,10 +57,10 @@ test('a signed-in member sees teams as root folders and New team last', async ({
   });
 
   expect(await rowNames(page, 'Spaces')).toEqual([
-    'My documents',
+    'My Documents',
     'Design guild',
     'Platform',
-    'New team',
+    'New Team',
   ]);
   await expect(nav(page).getByRole('link', { name: /Sign in to access Teams/ })).toHaveCount(0);
 
@@ -70,12 +70,12 @@ test('a signed-in member sees teams as root folders and New team last', async ({
   await guild.focus();
   await page.keyboard.press('ArrowRight');
   await expect(nav(page).getByRole('treeitem', { name: 'Roadmaps' })).toBeVisible();
-  await nav(page).getByRole('treeitem', { name: 'New team' }).click();
+  await nav(page).getByRole('treeitem', { name: 'New Team' }).click();
   await expect(page.getByRole('dialog', { name: /New Team/i })).toBeVisible();
   expectNoPageErrors(pageErrors);
 });
 
-test('a signed-out visitor sees the sign-in nudge instead of New team', async ({
+test('a signed-out visitor sees the sign-in nudge instead of New Team', async ({
   page,
   pageErrors,
 }) => {
@@ -84,7 +84,7 @@ test('a signed-out visitor sees the sign-in nudge instead of New team', async ({
   await expect(nav(page).getByRole('treeitem', { name: /^Home/ })).toBeVisible({
     timeout: 30_000,
   });
-  expect(await rowNames(page, 'Spaces')).toEqual(['My documents']);
+  expect(await rowNames(page, 'Spaces')).toEqual(['My Documents']);
   const spaces = nav(page).locator('section', { has: page.getByRole('tree', { name: 'Spaces' }) });
   await expect(spaces.getByRole('link', { name: /Sign in to access Teams/ })).toBeVisible();
   expectNoPageErrors(pageErrors);

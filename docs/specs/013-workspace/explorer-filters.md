@@ -18,26 +18,26 @@ One string means the lens fits a URL as it is, and a saved view later is that st
 
 Two different things narrow a list, and they never mix:
 
-- The **scope** is where you are: a folder, a team, My documents. It is the **breadcrumb**, never a chip and never a
+- The **scope** is where you are: a folder, a team, My Documents. It is the **breadcrumb**, never a chip and never a
   token. A scoped view lists what lives in its scope.
 - The **lens** narrows whatever the current view lists.
 
 An **aggregate view** lists documents from every place at once: **Recent**, **Favourites**, **Search results** and
-**Shared with me**. Only aggregate views have no scope to narrow by, so only they show the **Space** chip and apply the
+**Shared With Me**. Only aggregate views have no scope to narrow by, so only they show the **Space** chip and apply the
 `space:` token. Every other document view is a **scoped view**.
 
 ## Views
 
 | View                                                     | Route                                                                              | Lens                              |
 | -------------------------------------------------------- | ---------------------------------------------------------------------------------- | --------------------------------- |
-| My documents, and each of its folders                    | `/explorer/all`, `/explorer/folder?id=<id>`                                        | Scoped                            |
+| My Documents, and each of its folders                    | `/explorer/all`, `/explorer/folder?id=<id>`                                        | Scoped                            |
 | A team, at its root or in one of its folders             | `/explorer/team?id=<id>`                                                           | Scoped                            |
 | This browser                                             | `/explorer/offline`                                                                | Scoped                            |
-| Recent, Favourites, Search results, Shared with me       | `/explorer/recent`, `/explorer/favourites`, `/explorer/search`, `/explorer/shared` | Aggregate                         |
+| Recent, Favourites, Search results, Shared With Me       | `/explorer/recent`, `/explorer/favourites`, `/explorer/search`, `/explorer/shared` | Aggregate                         |
 | Home, Inbox, Timeline, the Library pages, Trash, Invites | Their own                                                                          | None: typing opens Search results |
 
-- **Search results** (`/explorer/search`) lists every document the reader can open: their own (My documents and this
-  browser), every team's they have joined, and Shared with me, newest first, with no cap. It has no sidebar row; its
+- **Search results** (`/explorer/search`) lists every document the reader can open: their own (My Documents and this
+  browser), every team's they have joined, and Shared With Me, newest first, with no cap. It has no sidebar row; its
   page title is **Search results**.
 - A view that lists no documents has no lens of its own. Typing into the field there takes the reader to Search
   results with what they typed, the field keeping focus; the view they left keeps no `q`.
@@ -46,7 +46,7 @@ An **aggregate view** lists documents from every place at once: **Recent**, **Fa
   aside while the lens is set and return when it is cleared. A row from a subfolder names its folder (the
   [Recent folder chip](recent-folder-chip.md)).
 - **Recent** lists the 12 newest documents that match.
-- **This browser**'s documents are the reader's own: they read as Space `mine` and People `me`, and keep their
+- **This Browser**'s documents are the reader's own: they read as Space `mine` and People `me`, and keep their
   **Local only** pill ([Explorer structure](explorer-structure.md#local-only-documents)).
 
 ## The chip row
@@ -77,7 +77,7 @@ general diagram tab's environment.
 | Made by   | `made-by`  | Made by AI  | `ai` Made by AI: the document's `source` is the AI assistant or an AI tool through the MCP server (not the CLI)                                    |
 | Edited    | `edited`   | Edited      | `today` Today, `7d` Last 7 days, `30d` Last 30 days, `12m` Last 12 months, `this-year` This year                                                   |
 | People    | `people`   | People      | `me` Me, `others` Others: the owner of a document; the actor of a Timeline event                                                                   |
-| Space     | `space`    | Space       | `mine` My documents, `shared` Shared with me, `team:<id>` the team's name. Aggregate views only                                                    |
+| Space     | `space`    | Space       | `mine` My Documents, `shared` Shared With Me, `team:<id>` the team's name. Aggregate views only                                                    |
 
 - **Opens in**, **Kind** and **Template** read the creation intent recorded on the document
   (Default folders: `opensIn`, `tabKind`, `templateFamily` on the document
@@ -93,12 +93,12 @@ general diagram tab's environment.
 - **Edited** reads the document's last save, in local time. Today starts at midnight; Last 7 days and Last 30 days count
   back that many days from now; Last 12 months counts back 12 calendar months from now; This year starts at midnight on
   1 January. A save in the future (a skewed clock) counts as edited.
-- **People** on a document is its owner: `me` when the reader owns it, `others` otherwise. Every row of Shared with me
+- **People** on a document is its owner: `me` when the reader owns it, `others` otherwise. Every row of Shared With Me
   is `others`.
-- **Space** on a document is `mine` for one in My documents or in this browser ([Offline Mode](../006-document/offline-mode.md),
-  the documents the sidebar marks "Local only"), `team:<id>` for one in a team, `shared` for a row of Shared with me. A
+- **Space** on a document is `mine` for one in My Documents or in this browser ([Offline Mode](../006-document/offline-mode.md),
+  the documents the sidebar marks "Local only"), `team:<id>` for one in a team, `shared` for a row of Shared With Me. A
   token names a team by id; every label shows the team's **name**, never the id.
-- A row that cannot answer a dimension (a Shared with me row carries no provenance, mode, kind or family) matches no
+- A row that cannot answer a dimension (a Shared With Me row carries no provenance, mode, kind or family) matches no
   value of it.
 - **More filters** (favourited, sharing, Drive status) join later behind a "More filters" disclosure.
 
@@ -141,7 +141,7 @@ The string is words separated by whitespace.
 
 The **canonical** string writes **one token per dimension, its values as a comma list**: the tokens in dimension order
 (Opens in, Kind, Template, Made by, Edited, People, Space), each list in its dimension's value order (teams after My
-documents and Shared with me, by id), then the text words, single spaces between. Parsing accepts both spellings;
+documents and Shared With Me, by id), then the text words, single spaces between. Parsing accepts both spellings;
 writing produces only this one. Writing a chip edits the string in place: the dimension's tokens merge into one,
 written where the first stood, or added after the last token; clearing a chip removes every token of its dimension.
 
@@ -150,6 +150,10 @@ written where the first stood, or added after the last token; clearing a chip re
 The top-bar search is the lens field on every Explorer view. It sits in the Explorer header, left of the account
 control; below the `sm` breakpoint it takes its own full-width row under the header. Its placeholder reads "Search or
 filter documents". The app-wide search panel (documents, folders, help, settings) stays on the bottom bar's Search.
+
+On Home the field moves into the [hero](explorer-home.md#the-hero), drawn large with New document inside its end,
+and the header draws none. It is the same field: the same lens, pills, suggestions and keyboard. Typing in it opens
+Search results; the header's field there takes the focus with the caret after the typed words.
 
 - Each token renders as a **pill** inside the field: "Template: Retrospective, Kanban", "Space: Acme". The free text
   follows the pills. A pill that does not apply (a Space pill on a scoped view) is muted and says why.
@@ -218,7 +222,7 @@ Keyboard:
 | Failed         | "Couldn’t load documents" and **Try again**; the lens stays as it was                                  |
 
 - **Failed** replaces the list when the view's last read failed: the reader's own documents for their own views,
-  Recent, Favourites and Search results; the shared list for Shared with me. A failed read never reads as Empty.
+  Recent, Favourites and Search results; the shared list for Shared With Me. A failed read never reads as Empty.
   When only the shared list failed, the other views still list what loaded, and a notice says the documents shared
   with the reader could not load.
 - The live region speaks only on document views, and only after the lens changes.

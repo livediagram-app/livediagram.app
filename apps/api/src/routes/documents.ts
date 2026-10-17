@@ -172,7 +172,7 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
         templateElements = seed.templateElements;
       }
       // The creation intent (docs/specs/013-workspace/default-folders.md): which default folder a
-      // create at the root of My documents lands in. Malformed, it refuses the create.
+      // create at the root of My Documents lands in. Malformed, it refuses the create.
       const intent =
         body.intent === undefined && derivedIntent
           ? { ok: true as const, intent: derivedIntent }

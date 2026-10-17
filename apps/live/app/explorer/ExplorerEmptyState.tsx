@@ -42,7 +42,7 @@ const CONTENT: Record<
     title: 'No favourites yet',
     // No CTA: a new document doesn't land here, starring an existing one
     // does — so the generic "New Document" button would be a dead end
-    // (docs/specs/013-workspace/favourites.md). Same reason Shared with me carries none.
+    // (docs/specs/013-workspace/favourites.md). Same reason Shared With Me carries none.
     description: 'Mark a document as a favourite to show it here.',
   },
   offline: {

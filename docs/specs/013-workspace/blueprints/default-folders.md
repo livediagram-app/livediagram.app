@@ -53,7 +53,7 @@ Scope, by file:
 | Template family  | `TemplateFamily`, `TEMPLATE_FAMILIES = ['retrospective', 'kanban']`; `template_family`, `templateFamily` | The family of templates a document was made from            |
 | Recorded intent  | `RecordedIntent` `{ opensIn, tabKind, templateFamily }`, each nullable                                   | What the create insert wrote; null `opensIn` = unknown      |
 | Chosen placement | `RequestedPlacement.chosen`                                                                              | The body names a team or carries the `folderId` key         |
-| Explicit root    | `{ teamId: null, folderId: null, chosen: true }`                                                         | The root of My documents, chosen on purpose                 |
+| Explicit root    | `{ teamId: null, folderId: null, chosen: true }`                                                         | The root of My Documents, chosen on purpose                 |
 | Dangling default | `DefaultSkipReason`                                                                                      | `folder_missing` / `folder_not_visible` / `team_not_joined` |
 | Via              | `via: 'explicit' \| 'default' \| 'root'`, log `via=default key=<key>`                                    | Which step decided; `root` only when nothing was chosen     |
 
@@ -174,7 +174,7 @@ templateFamily?: 'retrospective' | 'kanban' }`. `readCreationIntent(value)`: `un
   body when a string, `folderId` when not `undefined` (null included), `intent` when set. The
   placement-default functions throw `ApiError` with the token as `code`.
 - **MCP:** `create_document` body gains `intent: creationIntentOf(tabs[0], templateFamilyOf(<the first
-input tab's template kind, or null>))`; output `folder` is `"My documents"` when the created
+input tab's template kind, or null>))`; output `folder` is `"My Documents"` when the created
   `document.folderId` is null, else the folder's name (`D24`).
 
 ## Data and persistence
@@ -316,7 +316,7 @@ section is silent are `D105` to `D120` and `D123` to `D125`.
 | `apps/live/lib/placement-defaults/default-folder-names.ts`                                                                              | This browser's memory of default folders' names (`D113`)                                                                                                  |
 | `apps/live/lib/folder-delete-confirmation.ts`                                                                                           | `folderDeleteConfirmation`: where the contents go, the default-folder line                                                                                |
 | `apps/live/hooks/persistence/usePlacementDefaults.ts`                                                                                   | `usePlacementDefaults(ownerId)`, `useFolderDefaultKeys(folderId)`                                                                                         |
-| `apps/live/hooks/persistence/useDefaultFolderMenus.ts`                                                                                  | `useDefaultFolderIndex(lists)`, `useDefaultFolderMenus(ownerId, lists)`: the menu bundles for a folder and for My documents; notes default folders' names |
+| `apps/live/hooks/persistence/useDefaultFolderMenus.ts`                                                                                  | `useDefaultFolderIndex(lists)`, `useDefaultFolderMenus(ownerId, lists)`: the menu bundles for a folder and for My Documents; notes default folders' names |
 | `apps/live/hooks/persistence/usePlacementOptions.ts`                                                                                    | Moved from `app/new`: folders, teams and team folders for a picker, inline create, and `ready` / `failed`                                                 |
 | `apps/live/components/placement/default-key-icons.tsx`                                                                                  | `DEFAULT_KEY_ICONS`, `DefaultKeyIcon`                                                                                                                     |
 | `apps/live/components/placement/DefaultFolderMarker.tsx`                                                                                | The marker; `useDefaultFolderDescription(folderId)` for a tree row's description                                                                          |
@@ -327,9 +327,9 @@ section is silent are `D105` to `D120` and `D123` to `D125`.
 | `apps/live/app/explorer/folder-actions-menu.tsx`                                                                                        | `defaults?: DefaultFolderMenu` renders the submenu before Delete                                                                                          |
 | `apps/live/app/explorer/folder-row.tsx`, `explorer-folder-cards.tsx`                                                                    | Marker; `menuHandlers` passes `defaults`                                                                                                                  |
 | `apps/live/app/explorer/useExplorerState.ts`                                                                                            | `folderActions` bundles `defaults`; exposes `rootDefaults`                                                                                                |
-| `apps/live/app/explorer/sidebar/SpacesGroup.tsx`, `useMyDocumentsMenu.tsx`                                                              | My documents' `⋯` and right-click menu, shared with the panel                                                                                             |
+| `apps/live/app/explorer/sidebar/SpacesGroup.tsx`, `useMyDocumentsMenu.tsx`                                                              | My Documents' `⋯` and right-click menu, shared with the panel                                                                                             |
 | `apps/live/app/explorer/sidebar/SidebarFolderSubtree.tsx`, `TeamFolderSubtree.tsx`                                                      | `FolderLabel` (name, then marker); the marker's words as the row's description                                                                            |
-| `apps/live/components/panels/explorer-tree/*`                                                                                           | `PanelTree.defaultFolders`; panel folder rows and My documents                                                                                            |
+| `apps/live/components/panels/explorer-tree/*`                                                                                           | `PanelTree.defaultFolders`; panel folder rows and My Documents                                                                                            |
 | `apps/live/components/panels/TeamSharedDocuments.tsx`                                                                                   | Team library folder menus carry `defaults`                                                                                                                |
 | `apps/live/components/placement/placement-view.ts`, `usePlacementView.ts`                                                               | The browser opens where its selection is: `placementViewFor`, followed until the reader moves (`D125`)                                                    |
 | `apps/live/components/dialogs/settings/SettingsPlacementDefaultRow.tsx`                                                                 | One Settings row                                                                                                                                          |
@@ -381,7 +381,7 @@ templateFamily: f }` (`D112`).
 - `destinationOf(key, defaults, index)`: no stored default → `root`; working → `folder`; else
   `dangling` with `reason: 'deleted'` (a personal id, or a team folder of a listed team, not in the
   index) or `'unavailable'` (remembered as a team folder whose team is not listed), and
-  `fallback = resolveDefaultFor(representativeIntent(key))` over the other keys (null = My documents).
+  `fallback = resolveDefaultFor(representativeIntent(key))` over the other keys (null = My Documents).
 - `folderDefaultKeys(folderId, defaults)`: the keys stored for this folder, in list order.
 
 **Menus** (`useDefaultFolderMenus`):
@@ -497,7 +497,7 @@ dark:text-slate-400`, then `+N` at 10px semibold; after the count badge; in a tr
 | Working default, resolution, destinations, dangling fallback | `apps/live/lib/placement-defaults/default-destination.test.ts`                                   |
 | Name memory per owner                                        | `apps/live/lib/placement-defaults/default-folder-names.test.ts`                                  |
 | Folder delete wording                                        | `apps/live/lib/folder-delete-confirmation.test.ts`                                               |
-| Menu checks for a folder and for My documents                | `apps/live/hooks/persistence/useDefaultFolderMenus.test.tsx`                                     |
+| Menu checks for a folder and for My Documents                | `apps/live/hooks/persistence/useDefaultFolderMenus.test.tsx`                                     |
 | Submenu renders, toggles, ARIA                               | `apps/live/components/placement/UseAsDefaultMenu.test.tsx`                                       |
 | Marker icons, +N, words                                      | `apps/live/components/placement/DefaultFolderMarker.test.tsx`                                    |
 | The browser opens at the selected folder's level, then pins  | `apps/live/components/placement/placement-view.test.ts`, `PlacementBrowser.test.tsx`             |

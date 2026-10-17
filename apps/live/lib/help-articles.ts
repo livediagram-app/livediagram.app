@@ -418,7 +418,7 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     description: 'Coloured labels that group related documents across folders and teams.',
   },
   sharedWithYou: {
-    title: 'Learn about Shared with me',
+    title: 'Learn about Shared With Me',
     description: 'Documents other people have shared with you, collected here.',
   },
   folders: {

@@ -55,7 +55,7 @@ export function FolderActionsMenu({
   // Says nothing about the folder, so it sits apart from Delete.
   onRemoveFromTimeline?: () => void;
   // "Use as default for" (docs/specs/013-workspace/default-folders.md): the reader's default
-  // folders, checked for this folder (or for My documents). Absent until the defaults load, and
+  // folders, checked for this folder (or for My Documents). Absent until the defaults load, and
   // on a folder the reader may not file into.
   defaults?: DefaultFolderMenu;
 }) {

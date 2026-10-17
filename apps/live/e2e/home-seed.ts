@@ -199,7 +199,7 @@ export async function seedWithinReach(page: Page, origin: string, owner: string)
   await openDocument(page.request, owner, two);
   await page.goto('/explorer/home');
   // Home has read this browser's store by now, so the store exists and is not being opened.
-  await expect(page.getByRole('list', { name: 'Jump Back In' })).toBeVisible();
+  await expect(page.getByRole('region', { name: 'Jump Back In' })).toBeVisible();
   await seedLocalDocuments(page, [
     { name: 'Atlas', daysAgo: [0, 1, 2, 3, 4, 5], lastOpenedIn: 60_000 },
     { name: 'Beacon', daysAgo: [1, 2, 3, 4, 5], lastOpenedIn: -1 * DAY_MS },

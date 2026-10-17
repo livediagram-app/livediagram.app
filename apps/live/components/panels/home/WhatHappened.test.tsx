@@ -69,7 +69,7 @@ describe('WhatHappened', () => {
     const comment = screen.getByRole('link', { name: /Sam commented on Onboarding/ });
     expect(comment.getAttribute('href')).toBe('/document/d2');
     expect(within(comment).getByText('“Looks good”')).toBeTruthy();
-    expect(comment.textContent).toContain('My documents › Guides · ');
+    expect(comment.textContent).toContain('My Documents › Guides · ');
     expect(screen.getByRole('link', { name: /Sam edited Onboarding/ })).toBeTruthy();
     fireEvent.click(comment);
     expect(track).toHaveBeenCalledWith('Home', 'Selected', 'WhatHappened');
@@ -130,13 +130,31 @@ describe('WhatHappened', () => {
     expect(onSeeTimeline).toHaveBeenCalledTimes(1);
   });
 
-  it('says so when nothing happened, and keeps the link', () => {
-    renderIt([]);
-    expect(screen.getByText('No updates yet')).toBeTruthy();
-    expect(
-      screen.getByText('What others do in your documents over the last 14 days shows here.'),
-    ).toBeTruthy();
-    expect(screen.getByRole('link', { name: 'See Timeline' })).toBeTruthy();
+  it('leaves the section out when nothing happened', () => {
+    const { container } = render(
+      <WhatHappened
+        groups={[]}
+        loading={false}
+        lastSeenAt={undefined}
+        timelineHref="/explorer/timeline"
+        onSeeTimeline={() => {}}
+      />,
+    );
+    expect(container.innerHTML).toBe('');
+  });
+
+  it('holds its heading and skeleton while it loads, without the link', () => {
+    render(
+      <WhatHappened
+        groups={[]}
+        loading
+        lastSeenAt={undefined}
+        timelineHref="/explorer/timeline"
+        onSeeTimeline={() => {}}
+      />,
+    );
+    expect(screen.getByRole('heading', { level: 2, name: 'What Happened' })).toBeTruthy();
+    expect(screen.queryByRole('link', { name: 'See Timeline' })).toBeNull();
   });
 
   it('offers no filter controls', () => {

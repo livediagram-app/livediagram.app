@@ -70,7 +70,7 @@ export type NewBoardDocument = {
   tabs: Tab[];
   folderId?: string | null;
   // What the document opens as, from its first tab (docs/specs/013-workspace/default-folders.md):
-  // imported at the root of My documents, it lands in the person's default folder for it.
+  // imported at the root of My Documents, it lands in the person's default folder for it.
   intent: CreationIntent;
   createdAt?: number;
   savedAt?: number;
