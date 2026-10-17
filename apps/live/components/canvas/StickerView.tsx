@@ -42,8 +42,10 @@ export function StickerView({
 }) {
   // The catalogue rides the async icon chunk (lib/icon-registry.ts); subscribe
   // so the sticker pops in the moment it lands.
-  useIconCatalogs();
-  const def = getSticker(stickerId);
+  // The read is gated on the subscription's value, or the React Compiler's memo of `getSticker(stickerId)` keeps
+  // the empty answer from before the chunk landed.
+  const loaded = useIconCatalogs();
+  const def = loaded ? getSticker(stickerId) : undefined;
   // An unknown id renders nothing rather than a guess: the element keeps its
   // box (so it stays selectable and movable) and the sticker reappears if the
   // catalogue that knows it ever loads.

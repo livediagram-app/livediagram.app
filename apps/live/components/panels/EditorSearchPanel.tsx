@@ -54,7 +54,7 @@ export function EditorSearchPanel() {
   // shapes + icons + tech list without a reopen. (In practice the editor page
   // kicked the load at mount, so by the time anyone opens search the data is
   // almost always already in.)
-  useIconCatalogs();
+  const cataloguesLoaded = useIconCatalogs();
 
   if (!searchOpen) return null;
 
@@ -100,7 +100,11 @@ export function EditorSearchPanel() {
         setActiveId(tabId);
         setSelectedId(elementId);
       }}
-      paletteItems={isReadOnly ? undefined : buildPaletteSearchItems({ hasImage: !!addImage })}
+      paletteItems={
+        isReadOnly
+          ? undefined
+          : buildPaletteSearchItems({ hasImage: !!addImage, catalogues: cataloguesLoaded })
+      }
       onAddPaletteItem={
         isReadOnly
           ? undefined

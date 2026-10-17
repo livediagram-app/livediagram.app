@@ -87,4 +87,11 @@ describe('searchCatalogueTiles', () => {
     // A query matching most of every catalogue; a keystroke runs one.
     expect((performance.now() - start) / 20).toBeLessThan(16);
   });
+
+  it('lists nothing until the catalogues have loaded', () => {
+    expect(searchCatalogueTiles({ query: 'database', mode: 'diagram', loaded: false })).toEqual({
+      here: [],
+      elsewhere: [],
+    });
+  });
 });

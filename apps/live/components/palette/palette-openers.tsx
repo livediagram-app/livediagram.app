@@ -37,9 +37,13 @@ const OPENERS: Record<string, Opener> = {
 function OpenerIcon({ category, group }: { category: string; group?: string | undefined }) {
   // Starts the load (or retries a failed one) and redraws as the catalogues arrive; subscribing alone left the
   // AWS opener blank for good when the editor's one prefetch failed.
-  useIconCatalogs();
+  // Gated on the subscription's value: a group's artwork is catalogue data, which the React Compiler would
+  // otherwise memoise from before the chunk landed.
+  const loaded = useIconCatalogs();
   if (group)
-    return <>{catalogueStripGroups(category)?.find((g) => g.id === group)?.icon ?? null}</>;
+    return loaded ? (
+      <>{catalogueStripGroups(category)?.find((g) => g.id === group)?.icon ?? null}</>
+    ) : null;
   return <>{PALETTE_CATEGORIES.find((c) => c.id === category)?.icon ?? null}</>;
 }
 
