@@ -2,9 +2,11 @@
 // copy the page speaks with, and where its searches lead. The starts themselves (template picks) are
 // first-run-starts.ts, kept apart so the hero, on every Home, never loads the template catalogue.
 
-/** Nothing yet: once the lists have loaded, no document of their own, shared, in a team or in this browser. */
+/** Nothing yet: once the lists have loaded, no document of their own, shared, in a team or in this browser. A list
+ * that failed to load says nothing, so it is never read as an empty account. */
 export function isFirstRun(input: {
   loading: boolean;
+  failed: boolean;
   documents: number;
   shared: number;
   teamDocuments: number;
@@ -12,6 +14,7 @@ export function isFirstRun(input: {
 }): boolean {
   return (
     !input.loading &&
+    !input.failed &&
     input.documents === 0 &&
     input.shared === 0 &&
     input.teamDocuments === 0 &&

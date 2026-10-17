@@ -39,11 +39,21 @@ const HeroTemplateFan = lazy(() =>
 
 /** `active` while Home is the page; a hero folding away draws its field still, so the page holds one live field. */
 export function HomeHero({ active = true }: { active?: boolean }) {
-  const { ownerId, documents, loading, activity, go, setMobileNavOpen, lens, lensResult } =
-    useExplorer();
+  const {
+    ownerId,
+    documents,
+    loading,
+    failedReads,
+    activity,
+    go,
+    setMobileNavOpen,
+    lens,
+    lensResult,
+  } = useExplorer();
   const sheets = useMemo(() => heroSheets(documents), [documents]);
   const pills = heroPills({
-    documents: loading ? undefined : documents.length,
+    // A list that failed to load has no count to tell.
+    documents: loading || failedReads.documents ? undefined : documents.length,
     inbox: inboxBadge(activity),
   });
   const { heroFirstRun: firstRun, signedIn } = useFirstRun();
