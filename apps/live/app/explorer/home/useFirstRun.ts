@@ -39,9 +39,11 @@ export function useFirstRun(): {
   const explorer = useOptionalExplorer();
   const ownerId = explorer?.ownerId ?? null;
   const loading = explorer?.loading ?? true;
+  const failed = Boolean(explorer?.failedReads.documents || explorer?.failedReads.shared);
   const firstRun = explorer
     ? isFirstRun({
         loading: explorer.loading,
+        failed,
         documents: explorer.documents.length,
         shared: explorer.shared.length,
         teamDocuments: explorer.teamDocuments.length,
@@ -51,13 +53,14 @@ export function useFirstRun(): {
 
   const inExplorer = explorer !== null;
   useEffect(() => {
-    if (!inExplorer || loading || !ownerId) return;
+    // A failed read answers nothing, so it leaves the last answer standing.
+    if (!inExplorer || loading || failed || !ownerId) return;
     try {
       localStorage.setItem(SEEN_KEY, JSON.stringify({ ownerId, has: !firstRun }));
     } catch {
       // Storage refused (a private window): the hero simply guesses again next time.
     }
-  }, [inExplorer, loading, ownerId, firstRun]);
+  }, [inExplorer, loading, failed, ownerId, firstRun]);
 
   if (!explorer)
     return { firstRun: false, heroFirstRun: false, signedIn: false, offerSignIn: false };

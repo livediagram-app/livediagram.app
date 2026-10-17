@@ -29,6 +29,7 @@ function wrap(over: Partial<Record<string, unknown>> = {}) {
     teamDocuments: [],
     offlineDocuments: [],
     clerkUserId: null,
+    failedReads: { documents: false, shared: false },
     ...over,
   } as unknown as ExplorerStateValue;
   return ({ children }: { children: ReactNode }) => (
@@ -73,6 +74,17 @@ describe('useFirstRun', () => {
       wrapper: wrap({ documents: [{ id: 'a' }] }),
     });
     expect(result.current).toMatchObject({ firstRun: false, heroFirstRun: false });
+  });
+
+  it('is no first run when a list failed to load, and remembers nothing from it', () => {
+    for (const failedReads of [
+      { documents: true, shared: false },
+      { documents: false, shared: true },
+    ]) {
+      const { result } = renderHook(() => useFirstRun(), { wrapper: wrap({ failedReads }) });
+      expect(result.current).toMatchObject({ firstRun: false, heroFirstRun: false });
+    }
+    expect(localStorage.getItem(KEY)).toBeNull();
   });
 
   it('remembers the answer for this person once the lists land', () => {
