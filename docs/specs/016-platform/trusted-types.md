@@ -61,6 +61,7 @@ file to this.
 | ProseMirror (the article editor)                 | Parsing pasted HTML into an inert template                                      | The `ProseMirrorClipboard` policy name           |
 | Our web workers                                  | Their script URLs under `/_next/`                                               | `default`                                        |
 | Clerk (editor, community sign-in)                | Script URLs on the Clerk frontend API origin                                    | `default`, origin from the publishable key       |
+| Clerk's sign-up bot protection                   | Cloudflare Turnstile's script on `https://challenges.cloudflare.com`            | `default`, beside Clerk's origin                 |
 | Clerk's session timers                           | A `Worker` from the page's own `blob:` URL (its fixed timer source)             | `default`, for the Worker constructor sink alone |
 
 A worker's own scope is not the page's: its script is served from `/_next/` with no policy header, so the libraries
