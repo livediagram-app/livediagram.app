@@ -20,7 +20,7 @@ export const metadata = helpMetadata({
 
 ## Import formats
 
-Open the tab's menu (the **⋯** button on the active tab, or right-click the tab) and choose **Import**. You can also run **Import…** from the [command palette](/help/search-panel/the-search-panel/command-palette/). The **Import to tab** dialog opens with a card per format:
+Open the tab's menu (the **⋯** button on the active tab, or right-click the tab) and choose **Import**. You can also run **Import…** from the [command palette](/help/search-panel/the-search-panel/command-palette/). The **Import to Tab** dialog opens with a card per format:
 
 - **JSON** reads a livediagram tab export (a `.livediagram-tab.json` file) and restores its elements exactly, the highest-fidelity round trip. Plan cards in the file are added to this document, along with any card types it doesn't have yet; cards the document already holds are left as they are, so importing a tab back into its own document never doubles them.
 - **Mermaid** reads a [Mermaid](https://mermaid.js.org/) flowchart (`graph` / `flowchart`), state diagram (`stateDiagram`), or ER diagram (`erDiagram`, its relationships drawn with crow's-foot ends at each table, and an entity's alias in square brackets, like `BOOK_AUTHOR[Book author]`, used as its title) and lays it out on the canvas, keeping every connection, its style (dashed, thick, two-headed, headless), `click` links, and any `subgraph` or composite-state blocks, which come in as frames drawn around their nodes. Other Mermaid diagram types (sequence, gantt, pie and so on) aren't supported.
@@ -86,7 +86,7 @@ Importing **replaces the active tab's contents** with what comes in, it does not
 
 **Import** is greyed out while a tab is [locked](/help/tabs/locking-tabs/), since a locked tab is protected from edits, and the tab menu isn't offered on a view-only share link.
 
-<Figure caption="Because importing overwrites the tab, the Import to tab dialog leads with a warning naming the tab, above the format cards.">
+<Figure caption="Because importing overwrites the tab, the Import to Tab dialog leads with a warning naming the tab, above the format cards.">
   <ImportWarning />
 </Figure>
 

@@ -402,7 +402,7 @@ export function applyQuickIconAlign(el: Element, align: QuickIconAlign): Element
   return { ...el, iconPosition: align };
 }
 
-// Clear styles: the quick-style fields back to the theme's default.
+// Clear Styles: the quick-style fields back to the theme's default.
 export function clearQuickStyle(el: Element, theme: ThemeDefinition): Element {
   if (!isQuickStyleTarget(el)) return el;
   if (el.type === 'text') {

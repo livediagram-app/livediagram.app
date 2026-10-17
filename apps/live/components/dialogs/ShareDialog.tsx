@@ -163,14 +163,14 @@ export function ShareDialog({
     <Dialog
       open
       onClose={close}
-      ariaLabel="Share this document"
+      ariaLabel="Share This Document"
       // While Show Me runs, Escape is the tour's, never the dialog's.
       closeOnEscape={!tour.active}
       size="lg"
       className="max-h-[calc(100%-2rem)]"
     >
       <DialogHeader
-        title="Share this document"
+        title="Share This Document"
         subtitle={
           <ShareStatus
             passes={activeLinks.length}

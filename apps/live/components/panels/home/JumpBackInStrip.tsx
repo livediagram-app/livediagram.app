@@ -1,7 +1,7 @@
 'use client';
 
-// Jump back in on a phone (docs/specs/013-workspace/explorer-home.md "Phone"): one sideways strip of
-// at most 8 thumbnails, most used and recent alternating, ending in the See more tile. Its trailing
+// Jump Back In on a phone (docs/specs/013-workspace/explorer-home.md "Phone"): one sideways strip of
+// at most 8 thumbnails, most used and recent alternating, ending in the See More tile. Its trailing
 // edge fades while more lies to the right; the fade is an overlay, so nothing moves when it comes or
 // goes.
 
@@ -51,7 +51,7 @@ export function JumpBackInStrip({
         className={`scrollbar-slim -mx-1 flex ${STRIP_HEIGHT} snap-x gap-3 overflow-x-auto px-1 pb-2 pt-1`}
       >
         {tiles.length === 0 ? (
-          // The heading alone: the strip's height holds no second line, and See more beside it is the way forward.
+          // The heading alone: the strip's height holds no second line, and See More beside it is the way forward.
           <CompactEmptyState
             size="small"
             className="w-48 shrink-0"

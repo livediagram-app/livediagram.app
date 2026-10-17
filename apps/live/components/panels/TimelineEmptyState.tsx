@@ -35,7 +35,7 @@ export function TimelineEmptyState() {
         href="/new"
         className={`inline-flex items-center gap-1.5 rounded-lg bg-brand-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-800 ${SOLID_BRAND_DARK_CONTROL}`}
       >
-        New document
+        New Document
       </Link>
     </EmptyState>
   );

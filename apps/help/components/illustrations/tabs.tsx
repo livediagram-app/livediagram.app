@@ -815,7 +815,7 @@ export function ImportMenu() {
   );
 }
 
-/** The Export tab dialog: a card per format, text formats first, then the image formats. */
+/** The Export Tab dialog: a card per format, text formats first, then the image formats. */
 export function ExportMenu() {
   const W = 420;
   const H = 200;
@@ -832,7 +832,7 @@ export function ExportMenu() {
   ];
   return (
     <Scene w={W} h={H}>
-      <Dialog x={dx} y={dy} w={380} h={176} title="Export tab" sceneW={W} sceneH={H}>
+      <Dialog x={dx} y={dy} w={380} h={176} title="Export Tab" sceneW={W} sceneH={H}>
         {cards.map(([title, badge], i) => (
           <FormatCard
             key={title}
@@ -848,7 +848,7 @@ export function ExportMenu() {
   );
 }
 
-/** The Import to tab dialog: the amber warning naming the tab about to be replaced, over the
+/** The Import to Tab dialog: the amber warning naming the tab about to be replaced, over the
  *  format cards. */
 export function ImportWarning() {
   const W = 420;
@@ -864,7 +864,7 @@ export function ImportWarning() {
   ];
   return (
     <Scene w={W} h={H}>
-      <Dialog x={dx} y={dy} w={380} h={190} title="Import to tab" sceneW={W} sceneH={H}>
+      <Dialog x={dx} y={dy} w={380} h={190} title="Import to Tab" sceneW={W} sceneH={H}>
         {/* The amber warning banner */}
         <rect
           x={dx + 16}

@@ -180,7 +180,7 @@ describe('useQuickStyle for a tool in hand', () => {
     expect(edit).toHaveProperty([1, 0], expect.objectContaining({ strokeWidth: 'thick' }));
   });
 
-  it('forgets the tool style on Clear styles', () => {
+  it('forgets the tool style on Clear Styles', () => {
     const { result, memory } = setup([], null, whiteboardShapeIntent('arrow'));
     act(() => result.current.clearStyles());
     expect(memory.forget).toHaveBeenCalledWith(['board:arrow']);

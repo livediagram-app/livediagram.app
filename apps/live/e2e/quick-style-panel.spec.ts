@@ -4,7 +4,7 @@ import { expect, expectNoPageErrors, test, openStartBlank, pageOwnerHeaders } fr
 
 // The quick style panel and style memory, end to end (docs/specs/008-canvas/quick-style-panel.md). Unit
 // tests prove the rules; only the editor proves a choice lands, is remembered
-// for the next element the user draws, and is forgotten by Clear styles.
+// for the next element the user draws, and is forgotten by Clear Styles.
 
 const CANVAS = '[data-canvas-a11y-root]';
 type El = Record<string, unknown> & { id: string; type: string; shape?: string };
@@ -213,12 +213,12 @@ test.describe('quick style panel', () => {
     expectNoPageErrors(pageErrors);
   });
 
-  test('Clear styles resets the selection and forgets its kind', async ({ page, pageErrors }) => {
+  test('Clear Styles resets the selection and forgets its kind', async ({ page, pageErrors }) => {
     await openBoard(page);
     await drawShape(page, 'o', { x: 500, y: 300 });
     await choose(page, 'Background', 'Violet');
     await choose(page, 'Stroke width', 'Thick');
-    await panel(page).getByRole('button', { name: 'Clear styles' }).click();
+    await panel(page).getByRole('button', { name: 'Clear Styles' }).click();
     await drawShape(page, 'o', { x: 500, y: 600 });
     const els = await saved(page, (e) => shapesOf(e, 'circle').length === 2);
     for (const circle of shapesOf(els, 'circle')) {

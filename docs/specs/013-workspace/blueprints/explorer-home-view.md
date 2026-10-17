@@ -1,6 +1,6 @@
 # Explorer Home, view: blueprint
 
-Derived from [Explorer Home](../explorer-home.md) (Route, Layout, Jump back in, What happened, Opens, States,
+Derived from [Explorer Home](../explorer-home.md) (Route, Layout, Jump Back In, What Happened, Opens, States,
 Telemetry, Accessibility), with the allocation of [Within reach](../../004-interface-design/within-reach.md), the
 principle of [Design principles](../../004-interface-design/design-principles.md) (Calm by default), the page-title
 rules of [Explorer structure](../explorer-structure.md) and the landing of [Timeline](../timeline.md) §8. The data,
@@ -18,29 +18,29 @@ Scope, by file:
 | `apps/live/lib/offline/offline-store.ts`                                | `OfflineDocumentRecord.opens`; `offlineCreateDocument(..., { markUsed })` starts them   |
 | `apps/live/lib/api/tabs.ts`                                             | A marked load of a local document records a local open                                  |
 | `apps/live/app/explorer/home/page.tsx`                                  | The `/explorer/home` route stub and its title                                           |
-| `apps/live/app/explorer/home/home-model.ts`                             | Pure: Jump back in's set, the phone order, hrefs, What happened's days, the fade        |
+| `apps/live/app/explorer/home/home-model.ts`                             | Pure: Jump Back In's set, the phone order, hrefs, What Happened's days, the fade        |
 | `apps/live/app/explorer/home/home-copy.ts`                              | Pure: every sentence, label and state copy                                              |
 | `apps/live/app/explorer/home/useHome.ts`                                | The read, the local merge, retry, the unread clear                                      |
 | `apps/live/app/explorer/entry-path.ts`                                  | `ENTRY_PATH`, `ARRIVED_ON_HOME`, `ARRIVED_ON_TIMELINE`: where the page load began       |
 | `apps/live/lib/explorer-landing.ts`                                     | `EXPLORER_LANDING_PATH`, the one landing path                                           |
 | `apps/live/components/panels/home/HomePane.tsx`                         | One column of two sections; the error state; the landing telemetry                      |
-| `apps/live/components/panels/home/JumpBackIn.tsx`                       | The section: heading row, See more, the grid or the strip, the empty state              |
-| `apps/live/components/panels/home/JumpBackInStrip.tsx`                  | The phone's strip, its fade and its See more tile                                       |
-| `apps/live/components/panels/home/JumpBackInTile.tsx`                   | One document's tile (grid and strip) and the See more tile                              |
+| `apps/live/components/panels/home/JumpBackIn.tsx`                       | The section: heading row, See More, the grid or the strip, the empty state              |
+| `apps/live/components/panels/home/JumpBackInStrip.tsx`                  | The phone's strip, its fade and its See More tile                                       |
+| `apps/live/components/panels/home/JumpBackInTile.tsx`                   | One document's tile (grid and strip) and the See More tile                              |
 | `apps/live/components/panels/home/HomeSection.tsx`                      | `HomeSection` (wrapper, heading row, rule, quiet link) and `InAppLink`                  |
-| `apps/live/components/panels/home/WhatHappened.tsx`                     | The section: day headings, See timeline, the entries                                    |
+| `apps/live/components/panels/home/WhatHappened.tsx`                     | The section: day headings, See Timeline, the entries                                    |
 | `apps/live/components/panels/home/WhatHappenedEntry.tsx`                | `ActionEntry` (one person) and `SummaryEntry` (the disclosure)                          |
 | `apps/live/components/panels/home/HomeAvatar.tsx`                       | `HomeAvatar`, `AvatarStack`: people without presence rings                              |
 | `apps/live/components/panels/home/home-icons.tsx`                       | The verb icons and the empty states' glyphs                                             |
 | `apps/live/components/panels/home/HomeSkeletons.tsx`                    | The skeletons, sized as what replaces them                                              |
 | `apps/live/components/panels/home/home-styles.ts`                       | The shared classes                                                                      |
-| `apps/live/components/panels/home/home-test-utils.ts`                   | Test fixtures: a document, a person, an action, a group, a Jump back in item            |
+| `apps/live/components/panels/home/home-test-utils.ts`                   | Test fixtures: a document, a person, an action, a group, a Jump Back In item            |
 | `apps/live/app/explorer/{views.tsx,routes.ts,view-titles.ts}`           | `{ kind: 'home' }`, `/explorer/home`, the default, the titles                           |
 | `apps/live/app/explorer/{useExplorerPane.ts,ExplorerPane.tsx}`          | Crumbs (`Home › Recent`), the dispatch, the header                                      |
 | `apps/live/app/explorer/page.tsx`, `apps/live/src/worker.ts`            | The landing goes to `EXPLORER_LANDING_PATH`                                             |
 | `scripts/e2e-stack.mjs`                                                 | The e2e stack's `/explorer` redirect reads the same constant                            |
 | `apps/live/app/explorer/sidebar/OverviewGroup.tsx`                      | The Home row selects and opens Home                                                     |
-| `apps/live/components/panels/explorer-panel/PanelViews.tsx`             | The panel's Home section shows `HomePane`; See timeline shows the Timeline section      |
+| `apps/live/components/panels/explorer-panel/PanelViews.tsx`             | The panel's Home section shows `HomePane`; See Timeline shows the Timeline section      |
 | `apps/live/app/explorer/useTimelineFeed.ts`                             | `Timeline·Opened·Landing` only for a load that started on `/explorer/timeline`          |
 | `apps/live/app/explorer/useTimelineUnread.ts`                           | A clear outlives a count still in flight                                                |
 | `packages/ui/src/timeline/useTimelineGrouping.ts`                       | `formatDay` exported, shared by the day headings                                        |
@@ -56,19 +56,19 @@ Scope, by file:
 | ------------- | ------------------------------------------------ | ------------------------------------------------------------- |
 | Home          | `{ kind: 'home' }`, `/explorer/home`, `HomePane` | The landing view                                              |
 | Timeline      | `{ kind: 'timeline' }`, `/explorer/timeline`     | The Timeline feed, its sidebar row and its page title         |
-| Jump back in  | `JumpBackIn`, `JumpBackInSet`, `JumpBackInItem`  | The section and its within-reach set of documents             |
+| Jump Back In  | `JumpBackIn`, `JumpBackInSet`, `JumpBackInItem`  | The section and its within-reach set of documents             |
 | Group         | `JumpBackInGroup = 'mostUsed' \| 'recent'`       | Which half of the set an item belongs to; never shown         |
 | Grid          | `JumpBackIn` wide branch                         | Desktop and tablet: 4 by 2, most used on top                  |
-| Strip         | `JumpBackInStrip`                                | The phone's sideways row, alternating, ending in See more     |
+| Strip         | `JumpBackInStrip`                                | The phone's sideways row, alternating, ending in See More     |
 | Phone order   | `phoneOrder(set)`                                | Most used, recent, alternating, then the rest                 |
 | Tile          | `JumpBackInTile`, `SeeMoreTile`                  | One document's thumbnail and name; the strip's last tile      |
-| See more      | `HOME_COPY.seeMore`, `recentHref`, `onSeeMore`   | The way to the Recent page                                    |
+| See More      | `HOME_COPY.seeMore`, `recentHref`, `onSeeMore`   | The way to the Recent page                                    |
 | Local open    | `LocalOpens`, `OfflineDocumentRecord.opens`      | This browser's record of opens of a document stored only here |
 | Action entry  | `ActionEntry`                                    | One action of a one-person group, a link                      |
 | Summary entry | `SummaryEntry`                                   | A group of several people, a disclosure                       |
 
 Banned: "Most used" and "Recent" as visible copy or labels on Home (the groups carry no titles), "frecency",
-"timeline" for anything on Home but the See timeline link that leaves for it, "notification" for an action.
+"timeline" for anything on Home but the See Timeline link that leaves for it, "notification" for an action.
 
 ## Behaviour and state
 
@@ -110,7 +110,7 @@ never replaces it. `isNewEvent(at, lastSeenAt)` (`@livediagram/ui`, the Timeline
 `bg-brand-600` (`SOLID_BRAND_DARK` in dark), white 9 px semibold caps, "New", first in the entry's meta line, inside
 the link or button so it is part of the accessible name.
 
-### Jump back in
+### Jump Back In
 
 `jumpBackInSet(server, local, now, n = HOME_WITHIN_REACH_PER_ROW)` → `JumpBackInSet = { mostUsed, recent }`:
 
@@ -158,18 +158,18 @@ grid keeps two rows' height with fewer items (`D131`).
 
 ### Strip (phone)
 
-Narrow: a sideways scroller holding the `ul` of `phoneOrder(set)` tiles, then the See more tile outside the list.
+Narrow: a sideways scroller holding the `ul` of `phoneOrder(set)` tiles, then the See More tile outside the list.
 `stripFade({ scrollLeft, clientWidth, scrollWidth })` → `true` while `scrollLeft + clientWidth < scrollWidth - 1`.
 Read on mount, on `scroll` (passive) and on `ResizeObserver`; the fade is an overlay whose opacity toggles, so the
 layout never changes.
 
-### See more
+### See More
 
 The heading row's link (wide) and the strip's tile (narrow) are anchors to `recentHref` (`/explorer/recent`); a
 plain click (no modifier, primary button) is prevented and calls `onSeeMore()`, which navigates in the app, so a new
 tab or a copied link still work. Both track `Home·Selected·JumpBackIn.SeeMore`.
 
-### What happened by day
+### What Happened by day
 
 `groupsByDay(groups, now)` → `[{ day, label, groups }]` in the order sent (newest group first), label `Today`,
 `Yesterday`, else `formatDay(key).label` (`Tue, 29 Sep`), with the year appended when it is not the current year.
@@ -226,10 +226,10 @@ export function stripFade(box: {
 
 // apps/live/app/explorer/home/home-copy.ts
 export const HOME_COPY: {
-  jumpBackIn: 'Jump back in';
-  whatHappened: 'What happened';
-  seeMore: 'See more';
-  seeTimeline: 'See timeline';
+  jumpBackIn: 'Jump Back In';
+  whatHappened: 'What Happened';
+  seeMore: 'See More';
+  seeTimeline: 'See Timeline';
   jumpBackInEmptyTitle: 'No documents yet';
   jumpBackInEmpty: 'The documents you use most and last will gather here.';
   whatHappenedEmptyTitle: 'No updates yet';
@@ -277,7 +277,7 @@ Component props:
 | A document in both groups                      | Most used only (`withinReach`)                                                                    |
 | No most used document, some recent             | The recent take the grid's top row; the phone's strip is the recent alone                         |
 | Fewer than 8 documents                         | Only what exists; the grid's minimum height keeps two rows                                        |
-| No document at all                             | The empty state; on a phone the strip still ends in See more                                      |
+| No document at all                             | The empty state; on a phone the strip still ends in See More                                      |
 | Group whose actor has no name                  | "Someone"                                                                                         |
 | Group of more than three people                | "Priya, Sam, Lee and 2 others"                                                                    |
 | Shared document                                | Opens through `?s=<code>`; location "Shared by <owner>" ("Shared with you" without an owner name) |
@@ -296,7 +296,7 @@ Component props:
 ## Performance and limits
 
 - One request draws the first screen (`GET /api/home`); `offlineListOpens` reads IndexedDB in parallel.
-- Thumbnails: at most 8 in Jump back in, each lazily fetched on intersection by `DocumentThumbnail`, cached
+- Thumbnails: at most 8 in Jump Back In, each lazily fetched on intersection by `DocumentThumbnail`, cached
   page-wide.
 - `jumpBackInSet` is `O(k log k)` over at most 8 server items plus this browser's opened local documents.
 
@@ -307,20 +307,20 @@ Component props:
 - Heading row (`SECTION_HEADER`): `flex items-baseline justify-between gap-4 border-b border-slate-200 pb-2
 dark:border-slate-700` (the page's line colour), 12 px above the section's body. The heading (`h2`,
   `SECTION_HEADING`): `text-base font-semibold text-slate-900 dark:text-slate-100`. The quiet link at the end (See
-  more, See timeline): `text-sm font-medium text-brand-700 dark:text-brand-300 hover:underline`.
+  more, See Timeline): `text-sm font-medium text-brand-700 dark:text-brand-300 hover:underline`.
 - Grid: `ul grid min-h-[13.25rem] grid-cols-4 gap-3`, the section's full width (`D128`). Tile: a link, the
   thumbnail `h-20 w-full rounded-md` (slate border), the name below (`mt-1 block h-4 truncate text-xs leading-4`). Local only: `LocalOnlyPill asLabel`
   absolutely in the thumbnail's bottom-left corner (4 px inset).
 - Strip: a scroller `scrollbar-slim -mx-1 flex h-28 snap-x gap-3 overflow-x-auto px-1 pb-2 pt-1`; the `ul` inside it
-  `flex gap-3`; tiles `w-32 shrink-0 snap-start` with a 128 × 80 thumbnail. See more tile: the same 128 × 80 box,
-  dashed slate border, a chevron-right icon over "See more" (`text-xs font-medium`), the label also as its name.
+  `flex gap-3`; tiles `w-32 shrink-0 snap-start` with a 128 × 80 thumbnail. See More tile: the same 128 × 80 box,
+  dashed slate border, a chevron-right icon over "See More" (`text-xs font-medium`), the label also as its name.
   Fade: 48 px `bg-gradient-to-l from-slate-50 dark:from-slate-900` (the page), `pointer-events-none`, opacity
   transition.
 - Empty states: the shared `CompactEmptyState` (docs/specs/004-interface-design/empty-states.md) with the glyphs in
-  `home-icons.tsx` (file for Jump back in, history for What happened). The grid's is regular size, centred in the
+  `home-icons.tsx` (file for Jump Back In, history for What Happened). The grid's is regular size, centred in the
   grid's reserved box (`GRID_MIN_HEIGHT`) with heading and line; the strip's is small size, `w-48`, heading alone (the
-  strip's height holds no second line), before the See more tile; What happened's is regular size with `py-8`.
-- What happened: day heading (`h3`, `text-xs font-medium text-slate-500`), entries in a `ul` with 4 px between.
+  strip's height holds no second line), before the See More tile; What Happened's is regular size with `py-8`.
+- What Happened: day heading (`h3`, `text-xs font-medium text-slate-500`), entries in a `ul` with 4 px between.
   `ActionEntry`: a link row, 28 px avatar, text column: "**Priya** commented on **Payments architecture**"
   (`text-sm`), the detail in quotes (`text-xs`, muted, truncated), then "location · time" (`text-xs`, muted,
   wrapping). `SummaryEntry`: a full-width button, overlapped 24 px avatars (`-ml-2`, a 2 px ring in the page colour,
@@ -328,25 +328,25 @@ dark:border-slate-700` (the page's line colour), 12 px above the section's body.
   end rotating 180° when open (`motion-safe:transition-transform`). Expanded list indented under the sentence: each a
   link row with a 20 px avatar, "**Sam** edited", the verb icon (14 px), the time. Rows hover
   `bg-slate-100 dark:bg-slate-800/70`, `rounded-lg`, padding 8 px.
-- Skeletons: the grid's 2 rows of 4 tile boxes (the phone's strip: 4 boxes `h-20 w-32` with name bars); What happened
+- Skeletons: the grid's 2 rows of 4 tile boxes (the phone's strip: 4 boxes `h-20 w-32` with name bars); What Happened
   3 rows of 56 px; `motion-safe:animate-pulse`, `bg-slate-200/70 dark:bg-slate-800`.
 - Error state: a centred block, `text-sm`, copy plus a secondary Try again button.
-- Copy is final as in the spec's States table and Jump back in.
+- Copy is final as in the spec's States table and Jump Back In.
 
 ## Accessibility
 
-- Each section is a `section aria-labelledby` its `h2` (**Jump back in**, **What happened**): two region landmarks.
-- Jump back in: one `ul aria-labelledby` the heading, grid or strip; each `li` one link whose accessible name is the
+- Each section is a `section aria-labelledby` its `h2` (**Jump Back In**, **What Happened**): two region landmarks.
+- Jump Back In: one `ul aria-labelledby` the heading, grid or strip; each `li` one link whose accessible name is the
   document name ("Payments architecture", plus ", Local only" for a local one, from the pill label); a `Tooltip`
   shows the full name. No row, group or sub-label is exposed (Calm by default). The heading rule is a border,
   never content.
-- See more: a link named "See more" in the heading row (wide) or as the tile after the list (narrow), never both.
+- See More: a link named "See More" in the heading row (wide) or as the tile after the list (narrow), never both.
 - Summary: `button aria-expanded aria-controls=<list id>`; the list `ul id` follows it. Avatars `aria-hidden`; the
   sentence names everyone.
 - Focus: `focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500` on every link and
-  button. Targets ≥ 24 × 24 px (the See more link's line box is padded to 24 px; tiles are larger).
+  button. Targets ≥ 24 × 24 px (the See More link's line box is padded to 24 px; tiles are larger).
 - Contrast: body text slate-900 / slate-100; muted slate-500 on the slate-50 page (4.5:1) and slate-400 on the
-  slate-900 page (6.9:1); the See more link brand-700 / brand-300.
+  slate-900 page (6.9:1); the See More link brand-700 / brand-300.
 - Reduced motion: `motion-safe:` on the pulse, the chevron and the fade's transition; `scroll-behavior` untouched.
 
 ## Web Experience
@@ -382,9 +382,9 @@ dark:border-slate-700` (the page's line colour), 12 px above the section's body.
 | Sentences, people, verbs, updates, location                                        | `apps/live/app/explorer/home/home-copy.test.ts`                                         |
 | Read, error, retry, stale owner, unread clear, mark kept                           | `apps/live/app/explorer/home/useHome.test.tsx`                                          |
 | A clear outlives an unread count still in flight                                   | `apps/live/app/explorer/useTimelineUnread.test.tsx`                                     |
-| Grid and strip: names, no group labels, row break, pill, fade, See more, telemetry | `apps/live/components/panels/home/JumpBackIn.test.tsx`                                  |
+| Grid and strip: names, no group labels, row break, pill, fade, See More, telemetry | `apps/live/components/panels/home/JumpBackIn.test.tsx`                                  |
 | Headings with a rule: the heading row and its link, per section                    | `apps/live/components/panels/home/HomePane.test.tsx`                                    |
-| Entries: one-person links, summary disclosure, telemetry, See timeline             | `apps/live/components/panels/home/WhatHappened.test.tsx`                                |
+| Entries: one-person links, summary disclosure, telemetry, See Timeline             | `apps/live/components/panels/home/WhatHappened.test.tsx`                                |
 | One column, two sections, no Timeline, the error state                             | `apps/live/components/panels/home/HomePane.test.tsx`                                    |
 | Routes, titles, crumbs (Recent under Home), the landing 302                        | `routes.test.ts`, `view-titles.test.ts`, `apps/live/src/worker.test.ts`                 |
 | Telemetry charted and explained                                                    | `apps/telemetry` `metric-emitters.test.ts`, `event-explanation.test.ts`                 |

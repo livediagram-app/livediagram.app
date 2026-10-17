@@ -41,7 +41,7 @@ function isHome(body: unknown): boolean {
   );
 }
 
-/** The whole first screen: Jump back in and What happened, grouped by day in `tz` (the reader's
+/** The whole first screen: Jump Back In and What Happened, grouped by day in `tz` (the reader's
  *  IANA time zone). */
 export function apiReadHome(ownerId: string, opts: { tz: string }): Promise<HomeResponse | null> {
   const params = new URLSearchParams({ tz: opts.tz });

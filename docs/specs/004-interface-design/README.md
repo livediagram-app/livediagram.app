@@ -15,7 +15,7 @@ Follow the references below only as needed; never upfront.
 - ./toasts.md - when raising, styling or placing a toast (`useToast`): one line by default, the four tones, timing, the stack's place above bottom chrome and banners, its motion and copy rules
 - ./tooltips-hover-cards-popovers.md - when adding a hover or focus hint, a `title`, or a click-opened panel: Tooltip (name, 1 s), Hover card (title + description, instant), Popover (click, interactive), and their WCAG 1.4.13 behaviour
 - ./menus.md - when building or changing any menu: command menus (role menu, roving keys, typeahead, submenus) vs control menus (non-modal dialog), focus in and back, the inset focus ring
-- ./within-reach.md - when a surface offers a short "what you want next" list: N most used plus N recent, none twice (Jump back in, Shape slots)
+- ./within-reach.md - when a surface offers a short "what you want next" list: N most used plus N recent, none twice (Jump Back In, Shape slots)
 - ./blueprints/README.md - when implementing a 004-interface-design spec: engineering detail derived from the specs
 - ./dropdown-tile-grid.md - when working on Tile grids for the palette dropdowns: The canvas-tool and palette-category pickers lay their options out as an icon-over-label tile grid instead of a long column, matching the context menus' MenuTileGrid
 - ./iconography.md - when drawing, adding or changing any icon: Lucide vocabulary, 1.5px on-screen weight, one home, icon weight on canvas

@@ -216,7 +216,7 @@ pointing at the button that opened it, on the edge facing the dock, over its but
 
 The shapes group learns and keeps the shapes a user reaches for. Its six slots are a
 [Within reach](../004-interface-design/within-reach.md) set (N = 3, a use is a pick), the same rule as
-Explorer Home's Jump back in.
+Explorer Home's Jump Back In.
 
 - **The six slots** live in the **Shapes** flyout, not on the bar, in two
   rows of three with **no labels**: they are meant to become obvious after a

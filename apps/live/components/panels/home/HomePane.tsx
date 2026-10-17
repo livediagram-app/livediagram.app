@@ -2,7 +2,7 @@
 
 // Explorer Home (docs/specs/013-workspace/explorer-home.md; blueprint
 // docs/specs/013-workspace/blueprints/explorer-home-view.md). One column at every width: Jump back
-// in, then What happened, each its own section opened by a heading with a rule, generous space
+// in, then What Happened, each its own section opened by a heading with a rule, generous space
 // between them, no cards.
 
 import { useEffect } from 'react';

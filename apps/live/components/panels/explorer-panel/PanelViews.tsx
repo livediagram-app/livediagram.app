@@ -58,7 +58,7 @@ import { lucideRotateCcw, lucideTrash2 } from '@livediagram/icons/lucide';
 const RestoreGlyph = lucideGlyph(lucideRotateCcw, 16);
 const DeleteGlyph = lucideGlyph(lucideTrash2, 16);
 
-// One of Jump back in's documents as a preview card, with the document menu when the reader can reach it.
+// One of Jump Back In's documents as a preview card, with the document menu when the reader can reach it.
 function JumpBackInCard({
   item,
   ownerId,
@@ -99,7 +99,7 @@ function JumpBackInCard({
   );
 }
 
-// One of What happened's groups: the people, what they did and where, with the document's menu.
+// One of What Happened's groups: the people, what they did and where, with the document's menu.
 function WhatHappenedRow({ group, onOpen }: { group: HomeGroup; onOpen: () => void }) {
   const doc = usePanelTree().documentById?.(group.documentId);
   const menu = usePaneDocumentMenu(doc);
@@ -162,7 +162,7 @@ function TimelineRow({ event, ownerId }: { event: TimelineEvent; ownerId: string
 
 type Open = (id: string, shareCode?: string) => void;
 
-// How many documents Home's Jump back in lists in the pane.
+// How many documents Home's Jump Back In lists in the pane.
 const JUMP_BACK_IN_ROWS = 6;
 
 export function HomeSection({
@@ -174,7 +174,7 @@ export function HomeSection({
   ownerId: string;
   currentDocumentId: string | null;
   onOpenDocument: Open;
-  // Home's See timeline shows the Timeline in the pane, as the rail would.
+  // Home's See Timeline shows the Timeline in the pane, as the rail would.
   onSeeTimeline: () => void;
 }) {
   const home = useHome(ownerId, () => {});
@@ -213,13 +213,13 @@ export function HomeSection({
           />
         )}
       </PaneSection>
-      {/* Only when someone else did something: an empty "What happened" says nothing worth the room. */}
+      {/* Only when someone else did something: an empty "What Happened" says nothing worth the room. */}
       {home.whatHappened.length ? (
         <PaneSection
           title={HOME_COPY.whatHappened}
           action={
             <button type="button" onClick={onSeeTimeline} className={PANE_LINK}>
-              See timeline
+              See Timeline
             </button>
           }
         >

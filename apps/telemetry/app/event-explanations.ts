@@ -388,7 +388,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Element|Changed|QuickBackground':
     'Someone picked a background colour for the selected shapes from the quick style panel beside the selection.',
   'Element|Changed|QuickClearStyles':
-    'Someone pressed Clear styles in the quick style panel, returning the selected shapes, arrows and text to the theme default and forgetting that style for the next ones drawn.',
+    'Someone pressed Clear Styles in the quick style panel, returning the selected shapes, arrows and text to the theme default and forgetting that style for the next ones drawn.',
   'Element|Changed|QuickIconAlign':
     'Someone moved the icon before, above, or after the label of the selected shapes from the quick style panel.',
   'Element|Changed|QuickCorners':
@@ -623,18 +623,18 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone searched the help centre and got at least one matching article. Counted once per finished search; the search words are never recorded.',
   'Home|Loaded|Retry': 'Someone pressed "Try again" after Home failed to load.',
   'Home|Opened|Group':
-    "Someone expanded a summary of several people's work on one document in Home's What happened, to see every action.",
+    "Someone expanded a summary of several people's work on one document in Home's What Happened, to see every action.",
   'Home|Opened|Landing':
     'Someone arrived at the Explorer with Home as the very section that loaded.',
   'Home|Opened|Nav': 'Someone went to Home from another section of the Explorer.',
   'Home|Selected|JumpBackIn.MostUsed':
-    "Someone opened a document from Home's Jump back in that was among the ones they used on the most days.",
+    "Someone opened a document from Home's Jump Back In that was among the ones they used on the most days.",
   'Home|Selected|JumpBackIn.Recent':
-    "Someone opened a document from Home's Jump back in that was among the ones they used most recently.",
+    "Someone opened a document from Home's Jump Back In that was among the ones they used most recently.",
   'Home|Selected|JumpBackIn.SeeMore':
-    "Someone followed See more from Home's Jump back in to the Recent page.",
+    "Someone followed See More from Home's Jump Back In to the Recent page.",
   'Home|Selected|WhatHappened':
-    "Someone opened a document from Home's What happened, which lists what other people did to their documents.",
+    "Someone opened a document from Home's What Happened, which lists what other people did to their documents.",
   'Layer|Added|': 'A new layer was added in the Layers panel.',
   'Layer|Changed|Opacity': "A layer's opacity was adjusted.",
   'Layer|Cleared|': 'A layer was emptied (its elements deleted, the layer kept).',
@@ -1052,7 +1052,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Timeline|Opened|Menu':
     'Someone opened the ⋯ menu on a Timeline card or on a collapsed run of cards.',
   'Timeline|Opened|Nav':
-    "Someone went to the Timeline from elsewhere in the Explorer: its sidebar row, or Home's See timeline link.",
+    "Someone went to the Timeline from elsewhere in the Explorer: its sidebar row, or Home's See Timeline link.",
   'Timeline|Opened|Stack':
     'Someone expanded a collapsed run of similar Timeline entries (like "12 documents renamed") into its individual cards.',
   'Timeline|Removed|Entry': 'Someone removed a single entry from their Timeline feed.',
@@ -2126,11 +2126,11 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|View|ChartTourStepAnimate': 'The Chart tour reached its step previewing Grow on the chart.',
   'UI|View|ChartTourStepMenu':
     "The Chart tour reached its step on the chart's menu (Chart Type, Data, Chart).",
-  'UI|View|ChartTourStepData': 'The Chart tour reached its step on the Chart data grid.',
+  'UI|View|ChartTourStepData': 'The Chart tour reached its step on the Chart Data grid.',
   'UI|View|ChartTourStepSeries':
-    'The Chart tour reached its step on the series across the top of Chart data.',
-  'UI|View|ChartTourStepAddRow': 'The Chart tour reached its step on Add Row in Chart data.',
-  'UI|View|ChartTourStepImport': 'The Chart tour reached its step on Import CSV in Chart data.',
+    'The Chart tour reached its step on the series across the top of Chart Data.',
+  'UI|View|ChartTourStepAddRow': 'The Chart tour reached its step on Add Row in Chart Data.',
+  'UI|View|ChartTourStepImport': 'The Chart tour reached its step on Import CSV in Chart Data.',
   'UI|View|ChartTourStepOutro': 'The Chart tour reached its closing card.',
   'UI|View|StackTourStepStack':
     'The Stack tour reached its first step, how a stack lays itself out.',
