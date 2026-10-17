@@ -33,4 +33,19 @@ describe('the shared text fields', () => {
     expect(field.className).not.toContain('py-2');
     expect(field.className).toContain('focus:ring-2');
   });
+
+  it('read as disabled when disabled, so a field nobody may change never looks editable', () => {
+    render(
+      <>
+        <TextInput aria-label="locked" disabled />
+        <TextArea aria-label="locked note" disabled />
+      </>,
+    );
+    for (const label of ['locked', 'locked note']) {
+      const field = screen.getByLabelText(label);
+      expect(field).toHaveProperty('disabled', true);
+      expect(field.className).toContain('disabled:bg-slate-50');
+      expect(field.className).toContain('disabled:cursor-not-allowed');
+    }
+  });
 });
