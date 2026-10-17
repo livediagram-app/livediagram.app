@@ -34,6 +34,7 @@ type Drawn = {
   label?: string;
   fillColor?: string;
   textColor?: string;
+  richText?: { text: string; color?: string }[];
   shape?: string;
   opacity?: number;
 };
@@ -114,6 +115,15 @@ describe('template labels read against what is drawn behind them under every the
                 problems.push(
                   `${theme.id} picked ${picker}, seen ${viewer}: "${el.label.slice(0, 40)}" ${ink} on ${behind} (${ratio.toFixed(2)})`,
                 );
+              // A rich label's coloured words too.
+              for (const run of el.richText ?? []) {
+                if (!run.color || !HEX.test(run.color) || !run.text.trim()) continue;
+                const r = contrastRatio(run.color, behind);
+                if (r < OVERLAY_TEXT_CONTRAST)
+                  problems.push(
+                    `${theme.id} picked ${picker}, seen ${viewer}: "${run.text.slice(0, 40)}" ${run.color} on ${behind} (${r.toFixed(2)})`,
+                  );
+              }
             });
           }
         }

@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { cpuBudgetMs, cpuMsOf } from '@livediagram/vitest-config/cpu-time';
 import { contrastRatio } from './colors';
 import { LABEL_BACKDROP_CONTRAST, labelBackdrops, withReadableLabelInks } from './label-backdrop';
 import type { Element } from './index';
@@ -97,6 +98,22 @@ describe('withReadableLabelInks', () => {
     ).toBeGreaterThanOrEqual(LABEL_BACKDROP_CONTRAST);
   });
 
+  it('walks a rich label’s coloured runs the panel under it sank, and leaves its plain runs', () => {
+    const rich = (runs: { text: string; color?: string }[]) =>
+      ({ ...(label('t', '#ffffff') as object), richText: runs }) as unknown as Element;
+    const runs = [{ text: 'measured by', color: '#059669' }, { text: ', plain' }];
+    const before = [panel('p', '#0f172a'), rich(runs)];
+    // A green panel under green words.
+    const after = [panel('p', '#1f6f43'), rich(runs)];
+    const out = withReadableLabelInks(before, CANVAS, after, CANVAS)[1] as unknown as {
+      richText: { text: string; color?: string }[];
+    };
+    expect(contrastRatio(out.richText[0]!.color!, '#1f6f43')).toBeGreaterThanOrEqual(
+      LABEL_BACKDROP_CONTRAST,
+    );
+    expect(out.richText[1]).toBe(runs[1]);
+  });
+
   it('keeps a label someone chose low, which no theme sank', () => {
     const els = [panel('p', '#ffffff'), label('t', '#fde68a')];
     expect(withReadableLabelInks(els, CANVAS, els, CANVAS)).toBe(els);
@@ -135,10 +152,9 @@ describe('withReadableLabelInks', () => {
         after.push(t);
       }
     }
-    const t0 = performance.now();
-    const out = withReadableLabelInks(before, CANVAS, after, '#1a1a1a');
-    const ms = performance.now() - t0;
-    expect(out).not.toBe(after);
-    expect(ms).toBeLessThan(150);
+    expect(withReadableLabelInks(before, CANVAS, after, '#1a1a1a')).not.toBe(after);
+    // About 9 ms warm on an idle machine; CPU time, so a busy machine does not fail it.
+    const ms = cpuMsOf(() => withReadableLabelInks(before, CANVAS, after, '#1a1a1a'));
+    expect(ms).toBeLessThan(cpuBudgetMs(100));
   });
 });

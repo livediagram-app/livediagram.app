@@ -33,7 +33,14 @@ type Box = {
   shape?: string;
   fillColor?: unknown;
   textColor?: unknown;
+  richText?: unknown;
   opacity?: unknown;
+};
+
+type Run = { color?: unknown };
+const runsOf = (el: object): readonly Run[] => {
+  const runs = (el as Box).richText;
+  return Array.isArray(runs) ? (runs as Run[]) : [];
 };
 
 const boxOf = (el: Element): Box => el;
@@ -42,9 +49,10 @@ const num = (v: number | undefined): number =>
 
 /** Elements whose fill can sit behind a label: shapes and stickies. */
 const isPanel = (b: Box): boolean => b.type === 'shape' || b.type === 'sticky';
-/** Elements that write a label of their own. */
+/** Elements that write a label of their own, plain or rich. */
 const isLabel = (b: Box): boolean =>
-  (b.type === 'text' || b.type === 'shape') && typeof b.label === 'string' && b.label.trim() !== '';
+  (b.type === 'text' || b.type === 'shape') &&
+  ((typeof b.label === 'string' && b.label.trim() !== '') || runsOf(b).length > 0);
 
 function fillOf(b: Box, surface: CanvasSurface): string | null {
   const fill =
@@ -163,8 +171,8 @@ function readableOn(ink: string, behind: string): string {
 /** `after` (the same elements as `before`, by id, after a theme was applied or drawn in the other half, on
  *  `afterCanvas`) with each label the change left under LABEL_BACKDROP_CONTRAST against what is behind it, and
  *  reading worse than it did in `before` on `beforeCanvas`, given an ink walked in lightness until it reaches the
- *  floor. A label that reads no worse than it did keeps its ink: no theme did that. The same array when nothing
- *  changes. */
+ *  floor; a rich label's coloured runs the same, each against its own colour before. A label that reads no worse
+ *  than it did keeps its ink: no theme did that. The same array when nothing changes. */
 export function withReadableLabelInks<T extends Element>(
   before: readonly Element[],
   beforeCanvas: string,
@@ -175,19 +183,46 @@ export function withReadableLabelInks<T extends Element>(
   if (now.size === 0) return after;
   let was: Map<number, { ink: string; behind: string }> | null = null;
   let beforeIndex: Map<string, number> | null = null;
-  let out: T[] | null = null;
-  for (const [i, { ink, behind }] of now) {
-    const ratio = contrastRatio(ink, behind);
-    if (!(ratio < LABEL_BACKDROP_CONTRAST)) continue;
+  // The label as it was before the change: its element, and its ink and backdrop then.
+  const priorOf = (i: number) => {
     was ??= labelBackdrops(before, beforeCanvas);
     beforeIndex ??= new Map(before.map((el, k) => [el.id, k] as const));
     const k = beforeIndex.get(after[i]!.id);
-    const prior = k === undefined ? undefined : was.get(k);
-    const priorRatio = prior ? contrastRatio(prior.ink, prior.behind) : Infinity;
-    // Reading no worse than before the change: someone's choice, not the theme's doing.
-    if (!(ratio < priorRatio - 0.01)) continue;
+    return k === undefined ? null : { el: before[k]!, drawn: was.get(k) };
+  };
+  // Sunk by the change: under the floor now, and reading worse than it did.
+  const sunk = (ratio: number, prior: number) =>
+    ratio < LABEL_BACKDROP_CONTRAST && ratio < prior - 0.01;
+  let out: T[] | null = null;
+  for (const [i, { ink, behind }] of now) {
+    const el = after[i]!;
+    let patch: { textColor?: string; richText?: Run[] } | null = null;
+    const ratio = contrastRatio(ink, behind);
+    if (ratio < LABEL_BACKDROP_CONTRAST) {
+      const prior = priorOf(i)?.drawn;
+      if (sunk(ratio, prior ? contrastRatio(prior.ink, prior.behind) : Infinity))
+        patch = { textColor: readableOn(ink, behind) };
+    }
+    const runs = runsOf(el);
+    let walked: Run[] | null = null;
+    runs.forEach((run, r) => {
+      if (typeof run.color !== 'string' || !HEX.test(run.color)) return;
+      const runRatio = contrastRatio(run.color, behind);
+      if (!(runRatio < LABEL_BACKDROP_CONTRAST)) return;
+      const prior = priorOf(i);
+      const priorColour = prior ? runsOf(prior.el)[r]?.color : undefined;
+      const priorRatio =
+        prior?.drawn && typeof priorColour === 'string' && HEX.test(priorColour)
+          ? contrastRatio(priorColour, prior.drawn.behind)
+          : Infinity;
+      if (!sunk(runRatio, priorRatio)) return;
+      walked ??= [...runs];
+      walked[r] = { ...run, color: readableOn(run.color, behind) };
+    });
+    if (walked) patch = { ...patch, richText: walked };
+    if (!patch) continue;
     out ??= [...after];
-    out[i] = { ...after[i]!, textColor: readableOn(ink, behind) };
+    out[i] = { ...el, ...patch };
   }
   return out ?? after;
 }
