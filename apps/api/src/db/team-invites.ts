@@ -6,7 +6,15 @@
 
 import type { Team, TeamInvite, TeamMember } from '@livediagram/api-schema';
 import type { Env } from '../types';
-import { getMembership, JOINED_COUNT, rowToTeam, TEAM_COLS, type TeamRow } from './teams';
+import { mintDeclineToken } from './team-invite-decline';
+import {
+  getMembership,
+  JOINED_COUNT,
+  openMemberSql,
+  rowToTeam,
+  TEAM_COLS,
+  type TeamRow,
+} from './teams';
 
 // The lazy invite claim (docs/specs/013-workspace/teams.md): connect every pending row for this
 // verified email to the caller's Clerk user id. Runs at the top of
@@ -18,6 +26,7 @@ import { getMembership, JOINED_COUNT, rowToTeam, TEAM_COLS, type TeamRow } from 
 // by link (or under another address) would otherwise become a second membership row for the same
 // person. The unique (team_id, user_id) index (migration 0083) backs this up, and OR IGNORE keeps a
 // concurrent claim or link join from turning that into an error: the row stays unclaimed instead.
+// Only a pending invite is claimed: a rejected row is a record of an answer, not an invite to connect.
 export async function connectInvitesByEmail(
   env: Env,
   userId: string,
@@ -25,7 +34,7 @@ export async function connectInvitesByEmail(
 ): Promise<void> {
   await env.DB.prepare(
     `UPDATE OR IGNORE team_members SET user_id = ?1, updated_at = ?2
-     WHERE email = ?3 AND user_id IS NULL
+     WHERE email = ?3 AND user_id IS NULL AND status = 'invited'
        AND team_id NOT IN (SELECT team_id FROM team_members WHERE user_id = ?1)`,
   )
     .bind(userId, Date.now(), email)
@@ -144,6 +153,9 @@ export async function joinTeamByInviteToken(
       return { teamId: team.id, alreadyMember: connected.status === 'joined' };
     }
   }
+  // A rejected invite of theirs (declined or expired) is only a record, and the unique (team_id, user_id)
+  // and (team_id, email) indexes would refuse the fresh row beside it: joining replaces it.
+  await clearRejectedInvites(env, team.id, { userId, email: callerEmail });
   // Fresh join. Carry the caller's email for display only when it isn't
   // already taken on the team (the UNIQUE(team_id, email) gate), else null.
   const emailForRow =
@@ -158,30 +170,58 @@ export async function joinTeamByInviteToken(
   return { teamId: team.id, alreadyMember: false };
 }
 
-// True when the address already has a row (pending or connected) on
-// this team — the duplicate-invite gate.
+// True when the address already has an open row (pending or joined) on
+// this team — the duplicate-invite gate. A rejected row does not count:
+// inviting that address again replaces it (addTeamMember).
 export async function teamHasEmail(env: Env, teamId: string, email: string): Promise<boolean> {
   const row = await env.DB.prepare(
-    'SELECT 1 AS x FROM team_members WHERE team_id = ? AND email = ?',
+    `SELECT 1 AS x FROM team_members WHERE team_id = ? AND email = ? AND ${openMemberSql()}`,
   )
     .bind(teamId, email)
     .first<{ x: number }>();
   return row !== null;
 }
 
+// Delete a person's rejected rows on a team (docs/specs/013-workspace/teams.md): by user, by address, or both.
+// Called just before a fresh row for them goes in, so the rejected record never blocks it.
+async function clearRejectedInvites(
+  env: Env,
+  teamId: string,
+  who: { userId?: string | null; email?: string | null },
+): Promise<void> {
+  await env.DB.prepare(
+    `DELETE FROM team_members
+      WHERE team_id = ?1 AND status IN ('declined', 'expired')
+        AND ((?2 IS NOT NULL AND user_id = ?2) OR (?3 IS NOT NULL AND email = ?3))`,
+  )
+    .bind(teamId, who.userId ?? null, who.email ?? null)
+    .run();
+}
+
+// The invite row, born 'invited' with the first decline token's hash (docs/specs/013-workspace/teams.md). A
+// rejected row for the same address is replaced in the same batch, so inviting someone who declined (or
+// whose invite expired) starts over: a new id, a new token, its own reminder clock. The token rides back
+// to the caller for the invite email and is never stored.
 export async function addTeamMember(
   env: Env,
   m: { teamId: string; email: string },
-): Promise<TeamMember> {
+): Promise<{ member: TeamMember; declineToken: string }> {
   const now = Date.now();
   const id = crypto.randomUUID();
-  await env.DB.prepare(
-    `INSERT INTO team_members (id, team_id, user_id, email, role, status, created_at, updated_at)
-     VALUES (?, ?, NULL, ?, 'member', 'invited', ?, ?)`,
-  )
-    .bind(id, m.teamId, m.email, now, now)
-    .run();
-  return {
+  const decline = await mintDeclineToken(id);
+  await env.DB.batch([
+    env.DB.prepare(
+      `DELETE FROM team_members
+        WHERE team_id = ? AND email = ? AND status IN ('declined', 'expired')`,
+    ).bind(m.teamId, m.email),
+    env.DB.prepare(
+      `INSERT INTO team_members
+         (id, team_id, user_id, email, role, status, decline_token_hashes, clock_started_at,
+          created_at, updated_at)
+       VALUES (?, ?, NULL, ?, 'member', 'invited', ?, ?, ?, ?)`,
+    ).bind(id, m.teamId, m.email, decline.hash, now, now, now),
+  ]);
+  const member: TeamMember = {
     id,
     teamId: m.teamId,
     userId: null,
@@ -193,4 +233,5 @@ export async function addTeamMember(
     createdAt: now,
     updatedAt: now,
   };
+  return { member, declineToken: decline.token };
 }

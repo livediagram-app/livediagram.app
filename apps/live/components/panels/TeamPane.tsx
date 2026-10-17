@@ -188,7 +188,8 @@ export function TeamPane({
   const canLeave = selfRow !== null && !isLastAdmin(selfRow);
 
   const joinedCount = members.filter((m) => m.status === 'joined').length;
-  const invitedCount = members.length - joinedCount;
+  // Pending only: a rejected row is a record of an answer, not an invitation still out.
+  const invitedCount = members.filter((m) => m.status === 'invited').length;
   const headline = [
     team.organisation,
     `${joinedCount} ${joinedCount === 1 ? 'member' : 'members'}`,

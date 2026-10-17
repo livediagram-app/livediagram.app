@@ -12,24 +12,32 @@
 // withdrawal, was being emitted somewhere else entirely (by the RECIPIENT
 // declining, which is now `Team·Declined·Invite`).
 //
-// Three kinds, one decision point, so the copy and the counting can't disagree.
+// A fourth kind arrived with rejected invites (docs/specs/013-workspace/teams.md "Declining from the email",
+// "Reminders and expiry"): a declined or expired row is neither a member nor an open invitation, so clearing
+// it is neither a removal nor a withdrawal.
+//
+// Four kinds, one decision point, so the copy and the counting can't disagree.
 
 import type { TeamMemberStatus } from '@/lib/api-client';
 
-type TeamRemovalKind = 'self' | 'invite' | 'member';
+type TeamRemovalKind = 'self' | 'invite' | 'rejected' | 'member';
 
 export function teamRemovalKind(isSelf: boolean, status: TeamMemberStatus): TeamRemovalKind {
   // Leaving is checked first: a member acting on their own row is leaving the
   // team whatever the row's status says.
   if (isSelf) return 'self';
+  if (status === 'declined' || status === 'expired') return 'rejected';
   return status === 'invited' ? 'invite' : 'member';
 }
 
 // The `type` slot for `Team·Removed` (docs/specs/017-telemetry/telemetry.md). Deliberately parallel to the
 // kind rather than derived from it inline, so a new kind can't be added without
 // choosing what it reports as.
-export function teamRemovalTelemetryType(kind: TeamRemovalKind): 'Self' | 'Invite' | 'Member' {
+export function teamRemovalTelemetryType(
+  kind: TeamRemovalKind,
+): 'Self' | 'Invite' | 'Rejected' | 'Member' {
   if (kind === 'self') return 'Self';
+  if (kind === 'rejected') return 'Rejected';
   return kind === 'invite' ? 'Invite' : 'Member';
 }
 
@@ -53,10 +61,14 @@ type TeamRemovalCopy = {
 
 // `memberLabel` is the resolved display name (or the invite email's local part
 // for someone who has never signed in); unused for the self case, where the
-// subject is "you".
+// subject is "you". `expired` tells a rejected row's two causes apart.
 export function teamRemovalCopy(
   kind: TeamRemovalKind,
-  { memberLabel, teamName }: { memberLabel: string | null; teamName: string | undefined },
+  {
+    memberLabel,
+    teamName,
+    expired = false,
+  }: { memberLabel: string | null; teamName: string | undefined; expired?: boolean },
 ): TeamRemovalCopy {
   if (kind === 'self') {
     return {
@@ -72,6 +84,17 @@ export function teamRemovalCopy(
       message: `${memberLabel} has not joined "${teamName}" yet. Their invitation will be withdrawn.`,
       confirmLabel: 'Withdraw',
       failureNotice: 'Could not withdraw the invite. Try again.',
+    };
+  }
+  if (kind === 'rejected') {
+    const why = expired
+      ? `${memberLabel}'s invite to "${teamName}" expired with no reply.`
+      : `${memberLabel} declined the invite to "${teamName}".`;
+    return {
+      title: 'Remove from list?',
+      message: `${why} Removing clears it from the list, and you can invite them again any time.`,
+      confirmLabel: 'Remove',
+      failureNotice: 'Could not remove the invite. Try again.',
     };
   }
   return {

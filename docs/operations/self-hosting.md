@@ -238,7 +238,7 @@ The last two are the spend-DoS defence: on a public deployment they stop a third
 
 ## Email (optional, Resend)
 
-The api worker can send a small set of account emails via [Resend](https://resend.com) ([Transactional & lifecycle email (Resend)](../specs/014-identity/transactional-email.md)): a welcome on first sign-in; week-1 (Explorer) and week-2 (Teams) onboarding tips, an activation nudge and a win-back note off the daily cron; a warning before an API token expires; notifications (someone opened, commented on or mentioned you in a document, assigned you an action, or answered your team invite) plus first-share and document-count milestone notes; and transactional team-invite and account-deleted messages. The whole feature is **off until you provide a key** — no key, no sends, and the `email_lifecycle` table is never touched. Guests never receive email (it's authenticated-only).
+The api worker can send a small set of account emails via [Resend](https://resend.com) ([Transactional & lifecycle email (Resend)](../specs/014-identity/transactional-email.md)): a welcome on first sign-in; week-1 (Explorer) and week-2 (Teams) onboarding tips, an activation nudge and a win-back note off the daily cron; a warning before an API token expires; notifications (someone opened, commented on or mentioned you in a document, assigned you an action, or answered your team invite) plus first-share and document-count milestone notes; and transactional team-invite (with a Decline link that needs no account), team-invite reminder (1, 7 and 21 days after an unanswered invite) and account-deleted messages. The whole feature is **off until you provide a key** — no key, no sends, and the `email_lifecycle` table is never touched. Guests never receive email (it's authenticated-only).
 
 To turn it on, verify a sending domain in Resend, then:
 
@@ -252,6 +252,17 @@ Optional knobs (plain `[vars]`):
 - `APP_BASE_URL`: public origin for links in emails, defaults to `https://livediagram.app`.
 
 If you enable this on a deployment that already has signed-in users, run the one-time backfill in [Transactional & lifecycle email (Resend) §4](../specs/014-identity/transactional-email.md) first, so existing users aren't "welcomed" on their next sign-in.
+
+## Team invite reminders and expiry
+
+Teams need Clerk. With it on, the daily cron expires team invites nobody answered within 28 days (whether or not
+email is configured) and, with `RESEND_API_KEY` set, sends the three reminders first
+([Teams](../specs/013-workspace/teams.md#reminders-and-expiry)). Migration `0095_team_invite_decline_and_reminders.sql`
+adds the columns; nothing else to configure.
+
+- `TEAM_INVITE_RATE_LIMITER` (optional binding, declared in `apps/api/wrangler.toml`): 20 requests a minute per
+  network on the invite email's open Decline doors (`/api/teams/invite-decline/...`). Without the binding every
+  request is allowed; the token is 256 random bits either way.
 
 ## Forms
 

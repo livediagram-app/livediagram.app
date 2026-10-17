@@ -308,10 +308,17 @@ export type TeamListItem = Team & {
   memberCount: number;
 };
 
-// The accept/decline handshake state (docs/specs/013-workspace/teams.md). An 'invited' row
-// grants no membership: it waits in the invitee's Invites section
-// until they accept ('joined') or decline (row deleted).
-export type TeamMemberStatus = 'invited' | 'joined';
+// The invite's state (docs/specs/013-workspace/teams.md). An 'invited' row grants no membership: it
+// waits in the invitee's Invites section until they accept ('joined'). The two rejected states are
+// records, not memberships: 'declined' (they said no, in the app or from the email) and 'expired'
+// (nobody answered within 28 days). Both stay on the list, as Rejected, until an Admin removes them.
+export type TeamMemberStatus = 'invited' | 'joined' | 'declined' | 'expired';
+
+// True for a row that is (or may become) a membership. A rejected row ('declined' / 'expired') is only a
+// record for the admins' list: never a mention, an assignee, or anyone to email.
+export function isOpenTeamMember(member: { status: TeamMemberStatus }): boolean {
+  return member.status === 'invited' || member.status === 'joined';
+}
 
 // One member link row. `userId` is the Clerk user id, null while the
 // invite hasn't connected yet (docs/specs/013-workspace/teams.md's lazy claim fills it in —
@@ -368,6 +375,13 @@ export type TeamInviteLinkInfo = {
 export type TeamInviteLinkJoin = {
   teamId: string;
   alreadyMember: boolean;
+};
+
+// What a decline token names (docs/specs/013-workspace/teams.md "Declining from the email"): the invite's team
+// name and where the invite stands, read and returned by the open `/api/teams/invite-decline/:token` doors.
+export type TeamInviteDecline = {
+  teamName: string;
+  status: TeamMemberStatus;
 };
 
 // ---------------------------------------------------------------------

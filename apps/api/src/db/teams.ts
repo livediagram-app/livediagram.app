@@ -3,9 +3,17 @@
 // its owner's Invites section; `connectInvitesByEmail` fills in WHO
 // the person is the first time their address shows up in a verified
 // JWT, and `acceptTeamMember` is the explicit yes that makes them a
-// member. Declining is a plain row delete.
+// member. Declining marks the row 'declined', and an unanswered invite
+// becomes 'expired' after 28 days (team-invite-decline.ts, team-invite-reminders.ts): both are
+// rejected records an Admin sees on the list, never memberships.
 
-import type { Team, TeamListItem, TeamMember, TeamRole } from '@livediagram/api-schema';
+import type {
+  Team,
+  TeamListItem,
+  TeamMember,
+  TeamMemberStatus,
+  TeamRole,
+} from '@livediagram/api-schema';
 import type { Env } from '../types';
 import { getParticipant } from './participants';
 import { imageGrantOwnerChangeStatement } from './image-grants';
@@ -48,6 +56,19 @@ export function rowToTeam(row: TeamRow): Team {
   };
 }
 
+// The rows that are (or may become) a membership. A rejected row ('declined' / 'expired') is a record
+// an Admin reads on the list, so every permission check starts from these two only. NULL counts as
+// open for the same reason memberStatus reads it as 'joined'.
+export function openMemberSql(column = 'status'): string {
+  return `(${column} IS NULL OR ${column} IN ('invited', 'joined'))`;
+}
+
+// Defensive default mirrors the migration backfill: an unknown / NULL status reads as 'joined' so a
+// drifted row can't lock a real member out of their own team.
+export function memberStatus(raw: string | null): TeamMemberStatus {
+  return raw === 'invited' || raw === 'declined' || raw === 'expired' ? raw : 'joined';
+}
+
 function rowToMember(row: MemberRow): TeamMember {
   return {
     id: row.id,
@@ -55,10 +76,7 @@ function rowToMember(row: MemberRow): TeamMember {
     userId: row.user_id,
     email: row.email,
     role: row.role === 'admin' ? 'admin' : 'member',
-    // Defensive default mirrors the migration backfill: an unknown /
-    // NULL status reads as 'joined' so a drifted row can't lock a
-    // real member out of their own team.
-    status: row.status === 'invited' ? 'invited' : 'joined',
+    status: memberStatus(row.status),
     // Filled in by listTeamMembers via the participants join; the bare
     // row mapping leaves it null.
     name: null,
@@ -126,14 +144,16 @@ export async function listTeamMembers(env: Env, teamId: string): Promise<TeamMem
 }
 
 // The caller's own membership row in a team — the permission check
-// every team route starts from. Null = not a member.
+// every team route starts from. Null = not a member, which includes a
+// rejected invite: it grants nothing, not even a read of the team.
 export async function getMembership(
   env: Env,
   teamId: string,
   userId: string,
 ): Promise<TeamMember | null> {
   const row = await env.DB.prepare(
-    `SELECT ${MEMBER_COLS} FROM team_members WHERE team_id = ? AND user_id = ?`,
+    `SELECT ${MEMBER_COLS} FROM team_members
+      WHERE team_id = ? AND user_id = ? AND ${openMemberSql()}`,
   )
     .bind(teamId, userId)
     .first<MemberRow>();

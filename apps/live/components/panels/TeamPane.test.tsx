@@ -107,3 +107,44 @@ describe('TeamPane children', () => {
     errors.mockRestore();
   });
 });
+
+// docs/specs/013-workspace/teams.md "Declining from the email" / "Reminders and expiry": a rejected invite
+// stays on the list as Rejected, says why, offers an Admin its Remove, and is not counted as invited.
+describe('TeamPane rejected invites', () => {
+  const row = (id: string, email: string, status: string, role = 'member') => ({
+    id,
+    teamId: 't1',
+    userId: status === 'joined' ? id : null,
+    email,
+    role,
+    status,
+    name: null,
+    pictureUrl: null,
+    createdAt: 0,
+    updatedAt: 0,
+  });
+
+  it('shows Rejected with the reason, keeps Remove in view, and counts only pending invites', async () => {
+    getTeam.mockResolvedValue({
+      ...detail('t1', 'ACME'),
+      myRole: 'admin',
+      members: [
+        row('me', 'ada@x.test', 'joined', 'admin'),
+        row('m2', 'sam@x.test', 'declined'),
+        row('m3', 'kim@x.test', 'expired'),
+        row('m4', 'lee@x.test', 'invited'),
+      ],
+    });
+    render(pane());
+    await act(async () => {});
+    expect(screen.getAllByText('Rejected')).toHaveLength(2);
+    expect(screen.getByText('sam@x.test · Declined')).toBeTruthy();
+    expect(screen.getByText('kim@x.test · Expired')).toBeTruthy();
+    expect(screen.getByText(/1 invited/)).toBeTruthy();
+    // No role select on a rejected row; Remove is always visible for it.
+    expect(screen.queryByLabelText('Role for Sam')).toBeNull();
+    expect(screen.getByLabelText('Role for Lee')).toBeTruthy();
+    expect(screen.getByLabelText('Remove Sam').className).not.toContain('opacity-0');
+    expect(screen.getByLabelText('Remove Lee').className).toContain('opacity-0');
+  });
+});

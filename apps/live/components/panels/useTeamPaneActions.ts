@@ -125,13 +125,14 @@ export function useTeamPaneActions({
   };
 
   const removeMember = async (member: TeamMember, isSelf: boolean) => {
-    // One control, three acts: leaving, withdrawing an invitation nobody
-    // accepted, and removing someone who did join. team-removal.ts decides
+    // One control, four acts: leaving, withdrawing an invitation nobody
+    // accepted, clearing a rejected one, and removing someone who did join. team-removal.ts decides
     // which, so the wording and the telemetry can't drift apart.
     const kind = teamRemovalKind(isSelf, member.status);
     const copy = teamRemovalCopy(kind, {
       memberLabel: isSelf ? null : memberName(member, false, null),
       teamName: detail?.team.name,
+      expired: member.status === 'expired',
     });
     const ok = await confirm({
       title: copy.title,

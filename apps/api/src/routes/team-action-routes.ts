@@ -4,6 +4,7 @@
 // caller resolves the team + their own membership row once and passes
 // the scope in.
 
+import { isOpenTeamMember } from '@livediagram/api-schema';
 import { legacyDocumentIdOf } from '../legacy-request-forms';
 import type { TeamMember } from '@livediagram/api-schema';
 import { getDocumentMeta, getMembership, getParticipant, hasSharedAccess } from '../db';
@@ -118,7 +119,9 @@ export async function handleTeamActionRoutes(
     // exist. An invited member resolves by membership row id.
     const assignee = assigneeUserId
       ? await getMembership(env, teamId, assigneeUserId)
-      : ((await listTeamMembers(env, teamId)).find((m) => m.id === assigneeMemberId) ?? null);
+      : ((await listTeamMembers(env, teamId)).find(
+          (m) => m.id === assigneeMemberId && isOpenTeamMember(m),
+        ) ?? null);
     if (!assignee) return notFound();
     // The caller must be able to access the document: their own, in a team
     // library they've joined, or one they've opened through a share link.
