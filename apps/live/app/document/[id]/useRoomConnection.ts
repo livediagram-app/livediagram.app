@@ -684,45 +684,39 @@ export function useRoomConnection(opts: {
     // Every session joins through a one-time room ticket (docs/specs/015-api/api.md "Realtime model"),
     // minted over REST, where the access gates already read the guest signature, the share code and its
     // password, and team membership as headers. The WS upgrade can't carry headers, so before tickets
-    // those rode the upgrade URL, which is logged; now only the spent-on-use ticket does. Connect is async
-    // only for the ticket fetch; `cancelled` covers an unmount (or dep change) racing it.
-    let cancelled = false;
-    let openedRoom: ReturnType<typeof connectRoom> | null = null;
-    void (async () => {
-      const { self, shareCode } = connectAs();
-      const minted = await apiCreateRoomTicket(self.id, documentId, shareCode);
-      if (cancelled) return;
-      const ticket = minted?.ticket ?? null;
-      announceAdderKey(minted?.adderKey ?? null);
-      openedRoom = connectRoom(
-        documentId,
-        self,
-        handlers,
-        {
-          // The api worker resolves the role the mint stored on the ticket and
-          // stamps it into the participant row via X-Verified-Role so
-          // peers see a trustworthy Viewer / Editor badge.
-          ticket,
-          // Each reconnect needs its own ticket: the upgrade spends the one it admits.
-          mintTicket: async () => {
-            const again = await apiCreateRoomTicket(self.id, documentId, shareCode);
-            // A Participant's key comes back with every ticket (the same key, derived per document).
-            if (again?.adderKey) announceAdderKey(again.adderKey);
-            return again?.ticket ?? null;
-          },
-          readFollowing: roomReadFollowing,
+    // those rode the upgrade URL, which is logged; now only the spent-on-use ticket does. The connector
+    // mints its first ticket itself, so it exists while that request runs and keeps what the editor
+    // says meanwhile (its selection, its tab) for the room.
+    const { self, shareCode } = connectAs();
+    let firstMint = true;
+    const openedRoom = connectRoom(
+      documentId,
+      self,
+      handlers,
+      {
+        // The api worker resolves the role the mint stored on the ticket and
+        // stamps it into the participant row via X-Verified-Role so
+        // peers see a trustworthy Viewer / Editor badge. Each connect needs its
+        // own ticket: the upgrade spends the one it admits.
+        mintTicket: async () => {
+          const minted = await apiCreateRoomTicket(self.id, documentId, shareCode);
+          // A Participant's key comes back with every ticket (the same key, derived per document); the
+          // first answer also says when there is none.
+          if (minted?.adderKey || firstMint) announceAdderKey(minted?.adderKey ?? null);
+          firstMint = false;
+          return minted?.ticket ?? null;
         },
-        roomReadFacilitatorToken,
-      );
-      roomRef.current = openedRoom;
-    })();
+        readFollowing: roomReadFollowing,
+      },
+      roomReadFacilitatorToken,
+    );
+    roomRef.current = openedRoom;
     return () => {
-      cancelled = true;
       presence.cancel();
       resetArticlePeers();
       // Nobody's words outlive the room they were said in.
       resetSpeechBubbles();
-      openedRoom?.close();
+      openedRoom.close();
       roomRef.current = null;
     };
   }, [

@@ -280,20 +280,95 @@ describe('connectRoom outbox (docs/specs/012-collaboration/collab-race-hardening
     expect(FakeSocket.all[1]!.url).toContain('t=second');
   });
 
-  it('mints again on reconnect after a first mint that failed', async () => {
+  it('mints its first ticket itself when it starts without one', async () => {
+    const mintTicket = vi.fn(async () => 'first');
+    connectRoom(
+      'd1',
+      { id: 'me', name: 'Me', color: '#000' },
+      { onPresence() {}, onOp() {} },
+      { mintTicket },
+    );
+    // No socket until the ticket is in hand: an upgrade without one is refused.
+    expect(FakeSocket.all).toHaveLength(0);
+    await vi.runOnlyPendingTimersAsync();
+    expect(mintTicket).toHaveBeenCalledOnce();
+    expect(FakeSocket.all[0]!.url).toContain('t=first');
+  });
+
+  it('mints again on reconnect after a mint that failed', async () => {
     // A failed mint leaves no ticket: that upgrade is refused, and the next attempt must not give up on tickets.
     const mintTicket = vi.fn(async () => 'second');
     connectRoom(
       'd1',
       { id: 'me', name: 'Me', color: '#000' },
       { onPresence() {}, onOp() {} },
-      { ticket: null, mintTicket },
+      { ticket: '', mintTicket },
     );
     expect(FakeSocket.all[0]!.url).not.toContain('?');
     FakeSocket.all[0]!.fire('close');
     await vi.runOnlyPendingTimersAsync();
     expect(mintTicket).toHaveBeenCalledOnce();
     expect(FakeSocket.all[1]!.url).toContain('t=second');
+  });
+
+  // docs/specs/024-agents/agent-changesets.md "Held elements": the room holds an element from an agent only
+  // while it knows the selection, and a new socket is a session it knows nothing about.
+  it('says the selection and tab made before the first socket opened, once it opens', async () => {
+    let release: (t: string) => void = () => {};
+    const mintTicket = vi.fn(() => new Promise<string>((r) => (release = r)));
+    const room = connectRoom(
+      'd1',
+      { id: 'me', name: 'Me', color: '#000' },
+      { onPresence() {}, onOp() {} },
+      { mintTicket },
+    );
+    room.send({ kind: 'op', op: { kind: 'tab-focus', tabId: 't1' } });
+    room.send({ kind: 'op', op: { kind: 'select', elementId: 'old', tabId: 't1' } });
+    room.send({ kind: 'op', op: { kind: 'select', elementId: 'api', tabId: 't1' } });
+    release('first');
+    await vi.runOnlyPendingTimersAsync();
+    const socket = FakeSocket.all[0]!;
+    socket.fire('open');
+    const ops = socket.sent.filter((m) => (m as { kind: string }).kind === 'op');
+    expect(ops).toEqual([
+      { kind: 'op', op: { kind: 'tab-focus', tabId: 't1' } },
+      { kind: 'op', op: { kind: 'select', elementId: 'api', tabId: 't1' } },
+    ]);
+    expect((socket.sent[0] as { kind: string }).kind).toBe('hello');
+  });
+
+  it('says the latest selection again on a reconnect', async () => {
+    const room = connectRoom(
+      'd1',
+      { id: 'me', name: 'Me', color: '#000' },
+      { onPresence() {}, onOp() {} },
+      { ticket: 'first', mintTicket: async () => 'second' },
+    );
+    const first = FakeSocket.all[0]!;
+    first.fire('open');
+    room.send({ kind: 'op', op: { kind: 'select', elementId: 'api', tabId: 't1' } });
+    first.fire('close');
+    await vi.runOnlyPendingTimersAsync();
+    const second = FakeSocket.all[1]!;
+    second.fire('open');
+    expect(second.sent).toContainEqual({
+      kind: 'op',
+      op: { kind: 'select', elementId: 'api', tabId: 't1' },
+    });
+  });
+
+  it('closes cleanly while its first ticket is still being minted', async () => {
+    let release: (t: string) => void = () => {};
+    const room = connectRoom(
+      'd1',
+      { id: 'me', name: 'Me', color: '#000' },
+      { onPresence() {}, onOp() {} },
+      { mintTicket: () => new Promise<string>((r) => (release = r)) },
+    );
+    room.close();
+    release('late');
+    await vi.runOnlyPendingTimersAsync();
+    expect(FakeSocket.all).toHaveLength(0);
   });
 
   it('never puts a credential other than the ticket on the upgrade URL', async () => {

@@ -167,7 +167,11 @@ export function connectRoom(
     return wsUrl(`/documents/${documentId}/ws${qs ? `?${qs}` : ''}`);
   };
 
-  let ws: WebSocket;
+  // Null until the first ticket is minted and the first socket made.
+  let ws: WebSocket | null = null;
+  const isOpen = () => ws?.readyState === WebSocket.OPEN;
+  // The latest selection and tab focus we told the room, said again on every new socket (see send).
+  const lastSaid = new Map<string, RoomOutgoing>();
   let closed = false; // the caller called close() — never reconnect after that
   let opened = false; // we've had at least one successful session (→ reconnects sync)
   let attempts = 0;
@@ -216,7 +220,8 @@ export function connectRoom(
   // The current socket's keepalive, stopped when the caller closes the connector (a dead socket may never fire close).
   let stopSocketKeepalive = () => {};
   const open = () => {
-    ws = new WebSocket(urlNow());
+    const socket = new WebSocket(urlNow());
+    ws = socket;
     // This socket, as opposed to `opened` (any session so far).
     let socketOpened = false;
     // The close of this socket is handled once: by its close event, or first by the keepalive finding it dead.
@@ -231,7 +236,7 @@ export function connectRoom(
     };
     stopSocketKeepalive = stopKeepalive;
     const checkAlive = () => {
-      if (ws.readyState !== WebSocket.OPEN) return;
+      if (socket.readyState !== WebSocket.OPEN) return;
       const now = Date.now();
       if (pingSentAt !== null) {
         if (lastHeard >= pingSentAt) pingSentAt = null;
@@ -239,7 +244,7 @@ export function connectRoom(
           debugLog('[room] keepalive unanswered; treating the socket as dropped');
           stopKeepalive();
           try {
-            ws.close();
+            socket.close();
           } catch {
             // Already closing.
           }
@@ -249,10 +254,10 @@ export function connectRoom(
       }
       if (pingSentAt === null && now - lastHeard >= ROOM_KEEPALIVE_IDLE_MS) {
         pingSentAt = now;
-        ws.send(ROOM_PING);
+        socket.send(ROOM_PING);
       }
     };
-    ws.addEventListener('open', () => {
+    socket.addEventListener('open', () => {
       socketOpened = true;
       lastHeard = Date.now();
       keepalive = setInterval(checkAlive, ROOM_KEEPALIVE_TICK_MS);
@@ -260,7 +265,7 @@ export function connectRoom(
       // The baton coming home (docs/specs/012-collaboration/facilitator.md): on a reconnect this is what tells
       // the room we are the same facilitator it granted before the refresh.
       const facilitatorToken = readFacilitatorToken?.();
-      ws.send(
+      socket.send(
         JSON.stringify({
           kind: 'hello',
           participant,
@@ -270,25 +275,31 @@ export function connectRoom(
       // A reconnect (not the first open): ask the room for the ops we missed
       // while we were gone before resuming live traffic.
       if (opened) {
-        ws.send(JSON.stringify({ kind: 'sync', epoch: lastEpoch, lastSeq } satisfies RoomOutgoing));
+        socket.send(
+          JSON.stringify({ kind: 'sync', epoch: lastEpoch, lastSeq } satisfies RoomOutgoing),
+        );
       }
       opened = true;
       // A new socket is a new presence id: nobody follows it yet, and our own follow is said again.
       handlers.onFollowers?.([]);
       const following = options.readFollowing?.();
       if (following) {
-        ws.send(
+        socket.send(
           JSON.stringify({
             kind: 'op',
             op: { kind: 'follow', target: following },
           } satisfies RoomOutgoing),
         );
       }
+      // A new socket is a session the room knows nothing about: our selection (which holds elements
+      // from an agent, docs/specs/024-agents/agent-changesets.md "Held elements") and our tab are
+      // said again, including when they were set before this socket first opened.
+      for (const msg of lastSaid.values()) socket.send(JSON.stringify(msg));
       const held = outbox;
       outbox = [];
-      for (const msg of held) ws.send(JSON.stringify(msg));
+      for (const msg of held) socket.send(JSON.stringify(msg));
     });
-    ws.addEventListener('message', (e) => {
+    socket.addEventListener('message', (e) => {
       lastHeard = Date.now();
       // The keepalive's answer: proof of life, nothing to apply.
       if (e.data === ROOM_PONG) return;
@@ -380,7 +391,7 @@ export function connectRoom(
       attempts++;
       reconnectTimer = setTimeout(() => void reopen(), delay);
     };
-    ws.addEventListener('close', onClose);
+    socket.addEventListener('close', onClose);
   };
   // A reconnect, with a fresh ticket: the room spends each one it admits.
   const reopen = async () => {
@@ -391,7 +402,10 @@ export function connectRoom(
     }
     open();
   };
-  open();
+  // Without a ticket in hand, the first socket waits for one; the connector exists meanwhile, so what
+  // the editor says before the room opens (its selection, its tab) is kept and said on open.
+  if (ticket === null && options.mintTicket) void reopen();
+  else open();
 
   // A fresh round of attempts once the browser is back online or the tab is shown again, only while parked.
   const resume = () => {
@@ -415,7 +429,11 @@ export function connectRoom(
     // (docs/specs/012-collaboration/collab-race-hardening.md). One choke point for every send path.
     const msg: RoomOutgoing =
       raw.kind === 'op' ? { ...raw, op: opForTheWire(raw.op) as RoomOp } : raw;
-    if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(msg));
+    // State, not events: only the latest of each counts, so it is kept to say again on the next socket.
+    if (msg.kind === 'op' && (msg.op.kind === 'select' || msg.op.kind === 'tab-focus')) {
+      lastSaid.set(msg.op.kind, msg);
+    }
+    if (ws && isOpen()) ws.send(JSON.stringify(msg));
     else if (!closed && isOutboxOp(msg) && outbox.length < OUTBOX_MAX) outbox.push(msg);
   };
 
@@ -426,7 +444,7 @@ export function connectRoom(
     // (the op waits in the outbox, unconfirmed), drops, or the room stays silent past the timeout.
     sequence: (op) => {
       if (closed) return Promise.resolve(false);
-      if (ws.readyState !== WebSocket.OPEN) {
+      if (!isOpen()) {
         send({ kind: 'op', op });
         return Promise.resolve(false);
       }
@@ -453,14 +471,12 @@ export function connectRoom(
     // is down: a save made then is not merged with the room's ledger, because
     // what the client changed offline must not be overruled by the room.
     cursor: (): { epoch: string; seq: number } | null =>
-      ws.readyState === WebSocket.OPEN && lastEpoch !== null
-        ? { epoch: lastEpoch, seq: lastSeq }
-        : null,
+      isOpen() && lastEpoch !== null ? { epoch: lastEpoch, seq: lastSeq } : null,
     // An identity change over the open socket (docs/specs/014-identity/profile-picture.md §4): the
     // room updates the roster in place. A closed socket just remembers it for the next hello.
     updateSelf: (next) => {
       participant = next;
-      if (ws.readyState === WebSocket.OPEN) {
+      if (ws && isOpen()) {
         ws.send(JSON.stringify({ kind: 'identity', participant } satisfies RoomOutgoing));
       }
     },
@@ -472,7 +488,7 @@ export function connectRoom(
       settleAll(false);
       if (reconnectTimer !== null) clearTimeout(reconnectTimer);
       stopSocketKeepalive();
-      ws.close();
+      ws?.close();
     },
   };
 }
