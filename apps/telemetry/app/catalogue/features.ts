@@ -915,6 +915,14 @@ export const ZEN_MODE = chart('UI', 'Toggled', 'Zen Mode', 'Zen mode switched on
   rising: 'neutral',
 });
 
+export const LANDSCAPE_BARS = chart(
+  'UI',
+  'Toggled',
+  'Landscape Bars',
+  'The header and tabs shown or folded from the handle on a phone held sideways.',
+  { types: ['LandscapeBarsOn', 'LandscapeBarsOff'], rising: 'neutral' },
+);
+
 export const PANELS_DOCKED = chart(
   'UI',
   'Moved',
@@ -935,8 +943,8 @@ export const EDITOR_CHROME: MetricStack = {
   stack: true,
   title: 'Editor Chrome',
   blurb:
-    'Getting around and arranging the workspace: zoom, zen mode, panel layout, the Explorer view.',
-  members: [CANVAS_ZOOMS, ZEN_MODE, PANELS_DOCKED, EXPLORER_VIEW],
+    'Getting around and arranging the workspace: zoom, zen mode, the bars on a phone held sideways, panel layout, the Explorer view.',
+  members: [CANVAS_ZOOMS, ZEN_MODE, LANDSCAPE_BARS, PANELS_DOCKED, EXPLORER_VIEW],
 };
 
 // Dialogs and panels opened (UI·Opened), split by what was opened.

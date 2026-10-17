@@ -27,6 +27,15 @@
   }
 }
 
+/* A phone held sideways (docs/specs/007-editor/live-app.md "A phone held sideways"): the header and the
+ * tab bar fold away there. The JS twin is LANDSCAPE_PHONE_MEDIA_QUERY (lib/responsive.ts); the two
+ * state the same query. */
+@custom-variant landscape-phone {
+  @media (pointer: coarse) and (orientation: landscape) and (max-height: 499px) {
+    @slot;
+  }
+}
+
 /* Scan the shared UI package so utility classes used only inside its
  * components (e.g. the <Brand> mark's hover-rotate) are generated here too.
  * Tailwind v4 skips node_modules, where the workspace package is symlinked. */
