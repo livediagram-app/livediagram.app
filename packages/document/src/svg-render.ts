@@ -83,6 +83,7 @@ import { arrowLabelFontStack, svgArrow } from './svg-render-arrows';
 import { arrowLabelPass, arrowRoutePoints, type ArrowLabelPass } from './arrow-label-layout';
 
 export { arrowLabelFontStack, svgArrow, svgArrowhead } from './svg-render-arrows';
+export type { ArrowLineMotion } from './svg-render-arrows';
 import type { BoxedElement, Element, Tab } from './index';
 import { layerBands, layerOpacityOf, visibleLayerElements } from './layers';
 // Element drop shadows (docs/specs/008-canvas/element-shadows.md): gate + deterministic filter defs.

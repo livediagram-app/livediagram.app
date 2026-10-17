@@ -155,6 +155,17 @@ export function svgArrowhead(
   }
 }
 
+// A flow drawn moving rather than still (docs/specs/009-elements/tab-window.md "The drawing"): the line's class,
+// its own dash pattern in place of the stroke style's, an optional path length (a 'draw' reveal measures in
+// 0..1), and the inline custom properties the class reads. The caller (the editor) builds it from its flow
+// tables; every value is our own, never user text.
+export type ArrowLineMotion = {
+  className: string;
+  dash?: string;
+  pathLength?: number;
+  style: string;
+};
+
 export function svgArrow(
   source: ArrowElement,
   elements: Element[],
@@ -179,6 +190,8 @@ export function svgArrow(
   paper: string = surface === 'dark' ? DARK_CANVAS_BACKGROUND_COLOR : DEFAULT_BACKGROUND_COLOR,
   // The tab's finish (docs/specs/008-canvas/finish.md), for an arrow without its own.
   tabFinish?: Finish,
+  // Its flow, drawn moving (a tab window); absent, the line is a still, as every export draws it.
+  lineMotion?: ArrowLineMotion,
 ): string {
   // A stock colour stored by name is drawn in its version for this page.
   const stocked = resolveStockColours(source, surface);
@@ -207,8 +220,16 @@ export function svgArrow(
   const dash = BORDER_DASH_ARRAY[arrow.strokeStyle ?? 'solid'];
   // A shared end's pattern is anchored there, so every arrow into it runs in step (arrow-dash.ts).
   const dashOffset = arrowDashOffset(arrow, from, to);
-  const dashAttr = dash
-    ? ` stroke-dasharray="${dash}"${dashOffset ? ` stroke-dashoffset="${dashOffset}"` : ''}`
+  // A moving flow marches its own pattern, as ArrowView draws it.
+  const dashAttr = lineMotion?.dash
+    ? ` stroke-dasharray="${xmlEscape(lineMotion.dash)}"`
+    : dash
+      ? ` stroke-dasharray="${dash}"${dashOffset ? ` stroke-dashoffset="${dashOffset}"` : ''}`
+      : '';
+  const motionAttr = lineMotion
+    ? ` class="${xmlEscape(lineMotion.className)}"` +
+      (lineMotion.pathLength ? ` pathLength="${lineMotion.pathLength}"` : '') +
+      (lineMotion.style ? ` style="${xmlEscape(lineMotion.style)}"` : '')
     : '';
   // The line breaks around unrelated boxes it crosses, as on the canvas
   // (docs/specs/008-canvas/arrow-route-behind.md), and around the label knockouts. Both go in one
@@ -244,7 +265,7 @@ export function svgArrow(
         })
       : null;
   const lineAttrs = ` fill="none" stroke="${xmlEscape(stroke)}" stroke-width="${lw}" stroke-linecap="round" stroke-linejoin="round"`;
-  parts.push(`<path d="${sketched?.line ?? d}"${lineAttrs}${dashAttr}${maskAttr}/>`);
+  parts.push(`<path d="${sketched?.line ?? d}"${lineAttrs}${dashAttr}${motionAttr}${maskAttr}/>`);
   if (sketched?.heads) parts.push(`<path d="${sketched.heads}"${lineAttrs}/>`);
   if (!sketched?.sketchedHeads || mixed) {
     const { toRef, fromRef } = arrowHeadRefs(arrow, from, to);
