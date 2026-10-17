@@ -2,9 +2,9 @@ import { describe, expect, it } from 'vitest';
 import {
   deckFollowingPages,
   deckPagesKey,
-  isSlidePageOwnSlide,
   pageMoveForDeckOrder,
   pageSlideIdFor,
+  slidePageOwnSlideIds,
 } from './slide-deck-pages';
 import type { Deck, Slide } from './slide-deck';
 import type { IllustratePage } from './illustrate-page';
@@ -159,8 +159,8 @@ describe('pageMoveForDeckOrder', () => {
   });
 });
 
-describe('isSlidePageOwnSlide', () => {
-  it("holds for a slide page's only slide, not a copy's pair, another page's, or an unfollowed tab's", () => {
+describe('slidePageOwnSlideIds', () => {
+  it("holds a slide page's only slide, not a copy's pair, another page's, or an unfollowed tab's", () => {
     const tab = deckTab('t', [slidePage('a'), infoPage('i'), slidePage('b')]);
     const deck: Deck = {
       slides: [
@@ -172,14 +172,7 @@ describe('isSlidePageOwnSlide', () => {
         elementSlide('x', 't'),
       ],
     };
-    expect(isSlidePageOwnSlide(deck, 's-t-a', [tab])).toBe(true);
-    expect(isSlidePageOwnSlide(deck, 's-t-i', [tab])).toBe(false);
-    expect(isSlidePageOwnSlide(deck, 's-t-b', [tab])).toBe(false);
-    expect(isSlidePageOwnSlide(deck, 'copy', [tab])).toBe(false);
-    expect(isSlidePageOwnSlide(deck, 's-t-gone', [tab])).toBe(false);
-    expect(isSlidePageOwnSlide(deck, 'x', [tab])).toBe(false);
-    expect(isSlidePageOwnSlide(deck, 's-t-a', [deckTab('t', [slidePage('a')], 'diagram')])).toBe(
-      false,
-    );
+    expect([...slidePageOwnSlideIds(deck, [tab])]).toEqual(['s-t-a']);
+    expect(slidePageOwnSlideIds(deck, [deckTab('t', [slidePage('a')], 'diagram')]).size).toBe(0);
   });
 });

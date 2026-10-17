@@ -24,8 +24,8 @@ import {
   deckFollowingPages,
   EMPTY_DECK,
   firstDeck,
-  isSlidePageOwnSlide,
   pageMoveForDeckOrder,
+  slidePageOwnSlideIds,
   illustratePagesOf,
   pageLabel,
   parseStoredPresentation,
@@ -190,11 +190,8 @@ export function useSlideDeck({
     else commitDeck(follow);
   }, [commitDeck, isReadOnly, tabsRef]);
   // The slides a slide page holds in the deck, which the panel offers Hide for rather than Delete.
-  const ownPageSlideIds = useMemo(
-    () =>
-      new Set(deck.slides.filter((s) => isSlidePageOwnSlide(deck, s.id, tabs)).map((s) => s.id)),
-    [deck, tabs],
-  );
+  // One pass over the deck and the loaded Illustrate tabs' pages: about 0.1 ms at the 100-page cap.
+  const ownPageSlideIds = useMemo(() => slidePageOwnSlideIds(deck, tabs), [deck, tabs]);
 
   // --- What the panel renders -----------------------------------------------
 

@@ -13,10 +13,18 @@ import type { Deck, Slide } from './slide-deck';
 export const pageSlideIdFor = (tabId: string, pageId: string): string => `page:${tabId}:${pageId}`;
 
 // The tabs whose pages the deck follows: Illustrate tabs whose pages have loaded. A tab not yet loaded carries no
-// `pages`, and reading it would take its page slides for slides of deleted pages.
+// `pages`, and reading it would take its page slides for slides of deleted pages. Read once per `pages` array: an
+// element edit keeps the array, so the deck's per-edit checks cost a lookup, not a parse of every page.
+const readPages = new WeakMap<object, IllustratePage[]>();
 function followedPages(tab: Tab): IllustratePage[] | null {
   if (opensInOf(tab) !== 'illustrate' || !Array.isArray(tab.pages)) return null;
-  return illustratePagesOf(tab);
+  // An empty list reads as the default first page, which takes the tab's orientation: not cached.
+  if (tab.pages.length === 0) return illustratePagesOf(tab);
+  const known = readPages.get(tab.pages);
+  if (known) return known;
+  const pages = illustratePagesOf(tab);
+  readPages.set(tab.pages, pages);
+  return pages;
 }
 
 const isSlidePage = (p: IllustratePage) => p.kind === 'slide';
@@ -129,15 +137,20 @@ export function pageMoveForDeckOrder(
   return unitIndex === from ? null : { tabId: tab.id, pageId: slide.pageId, unitIndex };
 }
 
-// Whether a slide is the one slide in the deck of a followed tab's slide page: deleting it would only bring it straight
-// back, so the Slide Deck offers Hide for it instead. A copy of it, or a slide of any other page, deletes as before.
-export function isSlidePageOwnSlide(deck: Deck, slideId: string, tabs: readonly Tab[]): boolean {
-  const slide = deck.slides.find((s) => s.id === slideId);
-  if (!slide?.pageId) return false;
-  const tab = tabs.find((t) => t.id === slide.tabId);
-  const page = tab ? followedPages(tab)?.find((p) => p.id === slide.pageId) : undefined;
-  if (!page || !isSlidePage(page)) return false;
-  return !deck.slides.some(
-    (s) => s !== slide && s.tabId === slide.tabId && s.pageId === slide.pageId,
-  );
+// The slides that are the one slide in the deck of a followed tab's slide page: deleting one would only bring it
+// straight back, so the Slide Deck offers Hide for it instead. A copy of it, or a slide of any other page, deletes as
+// before. One pass over the deck and each tab's pages.
+export function slidePageOwnSlideIds(deck: Deck, tabs: readonly Tab[]): Set<string> {
+  const slidePages = new Map<string, Set<string>>();
+  for (const tab of tabs) {
+    const pages = followedPages(tab);
+    if (pages) slidePages.set(tab.id, new Set(pages.filter(isSlidePage).map((p) => p.id)));
+  }
+  const byPage = new Map<string, string[]>();
+  for (const s of deck.slides) {
+    if (!s.pageId || !slidePages.get(s.tabId)?.has(s.pageId)) continue;
+    const key = `${s.tabId}\n${s.pageId}`;
+    (byPage.get(key) ?? byPage.set(key, []).get(key)!).push(s.id);
+  }
+  return new Set([...byPage.values()].filter((ids) => ids.length === 1).map((ids) => ids[0]!));
 }
