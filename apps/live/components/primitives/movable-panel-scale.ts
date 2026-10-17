@@ -6,8 +6,7 @@ import type { MovablePanelProps } from './MovablePanel.types';
 // its corner class's insets would scale with it and a 150% panel would sit
 // 24px from the edge instead of 16px. While scaled, restate the same sides
 // inline in surface px so the panel stays its design distance from the
-// corner. Desktop insets only: a phone is never scaled. 'top-right-stacked'
-// takes its top from the panel above it, so only its right side is restated.
+// corner. Desktop insets only: a phone is never scaled.
 export function cornerInsetStyle(
   corner: MovablePanelProps['defaultCorner'],
   scale: number,
@@ -17,8 +16,6 @@ export function cornerInsetStyle(
   switch (corner) {
     case 'top-right':
       return { top: gap, right: gap };
-    case 'top-right-stacked':
-      return { right: gap };
     case 'top-banner': {
       const banner = toSurfacePx(12, scale);
       return { top: banner, left: banner, right: banner };
