@@ -9,10 +9,9 @@ export {
 export { brandLogoSvg } from './brand-logo-svg';
 export { PRISM_PALETTES, prismPalette, type PrismPalette, type PrismScheme } from './brand-prism';
 export { ProductNav, ProductNavLinks, type ProductNavKey } from './ProductNav';
+export { START_BLANK_HREF, StartBlankLink } from './StartBlankLink';
 export { SiteHeader } from './SiteHeader';
 export { RAIL_CLEAR_PADDING } from './share-rail-clearance';
-export { StartBlankMenu } from './StartBlankMenu';
-export { START_BLANKS } from './start-blanks';
 export { EXPLORER_HOME_HREF } from './HeaderPrimaryCta';
 export { BuildWithAiLink } from './BuildWithAiLink';
 export { ModeFilterMenu, type ModeFilterOption } from './ModeFilterMenu';

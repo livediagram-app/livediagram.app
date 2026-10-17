@@ -11,7 +11,14 @@ import {
 
 // docs/specs/013-workspace/explorer-home.md "First run".
 
-const none = { loading: false, documents: 0, shared: 0, teamDocuments: 0, offlineDocuments: 0 };
+const none = {
+  loading: false,
+  failed: false,
+  documents: 0,
+  shared: 0,
+  teamDocuments: 0,
+  offlineDocuments: 0,
+};
 
 describe('isFirstRun', () => {
   it('is a first run once the lists have loaded with nothing in any of them', () => {
@@ -20,6 +27,10 @@ describe('isFirstRun', () => {
 
   it('never guesses while the lists load', () => {
     expect(isFirstRun({ ...none, loading: true })).toBe(false);
+  });
+
+  it('never takes a list that failed to load for an empty account', () => {
+    expect(isFirstRun({ ...none, failed: true })).toBe(false);
   });
 
   it('is not a first run with anything at all: own, shared, team or this browser', () => {

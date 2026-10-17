@@ -141,7 +141,8 @@ Plan must cost nothing to a document that does not use it:
     `templateKeywords`, the words every template search reads: what
     it is for and other names for it, a Sprint found by "scrum", Hiring Pipeline by "recruiting", Budget by
     "expenses"; every word typed must match, case ignored), across every category, the results
-    grouped under **Boards**, **Spreadsheets**, **Dashboards** and **Inspiration**; the rail shows no choice while a search is typed, and
+    grouped under **Boards**, **Spreadsheets**, **Dashboards** and **Inspiration**, after a **Best Match** of the choices whose name begins
+    with what was typed ([Template starts → A title match leads](../007-editor/start-diagramming.md#the-panel)); the rail shows no choice while a search is typed, and
     Escape clears it. Templates of the other modes that match follow, under **In Other Modes**, and choosing one switches the
     tab to its mode ([Template starts → Found in other modes](../007-editor/start-diagramming.md#found-in-other-modes)). Nothing
     found anywhere: the shared empty state, "No boards, sheets or layouts match “<text>”" ("Try another word.").
@@ -272,7 +273,7 @@ deleted or migrated), but its indicators are not drawn, so nothing invites addin
   `OpensInPlan` and `TemplateModePlan`.
 - The `Plan` category: `Added` (the item type, or `Card` for a Plan card), `Moved` (`Board`), `Opened` (`Item` from a board or a list; `Parent`, `ChildCard` or `Breadcrumb` from inside the item panel), `Deleted` (the item type), `Changed` (the set-up part), `Toggled` (`FlagOn` / `FlagOff`)
   and `Revealed` (`Board`), never content. A board placed from the palette counts as `Element` · `Added` · `PlanBoard`, a plan view as `PlanView`.
-- The header's Start Blank menu offers Blank Plan, with its own funnel slot (`HeaderPlan`).
+- The header's Start Blank menu offered Blank Plan until it was retired, its funnel slot (`HeaderPlan`) kept for history.
 
 ## The Plan tour
 

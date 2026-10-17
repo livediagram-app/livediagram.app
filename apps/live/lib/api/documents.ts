@@ -367,22 +367,19 @@ export async function apiDismissSharedWith(ownerId: string, documentId: string):
   });
 }
 
-// Mint a one-time WebSocket room ticket (docs/specs/015-api/api.md). The WS upgrade
-// can't carry the Bearer token, so an identified caller (a signed-in
-// team member above all) proves access over normal authenticated REST
-// and rides the returned ticket on the upgrade URL as `?t=`. Returns
-// null on any failure — the connector falls back to the legacy
-// owner-id / share-code query params, which still cover every
-// non-team session.
+// Mint a one-time WebSocket room ticket (docs/specs/015-api/api.md "Realtime model"). The WS upgrade
+// can't carry headers, so every session proves access here over normal REST (the Bearer token, the
+// signed guest id, the share code and its password) and rides the returned ticket on the upgrade URL as
+// `?t=`, the only thing that URL carries. Returns null on any failure: that upgrade is refused and the
+// connector mints again on its next reconnect.
 export async function apiCreateRoomTicket(
   ownerId: string,
   documentId: string,
   shareCode: string | null = null,
 ): Promise<RoomTicketResponse | null> {
-  // Retried with a short backoff: a team member whose mint fails has NO
-  // fallback (the legacy query params are personal/share-code only), and the
-  // connector mints a fresh one for every reconnect, so one transient blip
-  // would otherwise cost the session its realtime.
+  // Retried with a short backoff: a session whose mint fails has no other way
+  // into the room, and the connector mints a fresh one for every reconnect,
+  // so one transient blip would otherwise cost the session its realtime.
   for (let attempt = 0; attempt < 3; attempt++) {
     if (attempt > 0) await new Promise((r) => setTimeout(r, 500 * attempt));
     try {

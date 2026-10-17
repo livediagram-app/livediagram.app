@@ -128,10 +128,10 @@ The sidebar's **Trash** row takes a document or a folder dragged onto it, the wa
 - **Over it, it opens up.** With the drag over it, the row fills with the solid brand colour, its label turns white
   and reads **Let go to trash it**, and its bin tips its lid (a small turn and grow). Never red: putting something in
   the Trash is undoable, not a warning.
-- **Let go, it swallows.** The bin gives one short bounce, and the drop goes through the same action as the item's own
-  Delete: a document moves to the Trash with the **Document deleted** toast and its **Undo**
-  ([Trash](trash.md)); a folder goes through **Delete Folder**, with its confirmation, and its contents move up to its
-  parent ([Folders](folders.md)).
+- **Let go, it swallows.** The drop goes through the same action as the item's own Delete, and the bin gives one short
+  bounce once the item is gone: a document moves to the Trash at once, with the **Document deleted** toast and its
+  **Undo** ([Trash](trash.md)); a folder goes through **Delete Folder**, with its confirmation, and its contents move up
+  to its parent ([Folders](folders.md)). Cancelling that confirmation keeps the folder, and the bin does not bounce.
 - **Leaving it, or letting go elsewhere**, puts the row back as it was. A drag of anything else (text, a file from the
   desktop) never wakes it.
 - **Motion** stays inside the budget: each change settles within 250 ms; under reduced motion the colours and words

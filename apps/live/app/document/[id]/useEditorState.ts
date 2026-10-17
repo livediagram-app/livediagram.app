@@ -112,7 +112,7 @@ import { useShowFollowersMyView } from '@/hooks/collab/useShowFollowersMyView';
 import { useFacilitator } from '@/hooks/collab/useFacilitator';
 import { useFocusLanding } from '@/hooks/collab/useFocusLanding';
 import { useFocusInvite } from '@/hooks/collab/useFocusInvite';
-import { FOCUS_PRESS_MESSAGE, focusPressOutcome } from '@/lib/focus-audience';
+import { FOCUS_PRESS_MESSAGE, focusPageAt, focusPressOutcome } from '@/lib/focus-audience';
 import type { CanvasTool } from '@/components/palette/palette.types';
 import { useCellLinkPicker } from '@/hooks/canvas/useCellLinkPicker';
 import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
@@ -1250,7 +1250,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   });
 
   useRoomConnection({
-    participant: participant.participating,
     onAdderKey: participant.setAdderKey,
     hydrated,
     documentId,
@@ -1560,12 +1559,13 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
             viewports: remoteViewports,
             tabId: activeId,
             at,
+            page: focusPageAt(activeTab, at)?.rect,
           })
         ],
       );
       track('Element', 'Used', 'BringFocus');
     },
-    [broadcastFocusHere, livePresence, remoteViewports, activeId, zoomRef, toast],
+    [broadcastFocusHere, livePresence, remoteViewports, activeId, activeTab, zoomRef, toast],
   );
 
   // Slide deck (docs/specs/012-collaboration/presentation-mode.md). Owns the deck, the panel's editing verbs, and the
@@ -1776,11 +1776,25 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // Bring Focus (docs/specs/012-collaboration/bring-focus.md): the invitation somebody else's press leaves on
   // screen, and what taking it does. Placed after the viewport because taking
   // one navigates through it.
-  const focusLanding = useFocusLanding({ activeId, setActiveId, centreOn });
+  // On an Illustrate tab a point on a page lands on that page, framed whole like its label's press frames
+  // it (docs/specs/012-collaboration/bring-focus.md "On a page"); anywhere else the point is centred.
+  const landFocus = useCallback(
+    (tabId: string, at: { x: number; y: number }) => {
+      const page = focusPageAt(
+        tabsRef.current.find((t) => t.id === tabId),
+        at,
+      );
+      if (page && framePageRef.current) framePageRef.current(page.id);
+      else centreOn(at);
+    },
+    [centreOn, tabsRef],
+  );
+  const focusLanding = useFocusLanding({ activeId, setActiveId, land: landFocus });
   const focusInvite = useFocusInvite({
     onFollowTab: focusLanding.onFollowTab,
     onCentreOn: focusLanding.onCentreOn,
-    isAlreadyThere: (tabId, at) => tabId === activeId && isCentredOn(at),
+    isAlreadyThere: (tabId, at) =>
+      tabId === activeId && isCentredOn(at, focusPageAt(activeTab, at)?.rect),
   });
   // The toast's Show (docs/specs/024-agents/agent-changesets.md "In the editor", CS34): the tab, then
   // every element the changeset touched that is still there, framed no closer than 100%.

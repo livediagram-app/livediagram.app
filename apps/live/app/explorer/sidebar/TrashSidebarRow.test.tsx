@@ -16,7 +16,7 @@ import { DOCUMENT_DRAG_MIME, FOLDER_DRAG_MIME } from '@/components/panels/explor
 import { TRASH_GULP_MS, TrashSidebarRow } from './TrashSidebarRow';
 
 const deleteDocument = vi.fn(async () => {});
-const deleteFolder = vi.fn(async () => {});
+const deleteFolder = vi.fn(async () => true);
 const folderActions = vi.fn(() => ({ delete: deleteFolder }));
 const go = vi.fn();
 
@@ -128,7 +128,7 @@ describe('TrashSidebarRow', () => {
     expect(line().querySelector('[data-trash-bin]')!.getAttribute('data-trash-bin')).toBe('rest');
   });
 
-  it("sends a dropped folder through the folder's own Delete", () => {
+  it("sends a dropped folder through the folder's own Delete, swallowing it once confirmed", async () => {
     renderRow();
     startDrag([FOLDER_DRAG_MIME]);
     fireEvent.drop(line(), {
@@ -137,6 +137,19 @@ describe('TrashSidebarRow', () => {
     expect(folderActions).toHaveBeenCalledWith(expect.objectContaining({ id: 'f1' }), null);
     expect(deleteFolder).toHaveBeenCalledTimes(1);
     expect(track).toHaveBeenCalledWith('UI', 'Selected', 'Sidebar.TrashDropFolder');
+    await act(async () => {});
+    expect(line().querySelector('[data-trash-bin]')!.getAttribute('data-trash-bin')).toBe('gulp');
+  });
+
+  it('does not swallow a folder whose Delete Folder was cancelled', async () => {
+    deleteFolder.mockResolvedValueOnce(false);
+    renderRow();
+    startDrag([FOLDER_DRAG_MIME]);
+    fireEvent.drop(line(), {
+      dataTransfer: dataTransfer([FOLDER_DRAG_MIME], { [FOLDER_DRAG_MIME]: 'f1' }),
+    });
+    await act(async () => {});
+    expect(line().querySelector('[data-trash-bin]')!.getAttribute('data-trash-bin')).toBe('rest');
   });
 
   it('deletes nothing for a folder it does not know', () => {

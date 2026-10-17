@@ -18,7 +18,7 @@ import { SidebarRow } from './SidebarRow';
 // a card. Dashed with "Drop to Trash" while the drag is elsewhere; filled with the brand colour, its bin's lid tipped
 // and "Let go to trash it" while the drag is over it; one short bounce as it swallows the drop. A drop goes through
 // the item's own Delete: a document to the Trash (with its Undo toast), a folder through Delete Folder (with its
-// confirmation). Never red: the Trash is undoable. Motion settles within the 250 ms budget; under reduced motion only
+// confirmation, the bounce waiting on it: a cancelled folder is not swallowed). Never red: the Trash is undoable. Motion settles within the 250 ms budget; under reduced motion only
 // the colours and words change.
 
 /** How long the bin's swallow bounce lasts (the motion budget's ceiling). */
@@ -62,11 +62,11 @@ export function TrashSidebarRow() {
     e.preventDefault();
     depth.current = 0;
     setOver(false);
-    setGulp(true);
     if (kind === 'document') {
       const id = e.dataTransfer.getData(DOCUMENT_DRAG_MIME);
       if (!id) return;
       trackSidebar('TrashDropDocument');
+      setGulp(true);
       void deleteDocument(id);
       return;
     }
@@ -76,7 +76,11 @@ export function TrashSidebarRow() {
       return;
     }
     trackSidebar('TrashDropFolder');
-    void folderActions(folder, null).delete();
+    void folderActions(folder, null)
+      .delete()
+      .then((deleted) => {
+        if (deleted) setGulp(true);
+      });
   };
 
   const target = dragging !== null;

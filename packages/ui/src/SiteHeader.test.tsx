@@ -3,32 +3,20 @@ import { describe, expect, it } from 'vitest';
 
 import { SiteHeader } from './SiteHeader';
 
-// docs/specs/007-editor/new-document-route.md "Start Blank"; docs/specs/019-marketing/marketing-site.md "Header".
+// docs/specs/019-marketing/marketing-site.md "Header".
 describe('SiteHeader', () => {
   const html = renderToStaticMarkup(<SiteHeader ctaSurface="Home" shareRail={false} />);
 
-  it('makes Start Blank a menu button, not a link', () => {
-    expect(html).toMatch(/<button[^>]*aria-haspopup="menu"[^>]*>.*Start Blank/);
-    expect(html).not.toMatch(/<a [^>]*>(<span[^>]*>)?Start Blank/);
-  });
-
-  it('offers one blank per editor mode, each with its own funnel slot', () => {
-    expect(html).toContain('href="/new?blank=1&amp;via=Home.HeaderDraw"');
-    expect(html).toContain('href="/new?template=whiteboard&amp;via=Home.HeaderWhiteboard"');
-    expect(html).toContain(
-      'href="/new?template=blank-illustration&amp;via=Home.HeaderIllustration"',
+  it('makes Start Blank a plain link to the wizard, not a menu of blanks', () => {
+    expect(html).not.toContain('aria-haspopup="menu"');
+    const link = html.match(
+      /<a [^>]*href="\/new\?start=blank&amp;via=Home\.HeaderBlank"[^>]*>(.*?)<\/a>/,
     );
-    const rows = [...html.matchAll(/role="menuitem"[^>]*>.*?font-semibold[^>]*>([^<]+)</g)].map(
-      (m) => m[1],
-    );
-    expect(html).toContain('href="/new?template=blank-plan&amp;via=Home.HeaderPlan"');
-    expect(html).toContain('href="/new?template=blank-session&amp;via=Home.HeaderSession"');
-    expect(rows).toEqual([
-      'Blank Diagram',
-      'Blank Whiteboard',
-      'Blank Session',
-      'Blank Illustration',
-      'Blank Plan',
+    expect(link?.[1]).toContain('Start Blank');
+    expect(link?.[0]).toContain('max-sm:hidden');
+    expect([...html.matchAll(/href="(\/new[^"]*)"/g)].map((m) => m[1])).toEqual([
+      '/new?start=blank&amp;via=Home.HeaderBlank',
+      '/new?via=Home.Header',
     ]);
   });
 

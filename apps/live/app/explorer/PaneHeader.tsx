@@ -128,7 +128,9 @@ export function PaneHeader({
           ) : null}
         </div>
         {hasActions ? (
-          <div className="flex shrink-0 items-center gap-2">
+          <div className="flex min-w-0 flex-wrap items-center justify-end gap-2">
+            {/* Wraps too when the actions alone outrun the pane (Timeline's at a tablet's width), ending flush
+                right. */}
             {/* Section actions first, then Help. Help is the least-used
                 control in the row and belongs at its quiet end; leading
                 with it pushed the controls a reader actually reaches for
