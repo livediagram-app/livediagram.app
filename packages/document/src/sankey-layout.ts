@@ -21,12 +21,12 @@ import {
 } from './sankey-model';
 
 // Geometry constants (docs/specs/009-elements/blueprints/sankey.md "Constants").
-export const SANKEY_NODE_WIDTH_PX = 12; // a node's bar, wide enough to hover, narrow enough to read as a post
-export const SANKEY_NODE_MIN_WIDTH_PX = 6;
-export const SANKEY_NODE_PAD_MAX_PX = 18; // vertical gap between nodes in a column, at most
-export const SANKEY_NODE_PAD_MIN_PX = 4;
-export const SANKEY_RELAX_SWEEPS = 6; // d3-sankey's default; more moves nothing visible
-export const SANKEY_MIN_BAND_PX = 1; // a real flow never vanishes, however small next to the rest
+const SANKEY_NODE_WIDTH_PX = 12; // a node's bar, wide enough to hover, narrow enough to read as a post
+const SANKEY_NODE_MIN_WIDTH_PX = 6;
+const SANKEY_NODE_PAD_MAX_PX = 18; // vertical gap between nodes in a column, at most
+const SANKEY_NODE_PAD_MIN_PX = 4;
+const SANKEY_RELAX_SWEEPS = 6; // d3-sankey's default; more moves nothing visible
+const SANKEY_MIN_BAND_PX = 1; // a real flow never vanishes, however small next to the rest
 
 export type SankeyNodeBox = {
   index: number;
@@ -84,7 +84,7 @@ export function sankeyBandPath(x0: number, y0: number, x1: number, y1: number, w
 }
 
 /** The middle line of a band from (x0, y0) to (x1, y1), with the same curve as its outline. */
-export function sankeyCentrePath(x0: number, y0: number, x1: number, y1: number): string {
+function sankeyCentrePath(x0: number, y0: number, x1: number, y1: number): string {
   const xm = (x0 + x1) / 2;
   return `M${r2(x0)},${r2(y0)}C${r2(xm)},${r2(y0)} ${r2(xm)},${r2(y1)} ${r2(x1)},${r2(y1)}`;
 }

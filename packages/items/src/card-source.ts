@@ -8,7 +8,7 @@ import { typeIn } from './type-catalogue';
 
 type Scalar = string | number | boolean | null;
 
-export type CardSourceShape = {
+type CardSourceShape = {
   cards(): readonly { key: number }[];
   fieldOf(card: { key: number }, name: string): Scalar | undefined;
   knowsField(name: string): boolean;

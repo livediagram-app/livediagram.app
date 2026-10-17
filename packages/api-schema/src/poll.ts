@@ -133,7 +133,7 @@ export type PollTallyRow = {
   share: number;
 };
 
-export type PollResults = {
+type PollResults = {
   rows: PollTallyRow[];
   // Free-text answers in arrival order. Always empty for a token poll.
   textAnswers: string[];

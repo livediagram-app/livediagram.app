@@ -19,6 +19,7 @@ import { useReposition } from '@/hooks/canvas/useReposition';
 import { initialsOf } from '@/lib/identity';
 import { formatRelativeTimeCompact, useRelativeNow } from '@/lib/relative-time';
 import { VIEWPORT_EDGE_MARGIN as EDGE_MARGIN } from '@/lib/clamp-to-viewport';
+import { elementSelector } from '@/lib/canvas-selectors';
 
 // Portal-rendered assigned-action card (docs/specs/012-collaboration/assigned-actions.md), anchored to the right
 // edge of the element like CommentThreadPopover. Name + description up
@@ -65,7 +66,7 @@ export function ActionPopover({
   // Anchor to the element's live rect, flipping left when there's no
   // room on the right — the CommentThreadPopover placement.
   const reposition = useCallback(() => {
-    const node = document.querySelector(`[data-element-id="${elementId}"]`);
+    const node = document.querySelector(elementSelector(elementId));
     if (!node) return;
     const rect = node.getBoundingClientRect();
     let left = rect.right + GAP;

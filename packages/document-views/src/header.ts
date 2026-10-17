@@ -5,7 +5,7 @@ import type { ViewHeader, ViewName } from '@livediagram/api-schema';
 import { threadOf } from './fields';
 import { jsonString, plural } from './text';
 
-export type ElementCounts = ViewHeader['counts'];
+type ElementCounts = ViewHeader['counts'];
 export type HeaderFacts = Omit<ViewHeader, 'view'>;
 
 export function countElements(printed: readonly Element[]): ElementCounts {

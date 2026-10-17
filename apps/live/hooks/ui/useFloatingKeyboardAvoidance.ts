@@ -14,7 +14,7 @@ import { VIEWPORT_EDGE_MARGIN } from '@/lib/clamp-to-viewport';
 // keyboard goes, the surface returns to where, and to the size, its own placement put it.
 
 // What counts as a floating surface: the shared popover, panel, sheet and menu primitives, and any dialog.
-export const FLOATING_SURFACE =
+const FLOATING_SURFACE =
   '[data-anchored-popover], [data-floating-panel], [data-bottom-sheet], [data-menu-surface], [role="dialog"], [role="menu"]';
 
 type Box = { top: number; bottom: number };

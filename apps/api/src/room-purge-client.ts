@@ -7,7 +7,7 @@ import { roomFetch } from './room-client';
 import type { Env } from './types';
 
 // The api never waits on one room longer than this.
-export const ROOM_PURGE_TIMEOUT_MS = 3_000;
+const ROOM_PURGE_TIMEOUT_MS = 3_000;
 // Rooms purged at a time, so the Trash cron's 2,000 a day are a steady trickle rather than one burst.
 export const ROOM_PURGE_CONCURRENCY = 10;
 

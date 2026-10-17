@@ -23,7 +23,7 @@ export type EventStormingNoteKind =
   | 'aggregate'
   | 'hotspot';
 
-export type EventStormingStage = 'big-picture' | 'process' | 'design';
+type EventStormingStage = 'big-picture' | 'process' | 'design';
 
 // The physical stationery set's silhouettes: standard squares for events /
 // commands / read models / hotspots, WIDE stickies for the prose kinds
@@ -37,7 +37,7 @@ export const ES_NOTE_SIZE_PX: Record<EventStormingNoteSize, { width: number; hei
   small: { width: 140, height: 140 },
 };
 
-export type EventStormingNote = {
+type EventStormingNote = {
   kind: EventStormingNoteKind;
   label: string;
   // A palette-row clause: what the note IS, not how to use it.

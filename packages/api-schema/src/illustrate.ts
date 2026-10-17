@@ -59,7 +59,7 @@ export type PageChange =
   // Every other page of the page's kind takes its background, as the Background tab's Apply to All.
   | { op: 'apply_background_to_all'; page: PageRef };
 
-export type PageChangeOp = PageChange['op'];
+type PageChangeOp = PageChange['op'];
 export const PAGE_CHANGE_OPS: readonly PageChangeOp[] = [
   'add',
   'set',
@@ -129,7 +129,7 @@ export type IllustrateAnswer = {
   changesetId: string | null;
 };
 
-export const ILLUSTRATE_REFUSAL_CODES = [
+const ILLUSTRATE_REFUSAL_CODES = [
   'invalid_body',
   'invalid_value',
   'tab_locked',

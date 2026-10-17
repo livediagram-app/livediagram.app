@@ -15,8 +15,8 @@ export type TextCase = 'upper' | 'lower';
 export const TEXT_CASES: readonly TextCase[] = ['upper', 'lower'];
 // Room kept for the glyphs outside a circle's baseline: above it on a positive arc (the letters
 // stand outward), below it on a negative one (their descenders), in em.
-export const ARC_ASCENT = 0.8;
-export const ARC_DESCENT = 0.25;
+const ARC_ASCENT = 0.8;
+const ARC_DESCENT = 0.25;
 // How far a glyph's middle sits above its baseline, in em: centres a shallow arc in its box.
 const GLYPH_MIDDLE = 0.35;
 

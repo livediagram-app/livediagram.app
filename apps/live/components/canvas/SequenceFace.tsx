@@ -10,10 +10,10 @@ import {
 import { useElementFinish } from '@/components/canvas/CanvasFinishContext';
 
 /** Seconds of the Play wipe per message at Normal speed (docs/specs/009-elements/sequence-diagram.md "Animation"). */
-export const SEQ_PLAY_S_PER_MESSAGE = 0.4;
+const SEQ_PLAY_S_PER_MESSAGE = 0.4;
 
 /** What the picture says to a screen reader: its participants and how many messages pass between them. */
-export function sequenceLabel(element: ShapeElement): string {
+function sequenceLabel(element: ShapeElement): string {
   const names = (element.sequenceParticipants ?? []).map((p) => p.label || p.id).join(', ');
   const n = element.sequenceMessages?.length ?? 0;
   return `Sequence diagram: ${names}; ${n} ${n === 1 ? 'message' : 'messages'}`;

@@ -31,7 +31,7 @@ const NO_NEW_DOCUMENT: ReadonlySet<Kind> = new Set<Kind>([
 // would not appear where it was made (docs/specs/013-workspace/favourites.md "The view").
 const NEW_FOLDER: ReadonlySet<Kind> = new Set<Kind>(['all', 'folder']);
 
-export type PaneHeaderActions = {
+type PaneHeaderActions = {
   newDocument: boolean;
   newFolder: boolean;
   /** The "Import from" toolbar. */

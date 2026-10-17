@@ -69,7 +69,7 @@ function sheet(spec: SheetSpec, x: number, y: number): Box {
 // A template tab as the new Plan model makes it (docs/specs/026-plan/plan-tabs.md "Templates"): its name (null for a
 // template of one tab, which keeps the caller's name), its elements, and its tab fields, given every tab's id in order
 // (a Dashboard's slots name the template's Board and Sheet tabs).
-export type PlanTemplateTabDef = {
+type PlanTemplateTabDef = {
   name: string | null;
   build: (cx: number, cy: number) => Element[];
   tab?: (ids: readonly string[]) => Partial<Tab>;

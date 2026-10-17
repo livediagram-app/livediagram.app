@@ -27,7 +27,7 @@ export const RULES = {
 
 export type BoardImage = { bytes: Uint8Array; mimeType: string };
 
-export type SceneInput = {
+type SceneInput = {
   board: WbBoard;
   title?: string;
   sourceId?: string;

@@ -3,7 +3,7 @@
 // the MCP's item tools, so both read a ref the same way.
 import type { Item } from './item';
 
-export type ItemRefResult =
+type ItemRefResult =
   { ok: true; item: Item } | { ok: false; reason: 'none' | 'ambiguous'; matches: Item[] };
 
 export function resolveItemRef(items: readonly Item[], ref: string): ItemRefResult {

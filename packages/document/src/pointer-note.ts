@@ -9,9 +9,9 @@ import type { Point, Rect } from './geometry-primitives';
 import type { Element, ShapeElement } from './index';
 
 /** The furthest a tip may sit from its note, either axis. */
-export const POINTER_TIP_MAX = 4000;
+const POINTER_TIP_MAX = 4000;
 /** The tip a note has before anyone moves it (D190): 56 px below its bottom-left corner, 24 px left of it. */
-export const POINTER_TIP_DEFAULT = { dx: -24, dyBelow: 56 } as const;
+const POINTER_TIP_DEFAULT = { dx: -24, dyBelow: 56 } as const;
 
 export function isPointerNote(el: Element): el is ShapeElement & { shape: 'pointer-note' } {
   return el.type === 'shape' && el.shape === 'pointer-note';

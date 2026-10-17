@@ -4,6 +4,8 @@
 // the state plumbing and `getBoundingClientRect` measurement; the
 // formulas land here.
 
+import type { Rect } from '@livediagram/document';
+
 // Padding (in canvas-space pixels) kept between the elements'
 // bounding box and the viewport edges when fit-to-screen runs. 60
 // matches the previous hard-coded value.
@@ -17,8 +19,8 @@ export const FIT_TO_SCREEN_MIN = 0.1;
 export const FIT_TO_SCREEN_MAX = 5;
 export const FIT_TO_SCREEN_MAX_AT_FIT = 1;
 
-export type Rect = { width: number; height: number };
-export type BBox = { x: number; y: number; width: number; height: number };
+// The viewport's measured size.
+type ViewportSize = { width: number; height: number };
 export type Offset = { x: number; y: number };
 
 // Given the viewport's bounding rect and the elements' bounding box
@@ -35,8 +37,8 @@ export type Offset = { x: number; y: number };
 // one box should fill the screen rather than sit tiny in the middle of it.
 // `padding` is 0 for a page slide presenting: the page is the slide, edge to edge.
 export function computeFitToScreen(
-  rect: Rect,
-  bbox: BBox,
+  rect: ViewportSize,
+  bbox: Rect,
   maxZoom: number = FIT_TO_SCREEN_MAX_AT_FIT,
   padding: number = FIT_TO_SCREEN_PADDING,
 ): { zoom: number; offset: Offset } {
@@ -61,8 +63,8 @@ export function computeFitToScreen(
 // than in the whole canvas. With the centred `scale(z) translate(offset)` transform a canvas y `c`
 // lands at screen `h/2 + z(c + offset.y - h/2)`, so centring on the band adds `insetTop / 2z`.
 export function computeFitBelow(
-  rect: Rect,
-  bbox: BBox,
+  rect: ViewportSize,
+  bbox: Rect,
   insetTop: number,
   maxZoom: number = FIT_TO_SCREEN_MAX_AT_FIT,
 ): { zoom: number; offset: Offset } {
@@ -123,7 +125,10 @@ export function topChromeInset(
 // scale is centred on the same point so zoom doesn't enter the
 // equation. Used as the drop point for "add a shape from the
 // palette".
-export function computeViewportCenter(rect: Rect, offset: Offset): { x: number; y: number } {
+export function computeViewportCenter(
+  rect: ViewportSize,
+  offset: Offset,
+): { x: number; y: number } {
   return {
     x: rect.width / 2 - offset.x,
     y: rect.height / 2 - offset.y,
@@ -133,7 +138,7 @@ export function computeViewportCenter(rect: Rect, offset: Offset): { x: number; 
 // The canvas-coord rectangle the viewport shows at the current pan / zoom: the
 // viewport centre, spread by the screen size divided by the zoom. A paste whose
 // usual spot is outside it lands in the middle of it instead.
-export function computeViewportCanvasRect(rect: Rect, offset: Offset, zoom: number): BBox {
+export function computeViewportCanvasRect(rect: ViewportSize, offset: Offset, zoom: number): Rect {
   const centre = computeViewportCenter(rect, offset);
   const width = rect.width / zoom;
   const height = rect.height / zoom;
@@ -147,7 +152,12 @@ export function computeViewportCanvasRect(rect: Rect, offset: Offset, zoom: numb
 // (cx - viewportCentreCanvasX)`), then reports a gap on any side. Callers
 // must first confirm there is at least one element to bound: an empty tab is
 // not "off-screen". Used to nudge the user toward Fit to screen.
-export function isContentOffScreen(rect: Rect, bbox: BBox, offset: Offset, zoom: number): boolean {
+export function isContentOffScreen(
+  rect: ViewportSize,
+  bbox: Rect,
+  offset: Offset,
+  zoom: number,
+): boolean {
   const centre = computeViewportCenter(rect, offset);
   const left = rect.width / 2 + zoom * (bbox.x - centre.x);
   const right = rect.width / 2 + zoom * (bbox.x + bbox.width - centre.x);
@@ -166,8 +176,8 @@ const READING_SIDE_ROOM = 32;
  * fits sits in the middle of the room below, a taller one shows its top.
  */
 export function computeReadingFrame(
-  rect: Rect,
-  page: BBox,
+  rect: ViewportSize,
+  page: Rect,
   insetTop: number,
   // The page's side margin: given, the text column (the page less its margins) fills the width,
   // the margins off screen, so the text reads larger on a narrow screen.

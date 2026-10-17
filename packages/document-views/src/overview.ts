@@ -6,11 +6,11 @@ import { fitLines, fitOf, type ViewLine, type ViewResult } from './budget';
 import { headerSegments, type HeaderFacts } from './header';
 import { jsonString, plural } from './text';
 
-export type OverviewDocument = { id: string; name: string; savedAt: number };
+type OverviewDocument = { id: string; name: string; savedAt: number };
 // A tab outside a tab-scoped visitor's scope is named by its id alone; its body is never read.
 export type OverviewTabInput =
   { id: string; outOfScope: true } | { id: string; outOfScope: false; facts: HeaderFacts };
-export type OverviewOptions = { now: number; budget?: number; door?: ViewDoor };
+type OverviewOptions = { now: number; budget?: number; door?: ViewDoor };
 
 const TAB = { one: 'tab', many: 'tabs' };
 const MINUTE = 60_000;

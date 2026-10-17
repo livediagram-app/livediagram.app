@@ -5,7 +5,7 @@ import type { CardSearchFilter } from './card-search';
 import { LEGACY_PARENT_GROUPING, PARENT_FIELD_ID } from './item-types';
 
 // Stored settings with their grouping read: the old Parent grouping as the Parent field.
-export type ReadGrouping<T> = Omit<T, 'swimlaneBy' | 'swimlaneField'> & {
+type ReadGrouping<T> = Omit<T, 'swimlaneBy' | 'swimlaneField'> & {
   swimlaneBy?: SwimlaneBy;
   swimlaneField?: string;
 };

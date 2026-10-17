@@ -21,7 +21,7 @@ import { ACCENT_BAR_TEXT, HERO_DEFAULT_CAPTION } from './web-components';
 // text colour. The fill/text pair is what every theme guarantees legible
 // together, so the card components built on a `surface` with `ink` text stay
 // readable on light AND dark themes.
-export type ComponentColors = { accent: string; surface: string; ink: string };
+type ComponentColors = { accent: string; surface: string; ink: string };
 
 // The component catalogue. The ids are the palette's (tile ids, favourites
 // and telemetry types all key off them), so they stay as they were even

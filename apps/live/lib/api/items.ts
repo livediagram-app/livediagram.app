@@ -187,7 +187,7 @@ export type ItemCommentAction =
   | { kind: 'resolve'; resolved: boolean };
 
 // Who is commenting: their owner id (the author id the api stamps) and how items name them.
-export type ItemCommenter = { ownerId: string; by: ItemPerson };
+type ItemCommenter = { ownerId: string; by: ItemPerson };
 
 // Sends one comment change: the item as stored, or null when it changed nothing. An offline document applies it
 // to its record; a cloud one sends it to the api, which stamps the author itself.

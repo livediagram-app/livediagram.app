@@ -11,7 +11,7 @@ export const ARTICLE_BLOCK_INSERT_EVENT = {
   code: 'ArticleCode',
 } as const;
 
-export type ArticleBlockInsert = keyof typeof ARTICLE_BLOCK_INSERT_EVENT;
+type ArticleBlockInsert = keyof typeof ARTICLE_BLOCK_INSERT_EVENT;
 
 /** The block-insert event a slash-menu choice counts as, or null (a text style, a list, or an
  *  object insert, which its host counts). */

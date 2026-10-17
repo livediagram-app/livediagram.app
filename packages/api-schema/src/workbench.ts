@@ -53,7 +53,7 @@ export function capWorkbenchRole(role: WorkbenchRole, ceiling?: WorkbenchRole): 
 // ---------------------------------------------------------------------
 
 declare const workbenchOriginBrand: unique symbol;
-export type WorkbenchOrigin = string & { readonly [workbenchOriginBrand]: true };
+type WorkbenchOrigin = string & { readonly [workbenchOriginBrand]: true };
 
 const LOOPBACK_HOSTS = new Set(['localhost', '127.0.0.1', '[::1]']);
 
@@ -167,7 +167,7 @@ export function normaliseWorkbenchName(value: unknown): string | null {
 // Confinement (blueprint "A request bearing lvw_")
 // ---------------------------------------------------------------------
 
-export type WorkbenchRouteVerdict = 'allow' | 'confined' | 'other-document';
+type WorkbenchRouteVerdict = 'allow' | 'confined' | 'other-document';
 
 // One allowed route shape: methods and a path under /api. `:doc` must be the session's document,
 // `:owner` the session's owner, `:p` any one segment (except the words in WORKBENCH_RESERVED_SEGMENTS).
@@ -178,7 +178,7 @@ const shape = (methods: string, path: string): RouteShape => ({
   path: path.split('/'),
 });
 
-export const WORKBENCH_ROUTES: readonly RouteShape[] = [
+const WORKBENCH_ROUTES: readonly RouteShape[] = [
   shape('GET', 'capabilities'),
   shape('GET', 'openapi.json'),
   shape('GET', 'templates'),

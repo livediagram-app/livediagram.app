@@ -34,7 +34,7 @@ const TILE_H = 47;
 
 /** The theme's accent and second colour, read back from its gradient presets (Theme bright runs
  *  from one to the other): all a colouring needs. */
-export function themeOfPresets(presets: readonly ThemeBackgroundPreset[]) {
+function themeOfPresets(presets: readonly ThemeBackgroundPreset[]) {
   const bright = presets.find((p) => p.id === 'theme-bright')?.fill;
   return bright?.kind === 'gradient'
     ? {

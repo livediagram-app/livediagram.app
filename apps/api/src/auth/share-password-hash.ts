@@ -15,7 +15,7 @@ export const SHARE_PASSWORD_ITERATIONS = 100_000;
 
 // A stored value outside this range is refused rather than derived: a corrupt
 // or hostile row must not make every check burn seconds of CPU.
-export const MIN_STORED_ITERATIONS = 1_000;
+const MIN_STORED_ITERATIONS = 1_000;
 export const MAX_STORED_ITERATIONS = 1_000_000;
 
 const SALT_BYTES = 16;

@@ -10,7 +10,7 @@ import { r2, xmlEscape } from './svg-render-primitives';
 // title, a 2px gap, a 12px leading-snug subtitle), then pb-2 and the 1px rule.
 const TITLE_LINE_PX = 23.75;
 const SUBTITLE_LINE_PX = 16.5;
-export const PAGE_MASTHEAD_PX = TITLE_LINE_PX + 2 + SUBTITLE_LINE_PX + 8 + 1;
+const PAGE_MASTHEAD_PX = TITLE_LINE_PX + 2 + SUBTITLE_LINE_PX + 8 + 1;
 // PageCornerFold's leaf, capped at half the page.
 const FOLD_PX = 22;
 

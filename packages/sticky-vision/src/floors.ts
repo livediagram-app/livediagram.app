@@ -35,7 +35,7 @@ const WALL_VALUE_RATIO = 0.7;
 // recording colour at all.
 export const VALUE_FLOOR = 0.2;
 // The floor a photograph with no measurable wall falls back to.
-export const SATURATION_FLOOR = 0.28;
+const SATURATION_FLOOR = 0.28;
 
 // The floors a particular PHOTOGRAPH needs, rather than the ones a swatch
 // would (see `wallFloorsOf`).
@@ -138,7 +138,7 @@ export function wallFloorsOf(image: {
 }
 
 // A grid of floors over the image, blended so no pixel sits on a seam.
-export type FloorField = {
+type FloorField = {
   tilesX: number;
   tilesY: number;
   // What the whole frame says, for the tiles that cannot say anything.

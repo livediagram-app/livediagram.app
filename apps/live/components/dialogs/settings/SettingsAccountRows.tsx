@@ -74,8 +74,7 @@ export function SettingsIdentityRow({ row }: { row: SettingsIdentityRowSpec }) {
   );
 }
 
-export const GUEST_IDENTITY =
-  'Your documents live in this browser. Sign in to keep them across devices.';
+const GUEST_IDENTITY = 'Your documents live in this browser. Sign in to keep them across devices.';
 
 // Delete account. Signed-in only, and not because of the UI: the api's
 // DELETE /api/account is Clerk-only by design (docs/specs/014-identity/profile-and-email-notifications.md), since the whole

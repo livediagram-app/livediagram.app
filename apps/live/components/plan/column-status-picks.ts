@@ -18,7 +18,7 @@ import { COLUMN_NAME_MAX } from './board-setup-edits';
 export { statusKey, missingStatuses, pickableStatuses, type StatusPick };
 
 // What a typed name would do: use an existing status, clash with a column the board has, or make a new one.
-export type NameMatch =
+type NameMatch =
   { kind: 'existing'; pick: StatusPick } | { kind: 'on-board'; name: string } | { kind: 'new' };
 
 export function matchStatus(
@@ -75,7 +75,7 @@ export function addStatusColumns(
 // document's): when this board already has a column for that status, a clash (the name stays); when the column's
 // own status holds no cards (`hasCards` false), the column switches to that status, its cards showing here; when it
 // holds cards, a clash too, as switching would leave them on no column.
-export type ColumnRename =
+type ColumnRename =
   | { kind: 'rename' }
   | { kind: 'reuse'; status: string; name: string }
   | { kind: 'clash'; name: string };

@@ -13,7 +13,7 @@ import type { Env } from './types';
 // Not a `.test.ts` file, so vitest doesn't collect it as a suite — the same
 // convention as routes/test-route-context.ts.
 
-export type D1Call = {
+type D1Call = {
   sql: string;
   bindings: unknown[];
   // Which terminal the caller used; lets a test tell a read apart from a
@@ -38,9 +38,9 @@ export type D1Response = {
 // Decides the response for one statement. A test usually matches on a
 // fragment of the SQL, which keeps it readable and independent of formatting
 // elsewhere in the query.
-export type D1Responder = (call: Omit<D1Call, 'method'>) => D1Response | undefined;
+type D1Responder = (call: Omit<D1Call, 'method'>) => D1Response | undefined;
 
-export type FakeD1 = {
+type FakeD1 = {
   env: Env;
   calls: D1Call[];
   // Every statement that reached a terminal, filtered by an SQL fragment.

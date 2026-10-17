@@ -6,19 +6,14 @@ import { isImageCredit, type ImageCredit } from './image-credit';
 
 // The overlays over the picture, under everything on the page.
 export type PageImageOverlayKind = 'light' | 'dark' | 'tint' | 'fade';
-export const PAGE_IMAGE_OVERLAY_KINDS: readonly PageImageOverlayKind[] = [
-  'light',
-  'dark',
-  'tint',
-  'fade',
-];
+const PAGE_IMAGE_OVERLAY_KINDS: readonly PageImageOverlayKind[] = ['light', 'dark', 'tint', 'fade'];
 // `strength` is the overlay's opacity, 0 to PAGE_IMAGE_OVERLAY_MAX; `color` is a Tint's colour
 // (the theme accent when it was chosen).
 export type PageImageOverlay = { kind: PageImageOverlayKind; strength: number; color?: string };
 
 // Which band of a taller picture stays when it is cropped to cover the page; absent is centre.
 export type PageImagePosition = 'top' | 'bottom';
-export const PAGE_IMAGE_POSITIONS: readonly PageImagePosition[] = ['top', 'bottom'];
+const PAGE_IMAGE_POSITIONS: readonly PageImagePosition[] = ['top', 'bottom'];
 
 export type PageImageFill = {
   kind: 'image';
@@ -38,12 +33,12 @@ export type PageImageFill = {
 // The most an overlay covers: always some picture shows through.
 export const PAGE_IMAGE_OVERLAY_MAX = 0.9;
 // A new picture's overlay strength: text stays readable whatever the picture.
-export const PAGE_IMAGE_DEFAULT_STRENGTH = 0.6;
+const PAGE_IMAGE_DEFAULT_STRENGTH = 0.6;
 // The washes' colours: white, and the dark paper's slate-900.
-export const PAGE_IMAGE_LIGHT = '#ffffff';
-export const PAGE_IMAGE_DARK = '#0f172a';
+const PAGE_IMAGE_LIGHT = '#ffffff';
+const PAGE_IMAGE_DARK = '#0f172a';
 // What a picture whose tone could not be sampled reads as.
-export const PAGE_IMAGE_UNKNOWN_TONE = '#808080';
+const PAGE_IMAGE_UNKNOWN_TONE = '#808080';
 // A gallery id: a UUID today, capped as the api's reference index caps it.
 const GALLERY_ID = /^[A-Za-z0-9_-]{1,128}$/;
 // An Offline Mode embed: the raster types an upload can hold, base64.

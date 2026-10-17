@@ -5,9 +5,9 @@
 import { ApiError, apiJson } from './api';
 import type { Env } from './env';
 
-export const ROOT_FOLDER = 'My documents';
+const ROOT_FOLDER = 'My documents';
 /** Said when the default folder's name cannot be read: the document is filed, the name unknown. */
-export const UNNAMED_DEFAULT_FOLDER = 'your default folder';
+const UNNAMED_DEFAULT_FOLDER = 'your default folder';
 
 type Folders = { folders?: { id: string; name: string }[] };
 

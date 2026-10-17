@@ -6,8 +6,8 @@
 // The sticky paper and ink each player writes on: the sticky presets' own pairs, so the colour picker names them.
 import { BLUE, LILAC, PINK } from './template-workshop-stickies';
 
-export type QuizQuestion = { question: string; options: readonly string[]; correct: number };
-export type QuizRound = { title: string; questions: readonly QuizQuestion[] };
+type QuizQuestion = { question: string; options: readonly string[]; correct: number };
+type QuizRound = { title: string; questions: readonly QuizQuestion[] };
 
 export const PUB_QUIZ_ROUNDS: readonly QuizRound[] = [
   {
@@ -103,7 +103,7 @@ export const ICEBREAKER_QUESTIONS: readonly string[] = [
   'What song always gets you dancing?',
 ];
 
-export type Dilemma = { a: string; b: string };
+type Dilemma = { a: string; b: string };
 
 // Each side fits a poll answer (POLL_OPTION_MAX, 60 characters).
 export const WOULD_YOU_RATHER: readonly Dilemma[] = [
@@ -135,7 +135,7 @@ export const BINGO_PROMPTS: readonly string[] = [
   'Has climbed a mountain',
 ];
 
-export type TwoTruthsPlayer = {
+type TwoTruthsPlayer = {
   initials: string;
   name: string;
   colour: string;

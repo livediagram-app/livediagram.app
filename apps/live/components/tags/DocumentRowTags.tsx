@@ -23,20 +23,22 @@ export function DocumentRowTags({
   const explorer = useOptionalExplorer();
   const tags = tagsFor(documentId);
   if (tags.length === 0) return null;
-  const chips = (
-    <DocumentTagChips
-      tags={tags}
-      onOpenTag={explorer ? (id) => explorer.go({ kind: 'tags', id }) : undefined}
-    />
-  );
-  if (line) return <div className="flex min-w-0">{chips}</div>;
-  if (!compactOnPhone) return chips;
+  const onOpenTag = explorer ? (id: string) => explorer.go({ kind: 'tags', id }) : undefined;
+  if (line) {
+    return (
+      <div className="flex min-w-0">
+        <DocumentTagChips tags={tags} onOpenTag={onOpenTag} />
+      </div>
+    );
+  }
+  // The chips are the row's own flex item (no wrapper), so their floor holds against the name beside them.
+  if (!compactOnPhone) return <DocumentTagChips tags={tags} onOpenTag={onOpenTag} />;
   return (
     <>
       <span className="inline-flex sm:hidden">
         <DocumentTagDots tags={tags} />
       </span>
-      <span className="hidden min-w-0 sm:inline-flex">{chips}</span>
+      <DocumentTagChips tags={tags} onOpenTag={onOpenTag} hiddenOnPhone />
     </>
   );
 }

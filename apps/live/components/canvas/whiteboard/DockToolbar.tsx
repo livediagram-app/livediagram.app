@@ -90,7 +90,7 @@ export function DockToolbar({
   );
 }
 
-export type DockButtonProps = {
+type DockButtonProps = {
   itemKey: string;
   label: string;
   icon: ReactNode;

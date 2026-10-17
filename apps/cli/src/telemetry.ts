@@ -11,7 +11,7 @@ import type { DebugLog } from './debug';
 import type { CliIo } from './io';
 import { isNetworkFailure } from './output/failure-of';
 
-export const TELEMETRY_FLUSH_TIMEOUT_MS = 300;
+const TELEMETRY_FLUSH_TIMEOUT_MS = 300;
 
 export const telemetryNotice = (host: string) =>
   `livediagram counts which commands succeed (the command's name only: never arguments, documents or hosts) and sends the count to ${host}. Turn it off: livediagram telemetry off, or LIVEDIAGRAM_TELEMETRY=0.`;

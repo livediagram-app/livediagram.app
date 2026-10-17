@@ -9,10 +9,10 @@ import { arrowPolyline, passesThroughOwnShapes, pathsCross } from './arrow-path-
 // Runs after the auto-rebind's re-evaluation, on the same working index.
 
 // Uncrossing straight paths converges in a pass or two; curves are capped.
-export const SWAP_MAX_PASSES = 8;
+const SWAP_MAX_PASSES = 8;
 // A side busier than this is left alone: pairs grow quadratically and a fan
 // that dense is separated visually anyway.
-export const SWAP_MAX_ENDS_PER_SIDE = 32;
+const SWAP_MAX_ENDS_PER_SIDE = 32;
 
 const SIDES: readonly Side[] = ['n', 'e', 's', 'w'];
 

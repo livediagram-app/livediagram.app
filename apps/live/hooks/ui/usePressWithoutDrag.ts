@@ -22,7 +22,7 @@ import { DOUBLE_PRESS_MS } from '@/lib/double-press';
 
 // Pure so the window itself is testable: was this press the second half of a
 // double? `last` is the previous press time, or null when there wasn't one.
-export function isDoublePress(last: number | null, now: number): boolean {
+function isDoublePress(last: number | null, now: number): boolean {
   return last !== null && now - last <= DOUBLE_PRESS_MS && now >= last;
 }
 

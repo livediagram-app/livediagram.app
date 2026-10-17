@@ -125,7 +125,7 @@ export function parseImportedTab(text: string): ImportResult {
 // The picked file's text, plus the File itself for a format that may be
 // binary (an Excalidraw PNG export).
 // `tooBig` (its text then empty, never read) when the file is past the `maxBytes` the caller allows.
-export type PickedTabFile = { name: string; text: string; file: File; tooBig?: true };
+type PickedTabFile = { name: string; text: string; file: File; tooBig?: true };
 
 export function pickTabFile(
   accept = 'application/json,.json,text/markdown,.md,.markdown,.mdown,.mkd,text/plain',

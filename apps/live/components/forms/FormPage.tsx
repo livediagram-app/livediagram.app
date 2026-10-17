@@ -42,6 +42,7 @@ import { FormStatusBar } from './FormStatusBar';
 import { ShareFormDialog } from './ShareFormDialog';
 import { FormFill } from './respond/FormFill';
 import { formLookProps } from './form-look';
+import { CANVAS_ROOT_SELECTOR } from '@/lib/canvas-selectors';
 
 const EyeIcon = lucideGlyph(lucideEye, 16);
 
@@ -74,7 +75,7 @@ export function FormPage({
 }) {
   const [canvas, setCanvas] = useState<HTMLElement | null>(null);
   const mark = useCallback((node: HTMLElement | null) => {
-    if (node) setCanvas(document.querySelector<HTMLElement>('[data-canvas-a11y-root]'));
+    if (node) setCanvas(document.querySelector<HTMLElement>(CANVAS_ROOT_SELECTOR));
   }, []);
   const layout = useCanvasLayerInsets(canvas, false);
   const plan = usePlan();

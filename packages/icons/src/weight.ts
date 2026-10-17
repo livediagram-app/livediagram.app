@@ -6,7 +6,7 @@ export const ICON_STROKE_PX = 1.25;
 export const ICON_STROKE_PX_SMALL = 1;
 export const ICON_SMALL_MAX_PX = 12;
 
-export type GlyphSize = 12 | 14 | 16 | 20 | 24;
+type GlyphSize = 12 | 14 | 16 | 20 | 24;
 export const GLYPH_SIZES: readonly GlyphSize[] = [12, 14, 16, 20, 24];
 
 // The on-screen stroke for a glyph rendered at `sizePx`.

@@ -57,7 +57,7 @@ const CARD_GAP = 6;
 const TAG_GAP = 4;
 
 /** A tag chip's width from its character count (no DOM headless; the canvas positions from the same number). */
-export function cardTagWidth(text: string, tagPx: number): number {
+function cardTagWidth(text: string, tagPx: number): number {
   return Math.ceil(text.length * tagPx * 0.6) + Math.round(tagPx * 1.6);
 }
 
@@ -245,7 +245,7 @@ function isLegacyCallout(el: Element): boolean {
 }
 
 /** The starting words a card line takes when it is switched on from the menu. */
-export const CARD_LINE_DEFAULT: Record<'pageTitle' | 'pageSubtitle', string> = {
+const CARD_LINE_DEFAULT: Record<'pageTitle' | 'pageSubtitle', string> = {
   pageTitle: 'Title',
   pageSubtitle: 'Meta line',
 };

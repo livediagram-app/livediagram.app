@@ -16,7 +16,7 @@
 
 import type { TeamMemberStatus } from '@/lib/api-client';
 
-export type TeamRemovalKind = 'self' | 'invite' | 'member';
+type TeamRemovalKind = 'self' | 'invite' | 'member';
 
 export function teamRemovalKind(isSelf: boolean, status: TeamMemberStatus): TeamRemovalKind {
   // Leaving is checked first: a member acting on their own row is leaving the
@@ -43,7 +43,7 @@ export function teamDeleteCopy(teamName: string | undefined) {
   };
 }
 
-export type TeamRemovalCopy = {
+type TeamRemovalCopy = {
   title: string;
   message: string;
   confirmLabel: string;

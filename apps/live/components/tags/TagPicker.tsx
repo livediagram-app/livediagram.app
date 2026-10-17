@@ -15,7 +15,7 @@ import { useDocumentTags, type TagPickerTarget } from './DocumentTagsProvider';
 import { TagColourButton } from './TagColourButton';
 import { TagDot } from './TagChip';
 
-export const TAG_PICKER_WIDTH = 288;
+const TAG_PICKER_WIDTH = 288;
 
 const ROW = 'data-tag-row';
 

@@ -81,7 +81,11 @@ that keeps them and leaves the rest as plain React.
 - **A forced re-render does not re-read module state.** A render-time call such as
   `isPending(userId)` is memoised on its arguments, so bumping an unused reducer to "refresh" it
   returns the cached value. Module state a render depends on is an external store that notifies
-  its subscribers.
+  its subscribers, and the render reads it through the value its subscription returns: the async
+  icon catalogues (`useIconCatalogs`) re-rendered every glyph when they landed, but a glyph that
+  called `getIcon(iconId)` without that value kept its placeholder, so a first visit's flowchart
+  showed a framed question mark on every node. `hooks/ui/useIconCatalogs.guard.test.ts` fails on
+  a call that drops the value, since Vitest runs without the compiler.
 
 ## Rendering in the browser only
 

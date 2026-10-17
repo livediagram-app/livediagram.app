@@ -44,7 +44,7 @@ export type SheetCellSize = keyof typeof SHEET_CELL_SIZES;
 const CARD_DATE_FIELDS: ReadonlySet<string> = new Set(['Due', 'Start']);
 
 // The most card rows a setup writes (sheet.md "Setup Sheet").
-export const SETUP_CARDS_MAX = 500;
+const SETUP_CARDS_MAX = 500;
 
 // The tints a look uses, for a light or a dark canvas: fixed once set, as any cell colour.
 const TINTS = {
@@ -195,7 +195,7 @@ export function cellSizeOf(layout: {
 
 // A start's cell read as written into a cell: its input and the format its reading hints (a date, a percent), or
 // null when a formula cannot be read.
-export type StarterRead = (
+type StarterRead = (
   v: Exclude<StarterCell, null>,
   r: string,
   c: string,

@@ -15,7 +15,7 @@ import { SCAFFOLD } from './template-retro-kit';
 
 type Pt = [number, number];
 
-export const SCENE_COLOURS = {
+const SCENE_COLOURS = {
   sky: '#f0f9ff',
   skyEdge: '#bae6fd',
   sea: '#7dd3fc',

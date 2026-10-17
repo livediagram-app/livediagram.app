@@ -96,12 +96,17 @@ export function searchCatalogueTiles({
   query,
   mode,
   tabElements = [],
+  loaded = true,
 }: {
   query: string;
   mode: EditorMode;
   tabElements?: readonly Element[];
+  // Whether the catalogues have loaded (useIconCatalogs): a component passes the subscription's value so the React
+  // Compiler re-runs this when they land. Before then they hold nothing to list.
+  loaded?: boolean;
   // No catalogue is bound to one mode's tools, so none is ever unavailable.
 }): Omit<ElementTileSearch, 'unavailable'> {
+  if (!loaded) return { here: [], elsewhere: [] };
   const browsing = !query.trim();
   const ids = browsing ? idsOnTab(tabElements) : null;
   const out: Omit<ElementTileSearch, 'unavailable'> = { here: [], elsewhere: [] };

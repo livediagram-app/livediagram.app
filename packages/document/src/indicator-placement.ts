@@ -11,7 +11,7 @@ import { pickedByOutline, roundedRectRing, shapeHitOutline } from './shape-hit';
 import type { ShapeKind } from './shape-kind';
 import { insidePolygon, segmentDistance } from './whiteboard-stroke';
 
-export type IndicatorAnchor = 'top-right' | 'top-centre' | 'bottom-left' | 'bottom-centre';
+type IndicatorAnchor = 'top-right' | 'top-centre' | 'bottom-left' | 'bottom-centre';
 export type IndicatorBox = { x: number; y: number; width: number; height: number };
 
 // How far the cluster keeps from the outline on every side.
@@ -19,8 +19,8 @@ export const INDICATOR_OUTLINE_CLEARANCE_PX = 6;
 // The cluster stays this far short of the element's vertical centre, where the label is.
 export const INDICATOR_MIDDLE_CLEARANCE_PX = 14;
 // Where the slide starts, and its step: the first inset that fits is the tightest one.
-export const INDICATOR_START_INSET_PX = 3;
-export const INDICATOR_STEP_PX = 1;
+const INDICATOR_START_INSET_PX = 3;
+const INDICATOR_STEP_PX = 1;
 
 // A fixed-size label's estimated box: an average advance per character and a line height, both
 // per font px, a little generous so the estimate errs toward avoiding the text.
@@ -69,7 +69,7 @@ export function footerAnchor(el: BoxedElement): IndicatorAnchor {
 }
 
 // An inline icon beside or above a label, as the content box needs it.
-export type ContentIcon = {
+type ContentIcon = {
   size: number;
   position: 'left' | 'right' | 'above' | 'below';
   gap: number;

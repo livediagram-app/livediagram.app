@@ -19,7 +19,7 @@ import type { ElementIndicatorStyle } from '@/lib/element-indicator-style';
 import { clusterSize, type IndicatorForm, type IndicatorItem } from './indicator-items';
 
 // What the cluster needs to know about the content: everything contentBox reads but the size.
-export type ContentLayout = Omit<Parameters<typeof contentBox>[0], 'width' | 'height'>;
+type ContentLayout = Omit<Parameters<typeof contentBox>[0], 'width' | 'height'>;
 
 // How far the content area pulls in from the element's top and bottom.
 export type ContentInset = { top: number; bottom: number };

@@ -18,7 +18,7 @@ export type GalleryImage = {
   uploadedAt: string;
 };
 
-export type GalleryListing = {
+type GalleryListing = {
   images: GalleryImage[];
   more: number;
 };
@@ -55,7 +55,7 @@ export function galleryListing(
   };
 }
 
-export interface PlacedImage {
+interface PlacedImage {
   // The element that places it, when the input names one.
   elementId: string | null;
   imageId: string;

@@ -86,7 +86,7 @@ export { LOOK_MD_MAX_NODES } from './look-size';
 import { LOOK_MD_MAX_NODES } from './look-size';
 // Auto direction lays a graph out both ways up to this size (two layouts' cost) and keeps the one whose aspect is
 // nearer LANDSCAPE; past it, down.
-export const AUTO_DIRECTION_MAX_NODES = 150;
+const AUTO_DIRECTION_MAX_NODES = 150;
 const LANDSCAPE = 1.5;
 
 // The words that start a clause after a noun phrase: "Orders service WHICH
@@ -397,7 +397,7 @@ export function graphFromMermaid(
 
 // A sequence from a graph: its nodes the participants (a node shaped actor a stick figure), its edges the messages in
 // order, a dashed edge a reply.
-export function sequenceFromGraph(input: GraphInput): SequenceDiagram {
+function sequenceFromGraph(input: GraphInput): SequenceDiagram {
   return {
     participants: input.nodes.map((n) => ({
       id: n.id,

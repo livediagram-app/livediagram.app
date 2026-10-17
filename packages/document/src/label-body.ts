@@ -11,7 +11,7 @@ export const CYLINDER_LID_BOTTOM = (15 + 12) / 100;
 export const CYLINDER_BASE_BOTTOM = (85 + 12) / 100;
 
 /** How far in from the box's top and bottom the label's band starts, in px. */
-export type LabelBodyInset = { top: number; bottom: number };
+type LabelBodyInset = { top: number; bottom: number };
 
 const WHOLE_BOX: LabelBodyInset = { top: 0, bottom: 0 };
 

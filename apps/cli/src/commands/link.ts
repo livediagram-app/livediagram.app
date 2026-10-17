@@ -38,7 +38,7 @@ import { readRemoteFacts } from '../link/remote';
 import { actionLine } from '../link/sync-lines';
 import { surveyLink } from '../link/sync-survey';
 
-export type LinkInitInput = { folder?: string; doc?: string[]; level?: MirrorLevel };
+type LinkInitInput = { folder?: string; doc?: string[]; level?: MirrorLevel };
 
 // The profile in config.toml whose host is the link's, for the refusal's hint.
 function profileFor(config: ConfigFile, host: string): string | null {

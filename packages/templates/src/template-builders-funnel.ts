@@ -13,6 +13,7 @@ import {
   pyramidLayout,
   type Element,
 } from '@livediagram/document';
+import { CANVAS_TONES } from './template-inks';
 
 // A funnel that tells a conversion story rather than just drawing a shape.
 // Four AIDA tiers (Awareness / Interest / Decision / Action) ramp from a
@@ -251,7 +252,8 @@ export function buildFunnel(cx: number, cy: number): Element[] {
       textSize: 'sm',
       textBold: true,
       textAlignX: 'left',
-      textColor: '#be123c',
+      // A heading on the canvas: a red that reads in either half.
+      textColor: CANVAS_TONES.red,
     },
     {
       ...createShape('checklist', calloutX, calloutY + cardH + listGap + 26),

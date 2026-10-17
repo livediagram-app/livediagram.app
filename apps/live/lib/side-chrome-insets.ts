@@ -3,7 +3,7 @@
 // framed on screen, and Zoom to Fit, centre in what shows beside it rather than under it.
 import { CONTENTS_SIDEBAR_SELECTOR } from './contents-placement';
 
-export type SideInsets = { left: number; right: number };
+type SideInsets = { left: number; right: number };
 
 export const NO_SIDE_INSETS: SideInsets = { left: 0, right: 0 };
 

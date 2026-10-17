@@ -13,7 +13,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { apiTimelineUnread } from '@/lib/api-client';
 
-export type TimelineUnread = {
+type TimelineUnread = {
   count: number;
   /** Call after Home or the feed is read, so the badge clears. */
   clear: () => void;

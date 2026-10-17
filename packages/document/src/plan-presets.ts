@@ -18,9 +18,9 @@ export const PLAN_PRESET_HUES = [
   { id: 'plan-lavender', name: 'Lavender', hue: '#7c3aed' },
 ] as const;
 
-export type PlanPresetId = (typeof PLAN_PRESET_HUES)[number]['id'];
+type PlanPresetId = (typeof PLAN_PRESET_HUES)[number]['id'];
 
-export type PlanPresetColours = { fill: string; stroke: string; text: string; hue: string };
+type PlanPresetColours = { fill: string; stroke: string; text: string; hue: string };
 
 // The papers and inks the hues are mixed into: the Plan palette's own neutral surfaces and text.
 const LIGHT_PAPER = '#ffffff';

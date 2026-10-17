@@ -16,7 +16,7 @@ import {
 // The most cards a mode shows before its Show All: a word matching dozens of one mode's templates never buries the rest.
 export const OTHER_MODE_CARDS_MAX = 6;
 
-export type OtherModeMatch = { mode: EditorMode; kinds: readonly TemplateKind[] };
+type OtherModeMatch = { mode: EditorMode; kinds: readonly TemplateKind[] };
 
 // Every listed template of each mode: its Popular picks first (the likeliest match leads), then catalogue order, and
 // the blanks last, since a blank found from another mode is only a mode switch, the least a search can offer.

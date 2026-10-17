@@ -116,7 +116,7 @@ export function symmetryMaps(rect: PageRect, settings: MirrorSettings): Symmetry
   }
 }
 
-export const mapPoint = (m: SymmetryMap, p: { x: number; y: number }) => ({
+const mapPoint = (m: SymmetryMap, p: { x: number; y: number }) => ({
   x: m.a * p.x + m.c * p.y + m.e,
   y: m.b * p.x + m.d * p.y + m.f,
 });

@@ -30,7 +30,7 @@ import { shownFields } from './show';
 import { jsonString } from './text';
 import { depthFirst } from './tree';
 
-export type PagesOptions = { budget?: number; door?: ViewDoor };
+type PagesOptions = { budget?: number; door?: ViewDoor };
 
 const PAGE = { one: 'page line', many: 'page lines' };
 const WRITING = { one: 'line of writing', many: 'lines of writing' };

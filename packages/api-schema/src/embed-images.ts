@@ -36,7 +36,7 @@ export type EmbedImageSource = (
   imageId: string,
 ) => Promise<{ bytes: ArrayBuffer; contentType: string | null } | null>;
 
-export type EmbedImageLimits = {
+type EmbedImageLimits = {
   maxBytesPerImage?: number;
   totalBudgetBytes?: number;
   totalBudgetPixels?: number;

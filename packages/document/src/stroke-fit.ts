@@ -20,9 +20,9 @@ export const STROKE_FIT_START_TOLERANCE_PX = 0.1;
  * spaced samples instead. Safe range: 4 to 10; each pass is one O(n) count over a single
  * simplification shared by every pass.
  */
-export const STROKE_FIT_MAX_PASSES = 8;
+const STROKE_FIT_MAX_PASSES = 8;
 
-export type FittedStroke = { points: Point[]; pressures?: number[] };
+type FittedStroke = { points: Point[]; pressures?: number[] };
 
 /**
  * `points` (and their `pressures`, one each) with at most `max` points: unchanged when they fit,

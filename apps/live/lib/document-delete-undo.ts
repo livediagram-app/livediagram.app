@@ -8,9 +8,9 @@ import type { LiveDoc } from '@livediagram/api-schema';
 /** Which Trash a deleted document went to, as the Trash's own telemetry types it. */
 export type DeletedTrash = 'Personal' | 'Team' | 'Local';
 
-export const DOCUMENT_DELETED_MESSAGE = 'Document deleted';
-export const DOCUMENT_RESTORED_MESSAGE = 'Document restored';
-export const DOCUMENT_RESTORE_FAILED_MESSAGE =
+const DOCUMENT_DELETED_MESSAGE = 'Document deleted';
+const DOCUMENT_RESTORED_MESSAGE = 'Document restored';
+const DOCUMENT_RESTORE_FAILED_MESSAGE =
   'Could not restore the document. It is still in the Trash, in Settings.';
 
 /**

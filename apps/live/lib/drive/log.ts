@@ -4,7 +4,7 @@
 
 import { debugLog } from '@/lib/debug-log';
 
-export type DriveLogFields = Record<string, string | number | boolean | null | undefined>;
+type DriveLogFields = Record<string, string | number | boolean | null | undefined>;
 
 export function driveLog(event: string, fields: DriveLogFields = {}): void {
   debugLog(`[drive-mirror] ${event}`, fields);

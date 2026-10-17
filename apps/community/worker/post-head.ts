@@ -13,7 +13,7 @@ import { breadcrumbJsonLd } from '@livediagram/ui/seo';
 import { SITE_URL } from '@livediagram/ui/site';
 
 // The same title suffix the page sets for itself once the post loads (components/post/PostView.tsx).
-export const POST_TITLE_SUFFIX = ' | livediagram Community';
+const POST_TITLE_SUFFIX = ' | livediagram Community';
 // A search result shows about 160 characters; the marketing site and the help centre hold theirs to it.
 export const META_DESCRIPTION_MAX = 160;
 

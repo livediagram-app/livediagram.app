@@ -36,7 +36,7 @@ const SHAPE_KINDS = {
 } as const;
 
 /** The diagram buckets the Excalidraw importer has always used. */
-export function diagramBorderStroke(px: number): BorderStroke {
+function diagramBorderStroke(px: number): BorderStroke {
   return px <= 1 ? 'thin' : px <= 2.5 ? 'medium' : 'thick';
 }
 

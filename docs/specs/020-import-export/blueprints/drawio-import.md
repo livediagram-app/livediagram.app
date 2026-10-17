@@ -9,7 +9,7 @@ Scope, by file (all under `apps/live/` unless stated):
 | File                                            | Role                                                                                                                             |
 | ----------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
 | `lib/drawio/limits.ts`                          | Named constants of this blueprint                                                                                                |
-| `lib/drawio/inflate.ts`                         | `inflateBytes`, `decompressDiagram`, `ByteBudget`: DecompressionStream with a byte budget                                        |
+| `lib/inflate.ts`, `lib/drawio/inflate.ts`       | `inflateBytes`, `ByteBudget` (shared with the Zip reader): DecompressionStream with a byte budget; `decompressDiagram`           |
 | `lib/drawio/png.ts`                             | `extractPngDiagram`: the embedded XML from a `.drawio.png`                                                                       |
 | `lib/drawio/refusals.ts`                        | `DrawioRefused`, `refusalMessage`: the named refusals and their copy                                                             |
 | `lib/drawio/envelope.ts`                        | `readDrawioSource`, `sniffDrawio`: content sniffing; `mxfile` / `mxGraphModel` / SVG / PNG to page sources and the file's `meta` |

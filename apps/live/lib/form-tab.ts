@@ -4,7 +4,7 @@ import { readForm, FORM_HEADING_MAX, type FormDefinition } from '@livediagram/fo
 import type { Tab } from '@livediagram/document';
 
 // The tab's form, read safely; null on any other tab.
-export function formOfTab(tab: Pick<Tab, 'kind' | 'form'> | undefined): FormDefinition | null {
+function formOfTab(tab: Pick<Tab, 'kind' | 'form'> | undefined): FormDefinition | null {
   if (!tab || tab.kind !== 'form') return null;
   return readForm(tab.form);
 }

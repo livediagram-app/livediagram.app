@@ -34,7 +34,7 @@ const WHITESPACE = /\s/;
 
 /** How one word reads: a token and its values, or text with the problem that kept it from being
  *  one (null for a plain word). */
-export type WordReading =
+type WordReading =
   | { kind: 'token'; dimension: LensDimension; values: readonly string[] }
   | { kind: 'text'; problem: WordProblem | null };
 

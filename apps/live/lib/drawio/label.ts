@@ -8,13 +8,13 @@ import { normalizeRuns, type RunHeading, type RunSize, type TextRun } from '@liv
 import { htmlFontSizePx } from './text-size';
 import { hexInk } from './colour';
 
-export type DrawioLabel = { plain: string; runs?: TextRun[] };
+type DrawioLabel = { plain: string; runs?: TextRun[] };
 
 // A run's format while walking; `px` is the span's font size, mapped to a run size at the end.
 type Format = Omit<TextRun, 'text' | 'size'> & { px?: number };
 
 /** A span's px as a run size, or undefined to inherit the label's. */
-export type RunSizeOf = (px: number) => RunSize | undefined;
+type RunSizeOf = (px: number) => RunSize | undefined;
 
 const BLOCKS = new Set([
   'div',

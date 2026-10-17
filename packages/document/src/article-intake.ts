@@ -59,8 +59,8 @@ export function isDrawingElement(el: Element): boolean {
 }
 
 // A drawing zone's room around what is drawn in it, and the least height it starts with.
-export const ARTICLE_DRAWING_PAD = 24;
-export const ARTICLE_DRAWING_MIN_HEIGHT = 200;
+const ARTICLE_DRAWING_PAD = 24;
+const ARTICLE_DRAWING_MIN_HEIGHT = 200;
 
 const boundsOf = (els: readonly Element[], all: readonly Element[]): PageRect => {
   let x0 = Infinity;
@@ -84,7 +84,7 @@ const boundsOf = (els: readonly Element[], all: readonly Element[]): PageRect =>
   return { x: x0, y: y0, width: Math.max(1, x1 - x0), height: Math.max(1, y1 - y0) };
 };
 
-export type ZonePlan = {
+type ZonePlan = {
   zone: ArticleZoneKind;
   width: number;
   height: number;
@@ -312,7 +312,7 @@ const insideRect = (r: PageRect, p: { x: number; y: number }) =>
   p.x >= r.x && p.x <= r.x + r.width && p.y >= r.y && p.y <= r.y + r.height;
 
 /** A zone the editor has just put into the writing, and where it measured it landing. */
-export type LandedZone = {
+type LandedZone = {
   id: string;
   blocks: ArticleBlock[];
   index: number;
@@ -354,7 +354,7 @@ export function withZoneLanded<T extends ArticlesTab>(
 }
 
 // A wrapped zone is at most this share of the text width.
-export const ARTICLE_WRAP_MAX_SHARE = 2 / 3;
+const ARTICLE_WRAP_MAX_SHARE = 2 / 3;
 
 /**
  * A zone's wrap or place across the text changed (docs/specs/007-editor/article-pages.md "Zones"):
@@ -470,7 +470,7 @@ export function withZoneSize<T extends ArticlesTab>(
 }
 
 /** An object dragged off its zone and dropped on its own article's pages: where it was dropped. */
-export type ObjectDraggedOut = { flow: string; zoneId: string; elementId: string; at: Point };
+type ObjectDraggedOut = { flow: string; zoneId: string; elementId: string; at: Point };
 type Point = { x: number; y: number };
 
 /**

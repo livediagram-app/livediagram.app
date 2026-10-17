@@ -9,11 +9,11 @@ import type { SheetWrite } from './store';
 import type { Workbook } from './engine/workbook';
 
 // An average glyph's advance as a share of the font size, bold a little wider (the static render's chip estimate).
-export const FIT_CHAR_EM = 0.56;
+const FIT_CHAR_EM = 0.56;
 const FIT_BOLD = 1.08;
 // Room either side of the text, and a dropdown chip's insets, arrow and padding beside it (the editor's chip is its
 // text a tenth wider, 24 px of padding and a 16 px arrow, inset 6 px each side: sheet-rule-draw.tsx).
-export const FIT_PAD_PX = 18;
+const FIT_PAD_PX = 18;
 const FIT_CHIP_PX = 48;
 // The narrowest and widest a fitted column is: a one-digit column stays clickable, a paragraph wraps or runs over.
 export const FIT_MIN_PX = 56;

@@ -36,9 +36,9 @@ import {
   WEEK_DATES,
 } from './template-gantt-plan';
 import { TEMPLATE_CONTENT_LAYER_ID, TEMPLATE_SCAFFOLD_LAYER_ID } from './template-layers';
+import { PAPER_INK as INK } from './template-inks';
 
 const MUTED = '#64748b';
-const INK = '#0f172a';
 const GRID_LINE = '#e2e8f0';
 const MONTH_LINE = '#cbd5e1';
 const TODAY = '#e11d48';
@@ -146,6 +146,8 @@ export function buildGanttChart(cx: number, cy: number): Element[] {
       label: `${month} 2027`,
       textSize: 'sm',
       textBold: true,
+      // The chart is pale paper on the Default scheme in either half: its words keep a dark ink.
+      textColor: INK,
       textAlignX: 'left',
       padding: 'md',
     });
@@ -218,6 +220,7 @@ export function buildGanttChart(cx: number, cy: number): Element[] {
         height: rowH,
         label: task.label,
         textSize: 'sm',
+        textColor: INK,
         textAlignX: 'left',
       });
       scaffold.push(...ownerCell(left + taskColW, y + (rowH - 26) / 2, task.owner));
@@ -253,6 +256,7 @@ export function buildGanttChart(cx: number, cy: number): Element[] {
       label: 'Launch day',
       textSize: 'sm',
       textBold: true,
+      textColor: INK,
       textAlignX: 'left',
     },
     ...ownerCell(left + taskColW, y + (rowH - 26) / 2, 'Sam'),
@@ -276,6 +280,7 @@ export function buildGanttChart(cx: number, cy: number): Element[] {
     label: 'Wed 24 Mar',
     textSize: 'sm',
     textBold: true,
+    textColor: INK,
     textAlignX: 'right',
   });
   content.push({

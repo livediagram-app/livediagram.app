@@ -35,9 +35,9 @@ export type ViewRequest = {
   q?: string;
 };
 
-export type ViewRefusal = RefErrorBody | { error: 'invalid_value'; message: string };
+type ViewRefusal = RefErrorBody | { error: 'invalid_value'; message: string };
 
-export type RenderedView =
+type RenderedView =
   | { ok: true; view: TabViewName; text: string; json: unknown; fit: ViewFit; elements: number }
   | { ok: false; refusal: ViewRefusal };
 

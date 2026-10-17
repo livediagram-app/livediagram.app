@@ -79,7 +79,7 @@ export function articleBlocksAsRuns(
 
 /** One article's Page elements, a page each: `split` lists each page's block ids in order (what the
  *  editor measured); without it, the whole writing goes on the first page. */
-export function articleAsPages(
+function articleAsPages(
   doc: ArticleFlow,
   pages: readonly { rect: { x: number; y: number; width: number; height: number } }[],
   split: readonly (readonly string[])[] | null,

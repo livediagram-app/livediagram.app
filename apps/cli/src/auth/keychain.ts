@@ -5,7 +5,7 @@
 
 import type { CliIo } from '../io';
 
-export const KEYCHAIN_SERVICE = 'livediagram';
+const KEYCHAIN_SERVICE = 'livediagram';
 
 // Where a profile's token is: in the file itself, sealed in the file, or in the platform's keychain.
 export type SavedToken = { token: string } | { sealed: string } | { keychain: true };

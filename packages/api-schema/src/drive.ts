@@ -78,7 +78,7 @@ export const DRIVE_STATE_TTL_MS = 10 * 60 * 1000;
 export const DRIVE_ACCOUNT_SWITCH_TTL_MS = 30 * 60 * 1000;
 // Rows per PUT /api/drive/items: one D1 batch.
 export const DRIVE_ITEMS_PUT_MAX = 100;
-export const DRIVE_ID_MAX = 200;
+const DRIVE_ID_MAX = 200;
 export const DRIVE_NAME_MAX = 1024;
 
 export function driveFileName(name: string): string {

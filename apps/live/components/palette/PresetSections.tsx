@@ -182,7 +182,7 @@ export function ArrowPresetsSection({
 // Code-block schemes (docs/specs/009-elements/code-block.md). A code block paints its own card and takes no
 // element colours, so its Presets grid is the colour SCHEME rather than the
 // shape looks: same accordion, same hover-preview, different vocabulary.
-export function CodeThemePresetsSection({
+function CodeThemePresetsSection({
   current,
   props,
   accordion,
@@ -219,7 +219,7 @@ export function hasStylePresets(el: Element): boolean {
 // Table looks (docs/specs/010-palette/style-presets.md): the four surfaces a table paints plus its banding,
 // theme-derived like the shape presets. Reset goes through the shared
 // reset-colours handler, which is what the Colours section's own reset uses.
-export function TablePresetsSection({
+function TablePresetsSection({
   current,
   props,
   accordion,
@@ -250,7 +250,7 @@ export function TablePresetsSection({
 // Chart palettes (docs/specs/009-elements/pie-chart.md). A chart styles per slice / series from its Data
 // category, so its Presets grid is the RAMP those fall back to: one pick for
 // the whole chart, and it keeps applying as rows are added.
-export function ChartPalettePresetsSection({
+function ChartPalettePresetsSection({
   current,
   props,
   accordion,

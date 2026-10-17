@@ -20,9 +20,9 @@ import type { SheetActions } from '../useSheetActions';
 
 const WIDTH_PX = 300;
 // What a new code starts as, and what the preview shows without a number in the cell.
-export const CUSTOM_FORMAT_DEFAULT = '#,##0.00';
+const CUSTOM_FORMAT_DEFAULT = '#,##0.00';
 const PREVIEW_SAMPLE = 1234.5;
-export const CUSTOM_FORMAT_CODES = [
+const CUSTOM_FORMAT_CODES = [
   '0.00',
   '#,##0',
   '0%',

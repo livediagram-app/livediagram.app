@@ -33,10 +33,10 @@ export const TOP_BACKING_PAD_PX = 2;
 // 4px after its glyph.
 export const FOOTER_ROW_PX = 22;
 export const FOOTER_PAD_PX = 4;
-export const FOOTER_GAP_PX = 10;
-export const FOOTER_GLYPH_PX = 12;
-export const FOOTER_DISC_PX = 16;
-export const FOOTER_WORD_GAP_PX = 4;
+const FOOTER_GAP_PX = 10;
+const FOOTER_GLYPH_PX = 12;
+const FOOTER_DISC_PX = 16;
+const FOOTER_WORD_GAP_PX = 4;
 // The average advance of the 11px digits and words, a little generous so text never clips.
 const DIGIT_PX = 7;
 const CHAR_PX = 6.2;

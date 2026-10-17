@@ -150,7 +150,7 @@ export function RatingPickerRow({
 // everything else (speed, repeat, the play-once-vs-loop copy) is identical.
 // `header` adds the "Animation" label (Progress omits it, as the category
 // title already reads "Animation").
-export type AnimTilesProps<T extends string> = {
+type AnimTilesProps<T extends string> = {
   anim: T | null;
   speed: AnimationSpeed;
   repeat: boolean;

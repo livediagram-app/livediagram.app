@@ -108,7 +108,7 @@ export function GlyphPicker({
 }
 
 // The panel's body: the search and category menu, and the grid. Exported for its tests.
-export function GlyphGrid({
+function GlyphGrid({
   value,
   colour,
   onPick,

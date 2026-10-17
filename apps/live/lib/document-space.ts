@@ -6,7 +6,7 @@ import { OFFLINE_OWNER_ID } from './offline/offline-store';
 // in this browser (Offline Mode) is the reader's own, exactly like one in My documents: Space
 // `mine`, owner "You". It just lives somewhere else, which the Local only pill says.
 
-export type DocumentSpace = 'mine' | 'team' | 'shared';
+type DocumentSpace = 'mine' | 'team' | 'shared';
 
 type Listed = {
   ownerId: string;

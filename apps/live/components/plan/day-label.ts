@@ -3,7 +3,7 @@
 
 // The formatting lives with the card values in @livediagram/items (card-text.ts), so every export labels a day as
 // the canvas does.
-export { dayLabel, type DayLabelStyle } from '@livediagram/items';
+export { dayLabel } from '@livediagram/items';
 
 // The viewer's own calendar day, `offset` days from today: local, never UTC, so it does not
 // slip a day either side of midnight.

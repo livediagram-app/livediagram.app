@@ -5,7 +5,7 @@
 // a question can move into another section); letting go places it there, one undo step. Escape cancels.
 import { useCallback, useEffect, useRef, useState, type PointerEvent, type RefObject } from 'react';
 
-export type DropMark = { section: number; index: number; top: number };
+type DropMark = { section: number; index: number; top: number };
 
 type Slot = { section: number; index: number; top: number; bottom: number };
 

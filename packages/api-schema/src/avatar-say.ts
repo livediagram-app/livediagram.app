@@ -8,7 +8,7 @@ export const AVATAR_SAY_MAX_WORDS = 50;
 // cannot fill the canvas either.
 export const AVATAR_SAY_MAX_CHARS = 300;
 // Longer ids than any the editor mints are refused rather than drawn.
-export const AVATAR_SAY_MAX_ID_LEN = 64;
+const AVATAR_SAY_MAX_ID_LEN = 64;
 
 export type AvatarSay = { tabId: string; id: string; text: string; x: number; y: number };
 export type AvatarSayOp = { kind: 'avatar-say' } & AvatarSay;

@@ -16,10 +16,10 @@ export const STRIDE_CATEGORIES = [
 ] as const;
 export type StrideCategory = (typeof STRIDE_CATEGORIES)[number];
 
-export type ThreatStatus = 'Open' | 'In Progress' | 'Mitigated';
+type ThreatStatus = 'Open' | 'In Progress' | 'Mitigated';
 export type ThreatRating = 'High' | 'Medium' | 'Low';
 
-export type ThreatExample = {
+type ThreatExample = {
   id: string;
   // The diagram element (or flow) it threatens, by the name the Threat model draws.
   element: string;
@@ -210,7 +210,7 @@ export const DRIVER_LEVERS: readonly { key: DriverInputKey; name: string; achiev
   { key: 'courierOnTime', name: 'Courier on time to 97%', achievable: 0.97 },
 ];
 
-export type DriverTree = {
+type DriverTree = {
   newCustomers: number;
   returning: number;
   actives: number;
@@ -239,7 +239,7 @@ export function leverGain(lever: (typeof DRIVER_LEVERS)[number]): number {
 
 // ---- Value Stream ---------------------------------------------------------------------------------------------------
 
-export type ValueStreamStep = {
+type ValueStreamStep = {
   step: string;
   owner: string;
   // Hands-on time, in working hours.
@@ -312,7 +312,7 @@ export const VALUE_STREAM_STEPS: readonly ValueStreamStep[] = [
   },
 ];
 
-export type ValueStreamTotals = {
+type ValueStreamTotals = {
   leadDays: number;
   processDays: number;
   flowEfficiency: number;

@@ -68,7 +68,7 @@ const isObj = (v: unknown): v is Record<string, unknown> =>
 const finite = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v);
 
 // A rectangle whose corners are rows and columns of the sheet.
-export function rangeOnSheet(r: unknown, layout: SheetLayout): boolean {
+function rangeOnSheet(r: unknown, layout: SheetLayout): boolean {
   if (!isObj(r)) return false;
   const ix = layoutIndex(layout);
   return (
@@ -161,7 +161,7 @@ function pointOk(v: unknown, end: 'min' | 'mid' | 'max'): boolean {
 }
 
 // A stored formula that reads, as a cell's formula input must (validate.ts inputProblem).
-export function storedFormulaOk(f: unknown): f is StoredFormula {
+function storedFormulaOk(f: unknown): f is StoredFormula {
   if (!isObj(f) || typeof f.t !== 'string' || !Array.isArray(f.r)) return false;
   if (Object.keys(f).some((k) => k !== 't' && k !== 'r')) return false;
   if (f.t.length > FORMAT_RULE_FORMULA_MAX) return false;

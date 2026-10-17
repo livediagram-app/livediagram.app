@@ -10,7 +10,8 @@ import {
   putAgentPresence,
   refreshAgentPresence,
   RoomUnavailableError,
-  mergeRoomLedger,
+  applyRoomLedger,
+  fetchRoomLedger,
   parseRoomCursor,
   readRoomSelections,
   relayChangeset,
@@ -44,7 +45,11 @@ function envWith(fetch: (url: string, init?: RequestInit) => Promise<Response>) 
   return { env, stubFetch };
 }
 
-describe('mergeRoomLedger (docs/specs/012-collaboration/collab-race-hardening.md phase 3)', () => {
+// The tab PUT's two halves, fetch then apply, as the route runs them.
+const mergeRoomLedger = async (env: Env, documentId: string, t: Tab, cursor: string | null) =>
+  applyRoomLedger(t, await fetchRoomLedger(env, documentId, t.id, cursor));
+
+describe('the room ledger merge (docs/specs/012-collaboration/collab-race-hardening.md phase 3)', () => {
   it("merges the room's answers the saver hadn't seen", async () => {
     const { env, stubFetch } = envWith(async () => Response.json(ledger));
     const { tab: merged } = await mergeRoomLedger(env, 'd1', tab, 'ep:4');

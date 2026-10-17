@@ -10,11 +10,11 @@ import { STATS, toggleStatusPick, useStatusPick, type Stat } from './sheet-statu
 import { OptionRows } from '@/components/plan/OptionRows';
 import { AnchoredPopover } from '@/components/primitives/AnchoredPopover';
 
-export const STATUS_BAR_PX = 24;
+const STATUS_BAR_PX = 24;
 const CELLS_MAX = 100_000;
 
 export { STATS, type Stat } from './sheet-status-pick';
-export type SelectionStats = {
+type SelectionStats = {
   sum: number;
   count: number;
   numbers: number;

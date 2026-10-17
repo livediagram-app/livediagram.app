@@ -32,7 +32,7 @@ type JsonCell = {
 
 export type JsonExportPage = { id: string; name: string; cells: JsonCell[] };
 
-export type JsonExport = { kind: 'xml'; text: string } | { kind: 'graph'; pages: JsonExportPage[] };
+type JsonExport = { kind: 'xml'; text: string } | { kind: 'graph'; pages: JsonExportPage[] };
 
 /** The export's pages, or the full diagram its `data` carries. Refuses anything else. */
 export function readJsonExport(text: string): JsonExport {

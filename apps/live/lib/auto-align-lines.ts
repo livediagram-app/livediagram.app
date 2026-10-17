@@ -23,7 +23,7 @@ import { isBoxed, type BoxedElement, type Element, type ElementId } from '@lived
 const GRID = 10;
 // How far apart two lines may be and still count as one (a few px of hand drift), and the wider
 // reach of two boxes an arrow runs straight between.
-export const ALIGN_TOLERANCE = 8;
+const ALIGN_TOLERANCE = 8;
 export const LINK_TOLERANCE = 16;
 
 type Kind = 'start' | 'centre' | 'end';

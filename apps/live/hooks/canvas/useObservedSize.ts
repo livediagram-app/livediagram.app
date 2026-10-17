@@ -1,6 +1,6 @@
 import { useLayoutEffect, useState, type Ref } from 'react';
 
-export type ObservedSize = { width: number; height: number };
+type ObservedSize = { width: number; height: number };
 
 // The size of the element behind an object ref, kept in state by a ResizeObserver, so render reads a
 // measurement instead of the DOM (docs/specs/003-system-architecture/react-state-and-effects.md).

@@ -13,7 +13,7 @@ import { onColourKeys } from '@/components/colour/useColourKeys';
 import { useThemeColours } from '@/components/colour/useThemeColours';
 import { getTheme, themePresetColors } from '@/lib/themes';
 
-export const TOOLBAR_SWATCHES = 5;
+const TOOLBAR_SWATCHES = 5;
 // Five 24 px swatches, More colours, and the 2 px gaps between.
 export const SWATCHES_PX = (TOOLBAR_SWATCHES + 1) * 24 + TOOLBAR_SWATCHES * 2;
 

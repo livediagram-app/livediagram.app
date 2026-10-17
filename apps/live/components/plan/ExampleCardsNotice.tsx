@@ -65,7 +65,8 @@ export function ExampleCardsNotice({
       <span aria-hidden className="shrink-0" style={{ color: palette.focus }}>
         <InfoIcon />
       </span>
-      <span className="min-w-0 flex-1">Example cards show how this board runs.</span>
+      {/* A basis of its own, so on a narrow board the buttons wrap under the sentence rather than crush it. */}
+      <span className="min-w-0 flex-1 basis-48">Example cards show how this board runs.</span>
       <button
         type="button"
         className={button}

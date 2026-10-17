@@ -12,12 +12,10 @@ import type { TokenSource } from './token-source';
 
 const DEVICE_KEY = 'livediagram:v2:drive-device';
 const FIRST_MIRROR_KEY = 'livediagram:v2:drive-first-mirror';
-export const DIAGNOSTICS_KEY = 'livediagram:v2:drive-diagnostics';
+const DIAGNOSTICS_KEY = 'livediagram:v2:drive-diagnostics';
 
 // A random per-browser id: the lease holder (D13).
-export function driveDeviceId(
-  storage: Pick<Storage, 'getItem' | 'setItem'> = localStorage,
-): string {
+function driveDeviceId(storage: Pick<Storage, 'getItem' | 'setItem'> = localStorage): string {
   let id = storage.getItem(DEVICE_KEY);
   if (!id || !/^[A-Za-z0-9-]{1,64}$/.test(id)) {
     id = crypto.randomUUID();

@@ -12,12 +12,12 @@ import type { ExcalidrawElement } from './excalidraw-types';
  */
 export const EXCALIDRAW_FREEDRAW_WIDTH_FACTOR = { constant: 2.8, variable: 4.25 } as const;
 /** Excalidraw's default `strokeWidth` and `fontSize`. */
-export const EXCALIDRAW_DEFAULT_STROKE_WIDTH = 2;
-export const EXCALIDRAW_DEFAULT_FONT_SIZE = 20;
+const EXCALIDRAW_DEFAULT_STROKE_WIDTH = 2;
+const EXCALIDRAW_DEFAULT_FONT_SIZE = 20;
 /** Excalidraw `FONT_FAMILY`: Virgil 1, Excalifont 5 are hand-drawn; Cascadia 3, Comic Shanns 8 code. */
-export const EXCALIDRAW_FONT_FAMILY = { hand: [1, 5], mono: [3, 8] } as const;
+const EXCALIDRAW_FONT_FAMILY = { hand: [1, 5], mono: [3, 8] } as const;
 
-export type ReadColour =
+type ReadColour =
   { kind: 'none' } | { kind: 'colour'; colour: SceneColour } | { kind: 'unreadable' };
 
 const HEX = /^#(?:[0-9a-f]{3}|[0-9a-f]{6}|[0-9a-f]{8})$/i;

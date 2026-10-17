@@ -33,7 +33,7 @@ import { seenRowsOf, type SeenStore } from './tombstones';
 import { DriveTokenError, type TokenSource } from './token-source';
 import { debugLog } from '@/lib/debug-log';
 
-export type PassKind = 'arrival' | 'poll' | 'focus' | 'write' | 'flush' | 'manual';
+type PassKind = 'arrival' | 'poll' | 'focus' | 'write' | 'flush' | 'manual';
 
 export type DriveMirrorState =
   'starting' | 'idle' | 'syncing' | 'disconnected' | 'needs_reconnect' | 'needs_resume';
@@ -66,7 +66,7 @@ export type DriveMirrorStatus = {
   failed: string[];
 };
 
-export type DriveEngineTelemetry = (
+type DriveEngineTelemetry = (
   action: 'Applied' | 'FirstMirrorFinished' | 'ReconnectNeeded',
   type?: string,
 ) => void;
@@ -76,7 +76,7 @@ export type Timers = {
   clearTimeout(handle: unknown): void;
 };
 
-export type DriveEngineDeps = {
+type DriveEngineDeps = {
   ownerId: string;
   host: string;
   deviceId: string;
@@ -113,7 +113,7 @@ const INITIAL: DriveMirrorStatus = {
 };
 
 // Each mirrored document's last uploaded savedAt, from the drive_items rows.
-export function mirroredFromItems(items: Iterable<DriveItem>): Record<string, number | null> {
+function mirroredFromItems(items: Iterable<DriveItem>): Record<string, number | null> {
   const out: Record<string, number | null> = {};
   for (const item of items) if (item.kind === 'document') out[item.ldId] = item.mirroredSavedAt;
   return out;

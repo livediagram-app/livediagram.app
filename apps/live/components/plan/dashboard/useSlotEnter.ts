@@ -9,7 +9,7 @@ import { useLayoutEffect, type RefObject } from 'react';
 import { MOTION_MS, cascadeDelayMs } from '@livediagram/tailwind-config/motion';
 import { prefersReducedMotion } from '@/lib/motion-preference';
 
-export const SLOT_ENTER_KEYFRAMES: Keyframe[] = [
+const SLOT_ENTER_KEYFRAMES: Keyframe[] = [
   { opacity: 0, transform: 'translateY(8px) scale(0.96)' },
   { opacity: 1, transform: 'none' },
 ];

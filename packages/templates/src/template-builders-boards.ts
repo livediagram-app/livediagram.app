@@ -8,6 +8,7 @@
 
 import { createShape, createSticky, createText, type Element } from '@livediagram/document';
 import { TEMPLATE_CONTENT_LAYER_ID, TEMPLATE_SCAFFOLD_LAYER_ID } from './template-layers';
+import { PAPER_INK } from './template-inks';
 
 export { buildRetrospective } from './template-builders-retrospective';
 export { buildPrioritizationMatrix } from './template-builders-prioritization';
@@ -269,6 +270,7 @@ export function buildSwot(cx: number, cy: number): Element[] {
       height: headerH,
       label: 'So what?',
       textSize: 'lg',
+      textColor: PAPER_INK,
       textAlignX: 'left',
       ...scaffold,
     },
@@ -313,6 +315,7 @@ export function buildSwot(cx: number, cy: number): Element[] {
         height: moveH - 56,
         label: m.move,
         textSize: 'sm',
+        textColor: PAPER_INK,
         textAlignX: 'left',
         textAlignY: 'top',
         ...content,

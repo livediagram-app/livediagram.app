@@ -36,7 +36,7 @@ export function stepFontSize(size: number, dir: 1 | -1): number {
 }
 // A font id as the editor's fonts name them (`space-grotesk`): this package knows no catalogue, so it checks the
 // shape; the drawing side resolves the id, and one it no longer offers draws in the tab's font.
-export const FONT_ID_RE = /^[a-z][a-z0-9-]{0,31}$/;
+const FONT_ID_RE = /^[a-z][a-z0-9-]{0,31}$/;
 
 export const BORDER_STYLES: readonly BorderStyle[] = ['solid', 'dashed', 'dotted'];
 export const FORMAT_KEYS = [

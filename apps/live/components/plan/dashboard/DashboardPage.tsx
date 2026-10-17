@@ -34,6 +34,7 @@ import { useFitGuard } from './useFitGuard';
 import { useSlotMove } from './useSlotMove';
 import { DashboardMenuName } from './DashboardMenuName';
 import { DashboardSettings } from './DashboardSettings';
+import { CANVAS_ROOT_SELECTOR } from '@/lib/canvas-selectors';
 
 export function DashboardPage({
   tab,
@@ -65,7 +66,7 @@ export function DashboardPage({
   // The canvas `main` the page covers: mounted beside the canvas, not in it, so found by its marker.
   const [canvas, setCanvas] = useState<HTMLElement | null>(null);
   const mark = useCallback((node: HTMLElement | null) => {
-    if (node) setCanvas(document.querySelector<HTMLElement>('[data-canvas-a11y-root]'));
+    if (node) setCanvas(document.querySelector<HTMLElement>(CANVAS_ROOT_SELECTOR));
   }, []);
   // A palette tile dragged over the page: the zone it would land in is drawn (DropZoneMark: a slot outlined, a line
   // between rows, a line in a row), and the drop fills it. Native drag and drop, as the palette's tiles are; what is

@@ -47,7 +47,7 @@ const GAP = 6;
 // The sheets' own ease (IllustratePages).
 const PAGE_EASE_MS = 200;
 
-export type PagePreview = { pageId: string; patch: Partial<PageBackground> } | null;
+type PagePreview = { pageId: string; patch: Partial<PageBackground> } | null;
 export type PagePanelTab = 'page' | 'background' | 'layouts';
 
 const TAB_LABEL: Record<PagePanelTab, string> = {

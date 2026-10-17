@@ -16,9 +16,9 @@
 // fields a tree needs, so every surface indexes through here rather than
 // rebuilding the maps inline.
 
-export type TreeFolder = { id: string; name: string; parentId: string | null };
+type TreeFolder = { id: string; name: string; parentId: string | null };
 
-export type FolderIndex<F extends TreeFolder = TreeFolder> = {
+type FolderIndex<F extends TreeFolder = TreeFolder> = {
   // Every folder by id, so a walk up the parents doesn't rescan the list.
   folderById: Map<string, F>;
   // Children per parent id (null = root), so the recursive renderer is O(1)

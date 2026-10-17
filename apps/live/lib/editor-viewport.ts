@@ -4,7 +4,7 @@
 
 export const EDITOR_VIEWPORT_ATTR = 'data-editor-viewport';
 
-export type EditorViewportBox = { left: number; width: number; element: HTMLElement | null };
+type EditorViewportBox = { left: number; width: number; element: HTMLElement | null };
 
 export function editorViewportOf(node: Element | null): EditorViewportBox {
   const element = node?.closest<HTMLElement>(`[${EDITOR_VIEWPORT_ATTR}]`) ?? null;

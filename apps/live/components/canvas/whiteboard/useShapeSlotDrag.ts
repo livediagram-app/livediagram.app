@@ -18,9 +18,9 @@ import { debugLog } from '@/lib/debug-log';
 
 // Screen px of travel before a press becomes a drag (the spec's 6 px; wider than the chrome's
 // PRESS_DRAG_SLOP_PX so a press on a small dock button never turns into a drag by accident).
-export const SHAPE_SLOT_DRAG_PX = 6;
+const SHAPE_SLOT_DRAG_PX = 6;
 
-export type SlotDrag = {
+type SlotDrag = {
   source: SlotSource;
   x: number;
   y: number;

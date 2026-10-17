@@ -26,6 +26,7 @@ import {
 import { objectiveCard, objectiveCardHeight, type Objective } from './template-objective-card';
 import { GUIDE_H, objectiveGuide } from './template-objective-guide';
 import { RHYTHM_H, checkinRhythm } from './template-checkin-rhythm';
+import { CANVAS_TONES } from './template-inks';
 
 // Alex's plan for the second half of 2026, read left to right the way the
 // thinking goes. START WITH WHY: one focus statement for the half, then
@@ -109,7 +110,8 @@ const STRENGTHS = ['Fast, scrappy prototypes', 'Customer interviews', 'Clear des
 const GROWTH = ['Presenting to execs', 'Letting go of the pixels', 'Saying no to side quests'];
 
 const WHY_HUE = '#e11d48';
-const GUIDE_HUE = '#4f46e5';
+// Also the ink of its phase band's title on the canvas, so an indigo that reads in either half.
+const GUIDE_HUE = CANVAS_TONES.indigo;
 const OBJ_HUE = '#0284c7';
 
 export function buildObjectivesPlanner(cx: number, cy: number): Element[] {

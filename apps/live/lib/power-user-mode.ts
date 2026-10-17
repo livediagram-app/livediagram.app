@@ -21,7 +21,7 @@ export const POWER_USER_PRESET = {
 
 export type PowerUserPresetSetting = keyof typeof POWER_USER_PRESET;
 
-export type PowerUserBaselineEntry = {
+type PowerUserBaselineEntry = {
   before: Partial<UserPreferences>;
   applied: Partial<UserPreferences>;
 };

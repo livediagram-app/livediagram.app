@@ -8,7 +8,7 @@
 // How far in from a quarter circle's box corner its 45° point sits, per unit of radius: 1 - 1/√2.
 const ARC_45 = 1 - Math.SQRT1_2;
 
-export type BadgeInset = { x: number; y: number };
+type BadgeInset = { x: number; y: number };
 
 /**
  * The inset of the badge point from the top-right corner of a `width` × `height` element of

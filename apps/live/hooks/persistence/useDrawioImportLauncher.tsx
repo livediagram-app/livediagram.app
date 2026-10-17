@@ -9,7 +9,7 @@ const DrawioImportDialog = dynamic(
 );
 
 /** The host's two commits: diagrams as new documents, libraries as shape libraries. */
-export type DrawioImportCommits = {
+type DrawioImportCommits = {
   importDocuments: ImportDrawioDocuments;
   importLibraries: ImportDrawioLibraries;
 };

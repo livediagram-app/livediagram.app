@@ -8,6 +8,7 @@ import { useSyncExternalStore } from 'react';
 import type { Command } from 'prosemirror-state';
 import type { Node as PMNode } from 'prosemirror-model';
 import type { ArticleSelectionState } from './article-commands';
+import { createListeners } from '@/lib/listeners';
 
 // Where a zone is moved to: the block boundary nearest a canvas point, or one block up or down.
 export type ZoneMoveTo = { x: number; y: number } | { by: -1 | 1 };
@@ -141,9 +142,9 @@ export type ActiveArticle = {
 };
 
 let active: ActiveArticle | null = null;
-const listeners = new Set<() => void>();
+const listeners = createListeners();
 const emit = () => {
-  for (const l of listeners) l();
+  listeners.notify();
 };
 
 export function setActiveArticle(next: ActiveArticle | null): void {
@@ -170,13 +171,8 @@ export function getActiveArticle(): ActiveArticle | null {
   return active;
 }
 
-const subscribe = (l: () => void) => {
-  listeners.add(l);
-  return () => listeners.delete(l);
-};
-
 export function useActiveArticle(): ActiveArticle | null {
-  return useSyncExternalStore(subscribe, getActiveArticle, () => null);
+  return useSyncExternalStore(listeners.subscribe, getActiveArticle, () => null);
 }
 
 // Requests the page toolbar answers: ⌘K in the writing opens its link field; its Article style
@@ -195,7 +191,7 @@ export function requestArticleComment(): void {
 
 export function useArticleCommentRequest(): number {
   return useSyncExternalStore(
-    subscribe,
+    listeners.subscribe,
     () => commentSignal,
     () => 0,
   );
@@ -213,7 +209,7 @@ export function requestStylePanel(pageId: string): void {
 
 export function useArticleLinkRequest(): number {
   return useSyncExternalStore(
-    subscribe,
+    listeners.subscribe,
     () => linkSignal.seq,
     () => 0,
   );
@@ -221,7 +217,7 @@ export function useArticleLinkRequest(): number {
 
 export function useStylePanelRequest(): Signal {
   return useSyncExternalStore(
-    subscribe,
+    listeners.subscribe,
     () => panelSignal,
     () => panelSignal,
   );

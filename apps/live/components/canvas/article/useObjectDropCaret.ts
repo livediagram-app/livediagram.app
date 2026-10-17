@@ -10,6 +10,7 @@ import type { ArticleZoneBlock, LaidOutPage, PageRect } from '@livediagram/docum
 import { useCanvasGesture } from '@/lib/canvas-gesture';
 import { articleHandleOf } from '@/lib/article/article-editor-store';
 import { screenToCanvasBySheet, type DropCaret } from './useZoneDrag';
+import { elementSelector } from '@/lib/canvas-selectors';
 
 type Held = { flow: string; zone: ArticleZoneBlock; rect: PageRect; elementId: string };
 
@@ -45,9 +46,7 @@ export function useObjectDropCaret({
       frame = requestAnimationFrame(look);
       const h = held.current;
       const pages = h ? latest.current.pagesOf(h.flow) : undefined;
-      const el = h
-        ? document.querySelector(`[data-element-id="${CSS.escape(h.elementId)}"]`)
-        : null;
+      const el = h ? document.querySelector(elementSelector(h.elementId)) : null;
       if (!h || !pages?.length || !el) return;
       const r = el.getBoundingClientRect();
       // Held still: nothing to look up again (the search runs over every block).

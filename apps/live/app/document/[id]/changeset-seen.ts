@@ -9,7 +9,7 @@ export function noteLoadedRev(seen: ChangesetSeen, tabId: string, rev: number): 
   if (rev > (seen.get(tabId) ?? -1)) seen.set(tabId, rev);
 }
 
-export type ChangesetAdmission = 'skip' | 'apply' | 'apply-and-refetch' | 'refetch';
+type ChangesetAdmission = 'skip' | 'apply' | 'apply-and-refetch' | 'refetch';
 
 // What to do with one relayed changeset, in the blueprint's order. A tab this editor never loaded
 // is skipped (its first load carries the change), except one the changeset itself created (CS23).

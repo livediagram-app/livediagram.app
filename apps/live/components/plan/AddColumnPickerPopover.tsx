@@ -17,7 +17,7 @@ import {
 import { AddColumnPicker } from './AddColumnPicker';
 
 // The picker's width, its gap from the button, and the arrow's size.
-export const ADD_COLUMN_PICKER_PX = 304;
+const ADD_COLUMN_PICKER_PX = 304;
 const GAP_PX = 10;
 const ARROW_PX = 12;
 const ORDER: readonly HintPlacement[] = ['right', 'left', 'bottom', 'top'];

@@ -24,7 +24,7 @@ import { pageScale, scalePage } from './scale';
 import { autoTextRect, isAutoSized } from './text-box';
 import { buildImageCaption, buildVertex, type PageContext } from './vertices';
 
-export type ConvertedPage = {
+type ConvertedPage = {
   elements: Element[];
   layers?: Layer[];
   backgroundColor?: string;

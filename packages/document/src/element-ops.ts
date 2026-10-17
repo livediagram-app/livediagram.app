@@ -117,7 +117,7 @@ export type ElementPatchOp = {
 };
 export type RoomElementOp = ElementOp | ElementPatchOp;
 
-export function applyElementPatch(elements: Element[], op: ElementPatchOp): Element[] {
+function applyElementPatch(elements: Element[], op: ElementPatchOp): Element[] {
   if (!elements.some((e) => e.id === op.id)) return elements;
   return elements.map((e) => {
     if (e.id !== op.id) return e;

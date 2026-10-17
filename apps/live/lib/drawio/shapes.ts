@@ -196,7 +196,7 @@ const TRIANGLE_TURN: Record<string, number> = { east: 90, south: 180, west: 270,
 // A flip across the pointing axis turns a triangle round.
 const FLIP: Record<string, string> = { east: 'west', west: 'east', north: 'south', south: 'north' };
 
-export type ShapeTurn = { rotation: number; swap: boolean; approximated: boolean };
+type ShapeTurn = { rotation: number; swap: boolean; approximated: boolean };
 
 /** How a shape's draw.io `direction` / flips carry over (blueprint step 9). */
 export function shapeTurn(cell: DrawioCell, shape: ShapeKind): ShapeTurn {

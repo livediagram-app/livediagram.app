@@ -26,7 +26,7 @@ import { arrowheadSizePreset, dashStyle, elementLink, textProps } from './vertex
 import type { PageContext } from './vertices';
 
 /** draw.io's routers; any of them draws a right-angled route. */
-export const DRAWIO_ANGLED_EDGE_STYLES = new Set([
+const DRAWIO_ANGLED_EDGE_STYLES = new Set([
   'orthogonalEdgeStyle',
   'elbowEdgeStyle',
   'entityRelationEdgeStyle',
@@ -39,7 +39,7 @@ export const DRAWIO_ANGLED_EDGE_STYLES = new Set([
 type Marker = { shape: ArrowheadShape; exact: boolean };
 
 /** draw.io marker names to livediagram heads; `exact: false` is approximated. */
-export const DRAWIO_MARKERS: Record<string, Marker> = {
+const DRAWIO_MARKERS: Record<string, Marker> = {
   classic: { shape: 'triangle', exact: true },
   classicThin: { shape: 'triangle', exact: true },
   block: { shape: 'triangle', exact: true },
@@ -86,7 +86,7 @@ export type EndTarget =
   | { kind: 'arrow'; arrowId: string }
   | { kind: 'point'; loosened: boolean };
 
-export type EdgeInput = {
+type EdgeInput = {
   cell: DrawioCell;
   source: EndTarget;
   target: EndTarget;

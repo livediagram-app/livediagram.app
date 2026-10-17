@@ -67,7 +67,7 @@ export const LENS_ISSUE_REASONS = [
   'space_not_here',
   'too_long',
 ] as const;
-export type LensIssueReason = (typeof LENS_ISSUE_REASONS)[number];
+type LensIssueReason = (typeof LENS_ISSUE_REASONS)[number];
 
 /** The reasons that concern one dimension, and so name it. */
 export type DimensionIssueReason = Exclude<LensIssueReason, 'unknown_dimension' | 'too_long'>;

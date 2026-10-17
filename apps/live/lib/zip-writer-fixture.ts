@@ -2,7 +2,7 @@
 
 import { crc32, deflateRawSync } from 'node:zlib';
 
-export type ZipInput = {
+type ZipInput = {
   name: string;
   data: Uint8Array | string;
   method?: 'stored' | 'deflate';

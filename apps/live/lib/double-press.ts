@@ -46,7 +46,7 @@ export function isEchoPress(prev: ElementPress | null, next: ElementPress): bool
   return pairsWith(prev, next) && !prev!.wasSelected;
 }
 
-export type PressVerdict = { pairs: boolean; echo: boolean };
+type PressVerdict = { pairs: boolean; echo: boolean };
 
 export function createPressLedger() {
   let last: ElementPress | null = null;

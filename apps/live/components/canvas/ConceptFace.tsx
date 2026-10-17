@@ -11,6 +11,7 @@ import {
   conceptAnimRepeats,
   conceptDrawsNotes,
   conceptFitPx,
+  conceptDiscInk,
   conceptRamp,
   cycleLayout,
   hubDrawsSpokes,
@@ -81,6 +82,8 @@ export function ConceptFace({
   const rows = element.conceptRows ?? [];
   const n = rows.length;
   const ramp = conceptRamp(n, accent, fill);
+  // A cycle's later stages and a hub's satellites sit on discs in the fill, not on the canvas.
+  const discInk = conceptDiscInk(ink, fill);
   const noun = CONCEPT_ROWS[element.shape].noun;
   const write = (i: number, patch: Partial<ConceptRow>) =>
     onSetRows({ conceptRows: rows.map((r, j) => (j === i ? { ...r, ...patch } : r)) });
@@ -281,7 +284,7 @@ export function ConceptFace({
                   />
                 </>,
               )}
-              {line(i, rect, row.label, l.labelPx, ink, {})}
+              {line(i, rect, row.label, l.labelPx, discInk, {})}
             </Row>
           );
         })}
@@ -380,7 +383,7 @@ export function ConceptFace({
                   strokeWidth={first ? undefined : 2}
                 />,
               )}
-              {line(i, rect, row.label, l.labelPx, first ? ramp[0]!.text : ink, {})}
+              {line(i, rect, row.label, l.labelPx, first ? ramp[0]!.text : discInk, {})}
             </Row>
           );
         })}

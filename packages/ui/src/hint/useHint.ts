@@ -13,7 +13,7 @@ import {
 import { claimHint, isHintWarm, releaseHint, type HintToken } from './hint-registry';
 import { hasVisibleText } from './trigger-text';
 
-export type HintOpenSource = 'pointer' | 'focus' | 'touch';
+type HintOpenSource = 'pointer' | 'focus' | 'touch';
 
 // Presses are heard in the capture phase: many canvas controls stop their
 // pointer events from bubbling, and the hint must still see them.
@@ -39,7 +39,7 @@ export type HintSurfaceProps = {
   onContextMenu: (e: React.SyntheticEvent) => void;
 };
 
-export type HintState = {
+type HintState = {
   open: boolean;
   source: HintOpenSource | null;
   // Callback ref for the wrapper around the trigger.

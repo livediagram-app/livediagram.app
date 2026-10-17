@@ -28,7 +28,7 @@ import { useToast } from '@/hooks/ui/useToast';
 import { useLatest } from '@/hooks/ui/useLatest';
 import { track } from '@/lib/telemetry';
 
-export type TagsStatus = 'idle' | 'loading' | 'ready' | 'error';
+type TagsStatus = 'idle' | 'loading' | 'ready' | 'error';
 
 // Which tags each document carries, by id. Kept as one immutable map so a change copies one entry.
 type Links = ReadonlyMap<string, ReadonlySet<string>>;

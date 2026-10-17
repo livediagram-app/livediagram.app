@@ -25,6 +25,7 @@ import {
 } from './page-ink-rules';
 import { isBoxed, type Element } from './index';
 import type { Layer } from './layers';
+import { pointInRect, type Rect } from './geometry-primitives';
 
 // A series (a line, a bar, a wedge, a Sankey node) against its ground: WCAG 2.2 SC 1.4.11
 // non-text contrast, floor and target both, as re-inking holds lines and marks.
@@ -36,7 +37,7 @@ export const CHART_TEXT_TARGET = PAGE_INK_TARGET;
 // How many adapted colours are remembered across draws (a hover re-draws a chart every move).
 // A board's charts use a few dozen colours on a few grounds; past this the memory starts over.
 // Safe range 64 to 4096: smaller recomputes on busy boards, larger only holds more strings.
-export const CHART_INK_MEMORY = 512;
+const CHART_INK_MEMORY = 512;
 
 const memory = new Map<string, string>();
 
@@ -70,16 +71,12 @@ export function chartTextInk(color: string, ground: readonly string[] | undefine
 
 /** Whether an element is a chart whose series come from a palette: a pie, doughnut, bar, column,
  *  line, area, scatter or Sankey. */
-export function isPaletteChart(el: Element): boolean {
+function isPaletteChart(el: Element): boolean {
   return el.type === 'shape' && (isChartShape(el.shape) || isSankeyShape(el.shape));
 }
 
-type Box = { x: number; y: number; width: number; height: number };
 // A surface under later elements: its box and tone, or null for a surface of unknown tone.
-type Cover = { box: Box; tone: string | null };
-
-const inBox = (b: Box, p: { x: number; y: number }) =>
-  p.x >= b.x && p.x <= b.x + b.width && p.y >= b.y && p.y <= b.y + b.height;
+type Cover = { box: Rect; tone: string | null };
 
 /**
  * What each chart on a page with a fill of its own sits on, by element id: the tones re-inking
@@ -117,7 +114,7 @@ export function chartPageGrounds(
         const at = elementAnchorPoint(el, index);
         let ground: readonly string[] | null | undefined;
         for (let i = covers.length - 1; i >= 0 && ground === undefined; i -= 1) {
-          if (inBox(covers[i]!.box, at)) ground = covers[i]!.tone ? [covers[i]!.tone!] : null;
+          if (pointInRect(covers[i]!.box, at)) ground = covers[i]!.tone ? [covers[i]!.tone!] : null;
         }
         if (ground === undefined) ground = pageGroundUnder(page.background, page.rect, box).tones;
         if (ground) out.set(el.id, ground);

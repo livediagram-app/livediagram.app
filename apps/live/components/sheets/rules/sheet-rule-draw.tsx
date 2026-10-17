@@ -19,10 +19,10 @@ import {
 import type { PlanPalette } from '@/components/plan/plan-palette';
 
 // data-validation.md "Drawing"; blueprint sheet-rules.md "Constants and configuration".
-export const CHECKBOX_PX = 14;
-export const INVALID_MARK_PX = 6;
+const CHECKBOX_PX = 14;
+const INVALID_MARK_PX = 6;
 // A chip's inset from the cell's left, its height's room above and below, and its arrow's room.
-export const CHIP_INSET_PX = 6;
+const CHIP_INSET_PX = 6;
 const CHIP_PAD_Y = 4;
 // The arrow's room, and the pill's padding beside the text (8 left, 4 right, 4 gap) with slack for the rough width.
 const CHIP_ARROW_PX = 16;
@@ -33,7 +33,7 @@ const INVALID_INK = '#dc2626';
 
 type Box = { x: number; y: number; w: number; h: number };
 
-export type RuleDraw = {
+type RuleDraw = {
   // The cell's own text is not drawn (a box or a chip draws it).
   hideText: boolean;
   // The text keeps room at the right for an arrow.
@@ -56,7 +56,7 @@ function Chevron({ colour }: { colour: string }) {
 }
 
 // The chip's box in its cell, for drawing and for the pointer: from the inset to the text's width and its arrow.
-export function chipBox(box: Box, textWidth: number, px: number): Box {
+function chipBox(box: Box, textWidth: number, px: number): Box {
   const h = Math.min(box.h - CHIP_PAD_Y, Math.round(px * 1.3) + 6);
   const w = Math.min(
     box.w - CHIP_INSET_PX * 2,
@@ -66,7 +66,7 @@ export function chipBox(box: Box, textWidth: number, px: number): Box {
 }
 
 // The checkbox's square in its cell.
-export function checkboxBox(box: Box): Box {
+function checkboxBox(box: Box): Box {
   return {
     x: box.x + (box.w - CHECKBOX_PX) / 2,
     y: box.y + (box.h - CHECKBOX_PX) / 2,
@@ -76,7 +76,7 @@ export function checkboxBox(box: Box): Box {
 }
 
 // What a press at (x, y) inside a cell's box hits: its checkbox, its dropdown (a chip or an arrow), or nothing.
-export function ruleTargetAt(
+function ruleTargetAt(
   rule: ValidationRule | null,
   box: Box,
   x: number,

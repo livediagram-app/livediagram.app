@@ -1,8 +1,8 @@
 // Who is sitting in each chair, from presence, never from the document (docs/specs/008-canvas/avatar-mode.md):
 // our own character plus every seated peer, keyed by chair id.
 
-export type Sitter = { name: string; color: string };
-export type ChairSitters = ReadonlyMap<string, readonly Sitter[]>;
+type Sitter = { name: string; color: string };
+type ChairSitters = ReadonlyMap<string, readonly Sitter[]>;
 
 export function sittersByChair(
   selfSeatedOn: string | null | undefined,

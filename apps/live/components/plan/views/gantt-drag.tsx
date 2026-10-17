@@ -21,7 +21,7 @@ import { followWindowDrag } from '@/lib/window-drag';
 const DRAG_SLOP_PX = 3;
 
 // A drag in flight: the mark's new ends, and the day its label names (both ends for a whole bar).
-export type GanttPreview = {
+type GanttPreview = {
   itemId: string;
   from: number;
   to: number;

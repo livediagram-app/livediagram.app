@@ -64,7 +64,7 @@ export function encodeNumber(value: number, length: 1 | 2 | 4 | 8 = 8): Uint8Arr
  */
 export type StrokeLayout = 'current' | 'older' | 'olderPlain' | 'olderTimed' | 'arrowhead';
 
-export type StrokeDescription = {
+type StrokeDescription = {
   layout?: StrokeLayout;
   unitScale?: number;
   /** In stored units. */
@@ -161,10 +161,10 @@ export const point = (x: number, y: number) =>
 export const size = (w: number, h: number) =>
   node(MSWB_TYPE.size, { [MSWB_TRAIT.children]: [num(w), num(h)] });
 export const argb = (hex: string, alpha = 1) => node(MSWB_TYPE.argb, {}, encodeArgb(hex, alpha));
-export const enumValue = (type: string) => node(type);
+const enumValue = (type: string) => node(type);
 
 /** A text body: paragraphs of one run each. */
-export const textBody = (paragraphs: string[]) =>
+const textBody = (paragraphs: string[]) =>
   paragraphs.map((p) =>
     node(MSWB_TYPE.paragraph, {
       [MSWB_TRAIT.children]: [
@@ -179,7 +179,7 @@ export const textBody = (paragraphs: string[]) =>
 
 // ---- elements -------------------------------------------------------------------------------
 
-export type StrokeNodeDescription = {
+type StrokeNodeDescription = {
   preset?: 'pen' | 'highlighter' | 'highlighterOld' | 'rainbow' | 'galaxy';
   colour?: string;
   alpha?: number;
@@ -190,7 +190,7 @@ export type StrokeNodeDescription = {
   arrowhead?: StrokeDescription;
 };
 
-export function strokeNode(d: StrokeNodeDescription): RawNode {
+function strokeNode(d: StrokeNodeDescription): RawNode {
   const preset = d.preset ?? 'pen';
   const traits: Record<string, RawNode[]> = {};
   if (d.colour)
@@ -343,7 +343,7 @@ export const tableNode = (
 
 // ---- changes --------------------------------------------------------------------------------
 
-export type RawChange = {
+type RawChange = {
   type: string;
   fuid: string;
   changeOrder: number;
@@ -508,8 +508,8 @@ export function history(start = Date.UTC(2026, 0, 1)) {
 
 // ---- a whole board --------------------------------------------------------------------------
 
-export const ROOT_ID = 'tree-root-1';
-export const LAYER_ID = 'tree-root-2';
+const ROOT_ID = 'tree-root-1';
+const LAYER_ID = 'tree-root-2';
 export const CANVAS_ID = 'tree-root-3';
 
 export function treeInit(): RawNode {
@@ -530,7 +530,7 @@ export function treeInit(): RawNode {
   );
 }
 
-export type BoardDescription = {
+type BoardDescription = {
   id?: string;
   title?: string | null;
   created?: string;

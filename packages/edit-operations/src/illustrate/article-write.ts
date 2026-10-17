@@ -34,7 +34,7 @@ import {
 } from '@livediagram/document';
 import { enterIllustrate, type IllustrateIds } from './enter';
 
-export type ArticleWriteOutcome =
+type ArticleWriteOutcome =
   | { tab: Tab; flow: string; created: boolean; lines: string[]; switched: boolean }
   | { refusal: IllustrateRefusal };
 

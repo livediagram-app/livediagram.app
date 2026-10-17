@@ -52,7 +52,7 @@ export type BoardSpec = {
 };
 
 // What the rail beside a board holds, top to bottom (plan-templates.md "Layout of a template tab").
-export type RailItem =
+type RailItem =
   | { kind: 'sticky'; text: string }
   | { kind: 'timer'; minutes: number }
   // A session vote with this many dots each, cast on the board's cards (docs/specs/012-collaboration/session-tools.md
@@ -65,7 +65,7 @@ export type RailItem =
 // filling its tab.
 export type SheetSpec = { start: TemplateStartId; width: number; height: number; fillTab?: true };
 
-export type PlanTabSpec = {
+type PlanTabSpec = {
   name: string;
   board?: BoardSpec;
   sheet?: SheetSpec;

@@ -1,7 +1,7 @@
 // What each function takes and does, in a line (blueprint sheets-engine.md "Functions"): the editor's autocomplete
 // and argument hint, and the Sheet Functions help article, read it. A flat catalogue (exempt from the size rule);
 // a test keeps it, the registry and formulas.md in step. Optional arguments are in [brackets]; "…" repeats.
-export type FunctionDoc = { args: readonly string[]; summary: string; example: string };
+type FunctionDoc = { args: readonly string[]; summary: string; example: string };
 
 // Arguments split on commas outside brackets, so a repeating "[value2, …]" stays one argument.
 function splitArgs(args: string): string[] {

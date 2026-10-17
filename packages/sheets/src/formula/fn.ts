@@ -62,7 +62,7 @@ export function volatileFn(
   return { min, max, volatile: true, impl };
 }
 
-export function rangeCells(r: RangeRef): number {
+function rangeCells(r: RangeRef): number {
   return (r.r2 - r.r1 + 1) * (r.c2 - r.c1 + 1);
 }
 
@@ -120,7 +120,7 @@ export function opt<T>(
   return read(a, f);
 }
 
-export function asArray(v: Value): ValueArray {
+function asArray(v: Value): ValueArray {
   return isArray(v) ? v : { rows: [[v]] };
 }
 

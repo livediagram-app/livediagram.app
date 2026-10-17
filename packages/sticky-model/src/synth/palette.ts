@@ -23,7 +23,7 @@ export const PAPERS = {
 } satisfies Record<string, HsvRange>;
 
 export type PaperName = keyof typeof PAPERS;
-export const PAPER_NAMES = Object.keys(PAPERS) as PaperName[];
+const PAPER_NAMES = Object.keys(PAPERS) as PaperName[];
 
 // Orange is the domain event and dominates every real wall; the rest share
 // what is left, so the model still sees plenty of each.

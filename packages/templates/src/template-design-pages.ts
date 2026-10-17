@@ -16,7 +16,7 @@ import {
 import { templatePage } from './template-page-kit';
 import type { TemplateKind } from './templates';
 
-export type DesignTemplateKind =
+type DesignTemplateKind =
   'floor-plan' | 'storyboard' | 'browser-wireframe' | 'laptop-wireframe' | 'mobile-wireframe';
 
 // A cool, quiet paper the grey wireframe frames read on; white for the storyboard's printed sheet;

@@ -17,7 +17,7 @@ import type { LandContext } from './context';
 import type { SceneText } from './scene';
 
 // A scale this close to 1 is no visible difference, so none is written.
-export const TEXT_SCALE_EPSILON = 0.005;
+const TEXT_SCALE_EPSILON = 0.005;
 
 // Source font families to the catalogue (fonts.ts): Excalifont, Virgil and Whiteboard's ink fonts
 // read as hand; the board's own font for sans-serif.
@@ -49,7 +49,7 @@ export function diagramTextSize(fontPx: number): TextSize {
   return fontPx <= 16 ? 'sm' : fontPx <= 22 ? 'md' : 'lg';
 }
 
-export type SceneTextFields = {
+type SceneTextFields = {
   label: string;
   textSize: TextSize;
   textScale?: number;

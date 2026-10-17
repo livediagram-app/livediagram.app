@@ -57,7 +57,7 @@ export const ViewTitle = createContext<{ title?: string; rename?: (title: string
 );
 
 // The view's name with its own title in its place: "Due Calendar · Oct 2026" becomes "Launch · Oct 2026".
-export function titledView(name: string, own: string | undefined): string {
+function titledView(name: string, own: string | undefined): string {
   if (!own) return name;
   const at = name.indexOf(' · ');
   return at < 0 ? own : `${own}${name.slice(at)}`;
@@ -65,7 +65,7 @@ export function titledView(name: string, own: string | undefined): string {
 
 // The view's own name without what it shows at the moment ("Due Calendar · October 2026" is "Due Calendar"): what a
 // rename starts from, so saving it never bakes the month in.
-export function bareViewName(name: string): string {
+function bareViewName(name: string): string {
   const at = name.indexOf(' · ');
   return at < 0 ? name : name.slice(0, at);
 }

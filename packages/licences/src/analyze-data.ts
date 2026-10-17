@@ -1,7 +1,7 @@
 import { LicencesError } from './errors.ts';
 
 // One app's shipped modules and emitted files, as the bundler reports them.
-export type DecodedBundle = { sources: string[]; assets: string[] };
+type DecodedBundle = { sources: string[]; assets: string[] };
 
 // The tree root carries a null parent.
 type Source = { path: string; parent_source_index?: number | null };

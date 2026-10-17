@@ -8,7 +8,7 @@ import { useEffect, useEffectEvent, useRef } from 'react';
 // reload or Back never copies a second time. An owner (no session share code) only loses the
 // parameter: their own document has nothing to copy.
 
-export const AUTO_COPY_PARAM = 'copy';
+const AUTO_COPY_PARAM = 'copy';
 
 export function hasAutoCopyParam(search: string): boolean {
   return new URLSearchParams(search).get(AUTO_COPY_PARAM) === '1';

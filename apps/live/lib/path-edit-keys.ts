@@ -5,7 +5,7 @@ import type { PathAnchor } from '@livediagram/document';
 import { canJoin, deleteNodes, moveNodes } from './path-edit';
 import type { PathEditKind } from '@/hooks/canvas/usePathCommits';
 
-export type PathKeyOutcome = {
+type PathKeyOutcome = {
   // The key is edit mode's: nothing else acts on it.
   claim: boolean;
   select?: ReadonlySet<number>;

@@ -794,8 +794,8 @@ which takes that one card off the reader's feed.
   team's shared activity feed (§3.4) is untouched: this verb only exists
   on the personal Timeline, which is the only feed with an Explorer
   context to build the menu from.
-- **Soft so a re-emit can't resurrect it.** `attachEventToScopes` is
-  INSERT OR IGNORE against the composite key, so the coalesced editing
+- **Soft so a re-emit can't resurrect it.** An emit attaches its scopes
+  with INSERT OR IGNORE against the composite key, so the coalesced editing
   event — which re-attaches on every save — finds the dismissed row and
   leaves it dismissed. Removing today's "Document Updated" and then
   saving again does not bring it back; the reader said they'd seen

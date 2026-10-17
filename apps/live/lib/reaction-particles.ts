@@ -335,7 +335,7 @@ export function stepParticles(ps: Particle[], dt: number): Particle[] {
 }
 
 /** 0..1, how far through its life a particle is. Negative age reads as 0. */
-export function progressOf(p: Particle): number {
+function progressOf(p: Particle): number {
   return p.age <= 0 ? 0 : Math.min(1, p.age / p.life);
 }
 

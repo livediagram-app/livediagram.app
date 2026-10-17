@@ -57,7 +57,7 @@ export function isSelectionMode(value: unknown): value is SelectionMode {
 // The Done check (docs/specs/012-collaboration/done-check.md) is one too: it is a roster and a button, laid
 // out for its own content, and stretching it only spreads the same three
 // things over empty card.
-export const FIXED_SIZE_SHAPES: ReadonlySet<string> = new Set([
+const FIXED_SIZE_SHAPES: ReadonlySet<string> = new Set([
   'mode-button',
   'session-button',
   'done-check',

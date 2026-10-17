@@ -9,7 +9,7 @@ import { apiListWorkbenchPairings, apiUnpairWorkbench } from '@/lib/api-client';
 
 const NONE: readonly WorkbenchPairing[] = [];
 
-export type WorkbenchPairingsController = {
+type WorkbenchPairingsController = {
   // A token's pairings, in the api's order (newest first); none is an empty list.
   forToken: (tokenId: string) => readonly WorkbenchPairing[];
   unpair: (pairingId: string) => Promise<void>;

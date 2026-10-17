@@ -15,7 +15,7 @@ import {
   type TextRun,
 } from '@livediagram/document';
 
-export type NoteFields = {
+type NoteFields = {
   // Empty string means "no note" — the caller strips both fields.
   note: string;
   // Absent when the note carries no formatting, so an unformatted note

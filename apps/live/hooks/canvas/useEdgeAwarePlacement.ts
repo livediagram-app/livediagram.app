@@ -2,9 +2,9 @@
 
 import { useEffectEvent, useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
 import { VIEWPORT_EDGE_MARGIN as EDGE } from '@/lib/clamp-to-viewport';
+import type { Rect } from '@livediagram/document';
 
 type XY = { x: number; y: number };
-type Bounds = { x: number; y: number; width: number; height: number };
 
 // Whether a box overlaps any floating chrome over the canvas (`data-floating-panel`: the palette, panels, the
 // top-centre toolbar), other than one it sits in.
@@ -40,7 +40,7 @@ export function overlapsChrome(r: DOMRect, self: Element): boolean {
 // 1/zoom so it stays a constant on-screen size. Callers still read `placeAbove`
 // for any above/below-dependent chrome (e.g. a title badge's side).
 export function useEdgeAwarePlacement(
-  bounds: Bounds,
+  bounds: Rect,
   canvasOffset: XY,
   zoom: number,
   gap: number,

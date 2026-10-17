@@ -11,7 +11,7 @@ import {
 
 // What a new type is being made for: a board (with the statuses its columns use), or a Gantt chart (with the fields it
 // needs to draw the type: Start and Due), docs/specs/026-plan/plan-views.md "Gantt Chart".
-export type TypeForBoard = {
+type TypeForBoard = {
   boardId?: string;
   statuses?: readonly string[];
   viewId?: string;

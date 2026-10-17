@@ -10,7 +10,7 @@
 import type { RemoteViewport } from '@/hooks/collab/useFollowMe';
 
 /** A view as either end can describe it: a canvas size, a pan, and a zoom. */
-export type FocusView = {
+type FocusView = {
   size: { width: number; height: number };
   pan: { x: number; y: number };
   zoom: number;
@@ -36,7 +36,7 @@ export function viewIsCentredOn(view: FocusView, at: { x: number; y: number }) {
 }
 
 /** What a press did, from the presser's side. */
-export type FocusPressOutcome = 'alone' | 'already-there' | 'asked';
+type FocusPressOutcome = 'alone' | 'already-there' | 'asked';
 
 export const FOCUS_PRESS_MESSAGE: Record<FocusPressOutcome, string> = {
   alone: 'Nobody else is on this canvas right now',

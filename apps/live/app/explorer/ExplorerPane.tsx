@@ -19,7 +19,7 @@ import { isOfflineIdSync } from '@/lib/offline/offline-store';
 import { useTimelineFeed } from './useTimelineFeed';
 import { useExplorerImport } from './useExplorerImport';
 import { explorerPathFor } from './routes';
-import { VIEW_TITLES } from './view-titles';
+import { rowLocation } from './row-location';
 import { paneHeaderActions } from './pane-header-actions';
 import { useTagsPage } from './tags/useTagsPage';
 
@@ -175,38 +175,16 @@ export function ExplorerPane() {
   // real team's title is never suppressed by a stale 404 from the last one.
   const [notFoundIn, setNotFoundIn] = useState<typeof selected | null>(null);
   const teamNotFound = notFoundIn === selected;
-  // Where each row lives (docs/specs/013-workspace/recent-folder-chip.md), on the views that list
-  // more than one place: Recent, Favourites and Search results, and a scoped view whose lens
-  // reaches into its subfolders (explorer-filters.md "Views"). Elsewhere every row sits in the
-  // view's own folder, where the chip would only repeat its title.
-  //
-  // Rows shared WITH you carry no folderId at all (they live in the sharer's
-  // library, not yours), so they get no chip rather than a misleading one.
+  // Where each row lives (docs/specs/013-workspace/recent-folder-chip.md), on the views that list more than one place
+  // (row-location.ts).
   const folderChipFor = useCallback(
     (d: PaneDocument): { label: string; onOpen: () => void } | null => {
-      if (d.shared) return null;
-      const aggregates =
-        selected.kind === 'recent' ||
-        selected.kind === 'favourites' ||
-        selected.kind === 'search' ||
-        selected.kind === 'tags';
-      const reaching = lensResult.active && (selected.kind === 'all' || selected.kind === 'folder');
-      if (!aggregates && !reaching) return null;
-      // A row in the folder the reader is in needs no chip.
-      const here = selected.kind === 'folder' ? selected.id : null;
-      if (reaching && d.folderId === here) return null;
-      // A team document's folder belongs to the team's library, which `folderById` (your
-      // personal folders) doesn't index: the chip names the TEAM and opens its library.
-      if (d.team) {
-        return { label: d.team.name, onOpen: () => go({ kind: 'team', id: d.team!.id }) };
-      }
-      if (!d.folderId) {
-        // The root is a location too: My documents.
-        return { label: VIEW_TITLES.all, onOpen: () => go({ kind: 'all' }) };
-      }
-      const folder = folderById.get(d.folderId);
-      if (!folder) return null;
-      return { label: folder.name, onOpen: () => go({ kind: 'folder', id: folder.id }) };
+      const where = rowLocation(d, {
+        selected,
+        lensActive: lensResult.active,
+        folderById,
+      });
+      return where ? { label: where.label, onOpen: () => go(where.opens) } : null;
     },
     [selected, folderById, go, lensResult.active],
   );

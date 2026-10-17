@@ -30,7 +30,7 @@ import {
 } from './type-catalogue';
 
 // Each size's slots by the names an agent gives them, in reading order.
-export const DISPLAY_SLOT_NAMES: Readonly<Record<CardSize, Readonly<Record<string, CardSlot>>>> = {
+const DISPLAY_SLOT_NAMES: Readonly<Record<CardSize, Readonly<Record<string, CardSlot>>>> = {
   minimal: { beforeTitle: 'lead', afterTitle: 'trail' },
   compact: { besideTitle: 'lead', belowTitle: 'row', bottomRight: 'trail' },
   detailed: {

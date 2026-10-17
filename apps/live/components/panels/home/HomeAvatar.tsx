@@ -12,7 +12,7 @@ import { PAGE_RING } from './home-styles';
 const FALLBACK_COLOUR = '#64748b';
 
 /** A summary overlaps at most this many avatars, then a `+N` disc. */
-export const AVATAR_STACK_MAX = 3;
+const AVATAR_STACK_MAX = 3;
 
 export function HomeAvatar({ person, size }: { person: HomePerson | undefined; size: number }) {
   return (

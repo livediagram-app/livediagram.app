@@ -106,7 +106,7 @@ export function withMindBranches(
 }
 
 /** A node grown from another, plus what had to move to fit it in. */
-export type MindGrowth = {
+type MindGrowth = {
   node: ShapeElement;
   arrow: ArrowElement | null;
   /** Existing nodes to move, by id, so the new one has somewhere to sit. */

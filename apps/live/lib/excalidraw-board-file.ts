@@ -14,7 +14,7 @@ export const EXCALIDRAW_NOT_A_SCENE = "This file isn't an Excalidraw scene.";
 const UNREADABLE_FILE = "This file couldn't be read.";
 
 /** Excalidraw's default file name: `Untitled-${getDateTime()}`, its local save moment. */
-export const EXCALIDRAW_UNTITLED_NAME = /^Untitled-(\d{4})-(\d{2})-(\d{2})-(\d{2})(\d{2})$/;
+const EXCALIDRAW_UNTITLED_NAME = /^Untitled-(\d{4})-(\d{2})-(\d{2})-(\d{2})(\d{2})$/;
 
 // Longest first, so `.excalidraw.png` is not read as `.png`.
 const EXTENSIONS = ['.excalidraw.png', '.excalidraw.svg', '.excalidraw', '.png', '.svg', '.json'];
@@ -25,7 +25,7 @@ const DATE_FORMAT = new Intl.DateTimeFormat('en-GB', {
   year: 'numeric',
 });
 
-export type ExcalidrawFileIdentity = { title: string; createdAt?: string; modifiedAt?: string };
+type ExcalidrawFileIdentity = { title: string; createdAt?: string; modifiedAt?: string };
 
 function stripExtension(name: string): string {
   const lower = name.toLowerCase();
@@ -69,7 +69,7 @@ export function excalidrawFileIdentity(name: string, lastModified: number): Exca
   };
 }
 
-export type ExcalidrawBoardFiles = {
+type ExcalidrawBoardFiles = {
   scenes: BoardScene[];
   // Where each scene was found (its file's kind), parallel to `scenes`.
   containers: ExcalidrawContainer[];

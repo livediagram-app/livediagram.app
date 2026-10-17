@@ -38,16 +38,16 @@ import { LABEL_LINE_HEIGHT, labelMeasure } from './svg-render-primitives';
 
 type Pt = { x: number; y: number };
 
-export const END_STUB_PX = 12;
+const END_STUB_PX = 12;
 export const LABEL_PAD_X_PX = 4;
 export const LABEL_PAD_Y_PX = 2;
 export const KNOCKOUT_MARGIN_PX = 3;
 export const KNOCKOUT_RADIUS_PX = 4;
-export const BESIDE_GAP_PX = 6;
-export const LOCAL_DIRECTION_WINDOW_PX = 24;
-export const CROSS_CAP_PX = 120;
-export const ALONG_CAP_PX = 240;
-export const CHAR_WIDTH_FALLBACK_PX = 7;
+const BESIDE_GAP_PX = 6;
+const LOCAL_DIRECTION_WINDOW_PX = 24;
+const CROSS_CAP_PX = 120;
+const ALONG_CAP_PX = 240;
+const CHAR_WIDTH_FALLBACK_PX = 7;
 const WORD_WIDTH_CACHE_MAX = 2000;
 // Slide candidates: twelfths of the open run, at most a quarter of it either
 // side of the preferred centre.
@@ -340,7 +340,7 @@ function hitsAny(rect: Rect, boxes: Rect[]): boolean {
 // Layout
 // ---------------------------------------------------------------------
 
-export type ArrowLabelContext = {
+type ArrowLabelContext = {
   elements: Element[];
   // Rects already claimed by earlier labels.
   claimed: Rect[];

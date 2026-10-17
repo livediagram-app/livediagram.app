@@ -5,6 +5,7 @@
 // tick is a hot path.
 
 import type { SetStateAction } from 'react';
+import { createListeners } from '@/lib/listeners';
 
 export type Point = { x: number; y: number };
 export type View = { readonly zoom: number; readonly offset: Point };
@@ -19,7 +20,7 @@ export type ViewportStore = {
 
 export function createViewportStore(zoom: number): ViewportStore {
   let current: View = { zoom, offset: { x: 0, y: 0 } };
-  const listeners = new Set<() => void>();
+  const listeners = createListeners();
   const commit = (next: View) => {
     if (
       next.zoom === current.zoom &&
@@ -29,16 +30,11 @@ export function createViewportStore(zoom: number): ViewportStore {
       return;
     }
     current = next;
-    for (const listener of [...listeners]) listener();
+    listeners.notify();
   };
   return {
     get: () => current,
-    subscribe(listener) {
-      listeners.add(listener);
-      return () => {
-        listeners.delete(listener);
-      };
-    },
+    subscribe: listeners.subscribe,
     setZoom(next) {
       commit({ ...current, zoom: typeof next === 'function' ? next(current.zoom) : next });
     },

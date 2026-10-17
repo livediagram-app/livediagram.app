@@ -18,7 +18,7 @@ import type { TidyUpActions } from './tidy-up-actions';
 // (useCleanupPreview); pressing it commits that layout as one undoable step.
 
 export const ALIGN_NAME = 'Auto-align';
-export const ALIGN_LINE = 'Snap to the grid. Nothing moves far.';
+const ALIGN_LINE = 'Snap to the grid. Nothing moves far.';
 export const TIDY_CAPTION = 'Rearrange shapes from the arrows between them.';
 export const TIDY_EMPTY_NOTE = 'Nothing to tidy yet. Add some shapes and connect them with arrows.';
 export const TIDY_LOCKED_NOTE = 'This tab is locked. Unlock it to tidy its layout.';

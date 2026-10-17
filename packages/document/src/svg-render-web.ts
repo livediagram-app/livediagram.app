@@ -106,20 +106,20 @@ const rect = (el: BoxedElement, r: LayoutRect, rx: number, attrs: string) =>
 const radiusOf = (el: Shape, fallback: number, r: LayoutRect) =>
   cornerRadiusPx(el.borderRadius, r.width, r.height, fallback);
 
+/** What a web component's face (a card's among them) is drawn with: the element's resolved ink and label. */
+export type WebFaceOptions = {
+  stroke: string;
+  fill: string;
+  labelColor: string;
+  label: string;
+  fontFamily?: string;
+  resolveIconArt?: ResolveIconArt;
+  // The tab's tag colours (docs/specs/009-elements/tag-colours.md), for a card's tinted tag chips.
+  tagColours?: readonly TagColour[];
+};
+
 /** The body of a web component shape, or '' for any other kind. */
-export function svgWebComponent(
-  el: Shape,
-  o: {
-    stroke: string;
-    fill: string;
-    labelColor: string;
-    label: string;
-    fontFamily?: string;
-    resolveIconArt?: ResolveIconArt;
-    // The tab's tag colours (docs/specs/009-elements/tag-colours.md), for a card's tinted tag chips.
-    tagColours?: readonly TagColour[];
-  },
-): string {
+export function svgWebComponent(el: Shape, o: WebFaceOptions): string {
   const { stroke, fill, label: text, fontFamily } = o;
   const ink = el.textColor ?? o.labelColor;
   const whole: LayoutRect = { x: 0, y: 0, width: el.width, height: el.height };

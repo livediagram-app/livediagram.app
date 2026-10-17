@@ -22,7 +22,7 @@ export const CARD_H = 50;
 export const CARD_GAP = 4;
 
 // The keys that move a focused entry, and by how many days (with Alt held).
-export const CALENDAR_MOVE_KEYS: Readonly<Record<string, number>> = {
+const CALENDAR_MOVE_KEYS: Readonly<Record<string, number>> = {
   ArrowLeft: -1,
   ArrowRight: 1,
   ArrowUp: -7,
@@ -182,7 +182,7 @@ export function CalendarEntryFace({
   );
 }
 
-export const entryClass = (asCards: boolean, done: boolean) =>
+const entryClass = (asCards: boolean, done: boolean) =>
   asCards
     ? `block w-full min-w-0 shrink-0 cursor-pointer rounded-lg text-left ${done ? 'opacity-60' : ''}`
     : 'flex w-full min-w-0 shrink-0 cursor-pointer items-center gap-1 rounded px-0.5 text-left text-[10px] transition hover:bg-black/5 dark:hover:bg-white/10';

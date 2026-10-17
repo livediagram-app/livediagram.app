@@ -1,6 +1,6 @@
 import { LicencesError } from './errors.ts';
 
-export type PackageLocation = { name: string; root: string; storeVersion: string };
+type PackageLocation = { name: string; root: string; storeVersion: string };
 
 const NODE_MODULES = 'node_modules/';
 // `.pnpm/<store key>/node_modules/`, right before the package directory.

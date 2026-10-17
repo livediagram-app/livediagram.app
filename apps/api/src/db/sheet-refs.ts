@@ -8,7 +8,7 @@ import type { Env } from '../types';
 
 // A sheet id is unique only in its document (a copied document keeps them), so a reference counts only through a
 // tab of the sheet's own document.
-export const REFERENCED = `EXISTS (SELECT 1 FROM sheet_refs r JOIN document_tabs dt ON dt.tab_id = r.tab_id
+const REFERENCED = `EXISTS (SELECT 1 FROM sheet_refs r JOIN document_tabs dt ON dt.tab_id = r.tab_id
   WHERE r.sheet_id = sheets.id AND dt.document_id = sheets.document_id)`;
 
 // The sheet ids a tab's elements reference.

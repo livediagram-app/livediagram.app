@@ -32,7 +32,7 @@ const ROLE_TARGETS: Record<Appearance, Record<Role, { l: number; keep: number; m
 export { THEME_LINE_CONTRAST, THEME_TEXT_CONTRAST };
 
 /** Which appearance a theme is written for: a light canvas is a light theme, a dark canvas a dark one. */
-export function nativeAppearance(theme: ThemeDefinition): Appearance {
+function nativeAppearance(theme: ThemeDefinition): Appearance {
   return canvasSurface(theme.backgroundColor) === 'dark' ? 'dark' : 'light';
 }
 

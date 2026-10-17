@@ -10,7 +10,7 @@
 
 type Rect = { left: number; top: number; width: number; height: number };
 
-export type FlyoutCover = { left: number; top: number; width: number; minHeight: number };
+type FlyoutCover = { left: number; top: number; width: number; minHeight: number };
 
 export function coverHost(
   host: Rect,

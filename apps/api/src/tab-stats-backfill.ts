@@ -15,7 +15,7 @@ export const TAB_STATS_BACKFILL_PAGE_ROWS = 10;
 // Tabs one run may count; the rest wait a day.
 export const TAB_STATS_BACKFILL_MAX_ROWS = 5000;
 // Wall-clock budget per run, as the image-refs backfill's.
-export const TAB_STATS_BACKFILL_BUDGET_MS = 60 * 1000;
+const TAB_STATS_BACKFILL_BUDGET_MS = 60 * 1000;
 
 // The backfill's insert: a row only where none exists.
 export function tabStatsBackfillStatement(

@@ -53,7 +53,7 @@ const STEP_LENGTH = 22;
 
 // What a peer needs to draw someone else's character (docs/specs/008-canvas/avatar-mode.md). Deliberately
 // tiny: it rides the presence channel at cursor rates.
-export type AvatarSnapshot = {
+type AvatarSnapshot = {
   x: number;
   y: number;
   facing: AvatarFacing;

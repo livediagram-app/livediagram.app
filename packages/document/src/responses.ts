@@ -59,7 +59,7 @@ export function responseOf(
 // Non-numeric answers ('?', 'XL') are counted in `count` but excluded from
 // `average` / `min` / `max`: someone who cannot size a story has still
 // answered, and folding their '?' in as a zero would be a lie about the room.
-export type ResponseStats = {
+type ResponseStats = {
   count: number;
   // Distinct answers, in ascending numeric order where numeric, then the rest
   // in first-seen order. Used to decide "unanimous".

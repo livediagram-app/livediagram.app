@@ -1,6 +1,13 @@
 'use client';
 
-import { useLayoutEffect, useRef, useState, type ReactNode } from 'react';
+import {
+  useEffect,
+  useEffectEvent,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from 'react';
 import { clamp, type PlanPalette } from '@livediagram/document';
 import { tourColourVars } from './tour-colours';
 import { placeTourPopover } from './tour-position';
@@ -24,7 +31,7 @@ export type TourCardCopy = {
 // its own way, in place of the single accept button.
 export type TourWelcomeChoice = { id: string; label: string; onPick: () => void };
 
-export const WELCOME_TOUR_COPY: TourCardCopy = {
+const WELCOME_TOUR_COPY: TourCardCopy = {
   welcomeEyebrow: 'Diagram tour',
   accept: 'Yes',
   decline: 'No',
@@ -107,6 +114,23 @@ export function TourPopover({
   // so the initial park-offscreen → placed jump doesn't animate as a fly-in
   // from the corner (a first-paint animation gate).
   const [animatePos, setAnimatePos] = useState(false);
+
+  // Escape is the card's way out (docs/specs/007-editor/editor-tour.md): it declines the offer, skips the tour from
+  // a step and finishes it from the last card, as their buttons do. Not while the key is editing something, where
+  // Escape puts the text back (an element tour asks for exactly that), nor when something else already took it.
+  const onEscape = useEffectEvent((e: KeyboardEvent) => {
+    if (e.key !== 'Escape' || e.defaultPrevented) return;
+    const t = e.target;
+    if (t instanceof HTMLElement && (t.isContentEditable || t.closest('input, textarea, select')))
+      return;
+    if (card === 'outro') onNext();
+    else onSkip();
+  });
+  useEffect(() => {
+    const listener = (e: KeyboardEvent) => onEscape(e);
+    document.addEventListener('keydown', listener);
+    return () => document.removeEventListener('keydown', listener);
+  }, []);
 
   useLayoutEffect(() => {
     const node = ref.current;

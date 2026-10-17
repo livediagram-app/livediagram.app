@@ -43,7 +43,7 @@ export function documentBoardSetups(tabs: readonly Tab[], activeId: string): unk
 // skipped, as for the names. Given the catalogue's type ids, a board whose every named type has since been
 // deleted shows every type again (docs/specs/026-plan/plan-board.md "Card types a board shows"). Serialisable,
 // for the signature.
-export function statusTypesOfSetups(
+function statusTypesOfSetups(
   setups: readonly unknown[],
   known?: ReadonlySet<string>,
 ): [string, 'all' | string[]][] {

@@ -1,4 +1,6 @@
 import { DEFAULT_PEN_CURSOR, penCursor } from './whiteboard-pen-cursor';
+import { WHITEBOARD_SHAPES } from './whiteboard-tool';
+import { shapeKindLabel } from './element-names';
 import type {
   ArrowEnds,
   ComponentKind,
@@ -130,25 +132,18 @@ export type PendingDraw =
   // (usePathDrawGesture) and the tool stays in hand after each path lands.
   | { type: 'path' };
 
-// Title-cased shape label for the draw-to-size mode banner. Avoids the
-// "a / an" article problem by reading "Drag to draw {Rectangle}"
-// instead of "draw a rectangle / an oval". Two kinds get human-
-// friendly aliases (square -> Rectangle, circle -> Oval) to match the
-// palette wording the user just clicked; everything else falls back
-// to a Capitalised version of the raw kind, which is fine for the
-// dozen-or-so other ShapeKind values without anyone having to keep a
-// dictionary in sync.
-function prettyShapeLabel(kind: ShapeKind): string {
-  if (kind === 'square') return 'Rectangle';
-  if (kind === 'circle') return 'Oval';
-  // A hyphenated kind would read as 'Mode-button' / 'Code-block' with the
-  // capitalise-the-first-letter fallback below; spell the words out.
-  if (kind.includes('-'))
-    return kind
-      .split('-')
-      .join(' ')
-      .replace(/^./, (c) => c.toUpperCase());
-  return kind.charAt(0).toUpperCase() + kind.slice(1);
+// The shape the banner names ("Tap to drop or drag to draw Square"), as the tile the person just picked names it.
+// Draw mode's dock names its own shapes (Rectangle, Ellipse); everywhere else a shape is named as the palette and
+// the selection badge name it (shapeKindLabel: Square, Circle). Its own aliases (square -> Rectangle, circle ->
+// Oval) had drifted from both, so a Circle tile armed an "Oval" and a dock Ellipse did too.
+function shapeIntentName(intent: Extract<PendingDraw, { type: 'shape' }>): string {
+  if (intent.board) {
+    const dock = WHITEBOARD_SHAPES.find(
+      (s) => s.intent.type === 'shape' && s.intent.kind === intent.kind,
+    );
+    if (dock) return dock.label;
+  }
+  return shapeKindLabel(intent.kind);
 }
 
 // User-facing component names for the draw-mode banner.
@@ -229,7 +224,7 @@ export function isPathIntent(intent: PendingDraw | null | undefined): boolean {
 
 // What the tab holds that changes a hint: a Plan card goes into a board's column, so its hint says where, or
 // that a board comes first (docs/specs/026-plan/plan-mode.md "The palette").
-export type DrawBannerContext = { hasPlanBoard?: boolean };
+type DrawBannerContext = { hasPlanBoard?: boolean };
 
 export function drawBannerMessage(
   intent: PendingDraw,
@@ -243,7 +238,7 @@ export function drawBannerMessage(
           ? 'Select the board column you want this card to appear in'
           : 'Add a board first in order to use cards';
       }
-      return `Tap to drop or drag to draw ${prettyShapeLabel(intent.kind)}`;
+      return `Tap to drop or drag to draw ${shapeIntentName(intent)}`;
     case 'text':
       return 'Tap to drop or drag to place text';
     case 'sticky':

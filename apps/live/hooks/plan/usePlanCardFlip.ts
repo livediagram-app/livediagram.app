@@ -17,7 +17,7 @@ export const FLIP_CARDS_MAX = 40;
 const FLIP_CLASS = 'plan-card-flip';
 
 // A node's place within `root`, in layout units.
-export function placeWithin(node: HTMLElement, root: HTMLElement): { x: number; y: number } {
+function placeWithin(node: HTMLElement, root: HTMLElement): { x: number; y: number } {
   let x = 0;
   let y = 0;
   let at: HTMLElement | null = node;

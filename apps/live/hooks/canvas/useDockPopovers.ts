@@ -15,7 +15,7 @@ import { useUiScale } from '@/components/providers/ui-scale';
 // scaled width or a scaled popover runs off the right edge.
 const POPOVER_WIDTH = 256;
 // A popover wider than the rest, so its placement keeps all of it on the canvas.
-export const POPOVER_WIDTHS: Partial<Record<string, number>> = {
+const POPOVER_WIDTHS: Partial<Record<string, number>> = {
   'plan-trash': 352,
   // The Layers popover's `w-[22rem]`: roomy rows (docs/specs/006-document/layers.md).
   layers: 352,

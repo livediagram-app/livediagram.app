@@ -3,7 +3,7 @@
 // memory follows the pixels, not the bytes (a flat 8000x8000 PNG is 0.19 MB on disk and 256 MB decoded). Pure and
 // worker-safe; reads only the first bytes it needs and never decodes.
 
-export type PixelSize = { width: number; height: number };
+type PixelSize = { width: number; height: number };
 
 const u16be = (b: Uint8Array, i: number) => (b[i]! << 8) | b[i + 1]!;
 const u16le = (b: Uint8Array, i: number) => b[i]! | (b[i + 1]! << 8);

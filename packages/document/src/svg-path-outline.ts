@@ -12,13 +12,14 @@ export const PATH_CURVE_SEGMENTS = 12;
 // Elliptical arcs likewise: under half a pixel of error on a quarter turn at 200 px.
 export const PATH_ARC_SEGMENTS = 16;
 
-export type SvgSubpath = { points: Point[]; closed: boolean };
+type SvgSubpath = { points: Point[]; closed: boolean };
 
 const PARAMS: Record<string, number> = { M: 2, L: 2, C: 6, A: 7, Z: 0 };
 
 // Points along an SVG arc from `from` to `to`, excluding `from` (SVG 1.1 F.6.5,
-// endpoint to centre parameterisation, radii scaled up when too small).
-function arcPoints(
+// endpoint to centre parameterisation, radii scaled up when too small). `segments`
+// is a count, or a count for the arc's approximate length (its sweep times its larger radius).
+export function arcPoints(
   from: Point,
   rxIn: number,
   ryIn: number,
@@ -26,7 +27,7 @@ function arcPoints(
   largeArc: boolean,
   sweep: boolean,
   to: Point,
-  segments: number,
+  segments: number | ((approxLength: number) => number),
 ): Point[] {
   let rx = Math.abs(rxIn);
   let ry = Math.abs(ryIn);
@@ -56,12 +57,13 @@ function arcPoints(
   let delta = angle((x1 - cx1) / rx, (y1 - cy1) / ry, (-x1 - cx1) / rx, (-y1 - cy1) / ry);
   if (!sweep && delta > 0) delta -= 2 * Math.PI;
   if (sweep && delta < 0) delta += 2 * Math.PI;
+  const n = typeof segments === 'number' ? segments : segments(Math.abs(delta) * Math.max(rx, ry));
   const out: Point[] = [];
-  for (let s = 1; s <= segments; s++) {
-    const t = start + (delta * s) / segments;
+  for (let s = 1; s <= n; s++) {
+    const t = start + (delta * s) / n;
     const ex = rx * Math.cos(t);
     const ey = ry * Math.sin(t);
-    out.push(s === segments ? to : { x: cos * ex - sin * ey + cx, y: sin * ex + cos * ey + cy });
+    out.push(s === n ? to : { x: cos * ex - sin * ey + cx, y: sin * ex + cos * ey + cy });
   }
   return out;
 }

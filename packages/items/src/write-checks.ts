@@ -113,7 +113,7 @@ export function statusExcluded(
   return !typeAllowsStatus(typeIn(types, next.type), status);
 }
 
-export type ItemWriteRefusal = { error: ItemRejection; id?: string };
+type ItemWriteRefusal = { error: ItemRejection; id?: string };
 
 // `write` read as the api reads the request it is sent as: the write with its fields normalised as the api stores
 // them, or the refusal the api would answer.

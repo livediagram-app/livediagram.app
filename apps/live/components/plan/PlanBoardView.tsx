@@ -75,7 +75,7 @@ const stop = (e: { stopPropagation: () => void }) => e.stopPropagation();
 // The board body keeps its presses (cards, cells, buttons) from the canvas, except a finger on empty board,
 // which pans the canvas as it would anywhere else, never moving the board: only its header does that
 // (docs/specs/026-plan/plan-board.md "On a phone").
-export function keepBoardPress(e: React.PointerEvent<HTMLElement>): void {
+function keepBoardPress(e: React.PointerEvent<HTMLElement>): void {
   if (e.pointerType === 'touch') {
     const t = e.target as HTMLElement;
     if (!t.closest('[data-plan-card], button, input, select, textarea, [role="button"]')) {

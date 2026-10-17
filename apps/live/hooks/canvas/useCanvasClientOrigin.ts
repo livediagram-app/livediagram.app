@@ -1,6 +1,6 @@
 import { useEffectEvent, useLayoutEffect, useState, type RefObject } from 'react';
 
-export type ClientOrigin = { left: number; top: number };
+type ClientOrigin = { left: number; top: number };
 
 // Where canvas (0, 0) sits on screen: the panned + zoomed wrapper's client rect origin. Overlays drawn
 // in fixed client coordinates convert canvas points with it (`left + x * zoom`).

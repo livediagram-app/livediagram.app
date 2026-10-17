@@ -96,3 +96,21 @@ describe('useTabEntryEffects', () => {
     expect(fitToScreen).toHaveBeenCalledTimes(1);
   });
 });
+
+// The tab pin (#t=<tab>) is the editor's: an address that names no document (new-document-route.md "Unknown
+// addresses") shows the not-found card and keeps its own address.
+describe('useTabEntryEffects tab pin', () => {
+  afterEach(() => window.history.replaceState(null, '', '/'));
+
+  it('pins the active tab on a document address', () => {
+    window.history.replaceState(null, '', '/document/doc-1');
+    setup({ activeId: 't1', elementCount: 0, tabLoaded: true });
+    expect(window.location.hash).toBe('#t=t1');
+  });
+
+  it('leaves an address that names no document alone', () => {
+    window.history.replaceState(null, '', '/explorer/mine');
+    setup({ activeId: 't1', elementCount: 0, tabLoaded: true });
+    expect(window.location.href).toBe(`${window.location.origin}/explorer/mine`);
+  });
+});

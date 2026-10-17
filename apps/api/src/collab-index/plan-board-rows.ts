@@ -12,7 +12,7 @@ import { normaliseBoardSetup } from '@livediagram/items';
 // there when no column holds it. Never a real status (a status is trimmed text a person typed).
 export const ALL_CARDS_STATUS = '*';
 
-export type PlanBoardStatusRow = {
+type PlanBoardStatusRow = {
   elementId: string;
   boardTitle: string;
   status: string;

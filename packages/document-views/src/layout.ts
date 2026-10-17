@@ -10,7 +10,7 @@ import type { ViewModel } from './model';
 import { rowsOf } from './reading-order';
 import { depthFirst, isViewRun, subtreeItems, type ViewNode } from './tree';
 
-export type LayoutOptions = { budget?: number; door?: ViewDoor; only?: string; coarse?: boolean };
+type LayoutOptions = { budget?: number; door?: ViewDoor; only?: string; coarse?: boolean };
 
 const BOX = { one: 'box', many: 'boxes' };
 const ARROW = { one: 'arrow', many: 'arrows' };

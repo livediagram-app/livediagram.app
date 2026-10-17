@@ -18,8 +18,8 @@ import { DROPDOWN_OPTIONS_MAX } from '../limits';
 import { firstRuleAt, ruleIndex } from './rule-index';
 
 // A Date rule's dates: 31 December 1899 to 31 December 9999 (data-validation.md "What each rule allows").
-export const DATE_SERIAL_MIN = 1;
-export const DATE_SERIAL_MAX = 2_958_465;
+const DATE_SERIAL_MIN = 1;
+const DATE_SERIAL_MAX = 2_958_465;
 // How many options a refusal line names before "and N more".
 const LINE_OPTIONS_SHOWN = 5;
 

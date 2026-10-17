@@ -23,6 +23,7 @@ import { duplicateDocument as duplicate } from '@/lib/duplicate-document';
 import { markDocumentDeleted, unmarkDocumentDeleted } from '@/lib/document-tombstones';
 import { handOffDeleteUndo, offerDeleteUndo, type DeletedTrash } from '@/lib/document-delete-undo';
 import { logMoveFailure } from '@/lib/move-failure';
+import { DOCUMENT_FAILURE, FOLDER_FAILURE } from '@/lib/write-failure-copy';
 import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
 import { folderDeleteConfirmation } from '@/lib/folder-delete-confirmation';
 import { folderDefaultKeys } from '@/lib/placement-defaults/default-destination';
@@ -125,7 +126,7 @@ export function useDocumentListActions(deps: DocumentListActionsDeps) {
         // — a silent swallow left the row showing a name the server rejected.
         if (prev)
           setDocumentList((p) => p.map((d) => (d.id === id ? { ...d, name: prev.name } : d)));
-        toast.error('Could not rename the document. Please try again.');
+        toast.error(DOCUMENT_FAILURE.rename);
       });
   };
 
@@ -194,7 +195,7 @@ export function useDocumentListActions(deps: DocumentListActionsDeps) {
           prev.some((d) => d.id === id) ? prev : [...prev.slice(0, at), row, ...prev.slice(at)],
         );
       }
-      toast.error('Could not delete the document. Please try again.');
+      toast.error(DOCUMENT_FAILURE.delete);
       return;
     }
     track('Document', 'Deleted');
@@ -243,7 +244,7 @@ export function useDocumentListActions(deps: DocumentListActionsDeps) {
     setDocumentList((prev) =>
       prev.map((d) => (movedUp.has(d.id) && d.folderId === parentId ? { ...d, folderId: id } : d)),
     );
-    toast.error('Could not delete the folder. Try again.');
+    toast.error(FOLDER_FAILURE.delete);
     return false;
   };
 
@@ -266,7 +267,7 @@ export function useDocumentListActions(deps: DocumentListActionsDeps) {
         setDocumentList((prev) =>
           prev.map((d) => (d.id === id ? { ...d, folderId: prevFolderId } : d)),
         );
-        toast.error('Could not move the document. Please try again.');
+        toast.error(DOCUMENT_FAILURE.move);
       });
   };
 
@@ -286,7 +287,7 @@ export function useDocumentListActions(deps: DocumentListActionsDeps) {
       toast.success('Document duplicated');
       await afterDuplicate(newId);
     } else {
-      toast.error("Couldn't duplicate that document. Try again.");
+      toast.error(DOCUMENT_FAILURE.duplicate);
     }
   };
 

@@ -385,7 +385,7 @@ export function recountStatement(
 }
 
 // JSON arrays of `items`, each at most about `max` bytes.
-export function byteChunks<T>(items: readonly T[], max: number): string[] {
+function byteChunks<T>(items: readonly T[], max: number): string[] {
   const out: string[] = [];
   let cur: string[] = [];
   let size = 2;

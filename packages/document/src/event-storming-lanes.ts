@@ -68,7 +68,7 @@ export const ES_CANDIDATE_RADIUS_X = ES_NOTE_SIZE_PX.square.width / 2;
 // How far above / below a note another one can be and still suggest a slot.
 // Two lanes: a column is a relationship between neighbouring rows, and a note
 // six rows down is a different part of the story.
-export const ES_CANDIDATE_REACH_LANES = 2;
+const ES_CANDIDATE_REACH_LANES = 2;
 
 // y is a REAL threshold too — half the lane gap, so a note deliberately parked
 // between two lanes stays there.
@@ -89,7 +89,7 @@ export function laneIndexAt(y: number, timeline: EsTimeline): number {
   return Math.round((y - laneCentre(0, timeline)) / ES_LANE_PITCH);
 }
 
-export type LaneSnap = {
+type LaneSnap = {
   // The bounds' left edge, untouched: a lane is a row and has no opinion
   // about x. Carried so a caller can use one shape for the whole placement.
   x: number;
@@ -128,7 +128,7 @@ export function snapToLane(
 // How close to a lane centre counts as ON it. Coordinates arrive as floats
 // from transforms and imports, so exact equality would call a note off-lane
 // for a rounding error.
-export const LANE_EPSILON = 0.5;
+const LANE_EPSILON = 0.5;
 
 export function laneSnapThreshold(held: boolean): number {
   return held ? Infinity : ES_LANE_SNAP_Y;
@@ -213,7 +213,7 @@ const RHYTHM_SLOTS_EACH_WAY = 4;
 // How many squares of empty wall a row's own slot may leave before the lanes
 // above and below outrank it (docs/specs/021-event-storming/event-storming.md Phase 6: the operator's "one sticky in
 // between").
-export const ES_OWN_ROW_FIRST_STEPS = 1;
+const ES_OWN_ROW_FIRST_STEPS = 1;
 
 function rhythmSlots(
   neighbour: { x: number; width: number },

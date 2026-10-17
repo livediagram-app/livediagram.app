@@ -9,7 +9,7 @@ import {
 } from '@livediagram/api-schema';
 import type { EditorMode } from '@livediagram/document';
 
-export type DefaultKeyEntry = { key: PlacementDefaultKey; label: string; noun: string };
+type DefaultKeyEntry = { key: PlacementDefaultKey; label: string; noun: string };
 
 type Words = { label: string; noun: string };
 

@@ -6,7 +6,7 @@ import type { ArrowElement, Element, ElementId } from '@livediagram/document';
 import { refOf, type LintContext } from './context';
 
 // The ids an arrow's ends are pinned to, when both are pinned to an element.
-export function pinnedEnds(arrow: Element): [ElementId, ElementId] | null {
+function pinnedEnds(arrow: Element): [ElementId, ElementId] | null {
   if (arrow.type !== 'arrow' || arrow.from.kind !== 'pinned' || arrow.to.kind !== 'pinned')
     return null;
   return [arrow.from.elementId, arrow.to.elementId];

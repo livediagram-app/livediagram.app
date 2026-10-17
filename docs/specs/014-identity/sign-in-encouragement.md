@@ -36,6 +36,10 @@ Common gate (all must hold):
 The pane reserves extra bottom padding while it's up so the last row
 never hides behind it.
 
+**Toasts stand on it.** While the banner shows, in the Explorer or the editor, it publishes how far its top sits
+above the bottom of the screen (`--lvd-signin-banner`), and the toast stack rises above that instead of landing on
+its words: a "Document deleted · Undo" used to sit across its message.
+
 **Editor** (`app/document/[id]/EditorView.tsx`): shown only **after a
 ~5 minute delay** into the session (`SIGNIN_BANNER_DELAY_MS`), so it
 never greets someone the instant they open a document. It sits above

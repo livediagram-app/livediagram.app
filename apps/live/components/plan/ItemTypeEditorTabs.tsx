@@ -9,7 +9,7 @@ import { SlidingTabUnderline } from '@/components/primitives/SlidingTabUnderline
 export const TYPE_EDITOR_TABS = ['configuration', 'statuses', 'display'] as const;
 export type TypeEditorTab = (typeof TYPE_EDITOR_TABS)[number];
 
-export const TYPE_EDITOR_TAB_LABELS: Record<TypeEditorTab, string> = {
+const TYPE_EDITOR_TAB_LABELS: Record<TypeEditorTab, string> = {
   configuration: 'Configuration',
   statuses: 'States',
   display: 'Display',

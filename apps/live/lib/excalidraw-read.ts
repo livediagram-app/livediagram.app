@@ -7,7 +7,7 @@ import { extractExcalidrawScene, NO_SCENE, type ExcalidrawContainer } from './ex
 import { readExcalidrawEnvelope } from './excalidraw-envelope';
 import { excalidrawToBoardScene } from './excalidraw-scene';
 
-export type ExcalidrawSceneRead = { ok: true; scene: BoardScene } | { ok: false; error: string };
+type ExcalidrawSceneRead = { ok: true; scene: BoardScene } | { ok: false; error: string };
 
 /** An Excalidraw text read into a board scene, or the rejection's message. */
 export function sceneFromExcalidrawText(text: string): ExcalidrawSceneRead {

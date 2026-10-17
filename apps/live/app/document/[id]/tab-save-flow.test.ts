@@ -60,7 +60,7 @@ const columnNames = (tab: Tab): string[] => {
 // One room and one D1, each built from the pure parts the real ones use. The room takes a frame a tick
 // after it is sent (a socket is not instant), sequences it, records it in its ledger and only then
 // acknowledges it, as the Durable Object does. D1 answers a tab PUT at once the way the api does: it
-// merges in what the room sequenced after the saver's cursor (mergeRoomLedger), then the last write wins.
+// merges in what the room sequenced after the saver's cursor (fetchRoomLedger + applyRoomLedger), then the last write wins.
 function world(initial: Tab) {
   let seq = 0;
   const ledger = new Map<string, ElementLedger | VoteLedger>();

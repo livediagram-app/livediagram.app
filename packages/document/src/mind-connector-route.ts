@@ -20,7 +20,7 @@ type Delta = { dx: number; dy: number };
 
 /** How a finish draws a mind connector: angled through `corners` (absolute, in from-to order; none for a
  *  run whose ends already line up), or a straight spoke. */
-export type MindConnectorRoute =
+type MindConnectorRoute =
   { style: 'angled'; corners: Point[] } | { style: 'straight'; corners: [] };
 
 const isNode = (el: Element | undefined): el is ShapeElement =>

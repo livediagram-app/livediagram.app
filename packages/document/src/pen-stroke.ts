@@ -29,8 +29,8 @@ export const PEN_STREAMLINE: Readonly<Record<PenPointerKind, number>> = {
 };
 // Excalidraw's freedraw recipe: how much pressure thins the line, and how much
 // the outline is smoothed.
-export const PEN_THINNING = 0.6;
-export const PEN_SMOOTHING = 0.5;
+const PEN_THINNING = 0.6;
+const PEN_SMOOTHING = 0.5;
 // The pressure a stroke without one draws at: every mouse stroke, a finger
 // without force, and pen strokes drawn before pressure was recorded.
 export const PEN_MID_PRESSURE = 0.5;
@@ -38,7 +38,7 @@ export const PEN_MID_PRESSURE = 0.5;
 // every point closer than this to the end of the line, so while a stroke is drawn slowly the
 // settled points behind the tip dropped out and came back as each sample moved the end. The
 // outline cancels it by carrying the last point this much further along the line.
-export const PERFECT_FREEHAND_END_NOISE = 3;
+const PERFECT_FREEHAND_END_NOISE = 3;
 
 const easing = (t: number) => Math.sin((t * Math.PI) / 2);
 
@@ -149,10 +149,7 @@ export function isPenStroke(el: FreehandElement): boolean {
 // What a pen stroke's ink reads: an element's packed points, or the live ink's freehand geometry
 // (its raw samples laid out in the box they land in, and the pen's pressures), unpacked: the
 // stroke being drawn never re-quantises its settled ink as its box grows.
-export type PenStrokeSource = Pick<
-  FreehandElement,
-  'width' | 'height' | 'penWidth' | 'streamline'
-> &
+type PenStrokeSource = Pick<FreehandElement, 'width' | 'height' | 'penWidth' | 'streamline'> &
   (
     | Pick<FreehandElement, 'packedPoints'>
     | { points: readonly NormalisedPoint[]; pressures?: readonly number[] }

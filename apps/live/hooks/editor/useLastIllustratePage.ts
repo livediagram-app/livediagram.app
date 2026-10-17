@@ -14,7 +14,7 @@ import {
   writeLastIllustratePage,
 } from '@/lib/last-illustrate-page';
 
-export type LastIllustratePage = {
+type LastIllustratePage = {
   // The remembered page among these, if it is still one of them.
   remembered: (pages: readonly LaidOutPage[]) => LaidOutPage | undefined;
   // The tab's landing frame has been made: from now on the view is this tab's, so where it rests

@@ -26,7 +26,7 @@ import { pointDistance, type Point } from './geometry-primitives';
 
 // Two candidate anchors whose distances to the other end differ by no more
 // than this are equally close; the one nearer the previous anchor wins.
-export const CLOSENESS_TIE_PX = 0.5;
+const CLOSENESS_TIE_PX = 0.5;
 
 // Pinned ends per element per anchor: what "another arrow holds it" reads.
 type HeldAnchors = Map<ElementId, Map<Anchor, number>>;

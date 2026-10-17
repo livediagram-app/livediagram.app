@@ -27,7 +27,7 @@ import { readStoredTab } from './stored-tab';
 import { SUBMIT_ATTEMPTS, withServerRules } from './submit';
 import { writeChangeset, type Author } from './write';
 
-export type IllustrateArgs = {
+type IllustrateArgs = {
   env: Env;
   document: DocumentDTO;
   tabId: string;
@@ -36,7 +36,7 @@ export type IllustrateArgs = {
   tokenId: string | null;
 };
 
-export type IllustrateResult = {
+type IllustrateResult = {
   status: number;
   body: IllustrateAnswer | ({ error: string } & Omit<IllustrateRefusal, 'code'>);
 };

@@ -5,6 +5,7 @@ import {
   pasteIntoTable,
   type TableElement,
 } from '@livediagram/document';
+import { useCommitOnLeave } from '@/hooks/ui/useCommitOnLeave';
 
 // The in-cell contentEditable editor (docs/specs/008-canvas/canvas-and-palette.md Table), lifted out of
 // TableView's cell render: the spreadsheet-style keyboard layer (Enter
@@ -52,6 +53,9 @@ export function TableCellEditor({
   };
   setEditing: (next: { r: number; c: number } | null) => void;
 }) {
+  // Mounted only while a cell is being edited. The page going fires no blur: commit the cell before the unload
+  // flush reads the tabs.
+  useCommitOnLeave(true, () => commitCell(r, c, editorRef.current?.textContent ?? ''));
   return (
     <div
       ref={editorRef}

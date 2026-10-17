@@ -18,9 +18,9 @@ import {
 /** Fewer timings than this and a card says so rather than quoting a percentile. */
 export const TIMING_MIN_SAMPLES = 20;
 /** A day with fewer timings than this leaves a gap in the daily p75 line. */
-export const TIMING_MIN_DAILY_SAMPLES = 5;
+const TIMING_MIN_DAILY_SAMPLES = 5;
 
-export type TimingHistogram = {
+type TimingHistogram = {
   scale: TimingScaleKey;
   buckets: { bucket: TimingBucket; count: number }[];
   total: number;

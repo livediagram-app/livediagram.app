@@ -24,7 +24,7 @@ import { isChunkLoadError } from '@/lib/stale-chunks';
 //     so the rest of the page stays reachable instead of going blank.
 
 // Closed on purpose: the area is part of a public telemetry token.
-export type ErrorArea =
+type ErrorArea =
   | 'Canvas'
   | 'Header'
   | 'TabBar'

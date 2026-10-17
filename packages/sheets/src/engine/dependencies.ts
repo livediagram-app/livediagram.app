@@ -1,7 +1,7 @@
 // Who reads what (blueprint sheets-engine.md "Dependency graph"): recorded while a formula is worked out, so
 // INDIRECT and OFFSET are tracked as they are read. Single cells by id; ranges by position in a per-column index,
 // so the readers of one changed cell are found without scanning every formula.
-export type ReaderId = string;
+type ReaderId = string;
 
 type RangeEntry = { r1: number; r2: number; reader: ReaderId };
 type Registration =

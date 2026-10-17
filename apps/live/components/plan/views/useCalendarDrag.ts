@@ -19,12 +19,12 @@ import { swallowNextClick } from './gantt-drag';
 import { followWindowDrag } from '@/lib/window-drag';
 
 // How far the pointer travels before a press counts as a drag (and no longer opens the card), as on a Gantt bar.
-export const CALENDAR_DRAG_SLOP_PX = 3;
+const CALENDAR_DRAG_SLOP_PX = 3;
 
 // A drag in flight: the card, the day it was on, the day under the pointer (undefined off the grid), and the lifted
 // copy's width. It changes only when the day under the pointer does, so a move inside one day re-renders no day; the
 // copy's place is its own (CalendarGhostPosition), so only the copy follows the pointer.
-export type CalendarDragState = {
+type CalendarDragState = {
   itemId: string;
   fromDay: number;
   overDay: number | undefined;

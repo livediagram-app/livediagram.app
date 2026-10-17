@@ -91,7 +91,7 @@ export function noteTextSimilarity(a: string, b: string): number {
 const KIND_BONUS = 0.05;
 const KIND_PENALTY = 0.15;
 
-export const DEFAULT_MATCH_THRESHOLD = 0.72;
+const DEFAULT_MATCH_THRESHOLD = 0.72;
 
 export type PhotoMatch = { detectedId: number; boardId: string; score: number };
 

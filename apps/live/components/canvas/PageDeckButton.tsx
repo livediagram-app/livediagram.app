@@ -10,9 +10,9 @@ import { EyeIcon, EyeOffIcon } from '@/components/panels/layers-panel-icons';
 import type { PageDeckControls } from '@/hooks/editor/useIllustratePages';
 import { titleButtonClass } from './TitlePopoverButton';
 
-export const ADD_TO_SLIDES = 'Add to Slides';
-export const HIDE_IN_SLIDES = 'Hide in Slides';
-export const SHOW_IN_SLIDES = 'Show in Slides';
+const ADD_TO_SLIDES = 'Add to Slides';
+const HIDE_IN_SLIDES = 'Hide in Slides';
+const SHOW_IN_SLIDES = 'Show in Slides';
 
 // The title-bar room it takes (24 px and the gap), or named beside its icon, sized for its longest
 // name, so the page's label truncates first.

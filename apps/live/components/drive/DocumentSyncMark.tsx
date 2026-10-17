@@ -16,7 +16,7 @@ import type { IconPrim } from '@livediagram/icons';
 import { Glyph, Tooltip, type IconProps } from '@livediagram/ui';
 import { useDocumentSync, type DocumentSyncState } from './drive-mirror-context';
 
-export const DOCUMENT_SYNC_LABEL: Record<DocumentSyncState, string> = {
+const DOCUMENT_SYNC_LABEL: Record<DocumentSyncState, string> = {
   synced: 'Synced to Google Drive',
   waiting: 'Waiting to sync to Google Drive',
   syncing: 'Syncing to Google Drive…',
@@ -79,7 +79,7 @@ function SyncGlyph({ state, size = 14, ...rest }: IconProps & { state: DocumentS
 }
 
 // On-screen stroke in px.
-export const DOCUMENT_SYNC_WEIGHT = 1;
+const DOCUMENT_SYNC_WEIGHT = 1;
 
 export function DocumentSyncMark({
   documentId,

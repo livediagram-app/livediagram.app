@@ -67,7 +67,7 @@ const escapeHtml = (s: string) => s.replace(/[&<>"]/g, (c) => ESCAPES[c]!);
 
 // A font id's family name, as another spreadsheet reads it from pasted HTML: the editor's fonts are named as their
 // ids in Title Case (`space-grotesk` is Space Grotesk).
-export function fontFamilyName(id: string): string {
+function fontFamilyName(id: string): string {
   return id
     .split('-')
     .map((w) => w.charAt(0).toUpperCase() + w.slice(1))

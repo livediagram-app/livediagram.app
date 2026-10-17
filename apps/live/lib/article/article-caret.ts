@@ -40,7 +40,7 @@ export function caretOf(state: EditorState): ArticleCaretPlace | null {
   return id ? { blockId: id, offset: 0 } : null;
 }
 
-export type ResolvedCaret = {
+type ResolvedCaret = {
   // The block's position and the position just past it.
   from: number;
   to: number;

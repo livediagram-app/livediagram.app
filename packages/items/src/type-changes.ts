@@ -113,10 +113,10 @@ export type CardTypeChange =
   | { op: 'add_default_types' }
   | { op: 'restore_built_ins' };
 
-export type TypeChangeRefusal =
+type TypeChangeRefusal =
   NameRefusal | { code: 'type_change_invalid' | 'display_invalid'; message: string };
 
-export type TypeChangesResult =
+type TypeChangesResult =
   | {
       ok: true;
       // The catalogue to store: null leaves the document's card types not chosen (none).

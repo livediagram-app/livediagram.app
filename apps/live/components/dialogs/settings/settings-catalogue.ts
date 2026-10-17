@@ -149,7 +149,7 @@ function emailSwitch(
 // (`clerkEnabled`): API tokens are Clerk-only, so on a no-auth self-host they
 // are absent end to end rather than a sign-in prompt with nowhere to go
 // (docs/specs/015-api/public-api-and-tokens.md#37-self-hosting).
-export type SettingsRowContext = {
+type SettingsRowContext = {
   emailEnabled: boolean;
   signedIn: boolean;
   authEnabled?: boolean;
@@ -455,7 +455,7 @@ function elementTourSwitch(
   };
 }
 
-export const ELEMENT_TOURS_SECTION = 'Element Tours';
+const ELEMENT_TOURS_SECTION = 'Element Tours';
 
 function tourTracksSwitch(
   key: 'planTourSeen' | 'illustrateTourSeen' | 'elementToursSeen',

@@ -19,7 +19,7 @@ import { writeChangeset, type Author } from './write';
 // a new changeset by the reverter, leaving every element changed since and listing it as kept.
 // Anyone with edit access to the tab may revert; a person's revert is never held, a token's is.
 
-export type RevertArgs = {
+type RevertArgs = {
   env: Env;
   document: DocumentDTO;
   record: ChangesetRecord;

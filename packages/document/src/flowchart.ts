@@ -83,17 +83,6 @@ export const FLOWCHART_STEP_LABEL: Record<FlowchartStepType, string> = {
   connector: 'Connector',
 };
 
-export const FLOWCHART_STEP_HINT: Record<FlowchartStepType, string> = {
-  terminator: 'Where the flow begins or finishes',
-  process: 'A step someone or something does',
-  decision: 'A question with labelled exits',
-  io: 'Data entering or leaving the flow',
-  document: 'A document the flow produces or reads',
-  database: 'Stored data',
-  preparation: 'Setting up before a step',
-  connector: 'An on-page jump, labelled with a letter',
-};
-
 const TYPE_OF_KIND = new Map<ShapeKind, FlowchartStepType>(
   FLOWCHART_STEP_TYPES.map((t) => [FLOWCHART_STEP_KIND[t], t]),
 );
@@ -104,7 +93,7 @@ export function flowchartStepTypeOf(kind: ShapeKind): FlowchartStepType | undefi
 }
 
 /** What a label reads on the first step the palette places. */
-export const FLOWCHART_START_LABEL = 'Start';
+const FLOWCHART_START_LABEL = 'Start';
 
 export function isFlowchartStep(el: Element): el is ShapeElement {
   return (

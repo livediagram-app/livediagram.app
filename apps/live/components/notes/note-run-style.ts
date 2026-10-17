@@ -16,7 +16,7 @@ export const NOTE_BASE_PX = 13;
 
 // A run's explicit size override, on the same scale as the body.
 // xs is RUN_XS_PX, as on every label (docs/specs/008-canvas/canvas-and-palette.md "Extra-small runs").
-export const NOTE_RUN_PX: Record<RunSize, number> = { xs: RUN_XS_PX, sm: 11, md: 13, lg: 16 };
+const NOTE_RUN_PX: Record<RunSize, number> = { xs: RUN_XS_PX, sm: 11, md: 13, lg: 16 };
 
 // Heading levels are line-level emphasis, not a separate block model: each
 // is a size + weight step over the body.

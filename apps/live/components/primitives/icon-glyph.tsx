@@ -13,7 +13,13 @@ import { Glyph } from '@livediagram/ui';
 
 import { iconBandClass } from '@/components/primitives/icon-band';
 
-import { getIcon, iconAnimationClass, iconAnimationStyle, type IconPrim } from '@/lib/icons';
+import {
+  PLACEHOLDER_ICON,
+  getIcon,
+  iconAnimationClass,
+  iconAnimationStyle,
+  type IconPrim,
+} from '@/lib/icons';
 import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
 
 // non-scaling-stroke keeps the line weight constant on screen at any
@@ -84,8 +90,13 @@ export function IconPrims({
   // subscription (a) kicks the load if nothing else has, and (b) re-renders
   // this glyph when the data lands — until then `getIcon` serves the framed
   // question-mark placeholder, so an icon element is never a blank flash.
-  useIconCatalogs();
-  const prims = getIcon(iconId).prims.map((p, i) => <Prim key={i} p={p} />);
+  // The read is gated on what the subscription returns: the React Compiler memoises `getIcon(iconId)` on its
+  // argument alone, so a re-render on load would reuse the placeholder (docs/specs/003-system-architecture/react-state-and-effects.md
+  // "The React Compiler").
+  const loaded = useIconCatalogs();
+  const prims = (loaded ? getIcon(iconId) : PLACEHOLDER_ICON).prims.map((p, i) => (
+    <Prim key={i} p={p} />
+  ));
   // An animated icon wraps the glyph in a <g> that carries the looping CSS
   // class; transform-box: fill-box in globals.css keeps the spin / scale
   // centred on the glyph. The speed factor rides a CSS var the class reads.

@@ -18,8 +18,8 @@
 
 import type { Anchor, Element } from './index';
 import { anchorFraction } from './anchors';
+import type { Rect } from './geometry-primitives';
 
-type Box = { x: number; y: number; width: number; height: number };
 type LegacyGroupEnd = { kind: 'pinned-group'; groupId: string; anchor: Anchor };
 
 const isLegacyGroupEnd = (ep: unknown): ep is LegacyGroupEnd =>
@@ -31,8 +31,8 @@ const legacyGroupIdOf = (el: Element): string | undefined => {
 };
 
 // The union box of every element that carried `groupId`, per group.
-function groupBoxes(elements: readonly Element[]): Map<string, Box> {
-  const out = new Map<string, Box>();
+function groupBoxes(elements: readonly Element[]): Map<string, Rect> {
+  const out = new Map<string, Rect>();
   for (const el of elements) {
     const gid = legacyGroupIdOf(el);
     if (!gid || el.type === 'arrow') continue;
@@ -51,7 +51,7 @@ function groupBoxes(elements: readonly Element[]): Map<string, Box> {
 }
 
 // The anchor point on a box, from the shared anchor table.
-function anchorOn(b: Box, anchor: Anchor): { x: number; y: number } {
+function anchorOn(b: Rect, anchor: Anchor): { x: number; y: number } {
   const { fx, fy } = anchorFraction(anchor);
   return { x: b.x + fx * b.width, y: b.y + fy * b.height };
 }

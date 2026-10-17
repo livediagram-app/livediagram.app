@@ -6,12 +6,25 @@ import { useTeamLibrary } from './useTeamLibrary';
 const apiGetTeamLibrary = vi.fn<typeof import('@/lib/api-client').apiGetTeamLibrary>();
 const apiCreateFolder = vi.fn<typeof import('@/lib/api-client').apiCreateFolder>();
 const apiUpdateFolder = vi.fn<typeof import('@/lib/api-client').apiUpdateFolder>();
+const apiDeleteFolder = vi.fn<typeof import('@/lib/api-client').apiDeleteFolder>();
+const apiSetDocumentFolder = vi.fn<typeof import('@/lib/api-client').apiSetDocumentFolder>();
+const apiSaveDocumentMeta = vi.fn<typeof import('@/lib/api-client').apiSaveDocumentMeta>();
 vi.mock('@/lib/api-client', () => ({
   apiGetTeamLibrary: (o: string, t: string) => apiGetTeamLibrary(o, t),
   apiCreateFolder: (...a: Parameters<typeof apiCreateFolder>) => apiCreateFolder(...a),
   apiUpdateFolder: (...a: Parameters<typeof apiUpdateFolder>) => apiUpdateFolder(...a),
+  apiDeleteFolder: (...a: Parameters<typeof apiDeleteFolder>) => apiDeleteFolder(...a),
+  apiSetDocumentFolder: (...a: Parameters<typeof apiSetDocumentFolder>) =>
+    apiSetDocumentFolder(...a),
+  apiSaveDocumentMeta: (...a: Parameters<typeof apiSaveDocumentMeta>) => apiSaveDocumentMeta(...a),
+}));
+const duplicateDocument = vi.fn<typeof import('@/lib/duplicate-document').duplicateDocument>();
+vi.mock('@/lib/duplicate-document', () => ({
+  duplicateDocument: (...a: Parameters<typeof duplicateDocument>) => duplicateDocument(...a),
 }));
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
+const toast = vi.hoisted(() => ({ error: vi.fn(), success: vi.fn(), info: vi.fn() }));
+vi.mock('@/hooks/ui/useToast', () => ({ useToast: () => toast }));
 
 afterEach(() => vi.clearAllMocks());
 
@@ -73,5 +86,58 @@ describe('useTeamLibrary', () => {
     );
     await result.current.renameFolder('new', 'Plans');
     expect(onChange).toHaveBeenCalledTimes(2);
+  });
+});
+
+// docs/specs/013-workspace/folders.md "A write that fails says so": every write a team page makes either lands or
+// ends in an error toast, and the refetch after it shows the library as the server holds it.
+describe('useTeamLibrary when the server refuses', () => {
+  it('says so for every folder and document write', async () => {
+    apiGetTeamLibrary.mockResolvedValue(lib('t1'));
+    const refused = () => Promise.reject(new Error('403'));
+    apiCreateFolder.mockImplementation(refused);
+    apiUpdateFolder.mockImplementation(refused);
+    apiDeleteFolder.mockImplementation(refused);
+    apiSetDocumentFolder.mockImplementation(refused);
+    apiSaveDocumentMeta.mockImplementation(refused);
+    duplicateDocument.mockResolvedValue(undefined);
+    const { result } = renderHook(() => useTeamLibrary('u1', 't1'));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(await result.current.createFolder(null, 'Planning')).toBeUndefined();
+    await result.current.renameFolder('t1-f', 'Plans');
+    await result.current.moveFolder('t1-f', null);
+    await result.current.deleteFolder('t1-f');
+    await result.current.moveDocument('t1-d', 't1-f');
+    await result.current.renameDocument('t1-d', 'Doc');
+    await result.current.duplicateDocument('t1-d');
+    expect(toast.error.mock.calls).toEqual([
+      ['Could not create the folder. Please try again.'],
+      ['Could not rename the folder. Please try again.'],
+      ['Could not move the folder. Please try again.'],
+      ['Could not delete the folder. Try again.'],
+      ['Could not move the document. Please try again.'],
+      ['Could not rename the document. Please try again.'],
+      ["Couldn't duplicate that document. Try again."],
+    ]);
+  });
+
+  it('says nothing when the writes land', async () => {
+    apiGetTeamLibrary.mockResolvedValue(lib('t1'));
+    apiUpdateFolder.mockResolvedValue({ id: 't1-f', name: 'Plans', parentId: null } as Awaited<
+      ReturnType<typeof apiUpdateFolder>
+    >);
+    apiDeleteFolder.mockResolvedValue(undefined);
+    apiSetDocumentFolder.mockResolvedValue(undefined);
+    apiSaveDocumentMeta.mockResolvedValue(undefined);
+    duplicateDocument.mockResolvedValue('copy');
+    const { result } = renderHook(() => useTeamLibrary('u1', 't1'));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    await result.current.renameFolder('t1-f', 'Plans');
+    await result.current.moveFolder('t1-f', null);
+    await result.current.deleteFolder('t1-f');
+    await result.current.moveDocument('t1-d', null);
+    await result.current.renameDocument('t1-d', 'Doc');
+    await result.current.duplicateDocument('t1-d');
+    expect(toast.error).not.toHaveBeenCalled();
   });
 });

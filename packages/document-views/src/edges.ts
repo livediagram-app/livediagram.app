@@ -86,7 +86,7 @@ export function edgesOf(
 }
 
 // ` "label" ~dashed ~both`, then any extra `key=value` text: what follows an end.
-export function edgeTail(edge: ViewEdge, extra: readonly string[] = []): string {
+function edgeTail(edge: ViewEdge, extra: readonly string[] = []): string {
   const label = edge.label === null ? '' : ` ${jsonString(edge.label, LABEL_CUT_CHARS)}`;
   const marks = edge.style.map((mark) => ` ~${attrValue(mark)}`).join('');
   return `${label}${marks}${extra.map((t) => ` ${t}`).join('')}`;

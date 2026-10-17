@@ -2,7 +2,7 @@
 // markup): element tags and their quoted attributes, in order. A hand-rolled scan rather than regexes, so
 // hostile input can't trigger polynomial backtracking.
 
-export type SvgElement = { tag: string; attrs: Record<string, string> };
+type SvgElement = { tag: string; attrs: Record<string, string> };
 
 // Character classes are tested by code unit, inline. A regex call per character was most of the
 // scan's cost, enough to put a hostile input at the test's CPU budget under coverage

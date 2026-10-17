@@ -7,7 +7,7 @@ import {
   type SetStateAction,
   useEffectEvent,
 } from 'react';
-import { documentIdFromPath } from '@/lib/legacy-editor-path';
+import { documentIdFromPath, isEditorPath } from '@/lib/legacy-editor-path';
 import type { Tab } from '@livediagram/document';
 import type { CommunitySession } from './editor-realtime';
 import {
@@ -324,9 +324,10 @@ export function useIdentityBootstrap(opts: {
       );
     }
     const initialShareCode = initialUrl.searchParams.get('s');
-    // No path id and no share code → the user landed on the placeholder
-    // route directly. Hand off to /live/new for the welcome flow.
-    if (!initialId && !initialShareCode) {
+    // No path id and no share code on the editor's own route → the user landed on the placeholder
+    // route directly. Hand off to /new for the welcome flow. Any other address (a mistyped or retired
+    // page the not-found slot serves the editor for) is not found, never a new document: see load().
+    if (!initialId && !initialShareCode && isEditorPath(initialUrl.pathname)) {
       window.location.assign(`${window.location.origin}/new`);
       return;
     }
@@ -375,6 +376,19 @@ export function useIdentityBootstrap(opts: {
         refreshDocumentList(self.id);
         refreshSharedList(self.id);
       };
+
+      // An address that names no document and carries no share link (docs/specs/007-editor/new-document-route.md
+      // "Unknown addresses"): the not-found card over the Explorer. It used to send the reader to /new, so a
+      // mistyped or retired page opened the New Document wizard with no word of what went wrong.
+      if (!id && !shareCodeParam) {
+        debugLog('[load] not an editor address, showing not found');
+        setDocumentNotFound(true);
+        seedExplorerLists();
+        setHydrated(true);
+        setLoadingDocument(false);
+        setNameConfirmed(hasConfirmedName());
+        return;
+      }
 
       // Two URL flavours: `?d=<id>` is the owner's private URL,
       // `?s=<code>` is a share URL another participant follows. Visitor

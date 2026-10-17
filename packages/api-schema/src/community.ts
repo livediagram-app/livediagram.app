@@ -189,10 +189,10 @@ export type CommunityPostInput = {
   anonymous: boolean;
 };
 
-export type CommunityInputError =
+type CommunityInputError =
   'invalid_title' | 'invalid_description' | 'invalid_category' | 'invalid_tags';
 
-export type CommunityInputResult =
+type CommunityInputResult =
   { ok: true; value: CommunityPostInput } | { ok: false; error: CommunityInputError };
 
 // The four fields a post's input has, in the order the publish dialog shows them.

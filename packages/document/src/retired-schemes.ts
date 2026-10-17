@@ -10,7 +10,7 @@ import {
 } from './themes';
 import type { Element, Tab } from './index';
 
-export type RetiredScheme = 'charcoal' | 'previous-default-dark' | 'previous-default-light';
+type RetiredScheme = 'charcoal' | 'previous-default-dark' | 'previous-default-light';
 
 // Charcoal, merged into Default as its dark half: the id and every colour it wrote.
 const CHARCOAL = {

@@ -82,7 +82,7 @@ export {
 import { arrowLabelFontStack, svgArrow } from './svg-render-arrows';
 import { arrowLabelPass, arrowRoutePoints, type ArrowLabelPass } from './arrow-label-layout';
 
-export { arrowHeadRefs, arrowLabelFontStack, svgArrow, svgArrowhead } from './svg-render-arrows';
+export { arrowLabelFontStack, svgArrow, svgArrowhead } from './svg-render-arrows';
 import type { BoxedElement, Element, Tab } from './index';
 import { layerBands, layerOpacityOf, visibleLayerElements } from './layers';
 // Element drop shadows (docs/specs/008-canvas/element-shadows.md): gate + deterministic filter defs.
@@ -98,12 +98,10 @@ export {
   selfLabelled,
   EXPORT_BG,
   EXPORT_IMAGE_FILL,
-  EXPORT_IMAGE_LABEL,
   EXPORT_IMAGE_STROKE,
   EXPORT_PADDING,
   exportFontFamily,
   exportFontIds,
-  type BoxedExport,
   type BoxedExportOptions,
   type ExportIconArt,
   type ExportShape,

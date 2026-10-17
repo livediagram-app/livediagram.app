@@ -25,7 +25,7 @@ import { bodySetClass } from '@/lib/animation-classes';
 
 type Drawing = FreehandElement | PathElement;
 
-export type DrawingAnimationParts = {
+type DrawingAnimationParts = {
   // Spread onto the drawing's main <path> (class, mask, filter, style variables).
   mainProps: SVGAttributes<SVGPathElement> & { style?: CSSProperties };
   // Defs for the drawing's own svg (a mask or filters).

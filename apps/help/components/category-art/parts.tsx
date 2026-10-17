@@ -11,8 +11,8 @@ import { useId, type ReactNode } from 'react';
 import { Label } from '@/components/illustrations/primitives';
 
 /** Every scene is drawn on this stage, in these units. */
-export const ART_W = 400;
-export const ART_H = 220;
+const ART_W = 400;
+const ART_H = 220;
 
 /** The SVG a scene draws into: the editor's dot grid under a soft brand glow. The scene always fits whole
  *  (`meet`), and the ground runs far past the stage on every side, so a frame of any shape (a card's banner, the

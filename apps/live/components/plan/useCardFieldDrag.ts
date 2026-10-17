@@ -12,15 +12,15 @@ import { cardSlotFits, type CardField, type CardSize, type CardSlot } from '@liv
 // How far a press travels before it is a drag (a shorter press is a click).
 export const DRAG_START_PX = 4;
 
-export type FieldDrag = { field: CardField; startX: number; startY: number; moving: boolean };
-export type FieldDropTarget = { slot: CardSlot; index: number };
+type FieldDrag = { field: CardField; startX: number; startY: number; moving: boolean };
+type FieldDropTarget = { slot: CardSlot; index: number };
 
 const sameTarget = (a: FieldDropTarget | null, b: FieldDropTarget | null) =>
   a === b || (!!a && !!b && a.slot === b.slot && a.index === b.index);
 
 // Where `field` would land at (x, y): the card part under the pointer that takes it, and its place among the part's
 // other chips (those whose centre is before the pointer, reading left to right, top to bottom).
-export function dropTargetAt(
+function dropTargetAt(
   card: HTMLElement | null,
   size: CardSize,
   field: CardField,

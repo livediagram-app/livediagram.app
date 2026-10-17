@@ -184,7 +184,7 @@ export function applyQaAction(notes: QaNote[], action: QaAction, actor: QaActor)
 
 // --- The view ---------------------------------------------------------------
 
-export type QaView = {
+type QaView = {
   // The spotlight: at most one.
   discussing: QaNote | null;
   // The live queue, most-voted first, oldest first on a tie.

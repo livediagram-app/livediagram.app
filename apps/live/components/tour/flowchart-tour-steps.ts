@@ -1,6 +1,7 @@
 import type { ElementTourApi } from './element-tour-api';
-import { conceptOutro, inElement, inTheMenu, onGraphic } from './concept-element-tour-steps';
+import { conceptOutro, inTheMenu, onGraphic } from './concept-element-tour-steps';
 import type { TourStepOf } from './tour-step';
+import { elementSelector } from '@/lib/canvas-selectors';
 
 // The Flowchart tour (docs/specs/007-editor/element-tours.md "The Flowchart tour"), on a selected step: growing the
 // chart from the keyboard (Tab, Enter) or the step's toolbar, its type, its lane, and the Flowchart menu. It points at
@@ -24,7 +25,7 @@ export function flowchartTourSteps(ctx: FlowchartTourContext): TourStepOf<Elemen
       'step',
       'A Step in a Flowchart',
       'Each step belongs to its chart, and every change lays the chart out again, so nobody ever drags a box into line.',
-      inElement(id),
+      elementSelector(id),
     ),
     onGraphic(
       'next',

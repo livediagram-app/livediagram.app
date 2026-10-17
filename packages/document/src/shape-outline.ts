@@ -16,9 +16,9 @@ import type { ShapeKind } from './shape-kind';
 // Half circles (a stadium's ends) and half ellipses (a cylinder's caps) are
 // polygonised with this many segments each: under half a pixel of error at
 // 200 px.
-export const ARC_SEGMENTS = 16;
+const ARC_SEGMENTS = 16;
 
-export type AnchorOutline =
+type AnchorOutline =
   | { kind: 'ellipse'; cx: number; cy: number; rx: number; ry: number }
   | { kind: 'polygon'; points: readonly Point[] };
 

@@ -80,7 +80,7 @@ export function clearVerifiedSharePasswords(): void {
 // an over-limit caller never learns whether a guess was right). The share-code
 // resolve maps the two failures to 401 / 403 for the client's password gate;
 // every other caller only asks whether it is `ok`.
-export type SharePasswordStatus = 'ok' | 'missing' | 'invalid';
+type SharePasswordStatus = 'ok' | 'missing' | 'invalid';
 
 export async function sharePasswordStatus(
   env: Env,

@@ -25,7 +25,7 @@ export const CONTENTS_SIDEBAR_SELECTOR = '[data-contents-sidebar]';
 // Its width in px, at the panels' UI scale. It sits flush against the canvas's edge, no gap.
 export const CONTENTS_SIDEBAR_WIDTH = 236;
 // The resting inset the corner panels and the bottom-right cluster keep from what is beside them.
-export const CONTENTS_SIDEBAR_GAP = 16;
+const CONTENTS_SIDEBAR_GAP = 16;
 
 // The sidebar is docked with more than one page: a single page has nothing to find its way round,
 // and keeps the button.

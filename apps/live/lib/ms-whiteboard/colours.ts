@@ -5,17 +5,17 @@ import { hexOklch } from '@livediagram/document';
 import type { SceneAppearance, SceneColour } from '@/lib/board-scene/scene';
 
 // Real backgrounds: #1f1f1f is L 0.24, #e1e1e1 0.91, white 1.
-export const DARK_BACKGROUND_MAX_LIGHTNESS = 0.5;
+const DARK_BACKGROUND_MAX_LIGHTNESS = 0.5;
 // Whiteboard's dark-board ink #ebebeb is L 0.94.
-export const INK_MIN_LIGHTNESS_ON_DARK = 0.8;
+const INK_MIN_LIGHTNESS_ON_DARK = 0.8;
 // Near-neutral, as the landing's ink rule.
 export const INK_MAX_CHROMA = 0.04;
 // OKLab distance below which a line disappears into its board (#000000 on #1f1f1f is 0.24 apart
 // in lightness, yet Whiteboard draws black as #1f1f1f, so black counts as the board colour).
-export const INVISIBLE_DISTANCE = 0.03;
+const INVISIBLE_DISTANCE = 0.03;
 
 /** Whiteboard draws pure black as this on every board. */
-export const WHITEBOARD_BLACK = '#1f1f1f';
+const WHITEBOARD_BLACK = '#1f1f1f';
 
 export function appearanceOf(background?: SceneColour): SceneAppearance {
   const lch = background ? hexOklch(background.hex) : null;
@@ -40,7 +40,7 @@ export function isInvisibleOn(colour: SceneColour, background: SceneColour): boo
   return Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]) < INVISIBLE_DISTANCE;
 }
 
-export type LineColour = SceneColour | 'ink' | 'skip';
+type LineColour = SceneColour | 'ink' | 'skip';
 
 /** A line's colour, light-reference: 'ink' for the dark board's own ink, 'skip' when invisible. */
 export function lineColour(

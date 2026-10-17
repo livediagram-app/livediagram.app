@@ -19,7 +19,7 @@ export interface CalendarDay {
   cards: { item: Item; done: boolean }[];
 }
 
-export interface CalendarModel {
+interface CalendarModel {
   label: string;
   // Rows of seven days, Monday first.
   weeks: CalendarDay[][];
@@ -64,7 +64,7 @@ export function calendarModel(
 
 // ---- Cards by Field (was Workload by Person) ----
 
-export interface BreakdownRow {
+interface BreakdownRow {
   key: string;
   // The row's name ("Ali", "High", "No assignee"), and its person when grouped by assignee.
   label: string;
@@ -119,7 +119,7 @@ export function breakdownModel(
 
 // ---- Status Breakdown ----
 
-export interface StatusSlice {
+interface StatusSlice {
   // Null is No status.
   status: string | null;
   label: string;
@@ -159,7 +159,7 @@ export function statusMixModel(
 
 // ---- Priority by Status ----
 
-export interface PriorityRow {
+interface PriorityRow {
   // Null is No Priority.
   priority: Priority | null;
   counts: Record<StatusPhase, number>;

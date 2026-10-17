@@ -1,6 +1,7 @@
 import { deflateRawSync, deflateSync } from 'node:zlib';
 import { describe, expect, it } from 'vitest';
-import { ByteBudget, BudgetExceeded, decompressDiagram, inflateBytes } from './inflate';
+import { ByteBudget, BudgetExceeded, inflateBytes } from '@/lib/inflate';
+import { decompressDiagram } from './inflate';
 
 const compress = (xml: string) =>
   deflateRawSync(Buffer.from(encodeURIComponent(xml), 'latin1')).toString('base64');

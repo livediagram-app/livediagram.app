@@ -104,7 +104,7 @@ export const EDIT_REJECTION_CODES = [
 ] as const;
 export type EditRejectionCode = (typeof EDIT_REJECTION_CODES)[number];
 
-export const EDIT_WARNING_CODES = [
+const EDIT_WARNING_CODES = [
   'no_base',
   'shape_coerced',
   'value_coerced',

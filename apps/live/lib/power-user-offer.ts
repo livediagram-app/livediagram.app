@@ -14,7 +14,7 @@ export type OfferCounters = { days: number; lastDay: string | null; shortcuts: n
 
 export const EMPTY_OFFER_COUNTERS: OfferCounters = { days: 0, lastDay: null, shortcuts: 0 };
 
-export type OfferContext = { editable: boolean; embed: boolean; zen: boolean };
+type OfferContext = { editable: boolean; embed: boolean; zen: boolean };
 
 // The local calendar day, so "separate days" means the reader's days.
 export function localDayKey(date: Date): string {

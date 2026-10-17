@@ -18,7 +18,7 @@ import { EXIT } from '../output/exit-codes';
 // The authorize session's own life (10 minutes): past it the browser could not finish anyway.
 export const LOGIN_TIMEOUT_MS = 600_000;
 
-export type AuthServer = {
+type AuthServer = {
   authorization_endpoint: string;
   token_endpoint: string;
   device_authorization_endpoint?: string;

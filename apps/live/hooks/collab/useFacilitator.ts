@@ -40,7 +40,7 @@ function writeToken(documentId: string | null, token: string | null): void {
   }
 }
 
-export type FacilitatorApi = {
+type FacilitatorApi = {
   /** The holder's presence id, or null when nobody is facilitating. */
   facilitatorId: string | null;
   /**

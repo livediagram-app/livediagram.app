@@ -3,7 +3,7 @@
 // reacts, and only to the worker (`from: 'system'`): the room refuses these
 // kinds from client sockets, so the sender check is defence in depth against a
 // forged force-redirect.
-export type ShareLinkOp = { kind: 'share-revoked' | 'share-rescoped'; code: string };
+type ShareLinkOp = { kind: 'share-revoked' | 'share-rescoped'; code: string };
 
 export function shareLinkOpEffect(
   op: ShareLinkOp,

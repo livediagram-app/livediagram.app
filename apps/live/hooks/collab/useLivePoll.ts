@@ -26,7 +26,7 @@ type RoomHandle = { send: (msg: RoomOutgoing) => void };
 // One participant's answer, keyed by the room's sender id. The key is used
 // ONLY to make a person changing their mind replace their earlier answer;
 // it is never rendered (docs/specs/012-collaboration/live-poll.md — results carry no identity).
-export type PollAnswers = Map<string, string | null>;
+type PollAnswers = Map<string, string | null>;
 
 // Who may end the poll and sees its host controls (docs/specs/012-collaboration/facilitator.md "Poll: start, end"):
 // its starter, unless somebody else has since taken the baton (the room would refuse the end), and the facilitator

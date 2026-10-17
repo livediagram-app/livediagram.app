@@ -13,7 +13,7 @@ const MinusGlyph = lucideGlyph(lucideMinus, 14);
 const PlusGlyph = lucideGlyph(lucidePlus, 14);
 
 // Colours from what holds the stepper (a Sheet's palette): its hairline, the value's field, its ink and the − and +.
-export type NumberStepperTone = { line: string; field: string; text: string; muted: string };
+type NumberStepperTone = { line: string; field: string; text: string; muted: string };
 
 const BUTTON =
   'flex shrink-0 items-center justify-center rounded-md transition disabled:cursor-not-allowed disabled:opacity-35';

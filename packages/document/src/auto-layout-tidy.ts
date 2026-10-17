@@ -35,7 +35,7 @@ import { routeTidyArrows, type RouteRequest } from './auto-layout-route';
 
 // Room kept between the laid-out block and a box it does not move, and how many placements the
 // search for a clear one tries before it settles for the nearest.
-export const TIDY_CLEARANCE = 24;
+const TIDY_CLEARANCE = 24;
 const MAX_PLACEMENT_TRIES = 400;
 const GRID = 10;
 const snapCentre = (lo: number, size: number) =>

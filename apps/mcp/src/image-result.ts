@@ -92,7 +92,7 @@ async function buildImageResolver(env: Env, token: string, tab: Tab): Promise<Im
 
 // `auth` (env + the caller's token) enables real image embedding; omit it to
 // render placeholders for image elements (the pre-embedding behaviour).
-export type ImageBlock = { type: 'image'; data: string; mimeType: string };
+type ImageBlock = { type: 'image'; data: string; mimeType: string };
 type TextBlock = { type: 'text'; text: string };
 
 // The preview's blocks: the picture, after a note when the budget drew some pictures as placeholders.

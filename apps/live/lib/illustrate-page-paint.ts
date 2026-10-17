@@ -36,7 +36,7 @@ export {
   withBackgroundPatch,
 } from '@livediagram/document';
 
-export type GradientPreset = { id: string; label: string; from: string; to: string };
+type GradientPreset = { id: string; label: string; from: string; to: string };
 
 export const PAGE_GRADIENT_PRESETS: readonly GradientPreset[] = [
   { id: 'sunrise', label: 'Sunrise', from: '#fde68a', to: '#fca5a5' },

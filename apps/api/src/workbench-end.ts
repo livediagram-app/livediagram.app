@@ -7,7 +7,7 @@ import { sessionPrefixOf } from './auth/workbench-session';
 import { closeWorkbenchSessions, TEAM_ROOM_CLOSE_CONCURRENCY } from './room-access-client';
 import type { Env } from './types';
 
-export type WorkbenchEndScope = { pairingId: string } | { tokenId: string };
+type WorkbenchEndScope = { pairingId: string } | { tokenId: string };
 export type WorkbenchEndReason = 'unpaired' | 'revoked';
 
 type SessionRow = { id: string; pairing_id: string; token_id: string; document_id: string };

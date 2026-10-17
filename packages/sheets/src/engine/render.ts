@@ -11,7 +11,7 @@ import { checkboxValue, optionFor, validationRuleAt } from '../rules/validation'
 import { formatRuleStyle } from '../rules/format-rules';
 import { isArray, isError, scalarOf } from '../formula/values';
 
-export type RenderCell = {
+type RenderCell = {
   r: number; // index into the model's rows
   c: number; // index into the model's columns
   text: string;
@@ -213,7 +213,7 @@ export function sheetContentSize(sheet: Sheet): { width: number; height: number 
 const STATIC_HEADER_H = 40 + 22;
 const STATIC_ROW_HEAD_W = 46;
 
-export type SheetFrame = { sheetId: string; width: number; height: number };
+type SheetFrame = { sheetId: string; width: number; height: number };
 
 // Every Sheet element's window on a tab, for an image, a thumbnail or an api or MCP render: one workbook over the
 // tab's sheets, each element's window the size of its grid area.

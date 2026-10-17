@@ -28,7 +28,7 @@ const REASON_TYPES: Record<FormReportReason, string> = {
 };
 
 // Reports from this many distinct networks suspend a link for good (= Community's rule).
-export const FORM_REPORTS_TO_SUSPEND = 3;
+const FORM_REPORTS_TO_SUSPEND = 3;
 const BROWSER_ID = /^[A-Za-z0-9-]{8,64}$/;
 
 const formNotFound = () => json({ error: 'form_not_found' }, { status: 404 });

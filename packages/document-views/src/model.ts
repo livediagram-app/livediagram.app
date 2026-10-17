@@ -39,10 +39,7 @@ export type ViewModel = {
 
 // Tab refs unique among the document's tabs; a tab outside them (no document context) takes the
 // ref it would have alone (VW4).
-export function tabRefsFor(
-  tabId: string,
-  tabIds: readonly string[] | undefined,
-): (id: string) => string {
+function tabRefsFor(tabId: string, tabIds: readonly string[] | undefined): (id: string) => string {
   const tabRefs = computeRefs(tabIds?.includes(tabId) ? tabIds : [tabId]);
   const known = new Set(tabRefs.ids);
   return (id) => (known.has(id) ? tabRefs.refOf(id) : computeRefs([id]).refOf(id));

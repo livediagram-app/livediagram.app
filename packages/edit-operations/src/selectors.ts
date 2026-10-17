@@ -28,7 +28,7 @@ import { REJECTION_CANDIDATES_MAX, RESERVED_WORDS, SELECTOR_KEYS } from './vocab
 const WORD_KEYS = ['in', 'from', 'to', 'downstream', 'upstream'] as const;
 type WordKey = (typeof WORD_KEYS)[number];
 
-export type SelectorTerm =
+type SelectorTerm =
   | { kind: 'ref'; text: string }
   | { kind: 'label'; text: string }
   | { kind: 'label~'; text: string }
@@ -123,8 +123,7 @@ export function resolveMembers(
 
 // A selector as a refusal quotes it: as written when it is one quoted label, else in quotes.
 const ONE_LABEL = /^"[^"]*"$/;
-export const shownSelector = (selector: string) =>
-  ONE_LABEL.test(selector) ? selector : `"${selector}"`;
+const shownSelector = (selector: string) => (ONE_LABEL.test(selector) ? selector : `"${selector}"`);
 
 function candidateLines(state: EditState, ids: readonly ElementId[]): string[] {
   const naming = namingOf(state);

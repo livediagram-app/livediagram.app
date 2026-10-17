@@ -8,7 +8,7 @@ import { normaliseRead, type ReadText } from './types';
 // What the model says when the paper is blank. It answers this consistently on
 // an empty crop, which is a better blank-detector than asking it for a
 // sentinel token (asking changed how it read real text).
-export const BLANK_ANSWERS = /^(no|none|nothing|n\/a|blank|no writing|no text)\b[.!]?$/i;
+const BLANK_ANSWERS = /^(no|none|nothing|n\/a|blank|no writing|no text)\b[.!]?$/i;
 
 // A bare yes / no / sure: an answer to a question nobody asked.
 const ASSENT = /^(yes|yeah|yep|no|nope|sure|ok|okay|maybe)[.!]*$/i;
@@ -20,7 +20,7 @@ const CHAT_OPENERS =
 
 // The most words a note carries is eight, measured over 86 labelled notes; past
 // twelve the model is narrating, not reading.
-export const NOTE_MAX_WORDS = 12;
+const NOTE_MAX_WORDS = 12;
 
 export function looksLikeChat(text: string): boolean {
   const clean = text.replace(/\s+/g, ' ').trim();

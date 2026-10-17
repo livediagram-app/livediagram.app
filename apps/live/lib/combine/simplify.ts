@@ -5,7 +5,7 @@
 import type { Ring } from './outline';
 
 // Points closer than this to the line through their neighbours are merged away, in canvas px.
-export const COMBINE_MERGE_PX = 0.05;
+const COMBINE_MERGE_PX = 0.05;
 
 // How far `p` lies from the segment a-b (not the infinite line): a point that folds back past an
 // end (a needle-thin spike) is far from the segment, so it is kept.

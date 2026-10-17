@@ -13,6 +13,7 @@ import {
   type ShapeElement,
 } from '@livediagram/document';
 import { liveFlowchart } from './template-flowchart-live';
+import { PAPER_INK } from './template-inks';
 
 // Flowchart: a checkout, the process everyone has been through, drawn with
 // the five ISO 5807 symbols a flowchart actually uses, each keeping ONE look
@@ -146,6 +147,7 @@ export function buildFlowchart(cx: number, cy: number): Element[] {
       label: 'Key',
       textSize: 'md',
       textBold: true,
+      textColor: PAPER_INK,
       textAlignX: 'left',
     },
   ];

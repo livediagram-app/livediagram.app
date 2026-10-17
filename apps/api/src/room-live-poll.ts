@@ -33,7 +33,7 @@ const TAG_LEN = 32;
 //   - `s`: the key is a session's own presence id, which only that session can present.
 type Claim = string;
 
-export type LivePollState = {
+type LivePollState = {
   poll: LivePoll;
   answers: Record<string, string | null>;
   // Absent on a state stored before answers were claimed; read as empty.
@@ -46,7 +46,7 @@ export type LivePollState = {
 
 // The parts of a session the poll needs. All of it is server-held: the presence id is minted by the room, and the
 // person and network tags are stamped by the api worker on the upgrade.
-export type PollAnswerer = {
+type PollAnswerer = {
   presenceId: string;
   personTag: string | null;
   networkTag: string | null;
@@ -56,9 +56,9 @@ export type PollAnswerer = {
   rememberAnswer(answeredAs: { pollId: string; key: string }): void;
 };
 
-export type PollAnswerRefusal = 'claimed' | 'session_key' | 'network_cap' | 'answers_cap';
+type PollAnswerRefusal = 'claimed' | 'session_key' | 'network_cap' | 'answers_cap';
 
-export type PollAnswerOutcome =
+type PollAnswerOutcome =
   | { accepted: true; op: RoomOp }
   | { accepted: false; reason: PollAnswerRefusal | 'no_poll' | 'bad_value' };
 

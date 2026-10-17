@@ -15,7 +15,7 @@ export const pageButton = (pageId: string, name: string) =>
 export const pageCog = (pageId: string) => `${pageSheet(pageId)} [data-tour-id="page-cog"]`;
 
 /** A title-bar popover by its name: anchored under its button, or a bottom sheet on a phone. */
-export const titlePopover = (name: string) =>
+const titlePopover = (name: string) =>
   `[role="dialog"][aria-label="${name}"]:is([data-anchored-popover], [data-bottom-sheet])`;
 
 // Whether an element sits wholly in the window.

@@ -120,7 +120,7 @@ export function elementSignature(el: Element): string {
 
 /** The tiles, in order, whose element type is on the tab: one per signature. `seen` carries the
  *  signatures already listed, so a second list never repeats the first's. */
-export function tilesOnTab(
+function tilesOnTab(
   tiles: readonly PaletteTileDef[],
   elements: readonly Element[],
   seen = new Set<string>(),

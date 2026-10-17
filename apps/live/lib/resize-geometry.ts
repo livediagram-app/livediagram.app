@@ -81,7 +81,7 @@ export function nextBounds(
 // The axis a constrained resize is led by: the edge handle's own axis, or
 // for a corner the axis the pointer has moved further along (in canvas
 // px). The other side follows from the ratio.
-export type ResizeAxis = 'x' | 'y';
+type ResizeAxis = 'x' | 'y';
 export function leadingAxis(mode: Exclude<DragMode, 'move'>, dx: number, dy: number): ResizeAxis {
   if (mode === 'resize-e' || mode === 'resize-w') return 'x';
   if (mode === 'resize-n' || mode === 'resize-s') return 'y';
@@ -233,7 +233,7 @@ export function cornerOf(mode: DragMode): 'nw' | 'ne' | 'sw' | 'se' | null {
 // Map a DragMode to the snap mode `snapResizeBounds` understands (the
 // corner OR single edge being dragged), or null for 'move'. Lets edge
 // resizes snap + dimension-match on their one axis just like corners do.
-export type ResizeSnapMode = 'nw' | 'ne' | 'sw' | 'se' | 'n' | 's' | 'e' | 'w';
+type ResizeSnapMode = 'nw' | 'ne' | 'sw' | 'se' | 'n' | 's' | 'e' | 'w';
 export function snapModeOf(mode: DragMode): ResizeSnapMode | null {
   return mode === 'move' ? null : (mode.slice('resize-'.length) as ResizeSnapMode);
 }

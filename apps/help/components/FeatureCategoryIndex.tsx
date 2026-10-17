@@ -21,7 +21,7 @@ function category(slug: string) {
 }
 
 /** A group's anchor id on its category page. */
-export function groupAnchor(group: string): string {
+function groupAnchor(group: string): string {
   return group
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')

@@ -11,7 +11,7 @@ import { inheritedSnap } from './optical-snap';
 export const OPTICAL_TOLERANCE_PX = 0.5;
 
 export type OpticalFailure = { where: string; what: string; offsetPx: number };
-export type OpticalReport = { measured: number; failures: OpticalFailure[] };
+type OpticalReport = { measured: number; failures: OpticalFailure[] };
 
 const PROBE_ATTR = 'data-optical-probe';
 const HIDE_STYLE_ID = 'optical-audit-hide';

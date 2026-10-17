@@ -48,7 +48,7 @@ const BY_STATUS: Readonly<Record<number, string>> = {
   429: 'too many calls in the last minute (the limit is per token). Wait about a minute, then make the same call again.',
 };
 
-export interface ApiRefusal {
+interface ApiRefusal {
   code: string;
   message: string;
 }

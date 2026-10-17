@@ -81,7 +81,7 @@ const samePage = (destination: string, location: Location) =>
   destination.split('#')[0] === `${location.pathname}${location.search}`;
 
 /** A full page load once nothing is unsaved; 'unsaved' when it could not happen. */
-export function fullPageLoad(
+function fullPageLoad(
   url: string,
   replace: boolean,
   deps: NavigationDeps,

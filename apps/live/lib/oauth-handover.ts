@@ -8,7 +8,7 @@ import { ApiError } from './api/core';
 import { debugLog } from '@/lib/debug-log';
 
 export type HandoverFailure = 'expired' | 'token_limit' | 'failed';
-export type HandoverResult<T> = { ok: true; value: T } | { ok: false; reason: HandoverFailure };
+type HandoverResult<T> = { ok: true; value: T } | { ok: false; reason: HandoverFailure };
 
 export type HandoverSteps<T> = {
   // Whether the request can still take a token; checked before minting.

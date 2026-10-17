@@ -16,7 +16,7 @@ import { ApiError } from '@/lib/api-client';
 import { track } from '@/lib/telemetry';
 
 // How often an open Form tab rereads its count (a cheap read: three small queries). Safe range 15..120 s.
-export const FORM_LINK_POLL_MS = 30_000;
+const FORM_LINK_POLL_MS = 30_000;
 
 export type FormLinkState = {
   link: FormLinkResponse | null;

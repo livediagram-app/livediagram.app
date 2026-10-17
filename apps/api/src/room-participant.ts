@@ -28,7 +28,7 @@ export const ANSWERS_FLUSH_MS = 1500;
 // sends one op per changed element every 600 ms), and a crafted flood is refused rather than starving everyone.
 export const PARTICIPANT_PENDING_MAX = 64;
 
-export type ParticipantRoomHooks = {
+type ParticipantRoomHooks = {
   env: Env | undefined;
   // Run one step on the room's tab write queue, after every step before it.
   enqueue: <T>(step: () => Promise<T>) => Promise<T>;
@@ -40,7 +40,7 @@ export type ParticipantRoomHooks = {
   readLedger: (tabId: string) => Promise<TabLedger>;
 };
 
-export type ParticipantSender = {
+type ParticipantSender = {
   ws: WebSocket;
   presenceId: string;
   documentId: string | null;

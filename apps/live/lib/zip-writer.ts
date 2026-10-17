@@ -3,7 +3,7 @@
 // deflating them again would cost time for nothing. Pure and browser-safe; the counterpart of
 // zip-reader.ts.
 
-export type ZipFile = { name: string; data: Uint8Array };
+type ZipFile = { name: string; data: Uint8Array };
 
 // The CRC-32 (IEEE) table, built once.
 const CRC_TABLE = (() => {

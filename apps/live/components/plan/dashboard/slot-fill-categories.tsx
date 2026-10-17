@@ -62,7 +62,7 @@ function StackedCards({ palette }: { palette: PlanPalette }) {
   );
 }
 
-export const SLOT_CATEGORY_INFO: Record<string, Info> = {
+const SLOT_CATEGORY_INFO: Record<string, Info> = {
   'This Document’s Tabs': {
     icon: <PanelsGlyph />,
     description: 'Your boards, sheets and diagrams, live.',

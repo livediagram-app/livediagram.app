@@ -7,6 +7,7 @@
 // have moved it, never on idle frames (docs/specs/008-canvas/canvas-performance.md "At rest").
 import { useLayoutEffect, useRef, type RefObject } from 'react';
 import { canvasGestureNow, subscribeCanvasGesture } from '@/lib/canvas-gesture';
+import { CANVAS_ROOT_SELECTOR } from '@/lib/canvas-selectors';
 
 // Screen px: the card's breathing room above and below it when it sits in the page's margin.
 const MARGIN_PAD = 4;
@@ -69,7 +70,7 @@ export function usePageToolbarPlacement({
     const follow = () => {
       const el = bar.current;
       const sheet = document.querySelector(`[data-illustrate-page-id="${CSS.escape(pageId)}"]`);
-      const canvas = document.querySelector('[data-canvas-a11y-root]');
+      const canvas = document.querySelector(CANVAS_ROOT_SELECTOR);
       if (!el || !sheet || !canvas) return;
       const r = sheet.getBoundingClientRect();
       const c = canvas.getBoundingClientRect();

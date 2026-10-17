@@ -73,7 +73,7 @@ export const DOCUMENT_LIST_LOAD_SAFETY_MS = 10_000;
 // slow uplink, so a large tab on a poor connection still has its time. Safe ranges: base 10 s to 60 s, rate 8 to
 // 64 KB/s.
 export const SAVE_TIMEOUT_BASE_MS = 20_000;
-export const SAVE_UPLOAD_BYTES_PER_SECOND = 16 * 1024;
+const SAVE_UPLOAD_BYTES_PER_SECOND = 16 * 1024;
 
 export function saveTimeoutMs(bodyBytes: number): number {
   return SAVE_TIMEOUT_BASE_MS + Math.ceil((bodyBytes / SAVE_UPLOAD_BYTES_PER_SECOND) * 1000);

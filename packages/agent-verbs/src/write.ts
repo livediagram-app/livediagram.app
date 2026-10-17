@@ -17,7 +17,7 @@ import { VerbRefusal, type VerbContext } from './define';
 
 export const HELD_RETRY_INTERVAL_MS = 2000;
 // `--wait-held` waits at most as long as `wait` may (WAIT_MAX_TIMEOUT_S).
-export const WAIT_HELD_MAX_S = 3600;
+const WAIT_HELD_MAX_S = 3600;
 
 export const writeFlags = {
   dryRun: z.boolean().optional().describe('Plan and print the result without writing'),
@@ -51,7 +51,7 @@ export type WriteFlags = {
   waitHeld?: number;
 };
 
-export type WriteTarget = { documentId: string; tabId: string; tabName: string; doc: string };
+type WriteTarget = { documentId: string; tabId: string; tabName: string; doc: string };
 
 async function baseFor(
   ctx: VerbContext,

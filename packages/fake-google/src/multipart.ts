@@ -1,7 +1,7 @@
 // multipart/related bodies as Drive's upload endpoint takes them: a JSON
 // metadata part, then the media part.
 
-export type MultipartPart = { contentType: string; body: string };
+type MultipartPart = { contentType: string; body: string };
 
 export function parseMultipartRelated(contentType: string, body: string): MultipartPart[] {
   const m = /boundary="?([^";]+)"?/i.exec(contentType);

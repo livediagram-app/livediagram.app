@@ -115,7 +115,7 @@ export const INSPIRATION_TEMPLATES: readonly PlanTemplateKind[] = [
 
 // The words people search for each choice by, beyond its name and line: what it is for, the work it suits and other
 // names for it (a Kanban is also a pipeline, a task board, an agile board).
-export const START_KEYWORDS: Readonly<Record<string, readonly string[]>> = {
+const START_KEYWORDS: Readonly<Record<string, readonly string[]>> = {
   'board:blank': ['custom', 'empty', 'scratch', 'own columns', 'build'],
   'board:kanban': [
     'agile',
@@ -204,7 +204,7 @@ export const START_KEYWORDS: Readonly<Record<string, readonly string[]>> = {
 };
 
 // Recommended, in order.
-export const RECOMMENDED_IDS = [
+const RECOMMENDED_IDS = [
   'board:roadmap',
   'board:kanban',
   'board:todo',

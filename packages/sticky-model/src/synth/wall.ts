@@ -30,7 +30,7 @@ export type SyntheticWall = {
   style: WallStyle;
 };
 
-export type SyntheticOptions = {
+type SyntheticOptions = {
   noteSize?: number;
   backing?: Backing;
   style?: WallStyle;
@@ -57,7 +57,7 @@ const MIN_VISIBLE_FRACTION = 0.2;
 // working size run from ~18px (a dense whiteboard) to ~110px (a close-up).
 // How often a wall also has notes outside its arrangement (see looseNotes).
 const LOOSE_NOTES_CHANCE = 0.35;
-export const NOTE_SIZE_RANGE: [number, number] = [14, 120];
+const NOTE_SIZE_RANGE: [number, number] = [14, 120];
 
 export function syntheticWall(
   seed: number,

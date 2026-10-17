@@ -34,7 +34,7 @@ type PagesTab = Pick<Tab, 'elements'> & {
 };
 
 /** One thing in the row that moves as one: an infographic page, or every page of an article. */
-export type PageUnit = { pageIds: string[]; flow?: string };
+type PageUnit = { pageIds: string[]; flow?: string };
 
 /** The row as units, in order (an article's pages sit together: illustratePagesOf). */
 export function pageUnits(pages: readonly IllustratePage[]): PageUnit[] {

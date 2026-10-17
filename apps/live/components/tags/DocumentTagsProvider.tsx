@@ -15,7 +15,7 @@ const TagPicker = dynamic(() => import('./TagPicker').then((m) => m.TagPicker), 
 
 export type TagPickerTarget = { documentId: string; documentName: string; anchor: HTMLElement };
 
-export type DocumentTagsValue = DocumentTagsState & {
+type DocumentTagsValue = DocumentTagsState & {
   // A provider with an owner is mounted: the surfaces that offer tags show them.
   available: boolean;
   openPicker: (target: TagPickerTarget) => void;

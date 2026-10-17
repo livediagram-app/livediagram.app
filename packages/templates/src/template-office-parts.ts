@@ -11,6 +11,7 @@ import {
   type RoomDoor,
   type ShapeKind,
 } from '@livediagram/document';
+import { CANVAS_TONES } from './template-inks';
 
 // `w`/`h` override the piece's default size (keep its proportion: the drawings are aspect locked).
 export type OfficePiece = {
@@ -88,7 +89,8 @@ export function walkIn(right: number, cy: number, hint: string): Element[] {
       label: hint,
       textSize: 'sm',
       textAlignX: 'right',
-      textColor: '#475569',
+      // On the canvas beside the room: a slate that reads in either half (#475569 sank into the dark one).
+      textColor: CANVAS_TONES.slate,
     },
     { ...createShape('mode-button', right - BUTTON_W, cy - BUTTON_H / 2), label: 'Walk In' },
   ];

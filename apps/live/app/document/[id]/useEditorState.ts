@@ -206,6 +206,7 @@ import { useIdentityBootstrap } from './useIdentityBootstrap';
 import { useEditorHistory } from './useEditorHistory';
 import { useTemplateFlow } from './useTemplateFlow';
 import { createOwnElementWrites, type OwnElementWrites } from './own-element-writes';
+import { usePlanStartDocumentName } from './usePlanStartDocumentName';
 import { usePanelLayout } from './usePanelLayout';
 import { usePresenceRows } from './usePresenceRows';
 import { usePresenceState } from './usePresenceState';
@@ -2650,6 +2651,15 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     if (name && documentId)
       setDocumentList((prev) => prev.map((d) => (d.id === documentId ? { ...d, name } : d)));
   };
+
+  // A Plan start on the first tab names a still-untitled document after what it made (usePlanStartDocumentName).
+  usePlanStartDocumentName({
+    firstTab: tabs[0],
+    firstTabLoaded: tabs[0] ? loadedTabIds.has(tabs[0].id) : false,
+    documentName,
+    nameDocument,
+    canEdit,
+  });
 
   // Template and identity actions. See useTemplateFlow. confirmName
   // stays in the page (also wired into useShareLinks) and is passed in.

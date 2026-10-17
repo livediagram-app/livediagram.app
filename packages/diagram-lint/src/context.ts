@@ -70,7 +70,7 @@ export type LintContext = {
 
 // Why an arrow cannot be drawn: an end on a missing element (`arrow-dangling`). A line with both ends free
 // is a drawing, not a broken arrow.
-export function isDangling(arrow: ArrowElement, index: ElementIndex): boolean {
+function isDangling(arrow: ArrowElement, index: ElementIndex): boolean {
   const missing = (end: Endpoint) => {
     if (end.kind === 'pinned') {
       const el = index.get(end.elementId);

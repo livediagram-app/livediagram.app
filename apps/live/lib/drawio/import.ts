@@ -12,7 +12,7 @@ import { readGraph } from './cells';
 import { convertPage } from './convert-page';
 import { readDrawioSource, sniffDrawio, type DrawioInput, type DrawioMeta } from './envelope';
 import { jsonPageElements, readJsonExport, type JsonExportPage } from './json-export';
-import { ByteBudget } from './inflate';
+import { ByteBudget } from '@/lib/inflate';
 import {
   DRAWIO_MAX_FILE_BYTES,
   DRAWIO_MAX_INFLATED_BYTES,
@@ -32,7 +32,7 @@ export type ImportedPage = {
   backgroundColor?: string;
 };
 
-export type DrawioImportResult =
+type DrawioImportResult =
   | {
       ok: true;
       pages: ImportedPage[];
@@ -43,7 +43,7 @@ export type DrawioImportResult =
     }
   | { ok: false; error: string };
 
-export type DrawioImportOptions = {
+type DrawioImportOptions = {
   /** The tab id each page becomes, by page index. */
   tabIdForPage: (index: number) => string;
 };

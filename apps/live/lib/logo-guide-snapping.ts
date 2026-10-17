@@ -18,7 +18,7 @@ import {
 type Point = { x: number; y: number };
 
 /** How near a guide, in screen px, a point is pulled onto it. */
-export const LOGO_GUIDE_SNAP_PX = 8;
+const LOGO_GUIDE_SNAP_PX = 8;
 // A stroke's end moved onto a guide carries the samples nearest it part of the way, fading over
 // this many, so the line bends onto the guide rather than kinking.
 const STROKE_EASE_SAMPLES = 8;
@@ -91,7 +91,7 @@ export function snapNewStrokes(
 
 /** How near a guide, in screen px, Tidy Up pulls a corner or a straight run onto it: further than
  *  drawing does, since tidying is asked for. */
-export const TIDY_GUIDE_PX = 16;
+const TIDY_GUIDE_PX = 16;
 
 /** What Tidy Up aligns a drawing to on a logo page: a corner onto the shown guides, and a level or
  *  upright run onto the nearest horizontal or vertical guide (a centre line, a grid line, a safe

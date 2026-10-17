@@ -13,7 +13,7 @@ import {
 } from './rich-text';
 
 /** What a one-line label gains as its caption, to type over. */
-export const CAPTION_PLACEHOLDER = 'Caption';
+const CAPTION_PLACEHOLDER = 'Caption';
 
 /** The opacity a muted run draws at. */
 export const MUTED_RUN_OPACITY = 0.65;

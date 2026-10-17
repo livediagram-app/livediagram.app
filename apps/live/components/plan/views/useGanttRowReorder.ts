@@ -8,7 +8,7 @@ import { useEffect, useRef, useState } from 'react';
 import { ganttReorder } from '@livediagram/items';
 import { followWindowDrag } from '@/lib/window-drag';
 
-export type GanttRowDrag = {
+type GanttRowDrag = {
   itemId: string;
   // The vertical travel so far, in chart px (unscaled).
   dy: number;

@@ -4,7 +4,7 @@
 // these flags in derived values.
 export type EditorSurface = 'app' | 'embed' | 'workbench';
 
-export type SurfaceFlags = {
+type SurfaceFlags = {
   // The read-only share-code embed.
   embedMode: boolean;
   // Signed in by a workbench session, inside a developer tool's frame.

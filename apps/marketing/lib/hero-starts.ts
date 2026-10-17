@@ -16,7 +16,7 @@ const ALL = (() => {
   );
 })();
 
-export type HeroMatch = (typeof ALL)[number];
+type HeroMatch = (typeof ALL)[number];
 
 // The best matches for a query, by the editor's own search (filterGallery): a template whose title
 // holds every typed word ranks before one found only through its description, category or search

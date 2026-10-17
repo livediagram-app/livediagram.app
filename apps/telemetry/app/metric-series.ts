@@ -174,6 +174,6 @@ export function previousCount(
 // The most members a stack's head draws as separate lines, one colour each
 // (stack-colours.ts). A bigger stack draws its combined line instead, and its
 // members' cards keep their own category colour since no head line matches them.
-export const MAX_STACK_LINES = 5;
+const MAX_STACK_LINES = 5;
 
 export const stackDrawsLines = (members: number): boolean => members <= MAX_STACK_LINES;

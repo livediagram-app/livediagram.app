@@ -5,9 +5,9 @@
 // size, never on a timer; null until the first measure, so the notice never paints out of place.
 import { useLayoutEffect, useState } from 'react';
 import { noticeBottom } from '@/lib/board-scene-notice-slot';
+import { CANVAS_ROOT_SELECTOR } from '@/lib/canvas-selectors';
 
 const DOCK_SELECTOR = '[data-whiteboard-dock]';
-const CANVAS_SELECTOR = '[data-canvas-a11y-root]';
 
 export function useNoticeSlot(active: boolean): number | null {
   const [bottom, setBottom] = useState<number | null>(null);
@@ -15,7 +15,7 @@ export function useNoticeSlot(active: boolean): number | null {
     if (!active) return;
     const measure = () => {
       const dock = document.querySelector<HTMLElement>(DOCK_SELECTOR);
-      const canvas = document.querySelector<HTMLElement>(CANVAS_SELECTOR);
+      const canvas = document.querySelector<HTMLElement>(CANVAS_ROOT_SELECTOR);
       setBottom(
         noticeBottom({
           viewportWidth: window.innerWidth,
@@ -28,7 +28,7 @@ export function useNoticeSlot(active: boolean): number | null {
     measure();
     const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(measure);
     const dock = document.querySelector(DOCK_SELECTOR);
-    const canvas = document.querySelector(CANVAS_SELECTOR);
+    const canvas = document.querySelector(CANVAS_ROOT_SELECTOR);
     if (dock) observer?.observe(dock);
     if (canvas) observer?.observe(canvas);
     window.addEventListener('resize', measure);

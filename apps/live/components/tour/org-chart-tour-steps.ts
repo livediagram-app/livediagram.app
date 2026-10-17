@@ -1,6 +1,7 @@
 import type { ElementTourApi } from './element-tour-api';
-import { conceptOutro, inElement, inTheMenu, onGraphic } from './concept-element-tour-steps';
+import { conceptOutro, inTheMenu, onGraphic } from './concept-element-tour-steps';
 import type { TourStepOf } from './tour-step';
+import { elementSelector } from '@/lib/canvas-selectors';
 
 // The Org Chart tour (docs/specs/007-editor/element-tours.md "The Org Chart tour"), on a selected person node: its
 // name, role and initials, reports and peers grown from the keyboard or the toolbar, and the tree it hangs in. It points
@@ -25,19 +26,19 @@ export function orgChartTourSteps(ctx: OrgChartTourContext): TourStepOf<ElementT
       'person',
       'A Person in the Chart',
       `Each node is a person: their name, their role, and their initials in the disc. ${ctx.touch ? 'Double-tap' : 'Double-click'} to change the name.`,
-      inElement(id),
+      elementSelector(id),
     ),
     onGraphic(
       'role',
       'Their Role',
       `${click} the line under the name to write their role: Head of Engineering, Designer, On call.`,
-      inElement(id, '[data-tour-part="person-role"]'),
+      elementSelector(id, '[data-tour-part="person-role"]'),
     ),
     onGraphic(
       'initials',
       'Initials, Made for You',
       "The disc takes the first letters of the name's first two words, and follows the name as it changes.",
-      inElement(id, '[data-tour-part="person-initials"]'),
+      elementSelector(id, '[data-tour-part="person-initials"]'),
     ),
     onGraphic(
       'report',
@@ -57,7 +58,7 @@ export function orgChartTourSteps(ctx: OrgChartTourContext): TourStepOf<ElementT
       'team',
       ctx.hasReports ? 'Move a Whole Team' : 'Teams Move Together',
       `Drag a person and ${ctx.hasReports ? 'their whole team comes with them' : 'everyone under them comes too'}.`,
-      inElement(id),
+      elementSelector(id),
     ),
     ...(ctx.hasMore
       ? [

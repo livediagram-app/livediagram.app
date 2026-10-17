@@ -8,7 +8,7 @@ import { sectionId, type SectionKey } from './view-keys';
 // for a section; the tab scrolls it in once it renders (the tab's code loads on its own, so the
 // section may not exist until then).
 
-export type ViewSection = { key: SectionKey; title: string; content: ReactNode };
+type ViewSection = { key: SectionKey; title: string; content: ReactNode };
 
 // A See also that asked for a section. `n` changes on every ask, so following the same link twice
 // scrolls twice.

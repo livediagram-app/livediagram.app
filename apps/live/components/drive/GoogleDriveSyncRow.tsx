@@ -94,7 +94,7 @@ function useSinceNow(lastSyncedAt: number | null): number {
 }
 
 // The livediagram folder in Google Drive, in a new tab.
-export function driveFolderUrl(folderId: string): string {
+function driveFolderUrl(folderId: string): string {
   return `https://drive.google.com/drive/folders/${encodeURIComponent(folderId)}`;
 }
 

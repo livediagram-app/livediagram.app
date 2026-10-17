@@ -160,7 +160,7 @@ than failing.
 room carrying the room cursor its snapshot was taken at
 (`X-Room-Cursor: <epoch>:<seq>`), the api reads the room's ledger for that tab
 (`GET /ledger` on the DO stub, internal only) and merges into the incoming tab
-only the entries sequenced after that cursor (`mergeRoomLedger` in
+only the entries sequenced after that cursor (`fetchRoomLedger` + `applyRoomLedger` in
 `room-client.ts`, `mergeLedgerIntoTab` in `collab-ledger.ts`) before writing.
 A save with no cursor (the unload beacon, an API token, the MCP server), or a
 cursor from another epoch, isn't merged. Each ledger entry is re-applied through `applyElementDelta`, so

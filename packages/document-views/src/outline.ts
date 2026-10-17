@@ -31,7 +31,7 @@ import {
 } from './tree';
 import type { ViewAttribute } from './view-attribute';
 
-export type OutlineOptions = {
+type OutlineOptions = {
   // The id of the element whose subtree to print, resolved by the caller.
   only?: string;
   style?: boolean;
@@ -43,7 +43,7 @@ export type OutlineOptions = {
 type Level = 0 | 1 | 2;
 const LEVELS: readonly Level[] = [0, 1, 2];
 
-export type OutlineState =
+type OutlineState =
   'full' | 'notes-dropped' | 'attributes-dropped' | 'containers-collapsed' | 'root-collapsed';
 
 type EntryLine =
@@ -62,7 +62,7 @@ type Entry = {
   end: number;
 };
 
-export type OutlineResult = ViewResult<OutlineView> & {
+type OutlineResult = ViewResult<OutlineView> & {
   state: OutlineState;
   // The estimate of the whole outline, unfitted.
   fullTokens: number;

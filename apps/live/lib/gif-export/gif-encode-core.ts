@@ -10,7 +10,7 @@ const FORMAT = 'rgb565';
 const COLOURS = 256;
 // Every this-many pixels of each sample frame go into a page's palette: plenty to find its colours, a fraction of
 // the time.
-export const PALETTE_SAMPLE_STRIDE = 4;
+const PALETTE_SAMPLE_STRIDE = 4;
 export type GifWriter = {
   /** Add a frame (RGBA, width x height) shown for `delayCs` centiseconds, in `palette` (its own when absent). */
   add(rgba: Uint8ClampedArray, delayCs: number, palette?: GifPalette): void;

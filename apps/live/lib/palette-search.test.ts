@@ -124,4 +124,13 @@ describe('buildPaletteSearchItems', () => {
       .filter((kind) => !(SHAPE_KEYWORDS as Record<string, string | undefined>)[kind]?.trim());
     expect(missing).toEqual([]);
   });
+
+  // Before the icon chunk lands the catalogues hold nothing; a caller passes the subscription's value so the
+  // React Compiler rebuilds the list when it does (useIconCatalogs.guard.test.ts).
+  it('lists no catalogue entries until the catalogues have loaded, and every tile either way', () => {
+    const before = buildPaletteSearchItems({ catalogues: false });
+    expect(before.some((i) => /^(icon|sticker|tech):/.test(i.id))).toBe(false);
+    const after = buildPaletteSearchItems();
+    expect(after.filter((i) => /^(shape|tile):/.test(i.id))).toEqual(before);
+  });
 });

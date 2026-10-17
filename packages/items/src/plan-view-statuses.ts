@@ -9,7 +9,7 @@ import type { PlanViewId } from './plan-views';
 export const PLAN_VIEW_STATUSES_MAX = 64;
 
 // The views that count by status and so take the setting.
-export const STATUS_FILTER_VIEWS: readonly PlanViewId[] = ['workload', 'priority-matrix'];
+const STATUS_FILTER_VIEWS: readonly PlanViewId[] = ['workload', 'priority-matrix'];
 
 export function viewTakesStatuses(view: PlanViewId): boolean {
   return STATUS_FILTER_VIEWS.includes(view);

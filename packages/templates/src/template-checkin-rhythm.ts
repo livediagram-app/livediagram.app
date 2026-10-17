@@ -14,13 +14,13 @@ import {
 } from '@livediagram/document';
 import { BAND_H, MUTED, chip, phaseBand } from './template-planner-parts';
 
-export const RHYTHM_HUE = '#0d9488';
+const RHYTHM_HUE = '#0d9488';
 
 type Stop = { title: string; when: string; body: string; state: 'done' | 'now' | 'later' };
 
 // Today is 30 Sep: set and the monthly check-ins are behind Alex, the
 // mid-point review is tomorrow.
-export const RHYTHM: Stop[] = [
+const RHYTHM: Stop[] = [
   {
     title: 'Set',
     when: '1 Jul',

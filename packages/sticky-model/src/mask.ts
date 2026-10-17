@@ -14,8 +14,8 @@ export const AMBIGUOUS_ID = -1;
 // The seam is a tenth of the note's short side, and never under two pixels:
 // thin enough that the core still says where the note is, wide enough that
 // two touching cores are at least four pixels apart after downsampling.
-export const SEAM_FRACTION = 0.1;
-export const MIN_SEAM_PX = 2;
+const SEAM_FRACTION = 0.1;
+const MIN_SEAM_PX = 2;
 
 export function seamRadiusFor(w: number, h: number): number {
   return Math.max(MIN_SEAM_PX, Math.round(SEAM_FRACTION * Math.min(w, h)));

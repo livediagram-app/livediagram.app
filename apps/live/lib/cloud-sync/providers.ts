@@ -7,7 +7,7 @@ import type { HelpArticleKey } from '@/lib/help-articles';
 
 export type CloudSyncProviderId = 'googleDrive';
 
-export type CloudSyncProvider = {
+type CloudSyncProvider = {
   id: CloudSyncProviderId;
   label: string;
   // Settings search synonyms, lower-case, space-separated.

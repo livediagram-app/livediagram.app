@@ -124,7 +124,7 @@ const PAPER_AND_SCREEN_SIZE_IDS: readonly PageSizeId[] = [
 ];
 
 // The one size a logo page takes (docs/specs/007-editor/logo-pages.md "A logo page").
-export const LOGO_PAGE_SIZE_IDS: readonly PageSizeId[] = ['logo'];
+const LOGO_PAGE_SIZE_IDS: readonly PageSizeId[] = ['logo'];
 
 /** The sizes a page of this kind offers in its panel: a slide page only the slide sizes, a logo
  *  page only the artboard, an infographic or article page the paper and screen ones (a slide size
@@ -153,7 +153,7 @@ export function pageSizeChoices(
   return current === 'fit' ? ['fit', ...sizes] : sizes;
 }
 
-export function isPageSizeId(v: unknown): v is PageSizeId {
+function isPageSizeId(v: unknown): v is PageSizeId {
   return typeof v === 'string' && v in PAGE_SIZES;
 }
 
@@ -218,7 +218,7 @@ export type LaidOutPage = IllustratePage & { index: number; rect: PageRect };
 // The id the first page of a tab that never stored its pages answers to.
 const FIRST_PAGE_ID = 'page-1';
 
-export function isPageOrientation(v: unknown): v is PageOrientation {
+function isPageOrientation(v: unknown): v is PageOrientation {
   return v === 'portrait' || v === 'landscape';
 }
 
@@ -497,7 +497,7 @@ export function pageMargin(page: Pick<IllustratePage, 'orientation' | 'size' | '
 }
 
 // A page's margin as a share of its short side (docs/specs/007-editor/illustrate-pages.md).
-export const PAGE_MARGIN_FRACTION = 0.07;
+const PAGE_MARGIN_FRACTION = 0.07;
 
 /** Where each page sits: the first centred on the origin, each further one a gap to the right,
  *  every page centred on the row's horizontal axis (y = 0). */

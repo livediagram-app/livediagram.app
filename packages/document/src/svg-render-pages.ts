@@ -16,7 +16,7 @@ import { getBuiltInTheme } from './themes';
 type RenderOpts = Omit<NonNullable<Parameters<typeof renderElementsToSvg>[1]>, 'frame'>;
 
 // The gap between pages in the grid, and the backdrop it shows (a neutral desk under the sheets).
-export const PAGES_GRID_GAP_PX = 48;
+const PAGES_GRID_GAP_PX = 48;
 const PAGES_GRID_BACKDROP = '#e2e8f0';
 // The size of the place and name under each page.
 const PAGES_GRID_LABEL_PX = 32;

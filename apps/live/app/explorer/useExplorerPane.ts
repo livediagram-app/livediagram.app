@@ -17,7 +17,7 @@ import {
 } from './lens/pane-lens';
 
 /** What the lens did to the current view (docs/specs/013-workspace/explorer-filters.md "States"). */
-export type PaneLensResult = {
+type PaneLensResult = {
   /** The lens narrows something: a word or a value is set. */
   active: boolean;
   /** Documents shown, and documents the lens ran over, for the live region. */
