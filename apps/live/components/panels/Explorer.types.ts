@@ -70,7 +70,7 @@ export type ExplorerProps = {
   onDeleteDocument?: (
     id: string,
     beforeRemove?: () => Promise<void> | void,
-    opts?: { onRestored?: () => void },
+    opts?: { onRestored?: () => void; name?: string },
   ) => void;
   onDuplicateDocument?: (id: string) => void;
   // Folder mutations. Optional so read-only surfaces can omit them.

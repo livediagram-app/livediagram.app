@@ -4,7 +4,8 @@
 export type ToastTone = 'info' | 'success' | 'warning' | 'error';
 
 // An offer (docs/specs/007-editor/power-user-mode.md): a toast that asks something, so it carries two
-// answers and waits for one: no timeout (WCAG 2.2.1). Closing it is the decline.
+// answers. It stays up longer than a plain toast (TOAST_ANSWER_TIMEOUT_MS), then leaves unanswered. Closing it is
+// the decline; timing out is neither answer.
 export type ToastOffer = {
   message: string;
   confirmLabel: string;
@@ -42,26 +43,32 @@ export const TOAST_TIMEOUT_MS: Readonly<Record<ToastTone, number>> = {
   error: 6_000,
 };
 
-/** The most toasts up at once; a newer one retires the oldest that times out. */
+/**
+ * How long a toast with answers (an offer, or an action toast with a button) stays up: long enough to reach for its
+ * button, never for good. Hovering, focusing or hiding the page pauses it, like every toast.
+ */
+export const TOAST_ANSWER_TIMEOUT_MS = 10_000;
+
+/** The most toasts up at once; a newer one retires the oldest without answers. */
 export const TOAST_LIMIT = 4;
 
-/** Whether a toast waits for an answer (an offer, or an action toast with a button) rather than timing out. */
-export function toastWaits(entry: Pick<ToastEntry, 'offer' | 'actions'>): boolean {
+/** Whether a toast carries answers (an offer, or an action toast with a button), so it stays up longer. */
+export function toastAnswers(entry: Pick<ToastEntry, 'offer' | 'actions'>): boolean {
   return entry.offer !== undefined || (entry.actions?.length ?? 0) > 0;
 }
 
-/** The timeout of a toast, or null for one that waits. */
-export function toastTimeout(entry: Pick<ToastEntry, 'offer' | 'actions' | 'tone'>): number | null {
-  return toastWaits(entry) ? null : TOAST_TIMEOUT_MS[entry.tone];
+/** How long a toast stays up: its tone's time, or the longer answer time for one with buttons. */
+export function toastTimeout(entry: Pick<ToastEntry, 'offer' | 'actions' | 'tone'>): number {
+  return toastAnswers(entry) ? TOAST_ANSWER_TIMEOUT_MS : TOAST_TIMEOUT_MS[entry.tone];
 }
 
-// Retire (mark leaving) the oldest toast past the limit: the oldest that times out first, else the oldest of all.
+// Retire (mark leaving) the oldest toast past the limit: the oldest without answers first, else the oldest of all.
 function applyLimit(list: ToastEntry[]): ToastEntry[] {
   let next = list;
   for (;;) {
     const live = next.filter((t) => !t.leaving);
     if (live.length <= TOAST_LIMIT) return next;
-    const victim = live.find((t) => !toastWaits(t)) ?? live[0]!;
+    const victim = live.find((t) => !toastAnswers(t)) ?? live[0]!;
     next = next.map((t) => (t.id === victim.id ? { ...t, leaving: true } : t));
   }
 }

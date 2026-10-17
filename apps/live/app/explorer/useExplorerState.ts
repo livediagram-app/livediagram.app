@@ -397,9 +397,11 @@ export function useExplorerState() {
   const deleteDocument = async (
     id: string,
     beforeRemove?: () => Promise<void> | void,
-    opts?: { onRestored?: () => void },
+    opts?: { onRestored?: () => void; name?: string },
   ) => {
-    await listDeleteDocument(id, beforeRemove, opts);
+    // A team document is not in the personal list, so its name for the toast comes from the team sweep.
+    const name = opts?.name ?? teamDocuments.find((d) => d.id === id)?.name;
+    await listDeleteDocument(id, beforeRemove, { ...opts, name });
     refreshIfTeamDocument(id);
   };
 

@@ -441,32 +441,35 @@ it stays in view as the dashboard scrolls; Settings opens the same synced
 - **A move that fails says so.** Every move the picker or a drop starts
   either lands or ends in an error toast; none fails silently. A move that
   took the row away first puts it back.
+  - Each names the document or folder it failed on, quoted and cut to fit
+    ([Toasts](../004-interface-design/toasts.md#naming-what-it-acted-on));
+    "the document" / "the folder" stands in for a blank or unknown name.
   - A document into a folder of My Documents: the row goes back to its
-    folder; "Could not move the document. Try again."
+    folder; "Could not move “Roadmap”. Try again."
   - A document into a team: the row comes back to My Documents; "Couldn’t
-    move the document to the team. Try again."
-  - A team document to another folder of its team: "Could not move the
-    document. Try again."
+    move “Roadmap” to the team. Try again."
+  - A team document to another folder of its team: "Could not move
+    “Roadmap”. Try again."
   - A team document out of its team, to My Documents or another team:
-    "Couldn’t move the document out of the team. Try again."
-  - A folder under another folder: "Could not move the folder. Try again."
-  - A folder made from the picker's New Folder tile: "Could not create the
-    folder. Try again.", the tile keeping the name typed.
+    "Couldn’t move “Roadmap” out of the team. Try again."
+  - A folder under another folder: "Could not move “Plans”. Try again."
+  - A folder made from the picker's New Folder tile: "Could not create
+    “Plans”. Try again.", the tile keeping the name typed.
   - Each failure logs
     `[explorer-move] <document|document-to-team|team-document|team-document-out|folder|new-folder> failed`
     with the subject's id and the error.
 - **A write that fails says so.** The same holds for every other folder and
   document write the Explorer page, the editor's Explorer panel and a team's
   library make: it lands or ends in an error toast, and a change shown at
-  once is put back. One wording per verb (`lib/write-failure-copy.ts`), so
-  a failure reads the same wherever it happened:
+  once is put back. One wording per verb (`lib/write-failure-copy.ts`), each
+  naming its subject, so a failure reads the same wherever it happened:
   - A new folder (New Folder, New Subfolder, a picker's New Folder tile in
-    any scope): "Could not create the folder. Try again."
-  - A folder rename: "Could not rename the folder. Try again.", the
+    any scope): "Could not create “New folder”. Try again."
+  - A folder rename: "Could not rename “Plans”. Try again.", the
     old name back.
-  - A folder delete: "Could not delete the folder. Try again."
-  - A team document's rename: "Could not rename the document. Please try
-    again."; its duplicate: "Couldn't duplicate that document. Try again."
+  - A folder delete: "Could not delete “Plans”. Try again."
+  - A document's rename: "Could not rename “Roadmap”. Try again."; its
+    duplicate: "Could not duplicate “Roadmap”. Try again."
   - Within a team's library, a folder or document move says what the
     Explorer's own moves say (above), with the same log line.
   - Each other failure logs `[folders] <verb> failed`,

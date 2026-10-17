@@ -85,8 +85,8 @@ describe('useTeamFolderActions when the server refuses', () => {
     await settle();
     expect(toast.error.mock.calls).toEqual([
       ['Could not create the folder. Try again.'],
-      ['Could not rename the folder. Try again.'],
-      ['Could not delete the folder. Try again.'],
+      ['Could not rename “Specs”. Try again.'],
+      ['Could not delete “Specs”. Try again.'],
     ]);
   });
 

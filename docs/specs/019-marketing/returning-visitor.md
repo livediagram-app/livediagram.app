@@ -64,7 +64,8 @@ on the same origin (the router serves `/` and `/explorer` from one host).
   document (`/document/<id>`).
 - **Explorer Home**, the last card: "Explorer Home" with "Open" at the top right, over a tinted panel ("All your
   documents"), to `/explorer/home`.
-- **On a phone** the fan shows three cards: the two most recent documents and Explorer Home.
+- **On a phone** the fan shows three cards, the three most recent documents, and leaves Explorer Home off: the
+  band has room for three, and a returning visitor came for their documents.
 - **They stay put.** The template fan deals a new card every few seconds; a returning visitor came for these, so
   nothing is swapped. Each card springs in a beat after the one before it when the fan deals.
 - **Keyboard and screen readers:** real links, in reading order.

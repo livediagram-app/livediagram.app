@@ -34,9 +34,9 @@ export function useTeamFolderActions({
   const toast = useToast();
   // A refused write says so (docs/specs/013-workspace/folders.md "A write that fails says so"), and logs why.
   const failed = useCallback(
-    (verb: keyof typeof FOLDER_FAILURE, err: unknown) => {
+    (verb: keyof typeof FOLDER_FAILURE, err: unknown, name?: string) => {
       console.warn(`[team-folders] ${verb} failed`, { message: (err as Error).message });
-      toast.error(FOLDER_FAILURE[verb]);
+      toast.error(FOLDER_FAILURE[verb](name));
     },
     [toast],
   );
@@ -67,7 +67,9 @@ export function useTeamFolderActions({
             track('Folder', 'Renamed', 'Team');
             refreshTeamLibraries();
           })
-          .catch((err: unknown) => failed('rename', err));
+          .catch((err: unknown) =>
+            failed('rename', err, teamFolders.find((f) => f.id === id)?.name),
+          );
       },
       delete: (id) => {
         const folder = teamFolders.find((f) => f.id === id);
@@ -87,7 +89,7 @@ export function useTeamFolderActions({
               track('Folder', 'Deleted', 'Team');
               refreshTeamLibraries();
             })
-            .catch((err: unknown) => failed('delete', err));
+            .catch((err: unknown) => failed('delete', err, folder?.name));
         });
       },
     };

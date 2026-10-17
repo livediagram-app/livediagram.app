@@ -16,6 +16,8 @@ import { track } from '@/lib/telemetry';
 import { useAfterDriveChange } from '@/hooks/persistence/useAfterDriveChange';
 import type { TrashGroup } from '@/lib/trash-groups';
 import type { useToast } from '@/hooks/ui/useToast';
+import { documentRestoredMessage } from '@/lib/document-toast-copy';
+import { toastName } from '@/lib/toast-name';
 
 export type TrashController = {
   listing: TrashListing | null;
@@ -72,14 +74,15 @@ export function useTrash(
   const restore = useCallback(
     async (id: string, group: TrashGroup) => {
       if (!ownerId) return;
+      const name = group.rows.find((r) => r.id === id)?.name;
       try {
         await apiRestoreDocument(ownerId, id);
         drop([id]);
         track('Trash', 'Restored', group.telemetryType);
-        toast.success('Document restored');
+        toast.success(documentRestoredMessage(name));
         onChanged();
       } catch {
-        toast.error('Could not restore that document. Try again.');
+        toast.error(`Could not restore ${toastName(name) ?? 'that document'}. Try again.`);
         load();
       }
     },
@@ -89,12 +92,13 @@ export function useTrash(
   const purge = useCallback(
     async (id: string, group: TrashGroup) => {
       if (!ownerId) return;
+      const name = group.rows.find((r) => r.id === id)?.name;
       try {
         await apiPurgeDocument(ownerId, id);
         drop([id]);
         track('Trash', 'Deleted', group.telemetryType);
       } catch {
-        toast.error('Could not delete that document. Try again.');
+        toast.error(`Could not delete ${toastName(name) ?? 'that document'}. Try again.`);
         load();
       }
     },

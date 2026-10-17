@@ -7,6 +7,7 @@ import { seededRandom } from '@livediagram/document';
 import { HERO_FAN_OPENING, HERO_FAN_SLOTS, heroTemplate, shuffleFan } from '@/lib/hero-starts';
 import { Hero } from './Hero';
 import { HERO_FAN_SWAP_MS } from './HeroFan';
+import { PHONE_RECENT } from './HeroFanMine';
 
 // docs/specs/019-marketing/marketing-site.md "Hero": the badge and the question, the template search
 // with the Start Blank menu in its bar, a returning visitor's recent diagrams, and the dealing fan.
@@ -173,6 +174,14 @@ describe('the hero', () => {
     expect(screen.getByRole('link', { name: /Explorer Home/ }).getAttribute('href')).toBe(
       '/explorer/home',
     );
+    // A phone shows the PHONE_RECENT most recent documents and leaves Explorer Home off.
+    const onPhone = screen
+      .getAllByRole('link')
+      .filter((a) => /^\/(document|explorer)\//.test(a.getAttribute('href') ?? ''))
+      .filter((a) => !a.parentElement!.className.split(' ').includes('max-sm:hidden'))
+      .map((a) => a.getAttribute('href'));
+    expect(onPhone).toEqual(['/document/d1', '/document/d2', '/document/d3']);
+    expect(onPhone).toHaveLength(PHONE_RECENT);
   });
 });
 

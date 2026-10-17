@@ -496,7 +496,7 @@ function ExplorerImpl({
                   } catch (err) {
                     // The tile keeps the name typed, for another try.
                     logMoveFailure('new-folder', '', err);
-                    toast.error(FOLDER_FAILURE.create);
+                    toast.error(FOLDER_FAILURE.create(name));
                     return null;
                   }
                 }}

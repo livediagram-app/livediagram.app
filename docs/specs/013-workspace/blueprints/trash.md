@@ -184,7 +184,7 @@ room`; open sessions still stop at their next save (I5).
 
 - The confirmation line, once, nowhere else: "It can be restored from Settings › Trash for 30 days." Team:
   "Any teammate can restore it from Settings › Trash for 30 days." Share links: "Its share links stop
-  working, and visitors see that it was deleted." The "Document deleted" toast is unchanged.
+  working, and visitors see that it was deleted." The "“Roadmap” deleted" toast is unchanged.
 - Settings › Account, section "Your Data", row "Trash" with an "Open Trash" link and the footnote "Deleted
   documents wait here for 30 days before they are removed for good. Restore one to put it back where it was."
 - Trash view: intro, in an `InfoNote` (the small info-glyph note the Explorer's views use), "Deleted documents wait here for 30 days, then they are removed for good. Restoring one
