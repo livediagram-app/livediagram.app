@@ -540,6 +540,17 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   'apps/live/components/forms/builder/FormAddBar.tsx Form·Added': {
     values: Object.values(QUESTION_TYPE_TELEMETRY),
   },
+  // Not Taking Responses pressed names its reason (apps/live/components/forms/form-not-taking.ts FORM_NOT_TAKING).
+  'apps/live/components/forms/FormNotTakingWarning.tsx Form·Opened': {
+    values: [
+      'NotTakingSuspended',
+      'NotTakingPaused',
+      'NotTakingSwitchedOff',
+      'NotTakingClosesAt',
+      'NotTakingLimit',
+      'NotTakingFull',
+    ],
+  },
   // A Sheet change names its kind (api-schema SHEET_CHANGE_KINDS); a formula's first use of a function, its name.
   'apps/live/components/sheets/sheet-controller.tsx Sheet·Changed': {
     values: [...SHEET_CHANGE_KINDS],

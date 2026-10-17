@@ -127,6 +127,8 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Form·Created',
   'Form·Sent',
   'Form·Linked',
+  'Form·Moved',
+  'Form·Opened',
   'Form·Shared',
   'Form·Toggled',
   'Home·Loaded',
