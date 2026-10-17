@@ -1440,6 +1440,12 @@ A shape can carry an inline **text label**.
 - Empty labels are valid (nothing is rendered).
 - Labels are **multi-line** for shapes, text, and sticky notes: Enter inserts a newline and the renderers (auto-fit SVG `tspan`s / wrapping div) lay the lines out.
 - Label data lives on the element: `label?: string`.
+- **Right-to-left text reads right to left.** Each line of a label takes its direction from its own first letter
+  (`unicode-bidi: plaintext` on the label's text, `dir="auto"` on its editors), so Arabic or Hebrew keeps its
+  closing punctuation at the end it belongs: "مرحبا بالعالم!" ends with "!" at its left, not stranded on the right as
+  under the page's left-to-right default. A line in English beside it stays left to right. Alignment is unchanged
+  (a label's Left, Centre and Right are where the user put them). This holds in shapes, text, sticky notes, tables,
+  arrow labels and the inline line editors, and while editing.
 
 ### Edit vs modes
 

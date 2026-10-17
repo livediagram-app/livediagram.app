@@ -74,6 +74,8 @@ export function InlineTextLine({
         // arriving as markup this field has nowhere to store.
         contentEditable={editable ? 'plaintext-only' : false}
         suppressContentEditableWarning
+        // Right-to-left text reads right to left (label-bidi.css).
+        dir="auto"
         role="textbox"
         aria-label={ariaLabel}
         tabIndex={editable ? 0 : -1}

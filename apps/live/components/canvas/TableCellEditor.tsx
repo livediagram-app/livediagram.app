@@ -61,6 +61,8 @@ export function TableCellEditor({
       ref={editorRef}
       contentEditable
       suppressContentEditableWarning
+      // Right-to-left text reads right to left (label-bidi.css).
+      dir="auto"
       role="textbox"
       tabIndex={0}
       onPointerDown={(e) => e.stopPropagation()}
