@@ -55,7 +55,7 @@ export function finishArrowThickness(
 ): ArrowThickness;
 // set → own; professional → 'thin'; else own (the resolved default)
 export function finishArrowWidthPx(own: number | undefined, finish: Finish): number;
-// own ?? (professional ? 1 : marker ? MARKER_LINE_PX : 2); read by ArrowView and svgArrow alike
+// marker and (own unset or ≤ 1) → MARKER_LINE_PX; else own ?? (professional ? 1 : 2); ArrowView and svgArrow
 export function finishIconWeight(own: IconWeight | undefined, finish: Finish): IconWeight;
 // own ?? (professional ? 'thin' : marker ? 'bold' : DEFAULT_ICON_WEIGHT)
 export function finishDrawsDefaultShadow(finish: Finish): boolean; // finish !== 'professional'
@@ -173,7 +173,7 @@ len * 0.04)`; the bow is `±min(len * MARKER_BOW_SHARE, MARKER_BOW_MAX_PX)`. Emi
 nibPx: number }`.
   - table: its frame at `MARKER_TABLE_FRAME_PX` (2.5), no fill layers; sticky, comment pin, text, images and
     self-painting kinds: null.
-  - shape: `strokePx = el.strokeWidth ? BORDER_STROKE_PX[el.strokeWidth] : MARKER_LINE_PX`; dash and corner as
+  - shape: `strokePx` is `MARKER_LINE_PX` when `strokeWidth` is unset or `thin`, else `BORDER_STROKE_PX[strokeWidth]`; dash and corner as
     Flexible's; outlines from `handDrawnOutlines(el, strokePx / 2, radiusPx)` (`sketch-element.ts`, shared with
     Sketch: shape-table parts fitted to the box, or the box kind's outline as its `main` part). Detail parts go to
     `details`; others to `ink` when `strokePx > 0`; filled roles (`FILLED_ROLES`, `shape-hit.ts`) add `solid`, and

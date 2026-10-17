@@ -113,8 +113,9 @@ Sketch is a pencil's wandering double line, Marker is one bold stroke per edge, 
   everywhere and only changes when its size or kind does.
 - **Ink:** marker ink is slightly see-through, so where two strokes cross (every corner, a circle's overlap, an
   arrowhead meeting its line) the ink is visibly darker, as real marker ink pools. A line on its own stays strong.
-- **Line weight:** an unset border draws at 3 px and an unset arrow at 3 px, a marker's nib. A width picked on the
-  element wins, drawn in the same ink.
+- **Line weight:** an unset or Thin border draws at 3 px, a marker's nib, and so does an arrow that is unset or 1 px
+  wide: a marker has no fine-liner, and templates set Thin borders on purpose, so without this a template drawn in
+  Marker would come out in fine lines. Medium and wider are drawn as picked, in the same ink.
 - **Fills** of shapes are coloured in: the fill colour laid down in broad, overlapping back-and-forth marker
   strokes, their ends not quite meeting the outline, with the overlaps showing as faint darker streaks. The strokes
   overlap enough that no gap opens under a label, so a label keeps the contrast it was coloured for. Backdrops

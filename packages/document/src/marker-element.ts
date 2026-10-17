@@ -42,8 +42,8 @@ export type MarkerDrawing = {
 const MARKER_TABLE_FRAME_PX = 2.5;
 
 /** An element in marker, with the width and dash its outline is stroked at; null for a kind Marker leaves as drawn
- *  (a sticky, which stays paper; text, images, freehand and self-painting faces). An unset border is drawn at
- *  MARKER_LINE_PX; a width picked on the element is drawn as picked. */
+ *  (a sticky, which stays paper; text, images, freehand and self-painting faces). An unset or Thin border is drawn
+ *  at MARKER_LINE_PX; Medium and wider are drawn as picked. */
 export function markerElementPaint(
   el: BoxedElement,
   fill: string,
@@ -66,7 +66,9 @@ export function markerElementPaint(
     return { drawing, strokePx, dash: null };
   }
   if (el.type !== 'shape' || el.shape === 'comment-pin') return null;
-  const strokePx = el.strokeWidth ? BORDER_STROKE_PX[el.strokeWidth] : MARKER_LINE_PX;
+  // A marker has no fine-liner: Thin draws at the nib like an unset border (templates set Thin on purpose).
+  const strokePx =
+    el.strokeWidth && el.strokeWidth !== 'thin' ? BORDER_STROKE_PX[el.strokeWidth] : MARKER_LINE_PX;
   const dash = BORDER_DASH_ARRAY[el.strokeStyle ?? DEFAULT_BORDER_STYLE];
   const kindDefault = el.shape === 'mind-node' ? MIND_NODE_RADIUS_PX : DEFAULT_BOX_RADIUS_PX;
   const radiusPx = cornerRadiusPx(

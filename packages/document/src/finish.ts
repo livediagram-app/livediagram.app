@@ -99,8 +99,11 @@ export function finishArrowThickness(
 }
 
 /** An arrow's line width, px: its own when set, else 1 px under Professional, a marker's nib under Marker, else
- *  2 px. Read by the canvas and the export alike. */
+ *  2 px. Under Marker a Thin (1 px or finer) arrow is drawn at the nib too: a marker has no fine-liner. Read by the
+ *  canvas and the export alike. */
 export function finishArrowWidthPx(own: number | undefined, finish: Finish): number {
+  if (finish === 'marker' && (own === undefined || own <= ARROW_THICKNESS_PX.thin))
+    return MARKER_LINE_PX;
   if (own !== undefined) return own;
   if (finish === 'professional') return ARROW_THICKNESS_PX.thin;
   return finish === 'marker' ? MARKER_LINE_PX : 2;

@@ -222,8 +222,10 @@ describe('Marker (docs/specs/008-canvas/finish.md "Marker")', () => {
     expect(elementFontId({ finish: 'marker' }, 'inter', 'flexible')).toBe(MARKER_FONT_ID);
   });
 
-  it('draws unset arrows at a marker’s nib and an own width as picked', () => {
+  it('draws unset and Thin arrows at a marker’s nib, a wider own width as picked', () => {
     expect(finishArrowWidthPx(undefined, 'marker')).toBe(MARKER_LINE_PX);
+    expect(finishArrowWidthPx(1, 'marker')).toBe(MARKER_LINE_PX);
+    expect(finishArrowWidthPx(1, 'flexible')).toBe(1);
     expect(finishArrowWidthPx(undefined, 'professional')).toBe(1);
     expect(finishArrowWidthPx(undefined, 'flexible')).toBe(2);
     expect(finishArrowWidthPx(7, 'marker')).toBe(7);

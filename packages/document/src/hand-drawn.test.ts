@@ -28,9 +28,14 @@ describe('handDrawnElementPaint', () => {
     expect(handDrawnElementPaint(sticky, 'sketch', '#fef08a')).not.toBeNull();
   });
 
-  it('draws an unset border at a marker’s nib, and a picked one as picked', () => {
+  it('draws an unset or Thin border at a marker’s nib, and a wider one as picked', () => {
     expect(handDrawnElementPaint(box(), 'marker', '#fff')?.strokePx).toBe(MARKER_LINE_PX);
-    expect(handDrawnElementPaint(box({ strokeWidth: 'thin' }), 'marker', '#fff')?.strokePx).toBe(1);
+    expect(handDrawnElementPaint(box({ strokeWidth: 'thin' }), 'marker', '#fff')?.strokePx).toBe(
+      MARKER_LINE_PX,
+    );
+    expect(handDrawnElementPaint(box({ strokeWidth: 'thick' }), 'marker', '#fff')?.strokePx).toBe(
+      4,
+    );
     expect(handDrawnElementPaint(box({ strokeWidth: 'none' }), 'marker', '#fff')?.strokePx).toBe(0);
   });
 
