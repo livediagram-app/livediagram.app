@@ -71,9 +71,13 @@ closed the escalation. The fix is [§4](#4-x-owner-id-trust-change).
 ### Where it stands now
 
 - **The WS upgrade no longer takes `?g=`.** It admits a caller by a one-time
-  room ticket minted over authenticated REST, a personal document's owner id, or
-  a share code, with the share password where one is set (`t` / `o` / `s` /
-  `p`, `routes/document-room-routes.ts`; [API app](api.md)).
+  room ticket minted over authenticated REST (`t`, `routes/document-room-routes.ts`;
+  [API app](api.md) "Realtime model"), which every editor session now uses, so no
+  owner id, guest signature, share code or share password rides the upgrade URL.
+  The legacy legs, a personal document's owner id or a share code with the share
+  password where one is set (`o` / `os` / `s` / `p`), still admit an editor from
+  before 2026-10-17 and log `[room-upgrade] legacy leg admitted` until they are
+  retired.
 - **Presence carries no owner id.** The room mints a random presence id per
   socket and builds each presence entry itself (`helloPresence`,
   `document-room-rules.ts`); a client never supplies or learns one.

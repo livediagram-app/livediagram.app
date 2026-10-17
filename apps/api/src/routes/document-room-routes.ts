@@ -17,7 +17,13 @@ import { isPersonalOwner, shareLinkForDocument, sharePasswordOk } from '../auth/
 import { clientRateKey } from '../client-ip';
 import { consumeWsTicket, createWsTicket, getDocumentMeta } from '../db';
 import { forbidden, json, notFound } from '../responses';
-import { COMMUNITY_CONTENT, gateGrant, missingDocument, type RouteContext } from './context';
+import {
+  COMMUNITY_CONTENT,
+  gateGrant,
+  missingDocument,
+  ownsDocument,
+  type RouteContext,
+} from './context';
 import { personTagFor } from '../person-tag';
 import { networkTagFor } from '../vote-integrity';
 
@@ -77,6 +83,9 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
       personTag: personId === null ? null : await personTagFor(id, personId),
       workbenchPairing: workbench?.pairingId ?? null,
       adderKey,
+      // The owner bit rides the ticket (docs/specs/012-collaboration/facilitator.md): every editor joins through
+      // one, so this is the only place the room can learn that a session is the owner's.
+      owner: await ownsDocument(ctx, liveDoc),
     });
     // The caller's own adder key comes back with its ticket, so its editor knows which stickies are its own
     // to delete (docs/specs/013-workspace/share-roles.md). It says nothing about anybody else.
@@ -106,6 +115,8 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
     let workbenchPairing: string | null = null;
     // Only a Participant's ticket carries an adder key; every other leg has none.
     let adderKey: string | null = null;
+    // Only a ticket minted for the owner, or the legacy bare-`o` owner leg, seats the owner.
+    let ownerSession = false;
     const claimedOwnerId = url.searchParams.get('o');
     // Gate-only projection — the upgrade uses only ownerId/teamId. A document
     // in the Trash (docs/specs/013-workspace/trash.md) reads as missing, so no
@@ -154,8 +165,13 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
       isPersonalOwner(claimedOwnerId, liveDoc.ownerId, liveDoc.teamId);
     if (admission) {
       ({ role, tabScope, shareCode, account, personTag, workbenchPairing, adderKey } = admission);
+      ownerSession = admission.owner;
     } else if (isOwnerUpgrade) {
       role = 'edit';
+      ownerSession = true;
+      // The legacy legs put credentials in the URL (docs/specs/015-api/api.md "Realtime model"); every editor
+      // now rides a ticket, so this counts what is left before they are retired.
+      console.info('[room-upgrade] legacy leg admitted', { leg: 'owner', documentId: id });
     } else {
       const link = await shareLinkForDocument(env, url.searchParams.get('s'), id);
       if (link?.purpose === 'community') return forbidden('community_link');
@@ -163,6 +179,7 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
         role = link.role;
         tabScope = link.tabId;
         shareCode = link.code;
+        console.info('[room-upgrade] legacy leg admitted', { leg: 'share', documentId: id });
       }
     }
     // Refuse the upgrade unless the caller is the owner or holds a valid
@@ -203,7 +220,7 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
     // upgrade is the document's OWNER. The facilitator baton needs it so the
     // owner can always take the session back, and a boolean answers that
     // without handing the room an identity it deliberately does not hold.
-    forwarded.headers.set('X-Verified-Owner', isOwnerUpgrade ? '1' : '0');
+    forwarded.headers.set('X-Verified-Owner', ownerSession ? '1' : '0');
     // The session's tab scope and admitting code, set on every path for the
     // same reason as the two above: the room believes these names. Empty =
     // none (docs/specs/013-workspace/tab-scoped-share-links.md).

@@ -19,6 +19,7 @@ const { db } = vi.hoisted(() => ({
     getDocumentMeta: vi.fn(),
     getDocumentSharePassword: vi.fn(async (): Promise<string | null> => null),
     getShareLink: vi.fn(),
+    getMembership: vi.fn(async (): Promise<{ status: string } | null> => null),
   },
 }));
 vi.mock('../db', () => db);
@@ -253,6 +254,49 @@ describe('WebSocket upgrade — trust headers', () => {
     // A ticket admits a team MEMBER, not the owner — the owner bit stays off.
     expect(seen[0]!.headers.get('X-Verified-Owner')).toBe('0');
   });
+
+  // docs/specs/012-collaboration/facilitator.md "Who may take it": every editor joins by ticket, so the owner
+  // bit comes from the mint, and a pre-set header never survives either way.
+  it("seats the owner from an owner's ticket", async () => {
+    db.getDocumentMeta.mockResolvedValue({ ownerId: 'owner-uuid', teamId: null });
+    db.consumeWsTicket.mockResolvedValue({
+      role: 'edit',
+      tabScope: null,
+      shareCode: null,
+      owner: true,
+    });
+    const { env, seen } = roomEnv();
+    const res = await handleDocumentRoomRoutes(
+      makeTestRouteContext('GET', '/api/documents/d1/ws?t=TICKET-1', {
+        owner: null,
+        headers: { ...SPOOFED, 'X-Verified-Owner': '0' },
+        env,
+      }),
+    );
+    expect(res?.status).toBe(REACHED_ROOM);
+    expect(seen[0]!.headers.get('X-Verified-Owner')).toBe('1');
+  });
+
+  it('does not seat the owner from a ticket presented beside the owner id', async () => {
+    // The ticket answers for the session: a visitor's ticket with the owner's id in `o` stays a visitor.
+    db.getDocumentMeta.mockResolvedValue({ ownerId: 'owner-uuid', teamId: null });
+    db.consumeWsTicket.mockResolvedValue({
+      role: 'view',
+      tabScope: null,
+      shareCode: 'CODE1234',
+      owner: false,
+    });
+    const { env, seen } = roomEnv();
+    await handleDocumentRoomRoutes(
+      makeTestRouteContext('GET', '/api/documents/d1/ws?t=TICKET-1&o=owner-uuid', {
+        owner: null,
+        headers: SPOOFED,
+        env,
+      }),
+    );
+    expect(seen[0]!.headers.get('X-Verified-Owner')).toBe('0');
+    expect(seen[0]!.headers.get('X-Verified-Role')).toBe('view');
+  });
 });
 
 describe('POST room-ticket', () => {
@@ -286,6 +330,7 @@ describe('POST room-ticket', () => {
       personTag: await personTagFor('d1', 'user_1'),
       workbenchPairing: 'pair-1',
       adderKey: null,
+      owner: true,
     });
   });
 
@@ -304,6 +349,7 @@ describe('POST room-ticket', () => {
       personTag: null,
       workbenchPairing: null,
       adderKey: null,
+      owner: true,
     });
   });
 
@@ -322,6 +368,7 @@ describe('POST room-ticket', () => {
       personTag: null,
       workbenchPairing: null,
       adderKey: null,
+      owner: false,
     });
   });
 
@@ -432,6 +479,33 @@ describe('WebSocket upgrade: tab scope', () => {
     expect(seen[0]!.headers.get('X-Verified-Share-Code')).toBe('');
   });
 
+  // docs/specs/012-collaboration/facilitator.md: the mint decides owner-ness with ownsDocument, so a team
+  // document's owner counts only while verified and still joined.
+  it('mints the owner bit only for the verified, joined owner of a team document', async () => {
+    db.getDocumentMeta.mockResolvedValue({ ownerId: 'user_own', teamId: 'team-1' });
+    gates.resolveDocumentGrant.mockResolvedValue({ role: 'edit', tabScope: null, shareCode: null });
+    db.getMembership.mockResolvedValue({ status: 'joined' });
+    const asOwner = () =>
+      makeTestRouteContext('POST', '/api/documents/d1/room-ticket', {
+        owner: 'user_own',
+        clerkUserId: 'user_own',
+        verifiedUserId: 'user_own',
+      });
+    await handleDocumentRoomRoutes(asOwner());
+    expect(db.createWsTicket).toHaveBeenLastCalledWith(
+      expect.anything(),
+      'd1',
+      expect.objectContaining({ owner: true }),
+    );
+    db.getMembership.mockResolvedValue(null);
+    await handleDocumentRoomRoutes(asOwner());
+    expect(db.createWsTicket).toHaveBeenLastCalledWith(
+      expect.anything(),
+      'd1',
+      expect.objectContaining({ owner: false }),
+    );
+  });
+
   it('mints a ticket carrying the grant scope and code', async () => {
     db.getDocumentMeta.mockResolvedValue({ ownerId: 'other', teamId: null });
     gates.resolveDocumentGrant.mockResolvedValue({
@@ -450,6 +524,7 @@ describe('WebSocket upgrade: tab scope', () => {
       personTag: null,
       workbenchPairing: null,
       adderKey: null,
+      owner: false,
     });
   });
 });

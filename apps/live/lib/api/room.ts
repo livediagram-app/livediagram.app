@@ -22,9 +22,8 @@ import {
 import { opForTheWire } from '@livediagram/document';
 import { splitPresenceFrame } from '../agent-presence-rows';
 import { noteServerBuild, noteServerDocumentFormat } from '../server-release';
-import { getGuestSelfSig } from '../local-identity';
 import { startEditorTiming } from '../timing';
-import { getSessionSharePassword, wsUrl } from './core';
+import { wsUrl } from './core';
 import { debugLog } from '../debug-log';
 
 export type RoomHandlers = {
@@ -69,57 +68,27 @@ export type RoomHandlers = {
   onResync?: () => void;
 };
 
-// Auth identifiers the connector rides on the room WebSocket URL.
-type RoomAuthOptions = {
-  shareCode?: string | null;
-  ownerId?: string | null;
-  // The guest signature for `ownerId` (X-Owner-Sig over REST); filled in by
-  // connectRoom from the stored self signature, never by callers.
-  ownerSig?: string | null;
-  // One-time room ticket (docs/specs/015-api/api.md), minted over authenticated REST via
-  // apiCreateRoomTicket. The only leg that can admit a team member —
-  // the worker doesn't trust a bare `o` for team membership.
+// connectRoom's options: the ticket that admits the socket, and how to mint a fresh one for a reconnect.
+type RoomConnectOptions = {
+  // One-time room ticket (docs/specs/015-api/api.md "Realtime model"), minted over authenticated REST via
+  // apiCreateRoomTicket: the REST gates (the guest signature, the share code and its password, team
+  // membership) all ran there, so the upgrade URL carries nothing but this. Null when the mint failed; the
+  // upgrade is then refused and the reconnect mints again.
   ticket?: string | null;
-};
-
-// connectRoom's options: the auth legs, and how to mint a fresh ticket for a reconnect.
-type RoomConnectOptions = RoomAuthOptions & {
-  // A ticket is spent by the upgrade it admits (ws-tickets.ts deletes it), so a reconnect that sent
-  // the first one again was refused, and a team member or signed-in owner lost the room for the rest
-  // of the session. Called before each reconnect of a session that used a ticket.
+  // A ticket is spent by the upgrade it admits (ws-tickets.ts deletes it), so a reconnect that sent the
+  // first one again was refused, and the session lost the room for good. Called before every reconnect.
   mintTicket?: () => Promise<string | null>;
   // Who we follow, read at every (re)connect: the room keeps a follow on the socket, so a new socket says it again.
   readFollowing?: () => string | null;
 };
 
-// Build the room WebSocket auth query string. Browsers can't set custom
-// headers on a WebSocket upgrade, so these ride on the query string; the
-// api worker reads them, resolves role, and forwards an X-Verified-Role
-// header to the Durable Object before the upgrade reaches it. Empty /
-// missing values are stripped so the URL stays clean.
-//   - `t` one-time room ticket (docs/specs/015-api/api.md) — proof the connector passed
-//     the authenticated REST access gates moments ago; required for
-//     team documents, where a bare owner id is not trusted.
-//   - `s` share code, `o` owner id (for documents the visitor owns)
-//   - `p` share password (docs/specs/013-workspace/share-password.md) for a protected document's room.
-// (A `g` guest-signature param used to ride along for presence-identity
-// binding; the DO switched to server-random ephemeral presence ids —
-// docs/specs/015-api/public-api-and-tokens.md §6 — and the server-side read was removed, so the client
-// stopped sending it.)
-// Pure (sharePassword passed in) so the param mapping is unit-tested.
-export function roomQueryString(options: RoomAuthOptions, sharePassword: string | null): string {
-  const params = new URLSearchParams();
-  if (options.ticket) params.set('t', options.ticket);
-  if (options.shareCode) params.set('s', options.shareCode);
-  if (options.ownerId) {
-    params.set('o', options.ownerId);
-    // Proof of possession for `o`, the same signature REST sends as
-    // X-Owner-Sig: once the guest signature gate is armed the worker refuses
-    // a bare owner id here. Absent for legacy unsigned guests and self-hosts.
-    if (options.ownerSig) params.set('os', options.ownerSig);
-  }
-  if (sharePassword) params.set('p', sharePassword);
-  return params.toString();
+// The room WebSocket's query string. Browsers can't set headers on a WebSocket upgrade, so whatever
+// admits the socket rides the URL, and a URL is logged (edge logs, Logpush, tail). Only the ticket rides
+// it: single-use, document-scoped and a minute long, so a logged one is already spent. The share code,
+// the owner id, its signature and the share password used to ride here as `s`, `o`, `os` and `p`; they
+// now go to the ticket mint as headers (docs/specs/015-api/api.md "Realtime model").
+export function roomQueryString(ticket: string | null): string {
+  return ticket ? new URLSearchParams({ t: ticket }).toString() : '';
 }
 
 // Reconnect backoff: a dropped socket auto-reopens so a brief network blip
@@ -190,17 +159,11 @@ export function connectRoom(
 } {
   // Read at every (re)connect, and replaced by updateSelf, so a reconnect says hello as we are now.
   let participant = initialParticipant;
-  // Auth identifiers ride on the query string (see roomQueryString). The
-  // share password is read from the same session state apiHeaders uses, so
-  // the editor doesn't have to thread it through; owners never have it set.
+  // The ticket rides the query string (see roomQueryString); every reconnect mints a fresh one,
+  // even after a mint that failed.
   let ticket = options.ticket ?? null;
-  // A session admitted by a ticket keeps minting one per reconnect, even after a mint that failed.
-  const usesTicket = ticket !== null && !!options.mintTicket;
   const urlNow = () => {
-    const qs = roomQueryString(
-      { ...options, ticket, ownerSig: options.ownerId ? getGuestSelfSig() : null },
-      getSessionSharePassword(),
-    );
+    const qs = roomQueryString(ticket);
     return wsUrl(`/documents/${documentId}/ws${qs ? `?${qs}` : ''}`);
   };
 
@@ -419,11 +382,11 @@ export function connectRoom(
     };
     ws.addEventListener('close', onClose);
   };
-  // A reconnect: with a fresh ticket when the session rode one (a spent ticket is refused).
+  // A reconnect, with a fresh ticket: the room spends each one it admits.
   const reopen = async () => {
     reconnectTimer = null;
-    if (usesTicket) {
-      ticket = await options.mintTicket!();
+    if (options.mintTicket) {
+      ticket = await options.mintTicket();
       if (closed) return;
     }
     open();
