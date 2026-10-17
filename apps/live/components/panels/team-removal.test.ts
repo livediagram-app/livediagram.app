@@ -17,6 +17,11 @@ describe('teamRemovalKind', () => {
     expect(teamRemovalKind(false, 'invited')).toBe('invite');
   });
 
+  it('calls a declined or expired invitation rejected', () => {
+    expect(teamRemovalKind(false, 'declined')).toBe('rejected');
+    expect(teamRemovalKind(false, 'expired')).toBe('rejected');
+  });
+
   it('calls the user acting on their own row leaving, whatever the status', () => {
     expect(teamRemovalKind(true, 'joined')).toBe('self');
     expect(teamRemovalKind(true, 'invited')).toBe('self');
@@ -28,10 +33,11 @@ describe('teamRemovalTelemetryType', () => {
     expect(teamRemovalTelemetryType('invite')).toBe('Invite');
     expect(teamRemovalTelemetryType('member')).toBe('Member');
     expect(teamRemovalTelemetryType('self')).toBe('Self');
+    expect(teamRemovalTelemetryType('rejected')).toBe('Rejected');
   });
 
   it('gives every kind a distinct type, so the buckets stay readable', () => {
-    const kinds = ['self', 'invite', 'member'] as const;
+    const kinds = ['self', 'invite', 'rejected', 'member'] as const;
     const types = kinds.map(teamRemovalTelemetryType);
     expect(new Set(types).size).toBe(kinds.length);
   });
@@ -69,8 +75,18 @@ describe('teamRemovalCopy', () => {
     expect(copy.message).not.toContain('null');
   });
 
+  it('says why a rejected row is on the list, and that they can be invited again', () => {
+    const declined = teamRemovalCopy('rejected', args);
+    expect(declined.title).toBe('Remove from list?');
+    expect(declined.message).toContain('sam declined the invite to "Design".');
+    expect(declined.message).toContain('invite them again');
+    const expired = teamRemovalCopy('rejected', { ...args, expired: true });
+    expect(expired.message).toContain('expired with no reply');
+    expect(expired.message).not.toContain('declined');
+  });
+
   it('names the team in every variant', () => {
-    for (const kind of ['self', 'invite', 'member'] as const) {
+    for (const kind of ['self', 'invite', 'rejected', 'member'] as const) {
       expect(teamRemovalCopy(kind, args).message).toContain('Design');
     }
   });

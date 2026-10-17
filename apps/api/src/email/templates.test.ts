@@ -7,6 +7,7 @@ import {
   documentJoinedEmail,
   inviteResponseEmail,
   teamInviteEmail,
+  teamInviteReminderEmail,
   week1Email,
   week2Email,
   welcomeEmail,
@@ -65,6 +66,39 @@ describe('email templates', () => {
 
   it('falls back gracefully on a null team name', () =>
     expect(teamInviteEmail(env, null).html).toContain('a team'));
+
+  // docs/specs/013-workspace/teams.md "Declining from the email"
+  it('team invite carries a Decline link to /join/decline with its token, escaped for the URL', () => {
+    const e = teamInviteEmail(env, 'Acme', 'm-1.a/b+c');
+    expect(e.html).toContain('https://app.test/join/decline?token=m-1.a%2Fb%2Bc');
+    expect(e.html).toContain('Decline the invite');
+    expect(e.html).toContain('no account needed');
+  });
+
+  it('team invite without a token has no Decline link', () =>
+    expect(teamInviteEmail(env, 'Acme').html).not.toContain('/join/decline'));
+
+  // docs/specs/013-workspace/teams.md "Reminders and expiry"
+  it('the three reminders name the team, link to the invites page and carry the decline link', () => {
+    const subjects = new Set<string>();
+    for (const stage of [1, 2, 3] as const) {
+      const e = teamInviteReminderEmail(env, 'Acme', stage, 'tok');
+      expect(e.kind).toBe(`TeamInviteReminder${stage}`);
+      expect(e.subject).toContain('Acme');
+      expect(e.html).toContain('https://app.test/explorer/invites');
+      expect(e.html).toContain('https://app.test/join/decline?token=tok');
+      expect(e.unsubscribeUrl).toBeUndefined();
+      subjects.add(e.subject);
+    }
+    expect(subjects.size).toBe(3);
+    expect(teamInviteReminderEmail(env, 'Acme', 3, 'tok').html).toMatch(/closes in a week/);
+  });
+
+  it('reminders escape the team name too', () => {
+    const e = teamInviteReminderEmail(env, '<b>x</b>\nBcc: y', 2, 'tok');
+    expect(e.html).not.toContain('<b>x</b>');
+    expect(e.subject).not.toContain('\n');
+  });
 
   // docs/specs/014-identity/profile-and-email-notifications.md — someone joined my document
   it('document-joined names the document + joiner and CTAs to the explorer', () => {

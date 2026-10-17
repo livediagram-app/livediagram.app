@@ -2784,7 +2784,8 @@ export const articles: Article[] = [
     slug: 'roles-and-invites',
     title: 'Roles and Invites',
     description: 'Admin and Member roles, and inviting people by email.',
-    keywords: 'admin member permission email invite add people access',
+    keywords:
+      'admin member permission email invite add people access decline reject rejected reminder expire expired',
     category: 'Collaboration',
     categorySlug: 'collaboration/teams',
     parentSlug: 'teams',

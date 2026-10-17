@@ -563,6 +563,12 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Email|Sent|FirstShare': "An email went out marking someone's first time sharing a document.",
   'Email|Sent|Milestone':
     'An email went out congratulating someone on reaching a document-count milestone.',
+  'Email|Sent|TeamInviteReminder1':
+    'A reminder went out about a team invite nobody had answered, a day after it was sent.',
+  'Email|Sent|TeamInviteReminder2':
+    'A reminder went out about a team invite nobody had answered, a week after it was sent.',
+  'Email|Sent|TeamInviteReminder3':
+    'The last reminder went out about a team invite nobody had answered, three weeks after it was sent.',
   'Email|Sent|Week1': 'The one-week onboarding email went out.',
   'Email|Sent|Week2': 'The two-week onboarding email went out.',
   'Email|Sent|Welcome': 'The welcome email went out just after someone signed up.',
@@ -1002,12 +1008,16 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Team|Created|': 'Someone created a new team.',
   'Team|Declined|Invite':
     'Someone turned down a team invite. Read against Joined: the two are the accept rate on an invitation.',
+  'Team|Declined|Email':
+    "Someone turned down a team invite from the email's Decline link, without signing in.",
   'Team|Deleted|': 'An admin deleted a team.',
   'Team|Joined|': 'Someone accepted a team invite, by email or by invite link.',
   'Team|Moved|Document':
     "A document already in a team's shared library was moved: re-foldered within the team, moved to a different team, or taken back to the owner's personal space.",
   'Team|Removed|Document': 'An admin removed a member who had joined the team.',
   'Team|Removed|Link': "A team's shareable invite link was turned off.",
+  'Team|Removed|Rejected':
+    'An admin cleared a declined or expired team invite from the member list.',
   'Team|Removed|Self': 'Someone left a team they had joined.',
   'Team|Shared|Link':
     "An admin turned on a team's shareable invite link, so anyone who has it can ask to join.",
@@ -2580,6 +2590,7 @@ export const API_OPERATIONS: Readonly<Record<string, string>> = {
   CreateShareLink: 'generating a share link',
   CreateTeam: 'creating a team',
   CreateToken: 'creating an API token',
+  DeclineTeamInvite: "declining a team invite from the email's Decline link",
   DeleteChangeLog: "clearing a document's since-removed change history",
   DeleteChangeLogEntry: "removing one entry from a document's since-removed change history",
   DeleteComment: 'deleting a comment',
@@ -2617,6 +2628,7 @@ export const API_OPERATIONS: Readonly<Record<string, string>> = {
   NotifyAssignedAction: 'emailing someone about an action assigned to them',
   OauthExchange: 'connecting an AI tool over MCP',
   ReadDocument: 'reading a document, from an AI tool connected over MCP',
+  ReadTeamInviteDecline: "opening a team invite email's Decline link",
   RenameDocument: 'renaming a document, from an AI tool connected over MCP',
   ResolveTeamInviteLink: "opening a team's invite link",
   RevokeTeamInviteLink: "turning off a team's invite link",

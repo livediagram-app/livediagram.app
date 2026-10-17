@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState, useSyncExternalStore } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import type { TeamInviteLinkInfo } from '@livediagram/api-schema';
 import { Button, buttonClassName, ButtonContent } from '@livediagram/ui';
 import {
@@ -14,6 +14,7 @@ import {
 import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
 import { clerkEnabled } from '@/lib/clerk-config';
 import { useSignedGuestId } from '@/hooks/persistence/useSignedGuestId';
+import { useUrlToken } from '@/hooks/ui/useUrlToken';
 import { track } from '@/lib/telemetry';
 import { apiJoinTeamByInviteLink, apiResolveTeamInviteLink } from '@/lib/api-client';
 
@@ -25,18 +26,11 @@ import { apiJoinTeamByInviteLink, apiResolveTeamInviteLink } from '@/lib/api-cli
 
 type Resolved = 'loading' | 'invalid' | TeamInviteLinkInfo;
 
-// The URL's token, as a store with nothing to subscribe to: the page never changes its own query.
-const noSubscription = () => () => {};
-const readUrlToken = () => new URLSearchParams(window.location.search).get('token');
-const beforeHydration = (): string | null | undefined => undefined;
-
 const teamHref = (teamId: string) => `/explorer/team?id=${encodeURIComponent(teamId)}`;
 
 export function TeamInviteJoin() {
   const { authLoaded, isSignedIn, clerkUserId } = useClerkApiBootstrap();
-  // The token is undefined while prerendering and hydrating (the server snapshot), so the static
-  // export and the first client render agree — no hydration mismatch — and read from the URL after.
-  const token = useSyncExternalStore(noSubscription, readUrlToken, beforeHydration);
+  const token = useUrlToken();
 
   // A guest's id is the SIGNED one, resolved before the invite is looked up
   // (docs/specs/014-identity/auth-and-guest-access.md "Signed guest ids").

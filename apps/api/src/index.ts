@@ -9,6 +9,7 @@ import { noteAuthSighting } from './auth/session-telemetry';
 import { emailEnabled } from './email/client';
 import { runLifecycleSweep, welcomeOnSighting } from './email/lifecycle';
 import { runTokenExpirySweep } from './email/token-expiry';
+import { runTeamInviteSweep } from './email/team-invite-reminders';
 import { NOTIFY_EMAIL_DEDUPE_MS } from './email/notifications';
 import { runTimelineExpirySweep } from './timeline';
 import { runImageRetention } from './image-refs/retention';
@@ -342,6 +343,15 @@ async function routeApiRequest(
     });
     if (!ok.success) return rateLimited();
   }
+  // An invite email's Decline link (docs/specs/013-workspace/teams.md "Declining from the email"): open, so
+  // limited per network, reads and declines on one key, apart from everyone's document writes.
+  const isInviteDecline = segments[1] === 'teams' && segments[2] === 'invite-decline';
+  if (isInviteDecline && env.TEAM_INVITE_RATE_LIMITER) {
+    const ok = await env.TEAM_INVITE_RATE_LIMITER.limit({
+      key: `invite-decline:${communityNetwork(clientIp(request))}`,
+    });
+    if (!ok.success) return rateLimited();
+  }
   if (isCommunityWrite && env.COMMUNITY_RATE_LIMITER) {
     // Keyed by address range, not address: rotating addresses inside one range buys no extra writes.
     const ok = await env.COMMUNITY_RATE_LIMITER.limit({
@@ -354,7 +364,8 @@ async function routeApiRequest(
     url.pathname !== '/api/events' &&
     !isRoomTicketMint &&
     !isCommunityWrite &&
-    !isFormRequest
+    !isFormRequest &&
+    !isInviteDecline
   ) {
     // A token request rate-limits on the TOKEN id (docs/specs/015-api/public-api-and-tokens.md §3.5), so a
     // runaway integration is throttled independently of the owner's
@@ -590,6 +601,13 @@ const worker = {
       // docs/specs/014-identity/transactional-email.md: send any due onboarding emails (welcome catch-up + week 1 / 2).
       // No-op when RESEND_API_KEY is unset.
       ctx.waitUntil(runLifecycleSweep(env));
+      // docs/specs/013-workspace/teams.md "Reminders and expiry": expire invites nobody answered in 28 days
+      // (always), then send the 1 / 7 / 21-day reminders (email only). Logs its own outcome.
+      ctx.waitUntil(
+        runTeamInviteSweep(env, now)
+          .then(() => undefined)
+          .catch((err) => console.error('[team-invites] sweep failed', err)),
+      );
       // docs/specs/014-identity/transactional-email.md (#3): warn owners whose API token is within a week of expiry.
       ctx.waitUntil(runTokenExpirySweep(env));
       // docs/specs/013-workspace/timeline.md §4.5: the same window, on the Timeline. Separate from

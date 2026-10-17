@@ -39,6 +39,11 @@ const { db } = vi.hoisted(() => ({
   },
 }));
 vi.mock('../db', () => db);
+// The in-app decline marks the row 'declined' (docs/specs/013-workspace/teams.md); the write has its own suite.
+const { decline } = vi.hoisted(() => ({
+  decline: { declineTeamInvite: vi.fn(async () => true) },
+}));
+vi.mock('../db/team-invite-decline', () => decline);
 // The room fan-out has its own suite (room-access-client.test.ts); here, only whether it is asked.
 const { roomAccess } = vi.hoisted(() => ({
   roomAccess: {
@@ -388,6 +393,52 @@ describe('invited rows grant no admin powers', () => {
     expect(res.status).toBe(204);
     expect(db.countTeamAdmins).not.toHaveBeenCalled();
   });
+
+  it('declining your own invite marks it declined instead of deleting it, and tells the admins once', async () => {
+    db.getTeam.mockResolvedValue(team);
+    db.getMembership.mockResolvedValue(member({ role: 'member', status: 'invited' }));
+    db.getTeamMember.mockResolvedValue(member({ role: 'member', status: 'invited' }));
+    vi.mocked(notifyInviteResponse).mockClear();
+    db.removeTeamMemberKeepingAdmin.mockClear();
+    decline.declineTeamInvite.mockResolvedValueOnce(true);
+    const res = await handleTeams(makeCtx('DELETE', '/api/teams/t1/members/m1'));
+    expect(res.status).toBe(204);
+    expect(decline.declineTeamInvite).toHaveBeenCalledWith({}, 'm1');
+    expect(db.removeTeamMemberKeepingAdmin).not.toHaveBeenCalled();
+    expect(notifyInviteResponse).toHaveBeenCalledOnce();
+    // A double-click finds it already declined: no second email.
+    decline.declineTeamInvite.mockResolvedValueOnce(false);
+    expect((await handleTeams(makeCtx('DELETE', '/api/teams/t1/members/m1'))).status).toBe(204);
+    expect(notifyInviteResponse).toHaveBeenCalledOnce();
+  });
+
+  it('an admin clears a rejected row with the ordinary remove, telling no one', async () => {
+    db.getTeam.mockResolvedValue(team);
+    db.getMembership.mockResolvedValue(member());
+    db.getTeamMember.mockResolvedValue(
+      member({ id: 'm2', userId: null, role: 'member', status: 'declined' }),
+    );
+    vi.mocked(notifyInviteResponse).mockClear();
+    db.removeTeamMemberKeepingAdmin.mockClear();
+    const res = await handleTeams(makeCtx('DELETE', '/api/teams/t1/members/m2'));
+    expect(res.status).toBe(204);
+    expect(db.removeTeamMemberKeepingAdmin).toHaveBeenCalledOnce();
+    expect(db.handTeamWorkToHeir).not.toHaveBeenCalledWith(expect.anything(), 't1', null);
+    expect(notifyInviteResponse).not.toHaveBeenCalled();
+  });
+
+  it('409 invite_rejected on a role change for a rejected row', async () => {
+    db.getTeam.mockResolvedValue(team);
+    db.getMembership.mockResolvedValue(member());
+    db.getTeamMember.mockResolvedValue(
+      member({ id: 'm2', userId: null, role: 'member', status: 'expired' }),
+    );
+    const res = await handleTeams(
+      makeCtx('PUT', '/api/teams/t1/members/m2', { body: { role: 'admin' } }),
+    );
+    expect(res.status).toBe(409);
+    expect(await res.json()).toEqual({ error: 'invite_rejected' });
+  });
 });
 
 describe('POST /api/teams (create)', () => {
@@ -456,7 +507,10 @@ describe('POST /api/teams/:id/members (invite)', () => {
 
   it('creates a pending member row with the lowercased email', async () => {
     db.teamHasEmail.mockResolvedValue(false);
-    db.addTeamMember.mockResolvedValue(member({ id: 'm2', userId: null, role: 'member' }));
+    db.addTeamMember.mockResolvedValue({
+      member: member({ id: 'm2', userId: null, role: 'member' }),
+      declineToken: 'm2.secret',
+    });
     const res = await handleTeams(
       makeCtx('POST', '/api/teams/t1/members', { body: { email: ' New@Example.COM ' } }),
     );

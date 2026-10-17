@@ -340,6 +340,17 @@ export const INVITES_DECLINED: Metric = {
   blurb: 'The recipient turned an invitation down. Read against accepted, not against sent.',
 };
 
+// docs/specs/013-workspace/teams.md "Declining from the email": the same answer, given from the inbox.
+export const INVITES_DECLINED_FROM_EMAIL: Metric = {
+  category: 'Team',
+  action: 'Declined',
+  type: 'Email',
+  rising: 'neutral',
+  title: 'Invites Declined From Email',
+  blurb:
+    "The recipient turned an invitation down from the email's Decline link, without signing in.",
+};
+
 export const DOCUMENTS_SHARED_TO_A_TEAM: Metric = {
   category: 'Team',
   action: 'Added',
@@ -555,6 +566,7 @@ export const TEAM_ACTIVITY: MetricStack = {
     INVITES_SENT,
     INVITES_ACCEPTED,
     INVITES_DECLINED,
+    INVITES_DECLINED_FROM_EMAIL,
     DOCUMENTS_SHARED_TO_A_TEAM,
     TEAM_DOCUMENTS_MOVED,
     INVITE_LINKS_SHARED,

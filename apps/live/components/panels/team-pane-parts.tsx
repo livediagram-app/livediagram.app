@@ -69,7 +69,7 @@ export function LinkIcon() {
   );
 }
 
-// One member row (docs/specs/013-workspace/teams.md): avatar bubble, name + you / Invited badges,
+// One member row (docs/specs/013-workspace/teams.md): avatar bubble, name + you / Invited / Rejected badges,
 // the email identifier line, the admin's role select (or the pinned
 // RolePill), and the hover-reveal remove button. Lifted out of
 // TeamPane's list; every mutation comes through the pane's handlers.
@@ -97,6 +97,9 @@ export function TeamMemberRow({
   // Pending = hasn't accepted (docs/specs/013-workspace/teams.md handshake), regardless
   // of whether the lazy claim has identified them yet.
   const pending = m.status === 'invited';
+  // Rejected = declined or expired: a record of the answer, kept until an Admin clears it. It holds no
+  // role worth changing, and clearing it is the only thing left to do with it, so its Remove stays in view.
+  const rejected = m.status === 'declined' || m.status === 'expired';
   const removable = isAdmin && !isSelf && !pinnedAdmin;
   // Our own row shows our picture to us whatever the switch says; everyone else's shows what they
   // published (docs/specs/014-identity/profile-picture.md §5).
@@ -111,7 +114,7 @@ export function TeamMemberRow({
           ...identityVars(colorForKey(m.email ?? m.userId ?? m.id)),
         }}
         className={`text-xs font-semibold text-white ${
-          pending ? 'opacity-50' : ''
+          pending || rejected ? 'opacity-50' : ''
         } ${IDENTITY_FILL}`}
       >
         {initialsOf(name)}
@@ -131,6 +134,11 @@ export function TeamMemberRow({
               Invited
             </span>
           ) : null}
+          {rejected ? (
+            <span className="shrink-0 rounded-full bg-rose-50 px-1.5 text-[10px] font-medium text-rose-700 ring-1 ring-rose-200 dark:bg-rose-500/15 dark:text-rose-300 dark:ring-rose-500/30">
+              Rejected
+            </span>
+          ) : null}
         </span>
         {/* Email under the name for every member (docs/specs/013-workspace/teams.md) — the
               recognisable identifier alongside the display name.
@@ -140,6 +148,7 @@ export function TeamMemberRow({
         {m.email ? (
           <span className="block truncate text-xs text-slate-500 dark:text-slate-400">
             {m.email}
+            {rejected ? (m.status === 'expired' ? ' · Expired' : ' · Declined') : null}
           </span>
         ) : pending ? (
           <span className="block truncate text-xs text-slate-400 dark:text-slate-400">
@@ -147,7 +156,7 @@ export function TeamMemberRow({
           </span>
         ) : null}
       </span>
-      {isAdmin && !pinnedAdmin ? (
+      {rejected ? null : isAdmin && !pinnedAdmin ? (
         <Select
           variant="ghost"
           value={m.role}
@@ -167,7 +176,11 @@ export function TeamMemberRow({
             type="button"
             onClick={() => onRemove(m)}
             aria-label={`Remove ${name}`}
-            className="inline-flex h-7 w-7 items-center justify-center rounded text-slate-300 opacity-0 transition hover:bg-slate-100 hover:text-slate-600 focus-visible:opacity-100 group-hover:opacity-100 dark:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-300 [@media(hover:none)]:opacity-100"
+            className={`inline-flex h-7 w-7 items-center justify-center rounded transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-300 ${
+              rejected
+                ? 'text-slate-400 dark:text-slate-400'
+                : 'text-slate-300 opacity-0 focus-visible:opacity-100 group-hover:opacity-100 dark:text-slate-600 [@media(hover:none)]:opacity-100'
+            }`}
           >
             <CloseIcon size={11} />
           </button>
