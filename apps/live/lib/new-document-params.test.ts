@@ -7,6 +7,7 @@ import {
   SEARCH_PRESET_MAX,
   wizardPresetMode,
   wizardPresetQuery,
+  wizardStartsBlank,
 } from './new-document-params';
 
 describe('wizardBypassKind (docs/specs/007-editor/new-document-route.md)', () => {
@@ -85,5 +86,22 @@ describe('placementParamsFromSearch', () => {
     expect(placementParamsFromSearch('')).toEqual({});
     expect(placementParamsFromSearch('?blank=1')).toEqual({});
     expect(placementParamsFromSearch('?folder=&team=')).toEqual({});
+  });
+});
+
+describe('wizardStartsBlank (docs/specs/007-editor/new-document-route.md "Start Blank after a mode")', () => {
+  it('reads ?start=blank, beside any other param', () => {
+    expect(wizardStartsBlank('?start=blank')).toBe(true);
+    expect(wizardStartsBlank('?start=blank&via=Home.HeaderBlank')).toBe(true);
+  });
+
+  it('is off without it or for any other value', () => {
+    expect(wizardStartsBlank('')).toBe(false);
+    expect(wizardStartsBlank('?start')).toBe(false);
+    expect(wizardStartsBlank('?start=templates')).toBe(false);
+  });
+
+  it('is not a bypass: the wizard still asks for a mode', () => {
+    expect(wizardBypassKind('?start=blank')).toBeNull();
   });
 });

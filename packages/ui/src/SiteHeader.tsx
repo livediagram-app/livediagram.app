@@ -5,21 +5,23 @@ import { BuildWithAiLink } from './BuildWithAiLink';
 import { HeaderPrimaryCta } from './HeaderPrimaryCta';
 import { ProductNav, type ProductNavKey } from './ProductNav';
 import { ShareRail } from './ShareRail';
+import { StartBlankLink } from './StartBlankLink';
 
 // The public site header shared by the marketing landing page, the telemetry
 // dashboard and the help centre so the three read as one product. Brand +
-// apps-menu dropdown on the left, the CTA on the right (the primary "Choose
-// Template", /new, where the visitor picks what they are making), with the
+// apps-menu dropdown on the left, the CTA pair on the right (a secondary
+// "Start Blank", a plain link to the wizard whose chosen mode opens with no start
+// screen (StartBlankLink), beside the primary "Choose Template", /new), with the
 // ShareRail pinned to the page edge below. Cross-surface navigation (Help,
 // Explorer, Telemetry, ...) lives in the apps menu, so the header itself
-// carries just that CTA. The Appearance toggle is never here
+// carries just those CTAs. The Appearance toggle is never here
 // (docs/specs/004-interface-design/appearance.md): it sits on the page-edge rail (xl+), and where there is
 // no gutter for the rail it is left out (the device's own setting applies through System).
 //
 // `productNav` is the current section key for the apps-menu dropdown next to
 // the logo (the landing page passes 'home', which reads as "Home").
 // `center` is an optional slot between the two clusters, shown from `sm` up
-// (the help centre's search box). `actions` replaces the default CTA
+// (the help centre's search box). `actions` replaces the default CTA pair
 // (no surface uses it today). `shareRail` (default true) puts the
 // share links on the page-edge rail; help and Community turn them off, keeping the rail's Appearance card. `wide` matches a surface whose
 // pages run max-w-7xl with md:px-8 (help), so the logo lines up with the
@@ -30,11 +32,11 @@ import { ShareRail } from './ShareRail';
 // bar, `top-18`) can rely on the number at every breakpoint.
 //
 // `ctaSurface` names the page for the landing funnel (docs/specs/019-marketing/landing-funnel.md): the default
-// CTA's href carries `via=<surface>.Header` so the editor can
+// pair's hrefs carry `via=<surface>.Header` / `.HeaderBlank` so the editor can
 // count which page's header brought somebody in. A surface passing its own
 // `actions` tags those links itself.
 //
-// `buildWithAi` adds the Build with AI link (desktop only) left of the CTA: 'link' on a marketing page,
+// `buildWithAi` adds the Build with AI link (desktop only) left of Start Blank: 'link' on a marketing page,
 // 'current' on /ai itself (docs/specs/019-marketing/build-with-ai.md "Entry points").
 export function SiteHeader({
   productNav,
@@ -80,12 +82,28 @@ export function SiteHeader({
           ) : null}
           <div className="flex shrink-0 items-center gap-2">
             {buildWithAi ? <BuildWithAiLink current={buildWithAi === 'current'} /> : null}
-            {actions ?? <HeaderPrimaryCta ctaSurface={ctaSurface} />}
+            {actions ?? <DefaultActions ctaSurface={ctaSurface} roomy={!center} />}
           </div>
         </div>
       </header>
       {/* The page-edge rail: sharing (unless `shareRail` is off) and, always, the Appearance toggle. */}
       <ShareRail share={shareRail} wide={wide} />
+    </>
+  );
+}
+
+// The default CTA pair. Start Blank is hidden on mobile: Brand + dropdown + the primary already fill a
+// narrow bar, and the wizard's own Skip covers the escape. `max-sm:hidden` (a variant, so it wins over the base
+// inline-flex). Beside a centre slot (help's search) it waits for `md`, so the search box keeps room to read on a
+// small tablet. Signed in, the primary is Open Explorer instead (HeaderPrimaryCta).
+function DefaultActions({ ctaSurface, roomy }: { ctaSurface?: CtaSurface; roomy: boolean }) {
+  return (
+    <>
+      <StartBlankLink
+        ctaSurface={ctaSurface}
+        className={roomy ? 'max-sm:hidden' : 'max-md:hidden'}
+      />
+      <HeaderPrimaryCta ctaSurface={ctaSurface} />
     </>
   );
 }

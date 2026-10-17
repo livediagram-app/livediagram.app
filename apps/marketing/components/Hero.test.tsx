@@ -10,7 +10,7 @@ import { HERO_FAN_SWAP_MS } from './HeroFan';
 import { PHONE_RECENT } from './HeroFanMine';
 
 // docs/specs/019-marketing/marketing-site.md "Hero": the badge and the question, the template search
-// with New Document in its bar, a returning visitor's recent diagrams, and the dealing fan.
+// with Start Blank in its bar, a returning visitor's recent diagrams, and the dealing fan.
 
 let reduceMotion = false;
 let observed: ((entries: { isIntersecting: boolean }[]) => void) | null = null;
@@ -104,13 +104,13 @@ describe('the hero', () => {
     expect(box.value).toBe('');
   });
 
-  it('closes the matches when focus moves to New Document in the bar', () => {
+  it('closes the matches when focus moves to Start Blank in the bar', () => {
     render(<Hero />);
     const box = screen.getByLabelText('Search templates');
     fireEvent.focus(box);
     fireEvent.change(box, { target: { value: 'retro' } });
     expect(screen.getByRole('list', { name: 'Matching templates' })).toBeTruthy();
-    const blank = within(screen.getByRole('search')).getByRole('link', { name: 'New Document' });
+    const blank = within(screen.getByRole('search')).getByRole('link', { name: 'Start Blank' });
     fireEvent.focus(blank);
     expect(screen.queryByRole('list', { name: 'Matching templates' })).toBeNull();
     fireEvent.focus(box);
@@ -125,10 +125,10 @@ describe('the hero', () => {
     expect(screen.getByText(/Nothing matches/)).toBeTruthy();
   });
 
-  it('sends New Document straight to /new, as the hero’s own funnel slot', () => {
+  it('sends Start Blank to the wizard with no start screen after it, as the hero’s own funnel slot', () => {
     render(<Hero />);
-    const link = within(screen.getByRole('search')).getByRole('link', { name: 'New Document' });
-    expect(link.getAttribute('href')).toBe('/new?via=Home.HeroNew');
+    const link = within(screen.getByRole('search')).getByRole('link', { name: 'Start Blank' });
+    expect(link.getAttribute('href')).toBe('/new?start=blank&via=Home.HeroBlank');
     expect(within(screen.getByRole('search')).queryAllByRole('menuitem', { hidden: true })).toEqual(
       [],
     );

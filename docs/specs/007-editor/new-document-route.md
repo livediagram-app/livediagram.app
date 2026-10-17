@@ -415,7 +415,7 @@ animated `stroke-dashoffset`. It is pure SVG + CSS (no per-frame JS),
 
 ## Start Blank (skip the wizard)
 
-**Start Blank** is the name of the `?blank=1` bypass (and of Explorer Home's first-run blanks; the public sites' header menu of that name was retired in October 2026, [No Start Blank menu](../019-marketing/marketing-site.md#no-start-blank-menu)); it was
+**Start Blank** is the name of the `?blank=1` bypass (and of Explorer Home's first-run blanks), and of the public sites' link to the wizard, `/new?start=blank` ([Start Blank after a mode](#start-blank-after-a-mode)); it was
 "Just Draw" until the hero's **Drawing** came to mean a whiteboard. Its telemetry token stays
 `JustDraw`, so the funnel's history reads on unbroken.
 
@@ -433,8 +433,8 @@ default document name) without walking the wizard:
   (`/new?blank=1&folder=<id>`, `/new?blank=1&team=<id>`), so a caller can
   Start Blank straight into a folder or team library. A failed create shows
   the same retryable error card as the wizard path. This is the URL a
-  start that wants no choice links to (Explorer Home's first-run Start Blank; the public sites
-  link plain `/new` instead, see [Marketing site](../019-marketing/marketing-site.md#no-start-blank-menu)).
+  start that wants no choice links to (Explorer Home's first-run Start Blank; the public sites'
+  Start Blank asks for a mode first, see [Start Blank after a mode](#start-blank-after-a-mode)).
   - The handoff replaces the `/new?blank=1` history entry with
     `/document/<id>`, so Back from the editor returns to the page before
     `/new` (usually the marketing site), never to a page that would mint
@@ -502,6 +502,19 @@ default document name) without walking the wizard:
 - **No "Start Blank" button inside the wizard.** The footer's **Skip** already commits the same blank defaults, and
   Start Blank now lives only on the surfaces that link to
   `/new?blank=1`.
+
+### Start Blank after a mode
+
+**`/new?start=blank`** is the public sites' **Start Blank** ([Marketing site](../019-marketing/marketing-site.md#start-blank)).
+It is **not a bypass**: the wizard shows as usual and asks for a mode. The mode chosen (a card, a number key, a card
+clicked before hydration, or **Create**) makes that mode's blank exactly as without the flag, but opens it **with its
+start closed** (`closeStartForBlank`), as Skip's Blank Diagram does, so whoever asked for a blank is not shown
+templates again. Plan's start cannot be closed (it is where a board or sheet is picked), so a Plan blank keeps it.
+
+- Read by `wizardStartsBlank` (`lib/new-document-params.ts`) at the moment of the create: only the exact value
+  `blank` counts; any other `start` value, or none, keeps the start.
+- Composes with the placement context (`?folder=`, `?team=`) and `?via=`, and with `?mode=` (the preset card).
+- `?blank=1` and `?template=` still win: with either, the wizard is bypassed and the flag has nothing to change.
 
 ### In-place handoff to the editor
 

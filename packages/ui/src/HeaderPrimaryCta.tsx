@@ -43,7 +43,7 @@ export function HeaderPrimaryCta({ ctaSurface }: { ctaSurface?: CtaSurface }) {
       aria-label={name}
       className={buttonClassName({
         size: 'md',
-        // A transparent border, so it is the height of a bordered secondary button.
+        // A transparent border, so it is the height of Start Blank (a bordered secondary) beside it.
         className: 'relative shrink-0 border border-transparent shadow-sm touch-target-y',
       })}
     >

@@ -6,8 +6,8 @@ import { lucideGlyph } from './icons/lucide-glyph';
 const SparklesIcon = lucideGlyph(lucideSparkles, 14);
 
 // The site header's Build with AI link (docs/specs/019-marketing/build-with-ai.md "Entry points"): a quiet ghost
-// link to /ai, left of the header's CTA, so the CTA stays the loudest thing in the bar. Desktop only (lg+): below
-// that the bar is full with Brand, the apps menu and the CTA. `current` marks it on /ai itself.
+// link to /ai, left of Start Blank, so the CTA pair stays the loudest thing in the bar. Desktop only (lg+): below
+// that the bar is full with Brand, the apps menu and the pair. `current` marks it on /ai itself.
 export function BuildWithAiLink({ current = false }: { current?: boolean }) {
   return (
     <a

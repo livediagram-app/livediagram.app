@@ -11,6 +11,8 @@
 export const CTA_SOURCES = {
   Home: [
     'Header',
+    // The header's Start Blank, a plain link to the wizard (/new?start=blank), on every surface with a header.
+    'HeaderBlank',
     // Retired with the Start Blank menu (October 2026), on every surface below too: the header and the
     // hero's bar now link /new only. The slots stay so their stored history still reads on the dashboard.
     'HeaderDraw',
@@ -25,11 +27,11 @@ export const CTA_SOURCES = {
     'HeroBrainstorm',
     'HeroCanvas',
     'HeroBuild',
-    // The intent-led hero (docs/specs/019-marketing/marketing-site.md "Hero"): its search, New Document in
-    // its bar, and its card fan. The HeroBlank slots are the Start Blank menu's rows the bar held until
+    // The intent-led hero (docs/specs/019-marketing/marketing-site.md "Hero"): its search, Start Blank in
+    // its bar, and its card fan. The HeroBlank<Blank> slots are the Start Blank menu's rows the bar held until
     // October 2026, retired with it.
     'HeroSearch',
-    'HeroNew',
+    'HeroBlank',
     'HeroBlankDraw',
     'HeroBlankWhiteboard',
     'HeroBlankSession',
@@ -43,6 +45,7 @@ export const CTA_SOURCES = {
   ],
   Feature: [
     'Header',
+    'HeaderBlank',
     'HeaderDraw',
     'HeaderWhiteboard',
     'HeaderIllustration',
@@ -55,6 +58,7 @@ export const CTA_SOURCES = {
   ],
   Compare: [
     'Header',
+    'HeaderBlank',
     'HeaderDraw',
     'HeaderWhiteboard',
     'HeaderIllustration',
@@ -64,6 +68,7 @@ export const CTA_SOURCES = {
   ],
   Faq: [
     'Header',
+    'HeaderBlank',
     'HeaderDraw',
     'HeaderWhiteboard',
     'HeaderIllustration',
@@ -75,6 +80,7 @@ export const CTA_SOURCES = {
   // a third-party tool or sign-up, never /new, so they are not funnel sources.
   Ai: [
     'Header',
+    'HeaderBlank',
     'HeaderDraw',
     'HeaderWhiteboard',
     'HeaderIllustration',
@@ -83,6 +89,7 @@ export const CTA_SOURCES = {
   ],
   Status: [
     'Header',
+    'HeaderBlank',
     'HeaderDraw',
     'HeaderWhiteboard',
     'HeaderIllustration',
@@ -91,6 +98,7 @@ export const CTA_SOURCES = {
   ],
   Dashboard: [
     'Header',
+    'HeaderBlank',
     'HeaderDraw',
     'HeaderWhiteboard',
     'HeaderIllustration',
@@ -99,6 +107,7 @@ export const CTA_SOURCES = {
   ],
   Help: [
     'Header',
+    'HeaderBlank',
     'HeaderDraw',
     'HeaderWhiteboard',
     'HeaderIllustration',
@@ -109,6 +118,7 @@ export const CTA_SOURCES = {
   // Explorer Home, not /new, so they are not funnel sources.
   Community: [
     'Header',
+    'HeaderBlank',
     'HeaderDraw',
     'HeaderWhiteboard',
     'HeaderIllustration',
