@@ -17,12 +17,16 @@ import { SOLID_BRAND_DARK_CONTROL } from '@livediagram/ui';
 
 export function FocusInviteDialog({
   from,
+  toPage = false,
   onAccept,
   onDismiss,
 }: {
   // The name of whoever pressed, resolved from presence by the caller. Null
   // when there is no invitation, which renders nothing.
   from: string | null;
+  // It points at a page of an Illustrate tab, which taking it frames whole (bring-focus.md "On a page"),
+  // so the zoom is not kept and the copy must not promise it.
+  toPage?: boolean;
   onAccept: () => void;
   onDismiss: () => void;
 }) {
@@ -38,8 +42,10 @@ export function FocusInviteDialog({
             {from} wants you to look at something
           </h2>
           <p className="text-[13px] leading-snug text-slate-500 dark:text-slate-400">
-            This will move your view to where they are pointing, keeping your zoom. Your view is
-            your own again straight afterwards.
+            {toPage
+              ? 'This will take you to the page they are pointing at, fitted to your screen.'
+              : 'This will move your view to where they are pointing, keeping your zoom.'}{' '}
+            Your view is your own again straight afterwards.
           </p>
         </div>
         <div className="flex items-center justify-end gap-2">

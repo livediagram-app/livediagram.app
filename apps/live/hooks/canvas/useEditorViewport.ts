@@ -15,7 +15,7 @@ import { createViewportStore, type ViewportStore } from '@/lib/viewport-store';
 import type { Selection } from '@/lib/selection-store';
 import { use, useCallback, useEffect, useEffectEvent, useRef, useState } from 'react';
 import { browser } from 'react-dom';
-import { isBoxed, unionBoxedBounds, type Tab } from '@livediagram/document';
+import { isBoxed, unionBoxedBounds, type PageRect, type Tab } from '@livediagram/document';
 import {
   besideSideInsets,
   computeFitToScreen,
@@ -116,8 +116,8 @@ type EditorViewportApi = {
   ) => void;
   // Centre a canvas point, keeping our own zoom (docs/specs/012-collaboration/bring-focus.md).
   centreOn: (at: { x: number; y: number }) => void;
-  // Is that point already in the middle of this view?
-  isCentredOn: (at: { x: number; y: number }) => boolean;
+  // Is that point already in the middle of this view? With its page (Illustrate), is that page framed?
+  isCentredOn: (at: { x: number; y: number }, page?: PageRect | null) => boolean;
 };
 
 // How long a Focus glide takes (docs/specs/026-plan/plan-board.md "Focus").
@@ -349,7 +349,7 @@ export function useEditorViewport(deps: EditorViewportDeps): EditorViewportApi {
   // The rule itself is shared with the presser's side of the press, which asks
   // the same thing of everyone else's published viewport.
   const isCentredOn = useCallback(
-    (at: { x: number; y: number }) => {
+    (at: { x: number; y: number }, page?: PageRect | null) => {
       const node = canvasMainRef.current;
       if (!node) return false;
       return viewIsCentredOn(
@@ -359,6 +359,7 @@ export function useEditorViewport(deps: EditorViewportDeps): EditorViewportApi {
           zoom: zoomRef.current,
         },
         at,
+        page,
       );
     },
     [viewportOffsetRef, zoomRef],
