@@ -509,6 +509,28 @@ describe('apiCreateDocument persisted body (docs/specs/006-document/tab-folders.
     expect(bodies[0]!.itemTypes).toEqual(itemTypes);
     expect(bodies[1]).not.toHaveProperty('itemTypes');
   });
+
+  // docs/specs/029-sheets/sheet-store.md "Offline documents", "Copies": a sync, a duplicate and a Drive import all
+  // hand over the document's sheets. The field was typed but never sent, so a synced document with a Sheet came up
+  // short and kept its local copy, and a copy landed without its sheets.
+  it('sends the sheet store when one is given', async () => {
+    const fetchSpy = vi.fn().mockImplementation(
+      async () =>
+        new Response(JSON.stringify({ document: { id: 'd1' } }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        }),
+    );
+    vi.stubGlobal('fetch', fetchSpy);
+    const sheets = [{ id: 's1', tabId: 't1', title: 'Responses', cells: [] }];
+    await apiCreateDocument('owner', { id: 'd1', name: 'N', tabs: [], sheets });
+    await apiCreateDocument('owner', { id: 'd2', name: 'N', tabs: [], sheets: [] });
+    const bodies = fetchSpy.mock.calls.map(
+      ([, init]) => JSON.parse((init as RequestInit).body as string) as Record<string, unknown>,
+    );
+    expect(bodies[0]!.sheets).toEqual(sheets);
+    expect(bodies[1]).not.toHaveProperty('sheets');
+  });
 });
 
 describe('apiCreateDocument placement (docs/specs/013-workspace/folders.md "Placement on create")', () => {
