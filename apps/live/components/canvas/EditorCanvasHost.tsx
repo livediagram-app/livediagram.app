@@ -8,7 +8,12 @@ import { openSearchWithPrefetch } from '@/lib/open-search';
 import { pastePointer } from '@/lib/canvas-pointer';
 import { dropThenDisarm } from '@/lib/palette-drop';
 import { describeOne } from '@/lib/element-names';
-import { canvasSurface, DEFAULT_BUTTON_MODE, PEN_INK } from '@livediagram/document';
+import {
+  canvasSurface,
+  DEFAULT_BACKGROUND_COLOR,
+  DEFAULT_BUTTON_MODE,
+  PEN_INK,
+} from '@livediagram/document';
 import { createStockColourProjector } from '@/lib/stock-colour-projector';
 import { drawnArrowAsShown } from '@/lib/drawn-arrow-preview';
 import { useMemo, useState } from 'react';
@@ -27,6 +32,7 @@ import { useEditModeContextMenu } from '@/hooks/canvas/useEditModeContextMenu';
 import { track } from '@/lib/telemetry';
 import { useTeamFolderActions } from '@/hooks/ui/useTeamFolderActions';
 import { getTheme, themeChartPalette, themeViewMap, type ThemeId } from '@/lib/themes';
+import { labelsFollowCanvas } from '@/lib/tab-theme-apply';
 import { resolveViewBackdrop } from '@/lib/view-backdrop';
 import { readDrawPattern } from '@/lib/whiteboard-dock-prefs';
 import { useAppearance } from '@/hooks/ui/useAppearance';
@@ -487,6 +493,12 @@ export function EditorCanvasHost() {
     presentingElements ?? activeTab.elements,
     surface,
     themeViewMap(activeTab.theme, appearance),
+    labelsFollowCanvas(activeTab)
+      ? {
+          stored: activeTab.backgroundColor ?? DEFAULT_BACKGROUND_COLOR,
+          drawn: backdrop.backgroundColor,
+        }
+      : undefined,
   );
   // Lazy per-tab load gate (docs/specs/006-document/per-tab-storage.md): show a blocking loader / error over
   // the canvas while the active tab's content is still being fetched, so

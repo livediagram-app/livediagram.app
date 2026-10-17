@@ -4,10 +4,13 @@
 // element keeps its identity between renders and the memoised element views stay quiet.
 //
 // Theme colours too (docs/specs/011-theme/light-and-dark.md): given the tab's theme map (themeViewMap), each colour the
-// theme painted is drawn as the same slot in the viewer's half, before the stock colours resolve.
+// theme painted is drawn as the same slot in the viewer's half, before the stock colours resolve. Given the stored and the
+// drawn canvas, a label that redraw sank into what is behind it is drawn in an ink that reads there ("A theme never
+// sinks a label into what is behind it").
 import {
   resolveStockColours,
   viewElementInTheme,
+  withReadableLabelInks,
   type CanvasSurface,
   type Element,
 } from '@livediagram/document';
@@ -18,19 +21,26 @@ export function createStockColourProjector(): (
   elements: Element[],
   surface: CanvasSurface,
   themeMap?: ReadonlyMap<string, string>,
+  canvases?: { stored: string; drawn: string },
 ) => Element[] {
   let cacheSurface: CanvasSurface | null = null;
   let cacheMap: ReadonlyMap<string, string> | null = null;
+  let cacheCanvases = '';
   let cache = new WeakMap<Element, Element>();
+  // Each projected label's re-inked version (withReadableLabelInks), so an unchanged label keeps its identity.
+  let inkCache = new WeakMap<Element, Element>();
   // The last board in and its projection: a render that changes no element (a pan, a zoom, a marquee
   // frame) gets the same array back, so nothing derived from the board recomputes.
   let lastIn: Element[] | null = null;
   let lastOut: Element[] = [];
-  return (elements, surface, themeMap = NO_THEME_MAP) => {
-    if (surface !== cacheSurface || themeMap !== cacheMap) {
+  return (elements, surface, themeMap = NO_THEME_MAP, canvases) => {
+    const canvasKey = canvases ? `${canvases.stored}|${canvases.drawn}` : '';
+    if (surface !== cacheSurface || themeMap !== cacheMap || canvasKey !== cacheCanvases) {
       cacheSurface = surface;
       cacheMap = themeMap;
+      cacheCanvases = canvasKey;
       cache = new WeakMap();
+      inkCache = new WeakMap();
       lastIn = null;
     }
     if (elements === lastIn) return lastOut;
@@ -46,6 +56,23 @@ export function createStockColourProjector(): (
     });
     lastIn = elements;
     lastOut = changed ? out : elements;
+    // Labels against what is behind them: only when the redraw changed an element or the canvas, so a tab drawn as
+    // stored is free. A label given the same ink as last time keeps last time's object, so its view stays quiet.
+    if (canvases && (changed || canvases.stored !== canvases.drawn)) {
+      const inked = withReadableLabelInks(elements, canvases.stored, lastOut, canvases.drawn);
+      if (inked !== lastOut)
+        lastOut = inked.map((el, i) => {
+          if (el === lastOut[i]) return el;
+          const prior = inkCache.get(lastOut[i]!);
+          if (
+            prior &&
+            (prior as { textColor?: string }).textColor === (el as { textColor?: string }).textColor
+          )
+            return prior;
+          inkCache.set(lastOut[i]!, el);
+          return el;
+        });
+    }
     return lastOut;
   };
 }
