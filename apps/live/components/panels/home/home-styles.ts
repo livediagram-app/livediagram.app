@@ -35,9 +35,12 @@ export const SKELETON = 'rounded-md bg-slate-200/70 motion-safe:animate-pulse da
 export const GROUP_LABEL =
   'mb-2.5 h-4 text-xs font-semibold uppercase leading-4 tracking-[0.08em] text-slate-500 dark:text-slate-400';
 
+/** A still surface: a white card on the page, a hairline edge (the raised surface in dark). */
+export const PANEL_SURFACE =
+  'border border-slate-200 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.04)] dark:border-slate-700 dark:bg-slate-800';
+
 /** A card's surface at rest; it lifts to a sky edge on hover. */
-export const CARD_SURFACE =
-  'border border-slate-200 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.04)] transition duration-micro hover:border-sky-300 hover:shadow-[0_0_0_4px_rgba(125,211,252,0.25),0_18px_36px_-16px_rgba(2,132,199,0.45)] motion-safe:hover:-translate-y-0.5 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-sky-400/60';
+export const CARD_SURFACE = `${PANEL_SURFACE} transition duration-micro hover:border-sky-300 hover:shadow-[0_0_0_4px_rgba(125,211,252,0.25),0_18px_36px_-16px_rgba(2,132,199,0.45)] motion-safe:hover:-translate-y-0.5 dark:hover:border-sky-400/60`;
 
 /** A most used card: 200 px high, its thumbnail 128 px. */
 export const LARGE_CARD = 'h-[12.5rem]';
@@ -66,3 +69,16 @@ export const STRIP_TILE = 'w-32 shrink-0';
 export const STRIP_THUMB = 'h-20 w-32';
 /** The strip's height: a tile (100 px) plus the scroller's padding for focus rings. */
 export const STRIP_HEIGHT = 'h-28';
+
+// ---- The hero's fanned sheets: the newest documents, or on a first run three template previews ----
+
+/** A sheet: a white frame round its picture. */
+export const SHEET_FRAME =
+  'absolute overflow-hidden rounded-2xl border-[6px] border-white bg-white dark:border-slate-800 dark:bg-slate-800';
+
+/** The three places, the front sheet first, then back left and back right. */
+export const SHEET_PLACES = [
+  'left-[20%] top-20 z-10 h-44 w-[62%] shadow-[0_24px_50px_-18px_rgba(2,132,199,0.5)]',
+  'left-[6%] top-12 h-40 w-[58%] -rotate-[8deg] shadow-[0_14px_34px_-14px_rgba(15,23,42,0.35)]',
+  'right-[2%] top-8 h-40 w-[58%] rotate-[7deg] shadow-[0_14px_34px_-14px_rgba(15,23,42,0.35)]',
+] as const;

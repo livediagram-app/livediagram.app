@@ -15,12 +15,19 @@ const { track, useHome, wide } = vi.hoisted(() => ({
 vi.mock('@/lib/telemetry', () => ({ track }));
 vi.mock('@/app/explorer/home/useHome', () => ({ useHome }));
 vi.mock('@/components/panels/DocumentThumbnail', () => ({ DocumentThumbnail: () => <span /> }));
+vi.mock('./HomeWelcome', () => ({
+  HomeWelcome: (p: { offerSignIn: boolean }) => (
+    <div data-home-welcome="" data-offer-sign-in={String(p.offerSignIn)} />
+  ),
+}));
 vi.mock('@livediagram/ui', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@livediagram/ui')>()),
   useMediaQuery: () => wide.value,
 }));
 
 import { HomePane } from './HomePane';
+import { ExplorerProvider } from '@/app/explorer/ExplorerContext';
+import type { ExplorerStateValue } from '@/app/explorer/useExplorerState';
 import { fixtureAction, fixtureGroup, fixtureJumpItem, fixturePerson } from './home-test-utils';
 
 const data = (over = {}) => ({
@@ -116,6 +123,34 @@ describe('HomePane', () => {
     expect(screen.getAllByRole('region').map((s) => s.getAttribute('aria-labelledby'))).toEqual([
       'home-jump-back-in',
     ]);
+  });
+
+  it('greets a person with nothing yet with the starts, in place of both sections', async () => {
+    wide.value = true;
+    const explorer = {
+      ownerId: 'me',
+      loading: false,
+      documents: [],
+      shared: [],
+      teamDocuments: [],
+      offlineDocuments: [],
+      clerkUserId: null,
+    } as unknown as ExplorerStateValue;
+    const { container } = render(
+      <ExplorerProvider value={explorer}>
+        <HomePane
+          ownerId="me"
+          onSeen={vi.fn()}
+          timelineHref="/explorer/timeline"
+          onSeeTimeline={vi.fn()}
+          recentHref="/explorer/recent"
+          onSeeMore={vi.fn()}
+        />
+      </ExplorerProvider>,
+    );
+    await vi.waitFor(() => expect(container.querySelector('[data-home-welcome]')).not.toBeNull());
+    expect(container.querySelector('[data-home-section="jump-back-in"]')).toBeNull();
+    expect(container.querySelector('[data-home-section="what-happened"]')).toBeNull();
   });
 
   it('says the read failed and retries', () => {

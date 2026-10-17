@@ -627,6 +627,20 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Home|Opened|Landing':
     'Someone arrived at the Explorer with Home as the very section that loaded.',
   'Home|Opened|Nav': 'Someone went to Home from another section of the Explorer.',
+  'Home|Opened|Welcome':
+    'Someone with no documents yet saw the first-run Home, with its blanks and popular templates to start from.',
+  'Home|Selected|Welcome.AllTemplates':
+    'Someone with no documents yet followed Browse All Templates from the first-run Home.',
+  'Home|Selected|Welcome.Blank':
+    'Someone with no documents yet started a blank from the first-run Home.',
+  'Home|Selected|Welcome.Search':
+    'Someone with no documents yet searched the templates from the field at the top of the first-run Home.',
+  'Home|Selected|Welcome.SignIn':
+    'Someone signed out with no documents followed Sign In from the first-run Home, to find their work.',
+  'Home|Selected|Welcome.StartBlank':
+    'Someone with no documents yet started a blank diagram from the field at the top of the first-run Home.',
+  'Home|Selected|Welcome.Template':
+    'Someone with no documents yet started a popular template from the first-run Home.',
   'Home|Selected|Hero.Documents':
     'Someone followed the documents pill at the top of Home to My Documents.',
   'Home|Selected|Hero.Inbox': 'Someone followed the Inbox pill at the top of Home to their Inbox.',

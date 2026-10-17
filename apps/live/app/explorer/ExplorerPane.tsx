@@ -327,6 +327,7 @@ export function ExplorerPane() {
             onSeeTimeline={() => go({ kind: 'timeline' })}
             recentHref={explorerPathFor({ kind: 'recent' })}
             onSeeMore={() => go({ kind: 'recent' })}
+            importToolbar={imports.toolbar}
           />
         ) : null
       ) : selected.kind === 'timeline' ? (

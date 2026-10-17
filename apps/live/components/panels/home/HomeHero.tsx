@@ -5,7 +5,7 @@
 // Explorer header on Home, its page header. Status pills, the greeting, the lead, the lens field drawn large with
 // New document inside it, and the fanned sheets of the newest documents. Reads only what the shell already holds.
 
-import { useMemo } from 'react';
+import { lazy, Suspense, useMemo } from 'react';
 import { PlusIcon } from '@/components/primitives/explorer-icons';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { DocumentThumbnail } from '@/components/panels/DocumentThumbnail';
@@ -17,19 +17,25 @@ import { LensField, LensFieldStill } from '@/app/explorer/lens/LensField';
 import { inboxBadge } from '@/app/explorer/sidebar/inbox-badge';
 import { explorerPathFor } from '@/app/explorer/routes';
 import { HERO_COPY, heroGreeting, heroPills, heroSheets } from '@/app/explorer/home/hero-model';
+import { WELCOME_COPY } from '@/app/explorer/home/first-run';
+import { useFirstRun } from '@/app/explorer/home/useFirstRun';
+import { WelcomeSearch } from './WelcomeSearch';
 import { InAppLink } from './HomeSection';
-import { FOCUS_RING } from './home-styles';
+import { FOCUS_RING, SHEET_FRAME, SHEET_PLACES } from './home-styles';
 
 const HEADING_ID = 'home-hero-greeting';
 
 const PILL_DOT = { emerald: 'bg-emerald-500', sky: 'bg-sky-500' } as const;
 
-// The three sheets, back left, back right, then the newest in front.
-const SHEET_PLACES = [
-  'left-[20%] top-20 z-10 h-44 w-[62%] shadow-[0_24px_50px_-18px_rgba(2,132,199,0.5)]',
-  'left-[6%] top-12 h-40 w-[58%] -rotate-[8deg] shadow-[0_14px_34px_-14px_rgba(15,23,42,0.35)]',
-  'right-[2%] top-8 h-40 w-[58%] rotate-[7deg] shadow-[0_14px_34px_-14px_rgba(15,23,42,0.35)]',
-] as const;
+const PILL =
+  'inline-flex h-8 items-center gap-2 rounded-full border border-slate-200 bg-white px-3.5 text-[13px] font-medium text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200';
+
+// A first run's sheets are template previews, fetched only when a first run draws them (explorer-home.md "First
+// run"). React.lazy rather than next/dynamic: next/dynamic registers its module for preloading, which would fetch
+// the previews on every Explorer page.
+const HeroTemplateFan = lazy(() =>
+  import('./HeroTemplateFan').then((m) => ({ default: m.HeroTemplateFan })),
+);
 
 /** `active` while Home is the page; a hero folding away draws its field still, so the page holds one live field. */
 export function HomeHero({ active = true }: { active?: boolean }) {
@@ -40,6 +46,7 @@ export function HomeHero({ active = true }: { active?: boolean }) {
     documents: loading ? undefined : documents.length,
     inbox: inboxBadge(activity),
   });
+  const { heroFirstRun: firstRun, signedIn } = useFirstRun();
   const now = useNow(false);
   const greeting = heroGreeting(new Date(now).getHours());
 
@@ -80,7 +87,22 @@ export function HomeHero({ active = true }: { active?: boolean }) {
             >
               <HamburgerIcon />
             </button>
-            {pills.map((pill) => {
+            {firstRun ? (
+              // What is true of every start; nothing to follow, so not links.
+              <>
+                <span className={PILL}>
+                  <span aria-hidden className={`size-[7px] rounded-full ${PILL_DOT.emerald}`} />
+                  <span className="text-optical-centre">{WELCOME_COPY.pillFree}</span>
+                </span>
+                <span className={PILL}>
+                  <span aria-hidden className={`size-[7px] rounded-full ${PILL_DOT.sky}`} />
+                  <span className="text-optical-centre">
+                    {signedIn ? WELCOME_COPY.pillSignedIn : WELCOME_COPY.pillGuest}
+                  </span>
+                </span>
+              </>
+            ) : null}
+            {(firstRun ? [] : pills).map((pill) => {
               const view =
                 pill.id === 'documents' ? ({ kind: 'all' } as const) : ({ kind: 'inbox' } as const);
               return (
@@ -95,7 +117,7 @@ export function HomeHero({ active = true }: { active?: boolean }) {
                       pill.id === 'documents' ? 'Hero.Documents' : 'Hero.Inbox',
                     )
                   }
-                  className={`inline-flex h-8 items-center gap-2 rounded-full border border-slate-200 bg-white px-3.5 text-[13px] font-medium text-slate-700 transition hover:border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-slate-600 ${FOCUS_RING}`}
+                  className={`${PILL} transition hover:border-slate-300 dark:hover:border-slate-600 ${FOCUS_RING}`}
                 >
                   <span aria-hidden className={`size-[7px] rounded-full ${PILL_DOT[pill.tone]}`} />
                   <span className="text-optical-centre">{pill.label}</span>
@@ -111,21 +133,25 @@ export function HomeHero({ active = true }: { active?: boolean }) {
             id={HEADING_ID}
             className="max-w-3xl text-4xl font-extrabold leading-[1.02] tracking-[-0.04em] text-[#17153a] sm:text-5xl lg:text-[3.5rem] dark:text-white"
           >
-            {greeting} {HERO_COPY.question}
+            {firstRun
+              ? `${WELCOME_COPY.greeting} ${WELCOME_COPY.question}`
+              : `${greeting} ${HERO_COPY.question}`}
           </h1>
           <p className="max-w-2xl text-[17px] leading-relaxed text-slate-600 dark:text-slate-300">
-            {HERO_COPY.lead}
+            {firstRun ? WELCOME_COPY.lead : HERO_COPY.lead}
           </p>
           <div className="max-w-2xl">
-            {active ? (
+            {!active ? (
+              <LensFieldStill size="hero" trailing={newDocument} />
+            ) : firstRun ? (
+              <WelcomeSearch />
+            ) : (
               <LensField
                 lens={lens}
                 subjects={lensResult.subjects}
                 size="hero"
                 trailing={newDocument}
               />
-            ) : (
-              <LensFieldStill size="hero" trailing={newDocument} />
             )}
           </div>
         </div>
@@ -133,12 +159,13 @@ export function HomeHero({ active = true }: { active?: boolean }) {
           <HelpArticleLink article="timeline" variant="button" />
         </div>
         <div aria-hidden className="relative hidden h-72 min-w-[18rem] flex-[1_1_22rem] lg:block">
-          {sheets.map((doc, i) => (
-            <span
-              key={doc.id}
-              data-hero-sheet=""
-              className={`absolute overflow-hidden rounded-2xl border-[6px] border-white bg-white dark:border-slate-800 dark:bg-slate-800 ${SHEET_PLACES[i]}`}
-            >
+          {firstRun ? (
+            <Suspense fallback={null}>
+              <HeroTemplateFan />
+            </Suspense>
+          ) : null}
+          {(firstRun ? [] : sheets).map((doc, i) => (
+            <span key={doc.id} data-hero-sheet="" className={`${SHEET_FRAME} ${SHEET_PLACES[i]}`}>
               <DocumentThumbnail
                 ownerId={ownerId}
                 documentId={doc.id}

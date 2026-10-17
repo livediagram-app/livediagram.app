@@ -71,6 +71,49 @@ goes at once. While folding away it takes no focus.
 The hero's top right holds Home's **Help** link ([Contextual help links](../018-help/contextual-help-links.md)). On a
 phone (below `sm`) its top left holds the menu button that opens the [mobile drawer](explorer-structure.md#mobile-drawer).
 
+## First run
+
+A person with **nothing yet** gets a Home that starts them off instead of one that waits for history. "Nothing yet"
+means, once the Explorer's lists have loaded: no document of their own, none shared with them, none in any team
+they belong to, and none stored only in this browser. Until the lists load, Home's body is the ordinary Home (its
+skeletons); it never guesses. The moment they have a document, Home is the ordinary Home again.
+
+The hero's words can't wait on the lists without a flash, so the hero draws the answer this browser last saw: it
+remembers, per person, whether they had anything, and until the lists land it greets them by that. A person this
+browser has never seen is greeted as new, which a newcomer is; before a guest's identity resolves, the browser's
+last answer stands for whoever is here. Only a first run fetches the welcome's template previews.
+
+The hero speaks to a beginning:
+
+- **Pills** say what is true of every start and are not links: "Free and open source" (green dot) and, for a guest,
+  "No sign-up to start" (sky dot); for someone signed in, "Saved to your account".
+- **The greeting** is "Welcome to livediagram. What are you making first?".
+- **The lead** is "Pick a starting point, or search the templates. Whatever you make lands here, ready to pick up
+  again."
+- **The field searches templates**, not documents (there are none): its placeholder is "Search templates", and
+  Enter opens the New document wizard with the words in its template search (`/new?q=`). Inside its right end,
+  **Start Blank** makes a blank diagram at once (`/new?blank=1`).
+- **The fanned sheets** show three template previews (Flowchart in front, Mind Map and Kanban Board behind), the
+  marketing hero's fan, so the page shows what can be made.
+
+Under it, beside the sidebar, Home holds three sections in place of Jump back in and What happened:
+
+- **Start Blank**: the five blanks, one per mode (Blank Diagram, Blank Whiteboard, Blank Session, Blank
+  Illustration, Blank Plan), each a card with its preview, title and one-line description. Activating one makes
+  that blank at once (`/new?template=<kind>`).
+- **Popular Templates**: the first eight non-blank templates of the shared Popular list, as large cards with their
+  previews, titles and descriptions; activating one makes it at once. A quiet **Browse All Templates** link in the
+  heading row opens the wizard (`/new`).
+- **Already Have Work?**: up to two cards side by side.
+  - For a guest on a deployment with sign-in: **Nothing here yet? Sign in**: "If you have used livediagram before,
+    sign in and your documents come back with you." with a **Sign In** button. A signed-out person who expected
+    their work finds the way back first.
+  - **Bring It With You**: "Import boards from Miro, draw.io, Excalidraw or Microsoft Whiteboard; each becomes its own
+    document." with the Explorer's own **Import From** control, filing into My Documents as it does there.
+
+The welcome's previews are loaded only for a person with nothing yet, so everyone else's Home pays nothing for
+them. It follows the share-role rule trivially: it is the person's own Home, with no shared document in reach.
+
 ## Jump back in
 
 Jump back in is a **[Within reach](../004-interface-design/within-reach.md)** set of the person's documents:
@@ -289,6 +332,10 @@ One-liners on the closed vocabulary ([Telemetry](../017-telemetry/telemetry.md))
 - `Home·Selected·WhatHappened`: a document opened from What happened.
 - `Home·Opened·Group`: a summary entry expanded.
 - `Home·Loaded·Retry`: a failed read retried.
+- `Home·Opened·Welcome`: the first-run Home shown.
+- `Home·Selected·Welcome.Blank` / `Welcome.Template` / `Welcome.AllTemplates` / `Welcome.Search` /
+  `Welcome.StartBlank` / `Welcome.SignIn`: a start taken from it (a blank card, a template card, Browse All
+  Templates, a template search, the field's Start Blank, Sign In).
 
 ## Help
 

@@ -45,6 +45,10 @@ const SIZES = {
   },
 } as const;
 
+/** The hero field's box and its glyph's size, for a field that looks the same and searches something else (the
+ *  first run's template search, explorer-home.md "First run"). */
+export const HERO_FIELD_LOOK = SIZES.hero;
+
 /** The field's look with nothing live in it: Home's hero while it folds away, so the page never holds two fields. */
 export function LensFieldStill({
   size = 'bar',

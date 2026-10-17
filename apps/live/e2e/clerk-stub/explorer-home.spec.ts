@@ -119,7 +119,7 @@ test('a teammate’s work on a team document reaches Home, named and placed', as
   await page.setViewportSize({ width: 390, height: 844 });
   await expect(
     page
-      .getByRole('list', { name: 'Jump back in' })
+      .getByRole('region', { name: 'Jump back in' })
       .getByRole('link', { name: 'Payments architecture' }),
   ).toBeVisible();
   await page

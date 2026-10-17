@@ -34,7 +34,9 @@ async function importBoards(page: Page, boards: 1 | 2): Promise<void> {
   await expect(page.getByTestId('import-documents')).toContainText(SINGLE_BOARD);
 }
 
-const jumpBackIn = (page: Page) => page.getByRole('list', { name: 'Jump back in' });
+// Jump back in's documents: the Most used and Recent lists on a wide screen, the strip on a phone.
+const jumpBackIn = (page: Page) =>
+  page.getByRole('region', { name: 'Jump back in' }).getByRole('listitem');
 
 async function freshGuest(page: Page): Promise<void> {
   await asGuest(page, await mintSignedGuest(page.request));

@@ -13,6 +13,7 @@ vi.mock('@/components/panels/DocumentThumbnail', () => ({
   DocumentThumbnail: (p: { documentId: string }) => <span data-testid={`thumb-${p.documentId}`} />,
 }));
 vi.mock('@/app/explorer/lens/LensField', () => ({
+  HERO_FIELD_LOOK: { wrap: '', box: '', glyph: 18, input: '' },
   LensField: (p: { size?: string; trailing?: React.ReactNode }) => {
     lensField(p);
     return (
@@ -46,6 +47,10 @@ function renderHero(over: Partial<ExplorerStateValue> = {}, active = true) {
       { id: 'd', name: 'D', savedAt: 0 },
     ],
     loading: false,
+    shared: [],
+    teamDocuments: [],
+    offlineDocuments: [],
+    clerkUserId: null,
     activity: { assignedToMe: [{}, {}], loading: false, error: false },
     go,
     setMobileNavOpen,
@@ -130,6 +135,24 @@ describe('HomeHero', () => {
       sheets.map((s) => s.querySelector('[data-testid]')!.getAttribute('data-testid')),
     ).toEqual(['thumb-b', 'thumb-c', 'thumb-a']);
     expect(sheets[0]!.parentElement!.getAttribute('aria-hidden')).toBe('true');
+  });
+
+  it('welcomes a person with nothing yet: plain pills, the template search, no document sheets', () => {
+    const { container } = renderHero({ documents: [] });
+    expect(screen.getByRole('heading', { level: 1 }).textContent).toBe(
+      'Welcome to livediagram. What are you making first?',
+    );
+    expect(screen.queryByRole('link', { name: /documents?$/ })).toBeNull();
+    expect(screen.getByText('Free and open source')).toBeTruthy();
+    expect(screen.getByText('No sign-up to start')).toBeTruthy();
+    expect(screen.getByRole('searchbox', { name: 'Search templates' })).toBeTruthy();
+    expect(screen.queryByTestId('lens')).toBeNull();
+    expect(container.querySelectorAll('[data-testid^="thumb-"]')).toHaveLength(0);
+  });
+
+  it('tells a signed-in newcomer their work is saved to their account', () => {
+    renderHero({ documents: [], clerkUserId: 'user_1' });
+    expect(screen.getByText('Saved to your account')).toBeTruthy();
   });
 
   it('opens the drawer from its menu button and links Help', () => {

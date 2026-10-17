@@ -299,9 +299,15 @@ test('a document stored only in this browser joins Jump back in with its pill', 
   await asGuest(page, owner);
   await page.setViewportSize({ width: 1280, height: 800 });
   await page.goto('/explorer/home');
-  await expect(
-    page.getByText('The documents you use most and last will gather here.'),
-  ).toBeVisible();
+  // Nothing yet: the first run's starts (explorer-home.md "First run"), not an empty Jump back in.
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText(
+    'Welcome to livediagram. What are you making first?',
+  );
+  await expect(page.getByRole('region', { name: 'Start Blank' })).toBeVisible();
+  await expect(page.getByRole('link', { name: /Blank Diagram/ })).toHaveAttribute(
+    'href',
+    '/new?template=blank',
+  );
 
   await seedLocalDocuments(page, [{ name: 'Kept on this laptop', daysAgo: [0], lastOpenedIn: 0 }]);
   await page.reload();

@@ -26,6 +26,12 @@ Scope, by file:
 | `apps/live/components/panels/home/HomePane.tsx`                         | One column of two sections; the error state; the landing telemetry                      |
 | `apps/live/components/panels/home/HomeHero.tsx`                         | The hero: menu button, Help, pills, greeting, lead, the large lens field, fanned sheets |
 | `apps/live/components/panels/home/useHeroPresence.ts`                   | The hero's fold: mounted and open as Home comes and goes, over the `long` token         |
+| `apps/live/app/explorer/home/first-run.ts`                              | Pure: `isFirstRun`, the welcome's copy, its search and blank hrefs                      |
+| `apps/live/app/explorer/home/first-run-starts.ts`                       | The welcome's picks from the template catalogue (lazy readers only)                     |
+| `apps/live/app/explorer/home/useFirstRun.ts`                            | First run from the Explorer's lists; the hero's remembered answer while they load       |
+| `apps/live/components/panels/home/HomeWelcome.tsx`                      | The first run's sections: Start Blank, Popular Templates, Already Have Work? (lazy)     |
+| `apps/live/components/panels/home/WelcomeSearch.tsx`                    | The first run's hero field: search templates in the wizard, Start Blank                 |
+| `apps/live/components/panels/home/HeroTemplateFan.tsx`                  | The first run's fanned template previews (lazy)                                         |
 | `apps/live/app/explorer/home/hero-model.ts`                             | Pure: the greeting by hour, the pills' copy, the fanned sheets' documents               |
 | `apps/live/app/explorer/lens/lens-focus-handoff.ts`                     | The hero field asks the header field to take the focus on Search results                |
 | `apps/live/components/panels/home/JumpBackIn.tsx`                       | The section: heading row, See more, the grid or the strip, the empty state              |
@@ -335,6 +341,16 @@ pl-[18px] pr-2 shadow-[0_0_0_6px_rgba(125,211,252,0.22),0_18px_40px_-20px_rgba(2
 rgba(15,23,42,0.35)]`: back left `left-[6%] top-12 w-[58%] h-40 -rotate-[8deg]`, back right `right-[2%] top-8
 w-[58%] h-40 rotate-[7deg]`, front `left-[20%] top-20 w-[62%] h-44` with a sky shadow. Dark: frames
     `border-slate-700 bg-slate-800`.
+- First run (`useFirstRun`): `HomePane` renders `HomeWelcome` (`next/dynamic`, `ssr: false`, `GridSkeleton` while it
+  loads) in place of both sections. Start Blank `ul grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3`, cards
+  `CARD_SURFACE rounded-[18px] p-2 pb-3` with a 96 px `TemplatePicture`, title `text-sm font-semibold`, description
+  `line-clamp-2 text-xs`; Popular Templates `grid-cols-2 lg:grid-cols-4 gap-4`, 128 px pictures, title `text-[15px]`,
+  Browse All Templates as the section's quiet link; Already Have Work? `grid sm:grid-cols-2 gap-4`: the sign-in card
+  (`bg-[#0b1230] rounded-[20px] p-5`, the prism, a 180 px sky glow, a white `Sign In` button) and the import card
+  (`PANEL_SURFACE rounded-[20px] p-5` round the Explorer's own Import From). The hero, on `heroFirstRun`: static pills
+  (`PILL`, no link), the welcome greeting and lead, `WelcomeSearch` in the hero field's look (`HERO_FIELD_LOOK`),
+  `HeroTemplateFan` (`next/dynamic`) in the sheets' places. The remembered answer lives in `localStorage`
+  (`livediagram:v2:home-has-documents`: `{ ownerId, has }`), written once the lists load.
 - Body: one column, `flex flex-col gap-10` (40 px between sections); each section a `section` wrapper
   (`data-home-section="jump-back-in"` / `"what-happened"`).
 - Heading row (`SECTION_HEADER`): `flex items-baseline justify-between gap-4`, 16 px above the section's body, no
