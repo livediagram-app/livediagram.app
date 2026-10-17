@@ -55,6 +55,9 @@ The AI panel and the tool panels (Laser, Spotlight, Eraser, Format, Slide Deck) 
 upwards from just above the bottom cluster, where the controls they set sit within reach of the canvas they
 act on, not top-right under the palette strip, where they hid its end and opened over a template's title. A panel
 the user has docked or placed keeps its spot; only the home moves.
+A panel in a bottom corner grows upward only as far as the canvas's top edge, and stops below the palette strip
+or the Draw dock where it overlaps them across; past that its body scrolls. On a short window (a laptop zoomed to
+200%, 720×450) its header otherwise slid under the strip, out of reach.
 
 The Palette, the Explorer and Layers were corner panels in the retired Floating layout
 ([Toolbar layout](toolbar-layout.md#one-layout)). A stored layout that still names them is read
