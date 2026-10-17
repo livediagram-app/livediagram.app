@@ -216,9 +216,10 @@ export async function addTeamMember(
     ).bind(m.teamId, m.email),
     env.DB.prepare(
       `INSERT INTO team_members
-         (id, team_id, user_id, email, role, status, decline_token_hashes, created_at, updated_at)
-       VALUES (?, ?, NULL, ?, 'member', 'invited', ?, ?, ?)`,
-    ).bind(id, m.teamId, m.email, decline.hash, now, now),
+         (id, team_id, user_id, email, role, status, decline_token_hashes, clock_started_at,
+          created_at, updated_at)
+       VALUES (?, ?, NULL, ?, 'member', 'invited', ?, ?, ?, ?)`,
+    ).bind(id, m.teamId, m.email, decline.hash, now, now, now),
   ]);
   const member: TeamMember = {
     id,

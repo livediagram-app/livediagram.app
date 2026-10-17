@@ -1,6 +1,7 @@
 // Team invite reminders and expiry (docs/specs/013-workspace/teams.md "Reminders and expiry"): the daily
 // sweep's reads and writes on `team_members` (migration 0095). An invite still 'invited' is reminded 1, 7
-// and 21 days after it was sent, and becomes 'expired' (rejected) 28 days after.
+// and 21 days after its clock started, and becomes 'expired' (rejected) 28 days after. The clock
+// (`clock_started_at`) is the invite's creation, or the deploy of migration 0095 for an invite already pending.
 
 import type { Env } from '../types';
 import { MAX_SEND_ATTEMPTS } from './email-lifecycle';
@@ -9,7 +10,7 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 
 export type InviteReminderStage = 1 | 2 | 3;
 
-// docs/specs/013-workspace/teams.md: when each reminder is due, measured from the invite's created_at.
+// docs/specs/013-workspace/teams.md: when each reminder is due, measured from the invite's clock_started_at.
 // Safe range: strictly increasing and all below INVITE_EXPIRY_MS.
 export const INVITE_REMINDER_DELAYS_MS: Record<InviteReminderStage, number> = {
   1: DAY_MS,
@@ -43,7 +44,7 @@ export type DueInviteReminder = {
 };
 
 // Pending invites owed `stage` now: inside its window, not yet stamped, under the attempt cap, oldest first.
-// Reads team_members_pending_idx (created_at WHERE status = 'invited').
+// Reads team_members_pending_idx (clock_started_at WHERE status = 'invited').
 export async function dueForInviteReminder(
   env: Env,
   stage: InviteReminderStage,
@@ -55,8 +56,8 @@ export async function dueForInviteReminder(
     `SELECT m.id, m.email, t.name
        FROM team_members m JOIN teams t ON t.id = m.team_id
       WHERE m.status = 'invited' AND m.email IS NOT NULL AND m.${col} IS NULL
-        AND m.created_at <= ? AND m.created_at > ? AND m.reminder_attempts < ?
-      ORDER BY m.created_at ASC
+        AND m.clock_started_at <= ? AND m.clock_started_at > ? AND m.reminder_attempts < ?
+      ORDER BY m.clock_started_at ASC
       LIMIT ?`,
   )
     .bind(
@@ -113,8 +114,8 @@ export async function expireStaleInvites(env: Env, now: number, limit: number): 
     `UPDATE team_members SET status = 'expired', updated_at = ?1
       WHERE id IN (
         SELECT id FROM team_members
-         WHERE status = 'invited' AND created_at <= ?2
-         ORDER BY created_at ASC
+         WHERE status = 'invited' AND clock_started_at <= ?2
+         ORDER BY clock_started_at ASC
          LIMIT ?3)`,
   )
     .bind(now, now - INVITE_EXPIRY_MS, limit)

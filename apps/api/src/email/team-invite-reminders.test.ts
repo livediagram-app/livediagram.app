@@ -16,6 +16,8 @@ vi.mock('./client', async (original) => ({
 
 import { MAX_SEND_ATTEMPTS } from '../db/email-lifecycle';
 import { resolveDeclineToken } from '../db/team-invite-decline';
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { runTeamInviteSweep } from './team-invite-reminders';
 
 // docs/specs/013-workspace/teams.md "Reminders and expiry": the daily cron step end to end, against a real
@@ -30,8 +32,8 @@ function setup(rows: { id: string; ageDays: number }[]) {
     .prepare(`INSERT INTO teams (id, name, created_at, updated_at) VALUES ('t', 'Design', 0, 0)`)
     .run();
   const insert = db.sql.prepare(
-    `INSERT INTO team_members (id, team_id, user_id, email, role, status, created_at, updated_at)
-     VALUES (?, 't', NULL, ?, 'member', 'invited', ?, 0)`,
+    `INSERT INTO team_members (id, team_id, user_id, email, role, status, clock_started_at, created_at, updated_at)
+     VALUES (?, 't', NULL, ?, 'member', 'invited', ?, 0, 0)`,
   );
   for (const r of rows) insert.run(r.id, `${r.id}@x.test`, NOW - r.ageDays * DAY);
   const row = (id: string) =>
@@ -136,5 +138,50 @@ describe('runTeamInviteSweep', () => {
     });
     expect(error).toHaveBeenCalled();
     error.mockRestore();
+  });
+
+  it('gives an invite 40 days old at the deploy the full series, not a rejection', async () => {
+    const db = sqliteD1({}, { before: '0095' });
+    db.sql
+      .prepare(`INSERT INTO teams (id, name, created_at, updated_at) VALUES ('t', 'Design', 0, 0)`)
+      .run();
+    const id = '00000000-0000-4000-8000-000000000009';
+    db.sql
+      .prepare(
+        `INSERT INTO team_members (id, team_id, user_id, email, role, status, created_at, updated_at)
+         VALUES (?, 't', NULL, 'old@x.test', 'member', 'invited', ?, 0)`,
+      )
+      .run(id, Date.now() - 40 * DAY);
+    db.sql.exec(
+      readFileSync(
+        fileURLToPath(
+          new URL('../../migrations/0095_team_invite_decline_and_reminders.sql', import.meta.url)
+            .href,
+        ),
+        'utf8',
+      ),
+    );
+    const deploy = Date.now();
+    const status = () =>
+      (db.sql.prepare('SELECT status FROM team_members WHERE id = ?').get(id) as { status: string })
+        .status;
+    // The first run, on deploy day: nothing expires and nothing is due yet.
+    await expect(runTeamInviteSweep(db.env, deploy)).resolves.toEqual({
+      expired: 0,
+      sent: 0,
+      failed: 0,
+    });
+    expect(status()).toBe('invited');
+    // The next day: reminder 1, with a working decline link.
+    await runTeamInviteSweep(db.env, deploy + DAY + 60_000);
+    expect(client.sendEmail).toHaveBeenCalledOnce();
+    const [, msg] = client.sendEmail.mock.calls[0]!;
+    expect(msg.kind).toBe('TeamInviteReminder1');
+    expect((await resolveDeclineToken(db.env, tokenIn(msg.html)))?.email).toBe('old@x.test');
+    // And it expires 28 days after the deploy, not after it was sent.
+    await runTeamInviteSweep(db.env, deploy + 27 * DAY);
+    expect(status()).toBe('invited');
+    await runTeamInviteSweep(db.env, deploy + 28 * DAY + 60_000);
+    expect(status()).toBe('expired');
   });
 });

@@ -49,7 +49,9 @@ describe('decline tokens', () => {
       email: 'a@x.test',
     });
     expect(declineToken.startsWith(`${member.id}.`)).toBe(true);
-    const stored = String(rowOf(db, member.id).decline_token_hashes);
+    const row = rowOf(db, member.id);
+    expect(row.clock_started_at).toBe(row.created_at);
+    const stored = String(row.decline_token_hashes);
     expect(stored).toMatch(/^[0-9a-f]{64}$/);
     expect(stored).not.toContain(declineToken.split('.')[1]);
   });
@@ -185,18 +187,22 @@ describe('rejected rows are records, not memberships', () => {
 });
 
 describe('migration 0095', () => {
-  it('never reminds an invite that was pending before it ran', () => {
+  // docs/specs/013-workspace/teams.md "Reminders and expiry": an invite already pending starts its clock at the
+  // deploy, so it gets the full series and is not rejected on the first run, however old it is.
+  it('starts the clock of an invite already pending at the deploy, and leaves other rows alone', () => {
     const db = sqliteD1({}, { before: '0095' });
     db.sql
       .prepare(`INSERT INTO teams (id, name, created_at, updated_at) VALUES ('t', 'T', 0, 0)`)
       .run();
+    const fortyDaysAgo = Date.now() - 40 * 24 * 60 * 60 * 1000;
     db.sql
       .prepare(
         `INSERT INTO team_members (id, team_id, user_id, email, role, status, created_at, updated_at)
-         VALUES ('old', 't', NULL, 'a@x.test', 'member', 'invited', 0, 0),
+         VALUES ('old', 't', NULL, 'a@x.test', 'member', 'invited', ?, 0),
                 ('in', 't', 'u', 'u@x.test', 'admin', 'joined', 0, 0)`,
       )
-      .run();
+      .run(fortyDaysAgo);
+    const before = Date.now();
     db.sql.exec(
       readFileSync(
         fileURLToPath(
@@ -206,12 +212,17 @@ describe('migration 0095', () => {
         'utf8',
       ),
     );
-    expect(rowOf(db, 'old')).toMatchObject({
-      reminder1_sent_at: 0,
-      reminder2_sent_at: 0,
-      reminder3_sent_at: 0,
+    const old = rowOf(db, 'old');
+    // strftime('%s') has whole-second precision.
+    expect(Number(old.clock_started_at)).toBeGreaterThanOrEqual(before - 1000);
+    expect(Number(old.clock_started_at)).toBeLessThanOrEqual(Date.now());
+    expect(old).toMatchObject({
+      created_at: fortyDaysAgo,
+      reminder1_sent_at: null,
+      reminder2_sent_at: null,
+      reminder3_sent_at: null,
       reminder_attempts: 0,
     });
-    expect(rowOf(db, 'in').reminder1_sent_at).toBeNull();
+    expect(rowOf(db, 'in').clock_started_at).toBeNull();
   });
 });

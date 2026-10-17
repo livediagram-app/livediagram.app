@@ -21,8 +21,8 @@ function setup(rows: { id: string; ageDays: number; status?: string; email?: str
     .prepare(`INSERT INTO teams (id, name, created_at, updated_at) VALUES ('t', 'Design', 0, 0)`)
     .run();
   const insert = db.sql.prepare(
-    `INSERT INTO team_members (id, team_id, user_id, email, role, status, created_at, updated_at)
-     VALUES (?, 't', NULL, ?, 'member', ?, ?, 0)`,
+    `INSERT INTO team_members (id, team_id, user_id, email, role, status, clock_started_at, created_at, updated_at)
+     VALUES (?, 't', NULL, ?, 'member', ?, ?, 0, 0)`,
   );
   for (const r of rows) {
     const email = r.email === undefined ? `${r.id}@x.test` : r.email;
@@ -151,7 +151,7 @@ describe('expireStaleInvites', () => {
     const plan = db.sql
       .prepare(
         `EXPLAIN QUERY PLAN SELECT id FROM team_members
-          WHERE status = 'invited' AND created_at <= ? ORDER BY created_at ASC LIMIT ?`,
+          WHERE status = 'invited' AND clock_started_at <= ? ORDER BY clock_started_at ASC LIMIT ?`,
       )
       .all(NOW, 10) as { detail: string }[];
     expect(plan.map((p) => p.detail).join(' ')).toContain('team_members_pending_idx');

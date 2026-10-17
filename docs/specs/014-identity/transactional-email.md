@@ -66,8 +66,7 @@ invite** — read from the [User preferences](../007-editor/user-preferences.md)
     invite link. The invite expires (is rejected) 28 days after it was sent. Not
     opt-out: the recipient may have no account to hold a preference, and the
     Decline link is the one-click way to stop them. Stamps on the invite's own
-    `team_members` row (`reminder1_sent_at` to `reminder3_sent_at`, `reminder_attempts`, migration
-    0095); see [Teams → Reminders and expiry](../013-workspace/teams.md#reminders-and-expiry).
+    `team_members` row (`reminder1_sent_at` to `reminder3_sent_at`, `reminder_attempts`, `clock_started_at`, migration 0095); see [Teams → Reminders and expiry](../013-workspace/teams.md#reminders-and-expiry).
 
 The three opt-out lifecycle/notification categories (`notifyComments`,
 `notifyTips`, `notifyMilestones`) join the [Account settings & email notifications](profile-and-email-notifications.md) pair in `getNotificationPrefs`

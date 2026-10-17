@@ -22,16 +22,17 @@ No synonyms: "rejected" is the UI word for both closed states; code always names
 
 Migration `0095_team_invite_decline_and_reminders.sql` on `team_members`:
 
-| Column                 | Type                       | Meaning                                                              |
-| ---------------------- | -------------------------- | -------------------------------------------------------------------- |
-| `decline_token_hashes` | TEXT NULL                  | SHA-256 hex of each email's secret, space-separated, at most 4       |
-| `reminder1_sent_at`    | INTEGER NULL               | ms stamp; `0` = skipped (a later stage stood in, or a legacy invite) |
-| `reminder2_sent_at`    | INTEGER NULL               | same                                                                 |
-| `reminder3_sent_at`    | INTEGER NULL               | same                                                                 |
-| `reminder_attempts`    | INTEGER NOT NULL DEFAULT 0 | failed reminder sends in a row; reset on success                     |
+| Column                 | Type                       | Meaning                                                        |
+| ---------------------- | -------------------------- | -------------------------------------------------------------- |
+| `decline_token_hashes` | TEXT NULL                  | SHA-256 hex of each email's secret, space-separated, at most 4 |
+| `reminder1_sent_at`    | INTEGER NULL               | ms stamp; `0` = skipped (a later stage stood in)               |
+| `reminder2_sent_at`    | INTEGER NULL               | same                                                           |
+| `reminder3_sent_at`    | INTEGER NULL               | same                                                           |
+| `reminder_attempts`    | INTEGER NOT NULL DEFAULT 0 | failed reminder sends in a row; reset on success               |
 
-- Index `team_members_pending_idx ON team_members (created_at) WHERE status = 'invited'`.
-- Backfill: every row `status = 'invited'` at migration time gets all three stamps `0`.
+- `clock_started_at INTEGER NULL`: the reminder and expiry clock; `addTeamMember` sets it to the row's `created_at`.
+- Index `team_members_pending_idx ON team_members (clock_started_at) WHERE status = 'invited'`.
+- Backfill: every row `status = 'invited'` at migration time gets `clock_started_at` = the migration's now (`strftime('%s','now') * 1000`); its reminder stamps stay null.
 - `status` stays TEXT with no CHECK; `memberStatus` maps unknown / NULL to `'joined'` (the 0021 rule).
 - Hashes are never cleared while the row lives; deleting the row (Admin remove, re-invite replacement, team delete) is the only revocation.
 - Account deletion: `detachUserFromTeams` deletes every row keyed to the user, rejected ones included.
@@ -65,24 +66,24 @@ declined | expired --re-invite--> (row gone) + new invited row
 - `getMembership` reads open rows only, so a rejected row passes no team gate (detail, accept, library: all 404).
 - `connectInvitesByEmail` claims `status = 'invited'` rows only.
 - `joinTeamByInviteToken` deletes the caller's rejected rows (by user id or address) before its fresh insert.
-- Reminder windows: stage 1 `[1d, 7d)`, stage 2 `[7d, 21d)`, stage 3 `[21d, 28d)`, by `created_at`. Disjoint, so at most one email per invite per run; `markInviteReminderSent` stamps earlier null stages `0`.
+- Reminder windows: stage 1 `[1d, 7d)`, stage 2 `[7d, 21d)`, stage 3 `[21d, 28d)`, by `clock_started_at`. Disjoint, so at most one email per invite per run; `markInviteReminderSent` stamps earlier null stages `0`.
 - Sweep order per run: expiry (always), then stages 3, 2, 1 (email only).
 
 ## Errors and edge cases
 
-| Case                                        | Handling                                                                                           |
-| ------------------------------------------- | -------------------------------------------------------------------------------------------------- |
-| Token malformed / unknown id / wrong secret | 404 `invite_not_found`, identical body                                                             |
-| Row has no hashes (creator row, legacy row) | Same 404                                                                                           |
-| Decline after accept                        | 409 `already_joined`; page "You're Already in <team>"                                              |
-| Decline after decline                       | 200 `declined`, nothing emitted                                                                    |
-| Decline after expiry                        | 200 `expired`, nothing emitted                                                                     |
-| Decline races accept                        | Loser re-reads status; joined → 409                                                                |
-| Reminder send fails                         | No stamp, no hash stored, `reminder_attempts + 1`; at 3 the invite leaves the queries, logged once |
-| Invite answered mid-send                    | `markInviteReminderSent` guarded on `invited`: no stamp, no hash                                   |
-| Email off                                   | Expiry still runs; no reminders; invite email never sent                                           |
-| D1 failure in the sweep                     | Caught per step, logged, never thrown into `scheduled()`                                           |
-| Team deleted                                | Rows go with it; tokens then 404                                                                   |
+| Case                                          | Handling                                                                                           |
+| --------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| Token malformed / unknown id / wrong secret   | 404 `invite_not_found`, identical body                                                             |
+| Row has no hashes (creator row, pre-0095 row) | Same 404                                                                                           |
+| Decline after accept                          | 409 `already_joined`; page "You're Already in <team>"                                              |
+| Decline after decline                         | 200 `declined`, nothing emitted                                                                    |
+| Decline after expiry                          | 200 `expired`, nothing emitted                                                                     |
+| Decline races accept                          | Loser re-reads status; joined → 409                                                                |
+| Reminder send fails                           | No stamp, no hash stored, `reminder_attempts + 1`; at 3 the invite leaves the queries, logged once |
+| Invite answered mid-send                      | `markInviteReminderSent` guarded on `invited`: no stamp, no hash                                   |
+| Email off                                     | Expiry still runs; no reminders; invite email never sent                                           |
+| D1 failure in the sweep                       | Caught per step, logged, never thrown into `scheduled()`                                           |
+| Team deleted                                  | Rows go with it; tokens then 404                                                                   |
 
 ## Security and trust
 
@@ -131,22 +132,22 @@ declined | expired --re-invite--> (row gone) + new invited row
 
 ## Testing
 
-| Rule                                                                               | Test                                                     |
-| ---------------------------------------------------------------------------------- | -------------------------------------------------------- |
-| Token minted per invite, hash only stored, resolves, refuses                       | `apps/api/src/db/team-invite-decline.test.ts`            |
-| Decline guarded; rejected rows grant nothing; re-invite replaces; link join clears | same                                                     |
-| Legacy invites never reminded                                                      | same ("migration 0095")                                  |
-| Windows, stamps, attempts, expiry, index                                           | `apps/api/src/db/team-invite-reminders.test.ts`          |
-| Sweep end to end, links work, cap, email off                                       | `apps/api/src/email/team-invite-reminders.test.ts`       |
-| Doors: GET never writes, POST idempotent, 409, 404s                                | `apps/api/src/routes/team-invite-decline-route.test.ts`  |
-| In-app decline marks declined; rejected remove / role change                       | `apps/api/src/routes/teams.test.ts`                      |
-| Rate limit keyed per network, apart from writes                                    | `apps/api/src/index.test.ts`                             |
-| Email links and reminder copy                                                      | `apps/api/src/email/templates.test.ts`                   |
-| Landing states, button-only decline                                                | `apps/live/components/panels/TeamInviteDecline.test.tsx` |
-| Client calls                                                                       | `apps/live/lib/api/team-invite-decline.test.ts`          |
-| Rejected row rendering                                                             | `apps/live/components/panels/TeamPane.test.tsx`          |
-| Removal kind, copy, telemetry type                                                 | `apps/live/components/panels/team-removal.test.ts`       |
-| Pickers leave rejected rows out                                                    | `apps/live/hooks/collab/team-member-rows.test.ts`        |
+| Rule                                                                                            | Test                                                                                    |
+| ----------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| Token minted per invite, hash only stored, resolves, refuses                                    | `apps/api/src/db/team-invite-decline.test.ts`                                           |
+| Decline guarded; rejected rows grant nothing; re-invite replaces; link join clears              | same                                                                                    |
+| Pre-0095 invites start their clock at the deploy (40 days old: not rejected, reminded next day) | `team-invite-decline.test.ts` ("migration 0095"), `email/team-invite-reminders.test.ts` |
+| Windows, stamps, attempts, expiry, index                                                        | `apps/api/src/db/team-invite-reminders.test.ts`                                         |
+| Sweep end to end, links work, cap, email off                                                    | `apps/api/src/email/team-invite-reminders.test.ts`                                      |
+| Doors: GET never writes, POST idempotent, 409, 404s                                             | `apps/api/src/routes/team-invite-decline-route.test.ts`                                 |
+| In-app decline marks declined; rejected remove / role change                                    | `apps/api/src/routes/teams.test.ts`                                                     |
+| Rate limit keyed per network, apart from writes                                                 | `apps/api/src/index.test.ts`                                                            |
+| Email links and reminder copy                                                                   | `apps/api/src/email/templates.test.ts`                                                  |
+| Landing states, button-only decline                                                             | `apps/live/components/panels/TeamInviteDecline.test.tsx`                                |
+| Client calls                                                                                    | `apps/live/lib/api/team-invite-decline.test.ts`                                         |
+| Rejected row rendering                                                                          | `apps/live/components/panels/TeamPane.test.tsx`                                         |
+| Removal kind, copy, telemetry type                                                              | `apps/live/components/panels/team-removal.test.ts`                                      |
+| Pickers leave rejected rows out                                                                 | `apps/live/hooks/collab/team-member-rows.test.ts`                                       |
 
 ## Constants and configuration
 
