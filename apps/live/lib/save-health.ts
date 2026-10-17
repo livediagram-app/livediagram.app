@@ -25,3 +25,15 @@ const subscribe = (l: () => void) => {
 /** isSaveFailing, re-rendering when it changes. */
 export const useSaveFailing = (): boolean =>
   useSyncExternalStore(subscribe, isSaveFailing, () => false);
+
+// A tab over the server's row cap (docs/specs/006-document/per-tab-storage.md "A tab too big to save says so"): not
+// retried, so not the banner's "Retrying", but its changes are as unsaved, so leaving asks first all the same.
+let tooLarge = false;
+
+/** Note whether the last save was refused as too large (true) or a save has since landed (false). */
+export function noteTabTooLarge(next: boolean): void {
+  tooLarge = next;
+}
+
+/** True while the last save was refused as too large. */
+export const isTabTooLarge = (): boolean => tooLarge;

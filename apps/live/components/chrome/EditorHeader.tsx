@@ -25,7 +25,10 @@ import { EXPLORER_LANDING_PATH } from '@/lib/explorer-landing';
 // than telling the user to check a connection that is fine. 'unauthenticated'
 // is a save the server could not tie to the signed-in account (a 401, or no
 // session token to send); it is retried, since the session can come back.
-export type SaveStatus = 'idle' | 'saving' | 'saved' | 'error' | 'unauthenticated' | 'forbidden';
+// 'tooLarge' is a tab over the server's row cap (a 413): only an edit that
+// shrinks it can save, so it is not retried on a timer.
+export type SaveStatus =
+  'idle' | 'saving' | 'saved' | 'error' | 'unauthenticated' | 'forbidden' | 'tooLarge';
 
 type EditorHeaderProps = {
   documentName: string;

@@ -101,6 +101,11 @@ export function useEditorPersistence({ toast }: { toast: ReturnType<typeof useTo
     // already stopped, so this fires once and has to carry the whole message.
     // It names the likely cause and the way out, because the alternative is a
     // user who keeps working on changes that will never leave the browser.
+    // Over the tab's row cap (docs/specs/006-document/per-tab-storage.md "A tab too big to save says so"): the
+    // connection is fine, and only a smaller tab saves.
+    if (saveStatus === 'tooLarge') {
+      toast.error('This tab is too big to save. Move some of it to another tab.');
+    }
     if (saveStatus === 'forbidden') {
       toast.error('You can no longer edit this. Export a copy to keep your changes.');
     }
