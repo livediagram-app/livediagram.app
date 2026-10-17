@@ -71,6 +71,10 @@ type AssignActionDialogProps = {
   // Editing one of an Action panel's actions (docs/specs/012-collaboration/action-panel.md): the card has no
   // popover, so its two-step delete lives here. Absent everywhere else.
   onDelete?: () => void;
+  // Editing one of an Action panel's actions: Won't Do for an open one, Reopen for a closed one
+  // (docs/specs/026-plan/linked-boards.md "On the canvas"). Each closes the dialog. Absent everywhere else.
+  onWontDo?: () => void;
+  onReopen?: () => void;
   onClose: () => void;
 };
 
@@ -88,6 +92,8 @@ export function AssignActionDialog({
   emailEnabled,
   onSubmit,
   onDelete,
+  onWontDo,
+  onReopen,
   onClose,
 }: AssignActionDialogProps) {
   const [name, setName] = useState('');
@@ -338,6 +344,15 @@ export function AssignActionDialog({
               className="mr-auto"
             >
               {confirmingDelete ? 'Confirm Delete' : 'Delete Action'}
+            </Button>
+          ) : null}
+          {editing && existing.status === 'open' && onWontDo ? (
+            <Button type="button" variant="secondary" onClick={onWontDo}>
+              Won’t Do
+            </Button>
+          ) : editing && existing.status !== 'open' && onReopen ? (
+            <Button type="button" variant="secondary" onClick={onReopen}>
+              Reopen
             </Button>
           ) : null}
           <Button type="button" variant="secondary" onClick={onClose}>

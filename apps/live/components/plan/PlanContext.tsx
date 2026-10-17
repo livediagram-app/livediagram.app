@@ -50,6 +50,12 @@ export type PlanContextValue = {
   // this board, on a new Form tab, opened. Absent where no form may be made.
   newFormFor?: (boardElementId: string) => void;
   openBoardSetup: (boardId: string | null) => void;
+  // The Actions board's links (docs/specs/026-plan/linked-boards.md "On the board"): where a linked card's action is,
+  // and the way to it. Absent outside the editor.
+  linkedActions?: {
+    placeOf: (item: Item) => { tabName: string } | null;
+    showOnCanvas: (item: Item) => void;
+  };
   status: PlanItemsStatus;
   self: ItemPerson | null;
   // People who could be assigned (the room, and the people already on items).

@@ -20,6 +20,7 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Action·Changed',
   'Action·Created',
   'Action·Deleted',
+  'Action·Linked',
   'Action·Moved',
   'Action·Opened',
   'Action·Resolved',

@@ -164,6 +164,8 @@ export type CanvasProps = {
     configure: (elementId: string, actionId?: string | null) => void;
     complete: (elementId: string, actionId?: string | null) => void;
     reopen: (elementId: string, actionId?: string | null) => void;
+    // Opens the Actions board (docs/specs/026-plan/linked-boards.md "On the canvas"); absent with no board.
+    openBoard?: () => void;
   };
   onSetSessionConfig?: (
     element: import('@livediagram/document').ShapeElement,

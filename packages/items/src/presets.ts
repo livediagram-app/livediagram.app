@@ -232,7 +232,16 @@ export function freshBoardSetup(
   random: () => number = Math.random,
   existing: Iterable<readonly [string, string]> = [],
 ): PlanBoardSetup {
-  const setup = presetSetupOrBlank(id);
+  return freshSetup(presetSetupOrBlank(id), random, existing);
+}
+
+// A set-up's columns given the document's states of the same name, else new ones of their own
+// (docs/specs/026-plan/plan-board.md "One name, one state"): what every board placed fresh starts from.
+export function freshSetup(
+  setup: PlanBoardSetup,
+  random: () => number = Math.random,
+  existing: Iterable<readonly [string, string]> = [],
+): PlanBoardSetup {
   if (setup.archive || setup.allCards) return setup;
   const names = [...existing];
   const suffix = Array.from({ length: 4 }, () => Math.floor(random() * 36).toString(36)).join('');

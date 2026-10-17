@@ -87,14 +87,18 @@ export function ActionRowItem({
 }) {
   const now = useRelativeNow();
   const [pressed, setPressed] = useState(false);
-  const done = row.status === 'done';
+  // Closed: done, or Won't Do (docs/specs/026-plan/linked-boards.md "On the canvas"), which wears slate, not green.
+  const done = row.status !== 'open';
+  const wontDo = row.status === 'wont-do';
   const shownDone = pressed ? !done : done;
   const check = (
     <span
       className={`flex h-5 w-5 items-center justify-center rounded-full border-2 transition-colors ${
-        shownDone
-          ? 'border-emerald-500 bg-emerald-500 text-white'
-          : 'border-slate-300 text-transparent group-hover/check:border-brand-500 group-hover/check:text-brand-700 dark:border-slate-600'
+        shownDone && wontDo && !pressed
+          ? 'border-slate-400 bg-slate-400 text-white'
+          : shownDone
+            ? 'border-emerald-500 bg-emerald-500 text-white'
+            : 'border-slate-300 text-transparent group-hover/check:border-brand-500 group-hover/check:text-brand-700 dark:border-slate-600'
       } ${pressed ? 'qa-pop' : ''}`}
     >
       <CheckIcon size={11} />
@@ -134,6 +138,7 @@ export function ActionRowItem({
           {row.actionName}
         </span>
         <span className="mt-[3px] block truncate text-[11px] text-slate-500 dark:text-slate-400">
+          {wontDo ? 'Won’t Do · ' : ''}
           {row.label} · {formatRelativeTimeCompact(now - row.createdAt)}
         </span>
       </span>

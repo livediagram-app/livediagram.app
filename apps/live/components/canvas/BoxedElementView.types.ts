@@ -141,6 +141,8 @@ export type BoxedElementViewProps = {
     edit: (actionId: string) => void;
     complete: (actionId: string) => void;
     reopen: (actionId: string) => void;
+    // Opens the Actions board (docs/specs/026-plan/linked-boards.md "On the canvas").
+    openBoard?: () => void;
   };
   // Per-element session settings from the element's own `…` menu (docs/specs/012-collaboration/session-button.md).
   onSetSessionConfig?: (

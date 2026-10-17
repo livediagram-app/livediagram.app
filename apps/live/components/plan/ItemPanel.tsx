@@ -31,6 +31,8 @@ import { DebouncedText } from './item-field-editors';
 import { PlanTypeGlyph } from './plan-type-glyph';
 import { ItemPanelMenu } from './ItemPanelMenu';
 import { LinkedCardGroup } from './LinkedCards';
+import { LinkedActionBanner } from './LinkedActionBanner';
+import type { PlanContextValue } from './PlanContext';
 import { ItemTrailCrumbs } from './ItemTrailCrumbs';
 import { ItemKeyTag, ItemTypePill } from './ItemPanelHeaderParts';
 import type { ItemOpenVia } from './item-trail';
@@ -92,6 +94,9 @@ type ItemPanelProps = {
   statusNames: ReadonlyMap<string, string>;
   // The card was just made by this person (openNewItem): its title is selected so typing names it.
   fresh?: boolean;
+  // The Actions board's links (docs/specs/026-plan/linked-boards.md "On the board"): a linked card shows where its
+  // action is and the way to it, and its assignee (the action's) reads only.
+  linkedActions?: PlanContextValue['linkedActions'];
 };
 
 // On a desktop, the title takes focus as a card opens (each card: the content is keyed by it): the caret at its
@@ -160,7 +165,9 @@ function ItemPanelContent({
   fresh = false,
   onAddLinked,
   statusNames,
+  linkedActions,
 }: ItemPanelProps) {
+  const linkedPlace = linkedActions?.placeOf(item) ?? null;
   const mobile = useIsMobileViewport();
   useTitleFocus(fieldId(item, 'title'), !mobile && canEdit, fresh);
   // When the panel opened: the meta line says how long ago the last change was from here.
@@ -270,14 +277,23 @@ function ItemPanelContent({
 
   const meta = <ItemMeta item={item} now={now} />;
 
-  // A Details row: label beside its control on a wide screen, above it in the phone's tab.
+  // A Details row: label beside its control on a wide screen, above it in the phone's tab. A linked card's assignee
+  // is its action's: shown, not picked here.
+  const lockedAssignee = !!linkedPlace && canEdit;
   const detailRow = (f: string) => (
     <ItemDetailsRow
       key={f}
       label={fieldLabel(type, f)}
       htmlFor={labelsItsControl(type, f) ? fieldId(item, f) : undefined}
     >
-      <ItemFieldEditor f={f} ctx={ctx} />
+      {f === 'assignee' && lockedAssignee ? (
+        <>
+          <ItemFieldEditor f={f} ctx={{ ...ctx, canEdit: false }} />
+          <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">Set on the action</p>
+        </>
+      ) : (
+        <ItemFieldEditor f={f} ctx={ctx} />
+      )}
     </ItemDetailsRow>
   );
 
@@ -322,6 +338,16 @@ function ItemPanelContent({
       {header}
       <div className="flex min-h-0 flex-1">
         <div className="min-w-0 flex-1 overflow-y-auto px-4 pb-8 pt-2 sm:px-8">
+          {linkedPlace && linkedActions ? (
+            <LinkedActionBanner
+              tabName={linkedPlace.tabName}
+              // Closes the panel and goes to the action.
+              onShowOnCanvas={() => {
+                onClose();
+                linkedActions.showOnCanvas(item);
+              }}
+            />
+          ) : null}
           <DebouncedText
             id={fieldId(item, 'title')}
             label="Title"

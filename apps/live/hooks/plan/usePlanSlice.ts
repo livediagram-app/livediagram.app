@@ -87,6 +87,8 @@ export function usePlanSlice(opts: {
   notify?: (message: string) => void;
   // New Form on a board's cog (useFormActions); stable.
   newFormFor?: (boardElementId: string) => void;
+  // The Actions board's links (useLinkedActionCards); stable callbacks, placeOf changes with the tabs.
+  linkedActions?: PlanContextValue['linkedActions'];
 }) {
   const { planItems, itemTypes, editorMode, canEdit, canVote, presence } = opts;
   const canEditCards = opts.canEditCards ?? canEdit;
@@ -512,6 +514,7 @@ export function usePlanSlice(opts: {
       setupBoardId,
       openBoardSetup,
       ...(opts.newFormFor && canEdit ? { newFormFor: opts.newFormFor } : {}),
+      ...(opts.linkedActions ? { linkedActions: opts.linkedActions } : {}),
       status: planItems.status,
       self: planItems.self,
       people,
@@ -600,6 +603,7 @@ export function usePlanSlice(opts: {
       opts.statusTypes,
       opts.statusBoards,
       opts.newFormFor,
+      opts.linkedActions,
     ],
   );
 

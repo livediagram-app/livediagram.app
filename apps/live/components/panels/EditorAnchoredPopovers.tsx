@@ -60,6 +60,8 @@ export function EditorAnchoredPopovers() {
     saveAction,
     completeAction,
     reopenAction,
+    wontDoAction,
+    linkedActions,
     deleteAction,
     teams,
     clerkUserId,
@@ -150,12 +152,22 @@ export function EditorAnchoredPopovers() {
               (el) => el.id === actionPopoverOpenId && isBoxed(el),
             );
             if (!target || !isBoxed(target) || !target.action) return null;
+            const actionId = target.action.id;
             return (
               <ActionPopover
                 elementId={target.id}
                 action={target.action}
                 onComplete={() => completeAction(target.id)}
                 onReopen={() => reopenAction(target.id)}
+                onWontDo={() => wontDoAction(target.id)}
+                onOpenBoard={
+                  linkedActions.openOnBoard
+                    ? () => {
+                        closeActionPopover();
+                        linkedActions.openOnBoard?.(actionId);
+                      }
+                    : undefined
+                }
                 onEdit={() => openAssignActionDialog(target.id)}
                 onDelete={() => deleteAction(target.id)}
                 onClose={closeActionPopover}
@@ -224,6 +236,22 @@ export function EditorAnchoredPopovers() {
                 onDelete={
                   cardTarget && assignActionId && !isReadOnly
                     ? () => deleteAction(target.id, assignActionId)
+                    : undefined
+                }
+                onWontDo={
+                  cardTarget && assignActionId && !isReadOnly
+                    ? () => {
+                        wontDoAction(target.id, assignActionId);
+                        closeAssignActionDialog();
+                      }
+                    : undefined
+                }
+                onReopen={
+                  cardTarget && assignActionId && !isReadOnly
+                    ? () => {
+                        reopenAction(target.id, assignActionId);
+                        closeAssignActionDialog();
+                      }
                     : undefined
                 }
                 onClose={closeAssignActionDialog}

@@ -22,6 +22,8 @@ import { usePlanPresence } from '@/hooks/plan/usePlanPresence';
 import { boardClientPoint, dropPlanCardAt, PLAN_CARD_MISSED } from '@/hooks/plan/plan-card-drop';
 import { debugLog } from '@/lib/debug-log';
 import { usePlanItems } from '@/hooks/plan/usePlanItems';
+import { useLinkedActionCards, type LinkedActions } from '@/hooks/plan/useLinkedActionCards';
+import { actionsBoardIn } from '@/hooks/plan/linked-actions';
 import { usePlanNeeded } from '@/hooks/plan/usePlanNeeded';
 import { usePlanStatuses } from '@/hooks/plan/usePlanStatusNames';
 import { useFormActions } from '@/hooks/forms/useFormActions';
@@ -636,6 +638,9 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   const mentionNotifyRef = useRef<
     (text: string, mentions: CommentMention[], itemId?: string, commentId?: string) => void
   >(() => {});
+  // The Actions board (useLinkedActionCards, below): declared first because the item store and the actions hook
+  // report to it before it exists.
+  const linkedActionsRef = useRef<LinkedActions | null>(null);
   // Comment-thread state + handlers. The open-id drives the
   // dynamic <CommentThreadPopover> JSX gate further down; the
   // action callbacks bind to the selection popover + the popover
@@ -1173,10 +1178,13 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // The document's items (docs/specs/026-plan/items.md): what Plan boards and Plan cards draw.
   // Items load only for a document with Plan content (docs/specs/026-plan/plan-mode.md "Cost").
   const planOpenTab = tabs.find((t) => t.id === activeId) ?? tabs[0];
+  // A document with an Actions board keeps its cards with its actions from any tab
+  // (docs/specs/026-plan/linked-boards.md), so it reads its items wherever it is open.
+  const actionsBoard = useMemo(() => actionsBoardIn(tabs), [tabs]);
   const planNeeded = usePlanNeeded(
     planOpenTab?.elements ?? NO_ELEMENTS,
     documentPresentation,
-    opensInOf(planOpenTab) === 'plan',
+    opensInOf(planOpenTab) === 'plan' || actionsBoard !== null,
   );
   const planItems = usePlanItems({
     documentId,
@@ -1191,6 +1199,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     // A card comment's mentions reach people as a canvas comment's do (docs/specs/026-plan/items.md "Comments").
     onMentioned: (text, mentions, itemId, commentId) =>
       mentionNotifyRef.current(text, mentions, itemId, commentId),
+    onOwnWrite: (write, before) => linkedActionsRef.current?.noteOwnWrite(write, before),
   });
 
   // The document's item types (docs/specs/026-plan/item-types.md): what cards, panels and the palette's
@@ -1916,10 +1925,12 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     saveAction,
     completeAction,
     reopenAction,
+    wontDoAction,
     deleteAction,
   } = useEditorActions({
     activeId,
     tickTabs,
+    onCreated: () => linkedActionsRef.current?.noteActionAdded(activeId),
     getAction: (elementId, actionId) => {
       const el = activeTab.elements.find((e) => e.id === elementId);
       if (!el || !isBoxed(el)) return undefined;
@@ -2091,7 +2102,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // An Inbox row opened this document at one element (docs/specs/013-workspace/inbox.md
   // §1): once the pinned tab is ready, select it, bring it into view and
   // open its popover (or a Plan card's item panel). See useCollabDeepLink.
-  useCollabDeepLink({
+  const arriveAtLink = useCollabDeepLink({
     link: collabDeepLink,
     hydrated,
     activeId,
@@ -2268,6 +2279,36 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     planNeeded,
     itemTypes.types.map((t) => t.id),
   );
+  // The Actions board (docs/specs/026-plan/linked-boards.md): every action has a card on it, kept together.
+  const editorLevel = hydrated && participant.can.level === 'edit' && !workbenchMode;
+  const linkedActions = useLinkedActionCards({
+    tabs,
+    loadedTabIds,
+    board: actionsBoard,
+    items: planItems,
+    canHeal: editorLevel,
+    canMakeBoard: editorLevel && !isStructureReadOnly,
+    statusNames: planStatusNames,
+    commitTabs,
+    tickTabs,
+    markTabLoaded,
+    loadTabs: loadAllTabs,
+    arrive: (link) => {
+      if (link.at) setActiveId(link.at.tabId);
+      arriveAtLink(link);
+    },
+    announceBoard: (message, open) =>
+      toast.action({
+        key: 'actions-board',
+        message,
+        actions: [{ label: 'Open Board', onSelect: open }],
+      }),
+  });
+  useAssignRef(linkedActionsRef, linkedActions);
+  const linkedPlan = useMemo(
+    () => ({ placeOf: linkedActions.placeOf, showOnCanvas: linkedActions.showOnCanvas }),
+    [linkedActions.placeOf, linkedActions.showOnCanvas],
+  );
   // One name, one state: duplicate states merge into the first. See useMergeDuplicateStatuses.
   useMergeDuplicateStatuses({
     tabs,
@@ -2343,6 +2384,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     notify: toast.info,
     // A form is an Editor's to make (docs/specs/030-forms/forms.md "Who may do what").
     newFormFor: participant.can.level === 'edit' ? forms.newFormFor : undefined,
+    linkedActions: linkedPlan,
   });
   // The Plan tour's example board and cards, or sheet (docs/specs/026-plan/plan-tour.md "Tour content").
   const tourSquare = useTourSquare({ activeId, tickTabs });
@@ -4444,6 +4486,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     openAssignAction,
     openAssignActionDialog,
     reopenAction,
+    wontDoAction,
+    linkedActions,
     saveAction,
     teamFolders,
     teamDocuments,
