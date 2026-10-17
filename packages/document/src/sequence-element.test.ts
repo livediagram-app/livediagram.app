@@ -127,6 +127,18 @@ describe('sequence diagram element', () => {
     );
   });
 
+  it("writes every message in the element's ink, not the colour of its line", () => {
+    const svg = sequenceDrawing(seq(), { stroke: '#15803d', ink: '#14532d' });
+    // Each message label is a <text> carrying its words in a <tspan>.
+    const message = svg.match(/<text [^>]*fill="([^"]+)"[^>]*><tspan[^>]*>Place order</);
+    expect(message?.[1]).toBe('#14532d');
+    expect(svg.match(/<text [^>]*fill="([^"]+)"[^>]*><tspan[^>]*>201 Created</)?.[1]).toBe(
+      '#14532d',
+    );
+    // The lines keep the accent.
+    expect(svg).toContain('stroke="#15803d"');
+  });
+
   it('opens no label editor (its words are its rows) but keeps its border controls', () => {
     expect(opensInlineLabelEditor('sequence')).toBe(false);
     expect(supportsBorderControls(seq())).toBe(true);
