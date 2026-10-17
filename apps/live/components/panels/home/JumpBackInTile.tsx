@@ -1,10 +1,10 @@
 'use client';
 
-// One document of Jump back in (docs/specs/013-workspace/explorer-home.md "Jump back in"): its
+// One document of Jump Back In (docs/specs/013-workspace/explorer-home.md "Jump Back In"): its
 // snapshot thumbnail with its name below, one link named by the document (plus Local only for one
 // stored here), the full name as its tooltip. Grid and strip draw the same tile at their own size.
 // Which half of the set it came from is tracked, never shown (Calm by default). The strip ends in
-// the See more tile, the same size as a thumbnail.
+// the See More tile, the same size as a thumbnail.
 
 import { ChevronRightIcon, Tooltip } from '@livediagram/ui';
 import { DocumentThumbnail } from '@/components/panels/DocumentThumbnail';

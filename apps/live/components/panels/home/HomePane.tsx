@@ -2,7 +2,7 @@
 
 // Explorer Home (docs/specs/013-workspace/explorer-home.md; blueprint
 // docs/specs/013-workspace/blueprints/explorer-home-view.md). One column at every width: Jump back
-// in, then What happened, each its own section opened by a display heading, generous space between
+// in, then What Happened, each its own section opened by a display heading, generous space between
 // them. The hero above it is the shell's (HomeHero).
 
 import { lazy, Suspense, useEffect, type ReactNode } from 'react';
@@ -63,7 +63,7 @@ export function HomePane({
     );
   }
 
-  // Nothing yet: starts in place of Jump back in and What happened, which would only be empty.
+  // Nothing yet: starts in place of Jump Back In and What Happened, which would only be empty.
   if (firstRun) {
     return (
       <Suspense fallback={<GridSkeleton />}>

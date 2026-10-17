@@ -3,7 +3,7 @@
 // Home's hero (docs/specs/013-workspace/explorer-home.md "The hero"; blueprint
 // docs/specs/013-workspace/blueprints/explorer-home-view.md "Presentation and UX"): the full-width band under the
 // Explorer header on Home, its page header. Status pills, the greeting, the lead, the lens field drawn large with
-// New document inside it, and the fanned sheets of the newest documents. Reads only what the shell already holds.
+// New Document inside it, and the fanned sheets of the newest documents. Reads only what the shell already holds.
 
 import { lazy, Suspense, useMemo } from 'react';
 import { PlusIcon } from '@/components/primitives/explorer-icons';

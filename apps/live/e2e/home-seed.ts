@@ -121,7 +121,7 @@ export async function asGuest(page: Page, owner: string): Promise<void> {
 
 /**
  * An owner whose Home has everything: three drawn documents opened today, and on the first one
- * two other people at work (Priya comments, Sam edits), so What happened holds a summary.
+ * two other people at work (Priya comments, Sam edits), so What Happened holds a summary.
  */
 export async function seedBusyHome(
   request: APIRequestContext,
@@ -199,7 +199,7 @@ export async function seedWithinReach(page: Page, origin: string, owner: string)
   await openDocument(page.request, owner, two);
   await page.goto('/explorer/home');
   // Home has read this browser's store by now, so the store exists and is not being opened.
-  await expect(page.getByRole('region', { name: 'Jump back in' })).toBeVisible();
+  await expect(page.getByRole('region', { name: 'Jump Back In' })).toBeVisible();
   await seedLocalDocuments(page, [
     { name: 'Atlas', daysAgo: [0, 1, 2, 3, 4, 5], lastOpenedIn: 60_000 },
     { name: 'Beacon', daysAgo: [1, 2, 3, 4, 5], lastOpenedIn: -1 * DAY_MS },

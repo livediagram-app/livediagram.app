@@ -3,8 +3,8 @@
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-// What happened (docs/specs/013-workspace/explorer-home.md): one person's actions are links that
-// open the document; several people collapse into a summary that expands; See timeline leads
+// What Happened (docs/specs/013-workspace/explorer-home.md): one person's actions are links that
+// open the document; several people collapse into a summary that expands; See Timeline leads
 // to the feed; no filter controls.
 
 const { track } = vi.hoisted(() => ({ track: vi.fn() }));
@@ -122,7 +122,7 @@ describe('WhatHappened', () => {
 
   it('opens the Timeline in the app, and leaves modified clicks to the browser', () => {
     const onSeeTimeline = renderIt();
-    const link = screen.getByRole('link', { name: 'See timeline' });
+    const link = screen.getByRole('link', { name: 'See Timeline' });
     expect(link.getAttribute('href')).toBe('/explorer/timeline');
     fireEvent.click(link);
     expect(onSeeTimeline).toHaveBeenCalledTimes(1);
@@ -153,8 +153,8 @@ describe('WhatHappened', () => {
         onSeeTimeline={() => {}}
       />,
     );
-    expect(screen.getByRole('heading', { level: 2, name: 'What happened' })).toBeTruthy();
-    expect(screen.queryByRole('link', { name: 'See timeline' })).toBeNull();
+    expect(screen.getByRole('heading', { level: 2, name: 'What Happened' })).toBeTruthy();
+    expect(screen.queryByRole('link', { name: 'See Timeline' })).toBeNull();
   });
 
   it('offers no filter controls', () => {

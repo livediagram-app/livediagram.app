@@ -276,7 +276,7 @@ describe('QuickStylePanel on a whiteboard: the marker rows', () => {
   });
   const second = heldPenStyle(DEFAULT_WHITEBOARD_PREFS.pens[1]!, PALETTE);
 
-  it('styles the pen in hand, with nothing selected, and offers no Clear styles', () => {
+  it('styles the pen in hand, with nothing selected, and offers no Clear Styles', () => {
     const quickStyle = api(second);
     render(<QuickStylePanel quickStyle={quickStyle} hidden={false} />);
     expect(screen.getByText('Marker 2')).toBeTruthy();

@@ -1,6 +1,6 @@
 'use client';
 
-// What happened (docs/specs/013-workspace/explorer-home.md "What happened"): what other people did
+// What Happened (docs/specs/013-workspace/explorer-home.md "What Happened"): what other people did
 // to documents the person can open, under day headings, with no filter controls. A quiet See
 // timeline link at the end of the section's heading row opens the Timeline; it
 // sits there so it never moves when the entries land.
@@ -35,14 +35,14 @@ export function WhatHappened({
   const now = useNow(false);
   const days = useMemo(() => groupsByDay(groups, now), [groups, now]);
   // Nothing from anyone: Home leaves the section out rather than show a second empty state
-  // (explorer-home.md "What happened"). It is the page's last section, so nothing moves when it goes.
+  // (explorer-home.md "What Happened"). It is the page's last section, so nothing moves when it goes.
   if (!loading && days.length === 0) return null;
   return (
     <HomeSection
       id="what-happened"
       title={HOME_COPY.whatHappened}
       busy={loading}
-      // See timeline once the entries are in: an empty section is not drawn at all.
+      // See Timeline once the entries are in: an empty section is not drawn at all.
       link={
         loading
           ? undefined

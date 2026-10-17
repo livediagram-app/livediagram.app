@@ -256,7 +256,7 @@ export function QuickStylePanelScene() {
       <SectionTitle x={rowX} y={py + 254}>
         ACTIONS
       </SectionTitle>
-      {/* Clear styles, with its eraser glyph */}
+      {/* Clear Styles, with its eraser glyph */}
       <path
         d={`M${rowX + 2} ${py + 276} l6 -6 l5 5 l-6 6 h-3 Z M${rowX + 8} ${py + 270} l4 -4 l5 5 l-4 4`}
         fill="none"
@@ -265,7 +265,7 @@ export function QuickStylePanelScene() {
         strokeLinejoin="round"
       />
       <Label x={rowX + 24} y={py + 274} size={11} weight={600} tone="body">
-        Clear styles
+        Clear Styles
       </Label>
       {/* The selected shape, in the chosen blue. */}
       <Shape

@@ -4,7 +4,7 @@ import { cleanup, fireEvent, render, screen, within } from '@testing-library/rea
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Home's hero (docs/specs/013-workspace/explorer-home.md "The hero"): the status pills open their views, the
-// greeting is the page's heading, New document starts one, the lens field is drawn large with New document inside
+// greeting is the page's heading, New Document starts one, the lens field is drawn large with New Document inside
 // it, the sheets are decoration, and the menu button opens the drawer.
 
 const { track, lensField } = vi.hoisted(() => ({ track: vi.fn(), lensField: vi.fn() }));
@@ -112,11 +112,11 @@ describe('HomeHero', () => {
     expect(screen.queryByRole('link', { name: /Inbox/ })).toBeNull();
   });
 
-  it('draws the lens field large with New document inside it', () => {
+  it('draws the lens field large with New Document inside it', () => {
     renderHero();
     const lens = screen.getByTestId('lens');
     expect(lens.dataset.size).toBe('hero');
-    fireEvent.click(within(lens).getByRole('button', { name: 'New document' }));
+    fireEvent.click(within(lens).getByRole('button', { name: 'New Document' }));
     expect(assign).toHaveBeenCalledWith('/new');
     expect(track).toHaveBeenLastCalledWith('Home', 'Selected', 'Hero.NewDocument');
   });

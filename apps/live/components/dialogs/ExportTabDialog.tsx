@@ -496,11 +496,11 @@ export function ExportTabDialog({
     <Dialog
       open
       onClose={onClose}
-      ariaLabel={isSelection ? 'Export selection' : 'Export tab'}
+      ariaLabel={isSelection ? 'Export Selection' : 'Export Tab'}
       size="xl"
       className="max-h-[90vh]"
     >
-      <DialogHeader title={isSelection ? 'Export selection' : 'Export tab'} subtitle={subtitle}>
+      <DialogHeader title={isSelection ? 'Export Selection' : 'Export Tab'} subtitle={subtitle}>
         <HelpArticleLink article="exportingDiagrams" size="md" />
         <DialogCloseButton onClick={onClose} />
       </DialogHeader>

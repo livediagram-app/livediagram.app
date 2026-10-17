@@ -1,5 +1,5 @@
 // Home's marks (docs/specs/013-workspace/blueprints/explorer-home-view.md): what kind of action an
-// expanded What happened row is. Drawn from the Timeline's own glyphs, so a comment, an edit or a
+// expanded What Happened row is. Drawn from the Timeline's own glyphs, so a comment, an edit or a
 // share looks the same in Home and in the Timeline.
 
 import type { HomeVerb, KnownTimelineEventType } from '@livediagram/api-schema';

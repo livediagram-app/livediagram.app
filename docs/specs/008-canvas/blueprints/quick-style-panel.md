@@ -212,7 +212,7 @@ One pure transform per section, a no-op on a non-supporting element:
   `flowSpeed` removed. Text: `textColor` to `theme.elementText ?? undefined`; `textSwatch` removed.
 
 `useQuickStyle` runs each as one `commit` over the targets (one undo step),
-records the memory from the same before / after, and tracks the section's token. Clear styles also
+records the memory from the same before / after, and tracks the section's token. Clear Styles also
 calls `forget` with the kind keys of every target it changed.
 
 ## Mixed selections and named colours
@@ -257,7 +257,7 @@ palette)` replaces `stroke` and `textColour` with `boardStroke` / `boardText`
   (unset or `full` → `null`, so no option is marked).
 - `QUICK_CORNERS` = `['none', 'sm', 'md', 'lg']` named None / Small / Medium / Large, drawn with the
   menu's `BorderRadiusIcon`; `applyQuickCorners(el, c)` sets `borderRadius` on supporting elements only;
-  `clearQuickCorners` removes it, composed into Clear styles on a whiteboard. `QuickRadioRow`'s
+  `clearQuickCorners` removes it, composed into Clear Styles on a whiteboard. `QuickRadioRow`'s
   `columns` sets a button row's count (four here; unset three).
 - `useQuickStyle.setCorners`, token `QuickCorners` (dashboard sentence in
   `apps/telemetry/app/event-explanations.ts`). The board's style memory records `borderRadius` for
@@ -367,13 +367,13 @@ dark:text-slate-400` (always shown, Minimal chrome included; a caller may pass `
 - Three-option rows: three equal buttons, 28 px tall, glyph-only (line weights, dash patterns, align
   glyphs, icon-before / above / after glyphs); selected = `bg-brand-50 text-brand-700 ring-brand-300`,
   dark `bg-brand-500/15 text-brand-200`.
-- Clear styles: a full-width text button "Clear styles" with an eraser glyph.
+- Clear Styles: a full-width text button "Clear Styles" with an eraser glyph.
 - Entrance: `motion-safe:animate-fade-in` (`micro`); none under `.reduce-motion`.
 
 Copy: titles "Stroke", "Background", "Text colour", "Stroke width", "Stroke style", "Text alignment", "Icon
 alignment", "Actions". Option names: swatch names; "Thin", "Medium", "Thick"; "Solid", "Dashed",
 "Dotted", "Flowing"; "Align left", "Align centre", "Align right"; "Icon before label", "Icon above
-label", "Icon after label"; "Clear styles". The panel's region label: "Quick style".
+label", "Icon after label"; "Clear Styles". The panel's region label: "Quick style".
 
 ## Accessibility
 
@@ -441,7 +441,7 @@ new network surface.
 
 - `[style-memory] recorded` (debug): kind keys and field names, on a changed record.
 - `[style-memory] applied` (debug): kind key, on a new element that took memory.
-- `[style-memory] forgot` (debug): kind keys, on Clear styles.
+- `[style-memory] forgot` (debug): kind keys, on Clear Styles.
 - `[style-memory] unreadable` / `write failed` (warn).
 - `[quick-style] placement fallback` (debug) with the candidate list.
 - Telemetry: `Element·Changed·QuickStroke | QuickBackground | QuickTextColour | QuickStrokeWidth | QuickStrokeStyle |
@@ -462,7 +462,7 @@ QuickTextAlign | QuickIconAlign | QuickClearStyles`.
 | Validation rejects a bad slot                                                     | `validate.test.ts`                                                                 |
 | Sections, mixed selection, shared value, style set                                | `quick-style.test.ts`                                                              |
 | Flowing in one choice                                                             | `quick-style.test.ts`, `e2e/quick-style-panel.spec.ts`                             |
-| Clear styles resets fields and forgets kinds                                      | `quick-style.test.ts`, `style-memory.test.ts`, e2e                                 |
+| Clear Styles resets fields and forgets kinds                                      | `quick-style.test.ts`, `style-memory.test.ts`, e2e                                 |
 | Memory per kind, arrows separate, field by field                                  | `style-memory.test.ts`                                                             |
 | Theme defaults are not memories                                                   | `style-memory.test.ts`                                                             |
 | Carries to the next drawn element of the kind only                                | `style-memory.test.ts`, e2e                                                        |
@@ -480,7 +480,7 @@ QuickTextAlign | QuickIconAlign | QuickClearStyles`.
 | Radio groups, names, keyboard                                                     | `QuickStylePanel.test.tsx`                                                         |
 | Any mix: rows apply where they fit, others passed over; caption counts styled     | `quick-style-applicability.test.ts`, `quick-style.test.ts`                         |
 | Whiteboard Stroke / Text colour rows: stock colours, custom section, apply        | `quick-style-whiteboard.test.ts`, `useQuickStyle.test.tsx`, `style-memory.test.ts` |
-| Named stock colours mark no swatch; a choice or Clear styles removes the name     | `quick-style.test.ts`                                                              |
+| Named stock colours mark no swatch; a choice or Clear Styles removes the name     | `quick-style.test.ts`                                                              |
 
 ## Constants and configuration
 

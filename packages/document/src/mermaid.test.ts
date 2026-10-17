@@ -627,7 +627,7 @@ describe('mermaidFromTab fallbacks and line forms', () => {
       ...extra,
     }) as Element;
 
-  it('names unlabelled nodes and frames by their ids and boxes an unknown shape', () => {
+  it('writes unlabelled nodes and frames blank, never as their ids, and boxes an unknown shape', () => {
     const text = mermaidFromTab({
       elements: [
         node('a', { label: '  ' }),
@@ -640,15 +640,92 @@ describe('mermaidFromTab fallbacks and line forms', () => {
     expect(text).toBe(
       [
         'flowchart TD',
-        '  subgraph s1["s1"]',
+        '  subgraph s1[" "]',
         '  end',
-        '  n1["n1"]',
+        '  n1[" "]',
         '  n2["Blob"]',
         '  n3["No kind"]',
-        '  n4["n4"]',
+        '  n4[" "]',
         '',
       ].join('\n'),
     );
+  });
+
+  it('keeps every connection: stickies are nodes, and a text or table an arrow pins is one for its sake', () => {
+    const sticky = {
+      id: 's',
+      type: 'sticky',
+      x: 0,
+      y: 0,
+      width: 160,
+      height: 160,
+      label: 'Idea',
+    } as Element;
+    const text = {
+      id: 't',
+      type: 'text',
+      x: 300,
+      y: 0,
+      width: 80,
+      height: 20,
+      label: 'Caption',
+    } as Element;
+    const table = { id: 'tb', type: 'table', x: 600, y: 0, width: 200, height: 100 } as Element;
+    const loose = {
+      id: 'lt',
+      type: 'text',
+      x: 900,
+      y: 0,
+      width: 80,
+      height: 20,
+      label: 'Title',
+    } as Element;
+    const out = mermaidFromTab({
+      elements: [
+        sticky,
+        text,
+        table,
+        loose,
+        node('a', { label: 'A' }),
+        arrow('1', 's', 'a'),
+        arrow('2', 't', 'tb'),
+      ],
+    });
+    expect(out.split('\n').slice(1, -1)).toEqual([
+      '  n1["Idea"]',
+      '  n2["Caption"]',
+      '  n3[" "]',
+      '  n4["A"]',
+      '  n1 --> n4',
+      '  n2 --> n3',
+    ]);
+  });
+
+  it('exports a board of stickies as nodes its own import reads', () => {
+    const out = mermaidFromTab({
+      elements: [{ id: 's', type: 'sticky', x: 0, y: 0, width: 160, height: 160, label: 'Event' }],
+    });
+    const back = parseMermaid(out);
+    expect(back.ok && back.graph.nodes.map((n) => n.label)).toEqual(['Event']);
+  });
+
+  it('reads a blank label back as none, so an unlabelled dot round-trips as a dot', () => {
+    const out = mermaidFromTab({
+      elements: [
+        node('f', { shape: 'frame', x: -10, y: -10, width: 100, height: 100 }),
+        node('a', { label: 'Start' }),
+        node('dot', { shape: 'circle', x: 500 }),
+        arrow('1', 'a', 'dot'),
+      ],
+    });
+    const back = parseMermaid(out);
+    expect(back.ok).toBe(true);
+    if (!back.ok) return;
+    expect(back.graph.nodes.map((n) => [n.label, n.shape])).toEqual([
+      ['Start', 'square'],
+      ['', 'circle'],
+    ]);
+    expect(back.graph.clusters?.map((c) => c.label)).toEqual(['']);
   });
 
   it('spells undirected dashed and thick lines, circle heads, and skips free ends', () => {

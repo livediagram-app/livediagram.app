@@ -1,8 +1,8 @@
 'use client';
 
-// Jump back in (docs/specs/013-workspace/explorer-home.md "Jump back in"): the person's Within reach
-// set of documents. On a desktop or tablet the Most used cards then the Recent cards, each group under its label,
-// with See more in the heading row; on a phone the alternating strip that ends in its See more tile, which
+// Jump Back In (docs/specs/013-workspace/explorer-home.md "Jump Back In"): the person's Within reach
+// set of documents. On a desktop or tablet the Most Used cards then the Recent cards, each group under its label,
+// with See More in the heading row; on a phone the alternating strip that ends in its See More tile, which
 // interleaves the groups and so labels neither.
 
 import { useId } from 'react';
@@ -30,7 +30,7 @@ const HOME_WIDE_QUERY = '(min-width: 768px)';
 
 const HEADING_ID = 'home-jump-back-in';
 
-const GROUP_LABELS: Record<JumpBackInGroup, string> = { mostUsed: 'Most used', recent: 'Recent' };
+const GROUP_LABELS: Record<JumpBackInGroup, string> = { mostUsed: 'Most Used', recent: 'Recent' };
 
 export function JumpBackIn({
   ownerId,
@@ -42,7 +42,7 @@ export function JumpBackIn({
   ownerId: string;
   set: JumpBackInSet;
   loading: boolean;
-  /** The Recent page, for See more's href (new tab, copy link). */
+  /** The Recent page, for See More's href (new tab, copy link). */
   recentHref: string;
   /** In-app navigation to the Recent page. */
   onSeeMore: () => void;
@@ -54,7 +54,7 @@ export function JumpBackIn({
       id="jump-back-in"
       title={HOME_COPY.jumpBackIn}
       busy={loading}
-      // See more only once there is something to see more of (explorer-home.md "Jump back in").
+      // See More only once there is something to see more of (explorer-home.md "Jump Back In").
       link={
         wide && !loading && !empty
           ? {
@@ -82,7 +82,7 @@ export function JumpBackIn({
         <GridSkeleton />
       ) : empty ? (
         // The shared empty state (docs/specs/004-interface-design/empty-states.md) in place of one most used card,
-        // so an empty Jump back in looks like a list with one thing in it.
+        // so an empty Jump Back In looks like a list with one thing in it.
         <div className={MOST_USED_GRID}>
           <div className={`${LARGE_CARD} ${EMPTY_SLOT} rounded-[18px]`}>
             <CompactEmptyState

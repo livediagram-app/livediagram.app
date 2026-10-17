@@ -66,11 +66,11 @@ async function importBoards(page: Page, boards: 1 | 2): Promise<void> {
   await expect(page.getByTestId('import-documents')).toContainText('Sprint board');
 }
 
-// Jump back in's documents: the Most used and Recent lists on a wide screen, the strip on a phone.
+// Jump Back In's documents: the Most Used and Recent lists on a wide screen, the strip on a phone.
 const jumpBackIn = (page: Page) =>
-  page.getByRole('region', { name: 'Jump back in' }).getByRole('listitem');
+  page.getByRole('region', { name: 'Jump Back In' }).getByRole('listitem');
 
-test('an API client’s document is in Jump back in unless it says markUsed: false', async ({
+test('an API client’s document is in Jump Back In unless it says markUsed: false', async ({
   page,
   pageErrors,
 }) => {
@@ -86,14 +86,14 @@ test('an API client’s document is in Jump back in unless it says markUsed: fal
   expectNoPageErrors(pageErrors);
 });
 
-test('signed in, a single imported board is in Jump back in; a two-board import is not', async ({
+test('signed in, a single imported board is in Jump Back In; a two-board import is not', async ({
   page,
   pageErrors,
 }) => {
   await signedIn(page, freshUserId('importer'));
   await importBoards(page, 2);
   await page.goto('/explorer/home');
-  await expect(page.getByRole('region', { name: 'Jump back in' })).toContainText(
+  await expect(page.getByRole('region', { name: 'Jump Back In' })).toContainText(
     'The documents you use most and last will gather here.',
     { timeout: 30_000 },
   );

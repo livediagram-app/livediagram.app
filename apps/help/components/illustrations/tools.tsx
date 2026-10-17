@@ -612,7 +612,7 @@ export function AutoLayoutTidy() {
 
 // --- Markdown import (dialog) ----------------------------------------------
 
-/** The Import to tab dialog on its Markdown step: the replace warning, the
+/** The Import to Tab dialog on its Markdown step: the replace warning, the
  *  All formats back bar with the chosen format, the paste box, and the two
  *  ways to import. */
 export function MarkdownImportPanel() {
@@ -629,7 +629,7 @@ export function MarkdownImportPanel() {
         strokeWidth={2}
       />
       <Label x={36} y={28} size={13} weight={700} tone="strong">
-        Import to tab
+        Import to Tab
       </Label>
       <Label x={36} y={44} size={10} tone="muted">
         Paste your Markdown, or import a file.

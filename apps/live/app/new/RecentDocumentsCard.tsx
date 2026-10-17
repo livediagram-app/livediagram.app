@@ -81,7 +81,7 @@ export function RecentDocumentsCard({
         <ClockIcon />
         <div className="flex flex-col">
           <span className="text-[11px] font-semibold uppercase tracking-wider text-brand-700 dark:text-brand-300">
-            Jump back in
+            Jump Back In
           </span>
           <span className="text-[10px] text-slate-400">Your recent documents</span>
         </div>

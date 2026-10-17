@@ -5,7 +5,7 @@ Status: **implemented**.
 While one or more shapes, arrows and / or text elements are selected, a small panel on the left
 edge of the canvas offers the handful of style choices people reach for most: stroke colour,
 background, text colour (for text elements), stroke width, stroke style, text alignment and icon
-alignment, plus a Clear styles action. What you choose there
+alignment, plus a Clear Styles action. What you choose there
 (or in the context menu) is remembered for the next shape of the same kind you draw.
 
 ## Why
@@ -99,7 +99,7 @@ Top to bottom, each a small title over one row of option buttons:
 | Corners            | Free-corner shapes (Draw mode only)                | None / Small / Medium / Large         |
 | Highlighter colour | Highlight strokes, or the armed Highlighter        | Yellow / Green / Pink / Blue / Orange |
 | Highlighter width  | Highlight strokes, or the armed Highlighter        | Thin / Medium / Bold                  |
-| Actions            | Shapes + arrows + text elements                    | Clear styles                          |
+| Actions            | Shapes + arrows + text elements                    | Clear Styles                          |
 
 **Transparent** ends the Background row, after its seven colours: the shared no-colour chip (white
 crossed by a diagonal), named "Transparent". A press clears the shape's fill to `transparent`
@@ -120,7 +120,7 @@ opens nothing.
   None would leave no way back to square, and Full is a pill rather than a corner, so it stays in
   the menu's set. That one row of four is the operator's decision; the rhythm rule below still
   holds for every other row. An element with no preset (its kind's default corner) marks none.
-  On a whiteboard, Clear styles returns corners to the kind's default too, and the board's style
+  On a whiteboard, Clear Styles returns corners to the kind's default too, and the board's style
   memory remembers them for the next rectangle.
 - **Highlighter colour** and **Highlighter width** are the [Highlighter](highlighter.md)'s settings, shown above the other rows for selected highlight strokes, and on their own (captioned "Highlighter") while the Highlighter tile is armed with nothing selected, where they set the next stroke. Five colours and three widths: the marker's own set, not the theme's. The width row has no context-menu twin, a deliberate exception scoped to these rows ([Highlighter](highlighter.md) "Settings").
 - **Icon alignment** shows only when a selected shape carries an inline icon. Before / Above / After
@@ -336,7 +336,7 @@ element of the same kind you draw.
   is not synced, not in the document, and not part of [User preferences](../007-editor/user-preferences.md):
   it is a working habit for one document's notation, like the panel placements are a habit for one screen.
 
-## Clear styles
+## Clear Styles
 
 The Actions section's first button. It resets the selected elements' quick-style fields to the
 tab theme's default (stroke, background and label colour, width, style, text alignment, icon
@@ -350,7 +350,7 @@ next one. One undo step.
 Actions is the home for **quick actions** that prove, through telemetry or strong feedback, to be used
 a lot and to fit better here than in the context menu because the panel is faster to reach. It grows
 slowly and deliberately: an action joins only with that evidence, and only if it acts on the style of
-the selection. Clear styles is the first action, because every restyle needs a way back.
+the selection. Clear Styles is the first action, because every restyle needs a way back.
 
 ## Accessibility
 

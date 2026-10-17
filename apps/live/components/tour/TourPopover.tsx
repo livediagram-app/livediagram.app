@@ -115,6 +115,23 @@ export function TourPopover({
   // from the corner (a first-paint animation gate).
   const [animatePos, setAnimatePos] = useState(false);
 
+  // The centred cards take the keyboard (docs/specs/007-editor/editor-tour.md): the offer and the last card are
+  // dialogs over a dimmed editor, so focus moves onto the card (not a button: a stray Enter accepts nothing) and goes
+  // back where it was when the card goes. A step card leaves focus on the control it points at.
+  useEffect(() => {
+    if (!card) return;
+    const card$ = ref.current;
+    if (!card$) return;
+    const before = document.activeElement;
+    card$.focus({ preventScroll: true });
+    return () => {
+      if (!card$.contains(document.activeElement) && document.activeElement !== document.body)
+        return;
+      if (before instanceof HTMLElement && before.isConnected)
+        before.focus({ preventScroll: true });
+    };
+  }, [card, stepId]);
+
   // Escape is the card's way out (docs/specs/007-editor/editor-tour.md): it declines the offer, skips the tour from
   // a step and finishes it from the last card, as their buttons do. Not while the key is editing something, where
   // Escape puts the text back (an element tour asks for exactly that), nor when something else already took it.
@@ -176,8 +193,9 @@ export function TourPopover({
       data-tour-popover=""
       role="dialog"
       aria-label={card ? title : `${ariaPrefix} step ${stepNumber} of ${stepCount}: ${title}`}
+      tabIndex={card ? -1 : undefined}
       onPointerDown={(e) => e.stopPropagation()}
-      className={`pointer-events-auto fixed z-[var(--z-toast)] flex max-w-[calc(100vw-1.5rem)] flex-col gap-2 rounded-xl border border-[var(--tour-border)] bg-[var(--tour-card)] p-4 text-[var(--tour-text)] shadow-2xl shadow-slate-900/20 dark:shadow-black/40 ${
+      className={`pointer-events-auto fixed z-[var(--z-toast)] flex outline-none max-w-[calc(100vw-1.5rem)] flex-col gap-2 rounded-xl border border-[var(--tour-border)] bg-[var(--tour-card)] p-4 text-[var(--tour-text)] shadow-2xl shadow-slate-900/20 dark:shadow-black/40 ${
         card ? 'w-[21rem]' : 'w-80'
       } ${animatePos ? 'transition-[left,top] duration-long ease-out' : ''}`}
       style={{

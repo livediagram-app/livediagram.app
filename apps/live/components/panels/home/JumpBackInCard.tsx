@@ -1,6 +1,6 @@
 'use client';
 
-// One document of Jump back in on a desktop or tablet (docs/specs/013-workspace/explorer-home.md "Jump back in"): a
+// One document of Jump Back In on a desktop or tablet (docs/specs/013-workspace/explorer-home.md "Jump Back In"): a
 // card with its snapshot thumbnail, its name and the quiet line that says why it is there. Large for a most used
 // document (the thumbnail over the words), compact for a recent one (the thumbnail beside them). One link named by
 // the document (plus Local only for one stored here), the quiet line its description, the full name its tooltip.
@@ -36,7 +36,7 @@ export function JumpBackInCard({
 }: {
   ownerId: string;
   item: JumpBackInItem;
-  /** Most used draws a large card, recent a compact one. */
+  /** Most Used draws a large card, recent a compact one. */
   group: JumpBackInGroup;
   /** The page's shared instant, so every card's relative time agrees. */
   now: number;

@@ -69,7 +69,7 @@ Folder rides the **same wire path as `orderIndex`**, never the per-tab content `
 
 Reuses the closed vocabulary ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)) with **the subject deciding the category**, and every event carries a `type` so none of it collides with tab lifecycle:
 
-| What happened                   | Event                |
+| What Happened                   | Event                |
 | ------------------------------- | -------------------- |
 | A tab was filed into a folder   | `Tab·Moved·Folder`   |
 | A tab was taken out of a folder | `Tab·Removed·Folder` |

@@ -179,7 +179,7 @@ export async function apiCreateDocument(
     createdAt?: number;
     savedAt?: number;
     presentation?: string | null;
-    // Whether making it is a use, so it joins Explorer Home's Jump back in at once
+    // Whether making it is a use, so it joins Explorer Home's Jump Back In at once
     // (docs/specs/015-api/api.md "Marking a document used"). Only `false` travels: absent is the
     // server's own default, a making that counts.
     markUsed?: boolean;
@@ -241,7 +241,7 @@ export async function apiDeleteDocument(ownerId: string, id: string): Promise<vo
 }
 
 // The personal library and, beside it, the newest documents of the teams the caller has joined: the
-// team ones feed only the recent lists (Welcome back, Jump back in), never the personal library views.
+// team ones feed only the recent lists (Welcome back, Jump Back In), never the personal library views.
 export type DocumentListing = {
   documents: DocumentSummary[];
   teamRecent: TeamRecentDocument[];

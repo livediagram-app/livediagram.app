@@ -1,4 +1,4 @@
-// Explorer feed illustrations (docs/specs/018-help/help-app.md): Home (Jump back in and What
+// Explorer feed illustrations (docs/specs/018-help/help-app.md): Home (Jump Back In and What
 // happened), the Timeline feed and its stacking, the Inbox, Recent, Shared With Me,
 // and the Spaces group of the sidebar with its teams. Drawn from the real labels in apps/live
 // (sidebar-structure.ts, home-copy.ts, ActivityPane.tsx, views.tsx, the @livediagram/ui timeline).
@@ -400,7 +400,7 @@ function FolderChip({ x, y, label }: { x: number; y: number; label: string }) {
 
 // --- Scenes ------------------------------------------------------------------
 
-/** Home: Jump back in (most used on top, last used below) and What happened, with a summary entry. */
+/** Home: Jump Back In (most used on top, last used below) and What Happened, with a summary entry. */
 export function HomeOverview() {
   const tiles = [
     ['Roadmap', 'Payments', 'Onboarding', 'Data model'],
@@ -409,7 +409,7 @@ export function HomeOverview() {
   return (
     <Scene w={420} h={262} bg="plain">
       <Pane h={238} />
-      <SectionHeading y={30} title="Jump back in" link="See more" />
+      <SectionHeading y={30} title="Jump Back In" link="See More" />
       {tiles.map((row, r) =>
         row.map((name, c) => (
           <g key={name}>
@@ -420,7 +420,7 @@ export function HomeOverview() {
           </g>
         )),
       )}
-      <SectionHeading y={168} title="What happened" link="See timeline" />
+      <SectionHeading y={168} title="What Happened" link="See Timeline" />
       <Label x={32} y={192} size={10} weight={700} tone="muted">
         Today
       </Label>

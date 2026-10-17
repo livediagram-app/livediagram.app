@@ -4,11 +4,11 @@
 /** A section's heading row: the display title and its quiet link at the end, no rule (Display headings). */
 export const SECTION_HEADER = 'flex items-baseline justify-between gap-4';
 
-/** A section's title: Jump back in, What happened. */
+/** A section's title: Jump Back In, What Happened. */
 export const SECTION_HEADING =
   'text-2xl font-extrabold tracking-[-0.03em] text-[#17153a] dark:text-slate-100';
 
-/** The quiet link at the end of a heading row: See more, See timeline. Its line box is padded
+/** The quiet link at the end of a heading row: See More, See Timeline. Its line box is padded
  *  to the 24 px target. */
 export const SECTION_LINK =
   'inline-flex min-h-6 items-center rounded-sm text-sm font-semibold text-brand-700 hover:underline dark:text-brand-300';
@@ -20,7 +20,7 @@ export const MUTED = 'text-slate-500 dark:text-slate-400';
 export const FOCUS_RING =
   'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500';
 
-/** A row that opens something: a What happened entry. */
+/** A row that opens something: a What Happened entry. */
 export const ROW = 'rounded-lg px-2 py-2 transition hover:bg-slate-100 dark:hover:bg-slate-800/70';
 
 /** The page behind Home, for overlays that blend into it (the strip's fade, the avatar rings). */
@@ -29,9 +29,9 @@ export const PAGE_RING = 'ring-2 ring-slate-50 dark:ring-slate-900';
 /** A placeholder block. */
 export const SKELETON = 'rounded-md bg-slate-200/70 motion-safe:animate-pulse dark:bg-slate-800';
 
-// ---- Jump back in's cards (desktop and tablet), shared by the cards and their skeletons ----
+// ---- Jump Back In's cards (desktop and tablet), shared by the cards and their skeletons ----
 
-/** A group's label: Most used, Recent. */
+/** A group's label: Most Used, Recent. */
 export const GROUP_LABEL =
   'mb-2.5 h-4 text-xs font-semibold uppercase leading-4 tracking-[0.08em] text-slate-500 dark:text-slate-400';
 
@@ -61,7 +61,7 @@ export const JUMP_BACK_IN_MIN_HEIGHT = 'min-h-[38.625rem] lg:min-h-[20.625rem]';
 export const EMPTY_SLOT =
   'border border-dashed border-slate-300 bg-white/60 dark:border-slate-600 dark:bg-slate-800/50';
 
-/** What happened's days sit in one panel. */
+/** What Happened's days sit in one panel. */
 export const WHAT_HAPPENED_PANEL =
   'rounded-[20px] border border-slate-200 bg-white px-3 py-2 sm:px-5 dark:border-slate-700 dark:bg-slate-800';
 /** A strip tile: 128 px wide, the thumbnail 128 × 80. */

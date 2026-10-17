@@ -32,6 +32,10 @@ proved the better introduction.
   **No** dismisses it. A document made from a Plan, Draw, Illustrate or Facilitate template does not show it
   there; the offer stays owed and comes the first time the person works on a Diagram tab in that browser tab.
   There is no wizard toggle; the offer IS the opt-in, and declining must be one obvious, equal-weight click.
+- **The centred cards take the keyboard.** The welcome offer and the last card are dialogs over a dimmed editor, so
+  focus moves to the card when it appears (the card itself, not a button, so a stray Enter accepts nothing) and Tab
+  reaches its buttons; when the card goes, focus returns to wherever it was. A step card leaves focus alone: it points
+  at a real control the person is about to use.
 - **Escape is each card's way out.** On the offer it declines (as **No**), on a step it skips the tour (as
   **Skip tour**), on the last card it finishes (as its finish button). Every tour's cards are the same card
   (`TourPopover`), so this holds for all of them. It leaves the key alone while it is editing a field, where an

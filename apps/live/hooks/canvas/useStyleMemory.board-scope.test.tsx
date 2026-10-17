@@ -107,7 +107,7 @@ describe('style memory across a diagram tab and a whiteboard tab', () => {
     });
   });
 
-  it('keeps the diagram’s Clear styles off the board', () => {
+  it('keeps the diagram’s Clear Styles off the board', () => {
     const view = setup({ documentId: DOC, tab: board, intent: rectangle });
     act(() => view.result.current.quick.setBoardStroke('red'));
     view.rerender({ documentId: DOC, tab: diagram, intent: null });

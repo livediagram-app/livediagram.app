@@ -1,11 +1,11 @@
 # Explorer Home, data: blueprint
 
-Derived from [Explorer Home](../explorer-home.md) (Jump back in, What happened, Opens), with the allocation of
+Derived from [Explorer Home](../explorer-home.md) (Jump Back In, What Happened, Opens), with the allocation of
 [Within reach](../../004-interface-design/within-reach.md), the event store of [Timeline](../timeline.md), the access
 set of [Inbox](../inbox.md) §4, the identity rules of
 [Auth + guest access](../../014-identity/auth-and-guest-access.md) and the owner-keyed list of
 [API](../../015-api/api.md#owner-keyed-data). The spec decides; this file only adds engineering precision. This
-blueprint covers the data: recording opens and makings, Jump back in's set, the reads and the wire. The view, and this browser's
+blueprint covers the data: recording opens and makings, Jump Back In's set, the reads and the wire. The view, and this browser's
 own opens of its local documents, are [Explorer Home, view](explorer-home-view.md).
 Defaults applied where the spec is silent are ledgered in [DEFAULTS.md](DEFAULTS.md) and cited as `Dn`.
 
@@ -63,8 +63,8 @@ Scope, by file:
 | Bulk import       | `importMarksUse(count)`, `MARKED_USED_IMPORT_MAX`               | An import that sets out to make more than one document             |
 | Use window        | `WITHIN_REACH_USE_WINDOW_DAYS`, `windowStartOf(now)`            | The last 90 UTC days, today included, over which use days count    |
 | Last use          | `lastUsedAt`                                                    | The latest of the last open, last real edit and marked making      |
-| Jump back in      | `jumpBackIn`, `HomeJumpBackInItem`, `HOME_WITHIN_REACH_PER_ROW` | A [Within reach](../../004-interface-design/within-reach.md) set   |
-| What happened     | `whatHappened`, `HomeGroup`, `HomeAction`, `HomePerson`         | Others' actions, grouped                                           |
+| Jump Back In      | `jumpBackIn`, `HomeJumpBackInItem`, `HOME_WITHIN_REACH_PER_ROW` | A [Within reach](../../004-interface-design/within-reach.md) set   |
+| What Happened     | `whatHappened`, `HomeGroup`, `HomeAction`, `HomePerson`         | Others' actions, grouped                                           |
 | Group             | `HomeGroup`, id `<documentId>:<day>`                            | One document's actions on one local day                            |
 | Summary           | `HomeGroup.summary`                                             | A group with more than one person: one entry with a sentence       |
 | Verb              | `HomeVerb`, `HOME_VERBS`                                        | The closed action vocabulary, in sentence order                    |
@@ -73,7 +73,7 @@ Scope, by file:
 | Local day         | `localDay(at, tz)`, `day`                                       | The reader's calendar day for an instant                           |
 | Me                | CTE `me`                                                        | The person's id plus every alias (`owner_aliases`)                 |
 
-Banned: "visit" or "view" for an open, "frecency" (the rule has no decay), "notification" for a What happened
+Banned: "visit" or "view" for an open, "frecency" (the rule has no decay), "notification" for a What Happened
 action, "timeline" for anything on Home but the link that leaves for the Timeline (`GET /api/timeline`).
 
 ## Behaviour and state
@@ -122,7 +122,7 @@ Invariants: a making is at most one use day (its event's `occurred_at`, the serv
 carries); a making and an open on one UTC day are one use day (`COUNT(DISTINCT day)`); an unmarked making never
 moves the last use.
 
-### Jump back in
+### Jump Back In
 
 The server's half of the [Within reach](../../004-interface-design/within-reach.md) set; the view merges this
 browser's local documents in by the same rule ([view blueprint](explorer-home-view.md#jump-back-in)).
@@ -154,8 +154,8 @@ then checked: not trashed, and owned, or in a joined team, or shared with `share
 code is gone (expired or revoked) is dropped. `via` is `own`, then `team`, then `shared`; `share_code` the oldest
 live code at the person's role and tab scope; `scope_tab_id` the person's tab scope for `shared`, else null.
 
-- **Jump back in** (`readJumpBackIn`): above.
-- **What happened** (`readWhatHappenedRows` then `groupWhatHappened`): `visible` (excluding `scope_tab_id IS NOT
+- **Jump Back In** (`readJumpBackIn`): above.
+- **What Happened** (`readWhatHappenedRows` then `groupWhatHappened`): `visible` (excluding `scope_tab_id IS NOT
 NULL`) → `timeline_event_scopes (document, id)` → `timeline_events` with `event_type IN (comment_added,
 comment_resolved, document_edited, action_assigned, action_completed, team_document_added)`, `occurred_at` in
   `[now - HOME_WHAT_HAPPENED_DAYS days, now]`, `actor_id` not null and not in `me`; ordered `occurred_at DESC, id
@@ -370,7 +370,7 @@ from` moves every row the account does not already hold; each leftover (opened u
 | Opened and edited on one day                         | One use day (`COUNT(DISTINCT day)`)                                         |
 | A reconstructed edit                                 | Not a use day (`REAL_EDIT`)                                                 |
 | Opened more than 90 days ago only                    | `use_days = 0`: never most used, still recent by its last open              |
-| Created, never opened or edited                      | In Jump back in: the marked making is a use day and the last use            |
+| Created, never opened or edited                      | In Jump Back In: the marked making is a use day and the last use            |
 | Created with `markUsed: false` (a bulk import)       | Not in `candidates` until its first open or edit; on the Recent page        |
 | Created before makings were marked                   | No mark: joins at its next open or edit                                     |
 | Created and opened on one UTC day                    | One use day                                                                 |
@@ -379,13 +379,13 @@ from` moves every row the account does not already hold; each leftover (opened u
 | Backfill over a marked creation                      | `keepExisting`: the mark stays                                              |
 | Creation event emit fails                            | `timeline emit failed` logged; the document is made, its making not counted |
 | Document trashed, team left, link revoked or expired | Dropped by `visible`; its rows remain until purge / sweep                   |
-| Tab-scoped shared document                           | In Jump back in; never in What happened                                     |
-| Own action on someone else's document                | Not in What happened (`me`); a use day when it is an edit                   |
-| Guest-era action of the person (aliased id)          | Excluded from What happened by `me`                                         |
+| Tab-scoped shared document                           | In Jump Back In; never in What Happened                                     |
+| Own action on someone else's document                | Not in What Happened (`me`); a use day when it is an edit                   |
+| Guest-era action of the person (aliased id)          | Excluded from What Happened by `me`                                         |
 | Actor without a participant row                      | `HomePerson.name` / `color` / `pictureUrl` null                             |
 | Legacy `comment_added` / `action_assigned` rows      | `commented` / `assigned`                                                    |
 | Future-dated event                                   | Excluded (`occurred_at <= now`)                                             |
-| What happened over its cap                           | First 200 actions newest first; `what-happened-capped` logged               |
+| What Happened over its cap                           | First 200 actions newest first; `what-happened-capped` logged               |
 | `tz` with a DST change inside the window             | `Intl` resolves each instant's own offset                                   |
 | A person with no opens and no edits                  | Empty arrays                                                                |
 | `document_opened` in `GET /api/timeline`             | Left out by `NOT_IN_FEED`; never counted unread                             |
@@ -398,14 +398,14 @@ from` moves every row the account does not already hold; each leftover (opened u
 - `visible` is the boundary: an event, an open or an entry about a document the person cannot open is never read.
   Team membership is matched on the resolved owner id, as the Inbox does; teams are Clerk-only and a Clerk-shaped
   guest header never reaches a route.
-- Opens are private: the event is scoped to `user:<person>` only, left out of the feed, and not a What happened
+- Opens are private: the event is scoped to `user:<person>` only, left out of the feed, and not a What Happened
   verb. Nobody's open is in anybody else's response.
 - `markUsed` is client-supplied and only decides whether the caller's own making counts in the caller's own Jump
   back in. The mark rides the creation's snapshot, which the creation's audience already reads; it says nothing
   the creation does not.
 - The marker is client-supplied and can only add opens to the caller's own data, for documents the read gate
   already admitted, at most once per document per day.
-- A tab-scoped link shows nothing in What happened (the actions name things on other tabs). A shared document's
+- A tab-scoped link shows nothing in What Happened (the actions name things on other tabs). A shared document's
   team and folder are not disclosed (`D69`).
 - Person ids on the wire are the same actor ids `GET /api/timeline` already carries to the same audience.
 - `HOME_RATE_LIMITER`: 60 reads per 60 s per resolved owner (`D73`); an API token caller is also under
@@ -419,12 +419,12 @@ Let `L` be the person's library (own + joined-team + shared documents).
 | --------------------- | ---------------------------------------------------------------------------------------------------- |
 | Tab read, marked      | Response path: nothing. `waitUntil`: 1 point read; then 1 update (same day) or 1 upsert + the emit   |
 | Tab read, unmarked    | Nothing                                                                                              |
-| Jump back in          | `L` + the person's events in 90 days on `timeline_events_actor_idx` (a heavy user: 40 a day, 3,600)  |
-| What happened         | `L` + every document-scope row of `L` within retention (worst case `L = 2,000`, 20 events each: 40k) |
+| Jump Back In          | `L` + the person's events in 90 days on `timeline_events_actor_idx` (a heavy user: 40 a day, 3,600)  |
+| What Happened         | `L` + every document-scope row of `L` within retention (worst case `L = 2,000`, 20 events each: 40k) |
 | `document_opens` size | One row per person per document opened in the last 365 days, ~100 B; 2,000 documents ≈ 200 KB        |
 | Response              | Worst 8 documents at ~0.4 KB, 200 actions at ~0.3 KB: ~65 KB; typical under 15 KB                    |
 
-The What happened scan is the one that grows with a team's history. The measured remedy, if it bites, is an
+The What Happened scan is the one that grows with a team's history. The measured remedy, if it bites, is an
 `added_at` range on the document-scope membership, not a cleverer query (as [Timeline](../timeline.md) §3.2 says of
 its own read).
 
@@ -463,12 +463,12 @@ stay on their own lazy route.
 | Verbs, grouping, summary, order, counts                                                 | `apps/api/src/home/what-happened.test.ts`                                                 |
 | Record, same-day touch, next day, race, private scope, failure log                      | `apps/api/src/home/record-open.test.ts` (real SQLite)                                     |
 | The tab read records a marked open only, never an unmarked or refused one               | `apps/api/src/routes/document-open-marker.test.ts` (real SQLite)                          |
-| Jump back in: use days in the window, edit days, dedupe, the split, access, ties        | `apps/api/src/routes/home.test.ts` (real SQLite)                                          |
+| Jump Back In: use days in the window, edit days, dedupe, the split, access, ties        | `apps/api/src/routes/home.test.ts` (real SQLite)                                          |
 | A making counts once, an opted-out or bulk one does not, a sync or re-commit never      | `apps/api/src/routes/document-create-use.test.ts` (real SQLite)                           |
 | `readMarkUsed`, `importMarksUse`                                                        | `packages/api-schema/src/creation-use.test.ts`                                            |
 | The client sends `markUsed: false` only; a bulk import sends it, a single one does not  | `apps/live/lib/api-client.test.ts`, `apps/live/lib/board-scene-import.test.ts`            |
 | `create_document` passes `markUsed` through only when given                             | `apps/mcp/src/create-document-placement.test.ts`                                          |
-| An imported board is in Jump back in unopened; a two-board import is not (guest, phone) | `apps/live/e2e/creation-use.spec.ts`                                                      |
+| An imported board is in Jump Back In unopened; a two-board import is not (guest, phone) | `apps/live/e2e/creation-use.spec.ts`                                                      |
 | Signed in: the same, and an API create with `markUsed: false` stays out                 | `apps/live/e2e/clerk-stub/creation-use.spec.ts`                                           |
 | Reads: others only, opens private, rejections, rate limit, the unread mark, no timeline | `apps/api/src/routes/home.test.ts` (real SQLite)                                          |
 | The backfill marks its edit, never marks a real one; migration 0063 marks legacy rows   | `apps/api/src/home/real-edits.test.ts` (real SQLite)                                      |

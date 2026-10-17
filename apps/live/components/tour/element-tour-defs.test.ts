@@ -67,7 +67,7 @@ describe('ELEMENT_TOUR_DEFS', () => {
     expect(api.closeSequence).toHaveBeenCalled();
   });
 
-  it('puts away the Chart data dialog on Done', () => {
+  it('puts away the Chart Data dialog on Done', () => {
     const api = { closeChartData: vi.fn() } as unknown as ElementTourApi;
     ELEMENT_TOUR_DEFS.chart.onDone?.(api);
     expect(api.closeChartData).toHaveBeenCalled();

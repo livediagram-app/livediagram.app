@@ -99,7 +99,7 @@ export function PaneHeader({
   const singleCreate =
     createMode.kind === 'single'
       ? createMode.action === 'document'
-        ? { label: 'New document', onClick: onCreateDocument! }
+        ? { label: 'New Document', onClick: onCreateDocument! }
         : { label: folderLabel ?? 'New Folder', onClick: onCreateFolder! }
       : null;
   const [createOpen, setCreateOpen] = useState(false);
@@ -184,7 +184,7 @@ export function PaneHeader({
                           <DocumentIcon />
                         </span>
                       }
-                      label="New document"
+                      label="New Document"
                       onClick={() => {
                         onCreateDocument();
                         setCreateOpen(false);

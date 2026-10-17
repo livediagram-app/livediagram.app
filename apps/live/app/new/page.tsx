@@ -208,7 +208,7 @@ export default function NewDocumentPage() {
   };
 
   useEffect(() => {
-    document.title = 'New document | livediagram';
+    document.title = 'New Document | livediagram';
     // Fetch the editor's chunk while identity + the create run. Fire-and-forget: a failure here
     // just leaves `dynamic` to retry the import at handoff.
     loadEditor().catch(() => {});
@@ -596,7 +596,7 @@ export default function NewDocumentPage() {
           />
         </div>
         {/* The right rail beside the centred wizard (desktop-only, xl+):
-            returning users get "Jump back in" (docs/specs/007-editor/new-document-route.md, hidden with no
+            returning users get "Jump Back In" (docs/specs/007-editor/new-document-route.md, hidden with no
             documents yet). Its fetch also reports the document count that
             gates the interactive tour's welcome offer (docs/specs/007-editor/editor-tour.md). The
             guided-tour sample card that used to sit under it was removed

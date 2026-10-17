@@ -30,7 +30,7 @@ const CONTENT: Record<
     icon: <ClockIcon />,
     title: 'No recent documents',
     description: 'Documents show up here as they change, newest first. Make your first one.',
-    cta: 'New document',
+    cta: 'New Document',
   },
   shared: {
     icon: <ShareIcon />,
@@ -41,7 +41,7 @@ const CONTENT: Record<
     icon: <StarIcon />,
     title: 'No favourites yet',
     // No CTA: a new document doesn't land here, starring an existing one
-    // does — so the generic "New document" button would be a dead end
+    // does — so the generic "New Document" button would be a dead end
     // (docs/specs/013-workspace/favourites.md). Same reason Shared With Me carries none.
     description: 'Mark a document as a favourite to show it here.',
   },
@@ -50,19 +50,19 @@ const CONTENT: Record<
     title: 'Nothing in this browser',
     description:
       'Choose "Local Browser" as the Save location in the New Document wizard and browser-only documents collect here.',
-    cta: 'New document',
+    cta: 'New Document',
   },
   folder: {
     icon: <FolderSolidIcon open />,
     title: 'This folder is empty',
     description: 'Add a document or a subfolder to organise your work.',
-    cta: 'New document',
+    cta: 'New Document',
   },
   default: {
     icon: <DocumentIcon />,
     title: 'No documents yet',
     description: 'Create your first document and it will appear here.',
-    cta: 'New document',
+    cta: 'New Document',
   },
 };
 

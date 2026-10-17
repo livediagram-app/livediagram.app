@@ -29,7 +29,7 @@ function TileSkeleton({ thumb }: { thumb: string }) {
   );
 }
 
-/** Jump back in on a wide screen: both groups' labels and cards, in their reserved height. */
+/** Jump Back In on a wide screen: both groups' labels and cards, in their reserved height. */
 export function GridSkeleton() {
   return (
     <div aria-hidden className={`flex flex-col gap-4 ${JUMP_BACK_IN_MIN_HEIGHT}`}>
@@ -53,7 +53,7 @@ export function GridSkeleton() {
   );
 }
 
-/** Jump back in's phone strip. */
+/** Jump Back In's phone strip. */
 export function StripSkeleton() {
   return (
     <div aria-hidden className={`-mx-1 flex ${STRIP_HEIGHT} gap-3 overflow-hidden px-1 pb-2 pt-1`}>

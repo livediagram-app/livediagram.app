@@ -89,11 +89,11 @@ kinds; Home's 8 server items plus this browser's opened local documents).
 | Short groups, empty input, `n <= 0`, stable ties    | same                                                                                           |
 | The merge property over two lists                   | same                                                                                           |
 | The Shapes flyout unchanged                         | `apps/live/lib/whiteboard-shape-slots.test.ts`, `apps/live/e2e/whiteboard-shape-slots.spec.ts` |
-| Jump back in's split, merge and alternation         | `apps/live/app/explorer/home/home-model.test.ts`                                               |
+| Jump Back In's split, merge and alternation         | `apps/live/app/explorer/home/home-model.test.ts`                                               |
 
 ## Constants and configuration
 
-None of its own: N, the measure of a use and its window belong to each surface (Shape slots: 3; Jump back in: 4,
+None of its own: N, the measure of a use and its window belong to each surface (Shape slots: 3; Jump Back In: 4,
 over `WITHIN_REACH_USE_WINDOW_DAYS`).
 
 ## Defaults ledger

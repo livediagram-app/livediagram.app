@@ -656,7 +656,7 @@ export const TIMELINE_VISITS = chart(
   'Timeline',
   'Opened',
   'Timeline Visits',
-  "The Timeline opened after starting elsewhere: its sidebar row, or Home's See timeline.",
+  "The Timeline opened after starting elsewhere: its sidebar row, or Home's See Timeline.",
   { types: ['Nav'] },
 );
 
@@ -728,7 +728,7 @@ export const HOME_DOCUMENTS_OPENED = chart(
   'Home',
   'Selected',
   'Documents Opened from Home',
-  'A document opened from Jump back in (most used or recent) or What happened, See more followed, or a start taken from the first-run Home.',
+  'A document opened from Jump Back In (most used or recent) or What Happened, See More followed, or a start taken from the first-run Home.',
 );
 
 export const HOME_GROUPS_EXPANDED = chart(

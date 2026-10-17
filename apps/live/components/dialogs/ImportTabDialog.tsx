@@ -124,7 +124,7 @@ export function ImportTabDialog({
   return (
     <Dialog open onClose={onClose} ariaLabel="Import into tab" size="xl" className="max-h-[90vh]">
       <DialogHeader
-        title="Import to tab"
+        title="Import to Tab"
         subtitle={
           report
             ? report.scene

@@ -4,7 +4,7 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Home's layout (docs/specs/013-workspace/explorer-home.md "Layout"): one column at every width,
-// Jump back in then What happened, each a landmark opened by a display heading and its quiet
+// Jump Back In then What Happened, each a landmark opened by a display heading and its quiet
 // link. No Timeline column and no switch. A failed read says so and retries.
 
 const { track, useHome, wide } = vi.hoisted(() => ({
@@ -76,8 +76,8 @@ describe('HomePane', () => {
       'home-jump-back-in',
       'home-what-happened',
     ]);
-    expect(screen.getByRole('region', { name: 'Jump back in' })).toBeTruthy();
-    expect(screen.getByRole('region', { name: 'What happened' })).toBeTruthy();
+    expect(screen.getByRole('region', { name: 'Jump Back In' })).toBeTruthy();
+    expect(screen.getByRole('region', { name: 'What Happened' })).toBeTruthy();
     expect(screen.queryByRole('tablist')).toBeNull();
     expect(screen.queryByRole('heading', { name: 'Timeline' })).toBeNull();
     expect(screen.queryByRole('heading', { name: 'Recent' })).toBeNull();
@@ -105,8 +105,8 @@ describe('HomePane', () => {
     );
     renderIt();
     for (const [name, link] of [
-      ['Jump back in', 'See more'],
-      ['What happened', 'See timeline'],
+      ['Jump Back In', 'See More'],
+      ['What Happened', 'See Timeline'],
     ] as const) {
       const heading = screen.getByRole('heading', { level: 2, name });
       const row = heading.parentElement!;
@@ -117,7 +117,7 @@ describe('HomePane', () => {
     }
   });
 
-  it('shows Jump back in alone when nothing happened', () => {
+  it('shows Jump Back In alone when nothing happened', () => {
     wide.value = true;
     renderIt();
     expect(screen.getAllByRole('region').map((s) => s.getAttribute('aria-labelledby'))).toEqual([
@@ -169,9 +169,9 @@ describe('HomePane', () => {
     wide.value = true;
     useHome.mockReturnValue(data({ status: 'loading' }));
     renderIt();
-    expect(screen.getByRole('heading', { name: 'Jump back in' })).toBeTruthy();
-    expect(screen.getByRole('heading', { name: 'What happened' })).toBeTruthy();
-    expect(screen.getByRole('region', { name: 'Jump back in' }).getAttribute('aria-busy')).toBe(
+    expect(screen.getByRole('heading', { name: 'Jump Back In' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'What Happened' })).toBeTruthy();
+    expect(screen.getByRole('region', { name: 'Jump Back In' }).getAttribute('aria-busy')).toBe(
       'true',
     );
   });

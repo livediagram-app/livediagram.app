@@ -1,6 +1,6 @@
 # Explorer Home, view: blueprint
 
-Derived from [Explorer Home](../explorer-home.md) (Route, Layout, Jump back in, What happened, Opens, States,
+Derived from [Explorer Home](../explorer-home.md) (Route, Layout, Jump Back In, What Happened, Opens, States,
 Telemetry, Accessibility), with the allocation of [Within reach](../../004-interface-design/within-reach.md), the
 principle of [Design principles](../../004-interface-design/design-principles.md) (Calm by default), the page-title
 rules of [Explorer structure](../explorer-structure.md) and the landing of [Timeline](../timeline.md) §8. The data,
@@ -18,7 +18,7 @@ Scope, by file:
 | `apps/live/lib/offline/offline-store.ts`                                | `OfflineDocumentRecord.opens`; `offlineCreateDocument(..., { markUsed })` starts them   |
 | `apps/live/lib/api/tabs.ts`                                             | A marked load of a local document records a local open                                  |
 | `apps/live/app/explorer/home/page.tsx`                                  | The `/explorer/home` route stub and its title                                           |
-| `apps/live/app/explorer/home/home-model.ts`                             | Pure: Jump back in's set, the phone order, hrefs, What happened's days, the fade        |
+| `apps/live/app/explorer/home/home-model.ts`                             | Pure: Jump Back In's set, the phone order, hrefs, What Happened's days, the fade        |
 | `apps/live/app/explorer/home/home-copy.ts`                              | Pure: every sentence, label and state copy                                              |
 | `apps/live/app/explorer/home/useHome.ts`                                | The read, the local merge, retry, the unread clear                                      |
 | `apps/live/app/explorer/entry-path.ts`                                  | `ENTRY_PATH`, `ARRIVED_ON_HOME`, `ARRIVED_ON_TIMELINE`: where the page load began       |
@@ -34,24 +34,24 @@ Scope, by file:
 | `apps/live/components/panels/home/HeroTemplateFan.tsx`                  | The first run's fanned template previews (lazy)                                         |
 | `apps/live/app/explorer/home/hero-model.ts`                             | Pure: the greeting by hour, the pills' copy, the fanned sheets' documents               |
 | `apps/live/app/explorer/lens/lens-focus-handoff.ts`                     | The hero field asks the header field to take the focus on Search results                |
-| `apps/live/components/panels/home/JumpBackIn.tsx`                       | The section: heading row, See more, the grid or the strip, the empty state              |
-| `apps/live/components/panels/home/JumpBackInStrip.tsx`                  | The phone's strip, its fade and its See more tile                                       |
-| `apps/live/components/panels/home/JumpBackInTile.tsx`                   | One document's tile (the strip) and the See more tile                                   |
+| `apps/live/components/panels/home/JumpBackIn.tsx`                       | The section: heading row, See More, the grid or the strip, the empty state              |
+| `apps/live/components/panels/home/JumpBackInStrip.tsx`                  | The phone's strip, its fade and its See More tile                                       |
+| `apps/live/components/panels/home/JumpBackInTile.tsx`                   | One document's tile (the strip) and the See More tile                                   |
 | `apps/live/components/panels/home/JumpBackInCard.tsx`                   | One document's card on a desktop or tablet: large (most used) or compact (recent)       |
 | `apps/live/components/panels/home/HomeSection.tsx`                      | `HomeSection` (wrapper, display heading row, quiet link) and `InAppLink`                |
-| `apps/live/components/panels/home/WhatHappened.tsx`                     | The section: day headings, See timeline, the entries                                    |
+| `apps/live/components/panels/home/WhatHappened.tsx`                     | The section: day headings, See Timeline, the entries                                    |
 | `apps/live/components/panels/home/WhatHappenedEntry.tsx`                | `ActionEntry` (one person) and `SummaryEntry` (the disclosure)                          |
 | `apps/live/components/panels/home/HomeAvatar.tsx`                       | `HomeAvatar`, `AvatarStack`: people without presence rings                              |
 | `apps/live/components/panels/home/home-icons.tsx`                       | The verb icons and the empty states' glyphs                                             |
 | `apps/live/components/panels/home/HomeSkeletons.tsx`                    | The skeletons, sized as what replaces them                                              |
 | `apps/live/components/panels/home/home-styles.ts`                       | The shared classes                                                                      |
-| `apps/live/components/panels/home/home-test-utils.ts`                   | Test fixtures: a document, a person, an action, a group, a Jump back in item            |
+| `apps/live/components/panels/home/home-test-utils.ts`                   | Test fixtures: a document, a person, an action, a group, a Jump Back In item            |
 | `apps/live/app/explorer/{views.tsx,routes.ts,view-titles.ts}`           | `{ kind: 'home' }`, `/explorer/home`, the default, the titles                           |
 | `apps/live/app/explorer/{useExplorerPane.ts,ExplorerPane.tsx}`          | Crumbs (`Home › Recent`), the dispatch, the header                                      |
 | `apps/live/app/explorer/page.tsx`, `apps/live/src/worker.ts`            | The landing goes to `EXPLORER_LANDING_PATH`                                             |
 | `scripts/e2e-stack.mjs`                                                 | The e2e stack's `/explorer` redirect reads the same constant                            |
 | `apps/live/app/explorer/sidebar/OverviewGroup.tsx`                      | The Home row selects and opens Home                                                     |
-| `apps/live/components/panels/explorer-panel/PanelViews.tsx`             | The panel's Home section shows `HomePane`; See timeline shows the Timeline section      |
+| `apps/live/components/panels/explorer-panel/PanelViews.tsx`             | The panel's Home section shows `HomePane`; See Timeline shows the Timeline section      |
 | `apps/live/app/explorer/useTimelineFeed.ts`                             | `Timeline·Opened·Landing` only for a load that started on `/explorer/timeline`          |
 | `apps/live/app/explorer/useTimelineUnread.ts`                           | A clear outlives a count still in flight                                                |
 | `packages/ui/src/timeline/useTimelineGrouping.ts`                       | `formatDay` exported, shared by the day headings                                        |
@@ -67,25 +67,25 @@ Scope, by file:
 | ------------- | ------------------------------------------------ | ------------------------------------------------------------- |
 | Home          | `{ kind: 'home' }`, `/explorer/home`, `HomePane` | The landing view                                              |
 | Timeline      | `{ kind: 'timeline' }`, `/explorer/timeline`     | The Timeline feed, its sidebar row and its page title         |
-| Jump back in  | `JumpBackIn`, `JumpBackInSet`, `JumpBackInItem`  | The section and its within-reach set of documents             |
+| Jump Back In  | `JumpBackIn`, `JumpBackInSet`, `JumpBackInItem`  | The section and its within-reach set of documents             |
 | Group         | `JumpBackInGroup = 'mostUsed' \| 'recent'`       | Which half of the set an item belongs to; labelled when wide  |
-| Grid          | `JumpBackIn` wide branch                         | Desktop and tablet: Most used cards, then Recent cards        |
+| Grid          | `JumpBackIn` wide branch                         | Desktop and tablet: Most Used cards, then Recent cards        |
 | Card          | `JumpBackInCard`                                 | A wide-screen document: large (most used) or compact (recent) |
 | Quiet line    | `jumpBackInLine(item, group, now)`               | "Used on N days" / "Used 2 hours ago" under a card's name     |
 | Hero          | `HomeHero`                                       | Home's full-width header band                                 |
 | Greeting      | `heroGreeting(hour)`                             | Good morning / afternoon / evening, the `h1`                  |
 | Pill          | `heroPills(...)`                                 | The documents and Inbox status links                          |
 | Sheets        | `heroSheets(documents)`                          | The three most recently saved documents, fanned               |
-| Strip         | `JumpBackInStrip`                                | The phone's sideways row, alternating, ending in See more     |
-| Phone order   | `phoneOrder(set)`                                | Most used, recent, alternating, then the rest                 |
+| Strip         | `JumpBackInStrip`                                | The phone's sideways row, alternating, ending in See More     |
+| Phone order   | `phoneOrder(set)`                                | Most Used, recent, alternating, then the rest                 |
 | Tile          | `JumpBackInTile`, `SeeMoreTile`                  | One document's thumbnail and name; the strip's last tile      |
-| See more      | `HOME_COPY.seeMore`, `recentHref`, `onSeeMore`   | The way to the Recent page                                    |
+| See More      | `HOME_COPY.seeMore`, `recentHref`, `onSeeMore`   | The way to the Recent page                                    |
 | Local open    | `LocalOpens`, `OfflineDocumentRecord.opens`      | This browser's record of opens of a document stored only here |
 | Action entry  | `ActionEntry`                                    | One action of a one-person group, a link                      |
 | Summary entry | `SummaryEntry`                                   | A group of several people, a disclosure                       |
 
-Banned: "Most used" and "Recent" anywhere on Home but the two group labels, "frecency",
-"timeline" for anything on Home but the See timeline link that leaves for it, "notification" for an action.
+Banned: "Most Used" and "Recent" anywhere on Home but the two group labels, "frecency",
+"timeline" for anything on Home but the See Timeline link that leaves for it, "notification" for an action.
 
 ## Behaviour and state
 
@@ -127,7 +127,7 @@ never replaces it. `isNewEvent(at, lastSeenAt)` (`@livediagram/ui`, the Timeline
 `bg-brand-600` (`SOLID_BRAND_DARK` in dark), white 9 px semibold caps, "New", first in the entry's meta line, inside
 the link or button so it is part of the accessible name.
 
-### Jump back in
+### Jump Back In
 
 `jumpBackInSet(server, local, now, n = HOME_WITHIN_REACH_PER_ROW)` → `JumpBackInSet = { mostUsed, recent }`:
 
@@ -168,7 +168,7 @@ it runs out; at most `2n` (8) items, each with the half it came from (`group`), 
 
 ### Grid (desktop and tablet)
 
-`JumpBackIn` reads `useMediaQuery(HOME_WIDE_QUERY)`. Wide: the Most used label and its `ul` of large cards, then the
+`JumpBackIn` reads `useMediaQuery(HOME_WIDE_QUERY)`. Wide: the Most Used label and its `ul` of large cards, then the
 Recent label and its `ul` of compact cards; a group with no item draws neither its label nor its list. Each card's
 quiet line is `jumpBackInLine(item, group, now)` (`now` from `useRelativeNow`): most used `Used on ${useDays} day(s)`,
 recent `Used ${relativeSince(lastUsedAt, now)}`. The two groups' container holds `JUMP_BACK_IN_MIN_HEIGHT`, so it keeps
@@ -176,18 +176,18 @@ both groups' height with fewer items (`D131`, `D168`).
 
 ### Strip (phone)
 
-Narrow: a sideways scroller holding the `ul` of `phoneOrder(set)` tiles, then the See more tile outside the list.
+Narrow: a sideways scroller holding the `ul` of `phoneOrder(set)` tiles, then the See More tile outside the list.
 `stripFade({ scrollLeft, clientWidth, scrollWidth })` → `true` while `scrollLeft + clientWidth < scrollWidth - 1`.
 Read on mount, on `scroll` (passive) and on `ResizeObserver`; the fade is an overlay whose opacity toggles, so the
 layout never changes.
 
-### See more
+### See More
 
 The heading row's link (wide) and the strip's tile (narrow) are anchors to `recentHref` (`/explorer/recent`); a
 plain click (no modifier, primary button) is prevented and calls `onSeeMore()`, which navigates in the app, so a new
 tab or a copied link still work. Both track `Home·Selected·JumpBackIn.SeeMore`.
 
-### What happened by day
+### What Happened by day
 
 `groupsByDay(groups, now)` → `[{ day, label, groups }]` in the order sent (newest group first), label `Today`,
 `Yesterday`, else `formatDay(key).label` (`Tue, 29 Sep`), with the year appended when it is not the current year.
@@ -244,10 +244,10 @@ export function stripFade(box: {
 
 // apps/live/app/explorer/home/home-copy.ts
 export const HOME_COPY: {
-  jumpBackIn: 'Jump back in';
-  whatHappened: 'What happened';
-  seeMore: 'See more';
-  seeTimeline: 'See timeline';
+  jumpBackIn: 'Jump Back In';
+  whatHappened: 'What Happened';
+  seeMore: 'See More';
+  seeTimeline: 'See Timeline';
   jumpBackInEmptyTitle: 'No documents yet';
   jumpBackInEmpty: 'The documents you use most and last will gather here.';
   readFailed: string;
@@ -290,10 +290,10 @@ Component props:
 | Local document trashed or synced to the cloud  | Not listed (trashed skipped; the record is gone after Sync)                                       |
 | Local record in the earlier `opens` shape      | Read as its last open day; rewritten in the new shape on its next open                            |
 | Owner id changes mid-read (a guest signs in)   | The request id drops the stale answer; the read re-runs for the new id                            |
-| A document in both groups                      | Most used only (`withinReach`)                                                                    |
+| A document in both groups                      | Most Used only (`withinReach`)                                                                    |
 | No most used document, some recent             | The recent take the grid's top row; the phone's strip is the recent alone                         |
 | Fewer than 8 documents                         | Only what exists; the grid's minimum height keeps two rows                                        |
-| No document at all                             | The empty state; on a phone the strip still ends in See more                                      |
+| No document at all                             | The empty state; on a phone the strip still ends in See More                                      |
 | Group whose actor has no name                  | "Someone"                                                                                         |
 | Group of more than three people                | "Priya, Sam, Lee and 2 others"                                                                    |
 | Shared document                                | Opens through `?s=<code>`; location "Shared by <owner>" ("Shared with you" without an owner name) |
@@ -312,7 +312,7 @@ Component props:
 ## Performance and limits
 
 - One request draws the first screen (`GET /api/home`); `offlineListOpens` reads IndexedDB in parallel.
-- Thumbnails: at most 8 in Jump back in, each lazily fetched on intersection by `DocumentThumbnail`, cached
+- Thumbnails: at most 8 in Jump Back In, each lazily fetched on intersection by `DocumentThumbnail`, cached
   page-wide.
 - `jumpBackInSet` is `O(k log k)` over at most 8 server items plus this browser's opened local documents.
 
@@ -335,7 +335,7 @@ text-[#17153a] dark:text-white max-w-3xl`.
   - Search: `LensField size="hero"` inside `max-w-2xl`: `h-[60px] rounded-[18px] border-2 border-sky-200 bg-white
 pl-[18px] pr-2 shadow-[0_0_0_6px_rgba(125,211,252,0.22),0_18px_40px_-20px_rgba(2,132,199,0.45)]`, focus
     `border-sky-400`; dark `border-sky-400/40 bg-slate-800 shadow-[0_0_0_6px_rgba(56,189,248,0.12)]`; text 16 px;
-    the search glyph 18 px. `trailing`: New document, `h-11 rounded-xl px-[18px] text-[15px] font-semibold` on the
+    the search glyph 18 px. `trailing`: New Document, `h-11 rounded-xl px-[18px] text-[15px] font-semibold` on the
     solid brand fill (`SOLID_BRAND` light, `SOLID_BRAND_DARK_CONTROL` dark) with the plus glyph.
   - Sheets: three `DocumentThumbnail`s in white 6 px framed sheets, `rounded-2xl`, `shadow-[0_14px_34px_-14px_
 rgba(15,23,42,0.35)]`: back left `left-[6%] top-12 w-[58%] h-40 -rotate-[8deg]`, back right `right-[2%] top-8
@@ -355,10 +355,10 @@ w-[58%] h-40 rotate-[7deg]`, front `left-[20%] top-20 w-[62%] h-44` with a sky s
   (`data-home-section="jump-back-in"` / `"what-happened"`).
 - Heading row (`SECTION_HEADER`): `flex items-baseline justify-between gap-4`, 16 px above the section's body, no
   rule. The heading (`h2`, `SECTION_HEADING`): `text-2xl font-extrabold tracking-[-0.03em] text-[#17153a]
-dark:text-slate-100`. The quiet link at the end (See more, See timeline): `text-sm font-semibold text-brand-700
+dark:text-slate-100`. The quiet link at the end (See More, See Timeline): `text-sm font-semibold text-brand-700
 dark:text-brand-300 hover:underline`.
 - Group label (`GROUP_LABEL`): `text-xs font-semibold uppercase tracking-[0.08em] text-slate-500
-dark:text-slate-400`, 10 px above its list; Recent's 16 px below Most used's list.
+dark:text-slate-400`, 10 px above its list; Recent's 16 px below Most Used's list.
 - Large card (`JumpBackInCard size="large"`): `flex flex-col gap-2.5 rounded-[18px] border border-slate-200 bg-white
 p-2 pb-3 shadow-[0_1px_2px_rgba(15,23,42,0.04)]` (dark `border-slate-700 bg-slate-800`); thumbnail `h-32 w-full
 rounded-xl border border-slate-100` (dark `border-slate-700`); name `text-[15px] font-semibold truncate`; quiet line
@@ -366,21 +366,21 @@ rounded-xl border border-slate-100` (dark `border-slate-700`); name `text-[15px]
 rgba(2,132,199,0.45)] -translate-y-0.5` (`motion-safe:` on the transform), `duration-micro`.
 - Compact card (`size="compact"`): `flex items-center gap-3 rounded-[14px] border p-2` with the same colours; the
   thumbnail `h-11 w-16 shrink-0 rounded-lg`; name `text-sm font-semibold truncate`; quiet line `text-xs` muted.
-- Lists: Most used `grid grid-cols-2 gap-4 lg:grid-cols-4`, Recent `grid grid-cols-2 gap-2.5 lg:grid-cols-4`. Their
+- Lists: Most Used `grid grid-cols-2 gap-4 lg:grid-cols-4`, Recent `grid grid-cols-2 gap-2.5 lg:grid-cols-4`. Their
   container holds `JUMP_BACK_IN_MIN_HEIGHT` so neither the load nor a short group moves what follows (`D168`).
   Local only: `LocalOnlyPill asLabel` absolutely in the thumbnail's bottom-left corner (4 px inset).
 - Strip: a scroller `scrollbar-slim -mx-1 flex h-28 snap-x gap-3 overflow-x-auto px-1 pb-2 pt-1`; the `ul` inside it
-  `flex gap-3`; tiles `w-32 shrink-0 snap-start` with a 128 × 80 thumbnail. See more tile: the same 128 × 80 box,
-  dashed slate border, a chevron-right icon over "See more" (`text-xs font-medium`), the label also as its name.
+  `flex gap-3`; tiles `w-32 shrink-0 snap-start` with a 128 × 80 thumbnail. See More tile: the same 128 × 80 box,
+  dashed slate border, a chevron-right icon over "See More" (`text-xs font-medium`), the label also as its name.
   Fade: 48 px `bg-gradient-to-l from-slate-50 dark:from-slate-900` (the page), `pointer-events-none`, opacity
   transition.
 - Empty states: the shared `CompactEmptyState` (docs/specs/004-interface-design/empty-states.md, "In place of one
-  item") with the glyphs in `home-icons.tsx` (file for Jump back in, history for What happened). Jump back in's is
+  item") with the glyphs in `home-icons.tsx` (file for Jump Back In, history for What Happened). Jump Back In's is
   regular size, `h-full w-full`, inside one `LARGE_CARD` slot (`EMPTY_SLOT`: dashed `border-slate-300`,
   `bg-white/60`; dark `border-slate-600 bg-slate-800/50`, `rounded-[18px]`) in the first cell of `MOST_USED_GRID`,
-  no labels, no reserved height and no See more; the strip's is small size, `w-48`, heading alone, with no See more
-  tile. What happened has none: `WhatHappened` renders nothing once loaded with no day.
-- What happened: the days in one panel (`WHAT_HAPPENED_PANEL`: `rounded-[20px] border border-slate-200 bg-white px-3
+  no labels, no reserved height and no See More; the strip's is small size, `w-48`, heading alone, with no See More
+  tile. What Happened has none: `WhatHappened` renders nothing once loaded with no day.
+- What Happened: the days in one panel (`WHAT_HAPPENED_PANEL`: `rounded-[20px] border border-slate-200 bg-white px-3
 py-2 sm:px-5`, dark `border-slate-700 bg-slate-800`); day heading (`h3`, `text-xs font-semibold uppercase
 tracking-[0.08em] text-slate-500 pt-3`), entries in a `ul` with 4 px between.
   `ActionEntry`: a link row, 28 px avatar, text column: "**Priya** commented on **Payments architecture**"
@@ -390,35 +390,35 @@ tracking-[0.08em] text-slate-500 pt-3`), entries in a `ul` with 4 px between.
   end rotating 180° when open (`motion-safe:transition-transform`). Expanded list indented under the sentence: each a
   link row with a 20 px avatar, "**Sam** edited", the verb icon (14 px), the time. Rows hover
   `bg-slate-100 dark:bg-slate-800/70`, `rounded-lg`, padding 8 px.
-- Skeletons: the grid's 2 rows of 4 tile boxes (the phone's strip: 4 boxes `h-20 w-32` with name bars); What happened
+- Skeletons: the grid's 2 rows of 4 tile boxes (the phone's strip: 4 boxes `h-20 w-32` with name bars); What Happened
   3 rows of 56 px; `motion-safe:animate-pulse`, `bg-slate-200/70 dark:bg-slate-800`.
 - Error state: a centred block, `text-sm`, copy plus a secondary Try again button.
-- Copy is final as in the spec's States table and Jump back in.
+- Copy is final as in the spec's States table and Jump Back In.
 
 ## Accessibility
 
-- Each section is a `section aria-labelledby` its `h2` (**Jump back in**, **What happened**): two region landmarks.
-- Jump back in: one `ul aria-labelledby` the heading, grid or strip; each `li` one link whose accessible name is the
+- Each section is a `section aria-labelledby` its `h2` (**Jump Back In**, **What Happened**): two region landmarks.
+- Jump Back In: one `ul aria-labelledby` the heading, grid or strip; each `li` one link whose accessible name is the
   document name ("Payments architecture", plus ", Local only" for a local one, from the pill label); a `Tooltip`
   shows the full name; the quiet line is the link's `aria-describedby`. On a desktop or tablet each group is its own
-  `ul aria-labelledby` its label (**Most used**, **Recent**) inside the section; the strip stays one list named by the
+  `ul aria-labelledby` its label (**Most Used**, **Recent**) inside the section; the strip stays one list named by the
   section's heading.
 - Hero: a `section aria-labelledby` the greeting `h1`; the pills are links named by their words; the sheets are
-  `aria-hidden`; the lens field keeps its combobox; New document is a button named "New document".
-- See more: a link named "See more" in the heading row (wide) or as the tile after the list (narrow), never both.
+  `aria-hidden`; the lens field keeps its combobox; New Document is a button named "New Document".
+- See More: a link named "See More" in the heading row (wide) or as the tile after the list (narrow), never both.
 - Summary: `button aria-expanded aria-controls=<list id>`; the list `ul id` follows it. Avatars `aria-hidden`; the
   sentence names everyone.
 - Focus: `focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500` on every link and
-  button. Targets ≥ 24 × 24 px (the See more link's line box is padded to 24 px; tiles are larger).
+  button. Targets ≥ 24 × 24 px (the See More link's line box is padded to 24 px; tiles are larger).
 - Contrast: body text slate-900 / slate-100; muted slate-500 on the slate-50 page (4.5:1) and slate-400 on the
-  slate-900 page (6.9:1); the See more link brand-700 / brand-300.
+  slate-900 page (6.9:1); the See More link brand-700 / brand-300.
 - Reduced motion: `motion-safe:` on the pulse, the chevron and the fade's transition; `scroll-behavior` untouched.
 
 ## Web Experience
 
 - LCP: the first screen is one api read; the largest element is a heading or the skeleton, both painted at once.
 - CLS 0: the hero renders whole with the shell (its text needs no read; the sheets keep their boxes while
-  thumbnails load); headings render with the skeletons; Jump back in, its skeleton and its empty state share
+  thumbnails load); headings render with the skeletons; Jump Back In, its skeleton and its empty state share
   `JUMP_BACK_IN_MIN_HEIGHT` at each breakpoint (cards are a fixed height); the strip, its skeleton and its empty state share `h-28`; What
   happened is last on the page; thumbnails keep their box (`DocumentThumbnail`); the fade and the chevron change
   opacity / transform only. Expanding a group is a user-initiated change.
@@ -448,12 +448,12 @@ tracking-[0.08em] text-slate-500 pt-3`), entries in a `ul` with 4 px between.
 | Sentences, people, verbs, updates, location                                       | `apps/live/app/explorer/home/home-copy.test.ts`                                         |
 | Read, error, retry, stale owner, unread clear, mark kept                          | `apps/live/app/explorer/home/useHome.test.tsx`                                          |
 | A clear outlives an unread count still in flight                                  | `apps/live/app/explorer/useTimelineUnread.test.tsx`                                     |
-| Grid and strip: group labels, quiet lines, cards, pill, fade, See more, telemetry | `apps/live/components/panels/home/JumpBackIn.test.tsx`                                  |
+| Grid and strip: group labels, quiet lines, cards, pill, fade, See More, telemetry | `apps/live/components/panels/home/JumpBackIn.test.tsx`                                  |
 | Display headings: the heading row and its link, per section, no rule              | `apps/live/components/panels/home/HomePane.test.tsx`                                    |
 | Greeting by hour, pills' copy, the sheets' documents                              | `apps/live/app/explorer/home/hero-model.test.ts`                                        |
-| Hero: pills open their views, New document, Help, sheets hidden, one lens field   | `apps/live/components/panels/home/HomeHero.test.tsx`                                    |
+| Hero: pills open their views, New Document, Help, sheets hidden, one lens field   | `apps/live/components/panels/home/HomeHero.test.tsx`                                    |
 | The hero field hands the focus to the header field on Search results              | `apps/live/app/explorer/lens/lens-focus-handoff.test.ts`                                |
-| Entries: one-person links, summary disclosure, telemetry, See timeline            | `apps/live/components/panels/home/WhatHappened.test.tsx`                                |
+| Entries: one-person links, summary disclosure, telemetry, See Timeline            | `apps/live/components/panels/home/WhatHappened.test.tsx`                                |
 | One column, two sections, no Timeline, the error state                            | `apps/live/components/panels/home/HomePane.test.tsx`                                    |
 | Routes, titles, crumbs (Recent under Home), the landing 302                       | `routes.test.ts`, `view-titles.test.ts`, `apps/live/src/worker.test.ts`                 |
 | Telemetry charted and explained                                                   | `apps/telemetry` `metric-emitters.test.ts`, `event-explanation.test.ts`                 |

@@ -1,6 +1,6 @@
 // Home's pure view model (docs/specs/013-workspace/explorer-home.md; blueprint
-// docs/specs/013-workspace/blueprints/explorer-home-view.md): Jump back in's Within reach set and
-// its phone order, which day heads which What happened entries, and when the strip fades.
+// docs/specs/013-workspace/blueprints/explorer-home-view.md): Jump Back In's Within reach set and
+// its phone order, which day heads which What Happened entries, and when the strip fades.
 
 import {
   HOME_WITHIN_REACH_PER_ROW,
@@ -15,7 +15,7 @@ import {
 import { dateKey, formatDay, relativeSince } from '@livediagram/ui';
 import type { LocalOpenDocument } from '@/lib/offline/offline-opens';
 
-/** One document of Jump back in: a server document or one stored only in this browser. */
+/** One document of Jump Back In: a server document or one stored only in this browser. */
 export type JumpBackInItem = {
   documentId: string;
   name: string;
@@ -45,7 +45,7 @@ export function homeDocumentHref(doc: Pick<HomeDocument, 'documentId' | 'via' | 
     : path;
 }
 
-/** Jump back in: the server's set and this browser's opened local documents, allocated as one
+/** Jump Back In: the server's set and this browser's opened local documents, allocated as one
  *  Within reach set. Sorted by id first: the stable order the merge property needs. */
 export function jumpBackInSet(
   server: readonly HomeJumpBackInItem[],
@@ -83,7 +83,7 @@ export function jumpBackInSet(
   return withinReach(items, n, (d) => ({ uses: d.useDays, lastUsedAt: d.lastUsedAt }));
 }
 
-/** The quiet line under a card's name (explorer-home.md "Jump back in"): why the document is there. A most used one
+/** The quiet line under a card's name (explorer-home.md "Jump Back In"): why the document is there. A most used one
  *  counts its use days; a recent one says when the person last used it. */
 export function jumpBackInLine(item: JumpBackInItem, group: JumpBackInGroup, now: number): string {
   if (group === 'mostUsed')
@@ -91,7 +91,7 @@ export function jumpBackInLine(item: JumpBackInItem, group: JumpBackInGroup, now
   return `Used ${relativeSince(item.lastUsedAt, now)}`;
 }
 
-/** The editor pane's Jump back in: the set as one list, most used then recent, each document once, less the
+/** The editor pane's Jump Back In: the set as one list, most used then recent, each document once, less the
  *  document already open (it is on screen, so offering it again is noise), cut to `n`. */
 export function paneJumpBackIn(
   set: JumpBackInSet,
@@ -131,7 +131,7 @@ export function dayHeading(day: string, now: number): string {
   return year && year !== String(new Date(now).getFullYear()) ? `${label} ${year}` : label;
 }
 
-/** What happened under its day headings, in the order the api sent the groups. */
+/** What Happened under its day headings, in the order the api sent the groups. */
 export function groupsByDay(
   groups: readonly HomeGroup[],
   now: number,

@@ -455,7 +455,7 @@ heading per the spec, `BoardSceneReportList` rows, the image placeholder sentenc
   which gains rows for paths, text boxes and the labels of unfilled shapes and arrows), so the
   custom section and the snap agree.
 - Quick style: a stock name on an element marks no theme swatch; applying a stroke clears
-  `penColour`, a text colour clears `penTextColour`; Clear styles clears both (see the quick style
+  `penColour`, a text colour clears `penTextColour`; Clear Styles clears both (see the quick style
   blueprint's delta). "Reset to Theme" (`resetElementColours`) clears them too.
 
 ## Testing

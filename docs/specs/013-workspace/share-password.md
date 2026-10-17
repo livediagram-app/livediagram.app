@@ -161,7 +161,7 @@ moving piece while it is up.
 
 ## Share dialog (owner)
 
-The "Share this document" dialog carries a **Password Protection** switch
+The "Share This Document" dialog carries a **Password Protection** switch
 beneath the passes (see [Live app → Share dialog](../007-editor/live-app.md#share-dialog);
 it applies to all links), hinting that everyone opening a pass must enter it,
 embeds included ([Read-only embeds (`/embed`)](embeds.md)). Switched on with no
