@@ -5,7 +5,7 @@ import type { Element } from './index';
 // docs/specs/008-canvas/canvas-and-palette.md "Dropped on a shape".
 
 const box = (id: string, x: number, y: number, extra: Record<string, unknown> = {}): Element =>
-  ({ id, type: 'shape', shape: 'square', x, y, width: 100, height: 60, ...extra }) as Element;
+  ({ id, type: 'shape', shape: 'square', x, y, width: 100, height: 60, ...extra });
 
 describe('bodyDropAnchor', () => {
   it('pins to the side facing the other end', () => {
