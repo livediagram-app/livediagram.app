@@ -134,6 +134,7 @@ describe('HomePane', () => {
       shared: [],
       teamDocuments: [],
       offlineDocuments: [],
+      failedReads: { documents: false, shared: false },
       clerkUserId: null,
     } as unknown as ExplorerStateValue;
     const { container } = render(

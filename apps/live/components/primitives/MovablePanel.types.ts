@@ -51,10 +51,7 @@ export type MovablePanelProps = {
   // panel hasn't been dragged yet — render at the default corner.
   position: { x: number; y: number } | null;
   // Where to render the panel when the user hasn't dragged it yet.
-  // `top-right-stacked` is for panels that should sit below another
-  // right-anchored panel (e.g. the Editor under the Palette).
-  defaultCorner:
-    'top-left' | 'top-right' | 'top-right-stacked' | 'top-banner' | 'bottom-left' | 'bottom-right';
+  defaultCorner: 'top-left' | 'top-right' | 'top-banner' | 'bottom-left' | 'bottom-right';
   // Tailwind width utility for the panel body (e.g. `w-56`, `w-64`).
   width?: string;
   // Optional content rendered to the right of the title inside the

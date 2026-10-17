@@ -522,10 +522,12 @@ export function useExplorerState() {
       // itself was focused: descendants survive the delete (they're
       // now root folders), so a B-was-selected, delete-A flow should
       // keep B selected.
+      // Answers whether it went, so the Trash's drop target bounces only for a confirmed delete.
       const deleted = await deleteFolderWithCascade(f.id, f.name || 'folder');
       if (deleted && selected.kind === 'folder' && selected.id === f.id) {
         go({ kind: 'all' });
       }
+      return deleted;
     },
   });
 

@@ -7,6 +7,15 @@
 // say. Same question, so one answer: a second copy of this arithmetic would
 // drift, and the two ends would disagree about who was asked.
 
+import {
+  hasPageLook,
+  illustratePagesOf,
+  layOutIllustratePages,
+  opensInOf,
+  type LaidOutPage,
+  type PageRect,
+  type Tab,
+} from '@livediagram/document';
 import type { RemoteViewport } from '@/hooks/collab/useFollowMe';
 
 /** A view as either end can describe it: a canvas size, a pan, and a zoom. */
@@ -22,9 +31,52 @@ type FocusView = {
 // tenth of a canvas at 10% zoom is not a difference anybody can see.
 const CENTRE_SLACK = 0.1;
 
-/** Is that canvas point already at the middle of this view? */
-export function viewIsCentredOn(view: FocusView, at: { x: number; y: number }) {
+/** The page a press on an Illustrate tab points at (docs/specs/012-collaboration/bring-focus.md "On a
+ *  page"): the one the point sits on, while the tab is in a mode that shows pages. Null anywhere else,
+ *  including the surround between pages, where taking it centres the point as on any canvas. */
+export function focusPageAt(
+  tab: Tab | undefined,
+  at: { x: number; y: number },
+): LaidOutPage | null {
+  if (!tab || !hasPageLook(opensInOf(tab))) return null;
+  return (
+    layOutIllustratePages(illustratePagesOf(tab)).find(
+      ({ rect }) =>
+        at.x >= rect.x &&
+        at.x <= rect.x + rect.width &&
+        at.y >= rect.y &&
+        at.y <= rect.y + rect.height,
+    ) ?? null
+  );
+}
+
+// A framed page fits the view with padding, so a hair over is still framed (rounding, a scrollbar).
+const PAGE_FIT_SLACK = 1.01;
+
+/** Is that page already framed in this view: the middle of the view on it, and all of it on screen?
+ *  Zoom is part of it here, unlike a bare point, because taking it fits the page: somebody zoomed
+ *  into one corner of it is not yet looking at the page. */
+function viewFramesPage(view: FocusView, page: PageRect) {
+  const midX = view.size.width / 2 - view.pan.x;
+  const midY = view.size.height / 2 - view.pan.y;
+  const onIt =
+    midX >= page.x && midX <= page.x + page.width && midY >= page.y && midY <= page.y + page.height;
+  return (
+    onIt &&
+    page.width * view.zoom <= view.size.width * PAGE_FIT_SLACK &&
+    page.height * view.zoom <= view.size.height * PAGE_FIT_SLACK
+  );
+}
+
+/** Is that canvas point already at the middle of this view? With the page it is on (an Illustrate
+ *  tab), is that page framed instead, since that is where taking it lands. */
+export function viewIsCentredOn(
+  view: FocusView,
+  at: { x: number; y: number },
+  page?: PageRect | null,
+) {
   if (view.size.width <= 0 || view.size.height <= 0) return false;
+  if (page) return viewFramesPage(view, page);
   // The pan is in CANVAS units (the zoom is applied separately, about the
   // viewport's own centre), so the point in the middle of the view is
   // size/2 - pan. Scaling the difference converts "how far off" into the
@@ -54,6 +106,7 @@ export function focusPressOutcome({
   viewports,
   tabId,
   at,
+  page,
 }: {
   /** Whether the op actually went out (no room, no publish). */
   sent: boolean;
@@ -63,6 +116,8 @@ export function focusPressOutcome({
   viewports: Map<string, RemoteViewport>;
   tabId: string;
   at: { x: number; y: number };
+  /** The page the point is on, on an Illustrate tab (focusPageAt): judged as framed, not centred. */
+  page?: PageRect | null;
 }): FocusPressOutcome {
   if (!sent || peerIds.length === 0) return 'alone';
   const everyoneIsHere = peerIds.every((id) => {
@@ -74,7 +129,7 @@ export function focusPressOutcome({
     // longer compared, our size would call a point centred for a wider screen
     // that their dialog still asks about. No size is unknown, so asked.
     if (!view.size) return false;
-    return viewIsCentredOn({ size: view.size, pan: view.pan, zoom: view.zoom }, at);
+    return viewIsCentredOn({ size: view.size, pan: view.pan, zoom: view.zoom }, at, page);
   });
   return everyoneIsHere ? 'already-there' : 'asked';
 }

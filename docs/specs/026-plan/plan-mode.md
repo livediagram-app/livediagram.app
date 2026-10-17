@@ -141,7 +141,8 @@ Plan must cost nothing to a document that does not use it:
     `templateKeywords`, the words every template search reads: what
     it is for and other names for it, a Sprint found by "scrum", Hiring Pipeline by "recruiting", Budget by
     "expenses"; every word typed must match, case ignored), across every category, the results
-    grouped under **Boards**, **Spreadsheets**, **Dashboards** and **Inspiration**; the rail shows no choice while a search is typed, and
+    grouped under **Boards**, **Spreadsheets**, **Dashboards** and **Inspiration**, after a **Best Match** of the choices whose name begins
+    with what was typed ([Template starts → A title match leads](../007-editor/start-diagramming.md#the-panel)); the rail shows no choice while a search is typed, and
     Escape clears it. Templates of the other modes that match follow, under **In Other Modes**, and choosing one switches the
     tab to its mode ([Template starts → Found in other modes](../007-editor/start-diagramming.md#found-in-other-modes)). Nothing
     found anywhere: the shared empty state, "No boards, sheets or layouts match “<text>”" ("Try another word.").

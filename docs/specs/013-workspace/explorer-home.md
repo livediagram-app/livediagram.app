@@ -44,7 +44,7 @@ Top to bottom, left column:
     Local only documents not counted), opening **My Documents**; a green dot;
   - the Inbox: "Inbox is clear" when no open action is assigned to the person, else "N open in your Inbox", the
     sidebar's Inbox count ([Inbox](inbox.md)), opening the **Inbox**; a sky dot.
-  - A pill is drawn once its count is known: never "0 documents" while the lists load, nor "Inbox is clear" for an
+  - A pill is drawn once its count is known: never "0 documents" while the lists load or after the list failed to, nor "Inbox is clear" for an
     Inbox that has not loaded or failed to.
 - **The greeting**, the page's `h1`: "Good morning.", "Good afternoon." or "Good evening." by the reader's local
   hour (5 to 11 morning, 12 to 17 afternoon, else evening), then "What are we picking up?". Large display type
@@ -76,7 +76,9 @@ phone (below `sm`) its top left holds the menu button that opens the [mobile dra
 A person with **nothing yet** gets a Home that starts them off instead of one that waits for history. "Nothing yet"
 means, once the Explorer's lists have loaded: no document of their own, none shared with them, none in any team
 they belong to, and none stored only in this browser. Until the lists load, Home's body is the ordinary Home (its
-skeletons); it never guesses. The moment they have a document, Home is the ordinary Home again.
+skeletons); it never guesses. A list that failed to load says nothing about them, so it is never "nothing yet": Home
+stays the ordinary Home, and the browser's remembered answer is left as it was. The moment they have a document, Home
+is the ordinary Home again.
 
 The hero's words can't wait on the lists without a flash, so the hero draws the answer this browser last saw: it
 remembers, per person, whether they had anything, and until the lists land it greets them by that. A person this

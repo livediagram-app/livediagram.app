@@ -11,6 +11,7 @@ import { openSearchWithPrefetch } from '@/lib/open-search';
 import { track } from '@/lib/telemetry';
 import { NewVersionPrompt } from '@/components/chrome/NewVersionPrompt';
 import { registerUnsavedWork } from '@/lib/unsaved-work';
+import { useRegionCycle } from '@/hooks/ui/useRegionCycle';
 import { useEffect, useMemo } from 'react';
 import { addToDocumentTargets } from '@/lib/add-to-document-targets';
 import { canvasSurface } from '@livediagram/document';
@@ -49,6 +50,7 @@ import { BoardSceneNotice } from '@/components/canvas/BoardSceneNotice';
 import { EditorModals } from '@/components/dialogs/EditorModals';
 import { PollPromptSheet } from '@/components/panels/PollPromptSheet';
 import { FocusInviteDialog } from '@/components/dialogs/FocusInviteDialog';
+import { focusPageAt } from '@/lib/focus-audience';
 import { EditorTabDialogs } from '@/components/dialogs/EditorTabDialogs';
 import { CollaboratorsHost } from '@/components/dialogs/CollaboratorsHost';
 import { EditorElementDialogs } from '@/components/dialogs/EditorElementDialogs';
@@ -109,6 +111,8 @@ export function EditorView() {
   // to be saved (docs/specs/016-platform/stale-builds.md).
   const { hasUnsavedChanges } = ctx;
   useEffect(() => registerUnsavedWork(hasUnsavedChanges), [hasUnsavedChanges]);
+  // F6 moves between the header, palette, canvas, controls and tab bar (canvas-accessibility.md).
+  useRegionCycle();
   const {
     pasteFromClipboard,
     slideDeck,
@@ -632,6 +636,13 @@ export function EditorView() {
                                               (p) => p.id === focusInvite.invite!.from,
                                             )?.name ?? 'Someone')
                                           : null
+                                      }
+                                      toPage={
+                                        !!focusInvite.invite &&
+                                        !!focusPageAt(
+                                          tabs.find((t) => t.id === focusInvite.invite!.tabId),
+                                          focusInvite.invite.at,
+                                        )
                                       }
                                       onAccept={focusInvite.acceptFocus}
                                       onDismiss={focusInvite.dismissFocus}

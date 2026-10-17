@@ -51,6 +51,7 @@ function renderHero(over: Partial<ExplorerStateValue> = {}, active = true) {
     teamDocuments: [],
     offlineDocuments: [],
     clerkUserId: null,
+    failedReads: { documents: false, shared: false },
     activity: { assignedToMe: [{}, {}], loading: false, error: false },
     go,
     setMobileNavOpen,
@@ -110,6 +111,14 @@ describe('HomeHero', () => {
     } as unknown as Partial<ExplorerStateValue>);
     expect(screen.queryByRole('link', { name: /documents?$/ })).toBeNull();
     expect(screen.queryByRole('link', { name: /Inbox/ })).toBeNull();
+  });
+
+  it('draws no documents pill when the list failed to load, never "0 documents"', () => {
+    renderHero({
+      documents: [],
+      failedReads: { documents: true, shared: false },
+    });
+    expect(screen.queryByRole('link', { name: /documents?$/ })).toBeNull();
   });
 
   it('draws the lens field large with New Document inside it', () => {

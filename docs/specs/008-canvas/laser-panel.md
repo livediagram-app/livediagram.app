@@ -12,11 +12,11 @@ None of that is worth a settings dialog, and none of it should be a permanent pr
 
 ## Where it lives
 
-A normal corner panel ([Panel corner docking](../007-editor/panel-docking.md)): draggable, dockable to any corner, the standard panel width, homed **top-right**. Like the Poll / Vote panels it exists only while its mode does, so it joins and leaves the corner stack rather than sitting there. It docks in its corner on a desktop and a phone alike. View-role visitors get it — the laser is theirs too.
+A normal corner panel ([Panel corner docking](../007-editor/panel-docking.md)): draggable, dockable to any corner, the standard panel width, homed **bottom-right** (above the bottom cluster). Like the Poll / Vote panels it exists only while its mode does, so it joins and leaves the corner stack rather than sitting there. It docks in its corner on a desktop and a phone alike. View-role visitors get it — the laser is theirs too.
 
 ## The settings
 
-Four, each a single-open accordion row with its current value in the collapsed header, over a live **preview stroke** that draws with the current settings.
+Four, each a single-open accordion row with its current value in the collapsed header, over a **preview stroke** that draws with the current settings. The preview holds still: it shows the stroke as it looks the moment a sweep ends, and a setting changed draws the sweep across once, then it rests again, so an open panel never moves on its own (a looping sweep was a distraction beside the canvas). With reduced motion it never plays.
 
 - **Width** — Fine / Medium / Bold (2 / 3.5 / 6 canvas px). Constant on screen at any zoom, like the trail itself.
 - **Colour** — a row opening the one [colour picker](../004-interface-design/colour-picker.md) in a popover beside it (the picker is wider than the panel): **Your colour** first (the default: the participant colour that already ties your cursor, your name chip, and your avatar's shirt together), then the strong standard colours, stored by name and drawn in their version for the canvas, then Custom colours and **Add a custom colour** (four coloured dots) for a custom colour. A presenter on a dark canvas needs a laser that reads against it, which their identity colour cannot promise. A pen saved with an earlier colour reads Cyan as Teal and White as Ink.

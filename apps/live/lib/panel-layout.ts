@@ -75,14 +75,15 @@ export const DEFAULT_PANEL_CORNER: Record<PanelId, PanelCorner> = {
   // Collaborate (docs/specs/012-collaboration/assigned-actions.md §5): a popover over its cluster
   // button, so its corner is only where a stored layout falls back to.
   collaborate: 'bottom-right',
-  ai: 'top-right',
+  ai: 'bottom-right',
   minimap: 'bottom-left',
-  // The tool panels: top-right. Each exists only while its tool does, so it joins and leaves its corner stack.
-  laser: 'top-right',
-  spotlight: 'top-right',
-  eraser: 'top-right',
-  format: 'top-right',
-  'slide-deck': 'top-right',
+  // The tool panels: bottom-right, above the bottom cluster. Each exists only while its tool does, so it joins and
+  // leaves its corner stack.
+  laser: 'bottom-right',
+  spotlight: 'bottom-right',
+  eraser: 'bottom-right',
+  format: 'bottom-right',
+  'slide-deck': 'bottom-right',
 };
 
 export const STORAGE_KEY = 'livediagram:panel-layout:v1';
@@ -98,9 +99,8 @@ export function defaultPanelLayout(): PanelLayout {
   const corners = emptyCorners();
   // Order within a corner matters (it's the stack order); list them in
   // the order they stacked historically rather than PANEL_IDS order.
-  corners['top-right'] = ['ai'];
   corners['bottom-left'] = ['minimap'];
-  corners['bottom-right'] = ['collaborate'];
+  corners['bottom-right'] = ['collaborate', 'ai'];
   return { corners, free: {} };
 }
 

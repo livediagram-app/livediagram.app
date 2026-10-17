@@ -32,6 +32,8 @@ import type { PlanPalette } from '@/components/plan/plan-palette';
 import { StartCardGrid, startTint, type StartPanelCard } from './StartCard';
 import { StartOtherModes, type StartPanelElsewhere } from './StartOtherModes';
 import { takeStartQuery } from './start-query';
+import { liftBestMatch } from './best-match';
+import { isStartCardKey, nextCardIndex } from './start-card-keys';
 import { noteStartPanelLeft, startPanelJustLeft } from './start-panel-open';
 
 const SearchGlyph = lucideGlyph(lucideSearch, 15);
@@ -50,6 +52,8 @@ type StartPanelCategory<C extends string> = {
 };
 
 export type { StartPanelCard } from './StartCard';
+
+type StartPanelResult<C extends string> = { category: C; cards: readonly StartPanelCard[] };
 
 export function StartPanel<C extends string>({
   titleId,
@@ -83,7 +87,7 @@ export function StartPanel<C extends string>({
   initialCategory: C;
   cardsIn: (category: C) => readonly StartPanelCard[];
   // Every match, grouped by category, in rail order.
-  search: (query: string) => readonly { category: C; cards: readonly StartPanelCard[] }[];
+  search: (query: string) => readonly StartPanelResult<C>[];
   onChoose: (cardId: string) => void;
   // Found in other modes (start-diagramming.md): the other modes' matches for a search, and choosing one, which
   // switches the tab to that mode. Absent where the tab's mode may not change: the search keeps to its own mode.
@@ -115,7 +119,10 @@ export function StartPanel<C extends string>({
   // phoneSheet, BottomSheet).
   const sheet = useSheetDrag(onClose ?? (() => {}));
   const searching = query.trim().length > 0;
-  const results = searching ? search(query) : [];
+  // A title match leads, under Best Match, lifted out of its group (start-diagramming.md "A title match leads").
+  const { best, groups: results } = searching
+    ? liftBestMatch<StartPanelCard, StartPanelResult<C>>(search(query), query)
+    : { best: [], groups: [] };
   const others = searching && elsewhere && onChooseElsewhere ? elsewhere(query) : [];
   const nameOf = (id: C) => categories.find((c) => c.id === id)?.name ?? id;
   // The cards' scroller: a category picked opens at its top, never part way down the last one's cards.
@@ -187,12 +194,47 @@ export function StartPanel<C extends string>({
   const cards = (list: readonly StartPanelCard[]) => (
     <StartCardGrid cards={list} palette={palette} cascade={!calm} onChoose={onChoose} />
   );
+  // The arrow keys move among the cards, Up from the first row back to the search (start-card-keys.ts).
+  const onCardsKey = (e: KeyboardEvent<HTMLDivElement>) => {
+    if (!isStartCardKey(e.key) || e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
+    const all = [
+      ...(cardsScroller.current?.querySelectorAll<HTMLElement>('[data-start-card]') ?? []),
+    ];
+    const from = all.indexOf(e.target as HTMLElement);
+    if (from < 0) return;
+    const to = nextCardIndex(
+      e.key,
+      from,
+      all.map((el) => el.getBoundingClientRect()),
+    );
+    if (to === null) {
+      if (e.key === 'ArrowUp' && searching) {
+        e.preventDefault();
+        searchInput.current?.focus();
+      }
+      return;
+    }
+    e.preventDefault();
+    all[to]!.focus();
+    all[to]!.scrollIntoView?.({ block: 'nearest' });
+  };
+  const section = (key: string, name: string, list: readonly StartPanelCard[]) => (
+    <section key={key} aria-label={name} className="mb-6 last:mb-0">
+      <h3
+        className="mb-3 text-[12px] font-semibold uppercase tracking-wider"
+        style={{ color: palette.muted }}
+      >
+        {name}
+      </h3>
+      {cards(list)}
+    </section>
+  );
   return (
     // Clear of the top chrome (the menu button and the palette strip, 8.5rem down) and the bottom clusters. On a phone,
-    // over the tab bar and docked to the bottom edge below the top bar, as the phone's sheets are. On a phone held
-    // sideways (390px tall, its bars folded) those two clearances left the list 56px: there it clears only the strip
-    // and lies over the bottom cluster, as the upright phone's sheet does.
-    <div className="pointer-events-none absolute inset-0 z-[var(--z-panel)] flex items-center justify-center p-4 pb-28 pt-[8.5rem] max-sm:z-[var(--z-overlay)] max-sm:items-end max-sm:px-0 max-sm:pb-0 max-sm:pt-20 landscape-phone:z-[var(--z-overlay)] landscape-phone:pb-2 landscape-phone:pt-16">
+    // over the tab bar and docked to the bottom edge below the top bar, as the phone's sheets are. On a short window
+    // (a phone held sideways, 390px tall with its bars folded, or a desktop zoomed to 200%, 450px) those two clearances
+    // left the list 56px to 96px: there it clears only the strip and lies over the bottom cluster.
+    <div className="pointer-events-none absolute inset-0 z-[var(--z-panel)] flex items-center justify-center p-4 pb-28 pt-[8.5rem] max-sm:z-[var(--z-overlay)] max-sm:items-end max-sm:px-0 max-sm:pb-0 max-sm:pt-20 short-window:z-[var(--z-overlay)] short-window:pb-2 short-window:pt-16">
       <section
         aria-labelledby={titleId}
         // One height whatever the category shows, so the panel never jumps as it changes.
@@ -346,10 +388,11 @@ export function StartPanel<C extends string>({
           </div>
           <div
             ref={cardsScroller}
+            onKeyDown={onCardsKey}
             className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-4 sm:p-6 max-sm:p-3"
           >
             {searching ? (
-              results.length === 0 && others.length === 0 ? (
+              best.length === 0 && results.length === 0 && others.length === 0 ? (
                 // The shared empty state in the board's colours (docs/specs/004-interface-design/empty-states.md).
                 <CompactEmptyState
                   role="status"
@@ -361,7 +404,7 @@ export function StartPanel<C extends string>({
                 />
               ) : (
                 <>
-                  {results.length === 0 ? (
+                  {best.length === 0 && results.length === 0 ? (
                     // Nothing of this mode, something of another's: one line, then the other modes' blocks.
                     <p
                       role="status"
@@ -377,21 +420,10 @@ export function StartPanel<C extends string>({
                       </span>
                     </p>
                   ) : (
-                    results.map((g) => (
-                      <section
-                        key={g.category}
-                        aria-label={nameOf(g.category)}
-                        className="mb-6 last:mb-0"
-                      >
-                        <h3
-                          className="mb-3 text-[12px] font-semibold uppercase tracking-wider"
-                          style={{ color: palette.muted }}
-                        >
-                          {nameOf(g.category)}
-                        </h3>
-                        {cards(g.cards)}
-                      </section>
-                    ))
+                    <>
+                      {best.length > 0 ? section('best-match', 'Best Match', best) : null}
+                      {results.map((g) => section(g.category, nameOf(g.category), g.cards))}
+                    </>
                   )}
                   {others.length && onChooseElsewhere ? (
                     <StartOtherModes
@@ -399,7 +431,7 @@ export function StartPanel<C extends string>({
                       key={query.trim().toLowerCase()}
                       groups={others}
                       palette={palette}
-                      divided={results.length > 0}
+                      divided={best.length + results.length > 0}
                       cascade={!calm}
                       onChoose={onChooseElsewhere}
                     />
