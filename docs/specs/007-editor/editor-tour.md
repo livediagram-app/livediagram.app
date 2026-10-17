@@ -32,6 +32,10 @@ proved the better introduction.
   **No** dismisses it. A document made from a Plan, Draw, Illustrate or Facilitate template does not show it
   there; the offer stays owed and comes the first time the person works on a Diagram tab in that browser tab.
   There is no wizard toggle; the offer IS the opt-in, and declining must be one obvious, equal-weight click.
+- **Escape is each card's way out.** On the offer it declines (as **No**), on a step it skips the tour (as
+  **Skip tour**), on the last card it finishes (as its finish button). Every tour's cards are the same card
+  (`TourPopover`), so this holds for all of them. It leaves the key alone while it is editing a field, where an
+  element tour asks for Escape to put text back, and when another surface has already taken it.
 - **Once ever per user.** However the offer ends (declined, skipped mid-tour, or completed), the synced
   `tourSeen` user preference ([User preferences](user-preferences.md)) stops it ever reappearing: the offer
   must never read as nagging, and answering it once covers every device the user signs in from (guests get
