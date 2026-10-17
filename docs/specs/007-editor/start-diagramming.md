@@ -26,13 +26,22 @@ draws them.
 - **Search:** the catalogue's own search (`templateMatchesQuery`, as the marketing gallery's),
   across the mode's templates; matches are grouped under their group, each once, in rail order, then the matches of
   every other mode ([Found in other modes](#found-in-other-modes)). Escape clears a search first.
+- **A title match leads.** A template whose name begins with what was typed (case, punctuation and hyphens ignored,
+  as the search's own) is listed first, under **Best Match**, and not again under its group: an exact name before a
+  longer one, then in the order the groups list them. Typing "flowchart" leads with Flowchart, though Design's
+  Service Blueprint, which matches through its search words, comes earlier in the rail. With no name beginning so,
+  there is no Best Match and the groups lead as before. Start Planning's search (the same panel) does the same with
+  its boards, sheets, forms and layouts.
 - **There is no way out to a bigger picker.** Each start holds every listed template of its mode, the mode switch
   reaches the others, and a search finds a template in any mode; the start is the whole catalogue. (Its
   **Something Else** row and **Browse More Templates** button opened the Quick Start, a modal of every template, which
   was removed: [New document route](new-document-route.md).)
 - **Picking a category** opens it at the top of its cards, never part way down the last one's.
 - **Keyboard:** the search is focused on a fine pointer; Up and Down move along the rail, choosing as they go. Down
-  in the search box moves to the first card it found.
+  in the search box moves to the first card it found. Among the cards the arrow keys move between them: Left and Right
+  to the card before and after (across a section's end into the next), Up and Down to the nearest card in the row
+  above and below; Up from the first row goes back to the search box while there is a search. Home and End reach the
+  first and last card.
 - **Undo and redo reach the editor through an empty search.** An undo that takes a tab back to empty (a template
   picked, then undone) brings the start back with its search focused, where Cmd/Ctrl+Z and redo were the text box's
   own and did nothing, so the template could not be redone from the keyboard. While the search is empty those chords
@@ -200,7 +209,10 @@ results also fires `UI · Used · StartOtherMode`, so how often a search crosses
 - `components/start/other-mode-matches.test.ts`: which modes and templates another mode's search finds, in order,
   never the tab's own mode, and the worst-case query within its budget.
 - `components/start/StartPanel.test.tsx`: the In Other Modes section, its cap and Show All, the one-line no-match,
-  Down from the search, choosing a card from another mode.
+  Down from the search, choosing a card from another mode, Best Match leading (Start Planning's too), the arrow keys
+  among the cards.
+- `components/start/best-match.test.ts`: which names lead, exact first, lifted out of their groups once.
+- `components/start/start-card-keys.test.ts`: where each arrow, Home and End go in a grid of cards.
 - `components/start/template-start-mode.test.ts`: when a start shows.
 - `components/start/StartFromTemplates.test.tsx`: titles per mode, choosing, the blank closing, the per-mode close,
   scroll to top.
