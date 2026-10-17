@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { applyMigration, sqliteD1 } from '../test-sqlite-d1';
 
-// Migration 0096 renames Draw mode's telemetry to Drawing (docs/specs/007-editor/editor-modes.md
-// "Telemetry"), so the dashboard's lines continue. Seeded under the 0095 schema, then migrated.
-describe('migration 0096: Drawing telemetry', () => {
+// Migration 0097 renames Draw mode's telemetry to Drawing (docs/specs/007-editor/editor-modes.md
+// "Telemetry"), so the dashboard's lines continue. Seeded under the 0096 schema, then migrated.
+describe('migration 0097: Drawing telemetry', () => {
   it('moves the Draw history to Drawing and touches nothing else', () => {
-    const { sql } = sqliteD1({}, { before: '0096' });
+    const { sql } = sqliteD1({}, { before: '0097' });
     const insert = sql.prepare(
       'INSERT INTO events (category, action, type, ts) VALUES (?, ?, ?, 1)',
     );
@@ -21,7 +21,7 @@ describe('migration 0096: Drawing telemetry', () => {
     insert.run('UI', 'Toggled', 'TemplateModeDraw');
     insert.run('UI', 'Used', 'JustDraw');
 
-    applyMigration(sql, '0096');
+    applyMigration(sql, '0097');
 
     const rows = sql.prepare('SELECT category, action, type FROM events ORDER BY id').all();
     expect(rows.map((r) => ({ ...r }))).toEqual([

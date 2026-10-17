@@ -297,7 +297,7 @@ Migration on read, in every entry point (`migrateStoredTab` / `migrateIncomingTa
 - `migrateLegacyTextSizing` (in `migrateStoredElements`): `autoWidth: true` → `sizing: 'fit'`,
   `autoWidth: false` dropped; a stored `sizing` wins.
 - Telemetry history: D1 migration `apps/api/migrations/0061_draw_telemetry.sql` renames the
-  `Whiteboard` category to `Draw`, and `0096_drawing_telemetry.sql` renames `Draw` to `Drawing` (with
+  `Whiteboard` category to `Draw`, and `0097_drawing_telemetry.sql` renames `Draw` to `Drawing` (with
   `ModeDraw`, the `DrawTour*` types and the two help article ids).
 
 ## Errors and edge cases
