@@ -31,6 +31,37 @@ export function EmptyState({
           : 'rounded-2xl border border-slate-200 bg-gradient-to-b from-white to-slate-50/70 px-6 py-16 dark:border-slate-700 dark:from-slate-900 dark:to-slate-900/60'
       }`}
     >
+      <EmptyStateArt icon={icon} compact={compact} spaced />
+
+      <h2
+        className={`relative font-semibold text-slate-900 dark:text-slate-100 ${compact ? 'text-sm' : 'text-base'}`}
+      >
+        {title}
+      </h2>
+      <p
+        className={`relative mt-1.5 max-w-sm leading-relaxed text-slate-500 dark:text-slate-400 ${compact ? 'text-xs' : 'text-sm'}`}
+      >
+        {description}
+      </p>
+      {children ? <div className={`relative ${compact ? 'mt-4' : 'mt-5'}`}>{children}</div> : null}
+    </div>
+  );
+}
+
+/** The empty state's art alone: the faint mini-diagram motif behind the floating badge over its pulsing rings. For a
+ *  surface that is empty in its own shape with no words to add (an empty folder's card, folders.md "Folder cards"). */
+export function EmptyStateArt({
+  icon,
+  compact = false,
+  spaced = false,
+}: {
+  icon: ReactNode;
+  compact?: boolean;
+  // Room under the badge for a heading that follows (EmptyState); the art alone sits centred with none.
+  spaced?: boolean;
+}) {
+  return (
+    <>
       {/* Faint mini-diagram motif (two shapes + an elbow connector) — the
           product's own visual language as a quiet backdrop. */}
       <svg
@@ -48,7 +79,9 @@ export function EmptyState({
 
       {/* Floating icon badge over a pulsing double ring. */}
       <div
-        className={`relative flex items-center justify-center ${compact ? 'mb-4 h-14 w-14' : 'mb-5 h-20 w-20'}`}
+        className={`relative flex items-center justify-center ${compact ? 'h-14 w-14' : 'h-20 w-20'} ${
+          spaced ? (compact ? 'mb-4' : 'mb-5') : ''
+        }`}
       >
         <span
           aria-hidden
@@ -68,18 +101,6 @@ export function EmptyState({
           {icon}
         </span>
       </div>
-
-      <h2
-        className={`relative font-semibold text-slate-900 dark:text-slate-100 ${compact ? 'text-sm' : 'text-base'}`}
-      >
-        {title}
-      </h2>
-      <p
-        className={`relative mt-1.5 max-w-sm leading-relaxed text-slate-500 dark:text-slate-400 ${compact ? 'text-xs' : 'text-sm'}`}
-      >
-        {description}
-      </p>
-      {children ? <div className={`relative ${compact ? 'mt-4' : 'mt-5'}`}>{children}</div> : null}
-    </div>
+    </>
   );
 }

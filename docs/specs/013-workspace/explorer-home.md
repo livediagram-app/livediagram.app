@@ -137,7 +137,8 @@ the **4 most used** and the **4 most recent**, no document twice.
   browser's own record of its opens and edits ([Opens](#opens)), and carries the **Local only** pill on its
   thumbnail, as every other row and card of one does.
 - Each document is a **card**: its snapshot thumbnail, its name, and one quiet line that says why it is there.
-  The full name is its tooltip and accessible name; the quiet line is its description. Activating a card opens the
+  The full name is its accessible name, and no tooltip repeats the name written under the picture; the quiet line is
+  its description. Activating a card opens the
   document.
   - A most used document's line counts its use days: "Used on 1 day", "Used on N days".
   - A recent document's line says when the person last used it: "Used 2 hours ago", "Used yesterday" (the

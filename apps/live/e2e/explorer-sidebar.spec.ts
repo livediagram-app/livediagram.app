@@ -50,7 +50,7 @@ test.describe('explorer sidebar', () => {
     expect((await rowNames(page, 'Spaces'))[0]).toBe('My Documents');
     await expect(row(page, 'New Team')).toHaveCount(0);
     // This browser holds nothing yet, so it is hidden.
-    expect(await rowNames(page, 'More')).toEqual(['Tags', 'Library', 'Trash']);
+    expect(await rowNames(page, 'More')).toEqual(['Library', 'Trash']);
     // My Documents starts open on its root folders: no Unsorted or Generated bucket.
     const myDocuments = row(page, 'My Documents');
     await expect(row(page, 'Projects')).toBeVisible();
@@ -91,7 +91,10 @@ test.describe('explorer sidebar', () => {
     await expect(row(page, 'Library')).toBeFocused();
     await page.keyboard.press('ArrowRight');
     await expect(row(page, 'Library')).toHaveAttribute('aria-expanded', 'true');
+    // Library's first row is Tags (tags.md "The sidebar"), then its pages.
     await page.keyboard.press('ArrowRight');
+    await expect(row(page, 'Tags')).toBeFocused();
+    await page.keyboard.press('ArrowDown');
     await expect(row(page, 'Image Gallery')).toBeFocused();
     await page.keyboard.press('Enter');
     await expect(page).toHaveURL(/\/explorer\/images\/?$/);
@@ -150,7 +153,7 @@ test.describe('explorer sidebar', () => {
     );
     await openExplorer(page);
     await expect(row(page, 'This Browser (1)')).toBeVisible();
-    expect(await rowNames(page, 'More')).toEqual(['This Browser', 'Tags', 'Library', 'Trash']);
+    expect(await rowNames(page, 'More')).toEqual(['This Browser', 'Library', 'Trash']);
     expectNoPageErrors(pageErrors);
   });
 

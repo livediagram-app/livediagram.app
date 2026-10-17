@@ -97,19 +97,20 @@ reached from Home's What Happened (**See Timeline**). The retired `/explorer/act
 
 ### More
 
-| Row          | Opens                                  | Children                               | Badge                     |
-| ------------ | -------------------------------------- | -------------------------------------- | ------------------------- |
-| This browser | `/explorer/offline`                    | None                                   | Documents in this browser |
-| Tags         | `/explorer/tags` ([Tags](tags.md))     | One row per tag                        | None                      |
-| Library      | Nothing: the row expands and collapses | Image gallery, Themes, Shape libraries | None                      |
-| Trash        | `/explorer/trash` ([Trash](trash.md))  | None                                   | None                      |
+| Row          | Opens                                  | Children                                     | Badge                     |
+| ------------ | -------------------------------------- | -------------------------------------------- | ------------------------- |
+| This browser | `/explorer/offline`                    | None                                         | Documents in this browser |
+| Library      | Nothing: the row expands and collapses | Tags, Image Gallery, Themes, Shape Libraries | None                      |
+| Trash        | `/explorer/trash` ([Trash](trash.md))  | None                                         | None                      |
 
 - **This Browser** shows only while this browser holds at least one offline document, or while its view is the current
   one (so the highlighted row never vanishes under the reader). Its documents are the reader's own
   ([Local only documents](#local-only-documents)).
-- **Tags** always shows, so it can be found before the first tag. Each tag's row carries its colour, its document
-  count as its badge and its menu ([Tags: The sidebar](tags.md#the-sidebar)).
-- **Library** has no view of its own: activating it expands or collapses it.
+- **Library** has no view of its own: activating it expands or collapses it. It opens by itself when one of its
+  pages is the current view, the Tags pages included.
+- **Tags** is Library's first row, always shown (so it can be found before the first tag). It opens the Tags page and
+  expands to one row per tag, each carrying its colour, its document count as its badge and its menu
+  ([Tags: The sidebar](tags.md#the-sidebar)). The editor's Explorer panel keeps Tags as its own rail entry.
 
 The group's title is **More**.
 

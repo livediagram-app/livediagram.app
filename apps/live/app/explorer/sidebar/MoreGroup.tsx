@@ -15,8 +15,8 @@ import { SidebarRow } from './SidebarRow';
 import { TagsSidebarRow } from './TagRows';
 
 // More (docs/specs/013-workspace/explorer-structure.md): This browser (offline documents,
-// docs/specs/006-document/offline-mode.md), Tags (docs/specs/013-workspace/tags.md), Library, and Trash
-// (docs/specs/013-workspace/trash.md). `rows` decides whether This browser shows.
+// docs/specs/006-document/offline-mode.md), Library (Tags, docs/specs/013-workspace/tags.md, then the Library
+// pages), and Trash (docs/specs/013-workspace/trash.md). `rows` decides whether This browser shows.
 export function MoreGroup({
   rows,
   divider,
@@ -44,7 +44,6 @@ export function MoreGroup({
           badge={offlineDocuments.length || undefined}
         />
       ) : null}
-      {rows.includes('tags') ? <TagsSidebarRow /> : null}
       {/* Library has no page of its own: activating it opens or closes it. */}
       <SidebarRow
         icon={<LibraryIcon />}
@@ -60,6 +59,7 @@ export function MoreGroup({
         expanded={expanded.has(LIBRARY_EXPAND_KEY)}
         onToggleExpand={toggleLibrary}
       >
+        <TagsSidebarRow depth={1} />
         {LIBRARY_PAGES.map(({ kind, label, Icon, row }) => (
           <SidebarRow
             key={kind}
