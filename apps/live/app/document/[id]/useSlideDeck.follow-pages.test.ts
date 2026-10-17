@@ -58,11 +58,15 @@ describe('the deck following the slide pages', () => {
       pageSlideIdFor('t', 'a'),
       pageSlideIdFor('t', 'b'),
     ]);
-    act(() => vi.runAllTimers());
+    act(() => {
+      vi.runAllTimers();
+    });
     expect(saveDeck).toHaveBeenCalledTimes(1);
     // A second pass with nothing new saves nothing.
     act(() => result.current.followPages());
-    act(() => vi.runAllTimers());
+    act(() => {
+      vi.runAllTimers();
+    });
     expect(saveDeck).toHaveBeenCalledTimes(1);
   });
 
@@ -79,7 +83,9 @@ describe('the deck following the slide pages', () => {
     const { result, saveDeck } = deckHook([deckTab(['a', 'b'])], true);
     act(() => result.current.hydrateDeck(null));
     act(() => result.current.followPages());
-    act(() => vi.runAllTimers());
+    act(() => {
+      vi.runAllTimers();
+    });
     expect(pageOrder(result.current.deck)).toEqual(['a', 'b']);
     expect(saveDeck).not.toHaveBeenCalled();
   });
