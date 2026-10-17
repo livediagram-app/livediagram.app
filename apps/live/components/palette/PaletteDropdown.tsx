@@ -396,7 +396,7 @@ export function PaletteDropdown({
                           // A tour can ring one band: its heading through its last tile (the
                           // Facilitate tour's Collaborate step).
                           data-tour-id={`band-${heading.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}
-                          className={`col-span-full px-1.5 pb-0.5 text-[10px] font-semibold uppercase tracking-wider text-slate-400 ${bandTint(opt.group)} ${
+                          className={`col-span-full px-1.5 pb-0.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 ${bandTint(opt.group)} ${
                             i === 0
                               ? 'pt-0.5'
                               : 'mt-1 border-t border-slate-200 pt-1.5 dark:border-slate-700'

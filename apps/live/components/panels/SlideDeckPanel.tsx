@@ -258,7 +258,7 @@ export function SlideDeckPanel({
         {notesSlide && !isReadOnly ? (
           <label className="flex flex-col gap-1">
             <span className="flex items-center justify-between px-0.5">
-              <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-400">
+              <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
                 Notes · {slideName(notesSlide, deck.slides.indexOf(notesSlide))}
               </span>
               <button

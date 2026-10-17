@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isLightColor, type Tab } from '@livediagram/document';
+import { MIN_TEXT_CONTRAST, contrastRatio, isLightColor, type Tab } from '@livediagram/document';
 import { legibleColor, legibleTabAccent } from './tab-accent';
 
 // The legibility transform: a colour too pale for the light bar gets darkened,
@@ -44,5 +44,31 @@ describe('the default tab accent', () => {
 
   it('keeps its own depth on the light bar', () => {
     expect(isLightColor(legibleTabAccent(unthemed, false))).toBe(false);
+  });
+});
+
+// Issue #863: the active pill's label reads at WCAG AA on the pill's own surface, whatever the accent.
+describe('the active pill label contrast', () => {
+  const accents = [
+    '#0284c7',
+    '#ffffff',
+    '#000000',
+    '#f59e0b',
+    '#22c55e',
+    '#e11d48',
+    '#7c3aed',
+    '#94a3b8',
+  ];
+  it.each(accents)('%s reads at 4.5:1 or more on white and on slate-800', (accent) => {
+    expect(contrastRatio(legibleColor(accent, false), '#ffffff')).toBeGreaterThanOrEqual(
+      MIN_TEXT_CONTRAST,
+    );
+    expect(contrastRatio(legibleColor(accent, true), '#1d293d')).toBeGreaterThanOrEqual(
+      MIN_TEXT_CONTRAST,
+    );
+  });
+
+  it('keeps an accent that already reads', () => {
+    expect(legibleColor('#0369a1', false)).toBe('#0369a1');
   });
 });

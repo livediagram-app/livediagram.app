@@ -35,7 +35,7 @@ export function TrashPane({ trash }: { trash: TrashController }) {
       </InfoNote>
 
       {groups === null ? (
-        <p className="text-sm text-slate-400" role="status">
+        <p className="text-sm text-slate-500 dark:text-slate-400" role="status">
           Loading…
         </p>
       ) : groups.length === 0 ? (

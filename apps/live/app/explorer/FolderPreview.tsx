@@ -57,7 +57,9 @@ export function FolderPreview({
         ),
       )}
       {hidden > 0 ? (
-        <span className={`${tileBox} text-xs font-medium text-slate-400`}>{`+${hidden}`}</span>
+        <span
+          className={`${tileBox} text-xs font-medium text-slate-500 dark:text-slate-400`}
+        >{`+${hidden}`}</span>
       ) : null}
     </span>
   );

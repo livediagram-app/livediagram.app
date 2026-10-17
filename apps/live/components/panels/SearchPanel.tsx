@@ -289,7 +289,7 @@ export function SearchPanel({
             type="button"
             onClick={onClose}
             aria-label="Close"
-            className="-mr-1 flex h-7 w-7 shrink-0 items-center justify-center rounded text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+            className="-mr-1 flex h-7 w-7 shrink-0 items-center justify-center rounded text-slate-500 hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
           >
             <kbd className="text-[10px] font-medium">Esc</kbd>
           </button>

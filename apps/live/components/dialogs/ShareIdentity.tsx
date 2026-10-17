@@ -32,7 +32,7 @@ export function ShareIdentity({
       <div className="flex min-w-0 flex-1 flex-col">
         <label
           htmlFor="share-name"
-          className="text-[10px] font-semibold uppercase tracking-wider text-slate-400"
+          className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400"
         >
           Sharing as
         </label>

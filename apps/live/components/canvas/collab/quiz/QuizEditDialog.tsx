@@ -122,7 +122,7 @@ export function QuizEditDialog({
               <div className="mt-2 flex flex-col gap-1.5">
                 {rows.map((row, i) => (
                   <div key={i} className="flex items-center gap-2">
-                    <span className="w-4 text-center text-xs font-semibold text-slate-400">
+                    <span className="w-4 text-center text-xs font-semibold text-slate-500 dark:text-slate-400">
                       {quizOptionLetter(i)}
                     </span>
                     <input

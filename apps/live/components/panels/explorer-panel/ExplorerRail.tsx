@@ -175,7 +175,7 @@ export function ExplorerRail({
               <section key={g.id} aria-label={SIDEBAR_GROUP_TITLES[g.id]}>
                 {divider === 'titles' ? (
                   <h3
-                    className={`px-2 pb-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-400 ${i ? 'mt-4' : ''}`}
+                    className={`px-2 pb-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 ${i ? 'mt-4' : ''}`}
                   >
                     {SIDEBAR_GROUP_TITLES[g.id]}
                   </h3>

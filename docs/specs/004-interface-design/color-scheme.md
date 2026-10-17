@@ -171,8 +171,12 @@ The wordmark's "live" half is the one vivid note: **sky-400 `#38bdf8`** in dark 
   ([Usage rules](#usage-rules)).
 - **Muted text in light mode** is `slate-500` on white or `slate-50` (4.8:1, 4.6:1) and `slate-600` on `slate-100` or a
   tint, never `slate-400` (2.6:1), which stays for icons, placeholders and disabled controls. The public sites
-  (marketing, help, community, telemetry) and the New Document wizard follow it; the editor's own chrome is still being
-  brought in line.
+  (marketing, help, community, telemetry), the New Document wizard and the editor's small and uppercase labels follow
+  it ([#863](https://github.com/livediagram-app/livediagram.app/issues/863)), held by
+  `apps/live/label-contrast.test.ts`, which fails a class string pairing a small size (`text-xs`, `text-sm`,
+  `text-[9px]` to `text-[13px]`) or `uppercase` with a light-mode `text-slate-400`. Dark mode keeps `slate-400`.
+- **The active tab's label** is its tab's accent, nudged (hue kept, 10% at a time toward black, or white in dark) until
+  it reads at 4.5:1 on the pill's own surface, white or `slate-800` (`legibleColor`, `apps/live/lib/tab-accent.ts`).
 - Never rely on color alone to convey status; pair semantic colors with an icon or label.
 - **Contrast guard (dark mode).** A Playwright audit (`apps/live/e2e/contrast-audit.spec.ts`) walks every visible
   text node on the New Document wizard, the editor, its dialogs and panels, and the Explorer in dark mode, composites

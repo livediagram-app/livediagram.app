@@ -151,7 +151,7 @@ export function TeamMemberRow({
             {rejected ? (m.status === 'expired' ? ' · Expired' : ' · Declined') : null}
           </span>
         ) : pending ? (
-          <span className="block truncate text-xs text-slate-400 dark:text-slate-400">
+          <span className="block truncate text-xs text-slate-500 dark:text-slate-400">
             Waiting for them to accept
           </span>
         ) : null}

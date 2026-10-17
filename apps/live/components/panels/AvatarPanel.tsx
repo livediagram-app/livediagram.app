@@ -77,7 +77,7 @@ function ActionRow({
         aria-expanded={open}
         className="flex w-full items-center justify-between gap-2 rounded-md px-1 py-1 text-left transition hover:bg-slate-100 dark:hover:bg-slate-800"
       >
-        <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-400">
+        <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
           {label}
         </span>
         <span className="text-slate-400">

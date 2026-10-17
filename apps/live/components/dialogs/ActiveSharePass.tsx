@@ -93,7 +93,8 @@ export function ActiveSharePass({
   const [revokeAnchor, setRevokeAnchor] = useState<HTMLElement | null>(null);
   const exit = usePassExit(() => onRevoke(link.code));
   const imageTabParam = scoped ? undefined : liveImageTabParam;
-  const metaLabel = 'text-[10px] font-semibold uppercase tracking-wider text-slate-400';
+  const metaLabel =
+    'text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400';
   return (
     <SharePassTicket
       role={link.role}

@@ -40,7 +40,7 @@ function NotesBody({
   const tracked = useRef(false);
   return (
     <label className="flex flex-col gap-1.5" data-page-notes-popover="">
-      <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">
+      <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
         Speaker Notes
       </span>
       <textarea

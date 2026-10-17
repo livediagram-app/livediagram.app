@@ -106,7 +106,7 @@ export function FormatPanel({
             open={openRow === 'copies'}
             onToggle={() => toggle('copies')}
             headerClassName="flex w-full items-center justify-between gap-2 py-1.5 text-left"
-            titleClassName="text-[10px] font-semibold uppercase tracking-wider text-slate-400"
+            titleClassName="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400"
             chevronClassName="text-slate-400"
             bodyClassName="pb-2"
             trailing={
@@ -149,7 +149,7 @@ export function FormatPanel({
             open={openRow === 'mode'}
             onToggle={() => toggle('mode')}
             headerClassName="flex w-full items-center justify-between gap-2 py-1.5 text-left"
-            titleClassName="text-[10px] font-semibold uppercase tracking-wider text-slate-400"
+            titleClassName="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400"
             chevronClassName="text-slate-400"
             bodyClassName="pb-2"
             trailing={

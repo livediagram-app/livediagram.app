@@ -36,7 +36,7 @@ export function OauthHelpLink() {
       href="/help/account-and-data/connect-ai-mcp/"
       target="_blank"
       rel="noopener noreferrer"
-      className="mt-5 inline-flex items-center gap-1.5 text-xs font-medium text-slate-400 transition hover:text-brand-700 dark:hover:text-brand-400"
+      className="mt-5 inline-flex items-center gap-1.5 text-xs font-medium text-slate-500 dark:text-slate-400 transition hover:text-brand-700 dark:hover:text-brand-400"
     >
       <Glyph size={13} units={16} strokeLinecap="butt" strokeLinejoin="miter">
         <circle cx="8" cy="8" r="6.5" />

@@ -81,7 +81,7 @@ export function SlashMenu({
             <div key={`${group.name}-${group.entries[0]!.i}`} role="group" aria-label={group.name}>
               <p
                 aria-hidden
-                className="px-2.5 pb-0.5 pt-2 text-[10px] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-400"
+                className="px-2.5 pb-0.5 pt-2 text-[10px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400"
               >
                 {group.name}
               </p>
@@ -102,7 +102,7 @@ export function SlashMenu({
                   }`}
                 >
                   <span className="font-medium">{item.label}</span>
-                  <span className="truncate text-xs text-slate-400 dark:text-slate-400">
+                  <span className="truncate text-xs text-slate-500 dark:text-slate-400">
                     {item.hint}
                   </span>
                 </button>

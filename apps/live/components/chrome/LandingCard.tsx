@@ -22,7 +22,7 @@ export function LandingCard({ children }: { children: ReactNode }) {
 
 export function Eyebrow({ children }: { children: ReactNode }) {
   return (
-    <p className="text-xs font-medium uppercase tracking-wider text-slate-400 dark:text-slate-400">
+    <p className="text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
       {children}
     </p>
   );
