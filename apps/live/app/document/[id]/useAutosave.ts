@@ -38,6 +38,7 @@ import { emptyAfterSave } from '@/lib/list-row-empty';
 import { createTabSaveQueue, type TabSaveQueue } from './tab-save-queue';
 import { useUnloadFlush } from './useUnloadFlush';
 import { sampleSaveTiming, startEditorTiming } from '@/lib/timing';
+import { noteSaveFailing } from '@/lib/save-health';
 
 // Per-tab autosave (docs/specs/006-document/per-tab-storage.md), lifted out of editor-page.tsx. Two effects:
 // a debounced (600ms) save and a beforeunload flush so a fast edit ->
@@ -203,6 +204,8 @@ export function useAutosave(opts: {
   // A different document gets a clean slate: the block is about THIS one.
   useEffect(() => {
     writesForbiddenRef.current = false;
+    noteSaveFailing(false);
+    return () => noteSaveFailing(false);
   }, [documentId]);
 
   // The last edits on the way out: a page closed, hidden for good, or left for another page of the app
@@ -409,6 +412,7 @@ export function useAutosave(opts: {
           }, SAVE_RESAVE_GRACE_MS);
           resaveTimersRef.current.add(timer);
           setSaveStatus('saved');
+          noteSaveFailing(false);
           if (sampleSaveTiming()) timing.end();
           else timing.cancel();
           retryAttemptsRef.current = 0;
@@ -443,6 +447,8 @@ export function useAutosave(opts: {
           const status = saveFailureStatus(err);
           if (status === 'forbidden') writesForbiddenRef.current = true;
           setSaveStatus(status);
+          // A failure the retry may fix keeps the banner up and the leave prompt armed (lib/save-health.ts).
+          noteSaveFailing(status === 'error');
           if (status === 'error' && retryTimerRef.current === null) {
             const delay = saveRetryDelayMs(retryAttemptsRef.current++);
             retryTimerRef.current = window.setTimeout(() => {
