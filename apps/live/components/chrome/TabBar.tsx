@@ -3,7 +3,8 @@ import dynamic from 'next/dynamic';
 import { tabDataRows } from './tab-data-rows';
 import { hasPlanContent } from '@/hooks/plan/usePlanNeeded';
 import { MenuErrorBoundary } from '@/components/primitives/MenuErrorBoundary';
-import { useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { scrollLeftToReveal } from './tab-strip-scroll';
 import {
   folderNamesInDocument,
   groupTabsIntoRuns,
@@ -302,6 +303,24 @@ export function TabBar({
   };
   const renderTabPill = (tab: Tab): ReactNode => <TabPill key={tab.id} tab={tab} ctx={pillCtx} />;
 
+  // The active tab is always in view: a tab added to a full strip, or picked from the Tabs list, used to open past
+  // the strip's edge, under Search. Runs when the active tab or the number of tabs changes, never on a timer.
+  const stripRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const strip = stripRef.current;
+    const pill = strip?.querySelector<HTMLElement>('[aria-current="page"]');
+    if (!strip || !pill) return;
+    const s = strip.getBoundingClientRect();
+    const t = pill.getBoundingClientRect();
+    const left = scrollLeftToReveal(
+      { left: s.left, right: s.right, scrollLeft: strip.scrollLeft },
+      t,
+    );
+    if (left === strip.scrollLeft) return;
+    const still = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    strip.scrollTo({ left, behavior: still ? 'auto' : 'smooth' });
+  }, [activeId, tabs.length]);
+
   return (
     <>
       <div
@@ -334,7 +353,10 @@ export function TabBar({
             left). */}
         {/* Sideways only: the tab menu's and Add tab's 44px tap areas (touch-target) reach past
             the row, and a free y axis drew a vertical scrollbar beside Search for them. */}
-        <div className="scrollbar-slim -m-1 flex flex-1 items-center gap-1 overflow-x-auto overflow-y-hidden p-1">
+        <div
+          ref={stripRef}
+          className="scrollbar-slim -m-1 flex flex-1 items-center gap-1 overflow-x-auto overflow-y-hidden p-1"
+        >
           {groupTabsIntoRuns(tabs).map((run) =>
             run.kind === 'loose' ? (
               renderTabPill(run.tab)
