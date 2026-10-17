@@ -12,7 +12,7 @@ vi.mock('@/lib/api-client', () => ({
 vi.mock('@/lib/document-tombstones', () => ({ isDocumentDeleted: () => false }));
 
 const { useUnloadFlush, shouldWarnOnLeave } = await import('./useUnloadFlush');
-const { noteSaveFailing } = await import('@/lib/save-health');
+const { noteSaveFailing, noteTabTooLarge } = await import('@/lib/save-health');
 const { useCommitOnLeave } = await import('@/hooks/ui/useCommitOnLeave');
 
 const tab = (label: string): Tab => ({
@@ -132,6 +132,15 @@ describe('the leave prompt', () => {
     noteSaveFailing(true);
     expect(leave()).toBe(true);
     expect(flush).toHaveBeenCalledOnce();
+    view.unmount();
+  });
+
+  // per-tab-storage.md "A tab too big to save says so": not retried, but just as unsaved.
+  it('raises the prompt while the tab is too big to save', () => {
+    const view = mount([tab('typed')]);
+    noteTabTooLarge(true);
+    expect(leave()).toBe(true);
+    noteTabTooLarge(false);
     view.unmount();
   });
 

@@ -226,6 +226,8 @@ So it gets its own `tooLarge` save status (`saveFailureStatus` in `save-failure.
 - No retry timer: only an edit can change the size, and the next edit's save tries again (and lands once the tab
   is back under the cap, clearing the status).
 - The last-chance flush on the way out still runs; it is refused the same way and changes nothing.
+- Leaving the page asks first, as while saves fail ([Load recovery](../007-editor/load-recovery.md) "Leaving with
+  unsaved changes asks first"): the changes are unsaved. The "Retrying" banner does not show, since nothing is retried.
 
 ### Autosave guard: never persist an unloaded tab
 

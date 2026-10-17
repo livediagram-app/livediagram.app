@@ -15,7 +15,7 @@ import { commitOpenEdit } from '@/lib/open-edit';
 import { useLatest } from '@/hooks/ui/useLatest';
 import { computeTabSaveDiff } from './editor-page-helpers';
 import { relayParticipantChanges } from './tab-save-flow';
-import { isSaveFailing } from '@/lib/save-health';
+import { isSaveFailing, isTabTooLarge } from '@/lib/save-health';
 
 /** Whether leaving now asks first: changes the server has not taken, while the last save failed or the browser is
  *  offline. */
@@ -107,7 +107,9 @@ export function useUnloadFlush(opts: {
     // case, a save in flight on a working connection, or people learn to click through it.
     const beforeUnload = (e: BeforeUnloadEvent) => {
       leave();
-      if (shouldWarnOnLeave(unsaved() !== null, isSaveFailing(), navigator.onLine)) {
+      if (
+        shouldWarnOnLeave(unsaved() !== null, isSaveFailing() || isTabTooLarge(), navigator.onLine)
+      ) {
         e.preventDefault();
         // Older browsers ask only when returnValue is set.
         e.returnValue = '';
