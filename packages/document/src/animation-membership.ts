@@ -115,6 +115,7 @@ const WORDLESS_SHAPES = new Set<string>([
   'desk',
   'sofa',
   'fence',
+  'avatar-pad',
   'sticker',
   // The office pieces (docs/specs/009-elements/office.md) but the room, whose label is its name plate.
   'meeting-table',

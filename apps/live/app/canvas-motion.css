@@ -1460,3 +1460,106 @@ html[data-presenting][data-slide-move='pending'] [data-canvas-a11y-root] {
 [data-canvas-root]:has(> [data-canvas-cover]) > [data-animated-pattern] {
   display: none;
 }
+
+/* The Avatar Pad (docs/specs/009-elements/avatar-pad.md). Pixel motion: every keyframe is stepped, never smooth, so
+   it moves the way the sprite does, and a stepped animation restyles only on its steps. The ring's shimmer is one
+   opacity loop on one group per pad. The arrival is one beam, a floor flash and six sparks per arriving person,
+   capped at AVATAR_PAD_MAX_ARRIVALS on screen, unmounted when the beam is over (AVATAR_PAD_ARRIVAL_MS = 900ms). */
+@keyframes avatar-pad-shimmer {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  25% {
+    opacity: 0.72;
+  }
+  50% {
+    opacity: 0.88;
+  }
+  75% {
+    opacity: 0.64;
+  }
+}
+.avatar-pad-shimmer {
+  animation: avatar-pad-shimmer 2.4s steps(1, end) infinite;
+}
+@keyframes avatar-pad-beam {
+  0% {
+    opacity: 1;
+    transform: scaleY(0.05);
+  }
+  22% {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+  62% {
+    opacity: 1;
+    transform: scaleX(0.7) scaleY(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scaleX(0.15) scaleY(1.15);
+  }
+}
+.avatar-pad-beam {
+  animation: avatar-pad-beam 900ms steps(9, end) both;
+}
+@keyframes avatar-pad-flash {
+  0% {
+    opacity: 1;
+    transform: scale(0.6);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.7);
+  }
+}
+.avatar-pad-flash {
+  animation: avatar-pad-flash 700ms steps(7, end) both;
+}
+@keyframes avatar-pad-spark {
+  0% {
+    opacity: 0;
+    transform: translateY(0);
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-40px);
+  }
+}
+.avatar-pad-spark {
+  animation: avatar-pad-spark 800ms steps(8, end) both;
+}
+.avatar-pad-spark:nth-child(2) {
+  animation-delay: 60ms;
+}
+.avatar-pad-spark:nth-child(3) {
+  animation-delay: 140ms;
+}
+.avatar-pad-spark:nth-child(4) {
+  animation-delay: 30ms;
+}
+.avatar-pad-spark:nth-child(5) {
+  animation-delay: 100ms;
+}
+.avatar-pad-spark:nth-child(6) {
+  animation-delay: 170ms;
+}
+/* Reduced motion: no shimmer and no beam. The arrival is decoration, so the character simply appears on the pad. */
+@media (prefers-reduced-motion: reduce) {
+  .avatar-pad-shimmer {
+    animation: none !important;
+  }
+  .avatar-pad-arrival {
+    display: none;
+  }
+}
+:root.reduce-motion .avatar-pad-shimmer {
+  animation: none !important;
+}
+:root.reduce-motion .avatar-pad-arrival {
+  display: none;
+}

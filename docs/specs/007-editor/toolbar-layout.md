@@ -25,7 +25,7 @@ and one category's tiles:
   holds the menu button alone.
   On a phone that card sits at the far left of the strip's row, the strip beside it (below).
 - **Left: the selection mode.** The canvas-tool picker (Select / Hand /
-  Eraser / Format / Laser / Spotlight / Avatar / Isometric / Zen, [Tile grids for the palette dropdowns](../004-interface-design/dropdown-tile-grid.md))
+  Eraser / Format / Laser / Spotlight / Isometric / Zen (Avatar only while in it), [Tile grids for the palette dropdowns](../004-interface-design/dropdown-tile-grid.md))
   as a compact icon trigger, opening the banded tile grid.
 - **Then, in Diagram, Facilitate and Illustrate, the category bar** ("The category bar").
 - **Then, in Plan, the category picker.** The same banded category grid ([Palette top-level categories and bands](../010-palette/palette-top-level-categories.md)),

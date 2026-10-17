@@ -174,7 +174,7 @@ export const categories: Category[] = [
     title: 'Palette',
     description:
       'Your launchpad for everything on the canvas: every element and palette setting explained.',
-    articleCount: 35,
+    articleCount: 36,
     kind: 'feature',
     groups: ['Everyday Elements', 'Diagram Kits', 'Workshop Kits', 'Palette Settings'],
   },
@@ -1198,6 +1198,16 @@ export const articles: Article[] = [
     description: 'A barrier for Avatar mode: characters cannot walk through a fence.',
     keywords:
       'fence fences barrier wall block blocked keep out enclosure boundary pen gate avatar character walk collision no entry area navigate behaviour',
+    category: 'Palette',
+    categorySlug: 'palette',
+    group: 'Workshop Kits',
+  },
+  {
+    slug: 'avatar-pads',
+    title: 'Avatar Pads',
+    description: 'Where everyone starts in Avatar mode: characters beam in on the pad.',
+    keywords:
+      'avatar pad pads spawn start starting point entrance arrive arrival teleport teleporter beam lobby welcome where do people appear avatar character walk navigate behaviour',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Workshop Kits',

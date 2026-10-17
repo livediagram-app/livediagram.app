@@ -223,6 +223,8 @@ export function isSelfDrawingShape(kind: ShapeKind): boolean {
     kind === 'sticker' ||
     // A fence (docs/specs/009-elements/fence.md) is posts and rails, with nothing to write on.
     kind === 'fence' ||
+    // An Avatar Pad (docs/specs/009-elements/avatar-pad.md) is pixels, with nothing to write on.
+    kind === 'avatar-pad' ||
     // The office's scenery and machines (docs/specs/009-elements/office.md) have nothing to write on; a room
     // keeps its label (its name plate) and a meeting table and the furniture theirs (under them).
     kind === 'plant' ||

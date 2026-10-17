@@ -51,6 +51,7 @@ import { WHITEBOARD_ERASER_RADIUS_PX } from '@/lib/whiteboard-tool';
 import { routeBoardDoubleClick } from '@/lib/whiteboard-edit-target';
 import { useWhiteboardPenCursor } from '@/hooks/canvas/useWhiteboardPenCursor';
 import { AvatarWalker } from '@/components/canvas/AvatarWalker';
+import { AvatarPadArrivals } from '@/components/canvas/AvatarPadArrivals';
 import { parseAvatarStatus } from '@/lib/avatar-status';
 import { headPoint } from '@/lib/avatar-speech';
 import { avatarScale } from '@/lib/avatar-config';
@@ -313,6 +314,7 @@ function CanvasView(props: CanvasProps) {
     avatarLook,
     avatarStandingOn,
     avatarStatus,
+    padArrivals,
     playAvatarBurst,
     pressModeButton,
     resolvePortal,
@@ -811,6 +813,8 @@ function CanvasView(props: CanvasProps) {
                     onStand={avatar.standUp}
                   />
                 ) : null}
+                {/* Arrival beams on an Avatar Pad (docs/specs/009-elements/avatar-pad.md), over the characters. */}
+                <AvatarPadArrivals arrivals={padArrivals} />
                 {/* Speech bubbles, in front of every character: yours and everyone's, and the composer above your
               own head while you type. */}
                 {speechBubbles.length > 0 || speech.composerOpen ? (

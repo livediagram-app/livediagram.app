@@ -224,6 +224,10 @@ function behaviourSkin(
     return surface === 'dark' ? CONTROL_SKIN_DARK : MODE_BUTTON_SKIN;
   }
   // A fence (docs/specs/009-elements/fence.md) is timber: a wood brown on each paper, no box.
+  // An Avatar Pad (docs/specs/009-elements/avatar-pad.md) paints its own pixels in the sprite's palette, no box.
+  if (kind === 'avatar-pad') {
+    return { fill: 'transparent', stroke: 'transparent', text: OUTLINE_SKIN_LIGHT.text };
+  }
   if (kind === 'fence') {
     return { fill: 'transparent', stroke: FENCE_WOOD[surface], text: OUTLINE_SKIN_LIGHT.text };
   }
@@ -591,6 +595,8 @@ export const SELF_PAINTING_SHAPES = new Set<string>([
   'fence',
   'desk',
   'sofa',
+  // An Avatar Pad (docs/specs/009-elements/avatar-pad.md) is its pixels.
+  'avatar-pad',
   // The office pieces (docs/specs/009-elements/office.md) draw themselves, the room its own floor.
   'room',
   'meeting-table',

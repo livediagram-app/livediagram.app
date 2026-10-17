@@ -485,6 +485,8 @@ export const PALETTE_TELEMETRY_TYPES = {
     'Desk',
     'Sofa',
     'Fence',
+    // Avatar Pad (docs/specs/009-elements/avatar-pad.md): beside the fence in Navigate.
+    'Avatar-pad',
     // The virtual office (docs/specs/009-elements/office.md), in Navigate.
     'Room',
     'Meeting-table',

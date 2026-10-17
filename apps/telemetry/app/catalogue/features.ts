@@ -872,6 +872,16 @@ export const OFFICE_DRINKS = chart(
   { types: ['WaterCooler', 'CoffeeMachine'] },
 );
 
+// Avatar Pad arrivals (docs/specs/009-elements/avatar-pad.md "Telemetry"): an entry into Avatar mode that started on a
+// pad, once per entry, never per peer seen arriving.
+export const AVATAR_PAD_ARRIVALS = chart(
+  'Canvas',
+  'Used',
+  'Avatar Pad Arrivals',
+  'An entry into Avatar mode that started on an Avatar Pad, the character beamed in.',
+  { types: ['AvatarPadArrival'] },
+);
+
 // Avatar-mode speech bubbles (docs/specs/008-canvas/avatar-mode.md "Speech bubbles"): that somebody spoke, by
 // either door, never what they said.
 export const AVATAR_MESSAGES = chart(
@@ -886,7 +896,7 @@ export const CANVAS_MODES: MetricStack = {
   stack: true,
   title: 'Canvas Modes',
   blurb: 'Ways of working on the canvas picked from the palette, and the options set inside them.',
-  members: [...MODE_METRICS, OFFICE_DRINKS, AVATAR_MESSAGES, MODE_OPTIONS],
+  members: [...MODE_METRICS, OFFICE_DRINKS, AVATAR_PAD_ARRIVALS, AVATAR_MESSAGES, MODE_OPTIONS],
   // Modes switched into; tweaking an option inside one is not another use.
   headline: [...MODE_METRICS],
   seeAlso: { section: 'modes', label: 'See Each Mode in Features › Modes' },

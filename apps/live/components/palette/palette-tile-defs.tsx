@@ -20,6 +20,7 @@ import {
   ChairIcon,
   DeskIcon,
   FenceIcon,
+  AvatarPadIcon,
   RoomIcon,
   MeetingTableIcon,
   PlantIcon,
@@ -1192,6 +1193,21 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     filled: true,
     action: { type: 'shape', kind: 'fence' },
     icon: <FenceIcon size={TILE_GLYPH_PX} />,
+  },
+  {
+    // Avatar Pad (docs/specs/009-elements/avatar-pad.md): where everyone entering Avatar mode starts.
+    id: 'tools:avatar-pad',
+    tileGroup: 'move',
+    blurb: 'Where Avatars arrive',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Avatar Pad',
+    caption: 'Avatar Pad',
+    description:
+      "The board's entrance for Avatar mode: everyone who starts walking appears on the pad, beamed in, rather than wherever they were looking.",
+    filled: true,
+    action: { type: 'shape', kind: 'avatar-pad' },
+    icon: <AvatarPadIcon size={TILE_GLYPH_PX} />,
   },
   {
     // Room (docs/specs/009-elements/office.md).

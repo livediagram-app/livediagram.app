@@ -15,7 +15,7 @@ tour's rules hold.
 
 ## Where it appears
 
-- **The first time a person is in Avatar mode**: picking Avatar in the canvas-tool picker, pressing `W`, or a
+- **The first time a person is in Avatar mode**, which they enter by pressing a
   [Selection Mode button](../009-elements/mode-button.md) set to Avatar. The editor has to be usable (hydrated, no
   welcome overlay, not an embed). Unlike the Draw tour it is offered **whatever the person's role**: the mode is
   a Viewer's as much as an Editor's, and a read-only canvas is the mode's normal state, not a reason to hold off.
