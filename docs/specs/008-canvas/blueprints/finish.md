@@ -4,15 +4,19 @@ Derived from [Finish](../finish.md). Defaults in [DEFAULTS.md](DEFAULTS.md) (D-f
 
 ## Domain and naming
 
-| Term (spec)       | Identifier                                                      | Never                          |
-| ----------------- | --------------------------------------------------------------- | ------------------------------ |
-| finish            | `Finish` (`'flexible' \| 'professional' \| 'sketch'`)           | tone, look, style, render mode |
-| a tab's finish    | `Tab.finish?: Finish`                                           |                                |
-| an element's own  | `finish?: Finish` on shape, arrow, text, sticky, table elements |                                |
-| drawn finish      | `resolveFinish(own, tab)`                                       | effective finish               |
-| Follow Tab        | the element's `finish` key absent                               | inherit, default               |
-| hand-drawn stroke | a **sketch stroke** (`sketchStrokes`)                           | rough path                     |
-| pencil hatching   | **hatching** (`sketchHatching`)                                 | hachure (in code), fill lines  |
+| Term (spec)       | Identifier                                                        | Never                          |
+| ----------------- | ----------------------------------------------------------------- | ------------------------------ |
+| finish            | `Finish` (`'flexible' \| 'professional' \| 'sketch' \| 'marker'`) | tone, look, style, render mode |
+| a tab's finish    | `Tab.finish?: Finish`                                             |                                |
+| an element's own  | `finish?: Finish` on shape, arrow, text, sticky, table elements   |                                |
+| drawn finish      | `resolveFinish(own, tab)`                                         | effective finish               |
+| Follow Tab        | the element's `finish` key absent                                 | inherit, default               |
+| hand-drawn stroke | a **sketch stroke** (`sketchStrokes`)                             | rough path                     |
+| pencil hatching   | **hatching** (`sketchHatching`)                                   | hachure (in code), fill lines  |
+| hand-drawn finish | `HandDrawnFinish` (`'sketch' \| 'marker'`), `isHandDrawn`         | rough finish                   |
+| marker stroke     | a **marker stroke** (`markerStrokes`), dealt into two **layers**  | felt line                      |
+| colouring in      | **colouring** (`markerColouring`), its rows the **streaks**       | scribble, fill strokes         |
+| ink pooling       | crossings between the two layers drawn darker                     | blending, overlap glow         |
 
 "Tone" stays the colour picker's strong / soft term ([Domain language](../../003-system-architecture/domain-language.md)).
 
@@ -21,8 +25,12 @@ Derived from [Finish](../finish.md). Defaults in [DEFAULTS.md](DEFAULTS.md) (D-f
 ### `packages/document/src/finish.ts`
 
 ```ts
-export type Finish = 'flexible' | 'professional' | 'sketch';
-export const FINISHES: readonly Finish[] = ['flexible', 'professional', 'sketch'];
+export type Finish = 'flexible' | 'professional' | 'sketch' | 'marker';
+export const FINISHES: readonly Finish[] = ['flexible', 'professional', 'sketch', 'marker'];
+export type HandDrawnFinish = 'sketch' | 'marker';
+export function isHandDrawn(finish: Finish): finish is HandDrawnFinish;
+export function finishDrawsBodyByHand(finish: Finish, type: string): boolean;
+// sketch → true; marker → type !== 'sticky' (a sticky stays paper with its peel); else false
 export const DEFAULT_FINISH: Finish = 'flexible';
 export function isFinish(v: unknown): v is Finish;
 export function resolveFinish(own: Finish | undefined, tab: Finish | undefined): Finish;
@@ -31,6 +39,8 @@ export function resolveFinish(own: Finish | undefined, tab: Finish | undefined):
 export const PROFESSIONAL_CORNER_PX = 0;
 export const PROFESSIONAL_FONT_ID = 'inter';
 export const SKETCH_FONT_ID = 'caveat';
+export const MARKER_FONT_ID = 'permanent-marker';
+export const MARKER_LINE_PX = 3;
 export const FINISH_ELEMENT_TYPES: ReadonlySet<Element['type']>; // shape, arrow, text, sticky, table
 export function supportsFinish(el: { type: string }): boolean;
 
@@ -44,13 +54,17 @@ export function finishArrowThickness(
   finish: Finish,
 ): ArrowThickness;
 // set → own; professional → 'thin'; else own (the resolved default)
+export function finishArrowWidthPx(own: number | undefined, finish: Finish): number;
+// own ?? (professional ? 1 : marker ? MARKER_LINE_PX : 2); read by ArrowView and svgArrow alike
+export function finishIconWeight(own: IconWeight | undefined, finish: Finish): IconWeight;
+// own ?? (professional ? 'thin' : marker ? 'bold' : DEFAULT_ICON_WEIGHT)
 export function finishDrawsDefaultShadow(finish: Finish): boolean; // finish !== 'professional'
 export function finishFontId(
   own: string | undefined,
   tab: string | undefined,
   finish: Finish,
 ): string | undefined;
-// own ?? (sketch ? SKETCH_FONT_ID : tab ?? (professional ? PROFESSIONAL_FONT_ID : undefined))
+// own ?? tab ?? (sketch ? SKETCH_FONT_ID : marker ? MARKER_FONT_ID : professional ? PROFESSIONAL_FONT_ID : undefined)
 export function elementFontId(el, tabFont, tabFinish): string | undefined; // finishFontId over resolveFinish
 export function finishCurvesNewArrows(finish: Finish): boolean; // finish !== 'professional'
 export function finishNewArrowStyle(finish: Finish): ArrowStyle | undefined; // professional → 'angled'
@@ -100,7 +114,80 @@ export function pathEndTangents(
 - **Arrowhead.** Two one-pass sketch lines from `tip` back to `tip - dir * L ± normal * L / 2`.
 - Every output is deterministic for the same input and seed; numbers are rounded to 2 decimals.
 
-### Canvas (`apps/live`)
+### `packages/document/src/marker.ts` (pure geometry, no DOM)
+
+Marker draws the outlines `sketch.ts` builds (`SketchOutline`, exported for it, with `sketchPoint` for path text),
+with its own pen. Seeded from `sketchSeed(id)` through `sketchRandom`, each function on its own stream
+(`seed ^ constant`), so Marker and Sketch never share a wobble.
+
+```ts
+export type MarkerLayers = [string, string];
+export function markerStrokes(
+  outline: SketchOutline,
+  seed: number,
+  opts?: { pinEnds?: boolean },
+): MarkerLayers;
+export function trimOutline(outline: SketchOutline, startPx: number, endPx: number): SketchOutline;
+export function markerArrowHead(
+  tip: Pt,
+  dir: Pt,
+  lengthPx: number,
+  seed: number,
+  closed: boolean,
+): string;
+export function markerColouring(area: Pt[], seed: number): { streaks: MarkerLayers; nibPx: number };
+```
+
+- **Lines.** One stroke per straight segment: the start lands early by `0..MARKER_LEAD_IN_PX`, the end runs past by
+  `(0.35..1) * MARKER_OVERSHOOT_PX`, both scaled by `min(1, len / 30)`; ends jitter by `min(MARKER_JITTER_PX,
+len * 0.04)`; the bow is `±min(len * MARKER_BOW_SHARE, MARKER_BOW_MAX_PX)`. Emitted as `M s Q c e`.
+- **Gestures.** A line followed by an open curve (a rounded corner) is one stroke: the line ends exactly on its
+  corner (no overshoot) and the corner's spline carries on from the line's actual end. A rounded rectangle is four
+  strokes, not eight.
+- **Curves.** Samples drift by `MARKER_CURVE_JITTER_PX`, set every fourth sample and eased between; a Catmull-Rom
+  spline. A closed curve starts at a random sample, goes once round, then on for `round(n * MARKER_LOOP_OVERLAP)`
+  more samples (at least 1): that stretch is a stroke of its own, the **overlap**.
+- **Layers.** Strokes alternate layers by index (0, 1, 0, 1, ...), so adjacent strokes cross between layers. A closed
+  curve's overlap goes in the layer its stroke is not in (layer 1 for a lone loop).
+- **Pinned ends** (`pinEnds`): the outline's first start and last end stay exactly where they are (no lead-in,
+  jitter or overshoot); an arrow meets its boxes and its heads.
+- **Trim.** `trimOutline` cuts the first segment's start and the last segment's end back along themselves by the
+  given lengths: a line moves its end point; an open curve drops samples and interpolates the cut. A line not longer
+  than 1.5 times its cut, a curve the cut would empty, and a closed curve are left whole.
+- **Heads.** Base at `tip - dir * L`; open (line): half-width `L / 2`, one stroke `w1 → tip → w2` with a ±0.8 px bow
+  on each arm; closed (triangle, hollow): half-width `0.42 L`, `M w1 L tip L w2 Z`. Corners jitter by
+  `min(0.8, L * 0.05)`, the tip by half that.
+- **Colouring.** The area is turned by `MARKER_COLOUR_ANGLE_DEG ± 6°` (seeded per element) and scanned in rows `nib`
+  wide: `nib = clamp(max(MARKER_COLOUR_NIB_PX, extent / (MARKER_COLOUR_MAX_ROWS * MARKER_COLOUR_STEP)), 2, extent)`,
+  `rows = ceil((extent - nib) / (nib * MARKER_COLOUR_STEP)) + 1`, spread evenly so the first and last rows' edges
+  touch the area's extremes. A row runs where its centre line and both its edges (`±0.96 * nib / 2`) are all inside
+  the area (the intersection of the three scan spans), so a row never leaves a convex or concave area; each end is
+  pulled in by `nib / 2` (its round cap) plus `0..MARKER_COLOUR_RAGGED_PX`. Rows alternate direction and layer; a
+  span too short for a stroke draws a dab. An area under 2 px across draws nothing (`nibPx` 0).
+- Every output is deterministic for the same input and seed; numbers are written in tenths (`sketchPoint`).
+
+### `packages/document/src/marker-element.ts` and `hand-drawn.ts`
+
+- `markerElementPaint(el, fill, backdrop)` returns `{ drawing: MarkerDrawing, strokePx, dash }` or null:
+  - `MarkerDrawing = { pen: 'marker'; ink: MarkerLayers; details: string; solid: string; streaks: MarkerLayers;
+nibPx: number }`.
+  - table: its frame at `MARKER_TABLE_FRAME_PX` (2.5), no fill layers; sticky, comment pin, text, images and
+    self-painting kinds: null.
+  - shape: `strokePx = el.strokeWidth ? BORDER_STROKE_PX[el.strokeWidth] : MARKER_LINE_PX`; dash and corner as
+    Flexible's; outlines from `handDrawnOutlines(el, strokePx / 2, radiusPx)` (`sketch-element.ts`, shared with
+    Sketch: shape-table parts fitted to the box, or the box kind's outline as its `main` part). Detail parts go to
+    `details`; others to `ink` when `strokePx > 0`; filled roles (`FILLED_ROLES`, `shape-hit.ts`) add `solid`, and
+    `markerColouring` streaks when `finishHatches(el, fill, backdrop)`; `nibPx` is the broadest part's.
+- `markerArrow(id, pathD, o)`: heads for `MARKER_HEAD_SHAPES` (triangle, hollow triangle, line) at length
+  `ARROWHEAD_SIZE_PX[size] * min(strokePx, MARKER_HEAD_SCALE_MAX_PX)`, tip `0.1 L` past the end; the line is
+  `markerStrokes(outline, seed, { pinEnds: true })`, trimmed by `0.9 L` at a hollow head's end; `oneLayer` joins
+  both layers into the first (a flow runs); `headFill` for a triangle.
+- `sketchElement`'s `SketchDrawing` carries `pen: 'pencil'`.
+- `hand-drawn.ts`: `handDrawnElementPaint(el, finish, fill, backdrop): HandDrawnPaint | null` (null unless
+  `finishDrawsBodyByHand`; Marker's or Sketch's paint by finish) and `handDrawnArrow(finish, id, pathD,
+{ strokePx, headSize, headShape, startHead, endHead, flowing }): HandDrawnArrow | null` (`{ line, lineOver,
+heads, sketchedHeads, headFill, inkOpacity }`; Sketch: `lineOver` empty, `headFill` false, `inkOpacity` 1, one
+  pass while `flowing`; Marker: `inkOpacity` `MARKER_INK_OPACITY`). The canvas and the export call only these two.
 
 ### `packages/document/src/sketch-element.ts` and `sketch-backdrop.ts`
 
@@ -109,7 +196,7 @@ export function pathEndTangents(
   unsketched element in the same finish; `sketchArrow(id, pathD, options)` returns the sketched line and, for
   `SKETCHED_HEAD_SHAPES` (triangle, hollow triangle, line), the heads.
 - `sketchBackdropIds(elements, tabFinish): Set<string>`: candidates are elements where `finishHatchesKind` holds and
-  the resolved finish is Sketch (none: an empty set, no further work). Boxed centres are collected with their drawing
+  the resolved finish is hand-drawn, Sketch or Marker (none: an empty set, no further work). Boxed centres are collected with their drawing
   order and sorted by x; per candidate a binary search finds the first centre at or right of its left edge and scans
   until past its right edge; a later element's centre inside its box makes it a backdrop. O(n log n + hits). A
   backdrop draws `solid`, never `hatch`.
@@ -121,16 +208,23 @@ export function pathEndTangents(
   `CanvasSurfaceContext` so memoised element views re-render on a tab finish change.
 - `describeVariant(..., surface, finish)`: Professional drops `shadow-sm` and the sticky peel and uses the
   Professional corner / stroke fallbacks; Sketch makes the wrapper's background transparent and its border none for
-  CSS shapes and stickies and drops the peel.
+  CSS shapes and stickies and drops the peel. Marker does the same through `finishDrawsBodyByHand`, except a sticky,
+  which keeps its paper and peel.
 - `lib/sketch-backdrop-store.ts`: `usePublishSketchBackdrops(tabId, drawnElements, tabFinish)` (called by
   `CanvasElementsLayer`) publishes `sketchBackdropIds` per tab; `useIsSketchBackdrop(id)` is a per-id
   `useSyncExternalStore` read, so only views whose flag flips re-render.
 - `components/canvas/SketchOverlay.tsx`: `useSketchPaint(element, finish, fill, backdrop)` memoised on the fields it
   reads (never position) and `SketchOverlay`, an absolutely positioned `<svg viewBox="0 0 w h">` drawing solid, hatch,
   strokes then details. `BoxedElementView` mounts it for every sketched boxed element (shapes, stickies, tables);
-  `ShapeContentRouter` skips its silhouette overlay when sketched.
-- `components/canvas/arrow-finish.ts`: `useArrowFinish(arrow, pathD)` returns the base width (Thin under
-  Professional when unset) and the memoised `sketchArrow` (one pass while a flow runs). `ArrowView` draws the
+  `ShapeContentRouter` skips its silhouette overlay when `isHandDrawn(finish)`. `useSketchPaint` reads
+  `handDrawnElementPaint`; for a `pen: 'marker'` drawing `SketchOverlay` draws (`data-finish="marker"`) the solid fill,
+  each streak layer (stroke colour, `MARKER_STREAK_OPACITY`, `nibPx` wide), each ink layer (stroke colour,
+  `MARKER_INK_OPACITY`, `strokePx`, the dash) and the details (`MARKER_DETAIL_PX`, the ink opacity), each its own
+  `<path>` so crossings pool.
+- `components/canvas/arrow-finish.ts`: `useArrowFinish(arrow, pathD)` returns the base width
+  (`finishArrowWidthPx`) and the memoised `handDrawnArrow` (`flowing` while a flow runs). Under Marker `ArrowView`
+  sets `strokeOpacity` to the ink opacity on the line, draws `lineOver` as a second path (same stroke, dash and
+  mask), and fills a `headFill` head in the head colour at the ink opacity. `ArrowView` draws the
   sketched line in place of `pathD`, sketched heads in place of markers (in `arrowheadColor` when set); the
   selection halo and the hit band keep `pathD`.
 - Lettering: `CanvasElementsLayer`, `text-hug-measure` and `useTextStyleSetters` resolve fonts with `elementFontId`.
@@ -143,9 +237,10 @@ export function pathEndTangents(
   `arrowStyle: finishNewArrowStyle(finish)` under Professional and skips the curve when `finishCurvesNewArrows` is
   false.
 - Palette: `components/palette/palette-tile-finish.ts` `paletteFinishClass(finish, action?)` (Sketch for every tile;
-  Professional for every tile but `tech-icon` and `sticker`); `IconButton` adds the class to the glyph wrapper from
+  Professional and Marker for every tile but `tech-icon` and `sticker`); `IconButton` adds the class to the glyph wrapper from
   `useTabFinish()` when given the tile's `finishAction`, and `StickerPickerTab` wraps each sticker's art in it. `app/globals.css`: `.palette-finish-professional` (mitre joins, 1 px
-  strokes, `rx: 0`) and `.palette-finish-sketch` (`filter: url(#lvd-sketch-tile)`).
+  strokes, `rx: 0`) and `.palette-finish-sketch` (`filter: url(#lvd-sketch-tile)`) and `.palette-finish-marker` (round caps and joins, 2.25 px strokes at 0.88
+  opacity).
   `components/canvas/SketchFilterDefs.tsx` renders that filter once in `EditorView`: two `feTurbulence` +
   `feDisplacementMap` passes (seeds 7 and 23, base frequency 0.12 and 0.1, scale 3), merged.
 
@@ -153,7 +248,7 @@ export function pathEndTangents(
   whose face is split: every shape kind outside `SKETCHED_BY_BODY` (the plain boxes whose sketched body is their
   whole drawing, the sequence diagram, icons and stickers), a plain box with an inline icon, tables, link cards,
   video and annotations. `BoxedElementView` wraps everything it draws over the body (accent edge to
-  `ElementFaceRouter`) in `components/canvas/SketchFace.tsx` when the resolved finish is Sketch and the predicate
+  `ElementFaceRouter`) in `components/canvas/SketchFace.tsx` when the resolved finish is Sketch (never Marker) and the predicate
   holds. `SketchFace` renders an empty `[data-sketch-ink]` div (`aria-hidden`, `inert`) then a
   `[data-sketch-words]` div holding the face, both `absolute inset-0`, no z-index. In a layout effect it fills the
   ink div with `sketchInkCopy(live)` (a `cloneNode` with `img, video, iframe, canvas, [data-sketch-skip]` removed and
@@ -172,7 +267,11 @@ export function pathEndTangents(
 `svgArrow` resolves its ends and drawn arrow through `finishArrowEnds(arrow, elements, finish)`, so a Professional
 mind connector exports on the same bracket as the canvas. `renderElementsToSvg` resolves each element's finish from `tab.finish`; `svgBoxed` and `svgArrow` take it and draw
 the same strokes, hatching and heads from `sketch.ts`, and the Professional fallbacks from `finish.ts`
-(`svg-render-sketch.ts` places a sketched body). Every caller that loops `svgBoxed` (`renderElementsToSvg`,
+(`svg-render-sketch.ts` places a sketched body: `svgSketchedBody` calls `handDrawnElementPaint` when
+`isHandDrawn(finish)` and writes `svgMarkerDrawing` for a marker drawing, the canvas overlay's layers in a
+`data-finish="marker"` group). `svgArrow` takes its width from `finishArrowWidthPx` and its line from
+`handDrawnArrow` (a still: `flowing` false); a marker line writes `stroke-opacity`, its `lineOver` as a second path,
+and a `headFill` head with `fill` and `fill-opacity`. Every caller that loops `svgBoxed` (`renderElementsToSvg`,
 `export-tab.ts` PNG and SVG, `Minimap`, `useLayerThumbnails`, `useSlideThumbnails`) computes `sketchBackdropIds`
 once and passes `sketchBackdrop` per element; `boxedNeedsSvgRaster` sends every non-Flexible element down the SVG
 raster path so PNG matches SVG.
@@ -190,7 +289,7 @@ is. `svgChecklistShape`, `svgLegendShape` and the empty tab window letter in the
 ### Menus and dialog
 
 - `components/palette/FinishSection.tsx`: a `MenuAccordionSection` titled **Finish** holding `OptionRows`
-  (`kind="single"`, label "Drawn As") with rows `follow-tab`, `flexible`, `professional`, `sketch`: a glyph, the
+  (`kind="single"`, label "Drawn As") with rows `follow-tab`, `flexible`, `professional`, `sketch`, `marker`: a glyph, the
   `FINISH_LABELS` name and the `FINISH_DETAILS` line. Hover previews through `OptionRows`' `onPreview` /
   `onPreviewEnd` (mouse only); click commits. Mounted by `ElementColourBorderSections` (the Style flyout, arrows
   included) when `supportsFinish(target)`, and by `MultiStyleSections` for the first finish-taking member;
@@ -199,7 +298,7 @@ is. `svgChecklistShape`, `svgLegendShape` and the empty tab window letter in the
 - `lib/style-presets.ts`: `applyFinishToEl(el, finish | null)` (null deletes the key; other types unchanged).
 - `useStylePreview`: `previewFinish`, `commitFinish` (`'Finish'` telemetry type), plumbed through `useEditorState`,
   `EditorContextMenuHost` and `EditorContextMenu.types.ts` as `onPreviewFinish` / `onCommitFinish`.
-- `CanvasThemeDialog`: `CanvasThemeTab` gains `'finish'`; `components/dialogs/FinishTab.tsx` (three tiles) with help link `choosingAFinish` (`canvas/finish`); `useTabCanvas.setTabFinish` commits
+- `CanvasThemeDialog`: `CanvasThemeTab` gains `'finish'`; `components/dialogs/FinishTab.tsx` (four tiles, two columns, four from `sm`) with help link `choosingAFinish` (`canvas/finish`); `useTabCanvas.setTabFinish` commits
   `withTabFinish` (`lib/tab-style-transforms.ts`): the tab's finish, every element's own cleared, one `commit`.
 - Preview: `lib/finish-preview.ts` `finishPreviewSvg(finish, { background, theme, font })` renders
   `FINISH_PREVIEW_ELEMENTS` (fixed ids `finish-preview-*`: a 180 x 70 square "Plan the work", a 130 x 100 diamond
@@ -230,9 +329,14 @@ sticky and table.
 ## Errors and edge cases
 
 - Zero or negative size: no outline is drawn (overlay returns null), same as `BoxBorderOverlay`.
-- Stroke width none (`'none'`): Sketch draws the fill and its shading only.
+- Stroke width none (`'none'`): Sketch draws the fill and its shading only; Marker its fill and colouring only.
+- A shape thinner than the colouring nib (after the slant): no row fits inside, so it draws its solid fill uncoloured
+  rather than spill a row past its outline.
+- A hollow marker head on a line no longer than 1.5 times the cut: the line is left whole.
+- An arrow's first and last points under Marker never move (pinned), so it meets its boxes exactly.
 - Transparent fill: no fill and no hatching.
-- Huge shapes (20000 px): hatching capped at `SKETCH_HATCH_MAX_LINES`, curve samples capped at 64.
+- Huge shapes (20000 px): hatching capped at `SKETCH_HATCH_MAX_LINES`, curve samples capped at 64; Marker's colouring
+  widens its nib to keep at most `MARKER_COLOUR_MAX_ROWS` rows.
 - Degenerate arrow (length < 0.5): drawn unsketched.
 - Unknown path commands in `outlineOfPath`: the rest of the path is ignored and the outline so far is used.
 - A face with no ink (words only): the export draws no filtered group; a face with no words or photos draws no words
@@ -253,6 +357,12 @@ Cosmetic fields only; no user content reaches the geometry beyond numbers. Parti
   20000 x 20000 (measured 0.23 ms rect, 0.30 ms ellipse). Path numbers are written in tenths through integer
   formatting, which tripled the speed (fractional number-to-string was the hot spot). Measured in
   `sketch.perf.test.ts`.
+- Marker: held to the same budgets in `marker.perf.test.ts`. Measured side by side with Sketch in one process on a
+  heavily loaded machine (load average ~105, so absolute numbers are inflated): 400 x 300 square 0.140 ms against
+  Sketch's 0.108, circle 0.150 / 0.142, cloud 0.208 / 0.196, cylinder 0.261 / 0.231; 20000 x 20000 square 0.398 /
+  0.465, circle 0.624 / 0.742 (the row cap makes Marker cheaper at the largest size). A marker body is five paths at
+  most (solid, two streak layers, two ink layers) plus details; `stroke-opacity` creates no compositing layer, so
+  there is no filter or group-opacity cost.
 - Backdrops: `sketchBackdropIds` on 2,000 overlapping sketched shapes measured 0.70 ms (budget 25 ms in
   `sketch-backdrop.test.ts`); it returns at once when nothing on the tab is sketched.
 - Views memoise geometry on size / kind / stroke, never position, so a drag recomputes nothing for moved shapes; the
@@ -269,7 +379,9 @@ Cosmetic fields only; no user content reaches the geometry beyond numbers. Parti
 ## Presentation and UX
 
 - Menu rows: a glyph (a link for Follow Tab, a rounded square for Flexible, a crisp square for Professional, a wobbly
-  square for Sketch), the name, and the line "As the tab is", "Soft and rounded", "Square and fine", "Drawn by hand".
+  square for Sketch, a bold square with crossing corners and a stroke of colouring for Marker), the name, and the line
+  "As the tab is", "Soft and rounded", "Square and fine", "Drawn by hand", "Bold felt-tip".
+- Looks: **Workshop** (Sand, soft grid) is drawn in Marker, its lettering Marker's own Permanent Marker.
   The checked row is the element's own finish (Follow Tab when it has none).
 - Finish panel: tiles of glyph over name, then a "Preview" heading over the sample diagram; heading "Finish", line "How lines, corners and lettering are drawn on this
   tab." (no apply button: a pick applies to the whole tab).
@@ -286,7 +398,7 @@ its focus rings (`:focus-visible` is exempt from the shadow reset).
 
 ## Web Experience
 
-No new network requests except the Caveat stylesheet, loaded on demand by the existing font loader when a sketched
+No new network requests except the Caveat or Permanent Marker stylesheet, loaded on demand by the existing font loader when a sketched
 element first needs it; no layout shift (overlays are absolutely positioned inside fixed-size boxes).
 
 ## Observability
@@ -312,31 +424,55 @@ per command letter.
 | dialog tab sets, previews, Apply to All clears               | `apps/live/components/dialogs/CanvasThemeDialog.test.tsx`, `apps/live/hooks/canvas/useTabCanvas.test.ts` |
 | Participant cannot write `finish`                            | `packages/document/src/participant-content.leak.test.ts`                                                 |
 | which elements split their face                              | `packages/document/src/finish.test.ts`                                                                   |
+| Marker: finish rules, font, widths, icon weight, sticky      | `packages/document/src/finish.test.ts`                                                                   |
+| Marker: strokes, layers, gestures, pins, trim, heads, rows   | `packages/document/src/marker.test.ts`                                                                   |
+| Marker: budgets                                              | `packages/document/src/marker.perf.test.ts`                                                              |
+| one door to both pens; Marker in the export; backdrops       | `packages/document/src/hand-drawn.test.ts`                                                               |
 | export split, body placement, tab window frame, defs, fonts  | `packages/document/src/svg-render-sketch.test.ts`                                                        |
 | ink copy, settle and longest wait, single render             | `apps/live/components/canvas/SketchFace.test.tsx`                                                        |
 | face split per finish, element font on the wrapper           | `apps/live/components/canvas/BoxedElementView.sketch-face.test.tsx`                                      |
 
 ## Constants and configuration
 
-| Constant                        | Value  | Provenance                                                             | Safe range              |
-| ------------------------------- | ------ | ---------------------------------------------------------------------- | ----------------------- |
-| `PROFESSIONAL_CORNER_PX`        | 0      | square, the clearest break from Flexible (user feedback)               | 0 to 4                  |
-| `PROFESSIONAL_FONT_ID`          | inter  | the catalogue's neutral sans                                           | any sans font id        |
-| `SKETCH_JITTER_PX`              | 1.5    | rough.js roughness 1 reads at ~1-2 px                                  | 0.5 to 3                |
-| `SKETCH_OVERSHOOT_PX`           | 2      | visible corner crossings without stray tails                           | 0 to 4                  |
-| `SKETCH_BOW_SHARE`              | 0.02   | a visible bow on long edges (tuned by eye)                             | 0 to 0.03               |
-| `SKETCH_BOW_MAX_PX`             | 5      | stops long edges from looking bent                                     | 1 to 8                  |
-| `SKETCH_CURVE_STEP_PX`          | 20     | smooth under the spline, half the string work of 14                    | 12 to 28                |
-| `SKETCH_CURVE_JITTER_PX`        | 2      | eased wander reads like a hand at 2 px (tuned by eye)                  | 1 to 3                  |
-| `SKETCH_HATCH_ANGLE_DEG`        | -41    | rough.js default hachure angle                                         | -60 to -30              |
-| `SKETCH_HATCH_MAX_LINES`        | 300    | caps cost on huge shapes                                               | 100 to 600              |
-| `SKETCH_HATCH_OPACITY`          | 0.15   | shading that reads without distracting (softened from 0.3 on feedback) | 0.1 to 0.45             |
-| `SKETCH_FONT_ID`                | caveat | the catalogue's handwriting font                                       | any handwriting font id |
-| `SKETCH_FACE_FILTER.scale`      | 3      | matches the icons' wobble; past 4 small rules break up                 | 2 to 4                  |
-| `SKETCH_FACE_FILTER.numOctaves` | 1      | two passes broke the zoom budget on a 200-chart board (measured)       | 1                       |
-| `SKETCH_INK_SETTLE_MS`          | 120    | past a zoom frame or a keystroke, quicker than the eye follows         | 80 to 200               |
-| `SKETCH_INK_MAX_WAIT_MS`        | 1000   | a face that never settles still follows within a second                | 500 to 2000             |
+| Constant                        | Value            | Provenance                                                             | Safe range              |
+| ------------------------------- | ---------------- | ---------------------------------------------------------------------- | ----------------------- |
+| `PROFESSIONAL_CORNER_PX`        | 0                | square, the clearest break from Flexible (user feedback)               | 0 to 4                  |
+| `PROFESSIONAL_FONT_ID`          | inter            | the catalogue's neutral sans                                           | any sans font id        |
+| `SKETCH_JITTER_PX`              | 1.5              | rough.js roughness 1 reads at ~1-2 px                                  | 0.5 to 3                |
+| `SKETCH_OVERSHOOT_PX`           | 2                | visible corner crossings without stray tails                           | 0 to 4                  |
+| `SKETCH_BOW_SHARE`              | 0.02             | a visible bow on long edges (tuned by eye)                             | 0 to 0.03               |
+| `SKETCH_BOW_MAX_PX`             | 5                | stops long edges from looking bent                                     | 1 to 8                  |
+| `SKETCH_CURVE_STEP_PX`          | 20               | smooth under the spline, half the string work of 14                    | 12 to 28                |
+| `SKETCH_CURVE_JITTER_PX`        | 2                | eased wander reads like a hand at 2 px (tuned by eye)                  | 1 to 3                  |
+| `SKETCH_HATCH_ANGLE_DEG`        | -41              | rough.js default hachure angle                                         | -60 to -30              |
+| `SKETCH_HATCH_MAX_LINES`        | 300              | caps cost on huge shapes                                               | 100 to 600              |
+| `SKETCH_HATCH_OPACITY`          | 0.15             | shading that reads without distracting (softened from 0.3 on feedback) | 0.1 to 0.45             |
+| `SKETCH_FONT_ID`                | caveat           | the catalogue's handwriting font                                       | any handwriting font id |
+| `MARKER_FONT_ID`                | permanent-marker | the catalogue's marker font                                            | any marker font id      |
+| `MARKER_LINE_PX`                | 3                | a felt-tip nib: bolder than Flexible's 2, finer than Thick's 4         | 2.5 to 3.5              |
+| `MARKER_JITTER_PX`              | 0.8              | a quick, steady line (tuned by eye against Sketch's 1.5)               | 0.4 to 1.5              |
+| `MARKER_OVERSHOOT_PX`           | 3.5              | corners visibly cross, as a fast stroke does                           | 2 to 5                  |
+| `MARKER_LEAD_IN_PX`             | 1.5              | the nib lands a little early                                           | 0 to 3                  |
+| `MARKER_BOW_SHARE`              | 0.012            | flatter than a pencil (tuned by eye)                                   | 0 to 0.02               |
+| `MARKER_BOW_MAX_PX`             | 3                | long edges stay straight-looking                                       | 1 to 5                  |
+| `MARKER_CURVE_JITTER_PX`        | 1.2              | curves drift less than Sketch's                                        | 0.6 to 2                |
+| `MARKER_LOOP_OVERLAP`           | 0.1              | a closed curve's visible overlap                                       | 0.05 to 0.2             |
+| `MARKER_INK_OPACITY`            | 0.86             | crossings pool visibly, a lone line stays strong                       | 0.8 to 0.92             |
+| `MARKER_DETAIL_PX`              | 1.2              | chrome reads as ink beside the nib                                     | 0.8 to 1.5              |
+| `MARKER_COLOUR_NIB_PX`          | 12               | a broad colouring nib at 100% zoom                                     | 8 to 16                 |
+| `MARKER_COLOUR_STEP`            | 0.74             | rows overlap by a quarter: visible streaks, no gaps                    | 0.6 to 0.85             |
+| `MARKER_COLOUR_ANGLE_DEG`       | -22              | a right-hander's slant, ±6° per element                                | -35 to -10              |
+| `MARKER_COLOUR_RAGGED_PX`       | 5                | row ends show inside the outline                                       | 0 to 8                  |
+| `MARKER_COLOUR_MAX_ROWS`        | 200              | caps cost on huge shapes                                               | 100 to 400              |
+| `MARKER_STREAK_OPACITY`         | 0.07             | one row a tint, two a streak, labels unaffected                        | 0.04 to 0.12            |
+| `MARKER_TABLE_FRAME_PX`         | 2.5              | reads as marker over the grid's own rules                              | 2 to 3                  |
+| `MARKER_HEAD_SCALE_MAX_PX`      | 2.5              | a 3 px line's head would swamp it (15 px long, not 18, at medium)      | 2 to 3                  |
+| `SKETCH_FACE_FILTER.scale`      | 3                | matches the icons' wobble; past 4 small rules break up                 | 2 to 4                  |
+| `SKETCH_FACE_FILTER.numOctaves` | 1                | two passes broke the zoom budget on a 200-chart board (measured)       | 1                       |
+| `SKETCH_INK_SETTLE_MS`          | 120              | past a zoom frame or a keystroke, quicker than the eye follows         | 80 to 200               |
+| `SKETCH_INK_MAX_WAIT_MS`        | 1000             | a face that never settles still follows within a second                | 500 to 2000             |
 
 ## Assets and external resources
 
-Caveat is already in the font catalogue (`packages/document/src/fonts.ts`, Google Fonts, OFL). No new asset.
+Caveat and Permanent Marker are already in the font catalogue (`packages/document/src/fonts.ts`, Google Fonts, OFL
+and Apache 2.0). No new asset.

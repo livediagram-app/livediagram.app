@@ -189,6 +189,8 @@ only when something on it is sketched (0.7 ms for 2,000 elements), and an elemen
 own backdrop flag flips. Generating one element's strokes and hatching stays under
 0.2 ms at worst-case sizes, so a 500-element sketched tab costs under 100 ms to draw from cold and nothing per
 drag frame for unmoved elements ([Canvas performance](canvas-performance.md)).
+Marker is held to the same budgets: it computes from the same inputs, is memoised the same way, and draws at most
+five paths per body with no filter, so it costs about what Sketch does.
 
 A sketched face costs one still copy of its DOM, taken once it settles (so a zoom, which restyles faces every
 frame, copies each once afterwards), and one light wobble filter. On a Sketch tab of 200 charts, copying every face
