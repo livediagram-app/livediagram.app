@@ -57,8 +57,7 @@ describe('a Mermaid import', () => {
   it('keeps a long label whole, where an agent gets a heading', () => {
     const long = 'Validate the order against the stock levels held by the warehouse service';
     const text = `flowchart TD\n  A[${long}] --> B[Ship]`;
-    const label = (els: Element[]) =>
-      (byId(els, 'A') as BoxedElement & { label?: string }).label ?? '';
+    const label = (els: Element[]) => byId(els, 'A').label ?? '';
     expect(label(imported(text))).toBe(long);
     const read = graphFromMermaid(text);
     if (!read.ok) throw new Error(read.error);
