@@ -122,7 +122,7 @@ test.describe('Optical alignment audit', () => {
 
     await page.goto('/explorer/all');
     await documentRow(page, 'Contrast').waitFor();
-    await expectCentred(page, 'Explorer, My documents');
+    await expectCentred(page, 'Explorer, My Documents');
     expectNoPageErrors(pageErrors);
   });
 });

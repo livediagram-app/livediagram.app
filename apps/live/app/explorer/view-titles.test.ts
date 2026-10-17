@@ -19,14 +19,14 @@ describe('VIEW_TITLES', () => {
     expect(VIEW_TITLES.invites).toBe(SIDEBAR_LABELS.invites);
   });
 
-  it('reads Home, Inbox, Timeline, Shared with me and This browser', () => {
+  it('reads Home, Inbox, Timeline, Shared With Me and This Browser', () => {
     expect([
       VIEW_TITLES.home,
       VIEW_TITLES.inbox,
       VIEW_TITLES.timeline,
       VIEW_TITLES.shared,
       VIEW_TITLES.offline,
-    ]).toEqual(['Home', 'Inbox', 'Timeline', 'Shared with me', 'This browser']);
+    ]).toEqual(['Home', 'Inbox', 'Timeline', 'Shared With Me', 'This Browser']);
   });
 
   it('keeps their own names for the views without a row', () => {

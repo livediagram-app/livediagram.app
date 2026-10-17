@@ -135,11 +135,11 @@ Wire DTOs (`Team`, `TeamListItem`, `TeamMember`, `TeamRole`) live in `@livediagr
 
 ## Explorer UI
 
-In the Explorer sidebar, each team is a root-level folder row in the **Spaces** group, after **My documents**: the two kinds of space read as the same noun ([Explorer structure](explorer-structure.md)).
+In the Explorer sidebar, each team is a root-level folder row in the **Spaces** group, after **My Documents**: the two kinds of space read as the same noun ([Explorer structure](explorer-structure.md)).
 
 - One row per team the user has joined; selecting it shows the team in the right pane, and it expands to the team's folders.
 - An **Invites** row, shown while an invite is pending, with a count badge. Selecting it shows each pending invite as a card (team name, organisation, joined-member count) with **Accept** and **Decline** actions. Accepting selects the newly joined team; declining removes the card.
-- **New team**, the group's last row (signed-in only), opens a create modal (name + organisation); submitting creates the team with the user as Admin. A guest sees the sign-in nudge in its place.
+- **New Team**, the group's last row (signed-in only), opens a create modal (name + organisation); submitting creates the team with the user as Admin. A guest sees the sign-in nudge in its place.
 
 The right-pane team view is **one calm card**, not a stack of panels:
 

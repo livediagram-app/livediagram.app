@@ -56,7 +56,7 @@ export function TeamPane({
   onLoadResult?: (found: boolean) => void;
   // Full move destinations + cross-scope router for the shared-documents
   // move picker (docs/specs/013-workspace/team-shared-documents.md): passed straight through to TeamSharedDocuments
-  // so a team document can be re-homed to My documents / another team.
+  // so a team document can be re-homed to My Documents / another team.
   moveDests?: ComponentProps<typeof TeamSharedDocuments>['moveDests'];
   onMoveDocumentTo?: ComponentProps<typeof TeamSharedDocuments>['onMoveDocumentTo'];
   // The Explorer's lens (docs/specs/013-workspace/explorer-filters.md), passed straight through.

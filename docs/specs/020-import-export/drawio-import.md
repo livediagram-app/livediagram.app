@@ -50,7 +50,7 @@ One file or one pasted text. The importer sniffs the content, never the file nam
 | `.drawio.png`                    | the PNG signature                                       | a `tEXt` or `zTXt` chunk keyed `mxfile` or `mxGraphModel`, URI-decoded; `zTXt` is zlib inflated |
 | pasted XML                       | as for the file forms above                             | as above                                                                                        |
 | JSON export                      | a JSON object with `version` and a `pages` array        | see "The JSON export" below                                                                     |
-| shape library (`mxlibrary`)      | root element `mxlibrary` holding a JSON array           | not a diagram: it becomes a shape library (see "Shape libraries" below)                         |
+| shape library (`mxlibrary`)      | root element `mxlibrary` holding a JSON array           | not a diagram: it becomes a shape library (see "Shape Libraries" below)                         |
 
 A PNG or SVG without an embedded diagram is refused with a message saying so ("This PNG has no draw.io
 diagram inside. In draw.io, export as PNG with 'Include a copy of my diagram' ticked."). Refusals are
@@ -99,7 +99,7 @@ refused ("None of this library's shapes could be read."). A library keeps its fi
 
 Each imported library becomes **its own named shape library** of the person importing it, as
 [Shape libraries](../013-workspace/shape-libraries.md) defines (palette **My shapes**, the Explorer's
-**Shape libraries** page): named after the file, never merged with another library. The tab Import
+**Shape Libraries** page): named after the file, never merged with another library. The tab Import
 dialog does not take libraries; pasted or picked there, one is refused with "This is a draw.io shape
 library. Import it with Import from draw.io on the Explorer page to add it to My shapes."
 

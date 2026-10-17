@@ -257,7 +257,7 @@ export function useDocumentListActions(deps: DocumentListActionsDeps) {
         // The row leaves the current view (it's now under the target
         // folder / the root), so confirm where it went — only once the
         // server actually accepted the move.
-        toast.success(folderId ? 'Moved to folder' : 'Moved to My documents');
+        toast.success(folderId ? 'Moved to folder' : 'Moved to My Documents');
         track('Document', 'Moved');
       })
       .catch((err: unknown) => {

@@ -1,5 +1,5 @@
 // Explorer feed illustrations (docs/specs/018-help/help-app.md): Home (Jump back in and What
-// happened), the Timeline feed and its stacking, the Inbox, Recent, Shared with me,
+// happened), the Timeline feed and its stacking, the Inbox, Recent, Shared With Me,
 // and the Spaces group of the sidebar with its teams. Drawn from the real labels in apps/live
 // (sidebar-structure.ts, home-copy.ts, ActivityPane.tsx, views.tsx, the @livediagram/ui timeline).
 // Composed from the shared primitives plus the Explorer parts, so the house style holds.
@@ -636,7 +636,7 @@ export function InboxSections() {
 export function RecentView() {
   const rows: { name: string; chip?: string; meta: string }[] = [
     { name: 'Q3 roadmap', chip: 'Planning', meta: '4m ago' },
-    { name: 'Onboarding flow', chip: 'My documents', meta: '1h ago' },
+    { name: 'Onboarding flow', chip: 'My Documents', meta: '1h ago' },
     { name: 'Incident runbook', chip: 'Platform team', meta: 'yesterday' },
     { name: 'Hiring plan', meta: '2 days ago' },
   ];
@@ -686,7 +686,7 @@ export function RecentView() {
   );
 }
 
-/** Shared with me: a table of name, owner, role, last update, and the dismiss cross. */
+/** Shared With Me: a table of name, owner, role, last update, and the dismiss cross. */
 export function SharedWithMeTable() {
   const rows = [
     { name: 'Sprint board', owner: 'Maya Patel', role: 'Edit', at: '2h ago' },
@@ -700,7 +700,7 @@ export function SharedWithMeTable() {
         <SidebarGlyph kind="shared" active />
       </g>
       <Label x={54} y={30} size={12} weight={700} tone="strong">
-        Shared with me
+        Shared With Me
       </Label>
       <line x1={16} y1={44} x2={404} y2={44} className="stroke-slate-200" strokeWidth={1.5} />
       <rect x={28} y={52} width={364} height={20} rx={4} className="fill-slate-50" />
@@ -772,7 +772,7 @@ export function SharedWithMeTable() {
   );
 }
 
-/** The sidebar's Spaces group when signed in: My documents, each team (expandable to its shared
+/** The sidebar's Spaces group when signed in: My Documents, each team (expandable to its shared
  *  folders, with a member count), Invites while one waits, and New team. */
 export function TeamSpacesSidebar() {
   const x = 100;
@@ -802,7 +802,7 @@ export function TeamSpacesSidebar() {
         SPACES
       </Label>
       {chevron(x + w - 18, 49, false)}
-      <SidebarRow x={x} y={38} w={w - 20} label="My documents" glyph="folder" />
+      <SidebarRow x={x} y={38} w={w - 20} label="My Documents" glyph="folder" />
       {chevron(x + w - 18, 73, true)}
       <SidebarRow x={x} y={62} w={w - 20} label="Platform team" glyph="team" count={5} active />
       <SidebarRow x={x} y={86} w={w - 20} label="Roadmaps" glyph="folder" indent={16} />
@@ -841,7 +841,7 @@ export function TeamSpacesSidebar() {
       <Label x={x + w - 39} y={169} anchor="middle" size={10} weight={700} tone="muted">
         1
       </Label>
-      {/* New team: a plus, last in Spaces. */}
+      {/* New Team: a plus, last in Spaces. */}
       <path
         d={`M${x + 16} 188 v10 M${x + 11} 193 h10`}
         className="stroke-slate-400"
@@ -849,7 +849,7 @@ export function TeamSpacesSidebar() {
         strokeLinecap="round"
       />
       <Label x={x + 32} y={193} size={10} weight={500} tone="body">
-        New team
+        New Team
       </Label>
     </Scene>
   );

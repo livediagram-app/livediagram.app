@@ -47,7 +47,7 @@ type DocumentActionsDeps = {
   sessionShareCode: string | null;
   // Post-move refreshes for the scope-aware mover below: the team
   // libraries sweep (a row moved within / left a team) and the personal
-  // list (a document landed in — or left — My documents).
+  // list (a document landed in — or left — My Documents).
   refreshTeamLibraries: () => void;
   refreshDocumentList: () => Promise<void> | void;
   // Fired after a successful scope-aware move so the editor can sync any
@@ -127,7 +127,7 @@ export function useDocumentActions(deps: DocumentActionsDeps) {
         refreshTeamLibraries();
         void refreshDocumentList();
         onDocumentScopeChanged?.(id, dest.teamId);
-        toast.success(dest.teamId ? 'Moved to the team library' : 'Moved to My documents');
+        toast.success(dest.teamId ? 'Moved to the team library' : 'Moved to My Documents');
         if (fromTeamId === null && dest.teamId) track('Team', 'Added', 'Document');
         else track('Team', 'Moved', 'Document');
       })

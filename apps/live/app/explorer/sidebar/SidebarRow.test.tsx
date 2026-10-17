@@ -13,8 +13,8 @@ const row = (props: Partial<React.ComponentProps<typeof SidebarRow>> = {}) =>
     <ul role="tree" aria-label="Spaces">
       <SidebarRow
         icon={<svg data-testid="icon" />}
-        label="My documents"
-        textLabel="My documents"
+        label="My Documents"
+        textLabel="My Documents"
         selected={false}
         onActivate={() => {}}
         depth={0}
@@ -71,10 +71,10 @@ describe('SidebarRow', () => {
 
   it('is a treeitem with its level, selection and label', () => {
     row({ depth: 1, selected: true });
-    const item = screen.getByRole('treeitem', { name: 'My documents' });
+    const item = screen.getByRole('treeitem', { name: 'My Documents' });
     expect(item.getAttribute('aria-level')).toBe('2');
     expect(item.getAttribute('aria-selected')).toBe('true');
-    expect(item.dataset.treeLabel).toBe('My documents');
+    expect(item.dataset.treeLabel).toBe('My Documents');
   });
 
   it('carries aria-expanded only when it can expand', () => {
@@ -107,7 +107,7 @@ describe('SidebarRow', () => {
   it('activates from its label', () => {
     const onActivate = vi.fn();
     row({ onActivate });
-    fireEvent.click(screen.getByText('My documents'));
+    fireEvent.click(screen.getByText('My Documents'));
     expect(onActivate).toHaveBeenCalledTimes(1);
   });
 

@@ -59,7 +59,7 @@ const LOOK: Record<
   },
   offline: {
     icon: <ThisBrowserIcon size={14} />,
-    reach: 'This browser',
+    reach: 'This Browser',
     stop: 'bg-amber-500 text-white ring-amber-200 dark:bg-amber-400 dark:text-amber-950 dark:ring-amber-500/40',
     hero: 'from-amber-50 to-white dark:from-amber-500/15 dark:to-slate-900',
     ink: 'text-amber-600 dark:text-amber-300',

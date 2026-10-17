@@ -183,9 +183,9 @@ Explorer lists follow after the paint.
   offline documents; offline rows never trigger a server fetch (list, thumbnail,
   or otherwise).
 - **The reader's own.** An offline document counts as one of the reader's own
-  documents: Space `mine` and owner "You", like a document in My documents
+  documents: Space `mine` and owner "You", like a document in My Documents
   ([Explorer structure: Local only documents](../013-workspace/explorer-structure.md#local-only-documents)).
-- **Sidebar.** The full-page Explorer's **This browser** row (the More group,
+- **Sidebar.** The full-page Explorer's **This Browser** row (the More group,
   [Explorer structure](../013-workspace/explorer-structure.md)) opens
   `/explorer/offline`, the list of every offline document, titled **This
   browser**; the row shows while this browser holds at least one.
@@ -296,13 +296,13 @@ Share dialog gate, Share Form's, and the move prompt after signing in).
   anywhere); the per-tab byte cap surfaces a hard failure to the caller.
 - **Everything on the record travels**, not just tabs: the slide deck
   ([Presentation mode](../012-collaboration/presentation-mode.md)), the created date, the folder (kept only when it is one of the
-  caller's own personal folders, else the root of My documents) and the star ([Favourite documents](../013-workspace/favourites.md)). The
+  caller's own personal folders, else the root of My Documents) and the star ([Favourite documents](../013-workspace/favourites.md)). The
   local copy is deleted next, so anything the create leaves behind is gone.
 - **A refused folder lands at the root, on the sync's say-so.** The create carries the folder as
   its placement ([Folders → Placement on create](../013-workspace/folders.md#placement-on-create)),
   and the server refuses a folder deleted since, or not the caller's, by name rather than
   filing it elsewhere. On `folder_not_found` or `folder_scope_mismatch` the sync creates the
-  document again at the root of My documents and logs `[offline-sync] placement refused reason=<code>, filed at root`;
+  document again at the root of My Documents and logs `[offline-sync] placement refused reason=<code>, filed at root`;
   any other failure fails the sync and keeps the local copy.
 - **A forked tab comes back as its own tab.** The create never writes into a tab
   another document holds: a seeded tab whose id is already taken outside this
@@ -353,7 +353,7 @@ confirmation:
   server row they live on is about to be deleted. The star is read from the account's
   favourites; if that read fails the conversion aborts before anything is written,
   rather than taking the document as unstarred and losing the star with the row. A team document's folder is a
-  team folder, which has no place in the personal tree, so it lands at the root of My documents.
+  team folder, which has no place in the personal tree, so it lands at the root of My Documents.
 - **Shared tabs fork.** A tab also linked into other documents
   ([Tab ↔ document many-to-many](tab-document-many-to-many.md)) is not taken
   away from them: the server delete keeps it there whole, history included, and

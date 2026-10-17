@@ -48,7 +48,7 @@ export function documentSubject(summary: LensDocumentSummary, viewerId: string):
   };
 }
 
-/** A row of Shared with me: always someone else's, and silent on provenance, mode, kind and family. */
+/** A row of Shared With Me: always someone else's, and silent on provenance, mode, kind and family. */
 export function sharedSubject(item: { name: string; savedAt: number }): LensSubject {
   return {
     name: item.name,

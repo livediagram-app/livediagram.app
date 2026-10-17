@@ -1573,7 +1573,7 @@ Overview
   ⌂  Home              ← Home, the landing view; badge: unread feed events
   ◔  Inbox
   ┆  Timeline          ← this feed
-  ↗  Shared with me
+  ↗  Shared With Me
 ```
 
 The badge counts only OTHER people's events since the reader last looked (§2.5). Viewing Home counts as having

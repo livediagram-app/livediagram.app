@@ -45,7 +45,7 @@ export function TrashView() {
       </Panel>
       <Panel x={14} y={154} w={392} h={62}>
         <Label x={30} y={176} size={11} weight={700} tone="strong">
-          This browser only
+          This Browser only
         </Label>
         <Label x={30} y={198} size={10} tone="muted">
           Offline sketch · Deleted 3 Oct · 26 days left

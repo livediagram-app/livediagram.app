@@ -13,7 +13,7 @@ import {
 const groups = panelSectionGroups({ teams: [{ id: 't1' }], hasBrowserDocuments: true });
 
 describe('the editor Explorer sections', () => {
-  it("lists the sidebar's groups, This browser only while it holds documents", () => {
+  it("lists the sidebar's groups, This Browser only while it holds documents", () => {
     expect(groups.map((g) => g.sections.map(sectionKey))).toEqual([
       ['home', 'inbox', 'timeline', 'shared'],
       ['mine', 'team:t1'],
@@ -32,7 +32,7 @@ describe('the editor Explorer sections', () => {
   });
 
   it('names each section, a team by its name', () => {
-    expect(sectionLabel({ kind: 'mine' })).toBe('My documents');
+    expect(sectionLabel({ kind: 'mine' })).toBe('My Documents');
     expect(sectionLabel({ kind: 'team', id: 't1' }, () => 'Design guild')).toBe('Design guild');
     expect(sectionLabel({ kind: 'team', id: 't1' })).toBe('Team');
   });

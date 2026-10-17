@@ -688,7 +688,7 @@ export const EXPLORER_SIDEBAR_PICKS = chart(
   'UI',
   'Selected',
   'Explorer Sidebar Picks',
-  "A row picked in the Explorer sidebar or the editor's Explorer panel: Home, Inbox, Timeline, a space or folder, This browser, the Library pages, or Trash. Picks of the Activity row, the Inbox's old name, still count here as history.",
+  "A row picked in the Explorer sidebar or the editor's Explorer panel: Home, Inbox, Timeline, a space or folder, This Browser, the Library pages, or Trash. Picks of the Activity row, the Inbox's old name, still count here as history.",
   {
     typeIn: (type) =>
       (type ?? '').startsWith('Sidebar.') || (type ?? '').startsWith('ExplorerPanel.'),
@@ -744,7 +744,7 @@ export const DEFAULT_FOLDERS_CLEARED = chart(
   'Folder',
   'Cleared',
   'Default Folders Cleared',
-  'A default folder cleared, so new documents of that kind land in My documents again.',
+  'A default folder cleared, so new documents of that kind land in My Documents again.',
   { rising: 'neutral' },
 );
 

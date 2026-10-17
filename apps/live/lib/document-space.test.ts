@@ -18,7 +18,7 @@ describe('documentSpace', () => {
     expect(documentSpace({ ownerId: 'offline' })).toBe('mine');
   });
 
-  it("counts a document in My documents as the reader's own", () => {
+  it("counts a document in My Documents as the reader's own", () => {
     expect(documentSpace({ ownerId: 'user_1' })).toBe('mine');
   });
 
@@ -26,7 +26,7 @@ describe('documentSpace', () => {
     expect(documentSpace({ ownerId: 'user_2', team: { id: 't1', name: 'Guild' } })).toBe('team');
   });
 
-  it('places a document shared with the reader under Shared with me', () => {
+  it('places a document shared with the reader under Shared With Me', () => {
     expect(
       documentSpace({ ownerId: '', shared: { ownerName: null, role: 'view', shareCode: 's' } }),
     ).toBe('shared');

@@ -89,7 +89,7 @@ test('the Explorer lands on Home: Jump back in, then What happened, no Timeline'
     name: /^(Sam and Priya|Priya and Sam) commented and edited in Payments architecture/,
   });
   await expect(summary).toHaveAttribute('aria-expanded', 'false');
-  await expect(summary).toContainText('My documents');
+  await expect(summary).toContainText('My Documents');
   await summary.click();
   await expect(summary).toHaveAttribute('aria-expanded', 'true');
   const actions = page.locator(`#${await summary.getAttribute('aria-controls')}`);

@@ -18,7 +18,7 @@ export type PlacementSpaces = {
   teamFolders: Record<string, PickerFolder[]>;
 };
 
-/** Whether the surface opens on the space overview: wherever My documents or two spaces are on offer. */
+/** Whether the surface opens on the space overview: wherever My Documents or two spaces are on offer. */
 export function hasSpaceOverview({ showPersonal, teams }: PlacementSpaces): boolean {
   return showPersonal || teams.length > 1;
 }

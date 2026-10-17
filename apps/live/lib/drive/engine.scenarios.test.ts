@@ -512,9 +512,9 @@ describe('the root folder name in the status (blueprint "Cloud Sync in Settings"
     await engine.start();
     // The test host is a self-hosted one.
     expect(statuses.at(-1)!.rootName).toBe('livediagram (self-hosted)');
-    w.google.userRename(w.ld.connection!.rootFolderId!, 'My documents');
+    w.google.userRename(w.ld.connection!.rootFolderId!, 'My Documents');
     await engine.syncNow();
-    expect(statuses.at(-1)!.rootName).toBe('My documents');
+    expect(statuses.at(-1)!.rootName).toBe('My Documents');
   });
 
   it('reads the name of a root it finds on arrival', async () => {

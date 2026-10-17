@@ -13,7 +13,7 @@ import { SidebarGroup } from './SidebarGroup';
 import { SidebarRow } from './SidebarRow';
 import { inboxBadge } from './inbox-badge';
 
-// Overview (docs/specs/013-workspace/explorer-structure.md): Home, Inbox, Timeline, Shared with me.
+// Overview (docs/specs/013-workspace/explorer-structure.md): Home, Inbox, Timeline, Shared With Me.
 export function OverviewGroup({ divider, first }: { divider: SidebarDivider; first: boolean }) {
   const { selected, go, shared, timelineUnread, activity } = useExplorer();
   return (

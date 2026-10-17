@@ -4,7 +4,7 @@ import { act, renderHook, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // The "Use as default for" submenu's checks (docs/specs/013-workspace/default-folders.md "Use as
-// default for"): a folder holds the keys pointing at it; My documents holds the keys with no
+// default for"): a folder holds the keys pointing at it; My Documents holds the keys with no
 // working default, and only clears.
 
 const { api } = vi.hoisted(() => ({
@@ -67,7 +67,7 @@ describe('useDefaultFolderMenus', () => {
     expect(result.current.forFolder({ id: 'x', teamId: 'team-left' })).toBeUndefined();
   });
 
-  it('checks My documents for keys with no working default, and only clears', async () => {
+  it('checks My Documents for keys with no working default, and only clears', async () => {
     const { result } = await ready();
     const root = result.current.forRoot!;
     expect(root.isChecked('mode:diagram')).toBe(true);

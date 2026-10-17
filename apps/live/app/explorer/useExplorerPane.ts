@@ -69,7 +69,7 @@ export function useExplorerPane({
   viewerId: string;
   now: number;
 }) {
-  // A document saved only in this browser lives in This browser, not at the root of My documents
+  // A document saved only in this browser lives in This browser, not at the root of My Documents
   // (docs/specs/013-workspace/explorer-structure.md); filed in one of the reader's folders, it is
   // listed there.
   const documentsByFolder = useMemo(
@@ -176,7 +176,7 @@ export function useExplorerPane({
     };
   }, [base, paneContent.documents.length, lensSet, selected.kind, viewerId]);
 
-  // The sidebar's Recent count, mirroring "Shared with me": how many rows Recent shows, capped.
+  // The sidebar's Recent count, mirroring "Shared With Me": how many rows Recent shows, capped.
   const recentCount = useMemo(() => {
     const visible =
       liveDocs.filter((d) => !excluded.has(d.id)).length +
@@ -193,7 +193,7 @@ export function useExplorerPane({
   }, [selected, folderById, teams]);
 
   // Breadcrumb segments for the pane header, following the sidebar's rows. The leaf (the current
-  // view) is plain text. Folders sit under My documents, Recent under Home; every
+  // view) is plain text. Folders sit under My Documents, Recent under Home; every
   // other view is its own single leaf.
   type Crumb = { name: string; onClick?: () => void };
   const paneCrumbs = useMemo<Crumb[]>(() => {

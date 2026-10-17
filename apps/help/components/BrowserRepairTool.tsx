@@ -47,7 +47,7 @@ export function BrowserRepairTool() {
 
   return (
     <div className="not-prose my-6 rounded-xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-800 dark:bg-slate-900/60">
-      <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">This browser</p>
+      <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">This Browser</p>
       <ul
         aria-live="polite"
         className="mt-2 mb-4 space-y-1 font-mono text-xs text-slate-600 dark:text-slate-300"

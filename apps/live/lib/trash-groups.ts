@@ -51,7 +51,7 @@ export function trashGroups(listing: TrashListing): TrashGroup[] {
   if (listing.local.length > 0) {
     groups.push({
       key: 'local',
-      title: 'This browser only',
+      title: 'This Browser only',
       scope: { kind: 'local' },
       telemetryType: 'Local',
       rows: listing.local,

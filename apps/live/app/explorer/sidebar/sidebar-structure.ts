@@ -12,22 +12,22 @@ export const SIDEBAR_GROUP_TITLES = {
 
 export type SidebarGroupId = keyof typeof SIDEBAR_GROUP_TITLES;
 
-// Sentence-case copy for every fixed row. Read by the sidebar and by the
+// Title Case copy for every fixed row. Read by the sidebar and by the
 // floating Explorer panel, which names its spaces with the same words.
 export const SIDEBAR_LABELS = {
   home: 'Home',
   inbox: 'Inbox',
   timeline: 'Timeline',
-  shared: 'Shared with me',
-  myDocuments: 'My documents',
+  shared: 'Shared With Me',
+  myDocuments: 'My Documents',
   invites: 'Invites',
-  newTeam: 'New team',
-  thisBrowser: 'This browser',
+  newTeam: 'New Team',
+  thisBrowser: 'This Browser',
   tags: 'Tags',
   library: 'Library',
-  gallery: 'Image gallery',
+  gallery: 'Image Gallery',
   themes: 'Themes',
-  shapeLibraries: 'Shape libraries',
+  shapeLibraries: 'Shape Libraries',
   trash: 'Trash',
 } as const;
 

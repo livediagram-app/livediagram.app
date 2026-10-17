@@ -60,7 +60,7 @@ function Harness({
   return (
     <PanelExplorerTree
       section={section}
-      rootLabel="My documents"
+      rootLabel="My Documents"
       tree={tree}
       shared={shared}
       ownIndex={{
@@ -104,7 +104,7 @@ afterEach(() => {
 });
 
 describe('PanelExplorerTree', () => {
-  it('shows My documents as its folders, then its documents, a folder opening in place under the back bar', () => {
+  it('shows My Documents as its folders, then its documents, a folder opening in place under the back bar', () => {
     render(<Harness section={{ kind: 'mine' }} />);
     expect(rows()).toEqual(['Projects', 'Loose notes']);
     expect(screen.queryByText('Unsorted')).toBeNull();
@@ -112,7 +112,7 @@ describe('PanelExplorerTree', () => {
     expect(rows()).toEqual(['Plan']);
     expect(row('Plan').getAttribute('aria-current')).toBe('true');
     // The import and export screens' back bar: back to the root, the folder as its chip.
-    const back = screen.getByRole('button', { name: /^My documents/ });
+    const back = screen.getByRole('button', { name: /^My Documents/ });
     expect(back.textContent).toContain('Projects');
     fireEvent.click(back);
     expect(rows()).toEqual(['Projects', 'Loose notes']);

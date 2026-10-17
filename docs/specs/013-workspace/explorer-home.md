@@ -40,8 +40,8 @@ Its content sits in the Explorer's content width.
 Top to bottom, left column:
 
 - **Status pills**, two, each a link with a coloured dot:
-  - the person's documents: "1 document" / "N documents" (My documents, the person's own space, this browser's
-    Local only documents not counted), opening **My documents**; a green dot;
+  - the person's documents: "1 document" / "N documents" (My Documents, the person's own space, this browser's
+    Local only documents not counted), opening **My Documents**; a green dot;
   - the Inbox: "Inbox is clear" when no open action is assigned to the person, else "N open in your Inbox", the
     sidebar's Inbox count ([Inbox](inbox.md)), opening the **Inbox**; a sky dot.
   - A pill is drawn once its count is known: never "0 documents" while the lists load, nor "Inbox is clear" for an
@@ -57,7 +57,7 @@ Top to bottom, left column:
   after what was typed, so the typing carries on uninterrupted.
 
 The right column, on a wide screen only (`lg` and up), shows **fanned sheets**: the snapshot thumbnails of the
-person's three most recently saved documents of My documents, the newest in front and the two behind turned out to
+person's three most recently saved documents of My Documents, the newest in front and the two behind turned out to
 either side, each on a white sheet with a soft shadow. They are decoration (hidden from assistive technology, not
 links): Jump back in is the way in. With fewer than three, fewer sheets; with none, the column is empty and the text
 keeps its width.
@@ -212,7 +212,7 @@ the **4 most used** and the **4 most recent**, no document twice.
 - A one-person entry is a link that opens the document. A comment or reply shows its words beneath, an action its
   name, on one line; then where the document lives and the time.
 - "Where the document lives" reads the team's name for a document in a team (whoever reaches it, its owner included)
-  or **My documents**, then `›` and the folder when it has one; a
+  or **My Documents**, then `›` and the folder when it has one; a
   document shared with the person reads **Shared by** and the owner's name.
 - A person without a known name is **Someone**. A summary names at most three people, then "and N others".
 - Times are clock times in the person's own time zone and locale (`14:05`, `2:05 PM`), under the day heading that dates
@@ -243,7 +243,7 @@ An **open** is the editor loading a document for a person to look at.
   Offline, the Google Drive mirror, and any read through the public API or an AI tool.
 - Opens are **private**. Only the person who opened a document ever sees that they did: in their Jump back in, never in What happened, a document's
   History, a team's feed, or the Timeline feed ([Timeline](timeline.md)).
-- Offline Mode documents never reach the server, so the server records none of their opens. **This browser counts
+- Offline Mode documents never reach the server, so the server records none of their opens. **This Browser counts
   them instead**: the editor opening a document stored only here adds the day to that document's own record in
   this browser, by the same once-per-UTC-day rule, keeping the days of the last 90, and moves its last open. Its
   last edit is the record's own save time. Making a document here starts that record with the day and the moment

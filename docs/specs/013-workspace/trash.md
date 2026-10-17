@@ -65,7 +65,7 @@ One view lists everything the person can restore, grouped:
 
 - **Your documents**: the personal Trash.
 - **One group per team** the person has joined, named after the team.
-- **This browser only**: the local Trash of offline documents, labelled as such.
+- **This Browser only**: the local Trash of offline documents, labelled as such.
 
 Each row shows the document's name, when it was deleted, and how many days are
 left before it is purged. A document the clean-up moved says so instead: "Moved

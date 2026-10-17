@@ -36,7 +36,7 @@ const ROWS: { label: string; glyph: ReactNode }[] = [
     ),
   },
   {
-    label: 'My documents',
+    label: 'My Documents',
     glyph: (
       <path
         d="M-5.5 -4 h4 l1.5 1.5 h5.5 v7 h-11 Z"
@@ -231,7 +231,7 @@ function Thumb({ x, y, kind }: { x: number; y: number; kind: (typeof DOCS)[numbe
   }
 }
 
-// Explorer: the document library. The sidebar with My documents open, and a grid of documents, each card a
+// Explorer: the document library. The sidebar with My Documents open, and a grid of documents, each card a
 // glimpse of what is inside it.
 export function ExplorerArt() {
   return (
@@ -265,7 +265,7 @@ export function ExplorerArt() {
         })}
 
         <Label x={136} y={50} size={12} weight={700} tone="strong">
-          My documents
+          My Documents
         </Label>
         <rect x={322} y={41} width={50} height={18} rx={6} className="fill-slate-100" />
         <rect
