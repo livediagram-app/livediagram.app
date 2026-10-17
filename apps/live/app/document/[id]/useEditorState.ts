@@ -3489,6 +3489,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     activeTab,
     drawMode,
     commit,
+    discardLastStep: cancelToCheckpoint,
     tickTabs,
     applyFormatFromSource,
     lockedByOther,
