@@ -254,8 +254,8 @@ export function TableView({
   const rowTemplate = gridTrackTemplate(rows, resizeHeights ?? element.rowHeights);
   // The table's quick-connect pluses sit on the edge MIDPOINTS (docs/specs/008-canvas/canvas-and-palette.md),
   // right where a centre column / row's ⋯ trigger would land now the
-  // triggers live outside the edges. When a trigger's centre falls under
-  // the plus, dodge it sideways / downwards by a screen-constant nudge.
+  // triggers live outside the edges. The one trigger whose centre falls
+  // under the plus steps aside (TableAxisControls, plusDodgeTrack).
   const colSizes = tableTrackSizes(element.width, cols, resizeWidths ?? element.colWidths);
   const rowSizes = tableTrackSizes(element.height, rows, resizeHeights ?? element.rowHeights);
 
