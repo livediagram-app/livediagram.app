@@ -190,10 +190,13 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
         />
       </EmbedShell>
     ) : (
-      <StatusShell title={page ? 'Page not found' : 'Document not found'} explorer={fullExplorer}>
+      // No Explorer panel beside it: the card stands alone and offers the Explorer as a button
+      // (docs/specs/007-editor/new-document-route.md "Unknown addresses").
+      <StatusShell title={page ? 'Page not found' : 'Document not found'}>
         <NotFound
           page={page}
           onCreateNew={() => window.location.assign(`${window.location.origin}/new`)}
+          onOpenExplorer={() => window.location.assign(`${window.location.origin}/explorer`)}
         />
       </StatusShell>
     );

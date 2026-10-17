@@ -123,10 +123,14 @@ A genuinely unknown address (a mistyped page, `/explorer/mine`, or a page an
 older build had) reaches the editor through the same slot. It names no
 document (`documentIdFromPath` reads no id off anything but
 `/document/<id>`) and carries no share link, so the editor shows the in-app
-`<NotFound>` card over the Explorer at once, titled **Page not found**
+`<NotFound>` card at once, titled **Page not found**
 ("There is no page at this address. Open a document from the Explorer or
-start fresh.") with its "Create a new document" button, and asks the API for
-nothing. Only the editor's own empty route (`/document`,
+start fresh.") with its **Open Explorer** and **New Document** buttons, and asks
+the API for nothing. A document that is missing or not yours gets the same card
+titled **Document not found**. The card stands alone under the app header, with
+no Explorer panel beside it: its buttons are the way on (Open Explorer goes to
+`/explorer`, New Document to `/new`). An embed shows the card with New Document
+only, opening the app in a new tab. Only the editor's own empty route (`/document`,
 `/document/placeholder`) hands off to `/new`. Before, every address without a
 document id went to `/new`, so a mistyped or retired page opened the New
 Document wizard with no word of what went wrong.
