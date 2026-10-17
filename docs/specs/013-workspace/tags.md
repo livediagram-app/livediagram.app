@@ -70,7 +70,9 @@ A small panel (an anchored popover named "Tags for <document>") that stays open 
   on a line of its own under a card's name (so the card's meta row keeps its time): a pill holding a dot of the tag's colour and its name, on a faint wash of that colour, so any
   colour reads on either appearance. At most **two chips**, then **+N** for the rest, whose tooltip names them all.
   Pressing a chip opens that tag's page; it never opens the document. On a phone a list row shows the dots below
-  instead, so the name keeps its room; cards keep their chips.
+  instead, so the name keeps its room; cards keep their chips. When a row is squeezed its name truncates first and
+  the chips then truncate their names too, each down to its dot and a few letters, so they never run over the badges
+  beside them (Local only, Made by AI, the folder).
 - **In the editor's Explorer panel** a row shows up to three **dots** after its name (the panel row is narrow), with a
   tooltip naming the tags. They are not buttons.
 

@@ -71,6 +71,7 @@ Every write carries `owner_id` in its statement (the insert selects from the cal
 ## Presentation and UX, Accessibility, Web Experience
 
 - Chips: `ROW_CHIP_MAX` 2 then `+N` (hover card and accessible name list the rest); panel and phone list rows: `PANEL_DOT_MAX` 3 dots, `role="img"` named "Tags: …".
+- Squeezed rows: `DocumentTagChips` is the row's own flex item (no wrapper), with `GROUP_SHRINK` and an explicit `min-width` of `chipsFloor` (each chip `CHIP_FLOOR_REM`, the `+N` `MORE_FLOOR_REM`, `GAP_REM` between). A row chip (`shrinks`) puts `min-w-12` on its outermost box and truncates its name; a lone chip stays `shrink-0`. The Local only and Made by AI pills are `whitespace-nowrap`, so their words never wrap to let them shrink.
 - Picker: `role="dialog"` named "Tags for <document>"; rows `role="checkbox"` with `aria-checked`; arrows move field ↔ rows; Escape closes and refocuses the anchor (AnchoredPopover).
 - Colours through the one picker (`TagColourButton`, `TagColourPopover`, inline in `TagDialog`), the editor context held off (`TagColourIsolation`).
 - Brand fills follow the palette guards (brand-700, dark brand-600). No layout shift: chips render with the row once tags load (Explorer loads them with the lists); nothing on the editor's first paint.
@@ -96,14 +97,17 @@ Every write carries `owner_id` in its statement (the insert selects from the cal
 
 ## Constants and configuration
 
-| Constant           | Value | Safe range | Provenance             |
-| ------------------ | ----- | ---------- | ---------------------- |
-| `TAG_LIMIT`        | 100   | 50 to 500  | Spec "A tag"           |
-| `TAG_NAME_MAX`     | 32    | 24 to 48   | Spec "A tag"           |
-| `TAG_ID_MAX`       | 64    | 36 to 128  | D155                   |
-| `ROW_CHIP_MAX`     | 2     | 1 to 3     | Spec "Where tags show" |
-| `PANEL_DOT_MAX`    | 3     | 2 to 5     | Spec "Where tags show" |
-| `TAG_PICKER_WIDTH` | 288   | 276 to 320 | D157                   |
+| Constant           | Value | Safe range  | Provenance             |
+| ------------------ | ----- | ----------- | ---------------------- |
+| `TAG_LIMIT`        | 100   | 50 to 500   | Spec "A tag"           |
+| `TAG_NAME_MAX`     | 32    | 24 to 48    | Spec "A tag"           |
+| `TAG_ID_MAX`       | 64    | 36 to 128   | D155                   |
+| `ROW_CHIP_MAX`     | 2     | 1 to 3      | Spec "Where tags show" |
+| `PANEL_DOT_MAX`    | 3     | 2 to 5      | Spec "Where tags show" |
+| `CHIP_FLOOR_REM`   | 3     | 2.5 to 4    | Spec "Where tags show" |
+| `MORE_FLOOR_REM`   | 2     | 1.75 to 2.5 | Spec "Where tags show" |
+| `GROUP_SHRINK`     | 0.5   | 0.25 to 1   | Spec "Where tags show" |
+| `TAG_PICKER_WIDTH` | 288   | 276 to 320  | D157                   |
 
 ## Defaults ledger
 
