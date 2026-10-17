@@ -14,7 +14,8 @@ import { CloseIcon, SparkleIcon } from '@livediagram/ui';
 import { SignInIcon } from '@/components/chrome/AuthControls';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { announceToastFloorChange } from '@/components/toast/toast-floor';
+import { announceToastFloorChange, BOTTOM_CHROME_SELECTOR } from '@/components/toast/toast-floor';
+import { useChromeFloor } from '@/components/toast/useToastFloor';
 import { track } from '@/lib/telemetry';
 import { useAuthHrefs } from '@/components/chrome/auth-shared';
 
@@ -37,18 +38,25 @@ export const SIGNIN_BANNER_DISMISS_KEY = 'livediagram:signin-banner-dismissed:v1
 // the mobile-nav overlay (z-[var(--z-chrome)]); the editor lifts it above
 // the 48px tab bar (pb-16) and over the canvas chrome (z-[var(--z-overlay)]).
 const EXPLORER_PLACEMENT = 'bottom-0 z-[var(--z-chrome)] pb-16';
+// The card's widest (`max-w-3xl`): the column that has to clear the chrome beneath it.
+const BANNER_MAX_WIDTH_PX = 768;
 
 export function SignInBanner({
   surface,
   onDismiss,
   placementClassName = EXPLORER_PLACEMENT,
+  standOnChrome = false,
 }: {
   // Which host mounted it, carried on every telemetry type (docs/specs/014-identity/sign-in-encouragement.md) so the
   // dashboard can tell an Explorer prompt from an editor one.
   surface: 'Explorer' | 'Editor';
   onDismiss: () => void;
   placementClassName?: string;
+  // The editor's banner stands 8px above its bottom chrome (the tab bar, the Undo / Timer / Vote / Poll cluster, the
+  // whiteboard dock) instead of a fixed lift, so it never covers a control somebody is running a session with.
+  standOnChrome?: boolean;
 }) {
+  const chromeFloor = useChromeFloor(standOnChrome, 0, BOTTOM_CHROME_SELECTOR, BANNER_MAX_WIDTH_PX);
   const [reasonsOpen, setReasonsOpen] = useState(false);
   const editor = surface === 'Editor';
   const trackSignIn = () =>
@@ -68,6 +76,7 @@ export function SignInBanner({
           them for itself. */}
       <div
         className={`pointer-events-none fixed inset-x-0 flex justify-center px-4 ${placementClassName}`}
+        style={standOnChrome ? { bottom: chromeFloor } : undefined}
       >
         <div
           data-toast-floor=""

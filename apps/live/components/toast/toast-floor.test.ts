@@ -67,4 +67,13 @@ describe('toastFloor', () => {
       expect(TOAST_FLOOR_SELECTOR).toContain(`[${hook}]`);
     }
   });
+
+  // The sign-in banner stands on the editor's bottom chrome too (docs/specs/014-identity/sign-in-encouragement.md),
+  // with its own wider column: the Undo / Timer / Vote / Poll cluster beside a toast's column is under the banner's.
+  it('measures a wider column when asked, so the sign-in banner clears the session cluster', () => {
+    const cluster = { top: 790, left: 1060, right: 1424, width: 364, height: 46 };
+    const at = { viewportWidth: 1440, viewportHeight: 900, obstacles: [cluster] };
+    expect(toastFloor(at)).toBe(TOAST_EDGE_PX);
+    expect(toastFloor({ ...at, columnWidth: 768 })).toBe(900 - 790 + 8);
+  });
 });
