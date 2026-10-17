@@ -12,6 +12,7 @@ import {
   type ArrowLabelLayout,
 } from '@livediagram/document';
 import { BRAND_600 } from './arrow-handle-style';
+import { useCommitOnLeave } from '@/hooks/ui/useCommitOnLeave';
 
 // Browsers and the canvas measure text a hair apart; the editor gets this
 // much extra width so it never wraps a line the layout kept whole.
@@ -96,6 +97,10 @@ export function ArrowLabel({
   useEffect(() => {
     if (isEditing) focusForEditing();
   }, [isEditing]);
+  // The page going fires no blur: commit what was typed before the unload flush reads it.
+  useCommitOnLeave(isEditing, () => {
+    if (inputRef.current) onCommit(inputRef.current.value.trim());
+  });
   const { center, width, height, lines, fontPx, lineHeightPx } = layout;
   const left = center.x - width / 2;
   const top = center.y - height / 2;

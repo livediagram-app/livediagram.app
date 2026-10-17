@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 import { renderHook } from '@testing-library/react';
+import { useState } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Tab } from '@livediagram/document';
 
@@ -11,6 +12,7 @@ vi.mock('@/lib/api-client', () => ({
 vi.mock('@/lib/document-tombstones', () => ({ isDocumentDeleted: () => false }));
 
 const { useUnloadFlush } = await import('./useUnloadFlush');
+const { useCommitOnLeave } = await import('@/hooks/ui/useCommitOnLeave');
 
 const tab = (label: string): Tab => ({
   id: 't1',
@@ -18,25 +20,25 @@ const tab = (label: string): Tab => ({
   elements: [{ id: 'e', type: 'text', x: 0, y: 0, width: 10, height: 10, label }],
 });
 
+const options = (tabs: Tab[], participant = false, send = vi.fn()) => ({
+  hydrated: true,
+  documentId: 'd1',
+  isReadOnly: false,
+  participant,
+  tabs,
+  documentName: 'Doc',
+  selfId: 'me',
+  sessionShareCode: null,
+  lastSavedTabsRef: { current: [tab('saved')] },
+  lastSavedNameRef: { current: 'Doc' },
+  loadedTabIdsRef: { current: new Set(['t1']) },
+  changesetSeen: new Map(),
+  writesForbiddenRef: { current: false },
+  roomRef: { current: { send } as never },
+});
+
 function mount(tabs: Tab[], participant = false, send = vi.fn()) {
-  return renderHook(() =>
-    useUnloadFlush({
-      hydrated: true,
-      documentId: 'd1',
-      isReadOnly: false,
-      participant,
-      tabs,
-      documentName: 'Doc',
-      selfId: 'me',
-      sessionShareCode: null,
-      lastSavedTabsRef: { current: [tab('saved')] },
-      lastSavedNameRef: { current: 'Doc' },
-      loadedTabIdsRef: { current: new Set(['t1']) },
-      changesetSeen: new Map(),
-      writesForbiddenRef: { current: false },
-      roomRef: { current: { send } as never },
-    }),
-  );
+  return renderHook(() => useUnloadFlush(options(tabs, participant, send)));
 }
 
 describe('useUnloadFlush', () => {
@@ -68,6 +70,30 @@ describe('useUnloadFlush', () => {
     expect(send).toHaveBeenCalledWith(
       expect.objectContaining({ kind: 'op', op: expect.objectContaining({ tabId: 't1' }) }),
     );
+  });
+
+  // A label still open when the page goes commits on blur, which a reload never fires: the flush commits it first.
+  it('commits a label still being typed before it reads the tabs', () => {
+    const view = renderHook(() => {
+      const [tabs, setTabs] = useState([tab('saved')]);
+      useCommitOnLeave(true, () => setTabs([tab('typed but never blurred')]));
+      useUnloadFlush(options(tabs));
+    });
+    window.dispatchEvent(new Event('pagehide'));
+    expect(flush).toHaveBeenCalledOnce();
+    expect(flush.mock.calls[0]![0].changedTabs).toEqual([tab('typed but never blurred')]);
+    view.unmount();
+  });
+
+  it('commits no edit once it has closed', () => {
+    const commit = vi.fn();
+    const view = renderHook(({ open }) => useCommitOnLeave(open, commit), {
+      initialProps: { open: true },
+    });
+    view.rerender({ open: false });
+    mount([tab('saved')]);
+    window.dispatchEvent(new Event('pagehide'));
+    expect(commit).not.toHaveBeenCalled();
   });
 
   it('sends nothing when everything is saved', () => {

@@ -130,6 +130,10 @@ renders immediately rather than showing a spinner over real content.
   tab, the back-forward cache) and when the editor unmounts for another page of the app. Those writes stay alive
   past the page while they fit the browser's keepalive budget (64 KB in all, 60 KB used); the rest are sent as
   plain requests, which land when the page lives on. Two events on the same way out send the content once.
+- A text edit still open when the page goes (a label, an arrow label, a table cell, a one-line field) is part of
+  what goes. It commits on blur, and a reload or a closed tab fires none, so on `beforeunload` and `pagehide` the
+  flush first commits the open edit (`lib/open-edit.ts`, `useCommitOnLeave`); a label typed and left open used to
+  come back as its first letter.
 - A tab's writes land in the order made: a save or delete of a tab waits for that tab's previous one to settle
   ([Collaboration race hardening](../012-collaboration/collab-race-hardening.md#saves)); other tabs never wait.
 
