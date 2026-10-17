@@ -21,13 +21,17 @@ import {
 import type { SaveStatus } from '@/components/chrome/EditorHeader';
 import { saveFailureStatus } from './save-failure';
 import { isDocumentDeleted } from '@/lib/document-tombstones';
+import { debugLog } from '@/lib/debug-log';
 import { isDocumentTrashedError } from '@/lib/document-trashed';
 import { computeTabSaveDiff } from './editor-page-helpers';
-import { relayParticipantChanges, saveTabAndRelay } from './tab-save-flow';
+import { prepareTabSave, relayParticipantChanges, saveTabAndRelay } from './tab-save-flow';
+import type { OwnElementWrites } from './own-element-writes';
 import {
+  SAVE_RESAVE_GRACE_MS,
   baselineAfterSave,
   closeSaveWindow,
   openSaveWindow,
+  tabsChangedByPeersSince,
   type RemoteOpJournal,
 } from './save-baseline';
 import { emptyAfterSave } from '@/lib/list-row-empty';
@@ -58,6 +62,8 @@ export function useAutosave(opts: {
   // Peer ops that arrive while a save is in flight, so the save's success
   // doesn't roll the baseline back to before them (docs/specs/012-collaboration/collab-race-hardening.md, save-baseline.ts).
   remoteOpJournalRef: MutableRefObject<RemoteOpJournal>;
+  // The element writes this editor's saves have not had sequenced yet (own-element-writes.ts).
+  ownWrites?: OwnElementWrites;
   // How many peer ops this render's `tabs` include: state, bumped in the same batch that applies each op.
   opsApplied: number;
   // True while a hover-preview is on screen. Previews mutate `tabs` (so they
@@ -92,6 +98,7 @@ export function useAutosave(opts: {
     lastSavedNameRef,
     loadedTabIdsRef,
     remoteOpJournalRef,
+    ownWrites,
     opsApplied,
     previewingRef,
     roomRef,
@@ -152,6 +159,18 @@ export function useAutosave(opts: {
   // effect, which re-sends whatever still differs from the last saved state.
   const [retryTick, setRetryTick] = useState(0);
   const retryAttemptsRef = useRef(0);
+  // Tabs to write again, content only: a peer changed them while (or just after) our save wrote them, so what D1
+  // kept may be our older copy (docs/specs/012-collaboration/collab-race-hardening.md "A save that wrote over a
+  // peer's change writes again"). The tick re-runs the save effect for them.
+  const resaveTabIdsRef = useRef(new Set<string>());
+  const [resaveTick, setResaveTick] = useState(0);
+  const resaveTimersRef = useRef(new Set<number>());
+  useEffect(() => {
+    const timers = resaveTimersRef.current;
+    return () => {
+      for (const timer of timers) window.clearTimeout(timer);
+    };
+  }, []);
   const retryTimerRef = useRef<number | null>(null);
   useEffect(
     () => () => {
@@ -249,11 +268,25 @@ export function useAutosave(opts: {
         documentName,
         loadedTabIdsRef.current,
       );
-      if (!hasChanges) {
+      // The tabs to write again: the same content as the baseline, so they send no ops, only the PUT.
+      const changedIds = new Set(changedTabs.map((t) => t.id));
+      const resaveTabs = participant
+        ? []
+        : tabs.filter(
+            (t) =>
+              resaveTabIdsRef.current.has(t.id) &&
+              !changedIds.has(t.id) &&
+              loadedTabIdsRef.current.has(t.id),
+          );
+      resaveTabIdsRef.current.clear();
+      if (!hasChanges && resaveTabs.length === 0) {
         // Same content, different objects (a peer's op applied to both
         // sides): adopt ours so the next diff is an identity check again.
         lastSavedTabsRef.current = tabs;
         return;
+      }
+      if (resaveTabs.length > 0) {
+        debugLog('[autosave] writing again over a peer change', { tabs: resaveTabs.length });
       }
 
       setSaveStatus('saving');
@@ -263,6 +296,8 @@ export function useAutosave(opts: {
       const timing = startEditorTiming('Save');
       const journal = remoteOpJournalRef.current;
       const mark = openSaveWindow(journal);
+      let windowHeld = false;
+      const savedTabIds = new Set([...changedTabs, ...resaveTabs].map((t) => t.id));
       const gen = ++saveGenRef.current;
       // What this client had seen of the room at the snapshot (docs/specs/012-collaboration/collab-race-hardening.md phase
       // 3): the api merges in only the answers and ticks it hadn't.
@@ -271,14 +306,16 @@ export function useAutosave(opts: {
       // The saves of tabs the last save did not have: the tab order waits for them (below).
       const newTabWrites: Promise<unknown>[] = [];
       const savedIds = new Set(lastSavedTabsRef.current.map((t) => t.id));
-      for (const t of changedTabs) {
+      for (const t of [...changedTabs, ...resaveTabs]) {
         // Granular ops (docs/specs/012-collaboration/realtime-conflict-resolution.md, Level 0), derived from the last state
         // peers saw, so concurrent different-element edits merge instead of the whole tab clobbering.
         const before = lastSavedTabsRef.current.find((s) => s.id === t.id);
         if (participant) {
-          writes.push(relayParticipantChanges(before, t, () => roomRef.current));
+          writes.push(relayParticipantChanges(before, t, () => roomRef.current, ownWrites));
           continue;
         }
+        // Derived and held now, at the snapshot, though the queue may run the save later.
+        const prepared = prepareTabSave(before, t, ownWrites);
         const write = saveQueueRef
           .current!.run(t.id, () =>
             saveTabAndRelay(
@@ -296,6 +333,7 @@ export function useAutosave(opts: {
                   // From the same render as `t`, never ahead of it (useChangesetSeen).
                   ...(changesetSeen.has(t.id) ? { changesetSeen: changesetSeen.get(t.id) } : {}),
                 }),
+              prepared,
             ),
           )
           .then((rev) => {
@@ -358,6 +396,18 @@ export function useAutosave(opts: {
             lastSavedTabsRef.current = next.tabs;
             lastSavedNameRef.current = next.name;
           }
+          // Peers' element changes to what we just wrote, from the snapshot to a moment after the write: ours may
+          // have landed over theirs in D1, so those tabs are written again with what is on screen.
+          windowHeld = true;
+          const timer = window.setTimeout(() => {
+            resaveTimersRef.current.delete(timer);
+            const touched = participant ? [] : tabsChangedByPeersSince(journal, mark, savedTabIds);
+            closeSaveWindow(journal);
+            if (touched.length === 0) return;
+            for (const id of touched) resaveTabIdsRef.current.add(id);
+            setResaveTick((t) => t + 1);
+          }, SAVE_RESAVE_GRACE_MS);
+          resaveTimersRef.current.add(timer);
           setSaveStatus('saved');
           if (sampleSaveTiming()) timing.end();
           else timing.cancel();
@@ -382,6 +432,8 @@ export function useAutosave(opts: {
         })
         .catch((err: unknown) => {
           timing.cancel();
+          // What was to be written again still is.
+          for (const t of resaveTabs) resaveTabIdsRef.current.add(t.id);
           if (isDocumentTrashedError(err)) {
             writesForbiddenRef.current = true;
             reportTrashed();
@@ -401,7 +453,8 @@ export function useAutosave(opts: {
         })
         .finally(() => {
           savesInFlightRef.current--;
-          closeSaveWindow(journal);
+          // A save that landed keeps its window open a little longer (above).
+          if (!windowHeld) closeSaveWindow(journal);
         });
     }, saveDelayMs());
     return () => window.clearTimeout(handle);
@@ -416,6 +469,7 @@ export function useAutosave(opts: {
     sessionShareCode,
     opsInRender,
     retryTick,
+    resaveTick,
     hiddenTick,
     changesetSeen,
     lastSavedTabsRef,
@@ -423,6 +477,7 @@ export function useAutosave(opts: {
     loadedTabIdsRef,
     previewingRef,
     remoteOpJournalRef,
+    ownWrites,
     roomRef,
     setDocumentList,
     setSaveStatus,

@@ -9,6 +9,7 @@ import {
   createRemoteOpJournal,
   foldRemoteOpIntoBaseline,
   openSaveWindow,
+  tabsChangedByPeersSince,
   type SaveBaselineRefs,
 } from './save-baseline';
 import { tabBroadcastOps } from './tab-broadcast-ops';
@@ -98,5 +99,29 @@ describe('save baseline (docs/specs/012-collaboration/collab-race-hardening.md)'
       tabs: [{ id: 't1', name: 'Tab 1', orderIndex: 0 }],
     });
     expect(c.refs.name.current).toBe('Renamed');
+  });
+});
+
+// docs/specs/012-collaboration/collab-race-hardening.md "A save that wrote over a peer's change writes again".
+describe('tabsChangedByPeersSince', () => {
+  it('names the saved tabs a peer changed after the mark, once each', () => {
+    const journal = createRemoteOpJournal();
+    const mark = openSaveWindow(journal);
+    const el = { id: 'e', type: 'shape', shape: 'square', x: 0, y: 0, width: 1, height: 1 };
+    const fold = (op: Parameters<typeof foldRemoteOpIntoBaseline>[1]) =>
+      foldRemoteOpIntoBaseline(
+        { tabs: { current: [] }, name: { current: '' }, journal: { current: journal } },
+        op,
+      );
+    fold({ kind: 'el', tabId: 't1', op: { kind: 'update', element: el } as never });
+    fold({ kind: 'el', tabId: 't1', op: { kind: 'remove', id: 'e' } });
+    fold({ kind: 'el', tabId: 'other', op: { kind: 'remove', id: 'e' } });
+    fold({ kind: 'tab-meta', tabId: 't2', patch: { name: 'X' } });
+    expect(tabsChangedByPeersSince(journal, mark, new Set(['t1', 't2'])).sort()).toEqual([
+      't1',
+      't2',
+    ]);
+    // Ops from before the mark are what the snapshot already had.
+    expect(tabsChangedByPeersSince(journal, journal.next, new Set(['t1', 't2']))).toEqual([]);
   });
 });
