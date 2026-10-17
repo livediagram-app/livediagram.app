@@ -1007,7 +1007,7 @@ html[data-presenting][data-hide-pointer][data-pointer-idle] [data-presentation-s
   stroke-linecap: round;
 }
 .palette-finish-marker svg :where(path, rect, circle, ellipse, polygon, polyline, line) {
-  stroke-width: 2.25px;
+  stroke-width: 2.75px;
   stroke-opacity: 0.88;
 }
 
