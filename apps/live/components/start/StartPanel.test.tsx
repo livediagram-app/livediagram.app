@@ -166,15 +166,16 @@ describe('a start search, best match first', () => {
   });
 });
 
-// docs/specs/007-editor/live-app.md "A phone held sideways": the panel keeps its desktop clearances everywhere but a
-// phone held sideways, where they left its list 56px tall. jsdom does no layout, so this holds the classes.
-describe('the start panel on a phone held sideways', () => {
-  it('clears only the strip and lies over the bottom cluster', () => {
+// docs/specs/007-editor/start-diagramming.md "On a short window": a window under 500px tall (a phone held sideways, a
+// desktop zoomed to 200%) keeps the cards room. jsdom does no layout, so this holds the classes.
+describe('the start panel on a short window', () => {
+  it('clears only the strip and lies over the bottom cluster, whatever the pointer', () => {
     diagram();
     const panel = screen.getByRole('textbox', { name: 'Find a template' }).closest('section')!;
     const wrapper = panel.parentElement!;
-    expect(wrapper.className).toContain('landscape-phone:pt-16');
-    expect(wrapper.className).toContain('landscape-phone:pb-2');
-    expect(wrapper.className).toContain('landscape-phone:z-[var(--z-overlay)]');
+    expect(wrapper.className).toContain('short-window:pt-16');
+    expect(wrapper.className).toContain('short-window:pb-2');
+    expect(wrapper.className).toContain('short-window:z-[var(--z-overlay)]');
+    expect(wrapper.className).not.toContain('landscape-phone:');
   });
 });

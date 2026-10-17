@@ -231,10 +231,10 @@ export function StartPanel<C extends string>({
   );
   return (
     // Clear of the top chrome (the menu button and the palette strip, 8.5rem down) and the bottom clusters. On a phone,
-    // over the tab bar and docked to the bottom edge below the top bar, as the phone's sheets are. On a phone held
-    // sideways (390px tall, its bars folded) those two clearances left the list 56px: there it clears only the strip
-    // and lies over the bottom cluster, as the upright phone's sheet does.
-    <div className="pointer-events-none absolute inset-0 z-[var(--z-panel)] flex items-center justify-center p-4 pb-28 pt-[8.5rem] max-sm:z-[var(--z-overlay)] max-sm:items-end max-sm:px-0 max-sm:pb-0 max-sm:pt-20 landscape-phone:z-[var(--z-overlay)] landscape-phone:pb-2 landscape-phone:pt-16">
+    // over the tab bar and docked to the bottom edge below the top bar, as the phone's sheets are. On a short window
+    // (a phone held sideways, 390px tall with its bars folded, or a desktop zoomed to 200%, 450px) those two clearances
+    // left the list 56px to 96px: there it clears only the strip and lies over the bottom cluster.
+    <div className="pointer-events-none absolute inset-0 z-[var(--z-panel)] flex items-center justify-center p-4 pb-28 pt-[8.5rem] max-sm:z-[var(--z-overlay)] max-sm:items-end max-sm:px-0 max-sm:pb-0 max-sm:pt-20 short-window:z-[var(--z-overlay)] short-window:pb-2 short-window:pt-16">
       <section
         aria-labelledby={titleId}
         // One height whatever the category shows, so the panel never jumps as it changes.
