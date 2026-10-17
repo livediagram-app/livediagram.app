@@ -63,6 +63,7 @@ import { BoardCardsStrip } from './BoardCardsStrip';
 import { BrowseMemoryContext, useBrowseMemory } from './PaletteCategoryBrowser';
 import { CATEGORY_BAR_MODES } from './category-flyout-groups';
 import { useBarLabels } from './useBarLabels';
+import { useStripCrowded } from './useStripCrowded';
 import { SessionBrowse } from './session-category';
 import { barCategoriesFor } from './bar-categories';
 import { CategoryBarButtons, CategoryBarFlyout, useCategoryBar } from './CategoryBar';
@@ -256,6 +257,8 @@ export function ToolbarPalette(props: Props) {
     scale,
   });
   const leadingRef = useRef<HTMLDivElement>(null);
+  // Too wide to centre between the menu card's sides (a tablet): the strip sits at the right instead.
+  const crowded = useStripCrowded(cardRef, leading == null);
   const stripLimit = useStripTileLimit(cardRef, {
     leadingRef,
     isMobile,
@@ -418,8 +421,10 @@ export function ToolbarPalette(props: Props) {
       // sets the two properties on the canvas; centred otherwise, docs/specs/026-plan/plan-board.md).
       style={{
         ...(scale === 1 ? {} : { ...uiScaleStyle(scale), top: toSurfacePx(12, scale) }),
-        alignItems: 'var(--plan-strip-align, center)',
-        paddingRight: 'var(--plan-strip-end, 0px)',
+        alignItems: crowded ? 'flex-end' : 'var(--plan-strip-align, center)',
+        paddingRight: crowded
+          ? 'max(0.75rem, var(--plan-strip-end, 0px))'
+          : 'var(--plan-strip-end, 0px)',
       }}
       // While one of its popovers is open (a category's flyout, More, Search) the strip rises to the popover layer,
       // so what hangs from it sits over everything on the canvas, an element's toolbar and menus included.
