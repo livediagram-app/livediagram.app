@@ -231,6 +231,7 @@ function ArrowViewImpl({
   const { baseStrokeWidth, sketch } = useArrowFinish(arrow, pathD);
   // Sketched heads replace the markers; circles and diamonds keep theirs.
   const sketchedHeads = !!sketch?.sketchedHeads && !mixedHeads;
+  const inkOpacity = sketch && sketch.inkOpacity < 1 ? sketch.inkOpacity : undefined;
   const headMarker = sketchedHeads ? undefined : markerUrl;
   const startMarker = sketchedHeads ? undefined : startMarkerUrl;
   const strokeWidth = isSelected ? baseStrokeWidth + 0.5 : baseStrokeWidth;
@@ -371,6 +372,8 @@ function ArrowViewImpl({
         fill="none"
         stroke={baseStroke}
         strokeWidth={strokeWidth}
+        // Marker's ink is see-through: where its strokes cross, they pool darker.
+        strokeOpacity={inkOpacity}
         strokeLinecap="round"
         strokeLinejoin="round"
         // 'draw' normalises the path length to 1 so its reveal dash maths is
@@ -414,13 +417,33 @@ function ArrowViewImpl({
           ...(arrow.flowRepeat === false ? { '--lvd-flow-iter': 1 } : {}),
         }}
       />
+      {sketch?.lineOver ? (
+        // Marker's second layer of strokes, crossing the first at every bend (marker.ts).
+        <path
+          d={sketch.lineOver}
+          mask={behindMask}
+          fill="none"
+          stroke={baseStroke}
+          strokeWidth={strokeWidth}
+          strokeOpacity={inkOpacity}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeDasharray={
+            BORDER_DASH_ARRAY[arrow.strokeStyle ?? DEFAULT_BORDER_STYLE] ?? undefined
+          }
+          style={{ pointerEvents: 'none' }}
+        />
+      ) : null}
       {sketch?.heads && sketchedHeads ? (
         <path
           d={sketch.heads}
           mask={behindMask}
-          fill="none"
+          // Marker's triangle is a solid wedge in the head's colour.
+          fill={sketch.headFill ? (ownHeadColor ?? baseStroke) : 'none'}
+          fillOpacity={inkOpacity}
           stroke={ownHeadColor ?? baseStroke}
           strokeWidth={strokeWidth}
+          strokeOpacity={inkOpacity}
           strokeLinecap="round"
           strokeLinejoin="round"
           style={{ pointerEvents: 'none' }}

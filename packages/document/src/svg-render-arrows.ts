@@ -13,7 +13,6 @@ import {
 } from './arrow-path';
 import {
   ARROWHEAD_SIZE_PX,
-  ARROW_THICKNESS_PX,
   arrowheadShapeOf,
   arrowheadStartShapeOf,
   arrowheadSizeOf,
@@ -31,9 +30,9 @@ import { resolveStockColours } from './stock-colours';
 import { KNOCKOUT_RADIUS_PX, arrowLabelPass, type ArrowLabelPass } from './arrow-label-layout';
 import type { Rect } from './geometry-primitives';
 import { resolveFontStack } from './fonts';
-import { elementFontId, resolveFinish, type Finish } from './finish';
+import { elementFontId, finishArrowWidthPx, resolveFinish, type Finish } from './finish';
 import { finishArrowEnds } from './mind-connector-route';
-import { sketchArrow } from './sketch-element';
+import { handDrawnArrow } from './hand-drawn';
 import { r2, xmlEscape } from './svg-render-primitives';
 import type { ArrowElement, Element } from './index';
 
@@ -195,14 +194,14 @@ export function svgArrow(
 ): string {
   // A stock colour stored by name is drawn in its version for this page.
   const stocked = resolveStockColours(source, surface);
-  // Professional thins an arrow that sets no width and draws a mind map's connectors right-angled; Sketch
-  // draws it by hand (docs/specs/008-canvas/finish.md).
+  // Professional thins an arrow that sets no width and draws a mind map's connectors right-angled; Sketch and
+  // Marker draw it by hand (docs/specs/008-canvas/finish.md).
   const finish = resolveFinish(stocked.finish, tabFinish);
   // The same ends the live canvas resolves (the converging-fan offset of arrow-endpoint-spread.ts, or a
   // finish's exact route), so exports match what's on screen.
   const { arrow, from, to } = finishArrowEnds(stocked, elements, finish);
   const stroke = arrow.strokeColor ?? defaultArrowStrokeColor(surface);
-  const lw = arrow.strokeWidth ?? (finish === 'professional' ? ARROW_THICKNESS_PX.thin : 2);
+  const lw = finishArrowWidthPx(arrow.strokeWidth, finish);
   const op = arrow.opacity ?? 1;
   const opAttr = op !== 1 ? ` opacity="${r2(op)}"` : '';
   const style = arrowStyleOf(arrow);
@@ -252,21 +251,30 @@ export function svgArrow(
   // heads are drawn exactly.
   const mixed = startShape !== headShape;
   const headPreset = arrowheadSizeOf(arrow);
-  const sketched =
-    finish === 'sketch'
-      ? sketchArrow(arrow.id, d, {
-          strokePx: lw,
-          headSize: headPreset,
-          headShape,
-          startHead: !mixed && (ends === 'from' || ends === 'both'),
-          endHead: !mixed && (ends === 'to' || ends === 'both'),
-          // The export is a still: no flow runs, so both passes.
-          passes: 2,
-        })
-      : null;
-  const lineAttrs = ` fill="none" stroke="${xmlEscape(stroke)}" stroke-width="${lw}" stroke-linecap="round" stroke-linejoin="round"`;
+  const sketched = handDrawnArrow(finish, arrow.id, d, {
+    strokePx: lw,
+    headSize: headPreset,
+    headShape,
+    startHead: !mixed && (ends === 'from' || ends === 'both'),
+    endHead: !mixed && (ends === 'to' || ends === 'both'),
+    // The export is a still: no flow runs, so every pass.
+    flowing: false,
+  });
+  // Marker's ink is see-through, each layer its own path, so where strokes cross it pools darker.
+  const ink = sketched && sketched.inkOpacity < 1 ? ` stroke-opacity="${sketched.inkOpacity}"` : '';
+  const lineAttrs = ` fill="none" stroke="${xmlEscape(stroke)}" stroke-width="${lw}" stroke-linecap="round" stroke-linejoin="round"${ink}`;
   parts.push(`<path d="${sketched?.line ?? d}"${lineAttrs}${dashAttr}${motionAttr}${maskAttr}/>`);
-  if (sketched?.heads) parts.push(`<path d="${sketched.heads}"${lineAttrs}/>`);
+  if (sketched?.lineOver)
+    parts.push(`<path d="${sketched.lineOver}"${lineAttrs}${dashAttr}${maskAttr}/>`);
+  if (sketched?.heads) {
+    const headAttrs = sketched.headFill
+      ? lineAttrs.replace(
+          ' fill="none"',
+          ` fill="${xmlEscape(stroke)}" fill-opacity="${sketched.inkOpacity}"`,
+        )
+      : lineAttrs;
+    parts.push(`<path d="${sketched.heads}"${headAttrs}/>`);
+  }
   if (!sketched?.sketchedHeads || mixed) {
     const { toRef, fromRef } = arrowHeadRefs(arrow, from, to);
     const headSize = ARROWHEAD_SIZE_PX[headPreset];

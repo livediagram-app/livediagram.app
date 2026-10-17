@@ -2,6 +2,7 @@ import {
   chartTextInk,
   finishIconWeight,
   finishWobblesArt,
+  isHandDrawn,
   actorFigureRect,
   BORDER_DASH_ARRAY,
   BORDER_STROKE_PX,
@@ -357,7 +358,7 @@ export function ShapeContentRouter({
       palette={chartPalette}
       ground={chartGround}
     />
-  ) : element.type === 'shape' && isSvgRenderedShape(element.shape) && finish !== 'sketch' ? (
+  ) : element.type === 'shape' && isSvgRenderedShape(element.shape) && !isHandDrawn(finish) ? (
     <ShapeSvgOverlay
       shape={element.shape}
       fill={element.fillColor ?? defaultFillColor(element, surface)}

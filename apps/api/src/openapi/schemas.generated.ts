@@ -6693,7 +6693,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "enum": [
       "flexible",
       "professional",
-      "sketch"
+      "sketch",
+      "marker"
     ],
     "type": "string"
   },

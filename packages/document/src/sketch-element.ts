@@ -16,6 +16,7 @@ import {
 import { finishBorderStroke, finishCornerFallbackPx, finishHatches, type Finish } from './finish';
 import type { BoxedElement } from './index';
 import { shapeGeometry, type ShapePartRole } from './shape-geometry';
+import { FILLED_ROLES } from './shape-hit';
 import {
   outlineOfBox,
   outlineOfPart,
@@ -26,11 +27,14 @@ import {
   sketchHatching,
   sketchSeed,
   sketchStrokes,
+  type SketchOutline,
 } from './sketch';
 import { boxFit, fitShapePart } from './svg-shape-fit';
 
 /** Path data for each layer of a sketched element; an empty string draws nothing. */
 export type SketchDrawing = {
+  /** Sketch's pencil (marker-element.ts draws Marker's felt-tip). */
+  pen: 'pencil';
   /** The outline, in the stroke colour at the border width. */
   strokes: string;
   /** Thin chrome (bezels, keys, creases), in the stroke colour at the detail width. */
@@ -57,9 +61,8 @@ type SketchElementOptions = {
   backdrop?: boolean;
 };
 
-const FILLED_ROLES: ReadonlySet<ShapePartRole> = new Set(['main', 'outline', 'head']);
-
-const isSeeThrough = (fill: string) => fill === 'transparent' || fill === 'none' || fill === '';
+export const isSeeThrough = (fill: string) =>
+  fill === 'transparent' || fill === 'none' || fill === '';
 
 /** The sketch of a boxed element, or null for a kind Sketch leaves as drawn (text, images, freehand,
  *  self-painting faces). */
@@ -76,6 +79,7 @@ function sketchElement(el: BoxedElement, o: SketchElementOptions): SketchDrawing
     // Paper stays paper: a solid sheet, its edge drawn once by hand.
     const box = outlineOfBox('square', w, h, 0, 0);
     return {
+      pen: 'pencil',
       strokes: sketchStrokes(outlineOfBox('square', w, h, 0, 0.5), seed, 1),
       details: '',
       hatch: '',
@@ -85,6 +89,7 @@ function sketchElement(el: BoxedElement, o: SketchElementOptions): SketchDrawing
   if (el.type === 'table') {
     // The grid draws its own cells; the sketch is its frame.
     return {
+      pen: 'pencil',
       strokes: outlinePx > 0 ? sketchStrokes(outlineOfBox('square', w, h, 0, inset), seed) : '',
       details: '',
       hatch: '',
@@ -96,6 +101,46 @@ function sketchElement(el: BoxedElement, o: SketchElementOptions): SketchDrawing
   if (el.shape === 'comment-pin') return null;
 
   const hatches = finishHatches(el, o.fill, o.backdrop);
+  const parts = handDrawnOutlines(el, inset, o.radiusPx);
+  if (!parts) return null;
+  const strokes: string[] = [];
+  const details: string[] = [];
+  const hatch: string[] = [];
+  const solid: string[] = [];
+  for (const { outline, role, seed: partSeed } of parts) {
+    if (role === 'detail') {
+      details.push(sketchStrokes(outline, partSeed, 1));
+      continue;
+    }
+    if (outlinePx > 0) strokes.push(sketchStrokes(outline, partSeed));
+    if (fillIt && FILLED_ROLES.has(role) && outline.area) {
+      solid.push(sketchAreaPath(outline.area));
+      if (hatches) hatch.push(sketchHatching(outline.area, partSeed, outlinePx || 2));
+    }
+  }
+  return {
+    pen: 'pencil',
+    strokes: strokes.join(' '),
+    details: details.join(' '),
+    hatch: hatch.join(' '),
+    solid: solid.join(' '),
+  };
+}
+
+/** One outline a hand-drawn finish draws for a shape, with its part's role and the seed its wobble grows from. */
+export type HandDrawnOutline = { outline: SketchOutline; role: ShapePartRole; seed: number };
+
+/** The outlines a hand-drawn finish (Sketch, Marker) draws for a shape, in its own px box: each shape-table part
+ *  fitted into the box, or a box kind's own outline (square, circle, stadium, mind node, the rectangular frames) as
+ *  its main part. `inset` keeps a stroke inside the box. Null for a kind drawn as it is (a self-painting face). */
+export function handDrawnOutlines(
+  el: BoxedElement & { type: 'shape' },
+  inset: number,
+  radiusPx: number,
+): HandDrawnOutline[] | null {
+  const seed = sketchSeed(el.id);
+  const w = el.width;
+  const h = el.height;
   const geometry = shapeGeometry(el.shape, w / h);
   if (geometry) {
     const area = el.shape === 'actor' ? actorFigureRect(el) : { x: 0, y: 0, width: w, height: h };
@@ -106,41 +151,14 @@ function sketchElement(el: BoxedElement, o: SketchElementOptions): SketchDrawing
       width: Math.max(0, area.width - 2 * pad),
       height: Math.max(0, area.height - 2 * pad),
     });
-    const strokes: string[] = [];
-    const details: string[] = [];
-    const hatch: string[] = [];
-    const solid: string[] = [];
-    geometry.parts.forEach((part, i) => {
-      const outline = outlineOfPart(fitShapePart(part, fit));
-      const partSeed = seed + i * 31;
-      if (part.role === 'detail') {
-        details.push(sketchStrokes(outline, partSeed, 1));
-        return;
-      }
-      if (outlinePx > 0) strokes.push(sketchStrokes(outline, partSeed));
-      if (fillIt && FILLED_ROLES.has(part.role) && outline.area) {
-        solid.push(sketchAreaPath(outline.area));
-        if (hatches) hatch.push(sketchHatching(outline.area, partSeed, outlinePx || 2));
-      }
-    });
-    return {
-      strokes: strokes.join(' '),
-      details: details.join(' '),
-      hatch: hatch.join(' '),
-      solid: solid.join(' '),
-    };
+    return geometry.parts.map((part, i) => ({
+      outline: outlineOfPart(fitShapePart(part, fit)),
+      role: part.role,
+      seed: seed + i * 31,
+    }));
   }
   if (SELF_PAINTING_SHAPES.has(el.shape)) return null;
-
-  // A box kind (square, circle, stadium, mind node, the rectangular frames).
-  const outline = outlineOfBox(el.shape, w, h, o.radiusPx, inset);
-  const area = outline.area;
-  return {
-    strokes: outlinePx > 0 ? sketchStrokes(outline, seed) : '',
-    details: '',
-    hatch: fillIt && hatches && area ? sketchHatching(area, seed, outlinePx || 2) : '',
-    solid: fillIt && area ? sketchAreaPath(area) : '',
-  };
+  return [{ outline: outlineOfBox(el.shape, w, h, radiusPx, inset), role: 'main', seed }];
 }
 
 /** The width a sketched table's frame and a sticky's edge are drawn at, px. */

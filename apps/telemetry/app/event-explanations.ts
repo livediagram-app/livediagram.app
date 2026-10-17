@@ -418,7 +418,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Element|Changed|SessionButton':
     'Someone configured what a Session Button element starts when pressed, such as a timer, a poll, or a vote.',
   'Element|Changed|Finish':
-    "Someone set a selected element's own finish (Flexible, Professional or Sketch), or set it back to follow its tab.",
+    "Someone set a selected element's own finish (Flexible, Professional, Sketch or Marker), or set it back to follow its tab.",
   'Element|Changed|SankeyAnim':
     'Someone set or cleared the animation on a selected Sankey diagram (Grow, Flow, Cascade, Pulse or Rise), or its speed or repeat.',
   'Element|Changed|SankeyFlows':
@@ -979,7 +979,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Tab|Changed|SeasonalLook':
     "Someone picked a seasonal look (New Year, Easter, Halloween or Christmas) behind the Seasonal toggle in Tab Style, setting the tab's theme, finish, font and canvas pattern at once.",
   'Tab|Changed|Finish':
-    "Someone changed a tab's finish (Flexible, Professional or Sketch) from Tab Look & Feel.",
+    "Someone changed a tab's finish (Flexible, Professional, Sketch or Marker) from Tab Look & Feel.",
   'Tab|Changed|DefaultTextSize':
     "Someone changed a tab's default text size, used for new elements added to it.",
   'Tab|Changed|Font':

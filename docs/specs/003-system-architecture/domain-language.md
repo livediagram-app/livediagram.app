@@ -122,10 +122,10 @@ The words for choosing a colour ([Colour picker](../004-interface-design/colour-
 
 The words for how elements are drawn, apart from their colours ([Finish](../008-canvas/finish.md)).
 
-| Term           | Means                                                                                   | Never called                   |
-| -------------- | --------------------------------------------------------------------------------------- | ------------------------------ |
-| **finish**     | The drawing style of a tab and its elements: Flexible (default), Professional or Sketch | tone, look, style, render mode |
-| **Follow Tab** | An element with no finish of its own, drawn in its tab's                                | inherit, default               |
+| Term           | Means                                                                                           | Never called                   |
+| -------------- | ----------------------------------------------------------------------------------------------- | ------------------------------ |
+| **finish**     | The drawing style of a tab and its elements: Flexible (default), Professional, Sketch or Marker | tone, look, style, render mode |
+| **Follow Tab** | An element with no finish of its own, drawn in its tab's                                        | inherit, default               |
 
 ## Flowcharts
 

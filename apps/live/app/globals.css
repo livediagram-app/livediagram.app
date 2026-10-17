@@ -987,7 +987,7 @@ html[data-presenting][data-hide-pointer][data-pointer-idle] [data-presentation-s
 }
 
 /* Palette tiles in the tab's finish (docs/specs/008-canvas/finish.md, palette-tile-finish.ts). Professional:
-   square corners, fine mitred lines. Sketch: the shared wobble filter (SketchFilterDefs). */
+   square corners, fine mitred lines. Sketch: the shared wobble filter (SketchFilterDefs). Marker: bold round lines. */
 .palette-finish-professional svg {
   stroke-linejoin: miter;
 }
@@ -1000,6 +1000,15 @@ html[data-presenting][data-hide-pointer][data-pointer-idle] [data-presentation-s
 }
 .palette-finish-sketch svg {
   filter: url(#lvd-sketch-tile);
+}
+/* Marker: a felt-tip's line, bold with round ends, slightly see-through so a glyph's crossings pool darker. */
+.palette-finish-marker svg {
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+.palette-finish-marker svg :where(path, rect, circle, ellipse, polygon, polyline, line) {
+  stroke-width: 2.25px;
+  stroke-opacity: 0.88;
 }
 
 /* A Tab Style change (lib/tab-style-ease.ts, docs/specs/011-theme/canvas-and-theme-dialog.md "Eased changes") eases the canvas's colours instead of snapping them. On only for the moment of the change, so it

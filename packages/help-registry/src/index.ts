@@ -2274,9 +2274,10 @@ export const articles: Article[] = [
   {
     slug: 'finish',
     title: 'Choosing a Finish',
-    description: 'Draw a tab or an element Flexible, Professional or hand-drawn Sketch.',
+    description:
+      'Draw a tab or an element Flexible, Professional, hand-drawn Sketch or bold Marker.',
     keywords:
-      'finish sketch sketchy hand drawn handdrawn whiteboard rough wobbly hatching professional crisp print clean flexible look style drawing',
+      'finish sketch sketchy hand drawn handdrawn whiteboard rough wobbly hatching professional crisp print clean flexible look style drawing marker felt tip sharpie flip chart bold ink',
     category: 'Canvas',
     categorySlug: 'canvas',
     group: 'Styling Elements',
@@ -2755,7 +2756,7 @@ export const articles: Article[] = [
     title: 'Changing the Theme',
     description: 'Open the Tab Style dialog and browse themes by category.',
     keywords:
-      'apply browse switch restyle colours colors dialog pick paintbrush look feel looks finish filter flexible professional sketch spectrum mashup random surprise shuffle dice billboard patchwork coffeehouse schematic aurora seasonal holiday christmas halloween easter new year snowflakes',
+      'apply browse switch restyle colours colors dialog pick paintbrush look feel looks finish filter flexible professional sketch marker spectrum mashup random surprise shuffle dice billboard patchwork coffeehouse schematic aurora seasonal holiday christmas halloween easter new year snowflakes',
     category: 'Canvas',
     categorySlug: 'canvas/themes',
     parentSlug: 'themes',
