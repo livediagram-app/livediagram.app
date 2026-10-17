@@ -71,6 +71,10 @@ function setup(label: string, richText?: { text: string; bold?: boolean }[]) {
     discardLastStep,
     label: () => (elements[0] as Element & { label?: string }).label,
     element: () => elements[0] as Element & { headerSize?: number; richText?: unknown },
+    undo: () => {
+      elements = past.pop() ?? elements;
+      return (elements[0] as Element & { label?: string }).label;
+    },
   };
 }
 
@@ -93,6 +97,18 @@ describe('type-to-edit, then Escape', () => {
     expect(s.label()).toBe('');
   });
 
+  it('commits the typed label in the seed’s place, so one undo puts back the label before the first key', () => {
+    const s = setup('Old');
+    s.hook.result.current.typeIntoSelected(s.id, 'N');
+    s.hook.rerender();
+    s.hook.result.current.commitLabel(s.id, 'New text');
+    s.hook.rerender();
+    expect(s.discardLastStep).toHaveBeenCalledTimes(1);
+    expect(s.label()).toBe('New text');
+    // One step back from the commit is the label before the seed, not the seed.
+    expect(s.undo()).toBe('Old');
+  });
+
   it('takes nothing back once the edit was committed', () => {
     const s = setup('Old');
     s.hook.result.current.typeIntoSelected(s.id, 'N');
@@ -100,7 +116,7 @@ describe('type-to-edit, then Escape', () => {
     s.hook.result.current.commitLabel(s.id, 'New text');
     s.hook.rerender();
     s.hook.result.current.cancelEdit();
-    expect(s.discardLastStep).not.toHaveBeenCalled();
+    expect(s.discardLastStep).toHaveBeenCalledTimes(1);
     expect(s.label()).toBe('New text');
   });
 

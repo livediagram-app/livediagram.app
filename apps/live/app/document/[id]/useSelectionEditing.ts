@@ -167,7 +167,15 @@ export function useSelectionEditing(opts: {
   };
 
   const commitLabel = (elementId: string, typed: string, typedRuns?: TextRun[]) => {
+    // The edit a type-to-edit seed began is one step, not two: while the element is still exactly what the seed
+    // wrote, its step is discarded and this commit takes its place, so one undo puts back the label from before the
+    // first key (never the lone seed character, which every peer would see).
+    const seed = seeded.current;
     seeded.current = null;
+    if (seed && seed.wrote.id === elementId) {
+      const now = activeTab.elements.find((e) => e.id === elementId);
+      if (now && JSON.stringify(now) === JSON.stringify(seed.wrote)) opts.discardLastStep();
+    }
     // Saved without whitespace at either end (docs/specs/008-canvas/canvas-and-palette.md "Rich text
     // labels"): a dangling newline or space serves no purpose, and the display drops a trailing one.
     const { label, runs } = trimLabel(typed, typedRuns);
