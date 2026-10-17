@@ -32,7 +32,7 @@ import { folderDefaultKeys } from '@/lib/placement-defaults/default-destination'
 import { placementDefaultsSnapshot } from '@/lib/placement-defaults/placement-defaults-store';
 import { LIST_CARD } from '@/components/primitives/surface-classes';
 import { logMoveFailure } from '@/lib/move-failure';
-import { FOLDER_FAILURE } from '@/lib/write-failure-copy';
+import { DOCUMENT_FAILURE, FOLDER_FAILURE } from '@/lib/write-failure-copy';
 
 const NO_FOLDERS: readonly Folder[] = [];
 
@@ -211,11 +211,18 @@ export function TeamSharedDocuments({
   // No question first (docs/specs/013-workspace/trash.md "Deleting"): it goes to the team's Trash, and the toast offers
   // it back.
   const deleteDocument = async (id: string) => {
+    const name = lib.documents.find((d) => d.id === id)?.name;
     if (!(await lib.deleteDocument(id))) {
-      toast.error('Could not delete the document. Try again.');
+      toast.error(DOCUMENT_FAILURE.delete(name));
       return;
     }
-    offerDeleteUndo(toast, { ownerId, id, trash: 'Team', onRestored: () => void lib.refresh() });
+    offerDeleteUndo(toast, {
+      ownerId,
+      id,
+      name,
+      trash: 'Team',
+      onRestored: () => void lib.refresh(),
+    });
   };
 
   // The props the card grid and the Details view share (ExplorerViewProps), built once.
@@ -401,7 +408,7 @@ export function TeamSharedDocuments({
             } catch (err) {
               // The tile keeps the name typed, for another try.
               logMoveFailure('new-folder', '', err);
-              toast.error(FOLDER_FAILURE.create);
+              toast.error(FOLDER_FAILURE.create(name));
               return null;
             }
           }}

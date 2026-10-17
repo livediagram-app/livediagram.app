@@ -11,6 +11,7 @@ import {
 } from '@/lib/api-client';
 import { logMoveFailure } from '@/lib/move-failure';
 import { DOCUMENT_FAILURE, FOLDER_FAILURE } from '@/lib/write-failure-copy';
+import { toastName } from '@/lib/toast-name';
 import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
 import { track } from '@/lib/telemetry';
 import type { TeamDocumentRow, TeamFolderRow } from '@/hooks/persistence/useTeamLibrariesSweep';
@@ -83,7 +84,7 @@ export function useExplorerMoves({
       })
       .catch((err: unknown) => {
         logMoveFailure('folder', ` folder=${id}`, err);
-        toast.error(FOLDER_FAILURE.move);
+        toast.error(FOLDER_FAILURE.move(folders.find((f) => f.id === id)?.name));
       });
   };
 
@@ -108,7 +109,9 @@ export function useExplorerMoves({
       .catch((err: unknown) => {
         logMoveFailure('document-to-team', ` document=${id}`, err);
         if (row) setDocuments((prev) => (prev.some((d) => d.id === id) ? prev : [row, ...prev]));
-        toast.error('Couldn’t move the document to the team. Try again.');
+        toast.error(
+          `Couldn’t move ${toastName(row?.name) ?? 'the document'} to the team. Try again.`,
+        );
       });
     setDocuments((prev) => prev.filter((d) => d.id !== id));
   };
@@ -128,7 +131,7 @@ export function useExplorerMoves({
       })
       .catch((err: unknown) => {
         logMoveFailure('team-document', ` document=${id}`, err);
-        toast.error(DOCUMENT_FAILURE.move);
+        toast.error(DOCUMENT_FAILURE.move(teamDocuments.find((d) => d.id === id)?.name));
       });
   };
 
@@ -147,7 +150,8 @@ export function useExplorerMoves({
       })
       .catch((err: unknown) => {
         logMoveFailure('team-document-out', ` document=${id}`, err);
-        toast.error('Couldn’t move the document out of the team. Try again.');
+        const name = toastName(teamDocuments.find((d) => d.id === id)?.name);
+        toast.error(`Couldn’t move ${name ?? 'the document'} out of the team. Try again.`);
       });
   };
 
@@ -226,7 +230,7 @@ export function useExplorerMoves({
     } catch (err) {
       // The tile keeps the name typed, for another try.
       logMoveFailure('new-folder', '', err);
-      toast.error(FOLDER_FAILURE.create);
+      toast.error(FOLDER_FAILURE.create(name));
       return null;
     }
     if (teamId) refreshTeamLibraries();

@@ -17,8 +17,13 @@ Derived from [Toasts](../toasts.md). Implementation detail only; the spec decide
 ## Domain and naming
 
 - **Toast**: one entry (`ToastEntry`). **Tone**: `ToastTone = 'info' | 'success' | 'warning' | 'error'`.
-- **Plain**, **action** and **offer** toasts as in the spec. A toast **waits** when it is an offer, or an action toast
-  with at least one action (`toastWaits(entry)`); otherwise it **times out**.
+- **Plain**, **action** and **offer** toasts as in the spec. A toast **has answers** when it is an offer, or an action
+  toast with at least one action (`toastAnswers(entry)`). Every toast **times out**: `toastTimeout(entry)` is
+  `TOAST_ANSWER_TIMEOUT_MS` for one with answers, else `TOAST_TIMEOUT_MS[tone]`.
+- **Toast name**: a document, folder or tab name as a toast shows it, `toastName(name)` in
+  `apps/live/lib/toast-name.ts`: whitespace collapsed, trimmed, cut by code point to `TOAST_NAME_MAX` with the last
+  kept character an ellipsis (trailing spaces before it dropped), wrapped in `“` `”`; `null` for a blank name, and
+  the caller substitutes its generic word.
 - **Floor**: the stack's CSS `bottom`, in px. **Obstacle**: an element matched by `TOAST_FLOOR_SELECTOR`.
 - **Leaving**: an entry dismissed but still playing `toast-out` (`leaving: true`).
 
@@ -30,15 +35,15 @@ Derived from [Toasts](../toasts.md). Implementation detail only; the spec decide
   otherwise appends, then applies the limit.
 - `upsertActionToast(list, spec, id)`: replaces the non-leaving entry with the same `key` in place (keeping its id), or
   appends and applies the limit.
-- The limit: while more than `TOAST_LIMIT` non-leaving entries remain, the oldest one that times out is marked
-  leaving; when every one waits, the oldest is.
+- The limit: while more than `TOAST_LIMIT` non-leaving entries remain, the oldest one without answers is marked
+  leaving; when every one has answers, the oldest is.
 - `dismiss(id)` marks the entry leaving; `remove(id)` drops it. `dismissAction(key)` marks the keyed entry leaving.
 - Gate: `info`, `success`, `offer` and `action` read `readUserPreferences().notificationsEnabled` per push and drop
   the push when it is `false`; `warning` and `error` never read it.
 
 `ToastCard` is presentational. Its host (`ToastItem` in `ToastStack.tsx`) owns:
 
-- `useToastTimer(ms, paused, onElapsed)`: `ms` is `null` for a waiting toast. Holds the remaining time in a ref; when
+- `useToastTimer(ms, paused, onElapsed)`: `ms` is `null` for a leaving toast (no timer). Holds the remaining time in a ref; when
   `paused` turns true it clears the timeout and subtracts what ran; when false it restarts with the remainder.
   A change of `ms` (an action toast replaced with no actions) restarts it.
 - `paused = hovered || focusWithin || document.hidden`, from `pointerenter`/`pointerleave`, `focus`/`blur` (React's
@@ -100,22 +105,26 @@ hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-
   callback for the obstacles found, on a document `animationend` (a banner that flew into place), and when the
   toast count changes. Each measure is one `querySelectorAll` and one `getBoundingClientRect` per obstacle (four or
   five elements), and sets state only when the floor changes.
-- No timer runs for a waiting toast; a paused toast holds no timeout.
+- One timer per toast, never more than `TOAST_LIMIT`; a paused toast holds no timeout.
+- `toastName` is linear in the name's length (one regex pass, one code-point split); names are capped by
+  `docs/specs/006-document/name-length.md`, and it runs once per toast push, never on a hot path.
 
 ## Constants and configuration
 
-| Constant                   | Value | Provenance                                    | Safe range   |
-| -------------------------- | ----- | --------------------------------------------- | ------------ |
-| `TOAST_TIMEOUT_MS.info`    | 4000  | The previous single timeout                   | 3000 to 6000 |
-| `TOAST_TIMEOUT_MS.success` | 4000  | Same                                          | 3000 to 6000 |
-| `TOAST_TIMEOUT_MS.warning` | 6000  | Longer copy, needs reading                    | 5000 to 8000 |
-| `TOAST_TIMEOUT_MS.error`   | 6000  | Same                                          | 5000 to 8000 |
-| `TOAST_LIMIT`              | 4     | Four 44px toasts stay in a phone's lower half | 3 to 5       |
-| `TOAST_EXIT_HOLD_MS`       | 150   | The `micro` token `toast-out` runs at         | = `micro`    |
-| `TOAST_EDGE_PX`            | 16    | The page gutter                               | 8 to 24      |
-| `TOAST_FLOOR_GAP_PX`       | 8     | The stack's own gap                           | 4 to 16      |
-| `TOAST_MAX_WIDTH_PX`       | 576   | `sm:max-w-[36rem]`                            | 400 to 640   |
-| `TOAST_PHONE_MAX_PX`       | 639   | Below Tailwind `sm`                           | = `sm` - 1   |
+| Constant                   | Value | Provenance                                    | Safe range    |
+| -------------------------- | ----- | --------------------------------------------- | ------------- |
+| `TOAST_TIMEOUT_MS.info`    | 4000  | The previous single timeout                   | 3000 to 6000  |
+| `TOAST_TIMEOUT_MS.success` | 4000  | Same                                          | 3000 to 6000  |
+| `TOAST_TIMEOUT_MS.warning` | 6000  | Longer copy, needs reading                    | 5000 to 8000  |
+| `TOAST_TIMEOUT_MS.error`   | 6000  | Same                                          | 5000 to 8000  |
+| `TOAST_ANSWER_TIMEOUT_MS`  | 10000 | Time to reach for Undo, never for good        | 8000 to 15000 |
+| `TOAST_NAME_MAX`           | 30    | Two names plus copy stay under 90 characters  | 20 to 32      |
+| `TOAST_LIMIT`              | 4     | Four 44px toasts stay in a phone's lower half | 3 to 5        |
+| `TOAST_EXIT_HOLD_MS`       | 150   | The `micro` token `toast-out` runs at         | = `micro`     |
+| `TOAST_EDGE_PX`            | 16    | The page gutter                               | 8 to 24       |
+| `TOAST_FLOOR_GAP_PX`       | 8     | The stack's own gap                           | 4 to 16       |
+| `TOAST_MAX_WIDTH_PX`       | 576   | `sm:max-w-[36rem]`                            | 400 to 640    |
+| `TOAST_PHONE_MAX_PX`       | 639   | Below Tailwind `sm`                           | = `sm` - 1    |
 
 `TOAST_FLOOR_SELECTOR`: `[data-toast-floor], [data-editor-tabbar], [data-zoom-cluster], [data-whiteboard-dock]`. The
 Explorer bottom bar and the sign-in banner's card carry `data-toast-floor`.
@@ -171,7 +180,8 @@ move and unmount, the new-version prompt when it shows or hides.
 | Timeouts per tone, pause and resume with the remainder    | `apps/live/components/toast/useToastTimer.test.tsx` |
 | Gate (warning and error ignore it), roles, Escape, exit   | `apps/live/hooks/ui/useToast.test.tsx`              |
 | One row: icon, message, actions, close in order           | `apps/live/components/toast/ToastCard.test.tsx`     |
-| Offer and action toasts wait; an emptied action times out | `apps/live/hooks/ui/useToast.test.tsx`              |
+| Offer and action toasts time out after the answer time    | `apps/live/hooks/ui/useToast.test.tsx`              |
+| Names quoted, cut, fallen back; copy stays under 90 chars | `apps/live/lib/toast-name.test.ts`                  |
 
 ## Observability
 

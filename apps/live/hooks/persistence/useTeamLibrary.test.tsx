@@ -111,13 +111,13 @@ describe('useTeamLibrary when the server refuses', () => {
     await result.current.renameDocument('t1-d', 'Doc');
     await result.current.duplicateDocument('t1-d');
     expect(toast.error.mock.calls).toEqual([
-      ['Could not create the folder. Try again.'],
-      ['Could not rename the folder. Try again.'],
-      ['Could not move the folder. Try again.'],
-      ['Could not delete the folder. Try again.'],
-      ['Could not move the document. Try again.'],
-      ['Could not rename the document. Try again.'],
-      ["Couldn't duplicate that document. Try again."],
+      ['Could not create “Planning”. Try again.'],
+      ['Could not rename “F”. Try again.'],
+      ['Could not move “F”. Try again.'],
+      ['Could not delete “F”. Try again.'],
+      ['Could not move “D”. Try again.'],
+      ['Could not rename “D”. Try again.'],
+      ['Could not duplicate “D”. Try again.'],
     ]);
   });
 

@@ -120,7 +120,7 @@ export function useFolders(
         return folder;
       } catch (err) {
         console.warn('[folders] create failed', { message: (err as Error).message });
-        toast.error(FOLDER_FAILURE.create);
+        toast.error(FOLDER_FAILURE.create(name));
         return undefined;
       }
     },
@@ -150,7 +150,7 @@ export function useFolders(
           console.warn('[folders] rename failed', { folder: id, message: (err as Error).message });
           if (prev)
             setFolders((fs) => fs.map((f) => (f.id === id ? { ...f, name: prev.name } : f)));
-          toast.error(FOLDER_FAILURE.rename);
+          toast.error(FOLDER_FAILURE.rename(prev?.name));
         });
     },
     [folders, ownerId, toast],

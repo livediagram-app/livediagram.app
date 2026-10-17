@@ -6,7 +6,7 @@ Status: shipped
 
 A toast is a short, floating notice that says what just happened or what went wrong, and offers at most a couple of
 answers to it. It is the editor and Explorer's one notification surface (`useToast`, `apps/live/hooks/ui/useToast.tsx`):
-a failure that would otherwise be silent, a consequential action that would otherwise go unconfirmed ("Document
+a failure that would otherwise be silent, a consequential action that would otherwise go unconfirmed ("“Roadmap”
 deleted", with Undo), or an offer (power user mode). It never says what is already visible on screen (an element
 appearing, a copy button turning into "Copied"), and autosave has its own header pill.
 
@@ -15,7 +15,7 @@ Inline notices that belong to a surface (a dialog's error line, a panel's empty 
 ## One line by default
 
 A toast reads as one line: **icon, message, actions, close**, left to right. A short message with its actions
-("Document deleted", Undo) is a single row, never a card with its button stacked underneath. It wraps only when the
+("“Roadmap” deleted", Undo) is a single row, never a card with its button stacked underneath. It wraps only when the
 words genuinely do not fit: the message wraps first, and the actions then drop to a row of their own under it, aligned
 to the toast's end. The close button stays in the top row's corner, whatever wraps.
 
@@ -24,9 +24,26 @@ The copy is written to fit. A message is one short sentence, or two very short o
 its actions; never over 90. Filler ("Please", "so your recent changes", a restated reason) is cut first.
 
 - **Messages are sentence case**, ending with a full stop when they are a sentence with advice, and without one when
-  they are a bare confirmation ("Document deleted", "Moved to folder").
+  they are a bare confirmation ("“Roadmap” deleted", "“Roadmap” moved to “Plans”").
 - **Action labels are Title Case** and one or two words ("Undo", "Show", "Try It", "No Thanks"). A label that needs
-  more context for a screen reader carries an `ariaLabel` ("Undo: restore the document").
+  more context for a screen reader carries an `ariaLabel` ("Undo: restore “Roadmap”").
+
+## Naming what it acted on
+
+A toast about a document, a folder or a tab names it, so someone who acted on one of several, or on a row that has
+scrolled away, can tell which one it was: "“Roadmap” deleted", "“Roadmap” moved to “Plans”", "Could not rename
+“Plans”. Try again.", "“Sheet 1” added to “Roadmap”".
+
+- **The name is in curly quotes**, its whitespace collapsed to single spaces.
+- **It is cut to 30 characters**, the last one an ellipsis (`TOAST_NAME_MAX`, `apps/live/lib/toast-name.ts`), cut
+  between characters so an emoji is never split. Two cut names and the words round them stay under the 90-character
+  ceiling; where they would not, the advice is dropped first ("Could not add “Sheet 1” to “Roadmap”.").
+- **A blank or unknown name falls back to the generic word**: "Document deleted", "Could not move the document. Try
+  again.", "moved to the team library". The surface never shows empty quotes.
+- **Where it went is named too**: the folder, or My documents. A team is named when the surface knows it, else "the
+  team library".
+- The wording lives in one place per family, so every surface says the same: `apps/live/lib/document-toast-copy.ts`
+  (delete, restore, move, duplicate) and `apps/live/lib/write-failure-copy.ts` (a failed folder or document write).
 
 ## Tones
 
@@ -35,7 +52,7 @@ reads as one family; the icon says the tone at a glance, and an error or warning
 
 | Tone      | Icon                | For                                                                        | Times out | Announced as        | In-Editor Notifications off |
 | --------- | ------------------- | -------------------------------------------------------------------------- | --------- | ------------------- | --------------------------- |
-| `info`    | Info circle, brand  | A neutral note or an offer                                                 | 4 s       | `status` (polite)   | Hidden                      |
+| `info`    | Info circle, brand  | A neutral note, an offer or an action toast                                | 4 s       | `status` (polite)   | Hidden                      |
 | `success` | Check circle, green | A consequential action confirmed                                           | 4 s       | `status` (polite)   | Hidden                      |
 | `warning` | Triangle, amber     | It worked, but not fully, or only here ("Showing this browser only")       | 6 s       | `status` (polite)   | Still shown                 |
 | `error`   | Alert circle, rose  | Something failed and nothing changed, or changes are at risk of not saving | 6 s       | `alert` (assertive) | Still shown                 |
@@ -47,10 +64,10 @@ and errors always show.
 
 - **A plain toast** (`toast.info`, `toast.success`, `toast.warning`, `toast.error`) carries a message and times out.
 - **An action toast** (`toast.action`) carries a message and one or two buttons, is upserted in place by its `key`
-  (so a burst updates one toast rather than stacking), and waits: no timeout while it has a button to press
-  (WCAG 2.2.1). An action toast replaced with no buttons ("Undone") is a plain info toast from then on and times out.
-- **An offer** (`toast.offer`) asks a question with a confirm and a decline, and waits for one. Closing it is the
-  decline.
+  (so a burst updates one toast rather than stacking), and stays up for the longer answer time (below). An action
+  toast replaced with no buttons ("Undone") is a plain info toast from then on and times out by its tone.
+- **An offer** (`toast.offer`) asks a question with a confirm and a decline, and stays up for the answer time.
+  Closing it is the decline; timing out is neither answer.
 
 The last button is the primary one (the brand-coloured answer: Undo, Try It); any before it are secondary. An offer
 lists its decline before its confirm.
@@ -58,11 +75,15 @@ lists its decline before its confirm.
 ## Timing
 
 - A plain toast times out after its tone's time (above).
+- **Every toast times out; none stays for good.** One with buttons (an action toast, an offer) stays up for 10 seconds
+  (`TOAST_ANSWER_TIMEOUT_MS`), long enough to reach for Undo, and then leaves. What its button offered is still
+  reachable elsewhere (a deleted document waits in the Trash, an agent's change in the document's history), so a
+  toast that has gone loses nothing. The pause below is how someone who needs longer keeps it (WCAG 2.2.1).
 - **Hovering or focusing a toast pauses its timer**, and leaving it resumes with the time it had left, never a fresh
   start, so a toast someone is reading never disappears under them. A hidden page (another browser tab) pauses it too.
 - The same message in the same tone, while one is still up, is not shown twice: the toast already up stays.
-- **At most four toasts** are up at once. A fifth retires the oldest one that times out, or the oldest of all when
-  every one is waiting.
+- **At most four toasts** are up at once. A fifth retires the oldest one without buttons, or the oldest of all when
+  every one has them.
 
 ## Placement
 

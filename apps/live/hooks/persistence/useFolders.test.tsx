@@ -127,7 +127,7 @@ describe('useFolders when the api refuses a create or a rename', () => {
     });
     expect(created).toBeUndefined();
     expect(result.current.folders).toEqual([]);
-    expect(toast.error).toHaveBeenCalledWith('Could not create the folder. Try again.');
+    expect(toast.error).toHaveBeenCalledWith('Could not create “New folder”. Try again.');
   });
 
   it('puts the old name back and says so', async () => {
@@ -138,7 +138,7 @@ describe('useFolders when the api refuses a create or a rename', () => {
     act(() => result.current.renameFolder('plans', 'Roadmaps'));
     expect(result.current.folders[0]!.name).toBe('Roadmaps');
     await waitFor(() =>
-      expect(toast.error).toHaveBeenCalledWith('Could not rename the folder. Try again.'),
+      expect(toast.error).toHaveBeenCalledWith('Could not rename “plans”. Try again.'),
     );
     expect(result.current.folders[0]!.name).toBe('plans');
   });

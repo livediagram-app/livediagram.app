@@ -5,7 +5,8 @@ import {
   pushToast,
   retireToasts,
   toastTimeout,
-  toastWaits,
+  toastAnswers,
+  TOAST_ANSWER_TIMEOUT_MS,
   upsertActionToast,
   type ToastEntry,
 } from './toast-queue';
@@ -29,7 +30,7 @@ describe('pushToast', () => {
     expect(live(pushToast(leaving, { message: 'Saved', tone: 'success' }, 2))).toEqual(['Saved']);
   });
 
-  it(`keeps at most ${TOAST_LIMIT} up, retiring the oldest that times out before any that waits`, () => {
+  it(`keeps at most ${TOAST_LIMIT} up, retiring the oldest without answers before any with them`, () => {
     let list = upsertActionToast([], { key: 'd', message: 'Document deleted', actions: [undo] }, 1);
     for (let i = 2; i <= TOAST_LIMIT + 1; i++) {
       list = pushToast(list, { message: `Note ${i}`, tone: 'info' }, i);
@@ -37,7 +38,7 @@ describe('pushToast', () => {
     expect(live(list)).toEqual(['Document deleted', 'Note 3', 'Note 4', 'Note 5']);
   });
 
-  it('retires the oldest of all when every toast waits', () => {
+  it('retires the oldest of all when every toast has answers', () => {
     let list: ToastEntry[] = [];
     for (let i = 1; i <= TOAST_LIMIT + 1; i++) {
       list = upsertActionToast(list, { key: `k${i}`, message: `Deleted ${i}`, actions: [undo] }, i);
@@ -78,8 +79,8 @@ describe('retireToasts', () => {
   });
 });
 
-describe('toastWaits / toastTimeout', () => {
-  it('waits for an offer or an action toast with a button; times out by tone otherwise', () => {
+describe('toastAnswers / toastTimeout', () => {
+  it('gives an offer or an action toast with a button the longer answer time; times out by tone otherwise', () => {
     const offer = {
       message: 'm',
       confirmLabel: 'Try It',
@@ -87,11 +88,14 @@ describe('toastWaits / toastTimeout', () => {
       onConfirm() {},
       onDecline() {},
     };
-    expect(toastWaits({ offer })).toBe(true);
-    expect(toastWaits({ actions: [undo] })).toBe(true);
-    expect(toastWaits({ actions: [] })).toBe(false);
-    expect(toastTimeout({ tone: 'info', actions: [undo] })).toBeNull();
+    expect(toastAnswers({ offer })).toBe(true);
+    expect(toastAnswers({ actions: [undo] })).toBe(true);
+    expect(toastAnswers({ actions: [] })).toBe(false);
+    expect(toastTimeout({ tone: 'info', actions: [undo] })).toBe(TOAST_ANSWER_TIMEOUT_MS);
+    expect(toastTimeout({ tone: 'info', offer })).toBe(TOAST_ANSWER_TIMEOUT_MS);
+    expect(toastTimeout({ tone: 'info', actions: [] })).toBe(TOAST_TIMEOUT_MS.info);
     expect(toastTimeout({ tone: 'warning' })).toBe(TOAST_TIMEOUT_MS.warning);
     expect(TOAST_TIMEOUT_MS).toEqual({ info: 4000, success: 4000, warning: 6000, error: 6000 });
+    expect(TOAST_ANSWER_TIMEOUT_MS).toBe(10_000);
   });
 });
