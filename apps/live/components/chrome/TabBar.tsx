@@ -330,6 +330,7 @@ export function TabBar({
     <>
       <div
         data-editor-tabbar
+        data-region="tabs"
         // Clear of the home indicator and a landscape notch (lib/safe-area): the 48px row sits
         // above the bottom inset (the height grows by it), its sides past the side insets.
         style={{
