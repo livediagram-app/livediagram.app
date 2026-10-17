@@ -1,6 +1,7 @@
 import {
   Fragment,
   useEffect,
+  useLayoutEffect,
   useRef,
   useState,
   type PointerEvent as ReactPointerEvent,
@@ -22,6 +23,8 @@ import {
 } from './quick-connect-options';
 import { useHoverCloseTimer } from '@/hooks/ui/useHoverCloseTimer';
 import { isDragTravel } from '@/lib/press-gestures';
+import { clampToViewport } from '@/lib/clamp-to-viewport';
+import { quickRingMenuRect } from '@/lib/quick-ring-menu-rect';
 
 // Same grace period as the other hover-open surfaces: long enough to cross
 // the gap between the + and its menu.
@@ -215,6 +218,26 @@ export function QuickConnectRing({
     return () => clearTimeout(t);
   }, [open]);
 
+  // The open menu kept on screen: beside an element that reaches the edge of a phone it fanned past the edge, out
+  // of reach. Nudged back in with `translate`, which composes with the open animation's `transform`. Written to the
+  // node rather than held in state: it is layout, measured after the menu mounts, and needs no render of its own.
+  const plusRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    const plus = plusRef.current;
+    const box = menuRef.current;
+    if (!rendered || !plus || !box) return;
+    const p = plus.getBoundingClientRect();
+    const rect = quickRingMenuRect(
+      { x: p.left + p.width / 2, y: p.top + p.height / 2 },
+      { width: box.offsetWidth, height: box.offsetHeight },
+      placement,
+      NEAR,
+    );
+    const nudge = clampToViewport(rect, { x: 0, y: 0 });
+    box.style.translate = nudge.x || nudge.y ? `${nudge.x}px ${nudge.y}px` : '';
+  }, [rendered, placement, x, y, zoom]);
+
   // Hover-open (quick-add-on-hover, docs/specs/008-canvas/canvas-and-palette.md): open on pointer-enter of the +
   // or its menu, and close on a short delay after leaving both, so crossing
   // the gap between the + and the menu doesn't close it. No-op unless the
@@ -304,6 +327,7 @@ export function QuickConnectRing({
       {/* The plus trigger, centred at (cx, cy). Click toggles the ring.
           Styled to match the selection toolbar (white, slate, soft shadow). */}
       <button
+        ref={plusRef}
         type="button"
         aria-label="Quick add and connect"
         aria-expanded={open}
@@ -344,6 +368,7 @@ export function QuickConnectRing({
           plus (scales from the plus-side edge) on open. */}
       {rendered ? (
         <div
+          ref={menuRef}
           className={`pointer-events-auto absolute flex items-center rounded-lg border border-slate-200 bg-white p-1 shadow-lg shadow-slate-900/10 dark:border-slate-800 dark:bg-slate-900 dark:shadow-slate-950/40 ${
             menu.col ? 'flex-col' : 'flex-row'
           }`}
