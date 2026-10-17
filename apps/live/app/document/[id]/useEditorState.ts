@@ -1,7 +1,6 @@
 'use client';
 
 import { useFocusNewPlanElement } from '@/hooks/plan/useFocusNewPlanElement';
-import { useShowFollowersMyView } from '@/hooks/collab/useShowFollowersMyView';
 import { tabsWithPageMoved, useDeckFollowsPages } from './useDeckFollowsPages';
 import { voteTallies } from '@/hooks/plan/vote-tally';
 import { useMergeDuplicateStatuses } from '@/hooks/plan/useMergeDuplicateStatuses';
@@ -108,6 +107,7 @@ import { useCollabElements } from '@/hooks/canvas/useCollabElements';
 import { useQuizElements } from '@/hooks/canvas/useQuizElements';
 import { useQaBoard } from '@/hooks/canvas/useQaBoard';
 import { useFollowMe } from '@/hooks/collab/useFollowMe';
+import { useShowFollowersMyView } from '@/hooks/collab/useShowFollowersMyView';
 import { useFacilitator } from '@/hooks/collab/useFacilitator';
 import { useFocusLanding } from '@/hooks/collab/useFocusLanding';
 import { useFocusInvite } from '@/hooks/collab/useFocusInvite';
