@@ -176,7 +176,9 @@ function ToastStack({
         // above the modal rung) so a failure toast surfaces even when a
         // dialog is open. On mobile it's lifted clear of the zoom / dock
         // controls along the bottom edge (sm+ drops it back to bottom-4).
-        className="pointer-events-none fixed inset-x-0 bottom-24 z-[var(--z-toast)] flex flex-col items-center gap-2 px-4 sm:bottom-4"
+        // And above the sign-in banner while it shows (SIGNIN_BANNER_VAR), which sat higher than either: a
+        // "Document deleted · Undo" landed on its words.
+        className="pointer-events-none fixed inset-x-0 bottom-[max(6rem,calc(var(--lvd-signin-banner,0px)_+_0.5rem))] z-[var(--z-toast)] flex flex-col items-center gap-2 px-4 sm:bottom-[max(1rem,calc(var(--lvd-signin-banner,0px)_+_0.5rem))]"
         aria-live="polite"
         aria-atomic="true"
       >
