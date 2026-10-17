@@ -7,6 +7,7 @@
 import { cleanup, render, screen, fireEvent } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { ElementAction } from '@livediagram/document';
+import type { SaveActionInput } from '@/hooks/collab/useEditorActions';
 import { AssignActionDialog } from './AssignActionDialog';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
@@ -88,5 +89,21 @@ describe('AssignActionDialog seed', () => {
     rerender(<AssignActionDialog {...props({ open: false })} />);
     rerender(<AssignActionDialog {...props()} />);
     expect(nameInput().value).toBe('Retry budget');
+  });
+});
+
+// docs/specs/026-plan/linked-boards.md "On the canvas": an edit picks Open, Done or Won't Do, saved with the rest.
+describe('AssignActionDialog status', () => {
+  it('offers a status only when editing, and sends it only when it changed', () => {
+    const onSubmit = vi.fn<(input: SaveActionInput) => void>();
+    const { rerender } = render(<AssignActionDialog {...props({ onSubmit })} />);
+    expect(screen.queryByRole('radiogroup', { name: 'Status' })).toBeNull();
+    rerender(<AssignActionDialog {...props({ onSubmit, existing: selfAction })} />);
+    expect(screen.getByRole('radio', { name: 'Open' }).getAttribute('aria-checked')).toBe('true');
+    fireEvent.click(screen.getByRole('button', { name: /save action/i }));
+    expect(onSubmit.mock.calls[0]![0].status).toBeUndefined();
+    fireEvent.click(screen.getByRole('radio', { name: 'Won’t Do' }));
+    fireEvent.click(screen.getByRole('button', { name: /save action/i }));
+    expect(onSubmit.mock.calls[1]![0].status).toBe('wont-do');
   });
 });

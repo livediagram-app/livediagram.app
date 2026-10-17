@@ -9,6 +9,7 @@ Follow the references below only as needed; never upfront.
 - ./plan-views.md - when implementing plan views: the plan-view element, view ids, the pure models, the view components and their tiles
 - ./plan-tour.md - when implementing the Plan tour: the shared tour engine and stage, the host, the steps on the tour subject, and the old tour content's leftover sweep
 - ./plan-agents.md - when implementing the agent Plan tools: the plan route, naming, card type changes, board placement, the MCP and CLI doors
+- ./linked-boards.md - when implementing linked boards: the Actions board, linked cards, the heal, Won't Do and the links between canvas and board
 - ./plan-mode.md - when wiring the Plan editor mode: catalogue, gate, palette layout and tiles, templates and their example cards
 - ./DEFAULTS.md - when a Plan blueprint applies a default the spec leaves open
 - ./COMPLETENESS.md - when checking which completeness categories a Plan blueprint covers

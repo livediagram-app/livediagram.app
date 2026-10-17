@@ -6198,11 +6198,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "type": "string"
       },
       "status": {
-        "enum": [
-          "open",
-          "done"
-        ],
-        "type": "string"
+        "$ref": "#/components/schemas/ElementActionStatus"
       },
       "teamId": {
         "type": [
@@ -6252,6 +6248,14 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "name"
     ],
     "type": "object"
+  },
+  "ElementActionStatus": {
+    "enum": [
+      "open",
+      "done",
+      "wont-do"
+    ],
+    "type": "string"
   },
   "ElementAnimation": {
     "anyOf": [
@@ -9979,6 +9983,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "LinkedRecordKind": {
+    "const": "actions",
+    "type": "string"
+  },
   "LintCode": {
     "enum": [
       "box-overlap",
@@ -11674,6 +11682,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "cardSize": {
         "$ref": "#/components/schemas/CardSize"
+      },
+      "collects": {
+        "$ref": "#/components/schemas/LinkedRecordKind"
       },
       "columns": {
         "items": {

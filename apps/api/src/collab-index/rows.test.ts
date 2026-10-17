@@ -92,6 +92,13 @@ describe('collabIndexRowsFromElements', () => {
     expect(actions[0]!.status).toBe('done');
   });
 
+  it('indexes a Won’t Do action as closed, never open', () => {
+    const { actions } = collabIndexRowsFromElements([
+      shape('s1', 'x', { action: action({ status: 'wont-do' }) }),
+    ]);
+    expect(actions[0]!.status).toBe('done');
+  });
+
   it('projects a thread: latest by timestamp, distinct participants, first/latest times', () => {
     const { threads } = collabIndexRowsFromElements([
       shape('s1', 'Checkout', {

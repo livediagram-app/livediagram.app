@@ -139,6 +139,8 @@ export const CARDS_CTES = `,
     match: `json_extract(i.fields, '$.assignee.id') IN (SELECT pid FROM mine)
        AND json_extract(i.fields, '$.archived') IS NOT 1
        AND json_extract(i.fields, '$.status') IS NOT 'trash'
+       -- A linked card's action is listed already (docs/specs/026-plan/linked-boards.md "The Inbox").
+       AND json_extract(i.fields, '$.linked') IS NULL
        AND NOT EXISTS (
          SELECT 1 FROM document_tabs dt
            JOIN plan_board_statuses pb

@@ -138,6 +138,7 @@ export function PlanSheetsHost({ plan }: { plan: PlanSlice }) {
           track('Plan', 'Added', 'LinkedCard');
         }}
         statusNames={ctx.statusNames}
+        {...(ctx.linkedActions ? { linkedActions: ctx.linkedActions } : {})}
         onTrash={() => {
           ctx.trashItem(item.id);
           ctx.announce('Card moved to the Trash');

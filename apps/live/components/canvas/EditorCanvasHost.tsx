@@ -266,6 +266,7 @@ export function EditorCanvasHost() {
     openAssignActionDialog,
     completeAction,
     reopenAction,
+    linkedActions,
     openCellLinkPicker,
     openComments,
     openDocument,
@@ -804,6 +805,9 @@ export function EditorCanvasHost() {
                       configure: openAssignActionDialog,
                       complete: completeAction,
                       reopen: reopenAction,
+                      ...(linkedActions.openOnBoard
+                        ? { openBoard: () => linkedActions.openOnBoard?.() }
+                        : {}),
                     }
               }
               // Everyone sees what a Picker holds; only an Editor spins it (ElementFaceRouter, share-roles.md).

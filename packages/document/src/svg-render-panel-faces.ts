@@ -8,7 +8,7 @@
 
 import { COLLAB_DONE_COLOR as DONE } from './colors';
 import type { Comment } from './comments';
-import { elementActions } from './element-action';
+import { elementActions, isClosedAction } from './element-action';
 import { initialsOf } from './names';
 import { r2, xmlEscape } from './svg-render-primitives';
 import {
@@ -181,7 +181,7 @@ export function svgCommentPanel(el: Face, title: string, color: string, a: Colla
 
 export function svgActionPanel(el: Face, title: string, color: string, a: CollabAccent): string {
   const actions = elementActions(el);
-  const open = actions.filter((x) => x.status !== 'done').length;
+  const open = actions.filter((x) => !isClosedAction(x)).length;
   const allDone = actions.length > 0 && open === 0;
   return collabCard(
     el,
@@ -224,7 +224,11 @@ export function svgActionPanel(el: Face, title: string, color: string, a: Collab
       let y = BODY_TOP;
       for (const action of actions) {
         const done = action.status === 'done';
-        const who = action.assignee.name?.trim() || 'Teammate';
+        // Won't Do (docs/specs/026-plan/linked-boards.md "On the canvas"): a grey slashed circle, muted like done.
+        const wontDo = action.status === 'wont-do';
+        const closed = done || wontDo;
+        const name = action.assignee.name?.trim() || 'Teammate';
+        const who = wontDo ? `Won’t Do · ${name}` : name;
         const lines = wrapLines(action.name, inner - 48, 12.5, 2);
         const rowH = 8 + lines.length * 17.2 + 4 + 16 + 8;
         if (y + rowH > barY - BODY_GAP) break;
@@ -234,22 +238,25 @@ export function svgActionPanel(el: Face, title: string, color: string, a: Collab
         out += done
           ? `<circle cx="${r2(cx)}" cy="${r2(cy)}" r="11" fill="${DONE}"/>` +
             checkMark(cx, cy, 12, '#ffffff', 1.8)
-          : `<circle cx="${r2(cx)}" cy="${r2(cy)}" r="10" fill="none" stroke="${xmlEscape(a.accent)}" stroke-opacity="0.6" stroke-width="2"/>`;
+          : wontDo
+            ? `<circle cx="${r2(cx)}" cy="${r2(cy)}" r="10" fill="none" stroke="${xmlEscape(color)}" stroke-opacity="0.45" stroke-width="2"/>` +
+              `<path d="M${r2(cx - 6.4)} ${r2(cy + 6.4)}L${r2(cx + 6.4)} ${r2(cy - 6.4)}" stroke="${xmlEscape(color)}" stroke-opacity="0.45" stroke-width="2" stroke-linecap="round"/>`
+            : `<circle cx="${r2(cx)}" cy="${r2(cy)}" r="10" fill="none" stroke="${xmlEscape(a.accent)}" stroke-opacity="0.6" stroke-width="2"/>`;
         const nx = PAD_X + 40;
         lines.forEach((line, i) => {
           out += text(nx, y + 21 + i * 17.2, line, {
             size: 12.5,
             weight: 600,
             color,
-            opacity: done ? 0.5 : undefined,
-            strike: done,
+            opacity: closed ? 0.5 : undefined,
+            strike: closed,
           });
         });
         const ay = y + 8 + lines.length * 17.2 + 4 + 8;
         out +=
           personDisc(nx + 8, ay, 8, color, {
-            initials: initialsOf(who),
-            fill: done ? DONE : a.accent,
+            initials: initialsOf(name),
+            fill: done ? DONE : wontDo ? color : a.accent,
           }) + text(nx + 22, ay + 3.5, who, { size: 10.5, color, opacity: 0.65 });
         y += rowH + 6;
       }

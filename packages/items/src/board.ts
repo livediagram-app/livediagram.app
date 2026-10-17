@@ -122,7 +122,13 @@ export interface PlanBoardSetup {
   // Fill Tab (docs/specs/026-plan/plan-board.md "Fill Tab"): the board fills its tab for everyone, every time the tab
   // is shown, and the rest of the canvas cannot be used. Absent is off.
   fillTab?: boolean;
+  // A linked board (docs/specs/026-plan/linked-boards.md): the kind of canvas record it collects. Absent is none.
+  collects?: LinkedRecordKind;
 }
+
+// The kinds of canvas record a linked board collects (docs/specs/026-plan/linked-boards.md).
+export const LINKED_RECORD_KINDS = ['actions'] as const;
+export type LinkedRecordKind = (typeof LINKED_RECORD_KINDS)[number];
 
 // The Due Soon widget's narrowing: due from `from` (absent: any earlier day) to `to`, not done.
 export interface QuickDueWindow {
@@ -771,6 +777,9 @@ export function normaliseBoardSetup(input: unknown): PlanBoardSetup | null {
       : {}),
     hideWriting: input['hideWriting'] === true,
     ...(input['fillTab'] === true ? { fillTab: true } : {}),
+    ...((LINKED_RECORD_KINDS as readonly unknown[]).includes(input['collects'])
+      ? { collects: input['collects'] as LinkedRecordKind }
+      : {}),
   };
 }
 

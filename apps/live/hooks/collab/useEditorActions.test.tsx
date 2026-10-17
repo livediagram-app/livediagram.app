@@ -26,13 +26,14 @@ const input = (name: string): SaveActionInput => ({
   notifyEmail: false,
 });
 
-function setup(elements: Tab['elements']) {
+function setup(elements: Tab['elements'], onCreated?: (elementId: string) => void) {
   const notify = vi.fn();
   let tabs: Tab[] = [{ id: 't', name: 'T', elements }];
   const find = (id: string) => tabs[0]!.elements.find((e) => e.id === id)!;
   const { result } = renderHook(() =>
     useEditorActions({
       activeId: 't',
+      ...(onCreated ? { onCreated } : {}),
       tickTabs: (fn) => {
         tabs = fn(tabs);
       },
@@ -83,6 +84,24 @@ describe('useEditorActions on an Action panel', () => {
     const first = list(card.id)[0]!;
     act(() => result.current.saveAction(card.id, input('First, renamed'), first.id));
     expect(list(card.id).map((a) => a.name)).toEqual(['First, renamed', 'Second']);
+  });
+
+  it('closes one as Won’t Do, sets a status from the dialog, and tells the board a new one was made', () => {
+    const card = createShape('action-card', 0, 0);
+    const onCreated = vi.fn();
+    const { result, list } = setup([card], onCreated);
+    act(() => result.current.saveAction(card.id, input('First')));
+    act(() => result.current.saveAction(card.id, input('Second')));
+    expect(onCreated).toHaveBeenCalledTimes(2);
+    const [first, second] = list(card.id);
+    act(() => result.current.wontDoAction(card.id, first!.id));
+    act(() =>
+      result.current.saveAction(card.id, { ...input('Second'), status: 'done' }, second!.id),
+    );
+    expect(list(card.id).map((a) => a.status)).toEqual(['wont-do', 'done']);
+    act(() => result.current.saveAction(card.id, { ...input('First'), status: 'open' }, first!.id));
+    expect(list(card.id)[0]!.status).toBe('open');
+    expect(onCreated).toHaveBeenCalledTimes(2);
   });
 
   it('migrates a card saved with a single action on its first edit', () => {

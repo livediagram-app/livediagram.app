@@ -105,8 +105,16 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Action|Deleted|': 'Someone removed an assigned action from an element.',
   'Action|Moved|DocumentToTeam':
     "While assigning an action to someone, the document was moved into that person's team so they'd have access to it.",
+  'Action|Linked|Board':
+    "Someone added a document's first action, which made its Actions board: a board tab where every action in the document has a card, kept in step with the canvas.",
   'Action|Opened|': 'Someone opened the popover for an action already assigned to an element.',
+  'Action|Opened|Board':
+    "Someone went from an action on the canvas to the document's Actions board, from the action's popover or an Action panel's Board chip.",
+  'Action|Opened|Canvas':
+    "Someone went from a card on the Actions board to its action on the canvas, with the card's Show on Canvas.",
   'Action|Resolved|': 'Someone marked an assigned action as done.',
+  'Action|Resolved|WontDo':
+    "Someone closed an assigned action as Won't Do: decided against, closed without being done.",
   'Action|Unresolved|': 'Someone reopened an assigned action that had been marked done.',
   'Activity|Loaded|Retry':
     'Someone clicked "Try again" after the Explorer\'s Inbox failed to load, retrying the read.',
@@ -2330,6 +2338,7 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Action|Changed': 'Someone changed something about an action assigned to an element.',
   'Action|Created': 'Someone assigned an action to a teammate, or to themselves, on an element.',
   'Action|Deleted': 'Someone removed an assigned action from an element.',
+  'Action|Linked': "Someone added a document's first action, which made its Actions board.",
   'Action|Moved': "A document was moved into a teammate's team while assigning them an action.",
   'Action|Opened': 'Someone opened the popover for an action already assigned to an element.',
   'Action|Resolved': 'Someone marked an assigned action as done.',

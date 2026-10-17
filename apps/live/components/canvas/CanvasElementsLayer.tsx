@@ -276,6 +276,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     actionConfigure: actionPanelActions?.configure,
     actionComplete: actionPanelActions?.complete,
     actionReopen: actionPanelActions?.reopen,
+    actionOpenBoard: actionPanelActions?.openBoard,
   });
   // One timer bag and one comment / action bag per element, built from the stable wrappers above, so
   // a view's memo holds across editor renders (docs/specs/008-canvas/canvas-performance.md).
@@ -305,13 +306,14 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     }));
   }, [h]);
   const actionActionsFor = useMemo(() => {
-    const { actionConfigure, actionComplete, actionReopen } = h;
+    const { actionConfigure, actionComplete, actionReopen, actionOpenBoard } = h;
     if (!actionConfigure || !actionComplete || !actionReopen) return null;
     return idBound((id) => ({
       add: () => actionConfigure(id, null),
       edit: (actionId: string) => actionConfigure(id, actionId),
       complete: (actionId: string) => actionComplete(id, actionId),
       reopen: (actionId: string) => actionReopen(id, actionId),
+      ...(actionOpenBoard ? { openBoard: actionOpenBoard } : {}),
     }));
   }, [h]);
   // Auto-fit measures the face it paints, and webfonts land after first

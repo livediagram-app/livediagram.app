@@ -24,6 +24,9 @@ export type ElementActionAssignee = {
   name: string | null;
 };
 
+export const ACTION_STATUSES = ['open', 'done', 'wont-do'] as const;
+export type ElementActionStatus = (typeof ACTION_STATUSES)[number];
+
 export type ElementAction = {
   id: string;
   // Required, short ("Confirm the retry budget").
@@ -38,7 +41,8 @@ export type ElementAction = {
   // signed-out self-assignment).
   assignerId: string;
   assignerName: string | null;
-  status: 'open' | 'done';
+  // 'wont-do' (docs/specs/026-plan/linked-boards.md "On the canvas"): decided against, closed without being done.
+  status: ElementActionStatus;
   createdAt: number; // unix ms
   updatedAt: number; // unix ms
 };
@@ -98,3 +102,15 @@ export function capElementActions<T extends object>(elements: T[]): T[] {
 export function isOpenAction(action: ElementAction | undefined): action is ElementAction {
   return !!action && action.status === 'open';
 }
+
+// Closed: done, or Won't Do. Everything that counts open against closed reads this, never `status === 'done'`.
+export function isClosedAction(action: Pick<ElementAction, 'status'>): boolean {
+  return action.status !== 'open';
+}
+
+// Each status in words, Title Case as status chips are.
+export const ACTION_STATUS_LABELS: Record<ElementActionStatus, string> = {
+  open: 'Open',
+  done: 'Done',
+  'wont-do': 'Won’t Do',
+};

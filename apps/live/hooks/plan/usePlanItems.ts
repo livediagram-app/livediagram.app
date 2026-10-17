@@ -55,7 +55,9 @@ export type PlanItems = {
   write: (write: ItemWrite) => Promise<boolean>;
   // The same, with no undo step: for content the editor makes and takes away itself (the Plan tour's
   // example cards, docs/specs/026-plan/plan-tour.md "Tour content"), which Undo must never bring back.
-  writeQuiet: (write: ItemWrite) => Promise<boolean>;
+  // `silent`: a refusal tells nobody (the Actions board's heal, docs/specs/026-plan/linked-boards.md "Keeping them
+  // together", whose duplicate of a teammate's identical write is refused and is no failure).
+  writeQuiet: (write: ItemWrite, opts?: { silent?: boolean }) => Promise<boolean>;
   receive: (op: ItemsRoomOp) => void;
   refetch: () => void;
   // A card's comment change (docs/specs/026-plan/items.md "Comments"): applied now, sent, settled on the
@@ -110,6 +112,8 @@ export function usePlanItems(opts: {
     itemId: string,
     commentId?: string,
   ) => void;
+  // A person's own undoable write, with the store it applies to (docs/specs/026-plan/linked-boards.md "The link").
+  onOwnWrite?: (write: ItemWrite, before: ItemStoreState) => void;
 }): PlanItems {
   const { documentId, ready, ownerId, name, color, shareCode, tabScope } = opts;
   // Handed over fresh each render: read at call time, so `send` and `write` keep their identity.
@@ -117,6 +121,7 @@ export function usePlanItems(opts: {
     pushUndo: opts.pushUndo,
     onError: opts.onError,
     onMentioned: opts.onMentioned,
+    onOwnWrite: opts.onOwnWrite,
   });
   const [store, setStore] = useState<ItemStoreState>(EMPTY_ITEM_STORE);
   const [status, setStatus] = useState<PlanItemsStatus>('loading');
@@ -225,7 +230,7 @@ export function usePlanItems(opts: {
   // Applies, sends and settles one write; false when it was refused (the store is refetched). `made` is what the api
   // stored; a write refused after part of it landed (ItemWritePartlyLanded) is not ok, with the part in `made`.
   const send = useCallback(
-    async (write: ItemWrite): Promise<{ ok: boolean; made: Item[] }> => {
+    async (write: ItemWrite, silent = false): Promise<{ ok: boolean; made: Item[] }> => {
       const s = scopeRef.current;
       const by = selfRef.current;
       if (!s || !by) return { ok: false, made: [] };
@@ -233,7 +238,7 @@ export function usePlanItems(opts: {
       if (!local.ok) {
         // Refused before it is sent: nothing changes, and the person is told why (the field goes back).
         console.warn('[items] items.rejected', { error: local.error });
-        callbacks.current.onError(refusalMessage(local.error));
+        if (!silent) callbacks.current.onError(refusalMessage(local.error));
         return { ok: false, made: [] };
       }
       storeRef.current = local.state;
@@ -262,13 +267,14 @@ export function usePlanItems(opts: {
           .filter((id) => !kept.has(id))
           .forEach((id) => unconfirmedRef.current.add(id));
         const code = (err as { code?: string }).code;
-        callbacks.current.onError(
-          code === 'items_full'
-            ? 'This document already holds the most items it can'
-            : code
-              ? refusalMessage(code)
-              : "Couldn't save that change",
-        );
+        if (!silent)
+          callbacks.current.onError(
+            code === 'items_full'
+              ? 'This document already holds the most items it can'
+              : code
+                ? refusalMessage(code)
+                : "Couldn't save that change",
+          );
         void load();
         return { ok: false, made: landed?.upserts ?? [] };
       }
@@ -281,6 +287,8 @@ export function usePlanItems(opts: {
       const w = withCreateIds(input);
       const before = storeRef.current;
       const inverse = inverseItemWrites(before, w);
+      // A person's own change, seen before it is applied (the Actions board deletes a deleted card's action).
+      callbacks.current.onOwnWrite?.(w, before);
       const result = await send(w);
       if (!inverse) return result.ok;
       // Refused after part of it landed: the part that landed is still one undo step.
@@ -314,7 +322,8 @@ export function usePlanItems(opts: {
   );
 
   const writeQuiet = useCallback(
-    async (input: ItemWrite): Promise<boolean> => (await send(withCreateIds(input))).ok,
+    async (input: ItemWrite, opts?: { silent?: boolean }): Promise<boolean> =>
+      (await send(withCreateIds(input), opts?.silent)).ok,
     [send],
   );
 
