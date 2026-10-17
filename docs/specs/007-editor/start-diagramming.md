@@ -33,6 +33,11 @@ draws them.
 - **Picking a category** opens it at the top of its cards, never part way down the last one's.
 - **Keyboard:** the search is focused on a fine pointer; Up and Down move along the rail, choosing as they go. Down
   in the search box moves to the first card it found.
+- **Undo and redo reach the editor through an empty search.** An undo that takes a tab back to empty (a template
+  picked, then undone) brings the start back with its search focused, where Cmd/Ctrl+Z and redo were the text box's
+  own and did nothing, so the template could not be redone from the keyboard. While the search is empty those chords
+  are the editor's (`data-editor-history` on the box, `passesHistoryChords` in `lib/typing-target.ts`); once something
+  is typed in it they undo the typing, as in any text box.
 
 ### Recommended and groups
 

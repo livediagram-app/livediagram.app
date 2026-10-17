@@ -246,6 +246,7 @@ export function StartPanel<C extends string>({
             <SearchGlyph />
             <input
               ref={searchInput}
+              data-editor-history=""
               aria-label={searchLabel}
               placeholder={searchLabel}
               value={query}
