@@ -5,10 +5,10 @@
 // without right-to-left letters is left exactly as it was.
 
 // Hebrew, Arabic, Syriac, Thaana, NKo, Samaritan, Mandaic and their presentation forms.
-const RTL = /[֐-ࣿיִ-﷿ﹰ-﻿]/;
+const RTL = /[\u0590-\u08FF\uFB1D-\uFDFF\uFE70-\uFEFF]/;
 
-const FSI = '⁨';
-const PDI = '⁩';
+const FSI = '\u2068';
+const PDI = '\u2069';
 
 /** True when the text holds a right-to-left letter. */
 export const hasRtl = (text: string): boolean => RTL.test(text);
