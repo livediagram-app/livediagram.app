@@ -306,20 +306,25 @@ export function TabBar({
   // The active tab is always in view: a tab added to a full strip, or picked from the Tabs list, used to open past
   // the strip's edge, under Search. Runs when the active tab or the number of tabs changes, never on a timer.
   const stripRef = useRef<HTMLDivElement>(null);
+  const lastTabId = tabs.at(-1)?.id;
+  const tabCount = tabs.length;
   useEffect(() => {
     const strip = stripRef.current;
     const pill = strip?.querySelector<HTMLElement>('[aria-current="page"]');
     if (!strip || !pill) return;
     const s = strip.getBoundingClientRect();
     const t = pill.getBoundingClientRect();
+    // The last tab brings Add tab with it, so a run of new tabs never has to hunt for it.
+    const add = activeId === lastTabId ? strip.querySelector('[data-tour-id="add-tab"]') : null;
+    const right = add ? add.getBoundingClientRect().right : t.right;
     const left = scrollLeftToReveal(
       { left: s.left, right: s.right, scrollLeft: strip.scrollLeft },
-      t,
+      { left: t.left, right },
     );
     if (left === strip.scrollLeft) return;
     const still = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
     strip.scrollTo({ left, behavior: still ? 'auto' : 'smooth' });
-  }, [activeId, tabs.length]);
+  }, [activeId, tabCount, lastTabId]);
 
   return (
     <>
