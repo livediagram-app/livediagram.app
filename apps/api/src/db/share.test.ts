@@ -42,12 +42,12 @@ function atTime(now: number) {
 }
 
 describe('generateShareCode', () => {
-  it('is eight characters from an alphabet with no ambiguous glyphs', async () => {
+  it('is fourteen characters from an alphabet with no ambiguous glyphs', async () => {
     // Codes get read aloud and transcribed; 0/O and 1/I/l are the pairs that
     // turn a shared link into a support conversation.
     const code = generateShareCode();
-    expect(code).toHaveLength(8);
-    expect(code).toMatch(/^[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]{8}$/);
+    expect(code).toHaveLength(14);
+    expect(code).toMatch(/^[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]{14}$/);
   });
 
   it('honours a requested length', () => {
