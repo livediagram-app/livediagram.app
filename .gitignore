@@ -54,6 +54,8 @@ apps/live/.playwright/
 
 # Wrangler local state (Miniflare D1 / Durable Object simulation cache)
 .wrangler/
+# Generated per preview deploy by @livediagram/preview-env (docs/specs/016-platform/pr-previews.md).
+wrangler.preview.toml
 
 # Env files
 .env

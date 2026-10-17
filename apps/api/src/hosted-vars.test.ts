@@ -12,16 +12,16 @@ import { parsePositiveCap } from './routes/images';
 
 type Profile = {
   shared: Record<string, string>;
-  environments: Record<'production' | 'staging', Record<string, string>>;
+  environments: Record<'production' | 'staging' | 'preview', Record<string, string>>;
 };
 
 interface HostedVarsModule {
   HOSTED_VARS_PATH: string;
   readHostedProfile: (path?: string) => Profile;
-  hostedEnvironment: (wranglerEnv: string) => 'production' | 'staging';
+  hostedEnvironment: (wranglerEnv: string) => 'production' | 'staging' | 'preview';
   resolveHostedVars: (
     profile: Profile,
-    environment: 'production' | 'staging',
+    environment: 'production' | 'staging' | 'preview',
   ) => { vars: Record<string, string>; unset: string[] };
   splitEnvArg: (args: string[]) => { wranglerEnv: string; rest: string[] };
   unsetVarDrift: (
@@ -85,6 +85,7 @@ describe('hosted profile', () => {
       ...Object.keys(shared),
       ...Object.keys(environments.production),
       ...Object.keys(environments.staging),
+      ...Object.keys(environments.preview),
     ];
     const toml = readApiFile('wrangler.toml');
     for (const table of ['vars', 'env.staging.vars']) {
@@ -130,23 +131,24 @@ describe('hosted-vars script', () => {
     expect(() => readHostedVars(write('{"lower": "1"}'))).toThrow(/invalid var name/);
     expect(() => readHostedVars(write('{"CAP": 100}'))).toThrow(/non-empty string/);
     expect(() => readHostedVars(write('{"CAP": ""}'))).toThrow(/non-empty string/);
-    const envs = (production: unknown, staging: unknown, extra = '') =>
+    const envs = (production: unknown, staging: unknown, extra = '', preview: unknown = staging) =>
       write(
-        `{"CAP": "1", "environments": {"production": ${JSON.stringify(production)}, "staging": ${JSON.stringify(staging)}${extra}}}`,
+        `{"CAP": "1", "environments": {"production": ${JSON.stringify(production)}, "staging": ${JSON.stringify(staging)}, "preview": ${JSON.stringify(preview)}${extra}}}`,
       );
     expect(() => readHostedVars(write('{"environments": {"production": {}}}'))).toThrow(
-      /production and staging/,
+      /production, staging and preview/,
     );
     expect(() => readHostedVars(envs({ A: '' }, {}, ', "dev": {}'))).toThrow(
-      /production and staging/,
+      /production, staging and preview/,
     );
     expect(() => readHostedVars(envs({ A: '' }, { B: '' }))).toThrow(/same names/);
+    expect(() => readHostedVars(envs({ A: '' }, { A: '' }, '', { B: '' }))).toThrow(/same names/);
     expect(() => readHostedVars(envs({ CAP: '' }, { CAP: '' }))).toThrow(/also shared/);
     expect(() => readHostedVars(envs({ A: 1 }, { A: '' }))).toThrow(/string/);
     expect(() => readHostedVars(envs({ a: '' }, { a: '' }))).toThrow(/invalid var name/);
     expect(readHostedVars(envs({ A: 'x' }, { A: '' }))).toEqual({
       shared: { CAP: '1' },
-      environments: { production: { A: 'x' }, staging: { A: '' } },
+      environments: { production: { A: 'x' }, staging: { A: '' }, preview: { A: '' } },
     });
   });
 
@@ -199,6 +201,7 @@ describe('hosted profile per environment', () => {
     environments: {
       production: { GOOGLE_CLIENT_ID: '111-prod.apps.googleusercontent.com' },
       staging: { GOOGLE_CLIENT_ID: '222-staging.apps.googleusercontent.com' },
+      preview: { GOOGLE_CLIENT_ID: '' },
     },
   };
 
@@ -206,6 +209,7 @@ describe('hosted profile per environment', () => {
     const { hostedEnvironment } = await load();
     expect(hostedEnvironment('')).toBe('production');
     expect(hostedEnvironment('staging')).toBe('staging');
+    expect(hostedEnvironment('preview')).toBe('preview');
     expect(() => hostedEnvironment('prod')).toThrow(/unknown environment/);
   });
 
@@ -242,6 +246,14 @@ describe('hosted profile per environment', () => {
     expect(unset).toEqual(['GOOGLE_CLIENT_ID']);
     expect(wranglerVarFlags(vars)).toEqual(['--var', 'TELEMETRY_ENABLED:true']);
     expect(buildEnv(vars)).toEqual(['NEXT_PUBLIC_TELEMETRY_ENABLED=true']);
+  });
+
+  it('leaves every per-environment var unset on PR previews (docs/specs/016-platform/pr-previews.md)', async () => {
+    const { readHostedProfile, resolveHostedVars } = await load();
+    const committed = readHostedProfile();
+    const { vars, unset } = resolveHostedVars(committed, 'preview');
+    expect(unset.sort()).toEqual(Object.keys(committed.environments.production).sort());
+    expect(vars).toEqual(committed.shared);
   });
 
   it('gives the worker and the live build of one environment the same client id', async () => {
