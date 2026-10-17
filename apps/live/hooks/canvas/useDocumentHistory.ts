@@ -36,10 +36,41 @@ const branchOf = (h: History) => h.branch ?? 0;
 // Pure transitions on a History value — exported for unit tests.
 // The hook wraps them with `setHistory((h) => transition(h, ...))`.
 
+/** True when two objects hold the same values one level down: what a setter that rebuilt an object without
+ *  changing anything leaves behind. */
+function sameFields(a: object, b: object): boolean {
+  const ka = Object.keys(a);
+  if (ka.length !== Object.keys(b).length) return false;
+  return ka.every((k) => (a as Record<string, unknown>)[k] === (b as Record<string, unknown>)[k]);
+}
+
+/** True when `next` changes nothing in `prev`: every tab is the same one, or holds the same fields and the same
+ *  elements. A setter maps a fresh array and object even when it writes the value already there (a size box
+ *  committed on Enter and again on blur), and that must not become an undo step. Linear in the elements of a
+ *  tab the setter touched; untouched tabs and elements match by reference. */
+export function sameTabs(prev: Tab[], next: Tab[]): boolean {
+  if (prev === next) return true;
+  if (prev.length !== next.length) return false;
+  return prev.every((tab, i) => {
+    const other = next[i]!;
+    if (tab === other) return true;
+    const { elements, ...rest } = tab;
+    const { elements: otherElements, ...otherRest } = other;
+    if (!sameFields(rest, otherRest)) return false;
+    if (elements === otherElements) return true;
+    if (elements.length !== otherElements.length) return false;
+    return elements.every((el, j) => el === otherElements[j] || sameFields(el, otherElements[j]!));
+  });
+}
+
 export function historyCommit(h: History, mapTabs: (tabs: Tab[]) => Tab[]): History {
+  const present = mapTabs(h.present);
+  // A commit that changes nothing is not a step (docs/specs/008-canvas/canvas-and-palette.md "Undo / Redo"):
+  // pushing it made Undo appear to do nothing and cleared the redo stack.
+  if (sameTabs(h.present, present)) return h;
   return {
     past: [...h.past, h.present].slice(-HISTORY_LIMIT),
-    present: mapTabs(h.present),
+    present,
     future: [],
     depth: depthOf(h) + 1,
     branch: branchOf(h) + 1,

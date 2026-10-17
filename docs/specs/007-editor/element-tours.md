@@ -45,7 +45,8 @@ The toured kinds: the [Sankey diagram](../009-elements/sankey.md), and the
   - the person may edit it (for a Sankey, `canEditSankey`: an Editor, on an unlocked diagram);
   - the person has not answered this kind's tour (below);
   - the editor is usable: hydrated, the synced preferences in, no welcome overlay, not an embed;
-  - no guided tour is running (`useActiveTour`), and no start panel is open.
+  - no guided tour is running (`useActiveTour`), no start panel is open, and no dialog is open (the modal guard,
+    [Diagram tour](editor-tour.md) "Dialogs come first"): the offer comes back once the last dialog closes.
 - **It fades in** with the selection toolbar, and away with it (a move, a quick-connect ring).
 - **Play** answers the offer and starts the tour on its first step. **Cancel** answers it and the offer goes. Either
   way, the kind is never offered again, on any device, until Settings offers it again. Simply deselecting is not an

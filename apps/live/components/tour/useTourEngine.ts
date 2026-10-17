@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, type RefObject } from 'react';
 import { useAssignRef } from '@/hooks/ui/useLatest';
+import { openModalCount, useOpenModalCount } from '@/lib/modal-guard';
 import { findTour, waitForSelector } from './tour-dom';
 import { revealInScrollers } from './tour-reveal';
 import { hasAnchor, type TourStepOf } from './tour-step';
@@ -15,6 +16,11 @@ import { hasAnchor, type TourStepOf } from './tour-step';
 // tracks layout changes, and re-runs prepare if the target is dismissed mid-step (an outside click
 // closing a menu). The last rect is kept while the next step prepares, so the ring GLIDES between
 // targets (transition-all) instead of blinking out and back.
+//
+// Dialogs come first (docs/specs/007-editor/editor-tour.md "Dialogs come first"): the engine keeps a baseline of
+// the modal dialogs that are the tour's own (open when it started, or holding a step's target) and steps aside
+// (`yielded`: the stage draws nothing, tracking pauses) while more are open than that, except while a step is still
+// waiting for its target, which may be the tour opening its own dialog.
 
 // How long a step waits for its target before it is skipped.
 export const TARGET_WAIT_MS = 3500;
@@ -27,6 +33,11 @@ const TRACK_MS = 150;
 export type TourTargetRect = { left: number; top: number; width: number; height: number };
 
 export type TourOutcome = 'completed' | 'skipped' | 'declined';
+
+// Whether a found target belongs to a dialog the tour is showing: a step drawn over a dialog, or a target inside one.
+function inTourDialog<Api>(step: TourStepOf<Api>, el: HTMLElement): boolean {
+  return step.layer === 'modal' || el.closest('[aria-modal="true"]') !== null;
+}
 
 const rectsEqual = (a: TourTargetRect, b: TourTargetRect) =>
   a.left === b.left && a.top === b.top && a.width === b.width && a.height === b.height;
@@ -110,6 +121,23 @@ export function useTourEngine<Api>({
   useAssignRef(onStepViewRef, onStepView);
   // finish, reachable from the step-run effect (declared here, kept current below its definition).
   const finishRef = useRef<(outcome: TourOutcome) => void>(() => {});
+  // The modal dialogs that are the tour's own; more open than this and the tour steps aside.
+  const openModals = useOpenModalCount();
+  const [modalBaseline, setModalBaseline] = useState(0);
+  // A dialog closing lowers it, so one opened after (the person's own) is in the tour's way. Adjusted during render.
+  if (active && openModals < modalBaseline) setModalBaseline(openModals);
+  // A step between entering and finding its target (its prepare may be opening the tour's own dialog).
+  const [awaitingTarget, setAwaitingTarget] = useState(false);
+  // A dialog that is not the tour's is open: draw nothing and pause tracking until it closes.
+  const yielded = active && !awaitingTarget && openModals > modalBaseline;
+  // Takes a found target's dialog as the tour's own.
+  const adoptDialogOf = (step: TourStepOf<Api>, el: HTMLElement) => {
+    if (!inTourDialog(step, el)) return;
+    const count = openModalCount();
+    setModalBaseline((b) => Math.max(b, count));
+  };
+  const adoptRef = useRef(adoptDialogOf);
+  useAssignRef(adoptRef, adoptDialogOf);
 
   // The step list can SHRINK mid-tour (crossing the mobile breakpoint
   // drops the desktop-only step): clamp the index so the effects and
@@ -132,6 +160,7 @@ export function useTourEngine<Api>({
         // Anchorless (welcome / outro) card: centred, no highlight. Its prepare still runs.
         targetElRef.current = null;
         setTargetRect(null);
+        setAwaitingTarget(false);
         try {
           await step.prepare?.(api);
         } catch {
@@ -139,6 +168,7 @@ export function useTourEngine<Api>({
         }
         return;
       }
+      setAwaitingTarget(true);
       try {
         await step.prepare?.(api);
       } catch {
@@ -148,6 +178,7 @@ export function useTourEngine<Api>({
       if (cancelled || token !== runTokenRef.current) return;
       const el = await waitForAnchor(step, apiRef.current);
       if (cancelled || token !== runTokenRef.current) return;
+      setAwaitingTarget(false);
       if (!el) {
         // Target never appeared: skip on the way the person was going. Going back, past it to the step before
         // (never onto the welcome card, which would start the tour over); else forward, finishing from the last.
@@ -162,6 +193,7 @@ export function useTourEngine<Api>({
         return;
       }
       targetElRef.current = el;
+      adoptRef.current(step, el);
       revealInScrollers(el, step.revealAt);
       setTargetRect(measureStep(el, step.alsoHighlight));
     })();
@@ -172,8 +204,10 @@ export function useTourEngine<Api>({
 
   // Track the target while a step is showing: follow it when it moves and
   // re-run prepare when it disappears (a menu dismissed under the tour).
+  // Paused while the tour has stepped aside, so nothing is reopened under the dialog; on its return the next tick heals
+  // a target the dialog closed (an outside click dismissing a menu).
   useEffect(() => {
-    if (!active) return;
+    if (!active || yielded) return;
     const step = steps[stepIndex];
     if (!step || !hasAnchor(step)) return;
     const id = window.setInterval(() => {
@@ -184,18 +218,24 @@ export function useTourEngine<Api>({
         healingRef.current = true;
         targetElRef.current = null;
         const token = ++runTokenRef.current;
+        // A heal may reopen the tour's own dialog: the tour does not step aside for it.
+        setAwaitingTarget(true);
         void (async () => {
           try {
             await step.prepare?.(apiRef.current);
             const next = await waitForAnchor(step, apiRef.current);
             if (token === runTokenRef.current) {
               targetElRef.current = next;
-              if (next) revealInScrollers(next, step.revealAt);
+              if (next) {
+                adoptRef.current(step, next);
+                revealInScrollers(next, step.revealAt);
+              }
               // Gone for good (a box deleted while its step is up): the ring lets go rather than framing nothing.
               setTargetRect(next ? measureStep(next, step.alsoHighlight) : null);
             }
           } finally {
             healingRef.current = false;
+            if (token === runTokenRef.current) setAwaitingTarget(false);
           }
         })();
         return;
@@ -204,12 +244,13 @@ export function useTourEngine<Api>({
       setTargetRect((prev) => (prev && rectsEqual(prev, r) ? prev : r));
     }, TRACK_MS);
     return () => window.clearInterval(id);
-  }, [active, apiRef, stepIndex, steps]);
+  }, [active, yielded, apiRef, stepIndex, steps]);
 
   const reset = () => {
     runTokenRef.current++;
     targetElRef.current = null;
     setTargetRect(null);
+    setAwaitingTarget(false);
   };
 
   // Ends without an outcome: the host's own reason (edit rights gone, the mode left).
@@ -226,6 +267,8 @@ export function useTourEngine<Api>({
 
   const start = () => {
     reset();
+    // The dialogs open as it starts are its own (Show Me run from inside one); an offered tour waits for none.
+    setModalBaseline(openModalCount());
     setStepIndex(0);
     setStepDir('forward');
     setActive(true);
@@ -264,6 +307,7 @@ export function useTourEngine<Api>({
     stepIndex,
     stepDir,
     targetRect,
+    yielded,
     // The bookend cards sit outside the step count: "1 of N" is the first real step.
     countableSteps: steps.filter((s) => !s.card).length,
     // Whether the tour opens on a welcome card (an offered tour) or straight on its first step (Show Me).

@@ -794,6 +794,7 @@ export * from './label-body';
 export * from './shape-area';
 export * from './indicator-placement';
 export * from './anchor-choice';
+export * from './arrow-body-drop';
 export * from './geometry';
 export * from './arrow-path-hits';
 export * from './arrow-rebind';

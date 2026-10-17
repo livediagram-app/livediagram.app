@@ -171,6 +171,19 @@ sighting with a changed address (§4), resets the count to zero.
   template's telemetry token (see below): it rides on the builder's return so
   it reaches `sendEmail` through the spread every caller already writes,
   instead of being re-stated (and forgotten) at each call site.
+  **Branding.** Every builder renders through one shell, so every email looks
+  the same: a brand-gradient band across the top of the card (sky-400 to
+  blue-700, flat `#0ea5e9` where a client drops gradients), the logo mark beside
+  the "live"/"diagram" wordmark in the header, a brand-50 page behind the card,
+  and a footer under the card with the lockup again, the tagline ("Diagram,
+  draw and illustrate together, live. Free and open source.") and a link to the
+  site. Both lockups link to `APP_BASE_URL`. The mark is a transparent 64px PNG
+  (`/email/livediagram-mark-64.png`, shown at 28px in the header and 22px in
+  the footer) served by the marketing app and written by `pnpm icons:brand`,
+  because Gmail and Outlook drop SVG and most clients block `data:` images.
+  Its `alt` is empty, since the wordmark beside it names the product when
+  images are blocked. The path is permanent: every email already sent points
+  at it.
 - `apps/api/src/db/email-lifecycle.ts` — sighting upsert (returns "is new", and
   refreshes a returning owner's address), the
   two due-queries + mark-sent, and row deletion (called from `deleteAccount`).
@@ -209,8 +222,7 @@ name, or a recipient count.
 
 ## 8. Out of scope (for now)
 
-Unsubscribe endpoint for the lifecycle series, HTML theming beyond simple
-inline styles, bounce handling beyond the attempt cap in §5 (Resend handles
+Unsubscribe endpoint for the lifecycle series, dark-mode email variants, bounce handling beyond the attempt cap in §5 (Resend handles
 delivery; sends are best-effort and idempotent via the `*_sent_at` stamps). Per-notification
 **email preferences** are no longer out of scope — [Account settings & email notifications](profile-and-email-notifications.md)
 adds an opt-out toggle for each of its two transactional notifications, stored

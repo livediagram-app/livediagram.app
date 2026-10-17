@@ -13,23 +13,41 @@ import { FLOATING_CONTROL_GAP, FLOATING_CONTROL_SIZE } from '@/components/chrome
 
 type AxisMenu = { axis: 'col' | 'row'; index: number; x: number; y: number } | null;
 
-// Centre of track `i` along its axis, in element-space px.
-function trackCentre(sizes: number[], i: number): number {
-  let off = 0;
-  for (let k = 0; k < i; k++) off += sizes[k]!;
-  return off + (sizes[i] ?? 0) / 2;
-}
-
 // The table's quick-connect pluses sit on the edge MIDPOINTS (docs/specs/008-canvas/canvas-and-palette.md),
 // right where a centre column / row's ⋯ trigger would land now the
-// triggers live outside the edges. When a trigger's centre falls under
-// the plus, dodge it sideways / downwards by a screen-constant nudge.
+// triggers live outside the edges. The one trigger whose centre falls under
+// the plus steps aside by a screen-constant nudge: a column's sideways, a
+// row's further out, past the plus.
 // Clearance in screen px, converted to element space (the plus is a fixed
 // screen size; the trigger counter-scales too).
 const PLUS_CLEARANCE_PX = 40;
 // How far a dodging trigger steps aside: its own width plus a gap, so the
 // two controls sit side by side rather than touching.
 const PLUS_DODGE_PX = FLOATING_CONTROL_SIZE + 10;
+
+/** The one track whose trigger would sit under the plus at the edge's midpoint: the track centred nearest it, when
+ *  that centre is within `clearance`; else -1. Only that trigger dodges. Every trigger near the midpoint used to step
+ *  the same way, so on short rows (a phone, a zoomed-out table) all of them moved down a row and the first one landed
+ *  under the plus. */
+export function plusDodgeTrack(
+  sizes: readonly number[],
+  extent: number,
+  clearance: number,
+): number {
+  const mid = extent / 2;
+  let best = -1;
+  let bestGap = clearance;
+  let start = 0;
+  sizes.forEach((size, i) => {
+    const gap = Math.abs(start + size / 2 - mid);
+    if (gap < bestGap) {
+      best = i;
+      bestGap = gap;
+    }
+    start += size;
+  });
+  return best;
+}
 
 // Screen-px offset from the table edge to the NEAR side of a trigger, so a
 // trigger's centre lands on the same line as the quick-connect plus on that
@@ -78,8 +96,8 @@ export function TableAxisTriggers({
   menu: AxisMenu;
   onToggle: (axis: 'col' | 'row', index: number, e: React.MouseEvent) => void;
 }) {
-  const dodges = (centre: number, mid: number) =>
-    Math.abs(centre - mid) < PLUS_CLEARANCE_PX * invScale;
+  const dodgeCol = plusDodgeTrack(colSizes, elementWidth, PLUS_CLEARANCE_PX * invScale);
+  const dodgeRow = plusDodgeTrack(rowSizes, elementHeight, PLUS_CLEARANCE_PX * invScale);
   return (
     <>
       {/* Column triggers laid out on a grid mirroring the column
@@ -104,9 +122,7 @@ export function TableAxisTriggers({
                     // zoom (an origin on the box's far side would leave the
                     // unscaled half-height in the sum and drift).
                     transform: `translateY(${-TRIGGER_OFFSET_PX * invScale}px) ${
-                      dodges(trackCentre(colSizes, c), elementWidth / 2)
-                        ? `translateX(${PLUS_DODGE_PX * invScale}px) `
-                        : ''
+                      c === dodgeCol ? `translateX(${PLUS_DODGE_PX * invScale}px) ` : ''
                     }scale(${invScale})`,
                     transformOrigin: 'top center',
                   }}
@@ -142,11 +158,11 @@ export function TableAxisTriggers({
                   style={{
                     // Left edge pinned by the origin, same reasoning as the
                     // column triggers above.
-                    transform: `translateX(${-TRIGGER_OFFSET_PX * invScale}px) ${
-                      dodges(trackCentre(rowSizes, r), elementHeight / 2)
-                        ? `translateY(${PLUS_DODGE_PX * invScale}px) `
-                        : ''
-                    }scale(${invScale})`,
+                    // The row under the plus steps further out, past it, and stays level with its row:
+                    // stepping down landed it on the next row's trigger.
+                    transform: `translateX(${
+                      -(TRIGGER_OFFSET_PX + (r === dodgeRow ? PLUS_DODGE_PX : 0)) * invScale
+                    }px) scale(${invScale})`,
                     transformOrigin: 'center left',
                   }}
                   onMouseEnter={() => onHoverRow(r)}

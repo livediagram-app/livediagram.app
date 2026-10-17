@@ -19,6 +19,25 @@ import {
 const env = { APP_BASE_URL: 'https://app.test' } as unknown as Env;
 
 describe('email templates', () => {
+  // docs/specs/014-identity/transactional-email.md §6 "Branding": every email opens with the logo mark next
+  // to the wordmark and closes on the branded footer, all from the one shell.
+  it.each([
+    ['welcome', () => welcomeEmail(env)],
+    ['team invite', () => teamInviteEmail(env, 'Acme')],
+    ['account deleted', () => accountDeletedEmail(env)],
+  ])('%s carries the logo beside the wordmark', (_label, build) => {
+    const { html } = build();
+    expect(html).toContain('<img src="https://app.test/email/livediagram-mark-64.png"');
+    const logo = html.indexOf('email/livediagram-mark-64.png');
+    const wordmark = html.indexOf('>live</span>diagram');
+    expect(logo).toBeGreaterThan(-1);
+    expect(wordmark).toBeGreaterThan(logo);
+    // Header and footer both carry the lockup, each linked home.
+    expect(html.match(/livediagram-mark-64\.png/g)).toHaveLength(2);
+    expect(html).toContain('<a href="https://app.test" style="text-decoration:none">');
+    expect(html).toContain('>app.test</a>');
+  });
+
   it('welcome has a subject + links to /new', () => {
     const e = welcomeEmail(env);
     expect(e.subject).toMatch(/welcome/i);

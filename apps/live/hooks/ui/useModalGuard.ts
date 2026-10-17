@@ -2,9 +2,10 @@
 
 // Register a modal with the shared modal guard (lib/modal-guard) for
 // its open lifetime, so the editor's window-level shortcut and paste
-// listeners go quiet behind it. The shared Dialog shell calls this for
+// listeners go quiet behind it, and the guided tours wait for it
+// (docs/specs/007-editor/editor-tour.md "Dialogs come first"). The shared Dialog shell calls this for
 // every dialog built on it; ad-hoc full-screen modals (TemplatePicker,
-// ImagePicker, CanvasThemeDialog, …) must call it themselves — a modal
+// CanvasThemeDialog, SearchPanel, …) must call it themselves — a modal
 // that skips it leaks `R`/Backspace/Cmd+V through to the canvas.
 // Pass `true` for modals that signal "open" by mounting.
 

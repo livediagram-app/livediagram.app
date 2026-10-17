@@ -12,6 +12,7 @@ import {
   isContainerKind,
   isChipShape,
   isConceptShape,
+  isSelfDrawingShape,
 } from '@livediagram/document';
 
 // Which side of a boxed element a screen point sits nearest, normalised by
@@ -54,6 +55,9 @@ export function inheritedSizeFor(
   // selection's dimensions, so a marker added while a big shape is selected
   // doesn't balloon. It stays its intrinsic 44×44.
   if (base.type === 'annotation') return { width: base.width, height: base.height };
+  // A table drops as its 3 x 3 grid at 360 x 150 (docs/specs/008-canvas/canvas-and-palette.md Table): its size is its
+  // grid's, not the selection's.
+  if (base.type === 'table') return { width: base.width, height: base.height };
   // Same for the kinds whose silhouette IS the element: a portal's ring
   // (docs/specs/009-elements/portal-element.md) and the fixed-size Selection Mode button (docs/specs/009-elements/mode-button.md). Inheriting
   // whatever box happened to be selected — a wide banner, a thin rail — hands
@@ -75,7 +79,10 @@ export function inheritedSizeFor(
       isConceptShape(base.shape) ||
       base.shape === 'sequence' ||
       base.shape === 'diagram-key' ||
-      base.shape === 'tab-window')
+      base.shape === 'tab-window' ||
+      // A chart, a meter, a rating, a timeline rail, a legend, a sticker: each draws its own content to its own
+      // proportions. A progress bar tapped while a legend was selected came out a 200 x 170 blob.
+      isSelfDrawingShape(base.shape))
   ) {
     return { width: base.width, height: base.height };
   }
@@ -84,9 +91,14 @@ export function inheritedSizeFor(
   // out 900x200 — the size of the lane, which is never what anyone meant. The
   // rule reads the other way round from the guards above: those are about what
   // the NEW element is, this is about what the selected one is.
+  // The same holds for a self-drawing donor: a square added while a rating or a progress bar was selected came out as
+  // thin as the bar.
   const donor = selected && isBoxed(selected) ? selected : null;
-  const isContainer = donor?.type === 'shape' && isContainerKind(donor.shape);
-  const inherit = isContainer ? null : donor;
+  // A table's size is its rows': a mind node tapped while a table was selected came out 360 x 150.
+  const keepsOwnSize =
+    donor?.type === 'table' ||
+    (donor?.type === 'shape' && (isContainerKind(donor.shape) || isSelfDrawingShape(donor.shape)));
+  const inherit = keepsOwnSize ? null : donor;
   let width = inherit?.width ?? base.width;
   let height = inherit?.height ?? base.height;
   if (base.type === 'shape' && (base.shape === 'circle' || base.shape === 'diamond')) {

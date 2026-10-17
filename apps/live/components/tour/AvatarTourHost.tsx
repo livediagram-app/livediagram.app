@@ -8,6 +8,7 @@ import { AVATAR_TOUR_RELAUNCH_EVENT } from '@/lib/avatar-tour';
 import { debugLog } from '@/lib/debug-log';
 import { track } from '@/lib/telemetry';
 import { setActiveTour, useActiveTour } from '@/lib/tour-active';
+import { useAnyModalOpen } from '@/lib/modal-guard';
 import { rebaseUserPreferences } from '@/lib/user-preferences';
 import { useStartPanelOpen } from '@/components/start/start-panel-open';
 import {
@@ -58,6 +59,8 @@ export function AvatarTourHost() {
   // One tour at a time: publish this one while it is on screen, and wait while another is.
   const shown = useActiveTour();
   const otherTour = shown !== null && shown !== 'avatar';
+  // Dialogs come first (docs/specs/007-editor/editor-tour.md): the offer waits for the last one to close.
+  const modalOpen = useAnyModalOpen();
   useEffect(() => {
     setActiveTour('avatar', active);
   }, [active]);
@@ -101,7 +104,7 @@ export function AvatarTourHost() {
 
   useEffect(() => {
     if (!armed || active || seen) return;
-    if (!inAvatar || !canWork || otherTour) return;
+    if (!inAvatar || !canWork || otherTour || modalOpen) return;
     const t = setTimeout(() => {
       setArmed(false);
       debugLog('[avatar-tour] offer');
@@ -109,7 +112,7 @@ export function AvatarTourHost() {
       track('UI', 'Opened', 'AvatarTourOffer');
     }, OFFER_DELAY_MS);
     return () => clearTimeout(t);
-  }, [armed, active, seen, inAvatar, canWork, otherTour, engineRef]);
+  }, [armed, active, seen, inAvatar, canWork, otherTour, modalOpen, engineRef]);
 
   // Settings rerun (Tours › "Avatar Tour", turned on from off + closed): offers again in Avatar mode, and otherwise
   // the next time the person enters it (the row has cleared the preference).

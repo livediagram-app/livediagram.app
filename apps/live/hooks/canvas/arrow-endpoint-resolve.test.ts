@@ -65,3 +65,44 @@ describe('resolveArrowEndpointDrag across pages', () => {
     expect(drag(topOf(otherTarget), false)).toMatchObject({ kind: 'pinned', elementId: 'o' });
   });
 });
+
+// docs/specs/008-canvas/canvas-and-palette.md "Dropped on a shape": an end over a shape's body, away from its
+// anchors, pins to the side facing its other end; Cmd / Ctrl leaves it free.
+describe('resolveArrowEndpointDrag over a shape body', () => {
+  const over = (
+    cursor: { x: number; y: number },
+    opts: { noSnap?: boolean; withPages?: boolean; els?: Element[] } = {},
+  ) =>
+    resolveArrowEndpointDrag({
+      cursor,
+      elements: opts.els ?? elements,
+      arrowId: 'arrow',
+      end: 'to',
+      noSnap: opts.noSnap ?? false,
+      guidesOn: false,
+      pages: opts.withPages ? pages : null,
+    });
+  const middle = (el: Element) => {
+    const b = el as { x: number; y: number; width: number; height: number };
+    return { x: b.x + b.width / 2, y: b.y + b.height / 2 };
+  };
+
+  it('pins to the side that faces the source, and marks that anchor', () => {
+    const out = over(middle(sameTarget));
+    expect(out.endpoint).toEqual({ kind: 'pinned', elementId: 't', anchor: 'n' });
+    const active = out.snapTargets.filter((t) => t.active);
+    expect(active).toHaveLength(1);
+    expect(active[0]).toMatchObject(topOf(sameTarget));
+  });
+
+  it('stays free with Cmd / Ctrl held, and over a shape on another page', () => {
+    expect(over(middle(sameTarget), { noSnap: true }).endpoint).toMatchObject({ kind: 'free' });
+    expect(over(middle(otherTarget), { withPages: true }).endpoint).toMatchObject({
+      kind: 'free',
+    });
+  });
+
+  it('does not pin back onto the shape the arrow leaves', () => {
+    expect(over(middle(source)).endpoint).toMatchObject({ kind: 'free' });
+  });
+});

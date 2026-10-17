@@ -23,6 +23,7 @@ function engine(step: TourStepOf<unknown>, over: Partial<TourEngine<unknown>> = 
     stepIndex: step.card === 'outro' ? 3 : step.card ? 0 : 2,
     stepDir: 'forward',
     targetRect: null,
+    yielded: false,
     countableSteps: 2,
     hasWelcome: true,
     start: vi.fn(),
@@ -41,6 +42,20 @@ describe('TourStage', () => {
     );
     expect(container.innerHTML).toBe('');
     expect(document.querySelector('[data-tour-popover]')).toBeNull();
+  });
+
+  // docs/specs/007-editor/editor-tour.md "Dialogs come first".
+  it('draws nothing while it has stepped aside for a dialog', () => {
+    render(
+      <TourStage
+        engine={engine(
+          { id: 'a', title: 'A', body: '', target: 'a' },
+          { yielded: true, targetRect: { left: 0, top: 0, width: 10, height: 10 } },
+        )}
+      />,
+    );
+    expect(document.querySelector('[data-tour-popover]')).toBeNull();
+    expect(document.body.querySelector('[aria-hidden]')).toBeNull();
   });
 
   it("wears the welcome tour's words by default", () => {

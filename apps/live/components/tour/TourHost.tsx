@@ -14,6 +14,7 @@ import { track } from '@/lib/telemetry';
 import { deriveNewBoxedColours } from '@/lib/themes';
 import { computeViewportCenter } from '@/lib/viewport';
 import { setActiveTour, useActiveTour } from '@/lib/tour-active';
+import { useAnyModalOpen } from '@/lib/modal-guard';
 import { rebaseUserPreferences } from '@/lib/user-preferences';
 import { waitForSelector } from './tour-dom';
 import { tourStepsFor, tourStepTelemetryType, type TourApi } from './tour-steps';
@@ -124,10 +125,13 @@ export function TourHost() {
   // Start Diagramming on screen holds the offer until a template is picked or the panel closed
   // (docs/specs/007-editor/start-diagramming.md "The tours wait").
   const startPanelOpen = useStartPanelOpen();
+  // Dialogs come first: an offer (or a Settings relaunch) waits for the last open dialog to close.
+  const modalOpen = useAnyModalOpen();
   const ready =
     ctx.hydrated &&
     !ctx.anyWelcomeOpen &&
     !startPanelOpen &&
+    !modalOpen &&
     !ctx.isReadOnly &&
     !ctx.embedMode &&
     inDiagram &&

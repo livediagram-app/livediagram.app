@@ -13,6 +13,19 @@ const BRAND = '#0ea5e9';
 const WORDMARK_ACCENT = '#0284c7';
 const INK = '#0f172a';
 const MUTED = '#475569';
+// The brand prism's light-to-deep sky run, for the band across the top of the
+// card. Outlook ignores the gradient and paints BRAND underneath instead.
+const BAND_GRADIENT = 'linear-gradient(90deg,#38bdf8 0%,#0ea5e9 45%,#1d4ed8 100%)';
+// The page behind the card: brand-50, so the frame reads livediagram before a
+// word is read.
+const CANVAS = '#f0f9ff';
+
+// The logo mark beside the wordmark. A transparent PNG on the public site, not
+// inline SVG: Gmail and Outlook drop SVG, and most clients block data: images.
+// `pnpm icons:brand` writes it into the marketing app's public/email/, a path kept
+// for email alone because every message ever sent points at it. 64px, 2x the slot.
+const LOGO_PATH = '/email/livediagram-mark-64.png';
+const LOGO_SIZE = 28;
 
 // Default sign-off, used by the onboarding emails (their recipients all have an
 // account). The invite + account-deleted builders pass their own, since those
@@ -95,7 +108,20 @@ type Section = {
   footer?: string;
 };
 
-function shell(section: Section): string {
+// The mark + "live"/"diagram" wordmark, linked home. A table rather than flex so
+// the two sit on one baseline in Outlook too. The image's alt is empty because
+// the wordmark beside it already says the name when images are blocked.
+function lockup(base: string, fontSize: number, centred = false): string {
+  const mark = Math.round((LOGO_SIZE * fontSize) / 18);
+  const margin = centred ? 'margin:0 auto' : 'margin:0';
+  return `<a href="${base}" style="text-decoration:none"><table role="presentation" cellpadding="0" cellspacing="0" style="${margin}"><tr>
+          <td style="padding-right:10px;vertical-align:middle"><img src="${base}${LOGO_PATH}" width="${mark}" height="${mark}" alt="" style="display:block;border:0;outline:none;width:${mark}px;height:${mark}px"></td>
+          <td style="vertical-align:middle;font-size:${fontSize}px;font-weight:600;letter-spacing:-0.3px;color:${INK}"><span style="color:${WORDMARK_ACCENT}">live</span>diagram</td>
+        </tr></table></a>`;
+}
+
+function shell(env: Env, section: Section): string {
+  const base = appBaseUrl(env);
   const preheader = `<span style="display:none!important;visibility:hidden;opacity:0;color:transparent;height:0;width:0;max-height:0;overflow:hidden">${section.preheader ?? section.intro}</span>`;
   const points = (section.points ?? [])
     .map(
@@ -115,12 +141,13 @@ function shell(section: Section): string {
          </table>`
       : '';
   return `<!doctype html>
-<html><body style="margin:0;background:#f8fafc;padding:24px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif">
+<html><body style="margin:0;background:${CANVAS};padding:24px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif">
   ${preheader}
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center">
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#ffffff;border:1px solid #e2e8f0;border-radius:14px;overflow:hidden">
-      <tr><td style="padding:28px 32px 0">
-        <span style="font-size:18px;font-weight:700;color:${INK}"><span style="color:${WORDMARK_ACCENT}">live</span>diagram</span>
+      <tr><td style="height:6px;line-height:6px;font-size:0;background-color:${BRAND};background-image:${BAND_GRADIENT}">&nbsp;</td></tr>
+      <tr><td style="padding:24px 32px 0">
+        ${lockup(base, 18)}
       </td></tr>
       <tr><td style="padding:20px 32px 32px">
         <h1 style="margin:0 0 12px;font-size:22px;line-height:1.3;color:${INK}">${section.heading}</h1>
@@ -135,6 +162,12 @@ function shell(section: Section): string {
         </p>
       </td></tr>
     </table>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px">
+      <tr><td align="center" style="padding:20px 32px 0">
+        ${lockup(base, 14, true)}
+        <p style="margin:8px 0 0;color:#94a3b8;font-size:12px;line-height:1.6">Diagram, draw and illustrate together, live. Free and open source. <a href="${base}" style="color:${WORDMARK_ACCENT};text-decoration:none">${base.replace(/^https?:\/\//, '')}</a></p>
+      </td></tr>
+    </table>
   </td></tr></table>
 </body></html>`;
 }
@@ -144,7 +177,7 @@ export function welcomeEmail(env: Env): RenderedEmail {
   return {
     kind: 'Welcome',
     subject: 'Welcome to livediagram',
-    html: shell({
+    html: shell(env, {
       heading: 'Welcome, let’s draw something',
       intro:
         'livediagram is a fast, no-friction canvas for diagrams. Here’s how to get your first one going:',
@@ -165,7 +198,7 @@ export function week1Email(env: Env): RenderedEmail {
   return {
     kind: 'Week1',
     subject: 'Find your way around the Explorer',
-    html: shell({
+    html: shell(env, {
       heading: 'Your documents, organised',
       intro: 'Now that you’ve made a few documents, the Explorer is where you keep them tidy:',
       points: [
@@ -186,7 +219,7 @@ export function week2Email(env: Env): RenderedEmail {
   return {
     kind: 'Week2',
     subject: 'Bring your team onto the canvas',
-    html: shell({
+    html: shell(env, {
       heading: 'Diagrams are better together',
       intro:
         'If you’re working with other people, a team gives everyone a shared home for documents:',
@@ -249,6 +282,7 @@ export function teamInviteEmail(
     kind: 'TeamInvite',
     subject: `You’ve been invited to ${name.text} on livediagram`,
     html: shell(
+      env,
       teamInviteSection(
         env,
         {
@@ -291,7 +325,7 @@ export function teamInviteReminderEmail(
   return {
     kind: `TeamInviteReminder${stage}`,
     subject,
-    html: shell(teamInviteSection(env, copy, declineToken)),
+    html: shell(env, teamInviteSection(env, copy, declineToken)),
   };
 }
 
@@ -300,7 +334,7 @@ export function accountDeletedEmail(env: Env): RenderedEmail {
   return {
     kind: 'AccountDeleted',
     subject: 'Your livediagram account has been deleted',
-    html: shell({
+    html: shell(env, {
       heading: 'Your account has been deleted',
       intro:
         'This confirms that your livediagram account and the documents stored under it have been permanently removed, as you requested. There’s nothing left for you to do.',
@@ -332,7 +366,7 @@ export function documentJoinedEmail(
   return {
     kind: 'DocumentJoined',
     subject: `${whoText} opened one of your documents`,
-    html: shell({
+    html: shell(env, {
       heading: 'Someone joined your document',
       intro: `<strong>${who}</strong> just opened <strong>${named}</strong>, a document you shared. They can collaborate on it with the access you granted.`,
       outro:
@@ -366,7 +400,7 @@ export function inviteResponseEmail(
   return {
     kind: 'InviteResponse',
     subject: `${escapeText(responderEmail)} ${verb} your invitation to ${teamText}`,
-    html: shell({
+    html: shell(env, {
       heading: accepted ? 'Invitation accepted' : 'Invitation declined',
       intro: accepted
         ? `<strong>${who}</strong> accepted your invitation and is now a member of <strong>${team}</strong>.`
@@ -419,7 +453,7 @@ export function actionAssignedEmail(
   return {
     kind: 'ActionAssigned',
     subject: `${whoText} assigned you an action`,
-    html: shell({
+    html: shell(env, {
       heading: 'You have a new action',
       intro,
       ...(detail ? { outro: detail } : {}),
@@ -471,7 +505,7 @@ export function mentionedEmail(
   return {
     kind: 'Mentioned',
     subject: `${whoText} mentioned you in ${documentText}`,
-    html: shell({
+    html: shell(env, {
       heading: 'You were mentioned',
       intro: `<strong>${who}</strong> mentioned you in a comment on <strong>${liveDoc}</strong>:`,
       outro: `“${escapeHtml(mentionQuote(commentText))}”`,
@@ -524,7 +558,7 @@ export function tokenExpiringEmail(
   return {
     kind: 'TokenExpiring',
     subject: 'Your livediagram API token expires soon',
-    html: shell({
+    html: shell(env, {
       heading: 'An API token is about to expire',
       intro: `Your API token <strong>${name}</strong> expires on ${when}. Once it lapses, any script or connected tool using it will stop being able to reach your documents.`,
       points: [
@@ -548,7 +582,7 @@ export function activationEmail(env: Env): RenderedEmail {
   return {
     kind: 'Activation',
     subject: 'Your canvas is waiting',
-    html: shell({
+    html: shell(env, {
       heading: 'Ready when you are',
       intro:
         'You signed up for livediagram but haven’t made a diagram yet. It takes about thirty seconds to get going:',
@@ -586,7 +620,7 @@ export function commentNotificationEmail(
   return {
     kind: 'CommentNotification',
     subject: `${whoText} commented on ${nameText}`,
-    html: shell({
+    html: shell(env, {
       heading: 'New comment on your document',
       intro: `<strong>${who}</strong> left a comment on <strong>${name}</strong>. Open the document to read it and reply.`,
       ctaText: 'Open the document',
@@ -620,7 +654,7 @@ export function formResponseEmail(
   return {
     kind: 'FormResponse',
     subject: `New response to ${headingText}`,
-    html: shell({
+    html: shell(env, {
       heading: `New response to ${heading}`,
       intro: `<strong>${title}</strong> just arrived on your board in <strong>${docName}</strong>.${since}`,
       ctaText: 'Open the board',
@@ -647,7 +681,7 @@ export function formSuspendedEmail(
   return {
     kind: 'FormSuspended',
     subject: `The link to ${headingText} was suspended`,
-    html: shell({
+    html: shell(env, {
       heading: 'Your form’s link was suspended',
       intro: `People who were sent the link to <strong>${heading}</strong> in <strong>${docName}</strong> reported it, so the link has stopped working. Its responses stay on your board. You can publish the form again, which makes a new link.`,
       ctaText: 'Open the document',
@@ -667,7 +701,7 @@ export function winBackEmail(env: Env): RenderedEmail {
   return {
     kind: 'WinBack',
     subject: 'Your documents are waiting',
-    html: shell({
+    html: shell(env, {
       heading: 'It’s been a while',
       intro:
         'You haven’t opened livediagram in a few weeks, and your documents are right where you left them. A few things you can pick back up:',
@@ -692,7 +726,7 @@ export function milestoneEmail(env: Env, count: number): RenderedEmail {
   return {
     kind: 'Milestone',
     subject: `You’ve made ${count} documents on livediagram`,
-    html: shell({
+    html: shell(env, {
       heading: `That’s ${count} documents`,
       intro: `Nice work, you’ve created <strong>${count}</strong> documents on livediagram. Thanks for building with us.`,
       outro: 'Here’s to the next one.',
@@ -714,7 +748,7 @@ export function firstShareEmail(env: Env): RenderedEmail {
   return {
     kind: 'FirstShare',
     subject: 'You shared your first document',
-    html: shell({
+    html: shell(env, {
       heading: 'Your first shared document',
       preheader: 'Anyone with the link can open it now, and you stay in control.',
       intro:
