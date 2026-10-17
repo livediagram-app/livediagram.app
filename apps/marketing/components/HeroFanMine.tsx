@@ -9,12 +9,13 @@ import { RecentPreview } from './RecentPreview';
 // The hero fan for a returning visitor with RECENT_FAN_MIN or more recent diagrams
 // (docs/specs/019-marketing/returning-visitor.md): their documents, most recent first, each its preview
 // on the fan's card, then a card to Explorer Home for everything else. They stay put (no dealing): a
-// returning visitor came for these. On a phone the two most recent and Explorer Home.
+// returning visitor came for these. On a phone the three most recent, without Explorer Home: the band has
+// room for three cards there, and their own documents are what a returning visitor came for.
 
 const ExplorerGlyph = lucideGlyph(lucideLayoutGrid, 28);
 
 // The fan's poses for four cards and for five, left to right, mirrored about the middle; on a phone the
-// three that show take a three-card fan of their own.
+// PHONE_RECENT most recent documents take a three-card fan of their own.
 const POSES: Record<number, readonly string[]> = {
   4: [
     '[transform:translateY(1.5rem)_rotate(-5deg)]',
@@ -30,6 +31,8 @@ const POSES: Record<number, readonly string[]> = {
     '[transform:translateY(2.5rem)_rotate(7deg)]',
   ],
 };
+/** How many documents a phone's fan shows; Explorer Home is left off there. */
+export const PHONE_RECENT = 3;
 const PHONE = [
   'max-sm:[transform:translateY(0.5rem)_rotate(-4deg)]',
   'max-sm:[transform:none]',
@@ -58,7 +61,7 @@ export function HeroFanMine({ diagrams }: { diagrams: readonly RecentDiagram[] }
   return (
     <>
       {diagrams.map((d, i) => (
-        <div key={d.id} className={slot(i, i < 2 ? PHONE[i]! : null)}>
+        <div key={d.id} className={slot(i, i < PHONE_RECENT ? PHONE[i]! : null)}>
           <a href={`/document/${encodeURIComponent(d.id)}`} className={CARD} style={dealt(i)}>
             <span className="truncate text-xs font-semibold sm:text-sm">
               {d.name || 'Untitled diagram'}
@@ -72,7 +75,7 @@ export function HeroFanMine({ diagrams }: { diagrams: readonly RecentDiagram[] }
           </a>
         </div>
       ))}
-      <div className={slot(diagrams.length, PHONE[2]!)}>
+      <div className={slot(diagrams.length, null)}>
         <a href={EXPLORER_HOME_HREF} className={CARD} style={dealt(diagrams.length)}>
           <span className={HEAD}>
             <span className="min-w-0 truncate text-xs font-semibold sm:text-sm">Explorer Home</span>
