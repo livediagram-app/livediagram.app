@@ -62,6 +62,12 @@ either side, each on a white sheet with a soft shadow. They are decoration (hidd
 links): Jump back in is the way in. With fewer than three, fewer sheets; with none, the column is empty and the text
 keeps its width.
 
+**It comes and goes with Home.** Leaving Home for another Explorer page folds the hero away (its height to nothing as
+it fades), and the page under it slides up; returning to Home unfolds it again. Each runs over the `long` motion token
+(250 ms), driven by the reader's own navigation ([Motion](../004-interface-design/motion.md) "Layout stability").
+Landing on Home from outside the Explorer shows it at once, with no animation. Under reduced motion it appears and
+goes at once. While folding away it takes no focus.
+
 The hero's top right holds Home's **Help** link ([Contextual help links](../018-help/contextual-help-links.md)). On a
 phone (below `sm`) its top left holds the menu button that opens the [mobile drawer](explorer-structure.md#mobile-drawer).
 
@@ -96,7 +102,8 @@ the **4 most used** and the **4 most recent**, no document twice.
 - **Two labelled groups** on a desktop or tablet: a small uppercase label, **Most used** then **Recent**, over each.
   The documents are one list of links named **Jump back in**; each group's label is its own list's name.
 - **See more** opens the **Recent** page: a quiet link at the end of the section's heading row on a desktop or
-  tablet, the strip's last tile on a phone. The Recent page is `/explorer/recent`: every document the person can
+  tablet, the strip's last tile on a phone. It shows only once Jump back in has a document: not while it loads, and
+  not when it is empty. The Recent page is `/explorer/recent`: every document the person can
   open, most recently saved first (a save by anyone), not by the person's own use as Jump back in's recent
   group is, with the shared filter chips ([Explorer filters](explorer-filters.md)). Its breadcrumb leads
   back to Home (**Home › Recent**).
@@ -127,9 +134,8 @@ the **4 most used** and the **4 most recent**, no document twice.
   (the first column, a dashed edge), holding the empty state ("No documents yet", "The documents you use most and last
   will gather here."), and no group labels. Only then is Jump back in shorter than its reserved height: What happened
   sits under the one row.
-- With no document at all, the section holds the shared [empty state](../004-interface-design/empty-states.md):
-  "No documents yet", over "The documents you use most and last will gather here." On a phone the strip holds the
-  small empty state's heading alone and still ends in its See more tile.
+- On a phone with no document at all, the strip holds the small [empty state](../004-interface-design/empty-states.md)'s
+  heading alone, the size of one tile, and no See more tile.
 
 ### Making a document
 
@@ -179,7 +185,11 @@ the **4 most used** and the **4 most recent**, no document twice.
 - Opens are never listed here: whether someone looked at a document is theirs to know, not the reader's.
 - **No filter controls** sit in or above this section. It stays clean; the shared filters live on the other
   Explorer views ([Explorer filters](explorer-filters.md)).
-- A quiet **See timeline** link beside the section's heading opens the **Timeline**, where
+- **Nothing from anyone, no section.** When nobody else did anything in the window, What happened is left out of the
+  page entirely, heading included, rather than set a second empty state under Jump back in's. While it loads, its
+  heading and skeleton hold its place.
+- A quiet **See timeline** link beside the section's heading opens the **Timeline**, shown only once What happened
+  has an entry (not while it loads, not when it is empty), where
   everything that happened, the person's own doings included, can be filtered and paged.
 - Every entry is **spot on**. It names:
   - who acted;
@@ -258,13 +268,13 @@ has the size of what replaces it, so nothing shifts (CLS 0). The one exception i
 Jump back in's single empty slot is shorter than the skeleton, so What happened rises once, on a page with nothing
 else on it.
 
-| State                 | What shows                                                                                                                                  |
-| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| Loading               | Each section's skeleton: both groups' cards (the phone's strip), three entry rows in the panel                                              |
-| Jump back in, partial | What exists, no empty boxes (see [Fewer than 8 documents](#fewer-than-8-documents))                                                         |
-| Jump back in, empty   | One card-sized slot: empty state "No documents yet": "The documents you use most and last will gather here."                                |
-| What happened, empty  | The panel with one entry-sized row: the badge beside "No updates yet": "What others do in your documents over the last 14 days shows here." |
-| Read failed           | "Home could not load. Check your connection and try again." with **Try again**, in place of the body                                        |
+| State                 | What shows                                                                                                     |
+| --------------------- | -------------------------------------------------------------------------------------------------------------- |
+| Loading               | Each section's skeleton: both groups' cards (the phone's strip), three entry rows in the panel                 |
+| Jump back in, partial | What exists, no empty boxes (see [Fewer than 8 documents](#fewer-than-8-documents))                            |
+| Jump back in, empty   | One card-sized slot: empty state "No documents yet": "The documents you use most and last will gather here."   |
+| What happened, empty  | The section is left out: no heading, no link, no empty state. It is the page's last section, so nothing moves. |
+| Read failed           | "Home could not load. Check your connection and try again." with **Try again**, in place of the body           |
 
 Under reduced motion nothing animates: no skeleton pulse, no chevron turn, no smooth scrolling.
 

@@ -6,7 +6,7 @@
 // sits there so it never moves when the entries land.
 
 import { useMemo } from 'react';
-import { CompactEmptyState, isNewEvent } from '@livediagram/ui';
+import { isNewEvent } from '@livediagram/ui';
 import type { HomeGroup } from '@livediagram/api-schema';
 import { HOME_COPY } from '@/app/explorer/home/home-copy';
 import { useNow } from '@/hooks/ui/useNow';
@@ -15,7 +15,6 @@ import { WhatHappenedSkeleton } from './HomeSkeletons';
 import { ActionEntry, SummaryEntry } from './WhatHappenedEntry';
 import { HomeSection } from './HomeSection';
 import { WHAT_HAPPENED_PANEL } from './home-styles';
-import { WhatHappenedEmptyIcon } from './home-icons';
 
 export function WhatHappened({
   groups,
@@ -35,27 +34,23 @@ export function WhatHappened({
 }) {
   const now = useNow(false);
   const days = useMemo(() => groupsByDay(groups, now), [groups, now]);
+  // Nothing from anyone: Home leaves the section out rather than show a second empty state
+  // (explorer-home.md "What happened"). It is the page's last section, so nothing moves when it goes.
+  if (!loading && days.length === 0) return null;
   return (
     <HomeSection
       id="what-happened"
       title={HOME_COPY.whatHappened}
       busy={loading}
-      link={{ href: timelineHref, label: HOME_COPY.seeTimeline, onNavigate: onSeeTimeline }}
+      // See timeline once the entries are in: an empty section is not drawn at all.
+      link={
+        loading
+          ? undefined
+          : { href: timelineHref, label: HOME_COPY.seeTimeline, onNavigate: onSeeTimeline }
+      }
     >
       {loading ? (
         <WhatHappenedSkeleton />
-      ) : days.length === 0 ? (
-        // In the panel, the size and place of one entry (docs/specs/004-interface-design/empty-states.md "In place
-        // of one item").
-        <div className={WHAT_HAPPENED_PANEL}>
-          <CompactEmptyState
-            layout="row"
-            className="px-2 py-3"
-            icon={<WhatHappenedEmptyIcon />}
-            title={HOME_COPY.whatHappenedEmptyTitle}
-            description={HOME_COPY.whatHappenedEmpty}
-          />
-        </div>
       ) : (
         <div className={`flex flex-col gap-3 ${WHAT_HAPPENED_PANEL}`}>
           {days.map((day) => (

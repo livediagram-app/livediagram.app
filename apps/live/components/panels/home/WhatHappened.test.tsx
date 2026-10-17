@@ -130,17 +130,31 @@ describe('WhatHappened', () => {
     expect(onSeeTimeline).toHaveBeenCalledTimes(1);
   });
 
-  it('says so when nothing happened, and keeps the link', () => {
-    renderIt([]);
-    expect(screen.getByText('No updates yet')).toBeTruthy();
-    expect(
-      screen.getByText('What others do in your documents over the last 14 days shows here.'),
-    ).toBeTruthy();
-    expect(screen.getByRole('link', { name: 'See timeline' })).toBeTruthy();
-    // In the panel, one entry's size: the badge beside the words, not a large centred block.
-    const empty = screen.getByText('No updates yet').closest('[data-empty-state]')!;
-    expect(empty.getAttribute('data-empty-layout')).toBe('row');
-    expect(empty.parentElement!.className).toContain('rounded-[20px]');
+  it('leaves the section out when nothing happened', () => {
+    const { container } = render(
+      <WhatHappened
+        groups={[]}
+        loading={false}
+        lastSeenAt={undefined}
+        timelineHref="/explorer/timeline"
+        onSeeTimeline={() => {}}
+      />,
+    );
+    expect(container.innerHTML).toBe('');
+  });
+
+  it('holds its heading and skeleton while it loads, without the link', () => {
+    render(
+      <WhatHappened
+        groups={[]}
+        loading
+        lastSeenAt={undefined}
+        timelineHref="/explorer/timeline"
+        onSeeTimeline={() => {}}
+      />,
+    );
+    expect(screen.getByRole('heading', { level: 2, name: 'What happened' })).toBeTruthy();
+    expect(screen.queryByRole('link', { name: 'See timeline' })).toBeNull();
   });
 
   it('offers no filter controls', () => {

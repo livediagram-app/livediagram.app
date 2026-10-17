@@ -51,7 +51,7 @@ export function JumpBackInStrip({
         className={`scrollbar-slim -mx-1 flex ${STRIP_HEIGHT} snap-x gap-3 overflow-x-auto px-1 pb-2 pt-1`}
       >
         {tiles.length === 0 ? (
-          // The heading alone: the strip's height holds no second line, and See more beside it is the way forward.
+          // The heading alone: the strip's height holds no second line. With nothing to show, no See more either.
           <CompactEmptyState
             size="small"
             className="w-48 shrink-0"
@@ -72,9 +72,11 @@ export function JumpBackInStrip({
             ))}
           </ul>
         )}
-        <div className="snap-start">
-          <SeeMoreTile href={recentHref} onSeeMore={onSeeMore} />
-        </div>
+        {tiles.length > 0 ? (
+          <div className="snap-start">
+            <SeeMoreTile href={recentHref} onSeeMore={onSeeMore} />
+          </div>
+        ) : null}
       </div>
       <span
         aria-hidden

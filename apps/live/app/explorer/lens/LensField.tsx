@@ -45,6 +45,32 @@ const SIZES = {
   },
 } as const;
 
+/** The field's look with nothing live in it: Home's hero while it folds away, so the page never holds two fields. */
+export function LensFieldStill({
+  size = 'bar',
+  trailing,
+}: {
+  size?: keyof typeof SIZES;
+  trailing?: ReactNode;
+}) {
+  const look = SIZES[size];
+  return (
+    <div aria-hidden className={look.wrap} data-lens-still="">
+      <div className={`flex items-center overflow-hidden ${look.box}`}>
+        <span className="shrink-0 text-slate-500 dark:text-slate-400">
+          <SearchIcon size={look.glyph} />
+        </span>
+        <span
+          className={`min-w-[8rem] flex-1 truncate text-slate-500 dark:text-slate-400 ${look.input}`}
+        >
+          {FIELD_PLACEHOLDER}
+        </span>
+        {trailing}
+      </div>
+    </div>
+  );
+}
+
 export function LensField({
   lens,
   subjects,

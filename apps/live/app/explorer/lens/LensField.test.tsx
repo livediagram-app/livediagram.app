@@ -12,7 +12,7 @@ import {
   type LensContext,
   type LensSubject,
 } from '@livediagram/explorer-lens';
-import { LensField } from './LensField';
+import { LensField, LensFieldStill } from './LensField';
 import { requestBarFocus, takeBarFocus } from './lens-focus-handoff';
 import type { ExplorerLens } from './useExplorerLens';
 
@@ -208,5 +208,16 @@ describe('LensField in the hero', () => {
   it('leaves the focus where it is when nothing was handed off', () => {
     render(<Harness initial="plan" />);
     expect(document.activeElement).not.toBe(field());
+  });
+});
+
+describe('LensFieldStill', () => {
+  it('draws the field with nothing live in it: no combobox, hidden from assistive technology', () => {
+    const { container } = render(<LensFieldStill size="hero" trailing={<span>New</span>} />);
+    expect(screen.queryByRole('combobox')).toBeNull();
+    const still = container.querySelector('[data-lens-still]')!;
+    expect(still.getAttribute('aria-hidden')).toBe('true');
+    expect(still.textContent).toContain('Search or filter documents');
+    expect(still.firstElementChild!.className).toContain('h-[60px]');
   });
 });

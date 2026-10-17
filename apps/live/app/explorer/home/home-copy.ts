@@ -19,8 +19,6 @@ export const HOME_COPY = {
   seeTimeline: 'See timeline',
   jumpBackInEmptyTitle: 'No documents yet',
   jumpBackInEmpty: 'The documents you use most and last will gather here.',
-  whatHappenedEmptyTitle: 'No updates yet',
-  whatHappenedEmpty: 'What others do in your documents over the last 14 days shows here.',
   readFailed: 'Home could not load. Check your connection and try again.',
   tryAgain: 'Try again',
 } as const;

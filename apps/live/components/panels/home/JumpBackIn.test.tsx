@@ -134,6 +134,13 @@ describe('JumpBackIn, desktop and tablet', () => {
     expect(onSeeMore).toHaveBeenCalledTimes(1);
   });
 
+  it('shows no See more while it loads', () => {
+    render(
+      <JumpBackIn ownerId="me" set={set([], [])} loading recentHref="/r" onSeeMore={() => {}} />,
+    );
+    expect(screen.queryByRole('link', { name: 'See more' })).toBeNull();
+  });
+
   it('marks a document stored only in this browser', () => {
     renderIt({ mostUsed: [item('l', { localOnly: true })], recent: [] });
     const link = screen.getByRole('link', { name: 'Doc l, Local only' });
@@ -146,7 +153,8 @@ describe('JumpBackIn, desktop and tablet', () => {
     expect(screen.getByText('No documents yet')).toBeTruthy();
     expect(screen.getByText('The documents you use most and last will gather here.')).toBeTruthy();
     expect(screen.queryByRole('list')).toBeNull();
-    expect(screen.getByRole('link', { name: 'See more' })).toBeTruthy();
+    // Nothing to see more of.
+    expect(screen.queryByRole('link', { name: 'See more' })).toBeNull();
     // In place of one most used card: its size, in the first column, no group labels.
     const slot = screen.getByText('No documents yet').closest('[data-empty-state]')!.parentElement!;
     expect(slot.className).toContain('h-[12.5rem]');
@@ -202,9 +210,9 @@ describe('JumpBackIn, phone', () => {
     expect(fade.className).toContain('opacity-0');
   });
 
-  it('keeps its See more tile beside the empty state', () => {
+  it('shows no See more tile beside the empty state', () => {
     renderIt(set([], []));
     expect(screen.getByText('No documents yet')).toBeTruthy();
-    expect(screen.getByRole('link', { name: 'See more' })).toBeTruthy();
+    expect(screen.queryByRole('link', { name: 'See more' })).toBeNull();
   });
 });

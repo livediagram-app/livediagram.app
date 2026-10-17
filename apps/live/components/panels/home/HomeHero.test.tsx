@@ -21,6 +21,9 @@ vi.mock('@/app/explorer/lens/LensField', () => ({
       </div>
     );
   },
+  LensFieldStill: (p: { trailing?: React.ReactNode }) => (
+    <div data-testid="lens-still">{p.trailing}</div>
+  ),
 }));
 vi.mock('@/components/primitives/HelpArticleLink', () => ({
   HelpArticleLink: (p: { article: string }) => <a href={`/help/${p.article}`}>Help</a>,
@@ -33,7 +36,7 @@ import { HomeHero } from './HomeHero';
 const go = vi.fn();
 const setMobileNavOpen = vi.fn();
 
-function renderHero(over: Partial<ExplorerStateValue> = {}) {
+function renderHero(over: Partial<ExplorerStateValue> = {}, active = true) {
   const value = {
     ownerId: 'me',
     documents: [
@@ -52,7 +55,7 @@ function renderHero(over: Partial<ExplorerStateValue> = {}) {
   } as unknown as ExplorerStateValue;
   return render(
     <ExplorerProvider value={value}>
-      <HomeHero />
+      <HomeHero active={active} />
     </ExplorerProvider>,
   );
 }
@@ -111,6 +114,13 @@ describe('HomeHero', () => {
     fireEvent.click(within(lens).getByRole('button', { name: 'New document' }));
     expect(assign).toHaveBeenCalledWith('/new');
     expect(track).toHaveBeenLastCalledWith('Home', 'Selected', 'Hero.NewDocument');
+  });
+
+  it('draws its field still while it folds away, so the page holds one live field', () => {
+    renderHero({}, false);
+    expect(screen.queryByTestId('lens')).toBeNull();
+    expect(screen.getByTestId('lens-still')).toBeTruthy();
+    expect(lensField).not.toHaveBeenCalled();
   });
 
   it('fans the three newest documents as decoration', () => {

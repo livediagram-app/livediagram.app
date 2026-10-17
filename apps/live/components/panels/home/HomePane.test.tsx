@@ -21,6 +21,7 @@ vi.mock('@livediagram/ui', async (importOriginal) => ({
 }));
 
 import { HomePane } from './HomePane';
+import { fixtureAction, fixtureGroup, fixtureJumpItem, fixturePerson } from './home-test-utils';
 
 const data = (over = {}) => ({
   status: 'ready',
@@ -52,6 +53,16 @@ afterEach(() => vi.unstubAllGlobals());
 describe('HomePane', () => {
   it.each([true, false])('is one column of two sections, wide=%s, with no Timeline', (isWide) => {
     wide.value = isWide;
+    useHome.mockReturnValue(
+      data({
+        whatHappened: [
+          fixtureGroup({
+            actions: [fixtureAction('x', 'edited', 'p', Date.now())],
+            people: [fixturePerson('p')],
+          }),
+        ],
+      }),
+    );
     const { container } = renderIt();
     const sections = screen.getAllByRole('region');
     expect(sections.map((s) => s.getAttribute('aria-labelledby'))).toEqual([
@@ -73,6 +84,18 @@ describe('HomePane', () => {
 
   it('opens each section with a display heading, its link at the end of the row, no rule', () => {
     wide.value = true;
+    // Each section has something to show, so each carries its link.
+    useHome.mockReturnValue(
+      data({
+        jumpBackIn: { mostUsed: [fixtureJumpItem('a')], recent: [] },
+        whatHappened: [
+          fixtureGroup({
+            actions: [fixtureAction('x', 'edited', 'p', Date.now())],
+            people: [fixturePerson('p')],
+          }),
+        ],
+      }),
+    );
     renderIt();
     for (const [name, link] of [
       ['Jump back in', 'See more'],
@@ -85,6 +108,14 @@ describe('HomePane', () => {
       expect(row.className).toContain('justify-between');
       expect(row.lastElementChild!.textContent).toBe(link);
     }
+  });
+
+  it('shows Jump back in alone when nothing happened', () => {
+    wide.value = true;
+    renderIt();
+    expect(screen.getAllByRole('region').map((s) => s.getAttribute('aria-labelledby'))).toEqual([
+      'home-jump-back-in',
+    ]);
   });
 
   it('says the read failed and retries', () => {

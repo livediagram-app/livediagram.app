@@ -54,8 +54,9 @@ export function JumpBackIn({
       id="jump-back-in"
       title={HOME_COPY.jumpBackIn}
       busy={loading}
+      // See more only once there is something to see more of (explorer-home.md "Jump back in").
       link={
-        wide
+        wide && !loading && !empty
           ? {
               href: recentHref,
               label: HOME_COPY.seeMore,

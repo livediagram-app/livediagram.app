@@ -32,10 +32,7 @@ small grey text. Every empty state reads alike, wherever it is: an icon in the b
   semibold heading, an 11px line, centred, with 12px of padding.
 - **Page** (`EmptyState` in `@livediagram/ui`): a page-sized list (the Explorer's views, the Trash, the Card Finder's
   list), with the floating badge and its rings. Same copy rules.
-- **In a row** (`layout="row"`): where an empty state stands in for one row of a list (Home's What happened), the
-  badge sits beside the heading and line, left-aligned, at either size, so the list keeps its shape.
-- **In place of one item.** Where a list's items are cards or rows on a known surface (Home's Jump back in, What
-  happened), the empty state takes the size and place of one item, so an empty list looks like a list with one thing
+- **In place of one item.** Where a list's items are cards or rows on a known surface (Home's Jump back in), the empty state takes the size and place of one item, so an empty list looks like a list with one thing
   in it rather than a large centred message.
 - The badge holds the surface's own glyph; a search's empty state defaults to the search glyph.
 - On a surface painted in its own theme (a Plan board, Setup Sheet), the heading and the line take that surface's text

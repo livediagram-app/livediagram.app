@@ -13,7 +13,7 @@ import { track } from '@/lib/telemetry';
 import { useNow } from '@/hooks/ui/useNow';
 import { useExplorer } from '@/app/explorer/ExplorerContext';
 import { HamburgerIcon } from '@/app/explorer/PaneHeader';
-import { LensField } from '@/app/explorer/lens/LensField';
+import { LensField, LensFieldStill } from '@/app/explorer/lens/LensField';
 import { inboxBadge } from '@/app/explorer/sidebar/inbox-badge';
 import { explorerPathFor } from '@/app/explorer/routes';
 import { HERO_COPY, heroGreeting, heroPills, heroSheets } from '@/app/explorer/home/hero-model';
@@ -31,7 +31,8 @@ const SHEET_PLACES = [
   'right-[2%] top-8 h-40 w-[58%] rotate-[7deg] shadow-[0_14px_34px_-14px_rgba(15,23,42,0.35)]',
 ] as const;
 
-export function HomeHero() {
+/** `active` while Home is the page; a hero folding away draws its field still, so the page holds one live field. */
+export function HomeHero({ active = true }: { active?: boolean }) {
   const { ownerId, documents, loading, activity, go, setMobileNavOpen, lens, lensResult } =
     useExplorer();
   const sheets = useMemo(() => heroSheets(documents), [documents]);
@@ -41,6 +42,22 @@ export function HomeHero() {
   });
   const now = useNow(false);
   const greeting = heroGreeting(new Date(now).getHours());
+
+  const newDocument = (
+    <button
+      type="button"
+      aria-label={HERO_COPY.newDocument}
+      onClick={() => {
+        track('Home', 'Selected', 'Hero.NewDocument');
+        window.location.assign('/new');
+      }}
+      className={`flex h-11 shrink-0 items-center gap-2 rounded-xl bg-brand-700 px-[18px] text-[15px] font-semibold text-white transition hover:bg-brand-800 dark:bg-brand-600 dark:hover:bg-brand-700 ${FOCUS_RING}`}
+    >
+      <PlusIcon />
+      {/* The label folds to the plus on a phone; the button keeps its name. */}
+      <span className="hidden sm:inline">{HERO_COPY.newDocument}</span>
+    </button>
+  );
 
   return (
     <section
@@ -100,26 +117,16 @@ export function HomeHero() {
             {HERO_COPY.lead}
           </p>
           <div className="max-w-2xl">
-            <LensField
-              lens={lens}
-              subjects={lensResult.subjects}
-              size="hero"
-              trailing={
-                <button
-                  type="button"
-                  aria-label={HERO_COPY.newDocument}
-                  onClick={() => {
-                    track('Home', 'Selected', 'Hero.NewDocument');
-                    window.location.assign('/new');
-                  }}
-                  className={`flex h-11 shrink-0 items-center gap-2 rounded-xl bg-brand-700 px-[18px] text-[15px] font-semibold text-white transition hover:bg-brand-800 dark:bg-brand-600 dark:hover:bg-brand-700 ${FOCUS_RING}`}
-                >
-                  <PlusIcon />
-                  {/* The label folds to the plus on a phone; the button keeps its name. */}
-                  <span className="hidden sm:inline">{HERO_COPY.newDocument}</span>
-                </button>
-              }
-            />
+            {active ? (
+              <LensField
+                lens={lens}
+                subjects={lensResult.subjects}
+                size="hero"
+                trailing={newDocument}
+              />
+            ) : (
+              <LensFieldStill size="hero" trailing={newDocument} />
+            )}
           </div>
         </div>
         <div className="absolute right-4 top-6 z-20 hidden sm:right-6 lg:block">

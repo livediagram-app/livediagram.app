@@ -25,6 +25,7 @@ Scope, by file:
 | `apps/live/lib/explorer-landing.ts`                                     | `EXPLORER_LANDING_PATH`, the one landing path                                           |
 | `apps/live/components/panels/home/HomePane.tsx`                         | One column of two sections; the error state; the landing telemetry                      |
 | `apps/live/components/panels/home/HomeHero.tsx`                         | The hero: menu button, Help, pills, greeting, lead, the large lens field, fanned sheets |
+| `apps/live/components/panels/home/useHeroPresence.ts`                   | The hero's fold: mounted and open as Home comes and goes, over the `long` token         |
 | `apps/live/app/explorer/home/hero-model.ts`                             | Pure: the greeting by hour, the pills' copy, the fanned sheets' documents               |
 | `apps/live/app/explorer/lens/lens-focus-handoff.ts`                     | The hero field asks the header field to take the focus on Search results                |
 | `apps/live/components/panels/home/JumpBackIn.tsx`                       | The section: heading row, See more, the grid or the strip, the empty state              |
@@ -243,8 +244,6 @@ export const HOME_COPY: {
   seeTimeline: 'See timeline';
   jumpBackInEmptyTitle: 'No documents yet';
   jumpBackInEmpty: 'The documents you use most and last will gather here.';
-  whatHappenedEmptyTitle: 'No updates yet';
-  whatHappenedEmpty: string;
   readFailed: string;
   tryAgain: 'Try again';
 };
@@ -363,8 +362,8 @@ rgba(2,132,199,0.45)] -translate-y-0.5` (`motion-safe:` on the transform), `dura
   item") with the glyphs in `home-icons.tsx` (file for Jump back in, history for What happened). Jump back in's is
   regular size, `h-full w-full`, inside one `LARGE_CARD` slot (`EMPTY_SLOT`: dashed `border-slate-300`,
   `bg-white/60`; dark `border-slate-600 bg-slate-800/50`, `rounded-[18px]`) in the first cell of `MOST_USED_GRID`,
-  no labels and no reserved height; the strip's is small size, `w-48`, heading alone, before the See more tile; What
-  happened's is regular size, `layout="row"`, `px-2 py-3`, inside `WHAT_HAPPENED_PANEL`.
+  no labels, no reserved height and no See more; the strip's is small size, `w-48`, heading alone, with no See more
+  tile. What happened has none: `WhatHappened` renders nothing once loaded with no day.
 - What happened: the days in one panel (`WHAT_HAPPENED_PANEL`: `rounded-[20px] border border-slate-200 bg-white px-3
 py-2 sm:px-5`, dark `border-slate-700 bg-slate-800`); day heading (`h3`, `text-xs font-semibold uppercase
 tracking-[0.08em] text-slate-500 pt-3`), entries in a `ul` with 4 px between.
