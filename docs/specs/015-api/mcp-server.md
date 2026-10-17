@@ -506,6 +506,8 @@ unlabelled circle is a small solid dot ([Mermaid](../020-import-export/mermaid.m
 - **Side steps sit level with their decision.** A decision (diamond) with two or more exits keeps its main exit on
   the spine (the one labelled yes / ok / true / pass, else the one leading furthest) and lays each other exit whose
   target nothing else enters on the decision's own rank, beside it, as the template's "No → Show card error" does.
+  An exit back to a step the flow reaches before the decision (a retry to the start, entered by nothing else) is a
+  loop, never a side step: laid level, it was drawn straight over the line into the decision.
 - **Loops go round the outside.** An edge back to an earlier rank (a retry, a loop) leaves its source by the side
   away from the spine, runs outside every box between, and enters its target from that side: an elbow that never
   crosses the spine. Several loops take separate tracks. On a drawing of up to 120 boxes a loop or a detour is first

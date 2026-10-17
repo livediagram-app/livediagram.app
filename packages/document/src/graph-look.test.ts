@@ -104,6 +104,46 @@ describe('side steps', () => {
     };
     expect(sideStepEdges(g.nodes, g.edges).size).toBe(0);
   });
+
+  // A retry to the start: the start is entered only by the retry, yet it comes before the decision.
+  it('never sides an exit back to a step before its decision, and draws it as a loop', () => {
+    const g: GraphInput = {
+      nodes: [
+        { id: 'enter', label: 'Enter password' },
+        { id: 'ok', shape: 'diamond' },
+        { id: 'in' },
+      ],
+      edges: [
+        { from: 'enter', to: 'ok' },
+        { from: 'ok', to: 'enter', label: 'no' },
+        { from: 'ok', to: 'in', label: 'yes' },
+      ],
+    };
+    expect(sideStepEdges(g.nodes, g.edges).size).toBe(0);
+    const back = arrowTo(lay(g), 'ok', 'enter');
+    expect(back.arrowStyle).toBe('angled');
+    expect(back.curvePoints?.length).toBeGreaterThan(0);
+  });
+
+  it('still sides an error step that then goes back to try again', () => {
+    const g: GraphInput = {
+      nodes: [
+        { id: 'go', shape: 'stadium' },
+        { id: 'try' },
+        { id: 'ok', shape: 'diamond' },
+        { id: 'err' },
+        { id: 'done' },
+      ],
+      edges: [
+        { from: 'go', to: 'try' },
+        { from: 'try', to: 'ok' },
+        { from: 'ok', to: 'err', label: 'no' },
+        { from: 'err', to: 'try' },
+        { from: 'ok', to: 'done', label: 'yes' },
+      ],
+    };
+    expect([...sideStepEdges(g.nodes, g.edges)]).toEqual(['ok->err']);
+  });
 });
 
 describe('the spine and loops', () => {

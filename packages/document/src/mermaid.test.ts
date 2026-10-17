@@ -177,6 +177,27 @@ describe('parseMermaid', () => {
     expect(r.graph.clusters).toEqual([{ id: 'outer', label: 'outer', members: ['A', 'B', 'C'] }]);
   });
 
+  // Mermaid's rule: the first subgraph to mention a node holds it, wherever the node was first written.
+  it('puts a node in the first subgraph that mentions it, though it was written above', () => {
+    const r = parseMermaid(`flowchart LR
+  A --> C[Brew]
+  subgraph Kitchen
+    C --> E((Serve))
+  end
+  subgraph Counter
+    E --> F
+  end
+  F --> A`);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.graph.clusters).toEqual([
+      { id: 'Kitchen', label: 'Kitchen', members: ['C', 'E'] },
+      { id: 'Counter', label: 'Counter', members: ['F'] },
+    ]);
+    // Its definition above still names it.
+    expect(r.graph.nodes.find((n) => n.id === 'C')!.label).toBe('Brew');
+  });
+
   it('lets an edge reference a subgraph id without minting a node for it', () => {
     const r = parseMermaid(`flowchart TD
   subgraph s1["Group"]
