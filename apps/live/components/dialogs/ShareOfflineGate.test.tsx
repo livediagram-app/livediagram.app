@@ -31,6 +31,8 @@ describe('ShareOfflineGate', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Sync Document' }));
     expect(sync).toHaveBeenCalledOnce();
     expect(screen.getByRole('button', { name: /Syncing/ }).getAttribute('aria-busy')).toBe('true');
+    // Cancel waits on the sync too.
+    expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Cancel' }).disabled).toBe(true);
     await act(async () => finish());
     expect(toast.success).toHaveBeenCalledOnce();
     // Still busy until the dialog swaps the gate for the share options: no flash of the button.

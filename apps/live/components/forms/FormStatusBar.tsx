@@ -2,20 +2,22 @@
 
 // Under the form's heading in the builder (docs/specs/030-forms/forms.md "Hearing about responses"): the response
 // count with how many are new to this reader (opening the tab responses go to), and the notices that say the form takes no responses
-// (paused: its destination broke; suspended after reports; closed), and an Editor's Problems with this Form, which opens
-// Share Form where they are listed.
+// (paused: its destination broke; suspended after reports; closed), an Editor's red Not Taking Responses while a
+// published form takes none, and an Editor's Problems with this Form, which opens Share Form where they are listed.
 import type { ReactNode } from 'react';
 import { Tooltip, lucideGlyph } from '@livediagram/ui';
 import { lucideTriangleAlert } from '@livediagram/icons/lucide';
 import { DESTINATION_PROBLEM_TEXT, type DestinationProblem } from '@livediagram/forms';
 import type { FormLinkState } from '@/hooks/forms/useFormLink';
+import { formNotTakingReason, type FormNotTakingFix } from './form-not-taking';
+import { FormNotTakingWarning } from './FormNotTakingWarning';
 
 const WarningIcon = lucideGlyph(lucideTriangleAlert, 14);
 
 export function FormStatusBar({
   link,
   problem,
-  overdue = false,
+  closedBy = null,
   full = false,
   canEdit,
   onFix,
@@ -24,11 +26,12 @@ export function FormStatusBar({
   destinationName,
   problems = 0,
   onProblems,
+  onNotTaking,
 }: {
   link: FormLinkState;
   problem: DestinationProblem | null;
-  // Switched on but past its Close On or at its Response Limit (formClosedBySettings): it reads Closed.
-  overdue?: boolean;
+  // Switched on but past its Close On or at its Response Limit (closedBySettings): it reads Closed.
+  closedBy?: 'closes_at' | 'limit' | null;
   // The document holds as many cards as it can: responses are refused until some go.
   full?: boolean;
   canEdit: boolean;
@@ -41,8 +44,13 @@ export function FormStatusBar({
   // How many problems the form has (FormProblems), and opening Share Form where they are listed: an Editor's.
   problems?: number;
   onProblems?: () => void;
+  // Opens where Not Taking Responses is fixed (Share Form, Responses Go To, Settings or the responses' tab).
+  onNotTaking?: (fix: FormNotTakingFix) => void;
 }) {
   const data = link.link;
+  const overdue = !!closedBy;
+  // Published but taking no responses: an Editor's red warning after the count.
+  const notTaking = canEdit ? formNotTakingReason({ link: data, problem, closedBy, full }) : null;
   const live = data?.link ?? null;
   const responses = data?.responses ?? 0;
   const pill = (tone: 'green' | 'slate' | 'amber' | 'red', text: string) => (
@@ -108,6 +116,12 @@ export function FormStatusBar({
         ) : (
           <span className="shrink-0 text-slate-600 dark:text-slate-300">{count}</span>
         )}
+        {notTaking ? (
+          <FormNotTakingWarning
+            reason={notTaking}
+            onFix={!onNotTaking || (notTaking === 'full' && !onOpenResponses) ? null : onNotTaking}
+          />
+        ) : null}
         {canEdit && problems > 0 && onProblems ? (
           <Tooltip label="See what to fix in Share Form">
             <button

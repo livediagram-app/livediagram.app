@@ -251,6 +251,9 @@ signed-in person alike:
 - A failed sync keeps the document Local only, says why in a toast
   (`syncFailureMessage`) and leaves the button to try again; nothing is
   half-uploaded (see below).
+- **Share Form** on a Form tab offers the same prompt (`SyncDocumentPrompt`, which
+  the gate draws too) with a form's wording, and carries on to publishing the form
+  once the document is synced ([Forms](../030-forms/forms.md#publishing-and-the-form-link)).
 
 ### Syncing in place
 
@@ -281,7 +284,7 @@ sync: the document there is not the one on screen, or several move at once.
 ### Save to server (Offline → Cloud)
 
 Action: **"Sync Document"** (one name everywhere: the Explorer row menu, the
-Share dialog gate, and the move prompt after signing in).
+Share dialog gate, Share Form's, and the move prompt after signing in).
 
 - Uploads the document's meta + tabs to the API ([API app](../015-api/api.md)), creating a normal
   cloud document owned by the current identity (signed-in account, or the guest
