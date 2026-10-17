@@ -65,6 +65,8 @@ function decodeEntityCode(code: string, digits: string): string {
 export function decodeLabel(s: string): string {
   let t = s.trim();
   if (t.startsWith('"') && t.endsWith('"') && t.length >= 2) t = t.slice(1, -1);
+  // A blank quoted label (`n1[" "]`, how the export writes an unlabelled node) is no label.
+  if (!t.trim()) return '';
   return t
     .replace(/<br\s*\/?>/gi, '\n')
     .replace(/&quot;/g, '"')

@@ -229,6 +229,15 @@ triangle|circle|cross`); `GraphNode` carries an optional `link` URL —
   captions) and non-graph element kinds (tables, images, freehand) have no
   flowchart representation and are dropped with the graph preserved — the
   export is the connection graph, faithfully.
+  - **Every connection is kept.** Stickies are nodes like shapes (a board of
+    them exports as nodes, not an empty flowchart its own import refuses),
+    and any other boxed element an arrow is pinned at both ends to (a text,
+    a table, an image) becomes a node for that arrow's sake, so the line is
+    never dropped. Each is a square box, labelled with its label or text.
+  - **No label stays no label.** An unlabelled node or frame is written with
+    a blank quoted label (`n1[" "]`, `subgraph s1[" "]`), never its id: the id
+    came back as a label on import, so a 28 px dot returned as a 96 px circle
+    reading "n18". On import a blank label (only spaces) is no label.
 
 ## Limits
 
