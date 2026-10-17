@@ -21,7 +21,10 @@ export type SidebarTelemetryRow =
   | 'ShapeLibraries'
   | 'Tags'
   | 'Tag'
-  | 'Trash';
+  | 'Trash'
+  // A document or folder dropped on the Trash row (explorer-structure.md "Dragging to the Trash").
+  | 'TrashDropDocument'
+  | 'TrashDropFolder';
 
 const SIDEBAR_TELEMETRY_PREFIX = { page: 'Sidebar', panel: 'ExplorerPanel' } as const;
 

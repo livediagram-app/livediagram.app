@@ -351,6 +351,8 @@ link.
   handling stands aside for a drag a target inside it has already
   accepted; otherwise its "dropped back on a panel" guard would turn the
   folder's accepted move into a no-drop (`usePaletteDrop`).
+  On the Explorer page a document, or one of the reader's own folders, can also be dragged onto the sidebar's
+  **Trash** row to delete it ([Explorer structure: Dragging to the Trash](explorer-structure.md#dragging-to-the-trash)).
   **Resting a drag on a row with a chevron** for 800 ms
   (`DRAG_HOVER_TOGGLE_MS`) opens it, so a document reaches a subfolder in
   one gesture; resting on an open row closes it. One rest toggles once:

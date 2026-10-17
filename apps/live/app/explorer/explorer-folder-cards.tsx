@@ -18,6 +18,7 @@ import type { FolderActionBundle } from './explorer-view-props';
 import { menuHandlers } from './folder-row';
 import { DefaultFolderMarker } from '@/components/placement/DefaultFolderMarker';
 import { DROP_TARGET_RING } from '@/components/panels/useDocumentDropTarget';
+import { folderDragProps } from '@/components/panels/explorer-drag-mime';
 import { useExplorerDropTarget } from './useExplorerDropTarget';
 
 // The plain folder mark that fills a folder card's preview box when
@@ -62,6 +63,8 @@ export function FolderCard({
       className={`${cardShell} ${drop.isDragOver ? DROP_TARGET_RING : ''}`}
       onContextMenu={menu.onContextMenu}
       {...drop.handlers}
+      // One of the reader's own folders drags to the sidebar's Trash (explorer-structure.md "Dragging to the Trash").
+      {...folderDragProps(folder, renaming)}
     >
       <button
         type="button"

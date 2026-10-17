@@ -43,6 +43,7 @@ export function SidebarRow({
   description,
   rowProps,
   highlighted = false,
+  rowClassName,
   className,
   children,
 }: {
@@ -71,6 +72,8 @@ export function SidebarRow({
   rowProps?: HTMLAttributes<HTMLDivElement>;
   // Ringed while something is dragged over it.
   highlighted?: boolean;
+  // The row's own look in place of the resting or current one (the Trash while it is a drop target).
+  rowClassName?: string;
   // Classes on the treeitem itself (the panel's slide-out when a row is deleted).
   className?: string;
   children?: ReactNode;
@@ -110,7 +113,7 @@ export function SidebarRow({
         {...rowProps}
         className={`group flex items-center gap-1 rounded-xl border px-1 transition-colors [li:focus-visible>&]:ring-2 [li:focus-visible>&]:ring-brand-500 ${
           highlighted ? `${DROP_TARGET_RING} ` : ''
-        }${selected ? SIDEBAR_CURRENT : SIDEBAR_RESTING}`}
+        }${rowClassName ?? (selected ? SIDEBAR_CURRENT : SIDEBAR_RESTING)}`}
         style={{ paddingLeft: depth * INDENT_STEP + 4 }}
       >
         <span

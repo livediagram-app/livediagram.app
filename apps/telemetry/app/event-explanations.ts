@@ -627,6 +627,10 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Home|Opened|Landing':
     'Someone arrived at the Explorer with Home as the very section that loaded.',
   'Home|Opened|Nav': 'Someone went to Home from another section of the Explorer.',
+  'UI|Selected|Sidebar.TrashDropDocument':
+    "Someone dragged a document onto the Trash row in the Explorer's sidebar, moving it to the Trash.",
+  'UI|Selected|Sidebar.TrashDropFolder':
+    "Someone dragged one of their folders onto the Trash row in the Explorer's sidebar to delete it.",
   'Home|Opened|Welcome':
     'Someone with no documents yet saw the first-run Home, with its blanks and popular templates to start from.',
   'Home|Selected|Welcome.AllTemplates':
