@@ -1,11 +1,12 @@
 // A finish (docs/specs/008-canvas/finish.md): the drawing style a tab's elements are rendered in, apart from
-// their colours. Flexible is today's look; Professional is crisp; Sketch is hand-drawn. A tab carries one,
+// their colours. Flexible is today's look; Professional is crisp; Sketch is pencil by hand; Marker is felt-tip by
+// hand. A tab carries one,
 // an element may carry its own, and what an element is drawn in is its own, else its tab's, else Flexible.
 //
 // A finish only changes what an element leaves unset (its corner, border width, arrow thickness, shadow,
-// font) plus how a line is drawn (Sketch, see sketch.ts). An explicit pick on the element always wins. Pure
+// font) plus how a line is drawn (Sketch, see sketch.ts; Marker, see marker.ts). An explicit pick on the element always wins. Pure
 // functions, read by the canvas and every export so the two agree.
-import type { ArrowStyle, ArrowThickness } from './arrow-style';
+import { ARROW_THICKNESS_PX, type ArrowStyle, type ArrowThickness } from './arrow-style';
 import { DEFAULT_ICON_WEIGHT, type IconWeight } from './icon-weight';
 import type { BorderStroke } from './border-style';
 import { DEFAULT_BORDER_STROKE } from './border-style';
@@ -13,9 +14,13 @@ import { SELF_PAINTING_SHAPES } from './colors';
 import type { Element } from './index';
 import { shapeGeometry } from './shape-geometry';
 
-export type Finish = 'flexible' | 'professional' | 'sketch';
+export type Finish = 'flexible' | 'professional' | 'sketch' | 'marker';
 
-export const FINISHES: readonly Finish[] = ['flexible', 'professional', 'sketch'];
+export const FINISHES: readonly Finish[] = ['flexible', 'professional', 'sketch', 'marker'];
+
+/** The finishes that redraw an element's lines by hand (its body, its arrows): a pencil's (Sketch) or a felt-tip
+ *  marker's (Marker). */
+export type HandDrawnFinish = 'sketch' | 'marker';
 
 export const DEFAULT_FINISH: Finish = 'flexible';
 
@@ -29,8 +34,26 @@ export const PROFESSIONAL_FONT_ID = 'inter';
 /** The handwriting font a Sketch element without its own font is lettered in (fonts.ts id). */
 export const SKETCH_FONT_ID = 'caveat';
 
+/** The marker lettering a Marker element without its own font is written in (fonts.ts id). */
+export const MARKER_FONT_ID = 'permanent-marker';
+
+/** The width a Marker outline or arrow that sets none is drawn at, px: a felt-tip's nib, bolder than Flexible's 2 px
+ *  and finer than Thick's 4 px (blueprint: 2.5 to 3.5). */
+export const MARKER_LINE_PX = 3;
+
 export function isFinish(v: unknown): v is Finish {
-  return v === 'flexible' || v === 'professional' || v === 'sketch';
+  return v === 'flexible' || v === 'professional' || v === 'sketch' || v === 'marker';
+}
+
+/** Whether a finish redraws lines by hand (Sketch's pencil, Marker's felt-tip). */
+export function isHandDrawn(finish: Finish): finish is HandDrawnFinish {
+  return finish === 'sketch' || finish === 'marker';
+}
+
+/** Whether a finish hands an element's body (outline and fill) to the hand-drawn overlay. A sticky under Marker
+ *  stays paper with its peel: a note on a wall is written on with a marker, never outlined. */
+export function finishDrawsBodyByHand(finish: Finish, type: string): boolean {
+  return finish === 'sketch' || (finish === 'marker' && type !== 'sticky');
 }
 
 /** The element types that carry their own finish (the spec's "Where it is set"). */
@@ -75,6 +98,17 @@ export function finishArrowThickness(
   return !isOwnSet && finish === 'professional' ? 'thin' : resolved;
 }
 
+/** An arrow's line width, px: its own when set, else 1 px under Professional, a marker's nib under Marker, else
+ *  2 px. Under Marker a Thin (1 px or finer) arrow is drawn at the nib too: a marker has no fine-liner. Read by the
+ *  canvas and the export alike. */
+export function finishArrowWidthPx(own: number | undefined, finish: Finish): number {
+  if (finish === 'marker' && (own === undefined || own <= ARROW_THICKNESS_PX.thin))
+    return MARKER_LINE_PX;
+  if (own !== undefined) return own;
+  if (finish === 'professional') return ARROW_THICKNESS_PX.thin;
+  return finish === 'marker' ? MARKER_LINE_PX : 2;
+}
+
 /** Whether the soft default shadow on boxes and the sticky's paper peel draw. An element's own shadow
  *  always draws. */
 export function finishDrawsDefaultShadow(finish: Finish): boolean {
@@ -93,6 +127,7 @@ export function finishFontId(
   if (own) return own;
   if (tab) return tab;
   if (finish === 'sketch') return SKETCH_FONT_ID;
+  if (finish === 'marker') return MARKER_FONT_ID;
   return finish === 'professional' ? PROFESSIONAL_FONT_ID : undefined;
 }
 
@@ -111,9 +146,11 @@ export function elementFontId(
   return finishFontId(el.font, tabFont, resolveFinish(el.finish, tabFinish));
 }
 
-/** A line-art icon's weight: its own, else Thin under Professional, else the default. */
+/** A line-art icon's weight: its own, else Thin under Professional, Bold under Marker, else the default. */
 export function finishIconWeight(own: IconWeight | undefined, finish: Finish): IconWeight {
-  return own ?? (finish === 'professional' ? 'thin' : DEFAULT_ICON_WEIGHT);
+  if (own) return own;
+  if (finish === 'professional') return 'thin';
+  return finish === 'marker' ? 'bold' : DEFAULT_ICON_WEIGHT;
 }
 
 /** Whether an element is art Sketch draws through the hand-drawn wobble rather than redrawing it: icons (line art
@@ -196,7 +233,8 @@ export function finishHatchesKind(element: Element): boolean {
   return HATCHED_BOXES.has(element.shape) || drawn;
 }
 
-/** Whether a Sketch element's fill (`fill`, already resolved) is drawn as hatching rather than solid:
+/** Whether a hand-drawn element's fill (`fill`, already resolved) is shaded (Sketch's hatching, Marker's colouring in)
+ *  rather than solid:
  *  plain shapes only, never a see-through fill, and never a backdrop (a shape other elements sit on, see
  *  sketchBackdropIds): hatching under a key's captions or a card's contents makes them unreadable. */
 export function finishHatches(element: Element, fill: string, backdrop = false): boolean {

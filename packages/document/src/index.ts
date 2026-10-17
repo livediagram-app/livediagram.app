@@ -601,6 +601,9 @@ export * from './finish';
 export * from './sketch';
 export * from './sketch-element';
 export * from './sketch-backdrop';
+export * from './marker';
+export * from './marker-element';
+export * from './hand-drawn';
 // Which elements can be rotated (an annotation marker cannot).
 export * from './rotation';
 export * from './shape-marker';

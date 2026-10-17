@@ -54,7 +54,7 @@ export const TAB_FINISH = chart(
   'Tab',
   'Changed',
   'Tab Finish',
-  'A tab’s finish changed (Flexible, Professional or Sketch).',
+  'A tab’s finish changed (Flexible, Professional, Sketch or Marker).',
   { types: ['Finish'] },
 );
 

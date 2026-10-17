@@ -4,9 +4,10 @@ import { PALETTE_TILES } from './palette-tile-defs';
 
 // Palette tiles in the tab's finish (docs/specs/008-canvas/finish.md "Where it shows").
 describe('paletteFinishClass', () => {
-  it('names a class for Professional and Sketch, none for Flexible', () => {
+  it('names a class for Professional, Sketch and Marker, none for Flexible', () => {
     expect(paletteFinishClass('professional')).toBe('palette-finish-professional');
     expect(paletteFinishClass('sketch')).toBe('palette-finish-sketch');
+    expect(paletteFinishClass('marker')).toBe('palette-finish-marker');
     expect(paletteFinishClass('flexible')).toBe('');
     expect(paletteFinishClass(undefined)).toBe('');
   });
@@ -25,6 +26,14 @@ describe('paletteFinishClass', () => {
       expect(paletteFinishClass('sketch', action as never)).toBe('palette-finish-sketch');
       expect(paletteFinishClass('professional', action as never)).toBe('');
     }
+    for (const action of [
+      { type: 'sticker', stickerId: 'x' },
+      { type: 'tech-icon', iconId: 'x' },
+    ] as const)
+      expect(paletteFinishClass('marker', action as never)).toBe('');
+    expect(paletteFinishClass('marker', { type: 'icon', iconId: 'x' } as never)).toBe(
+      'palette-finish-marker',
+    );
     expect(paletteFinishClass('professional', { type: 'icon', iconId: 'x' } as never)).toBe(
       'palette-finish-professional',
     );

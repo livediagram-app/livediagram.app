@@ -222,8 +222,9 @@ so text contrast never depends on the theme.
 - **Font**: the tab font, on everything in the form (a tab with none keeps the app font).
 - **Finish**: **Flexible** draws boxes as they are; **Professional** squares their corners (2 px); **Sketch** draws
   every box (cards, fields, choices, ratings, buttons) by hand: a wandering outline at a marker's 2 px in ink
-  (slate 700 light, slate 300 dark), neighbours wobbling differently, with a pencil-offset shadow. Focus, a pick and
-  an error keep their own outline colours.
+  (slate 700 light, slate 300 dark), neighbours wobbling differently, with a pencil-offset shadow; **Marker** draws
+  every box in a felt-tip's 3 px, its ink 86% opaque, its corners a touch uneven (neighbours differently), with no
+  shadow. Focus, a pick and an error keep their own outline colours.
 - **Backdrop**: the theme's canvas colour, its light or dark half following the viewer, with the tab's **canvas
   style** over it when someone picked one in Tab Style's Canvas (a Form tab is in Plan, whose own canvas is plain):
   a static pattern or an animated one moving behind the form (still under reduced motion), at the tab's pattern

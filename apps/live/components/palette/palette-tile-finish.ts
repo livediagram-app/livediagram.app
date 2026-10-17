@@ -1,8 +1,8 @@
 // Palette tiles in the tab's finish (docs/specs/008-canvas/finish.md "Where it shows"): every tile places an element,
 // so every tile draws its glyph in the finish that element will land in, and the whole palette previews the tab.
 // Professional squares and thins a line glyph; Sketch wobbles every glyph through the shared sketch filter
-// (SketchFilterDefs). Full-colour art (technology icons, stickers) keeps its weight under Professional, as on the
-// canvas, and only wobbles under Sketch.
+// (SketchFilterDefs); Marker draws a line glyph bold with round ends, a felt-tip's line. Full-colour art (technology
+// icons, stickers) keeps its weight under Professional and Marker, as on the canvas, and only wobbles under Sketch.
 import type { Finish } from '@livediagram/document';
 import type { PaletteTileDef } from './palette-tile-defs';
 
@@ -20,6 +20,7 @@ export function paletteFinishClass(
   action?: PaletteTileDef['action'],
 ): string {
   if (finish === 'sketch') return 'palette-finish-sketch';
+  if (finish === 'marker' && !(action && isColourArt(action))) return 'palette-finish-marker';
   if (finish === 'professional' && !(action && isColourArt(action)))
     return 'palette-finish-professional';
   return '';

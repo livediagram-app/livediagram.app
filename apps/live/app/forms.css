@@ -54,6 +54,20 @@
   border-color: var(--form-ink);
 }
 
+/* Marker: outlines in a felt-tip's 3 px, in slightly see-through ink, corners a touch uneven, no shadow (a marker
+   drawing casts none); neighbours drawn differently. */
+[data-form-finish='marker'] .form-box {
+  border-width: 3px;
+  border-radius: 9px 13px 8px 12px / 12px 8px 13px 9px;
+  box-shadow: none;
+}
+[data-form-finish='marker'] .form-box:nth-child(even) {
+  border-radius: 13px 8px 12px 9px / 8px 12px 9px 13px;
+}
+[data-form-finish='marker'] .form-ink:not(:focus, :focus-within) {
+  border-color: color-mix(in srgb, var(--form-ink) 86%, transparent);
+}
+
 /*
  * Builder motion (docs/specs/030-forms/forms.md "Building a form"): a question slides to its new place when moved
  * (useFlipList adds .form-q-move), grows in when added, and fades and shrinks away before it is deleted. Reduced

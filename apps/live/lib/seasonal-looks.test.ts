@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  FINISHES,
   FONTS,
   isAnimatedPattern,
   isSeasonalPattern,
@@ -56,9 +57,7 @@ describe('SEASONAL_LOOKS', () => {
         SEASONAL_LOOKS.some((l) => l.pattern === p),
         p,
       ).toBe(true);
-    expect(new Set(SEASONAL_LOOKS.map((l) => l.finish))).toEqual(
-      new Set(['flexible', 'professional', 'sketch']),
-    );
+    expect(new Set(SEASONAL_LOOKS.map((l) => l.finish))).toEqual(new Set(FINISHES));
   });
 
   it('never shares an id or a mix with any look, so at most one reads as selected', () => {

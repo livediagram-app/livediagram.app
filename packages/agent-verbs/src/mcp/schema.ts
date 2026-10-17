@@ -190,7 +190,7 @@ const ELEMENT_SCHEMA_HINT =
   `${anchors}; preferred, so arrows track their shapes) or ` +
   '{ "kind": "free", "x", "y" }; an arrow may carry a "label". ' +
   'The theme owns fill, stroke, and text colour on every element except a sticky. ' +
-  'Any element may carry "finish" ("flexible", "professional" or "sketch") to be drawn ' +
+  'Any element may carry "finish" ("flexible", "professional", "sketch" or "marker") to be drawn ' +
   'differently from its tab. ' +
   STYLE_FIELDS +
   CONTENT_KINDS;
@@ -433,8 +433,9 @@ const finishField = z
   .optional()
   .describe(
     'How the tab is drawn (docs/specs/008-canvas/finish.md): "flexible" (the default), "professional" ' +
-      '(crisp corners, thin lines, no shadows) or "sketch" (hand-drawn lines, hatched fills, a ' +
-      'handwriting font). An element can carry its own "finish" too.',
+      '(crisp corners, thin lines, no shadows), "sketch" (hand-drawn pencil lines, hatched fills, a ' +
+      'handwriting font) or "marker" (bold felt-tip lines, coloured-in fills, marker lettering). An element ' +
+      'can carry its own "finish" too.',
   );
 
 // Graph-first authoring (docs/specs/015-api/mcp-server.md §4.7): the LOW-BURDEN path. Give just the

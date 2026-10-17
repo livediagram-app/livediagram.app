@@ -1,6 +1,6 @@
 'use client';
 
-// The Tab Style dialog's Finish panel (docs/specs/008-canvas/finish.md "Where it is set"): the tab's finish as three
+// The Tab Style dialog's Finish panel (docs/specs/008-canvas/finish.md "Where it is set"): the tab's finish as four
 // tiles, applied live to the tab and every element on it (each follows the tab again), and a preview of the sample in
 // the chosen finish.
 
@@ -31,7 +31,11 @@ export function FinishTab({
         <span className="text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
           Finish
         </span>
-        <div role="radiogroup" aria-label="Finish" className="grid grid-cols-3 gap-2">
+        <div
+          role="radiogroup"
+          aria-label="Finish"
+          className="grid grid-cols-2 gap-2 sm:grid-cols-4"
+        >
           {FINISHES.map((f) => (
             <FinishTile key={f} finish={f} active={current === f} onPick={() => onSetFinish(f)} />
           ))}
@@ -74,7 +78,7 @@ function FinishTile({
           : 'border-slate-200 bg-white text-slate-700 hover:border-brand-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-brand-500/60'
       }`}
     >
-      {/* Big enough to see the corner, line weight and wobble change between the three. */}
+      {/* Big enough to see the corner, line weight and wobble change between the four. */}
       <FinishSwatch finish={finish} size={40} />
       <span className="text-[12px] font-semibold">{FINISH_LABELS[finish]}</span>
     </button>

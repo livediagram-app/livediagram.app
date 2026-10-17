@@ -17,8 +17,9 @@ export type Pt = { x: number; y: number };
 type SketchSegment =
   { kind: 'line'; from: Pt; to: Pt } | { kind: 'curve'; points: Pt[]; closed: boolean };
 
-/** An outline to sketch. `area` is the closed polygon hatching fills, null for an open outline. */
-type SketchOutline = { segments: SketchSegment[]; area: Pt[] | null };
+/** An outline to sketch. `area` is the closed polygon hatching fills, null for an open outline. Marker draws the same
+ *  outlines with its own pen (marker.ts). */
+export type SketchOutline = { segments: SketchSegment[]; area: Pt[] | null };
 
 /** Most a line's end moves, px (rough.js roughness 1 reads at about 1 to 2 px). */
 const SKETCH_JITTER_PX = 1.5;
@@ -52,7 +53,9 @@ function num(v: number): string {
   if (tenth === 0) return String(whole);
   return `${t < 0 && whole === 0 ? '-' : ''}${whole}.${tenth < 0 ? -tenth : tenth}`;
 }
-const fmt = (p: Pt) => `${num(p.x)} ${num(p.y)}`;
+/** A point as path text, to a tenth of a pixel (shared with marker.ts). */
+export const sketchPoint = (p: Pt) => `${num(p.x)} ${num(p.y)}`;
+const fmt = sketchPoint;
 const dist = (a: Pt, b: Pt) => Math.hypot(b.x - a.x, b.y - a.y);
 const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
 

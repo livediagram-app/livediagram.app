@@ -1,13 +1,14 @@
 # Finish
 
 A **finish** is the drawing style a tab's elements are rendered in: how their lines, corners, fills and lettering
-look, independent of their colours. There are three:
+look, independent of their colours. There are four:
 
-| Finish           | Reads as                      | What it changes                                                                                                |
-| ---------------- | ----------------------------- | -------------------------------------------------------------------------------------------------------------- |
-| **Flexible**     | Today's look (the default)    | Nothing: soft 8 px corners, 2 px lines, a soft default shadow on boxes, a peel under stickies                  |
-| **Professional** | Crisp, print-ready            | Square corners, thin lines, Inter lettering, no default shadows, new arrows and mind maps drawn right-angled   |
-| **Sketch**       | Drawn by hand on a whiteboard | Wobbly double-stroked outlines, pencil-shaded fills, a handwriting font, arrowheads drawn as two loose strokes |
+| Finish           | Reads as                      | What it changes                                                                                                 |
+| ---------------- | ----------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| **Flexible**     | Today's look (the default)    | Nothing: soft 8 px corners, 2 px lines, a soft default shadow on boxes, a peel under stickies                   |
+| **Professional** | Crisp, print-ready            | Square corners, thin lines, Inter lettering, no default shadows, new arrows and mind maps drawn right-angled    |
+| **Sketch**       | Drawn by hand on a whiteboard | Wobbly double-stroked outlines, pencil-shaded fills, a handwriting font, arrowheads drawn as two loose strokes  |
+| **Marker**       | Drawn in felt-tip marker      | One bold, slightly see-through stroke per edge, darker where strokes cross, fills coloured in, marker lettering |
 
 A finish is a look, never a type: switching it changes no stored geometry, colour or text, and switching back
 restores exactly what was there.
@@ -25,7 +26,7 @@ restores exactly what was there.
 
 **A finish sets the defaults; what you pick on an element wins.** An explicit corner, border width, shadow, arrow
 thickness, arrow style or font on an element is drawn as picked in every finish. A finish changes only what the
-element leaves unset, plus how a line is drawn (Sketch).
+element leaves unset, plus how a line is drawn (Sketch, Marker).
 
 ### Professional
 
@@ -101,6 +102,41 @@ element leaves unset, plus how a line is drawn (Sketch).
 - **Selection, hit testing, anchors and snapping** use the element's true geometry, never the wobble, so a
   sketched element is selected, connected and aligned exactly as a Flexible one.
 
+### Marker
+
+Marker reads as a diagram drawn quickly and confidently on a whiteboard or flip chart with felt-tip markers. Where
+Sketch is a pencil's wandering double line, Marker is one bold stroke per edge, laid down fast.
+
+- **Outlines** of shapes, frames, lanes and tables are drawn as one hand-drawn stroke per edge (never doubled):
+  straight edges bow a little and run past their corners as a quick stroke does, curves drift, and a closed curve
+  overlaps where it started. The wobble is seeded by the element's id, as Sketch's is, so an element looks the same
+  everywhere and only changes when its size or kind does.
+- **Ink:** marker ink is slightly see-through, so where two strokes cross (every corner, a circle's overlap, an
+  arrowhead meeting its line) the ink is visibly darker, as real marker ink pools. A line on its own stays strong.
+- **Line weight:** an unset or Thin border draws at 3 px, a marker's nib, and so does an arrow that is unset or 1 px
+  wide: a marker has no fine-liner, and templates set Thin borders on purpose, so without this a template drawn in
+  Marker would come out in fine lines. Medium and wider are drawn as picked, in the same ink.
+- **Fills** of shapes are coloured in: the fill colour laid down in broad, overlapping back-and-forth marker
+  strokes, their ends not quite meeting the outline, with the overlaps showing as faint darker streaks. The strokes
+  overlap enough that no gap opens under a label, so a label keeps the contrast it was coloured for. Backdrops
+  (shapes something sits on, as under Sketch), frames, lanes, cards and the other kinds Sketch keeps unshaded keep a
+  solid fill under the marker outline.
+- **Shadows:** a marker drawing casts none, so the default soft shadow on boxes is not drawn. An element's own
+  shadow still draws.
+- **Stickies** stay paper: a sheet with its peel, no outline, its writing in marker (a sticky note on a wall is
+  written on with a marker, never outlined).
+- **Lettering:** an element without its own font, on a tab without one, is written in Permanent Marker. The same
+  precedence as Sketch: a font picked on the element or the tab wins, Marker picked on the element itself wins over
+  the tab's font. A code block keeps its monospace font.
+- **Arrows** are drawn as one hand-drawn stroke. A line arrowhead is one chevron stroke, a triangle a solid marker
+  wedge with rounded corners, and a hollow triangle a closed outline the line stops short of. Circle and diamond
+  heads keep their shapes, as under Sketch.
+- **Dashes:** a dashed or dotted border or arrow stays dashed or dotted, along the marker line.
+- **Icons** without their own weight draw Bold, a marker's line. Technology icons and stickers keep their art.
+- **Not affected:** freehand strokes, images, and the faces of self-painting elements other than their lettering
+  (Marker draws them as Flexible does; Sketch's face wobble is pencil-only).
+- **Selection, hit testing, anchors and snapping** use the element's true geometry, as under Sketch.
+
 ### Flexible
 
 Draws exactly as livediagram did before finishes existed.
@@ -110,11 +146,11 @@ Draws exactly as livediagram did before finishes existed.
 - **Element menu, Style section:** a **Finish** category (closed by default, like every menu section) holding a
   full-width option list in the Plan style ([Plan board](../026-plan/plan-board.md) "Option lists"), one row per
   choice with its glyph, name and a short line: **Follow Tab** (As the tab is), **Flexible** (Soft and rounded),
-  **Professional** (Square and fine), **Sketch** (Drawn by hand). Follow Tab clears the element's own finish.
+  **Professional** (Square and fine), **Sketch** (Drawn by hand), **Marker** (Bold felt-tip). Follow Tab clears the element's own finish.
   Hovering a tile previews it on the selection; clicking commits it as one undo step. The category shows for
   shapes, arrows, text, stickies and tables, and in the multi-selection menu when the selection holds any of
   them (the commit then sets every one of them).
-- **Tab style:** the **Finish** panel (a Fine-tune row of the dialog's home, beside Colours, Text and Canvas, [Canvas + Theme dialog](../011-theme/canvas-and-theme-dialog.md)), and every **Look** sets a finish, with the three finishes as tiles, a
+- **Tab style:** the **Finish** panel (a Fine-tune row of the dialog's home, beside Colours, Text and Canvas, [Canvas + Theme dialog](../011-theme/canvas-and-theme-dialog.md)), and every **Look** sets a finish, with the four finishes as tiles, a
   **Preview** under them showing a small sample diagram (a step, a decision, the arrow between them and a sticky
   note) in the chosen finish on the tab's own background and font. Picking a finish applies to the whole tab at once: every
   element's own finish on the tab is cleared so they all follow it again.
@@ -126,7 +162,7 @@ Draws exactly as livediagram did before finishes existed.
 
 - **The canvas and every export** (SVG, PNG, PDF, thumbnails, the Map, live images) draw each element in its finish.
 - **The palette** previews the tab's finish on every tile, the sticker picker's included: under Professional the
-  glyphs are square and fine, under Sketch they are drawn wobbly and doubled. Full-colour art (technology icons,
+  glyphs are square and fine, under Sketch they are drawn wobbly and doubled, under Marker they are drawn bold with round ends. Full-colour art (technology icons,
   stickers) keeps its weight under Professional, as on the canvas, and wobbles under Sketch.
 
 ## Share roles
@@ -154,6 +190,8 @@ only when something on it is sketched (0.7 ms for 2,000 elements), and an elemen
 own backdrop flag flips. Generating one element's strokes and hatching stays under
 0.2 ms at worst-case sizes, so a 500-element sketched tab costs under 100 ms to draw from cold and nothing per
 drag frame for unmoved elements ([Canvas performance](canvas-performance.md)).
+Marker is held to the same budgets: it computes from the same inputs, is memoised the same way, and draws at most
+five paths per body with no filter, so it costs about what Sketch does.
 
 A sketched face costs one still copy of its DOM, taken once it settles (so a zoom, which restyles faces every
 frame, copies each once afterwards), and one light wobble filter. On a Sketch tab of 200 charts, copying every face

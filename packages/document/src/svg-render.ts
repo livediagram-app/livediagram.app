@@ -30,6 +30,7 @@ import {
   finishCornerFallbackPx,
   finishSplitsFace,
   finishWobblesArt,
+  isHandDrawn,
   resolveFinish,
   type Finish,
 } from './finish';
@@ -217,11 +218,12 @@ function svgBoxedFace(source: BoxedElement, opts: BoxedExportOptions): string {
   // other label on the canvas.
   const labelColor = label?.color ?? defaultTextColor(el, surface);
   const fontFamily = label?.fontFamily ?? exportFontFamily(el, opts.tabFont, opts.tabFinish);
-  // The drawing style (docs/specs/008-canvas/finish.md): Professional's borders and corners, Sketch's
-  // hand-drawn body. Null when this element is not sketched.
+  // The drawing style (docs/specs/008-canvas/finish.md): Professional's borders and corners, Sketch's or Marker's
+  // hand-drawn body. Null when this element is not drawn by hand.
   const finish = resolveFinish(finishOf(el), opts.tabFinish);
-  const sketch =
-    finish === 'sketch' ? svgSketchedBody(el, shape, finish, !!opts.sketchBackdrop) : null;
+  const sketch = isHandDrawn(finish)
+    ? svgSketchedBody(el, shape, finish, !!opts.sketchBackdrop)
+    : null;
   const opAttr = opacity !== 1 ? ` opacity="${r2(opacity)}"` : '';
   // Rotation applies to the whole element (body + label) about its centre,
   // exactly like the canvas wrapper's CSS rotate.

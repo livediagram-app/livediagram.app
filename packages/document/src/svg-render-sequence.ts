@@ -73,7 +73,7 @@ export function sequenceDrawing(el: ShapeElement, look: SequenceLook = {}): stri
     paper,
   );
   // Rendered on the paper so its ink reads on it, then the paper rect (the first child) taken out: the element's
-  // own box is the paper. The finish draws its lines (Sketch's hand-drawn boxes, Professional's square corners).
+  // own box is the paper. The finish draws its lines (Sketch's and Marker's hand-drawn boxes, Professional's square corners).
   let svg = renderElementsToSvg(
     {
       id: 'seq',

@@ -2,19 +2,25 @@
 
 import { memo, useMemo } from 'react';
 import {
+  MARKER_DETAIL_PX,
+  MARKER_INK_OPACITY,
+  MARKER_STREAK_OPACITY,
   SHAPE_DETAIL_STROKE_PX,
   SKETCH_HATCH_OPACITY,
-  sketchElementPaint,
+  handDrawnElementPaint,
   type BoxedElement,
   type Finish,
+  type HandDrawnPaint,
 } from '@livediagram/document';
 
 // A sketched element's body on the canvas (docs/specs/008-canvas/finish.md "Sketch"): the hand-drawn outline,
 // solid fill with faint pencil shading over it, and chrome from sketch-element.ts in @livediagram/document, the same drawing the
 // SVG export emits. It stands in for the wrapper's CSS border and background (element-variant.ts drops them
-// under Sketch) and for the shape's SVG overlay (ShapeContentRouter skips it), and sits under the label.
+// under Sketch) and for the shape's SVG overlay (ShapeContentRouter skips it), and sits under the label. Marker's
+// felt-tip body (docs/specs/008-canvas/finish.md "Marker", marker-element.ts) takes the same place, drawn in layers of
+// see-through ink so crossings pool darker.
 
-type SketchPaint = NonNullable<ReturnType<typeof sketchElementPaint>>;
+type SketchPaint = HandDrawnPaint;
 
 /** The element's sketch, memoised on what shapes it: never on position, so a drag recomputes nothing
  *  (docs/specs/008-canvas/canvas-performance.md). Null when the element is not sketched. */
@@ -32,8 +38,8 @@ export function useSketchPaint(
     borderRadius?: string;
   };
   return useMemo(
-    () => sketchElementPaint(element, finish, fill, backdrop),
-    // The fields sketchElementPaint reads, so moving the element keeps the drawing.
+    () => handDrawnElementPaint(element, finish, fill, backdrop),
+    // The fields the paint reads, so moving the element keeps the drawing.
     // oxlint-disable-next-line react/exhaustive-deps
     [
       element.id,
@@ -66,6 +72,55 @@ function SketchOverlayImpl({
 }) {
   const { drawing, strokePx, dash } = paint;
   const line = { fill: 'none', strokeLinecap: 'round', strokeLinejoin: 'round' } as const;
+  if (drawing.pen === 'marker') {
+    // Bottom to top: the fill, the colouring's streaks, the outline's ink, the chrome (svg-render-sketch.ts's
+    // svgMarkerDrawing in the export). Each layer is its own path so crossings between them pool.
+    return (
+      <svg
+        className="pointer-events-none absolute inset-0 h-full w-full overflow-visible"
+        viewBox={`0 0 ${width} ${height}`}
+        preserveAspectRatio="none"
+        data-finish="marker"
+        aria-hidden
+      >
+        {drawing.solid ? <path d={drawing.solid} fill={fill} /> : null}
+        {drawing.streaks.map((d, i) =>
+          d ? (
+            <path
+              key={`s${i}`}
+              d={d}
+              stroke={stroke}
+              strokeOpacity={MARKER_STREAK_OPACITY}
+              strokeWidth={drawing.nibPx}
+              {...line}
+            />
+          ) : null,
+        )}
+        {drawing.ink.map((d, i) =>
+          d ? (
+            <path
+              key={`i${i}`}
+              d={d}
+              stroke={stroke}
+              strokeOpacity={MARKER_INK_OPACITY}
+              strokeWidth={strokePx}
+              strokeDasharray={dash ?? undefined}
+              {...line}
+            />
+          ) : null,
+        )}
+        {drawing.details ? (
+          <path
+            d={drawing.details}
+            stroke={stroke}
+            strokeOpacity={MARKER_INK_OPACITY}
+            strokeWidth={MARKER_DETAIL_PX}
+            {...line}
+          />
+        ) : null}
+      </svg>
+    );
+  }
   return (
     <svg
       className="pointer-events-none absolute inset-0 h-full w-full overflow-visible"

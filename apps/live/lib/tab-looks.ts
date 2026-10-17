@@ -171,10 +171,11 @@ export const TAB_LOOKS: readonly TabLook[] = [
   {
     id: 'workshop',
     label: 'Workshop',
-    description: 'Sand, Sketch, marker pen, soft grid',
+    description: 'Sand, Marker, soft grid',
     theme: 'sand',
-    finish: 'sketch',
-    font: 'permanent-marker',
+    finish: 'marker',
+    // Marker letters in Permanent Marker itself.
+    font: undefined,
     pattern: 'grid',
     patternOpacity: 0.6,
   },

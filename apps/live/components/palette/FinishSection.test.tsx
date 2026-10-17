@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-// The Finish category (docs/specs/008-canvas/finish.md "Where it is set"): Follow Tab plus the three finishes,
+// The Finish category (docs/specs/008-canvas/finish.md "Where it is set"): Follow Tab plus the four finishes,
 // the element's own pressed, hover previews, click commits, Follow Tab clears.
 
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
@@ -21,7 +21,7 @@ const renderSection = (finish: Finish | undefined) => {
 const tile = (name: string) => screen.getByRole('radio', { name: new RegExp(`^${name}`) });
 
 describe('FinishSection', () => {
-  it('offers Follow Tab and the three finishes as one full-width list, in order', () => {
+  it('offers Follow Tab and the four finishes as one full-width list, in order', () => {
     renderSection(undefined);
     const rows = screen
       .getByRole('radiogroup', { name: 'Drawn As' })
@@ -31,6 +31,7 @@ describe('FinishSection', () => {
       'flexible',
       'professional',
       'sketch',
+      'marker',
     ]);
   });
 

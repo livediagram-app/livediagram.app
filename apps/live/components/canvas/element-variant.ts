@@ -6,6 +6,7 @@ import {
   cornerRadiusPx,
   finishBorderStroke,
   finishCornerFallbackPx,
+  finishDrawsBodyByHand,
   finishDrawsDefaultShadow,
   BORDER_STROKE_PX,
   DEFAULT_BORDER_STYLE,
@@ -46,7 +47,8 @@ export function describeVariant(
   // sharpens unset borders; Sketch hands the body to the SketchOverlay, so the wrapper draws none.
   finish: Finish = 'flexible',
 ): { className: string; style: CSSProperties } {
-  const sketched = finish === 'sketch';
+  // Sketch and Marker hand the body to the SketchOverlay (a sticky stays paper under Marker).
+  const sketched = finishDrawsBodyByHand(finish, element.type);
   const softShadow = finishDrawsDefaultShadow(finish) ? 'shadow-sm ' : '';
   // Multi-selection uses a much louder ring (solid brand-500, offset)
   // so a busy canvas with many selected elements reads unambiguously.
