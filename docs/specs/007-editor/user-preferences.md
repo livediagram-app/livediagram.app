@@ -473,8 +473,8 @@ Missing key === undefined === default behaviour. Concretely:
   default). Setting it to `false` suppresses the success + info toasts
   the editor shows for consequential, otherwise-silent actions (a
   document moved to a folder, duplicated, or deleted from a long list; a
-  tab linked into another document). **Error toasts are never gated by
-  this** — a failure the user would otherwise never see still surfaces,
+  tab linked into another document). **Error and warning toasts are never
+  gated by this** ([Toasts](../004-interface-design/toasts.md)): a failure the user would otherwise never see still surfaces,
   so turning notifications off quiets the chatter without hiding
   breakage. The gate is read fresh on each toast push (a synchronous
   `readUserPreferences()` call in `hooks/ui/useToast.tsx`), so a flip

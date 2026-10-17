@@ -132,7 +132,7 @@ export function useDocumentActions(deps: DocumentActionsDeps) {
         else track('Team', 'Moved', 'Document');
       })
       .catch(() => {
-        toast.error('Could not move the document. Please try again.');
+        toast.error('Could not move the document. Try again.');
       });
   };
 

@@ -3,15 +3,15 @@
 // failure reads the same wherever it happened.
 
 export const FOLDER_FAILURE = {
-  create: 'Could not create the folder. Please try again.',
-  rename: 'Could not rename the folder. Please try again.',
-  move: 'Could not move the folder. Please try again.',
+  create: 'Could not create the folder. Try again.',
+  rename: 'Could not rename the folder. Try again.',
+  move: 'Could not move the folder. Try again.',
   delete: 'Could not delete the folder. Try again.',
 } as const;
 
 export const DOCUMENT_FAILURE = {
-  rename: 'Could not rename the document. Please try again.',
-  move: 'Could not move the document. Please try again.',
-  delete: 'Could not delete the document. Please try again.',
+  rename: 'Could not rename the document. Try again.',
+  move: 'Could not move the document. Try again.',
+  delete: 'Could not delete the document. Try again.',
   duplicate: "Couldn't duplicate that document. Try again.",
 } as const;

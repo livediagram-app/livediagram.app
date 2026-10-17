@@ -309,6 +309,6 @@ export function useLayersState(opts: {
 // "Blocked-creation notice").
 export function blockedLayerMessage(hidden: boolean): string {
   return hidden
-    ? 'The active layer is hidden, so adding elements is paused. Show it or switch layers.'
-    : 'The active layer is locked, so adding elements is paused. Unlock it or switch layers.';
+    ? 'The active layer is hidden. Show it, or switch layers to add.'
+    : 'The active layer is locked. Unlock it, or switch layers to add.';
 }

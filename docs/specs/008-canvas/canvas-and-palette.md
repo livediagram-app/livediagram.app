@@ -1584,12 +1584,12 @@ individually rather than refusing the whole paste), and de-duplicates ids.
 past either cap (`MAX_CLIPBOARD_ELEMENTS`, `MAX_CLIPBOARD_BYTES`) would paste cut
 short, dropping elements and leaving arrows without ends, so it is never
 written. The clipboard gets a small marker naming the copy instead
-(`clipboardWriteFor`), and the copy says so: "Copied N elements. That is too
-large for the system clipboard, so it pastes in this window only." In that
+(`clipboardWriteFor`), and the copy says so: "Copied N elements: too many for
+the clipboard, so paste in this window." In that
 window a paste of the marker lands the whole in-app buffer, every element and
 arrow (a cut of it too, since the buffer is filled before the delete). In
-another window the marker pastes nothing and says: "That copy was too large to
-leave the window it was made in. Paste it there, or copy fewer elements." The
+another window the marker pastes nothing and says: "That copy was too big to
+leave its window. Paste it there, or copy less." The
 marker still displaces a stale image, and anything copied after it replaces it
 as usual.
 

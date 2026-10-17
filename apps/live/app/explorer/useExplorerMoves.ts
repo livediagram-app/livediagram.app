@@ -108,7 +108,7 @@ export function useExplorerMoves({
       .catch((err: unknown) => {
         logMoveFailure('document-to-team', ` document=${id}`, err);
         if (row) setDocuments((prev) => (prev.some((d) => d.id === id) ? prev : [row, ...prev]));
-        toast.error('Could not move the document to the team. Please try again.');
+        toast.error('Couldn’t move the document to the team. Try again.');
       });
     setDocuments((prev) => prev.filter((d) => d.id !== id));
   };
@@ -147,7 +147,7 @@ export function useExplorerMoves({
       })
       .catch((err: unknown) => {
         logMoveFailure('team-document-out', ` document=${id}`, err);
-        toast.error('Could not move the document out of the team. Please try again.');
+        toast.error('Couldn’t move the document out of the team. Try again.');
       });
   };
 

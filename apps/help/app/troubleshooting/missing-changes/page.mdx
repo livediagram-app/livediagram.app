@@ -26,10 +26,10 @@ Work in livediagram is saved automatically as you go, so missing changes are usu
 
 Changes are saved automatically after you make them, per tab, to the server, not just to your browser. There is no manual "save" to forget. Because saving is per tab, editing one tab never disturbs another, and an empty, never-loaded tab is prevented from overwriting a tab that still has content.
 
-There is no "saved" indicator to watch, because saving is the normal state. What you will see is a failure: if a save cannot reach the server, a message at the bottom of the screen says **Couldn't save your changes. Check your connection.** (If your browser is offline it says **You're offline. Your changes will save when you reconnect. Keep this tab open.**) Autosave keeps trying, so reconnect and leave the tab open until your changes go through. Two other messages mean retrying will not help on its own:
+There is no "saved" indicator to watch, because saving is the normal state. What you will see is a failure: if a save cannot reach the server, a message at the bottom of the screen says **Couldn't save your changes. Check your connection.** (If your browser is offline it says **You're offline. Keep this tab open to save when you reconnect.**) Autosave keeps trying, so reconnect and leave the tab open until your changes go through. Two other messages mean retrying will not help on its own:
 
-- **Couldn't confirm you're signed in**: your session has lapsed. Sign in again to keep the changes.
-- **You no longer have permission to edit this document**: the share link was revoked or you were removed from the team, so autosave has stopped. Export a copy of the tab to keep your recent work.
+- **Your sign-in has lapsed**: sign in again to keep the changes.
+- **You can no longer edit this**: the share link was revoked or you were removed from the team, so autosave has stopped. Export a copy of the tab to keep your recent work.
 
 <Figure caption="A save that did not reach the server shows a message at the bottom of the screen; autosave keeps retrying.">
   <SaveFailedToast />

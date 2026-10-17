@@ -129,7 +129,7 @@ describe('CommunityPublishedConfirmation', () => {
       fireEvent.click(screen.getByRole('button', { name: /Copy Link/ }));
     });
     expect(toast.error).toHaveBeenCalledWith(
-      'Could not copy the link. Open the post to copy it from there.',
+      'Couldn’t copy the link. Copy it from the post instead.',
     );
   });
 });

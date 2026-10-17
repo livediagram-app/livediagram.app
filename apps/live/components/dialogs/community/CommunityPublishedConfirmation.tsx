@@ -38,7 +38,7 @@ export function CommunityPublishedConfirmation({
       await navigator.clipboard.writeText(absolute);
       flash(true);
     } catch {
-      toast.error('Could not copy the link. Open the post to copy it from there.');
+      toast.error('Couldn’t copy the link. Copy it from the post instead.');
     }
   };
 

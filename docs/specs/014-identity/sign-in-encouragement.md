@@ -36,9 +36,9 @@ Common gate (all must hold):
 The pane reserves extra bottom padding while it's up so the last row
 never hides behind it.
 
-**Toasts stand on it.** While the banner shows, in the Explorer or the editor, it publishes how far its top sits
-above the bottom of the screen (`--lvd-signin-banner`), and the toast stack rises above that instead of landing on
-its words: a "Document deleted · Undo" used to sit across its message.
+**Toasts stand on it.** While the banner shows, in the Explorer or the editor, its card is part of the bottom chrome
+the toast stack clears ([Toasts](../004-interface-design/toasts.md) "Placement"): the stack sits 8px above the card's
+top instead of landing on its words, as a "Document deleted · Undo" once did.
 
 **Editor** (`app/document/[id]/EditorView.tsx`): shown only **after a
 ~5 minute delay** into the session (`SIGNIN_BANNER_DELAY_MS`), so it
@@ -59,8 +59,10 @@ never triggers it; staying in one for 5+ minutes does.
 - Fixed to the bottom of the viewport, a centred floating card with a
   max width, rounded corners, shadow, and a brand gradient, visually a
   peer of the app's other branded surfaces, not chrome.
-- Contents: a small icon/illustration, a headline ("Sign in to keep
-  your work safe"), one line of supporting copy, a primary **Sign in**
+- Contents: a small icon/illustration, a headline ("Sign in to access
+  Teams & AI"), one line of supporting copy saying what those give and
+  that documents sync ("Share with your team, build with AI, sync across
+  devices."), a primary **Sign in**
   button (→ `/sign-in/`), a secondary **Learn more** button (opens the
   reasons modal), and a dismiss (×) control.
 - Responsive: the copy and buttons stack / shrink gracefully on a

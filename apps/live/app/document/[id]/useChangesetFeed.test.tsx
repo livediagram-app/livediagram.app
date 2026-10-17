@@ -45,6 +45,7 @@ function setup(seen = new Map([['t1', 1]])) {
   const toast = {
     error: vi.fn(),
     success: vi.fn(),
+    warning: vi.fn(),
     info: vi.fn(),
     offer: vi.fn(),
     action: vi.fn(),

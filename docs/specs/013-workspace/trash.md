@@ -21,7 +21,7 @@ library): it only moves the document to the Trash, so a question would guard not
   It is still in the Trash, in Settings." The toast waits until it is closed (an action toast, WCAG 2.2.1), and the
   "Show notifications" preference silences it like any other, leaving the Trash.
 - From a list (the Explorer, the editor's Explorer panel, `/new`), the row leaves at once, and Undo puts it back where it
-  was. A delete that fails puts the row back and says "Could not delete the document. Please try again." (logged
+  was. A delete that fails puts the row back and says "Could not delete the document. Try again." (logged
   `[explorer] delete-failed, row restored`).
 - Deleting the document open in the editor takes the editor to the Explorer, which offers the same toast on arrival:
   the delete is handed over in `sessionStorage` for 30 seconds (`handOffDeleteUndo`, `takeDeleteUndo`,

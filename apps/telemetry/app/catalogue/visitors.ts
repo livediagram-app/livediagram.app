@@ -719,7 +719,7 @@ export const POWER_USER_OFFER_ACCEPTED = chart(
   'UI',
   'Used',
   'Power User Offer Accepted',
-  'Try power user mode, pressed on the offer.',
+  'Try It, pressed on the power user mode offer.',
   { types: ['PowerUserOffer'] },
 );
 
@@ -727,7 +727,7 @@ export const POWER_USER_OFFER_DECLINED = chart(
   'UI',
   'Declined',
   'Power User Offer Declined',
-  'No thanks, or the offer closed.',
+  'No Thanks, or the power user mode offer closed.',
   { types: ['PowerUserOffer'], rising: 'neutral' },
 );
 

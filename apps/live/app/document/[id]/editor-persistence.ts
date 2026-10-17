@@ -89,24 +89,20 @@ export function useEditorPersistence({ toast }: { toast: ReturnType<typeof useTo
       toast.error(
         getOnline()
           ? 'Couldn’t save your changes. Check your connection.'
-          : 'You’re offline. Your changes will save when you reconnect. Keep this tab open.',
+          : 'You’re offline. Keep this tab open to save when you reconnect.',
       );
     }
     // The network is fine here: the server couldn't tie the save to the
     // signed-in account. Blaming the connection sent people checking a cable.
     if (saveStatus === 'unauthenticated') {
-      toast.error(
-        'Couldn’t confirm you’re signed in, so your changes aren’t saving. Sign in again to keep them.',
-      );
+      toast.error('Your sign-in has lapsed, so changes aren’t saving. Sign in again.');
     }
     // A refusal, not a failure: retrying is pointless and the autosave has
     // already stopped, so this fires once and has to carry the whole message.
     // It names the likely cause and the way out, because the alternative is a
     // user who keeps working on changes that will never leave the browser.
     if (saveStatus === 'forbidden') {
-      toast.error(
-        'You no longer have permission to edit this document, so your recent changes aren’t being saved. Export a copy to keep them.',
-      );
+      toast.error('You can no longer edit this. Export a copy to keep your changes.');
     }
   }, [saveStatus, toast]);
 

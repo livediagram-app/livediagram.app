@@ -38,4 +38,4 @@ export function isExcalidrawFileCandidate(file: Pick<File, 'name' | 'type'>): bo
 
 /** Said when a file dropped on the canvas holds no Excalidraw scene. */
 export const DROP_NOT_A_SCENE =
-  'Only Excalidraw files, or images exported from Excalidraw with the scene embedded, can be dropped on the canvas.';
+  'Drop an Excalidraw file, or an Excalidraw image with the scene embedded.';

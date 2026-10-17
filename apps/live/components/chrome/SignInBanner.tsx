@@ -13,7 +13,8 @@ import dynamic from 'next/dynamic';
 import { CloseIcon, SparkleIcon } from '@livediagram/ui';
 import { SignInIcon } from '@/components/chrome/AuthControls';
 import Link from 'next/link';
-import { useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
+import { announceToastFloorChange } from '@/components/toast/toast-floor';
 import { track } from '@/lib/telemetry';
 import { useAuthHrefs } from '@/components/chrome/auth-shared';
 
@@ -37,10 +38,6 @@ export const SIGNIN_BANNER_DISMISS_KEY = 'livediagram:signin-banner-dismissed:v1
 // the 48px tab bar (pb-16) and over the canvas chrome (z-[var(--z-overlay)]).
 const EXPLORER_PLACEMENT = 'bottom-0 z-[var(--z-chrome)] pb-16';
 
-// How far the card's top sits above the bottom of the screen, while it shows: the toasts stand on it (useToast)
-// rather than landing on its words, as a "Document deleted · Undo" did.
-export const SIGNIN_BANNER_VAR = '--lvd-signin-banner';
-
 export function SignInBanner({
   surface,
   onDismiss,
@@ -57,28 +54,11 @@ export function SignInBanner({
   const trackSignIn = () =>
     track('UI', 'Selected', editor ? 'SignInBannerEditor' : 'SignInBannerExplorer');
   const { signInHref } = useAuthHrefs();
-  const cardRef = useRef<HTMLDivElement>(null);
-  useLayoutEffect(() => {
-    const card = cardRef.current;
-    if (!card) return;
-    const root = document.documentElement;
-    const publish = () =>
-      root.style.setProperty(
-        SIGNIN_BANNER_VAR,
-        `${Math.max(0, window.innerHeight - card.getBoundingClientRect().top)}px`,
-      );
-    publish();
-    const resize = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(publish);
-    resize?.observe(card);
-    window.addEventListener('resize', publish);
-    // It flies up into place: measured again where it lands, which a transform does not tell the observer.
-    card.addEventListener('animationend', publish);
-    return () => {
-      resize?.disconnect();
-      window.removeEventListener('resize', publish);
-      card.removeEventListener('animationend', publish);
-      root.style.removeProperty(SIGNIN_BANNER_VAR);
-    };
+  // The toasts stand on the card (docs/specs/004-interface-design/toasts.md "Placement"): it is
+  // `data-toast-floor`, and says when it comes and goes so a toast already up moves with it.
+  useEffect(() => {
+    announceToastFloorChange();
+    return announceToastFloorChange;
   }, []);
 
   return (
@@ -90,7 +70,7 @@ export function SignInBanner({
         className={`pointer-events-none fixed inset-x-0 flex justify-center px-4 ${placementClassName}`}
       >
         <div
-          ref={cardRef}
+          data-toast-floor=""
           className="pointer-events-auto flex w-full max-w-3xl animate-fly-up-in flex-col gap-3 overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-brand-500 to-brand-600 dark:from-brand-600 dark:to-brand-700 p-4 text-white shadow-2xl shadow-brand-900/30 sm:flex-row sm:items-center sm:gap-4 sm:px-5"
         >
           {/* Decorative glyph tile */}
@@ -99,10 +79,9 @@ export function SignInBanner({
           </span>
 
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-semibold sm:text-base">Sign in to keep your work safe</p>
+            <p className="text-sm font-semibold sm:text-base">Sign in to access Teams &amp; AI</p>
             <p className="mt-0.5 text-xs text-white/85 sm:text-sm">
-              Free account. Your documents sync across devices, survive a cache clear or browser
-              restart, and carry your real name.
+              Share with your team, build with AI, sync across devices.
             </p>
           </div>
 

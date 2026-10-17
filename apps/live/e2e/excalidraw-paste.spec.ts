@@ -183,7 +183,7 @@ test.describe('dropping an Excalidraw file', () => {
     });
     const canvas = page.locator('[data-canvas-a11y-root]');
     await canvas.dispatchEvent('drop', { dataTransfer: drop, clientX: 700, clientY: 450 });
-    await expect(page.getByText('Only Excalidraw files', { exact: false })).toBeVisible();
+    await expect(page.getByText('Drop an Excalidraw file', { exact: false })).toBeVisible();
     expect(await countElements(page)).toBe(0);
     expectNoPageErrors(pageErrors);
   });

@@ -66,7 +66,7 @@ export function useOfflineConversion(
       // Stays on the server (aborts roll the local copy back). A conversion already running
       // reports for itself.
       if (e instanceof ConversionInProgressError) return;
-      toast.error('Could not take this document offline. It stays safely on the server.');
+      toast.error('Couldn’t take this offline. It stays safe on the server.');
     }
   };
 

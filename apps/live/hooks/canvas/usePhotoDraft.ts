@@ -177,7 +177,7 @@ const ERROR_TOASTS: Record<string, string> = {
   sign_in_required: 'Sign in to read a photo of your wall.',
   origin_not_allowed: 'Reading photos is not available from here.',
   rate_limited: 'Too many photos just now. Wait a moment and try again.',
-  ai_quota: 'The model key has used up its quota. Try again later, or raise the limit on the key.',
+  ai_quota: 'The model key is out of quota. Try later, or raise its limit.',
   ai_error: 'The reader could not finish. Try again in a moment.',
 };
 
@@ -185,7 +185,7 @@ const ERROR_TOASTS: Record<string, string> = {
 // actionable, and the thing in the way is always on screen already.
 const BUSY_TOASTS = {
   review: 'A photo is already open. Finish or cancel that one first.',
-  draft: 'Finish the notes from the last photo (Add or Discard them), then import another.',
+  draft: 'Finish the last photo’s notes first: Add or Discard them.',
   blocked: 'This board cannot take new notes right now.',
 } as const;
 
