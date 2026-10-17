@@ -1852,6 +1852,10 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone switched on Tours › "Plan Tour" in Settings, marking the Plan tour as not yet seen.',
   'UI|Toggled|PlanTourSeenOn':
     'Someone switched off Tours › "Plan Tour" in Settings, marking the Plan tour as seen so it won\'t be offered again.',
+  'UI|Toggled|LandscapeBarsOff':
+    'Someone folded the header and the tab bar away again from the handle on a phone held sideways, giving the canvas the whole screen.',
+  'UI|Toggled|LandscapeBarsOn':
+    'Someone showed the header and the tab bar from the handle on a phone held sideways, where they fold away so the canvas fills the screen.',
   'UI|Toggled|ZenModeOff': "Someone turned off zen mode, restoring the editor's chrome.",
   'UI|Toggled|ZenModeOn':
     "Someone turned on zen mode, hiding the editor's chrome for a distraction-free canvas.",

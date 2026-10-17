@@ -905,7 +905,8 @@ export const articles: Article[] = [
     slug: 'mobile',
     title: 'Mobile',
     description: 'The touch-friendly editor on a phone, with the toolbar strip and gestures.',
-    keywords: 'phone iphone android touch gestures small screen toolbar dock mobile layout',
+    keywords:
+      'phone iphone android touch gestures small screen toolbar dock mobile layout landscape sideways rotate header tabs hide fullscreen',
     category: 'Supported Devices',
     categorySlug: 'supported-devices',
   },

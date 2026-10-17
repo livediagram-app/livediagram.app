@@ -228,6 +228,57 @@ On a phone-sized viewport the editor's chrome would crowd the canvas. It tighten
 - **EditorHeader** drops the `livediagram` wordmark on mobile via the Brand component's new `wordmarkClassName` prop (set to `hidden sm:inline`). The mark stays for orientation. The header's reserved width shrinks accordingly so the document title centres correctly.
 - **TabBar** hides the leading `Tabs` label below `sm` and drops the right-hand cluster's text labels to icons only. Tabs themselves, the +-add, Search, Settings and the dark-mode toggle stay. (There is no shortcuts button to hide: the shortcut reference lives in Settings' Keyboard category, [User preferences](user-preferences.md).)
 
+### A phone held sideways
+
+**The header and the tab bar fold away on a phone held sideways**, so the canvas fills the screen.
+Held sideways, a phone is short: the header (56px) and the tab bar (48px) took 104px of an iPhone
+15's 393px, leaving the canvas 289px, and 256px of a small Android's 360px (measured 2026-10-17).
+Folded, the canvas gets all of it (393px, 360px). Sideways means a touch screen in landscape under
+500px tall: `LANDSCAPE_PHONE_MEDIA_QUERY` in `lib/responsive.ts`,
+`(pointer: coarse) and (orientation: landscape) and (max-height: 499px)`, with the CSS twin the
+`landscape-phone:` variant (`app/globals.css`). The height is `PHONE_MAX_HEIGHT_PX`, the same 500px
+that makes a sideways phone a phone at all (above): the tallest phone held sideways is about 440px
+(a 6.9" iPhone Pro Max), and the shortest tablet held sideways is 744px (an iPad mini). A phone held upright, a tablet
+and a desktop window however short (a fine pointer) never fold. `orientation: landscape` keeps an
+upright phone whose layout shrinks for its keyboard (an older Android) from folding mid-typing.
+
+- **What stays.** Everything on the canvas stays where it is: the strip across the top (the menu
+  button for the Explorer, the palette, its Search), the bottom-right cluster (Undo, Redo, the
+  Session strip, Layers, the Theme & Canvas brush, Fit), the menus and the dialogs.
+- **The bars handle.** A small card at the canvas's top-right corner (12px in, and past a landscape
+  notch's side inset and below the top inset; a 36px button with a 44px tap area) holds a chevron:
+  **Show Header and Tabs**. Pressing it brings both bars back where they always are: the canvas
+  shrinks to make room again, so nothing covers it or the chrome on it. The button, now under the
+  header, turns into **Hide Header and Tabs** (`aria-expanded` says which) and folds them again. So
+  what lives in the bars stays one press away: Share or Make a Copy, the document's name and
+  badges, the role pill, the tabs and their menus, Add Tab, Search, Settings and the appearance
+  toggle. The strip's row keeps the handle's 54px clear on its right (`LANDSCAPE_HANDLE_ROOM`: the
+  46px card and the row's 8px gap), so a long strip scrolls short of it rather than under it. The
+  choice lasts while the document is open in that window: not saved, not synced, and a
+  fresh load starts folded.
+- **The bars come back on their own** when something needs them: a rename asked for elsewhere (the
+  Rename Document and Rename Tab search commands) shows them first, so the name field takes the
+  focus; a tour on screen (any of them: the Diagram tour's Tabs step points at the tab bar) keeps
+  them shown; and a bar never folds while focus is inside it, so a layout that changes while a
+  name is typed there (the on-screen keyboard resizing it) cannot fold the field away. Pressing
+  Hide takes the focus to the handle, which ends a rename as any press outside it does.
+- **Turning the phone** upright shows the bars at once and sideways folds them again (unless shown
+  with the handle). The fold is CSS alone: a media query hides the two bars' wrappers
+  (`display: contents` otherwise, so the column lays out as before), with no resize or orientation
+  listener and no script on the hot path; a press of the handle re-lays the column out once.
+- **Not drawn** where the bars are not there to fold: zen mode (it hides them already and keeps its
+  own way out, [Zen mode](zen-mode.md)), embeds and the workbench frame, the welcome flow, and a
+  running presentation.
+- **Every share role** gets the fold and the handle alike, Editor, Participant and Viewer: it is a
+  view of the editor, never of the document, and what is inside each bar keeps its own role gates.
+- **Telemetry:** the handle sends `UI / Toggled / LandscapeBarsOn` when it shows the bars and
+  `LandscapeBarsOff` when it folds them ([Telemetry](../017-telemetry/telemetry.md)); the automatic
+  fold and unfold send nothing.
+
+Implementation: `useLandscapeBars` (the shown flag, the rename and tour reveals, the telemetry),
+`LandscapeBarFold` (the wrapper round each bar) and `LandscapeBarsHandle`
+(`components/chrome/LandscapeBars.tsx`), wired in `EditorView`.
+
 These don't change desktop layout. The strip and the popovers are what resolve the old "panels overlap when all four open" case on a phone: the Palette is one strip and the Explorer, Layers and Collaborate are one-at-a-time popovers. The mobile picker ([Dedicated route for new-document creation](new-document-route.md) responsive section) covers the template / identity surface the same way.
 
 The root layout (`apps/live/app/layout.tsx`) exports a `viewport` config that pins the page at `initialScale: 1` with `maximumScale: 1` + `userScalable: false`, so mobile browsers don't auto-zoom on top of the editor's own canvas zoom. The two paths this blocks: pinch-zoom on the whole page, and iOS Safari's automatic focus-zoom when a focused input's effective font-size is under 16px (every TabBar / Explorer / Palette field is well under). Without this, focusing a text input on iOS zooms the page in and leaves the chrome misaligned with the canvas-transform coordinate space the cursor / selection-ring math expects. The canvas zoom (pinch on the canvas surface, or the bottom-right zoom buttons) is the only zoom the editor wants users to drive.
