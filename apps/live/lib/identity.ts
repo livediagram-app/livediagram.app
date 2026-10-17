@@ -83,6 +83,13 @@ export function uniqueParticipants(participants: readonly Participant[]): Partic
   });
 }
 
+// Ourselves as a row of the room, carrying our own level as every peer's row carries theirs (the room stamps a
+// peer's server-verified role on presence; our own row is local and had none). Without it a Viewer's own screen
+// counted the Viewer among those who can answer, so its Done check waited on it forever.
+export function selfInRoom(self: Participant, level: AccessLevel): Participant {
+  return { ...self, role: level };
+}
+
 // The keys of everyone in the room who CAN answer a per-participant card
 // (docs/specs/012-collaboration/participant-responses.md "Who counts"): one per
 // person, leaving out view-link guests (who can't write) and agent rows (never
