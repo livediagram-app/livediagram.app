@@ -6,6 +6,8 @@ import { createShape, createText, type Element } from '@livediagram/document';
 
 // Muted slate for the one-line explainers under each region label.
 const MUTED = '#64748b';
+// The quiet line under a name inside a circle: the circles' mid tints are too strong for MUTED to read on.
+const MUTED_ON_TINT = '#334155';
 
 // The design-thinking Venn: three tinted, translucent circles (Desirable /
 // Feasible / Viable) whose overlaps visibly blend, so every region of the
@@ -187,7 +189,7 @@ export function buildVenn(cx0: number, cy: number): Element[] {
       label: l.meaning,
       textSize: 'sm',
       textAlignX: 'center',
-      textColor: MUTED,
+      textColor: MUTED_ON_TINT,
     });
   }
 
@@ -218,7 +220,7 @@ export function buildVenn(cx0: number, cy: number): Element[] {
       label: p.meaning,
       textSize: 'sm',
       textAlignX: 'center',
-      textColor: MUTED,
+      textColor: MUTED_ON_TINT,
     });
   }
 

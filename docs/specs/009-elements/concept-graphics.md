@@ -103,8 +103,11 @@ it further toward the element's fill, down to 22%. The Cycle draws its steps as 
 first step solid in the accent to mark where the loop starts. A Hub's hub is solid in the accent and its satellites
 the fill with an accent ring, its spokes in the accent at half strength. An Onion's core is the accent and each ring
 outward steps down the ramp; a Chevron process ramps left to right. Each row's text takes the readable colour for its own
-fill (`readableColour`), so labels stay legible down the ramp. A theme switch carries all of it, since it is derived
-from the stroke and fill.
+fill (`readableColour`), so labels stay legible down the ramp. A Cycle's later steps and a Hub's satellites, drawn in
+the fill, write their names in the element's text colour where it reads on that fill at 4.5:1, and in the fill's own
+readable label where it does not (`conceptDiscInk`): the text colour is chosen for the canvas, where a Cycle's centre
+words sit, so a pale fill on a dark canvas must not take it. A theme switch carries all of it, since it is derived from
+the stroke and fill.
 
 ## Animation
 

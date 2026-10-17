@@ -16,9 +16,11 @@ import { textAt, uiAt } from './template-wireframe-kit';
 export const PAPER = '#fffdf8';
 export const INK = '#1e293b';
 export const FAINT = '#94a3b8';
+// The prompt written in an empty frame: quieter than the pen, but it must still read on the paper (FAINT did not).
+const HINT = '#64748b';
 export const HAND = 'caveat';
-// Plateful orange for the big button, rose for the tap markers.
-const CTA = '#f97316';
+// Plateful orange for the big button (deep enough for its white label to read), rose for the tap markers.
+const CTA = '#ea580c';
 const TAP = '#e11d48';
 
 // The handwriting caption under each sketch, and how to draw it.
@@ -183,6 +185,6 @@ export function panelHint(ox: number, oy: number, w: number, h: number, hint: st
       fillColor: undefined,
       themeLockFill: undefined,
     }),
-    p.write(16, h / 2 + 6, w - 32, 32, hint, { textColor: FAINT, textAlignX: 'center' }),
+    p.write(16, h / 2 + 6, w - 32, 32, hint, { textColor: HINT, textAlignX: 'center' }),
   ];
 }

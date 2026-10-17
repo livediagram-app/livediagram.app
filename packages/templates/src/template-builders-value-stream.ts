@@ -31,6 +31,7 @@ import {
 } from '@livediagram/sheets';
 import { techHeader, TECH_HEADER_H } from './template-builders-technical-kit';
 import { CONTENT, INK, MUTED, PAPER, SCAFFOLD, chipRow } from './template-report-kit';
+import { CANVAS_TONES } from './template-inks';
 
 const TITLE = 'Plateful · Value stream: idea to production';
 const CAPTION =
@@ -275,7 +276,8 @@ function bursts(slotX: (i: number) => number, procY: number, h: number): Element
         label: b.text,
         textSize: 'sm',
         textBold: true,
-        textColor: BURST.ink,
+        // Beside the burst, on the canvas: the burst's deep red ink sank into the dark one.
+        textColor: CANVAS_TONES.red,
         textAlignX: 'left',
         ...CONTENT,
       },

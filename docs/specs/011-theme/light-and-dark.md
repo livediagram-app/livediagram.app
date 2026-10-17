@@ -41,6 +41,13 @@ does too, so the editor never asks anyone to switch mode to suit a tab.
   pair does, the box keeps its stored fill and text instead (its outline still follows the half). `packages/document/src/theme-halves.test.ts` covers the rule, and
   `apps/live/lib/template-theme-contrast.test.ts` every template under every theme, for a light- and a dark-mode
   viewer.
+- **A label reads against what is drawn behind it.** A template opened on the Default scheme keeps every label at
+  3:1 or more against what is behind it in either half: its own fill, else the topmost filled element it sits on (a
+  translucent wash mixed over what is under it), else the canvas. A label with no colour of its own takes the viewer's
+  ink, light on the dark canvas, so words on a panel whose fill the template fixes (a pale key, a pastel lane) carry a
+  dark ink (`PAPER_INK`), and coloured words straight on the canvas take a tone that reads on both halves'
+  (`CANVAS_TONES`), both in `packages/templates/src/template-inks.ts`. `apps/live/lib/template-overlay-contrast.test.ts`
+  checks every template but the Illustrate ones, whose words sit on pages with their own paper.
 - **A shape styled with an earlier preset follows too.** A shape styled before presets met the floor stores the
   colours they had then; those are read as the same preset, so the box is drawn as today's version of it (a stored
   Bold of white on a mid-tone fill is drawn with the darker fill).

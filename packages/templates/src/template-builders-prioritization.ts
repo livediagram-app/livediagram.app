@@ -7,6 +7,7 @@
 import { createShape, createSticky, createText, type Element } from '@livediagram/document';
 import { TEMPLATE_CONTENT_LAYER_ID, TEMPLATE_SCAFFOLD_LAYER_ID } from './template-layers';
 import { matrixAxes } from './template-discovery-parts';
+import { CANVAS_TONES } from './template-inks';
 
 // An impact / effort matrix a team has just run. The plot is four tinted
 // quadrants named for what you do with the work in them, the names every
@@ -219,9 +220,9 @@ export function buildPrioritizationMatrix(cx: number, cy: number): Element[] {
 
   // Axes: impact up the left, effort along the bottom.
   elements.push(
+    // The axes sit on the canvas: their names take its ink, their lines a slate that reads in either half.
     ...matrixAxes({ x: plotX, y: plotY, w: plotW, h: plotH }, 'Impact', 'Effort', {
-      stroke: '#475569',
-      bold: '#334155',
+      stroke: CANVAS_TONES.slate,
       muted,
     }),
   );

@@ -19,6 +19,7 @@ import {
   note,
   section,
 } from './template-session-parts';
+import { PAPER_INK } from './template-inks';
 
 // Town Hall Q&A: an all-hands where the audience asks and upvotes questions,
 // often from a view-only link, which the Q&A board allows
@@ -95,6 +96,7 @@ export function buildTownHall(cx: number, cy: number): Element[] {
         label: p.name,
         textSize: 'sm',
         textBold: true,
+        textColor: PAPER_INK,
         textAlignX: 'left',
       },
       {
