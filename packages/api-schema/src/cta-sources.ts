@@ -11,6 +11,8 @@
 export const CTA_SOURCES = {
   Home: [
     'Header',
+    // Retired with the Start Blank menu (October 2026), on every surface below too: the header and the
+    // hero's bar now link /new only. The slots stay so their stored history still reads on the dashboard.
     'HeaderDraw',
     'HeaderWhiteboard',
     'HeaderIllustration',
@@ -23,9 +25,11 @@ export const CTA_SOURCES = {
     'HeroBrainstorm',
     'HeroCanvas',
     'HeroBuild',
-    // The intent-led hero (docs/specs/019-marketing/marketing-site.md "Hero"): its search, the five
-    // blanks of the Start Blank menu in its bar, and its card fan.
+    // The intent-led hero (docs/specs/019-marketing/marketing-site.md "Hero"): its search, New Document in
+    // its bar, and its card fan. The HeroBlank slots are the Start Blank menu's rows the bar held until
+    // October 2026, retired with it.
     'HeroSearch',
+    'HeroNew',
     'HeroBlankDraw',
     'HeroBlankWhiteboard',
     'HeroBlankSession',

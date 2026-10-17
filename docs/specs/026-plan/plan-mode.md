@@ -272,7 +272,7 @@ deleted or migrated), but its indicators are not drawn, so nothing invites addin
   `OpensInPlan` and `TemplateModePlan`.
 - The `Plan` category: `Added` (the item type, or `Card` for a Plan card), `Moved` (`Board`), `Opened` (`Item` from a board or a list; `Parent`, `ChildCard` or `Breadcrumb` from inside the item panel), `Deleted` (the item type), `Changed` (the set-up part), `Toggled` (`FlagOn` / `FlagOff`)
   and `Revealed` (`Board`), never content. A board placed from the palette counts as `Element` · `Added` · `PlanBoard`, a plan view as `PlanView`.
-- The header's Start Blank menu offers Blank Plan, with its own funnel slot (`HeaderPlan`).
+- The header's Start Blank menu offered Blank Plan until it was retired, its funnel slot (`HeaderPlan`) kept for history.
 
 ## The Plan tour
 

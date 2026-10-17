@@ -11,8 +11,6 @@ export { PRISM_PALETTES, prismPalette, type PrismPalette, type PrismScheme } fro
 export { ProductNav, ProductNavLinks, type ProductNavKey } from './ProductNav';
 export { SiteHeader } from './SiteHeader';
 export { RAIL_CLEAR_PADDING } from './share-rail-clearance';
-export { StartBlankMenu } from './StartBlankMenu';
-export { START_BLANKS } from './start-blanks';
 export { EXPLORER_HOME_HREF } from './HeaderPrimaryCta';
 export { BuildWithAiLink } from './BuildWithAiLink';
 export { ModeFilterMenu, type ModeFilterOption } from './ModeFilterMenu';

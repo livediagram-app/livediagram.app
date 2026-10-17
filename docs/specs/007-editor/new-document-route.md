@@ -415,7 +415,7 @@ animated `stroke-dashoffset`. It is pure SVG + CSS (no per-frame JS),
 
 ## Start Blank (skip the wizard)
 
-**Start Blank** is the name on every surface (the site header, and the `?blank=1` bypass it links to); it was
+**Start Blank** is the name of the `?blank=1` bypass (and of Explorer Home's first-run blanks; the public sites' header menu of that name was retired in October 2026, [No Start Blank menu](../019-marketing/marketing-site.md#no-start-blank-menu)); it was
 "Just Draw" until the hero's **Drawing** came to mean a whiteboard. Its telemetry token stays
 `JustDraw`, so the funnel's history reads on unbroken.
 
@@ -432,10 +432,9 @@ default document name) without walking the wizard:
   The placement context params compose with it
   (`/new?blank=1&folder=<id>`, `/new?blank=1&team=<id>`), so a caller can
   Start Blank straight into a folder or team library. A failed create shows
-  the same retryable error card as the wizard path. This is the URL that
-  outside surfaces link to (the Blank Diagram row of the site header's "Start Blank" menu on
-  marketing and the telemetry dashboard, see [Marketing site](../019-marketing/marketing-site.md#the-start-blank-menu);
-  its other rows are `?template=whiteboard` and `?template=blank-illustration`).
+  the same retryable error card as the wizard path. This is the URL a
+  start that wants no choice links to (Explorer Home's first-run Start Blank; the public sites
+  link plain `/new` instead, see [Marketing site](../019-marketing/marketing-site.md#no-start-blank-menu)).
   - The handoff replaces the `/new?blank=1` history entry with
     `/document/<id>`, so Back from the editor returns to the page before
     `/new` (usually the marketing site), never to a page that would mint
@@ -501,7 +500,7 @@ default document name) without walking the wizard:
   Skip or a bypass) then sends `Cta / Created / <source>`, once. An unknown
   source is stripped and ignored.
 - **No "Start Blank" button inside the wizard.** The footer's **Skip** already commits the same blank defaults, and
-  Start Blank now lives only on the outside surfaces that link to
+  Start Blank now lives only on the surfaces that link to
   `/new?blank=1`.
 
 ### In-place handoff to the editor
