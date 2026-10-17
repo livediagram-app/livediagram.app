@@ -58,11 +58,11 @@ export function HomeHero({ active = true }: { active?: boolean }) {
         track('Home', 'Selected', 'Hero.NewDocument');
         window.location.assign('/new');
       }}
-      className={`flex h-11 shrink-0 items-center gap-2 rounded-xl bg-brand-700 px-[18px] text-[15px] font-semibold text-white transition hover:bg-brand-800 dark:bg-brand-600 dark:hover:bg-brand-700 ${FOCUS_RING}`}
+      className={`optical-edges flex h-11 shrink-0 items-center gap-2 rounded-xl bg-brand-700 px-[18px] text-[15px] font-semibold text-white transition hover:bg-brand-800 dark:bg-brand-600 dark:hover:bg-brand-700 ${FOCUS_RING}`}
     >
       <PlusIcon />
       {/* The label folds to the plus on a phone; the button keeps its name. */}
-      <span className="hidden sm:inline">{HERO_COPY.newDocument}</span>
+      <span className="hidden sm:text-optical-line">{HERO_COPY.newDocument}</span>
     </button>
   );
 
@@ -91,7 +91,8 @@ export function HomeHero({ active = true }: { active?: boolean }) {
             </button>
             <HelpArticleLink article="timeline" variant="button" />
           </div>
-          <div className="flex flex-wrap items-center gap-2">
+          {/* Holds a pill's height before the counts arrive, so nothing under it moves when they do. */}
+          <div className="flex min-h-8 flex-wrap items-center gap-2">
             {firstRun ? (
               // What is true of every start; nothing to follow, so not links.
               <>
@@ -137,13 +138,14 @@ export function HomeHero({ active = true }: { active?: boolean }) {
           </div>
           <h1
             id={HEADING_ID}
-            className="max-w-3xl text-4xl font-extrabold leading-[1.02] tracking-[-0.04em] text-[#17153a] sm:text-5xl lg:text-[3.5rem] dark:text-white"
+            // Two lines held whichever greeting it is, so the first run's and the ordinary one swap without a shift.
+            className="min-h-[2lh] max-w-3xl text-4xl font-extrabold leading-[1.02] tracking-[-0.04em] text-[#17153a] sm:text-5xl lg:text-[3.5rem] dark:text-white"
           >
             {firstRun
               ? `${WELCOME_COPY.greeting} ${WELCOME_COPY.question}`
               : `${greeting} ${HERO_COPY.question}`}
           </h1>
-          <p className="max-w-2xl text-[17px] leading-relaxed text-slate-600 dark:text-slate-300">
+          <p className="min-h-[2lh] max-w-2xl text-[17px] leading-relaxed text-slate-600 dark:text-slate-300">
             {firstRun ? WELCOME_COPY.lead : HERO_COPY.lead}
           </p>
           <div className="max-w-2xl">

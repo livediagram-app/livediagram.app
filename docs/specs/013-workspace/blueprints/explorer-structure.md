@@ -197,7 +197,8 @@ keystroke and per render (tens to low hundreds of nodes). No new fetch.
 
 - Row: `[indent 16px × depth][gutter 20px][icon][label][badge][trailing]`, text 14 px (`text-sm`), `py-1.5`
   (36 px with a tile; `pointer-coarse` 44 px), `rounded-xl`, gap 10 px; hover `bg-slate-100 dark:bg-slate-800`.
-- Tile (`SidebarRow tone`): `size-6 rounded-lg grid place-items-center`, `SIDEBAR_TONES[tone]`: the tone's 100 tint
+- Tile (`SidebarRow tone`): `size-6 rounded-lg grid place-items-center`, its icon a 14 px block (a 13 px one sits on a half
+  pixel and fails the optical audit), `SIDEBAR_TONES[tone]`: the tone's 100 tint
   under its 700 ink in light (`bg-sky-100 text-sky-700`), its 400 at 15 % under its 300 ink in dark
   (`dark:bg-sky-400/15 dark:text-sky-300`). Tones: `home`, `myDocuments` sky; `inbox` violet; `timeline` amber;
   `shared` emerald; `team` indigo; `invites` rose. A row without a tone keeps the bare `text-slate-400` icon.

@@ -18,7 +18,10 @@ export const SIDEBAR_TONES: Record<SidebarTone, string> = {
 export const SIDEBAR_TILE_CURRENT = 'bg-sky-600 text-white dark:bg-sky-500';
 
 /** The tile's box. */
-export const SIDEBAR_TILE = 'grid size-6 shrink-0 place-items-center rounded-lg';
+// Its icon drawn at 14 px, so the 24 px tile centres it on whole pixels (a 13 px icon would sit on a half pixel and
+// fail the optical audit, optical-alignment.md).
+export const SIDEBAR_TILE =
+  'grid size-6 shrink-0 place-items-center rounded-lg [&>svg]:block [&>svg]:size-3.5';
 
 /** The current row: a raised white pill; in dark a glass pill with a sky hairline inside its edge. */
 export const SIDEBAR_CURRENT =

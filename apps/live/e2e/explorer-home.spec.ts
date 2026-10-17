@@ -139,7 +139,8 @@ test('each section opens with a display heading and no rule, in dark and light',
         const s = getComputedStyle(el);
         return { width: s.borderBottomWidth, style: s.borderBottomStyle };
       });
-      expect(style.style, `${scheme} ${name} has no rule`).toBe('none');
+      // Every element carries the base style's solid border at no width; a rule would have width.
+      expect(style.width, `${scheme} ${name} has no rule`).toBe('0px');
       // The row spans the section; the link sits at its right end.
       const section = page.getByRole('region', { name });
       expect(Math.round((await row.boundingBox())!.width)).toBe(
@@ -328,7 +329,8 @@ test('a failed read says so, and Try again reads again', async ({ page, pageErro
   await page.unroute('**/api/home?*');
   await page.getByRole('button', { name: 'Try again' }).click();
   await expect(failed).toHaveCount(0);
-  await expect(page.getByRole('region', { name: 'Jump Back In' })).toBeVisible();
+  // A guest with nothing yet: the read in, Home is the first run's starts (explorer-home.md "First run").
+  await expect(page.getByRole('region', { name: 'Start Blank' })).toBeVisible();
   expectNoPageErrors(pageErrors);
 });
 
@@ -339,9 +341,11 @@ test('what others did since the last look is marked New', async ({ page, baseURL
   const code = await editLink(page.request, owner, origin, doc.id);
   await asGuest(page, owner);
 
-  // The first look sets the mark; nothing is new to someone who never looked.
+  // The first look sets the mark; nothing is new to someone who never looked. With nothing from anyone
+  // yet, What Happened is left out (explorer-home.md "What happened").
   await page.goto('/explorer/home');
-  await expect(page.getByText('No updates yet')).toBeVisible();
+  await expect(page.getByRole('region', { name: 'Jump Back In' })).toBeVisible();
+  await expect(page.getByRole('region', { name: 'What Happened' })).toHaveCount(0);
 
   const lee = await person(page.request, 'Lee', '#14b8a6');
   await visitorSaves(page.request, lee, code, doc, [box('a', 'Launch day', 40, 40)]);
