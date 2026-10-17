@@ -77,6 +77,11 @@ Participant at what they may add.
 
 A new tab opens on its mode's start (`newTabOpening` in `apps/live/lib/new-tab-seed.ts`).
 
+An **explicit blank** opens with its start already closed (`closeStartForBlank`): a document made by Skip, Start
+Blank's `/new?blank=1`, a blank's `/new?template=` link, or a mode chosen after the public sites' Start Blank
+(`/new?start=blank`, [New document route](new-document-route.md) "Start Blank after a mode"). Plan keeps Start
+Planning.
+
 ## Bringing it back
 
 The × starts from a blank canvas: the start stays closed on that tab in that mode, for this person in this browser

@@ -58,6 +58,7 @@ import {
   wizardBypassKind,
   wizardPresetMode,
   wizardPresetQuery,
+  wizardStartsBlank,
 } from '@/lib/new-document-params';
 import { backOutTarget } from '@/lib/back-out';
 import { getTheme } from '@/lib/themes';
@@ -587,7 +588,10 @@ export default function NewDocumentPage() {
           <NewDocumentWizard
             busy={submitting || preparing}
             initialMode={presetMode}
-            onCreate={(kind) => void createByDefault(kind, false)}
+            // A mode chosen after a Start Blank link (`?start=blank`) opens its blank with the start closed.
+            onCreate={(kind) =>
+              void createByDefault(kind, wizardStartsBlank(window.location.search))
+            }
             onSkip={() => void createByDefault('blank', true)}
             onOpenExisting={() => window.location.assign('/explorer/recent')}
             // Escape backs out to the page that opened /new, creating nothing

@@ -128,8 +128,8 @@ export const EDITOR_MODE_ICONS: Record<EditorMode, IconComponent>; // key type d
   (Group 16, chained last in `template-preview.tsx`), with its hover story (the timer runs down, dots land).
 - The help card glyph `facilitate-mode` in `apps/help/lib/featureIcons.tsx` (three people round a
   speech bubble), hue `#c2410c` in `featureColours.ts`.
-- The Start Blank menu row (`packages/ui/src/StartBlankMenu.tsx`) and its funnel slot `HeaderSession`
-  on every surface (`packages/api-schema/src/cta-sources.ts`).
+- The funnel slot `HeaderSession` on every surface (`packages/api-schema/src/cta-sources.ts`), retired
+  with the public sites' Start Blank menu.
 
 ## Observability
 
