@@ -8,6 +8,7 @@ import { LABEL_LINE_HEIGHT, labelMeasure, r2, xmlEscape } from './svg-render-pri
 
 // One resolved span of a rich label (run + element defaults).
 import { MUTED_RUN_OPACITY } from './title-caption';
+import { bidiLine, bidiMarkup } from './svg-bidi';
 
 export type ExportRun = {
   text: string;
@@ -107,7 +108,7 @@ export function svgWrappedLabel(
       // A blank line is a no-break space: an empty <tspan> has no glyph, so SVG
       // drops its dy and the next line moves up into the gap.
       (line, i) =>
-        `<tspan x="${r2(x)}" dy="${i === 0 ? 0 : r2(lineH)}">${xmlEscape(line || BLANK_LINE)}</tspan>`,
+        `<tspan x="${r2(x)}" dy="${i === 0 ? 0 : r2(lineH)}">${xmlEscape(bidiLine(line || BLANK_LINE))}</tspan>`,
     )
     .join('');
   return (
@@ -200,7 +201,8 @@ export function svgRichWrappedLabel(
             `${xmlEscape(run.text)}</tspan>`,
         )
         .join('');
-      return `<tspan x="${r2(x)}" dy="${i === 0 ? 0 : r2(lineH)}">${frags || ' '}</tspan>`;
+      const plain = line.map((run) => run.text).join('');
+      return `<tspan x="${r2(x)}" dy="${i === 0 ? 0 : r2(lineH)}">${frags ? bidiMarkup(frags, plain) : ' '}</tspan>`;
     })
     .join('');
   return (

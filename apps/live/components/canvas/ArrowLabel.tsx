@@ -121,6 +121,8 @@ export function ArrowLabel({
         <textarea
           ref={inputRef}
           defaultValue={text}
+          // Right-to-left text reads right to left (label-bidi.css).
+          dir="auto"
           aria-label="Arrow label"
           placeholder="Label"
           rows={1}
