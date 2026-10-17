@@ -31,38 +31,38 @@ records which look was picked, and the tab carries only those four ordinary sett
 picked one by one.
 
 A **Finish filter** sits left of the carousel's page controls on the Looks heading row: a compact dropdown,
-**All finishes** (the default, every look), then each finish (**Flexible**, **Professional**, **Sketch**),
+**All finishes** (the default, every look), then each finish (**Flexible**, **Professional**, **Sketch**, **Marker**),
 narrowing the carousel to the looks of that finish, paged afresh from its first page (or the page holding the
 tab's look when it is among them). It is the viewer's own, for this open of the dialog only (not stored), and
 changing it is tracked as `UI / Changed / LooksFinishFilter`.
 
 The table is in the order the carousel shows them after the Mashup card, six to a page:
 
-| Look            | Theme    | Finish       | Tab font         | Pattern      | Pattern strength |
-| --------------- | -------- | ------------ | ---------------- | ------------ | ---------------- |
-| Everyday        | Default  | Flexible     | (none)           | Grid         | (kept)           |
-| Textbook        | UML      | Professional | Oswald           | Graph        | 50%              |
-| Whiteboard      | Mono     | Sketch       | (none)           | Blank        | (kept)           |
-| Spectrum        | Rainbow  | Flexible     | Inter            | Grid         | 50%              |
-| Boardroom       | Steel    | Professional | Inter            | Blank        | (kept)           |
-| Notebook        | Mocha    | Sketch       | (none)           | Lines        | (kept)           |
-| Seaside         | Ocean    | Flexible     | Nunito           | Waves        | (kept)           |
-| Doodle          | Rainbow  | Sketch       | Caveat           | Blank        | (kept)           |
-| Editorial       | Cream    | Professional | Lora             | Blank        | (kept)           |
-| Midnight        | Midnight | Flexible     | (none)           | Grid         | (kept)           |
-| Poster          | Tropical | Professional | Abril Fatface    | Diagonal     | 40%              |
-| Workshop        | Sand     | Sketch       | Permanent Marker | Grid         | 60%              |
-| Graph Paper     | Indigo   | Professional | Roboto Mono      | Graph        | (kept)           |
-| Daydream        | Pastel   | Flexible     | Nunito           | Grid         | 60%              |
-| Engineer        | Sky      | Professional | Space Grotesk    | Engineering  | (kept)           |
-| Lagoon          | Tropical | Flexible     | Space Grotesk    | Ripple       | 50%              |
-| Studio          | Lavender | Professional | Roboto Slab      | Isometric    | (kept)           |
-| Garden          | Forest   | Flexible     | Poppins          | Hexagonal    | 40%              |
-| Billboard       | Sunset   | Professional | Oswald           | Stripes      | 40%              |
-| Patchwork       | Pastel   | Sketch       | Lora             | Checkerboard | 30%              |
-| Northern Lights | Abyss    | Flexible     | Poppins          | Aurora       | 60%              |
-| Coffeehouse     | Espresso | Sketch       | Caveat           | Bricks       | 40%              |
-| Schematic       | UML      | Professional | Roboto Mono      | Crosshatch   | 40%              |
+| Look            | Theme    | Finish       | Tab font      | Pattern      | Pattern strength |
+| --------------- | -------- | ------------ | ------------- | ------------ | ---------------- |
+| Everyday        | Default  | Flexible     | (none)        | Grid         | (kept)           |
+| Textbook        | UML      | Professional | Oswald        | Graph        | 50%              |
+| Whiteboard      | Mono     | Sketch       | (none)        | Blank        | (kept)           |
+| Spectrum        | Rainbow  | Flexible     | Inter         | Grid         | 50%              |
+| Boardroom       | Steel    | Professional | Inter         | Blank        | (kept)           |
+| Notebook        | Mocha    | Sketch       | (none)        | Lines        | (kept)           |
+| Seaside         | Ocean    | Flexible     | Nunito        | Waves        | (kept)           |
+| Doodle          | Rainbow  | Sketch       | Caveat        | Blank        | (kept)           |
+| Editorial       | Cream    | Professional | Lora          | Blank        | (kept)           |
+| Midnight        | Midnight | Flexible     | (none)        | Grid         | (kept)           |
+| Poster          | Tropical | Professional | Abril Fatface | Diagonal     | 40%              |
+| Workshop        | Sand     | Marker       | (none)        | Grid         | 60%              |
+| Graph Paper     | Indigo   | Professional | Roboto Mono   | Graph        | (kept)           |
+| Daydream        | Pastel   | Flexible     | Nunito        | Grid         | 60%              |
+| Engineer        | Sky      | Professional | Space Grotesk | Engineering  | (kept)           |
+| Lagoon          | Tropical | Flexible     | Space Grotesk | Ripple       | 50%              |
+| Studio          | Lavender | Professional | Roboto Slab   | Isometric    | (kept)           |
+| Garden          | Forest   | Flexible     | Poppins       | Hexagonal    | 40%              |
+| Billboard       | Sunset   | Professional | Oswald        | Stripes      | 40%              |
+| Patchwork       | Pastel   | Sketch       | Lora          | Checkerboard | 30%              |
+| Northern Lights | Abyss    | Flexible     | Poppins       | Aurora       | 60%              |
+| Coffeehouse     | Espresso | Sketch       | Caveat        | Bricks       | 40%              |
+| Schematic       | UML      | Professional | Roboto Mono   | Crosshatch   | 40%              |
 
 - **Multi-colour looks.** Eight looks use a theme whose nodes take different colours: the branch palettes of Rainbow,
   Pastel and Tropical ([Multi-colour themes](multicolour-themes.md)) and UML's colour per shape kind. Each is a
@@ -121,14 +121,14 @@ tab matches) but they never appear among the everyday looks.
   catalogue order. The order is worked out once per open of the dialog.
 - **The card** names its season in a small line above the look's name.
 
-| Season    | Look              | Theme     | Finish       | Tab font         | Pattern       | Pattern strength |
-| --------- | ----------------- | --------- | ------------ | ---------------- | ------------- | ---------------- |
-| New Year  | Countdown         | Sparkle   | Professional | Abril Fatface    | Sparkles      | 70%              |
-| Easter    | Egg Hunt          | Spring    | Flexible     | Nunito           | Eggs          | 70%              |
-| Halloween | Haunted           | Pumpkin   | Sketch       | Permanent Marker | Cobwebs       | 70%              |
-| Christmas | Christmas Morning | Yuletide  | Flexible     | Lora             | Candy Stripes | 30%              |
-| Christmas | Winter Wonderland | Frost     | Sketch       | Caveat           | Snowflakes    | 80%              |
-| Christmas | Fireside          | Evergreen | Professional | Roboto Slab      | Drift         | 60%              |
+| Season    | Look              | Theme     | Finish       | Tab font      | Pattern       | Pattern strength |
+| --------- | ----------------- | --------- | ------------ | ------------- | ------------- | ---------------- |
+| New Year  | Countdown         | Sparkle   | Professional | Abril Fatface | Sparkles      | 70%              |
+| Easter    | Egg Hunt          | Spring    | Flexible     | Nunito        | Eggs          | 70%              |
+| Halloween | Haunted           | Pumpkin   | Marker       | (none)        | Cobwebs       | 70%              |
+| Christmas | Christmas Morning | Yuletide  | Flexible     | Lora          | Candy Stripes | 30%              |
+| Christmas | Winter Wonderland | Frost     | Sketch       | Caveat        | Snowflakes    | 80%              |
+| Christmas | Fireside          | Evergreen | Professional | Roboto Slab   | Drift         | 60%              |
 
 - **Seasonal themes.** Sparkle (gold on midnight navy), Spring (painted-egg pastels, a hue per branch), Pumpkin
   (orange, purple and green per branch on a night canvas), Yuletide (red, green and gold per branch), Frost (icy

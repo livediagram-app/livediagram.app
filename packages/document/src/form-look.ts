@@ -21,7 +21,7 @@ export type FormLook = {
   accent: FormHalves;
   // Text drawn on the accent (a filled button's label).
   onAccent: FormHalves;
-  // How boxes are drawn: Flexible as they are, Professional square and fine, Sketch by hand.
+  // How boxes are drawn: Flexible as they are, Professional square and fine, Sketch by hand, Marker in felt-tip.
   finish: Finish;
   // The tab font's id, when the tab has one the catalogue knows.
   font?: string;

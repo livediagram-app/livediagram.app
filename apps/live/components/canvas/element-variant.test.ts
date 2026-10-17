@@ -291,4 +291,14 @@ describe('describeVariant — finish', () => {
     expect(sticky.className).not.toContain('lvd-sticky-peel');
     expect(sticky.style.backgroundColor).toBeUndefined();
   });
+
+  it('Marker hands a shape’s body to the overlay too, but a sticky stays paper with its peel', () => {
+    const v = describeVariant(shape(), false, false, null, 'light', 'marker');
+    expect(v.style.backgroundColor).toBe('transparent');
+    expect(v.style.borderWidth).toBe(0);
+    expect(v.className).not.toContain('shadow-sm');
+    const sticky = describeVariant(make('sticky'), false, false, null, 'light', 'marker');
+    expect(sticky.className).toContain('lvd-sticky-peel');
+    expect(sticky.style.backgroundColor).toBeDefined();
+  });
 });

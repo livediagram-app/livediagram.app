@@ -334,7 +334,7 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   choosingAFinish: {
     title: 'Learn about finishes',
-    description: 'Drawing a tab crisp and print-ready, or sketched by hand.',
+    description: 'Drawing a tab crisp and print-ready, sketched by hand, or in bold marker.',
   },
   choosingFonts: {
     title: 'Learn about fonts',
