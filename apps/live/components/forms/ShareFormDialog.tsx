@@ -6,9 +6,11 @@
 // Responses, and Delete Link, which asks first. On a Local only document it offers Sync Document first (the document
 // Share dialog's prompt), then carries straight on to publishing as the document stops being offline.
 import { useId, useState } from 'react';
-import { Button, Dialog, DialogCloseButton, DialogHeader } from '@livediagram/ui';
+import { Button, DialogCloseButton, DialogHeader } from '@livediagram/ui';
 import type { DestinationProblem, PublishProblem } from '@livediagram/forms';
 import { SyncDocumentPrompt } from '@/components/dialogs/SyncDocumentPrompt';
+// The editor's Dialog, so the modal guard counts it (shortcuts behind it go quiet, and the tours wait for it).
+import { Dialog } from '@/components/dialogs/Dialog';
 import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
 import { SwitchRow } from '@/components/primitives/SwitchRow';
 import type { FormLinkState } from '@/hooks/forms/useFormLink';

@@ -20,7 +20,9 @@ pointer exactly and can be placed or sized off-grid.
   endpoint** (both share the snap sites in `useEditorDrag`), an arrow's **curve
   and elbow handles** and a slid bend (`applyArrowDragMove`), and a **resize**: the
   dragged edge neither snaps to a neighbour's line nor matches its size, and no
-  guides draw. (A multi-selection or rotated resize never snaps anyway.)
+  guides draw. (A multi-selection or rotated resize never snaps anyway.) A dragged arrow endpoint over a shape's body
+  stays free there instead of pinning to the shape's facing anchor ([Canvas and palette](canvas-and-palette.md)
+  "Dropped on a shape"); an end on an anchor itself still pins.
 - **Insert between wins over it.** On an event-storming board, Alt opens an
   insertion slot ([Event storming](../021-event-storming/event-storming.md)); while one is open the
   slot IS the placement, so holding Cmd/Ctrl as well changes nothing — free
@@ -39,7 +41,8 @@ pointer exactly and can be placed or sized off-grid.
 `useEditorDrag`'s `onMove` reads `noSnap = e.metaKey || e.ctrlKey` and gates the
 two `snapToAlignment` sites (boxed move + free arrow endpoint) on `!noSnap`, and
 passes it to `resolveBoxedResize`, which then keeps the raw resized bounds and draws no guides, and to
-`applyArrowDragMove`, whose curve and elbow handles (`resolveArrowControlFrame`) and slid bends skip their snap.
+`applyArrowDragMove`, whose curve and elbow handles (`resolveArrowControlFrame`) and slid bends skip their snap,
+and whose endpoint resolver (`resolveArrowEndpointDrag`) skips the body drop.
 Each site's existing `else` branch already clears the guides and falls back to
 the raw position, so the override needed no new clearing path. The separate
 "alignment guides off" preference (`alignmentGuidesRef`) is unrelated: it hides

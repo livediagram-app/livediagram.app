@@ -26,6 +26,7 @@ import { track } from '@/lib/telemetry';
 import { setActiveTour, useActiveTour } from '@/lib/tour-active';
 import { rebaseUserPreferences } from '@/lib/user-preferences';
 import { useStartPanelOpen } from '@/components/start/start-panel-open';
+import { useAnyModalOpen } from '@/lib/modal-guard';
 import type { ElementTourApi } from './element-tour-api';
 import { ELEMENT_TOUR_DEFS, elementTourStepTelemetryType } from './element-tour-defs';
 import { TourStage } from './TourStage';
@@ -159,6 +160,8 @@ export function ElementTourHost() {
   const dismissRef = useLatest(dismiss);
 
   const startPanelOpen = useStartPanelOpen();
+  // Dialogs come first (docs/specs/007-editor/editor-tour.md): the offer goes while one is open and comes back after.
+  const modalOpen = useAnyModalOpen();
   const usable =
     ctx.hydrated &&
     // The synced preferences are in, so an answer given on another device holds here too.
@@ -170,6 +173,7 @@ export function ElementTourHost() {
     usable &&
     !active &&
     shown === null &&
+    !modalOpen &&
     element !== null &&
     kind !== null &&
     canTourElement(ctx.can, element, kind) &&

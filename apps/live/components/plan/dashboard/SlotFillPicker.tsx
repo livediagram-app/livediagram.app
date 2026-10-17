@@ -30,7 +30,7 @@ import { AnchoredPopover } from '@/components/primitives/AnchoredPopover';
 import { ToolsBreadcrumb } from '@/components/palette/palette-tools-nav';
 import { lucideGlyph } from '@livediagram/ui';
 import { lucideArrowUpDown } from '@livediagram/icons/lucide';
-import { PICK_CARD, SlotCategoryCard } from './slot-fill-categories';
+import { PICK_CARD, SlotCategoryCard, type SlotCategory } from './slot-fill-categories';
 import { tileById, tilesForCategory } from '@/components/palette/palette-tile-defs';
 import { tileCaption } from '@/components/palette/tile-caption';
 import type { PaletteTileDef } from '@/components/palette/palette-tile-defs';
@@ -52,7 +52,7 @@ export function slotItemOfTile(tile: PaletteTileDef): DashboardItem | null {
   return dashboardItemOf(a.type);
 }
 
-type Section = { title: string; tiles: PaletteTileDef[] };
+type Section = { title: SlotCategory; tiles: PaletteTileDef[] };
 
 // The picker's sections, in order: only what fits the slot (all of it when its size is unknown), empty sections left
 // out; and the kinds left out for being too big, for the line that says so.

@@ -1,6 +1,7 @@
 import {
   alignmentGuides,
   arrowSnapPoints,
+  bodyDropAnchor,
   crossesPages,
   endpointPosition,
   pageIdAt,
@@ -106,13 +107,28 @@ export function resolveArrowEndpointDrag({
   // An arrow on another page is passed over (its page resolved only for the one found).
   const arrowHit = nearArrow && reach.joins(nearArrow.arrowId) ? nearArrow : null;
   const arrowSnap = arrowHit && arrowHit.dist <= ARROW_SNAP_THRESHOLD_PX ? arrowHit : null;
+  // Over a shape's body, away from its anchors and any arrow's line: the end pins to the anchor facing its other
+  // end (docs/specs/008-canvas/canvas-and-palette.md "Dropped on a shape"), shown live so the release holds no
+  // surprise. Cmd / Ctrl leaves it free, over the shape, as it skips the other snaps.
+  const arrow = elements.find((e): e is ArrowElement => e.id === arrowId && e.type === 'arrow');
+  const otherEnd = arrow ? arrow[end === 'from' ? 'to' : 'from'] : null;
+  const bodySnap =
+    anchorSnap || arrowSnap || noSnap || !otherEnd
+      ? null
+      : bodyDropAnchor(
+          cursor,
+          reach.elements,
+          endpointPosition(otherEnd, elements),
+          otherEnd.kind === 'pinned' ? otherEnd.elementId : null,
+        );
+  const pinned = anchorSnap ?? bodySnap;
   // Reveal the connection points of nearby shapes + arrows so the user can
   // see where the endpoint will snap, highlighting the active one.
   const snapTargets = computeSnapTargets(
     cursor,
     reach.elements,
-    anchorSnap?.elementId ?? null,
-    anchorSnap?.anchor ?? null,
+    pinned?.elementId ?? null,
+    pinned?.anchor ?? null,
   );
   if (arrowHit) {
     const targetArrow = elements.find((e) => e.id === arrowHit.arrowId && e.type === 'arrow') as
@@ -136,6 +152,14 @@ export function resolveArrowEndpointDrag({
       arrowConnected: false,
     };
   }
+  if (bodySnap) {
+    return {
+      endpoint: { kind: 'pinned', elementId: bodySnap.elementId, anchor: bodySnap.anchor },
+      guides: [],
+      snapTargets,
+      arrowConnected: false,
+    };
+  }
   if (arrowSnap) {
     // Connect to a point along the target arrow's line; it resolves
     // dynamically so it tracks the target as it moves (docs/specs/008-canvas/arrow-to-arrow.md).
@@ -151,8 +175,6 @@ export function resolveArrowEndpointDrag({
   // other endpoint when the cursor is within ~5 degrees of one.
   // Keeps right-angle connectors easy to draw without fighting the
   // cursor at oblique angles.
-  const arrow = elements.find((e) => e.id === arrowId && e.type === 'arrow') as
-    ArrowElement | undefined;
   let resolved = cursor;
   let angleLocked = false;
   let other: { x: number; y: number } | null = null;
