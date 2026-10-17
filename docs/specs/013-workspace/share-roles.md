@@ -108,6 +108,13 @@ and moves stay with the owner and joined team members. No level grants any of th
   granted: those people lose the document from Shared with you, and from the copy and activity legs, even when
   another link of the same level is still live; a newer link reaches them only if they open it. A visit recorded
   before links were recorded keeps the older rule (the oldest live link of its level and scope) until its next open.
+- **Losing access is explained, never silent.** A session open on a revoked pass leaves for the Explorer, which shows
+  a warning toast ("The link you opened that document with was revoked, so it is no longer open to you."). A session
+  ended by an access change (a team removal, a share password, [API](../015-api/api.md) "Access changes end the
+  sessions they affect") reloads into the access check, and a refusal then reads **No Longer Shared With You** ("Your
+  access to this document was removed while you had it open. Ask its owner to share it with you again.") instead of
+  "doesn't exist or isn't yours". The editor notes the reason in `sessionStorage` just before it goes and the first
+  page after takes it once (`apps/live/lib/access-notice.ts`, honoured for a minute).
 - The collaborators list badges each person Editor, Participant or Viewer; "Shared with you" chips read Edit,
   Participate or View.
 - **Embeds look only below Editor**: an embed of a Participant link renders as a Viewer, since an embed has no

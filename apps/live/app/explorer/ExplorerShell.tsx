@@ -12,6 +12,7 @@ import { LensAnnouncer } from './lens/LensStates';
 import { ChromeControls } from '@/components/chrome/ChromeControls';
 import { TeamFormModal } from '@/components/dialogs/TeamFormModal';
 import { SignInBanner, SIGNIN_BANNER_DISMISS_KEY } from '@/components/chrome/SignInBanner';
+import { useAccessEndedToast } from './useAccessEndedToast';
 import { clerkEnabled } from '@/lib/clerk-config';
 import { HELP_SEARCH_ITEMS } from '@/lib/help-search';
 import { SETTINGS_SEARCH_ITEMS } from '@/lib/settings-search-items';
@@ -148,6 +149,8 @@ function ShellChrome({ children }: { children: ReactNode }) {
   const { dismissed: bannerDismissed, dismiss: dismissBanner } =
     useDismissibleBanner(SIGNIN_BANNER_DISMISS_KEY);
   const showSignInBanner = clerkEnabled && !clerkUserId && !bannerDismissed;
+  // Arrived here because a pass was revoked under an open document: say so (lib/access-notice.ts).
+  useAccessEndedToast();
 
   return (
     <div className="relative flex min-h-dvh flex-col bg-slate-50 dark:bg-slate-900">

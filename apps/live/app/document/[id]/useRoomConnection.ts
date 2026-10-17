@@ -7,6 +7,7 @@ import {
   type SetStateAction,
 } from 'react';
 import { setRemoteBesideTab, syncRemoteBesideTabs } from '@/lib/split-presence';
+import { noteAccessEnded } from '@/lib/access-notice';
 import type { EditorMode, QaNote, Tab } from '@livediagram/document';
 import {
   parseArticleCaret,
@@ -567,8 +568,11 @@ export function useRoomConnection(opts: {
         // revoke and reloads into the new scope on a rescope; the room
         // closes its socket either way. Everyone else keeps their session.
         const effect = shareLinkOpEffect(op, from, sessionShareCodeRef.current);
-        if (effect === 'leave') window.location.assign('/explorer');
-        else if (effect === 'reload') window.location.reload();
+        if (effect === 'leave') {
+          // The Explorer says why we arrived (lib/access-notice.ts), rather than landing without a word.
+          noteAccessEnded(documentId, 'revoked');
+          window.location.assign('/explorer');
+        } else if (effect === 'reload') window.location.reload();
       } else if (op.kind === 'changeset') {
         // An agent's changeset, applied, outlined and toasted by useChangesetFeed. System-only, like
         // the share ops: the room refuses one from a client socket.
@@ -607,9 +611,12 @@ export function useRoomConnection(opts: {
 
   const roomDocumentTrashed = useEffectEvent(() => receiveDocumentTrashed());
   // A workbench frame cannot reload into another access path: an access change ends its session.
-  const roomAccessChanged = useEffectEvent(() =>
-    onWorkbenchEnded ? onWorkbenchEnded() : window.location.reload(),
-  );
+  const roomAccessChanged = useEffectEvent(() => {
+    if (onWorkbenchEnded) return onWorkbenchEnded();
+    // Whatever the reload's access check answers, a refusal says why (lib/access-notice.ts).
+    noteAccessEnded(documentId, 'changed');
+    window.location.reload();
+  });
   const roomWorkbenchEnded = useEffectEvent(() => onWorkbenchEnded?.());
   // A join turned away (docs/specs/013-workspace/trash.md): trashed between our load and our join, the room
   // refuses us instead of telling us. Ask the api once per refusal (one probe at a time); only a trashed

@@ -1,7 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { useEffect, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { setSessionSharePassword } from '@/lib/api-client';
 import { ensureIconCatalogs } from '@/lib/icon-registry';
 import { DOCUMENT_CONTENT_CODE, EDITOR_SURFACE_CODE } from '@/lib/editor-deferred-code';
@@ -21,6 +21,7 @@ import { LocalMovePrompt } from '@/components/dialogs/LocalMovePrompt';
 import { EditorContext } from './EditorContext';
 import { EditorView } from './EditorView';
 import { useEditorState } from './useEditorState';
+import { takeAccessEnded } from '@/lib/access-notice';
 import { surfaceFlags, type EditorSurface } from './editor-surface';
 import { MentionContext } from '@/components/canvas/collab/comment/MentionContext';
 import { isEditorPath } from '@/lib/legacy-editor-path';
@@ -76,6 +77,9 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
     if (!state.documentId) return;
     return () => requestDriveFlush();
   }, [state.documentId]);
+  // An access change just reloaded us (lib/access-notice.ts): taken once, on mount, so a refusal can say why. The
+  // first page after the eject always takes it, whatever it shows (the editor, a password prompt, a refusal).
+  const [accessEnded] = useState(() => takeAccessEnded());
   // Tab title reflects the document: "<name> | livediagram" (falls back to
   // Untitled when the document has no name yet). Updates as the user renames.
   useEffect(() => {
@@ -192,9 +196,18 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
     ) : (
       // No Explorer panel beside it: the card stands alone and offers the Explorer as a button
       // (docs/specs/007-editor/new-document-route.md "Unknown addresses").
-      <StatusShell title={page ? 'Page not found' : 'Document not found'}>
+      <StatusShell
+        title={
+          page
+            ? 'Page not found'
+            : accessEnded !== null
+              ? 'No Longer Shared With You'
+              : 'Document not found'
+        }
+      >
         <NotFound
           page={page}
+          accessEnded={accessEnded !== null}
           onCreateNew={() => window.location.assign(`${window.location.origin}/new`)}
           onOpenExplorer={() => window.location.assign(`${window.location.origin}/explorer`)}
         />
