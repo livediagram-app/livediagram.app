@@ -8,7 +8,7 @@ that layout **persist in the browser** so a reload restores their arrangement.
 
 ## Why
 
-Without docking, corners are fixed: the AI panel is always top-right, the Minimap always
+Without docking, corners are fixed: the AI panel is always in one corner, the Minimap always
 bottom-left. A left-handed user, or one whose content lives on the right, can drag a panel away but it
 snaps back on reload and there is no guidance toward a tidy resting spot. Letting people
 park each panel where it suits them — and remembering it — makes the chrome feel like
@@ -44,12 +44,17 @@ the corner. No manual re-measuring — the layout falls out of the flexbox.
 
 When the user has never arranged panels, the corners match today's defaults:
 
-| Corner         | Panels (top → bottom)        |
-| -------------- | ---------------------------- |
-| `top-left`     | _(empty; the menu button)_   |
-| `top-right`    | Vote, Poll, AI, tool panels  |
-| `bottom-left`  | Minimap                      |
-| `bottom-right` | _(empty; zoom controls pin)_ |
+| Corner         | Panels (top → bottom)                                         |
+| -------------- | ------------------------------------------------------------- |
+| `top-left`     | _(empty; the menu button)_                                    |
+| `top-right`    | _(empty; the palette strip's end)_                            |
+| `bottom-left`  | Minimap                                                       |
+| `bottom-right` | AI, tool panels, above the bottom cluster (zoom controls pin) |
+
+The AI panel and the tool panels (Laser, Spotlight, Eraser, Format, Slide Deck) open bottom-right, stacked
+upwards from just above the bottom cluster, where the controls they set sit within reach of the canvas they
+act on, not top-right under the palette strip, where they hid its end and opened over a template's title. A panel
+the user has docked or placed keeps its spot; only the home moves.
 
 The Palette, the Explorer and Layers were corner panels in the retired Floating layout
 ([Toolbar layout](toolbar-layout.md#one-layout)). A stored layout that still names them is read

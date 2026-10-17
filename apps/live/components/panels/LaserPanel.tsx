@@ -13,7 +13,7 @@
 // Nothing here is a document edit: the pen is device-local (see
 // lib/laser-config) and rides your laser samples so peers see the same beam.
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   laserLifetimeMs,
   laserStrokeWidth,
@@ -30,45 +30,64 @@ import { ModePanel, type ModePanelProps } from '@/components/panels/ModePanel';
 
 type Row = 'width' | 'trail' | 'effect';
 
-// The preview: a looping sweep drawn by the REAL overlay, so what you see here
-// is what the canvas draws — including the fade, which a static swatch of a
-// stroke can't show. Points are regenerated on a timer with fresh timestamps so
-// the trail keeps sweeping instead of fading out and staying gone.
-function PenPreview({ config, colour }: { config: LaserConfig; colour: string }) {
-  // The instant the current sweep was drawn at: state set by the timer, so render stays pure.
-  const [sweptAt, setSweptAt] = useState(() => performance.now());
-  const lifetime = laserLifetimeMs(config);
-  useEffect(() => {
-    // Redraw a sweep a little more often than the trail's own lifetime, so
-    // there is always a stroke on screen at every trail length.
-    const id = window.setInterval(
-      () => setSweptAt(performance.now()),
-      Math.max(500, lifetime * 0.6),
-    );
-    return () => window.clearInterval(id);
-  }, [lifetime]);
+// The preview: a sweep drawn by the REAL overlay, so what you see here is what the canvas draws, including the
+// fade, at the instant the sweep ends. It holds still (docs/specs/008-canvas/laser-panel.md "The settings"): a setting
+// changed draws the sweep across once, then it rests again, so an open panel never moves on its own. With reduced
+// motion it never plays.
+const PREVIEW_POINTS = 24;
 
-  // A gentle S-curve across the box, sampled back in time so the tail is
-  // already fading when it appears — the same shape a hand sweeping across a
-  // canvas makes.
-  const points = Array.from({ length: 24 }, (_, i) => {
-    const p = i / 23;
-    return {
-      x: 8 + p * 208,
-      y: 26 - Math.sin(p * Math.PI * 1.2) * 12,
-      // Oldest first: the last point is "now", so the head sits at the end.
-      t: sweptAt - (1 - p) * lifetime * 0.8,
-    };
+function sweepPoints(start: number, lifetime: number) {
+  // A gentle S-curve across the box, its head reaching the end as the sweep finishes, the same shape a hand sweeping
+  // across a canvas makes. Oldest first: the last point is the head.
+  const draw = lifetime * 0.8;
+  return Array.from({ length: PREVIEW_POINTS }, (_, i) => {
+    const p = i / (PREVIEW_POINTS - 1);
+    return { x: 8 + p * 208, y: 26 - Math.sin(p * Math.PI * 1.2) * 12, t: start + p * draw };
   });
+}
+
+function PenPreview({ config, colour }: { config: LaserConfig; colour: string }) {
+  const lifetime = laserLifetimeMs(config);
+  const draw = lifetime * 0.8;
+  // The sweep playing (its start and the frame's instant), or none: at rest the preview shows the sweep's end.
+  const [play, setPlay] = useState<{ start: number; at: number } | null>(null);
+  const settings = `${config.width}|${config.trail}|${config.effect}|${config.colour}|${colour}`;
+  const shown = useRef(settings);
+  // A setting changed: play the sweep once, from its first point to its head, then rest on its end.
+  useEffect(() => {
+    if (settings === shown.current) return;
+    shown.current = settings;
+    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
+    const start = performance.now();
+    let raf = 0;
+    const tick = () => {
+      const at = performance.now();
+      if (at >= start + draw) return setPlay(null);
+      setPlay({ start, at });
+      raf = window.requestAnimationFrame(tick);
+    };
+    raf = window.requestAnimationFrame(tick);
+    return () => {
+      window.cancelAnimationFrame(raf);
+      setPlay(null);
+    };
+  }, [settings, draw]);
+  const sweep = play ?? { start: 0, at: draw };
+  const points = sweepPoints(sweep.start, lifetime).filter((p) => p.t <= sweep.at);
 
   return (
-    <div className="relative mb-1 h-14 overflow-hidden rounded-lg bg-slate-900/95 dark:bg-slate-950">
+    <div
+      data-laser-preview={play ? 'playing' : 'still'}
+      className="relative mb-1 h-14 overflow-hidden rounded-lg bg-slate-900/95 dark:bg-slate-950"
+    >
       {/* The preview's box is dark, so a standard colour draws in its dark-canvas version. */}
       <CanvasSurfaceProvider surface="dark">
         <LaserOverlay
-          key={sweptAt}
           zoom={1}
-          trails={[{ participantId: 'preview', color: colour, points, config }]}
+          frozenAt={sweep.at}
+          trails={
+            points.length > 0 ? [{ participantId: 'preview', color: colour, points, config }] : []
+          }
         />
       </CanvasSurfaceProvider>
     </div>

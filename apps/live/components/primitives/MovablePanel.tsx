@@ -152,15 +152,13 @@ export function MovablePanel({
     ? ''
     : defaultCorner === 'top-right'
       ? 'inset-x-3 top-3 sm:inset-x-auto sm:right-4 sm:top-4'
-      : defaultCorner === 'top-right-stacked'
-        ? 'inset-x-3 top-[15rem] sm:inset-x-auto sm:right-4'
-        : defaultCorner === 'top-banner'
-          ? 'inset-x-3 top-3'
-          : defaultCorner === 'bottom-left'
-            ? 'bottom-4 left-4'
-            : defaultCorner === 'bottom-right'
-              ? 'bottom-4 right-4'
-              : 'left-4 top-4';
+      : defaultCorner === 'top-banner'
+        ? 'inset-x-3 top-3'
+        : defaultCorner === 'bottom-left'
+          ? 'bottom-4 left-4'
+          : defaultCorner === 'bottom-right'
+            ? 'bottom-4 right-4'
+            : 'left-4 top-4';
 
   // Docked rest (docs/specs/007-editor/panel-docking.md): the panel sits in a corner stack container
   // and lets that flex column own its position + reflow — no absolute
@@ -271,10 +269,10 @@ export function MovablePanel({
   // Progressive disclosure: the header's reset-position button renders only
   // once the panel has left its default spot (free-dragged, or docked into
   // a corner other than its home), so a never-rearranged layout keeps a
-  // minimal header. 'top-right-stacked' panels home to the top-right stack;
+  // minimal header.
   // 'top-banner' never equals a dock corner, so a docked banner-default
   // panel keeps its reset (the conservative fallback).
-  const homeCorner = defaultCorner === 'top-right-stacked' ? 'top-right' : defaultCorner;
+  const homeCorner = defaultCorner;
   const atDefaultSpot =
     position === null && (!docked || !dockedCorner || dockedCorner === homeCorner);
 
