@@ -31,6 +31,8 @@ import { useDefaultFolderMenus } from '@/hooks/persistence/useDefaultFolderMenus
 import { folderDefaultKeys } from '@/lib/placement-defaults/default-destination';
 import { placementDefaultsSnapshot } from '@/lib/placement-defaults/placement-defaults-store';
 import { LIST_CARD } from '@/components/primitives/surface-classes';
+import { logMoveFailure } from '@/lib/move-failure';
+import { FOLDER_FAILURE } from '@/lib/write-failure-copy';
 
 const NO_FOLDERS: readonly Folder[] = [];
 
@@ -396,7 +398,10 @@ export function TeamSharedDocuments({
               track('Folder', 'Created', destTeamId ? 'Team' : undefined);
               onLibraryChange?.(destTeamId ?? null);
               return { id: folder.id, name: folder.name, parentId: folder.parentId };
-            } catch {
+            } catch (err) {
+              // The tile keeps the name typed, for another try.
+              logMoveFailure('new-folder', '', err);
+              toast.error(FOLDER_FAILURE.create);
               return null;
             }
           }}
