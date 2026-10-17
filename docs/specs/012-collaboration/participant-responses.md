@@ -92,6 +92,10 @@ A card that counts the room (the Done check's waiting list, the Estimate's
 collab key, so your own second tab (same key, another socket) is one person,
 and view-link guests (role `view`, who can't cast) and agent rows are left out.
 Before this, a viewer or a second tab kept a Done check waiting forever.
+Our own row counts by the same rule on our own screen: it carries our own level
+(`selfInRoom`), as a peer's row carries the role the room stamped on it, so a
+Viewer's screen leaves the Viewer out too rather than reading 3/5 where everyone
+else reads 3/4.
 
 `ShapeElement.responsesRevealed?: boolean` is the shared "values are out" flag.
 The estimate card uses it; the temperature check deliberately does not.

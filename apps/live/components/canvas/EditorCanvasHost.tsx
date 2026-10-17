@@ -20,7 +20,7 @@ import { useElementMenuOpener } from '@/hooks/canvas/element-menu-opener';
 import { useSheetChartMenuSelection } from '@/hooks/sheets/useSheetChartMenuSelection';
 import { focusSheetCell } from '@/hooks/sheets/sheet-cell-refs';
 import { LockedElementMenu, type LockHolder } from '@/components/canvas/LockedElementMenu';
-import { answeringKeys, participantKey } from '@/lib/identity';
+import { answeringKeys, participantKey, selfInRoom } from '@/lib/identity';
 import { useQuickConnectStart } from '@/hooks/canvas/useQuickConnectStart';
 import { useEditModeContextMenu } from '@/hooks/canvas/useEditModeContextMenu';
 import { track } from '@/lib/telemetry';
@@ -531,8 +531,9 @@ export function EditorCanvasHost() {
     // The document-write key, not the owner id — see CollabApi.selfKey.
     selfKey: participantKey(selfParticipant),
     // Ourselves first: livePresence is the REMOTE roster, and an estimate
-    // card that can't show your own avatar is showing the wrong room.
-    participants: [selfParticipant, ...livePresence],
+    // card that can't show your own avatar is showing the wrong room. Our row carries our own level, as a peer's
+    // does, so a Viewer's screen never waits on the Viewer.
+    participants: [selfInRoom(selfParticipant, can.level), ...livePresence],
     tabTimer: activeTab.timer,
     canArrange: !isReadOnly,
     // Taking part is a Participant's too (docs/specs/013-workspace/share-roles.md); running stays an Editor's.
@@ -963,7 +964,9 @@ export function EditorCanvasHost() {
               }
               // Who can cast, ourselves included (livePresence is the REMOTE roster): one per person, never a
               // view-link guest or an agent row (answeringKeys), so turnout never waits on someone who cannot vote.
-              participantCount={answeringKeys([selfParticipant, ...livePresence]).length}
+              participantCount={
+                answeringKeys([selfInRoom(selfParticipant, can.level), ...livePresence]).length
+              }
               // Bottom-dock Theme & canvas button (docs/specs/011-theme/canvas-and-theme-dialog.md): opens the
               // CanvasThemeDialog on its home, the Looks and the Fine-tune rows.
               onOpenCanvasTheme={
