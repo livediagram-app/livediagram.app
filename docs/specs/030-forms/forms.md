@@ -384,8 +384,15 @@ Tour** stack beside the Draw tour's.
     read-only field with **Copy Link** (it reads "Copied" for a moment), **Open** (a new
     browser tab), **Accepting Responses** with the count so far, and **Delete Link**, which asks first ("Delete this
     link? People with it will see this form isn’t available. Publishing again makes a new link.").
-  - A document kept on this device only (an offline document) cannot publish: the dialog says forms are published
-    from documents saved to livediagram.
+  - A document kept on this device only (an offline document) cannot publish until it is synced, so Share Form offers
+    the same move the document's Share dialog does ([Offline mode](../006-document/offline-mode.md#sharing-a-local-only-document)):
+    the shared sync prompt (`SyncDocumentPrompt`, the one `ShareOfflineGate` draws) says **This Document Is Offline**,
+    "It is saved only in this browser, so this form can't be published yet. Sync it to livediagram to publish it: the
+    form link and its responses need it on our servers. You can take it offline again any time.", with **Sync
+    Document**. It syncs the document in place; the toast confirms and the same dialog carries straight on to the
+    unpublished view (Publish Form, held while the link is first read), so the Editor publishes without reopening
+    anything. Nothing uploads before Sync Document is pressed, nor before the reader is known; a failed sync says
+    why and leaves the button to try again. Only an Editor reaches Share Form, so only an Editor can sync from it.
 - The form link is `/form/<code>`: a code of 22 random characters (base 62, about 131 bits), separate from every
   share link. It grants **nothing** on the document: no read, no room, no images.
 - One live link per Form tab. Its response number carries on across a deleted or suspended link and a new one: a
@@ -535,6 +542,27 @@ board settings, for switching back.
   new to this reader), which opens the destination's tab (its tooltip names it), and, for an Editor while the form has
   any problem, **Problems with this Form** with a warning triangle to the right of the count, which opens Share Form
   where they are listed. The count is read when the tab opens and every 30 seconds while it is shown.
+- **Not Taking Responses**: for an Editor, a form that has been published but takes no responses now shows a red
+  (danger) warning right after the count, before Problems with this Form (amber), so a paused form is never missed:
+  the warning triangle and **Not Taking Responses**, a button whose tooltip says why and what it opens. The reasons,
+  first match wins (`formNotTakingReason`):
+  - **Suspended** (the link was suspended after reports): "Its link was suspended after reports. Share Form publishes
+    a new one." Opens Share Form.
+  - **Paused** (its destination broke): "Responses have nowhere to go. Choose where they go to take them again." Opens
+    Responses Go To.
+  - **Switched off** (Accepting Responses off): "Accepting Responses is off, so the link shows your closed message.
+    Turn it on in Share Form." Opens Share Form.
+  - **Closed On passed**: "Its Close On time has passed. Change it in Settings to take responses again." Opens
+    Settings.
+  - **Response Limit reached**: "It reached its Response Limit. Raise it in Settings to take responses again." Opens
+    Settings.
+  - **Document full** (as many cards as it can hold): "This document holds as many cards as it can. Remove some to
+    take responses again." Opens the tab responses go to, when there is one.
+    A form never published, a Draft (offline) one and one taking responses show none, and a sheet form is never full
+    (its rows are not cards). Its red is `red-700` on white (6.4:1; 5.9:1 on its `red-50` hover) and `red-300` on the
+    dark bar (`slate-900`, 9.3:1; 8.7:1 on its hover), all past WCAG AA's 4.5:1. Its accessible name carries the reason
+    ("Not Taking Responses. Accepting Responses is off, ..."), so the tooltip never holds the only copy of it. Participants and Viewers see
+    the state pill (Paused, Closed, Suspended) and no warning: what it opens is an Editor's.
 - **Inbox**: a **Form Responses** section in the Explorer's [Inbox](../013-workspace/inbox.md) lists each live
   form, in a document the reader owns or reaches through a team, that has responses the reader has not seen: "3 new
   responses to **Bug Report**", its document's chip, newest response first; a row opens the destination board (the
@@ -556,6 +584,8 @@ board settings, for switching back.
 | Start a form: New Form, a form template, the Forms tour  | ✓                                      |             |        |
 | Edit Form on a live form (stops it taking responses)     | ✓                                      |             |        |
 | See the response count, which opens the destination      | ✓                                      | ✓           | ✓      |
+| See Not Taking Responses, which opens its fix            | ✓                                      |             |        |
+| Sync a Local only document from Share Form               | ✓                                      |             |        |
 | Fill in the form through its link                        | anyone with the link, signed in or not |             |        |
 
 A Participant or Viewer sees the form drawn as the form link draws it (working, but sending nothing and making no
@@ -684,6 +714,8 @@ showIf? }` (`showIf: null` is Always), `delete_section` (its questions join the 
 | Form     | Shared   | `Link`                                                  | Publish Form                                          |
 | Form     | Shared   | `BoardCopy`                                             | Copy Form Link on a board's Form strip                |
 | Form     | Toggled  | `Open` / `Closed`                                       | Accepting Responses flipped (before the change lands) |
+| Form     | Opened   | `NotTaking` + the reason (`NotTakingSwitchedOff`, ...)  | Not Taking Responses pressed                          |
+| Form     | Moved    | `SyncedToShare`                                         | Sync Document pressed in Share Form                   |
 | Form     | Sent     | `Response` / `Dropped` (hidden field)                   | The api accepts or drops a response (server-side)     |
 | Form     | Sent     | `Preview`                                               | An Editor's Preview makes its card                    |
 | Form     | Reported | `Spam` / `Phishing` / `Offensive` / `Other`             | A report is filed (server-side)                       |
