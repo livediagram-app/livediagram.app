@@ -43,7 +43,9 @@ describe('the Laser Panel preview', () => {
     render(panel(DEFAULT_LASER_CONFIG));
     expect(state()).toBe('still');
     expect(strokes()).toBeGreaterThan(0);
-    act(() => vi.advanceTimersByTime(10_000));
+    act(() => {
+      vi.advanceTimersByTime(10_000);
+    });
     expect(raf).not.toHaveBeenCalled();
     expect(state()).toBe('still');
   });
@@ -52,12 +54,18 @@ describe('the Laser Panel preview', () => {
     const { rerender } = render(panel(DEFAULT_LASER_CONFIG));
     const bold: LaserConfig = { ...DEFAULT_LASER_CONFIG, width: 'bold' };
     rerender(panel(bold));
-    act(() => vi.advanceTimersByTime(50));
+    act(() => {
+      vi.advanceTimersByTime(50);
+    });
     expect(state()).toBe('playing');
-    act(() => vi.advanceTimersByTime(laserLifetimeMs(bold)));
+    act(() => {
+      vi.advanceTimersByTime(laserLifetimeMs(bold));
+    });
     expect(state()).toBe('still');
     const raf = vi.spyOn(window, 'requestAnimationFrame');
-    act(() => vi.advanceTimersByTime(10_000));
+    act(() => {
+      vi.advanceTimersByTime(10_000);
+    });
     expect(raf).not.toHaveBeenCalled();
   });
 
@@ -65,7 +73,9 @@ describe('the Laser Panel preview', () => {
     vi.stubGlobal('matchMedia', (q: string) => ({ matches: q.includes('reduce') }));
     const { rerender } = render(panel(DEFAULT_LASER_CONFIG));
     rerender(panel({ ...DEFAULT_LASER_CONFIG, trail: 'long' }));
-    act(() => vi.advanceTimersByTime(50));
+    act(() => {
+      vi.advanceTimersByTime(50);
+    });
     expect(state()).toBe('still');
   });
 });
