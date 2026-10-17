@@ -149,11 +149,11 @@ const CLERK_KID = 'e2e-clerk-stub';
 const b64url = (buf) => Buffer.from(buf).toString('base64url');
 
 // An RS256 session token shaped like Clerk's: sub, sid, iat / nbf / exp.
-function mintClerkToken(sub) {
+function mintClerkToken(sub, email) {
   const now = Math.floor(Date.now() / 1000);
   const header = b64url(JSON.stringify({ alg: 'RS256', kid: CLERK_KID, typ: 'JWT' }));
   const payload = b64url(
-    JSON.stringify({ sub, sid: `sess_${sub}`, iat: now, nbf: now - 5, exp: now + 3600 }),
+    JSON.stringify({ sub, sid: `sess_${sub}`, iat: now, nbf: now - 5, exp: now + 3600, ...(email ? { email } : {}) }),
   );
   const signature = sign('sha256', Buffer.from(`${header}.${payload}`), clerkKey.privateKey);
   return `${header}.${payload}.${b64url(signature)}`;
@@ -176,7 +176,7 @@ function serveClerkStandIn(pathname, url, res) {
       return true;
     }
     res.writeHead(200, { 'Content-Type': 'text/plain', 'Cache-Control': 'no-store' });
-    res.end(mintClerkToken(sub));
+    res.end(mintClerkToken(sub, url.searchParams.get('email') ?? undefined));
     return true;
   }
   return false;

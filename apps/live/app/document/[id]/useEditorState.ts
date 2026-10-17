@@ -108,6 +108,7 @@ import { useCollabElements } from '@/hooks/canvas/useCollabElements';
 import { useQuizElements } from '@/hooks/canvas/useQuizElements';
 import { useQaBoard } from '@/hooks/canvas/useQaBoard';
 import { useFollowMe } from '@/hooks/collab/useFollowMe';
+import { useShowFollowersMyView } from '@/hooks/collab/useShowFollowersMyView';
 import { useFacilitator } from '@/hooks/collab/useFacilitator';
 import { useFocusLanding } from '@/hooks/collab/useFocusLanding';
 import { useFocusInvite } from '@/hooks/collab/useFocusInvite';
@@ -1734,18 +1735,21 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // so an idle participant sends nothing at all.
   // `broadcastViewport` is re-created every render, so it is called through an effect event. It follows
   // the viewport store (a pan or zoom renders no part of the editor) and sends again on a tab switch.
-  const publishViewport = useEffectEvent(() => {
+  const publishViewNow = () => {
     const view = viewport.get();
     const node = canvasMainRef.current;
     broadcastViewport(view.offset, view.zoom, {
       width: node?.offsetWidth ?? 0,
       height: node?.offsetHeight ?? 0,
     });
-  });
+  };
+  const publishViewport = useEffectEvent(publishViewNow);
   useEffect(() => {
     publishViewport();
     return viewport.subscribe(publishViewport);
   }, [viewport, activeId]);
+  // A new follower is shown our view at once, not at our next pan.
+  useShowFollowersMyView(followerIds, publishViewNow);
 
   // Follow-me viewport (docs/specs/012-collaboration/follow-me-viewport.md): pin our pan / zoom / tab to a peer's until
   // we take the canvas back. View-role visitors can both follow and be
