@@ -117,6 +117,7 @@ export function EditorHeader({
     // behind the canvas — siblings without explicit z-index stack in
     // document order and the canvas wins.
     <header
+      data-region="header"
       // Below the status bar / notch and past a landscape notch's sides (lib/safe-area).
       style={{
         height: `calc(3.5rem + ${safeInset('top')})`,

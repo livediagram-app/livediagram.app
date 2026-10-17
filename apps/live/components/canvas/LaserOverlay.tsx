@@ -33,12 +33,16 @@ type LaserOverlayProps = {
   // visually constant. Passed in rather than read from a context so
   // this component stays a pure renderer.
   zoom: number;
+  // Draws the trails as they are at this instant and runs no frame loop: the Laser Panel's still preview.
+  frozenAt?: number;
 };
 
-export function LaserOverlay({ trails, zoom }: LaserOverlayProps) {
-  const [now, setNow] = useState(() => performance.now());
+export function LaserOverlay({ trails, zoom, frozenAt }: LaserOverlayProps) {
+  const [ticked, setNow] = useState(() => performance.now());
+  const now = frozenAt ?? ticked;
+  const frozen = frozenAt !== undefined;
   useEffect(() => {
-    if (trails.length === 0) return;
+    if (trails.length === 0 || frozen) return;
     let raf = 0;
     const tick = () => {
       setNow(performance.now());
@@ -46,7 +50,7 @@ export function LaserOverlay({ trails, zoom }: LaserOverlayProps) {
     };
     raf = window.requestAnimationFrame(tick);
     return () => window.cancelAnimationFrame(raf);
-  }, [trails.length]);
+  }, [trails.length, frozen]);
 
   if (trails.length === 0) return null;
 

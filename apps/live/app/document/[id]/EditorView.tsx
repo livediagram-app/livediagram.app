@@ -11,6 +11,7 @@ import { openSearchWithPrefetch } from '@/lib/open-search';
 import { track } from '@/lib/telemetry';
 import { NewVersionPrompt } from '@/components/chrome/NewVersionPrompt';
 import { registerUnsavedWork } from '@/lib/unsaved-work';
+import { useRegionCycle } from '@/hooks/ui/useRegionCycle';
 import { useEffect, useMemo } from 'react';
 import { addToDocumentTargets } from '@/lib/add-to-document-targets';
 import { canvasSurface } from '@livediagram/document';
@@ -110,6 +111,8 @@ export function EditorView() {
   // to be saved (docs/specs/016-platform/stale-builds.md).
   const { hasUnsavedChanges } = ctx;
   useEffect(() => registerUnsavedWork(hasUnsavedChanges), [hasUnsavedChanges]);
+  // F6 moves between the header, palette, canvas, controls and tab bar (canvas-accessibility.md).
+  useRegionCycle();
   const {
     pasteFromClipboard,
     slideDeck,

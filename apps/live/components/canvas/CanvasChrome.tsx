@@ -645,6 +645,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
         // as its one way back out, and a deck has its own way out plus no
         // zoom to offer.
         data-zoom-cluster=""
+        data-region="controls"
         // Drawn at the UI scale, still 16px from the corner, or clear of a landscape notch.
         // Over a maximised or tab-filling board or Sheet it sits inside the element's frame, clear of its edge and its
         // scrollbar: in by the cover's padding and up past the scrollbar (docs/specs/026-plan/plan-board.md "Maximised
