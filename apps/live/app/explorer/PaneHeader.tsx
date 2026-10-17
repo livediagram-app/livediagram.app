@@ -16,7 +16,8 @@ import { paneCreateMode } from './pane-create-action';
 import { ViewToggle } from './ViewToggle';
 import type { ExplorerViewMode } from './useExplorerViewMode';
 
-function HamburgerIcon() {
+// Shared with Home's hero, which stands in for this header on Home.
+export function HamburgerIcon() {
   return (
     <Glyph size={18} units={18} strokeLinejoin="miter">
       <path d="M3 5h12M3 9h12M3 13h12" />

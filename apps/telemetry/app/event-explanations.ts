@@ -627,6 +627,11 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Home|Opened|Landing':
     'Someone arrived at the Explorer with Home as the very section that loaded.',
   'Home|Opened|Nav': 'Someone went to Home from another section of the Explorer.',
+  'Home|Selected|Hero.Documents':
+    'Someone followed the documents pill at the top of Home to My documents.',
+  'Home|Selected|Hero.Inbox': 'Someone followed the Inbox pill at the top of Home to their Inbox.',
+  'Home|Selected|Hero.NewDocument':
+    'Someone started a new document from the New document button in the search field at the top of Home.',
   'Home|Selected|JumpBackIn.MostUsed':
     "Someone opened a document from Home's Jump back in that was among the ones they used on the most days.",
   'Home|Selected|JumpBackIn.Recent':

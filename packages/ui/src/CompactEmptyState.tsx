@@ -44,6 +44,7 @@ export function CompactEmptyState({
   size = 'regular',
   role,
   ink,
+  layout = 'stack',
 }: {
   icon: ReactNode;
   title: string;
@@ -56,15 +57,22 @@ export function CompactEmptyState({
   // 'status' where the list empties as the person types, so a screen reader hears it (LiveStatus).
   role?: 'status';
   ink?: EmptyStateInk;
+  // 'row' sets the badge beside the words, left-aligned, where the empty state stands in for one row of a list (Home's
+  // What happened); 'stack' (the default) centres them under it.
+  layout?: 'stack' | 'row';
 }) {
   const s = SIZES[size];
+  const row = layout === 'row';
   // Announced through a live region that is in the page before its words (LiveStatus), so a screen reader hears an
   // empty state that appears as the person types; the words on show are then hidden from it, so it reads them once.
   const live = role === 'status';
   return (
     <div
       data-empty-state={size}
-      className={`flex flex-col items-center justify-center overflow-hidden text-center ${s.box} ${className}`}
+      data-empty-layout={layout}
+      className={`flex items-center overflow-hidden ${
+        row ? 'flex-row text-left' : 'flex-col justify-center text-center'
+      } ${s.box} ${className}`}
     >
       {live ? <LiveStatus message={description ? `${title}. ${description}` : title} /> : null}
       <span
@@ -73,24 +81,38 @@ export function CompactEmptyState({
       >
         {icon}
       </span>
-      <span
-        aria-hidden={live || undefined}
-        className={`max-w-full font-semibold text-slate-800 [overflow-wrap:anywhere] dark:text-slate-100 ${s.title}`}
-        style={ink ? { color: ink.text } : undefined}
-      >
-        {title}
-      </span>
-      {description ? (
+      <Words row={row}>
         <span
           aria-hidden={live || undefined}
-          className={`leading-snug text-slate-500 dark:text-slate-400 ${s.line}`}
-          style={ink ? { color: ink.muted } : undefined}
+          className={`max-w-full font-semibold text-slate-800 [overflow-wrap:anywhere] dark:text-slate-100 ${s.title}`}
+          style={ink ? { color: ink.text } : undefined}
         >
-          {description}
+          {title}
         </span>
-      ) : null}
-      {action ? <span className={`flex ${s.action}`}>{action}</span> : null}
+        {description ? (
+          <span
+            aria-hidden={live || undefined}
+            className={`leading-snug text-slate-500 dark:text-slate-400 ${
+              // A row's line runs the row's width; the stack's cap keeps a centred block narrow.
+              row ? s.line.replace(/\bmax-w-\S+/, '') : s.line
+            }`}
+            style={ink ? { color: ink.muted } : undefined}
+          >
+            {description}
+          </span>
+        ) : null}
+        {action ? <span className={`flex ${s.action}`}>{action}</span> : null}
+      </Words>
     </div>
+  );
+}
+
+// In a row the heading, line and action stack beside the badge; in a stack they are the box's own children.
+function Words({ row, children }: { row: boolean; children: ReactNode }) {
+  return row ? (
+    <span className="flex min-w-0 flex-col items-start gap-0.5">{children}</span>
+  ) : (
+    <>{children}</>
   );
 }
 

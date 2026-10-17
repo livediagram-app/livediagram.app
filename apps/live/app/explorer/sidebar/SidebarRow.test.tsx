@@ -26,6 +26,35 @@ const row = (props: Partial<React.ComponentProps<typeof SidebarRow>> = {}) =>
 const gutterOf = (el: HTMLElement) => el.querySelector('[data-tree-toggle]');
 
 describe('SidebarRow', () => {
+  // docs/specs/013-workspace/explorer-structure.md "Look".
+  it('carries its icon on a tile in its tone, and a bare icon without one', () => {
+    row({ tone: 'violet' });
+    const tile = screen.getByRole('treeitem').querySelector('[data-sidebar-tile]')!;
+    expect(tile.getAttribute('data-sidebar-tile')).toBe('violet');
+    expect(tile.className).toContain('bg-violet-100');
+    expect(tile.querySelector('[data-testid="icon"]')).not.toBeNull();
+    cleanup();
+    row();
+    expect(screen.getByRole('treeitem').querySelector('[data-sidebar-tile]')).toBeNull();
+  });
+
+  it('raises the current row into a white pill with a solid sky tile', () => {
+    row({ tone: 'sky', selected: true });
+    const line = screen.getByRole('treeitem').querySelector('[data-tree-row]')!;
+    expect(line.className).toContain('bg-white');
+    expect(line.className).toContain('border-sky-200');
+    expect(screen.getByRole('treeitem').querySelector('[data-sidebar-tile]')!.className).toContain(
+      'bg-sky-600',
+    );
+  });
+
+  it('keeps a transparent edge at rest, so selecting moves nothing', () => {
+    row();
+    const line = screen.getByRole('treeitem').querySelector('[data-tree-row]')!;
+    expect(line.className).toMatch(/\bborder\b/);
+    expect(line.className).toContain('border-transparent');
+  });
+
   it('reserves the chevron gutter on a row that cannot expand', () => {
     row();
     const gutter = gutterOf(screen.getByRole('treeitem'));
@@ -153,7 +182,7 @@ describe('SidebarRow on a touch screen', () => {
     const activate = item.querySelector('[data-tree-activate]')!.className;
     expect(activate).toMatch(/\bpointer-coarse:py-3\b/);
     expect(activate).toMatch(/\bpointer-coarse:text-\[15px\]/);
-    expect(activate).toMatch(/\bpointer-coarse:leading-5\b/);
+    expect(activate).toMatch(/\bleading-5\b/);
     const gutter = gutterOf(item)!;
     expect(gutter.className).toMatch(/\bpointer-coarse:self-stretch\b/);
     expect(gutter.className).toMatch(/\bpointer-coarse:w-11\b/);

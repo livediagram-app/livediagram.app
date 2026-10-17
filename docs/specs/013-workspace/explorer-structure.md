@@ -21,10 +21,31 @@ document **lives**, and which **views** compute lists of documents from wherever
 The sidebar holds navigation only. It carries no greeting, no search field, no New button and no pins:
 
 - **Search** lives in the top bar: the lens field of [Explorer filters](explorer-filters.md#the-field), left of the
-  account control, searches and filters the documents of the current view. The bottom bar's Search opens the
-  app-wide search panel.
-- **New folder** and **New document** live in the page header of the view they create in.
+  account control, searches and filters the documents of the current view. On Home it sits in the
+  [hero](explorer-home.md#the-hero) instead. The bottom bar's Search opens the app-wide search panel.
+- **New folder** and **New document** live in the page header of the view they create in (Home's hero on Home).
 - The account is reached from the header's account menu.
+
+## Look
+
+The sidebar shares Home's front-page language ([Explorer Home](explorer-home.md#layout)).
+
+- **No box.** The tree sits directly on the page, beside the content: no card, border or shadow round it.
+- **Rows** are about 36 px high (44 px on a touch screen), their labels 14 px, rounded 12 px. A row hovers to a soft
+  slate wash.
+- **Tiles.** Every top-level row of Overview and Spaces carries its icon on a small rounded **tile** (24 px, radius
+  8 px) tinted in the row's **tone**: Home and My documents sky, Inbox violet, Timeline amber, Shared with me emerald,
+  a team indigo, Invites rose. New team and the rows of More (This browser, Tags, Library, Trash) keep a bare slate
+  icon, so the places and views people go to most read first. Nested rows (folders, a team's folders, the Library
+  pages, tags) keep a bare icon too.
+- **The current row** is a raised pill: white, a hairline sky edge and a soft sky shadow, its label in semibold deep
+  sky, and its tile filled solid sky with a white icon (a bare icon turns sky). In dark mode it is a glass pill: a
+  faint sky wash fading to the right with a sky hairline inside its edge, its label white.
+- **Group titles** are 11 px, semibold, uppercase, widely tracked, slate-500 (4.5:1 on the page; slate-400 in dark).
+- **The sign-in nudge** is a deep navy card in both appearances, the brand prism and a soft sky glow in its corner,
+  its title white and its line a pale slate.
+
+The editor's Explorer panel ([below](#the-editors-explorer)) keeps its own look.
 
 ## Groups and rows
 

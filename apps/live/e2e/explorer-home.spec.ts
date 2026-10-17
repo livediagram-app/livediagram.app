@@ -14,10 +14,11 @@ import {
 } from './home-seed';
 
 // Explorer Home (docs/specs/013-workspace/explorer-home.md), end to end against the real build and
-// api worker, as a guest, in dark mode: the Explorer lands on Home, one column of Jump back in then
-// What happened, each opened by a heading with a rule; Jump back in is a Within reach set (4 most
-// used on top, 4 recent below, none twice) as a 4 by 2 grid, or a phone strip that alternates,
-// holds eight and ends in See more; See more opens Recent, under Home; nothing shifts as Home lands.
+// api worker, as a guest, in dark mode: the Explorer lands on Home, its hero then one column of Jump
+// back in and What happened, each opened by a display heading; Jump back in is a Within reach set (4
+// most used cards under Most used, 4 recent under Recent, none twice), or a phone strip that
+// alternates, holds eight and ends in See more; See more opens Recent, under Home; nothing shifts as
+// Home lands.
 
 test.use({ colorScheme: 'dark' });
 
@@ -39,7 +40,9 @@ async function layoutShift(page: Page): Promise<number> {
   );
 }
 
-const jumpBackIn = (page: Page) => page.getByRole('list', { name: 'Jump back in' });
+// Jump back in's documents: the Most used and Recent lists on a wide screen, the strip on a phone.
+const jumpBackIn = (page: Page) =>
+  page.getByRole('region', { name: 'Jump back in' }).getByRole('listitem');
 const names = async (list: Locator) =>
   list.getByRole('link').evaluateAll((links) => links.map((l) => l.getAttribute('aria-label')));
 
@@ -55,7 +58,14 @@ test('the Explorer lands on Home: Jump back in, then What happened, no Timeline'
 
   await page.goto('/explorer');
   await expect(page).toHaveURL(/\/explorer\/home\/?$/);
-  await expect(page.getByRole('heading', { level: 1, name: 'Home' })).toBeVisible();
+  // The hero is Home's header: the greeting is the page's heading; the field and New document sit in it.
+  const hero = page.getByRole('region', { name: /What are we picking up\?$/ });
+  await expect(hero.getByRole('heading', { level: 1 })).toHaveText(
+    /^Good (morning|afternoon|evening)\. What are we picking up\?$/,
+  );
+  await expect(hero.getByRole('combobox', { name: 'Filter documents' })).toBeVisible();
+  await expect(page.getByRole('combobox', { name: 'Filter documents' })).toHaveCount(1);
+  await expect(hero.getByRole('button', { name: 'New document' })).toBeVisible();
   await expect(page).toHaveTitle('Home | livediagram');
 
   const jump = page.getByRole('region', { name: 'Jump back in' });
@@ -64,10 +74,10 @@ test('the Explorer lands on Home: Jump back in, then What happened, no Timeline'
   await expect(
     jumpBackIn(page).getByRole('link', { name: 'Payments architecture' }),
   ).toHaveAttribute('href', `/document/${payments}`);
-  // No Timeline column, no switch, no group titles.
+  // No Timeline column, no switch; the groups are labelled.
   await expect(page.getByRole('region', { name: 'Timeline' })).toHaveCount(0);
   await expect(page.getByRole('tablist')).toHaveCount(0);
-  await expect(jump.getByText(/most used/i)).toHaveCount(0);
+  await expect(jump.getByRole('heading', { level: 3 }).first()).toBeVisible();
 
   // One column: What happened sits under Jump back in, the same width.
   const [a, b] = [await jump.boundingBox(), await happened.boundingBox()];
@@ -101,7 +111,7 @@ test('the Explorer lands on Home: Jump back in, then What happened, no Timeline'
   expectNoPageErrors(pageErrors);
 });
 
-test('each section opens with a heading with a rule, in dark and light', async ({
+test('each section opens with a display heading and no rule, in dark and light', async ({
   page,
   baseURL,
   pageErrors,
@@ -129,8 +139,8 @@ test('each section opens with a heading with a rule, in dark and light', async (
         const s = getComputedStyle(el);
         return { width: s.borderBottomWidth, style: s.borderBottomStyle };
       });
-      expect(style, `${scheme} ${name} rule`).toEqual({ width: '1px', style: 'solid' });
-      // The rule spans the section; the link sits at the row's right end.
+      expect(style.style, `${scheme} ${name} has no rule`).toBe('none');
+      // The row spans the section; the link sits at its right end.
       const section = page.getByRole('region', { name });
       expect(Math.round((await row.boundingBox())!.width)).toBe(
         Math.round((await section.boundingBox())!.width),
@@ -139,14 +149,14 @@ test('each section opens with a heading with a rule, in dark and light', async (
       const rowBox = await row.boundingBox();
       expect(Math.round(linkBox!.x + linkBox!.width)).toBe(Math.round(rowBox!.x + rowBox!.width));
       expect(await heading.evaluate((el) => Number.parseFloat(getComputedStyle(el).fontSize))).toBe(
-        16,
+        24,
       );
     }
   }
   expectNoPageErrors(pageErrors);
 });
 
-test('Jump back in is 4 most used on top and 4 recent below, none twice', async ({
+test('Jump back in is 4 most used cards, then 4 recent, none twice', async ({
   page,
   baseURL,
   pageErrors,
@@ -159,11 +169,13 @@ test('Jump back in is 4 most used on top and 4 recent below, none twice', async 
 
   const list = jumpBackIn(page);
   await expect(list.getByRole('link')).toHaveCount(8);
-  expect(await names(list)).toEqual([
+  expect(await names(page.getByRole('list', { name: 'Most used' }))).toEqual([
     'Atlas, Local only',
     'Beacon, Local only',
     'Compass, Local only',
     'Delta, Local only',
+  ]);
+  expect(await names(page.getByRole('list', { name: 'Recent' }))).toEqual([
     'Server two',
     'Server one',
     'Echo, Local only',
@@ -172,14 +184,15 @@ test('Jump back in is 4 most used on top and 4 recent below, none twice', async 
   // Atlas is both the most used and the newest: it shows once, under most used.
   await expect(list.getByRole('link', { name: /^Atlas/ })).toHaveCount(1);
 
-  // Two rows of four; no sideways scrolling.
-  const tops = await list
-    .getByRole('listitem')
-    .evaluateAll((items) => items.map((i) => Math.round(i.getBoundingClientRect().top)));
+  // Four across in each group; no sideways scrolling.
+  const tops = await list.evaluateAll((items) =>
+    items.map((i) => Math.round(i.getBoundingClientRect().top)),
+  );
   expect(new Set(tops.slice(0, 4)).size).toBe(1);
   expect(new Set(tops.slice(4)).size).toBe(1);
   expect(tops[4]!).toBeGreaterThan(tops[0]!);
-  expect(await list.evaluate((el) => el.scrollWidth <= el.clientWidth)).toBe(true);
+  const region = page.getByRole('region', { name: 'Jump back in' });
+  expect(await region.evaluate((el) => el.scrollWidth <= el.clientWidth)).toBe(true);
 
   // See more: the Recent page, under Home in the breadcrumb.
   await page
@@ -217,9 +230,9 @@ test('on a phone the strip alternates, holds eight and ends in See more', async 
     'Foxtrot, Local only',
   ]);
   // One row, sideways.
-  const tops = await list
-    .getByRole('listitem')
-    .evaluateAll((items) => items.map((i) => Math.round(i.getBoundingClientRect().top)));
+  const tops = await list.evaluateAll((items) =>
+    items.map((i) => Math.round(i.getBoundingClientRect().top)),
+  );
   expect(new Set(tops).size).toBe(1);
 
   // The strip ends in See more, the only one (no heading-row link on a phone).
@@ -228,7 +241,7 @@ test('on a phone the strip alternates, holds eight and ends in See more', async 
   await expect(seeMore).toHaveCount(1);
   await seeMore.scrollIntoViewIfNeeded();
   const tile = await seeMore.boundingBox();
-  const last = await list.getByRole('listitem').last().boundingBox();
+  const last = await list.last().boundingBox();
   expect(tile!.x).toBeGreaterThan(last!.x);
   await seeMore.click();
   await expect(page).toHaveURL(/\/explorer\/recent\/?$/);
@@ -270,9 +283,10 @@ test('with fewer than eight, only what exists shows, and nothing shifts', async 
   await page.goto('/explorer/home');
 
   const list = jumpBackIn(page);
-  await expect(list.getByRole('listitem')).toHaveCount(1);
-  // The grid keeps its two rows' height: What happened never moves.
-  expect(Math.round((await list.boundingBox())!.height)).toBe(212);
+  await expect(list).toHaveCount(1);
+  // Jump back in keeps both groups' height at lg: a label and a row of each. What happened never moves.
+  const groups = page.locator('[data-jump-back-in-group]').first().locator('..');
+  expect(Math.round((await groups.boundingBox())!.height)).toBe(330);
   expect(await layoutShift(page)).toBe(0);
   expectNoPageErrors(pageErrors);
 });

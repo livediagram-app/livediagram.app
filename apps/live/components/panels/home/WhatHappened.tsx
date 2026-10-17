@@ -14,7 +14,7 @@ import { groupsByDay } from '@/app/explorer/home/home-model';
 import { WhatHappenedSkeleton } from './HomeSkeletons';
 import { ActionEntry, SummaryEntry } from './WhatHappenedEntry';
 import { HomeSection } from './HomeSection';
-import { MUTED } from './home-styles';
+import { WHAT_HAPPENED_PANEL } from './home-styles';
 import { WhatHappenedEmptyIcon } from './home-icons';
 
 export function WhatHappened({
@@ -45,17 +45,25 @@ export function WhatHappened({
       {loading ? (
         <WhatHappenedSkeleton />
       ) : days.length === 0 ? (
-        <CompactEmptyState
-          className="py-8"
-          icon={<WhatHappenedEmptyIcon />}
-          title={HOME_COPY.whatHappenedEmptyTitle}
-          description={HOME_COPY.whatHappenedEmpty}
-        />
+        // In the panel, the size and place of one entry (docs/specs/004-interface-design/empty-states.md "In place
+        // of one item").
+        <div className={WHAT_HAPPENED_PANEL}>
+          <CompactEmptyState
+            layout="row"
+            className="px-2 py-3"
+            icon={<WhatHappenedEmptyIcon />}
+            title={HOME_COPY.whatHappenedEmptyTitle}
+            description={HOME_COPY.whatHappenedEmpty}
+          />
+        </div>
       ) : (
-        <div className="flex flex-col gap-3">
+        <div className={`flex flex-col gap-3 ${WHAT_HAPPENED_PANEL}`}>
           {days.map((day) => (
             <div key={day.day}>
-              <h3 id={`home-day-${day.day}`} className={`mb-1 px-2 text-xs font-medium ${MUTED}`}>
+              <h3
+                id={`home-day-${day.day}`}
+                className="mb-1 px-2 pt-3 text-xs font-semibold uppercase tracking-[0.08em] text-slate-500 dark:text-slate-400"
+              >
                 {day.label}
               </h3>
               <ul className="flex flex-col gap-1">

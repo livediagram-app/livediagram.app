@@ -4,7 +4,7 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Home's layout (docs/specs/013-workspace/explorer-home.md "Layout"): one column at every width,
-// Jump back in then What happened, each a landmark opened by a heading with a rule and its quiet
+// Jump back in then What happened, each a landmark opened by a display heading and its quiet
 // link. No Timeline column and no switch. A failed read says so and retries.
 
 const { track, useHome, wide } = vi.hoisted(() => ({
@@ -71,7 +71,7 @@ describe('HomePane', () => {
     expect(track).toHaveBeenCalledWith('Home', 'Opened', expect.stringMatching(/^(Landing|Nav)$/));
   });
 
-  it('opens each section with a heading with a rule, its link at the end of the row', () => {
+  it('opens each section with a display heading, its link at the end of the row, no rule', () => {
     wide.value = true;
     renderIt();
     for (const [name, link] of [
@@ -80,7 +80,8 @@ describe('HomePane', () => {
     ] as const) {
       const heading = screen.getByRole('heading', { level: 2, name });
       const row = heading.parentElement!;
-      expect(row.className).toContain('border-b');
+      expect(row.className).not.toContain('border-b');
+      expect(heading.className).toContain('font-extrabold');
       expect(row.className).toContain('justify-between');
       expect(row.lastElementChild!.textContent).toBe(link);
     }

@@ -137,6 +137,10 @@ describe('WhatHappened', () => {
       screen.getByText('What others do in your documents over the last 14 days shows here.'),
     ).toBeTruthy();
     expect(screen.getByRole('link', { name: 'See timeline' })).toBeTruthy();
+    // In the panel, one entry's size: the badge beside the words, not a large centred block.
+    const empty = screen.getByText('No updates yet').closest('[data-empty-state]')!;
+    expect(empty.getAttribute('data-empty-layout')).toBe('row');
+    expect(empty.parentElement!.className).toContain('rounded-[20px]');
   });
 
   it('offers no filter controls', () => {

@@ -151,6 +151,10 @@ The top-bar search is the lens field on every Explorer view. It sits in the Expl
 control; below the `sm` breakpoint it takes its own full-width row under the header. Its placeholder reads "Search or
 filter documents". The app-wide search panel (documents, folders, help, settings) stays on the bottom bar's Search.
 
+On Home the field moves into the [hero](explorer-home.md#the-hero), drawn large with New document inside its end,
+and the header draws none. It is the same field: the same lens, pills, suggestions and keyboard. Typing in it opens
+Search results; the header's field there takes the focus with the caret after the typed words.
+
 - Each token renders as a **pill** inside the field: "Template: Retrospective, Kanban", "Space: Acme". The free text
   follows the pills. A pill that does not apply (a Space pill on a scoped view) is muted and says why.
 - A typed token becomes a pill once it is complete: accepted from the suggestions, or followed by a space.

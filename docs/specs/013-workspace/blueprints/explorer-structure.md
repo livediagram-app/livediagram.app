@@ -22,6 +22,8 @@ on the `nav`.
 | `apps/live/app/explorer/sidebar/SidebarFolderSubtree.tsx`                | A personal folder row, its menu, and its subfolders                                                                                                                                                                                                                                  |
 | `apps/live/app/explorer/sidebar/TeamFolderSubtree.tsx`                   | A team folder row and its subfolders                                                                                                                                                                                                                                                 |
 | `apps/live/app/explorer/sidebar/SidebarSignInNudge.tsx`                  | The guest's "Sign in to access Teams" card                                                                                                                                                                                                                                           |
+| `apps/live/app/explorer/sidebar/sidebar-tones.ts`                        | `SIDEBAR_TONES`, the tile, the current row's pill and the resting row (Look)                                                                                                                                                                                                         |
+| `apps/live/app/explorer/useMidnightPalette.ts`                           | Sets `data-palette="midnight"` on the root while the Explorer is mounted                                                                                                                                                                                                             |
 | `apps/live/app/explorer/sidebar/useSidebarExpansion.ts`                  | `useSidebarExpansion(selected)`: the `expanded` set, `expand`, `toggleExpand`; Library opens with a Library view                                                                                                                                                                     |
 | `apps/live/app/explorer/useExplorerState.ts`                             | Composes `useSidebarExpansion`; renders in the browser only (`use(browser())`), so `prefs` and the URL are read from the first render                                                                                                                                                |
 | `apps/live/app/explorer/lens/LensField.tsx`                              | The Explorer header's search, the lens field ([Explorer filters blueprint](explorer-filters.md#the-explorer-page)); mounted by `ExplorerShell.tsx`                                                                                                                                   |
@@ -193,8 +195,19 @@ keystroke and per render (tens to low hundreds of nodes). No new fetch.
 
 ## Presentation and UX
 
-- Row: `[indent 16px × depth][gutter 20px][icon][label][badge][trailing]`, text 12px, padding as today.
-- Group title: 10px semibold uppercase, `tracking-wider`, `text-slate-400`; first group without top margin.
+- Row: `[indent 16px × depth][gutter 20px][icon][label][badge][trailing]`, text 14 px (`text-sm`), `py-1.5`
+  (36 px with a tile; `pointer-coarse` 44 px), `rounded-xl`, gap 10 px; hover `bg-slate-100 dark:bg-slate-800`.
+- Tile (`SidebarRow tone`): `size-6 rounded-lg grid place-items-center`, `SIDEBAR_TONES[tone]`: the tone's 100 tint
+  under its 700 ink in light (`bg-sky-100 text-sky-700`), its 400 at 15 % under its 300 ink in dark
+  (`dark:bg-sky-400/15 dark:text-sky-300`). Tones: `home`, `myDocuments` sky; `inbox` violet; `timeline` amber;
+  `shared` emerald; `team` indigo; `invites` rose. A row without a tone keeps the bare `text-slate-400` icon.
+- Current row (`SIDEBAR_CURRENT`): `bg-white border border-sky-200 shadow-[0_6px_18px_-8px_rgba(2,132,199,0.35)]`,
+  label `font-semibold text-sky-900`; its tile `bg-sky-600 text-white`, a bare icon `text-sky-600`. Dark:
+  `bg-gradient-to-r from-sky-400/[0.18] to-sky-400/[0.04] ring-1 ring-inset ring-sky-400/35 border-transparent
+shadow-none`, label `text-white`, tile `bg-sky-500 text-white`. Every other row carries a transparent 1 px border
+  so selecting moves nothing.
+- Group title: 11 px semibold uppercase, `tracking-[0.1em]`, `text-slate-500 dark:text-slate-400`, `px-2.5 pb-2`;
+  first group without top margin; `mt-6` between groups.
 - Separator: inside the title's own box (same classes, so the same height): the title as `sr-only` text and an
   absolutely placed `h-px` line, `bg-slate-200` / `dark:bg-slate-700`, at its vertical middle. The first group's
   title, under separators, is an `sr-only` heading with no box.
@@ -203,7 +216,11 @@ keystroke and per render (tens to low hundreds of nodes). No new fetch.
 - Panel: `w-[38rem]`; the rail `w-44` with a right hairline beside the pane, both `h-[min(30rem,62vh)]`, the pane scrolling.
   On a phone the chips (`h-11`, rounded-full) sit over the pane in `max-h-[max(14rem,calc(100dvh-25rem))]`, the picked
   chip scrolled into view.
-- Sign-in nudge: the existing card, last in Spaces.
+- Sign-in nudge: last in Spaces, `relative overflow-hidden rounded-2xl bg-[#0b1230] p-4 mt-3` (dark adds
+  `ring-1 ring-sky-400/30`), an `aria-hidden` 120 px radial `rgba(56,189,248,0.45)` glow at the top-right corner, the
+  title row (the brand prism mark at 18 px, `text-sm font-semibold text-white`), the line `text-[12.5px] leading-normal
+text-[#a9b8d0]`; focus ring `outline-sky-400`.
+- Container: the `aside`'s sticky box has no border, background, shadow or padding beyond `px-1 py-1`.
 - New team: a row with `PlusIcon`, label "New team".
 - Header search: the lens field left of the account control; below `sm` its own row under the header.
 
@@ -244,12 +261,13 @@ creation).
 
 ## Constants and configuration
 
-| Constant                  | Value                  | Provenance                       |
-| ------------------------- | ---------------------- | -------------------------------- |
-| `INDENT_STEP`             | 16 px                  | Unchanged from the previous tree |
-| Chevron gutter            | 20 px (`h-5 w-5`)      | Unchanged; now always reserved   |
-| `MY_DOCUMENTS_EXPAND_KEY` | `'space:my-documents'` | Prefix keeps it apart from UUIDs |
-| `LIBRARY_EXPAND_KEY`      | `'more:library'`       | Same                             |
+| Constant                  | Value                                     | Provenance                       |
+| ------------------------- | ----------------------------------------- | -------------------------------- |
+| `INDENT_STEP`             | 16 px                                     | Unchanged from the previous tree |
+| `SIDEBAR_TONES`           | sky, violet, amber, emerald, indigo, rose | Spec (Look); `D170`              |
+| Chevron gutter            | 20 px (`h-5 w-5`)                         | Unchanged; now always reserved   |
+| `MY_DOCUMENTS_EXPAND_KEY` | `'space:my-documents'`                    | Prefix keeps it apart from UUIDs |
+| `LIBRARY_EXPAND_KEY`      | `'more:library'`                          | Same                             |
 
 ## Assets and external resources
 

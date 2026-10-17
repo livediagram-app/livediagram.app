@@ -99,7 +99,7 @@ test('a teammate’s work on a team document reaches Home, named and placed', as
 
   await expect(
     page
-      .getByRole('list', { name: 'Jump back in' })
+      .getByRole('region', { name: 'Jump back in' })
       .getByRole('link', { name: 'Payments architecture' }),
   ).toHaveAttribute('href', `/document/${doc}`);
   const happened = page.getByRole('region', { name: 'What happened' });

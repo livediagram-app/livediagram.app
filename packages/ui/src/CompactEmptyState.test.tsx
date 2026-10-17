@@ -182,3 +182,25 @@ describe('a no-match clear', () => {
     expect(label('', 1, true)).toBe('Clear Filters');
   });
 });
+
+describe('CompactEmptyState layout', () => {
+  it('centres the words under the badge by default', () => {
+    const { container } = render(<CompactEmptyState icon={<svg />} title="No things yet" />);
+    const box = container.querySelector('[data-empty-state]')!;
+    expect(box.getAttribute('data-empty-layout')).toBe('stack');
+    expect(box.className).toContain('flex-col');
+    expect(box.className).toContain('text-center');
+  });
+
+  it('sets the badge beside the words in a row, left-aligned', () => {
+    const { container } = render(
+      <CompactEmptyState layout="row" icon={<svg />} title="No updates yet" description="Soon." />,
+    );
+    const box = container.querySelector('[data-empty-state]')!;
+    expect(box.getAttribute('data-empty-layout')).toBe('row');
+    expect(box.className).toContain('flex-row');
+    expect(box.className).toContain('text-left');
+    const words = box.children[1]!;
+    expect(words.textContent).toBe('No updates yetSoon.');
+  });
+});

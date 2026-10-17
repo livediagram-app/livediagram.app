@@ -13,17 +13,57 @@ brings, in one screen: "what was I working on?" and "what happened while I was a
 
 ## Layout
 
-- **One column**, at every width: **Jump back in**, then **What happened**. It scrolls with the page.
-- **Headings with a rule** set the sections apart. Each section opens with its heading row: the title (a larger
-  heading, about 16 px, bold), the section's quiet link at the right end (**See more**, **See timeline**), and
-  a hairline rule under the row (1 px, the page's line colour, spanning the section's width). Generous space (about
-  28 px) separates one section from the next.
-- No cards and no panel backgrounds: the sections sit directly on the page.
-- The page header carries **New document**, as every Explorer section does, and the section's Help link, as every
-  section's header does ([Contextual help links](../018-help/contextual-help-links.md)). Home has no other header
-  actions: no import, no folder, no view switch.
+Home reads as the front page of the person's work, in the marketing site's visual language: the dotted
+backdrop, a heavy display heading, pills with a coloured dot, the glowing search field and fanned sheets
+([Design principles](../004-interface-design/design-principles.md)).
+
+- **The hero** opens the page ([The hero](#the-hero)): a full-width band under the Explorer header, above the
+  sidebar and the sections. It is Home's page header; Home has no other.
+- **One column** under it, beside the sidebar, at every width: **Jump back in**, then **What happened**. It scrolls
+  with the page.
+- **Display headings** set the sections apart. Each section opens with its heading row: the title (about 24 px,
+  extra bold, tight tracking) and the section's quiet link at the right end (**See more**, **See timeline**). No rule
+  runs under the row. Generous space (about 40 px) separates one section from the next.
+- Jump back in's documents are **cards** ([Jump back in](#jump-back-in)); What happened's days sit in **one panel**
+  (a white, rounded, hairline-bordered surface; the raised surface in dark mode).
+- Home has no import, no folder and no view switch.
 - The person's own history (what they created, updated or opened) is not on Home: Jump back in holds what they
   reach for, and the full record is the Timeline's.
+
+## The hero
+
+A band the page's full width, under the Explorer header and above the sidebar and Home's sections, on Home only. Its
+ground is the marketing hero's: a soft sky wash under a dotted grid, a hairline under it. In dark mode it is the
+[Midnight](../004-interface-design/color-scheme.md#explorer-midnight) ground with a soft blue glow from the top.
+Its content sits in the Explorer's content width.
+
+Top to bottom, left column:
+
+- **Status pills**, two, each a link with a coloured dot:
+  - the person's documents: "1 document" / "N documents" (My documents, the person's own space, this browser's
+    Local only documents not counted), opening **My documents**; a green dot;
+  - the Inbox: "Inbox is clear" when no open action is assigned to the person, else "N open in your Inbox", the
+    sidebar's Inbox count ([Inbox](inbox.md)), opening the **Inbox**; a sky dot.
+  - A pill is drawn once its count is known: never "0 documents" while the lists load, nor "Inbox is clear" for an
+    Inbox that has not loaded or failed to.
+- **The greeting**, the page's `h1`: "Good morning.", "Good afternoon." or "Good evening." by the reader's local
+  hour (5 to 11 morning, 12 to 17 afternoon, else evening), then "What are we picking up?". Large display type
+  (about 56 px on a desktop, 36 px on a phone), extra bold, tight tracking. The tab's title stays **Home**.
+- **The lead**: "Jump back into what you use most, or see what changed while you were away."
+- **The search field**: the Explorer's lens field ([Explorer filters](explorer-filters.md#the-field)) drawn large
+  (60 px high, a 2 px sky edge and a soft sky glow), with **New document** as a solid button inside its right end.
+  On Home it is the only lens field: the header's is not drawn, so the page never shows two. Typing in it opens
+  Search results, as the header's field does from Home, and the header's field there takes the focus with the caret
+  after what was typed, so the typing carries on uninterrupted.
+
+The right column, on a wide screen only (`lg` and up), shows **fanned sheets**: the snapshot thumbnails of the
+person's three most recently saved documents of My documents, the newest in front and the two behind turned out to
+either side, each on a white sheet with a soft shadow. They are decoration (hidden from assistive technology, not
+links): Jump back in is the way in. With fewer than three, fewer sheets; with none, the column is empty and the text
+keeps its width.
+
+The hero's top right holds Home's **Help** link ([Contextual help links](../018-help/contextual-help-links.md)). On a
+phone (below `sm`) its top left holds the menu button that opens the [mobile drawer](explorer-structure.md#mobile-drawer).
 
 ## Jump back in
 
@@ -47,12 +87,14 @@ the **4 most used** and the **4 most recent**, no document twice.
 - A document stored only in this browser ([Offline Mode](../006-document/offline-mode.md)) takes part with this
   browser's own record of its opens and edits ([Opens](#opens)), and carries the **Local only** pill on its
   thumbnail, as every other row and card of one does.
-- Each document is a small snapshot thumbnail with its name below it in a small font, truncated to the
-  thumbnail's width. The full name is its tooltip and accessible name. Activating a thumbnail opens the document.
-- **No row titles.** "Jump back in" is the section's only title: the two groups carry no visible label and no
-  extra screen-reader label, and their order (most used first, then recent) is left to people's intuition
-  ([Design principles: Calm by default](../004-interface-design/design-principles.md)). The documents are one list
-  of links, named **Jump back in**, each named by its document's name.
+- Each document is a **card**: its snapshot thumbnail, its name, and one quiet line that says why it is there.
+  The full name is its tooltip and accessible name; the quiet line is its description. Activating a card opens the
+  document.
+  - A most used document's line counts its use days: "Used on 1 day", "Used on N days".
+  - A recent document's line says when the person last used it: "Used 2 hours ago", "Used yesterday" (the
+    Explorer's relative time).
+- **Two labelled groups** on a desktop or tablet: a small uppercase label, **Most used** then **Recent**, over each.
+  The documents are one list of links named **Jump back in**; each group's label is its own list's name.
 - **See more** opens the **Recent** page: a quiet link at the end of the section's heading row on a desktop or
   tablet, the strip's last tile on a phone. The Recent page is `/explorer/recent`: every document the person can
   open, most recently saved first (a save by anyone), not by the person's own use as Jump back in's recent
@@ -61,23 +103,30 @@ the **4 most used** and the **4 most recent**, no document twice.
 
 ### Desktop and tablet
 
-- A **4 by 2 grid** that never scrolls sideways: the top row holds the most used, the bottom row the recent, each
-  most used or newest first from the left. The tiles share the section's width equally; the thumbnails keep one
-  short height, so the grid's height never depends on the width.
+- **Most used** first: up to 4 large cards (a white, rounded, hairline-bordered card; the thumbnail 128 px high
+  inside it, the name in semibold and the quiet line under it), most used first from the left.
+- **Recent** under it: up to 4 compact cards (a 64 × 44 thumbnail beside the name and the quiet line), newest first.
+- Four across from the `lg` breakpoint; two across below it. Nothing scrolls sideways.
+- A card lifts a little on hover (a sky edge and a soft sky shadow), within the motion budget.
 
 ### Phone
 
 - One **sideways-scrolling strip** of at most **8** thumbnails: most used, recent, most used, recent, and so on;
-  when one group runs out, the rest of the other follows.
+  when one group runs out, the rest of the other follows. The strip interleaves the groups, so it carries no group
+  labels and no quiet lines: each tile is its thumbnail and name.
 - The strip ends in a **See more** tile, the same size as a thumbnail, that opens the Recent page.
 - The strip scrolls sideways (touch, trackpad, Shift+wheel, and keyboard focus moving through it). Its trailing
   edge fades to say there is more, and only while there is more.
 
 ### Fewer than 8 documents
 
-- Only the documents that exist are drawn: no empty boxes. A short group leaves the rest of its row blank; with no
-  most used document at all, the recent ones take the top row.
-- The grid keeps its two rows' height whatever lands in it, so nothing below moves when Home loads.
+- Only the documents that exist are drawn: no empty boxes. A short group leaves the rest of its row blank; a group
+  with no document at all is not drawn, label included.
+- Jump back in keeps both groups' height whatever lands in it, so nothing below moves when Home loads.
+- With **no document at all** it looks as if it held one: a single slot the size and place of one most used card
+  (the first column, a dashed edge), holding the empty state ("No documents yet", "The documents you use most and last
+  will gather here."), and no group labels. Only then is Jump back in shorter than its reserved height: What happened
+  sits under the one row.
 - With no document at all, the section holds the shared [empty state](../004-interface-design/empty-states.md):
   "No documents yet", over "The documents you use most and last will gather here." On a phone the strip holds the
   small empty state's heading alone and still ends in its See more tile.
@@ -205,15 +254,17 @@ An **open** is the editor loading a document for a person to look at.
 ## States
 
 Every state keeps the layout it lands in: headings are in place from the first paint, and each section's skeleton
-has the size of what replaces it, so nothing shifts (CLS 0).
+has the size of what replaces it, so nothing shifts (CLS 0). The one exception is a person with no document at all:
+Jump back in's single empty slot is shorter than the skeleton, so What happened rises once, on a page with nothing
+else on it.
 
-| State                 | What shows                                                                                           |
-| --------------------- | ---------------------------------------------------------------------------------------------------- |
-| Loading               | Each section's skeleton: the grid's two rows (the phone's strip), three entry rows                   |
-| Jump back in, partial | What exists, no empty boxes (see [Fewer than 8 documents](#fewer-than-8-documents))                  |
-| Jump back in, empty   | Empty state "No documents yet": "The documents you use most and last will gather here."              |
-| What happened, empty  | Empty state "No updates yet": "What others do in your documents over the last 14 days shows here."   |
-| Read failed           | "Home could not load. Check your connection and try again." with **Try again**, in place of the body |
+| State                 | What shows                                                                                                                                  |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| Loading               | Each section's skeleton: both groups' cards (the phone's strip), three entry rows in the panel                                              |
+| Jump back in, partial | What exists, no empty boxes (see [Fewer than 8 documents](#fewer-than-8-documents))                                                         |
+| Jump back in, empty   | One card-sized slot: empty state "No documents yet": "The documents you use most and last will gather here."                                |
+| What happened, empty  | The panel with one entry-sized row: the badge beside "No updates yet": "What others do in your documents over the last 14 days shows here." |
+| Read failed           | "Home could not load. Check your connection and try again." with **Try again**, in place of the body                                        |
 
 Under reduced motion nothing animates: no skeleton pulse, no chevron turn, no smooth scrolling.
 

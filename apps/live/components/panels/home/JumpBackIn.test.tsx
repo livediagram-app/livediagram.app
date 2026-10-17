@@ -3,10 +3,10 @@
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-// Jump back in (docs/specs/013-workspace/explorer-home.md "Jump back in"): on a desktop or tablet a
-// 4 by 2 grid, most used on top, recent below, See more in the heading row; on a phone a strip that
-// alternates and ends in a See more tile. One list of links named by their documents, no group
-// titles; a local document carries the Local only pill.
+// Jump back in (docs/specs/013-workspace/explorer-home.md "Jump back in"): on a desktop or tablet the
+// Most used cards then the Recent cards, each group under its label, each card saying why it is
+// there, See more in the heading row; on a phone a strip that alternates, labels neither group and
+// ends in a See more tile. A local document carries the Local only pill.
 
 const { track, wide } = vi.hoisted(() => ({ track: vi.fn(), wide: { value: true } }));
 vi.mock('@/lib/telemetry', () => ({ track }));
@@ -51,42 +51,67 @@ describe('JumpBackIn, desktop and tablet', () => {
     wide.value = true;
   });
 
-  it('lists the most used then the recent as one list of links named by their documents', () => {
+  it('lists the most used, then the recent, each group a list named by its label', () => {
     renderIt(set(['m1', 'm2', 'm3', 'm4'], ['r1', 'r2', 'r3', 'r4']));
-    const list = screen.getByRole('list', { name: 'Jump back in' });
-    const links = within(list).getAllByRole('link');
-    expect(names(links)).toEqual([
+    expect(screen.getAllByRole('list')).toHaveLength(2);
+    const used = screen.getByRole('list', { name: 'Most used' });
+    const recent = screen.getByRole('list', { name: 'Recent' });
+    expect(names(within(used).getAllByRole('link'))).toEqual([
       'Doc m1',
       'Doc m2',
       'Doc m3',
       'Doc m4',
+    ]);
+    expect(names(within(recent).getAllByRole('link'))).toEqual([
       'Doc r1',
       'Doc r2',
       'Doc r3',
       'Doc r4',
     ]);
-    expect(links[0]!.getAttribute('href')).toBe('/document/m1');
-    expect(links[0]!.textContent).toBe('Doc m1');
-    // No group titles, on screen or for assistive technology.
-    expect(screen.queryByText(/most used/i)).toBeNull();
-    expect(screen.getAllByRole('list')).toHaveLength(1);
+    expect(screen.getByRole('heading', { level: 3, name: 'Most used' })).toBeTruthy();
+    const first = within(used).getAllByRole('link')[0]!;
+    expect(first.getAttribute('href')).toBe('/document/m1');
+    expect(first.dataset.jumpBackInCard).toBe('large');
+    expect(within(recent).getAllByRole('link')[0]!.dataset.jumpBackInCard).toBe('compact');
   });
 
-  it('starts the recent on the second row however short the first is', () => {
-    renderIt(set(['m1', 'm2'], ['r1']));
-    const items = within(screen.getByRole('list', { name: 'Jump back in' })).getAllByRole(
-      'listitem',
-    );
-    expect(items[2]!.className).toContain('col-start-1');
-    expect(items[0]!.className).not.toContain('col-start-1');
+  it("says why each document is there, as the card's description", () => {
+    const now = Date.now();
+    renderIt({
+      mostUsed: [item('m1', { useDays: 1 }), item('m2', { useDays: 14 })],
+      recent: [item('r1', { lastUsedAt: now - 2 * 3_600_000 })],
+    });
+    const line = (name: string) => {
+      const link = screen.getByRole('link', { name });
+      return document.getElementById(link.getAttribute('aria-describedby')!)!.textContent;
+    };
+    expect(line('Doc m1')).toBe('Used on 1 day');
+    expect(line('Doc m2')).toBe('Used on 14 days');
+    expect(line('Doc r1')).toBe('Used 2 hours ago');
   });
 
-  it('lets the recent take the top row when nothing is most used', () => {
+  it('draws neither label nor list for a group with no document', () => {
     renderIt(set([], ['r1', 'r2']));
-    const items = within(screen.getByRole('list', { name: 'Jump back in' })).getAllByRole(
-      'listitem',
+    expect(screen.queryByText('Most used')).toBeNull();
+    expect(screen.queryByRole('list', { name: 'Most used' })).toBeNull();
+    expect(
+      names(within(screen.getByRole('list', { name: 'Recent' })).getAllByRole('link')),
+    ).toEqual(['Doc r1', 'Doc r2']);
+  });
+
+  it("keeps both groups' height whatever lands in them", () => {
+    const { container } = render(
+      <JumpBackIn
+        ownerId="me"
+        set={set(['m1'], [])}
+        loading={false}
+        recentHref="/r"
+        onSeeMore={() => {}}
+      />,
     );
-    expect(items[0]!.className).not.toContain('col-start-1');
+    const box = container.querySelector('[data-jump-back-in-group="mostUsed"]')!.parentElement!;
+    expect(box.className).toContain('min-h-[38.625rem]');
+    expect(box.className).toContain('lg:min-h-[20.625rem]');
   });
 
   it('tracks which half a document was opened from', () => {
@@ -122,6 +147,12 @@ describe('JumpBackIn, desktop and tablet', () => {
     expect(screen.getByText('The documents you use most and last will gather here.')).toBeTruthy();
     expect(screen.queryByRole('list')).toBeNull();
     expect(screen.getByRole('link', { name: 'See more' })).toBeTruthy();
+    // In place of one most used card: its size, in the first column, no group labels.
+    const slot = screen.getByText('No documents yet').closest('[data-empty-state]')!.parentElement!;
+    expect(slot.className).toContain('h-[12.5rem]');
+    expect(slot.className).toContain('border-dashed');
+    expect(slot.parentElement!.className).toContain('lg:grid-cols-4');
+    expect(screen.queryByText('Most used')).toBeNull();
   });
 });
 

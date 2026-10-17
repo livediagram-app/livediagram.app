@@ -2,8 +2,8 @@
 
 // Explorer Home (docs/specs/013-workspace/explorer-home.md; blueprint
 // docs/specs/013-workspace/blueprints/explorer-home-view.md). One column at every width: Jump back
-// in, then What happened, each its own section opened by a heading with a rule, generous space
-// between them, no cards.
+// in, then What happened, each its own section opened by a display heading, generous space between
+// them. The hero above it is the shell's (HomeHero).
 
 import { useEffect } from 'react';
 import { track } from '@/lib/telemetry';
@@ -54,7 +54,7 @@ export function HomePane({
 
   const loading = home.status === 'loading';
   return (
-    <div className="flex flex-col gap-7">
+    <div className="flex flex-col gap-10">
       <JumpBackIn
         ownerId={ownerId}
         set={home.jumpBackIn}

@@ -1,0 +1,148 @@
+'use client';
+
+// Home's hero (docs/specs/013-workspace/explorer-home.md "The hero"; blueprint
+// docs/specs/013-workspace/blueprints/explorer-home-view.md "Presentation and UX"): the full-width band under the
+// Explorer header on Home, its page header. Status pills, the greeting, the lead, the lens field drawn large with
+// New document inside it, and the fanned sheets of the newest documents. Reads only what the shell already holds.
+
+import { useMemo } from 'react';
+import { PlusIcon } from '@/components/primitives/explorer-icons';
+import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
+import { DocumentThumbnail } from '@/components/panels/DocumentThumbnail';
+import { track } from '@/lib/telemetry';
+import { useNow } from '@/hooks/ui/useNow';
+import { useExplorer } from '@/app/explorer/ExplorerContext';
+import { HamburgerIcon } from '@/app/explorer/PaneHeader';
+import { LensField } from '@/app/explorer/lens/LensField';
+import { inboxBadge } from '@/app/explorer/sidebar/inbox-badge';
+import { explorerPathFor } from '@/app/explorer/routes';
+import { HERO_COPY, heroGreeting, heroPills, heroSheets } from '@/app/explorer/home/hero-model';
+import { InAppLink } from './HomeSection';
+import { FOCUS_RING } from './home-styles';
+
+const HEADING_ID = 'home-hero-greeting';
+
+const PILL_DOT = { emerald: 'bg-emerald-500', sky: 'bg-sky-500' } as const;
+
+// The three sheets, back left, back right, then the newest in front.
+const SHEET_PLACES = [
+  'left-[20%] top-20 z-10 h-44 w-[62%] shadow-[0_24px_50px_-18px_rgba(2,132,199,0.5)]',
+  'left-[6%] top-12 h-40 w-[58%] -rotate-[8deg] shadow-[0_14px_34px_-14px_rgba(15,23,42,0.35)]',
+  'right-[2%] top-8 h-40 w-[58%] rotate-[7deg] shadow-[0_14px_34px_-14px_rgba(15,23,42,0.35)]',
+] as const;
+
+export function HomeHero() {
+  const { ownerId, documents, loading, activity, go, setMobileNavOpen, lens, lensResult } =
+    useExplorer();
+  const sheets = useMemo(() => heroSheets(documents), [documents]);
+  const pills = heroPills({
+    documents: loading ? undefined : documents.length,
+    inbox: inboxBadge(activity),
+  });
+  const now = useNow(false);
+  const greeting = heroGreeting(new Date(now).getHours());
+
+  return (
+    <section
+      aria-labelledby={HEADING_ID}
+      data-home-hero=""
+      className="relative overflow-hidden border-b border-slate-200 bg-sky-50/70 bg-[radial-gradient(#cfe0f1_1px,transparent_1px)] bg-[length:22px_22px] dark:border-slate-800 dark:bg-slate-900 dark:bg-[radial-gradient(#1c2752_1px,transparent_1px)]"
+    >
+      <span
+        aria-hidden
+        className="pointer-events-none absolute left-1/2 top-[-260px] hidden h-[520px] w-[900px] -translate-x-1/3 rounded-full bg-[radial-gradient(closest-side,rgba(37,99,235,0.30),transparent)] dark:block"
+      />
+      <div className="relative mx-auto flex w-full max-w-7xl flex-wrap items-center gap-10 px-4 pb-12 pt-6 sm:px-6 lg:pb-14">
+        <div className="flex min-w-0 flex-[999_1_32rem] flex-col gap-5">
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setMobileNavOpen(true)}
+              aria-label={HERO_COPY.openNav}
+              className={`-ml-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-slate-600 transition hover:bg-white hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white sm:hidden ${FOCUS_RING}`}
+            >
+              <HamburgerIcon />
+            </button>
+            {pills.map((pill) => {
+              const view =
+                pill.id === 'documents' ? ({ kind: 'all' } as const) : ({ kind: 'inbox' } as const);
+              return (
+                <InAppLink
+                  key={pill.id}
+                  href={explorerPathFor(view)}
+                  onNavigate={() => go(view)}
+                  onActivate={() =>
+                    track(
+                      'Home',
+                      'Selected',
+                      pill.id === 'documents' ? 'Hero.Documents' : 'Hero.Inbox',
+                    )
+                  }
+                  className={`inline-flex h-8 items-center gap-2 rounded-full border border-slate-200 bg-white px-3.5 text-[13px] font-medium text-slate-700 transition hover:border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-slate-600 ${FOCUS_RING}`}
+                >
+                  <span aria-hidden className={`size-[7px] rounded-full ${PILL_DOT[pill.tone]}`} />
+                  <span className="text-optical-centre">{pill.label}</span>
+                </InAppLink>
+              );
+            })}
+            {/* Help ends the row below `lg`; from `lg` it stands at the hero's top right, over the sheets. */}
+            <span className="ml-auto lg:hidden">
+              <HelpArticleLink article="timeline" variant="button" />
+            </span>
+          </div>
+          <h1
+            id={HEADING_ID}
+            className="max-w-3xl text-4xl font-extrabold leading-[1.02] tracking-[-0.04em] text-[#17153a] sm:text-5xl lg:text-[3.5rem] dark:text-white"
+          >
+            {greeting} {HERO_COPY.question}
+          </h1>
+          <p className="max-w-2xl text-[17px] leading-relaxed text-slate-600 dark:text-slate-300">
+            {HERO_COPY.lead}
+          </p>
+          <div className="max-w-2xl">
+            <LensField
+              lens={lens}
+              subjects={lensResult.subjects}
+              size="hero"
+              trailing={
+                <button
+                  type="button"
+                  aria-label={HERO_COPY.newDocument}
+                  onClick={() => {
+                    track('Home', 'Selected', 'Hero.NewDocument');
+                    window.location.assign('/new');
+                  }}
+                  className={`flex h-11 shrink-0 items-center gap-2 rounded-xl bg-brand-700 px-[18px] text-[15px] font-semibold text-white transition hover:bg-brand-800 dark:bg-brand-600 dark:hover:bg-brand-700 ${FOCUS_RING}`}
+                >
+                  <PlusIcon />
+                  {/* The label folds to the plus on a phone; the button keeps its name. */}
+                  <span className="hidden sm:inline">{HERO_COPY.newDocument}</span>
+                </button>
+              }
+            />
+          </div>
+        </div>
+        <div className="absolute right-4 top-6 z-20 hidden sm:right-6 lg:block">
+          <HelpArticleLink article="timeline" variant="button" />
+        </div>
+        <div aria-hidden className="relative hidden h-72 min-w-[18rem] flex-[1_1_22rem] lg:block">
+          {sheets.map((doc, i) => (
+            <span
+              key={doc.id}
+              data-hero-sheet=""
+              className={`absolute overflow-hidden rounded-2xl border-[6px] border-white bg-white dark:border-slate-800 dark:bg-slate-800 ${SHEET_PLACES[i]}`}
+            >
+              <DocumentThumbnail
+                ownerId={ownerId}
+                documentId={doc.id}
+                version={doc.savedAt}
+                empty={doc.empty}
+                className="block h-full w-full"
+              />
+            </span>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
