@@ -410,6 +410,33 @@ describe('POST room-ticket', () => {
     expect(seen).toHaveLength(0);
   });
 
+  // docs/specs/012-collaboration/facilitator.md: the mint decides owner-ness with ownsDocument, so a team
+  // document's owner counts only while verified and still joined.
+  it('mints the owner bit only for the verified, joined owner of a team document', async () => {
+    db.getDocumentMeta.mockResolvedValue({ ownerId: 'user_own', teamId: 'team-1' });
+    gates.resolveDocumentGrant.mockResolvedValue({ role: 'edit', tabScope: null, shareCode: null });
+    db.getMembership.mockResolvedValue({ status: 'joined' });
+    const asOwner = () =>
+      makeTestRouteContext('POST', '/api/documents/d1/room-ticket', {
+        owner: 'user_own',
+        clerkUserId: 'user_own',
+        verifiedUserId: 'user_own',
+      });
+    await handleDocumentRoomRoutes(asOwner());
+    expect(db.createWsTicket).toHaveBeenLastCalledWith(
+      expect.anything(),
+      'd1',
+      expect.objectContaining({ owner: true }),
+    );
+    db.getMembership.mockResolvedValue(null);
+    await handleDocumentRoomRoutes(asOwner());
+    expect(db.createWsTicket).toHaveBeenLastCalledWith(
+      expect.anything(),
+      'd1',
+      expect.objectContaining({ owner: false }),
+    );
+  });
+
   it('404s (no existence leak) and mints nothing without a grant', async () => {
     db.getDocumentMeta.mockResolvedValue({ ownerId: 'other', teamId: null });
     gates.resolveDocumentGrant.mockResolvedValue(null);
@@ -477,33 +504,6 @@ describe('WebSocket upgrade: tab scope', () => {
     );
     expect(seen[0]!.headers.get('X-Verified-Tab-Scope')).toBe('');
     expect(seen[0]!.headers.get('X-Verified-Share-Code')).toBe('');
-  });
-
-  // docs/specs/012-collaboration/facilitator.md: the mint decides owner-ness with ownsDocument, so a team
-  // document's owner counts only while verified and still joined.
-  it('mints the owner bit only for the verified, joined owner of a team document', async () => {
-    db.getDocumentMeta.mockResolvedValue({ ownerId: 'user_own', teamId: 'team-1' });
-    gates.resolveDocumentGrant.mockResolvedValue({ role: 'edit', tabScope: null, shareCode: null });
-    db.getMembership.mockResolvedValue({ status: 'joined' });
-    const asOwner = () =>
-      makeTestRouteContext('POST', '/api/documents/d1/room-ticket', {
-        owner: 'user_own',
-        clerkUserId: 'user_own',
-        verifiedUserId: 'user_own',
-      });
-    await handleDocumentRoomRoutes(asOwner());
-    expect(db.createWsTicket).toHaveBeenLastCalledWith(
-      expect.anything(),
-      'd1',
-      expect.objectContaining({ owner: true }),
-    );
-    db.getMembership.mockResolvedValue(null);
-    await handleDocumentRoomRoutes(asOwner());
-    expect(db.createWsTicket).toHaveBeenLastCalledWith(
-      expect.anything(),
-      'd1',
-      expect.objectContaining({ owner: false }),
-    );
   });
 
   it('mints a ticket carrying the grant scope and code', async () => {
