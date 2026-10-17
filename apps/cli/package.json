@@ -30,11 +30,11 @@
     "@livediagram/oxlint-config": "workspace:*",
     "@livediagram/vitest-config": "workspace:*",
     "@resvg/resvg-wasm": "^2.6.2",
-    "@types/node": "^26.6.4",
-    "@vitest/coverage-v8": "^5.0.3",
+    "@types/node": "^26.6.5",
+    "@vitest/coverage-v8": "^5.0.4",
     "esbuild": "^0.28.2",
     "oxlint": "^1.88.0",
     "typescript": "^7.0.2",
-    "vitest": "^5.0.3"
+    "vitest": "^5.0.4"
   }
 }
