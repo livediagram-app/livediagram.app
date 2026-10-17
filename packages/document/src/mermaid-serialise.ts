@@ -37,6 +37,9 @@ function escapeLabel(label: string): string {
     .replace(/\n/g, '<br/>');
 }
 
+// What an unlabelled node or frame is written with: one space, a label Mermaid accepts that reads back as none.
+const BLANK_LABEL = ' ';
+
 // Mermaid ids must be plain tokens; map our arbitrary element ids to n1, n2…
 // deterministically by first appearance.
 function mermaidNodeText(id: string, label: string, shape: string): string {
@@ -75,9 +78,23 @@ export function mermaidFromTab(tab: { elements: Element[]; layers?: Layer[] }): 
   // touching hidden nodes) vanish with them, since a hidden node never
   // enters the id map below.
   const elements = visibleLayerElements(tab.elements, tab.layers);
-  const boxed = elements.filter((e): e is BoxedShape => e.type === 'shape' && 'x' in e);
-  const frames = boxed.filter((e) => e.shape === 'frame');
-  const nodes = boxed.filter((e) => e.shape !== 'frame');
+  // Every connection is kept: an element an arrow is pinned to at both ends is a node for that arrow's sake, even a
+  // kind with no flowchart meaning of its own (a text, a table), so the line is never dropped.
+  const connected = new Set<string>();
+  for (const el of elements) {
+    if (el.type !== 'arrow' || el.from.kind !== 'pinned' || el.to.kind !== 'pinned') continue;
+    connected.add(el.from.elementId);
+    connected.add(el.to.elementId);
+  }
+  const boxed = elements.filter(
+    (e): e is BoxedShape =>
+      e.type !== 'arrow' &&
+      'x' in e &&
+      typeof (e as { width?: unknown }).width === 'number' &&
+      (e.type === 'shape' || e.type === 'sticky' || connected.has(e.id)),
+  );
+  const frames = boxed.filter((e) => e.type === 'shape' && e.shape === 'frame');
+  const nodes = boxed.filter((e) => !(e.type === 'shape' && e.shape === 'frame'));
 
   const idMap = new Map<string, string>();
   nodes.forEach((el, i) => idMap.set(el.id, `n${i + 1}`));
@@ -93,14 +110,17 @@ export function mermaidFromTab(tab: { elements: Element[]; layers?: Layer[] }): 
 
   const nodeLine = (el: BoxedShape, indent: string) => {
     const mid = idMap.get(el.id)!;
-    const label = (el.label ?? '').trim() || mid;
-    return `${indent}${mermaidNodeText(mid, label, el.shape ?? 'square')}`;
+    // No label is written blank, never as the id: the id came back as the label on import (a dot as a circle
+    // reading "n18").
+    const label = (el.label ?? '').trim() || BLANK_LABEL;
+    const shape = el.type === 'shape' ? (el.shape ?? 'square') : 'square';
+    return `${indent}${mermaidNodeText(mid, label, shape)}`;
   };
 
   const lines: string[] = ['flowchart TD'];
   for (const f of frames) {
     const sid = idMap.get(f.id)!;
-    const title = (f.label ?? '').trim() || sid;
+    const title = (f.label ?? '').trim() || BLANK_LABEL;
     lines.push(`  subgraph ${sid}["${escapeLabel(title)}"]`);
     for (const n of nodes) if (frameOf.get(n.id) === f.id) lines.push(nodeLine(n, '    '));
     lines.push('  end');
