@@ -1,6 +1,6 @@
 'use client';
 
-// What happened (docs/specs/013-workspace/explorer-home.md "What happened"): what other people did
+// What Happened (docs/specs/013-workspace/explorer-home.md "What Happened"): what other people did
 // to documents the person can open, under day headings, with no filter controls. A quiet See
 // timeline link at the end of the section's heading row opens the Timeline; it
 // sits there so it never moves when the entries land.

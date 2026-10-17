@@ -30,7 +30,7 @@ export function viewDocumentTitle(kind: NamedKind): string {
   return `${VIEW_TITLES[kind]} | livediagram`;
 }
 
-// The view reached from Home, without a sidebar row of its own: Recent (See more). Its breadcrumb
+// The view reached from Home, without a sidebar row of its own: Recent (See More). Its breadcrumb
 // leads back to Home
 // (docs/specs/013-workspace/explorer-structure.md#page-titles-follow-the-rows).
 const UNDER_HOME: ReadonlySet<SelectedNode['kind']> = new Set(['recent']);

@@ -1,9 +1,9 @@
 'use client';
 
-// Jump back in (docs/specs/013-workspace/explorer-home.md "Jump back in"): the person's Within reach
+// Jump Back In (docs/specs/013-workspace/explorer-home.md "Jump Back In"): the person's Within reach
 // set of documents. On a desktop or tablet a 4 by 2 grid, most used on top and recent below, with
-// See more in the heading row; on a phone the alternating strip that ends in its See more tile. The
-// two halves carry no titles: the documents are one list named Jump back in (Calm by default).
+// See More in the heading row; on a phone the alternating strip that ends in its See More tile. The
+// two halves carry no titles: the documents are one list named Jump Back In (Calm by default).
 
 import { CompactEmptyState, useMediaQuery } from '@livediagram/ui';
 import { track } from '@/lib/telemetry';
@@ -31,7 +31,7 @@ export function JumpBackIn({
   ownerId: string;
   set: JumpBackInSet;
   loading: boolean;
-  /** The Recent page, for See more's href (new tab, copy link). */
+  /** The Recent page, for See More's href (new tab, copy link). */
   recentHref: string;
   /** In-app navigation to the Recent page. */
   onSeeMore: () => void;

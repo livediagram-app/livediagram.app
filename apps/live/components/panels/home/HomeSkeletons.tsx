@@ -19,7 +19,7 @@ function TileSkeleton({ thumb }: { thumb: string }) {
   );
 }
 
-/** Jump back in's grid: two rows of four tiles. */
+/** Jump Back In's grid: two rows of four tiles. */
 export function GridSkeleton() {
   return (
     <div aria-hidden className={GRID}>
@@ -32,7 +32,7 @@ export function GridSkeleton() {
   );
 }
 
-/** Jump back in's phone strip. */
+/** Jump Back In's phone strip. */
 export function StripSkeleton() {
   return (
     <div aria-hidden className={`-mx-1 flex ${STRIP_HEIGHT} gap-3 overflow-hidden px-1 pb-2 pt-1`}>

@@ -11,7 +11,7 @@ import type { ReactNode } from 'react';
 //
 // The actions are a CHILDREN SLOT rather than props because the close button
 // is not uniform: most dialogs mount the standard DialogCloseButton, but Code
-// and Chart data use a larger round one. Which of those is right is a design
+// and Chart Data use a larger round one. Which of those is right is a design
 // question, so this component carries neither opinion and renders whatever it
 // is handed.
 //

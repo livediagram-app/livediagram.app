@@ -3,9 +3,9 @@
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-// Jump back in (docs/specs/013-workspace/explorer-home.md "Jump back in"): on a desktop or tablet a
-// 4 by 2 grid, most used on top, recent below, See more in the heading row; on a phone a strip that
-// alternates and ends in a See more tile. One list of links named by their documents, no group
+// Jump Back In (docs/specs/013-workspace/explorer-home.md "Jump Back In"): on a desktop or tablet a
+// 4 by 2 grid, most used on top, recent below, See More in the heading row; on a phone a strip that
+// alternates and ends in a See More tile. One list of links named by their documents, no group
 // titles; a local document carries the Local only pill.
 
 const { track, wide } = vi.hoisted(() => ({ track: vi.fn(), wide: { value: true } }));
@@ -53,7 +53,7 @@ describe('JumpBackIn, desktop and tablet', () => {
 
   it('lists the most used then the recent as one list of links named by their documents', () => {
     renderIt(set(['m1', 'm2', 'm3', 'm4'], ['r1', 'r2', 'r3', 'r4']));
-    const list = screen.getByRole('list', { name: 'Jump back in' });
+    const list = screen.getByRole('list', { name: 'Jump Back In' });
     const links = within(list).getAllByRole('link');
     expect(names(links)).toEqual([
       'Doc m1',
@@ -74,7 +74,7 @@ describe('JumpBackIn, desktop and tablet', () => {
 
   it('starts the recent on the second row however short the first is', () => {
     renderIt(set(['m1', 'm2'], ['r1']));
-    const items = within(screen.getByRole('list', { name: 'Jump back in' })).getAllByRole(
+    const items = within(screen.getByRole('list', { name: 'Jump Back In' })).getAllByRole(
       'listitem',
     );
     expect(items[2]!.className).toContain('col-start-1');
@@ -83,7 +83,7 @@ describe('JumpBackIn, desktop and tablet', () => {
 
   it('lets the recent take the top row when nothing is most used', () => {
     renderIt(set([], ['r1', 'r2']));
-    const items = within(screen.getByRole('list', { name: 'Jump back in' })).getAllByRole(
+    const items = within(screen.getByRole('list', { name: 'Jump Back In' })).getAllByRole(
       'listitem',
     );
     expect(items[0]!.className).not.toContain('col-start-1');
@@ -97,11 +97,11 @@ describe('JumpBackIn, desktop and tablet', () => {
     expect(track).toHaveBeenLastCalledWith('Home', 'Selected', 'JumpBackIn.Recent');
   });
 
-  it('puts See more in the heading row, navigating in the app on a plain click', () => {
+  it('puts See More in the heading row, navigating in the app on a plain click', () => {
     const onSeeMore = renderIt(set(['m1'], []));
-    const link = screen.getByRole('link', { name: 'See more' });
+    const link = screen.getByRole('link', { name: 'See More' });
     expect(link.getAttribute('href')).toBe('/explorer/recent');
-    expect(link.parentElement!.querySelector('h2')!.textContent).toBe('Jump back in');
+    expect(link.parentElement!.querySelector('h2')!.textContent).toBe('Jump Back In');
     fireEvent.click(link);
     expect(onSeeMore).toHaveBeenCalledTimes(1);
     expect(track).toHaveBeenCalledWith('Home', 'Selected', 'JumpBackIn.SeeMore');
@@ -121,7 +121,7 @@ describe('JumpBackIn, desktop and tablet', () => {
     expect(screen.getByText('No documents yet')).toBeTruthy();
     expect(screen.getByText('The documents you use most and last will gather here.')).toBeTruthy();
     expect(screen.queryByRole('list')).toBeNull();
-    expect(screen.getByRole('link', { name: 'See more' })).toBeTruthy();
+    expect(screen.getByRole('link', { name: 'See More' })).toBeTruthy();
   });
 });
 
@@ -130,9 +130,9 @@ describe('JumpBackIn, phone', () => {
     wide.value = false;
   });
 
-  it('alternates most used and recent, then ends in a See more tile outside the list', () => {
+  it('alternates most used and recent, then ends in a See More tile outside the list', () => {
     const onSeeMore = renderIt(set(['m1', 'm2'], ['r1', 'r2', 'r3']));
-    const list = screen.getByRole('list', { name: 'Jump back in' });
+    const list = screen.getByRole('list', { name: 'Jump Back In' });
     expect(names(within(list).getAllByRole('link'))).toEqual([
       'Doc m1',
       'Doc r1',
@@ -140,8 +140,8 @@ describe('JumpBackIn, phone', () => {
       'Doc r2',
       'Doc r3',
     ]);
-    const seeMore = screen.getAllByRole('link', { name: 'See more' });
-    // The tile only: no second See more in the heading row.
+    const seeMore = screen.getAllByRole('link', { name: 'See More' });
+    // The tile only: no second See More in the heading row.
     expect(seeMore).toHaveLength(1);
     expect(list.contains(seeMore[0]!)).toBe(false);
     fireEvent.click(seeMore[0]!);
@@ -157,7 +157,7 @@ describe('JumpBackIn, phone', () => {
 
   it('fades the trailing edge only while more lies to the right', () => {
     renderIt(set(['a'], ['b']));
-    const scroller = screen.getByRole('list', { name: 'Jump back in' }).parentElement!;
+    const scroller = screen.getByRole('list', { name: 'Jump Back In' }).parentElement!;
     const fade = scroller.nextElementSibling as HTMLElement;
     Object.defineProperties(scroller, {
       clientWidth: { value: 300, configurable: true },
@@ -171,9 +171,9 @@ describe('JumpBackIn, phone', () => {
     expect(fade.className).toContain('opacity-0');
   });
 
-  it('keeps its See more tile beside the empty state', () => {
+  it('keeps its See More tile beside the empty state', () => {
     renderIt(set([], []));
     expect(screen.getByText('No documents yet')).toBeTruthy();
-    expect(screen.getByRole('link', { name: 'See more' })).toBeTruthy();
+    expect(screen.getByRole('link', { name: 'See More' })).toBeTruthy();
   });
 });

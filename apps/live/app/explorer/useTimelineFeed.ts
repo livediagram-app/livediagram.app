@@ -41,7 +41,7 @@ import { track } from '@/lib/telemetry';
 import { ARRIVED_ON_TIMELINE } from './entry-path';
 
 // Was the Timeline where this page load STARTED, or somewhere the user
-// went afterwards (its sidebar row, Home's See timeline)? See ./entry-path.ts.
+// went afterwards (its sidebar row, Home's See Timeline)? See ./entry-path.ts.
 
 // `#event=<id>` on the Timeline URL. Read once at module scope for the
 // same reason ENTRY_PATH (./entry-path.ts) is: the hash is what the page was OPENED with,

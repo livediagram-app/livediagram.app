@@ -100,7 +100,7 @@ describe('the Corners row', () => {
     expect(view([circle, text, arrow]).sections.corners).toBeUndefined();
   });
 
-  it('goes back to the kind’s default on Clear styles', () => {
+  it('goes back to the kind’s default on Clear Styles', () => {
     expect(clearQuickCorners({ ...shape, borderRadius: 'lg' })).not.toHaveProperty('borderRadius');
     expect(clearQuickCorners(text)).toBe(text);
   });

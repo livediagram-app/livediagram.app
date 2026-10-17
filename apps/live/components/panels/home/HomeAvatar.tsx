@@ -1,4 +1,4 @@
-// People on Home (docs/specs/013-workspace/explorer-home.md "What happened"): an initials disc in
+// People on Home (docs/specs/013-workspace/explorer-home.md "What Happened"): an initials disc in
 // the person's colour, with their picture over it once it loads, and no presence ring (Home says
 // what people did, not whether they are here). Decorative: every entry names its people in words.
 

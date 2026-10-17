@@ -34,7 +34,7 @@ export function useTagsPage(selected: SelectedNode, go: (node: SelectedNode) => 
   const headerActions: ReactNode = onTags ? (
     <>
       {tag ? <OneTagMenu key={tag.id} tag={tag} onDeleted={() => openTag(null)} /> : null}
-      {/* Like the pane's own New document: the label folds to the icon on a phone. */}
+      {/* Like the pane's own New Document: the label folds to the icon on a phone. */}
       <Button size="xs" onClick={newTag} aria-label="New Tag" className="shadow-sm">
         <PlusIcon />
         <span className="hidden sm:inline">New Tag</span>

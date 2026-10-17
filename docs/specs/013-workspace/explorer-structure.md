@@ -23,7 +23,7 @@ The sidebar holds navigation only. It carries no greeting, no search field, no N
 - **Search** lives in the top bar: the lens field of [Explorer filters](explorer-filters.md#the-field), left of the
   account control, searches and filters the documents of the current view. The bottom bar's Search opens the
   app-wide search panel.
-- **New folder** and **New document** live in the page header of the view they create in.
+- **New folder** and **New Document** live in the page header of the view they create in.
 - The account is reached from the header's account menu.
 
 ## Groups and rows
@@ -42,8 +42,8 @@ Top to bottom. "Opens" names the view a row selects; every view keeps its own ro
 
 Home is the Explorer's landing view. The **Inbox** is what is outstanding for the reader now; the **Timeline** is the
 record of what happened. Recent and Favourites have no sidebar row; their routes (`/explorer/recent`,
-`/explorer/favourites`) keep working. Recent is reached from Home's Jump back in (**See more**); the Timeline is also
-reached from Home's What happened (**See timeline**). The retired `/explorer/activity` opens the Inbox
+`/explorer/favourites`) keep working. Recent is reached from Home's Jump Back In (**See More**); the Timeline is also
+reached from Home's What Happened (**See Timeline**). The retired `/explorer/activity` opens the Inbox
 ([Folders: Explorer routes](folders.md#explorer-routes)).
 
 ### Spaces
@@ -247,7 +247,7 @@ compact size, skeleton rows while loading, and one line with **Try Again** when 
 
 | Section        | The pane shows                                                                                                                                                                                                                                                                                                         | Action     |
 | -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- |
-| Home           | **Jump back in**: up to six documents (most used, then most recent), never the one already open, as preview cards, with **See all** (Recent). **What happened**, only when someone else did something: each document's summary sentence under its day, with **See timeline** (the Timeline in the pane)                | None       |
+| Home           | **Jump Back In**: up to six documents (most used, then most recent), never the one already open, as preview cards, with **See all** (Recent). **What Happened**, only when someone else did something: each document's summary sentence under its day, with **See Timeline** (the Timeline in the pane)                | None       |
 | Inbox          | The Inbox ([Inbox](inbox.md)): assigned to you, you assigned, open comment threads                                                                                                                                                                                                                                     | None       |
 | Timeline       | The Timeline ([Timeline](timeline.md)) as a list: each event a row (its glyph, its subject, its reason and time) under its day, **Show Earlier** to page back                                                                                                                                                          | None       |
 | Shared with me | The documents shared with the reader, as rows                                                                                                                                                                                                                                                                          | None       |
@@ -258,7 +258,7 @@ compact size, skeleton rows while loading, and one line with **Try Again** when 
 | Library        | Three tabs: Image gallery, Themes, Shape libraries, each the Explorer page's own view at the pane's width; Open Page goes to the tab shown                                                                                                                                                                             | None       |
 | Trash          | A line on the 30 days, then each deleted document as a row with **Restore** and **Delete** as icon buttons named by their tooltips (Delete asked first)                                                                                                                                                                | None       |
 
-- **Every document the pane shows** (a place's rows, Home's cards and What happened, the Timeline's document events)
+- **Every document the pane shows** (a place's rows, Home's cards and What Happened, the Timeline's document events)
   carries the Explorer page's document menu (`⋯`, right-click, Shift+F10), the same verbs as on the Explorer page. The
   `⋯` shows on hover or focus under a mouse, always on a touch screen.
 - **Rows with documents**: a document row shows its thumbnail and "Updated <relative time>"; activating it opens the
@@ -306,7 +306,7 @@ row and card of one, wherever it is listed (folders, This browser, Recent and Fa
 editor's Explorer, the Trash), carries the **Local only** pill
 ([Offline Mode: Local only pill](../006-document/offline-mode.md#local-only-pill)).
 
-The editor header names such a document with the matching **Local only** badge. Home's "Jump back in" carries the
+The editor header names such a document with the matching **Local only** badge. Home's "Jump Back In" carries the
 same pill (`LocalOnlyPill`) on the document's thumbnail ([Explorer Home](explorer-home.md)).
 
 ## Telemetry

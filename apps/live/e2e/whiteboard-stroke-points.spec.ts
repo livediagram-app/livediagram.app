@@ -60,7 +60,7 @@ async function exportTab(page: Page, format: 'SVG' | 'PNG'): Promise<Buffer> {
   // The Tab menu is a control menu: a named dialog (docs/specs/004-interface-design/menus.md).
   const tabMenu = page.getByRole('dialog', { name: 'Tab menu' });
   await tabMenu.getByRole('button', { name: 'Export', exact: true }).click();
-  const dialog = page.getByRole('dialog', { name: 'Export tab' });
+  const dialog = page.getByRole('dialog', { name: 'Export Tab' });
   await dialog.getByRole('button', { name: new RegExp(`^${format}`) }).click();
   const download = page.waitForEvent('download');
   await dialog.getByRole('button', { name: `Download ${format}` }).click();

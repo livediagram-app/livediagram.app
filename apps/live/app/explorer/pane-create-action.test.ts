@@ -11,7 +11,7 @@ describe('paneCreateMode', () => {
   });
 
   it('renders a lone action directly rather than hiding it in a menu', () => {
-    // Timeline and Recent offer only New document; a one-tile dropdown would
+    // Timeline and Recent offer only New Document; a one-tile dropdown would
     // cost a click and drop the word "document" from the button.
     expect(paneCreateMode({ hasCreateDocument: true, hasCreateFolder: false })).toEqual({
       kind: 'single',

@@ -252,7 +252,7 @@ export function QuickStylePanel({
                 className="flex h-7 w-full items-center justify-center gap-1.5 rounded-md text-xs font-medium text-slate-700 transition hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 dark:text-slate-200 dark:hover:bg-slate-800"
               >
                 <ClearStylesGlyph />
-                Clear styles
+                Clear Styles
               </button>
             </div>
           </div>

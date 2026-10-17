@@ -471,7 +471,7 @@ The Explorer page header's **Import from** group ([Folders](../013-workspace/fol
 
 - **Diagrams**: each draw.io file becomes **its own new document**, its pages as **diagram tabs** in
   page order (named after the pages), through the shared new-document target ([Board import](board-import.md)
-  "new-document"), filed where New document files.
+  "new-document"), filed where New Document files.
 - **Libraries**: each library file becomes its own shape library (above).
 - **Everything else** (an image without a diagram, a text file, a folder's stray files) is listed as
   skipped with its reason, never fatal.

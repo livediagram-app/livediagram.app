@@ -724,7 +724,7 @@ export function ExportPagePickerScene() {
         strokeWidth={1.5}
       />
       <Label x={32} y={32} size={13} weight={700} tone="strong">
-        Export tab
+        Export Tab
       </Label>
       {/* The two-level bar back to the format cards. */}
       <Label x={32} y={56} size={10.5} weight={600} tone="muted">

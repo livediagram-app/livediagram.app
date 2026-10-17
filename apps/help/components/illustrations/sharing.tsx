@@ -398,7 +398,7 @@ function ShareCard({
         strokeWidth={2}
       />
       <Label x={x + 16} y={y + 20} size={13} weight={700} tone="strong">
-        Share this document
+        Share This Document
       </Label>
       {status ? (
         <g>

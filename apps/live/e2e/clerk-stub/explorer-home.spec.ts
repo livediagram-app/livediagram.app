@@ -4,8 +4,8 @@ import { freshUserId, installClerkStub, type StubUser } from './clerk-stub';
 
 // Explorer Home signed in (docs/specs/013-workspace/explorer-home.md), against the Clerk-enabled
 // export: a team member's Home names what a teammate did on a team document, where it lives, and
-// opens it; the person's own Jump back in holds the document they opened, on a desktop and on a
-// phone, and See more leads to Recent.
+// opens it; the person's own Jump Back In holds the document they opened, on a desktop and on a
+// phone, and See More leads to Recent.
 
 test.use({ colorScheme: 'dark', viewport: { width: 1280, height: 800 } });
 
@@ -99,10 +99,10 @@ test('a teammate’s work on a team document reaches Home, named and placed', as
 
   await expect(
     page
-      .getByRole('list', { name: 'Jump back in' })
+      .getByRole('list', { name: 'Jump Back In' })
       .getByRole('link', { name: 'Payments architecture' }),
   ).toHaveAttribute('href', `/document/${doc}`);
-  const happened = page.getByRole('region', { name: 'What happened' });
+  const happened = page.getByRole('region', { name: 'What Happened' });
 
   // One teammate: each action its own entry, naming who, what, which document and where.
   const comment = happened.getByRole('link', { name: /^Bob commented on Payments architecture/ });
@@ -115,16 +115,16 @@ test('a teammate’s work on a team document reaches Home, named and placed', as
   // Home has no Timeline of its own.
   await expect(page.getByRole('region', { name: 'Timeline' })).toHaveCount(0);
 
-  // A phone: the same document in the strip, which ends in See more.
+  // A phone: the same document in the strip, which ends in See More.
   await page.setViewportSize({ width: 390, height: 844 });
   await expect(
     page
-      .getByRole('list', { name: 'Jump back in' })
+      .getByRole('list', { name: 'Jump Back In' })
       .getByRole('link', { name: 'Payments architecture' }),
   ).toBeVisible();
   await page
-    .getByRole('region', { name: 'Jump back in' })
-    .getByRole('link', { name: 'See more' })
+    .getByRole('region', { name: 'Jump Back In' })
+    .getByRole('link', { name: 'See More' })
     .click();
   await expect(page).toHaveURL(/\/explorer\/recent\/?$/);
   await page.goBack();

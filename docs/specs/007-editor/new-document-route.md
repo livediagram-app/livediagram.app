@@ -294,9 +294,9 @@ The card has no backdrop, so the editor header stays live beside it. It stacks o
 
 This is the only welcome surface so it sets the mobile floor for the rest of the editor's panel chrome (Palette / Context / Explorer, see [07-live-app](live-app.md)). Those are addressed separately.
 
-## Jump back in (recent documents card)
+## Jump Back In (recent documents card)
 
-Returning users get a **"Jump back in" card** pinned to the right of the
+Returning users get a **"Jump Back In" card** pinned to the right of the
 centred wizard (desktop `xl+` only — below that the wizard owns the width):
 the 5 most recently-saved documents they own or that sit in a team they have
 joined (the same list as the landing page's Welcome back,

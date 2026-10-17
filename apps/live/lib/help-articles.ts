@@ -403,7 +403,7 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   timeline: {
     title: 'Learn about Home and the Timeline',
-    description: 'Jump back in, what others did while you were away, and your own Timeline.',
+    description: 'Jump Back In, what others did while you were away, and your own Timeline.',
   },
   inbox: {
     title: 'Learn about the Inbox',

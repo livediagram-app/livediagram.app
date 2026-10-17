@@ -290,7 +290,7 @@ saved in Excalidraw comes in as its own document, with no editor open.
 - **What it makes**: each file becomes **a new document with one whiteboard
   tab**, through the shared new-document target
   ([Board import](board-import.md) "new-document", `importBoardsAsDocuments`):
-  the whiteboard profile, filed where New document files, images through the
+  the whiteboard profile, filed where New Document files, images through the
   [Import image pipeline](import-image-pipeline.md). Several files make one
   document each; a file that cannot be read is listed with its reason and the
   rest still land. A whiteboard ignores the file's `viewBackgroundColor` (it is

@@ -80,7 +80,7 @@ export function LineDataDialog({
       className="max-h-[90vh]"
     >
       <DialogHeader
-        title="Chart data"
+        title="Chart Data"
         subtitle="A row per category, a column per series. Or import a CSV (header = series names, first column = categories)."
       >
         <HelpArticleLink article="dataElements" size="md" />

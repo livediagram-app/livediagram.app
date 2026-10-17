@@ -308,7 +308,7 @@ The tour points at the section by name; it never opens the menu itself.
 
 On a selected data chart (`pie-chart`, `bar-chart` or `line-chart`, any of the seven chart types), from
 `chart-tour-steps.ts`. Its words name the chart's own type and marks (slices, bars or points). A line, area or
-scatter chart's numbers are edited in its **Chart data** dialog, which the tour opens and carries on inside, as the
+scatter chart's numbers are edited in its **Chart Data** dialog, which the tour opens and carries on inside, as the
 Sankey tour does with Flows; every dialog step rings a real control (`data-tour-id`: `chart-data-table`,
 `chart-data-series`, `chart-data-add-row`, `chart-data-import`). A canvas step puts the dialog away. While it runs,
 Escape is the tour's and never closes the dialog.
@@ -320,12 +320,12 @@ Escape is the tour's and never closes the dialog.
 4. **The Chart's Own Menu**: the menu step. Chart Type (keeps the data), Data, Chart (the legend, Show Values, Show
    Axis), Presets (a palette). On a pie or column chart, Data is a row per mark; on a chart drawn from a Sheet, Data
    reads the Sheet and **Unlink From Sheet** keeps today's numbers.
-5. **A Row per Category** (a line, area or scatter chart not drawn from a Sheet): opens **Chart data** and rings its
+5. **A Row per Category** (a line, area or scatter chart not drawn from a Sheet): opens **Chart Data** and rings its
    table; the chart behind redraws as the numbers change.
 6. **Series Across the Top**: rings the series header row; rename, remove, or **+** for another series.
 7. **Add a Row**: rings **+ Add row**: a category at the end, every series at 0.
 8. **Or Import a CSV**: rings **Import CSV**: the header row names the series, the first column the categories.
-9. **That Is a Chart**: the closing card, with **Data Elements Help**. **Done** closes Chart data with the tour, storing
+9. **That Is a Chart**: the closing card, with **Data Elements Help**. **Done** closes Chart Data with the tour, storing
    what is being typed as the dialog's own Done does; Skip leaves it open.
 
 ## The Stack tour

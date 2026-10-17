@@ -8,26 +8,26 @@ brings, in one screen: "what was I working on?" and "what happened while I was a
 
 - Home lives at `/explorer/home`. `/explorer`, and any Explorer URL that names no view, lands on it.
 - The **Timeline** ([Timeline](timeline.md)) lives at `/explorer/timeline`, with a sidebar row of its own under the
-  Inbox ([Explorer structure](explorer-structure.md)). What happened's **See timeline** link also opens it; its
+  Inbox ([Explorer structure](explorer-structure.md)). What Happened's **See Timeline** link also opens it; its
   breadcrumb is its own (**Timeline**).
 
 ## Layout
 
-- **One column**, at every width: **Jump back in**, then **What happened**. It scrolls with the page.
+- **One column**, at every width: **Jump Back In**, then **What Happened**. It scrolls with the page.
 - **Headings with a rule** set the sections apart. Each section opens with its heading row: the title (a larger
-  heading, about 16 px, bold), the section's quiet link at the right end (**See more**, **See timeline**), and
+  heading, about 16 px, bold), the section's quiet link at the right end (**See More**, **See Timeline**), and
   a hairline rule under the row (1 px, the page's line colour, spanning the section's width). Generous space (about
   28 px) separates one section from the next.
 - No cards and no panel backgrounds: the sections sit directly on the page.
-- The page header carries **New document**, as every Explorer section does, and the section's Help link, as every
+- The page header carries **New Document**, as every Explorer section does, and the section's Help link, as every
   section's header does ([Contextual help links](../018-help/contextual-help-links.md)). Home has no other header
   actions: no import, no folder, no view switch.
-- The person's own history (what they created, updated or opened) is not on Home: Jump back in holds what they
+- The person's own history (what they created, updated or opened) is not on Home: Jump Back In holds what they
   reach for, and the full record is the Timeline's.
 
-## Jump back in
+## Jump Back In
 
-Jump back in is a **[Within reach](../004-interface-design/within-reach.md)** set of the person's documents:
+Jump Back In is a **[Within reach](../004-interface-design/within-reach.md)** set of the person's documents:
 the **4 most used** and the **4 most recent**, no document twice.
 
 - **Most used**: the documents the person used on the most days in the **last 90 days**. A **use day** is a UTC
@@ -40,7 +40,7 @@ the **4 most used** and the **4 most recent**, no document twice.
 - **Not empty on day one**: every day the person edited a document before opens were recorded counts as a day
   they opened it, so Most used reflects the work they already did.
 - **Making a document is a use**, and a **bulk import is not** ([Making a document](#making-a-document)): what the
-  person just made is in Jump back in at once, opened or not, while one big import never pushes everything else
+  person just made is in Jump Back In at once, opened or not, while one big import never pushes everything else
   out of it.
 - Only documents the person can open now: never one in the Trash, nor one whose share link has lapsed or whose
   team they have left.
@@ -49,13 +49,13 @@ the **4 most used** and the **4 most recent**, no document twice.
   thumbnail, as every other row and card of one does.
 - Each document is a small snapshot thumbnail with its name below it in a small font, truncated to the
   thumbnail's width. The full name is its tooltip and accessible name. Activating a thumbnail opens the document.
-- **No row titles.** "Jump back in" is the section's only title: the two groups carry no visible label and no
+- **No row titles.** "Jump Back In" is the section's only title: the two groups carry no visible label and no
   extra screen-reader label, and their order (most used first, then recent) is left to people's intuition
   ([Design principles: Calm by default](../004-interface-design/design-principles.md)). The documents are one list
-  of links, named **Jump back in**, each named by its document's name.
-- **See more** opens the **Recent** page: a quiet link at the end of the section's heading row on a desktop or
+  of links, named **Jump Back In**, each named by its document's name.
+- **See More** opens the **Recent** page: a quiet link at the end of the section's heading row on a desktop or
   tablet, the strip's last tile on a phone. The Recent page is `/explorer/recent`: every document the person can
-  open, most recently saved first (a save by anyone), not by the person's own use as Jump back in's recent
+  open, most recently saved first (a save by anyone), not by the person's own use as Jump Back In's recent
   group is, with the shared filter chips ([Explorer filters](explorer-filters.md)). Its breadcrumb leads
   back to Home (**Home › Recent**).
 
@@ -69,7 +69,7 @@ the **4 most used** and the **4 most recent**, no document twice.
 
 - One **sideways-scrolling strip** of at most **8** thumbnails: most used, recent, most used, recent, and so on;
   when one group runs out, the rest of the other follows.
-- The strip ends in a **See more** tile, the same size as a thumbnail, that opens the Recent page.
+- The strip ends in a **See More** tile, the same size as a thumbnail, that opens the Recent page.
 - The strip scrolls sideways (touch, trackpad, Shift+wheel, and keyboard focus moving through it). Its trailing
   edge fades to say there is more, and only while there is more.
 
@@ -80,14 +80,14 @@ the **4 most used** and the **4 most recent**, no document twice.
 - The grid keeps its two rows' height whatever lands in it, so nothing below moves when Home loads.
 - With no document at all, the section holds the shared [empty state](../004-interface-design/empty-states.md):
   "No documents yet", over "The documents you use most and last will gather here." On a phone the strip holds the
-  small empty state's heading alone and still ends in its See more tile.
+  small empty state's heading alone and still ends in its See More tile.
 
 ### Making a document
 
 - **Making a document is a use.** The day a person makes a document is a use day of it, and the moment they make
   it a use, however they make it: the New Document wizard, an import of one document, a duplicate, a copy of a
   document shared with them, or one an AI tool or an API client makes for them. So a document made without being
-  opened is in Jump back in at once.
+  opened is in Jump Back In at once.
 - **Once a day, as ever.** The wizard opens what it makes: the making and the first open fall on one day, which is
   one use day, not two.
 - **A bulk import is not a use.** An import that makes **more than one document in one go** (a Microsoft
@@ -105,7 +105,7 @@ the **4 most used** and the **4 most recent**, no document twice.
 - A document stored only in this browser counts its making in this browser's record ([Opens](#opens)), by the same
   rule: a bulk import of local documents marks none of them used.
 
-## What happened
+## What Happened
 
 - What **other people** did to documents the person can open, grouped under day headings (**Today**, **Yesterday**,
   then the date). The days are the person's own (their time zone), and the section covers the last **14 days**.
@@ -130,7 +130,7 @@ the **4 most used** and the **4 most recent**, no document twice.
 - Opens are never listed here: whether someone looked at a document is theirs to know, not the reader's.
 - **No filter controls** sit in or above this section. It stays clean; the shared filters live on the other
   Explorer views ([Explorer filters](explorer-filters.md)).
-- A quiet **See timeline** link beside the section's heading opens the **Timeline**, where
+- A quiet **See Timeline** link beside the section's heading opens the **Timeline**, where
   everything that happened, the person's own doings included, can be filtered and paged.
 - Every entry is **spot on**. It names:
   - who acted;
@@ -165,7 +165,7 @@ Viewing Home counts as having looked: it moves the Timeline feed's unread mark e
 ([Timeline](timeline.md) §2.5), once per visit, and says where the mark stood before, so what is new to the person
 can be marked.
 
-- In What happened, an entry newer than that mark carries a **New** pill, as the Timeline's cards do: the word,
+- In What Happened, an entry newer than that mark carries a **New** pill, as the Timeline's cards do: the word,
   never colour alone. A summary is new when its latest action is.
 - A person who has never looked sees none: marking a whole history new would be noise.
 - The mark is the one the first read of the visit reports; a retry does not move what is marked.
@@ -182,14 +182,14 @@ An **open** is the editor loading a document for a person to look at.
   document, which is what Recent reads.
 - These are **not** opens: a snapshot or thumbnail, an embed ([Read-only embeds](embeds.md)), a duplicate, Take
   Offline, the Google Drive mirror, and any read through the public API or an AI tool.
-- Opens are **private**. Only the person who opened a document ever sees that they did: in their Jump back in, never in What happened, a document's
+- Opens are **private**. Only the person who opened a document ever sees that they did: in their Jump Back In, never in What Happened, a document's
   History, a team's feed, or the Timeline feed ([Timeline](timeline.md)).
 - Offline Mode documents never reach the server, so the server records none of their opens. **This browser counts
   them instead**: the editor opening a document stored only here adds the day to that document's own record in
   this browser, by the same once-per-UTC-day rule, keeping the days of the last 90, and moves its last open. Its
   last edit is the record's own save time. Making a document here starts that record with the day and the moment
   it was made, as an open would, unless it came in a bulk import ([Making a document](#making-a-document)). So
-  Jump back in places it among the rest by the same rule. The record lives and dies with the document's local
+  Jump Back In places it among the rest by the same rule. The record lives and dies with the document's local
   record and never leaves the browser.
 
 ### Guests, sign-up and deletion
@@ -210,9 +210,9 @@ has the size of what replaces it, so nothing shifts (CLS 0).
 | State                 | What shows                                                                                           |
 | --------------------- | ---------------------------------------------------------------------------------------------------- |
 | Loading               | Each section's skeleton: the grid's two rows (the phone's strip), three entry rows                   |
-| Jump back in, partial | What exists, no empty boxes (see [Fewer than 8 documents](#fewer-than-8-documents))                  |
-| Jump back in, empty   | Empty state "No documents yet": "The documents you use most and last will gather here."              |
-| What happened, empty  | Empty state "No updates yet": "What others do in your documents over the last 14 days shows here."   |
+| Jump Back In, partial | What exists, no empty boxes (see [Fewer than 8 documents](#fewer-than-8-documents))                  |
+| Jump Back In, empty   | Empty state "No documents yet": "The documents you use most and last will gather here."              |
+| What Happened, empty  | Empty state "No updates yet": "What others do in your documents over the last 14 days shows here."   |
 | Read failed           | "Home could not load. Check your connection and try again." with **Try again**, in place of the body |
 
 Under reduced motion nothing animates: no skeleton pulse, no chevron turn, no smooth scrolling.
@@ -222,23 +222,23 @@ Under reduced motion nothing animates: no skeleton pulse, no chevron turn, no sm
 One-liners on the closed vocabulary ([Telemetry](../017-telemetry/telemetry.md)), never a name or an id:
 
 - `Home·Opened·Landing` / `Nav`: Home shown, as the page the Explorer opened on or after starting elsewhere.
-- `Home·Selected·JumpBackIn.MostUsed` / `JumpBackIn.Recent`: a document opened from Jump back in, by the group it
+- `Home·Selected·JumpBackIn.MostUsed` / `JumpBackIn.Recent`: a document opened from Jump Back In, by the group it
   belongs to (most used or recent), wherever it sits.
-- `Home·Selected·JumpBackIn.SeeMore`: See more followed to the Recent page (the link or the phone's tile).
-- `Home·Selected·WhatHappened`: a document opened from What happened.
+- `Home·Selected·JumpBackIn.SeeMore`: See More followed to the Recent page (the link or the phone's tile).
+- `Home·Selected·WhatHappened`: a document opened from What Happened.
 - `Home·Opened·Group`: a summary entry expanded.
 - `Home·Loaded·Retry`: a failed read retried.
 
 ## Help
 
-The help centre's [Home](../../../apps/help/app/explorer/timeline/page.mdx) article describes Home (Jump back in, What happened) and the Timeline.
+The help centre's [Home](../../../apps/help/app/explorer/timeline/page.mdx) article describes Home (Jump Back In, What Happened) and the Timeline.
 
 ## Accessibility
 
-- Each section is a landmark (`section`) named by its heading (**Jump back in**, **What happened**).
-- Jump back in's documents are one list named **Jump back in**; each document is one link named by its document's
+- Each section is a landmark (`section`) named by its heading (**Jump Back In**, **What Happened**).
+- Jump Back In's documents are one list named **Jump Back In**; each document is one link named by its document's
   name (plus **Local only** for a document stored only here). No row or group carries a label of its own.
 - A summary entry's expanded list is the region its disclosure button controls (`aria-controls`).
-- Keyboard order follows the reading order: See more (desktop and tablet), Jump back in's documents in their order
-  (then the See more tile on a phone), then What happened.
+- Keyboard order follows the reading order: See More (desktop and tablet), Jump Back In's documents in their order
+  (then the See More tile on a phone), then What Happened.
 - WCAG 2.2 AA: contrast, visible focus, and targets of at least 24 by 24 px.

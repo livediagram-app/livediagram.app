@@ -1,6 +1,6 @@
 'use client';
 
-// One What happened entry (docs/specs/013-workspace/explorer-home.md "What happened"). A group
+// One What Happened entry (docs/specs/013-workspace/explorer-home.md "What Happened"). A group
 // with one person shows that person's actions, each a link that opens the document. A group with
 // several people collapses into one summary: a disclosure button whose sentence names everyone
 // and everything, expanding (collapsed by default, never remembered) to every action, newest first.

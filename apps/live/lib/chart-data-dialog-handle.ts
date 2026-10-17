@@ -1,6 +1,6 @@
 import { createDialogHandle } from './dialog-handle';
 
-// The open Chart data dialog's close, for the Chart element tour (docs/specs/007-editor/element-tours.md "The Chart
+// The open Chart Data dialog's close, for the Chart element tour (docs/specs/007-editor/element-tours.md "The Chart
 // tour"), which runs steps inside the dialog from outside it and closes it on Done.
 
 type ChartDataDialogHandle = {
