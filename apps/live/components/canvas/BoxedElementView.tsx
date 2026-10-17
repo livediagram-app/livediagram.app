@@ -45,6 +45,7 @@ import { useMindLabelFit } from '@/components/canvas/useMindLabelFit';
 import { PageCornerFold } from '@/components/canvas/PageCornerFold';
 import { ReactionBurst } from '@/components/canvas/ReactionBurst';
 import { FenceView } from '@/components/canvas/collab/FenceView';
+import { AvatarPadView } from '@/components/canvas/collab/AvatarPadView';
 import { FurnitureView, isFurnitureViewShape } from '@/components/canvas/collab/FurnitureView';
 import { RoomView } from '@/components/canvas/collab/RoomView';
 import { isCssNativeBorderStyle } from '@/components/canvas/border-css';
@@ -633,6 +634,10 @@ function BoxedElementViewImpl({
             stroke={own.stroke ?? defaultStrokeColor(element, surface)}
             animClass={artAnimClass}
           />
+        ) : null}
+        {/* An Avatar Pad (docs/specs/009-elements/avatar-pad.md): the pixel platform characters start on. */}
+        {element.type === 'shape' && element.shape === 'avatar-pad' ? (
+          <AvatarPadView animClass={artAnimClass} />
         ) : null}
         {/* A Lane's title gutter (docs/specs/009-elements/lane.md), behind the label. */}
         {element.type === 'shape' && element.shape === 'lane' ? (

@@ -41,6 +41,11 @@ function inked(elements: Element[], look: SequenceLook, paper: string): Element[
       const v = value[field];
       if (v && (el as Record<string, unknown>)[field] === undefined) patch[field] = v;
     }
+    // A message's words are words like the rest (docs/specs/009-elements/sequence-diagram.md "Colours"): an arrow
+    // themes only its line, and a caption with no colour of its own takes the line's, the pale accent.
+    if (el.type === 'arrow' && el.label && look.ink && el.textColor === undefined) {
+      patch.textColor = look.ink;
+    }
     return Object.keys(patch).length ? { ...el, ...patch } : el;
   });
 }

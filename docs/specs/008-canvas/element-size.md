@@ -32,7 +32,8 @@ Behaviour:
 - **Drafts, not live commits.** The boxes hold what you type and commit on blur
   or Enter; Escape reverts. Committing per keystroke would resize the element
   three times on the way to "120" and leave two junk entries in the undo
-  history.
+  history. Enter only leaves the box, so the size lands once, as one undo step,
+  and Escape's own blur commits nothing.
 - **The lock applies.** With it on, typing one dimension carries the other, so
   the lock means the same thing here as it does on a drag handle. Setting both
   at once is not overruled — that IS the intent.

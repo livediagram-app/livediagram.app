@@ -12,7 +12,14 @@ import {
   type RefObject,
 } from 'react';
 import { onToolbarSearchRequest } from '@/lib/toolbar-search-request';
-import { ChevronDownIcon, EllipsisIcon, HoverCard, safeInlinePadding } from '@livediagram/ui';
+import {
+  ChevronDownIcon,
+  EllipsisIcon,
+  HoverCard,
+  atLeastInset,
+  safeInlinePadding,
+} from '@livediagram/ui';
+import { LANDSCAPE_HANDLE_ROOM } from '@/components/chrome/LandscapeBars';
 import { track } from '@/lib/telemetry';
 import { SnapWidth } from '@/components/primitives/SnapWidth';
 import { PHONE_TOOLBAR_ITEMS } from '@/components/chrome/phone-toolbar-items';
@@ -114,9 +121,14 @@ function StripRow({
   if (!leading) return <>{children}</>;
   return (
     <div
-      // 12px gutters, or a landscape notch's inset where that is bigger (lib/safe-area).
-      style={safeInlinePadding('0.75rem')}
-      className="pointer-events-none flex w-full items-start gap-2 [&>*]:pointer-events-auto"
+      // 12px gutters, or a landscape notch's inset where that is bigger (lib/safe-area). Held
+      // sideways, the right gutter also clears the bars handle at the canvas's top-right corner
+      // (LandscapeBarsHandle), so a long strip's rail scrolls short of it rather than under it.
+      style={{
+        ...safeInlinePadding('0.75rem'),
+        paddingRight: `calc(${atLeastInset('0.75rem', 'right')} + var(--landscape-handle-room, 0px))`,
+      }}
+      className={`pointer-events-none flex w-full items-start gap-2 [&>*]:pointer-events-auto ${LANDSCAPE_HANDLE_ROOM}`}
     >
       <div ref={leadingRef} data-strip-leading="" className={CARD_CLASS}>
         {leading}

@@ -258,8 +258,7 @@ describe('buildEditorCommands — app-level commands (docs/specs/007-editor/comm
     // the canvas. Nothing here writes to the document, which is the property
     // this test exists to hold: the eraser and the format painter are
     // withheld, and so is every command below the read-only return.
-    // In Facilitate, so Avatar is among them (docs/specs/008-canvas/avatar-mode.md "Where it is offered").
-    expect(ids({ ...base, isReadOnly: true, facilitateMode: true })).toEqual([
+    expect(ids({ ...base, isReadOnly: true })).toEqual([
       'zen',
       'fit-to-screen',
       'export',
@@ -268,7 +267,6 @@ describe('buildEditorCommands — app-level commands (docs/specs/007-editor/comm
       'tool:pan',
       'tool:laser',
       'tool:spotlight',
-      'tool:avatar',
       // Slide Deck is an Editor's (docs/specs/013-workspace/share-roles.md).
       'tool:isometric',
     ]);
@@ -337,14 +335,13 @@ describe('buildEditorCommands — app-level commands (docs/specs/007-editor/comm
 // Isometric; the search panel offered none of them.
 describe('canvas tool commands', () => {
   it('offers every tool but the one already in force', () => {
-    const got = ids({ ...base, facilitateMode: true }).filter((id) => id.startsWith('tool:'));
+    const got = ids(base).filter((id) => id.startsWith('tool:'));
     expect(got).toEqual([
       'tool:pan',
       'tool:eraser',
       'tool:format',
       'tool:laser',
       'tool:spotlight',
-      'tool:avatar',
       'tool:slide-deck',
       'tool:isometric',
     ]);
@@ -356,10 +353,10 @@ describe('canvas tool commands', () => {
 
   it('runs the tool setter with the tool id', () => {
     const h = handlers();
-    buildEditorCommands({ ...base, facilitateMode: true }, h)
-      .find((c) => c.id === 'tool:avatar')!
+    buildEditorCommands(base, h)
+      .find((c) => c.id === 'tool:laser')!
       .run();
-    expect(h.setTool).toHaveBeenCalledWith('avatar');
+    expect(h.setTool).toHaveBeenCalledWith('laser');
   });
 
   it('drops the content-dependent tools on an empty canvas', () => {
@@ -496,8 +493,9 @@ describe('buildEditorCommands — locked tab and Plan mode', () => {
     expect(got).toContain('tool:laser');
   });
 
-  it('offers Avatar Mode in Facilitate only', () => {
+  it('never offers Avatar Mode (docs/specs/008-canvas/avatar-mode.md "Where it lives")', () => {
     expect(ids(base)).not.toContain('tool:avatar');
-    expect(ids({ ...base, facilitateMode: true })).toContain('tool:avatar');
+    expect(ids({ ...base, isReadOnly: true })).not.toContain('tool:avatar');
+    expect(ids({ ...base, canvasTool: 'avatar' })).not.toContain('tool:avatar');
   });
 });

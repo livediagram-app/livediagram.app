@@ -10,14 +10,13 @@ Narrating the canvas on a call today means waving a cursor around, or reaching f
 
 ## Where it lives
 
-- New `CanvasTool` id `'avatar'`, offered in the canvas-tool picker's **presenter group** next to Laser and Spotlight.
-- Keyboard shortcut **`W`** (walk). `A` is Arrow, `V` / `H` / `K` / `I` / `E` / `Z` are taken.
-- **Where it is offered: Facilitate only.** Avatar is a [Facilitate mode](../012-collaboration/facilitate-mode.md) tool, so the canvas-tool picker, the `W` key and the search panel's `tool:avatar` command offer it only while the tab is in Facilitate; Diagram, Draw, Illustrate and Plan leave it out (`FACILITATE_ONLY_TOOLS` in `canvas-tool-options.tsx`). A [Selection Mode button](../009-elements/mode-button.md) set to Avatar still hands it out in **every** mode: an author who placed one chose to offer the walk on that board, so the button, not the mode, decides. Leaving Facilitate while walking does not end the walk; the usual ways out (a view-tool key, the picker, the button) still work.
-- **Disabled on an empty canvas**, like every tool below Select / Hand: with nothing drawn there is nowhere to walk.
+- New `CanvasTool` id `'avatar'`. **It is reached only through a [Selection Mode button](../009-elements/mode-button.md) set to Avatar**, placed on the board: the author who put the button there chose to offer the walk on that board, so the board, not the editor's chrome, is the door. The canvas-tool picker (the Selection Mode menu at the start of the palette strip) does not offer Avatar, there is no keyboard shortcut for it, and the search panel has no `tool:avatar` command. A board that wants walking gets a button; the [Avatar Pad](../009-elements/avatar-pad.md) decides where people then start.
+- **The picker still shows where you are.** While you are in Avatar mode the picker's current value reads **Avatar** (the one time the entry appears in its list), so the mode you are in is never mislabelled as Select; picking any other mode there leaves it. The other ways out stay as they were: a view-tool key (`V`, `H`, `K`, `I`), reaching for the palette, or pressing an Avatar button again.
+- A button hands Avatar out in **every** editor mode, and leaving Facilitate while walking does not end the walk.
 - Available on **every viewport** (unlike Spotlight): tap-to-walk works fine on touch, it just loses the arrow keys.
 - Available to **view-role** visitors — it is a pure view aid and mutates nothing.
 - **Entering the mode clears the current selection** (an element left selected would keep its handles and reappear on exit, the same reason Spotlight clears it).
-- The picker label is **Avatar**, deliberately the same word the user asked for. It is NOT the palette's **Avatar element tile** (a circular photo, [Canvas and palette](canvas-and-palette.md) Components); the two never appear on the same surface, and telemetry keeps them apart via a distinct type token (below).
+- The mode's name is **Avatar**, deliberately the same word the user asked for. It is NOT the palette's **Avatar element tile** (a circular photo, [Canvas and palette](canvas-and-palette.md) Components); the two never appear on the same surface, and telemetry keeps them apart via a distinct type token (below).
 
 ## The character
 
@@ -29,7 +28,7 @@ Narrating the canvas on a call today means waving a cursor around, or reaching f
 - **The shirt is the participant's presence colour** — the same colour as your cursor, your name chip, and your tab-bar dot — so on a shared document you can tell at a glance which character is whose. Falls back to the brand cyan when there is no participant colour. **Colour is deliberately not customisable**: it is the one thing on the character that carries information.
 - **Walk animation**: a two-frame leg swing plus a one-pixel body bob, advanced by **distance travelled** rather than wall-clock, so the step cadence matches the speed at any zoom.
 - Renders **above the element layer** (it is standing in front of what's on the canvas, not behind it) and below the palette / chrome, which stay clickable so you can leave the mode.
-- Spawns at the **centre of the current viewport** on entry, keeps its spot across a detour to another tool (the canvas stays mounted), and resets on the next entry after a tab change — it is transient view state that belongs to nobody.
+- **Where it appears on entry**: on the tab's [Avatar Pad](../009-elements/avatar-pad.md) when it has one (the nearest to the view's centre when it has several), arriving in a beam of light; otherwise just below the button that was pressed ([Entering from a button](#entering-from-a-button)); otherwise where it was left, while that is still on screen (a quick detour to another tool, the canvas staying mounted); otherwise the **centre of the current viewport**. It resets on the next entry after a tab change: it is transient view state that belongs to nobody.
 
 ## The Avatar Panel
 
@@ -184,7 +183,11 @@ The pop on opening, the sway and the rise are decoration. Under **reduced motion
 
 ## Entering from a button
 
-A [Selection Mode button](../009-elements/mode-button.md) set to Avatar drops the character **just below that button** rather than at the viewport centre: you pressed a thing on the canvas, so the character should appear where you pressed it. The spawn point is one-shot — entering from the palette still spawns centre-screen, and a quick detour to Select still returns you to where you left the character. Only a press that enters the mode sets it: pressing the button while already in Avatar mode leaves the mode and leaves no spawn point behind (`avatarSpawnFromButton`).
+A [Selection Mode button](../009-elements/mode-button.md) set to Avatar drops the character **just below that button** rather than at the viewport centre: you pressed a thing on the canvas, so the character should appear where you pressed it. A pad on the tab beats it ([Entering on a pad](#entering-on-a-pad)). The spawn point is one-shot: a quick detour to Select still returns you to where you left the character. Only a press that enters the mode sets it: pressing the button while already in Avatar mode leaves the mode and leaves no spawn point behind (`avatarSpawnFromButton`).
+
+## Entering on a pad
+
+An [Avatar Pad](../009-elements/avatar-pad.md) is the board's entrance. While the tab has one, every entry into the mode puts the character on it (the pad nearest the view's centre, if there are several), centres the view on it when it is off screen, and plays the arrival beam in the person's colour. Placing or moving a pad never moves a character already walking. The pure choice (`pickSpawnPad`, `padSpawnPoint`) lives in `apps/live/lib/avatar-pad.ts`; the arrivals (yours and peers', derived from presence) in `apps/live/hooks/canvas/useAvatarPadArrivals.ts`, drawn by `AvatarPadArrivals.tsx`.
 
 ## Implementation shape
 
@@ -203,7 +206,7 @@ Per the no-god-files rule:
 - **`apps/live/hooks/canvas/useAvatarKeys.ts`** — the keyboard slice (held arrows + the Space jump), split out so the hook above keeps to state + loop.
 - **`apps/live/components/canvas/AvatarWalker.tsx`** — placement: the canvas-coords box, the standing-on ring, the peer name chip. The pixel art itself is three files beside it: **`avatar-sprite.tsx`** draws the body and assembles the whole figure (the walk cycle, the hop, the flag), **`avatar-sprite-head.tsx`** everything above the neck (where the eight-hairstyles-by-three-facings combinations live, which is most of what the sprite draws), and **`avatar-sprite-palette.ts`** the colours both halves have to agree on.
 - **Realtime**: `AvatarPresence` + the `avatar` `RoomOp` in `@livediagram/api-schema`; `'avatar'` added to `PRESENCE_OP_KINDS` in `@livediagram/api-schema`; `broadcastAvatar` in `useEditorBroadcast`; the inbound coalescing buffer in `useRoomConnection`; `remoteAvatars` in `usePresenceState`; `buildRemoteAvatarRows` in `lib/presence-rows.ts` (unit-tested).
-- Wiring, one small edit each: `canvas-tool-options.tsx` + `palette-icons.tsx` (picker entry), `useCanvasSurfaceGestures.ts` (the click-to-walk + right-click-gender capture intercept, next to the spotlight one), `canvas-chrome.ts` (cursor), `editor-shortcut-keys.ts` + `useEditorKeyboardShortcuts.ts` (`W`, the read-only gate, the arrow-key handover), `useCanvasTool.ts` (telemetry + the remembered pre-avatar tool), `palette-tile-actions.ts` (the leave-on-add wrapper, unit-tested), `useDockPopovers.ts` + `useCanvasChromePanels.tsx` + `CanvasChrome.tsx` (the `avatar` dock popover and its button).
+- Wiring, one small edit each: `canvas-tool-options.tsx` + `palette-icons.tsx` (the picker entry, shown only while in the mode), `useCanvasSurfaceGestures.ts` (the click-to-walk + right-click-gender capture intercept, next to the spotlight one), `canvas-chrome.ts` (cursor), `useEditorKeyboardShortcuts.ts` (the read-only gate, the arrow-key handover), `useCanvasTool.ts` (telemetry + the remembered pre-avatar tool), `palette-tile-actions.ts` (the leave-on-add wrapper, unit-tested), `useDockPopovers.ts` + `useCanvasChromePanels.tsx` + `CanvasChrome.tsx` (the `avatar` dock popover and its button).
 
 ## Telemetry
 

@@ -87,9 +87,6 @@ export type CommandContext = {
   // Plan mode (docs/specs/026-plan/plan-mode.md) leaves Eraser and Format out of the tool dropdown, so search
   // does too.
   planMode?: boolean;
-  // Facilitate (docs/specs/008-canvas/avatar-mode.md "Where it is offered") is the one mode offering Avatar, as in
-  // the dropdown.
-  facilitateMode?: boolean;
   // A locked tab (docs/specs/008-canvas/canvas-and-palette.md "Locking") refuses every element edit, so search
   // offers none of them: no selection verbs, no layout cleanup, no Eraser or Format.
   tabLocked?: boolean;
@@ -162,8 +159,6 @@ export const CANVAS_TOOLS: {
   // Edits the tab's elements, so it goes on a locked tab and in Plan mode, as in the dropdown.
   editsElements?: boolean;
   desktopOnly?: boolean;
-  // Offered in Facilitate only, as in the dropdown.
-  facilitateOnly?: boolean;
 }[] = [
   { id: 'select', name: 'Select Tool', keywords: 'select pointer arrow cursor pick v' },
   { id: 'pan', name: 'Hand Tool', keywords: 'hand pan grab drag move canvas scroll h' },
@@ -196,13 +191,7 @@ export const CANVAS_TOOLS: {
     needsContent: true,
     desktopOnly: true,
   },
-  {
-    id: 'avatar',
-    name: 'Avatar Mode',
-    keywords: 'avatar walk character presence walkthrough tour steer w',
-    needsContent: true,
-    facilitateOnly: true,
-  },
+
   {
     // Slide Deck (docs/specs/012-collaboration/presentation-mode.md). A presenter tool like the Laser and Spotlight,
     // so it needs content for the same reason: there is nothing to put on a
@@ -236,7 +225,6 @@ function toolCommands(ctx: CommandContext, h: CommandHandlers): EditorCommand[] 
       t.id !== ctx.canvasTool &&
       !(t.needsContent && ctx.canvasEmpty) &&
       !(t.desktopOnly && ctx.isMobile) &&
-      !(t.facilitateOnly && !ctx.facilitateMode) &&
       !(t.mutates && ctx.isReadOnly) &&
       !(t.editsElements && (ctx.tabLocked || ctx.planMode)) &&
       !(ctx.whiteboard && WHITEBOARD_ABSENT_TOOLS.has(t.id)),

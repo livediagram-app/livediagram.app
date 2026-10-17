@@ -3759,7 +3759,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     // In Illustrate, Fit frames the page you are nearest, not the whole tab.
     onFitToScreen: illustratePages ? illustratePages.fitPageInView : fitToScreen,
     onCycleEditorMode: editorModeShortcut(editorMode, announce),
-    facilitateMode: editorMode.mode === 'facilitate',
     onDeselect: () => {
       setSelectedId(null);
       setMultiSelectedIds(new Set());

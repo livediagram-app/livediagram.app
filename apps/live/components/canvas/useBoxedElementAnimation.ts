@@ -116,6 +116,7 @@ export function useBoxedElementAnimation(element: BoxedElement, textColor: strin
       (element.shape === 'sticker' ||
         isSeatingShape(element.shape) ||
         element.shape === 'fence' ||
+        element.shape === 'avatar-pad' ||
         element.shape === 'timeline-rail' ||
         // An office's furniture, rooms and rugs (docs/specs/009-elements/office.md), drawn as a chair is.
         isOfficeShape(element.shape)));
@@ -138,6 +139,8 @@ export function useBoxedElementAnimation(element: BoxedElement, textColor: strin
     (element.shape === 'sticker' ||
       isSeatingShape(element.shape) ||
       element.shape === 'fence' ||
+      // AvatarPadView mounts it on its pixels (docs/specs/009-elements/avatar-pad.md).
+      element.shape === 'avatar-pad' ||
       // FurnitureView and RoomView mount it on their art.
       isOfficeShape(element.shape));
   const labelAnimClass = isDrawnArt ? undefined : silhouetteAnimClass;

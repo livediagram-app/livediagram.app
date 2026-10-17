@@ -110,6 +110,7 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   collaborate: '#f59e0b',
   chairs: '#a855f7',
   fences: '#b45309',
+  'avatar-pads': '#0ea5e9',
   'virtual-office': '#0f766e',
   lanes: '#3b82f6',
   entities: '#0284c7',

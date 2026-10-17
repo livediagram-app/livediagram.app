@@ -35,6 +35,36 @@ describe('historyCommit', () => {
     expect(next.future).toEqual([]);
   });
 
+  it('leaves history alone when the commit changes nothing', () => {
+    const h: History = { past: [[tab('P')]], present: [tab('A', 'a')], future: [[tab('F')]] };
+    // A setter that rebuilds the tab, its elements array and the element with the same values (a size box
+    // committed on Enter and again on blur) is not a step, and keeps the redo stack.
+    const next = historyCommit(h, (ts) =>
+      ts.map((t) => ({ ...t, elements: t.elements.map((el) => ({ ...el })) })),
+    );
+    expect(next).toBe(h);
+  });
+
+  it('records a commit that changes one field of one element', () => {
+    const h = start([tab('A', 'a')]);
+    const next = historyCommit(h, (ts) =>
+      ts.map((t) => ({ ...t, elements: t.elements.map((el) => ({ ...el, width: 60 })) })),
+    );
+    expect(next.past).toEqual([[tab('A', 'a')]]);
+    expect(next.present[0]!.elements[0]).toMatchObject({ width: 60 });
+  });
+
+  it('records a commit that adds a field, removes an element or renames a tab', () => {
+    const h = start([tab('A', 'a')]);
+    expect(
+      historyCommit(h, (ts) =>
+        ts.map((t) => ({ ...t, elements: t.elements.map((el) => ({ ...el, locked: true })) })),
+      ).past,
+    ).toHaveLength(1);
+    expect(historyCommit(h, (ts) => ts.map((t) => ({ ...t, elements: [] }))).past).toHaveLength(1);
+    expect(historyCommit(h, (ts) => ts.map((t) => ({ ...t, name: 'B' }))).past).toHaveLength(1);
+  });
+
   it('keeps at least 500 steps of history', () => {
     expect(HISTORY_LIMIT).toBeGreaterThanOrEqual(500);
   });
@@ -46,7 +76,7 @@ describe('historyCommit', () => {
       present: [tab('present')],
       future: [],
     };
-    const next = historyCommit(filled, (ts) => ts);
+    const next = historyCommit(filled, () => [tab('next')]);
     expect(next.past).toHaveLength(HISTORY_LIMIT);
     // Oldest entry should have been dropped (FIFO eviction).
     expect(next.past[0]).toEqual([tab('P1')]);

@@ -29,6 +29,9 @@ import { avatarScale, type AvatarConfig } from '@/lib/avatar-config';
 import type { AvatarStatus } from '@/lib/avatar-status';
 import { reactionPose, type AvatarReactionKind, type ReactionPose } from '@/lib/avatar-reactions';
 import { useAvatarKeys, NO_KEYS_HELD, type AvatarHeldKeys } from '@/hooks/canvas/useAvatarKeys';
+import { padEntry } from '@/lib/avatar-pad';
+import { viewportOffsetCentredOn } from '@/lib/portals';
+import { track } from '@/lib/telemetry';
 import {
   arrowDirection,
   elementUnderFeet,
@@ -277,35 +280,48 @@ export function useAvatarWalk({
       holdingRef.current = null;
       return;
     }
+    const r = rects();
+    const centre = viewportCentre();
+    const onScreen = (p: AvatarPoint) => {
+      if (!r) return false;
+      const sx = r.wrapper.left + p.x * viewportZoom;
+      const sy = r.wrapper.top + p.y * viewportZoom;
+      return sx >= r.main.left && sx <= r.main.right && sy >= r.main.top && sy <= r.main.bottom;
+    };
+    const place = (point: AvatarPoint) => {
+      posRef.current = point;
+      setPos(point);
+      setFacing('down');
+    };
+    // An Avatar Pad on the tab (docs/specs/009-elements/avatar-pad.md "Starting on the pad") is the board's
+    // entrance: it wins over the button and the remembered spot, and the view comes to it when it is off screen.
+    const entry = padEntry(elements, centre, onScreen);
+    if (entry) {
+      if (spawnAtRef) spawnAtRef.current = null;
+      place(entry.feet);
+      if (entry.recentre && r) {
+        setViewportOffset(
+          viewportOffsetCentredOn(
+            { ...entry.feet, width: 0, height: 0 },
+            { width: r.main.width, height: r.main.height },
+            viewportZoom,
+          ),
+        );
+      }
+      track('Canvas', 'Used', 'AvatarPadArrival');
+      return;
+    }
     // A button asked for the character HERE: honour it even if the remembered
     // position is still on screen, since the press is a fresh instruction.
     const requested = spawnAtRef?.current ?? null;
     if (requested) {
       if (spawnAtRef) spawnAtRef.current = null;
-      posRef.current = requested;
-      setPos(requested);
-      setFacing('down');
+      place(requested);
       return;
     }
-    const r = rects();
-    const centre = viewportCentre();
     if (!centre) return;
     const current = posRef.current;
-    const onScreen =
-      current && r
-        ? (() => {
-            const sx = r.wrapper.left + current.x * viewportZoom;
-            const sy = r.wrapper.top + current.y * viewportZoom;
-            return (
-              sx >= r.main.left && sx <= r.main.right && sy >= r.main.top && sy <= r.main.bottom
-            );
-          })()
-        : false;
-    if (!onScreen) {
-      posRef.current = centre;
-      setPos(centre);
-      setFacing('down');
-    }
+    if (!(current && onScreen(current))) place(centre);
   });
   useEffect(() => {
     enterOrLeave(active);

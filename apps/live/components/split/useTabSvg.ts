@@ -1,10 +1,11 @@
 'use client';
 
 import { useDeferredValue, useEffect, useMemo, useState } from 'react';
-import { tabWindowNames, type Tab } from '@livediagram/document';
+import { canvasSurface, tabWindowNames, type Tab } from '@livediagram/document';
 import { tabAsSeen } from '@/lib/export-as-seen';
 import { loadTabImages, renderTabToSvg } from '@/lib/export-tab';
 import { tabImageKey, type ExportImageMap } from '@/lib/export-tab-images';
+import type { SvgMotion } from '@/lib/export-tab';
 import { ensureIconCatalogs } from '@/lib/icon-registry';
 import { svgFrameOf } from '@/lib/svg-frame';
 import { usePlan } from '@/components/plan/PlanContext';
@@ -27,7 +28,14 @@ export type TabSvg = {
 // the export renderer's SVG, in the viewer's appearance, with the document's Plan items and the
 // tab's photos. Re-rendered when the tab changes (an edit, a collaborator's op) at a deferred
 // priority, so a burst of remote edits never competes with the editor beside it.
-export function useTabSvg(tab: Tab | undefined): TabSvg | null {
+//
+// `motionFor` sets the drawing moving (a tab window, docs/specs/009-elements/tab-window.md "The drawing"): given the
+// drawn tab's surface, it says how each element animates. Without it the drawing is a still, as the side pane's is.
+// Pass a module-level function so its identity is stable.
+export function useTabSvg(
+  tab: Tab | undefined,
+  motionFor?: (surface: ReturnType<typeof canvasSurface>) => SvgMotion,
+): TabSvg | null {
   const { imageContext, tabs } = useEditorContext();
   // A window inside this tab is named for the tab it shows, as the export names it. Keyed on the tabs' names, not the
   // tabs, so an edit anywhere in the document does not redraw this one.
@@ -69,6 +77,7 @@ export function useTabSvg(tab: Tab | undefined): TabSvg | null {
     const seen = tabAsSeen(deferredTab, appearance);
     const markup = renderTabToSvg(seen, {
       pattern: false,
+      motion: motionFor?.(canvasSurface(seen.backgroundColor)),
       images: images?.map,
       resolveTabWindow: windowNames,
       ...(plan ? { items: plan.items, itemTypes: plan.types } : {}),
@@ -78,5 +87,5 @@ export function useTabSvg(tab: Tab | undefined): TabSvg | null {
       ...svgFrameOf(markup),
       background: seen.backgroundColor ?? '#ffffff',
     };
-  }, [deferredTab, appearance, images, plan, iconsReady, windowNames]);
+  }, [deferredTab, appearance, images, plan, iconsReady, windowNames, motionFor]);
 }

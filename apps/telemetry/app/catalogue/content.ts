@@ -1052,6 +1052,31 @@ export const FORMS_OPENED_CLOSED = chart(
   { types: ['Open', 'Closed'] },
 );
 
+export const FORMS_NOT_TAKING_OPENED = chart(
+  'Form',
+  'Opened',
+  'Not Taking Responses Pressed',
+  "A published form's red Not Taking Responses warning pressed, by why it takes none: suspended, paused, switched off, past its Close On time, at its Response Limit, or its document full.",
+  {
+    types: [
+      'NotTakingSuspended',
+      'NotTakingPaused',
+      'NotTakingSwitchedOff',
+      'NotTakingClosesAt',
+      'NotTakingLimit',
+      'NotTakingFull',
+    ],
+  },
+);
+
+export const FORMS_SYNCED_TO_SHARE = chart(
+  'Form',
+  'Moved',
+  'Documents Synced to Share a Form',
+  'A Local only document synced from Share Form, so its form could be published.',
+  { types: ['SyncedToShare'] },
+);
+
 export const FORM_RESPONSES = chart(
   'Form',
   'Sent',
@@ -1079,6 +1104,8 @@ export const FORMS: MetricStack = {
     FORMS_CONNECTED,
     FORMS_PUBLISHED,
     FORMS_OPENED_CLOSED,
+    FORMS_NOT_TAKING_OPENED,
+    FORMS_SYNCED_TO_SHARE,
     FORM_RESPONSES,
     FORM_REPORTS,
   ],

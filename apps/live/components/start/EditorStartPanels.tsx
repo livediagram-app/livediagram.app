@@ -157,6 +157,10 @@ export function EditorStartPanels() {
           ownerId={ctx.selfParticipant.id}
           share={ctx.sessionShareCode}
           online={!isOffline}
+          // Share Form on a Local only document syncs it first (docs/specs/030-forms/forms.md), never as the
+          // 'self' placeholder an early open runs under.
+          onSyncToCloud={ctx.syncToCloud}
+          syncReady={ctx.selfParticipant.id !== 'self'}
         />
       ) : null}
       {/* One View Transition around every start, so a mode change turns the panel in place. */}

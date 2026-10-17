@@ -105,6 +105,8 @@ export function isSvgRenderedShape(kind: ShapeKind): boolean {
     kind !== 'chair' &&
     // A fence, a desk and a sofa (docs/specs/009-elements/fence.md, chair.md) draw themselves too.
     kind !== 'fence' &&
+    // An Avatar Pad (docs/specs/009-elements/avatar-pad.md) paints its own pixels.
+    kind !== 'avatar-pad' &&
     kind !== 'desk' &&
     kind !== 'sofa' &&
     // The Plan board, card and view (docs/specs/026-plan/plan-board.md, plan-views.md) paint their own surfaces.

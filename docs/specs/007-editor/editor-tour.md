@@ -51,6 +51,22 @@ proved the better introduction.
   the [Illustrate tour](illustrate-tour.md) are this tour's siblings; while any is on screen the others wait.
   Each belongs to its own mode, so none is owed to another: the others never wait for this tour's offer, and
   this tour never carries theirs.
+- **Dialogs come first.** A tour never lands over a dialog the person has open (Share, Settings, Export, Share
+  Form, the Search panel, a confirm, any dialog at all). This holds for every tour on the shared engine, the
+  element tours' offer included:
+  - **An offer waits.** A tour that would be offered while a dialog is open is not skipped: it stays owed and is
+    offered once every dialog has closed (stacked dialogs count until the last one goes), after the tour's usual
+    offer delay. Nothing is remembered as answered while it waits.
+  - **A running tour steps aside.** When a dialog opens over a running tour (opened by the person, or by
+    something else such as a sign-in prompt), the card, the ring and the backdrop hide, and the step's live
+    tracking pauses, so nothing is reopened under the dialog. When the dialog closes the tour comes back on the
+    same step, its target re-found (and re-prepared if the dialog closed what it had opened). Stepping aside is
+    not an answer: the tour neither ends nor counts a new step view.
+  - **A tour's own dialogs are not in its way.** A dialog a tour step opens to show what is in it (a Sequence's
+    or a chart's data dialog, a Sankey's Flows) is the tour's: while the step's target sits inside it the tour
+    stays up, and it stays up after that dialog's last step too, until the tour puts it away. A tour started
+    from inside a dialog (Show Me in the card type editor, the Share dialog, Photo Review) counts that dialog as
+    its own in the same way. Only a dialog opened on top of those makes it step aside.
 
 ## Handoff
 
@@ -142,6 +158,15 @@ menu alone.
   count stays honest instead of a hidden step burning its timeout mid-tour.
 - **The strip** ([Toolbar layout](toolbar-layout.md)): the Palette step anchors to the strip's card, not the
   full-width row it is centred in; the selection-mode and category steps use the strip's own pickers.
+- **What counts as a dialog** is one signal, the modal guard (`lib/modal-guard.ts`): a count of open modal
+  dialogs, fed by the editor's `Dialog` (so every dialog built on it counts with no extra work) and by the
+  full-screen modals that do not use it calling `useModalGuard` themselves (the Search panel, the canvas theme
+  dialog, Photo Review, the identity prompt, the new document wizard, the sign-in reasons and delete account
+  modals). The window-level shortcut and paste listeners read the same count. The tours subscribe to it
+  (`useOpenModalCount`, a `useSyncExternalStore` hook), never query the DOM for it. The engine keeps a
+  **baseline**: the dialogs open when the tour started, raised when a step's target is found inside a dialog (the
+  tour's own), and lowered as dialogs close; the tour steps aside while more dialogs are open than its baseline,
+  except while a step is still waiting for its target (a step opening its own dialog is not interrupted).
 - Advancing closes whatever the previous step opened (dropdowns, context menu, popovers); finishing or skipping
   restores a quiet editor.
 

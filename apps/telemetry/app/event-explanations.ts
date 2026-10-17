@@ -130,6 +130,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone said something in Avatar mode, typing a message in the bubble above their character (Enter). Never the words.',
   'Canvas|Used|AvatarMessagePanel':
     "Someone said something in Avatar mode from the Avatar panel's Send a Message. Never the words.",
+  'Canvas|Used|AvatarPadArrival':
+    'Someone went into Avatar mode on a board with an Avatar Pad, so their character beamed in on the pad.',
   'Canvas|Used|AvatarMode':
     'Someone switched to Avatar mode, steering a small walking character around the canvas instead of the usual pointer.',
   'Canvas|Used|ChangeNoteKind':
@@ -744,6 +746,20 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Form|Toggled|Open': 'Someone switched Accepting Responses on for a published form.',
   'Form|Toggled|Closed':
     'Someone switched Accepting Responses off: the link stays, showing the closed message.',
+  'Form|Opened|NotTakingSuspended':
+    "Someone pressed a form's Not Taking Responses warning: its link was suspended after reports.",
+  'Form|Opened|NotTakingPaused':
+    "Someone pressed a form's Not Taking Responses warning: its responses had nowhere to go.",
+  'Form|Opened|NotTakingSwitchedOff':
+    "Someone pressed a form's Not Taking Responses warning: Accepting Responses was off.",
+  'Form|Opened|NotTakingClosesAt':
+    "Someone pressed a form's Not Taking Responses warning: its Close On time had passed.",
+  'Form|Opened|NotTakingLimit':
+    "Someone pressed a form's Not Taking Responses warning: it had reached its Response Limit.",
+  'Form|Opened|NotTakingFull':
+    "Someone pressed a form's Not Taking Responses warning: its document held as many cards as it can.",
+  'Form|Moved|SyncedToShare':
+    'Someone synced a Local only document from Share Form, so its form could be published.',
   'Form|Sent|Response':
     'Someone filled in a form through its link, and the response became a card on its board.',
   'Form|Sent|Dropped':
@@ -1852,6 +1868,10 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone switched on Tours › "Plan Tour" in Settings, marking the Plan tour as not yet seen.',
   'UI|Toggled|PlanTourSeenOn':
     'Someone switched off Tours › "Plan Tour" in Settings, marking the Plan tour as seen so it won\'t be offered again.',
+  'UI|Toggled|LandscapeBarsOff':
+    'Someone folded the header and the tab bar away again from the handle on a phone held sideways, giving the canvas the whole screen.',
+  'UI|Toggled|LandscapeBarsOn':
+    'Someone showed the header and the tab bar from the handle on a phone held sideways, where they fold away so the canvas fills the screen.',
   'UI|Toggled|ZenModeOff': "Someone turned off zen mode, restoring the editor's chrome.",
   'UI|Toggled|ZenModeOn':
     "Someone turned on zen mode, hiding the editor's chrome for a distraction-free canvas.",
@@ -2290,6 +2310,9 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
     'Someone connected a form to where its responses go, from the box above its title.',
   'Form|Shared': 'Someone published a form, making its public link.',
   'Form|Toggled': 'Someone switched Accepting Responses on or off for a published form.',
+  'Form|Opened': "Someone pressed a form's Not Taking Responses warning, to see why and fix it.",
+  'Form|Moved':
+    'Someone synced a Local only document from Share Form, so its form could be published.',
   'Form|Sent': 'A response came in through a form link.',
   'Form|Reported': 'Someone reported a form they were sent.',
   'Activity|Selected': "Someone clicked a row in the Explorer's Inbox, jumping to what it's about.",

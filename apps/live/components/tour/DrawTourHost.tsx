@@ -7,6 +7,7 @@ import { debugLog } from '@/lib/debug-log';
 import { DRAW_TOUR_RELAUNCH_EVENT } from '@/lib/draw-tour';
 import { track } from '@/lib/telemetry';
 import { setActiveTour, useActiveTour } from '@/lib/tour-active';
+import { useAnyModalOpen } from '@/lib/modal-guard';
 import { rebaseUserPreferences } from '@/lib/user-preferences';
 import { drawTourSteps, drawTourStepTelemetryType, type DrawTourApi } from './draw-tour-steps';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
@@ -48,6 +49,8 @@ export function DrawTourHost() {
   // One tour at a time: publish this one while it is on screen, and wait while another is.
   const shown = useActiveTour();
   const otherTour = shown !== null && shown !== 'draw';
+  // Dialogs come first (docs/specs/007-editor/editor-tour.md): the offer waits for the last one to close.
+  const modalOpen = useAnyModalOpen();
   useEffect(() => {
     setActiveTour('draw', active);
   }, [active]);
@@ -97,7 +100,7 @@ export function DrawTourHost() {
   // re-renders this through useActiveTour, so this tour follows it.
   useEffect(() => {
     if (!armed || active || seen) return;
-    if (!inDraw || !canWork || otherTour) return;
+    if (!inDraw || !canWork || otherTour || modalOpen) return;
     const t = setTimeout(() => {
       setArmed(false);
       debugLog('[draw-tour] offer');
@@ -105,7 +108,7 @@ export function DrawTourHost() {
       track('UI', 'Opened', 'DrawTourOffer');
     }, OFFER_DELAY_MS);
     return () => clearTimeout(t);
-  }, [armed, active, seen, inDraw, canWork, otherTour, engineRef]);
+  }, [armed, active, seen, inDraw, canWork, otherTour, modalOpen, engineRef]);
 
   // Settings rerun (the Tours › "Draw Tour" row, turned on from off + closed): offers again in
   // Draw, and otherwise the next time the person enters it (the row has cleared the preference).

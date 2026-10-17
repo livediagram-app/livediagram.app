@@ -135,7 +135,7 @@ export function ArrowLineControls({
       {style !== null ? (
         <>
           {thickness !== null ? <div className={divider} /> : null}
-          <p className={subLabel}>Line style</p>
+          <p className={subLabel}>Line Style</p>
           <div className="mt-1 grid grid-cols-3 gap-1">
             {(
               [
@@ -156,7 +156,7 @@ export function ArrowLineControls({
       {strokeStyle !== null ? (
         <>
           {thickness !== null || style !== null ? <div className={divider} /> : null}
-          <p className={subLabel}>Line pattern</p>
+          <p className={subLabel}>Line Pattern</p>
           <div className="mt-1 grid grid-cols-3 gap-1">
             {LINE_PATTERN_ORDER.map((value) => (
               <HoverCard
@@ -252,7 +252,7 @@ export function ArrowPointerControls({
       {headSize !== null && ends !== 'none' ? (
         <>
           <div className={divider} />
-          <p className={subLabel}>Arrowhead size</p>
+          <p className={subLabel}>Arrowhead Size</p>
           <div className="mt-1 grid grid-cols-4 gap-1">
             {(
               [
@@ -278,7 +278,7 @@ export function ArrowPointerControls({
       {headShape !== null && ends !== 'none' ? (
         <>
           <div className={divider} />
-          <p className={subLabel}>Arrowhead shape</p>
+          <p className={subLabel}>Arrowhead Shape</p>
           <div className="mt-1 grid grid-cols-4 gap-1">
             {ARROWHEAD_SHAPES.map((shape) => (
               <HoverCard

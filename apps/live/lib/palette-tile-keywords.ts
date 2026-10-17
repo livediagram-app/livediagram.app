@@ -62,6 +62,7 @@ export const SHAPE_KEYWORDS: Partial<Record<ShapeKind, string>> = {
   desk: 'computer office workstation monitor screen sit seat furniture',
   sofa: 'couch settee loveseat two seater sit seat furniture lounge',
   fence: 'barrier wall block boundary enclosure keep out avatar walk',
+  'avatar-pad': 'spawn start entrance arrive arrival teleport beam lobby avatar walk pad',
   room: 'office room walls door doorway meeting kitchen lounge area space zone floor virtual office',
   'meeting-table': 'meeting table conference boardroom seats chairs sit together team office',
   plant: 'plant pot potted green leaves foliage decoration office scenery',

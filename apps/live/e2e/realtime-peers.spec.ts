@@ -64,10 +64,21 @@ test('two peers see each other, edit live, and every edit is kept', async ({
         {
           id: tabId,
           name: 'Board',
-          // Facilitate, the mode that offers Avatar in the tool picker (docs/specs/008-canvas/avatar-mode.md).
           opensIn: 'facilitate',
           elements: [
             { id: 'a', type: 'shape', shape: 'square', x: 100, y: 100, width: 200, height: 100 },
+            // Avatar mode's one way in (docs/specs/008-canvas/avatar-mode.md "Where it lives").
+            {
+              id: 'walk',
+              type: 'shape',
+              shape: 'mode-button',
+              mode: 'avatar',
+              label: 'Walk In',
+              x: 400,
+              y: 100,
+              width: 120,
+              height: 120,
+            },
           ],
         },
       ],
@@ -115,14 +126,13 @@ test('two peers see each other, edit live, and every edit is kept', async ({
         ? (((await res.json()) as { tab?: { elements?: unknown[] } }).tab?.elements?.length ?? 0)
         : 0;
     })
-    .toBe(3);
+    .toBe(4);
   await ownerPage.reload();
   await ownerPage.locator(CANVAS).waitFor();
   await expect(squares(ownerPage)).toHaveCount(3);
 
   // The peer walks as an avatar; the owner sees the character.
-  await peerPage.getByRole('button', { name: 'Selection mode' }).click();
-  await peerPage.getByText('Avatar', { exact: true }).first().click();
+  await peerPage.getByRole('button', { name: /switch to Avatar mode/ }).click();
   await peerPage.locator(CANVAS).click({ position: { x: 900, y: 300 } });
   await expect(ownerPage.locator('[data-avatar="peer"]')).toHaveCount(1);
 

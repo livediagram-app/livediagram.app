@@ -434,6 +434,18 @@ export function FenceIcon({ size = 14 }: IconSizeProps = {}) {
   );
 }
 
+// Avatar Pad (docs/specs/009-elements/avatar-pad.md): a round platform with a beam rising out of it.
+export function AvatarPadIcon({ size = 14 }: IconSizeProps = {}) {
+  return (
+    <Glyph size={size} units={24}>
+      <ellipse cx="12" cy="16.5" rx="8.5" ry="3" />
+      <path d="M3.5 16.5v2c0 1.7 3.8 3 8.5 3s8.5-1.3 8.5-3v-2" />
+      <path d="M8.5 13.5V6M15.5 13.5V6" opacity="0.55" />
+      <path d="M12 14V3" />
+    </Glyph>
+  );
+}
+
 export function EstimateIcon({ size = 14 }: IconSizeProps = {}) {
   return (
     <Glyph size={size} units={24}>

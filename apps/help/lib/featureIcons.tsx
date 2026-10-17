@@ -238,6 +238,15 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M3 10.5h18M3 15.5h18" />
     </Glyph>
   ),
+  // A round platform with a beam rising out of it: where a character arrives.
+  'avatar-pads': (
+    <Glyph>
+      <ellipse cx="12" cy="17" rx="8.5" ry="3" />
+      <path d="M3.5 17v1.5c0 1.7 3.8 3 8.5 3s8.5-1.3 8.5-3V17" />
+      <path d="M8.5 14V6.5M15.5 14V6.5" opacity="0.55" />
+      <path d="M12 14.5V3" />
+    </Glyph>
+  ),
   // A room's walls with a doorway, a little table and a plant: an office floor plan.
   'virtual-office': (
     <Glyph>
