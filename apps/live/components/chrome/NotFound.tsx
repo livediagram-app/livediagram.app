@@ -1,24 +1,28 @@
 // 404 card surfaced when the URL points at a document that doesn't
 // exist OR isn't owned by the current participant. The API returns
-// 404 for both (we don't leak existence to strangers). The card is
-// designed to drop into the same chrome as /live/new — EditorHeader
-// above + Explorer panel overlay — so the caller composes the page
-// layout. Renders as an absolute overlay so the Explorer behind
-// stays interactive.
+// 404 for both (we don't leak existence to strangers). It stands alone
+// under the app header (docs/specs/007-editor/new-document-route.md "Unknown addresses"): no Explorer
+// panel beside it, so its two ways on are its own buttons, the Explorer
+// and a new document.
 
 // The new-document sparkle, shared with the template picker's footer so
 // the two create-new surfaces can't drift.
 import { SparkleIcon } from '@/components/palette/template-picker-icons';
-import { Button, CircleXIcon } from '@livediagram/ui';
+import { Button, CircleXIcon, lucideGlyph } from '@livediagram/ui';
+import { lucideFolder } from '@livediagram/icons/lucide';
+
+const FolderIcon = lucideGlyph(lucideFolder, 16);
 
 type NotFoundProps = {
   onCreateNew: () => void;
+  // Opens the Explorer; absent (an embed) leaves the one button.
+  onOpenExplorer?: () => void;
   // The address names no document at all (a mistyped or retired page, docs/specs/007-editor/new-document-route.md
   // "Unknown addresses"): the card speaks of a page, not a document.
   page?: boolean;
 };
 
-export function NotFound({ onCreateNew, page = false }: NotFoundProps) {
+export function NotFound({ onCreateNew, onOpenExplorer, page = false }: NotFoundProps) {
   return (
     <div className="pointer-events-none absolute inset-0 flex items-center justify-center p-6">
       <div className="pointer-events-auto flex max-w-md animate-pop-in flex-col items-center rounded-xl border border-slate-200 bg-white px-8 py-10 text-center shadow-lg shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-900">
@@ -36,10 +40,18 @@ export function NotFound({ onCreateNew, page = false }: NotFoundProps) {
             ? 'There is no page at this address. Open a document from the Explorer or start fresh.'
             : 'This document doesn’t exist or isn’t yours. Open one from the Explorer or start fresh.'}
         </p>
-        <Button size="md" onClick={onCreateNew} className="mt-6 shadow-sm">
-          <SparkleIcon />
-          Create a new document
-        </Button>
+        <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
+          {onOpenExplorer ? (
+            <Button size="md" variant="secondary" onClick={onOpenExplorer}>
+              <FolderIcon />
+              Open Explorer
+            </Button>
+          ) : null}
+          <Button size="md" onClick={onCreateNew} className="shadow-sm">
+            <SparkleIcon />
+            New Document
+          </Button>
+        </div>
       </div>
     </div>
   );

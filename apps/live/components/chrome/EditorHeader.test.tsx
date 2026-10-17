@@ -193,3 +193,20 @@ describe('EditorHeader Present button', () => {
     );
   });
 });
+
+// A long document name truncates rather than pushing the header's actions off a phone: every flex box between the
+// header row and the name may shrink below its content (min-w-0), and the actions never shrink. jsdom does no layout,
+// so this holds the classes that make the layout work.
+describe('EditorHeader with a long name', () => {
+  it('lets the name shrink and keeps the actions whole', () => {
+    const { container } = renderHeader();
+    const header = container.firstElementChild as HTMLElement;
+    const name = screen.getByRole('button', { name: 'Untitled document' });
+    expect(name.className).toContain('truncate');
+    for (let el = name.parentElement; el && el !== header; el = el.parentElement) {
+      expect(el.className, el.outerHTML.slice(0, 80)).toContain('min-w-0');
+    }
+    const actions = screen.getByRole('button', { name: /Share/ }).closest('.self-stretch');
+    expect(actions?.className).toContain('shrink-0');
+  });
+});

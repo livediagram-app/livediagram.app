@@ -132,7 +132,8 @@ export function EditorHeader({
           className="relative touch-target"
         />
       </div>
-      <div className="flex flex-1 items-center justify-start sm:justify-center">
+      {/* min-w-0 down to the name, so a long name truncates instead of pushing Share and Sign in off a phone. */}
+      <div className="flex min-w-0 flex-1 items-center justify-start sm:justify-center">
         {hideTitle ? null : editing && !readOnly ? (
           <NameEditor
             initial={documentName}
@@ -144,13 +145,17 @@ export function EditorHeader({
             className="rounded border border-slate-300 bg-white px-2 py-0.5 text-sm text-slate-800 outline-none focus:border-brand-500 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
           />
         ) : (
-          <div className="flex items-center gap-1">
+          <div className="flex min-w-0 items-center gap-1">
             {readOnly ? (
               <span className="truncate px-2 py-0.5 text-sm text-slate-600 dark:text-slate-200">
                 {documentName}
               </span>
             ) : (
-              <HoverCard title="Rename document" description="Click to edit the name.">
+              <HoverCard
+                title="Rename document"
+                description="Click to edit the name."
+                className="min-w-0"
+              >
                 <button
                   type="button"
                   onClick={() => setEditing(true)}
@@ -176,7 +181,7 @@ export function EditorHeader({
       </div>
       {/* Right-edge actions: full-height, flush to the top / bottom / right of
           the bar (the -mr-4 cancels the header's right padding). */}
-      <div className="-mr-4 flex items-stretch self-stretch">
+      <div className="-mr-4 flex shrink-0 items-stretch self-stretch">
         {onMakeCopy ? (
           <HoverCard title="Make a copy" description="Duplicate this document into your own files.">
             <button

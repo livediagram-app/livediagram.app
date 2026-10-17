@@ -86,7 +86,9 @@ own named policy. The boot script contains no `</script` anywhere (a test holds 
 ### Third-party origins
 
 `trustedScriptOrigins(env)` returns the Clerk frontend API origin decoded from `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`
-(`pk_<env>_<base64 of "<host>$">`, shape checked by `clerkPublishableKeyOrNull`) when it is set, else `[]`.
+(`pk_<env>_<base64 of "<host>$">`, shape checked by `clerkPublishableKeyOrNull`) and `CLERK_CAPTCHA_ORIGIN`
+(`https://challenges.cloudflare.com`, where Clerk's sign-up bot protection loads Cloudflare Turnstile) when it is
+set, else `[]`. The sign-up form holds `<div id="clerk-captcha">` (hidden while empty) for the widget to draw into.
 
 ## Interfaces and contracts
 
@@ -118,6 +120,7 @@ export function trustedTypesBootScript(assetPrefix: string, origins: readonly st
 | A malformed publishable key                  | No Clerk origin; Clerk's script is refused and logged                                        |
 | A prefix or origin that is not one           | `trustedTypesBootScript` throws, so the build fails; what it embeds is JSON with `<` escaped |
 | Clerk's timer worker refused (older rule)    | Clerk falls back to page timers and warns; the blob rule prevents it                         |
+| Clerk's sign-up CAPTCHA refused (older rule) | Sign-up stops at "The CAPTCHA failed to load"; `CLERK_CAPTCHA_ORIGIN` prevents it            |
 
 ## Security and trust
 
@@ -143,7 +146,7 @@ export function trustedTypesBootScript(assetPrefix: string, origins: readonly st
 | Rule                                       | Test                                                                       |
 | ------------------------------------------ | -------------------------------------------------------------------------- |
 | The URL rule, prefixes and the blob worker | `packages/ui/src/trusted-types.test.ts`: `isAllowedScriptUrl` cases        |
-| Clerk origin from the key                  | `trusted-types.test.ts`: `trustedScriptOrigins`                            |
+| Clerk origin from the key, and its CAPTCHA | `trusted-types.test.ts`: `trustedScriptOrigins`                            |
 | `trustedHtml` and `parseInert`             | `trusted-types.test.ts`                                                    |
 | The boot script runs the rule and logs     | `trusted-types.test.ts`: `trustedTypesBootScript`                          |
 | Every sink uses a policy                   | `packages/ui/src/trusted-types-sinks.test.ts` (every app and package)      |

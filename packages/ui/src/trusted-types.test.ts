@@ -98,10 +98,22 @@ describe('isAllowedScriptUrl', () => {
 
 describe('trustedScriptOrigins', () => {
   const key = (host: string) => `pk_test_${btoa(`${host}$`)}`;
-  it("reads the Clerk frontend API's origin from the publishable key", () => {
+  it("reads the Clerk frontend API's origin from the publishable key, beside its sign-up CAPTCHA's", () => {
     expect(
       trustedScriptOrigins({ NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: key('clerk.livediagram.app') }),
-    ).toEqual(['https://clerk.livediagram.app']);
+    ).toEqual(['https://clerk.livediagram.app', 'https://challenges.cloudflare.com']);
+  });
+
+  it("lets Clerk's sign-up CAPTCHA load, and nothing else on its origin's neighbours", () => {
+    const origins = trustedScriptOrigins({
+      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: key('clerk.livediagram.app'),
+    });
+    const page = 'https://www.livediagram.app';
+    const turnstile = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
+    expect(isAllowedScriptUrl(turnstile, page, '/live', origins)).toBe(true);
+    expect(isAllowedScriptUrl('https://evil.cloudflare.com/x.js', page, '/live', origins)).toBe(
+      false,
+    );
   });
 
   it('names none without a key, or with one it cannot read', () => {

@@ -71,7 +71,16 @@ export function isAllowedScriptUrl(
   return origins.indexOf(parsed.origin) >= 0;
 }
 
-/** The Clerk frontend API's origin, read from the publishable key (`pk_<env>_<base64 of "<host>$">`); none without. */
+/**
+ * Where Clerk's bot protection loads Cloudflare Turnstile from (`/turnstile/v0/api.js`) when the instance asks for a
+ * CAPTCHA on sign-up; refused, sign-up stops at "The CAPTCHA failed to load".
+ */
+const CLERK_CAPTCHA_ORIGIN = 'https://challenges.cloudflare.com';
+
+/**
+ * The Clerk frontend API's origin, read from the publishable key (`pk_<env>_<base64 of "<host>$">`), and the origin
+ * of the CAPTCHA its sign-up loads; none without a key.
+ */
 export function trustedScriptOrigins(env: {
   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY?: string;
 }): string[] {
@@ -81,7 +90,7 @@ export function trustedScriptOrigins(env: {
   if (!match) return [];
   try {
     const host = atob(match[1]!).replace(/\$$/, '');
-    return /^[a-z0-9.-]+$/i.test(host) ? [`https://${host}`] : [];
+    return /^[a-z0-9.-]+$/i.test(host) ? [`https://${host}`, CLERK_CAPTCHA_ORIGIN] : [];
   } catch {
     return [];
   }
