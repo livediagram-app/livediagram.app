@@ -2,7 +2,7 @@
 
 ## What
 
-An **Org chart** is a [mind map](mind-node.md) in the **Downward** flow whose nodes are **person nodes**: each draws an
+An **Org Chart** is a [mind map](mind-node.md) in the **Downward** flow whose nodes are **person nodes**: each draws an
 initials disc, the person's name and their role, like a person [Card](card.md). It is not a new kind: a person node is
 a mind node with `mindLook: 'person'`, so everything a mind map does (Tab for a report, Enter for a peer, Tidy Map,
 moving a branch with its subtree, Edit Outline, the flows) works on an org chart as it is.

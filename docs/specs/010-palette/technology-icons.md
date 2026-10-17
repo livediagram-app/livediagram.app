@@ -266,7 +266,7 @@ import of the catalogue data).
 
 ## Templates that seed brand tiles
 
-The **System architecture** starter ([Canvas and palette](../008-canvas/canvas-and-palette.md) "Templates",
+The **System Architecture** starter ([Canvas and palette](../008-canvas/canvas-and-palette.md) "Templates",
 `buildSystemArchitecture` in `packages/templates/src/template-builders-technical.ts`) is
 the first catalogue consumer: it drops the gateway / service / datastore nodes
 as branded tiles (`nginx`, `docker`, `k8s`, `postgres`, `redis` from the

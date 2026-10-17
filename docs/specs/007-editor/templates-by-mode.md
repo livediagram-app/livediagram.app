@@ -181,16 +181,16 @@ unchanged; only the mode they open in moved from Diagram.
 - **Town Hall Q&A** (`town-hall`), **Lean Coffee** (`lean-coffee`), **Crazy Eights**
   (`crazy-eights`), **Meeting Agenda** (`meeting-agenda`), **Workshop Board** (`workshop-board`) and
   **Brainstorm Board** (`brainstorm`).
-- The boards that ship a dot vote: **Affinity map** (`affinity-map`), **Prioritization matrix**
-  (`prioritization-matrix`) and **Risk matrix** (`risk-matrix`). Diagram has no Session strip, so a
+- The boards that ship a dot vote: **Affinity Map** (`affinity-map`), **Prioritization Matrix**
+  (`prioritization-matrix`) and **Risk Matrix** (`risk-matrix`). Diagram has no Session strip, so a
   vote on a Diagram tab could be started but not watched, ended or kept; every template carrying a
   session tool opens in Facilitate.
 - The boards a team fills in together in a session, rather than a diagram one person draws: **Incident
-  postmortem** (`incident-postmortem`, a look back, under Retrospectives), **User persona** (`user-persona`, under
-  Workshops), the **Planning** group's **Objectives planner** (`objectives-planner`), **Roadmap** (`roadmap`),
-  **RACI matrix** (`raci-matrix`) and **User story map** (`user-story-map`), and the **Strategy** group's **Business
+  postmortem** (`incident-postmortem`, a look back, under Retrospectives), **User Persona** (`user-persona`, under
+  Workshops), the **Planning** group's **Objectives Planner** (`objectives-planner`), **Roadmap** (`roadmap`),
+  **RACI Matrix** (`raci-matrix`) and **User Story Map** (`user-story-map`), and the **Strategy** group's **Business
   Model Canvas** (`business-model-canvas`), **Value Proposition Canvas** (`value-proposition-canvas`), **Stakeholder
-  map** (`stakeholder-map`) and **Opportunity solution tree** (`opportunity-solution-tree`). Their catalogue
+  map** (`stakeholder-map`) and **Opportunity Solution Tree** (`opportunity-solution-tree`). Their catalogue
   categories are unchanged.
 - The **Spaces** group, after Meetings: **Virtual Office** (`virtual-office`), **Coworking Space**
   (`coworking-space`), **Team Pod** (`team-pod`) and **All-Hands Hall** (`all-hands-hall`), "Offices and halls to walk
