@@ -3,6 +3,7 @@
 import { MAX_SIZE_PX, MIN_SIZE_PX } from '@/hooks/canvas/useShapeStyleSetters';
 import { MenuActionButton } from '@/components/primitives/PortalMenu';
 import { MenuToggleRow } from '@/components/palette/context-menu-input-rows';
+import { useRef } from 'react';
 import { useFollowingDraft } from '@/hooks/ui/useFollowingDraft';
 
 // The element menu's Size category (docs/specs/008-canvas/element-size.md): the exact width and height in
@@ -33,7 +34,15 @@ function SizeField({
   // Adjusted during render.
   const [draft, setDraft] = useFollowingDraft(value, (v) => String(Math.round(v)));
 
+  // Set by Escape for the blur it causes: that blur reads this render's draft, the typed value, so without the
+  // flag it would commit what Escape is meant to throw away.
+  const reverting = useRef(false);
+
   const commit = () => {
+    if (reverting.current) {
+      reverting.current = false;
+      return;
+    }
     const n = Number(draft);
     // An empty or nonsense box reverts rather than resizing to zero.
     if (!Number.isFinite(n) || draft.trim() === '') {
@@ -60,12 +69,13 @@ function SizeField({
           onKeyDown={(e) => {
             // The menu listens for keys; a number box must keep its own.
             e.stopPropagation();
+            // Enter only leaves the box: the blur commits, once.
             if (e.key === 'Enter') {
               e.preventDefault();
-              commit();
               (e.target as HTMLInputElement).blur();
             }
             if (e.key === 'Escape') {
+              reverting.current = true;
               setDraft(String(Math.round(value)));
               (e.target as HTMLInputElement).blur();
             }
