@@ -80,7 +80,7 @@ export function TableCellMenu({
     }`;
   return createPortal(
     <ContextMenu position={position} label="Cell menu" onClose={onClose} flush>
-      <p className="px-3 pb-0.5 pt-2 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+      <p className="px-3 pb-0.5 pt-2 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
         {single ? 'Selected Cell' : `${cells.length} Cells`}
       </p>
       <MenuAccordionSection title="Text" icon={<TextGlyph />} {...section('text')}>

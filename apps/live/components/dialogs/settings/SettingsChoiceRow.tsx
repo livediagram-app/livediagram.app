@@ -63,7 +63,7 @@ export function SettingsChoiceRow({
                 className={`rounded-md px-2.5 py-1 text-xs font-medium transition disabled:cursor-not-allowed disabled:opacity-40 ${
                   active
                     ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-slate-50'
-                    : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100'
+                    : 'text-slate-600 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100'
                 }`}
               >
                 {option.label}

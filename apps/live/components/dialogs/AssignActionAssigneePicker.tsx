@@ -119,7 +119,7 @@ export function AssigneePicker({
           </div>
         ))}
         {signedIn && memberOfDocumentTeam && members === null ? (
-          <p className="px-3 py-2 text-center text-xs text-slate-400 dark:text-slate-400">
+          <p className="px-3 py-2 text-center text-xs text-slate-500 dark:text-slate-400">
             Loading teammates…
           </p>
         ) : null}
@@ -177,11 +177,11 @@ export function AssigneePicker({
       ) : signedIn && !memberOfDocumentTeam ? (
         // Share-link editor on someone else's team document: they can
         // edit, but only the team's members are assignable.
-        <p className="px-1 text-xs text-slate-400">
+        <p className="px-1 text-xs text-slate-500 dark:text-slate-400">
           Only members of this document&apos;s team can be assigned actions.
         </p>
       ) : signedIn && members !== null && members.length === 0 ? (
-        <p className="px-1 text-xs text-slate-400">
+        <p className="px-1 text-xs text-slate-500 dark:text-slate-400">
           No other members in this team yet. Invite teammates from the team page and they become
           assignable here, even before they accept.
         </p>

@@ -343,7 +343,9 @@ export function ActivityFailedState({ onRetry }: { onRetry: () => void }) {
       <p className="text-sm font-medium text-slate-600 dark:text-slate-300">
         Couldn&apos;t load your activity
       </p>
-      <p className="mt-1 text-xs text-slate-400">Check your connection and try again.</p>
+      <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+        Check your connection and try again.
+      </p>
       <button
         type="button"
         onClick={onRetry}

@@ -160,7 +160,7 @@ export function CollaboratePanel({
             {sections.map((section) => (
               <section key={section.key} aria-label={section.label ?? undefined}>
                 {section.label ? (
-                  <h3 className="px-3 pb-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                  <h3 className="px-3 pb-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                     {section.label}
                   </h3>
                 ) : null}

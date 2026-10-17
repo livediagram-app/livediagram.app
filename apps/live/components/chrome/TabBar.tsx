@@ -343,7 +343,7 @@ export function TabBar({
         {/* Minimal chrome drops the label; it was never announced (aria-hidden). */}
         {minimalChrome ? null : (
           <span
-            className="hidden items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400 sm:flex dark:text-slate-400"
+            className="hidden items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-slate-500 sm:flex dark:text-slate-400"
             aria-hidden
           >
             <TabsLabelIcon />

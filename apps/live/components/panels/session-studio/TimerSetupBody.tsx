@@ -81,7 +81,7 @@ export function TimerSetupBody({
                 <span className="text-[22px] font-semibold leading-none tabular-nums text-slate-800 dark:text-slate-100">
                   {formatTimerClock(minutes * 60_000)}
                 </span>
-                <span className="mt-1 text-[9px] font-medium uppercase tracking-wider text-slate-400">
+                <span className="mt-1 text-[9px] font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
                   Drag to set
                 </span>
               </TimerDial>
@@ -105,7 +105,7 @@ export function TimerSetupBody({
             <span className="text-[22px] font-semibold leading-none tabular-nums text-slate-800 dark:text-slate-100">
               0:00
             </span>
-            <span className="mt-1 text-[9px] font-medium uppercase tracking-wider text-slate-400">
+            <span className="mt-1 text-[9px] font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
               Counts up
             </span>
           </TimerDial>

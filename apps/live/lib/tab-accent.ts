@@ -3,7 +3,14 @@
 // cursor helpers live in their own modules). Each tab's theme stroke is
 // reused on its pill to tie the bar visually to the tab content.
 
-import { isLightColor, shade, tint, type Tab } from '@livediagram/document';
+import {
+  MIN_TEXT_CONTRAST,
+  contrastRatio,
+  isLightColor,
+  shade,
+  tint,
+  type Tab,
+} from '@livediagram/document';
 import { getTheme } from './themes';
 
 // A theme that paints no stroke — Default, and any unthemed tab —
@@ -25,9 +32,36 @@ function tabAccent(tab: Tab): string {
 // isLightColor/tint/shade only parse `#rrggbb`, so a non-hex colour (like the
 // default accent) falls through untouched — it already reads on both. Pure (no
 // theme lookup) so the rule is unit-tested in isolation.
+// Then, keeping the hue, it is nudged in steps until the pill's label reads at WCAG AA (4.5:1) on the
+// pill's own surface (white, or slate-800 in dark): the default accent sat at 4.1:1 on white
+// (issue #863).
 export function legibleColor(raw: string, isDark: boolean): string {
-  if (isDark) return isLightColor(raw) ? raw : tint(raw, 0.6);
-  return isLightColor(raw) ? shade(raw, 0.6) : raw;
+  const half = isDark
+    ? isLightColor(raw)
+      ? raw
+      : tint(raw, 0.6)
+    : isLightColor(raw)
+      ? shade(raw, 0.6)
+      : raw;
+  return toAaContrast(half, isDark);
+}
+
+// The active pill's surfaces (TabPill): white, and slate-800 in dark.
+const PILL_LIGHT = '#ffffff';
+const PILL_DARK = '#1d293d';
+// Each nudge mixes 10% toward black or white; ten reach either, so the loop is bounded.
+const NUDGE = 0.1;
+const MAX_NUDGES = 10;
+
+function toAaContrast(colour: string, isDark: boolean): string {
+  const surface = isDark ? PILL_DARK : PILL_LIGHT;
+  let c = colour;
+  for (let i = 0; i < MAX_NUDGES; i += 1) {
+    // NaN (not #rrggbb) fails `<` and leaves the colour as it is.
+    if (!(contrastRatio(c, surface) < MIN_TEXT_CONTRAST)) return c;
+    c = isDark ? tint(c, NUDGE) : shade(c, NUDGE);
+  }
+  return c;
 }
 
 export function legibleTabAccent(tab: Tab, isDark: boolean): string {

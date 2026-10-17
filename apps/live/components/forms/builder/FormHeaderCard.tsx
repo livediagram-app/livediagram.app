@@ -134,7 +134,7 @@ export function FormHeaderCard({ sections }: { sections: number }) {
         className={`px-6 pb-5 pt-5 max-sm:px-4 ${form.cover ? '' : 'border-t-[6px] border-[var(--form-accent)]'}`}
       >
         {sections > 1 ? (
-          <p className="mb-2 text-[12px] font-semibold uppercase tracking-wider text-slate-400">
+          <p className="mb-2 text-[12px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
             Section 1 of {sections}
           </p>
         ) : null}

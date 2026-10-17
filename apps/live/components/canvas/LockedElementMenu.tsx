@@ -81,7 +81,7 @@ export function LockedElementMenu({
             {...{ [MENU_LABEL_ATTR]: '' }}
             id={`${noteId}-label`}
             aria-hidden
-            className="px-3 pb-1 text-[10px] font-semibold uppercase tracking-wide text-slate-400"
+            className="px-3 pb-1 text-[10px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400"
           >
             In use
           </p>

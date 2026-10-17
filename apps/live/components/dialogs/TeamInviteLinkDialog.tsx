@@ -151,7 +151,7 @@ export function TeamInviteLinkDialog({
                 {copied ? 'Copied' : 'Copy link'}
               </Button>
             </div>
-            <p className="mt-2 text-xs text-slate-400 dark:text-slate-400">
+            <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
               {expiryLabel(inviteLink.expiresAt, now)}
             </p>
           </div>

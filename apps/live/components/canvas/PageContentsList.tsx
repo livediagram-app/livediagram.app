@@ -431,7 +431,7 @@ function ListRow({ row, here, thumb, actions, grip }: RowProps) {
       ) : null}
       <span className="flex w-7 shrink-0 flex-col items-center">
         <span
-          className={`text-sm font-semibold tabular-nums ${here ? 'text-brand-700 dark:text-brand-200' : 'text-slate-400 dark:text-slate-400'}`}
+          className={`text-sm font-semibold tabular-nums ${here ? 'text-brand-700 dark:text-brand-200' : 'text-slate-500 dark:text-slate-400'}`}
         >
           {row.number}
         </span>
@@ -457,7 +457,7 @@ function FilmRow({ row, here, thumb, actions, grip }: RowProps) {
     <>
       <span className="flex w-6 shrink-0 flex-col items-center gap-1 pt-0.5">
         <span
-          className={`text-xs font-semibold tabular-nums ${here ? 'text-brand-700 dark:text-brand-300' : 'text-slate-400 dark:text-slate-400'}`}
+          className={`text-xs font-semibold tabular-nums ${here ? 'text-brand-700 dark:text-brand-300' : 'text-slate-500 dark:text-slate-400'}`}
         >
           {row.number}
         </span>
