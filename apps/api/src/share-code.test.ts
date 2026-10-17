@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { generateShareCode } from './db';
+import { generateShareCode, SHARE_CODE_LENGTH } from './db';
 
 // `generateShareCode` mints the short codes used as URL params on
 // /live/document/shared?s=<code>. Two contracts matter:
@@ -22,9 +22,9 @@ import { generateShareCode } from './db';
 const ALPHABET = new Set('ABCDEFGHJKLMNPQRSTUVWXYZ23456789');
 
 describe('generateShareCode', () => {
-  it('defaults to length 8 when no argument is passed (matches the historical URL shape)', () => {
-    const code = generateShareCode();
-    expect(code).toHaveLength(8);
+  it('defaults to 14 characters, 70 bits against guessing across every live link (docs/specs/015-api/api.md "Share codes")', () => {
+    expect(SHARE_CODE_LENGTH).toBe(14);
+    expect(generateShareCode()).toHaveLength(14);
   });
 
   it('honours the explicit length argument', () => {
@@ -45,16 +45,15 @@ describe('generateShareCode', () => {
     }
   });
 
-  it('produces a different code on each call (vanishingly small collision odds with 32^8 = 1.1T combinations)', () => {
+  it('produces a different code on each call (32^14, about 1.2e21 combinations)', () => {
     const seen = new Set<string>();
     for (let i = 0; i < 1000; i++) {
       seen.add(generateShareCode());
     }
-    // Collision-free across 1000 calls is the realistic expectation.
-    // The birthday bound on 32^8 codes makes the first expected
-    // collision land somewhere around the 10^6 mark, so a single
-    // dupe across 1000 calls would be a real signal of a broken
-    // RNG / bug, not statistical noise.
+    // Collision-free across 1000 calls is the realistic expectation:
+    // even the old 8-character codes put the first expected collision
+    // around the 10^6 mark, so a single dupe here would be a real
+    // signal of a broken RNG / bug, not statistical noise.
     expect(seen.size).toBe(1000);
   });
 

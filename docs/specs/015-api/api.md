@@ -149,6 +149,15 @@ Owner-only routes require a resolved owner (see Auth above). When none resolves,
 | DELETE     | `/api/documents/:id/share/:code`                                             | owner/team | Revoke a single link. Also fires a `share-revoked` op (see Realtime model below) into the document's room: any visitor hydrated with `X-Share-Code: <code>` hard-redirects out of the editor, and the room closes every socket that code admitted. Best-effort and logged on failure: the D1 delete is the authoritative revoke.                                                                                                                                                                                                                                                                                               |
 | DELETE     | `/api/documents/:id/share`                                                   | owner/team | Bulk-revoke: drops every share link on the document AND flips the legacy `shareable` flag off, so the live app stops opening the realtime room. Returns `{ shareable: false, shareCode: null }`. Drives the "Stop sharing" button in the Share dialog.                                                                                                                                                                                                                                                                                                                                                                         |
 
+**Share codes.** A share code is a bearer credential: holding it is the whole of a visitor's access. The api
+mints it as 14 characters of `ABCDEFGHJKLMNPQRSTUVWXYZ23456789` from the CSPRNG (`SHARE_CODE_LENGTH`,
+`apps/api/src/db/share.ts`), which is 70 bits. Guessing runs against every live link at once, not one, so the
+length is set for the whole population rather than for a single link; the `SHARE_RATE_LIMITER` is a second
+brake, not the first. Codes minted before 2026-10-17 are 8 characters (40 bits) and stay valid until revoked or
+expired: nothing in the api, the editor, the router or the MCP parses a code's length or shape. A Community
+post's link is minted the same way; its post id stays 10 characters
+([Community](../025-community/blueprints/community.md)).
+
 **Folders (Explorer organisation — see [15-folders.md](../013-workspace/folders.md))**
 
 | Method | Path               | Auth  | Notes                                                                                        |
