@@ -59,6 +59,10 @@ recognise itself in a peer's message.
   click any avatar in a tab's presence stack, then **Follow** on that person's
   row. The stack is where you go to find out who is here; the modal is where
   you act on it. (Clicking the avatar used to start following directly.)
+- **You land on their view at once.** Viewports go out on change only, so the person followed publishes theirs
+  again whenever the set of people following them changes (`useShowFollowersMyView`): one frame per follow. Without
+  it, a follower who joined after the presenter's last pan read "Following Alex" over a view of their own until
+  Alex next moved.
 - While following, a pill reads **"Following Alex"** with a **Stop**.
 - **Any canvas gesture of your own breaks it, instantly and silently** — pan,
   zoom, pinch, arrow keys, fit-to-screen, the minimap ([Minimap](../008-canvas/minimap.md)). Grabbing the
