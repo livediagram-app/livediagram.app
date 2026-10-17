@@ -252,6 +252,48 @@ describe('ToolbarPalette', () => {
     expect(screen.queryByRole('button', { name: 'Palette category' })).toBeNull();
   });
 
+  // docs/specs/007-editor/toolbar-layout.md "On a phone": held sideways the row has no menu card, and the strip
+  // keeps the phone's swiping row rather than turning into the desktop's centred one.
+  it('keeps the phone’s swiping row with no menu card', () => {
+    mobile.value = true;
+    render(
+      inMode(
+        'diagram',
+        <ToolbarPalette
+          canvasTool="select"
+          onSetCanvasTool={vi.fn()}
+          canvasEmpty={false}
+          pendingDraw={null}
+          leading={null}
+          {...handlers()}
+        />,
+      ),
+    );
+    expect(document.querySelector('[data-strip-leading]')).toBeNull();
+    // The swiping card: its rail gives way, the controls beside it keep their size.
+    const card = document.querySelector('[data-tour-id="palette"]')!;
+    expect(card.className).toContain('min-w-0');
+    expect(screen.getByRole('button', { name: 'Selection mode' })).toBeTruthy();
+  });
+
+  it('draws the menu card on a phone’s row when given one', () => {
+    mobile.value = true;
+    render(
+      inMode(
+        'diagram',
+        <ToolbarPalette
+          canvasTool="select"
+          onSetCanvasTool={vi.fn()}
+          canvasEmpty={false}
+          pendingDraw={null}
+          leading={<button type="button">Menu</button>}
+          {...handlers()}
+        />,
+      ),
+    );
+    expect(document.querySelector('[data-strip-leading]')).not.toBeNull();
+  });
+
   it('swaps the tiles when the category changes', () => {
     show({ mode: 'plan' });
     pickCategory('plan-metrics');
