@@ -1,6 +1,7 @@
 'use client';
 
 import { useFocusNewPlanElement } from '@/hooks/plan/useFocusNewPlanElement';
+import { contentAddBlocked } from '@/lib/editor-capabilities';
 import { voteTallies } from '@/hooks/plan/vote-tally';
 import { useMergeDuplicateStatuses } from '@/hooks/plan/useMergeDuplicateStatuses';
 import { usePresetCardTypes } from '@/hooks/plan/usePresetCardTypes';
@@ -2420,8 +2421,15 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
       activeId,
       activeTab,
       // Creation-only helpers: additionally blocked while the active layer
-      // is hidden / locked (docs/specs/006-document/layers.md).
-      editsBlocked: structureCreateBlocked,
+      // is hidden / locked (docs/specs/006-document/layers.md). Open to a Participant that may add content
+      // (docs/specs/013-workspace/share-roles.md): a sticky, text or image dragged from its palette lands through
+      // addBoxedAt, and every commit it makes still passes participant.guardCommit.
+      editsBlocked: contentAddBlocked({
+        participating: participant.participating,
+        canAddContent: participant.can.addContent,
+        blocked: createBlocked,
+        structureBlocked: structureCreateBlocked,
+      }),
       formatSourceId,
       formatConfig: formatSettings.config,
       getViewportCenter,
@@ -2844,9 +2852,12 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     closeImagePicker,
   } = useEditorImages({
     // A Participant places images and swaps their pictures (docs/specs/013-workspace/share-roles.md).
-    editsBlocked: participant.participating
-      ? editsBlocked || !participant.can.addContent
-      : structureBlocked,
+    editsBlocked: contentAddBlocked({
+      participating: participant.participating,
+      canAddContent: participant.can.addContent,
+      blocked: editsBlocked,
+      structureBlocked,
+    }),
     isReadOnly: isReadOnly && !(participant.participating && participant.can.addContent),
     embedMode,
     // Upload only in a workbench: no gallery read.
@@ -2932,9 +2943,12 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   const growthOpts = {
     // A Participant grows a mind map or a flowchart (docs/specs/013-workspace/share-roles.md): branches
     // and steps are content.
-    editsBlocked: participant.participating
-      ? createBlocked || !participant.can.addContent
-      : structureCreateBlocked,
+    editsBlocked: contentAddBlocked({
+      participating: participant.participating,
+      canAddContent: participant.can.addContent,
+      blocked: createBlocked,
+      structureBlocked: structureCreateBlocked,
+    }),
     participating: participant.participating,
     activeId,
     activeTab,

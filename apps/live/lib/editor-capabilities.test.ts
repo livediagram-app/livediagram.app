@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Element } from '@livediagram/document';
-import { resolveEditorCapabilities } from './editor-capabilities';
+import { contentAddBlocked, resolveEditorCapabilities } from './editor-capabilities';
 
 // docs/specs/013-workspace/share-roles.md "What a Participant changes", as the editor renders it.
 const ME = 'a'.repeat(32);
@@ -69,5 +69,29 @@ describe('resolveEditorCapabilities', () => {
     expect(can.addContent).toBe(false);
     expect(can.remove(sticky({ addedBy: ME }))).toBe(false);
     expect(can.writeText(sticky())).toBe(true);
+  });
+});
+
+// A Participant's content-adding gestures (docs/specs/013-workspace/share-roles.md "The Participant palette"): a
+// sticky dragged from its palette landed nowhere while the placement helpers took the structural guard.
+describe('contentAddBlocked', () => {
+  const base = {
+    participating: false,
+    canAddContent: false,
+    blocked: false,
+    structureBlocked: true,
+  };
+  it('opens to a Participant that may add content', () => {
+    expect(contentAddBlocked({ ...base, participating: true, canAddContent: true })).toBe(false);
+  });
+  it('keeps a Participant shut until it holds an adder key, and on a locked tab', () => {
+    expect(contentAddBlocked({ ...base, participating: true, canAddContent: false })).toBe(true);
+    expect(
+      contentAddBlocked({ ...base, participating: true, canAddContent: true, blocked: true }),
+    ).toBe(true);
+  });
+  it('keeps a Viewer shut, and lets an Editor through on the structural guard', () => {
+    expect(contentAddBlocked(base)).toBe(true);
+    expect(contentAddBlocked({ ...base, structureBlocked: false })).toBe(false);
   });
 });
