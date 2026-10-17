@@ -12,7 +12,8 @@ import { canvasSurface, DEFAULT_BUTTON_MODE, PEN_INK } from '@livediagram/docume
 import { createStockColourProjector } from '@/lib/stock-colour-projector';
 import { drawnArrowAsShown } from '@/lib/drawn-arrow-preview';
 import { useMemo, useState } from 'react';
-import { isVoteHost } from '@livediagram/document';
+import { isBoxed, isVoteHost, threadAt } from '@livediagram/document';
+import { commentPersisters } from '@/lib/comment-persistence';
 import { pollHostFor } from '@/hooks/collab/useLivePoll';
 import { presentedPages } from '@/lib/presented-pages';
 import { elementMenuAnchor } from '@/lib/context-menu-anchor';
@@ -284,6 +285,7 @@ export function EditorCanvasHost() {
     selectMarquee,
     confirm,
     selfParticipant,
+    sessionShareCode,
     setAiPanelPosition,
     exitAvatarTool,
     pressModeButton,
@@ -456,6 +458,18 @@ export function EditorCanvasHost() {
     if (el.shape === 'code-block') setCodeEditOpenForId(id);
     else if (el.shape === 'sankey' && canEditSankey(can, el)) setSankeyFlowsOpenForId(id);
     else if (el.shape === 'sequence' && canEditSequence(can, el)) setSequenceOpenForId(id);
+  };
+  // How a comment change made on a Comment panel is kept: shared with the anchored popover.
+  const commentPersist = commentPersisters({
+    readOnly: isReadOnly,
+    documentId,
+    tabId: activeTab.id,
+    selfId: selfParticipant.id,
+    shareCode: sessionShareCode,
+  });
+  const threadOn = (elementId: string) => {
+    const el = activeTab.elements.find((e) => e.id === elementId);
+    return el && isBoxed(el) ? threadAt(el) : undefined;
   };
   const backdrop = resolveViewBackdrop(
     activeTab,
@@ -756,10 +770,15 @@ export function EditorCanvasHost() {
                 !can.takePart
                   ? undefined
                   : {
-                      add: (id, text, mentions) => addComment(id, text, undefined, mentions),
-                      remove: deleteComment,
-                      resolve: resolveThread,
-                      unresolve: unresolveThread,
+                      // A Participant has no autosave: its panel changes go through the comment endpoints, as the
+                      // popover's do (lib/comment-persistence.ts); an Editor's ride the room and its save.
+                      add: (id, text, mentions) =>
+                        addComment(id, text, commentPersist.add(id, text, mentions), mentions),
+                      remove: (id, cid) => deleteComment(id, cid, commentPersist.remove(cid)),
+                      resolve: (id) =>
+                        resolveThread(id, commentPersist.threadState(threadOn(id), true)),
+                      unresolve: (id) =>
+                        unresolveThread(id, commentPersist.threadState(threadOn(id), false)),
                     }
               }
               // Action panels (docs/specs/012-collaboration/action-panel.md) drive the SAME action machinery the popover

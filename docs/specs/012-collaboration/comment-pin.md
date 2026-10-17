@@ -68,6 +68,10 @@ and right-click opens the ordinary element menu.
 - **Resolved**: the thread softens, the composer gives way to a dashed accent
   bar, **Reopen Thread**, and the header shows the green **Resolved** chip.
 - **Read-only** surfaces show the thread with no composer and no resolve.
+- **A Participant** writes, resolves and reopens on a panel as on the popover ([Share roles](../013-workspace/share-roles.md)).
+  It has no autosave, so its changes go through the comment endpoints, the same way the popover sends them
+  (`commentPersisters` in `apps/live/lib/comment-persistence.ts`, shared by both surfaces); an Editor's ride the room
+  and the tab save. Before the two shared it, a Participant's panel comment stayed on its own screen, unsaved.
 - **Export** draws the header (with **Resolved** once resolved) and the newest
   comments as bubbles with their authors (`svg-render-faces.ts`), so the card reads the same in a PNG.
 - **It does not collapse.** A collapse-to-summary was built and then dropped: a
