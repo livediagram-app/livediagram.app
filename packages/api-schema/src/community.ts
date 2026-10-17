@@ -65,7 +65,12 @@ export const COMMUNITY_CATEGORIES = [
     blurb: 'Illustrate pages and articles',
     type: 'Infographics',
   },
-  { id: 'art', label: 'Drawing & Art', blurb: 'Sketches, illustrations, Draw mode', type: 'Art' },
+  {
+    id: 'art',
+    label: 'Drawing & Art',
+    blurb: 'Sketches, illustrations, Drawing mode',
+    type: 'Art',
+  },
   {
     id: 'other',
     label: 'Something Else',

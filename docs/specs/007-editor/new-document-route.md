@@ -317,7 +317,7 @@ mode's own start ([Template starts](start-diagramming.md)); the marketing site's
 browsed before signing up.
 
 - **Heading:** "What are you making today?"
-- **Five mode cards**, in the order every mode list shows them (`EDITOR_MODES`: Diagram, Draw, Facilitate,
+- **Five mode cards**, in the order every mode list shows them (`EDITOR_MODES`: Diagram, Drawing, Facilitate,
   Illustrate, Plan), three then two from 640px (a six-track grid: the first row's cards take two tracks each, the
   second row's three, `modeCardSpan`; one column on a phone). Every card has the same build and, across both rows,
   the same height (`auto-rows-fr`), so **Diagram**, first there and where most start, leads the top row as an equal
@@ -396,8 +396,8 @@ the cards are not focused until the wizard mounts.
 The **empty-canvas hint** is a calm **card in the middle of the canvas** (`EmptyCanvasBanner`), shown while the
 active tab has no elements to someone who cannot edit it: an Editor gets the mode's start instead ([Template
 starts](start-diagramming.md)). A **Viewer** reads "Nothing here yet. The owner can build it out, and your view
-updates live."; a **Participant** is pointed at a sticky, text or an image. It shows in Diagram and Facilitate; Draw
-(its dock is the hint, [Draw mode](../023-draw-mode/draw-mode.md)), Illustrate and Plan show none. It offers no action
+updates live."; a **Participant** is pointed at a sticky, text or an image. It shows in Diagram and Facilitate; Drawing
+(its dock is the hint, [Drawing mode](../023-drawing-mode/drawing-mode.md)), Illustrate and Plan show none. It offers no action
 of its own: an Editor's empty tab shows its start instead, and **Help** on a desktop. It goes once the
 canvas has content, and a **Close** (×) in its top right corner closes it for good on that tab for this person in
 this browser (a per-browser list of the last 200 closed keys, `livediagram:v2:empty-card-dismissed` in localStorage,
@@ -662,8 +662,8 @@ theme for a new tab.
   editor loads on `/document/<id>`.
 - `/new?template=not-a-kind` → the plain wizard.
 - `/new?template=whiteboard` → no wizard; a document created whose tab opens
-  in Draw mode ([Editor modes](editor-modes.md)), the Ink pen in hand.
-- `/new?mode=draw` → the wizard, the Draw card chosen; Create makes a Draw tab.
+  in Drawing mode ([Editor modes](editor-modes.md)), the Ink pen in hand.
+- `/new?mode=draw` → the wizard, the Drawing card chosen; Create makes a Drawing tab.
 - `/new?mode=illustrate&q=article` → the wizard, Illustrate chosen; on the new document Start Illustrating
   opens with its search reading "article".
 - `/new?mode=sideways` → the plain wizard, no card chosen.

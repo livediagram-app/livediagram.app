@@ -104,7 +104,7 @@ export type ViewHeader = {
   threads: { open: number; total: number };
   rev: number | null;
   // The tab's mode when it is not Diagram, and its finish when one is set (docs/specs/024-agents/blueprints/
-  // document-views.md "The outline grammar"), so a reader knows a Draw tab or a sketch finish took.
+  // document-views.md "The outline grammar"), so a reader knows a Drawing tab or a sketch finish took.
   mode?: EditorMode;
   finish?: Finish;
   // An Illustrate tab's pages, by kind (docs/specs/024-agents/illustrate-for-agents.md "Reading");

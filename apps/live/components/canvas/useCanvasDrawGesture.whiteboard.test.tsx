@@ -68,7 +68,7 @@ describe('the pen gesture under a pinch', () => {
   });
 });
 
-describe('a whiteboard pen draws freely (docs/specs/023-draw-mode/draw-mode.md "No guides for pens")', () => {
+describe('a whiteboard pen draws freely (docs/specs/023-drawing-mode/drawing-mode.md "No guides for pens")', () => {
   // A box whose left edge sits 3 px from where the stroke starts: close enough
   // that a pencil's first point snaps onto it.
   const box = {
@@ -117,7 +117,7 @@ describe('a whiteboard pen draws freely (docs/specs/023-draw-mode/draw-mode.md "
   });
 });
 
-describe('a whiteboard pen draws through the live pipeline (docs/specs/023-draw-mode/draw-mode.md "Pens")', () => {
+describe('a whiteboard pen draws through the live pipeline (docs/specs/023-drawing-mode/drawing-mode.md "Pens")', () => {
   it('starts a live stroke, not the pencil\u2019s sample buffer', () => {
     const wrapper = document.createElement('div');
     wrapper.getBoundingClientRect = () => ({ left: 0, top: 0 }) as DOMRect;

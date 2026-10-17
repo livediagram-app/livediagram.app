@@ -28,7 +28,7 @@ type CanvasDrawGestureDeps = Pick<
   // then STAMPS the note at this placement instead of drawing a box to size.
   stampAt: ((canvasX: number, canvasY: number) => StampPlacement) | null;
   showStamp: (placement: StampPlacement | null) => void;
-  // On a whiteboard (Draw mode) a pen draws freely; elsewhere a marker lines up like the pencil.
+  // On a whiteboard (Drawing mode) a pen draws freely; elsewhere a marker lines up like the pencil.
   whiteboard: boolean;
 };
 
@@ -78,7 +78,7 @@ export function useCanvasDrawGesture({
   useEffect(() => (drawing ? beginCanvasGesture('stroke') : undefined), [drawing]);
 
   // A whiteboard pen draws through the live stroke pipeline instead (its own hook: coalesced
-  // samples, no React state per sample; docs/specs/023-draw-mode/draw-mode.md "Pens").
+  // samples, no React state per sample; docs/specs/023-drawing-mode/drawing-mode.md "Pens").
   const { penStroke, beginWhiteboardStroke } = useWhiteboardPenGesture({
     pendingDraw,
     wrapperRef,

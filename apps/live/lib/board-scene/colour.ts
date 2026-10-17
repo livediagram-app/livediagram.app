@@ -15,7 +15,7 @@ import {
 import type { SceneColour } from './scene';
 
 // The nearest stock colour is the whiteboard's one definition (penColourAtHue, the snap's too:
-// docs/specs/023-draw-mode/blueprints/snap-colours.md). The import asks more of a colour before
+// docs/specs/023-drawing-mode/blueprints/snap-colours.md). The import asks more of a colour before
 // it becomes one: the snap is "always nearest" (any colour at PEN_NEUTRAL_CHROMA or over), the import
 // "keep the exact hex unless clearly a stock colour" (docs/specs/020-import-export/board-scene.md).
 

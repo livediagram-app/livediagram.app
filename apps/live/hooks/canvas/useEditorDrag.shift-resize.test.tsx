@@ -23,7 +23,7 @@ import { applyOverlay, localPreview, resetDragPreviewForTests } from '@/lib/drag
 import { useEditorDrag } from './useEditorDrag';
 import type { EditorDragDeps } from './useEditorDrag.types';
 
-// Stands in for the DOM text measure in Draw mode: 10 px a character at 14 px, scaled with the
+// Stands in for the DOM text measure in Drawing mode: 10 px a character at 14 px, scaled with the
 // text, one line of 1.25 leading.
 vi.mock('@/components/canvas/text-hug-measure', () => ({
   measureDrawnText: () => (el: { label?: string; textScale?: number }) => () => {
@@ -217,7 +217,7 @@ describe('Shift pressed or released mid-drag', () => {
   });
 });
 
-// docs/specs/023-draw-mode/draw-mode.md "Text boxes": Shift keeps a hugging text box's
+// docs/specs/023-drawing-mode/drawing-mode.md "Text boxes": Shift keeps a hugging text box's
 // ratio by scaling its text with the box; the height hugs the scaled text.
 // Keyed on the box's sizing, never the editor mode (docs/specs/007-editor/editor-modes.md "A text
 // box's sizing"); the drag machine has no mode at all.

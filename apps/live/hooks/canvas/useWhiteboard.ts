@@ -1,6 +1,6 @@
 'use client';
 
-// The whiteboard dock's state and actions (docs/specs/023-draw-mode/draw-mode.md "What a whiteboard
+// The whiteboard dock's state and actions (docs/specs/023-drawing-mode/drawing-mode.md "What a whiteboard
 // shows"). The dock tool in hand is DERIVED from the editor's canvas tool and
 // armed intent (activeWhiteboardTool), so the dock can never disagree with the
 // canvas; this hook owns only the device-local prefs (pens, recognition,
@@ -37,7 +37,7 @@ import type { SnapColoursApi } from './useSnapColours';
 
 type Deps = {
   activeTab: Tab;
-  // The viewer works on the tab in Draw mode (docs/specs/007-editor/editor-modes.md): the dock,
+  // The viewer works on the tab in Drawing mode (docs/specs/007-editor/editor-modes.md): the dock,
   // its pens and its rules are in focus.
   drawMode: boolean;
   canvasTool: CanvasTool;
@@ -50,11 +50,11 @@ type Deps = {
   selectCanvasTool: (tool: CanvasTool) => void;
   beginDraw: (intent: PendingDraw) => void;
   cancelDraw: () => void;
-  // A path is open in its edit mode (docs/specs/023-draw-mode/path-tool.md "Editing"), and how to
+  // A path is open in its edit mode (docs/specs/023-drawing-mode/path-tool.md "Editing"), and how to
   // leave it: the dock presses Select with a path glyph meanwhile.
   pathEditing: boolean;
   leavePathEdit: () => void;
-  // Snap colours (docs/specs/023-draw-mode/draw-mode.md "Snap colours"), for the Settings flyout.
+  // Snap colours (docs/specs/023-drawing-mode/drawing-mode.md "Snap colours"), for the Settings flyout.
   snapColours: SnapColoursApi;
 } & WhiteboardDockPrefsDeps;
 
@@ -82,7 +82,7 @@ export function useWhiteboard(deps: Deps) {
   } = deps;
   // The synced dock preferences: pinned shapes and pick counts ("Shape slots").
   const dockPrefs = useWhiteboardDockPrefs(deps);
-  // S (docs/specs/023-draw-mode/draw-mode.md "Keyboard shortcuts"): each press raises this, and
+  // S (docs/specs/023-drawing-mode/drawing-mode.md "Keyboard shortcuts"): each press raises this, and
   // the dock, which owns its flyouts, opens the Shapes flyout in answer.
   const [shapesRequest, setShapesRequest] = useState(0);
   // Read lazily from this browser (readLocalStorageSafe copes with no storage).
@@ -100,10 +100,10 @@ export function useWhiteboard(deps: Deps) {
     beginDraw(whiteboardPenIntent(pen, next.recognise));
   };
 
-  // Entering Draw mode on an empty tab puts the active pen in hand (D2): "pick up a
+  // Entering Drawing mode on an empty tab puts the active pen in hand (D2): "pick up a
   // pen and draw". A tab with content opens on Select. Only when nothing
   // else is held, so a mode the user chose survives.
-  // "Entering" is a new active tab in Draw mode, or the open tab switched into it.
+  // "Entering" is a new active tab in Drawing mode, or the open tab switched into it.
   // Leaving a mode puts its tool down (docs/specs/007-editor/editor-modes.md "What a mode brings
   // into focus"): a pen, the eraser or an armed shape never carries over into the other mode.
   const seenRef = useRef<string | null>(null);
@@ -122,10 +122,10 @@ export function useWhiteboard(deps: Deps) {
       if (eraserCarried) setCanvasTool('select');
       return;
     }
-    // A shape armed from the palette is Diagram mode's own: switching into Draw puts it down.
+    // A shape armed from the palette is Diagram mode's own: switching into Drawing puts it down.
     const shapeCarried = switched && !!pendingDraw && !isWhiteboardOnlyIntent(pendingDraw);
     if (shapeCarried) cancelDraw();
-    // Draw mode has no format painter, and the eraser does not come across a switch: each is
+    // Drawing mode has no format painter, and the eraser does not come across a switch: each is
     // put down, and the pen picked up in its place.
     const heldElsewhere = canvasTool === 'format' || eraserCarried;
     if (!entered) return;
@@ -148,7 +148,7 @@ export function useWhiteboard(deps: Deps) {
     setPrefs(next);
     armPen(next);
     const pen = next.pens.find((p) => p.id === id);
-    if (pen) track('Draw', 'Selected', penTelemetryType(pen));
+    if (pen) track('Drawing', 'Selected', penTelemetryType(pen));
   };
 
   const updatePen = (id: WhiteboardPenId, patch: { colour?: PenColour | null; width?: number }) => {
@@ -158,11 +158,11 @@ export function useWhiteboard(deps: Deps) {
     };
     setPrefs(next);
     if (tool === 'pen' && prefs.activePenId === id) armPen(next);
-    if (patch.colour !== undefined) track('Draw', 'Changed', 'PenColour');
-    if (patch.width !== undefined) track('Draw', 'Changed', 'PenWidth');
+    if (patch.colour !== undefined) track('Drawing', 'Changed', 'PenColour');
+    if (patch.width !== undefined) track('Drawing', 'Changed', 'PenWidth');
   };
 
-  // Right-click on a pen: back to how it started, colour and width (docs/specs/023-draw-mode/draw-mode.md "Pens").
+  // Right-click on a pen: back to how it started, colour and width (docs/specs/023-drawing-mode/drawing-mode.md "Pens").
   const resetPen = (id: WhiteboardPenId) => {
     const preset = DEFAULT_WHITEBOARD_PREFS.pens.find((p) => p.id === id);
     const pen = prefs.pens.find((p) => p.id === id);
@@ -170,14 +170,14 @@ export function useWhiteboard(deps: Deps) {
     const next = { ...prefs, pens: prefs.pens.map((p) => (p.id === id ? preset : p)) };
     setPrefs(next);
     if (tool === 'pen' && prefs.activePenId === id) armPen(next);
-    track('Draw', 'Changed', 'PenReset');
+    track('Drawing', 'Changed', 'PenReset');
   };
 
-  // The Path tool (docs/specs/023-draw-mode/path-tool.md): held like a pen until another tool is picked.
+  // The Path tool (docs/specs/023-drawing-mode/path-tool.md): held like a pen until another tool is picked.
   const pickPath = () => {
     setCanvasTool('select');
     beginDraw({ type: 'path' });
-    track('Draw', 'Selected', 'Path');
+    track('Drawing', 'Selected', 'Path');
   };
 
   const pickEraser = () => {
@@ -188,7 +188,7 @@ export function useWhiteboard(deps: Deps) {
   const setEraserMode = (mode: WhiteboardEraserMode) => {
     if (mode === prefs.eraserMode) return;
     setPrefs({ ...prefs, eraserMode: mode });
-    track('Draw', 'Changed', mode === 'partial' ? 'EraserPartial' : 'EraserStroke');
+    track('Drawing', 'Changed', mode === 'partial' ? 'EraserPartial' : 'EraserStroke');
   };
 
   const pickIntent = (intent: PendingDraw) => {
@@ -197,7 +197,7 @@ export function useWhiteboard(deps: Deps) {
   };
 
   // Any catalogue shape, from the Shapes flyout, a slot, More shapes or a key. Plain: a pen never
-  // colours another tool (docs/specs/023-draw-mode/draw-mode.md "Shapes"). Every pick counts
+  // colours another tool (docs/specs/023-drawing-mode/drawing-mode.md "Shapes"). Every pick counts
   // towards the Shapes flyout's slots ("Shape slots").
   const pickShape = (key: WhiteboardShapeKey) => {
     const entry = whiteboardShapeEntry(key);
@@ -212,7 +212,7 @@ export function useWhiteboard(deps: Deps) {
   // A pick from the More shapes search: reported as one fixed token, never the kind.
   const pickSearchedShape = (key: WhiteboardShapeKey) => {
     pickShape(key);
-    track('Draw', 'Selected', 'ShapeSearch');
+    track('Drawing', 'Selected', 'ShapeSearch');
   };
 
   const setRecognition = (on: boolean) => {
@@ -220,22 +220,22 @@ export function useWhiteboard(deps: Deps) {
     const next = { ...prefs, recognise: on };
     setPrefs(next);
     if (tool === 'pen') armPen(next);
-    track('Draw', 'Toggled', next.recognise ? 'RecognitionOn' : 'RecognitionOff');
+    track('Drawing', 'Toggled', next.recognise ? 'RecognitionOn' : 'RecognitionOff');
   };
 
   const setCursor = (cursor: PenCursorVariant) => {
     if (cursor === prefs.cursor) return;
     setPrefs({ ...prefs, cursor });
-    track('Draw', 'Changed', cursor === 'dot' ? 'CursorDot' : 'CursorCrosshair');
+    track('Drawing', 'Changed', cursor === 'dot' ? 'CursorDot' : 'CursorCrosshair');
   };
 
-  // The Background row writes the person's own Draw pattern, never the tab
+  // The Background row writes the person's own Drawing pattern, never the tab
   // (docs/specs/007-editor/editor-modes.md "One look").
   const setBackground = (id: (typeof WHITEBOARD_BACKGROUNDS)[number]['id']) => {
     const bg = WHITEBOARD_BACKGROUNDS.find((b) => b.id === id);
     const pattern = DRAW_PATTERNS.find((p) => p === bg?.pattern);
     if (!bg || !pattern || pattern === dockPrefs.pattern) return;
-    track('Draw', 'Changed', BACKGROUND_TOKEN[bg.id]);
+    track('Drawing', 'Changed', BACKGROUND_TOKEN[bg.id]);
     dockPrefs.setPattern(pattern);
   };
 
@@ -251,7 +251,7 @@ export function useWhiteboard(deps: Deps) {
     resetPen,
     pickEraser,
     setEraserMode,
-    // The sticky note is a shape (docs/specs/023-draw-mode/draw-mode.md "Shape slots"): N counts
+    // The sticky note is a shape (docs/specs/023-drawing-mode/drawing-mode.md "Shape slots"): N counts
     // as a pick, like the shape keys.
     pickSticky: () => pickShape('sticky'),
     pickText: () => pickIntent({ type: 'text' }),
@@ -264,7 +264,7 @@ export function useWhiteboard(deps: Deps) {
     pinnedShapes: dockPrefs.pinned,
     slotShapes: dockPrefs.slots,
     applySlotOutcome: dockPrefs.applySlotOutcome,
-    // Where the dock sits (docs/specs/023-draw-mode/draw-mode.md "Where the dock sits").
+    // Where the dock sits (docs/specs/023-drawing-mode/drawing-mode.md "Where the dock sits").
     position: dockPrefs.position,
     pickPath,
     pathEditing,

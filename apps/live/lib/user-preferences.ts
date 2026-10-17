@@ -213,8 +213,8 @@ export type UserPreferences = {
   // The Facilitate tour's seen-guard (docs/specs/012-collaboration/facilitate-tour.md), as `planTourSeen`.
   // Surfaced in Settings as Tours › "Facilitate Tour" (inverted). Missing / undefined === not seen.
   facilitateTourSeen?: boolean;
-  // The Draw tour's seen-guard (docs/specs/023-draw-mode/draw-tour.md), as `facilitateTourSeen`.
-  // Surfaced in Settings as Tours › "Draw Tour" (inverted). Missing / undefined === not seen.
+  // The Drawing tour's seen-guard (docs/specs/023-drawing-mode/drawing-tour.md), as `facilitateTourSeen`.
+  // Surfaced in Settings as Tours › "Drawing Tour" (inverted). Missing / undefined === not seen.
   drawTourSeen?: boolean;
   // The Forms tour's seen-guard (docs/specs/030-forms/forms.md "The Forms tour"), as `drawTourSeen`; Show Me in the
   // form's cog panel reruns it. Missing / undefined === not seen.
@@ -265,7 +265,7 @@ export type UserPreferences = {
   minimalChrome?: boolean;
   // One-way latch: the power user mode offer has been shown to this account.
   powerUserOfferShown?: boolean;
-  // The whiteboard dock (docs/specs/023-draw-mode/draw-mode.md "Shape slots"): the pinned shape
+  // The whiteboard dock (docs/specs/023-drawing-mode/drawing-mode.md "Shape slots"): the pinned shape
   // kinds and the pick counts behind the Shapes flyout's slots. Read and written through
   // lib/whiteboard-dock-prefs, which parses them. Missing === the default pins, no history.
   whiteboardPinnedShapes?: WhiteboardShapeKey[];
@@ -273,10 +273,10 @@ export type UserPreferences = {
   // DEAD as of docs/specs/004-interface-design/colour-picker.md, like `customSwatches`: the markers'
   // Custom colours are the document's. Kept in the type because it is already stored.
   whiteboardYourColours?: string[];
-  // Where a whiteboard's dock sits (docs/specs/023-draw-mode/draw-mode.md "Where the dock sits").
+  // Where a whiteboard's dock sits (docs/specs/023-drawing-mode/drawing-mode.md "Where the dock sits").
   // Read through lib/whiteboard-dock-prefs. Missing (or anything but 'bottom') === the top.
   whiteboardDockPosition?: 'top' | 'bottom';
-  // Draw mode's pattern, the person's own (docs/specs/007-editor/editor-modes.md "One look"):
+  // Drawing mode's pattern, the person's own (docs/specs/007-editor/editor-modes.md "One look"):
   // Plain, Dots or Grid. Read through lib/whiteboard-dock-prefs. Missing === Grid.
   drawPattern?: 'blank' | 'grid' | 'graph';
   // How Illustrate's Contents shows on a desktop (docs/specs/007-editor/illustrate-pages.md

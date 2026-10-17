@@ -5,7 +5,7 @@ import { createFreehand, createShape, type BoxedElement } from '@livediagram/doc
 import { BoxedElementView } from '@/components/canvas/BoxedElementView';
 import { CanvasStillProvider } from '@/components/canvas/CanvasStillContext';
 
-// docs/specs/023-draw-mode/draw-mode.md "Selecting": on a whiteboard a shape or a pen stroke is
+// docs/specs/023-drawing-mode/drawing-mode.md "Selecting": on a whiteboard a shape or a pen stroke is
 // picked by its drawn line. Once selected its box catches pointers too, and the line still does,
 // outside the box as well, so a double-click on its outer half reaches it, never the board.
 

@@ -28,7 +28,7 @@ type TopCenterChromeProps = Pick<
   | 'formatSourceId'
   | 'illustratePages'
 > & {
-  // A whiteboard's dock at the top (docs/specs/023-draw-mode/draw-mode.md "Where the dock sits"):
+  // A whiteboard's dock at the top (docs/specs/023-drawing-mode/drawing-mode.md "Where the dock sits"):
   // the stack starts beneath it.
   dockOnTop?: boolean;
   // The tab has a Plan board: an armed Plan card's hint says to pick a column, not to add a board first.

@@ -1,6 +1,6 @@
 'use client';
 
-// Where a path lands in the document (docs/specs/023-draw-mode/path-tool.md; blueprint path-tool
+// Where a path lands in the document (docs/specs/023-drawing-mode/path-tool.md; blueprint path-tool
 // "Drawing" and "Edit mode"): a drawn path, a continued one, and every edit-mode gesture, each one
 // `commit`, so each is one undo step.
 import {
@@ -44,7 +44,7 @@ export function usePathCommits({
       debugLog('[path] refused: too few nodes');
       return;
     }
-    // The Path tool is a Draw mode tool: its path is written in Ink, unfilled (boardShape).
+    // The Path tool is a Drawing mode tool: its path is written in Ink, unfilled (boardShape).
     const fresh = styleNewElement(boardShape(createPath(anchors, closed)));
     const continued =
       !!continuing && elements().some((el) => el.id === continuing.id && el.type === 'path');

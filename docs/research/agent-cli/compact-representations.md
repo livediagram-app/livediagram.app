@@ -474,7 +474,7 @@ budget 2k: 82 of 300 elements shown · --budget 8k or --in <ref> for more
 | Self-loop                                    | `→ <own ref>`                                                                            |
 | Event Storming tab                           | header `kind=event-storming`; lanes are containers; stickies print their `esKind`        |
 | Mind map                                     | nesting follows `mindParentId`, not geometry                                             |
-| Board drawn in Draw mode (mostly ink)        | strokes collapse into `freehand ×N`; text and stickies stay legible                      |
+| Board drawn in Drawing mode (mostly ink)     | strokes collapse into `freehand ×N`; text and stickies stay legible                      |
 | Huge table or long code                      | outline shows dimensions; `show` prints in full, under the budget                        |
 | Prefix collision after a collaborator's edit | ambiguity error with candidates; never a guess                                           |
 | Element deleted between read and write       | `not found: e4a8 (deleted since your read?)`, suggesting `diff`                          |

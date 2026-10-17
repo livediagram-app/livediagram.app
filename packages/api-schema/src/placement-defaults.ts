@@ -22,7 +22,7 @@ import {
 export const DEFAULT_KEY_DIMENSIONS = ['kind', 'template', 'mode'] as const;
 
 /** The tab kinds a document can be created with. The legacy `whiteboard` kind is not one: a
- *  whiteboard is a general tab that opens in Draw mode. */
+ *  whiteboard is a general tab that opens in Drawing mode. */
 export const CREATION_TAB_KINDS = [
   'diagram',
   'event-storming',
@@ -121,7 +121,7 @@ export function placementDefaultTelemetryType(key: PlacementDefaultKey): string 
 /**
  * The creation intent of a new document, from its first tab and the family of the template it was
  * made from. Structural, so it reads a tab from before editor modes (a legacy `kind: 'whiteboard'`
- * opens in Draw mode) and one after (`opensIn`); the tab kind is read the way the document model
+ * opens in Drawing mode) and one after (`opensIn`); the tab kind is read the way the document model
  * reads it, legacy event-storming boards included.
  */
 export function creationIntentOf(

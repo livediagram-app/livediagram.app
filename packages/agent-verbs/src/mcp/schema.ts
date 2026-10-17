@@ -181,7 +181,7 @@ const ELEMENT_SCHEMA_HINT =
   'coordinates, [[x, y], ...] in drawing order (the box is taken from them), with "closed" true to ' +
   'close and fill the shape, and "penColour" (' +
   `${[INK_PEN_COLOUR, GREY_PEN_COLOUR, ...PEN_COLOUR_NAMES].join(', ')}` +
-  '). A hand-drawn board starts from the "whiteboard" template, a tab in Draw mode: underline a ' +
+  '). A hand-drawn board starts from the "whiteboard" template, a tab in Drawing mode: underline a ' +
   'heading, ring a word or draw a doodle with a few strokes, a point every 10 to 20 px along a ' +
   'curve; an arrow between boxes stays a pinned "arrow", which a "sketch" finish draws by hand and ' +
   'which stays attached. Any box may carry "rotation" in degrees, a small tilt (-4 to 4) reading as ' +

@@ -55,12 +55,12 @@ describe('settings catalogue', () => {
     }
   });
 
-  it('offers the Draw mode dock position in the Editor › Draw sub-category', () => {
-    // docs/specs/023-draw-mode/draw-mode.md "Where the dock sits": top by default, bottom by choice;
-    // the sub-category says Draw, as the mode switch does (docs/specs/007-editor/editor-modes.md
+  it('offers the Drawing mode dock position in the Editor › Drawing sub-category', () => {
+    // docs/specs/023-drawing-mode/drawing-mode.md "Where the dock sits": top by default, bottom by choice;
+    // the sub-category says Drawing, as the mode switch does (docs/specs/007-editor/editor-modes.md
     // "Naming in the interface").
     const draw = SETTINGS_CATEGORIES.find((c) => c.id === 'draw')!;
-    expect(settingsCategoryPath(draw)).toBe('Editor › Draw');
+    expect(settingsCategoryPath(draw)).toBe('Editor › Drawing');
     const row = draw.rows.find((r) => r.key === 'whiteboardDockPosition');
     if (row?.kind !== 'choice') throw new Error('no Dock Position choice row');
     expect(row.section).toBeUndefined();
@@ -168,7 +168,7 @@ describe('settings catalogue', () => {
       ['tourSeen', 'toggle', 'Diagram Tour', 'diagramTour'],
       ['planTourSeen', 'toggle', 'Plan Tour', 'planTour'],
       ['facilitateTourSeen', 'toggle', 'Facilitate Tour', 'facilitateTour'],
-      ['drawTourSeen', 'toggle', 'Draw Tour', 'drawTour'],
+      ['drawTourSeen', 'toggle', 'Drawing Tour', 'drawTour'],
       ['formTourSeen', 'toggle', 'Forms Tour', 'planForms'],
       ['avatarTourSeen', 'toggle', 'Avatar Tour', 'avatarTour'],
       ['illustrateTourSeen', 'toggle', 'Illustrate Tour', 'illustrateTour'],
@@ -209,7 +209,7 @@ describe('settings catalogue', () => {
         ['TourSeenOff', 'TourSeenOn'],
         ['PlanTourSeenOff', 'PlanTourSeenOn'],
         ['FacilitateTourSeenOff', 'FacilitateTourSeenOn'],
-        ['DrawTourSeenOff', 'DrawTourSeenOn'],
+        ['DrawingTourSeenOff', 'DrawingTourSeenOn'],
         ['FormTourSeenOff', 'FormTourSeenOn'],
         ['AvatarTourSeenOff', 'AvatarTourSeenOn'],
         ['IllustrateTourSeenOff', 'IllustrateTourSeenOn'],
@@ -492,7 +492,7 @@ describe('settings catalogue', () => {
 
 // Editor and Panels hold sub-categories (docs/specs/007-editor/user-preferences.md), each its own pane.
 describe('settings sub-categories', () => {
-  it('nests one sub-category per mode with settings of its own under Editor (Draw, Illustrate; no Diagram yet), then Presenting', () => {
+  it('nests one sub-category per mode with settings of its own under Editor (Drawing, Illustrate; no Diagram yet), then Presenting', () => {
     const ids = SETTINGS_CATEGORIES.map((c) => c.id);
     const children = SETTINGS_CATEGORIES.filter((c) => c.parent === 'editor').map((c) => c.id);
     expect(children).toEqual(['draw', 'illustrate', 'presenting']);

@@ -19,7 +19,7 @@ beforeEach(() => {
   // React's listeners sit on the root container, below window.
   root = document.createElement('div');
   root.innerHTML =
-    '<button data-new-mode="draw"><span>Draw</span></button><button id="other">Other</button>';
+    '<button data-new-mode="draw"><span>Drawing</span></button><button id="other">Other</button>';
   document.body.appendChild(root);
   reactSaw = vi.fn<() => void>();
   root.addEventListener('click', () => reactSaw());

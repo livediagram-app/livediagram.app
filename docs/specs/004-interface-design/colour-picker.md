@@ -34,7 +34,7 @@ felt inconsistent and janky.
 A picker shows up to three groups, always in this order, each under a small heading:
 
 1. **Theme Palette**, in every picker in the editor, whatever the mode or surface (an element, a Plan card, card type
-   or column, a Draw marker, a page background, an article, the laser): the active tab's theme colours, as the
+   or column, a Drawing marker, a page background, an article, the laser): the active tab's theme colours, as the
    theme derives them ([Canvas and palette](../008-canvas/canvas-and-palette.md#colours)), each named by a
    colour word, never two alike ("Blue", "Light blue", "Deep blue"). A Quick Style row's More colours shows the
    row's own colours here instead ([Quick Style Panel](../008-canvas/quick-style-panel.md#colours)). Outside
@@ -54,7 +54,7 @@ A picker shows up to three groups, always in this order, each under a small head
    | Violet      | Violet    |
    | Pink        | Pink      |
    - The **strong tone** is for lines, text, markers, accents, card types, columns, the laser and chart
-     slices. It is the marker stock set ([Draw mode](../023-draw-mode/draw-mode.md#the-colour-picker)) plus
+     slices. It is the marker stock set ([Drawing mode](../023-drawing-mode/drawing-mode.md#the-colour-picker)) plus
      Grey: each colour is tuned for the surface it is drawn on, darker on light paper and lighter on dark, so
      it is at least 4.5:1 on that surface.
    - The **soft tone** is for backgrounds, fills and highlights: the same hues as washes, pale on light paper
@@ -100,7 +100,7 @@ one, and **Use**. Use (or Enter in the hex field) applies the colour and keeps i
 
 - Where a line or text has to read on both appearances (a marker, the element menu's line and text rows),
   the editor warns when a colour is under 3:1 on either and offers a readable version beside the warning
-  ([Draw mode](../023-draw-mode/draw-mode.md#the-colour-picker)). Elsewhere it does not.
+  ([Drawing mode](../023-drawing-mode/drawing-mode.md#the-colour-picker)). Elsewhere it does not.
 - Quick Style's custom swatch popover holds the same editor
   ([Quick Style Panel](../008-canvas/quick-style-panel.md#custom-swatches)).
 - There is **no system colour well** anywhere in the editor; the custom colour editor is the only one.
@@ -152,7 +152,7 @@ pick commits it, once, for undo.
 
 | Skin              | What it is                                                                                  | Used by                                                                                                                                                                                                                                                                                                        |
 | ----------------- | ------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Inline**        | The picker drawn in place, inside a flyout, panel or popover                                | Draw pen flyout, Plan column, Illustrate page background, article toolbar Colour, article Accent                                                                                                                                                                                                               |
+| **Inline**        | The picker drawn in place, inside a flyout, panel or popover                                | Drawing pen flyout, Plan column, Illustrate page background, article toolbar Colour, article Accent                                                                                                                                                                                                            |
 | **Row**           | A labelled row (the colour in force on its right) opening the picker in a popover beside it | Element, selection and table cell menu colour rows (the menu is 224px, narrower than the picker), the Laser Panel's Colour                                                                                                                                                                                     |
 | **Field**         | A field-sized trigger (swatch, name, chevron) opening the picker in a popover               | Plan card Colour                                                                                                                                                                                                                                                                                               |
 | **Swatch button** | A small swatch-only trigger opening the picker in a popover                                 | Rich-text label colour, gradient From and To, chart slice and legend colours, canvas and pattern colours, custom theme builder tiles, Quick Style's **More colours**, Plan card type (end of its Name field), a tag's colour in the tag picker and its menu's Change Colour ([Tags](../013-workspace/tags.md)) |
@@ -160,7 +160,7 @@ pick commits it, once, for undo.
 ## Quick Style
 
 The [Quick Style Panel](../008-canvas/quick-style-panel.md) keeps its compact rows: a theme row's seven and
-Ink, Draw mode's Ink and eight hued stock colours in the standard order (Red to Pink; Grey is in More
+Ink, Drawing mode's Ink and eight hued stock colours in the standard order (Red to Pink; Grey is in More
 colours), the highlighter's five tints. Each row draws the one swatch, follows the
 one keyboard model, and ends with **More colours**, a swatch button opening the full picker (the row's own
 colours as its Theme Palette, the standard colours, Custom colours). Its glyph is four dots of the standard

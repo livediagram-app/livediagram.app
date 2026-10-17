@@ -106,7 +106,7 @@ closes the composer, tracks `Canvas · Used · AvatarMessage` or `AvatarMessageP
 
 ### Tour
 
-As the Draw tour's host (`DrawTourHost`), with: armed on entering Avatar mode; `canWork` without the
+As the Drawing tour's host (`DrawTourHost`), with: armed on entering Avatar mode; `canWork` without the
 `isReadOnly` and lock gates; steps filtered by `{ canSpeak, mobile }`; `prepare` of `character` clicks the Avatar
 button when the popover is closed and waits for `avatar-character`; `prepare` of `push` closes the popover;
 `cleanup` on leaving closes the popover if the tour opened it. Ends as skipped when the mode is left or the tab

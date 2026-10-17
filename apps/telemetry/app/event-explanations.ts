@@ -30,58 +30,60 @@ const perReportReason = Object.fromEntries(
 
 export const EXACT: Readonly<Record<string, string>> = {
   'Editor|Changed|LeaveIllustrateConfirmed':
-    'Someone confirmed leaving Illustrate on a tab with pages, after the warning that its pages do not show in Diagram or Draw.',
+    'Someone confirmed leaving Illustrate on a tab with pages, after the warning that its pages do not show in Diagram or Drawing.',
   'Editor|Changed|ModeDiagram':
     'Someone switched a tab to Diagram mode, for shapes, arrows and the palette.',
-  'Editor|Changed|ModeDraw': 'Someone switched a tab to Draw mode, to draw freehand with pens.',
+  'Editor|Changed|ModeDrawing':
+    'Someone switched a tab to Drawing mode, to draw freehand with pens.',
   'Editor|Changed|ModeIllustrate':
     'Someone switched a tab to Illustrate mode, to lay out a page of icons, stickers, components and media.',
   'Editor|Changed|ModePlan':
     'Someone switched a tab to Plan mode, to work on boards of items: drag cards through columns, add and open items.',
   'Editor|Changed|ModeFacilitate':
     'Someone switched a tab to Facilitate mode, to run a session with their team: timers, votes, polls and reveals.',
-  'Draw|Created|Template':
+  'Drawing|Created|Template':
     'Someone started a new document as a whiteboard, a plain board drawn on with pens, from the New Document wizard.',
-  'Draw|Created|NewTab':
+  'Drawing|Created|NewTab':
     'Someone added a whiteboard tab, a plain board drawn on with pens, to a document from Quick Start.',
-  'Draw|Selected|Main':
+  'Drawing|Selected|Main':
     "Someone picked up a whiteboard's main pen, which draws in the board's own ink colour: dark on the light board, light on the dark one.",
-  'Draw|Selected|Path':
+  'Drawing|Selected|Path':
     "Someone picked up a whiteboard's Path tool, a vector pen: each click places a point and a drag pulls out a curve.",
-  'Draw|Selected|ShapeSearch':
+  'Drawing|Selected|ShapeSearch':
     "Someone picked a shape they searched for in a whiteboard's Shapes flyout, which finds any of the palette's shapes by name.",
-  'Draw|Selected|Second':
+  'Drawing|Selected|Second':
     "Someone picked up a whiteboard's second pen (blue unless they changed it).",
-  'Draw|Selected|Third': "Someone picked up a whiteboard's third pen (red unless they changed it).",
-  'Draw|Changed|PenColour': "Someone gave a whiteboard's second or third pen a new colour.",
-  'Draw|Changed|PenWidth': "Someone changed the width of one of a whiteboard's pens.",
-  'Draw|Changed|CursorDot': "Someone chose the dot as a whiteboard's pen cursor.",
-  'Draw|Changed|CursorCrosshair':
+  'Drawing|Selected|Third':
+    "Someone picked up a whiteboard's third pen (red unless they changed it).",
+  'Drawing|Changed|PenColour': "Someone gave a whiteboard's second or third pen a new colour.",
+  'Drawing|Changed|PenWidth': "Someone changed the width of one of a whiteboard's pens.",
+  'Drawing|Changed|CursorDot': "Someone chose the dot as a whiteboard's pen cursor.",
+  'Drawing|Changed|CursorCrosshair':
     "Someone chose the crosshair with a nib as a whiteboard's pen cursor.",
-  'Draw|Changed|PenReset':
+  'Drawing|Changed|PenReset':
     "Someone reset one of a whiteboard's pens to its starting colour and width.",
-  'Draw|Changed|EraserStroke': "Someone set a whiteboard's eraser to remove whole strokes.",
-  'Draw|Changed|EraserPartial':
+  'Drawing|Changed|EraserStroke': "Someone set a whiteboard's eraser to remove whole strokes.",
+  'Drawing|Changed|EraserPartial':
     "Someone set a whiteboard's eraser to rub out only the part of a stroke under it.",
-  'Draw|Changed|ShapePinned':
+  'Drawing|Changed|ShapePinned':
     'Someone pinned a shape to their whiteboard dock, so it stays there beside the shapes they use most.',
-  'Draw|Changed|ShapeUnpinned': 'Someone unpinned a shape from their whiteboard dock.',
-  'Draw|Changed|BackgroundPlain': 'Someone gave a whiteboard a plain background.',
-  'Draw|Changed|BackgroundDots': 'Someone gave a whiteboard a dotted background.',
-  'Draw|Changed|BackgroundGrid': 'Someone gave a whiteboard a grid background.',
-  'Draw|Changed|SnapColours':
+  'Drawing|Changed|ShapeUnpinned': 'Someone unpinned a shape from their whiteboard dock.',
+  'Drawing|Changed|BackgroundPlain': 'Someone gave a whiteboard a plain background.',
+  'Drawing|Changed|BackgroundDots': 'Someone gave a whiteboard a dotted background.',
+  'Drawing|Changed|BackgroundGrid': 'Someone gave a whiteboard a grid background.',
+  'Drawing|Changed|SnapColours':
     "Someone snapped a whiteboard's custom colours to its stock colours, so they adapt to light and dark boards.",
-  'Draw|Toggled|RecognitionOn':
+  'Drawing|Toggled|RecognitionOn':
     'Someone turned on shape recognition on a whiteboard, so a roughly drawn shape becomes a clean one.',
-  'Draw|Toggled|RecognitionOff':
+  'Drawing|Toggled|RecognitionOff':
     'Someone turned off shape recognition on a whiteboard, so strokes stay as drawn.',
-  'Draw|Toggled|RecogniseOnceKey':
+  'Drawing|Toggled|RecogniseOnceKey':
     'Someone pressed Alt (Option) while drawing on a whiteboard to turn that one stroke into a clean shape at once.',
-  'Draw|Toggled|RecogniseOnceChip':
+  'Drawing|Toggled|RecogniseOnceChip':
     "Someone tapped a whiteboard's Make shape chip while drawing to turn that one stroke into a clean shape at once.",
-  'Draw|Toggled|BreakShapeKey':
+  'Drawing|Toggled|BreakShapeKey':
     'Someone pressed Alt (Option) while drawing on a whiteboard to turn a recognised shape back into the ink they drew.',
-  'Draw|Toggled|BreakShapeChip':
+  'Drawing|Toggled|BreakShapeChip':
     "Someone tapped a whiteboard's Keep drawing chip while drawing to turn a recognised shape back into the ink they drew.",
   'AI|Toggled|AiOff': 'Someone turned off the AI Assistant panel, in Settings under AI Tools.',
   'AI|Toggled|AiOn': 'Someone turned on the AI Assistant panel, in Settings under AI Tools.',
@@ -890,7 +892,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Tab|Changed|OpensInDiagram':
     "Someone set a tab to open in Diagram mode for everyone, from the tab menu's former Opens in (retired: the tab menu's Mode now counts as a mode switch).",
   'Tab|Changed|OpensInDraw':
-    "Someone set a tab to open in Draw mode for everyone, from the tab menu's former Opens in (retired: the tab menu's Mode now counts as a mode switch).",
+    "Someone set a tab to open in Drawing mode for everyone, from the tab menu's former Opens in (retired: the tab menu's Mode now counts as a mode switch).",
   'Tab|Changed|PageAdded': 'Someone added an infographic page to an Illustrate tab.',
   'Tab|Changed|ArticleAdded': 'Someone added a new article to an Illustrate tab.',
   'Tab|Changed|SlidePageAdded': 'Someone added a slide page to an Illustrate tab.',
@@ -1089,7 +1091,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Explorer|Selected|Text':
     'Someone typed words into the Explorer search to narrow a list of documents.',
   'Explorer|Selected|OpensIn':
-    'Someone filtered an Explorer list by the editor mode documents open in (Diagram or Draw).',
+    'Someone filtered an Explorer list by the editor mode documents open in (Diagram or Drawing).',
   'Explorer|Selected|Kind':
     'Someone filtered an Explorer list by tab kind (Event Storming boards).',
   'Explorer|Selected|Template':
@@ -1224,7 +1226,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Closed|IllustrateTourOffer':
     'Someone turned the Illustrate tour down with No on its own card.',
   'UI|Closed|AvatarTourOffer': 'Someone turned the Avatar tour down with No on its own card.',
-  'UI|Closed|DrawTourOffer': 'Someone turned the Draw tour down with No on its own card.',
+  'UI|Closed|DrawingTourOffer': 'Someone turned the Drawing tour down with No on its own card.',
   'UI|Closed|FacilitateTourOffer':
     'Someone turned the Facilitate tour down with No thanks on its own card (until October 2026, also by finishing the welcome tour without pressing Show me Facilitate).',
   'UI|Closed|FormTourOffer': 'Someone turned the Forms tour down with No on its own card.',
@@ -1366,9 +1368,9 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Ended|AvatarTourCompleted':
     "Someone reached the end of the Avatar tour, or a step's target never appeared and the tour finished early.",
   'UI|Ended|AvatarTourSkipped': 'Someone closed the Avatar tour before its end.',
-  'UI|Ended|DrawTourCompleted':
-    "Someone reached the end of the Draw tour, or a step's target never appeared and the tour finished early.",
-  'UI|Ended|DrawTourSkipped': 'Someone closed the Draw tour before its end.',
+  'UI|Ended|DrawingTourCompleted':
+    "Someone reached the end of the Drawing tour, or a step's target never appeared and the tour finished early.",
+  'UI|Ended|DrawingTourSkipped': 'Someone closed the Drawing tour before its end.',
   'UI|Ended|FormTourCompleted':
     "Someone reached the end of the Forms tour, or a step's target never appeared and the tour finished early.",
   'UI|Ended|FormTourSkipped':
@@ -1514,8 +1516,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     'The Portal tour was offered, as a small Tour toolbar beside a selected portal (counted once per visit).',
   'UI|Opened|SankeyTourOffer':
     'The Sankey tour was offered, as a small Tour toolbar beside a selected Sankey diagram (counted once per visit).',
-  'UI|Opened|DrawTourOffer':
-    'The Draw tour was offered: as its own card the first time someone worked in Draw mode, or replayed from Settings\' Tours › "Draw Tour".',
+  'UI|Opened|DrawingTourOffer':
+    'The Drawing tour was offered: as its own card the first time someone worked in Drawing mode, or replayed from Settings\' Tours › "Drawing Tour".',
   'UI|Opened|FormTourOffer':
     'The Forms tour was offered: as its own card the first time an Editor opened a Form tab, or replayed from Show Me Around in the form cog or Settings\' Tours › "Forms Tour".',
   'UI|Opened|FacilitateTourOffer':
@@ -1640,8 +1642,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone pressed Yes on the Illustrate tour's first card, beginning its walkthrough of the pages.",
   'UI|Started|AvatarTour':
     "Someone pressed Yes on the Avatar tour's first card, beginning its walkthrough of Avatar mode.",
-  'UI|Started|DrawTour':
-    "Someone pressed Yes on the Draw tour's first card, beginning its walkthrough of the dock.",
+  'UI|Started|DrawingTour':
+    "Someone pressed Yes on the Drawing tour's first card, beginning its walkthrough of the dock.",
   'UI|Started|FormTour':
     "Someone pressed Yes on the Forms tour's first card, beginning its walkthrough of the form builder.",
   'UI|Started|FacilitateTour':
@@ -1774,7 +1776,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Toggled|TemplateModeDiagram':
     'Someone narrowed the New Document templates to the ones that open in Diagram mode.',
   'UI|Toggled|TemplateModeDraw':
-    'Someone narrowed the New Document templates to the ones that open in Draw mode.',
+    'Someone narrowed the New Document templates to the ones that open in Drawing mode.',
   'UI|Toggled|TemplateModeIllustrate':
     'Someone narrowed the New Document templates to the ones that open in Illustrate mode.',
   'UI|Toggled|TemplateModePlan':
@@ -1885,10 +1887,10 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone switched on Tours › Element Tours › "Sankey Diagram Tour" in Settings, so it is offered again.',
   'UI|Toggled|SankeyTourSeenOn':
     'Someone switched off Tours › Element Tours › "Sankey Diagram Tour" in Settings, so it is not offered.',
-  'UI|Toggled|DrawTourSeenOff':
-    'Someone switched on Tours › "Draw Tour" in Settings, marking the Draw tour as not yet seen.',
-  'UI|Toggled|DrawTourSeenOn':
-    'Someone switched off Tours › "Draw Tour" in Settings, marking the Draw tour as seen.',
+  'UI|Toggled|DrawingTourSeenOff':
+    'Someone switched on Tours › "Drawing Tour" in Settings, marking the Drawing tour as not yet seen.',
+  'UI|Toggled|DrawingTourSeenOn':
+    'Someone switched off Tours › "Drawing Tour" in Settings, marking the Drawing tour as seen.',
   'UI|Toggled|FormTourSeenOff':
     'Someone switched on Tours › "Forms Tour" in Settings, marking the Forms tour as not yet seen.',
   'UI|Toggled|FormTourSeenOn':
@@ -2231,15 +2233,16 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|View|SankeyTourStepFlowsPreview':
     'The Sankey tour reached its "Live Preview" step, inside the Flows dialog.',
   'UI|View|SankeyTourStepOutro': 'The Sankey tour reached its closing "That Is a Sankey" card.',
-  'UI|View|DrawTourStepDrawingTools':
-    'The Draw tour reached its "Pens and Tools" step, on the dock\'s Drawing tools group.',
-  'UI|View|DrawTourStepQuickStyle':
-    'The Draw tour reached its "Quick Style" step, on the Quick style panel.',
-  'UI|View|DrawTourStepShapes':
-    'The Draw tour reached its "Shapes" step, on the dock\'s Shapes group.',
-  'UI|View|DrawTourStepSettings':
-    'The Draw tour reached its "Board Settings" step, on the dock\'s Settings cog.',
-  'UI|View|DrawTourStepOutro': 'The Draw tour reached its closing "You\'re ready to draw" card.',
+  'UI|View|DrawingTourStepDrawingTools':
+    'The Drawing tour reached its "Pens and Tools" step, on the dock\'s Drawing tools group.',
+  'UI|View|DrawingTourStepQuickStyle':
+    'The Drawing tour reached its "Quick Style" step, on the Quick style panel.',
+  'UI|View|DrawingTourStepShapes':
+    'The Drawing tour reached its "Shapes" step, on the dock\'s Shapes group.',
+  'UI|View|DrawingTourStepSettings':
+    'The Drawing tour reached its "Board Settings" step, on the dock\'s Settings cog.',
+  'UI|View|DrawingTourStepOutro':
+    'The Drawing tour reached its closing "You\'re ready to draw" card.',
   'UI|View|FacilitateTourStepCollaborate':
     'The Facilitate tour reached its "Collaborate" step, ringing the Collaborate band of the palette\'s category picker.',
   'UI|View|FormTourStepAdd':
@@ -2311,14 +2314,14 @@ export const EXACT: Readonly<Record<string, string>> = {
 export const BY_ACTION: Readonly<Record<string, string>> = {
   'Timing|Measured':
     'A key moment was timed: a document opening, a tab switch, a save, the live room connecting, or a page loading. Only the range it fell in is recorded, never the exact time.',
-  'Editor|Changed': 'Someone switched a tab between Diagram mode and Draw mode.',
+  'Editor|Changed': 'Someone switched a tab between Diagram mode and Drawing mode.',
   'Element|Created': 'Someone made an element in a way other than placing it from the palette.',
-  'Draw|Created': 'Someone made a whiteboard tab, a plain board drawn on with pens.',
-  'Draw|Selected':
+  'Drawing|Created': 'Someone made a whiteboard tab, a plain board drawn on with pens.',
+  'Drawing|Selected':
     'Someone picked up one of the pens or the Path tool on a whiteboard, or a shape from its search.',
-  'Draw|Changed':
+  'Drawing|Changed':
     "Someone changed a whiteboard pen's colour or width, the eraser mode, the board background or its pinned shapes.",
-  'Draw|Toggled':
+  'Drawing|Toggled':
     'Someone switched shape recognition on a whiteboard on or off, or flipped the stroke they were drawing between ink and a shape.',
   'Cta|Opened':
     'Someone followed a call to action on a public page (the landing page, a feature or comparison page, the help centre) and reached the New Document page.',

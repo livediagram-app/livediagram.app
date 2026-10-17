@@ -1,4 +1,4 @@
-// Pre-Mortem (docs/specs/007-editor/templates-by-mode.md "Draw templates"): Gary Klein's
+// Pre-Mortem (docs/specs/007-editor/templates-by-mode.md "Drawing templates"): Gary Klein's
 // prospective hindsight, drawn. "It's a year from now and the project failed. What happened?"
 // The project (the launch of a new mobile app) is a ship going down in the middle of the board;
 // round it the team's reasons sit on pink sticky notes in four groups (People, Plan, Tech,

@@ -16,7 +16,7 @@ describe('editorModeShortcut', () => {
   });
 
   it.each([
-    ['diagram', 'draw', 'Draw mode'],
+    ['diagram', 'draw', 'Drawing mode'],
     ['draw', 'facilitate', 'Facilitate mode'],
     ['facilitate', 'illustrate', 'Illustrate mode'],
     ['illustrate', 'diagram', 'Diagram mode'],

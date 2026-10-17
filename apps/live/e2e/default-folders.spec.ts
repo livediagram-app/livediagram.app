@@ -130,7 +130,7 @@ test.describe('default folders', () => {
     const workshops = await folder(page, s, 'Workshops', projects);
     await setDefault(page, s, 'mode:draw', workshops);
 
-    // No Location step: choosing Draw makes the whiteboard, in the whiteboards' default folder.
+    // No Location step: choosing Drawing makes the whiteboard, in the whiteboards' default folder.
     const whiteboard = await createInMode(page, 'draw');
     expect(await documentFolder(page, s, whiteboard)).toBe(workshops);
     // Diagrams have no default: the root of My Documents.

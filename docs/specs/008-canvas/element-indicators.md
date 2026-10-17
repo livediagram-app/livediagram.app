@@ -64,7 +64,7 @@ from the root's Mind Map menu section. A scale-to-fit label keeps its whole box.
 Both styles sit **inside the element's outline**, never across it, on every shape:
 
 - The outline is the one the canvas already hit-tests against
-  ([Draw mode](../023-draw-mode/draw-mode.md) "Selecting"): a circle's ellipse, a diamond's,
+  ([Drawing mode](../023-drawing-mode/drawing-mode.md) "Selecting"): a circle's ellipse, a diamond's,
   hexagon's or triangle's polygon, a cloud's curve, a pill's rounded ends, and for an element
   that paints its own face (a mind node, a card, a panel) its box with its own corner radius.
 - The cluster keeps **at least 6px clear of the outline** on every side.

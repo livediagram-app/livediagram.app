@@ -1,5 +1,5 @@
 // Where the transformed canvas sits on screen during a whiteboard erase sweep
-// (docs/specs/023-draw-mode/draw-mode.md "Eraser"), so a client point maps to canvas coords with
+// (docs/specs/023-drawing-mode/drawing-mode.md "Eraser"), so a client point maps to canvas coords with
 // `pointerToCanvas`. Read per pointer sample, so a pan or zoom mid-sweep (wheel, pinch) keeps the
 // brush under the pointer; the wrapper's rect is re-read only when the view (offset or zoom) has
 // changed since the last read, since the sweep's own erasing dirties layout every sample and a

@@ -9,7 +9,7 @@ describe('templateOpensIn', () => {
     expect(templateOpensIn(templateCanvasOverrides('blank'))).toBe('diagram');
   });
 
-  it('opens the Whiteboard in Draw', () => {
+  it('opens the Whiteboard in Drawing', () => {
     expect(templateOpensIn(templateCanvasOverrides('whiteboard'))).toBe('draw');
   });
 

@@ -13,8 +13,8 @@ import { buildDressedDrawnArrow } from '@/lib/draw-commit';
 const DRAWN_ARROW_PREVIEW_ID = 'drawn-arrow-preview';
 
 // The line or arrow a draw gesture would land if released now, as the canvas would then show it
-// (docs/specs/023-draw-mode/draw-mode.md "Shapes"): the commit's own builder and dressing, its
-// stock colours (Draw mode's Ink) drawn in their version for the canvas, as the canvas draws them.
+// (docs/specs/023-drawing-mode/drawing-mode.md "Shapes"): the commit's own builder and dressing, its
+// stock colours (Drawing mode's Ink) drawn in their version for the canvas, as the canvas draws them.
 export function drawnArrowAsShown(
   intent: Extract<PendingDraw, { type: 'arrow' }>,
   startX: number,

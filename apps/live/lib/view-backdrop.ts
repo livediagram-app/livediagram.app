@@ -1,6 +1,6 @@
 // The backdrop a viewer's canvas paints (docs/specs/007-editor/editor-modes.md "One look"): one
 // colour in every editor mode, the tab's own (its theme's canvas, or the custom colour). The
-// pattern is the tab's in Diagram mode and the person's own in Draw mode, so choosing it there
+// pattern is the tab's in Diagram mode and the person's own in Drawing mode, so choosing it there
 // changes nothing for anyone else. Illustrate and Plan have a default of their own (MODE_PATTERNS),
 // shown only while the tab's pattern is still its theme's: a pattern someone picked always shows.
 // Exports and thumbnails use the tab's backdrop (resolveTabBackdrop).

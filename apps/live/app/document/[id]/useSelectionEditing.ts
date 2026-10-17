@@ -53,7 +53,7 @@ export function useSelectionEditing(opts: {
   documentName: string;
   tabs: Tab[];
   activeTab: Tab;
-  // The viewer works in Draw mode (docs/specs/007-editor/editor-modes.md): plain keys belong to
+  // The viewer works in Drawing mode (docs/specs/007-editor/editor-modes.md): plain keys belong to
   // the dock.
   drawMode: boolean;
   commit: (updater: (els: Element[]) => Element[]) => void;
@@ -310,13 +310,13 @@ export function useSelectionEditing(opts: {
     if (lockedByOther(elementId)) return false;
     const el = activeTab.elements.find((e) => e.id === elementId);
     if (!el) return false;
-    // A path takes no typed label (docs/specs/023-draw-mode/blueprints/path-tool.md P1): its edit
+    // A path takes no typed label (docs/specs/023-drawing-mode/blueprints/path-tool.md P1): its edit
     // mode is its points, never a caret.
     const labelable = (isBoxed(el) && el.type !== 'path') || el.type === 'arrow';
     if (!labelable) return false;
     // Self-drawing data components have no editable label (see beginEdit).
     if (el.type === 'shape' && !opensInlineLabelEditor(el.shape)) return false;
-    // Draw mode leaves the key to its dock unless a note or text box is selected.
+    // Drawing mode leaves the key to its dock unless a note or text box is selected.
     if (opts.drawMode && !whiteboardTakesTyping(el)) return false;
     // Type-to-edit REPLACES the whole label with the typed char, so any
     // per-range `richText` from a prior edit must be dropped — otherwise the

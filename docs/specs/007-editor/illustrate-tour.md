@@ -3,9 +3,9 @@
 A short, optional guided tour of one [page kind](illustrate-pages.md#page-kinds) in Illustrate mode: a slide, an
 infographic, an article or a logo. Each kind has its own **track**, which shows how that kind of page is made by
 opening the real controls on the person's own page (a slide's Layout and Background popovers, its deck button,
-the Slide Deck and Present) rather than only pointing at them. It is the [Draw tour](../023-draw-mode/draw-tour.md)'s
+the Slide Deck and Present) rather than only pointing at them. It is the [Drawing tour](../023-drawing-mode/drawing-tour.md)'s
 sibling: the same welcome card, anchored step cards, glide, dimming ring, Skip, Back and outro card, driven by the
-same engine. Where this spec is silent, the Draw tour's rules hold.
+same engine. Where this spec is silent, the Drawing tour's rules hold.
 
 ## Domain language
 
@@ -130,7 +130,7 @@ Only someone who may edit the tab is offered the tour, or sees Show Me: an **Edi
 
 ## Telemetry ([Telemetry](../017-telemetry/telemetry.md))
 
-The Draw tour's funnel, with its own tokens; the track shows in the step tokens:
+The Drawing tour's funnel, with its own tokens; the track shows in the step tokens:
 
 - **Offer**: `UI` · `Opened` · `IllustrateTourOffer` when its welcome card shows; `UI` · `Closed` ·
   `IllustrateTourOffer` on No.
@@ -146,7 +146,7 @@ The Draw tour's funnel, with its own tokens; the track shows in the step tokens:
 ## Power user mode
 
 [Power user mode](power-user-mode.md) marks the Illustrate tour seen (`illustrateTourSeen`, every kind while the mode
-is on) alongside the Diagram, Plan, Facilitate and Draw tours.
+is on) alongside the Diagram, Plan, Facilitate and Drawing tours.
 
 ## Code
 

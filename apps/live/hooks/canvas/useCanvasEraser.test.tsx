@@ -58,7 +58,7 @@ describe('useCanvasEraser gesture', () => {
   });
 });
 
-describe('useCanvasEraser on a whiteboard (docs/specs/023-draw-mode/draw-mode.md "Eraser")', () => {
+describe('useCanvasEraser on a whiteboard (docs/specs/023-drawing-mode/drawing-mode.md "Eraser")', () => {
   // A stroke along y = 100 from x 0 to 200, and a press well above it.
   const stroke = {
     ...createFreehand(

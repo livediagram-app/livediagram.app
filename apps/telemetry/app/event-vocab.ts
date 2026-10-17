@@ -55,7 +55,7 @@ const CATEGORY_COLORS: Record<TelemetryCategory, string> = {
   // Activity's amber.
   Drive: '#854d0e',
   Mcp: '#f43f5e',
-  // Terminal ink: the command line, darker than the stone greys of Trash and Draw.
+  // Terminal ink: the command line, darker than the stone greys of Trash and Drawing.
   Cli: '#1e293b',
   // Burnt orange: the agents' changesets, apart from MCP's rose and Activity's amber.
   Agent: '#c2410c',
@@ -69,8 +69,8 @@ const CATEGORY_COLORS: Record<TelemetryCategory, string> = {
   Email: '#0d9488',
   Error: '#dc2626',
   // Warm stone, the marker on a whiteboard: apart from every blue and green.
-  Draw: '#78716c',
-  // Deep violet: the mode switch, apart from Draw's stone beside it.
+  Drawing: '#78716c',
+  // Deep violet: the mode switch, apart from Drawing's stone beside it.
   Editor: '#6d28d9',
   // Deep cyan: the Explorer's filters, apart from UI's lighter cyan and Search's indigo.
   Explorer: '#155e75',

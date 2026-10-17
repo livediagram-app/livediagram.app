@@ -1,11 +1,11 @@
-# Draw mode blueprint defaults
+# Drawing mode blueprint defaults
 
 One row per default applied where a spec is silent or qualitative.
 
 | #   | Blueprint            | Spec silence                                                         | Default applied                                                                                                                                    |
 | --- | -------------------- | -------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
 | D1  | whiteboard-round-one | Which template category Whiteboard belongs to                        | `design`, nominal: the picker shows Whiteboard only as a quick-pick, as it does Blank                                                              |
-| D2  | whiteboard-round-one | Which tool is in hand entering Draw mode                             | Select with content; the active pen on an empty board, when editable and no other intent or mode is held                                           |
+| D2  | whiteboard-round-one | Which tool is in hand entering Drawing mode                          | Select with content; the active pen on an empty board, when editable and no other intent or mode is held                                           |
 | D3  | whiteboard-round-one | Where a split stroke's label, link, note and comments go             | The longest piece                                                                                                                                  |
 | D4  | whiteboard-round-one | Which tools the "touch pans once a pen is seen" rule covers          | Every inking tool: the pens and the eraser                                                                                                         |
 | D6  | whiteboard-round-one | The eraser's brush size on a whiteboard                              | Stroke 10 px, Partial 16 px (screen)                                                                                                               |

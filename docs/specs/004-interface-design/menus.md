@@ -136,7 +136,7 @@ element or add one:
 
 - **Palette tiles**: every add-tile's name and caption ("Add Sticky Note" captioned "Sticky
   Note", "Add Domain Event Note"), the Toolbar strip's **Add Page** and **Add from Photo**, and
-  the Draw dock's shapes. A catalogue entry (an icon, a sticker, a technology, an Event Storming
+  the Drawing dock's shapes. A catalogue entry (an icon, a sticker, a technology, an Event Storming
   note kind) keeps its own sentence-case name and its tile Title Cases it on the way
   (`headlineCase` in `@livediagram/api-schema`).
 - **The quick-add ring's options**: "Add Row", "Add Column", "Add Child", "Add Sibling", "Add
@@ -177,7 +177,7 @@ Each menu, how it opens, what it holds, and what the keyboard could do before th
 | Slide menu            | ⋯ on a presentation slide row                                            | Tool buttons, accordion groups of tiles                                  | Tab only, into collapsed rows too                   |
 | Embed copy menu       | Embed on a share pass                                                    | Copy rows                                                                | Tab only                                            |
 | Selection filter menu | The filter button on a mixed selection                                   | One tile per element type                                                | Tab only                                            |
-| Custom colour menu    | Right-click, long press or Shift+F10 on a custom Draw colour             | Remove                                                                   | Focus in, Escape                                    |
+| Custom colour menu    | Right-click, long press or Shift+F10 on a custom Drawing colour          | Remove                                                                   | Focus in, Escape                                    |
 | Editor mode menu      | The mode chip                                                            | One-of-a-set modes                                                       | Arrows, Home, End, Escape; no typeahead, Tab        |
 | Zoom menu             | Hovering or focusing the zoom percentage                                 | One-of-a-set zoom levels, Fit to screen                                  | Opened on focus; Tab through; no arrows             |
 | Account menu          | The account pill                                                         | Name header, Account, Sign out                                           | Tab only; trigger had no `aria-haspopup`; no Escape |

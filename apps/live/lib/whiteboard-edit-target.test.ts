@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { createShape, createSticky, type Element } from '@livediagram/document';
 import { routeBoardDoubleClick, shapeToEditAt } from './whiteboard-edit-target';
 
-// docs/specs/023-draw-mode/draw-mode.md "Selecting": a whiteboard shape is picked by its outline,
+// docs/specs/023-drawing-mode/drawing-mode.md "Selecting": a whiteboard shape is picked by its outline,
 // yet a double-click anywhere inside it edits its label, selected or not.
 
 const shape = (kind: Parameters<typeof createShape>[0], x: number, y: number, over = {}) =>

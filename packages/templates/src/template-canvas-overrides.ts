@@ -134,9 +134,9 @@ const TEMPLATE_PATTERNS: Partial<Record<TemplateKind, BackgroundPattern>> = {
   'empathy-map': 'grid',
   funnel: 'blank',
   sankey: 'blank',
-  // A new whiteboard starts on Grid (docs/specs/023-draw-mode/draw-mode.md "Board background").
+  // A new whiteboard starts on Grid (docs/specs/023-drawing-mode/drawing-mode.md "Board background").
   whiteboard: WHITEBOARD_DEFAULT_PATTERN,
-  // The Draw templates start on the whiteboard's board too.
+  // The Drawing templates start on the whiteboard's board too.
   sketchnote: WHITEBOARD_DEFAULT_PATTERN,
   'rich-picture': WHITEBOARD_DEFAULT_PATTERN,
   'comic-strip': WHITEBOARD_DEFAULT_PATTERN,
@@ -228,7 +228,7 @@ export function templateCanvasOverrides(kind: TemplateKind): Partial<Tab> {
   // louder the pattern, the further it steps back (TEMPLATE_PATTERN_OPACITY);
   // a few radial / stage layouts soften further still, and the lower of the
   // two wins.
-  // A whiteboard draws its own quiet board pattern (docs/specs/023-draw-mode/draw-mode.md "Board
+  // A whiteboard draws its own quiet board pattern (docs/specs/023-drawing-mode/drawing-mode.md "Board
   // background"), so it never takes a template's dimming.
   const mode = templateEditorMode(kind);
   const quiet = pattern && mode !== 'draw' ? TEMPLATE_PATTERN_OPACITY[pattern] : undefined;
@@ -247,8 +247,8 @@ export function templateCanvasOverrides(kind: TemplateKind): Partial<Tab> {
   // The kind, not a layer id, is what the editor reads to decide it is a
   // workshop board, so it must land on every application path: the picker,
   // /new, and the MCP worker all go through here.
-  // A template's mode (docs/specs/007-editor/templates-by-mode.md): the Draw templates are general
-  // tabs that OPEN in Draw mode (docs/specs/007-editor/editor-modes.md "Where the mode lives";
+  // A template's mode (docs/specs/007-editor/templates-by-mode.md): the Drawing templates are general
+  // tabs that OPEN in Drawing mode (docs/specs/007-editor/editor-modes.md "Where the mode lives";
   // whiteboarding is no kind), the Illustrate ones open in Illustrate (their pages below).
   if (mode !== 'diagram') overrides.opensIn = mode;
   // The Article opens in Illustrate on its one article page (docs/specs/007-editor/article-pages.md).

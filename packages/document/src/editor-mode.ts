@@ -1,5 +1,5 @@
 // Editor modes (docs/specs/007-editor/editor-modes.md): how a general tab is worked on, Diagram,
-// Draw, Facilitate, Illustrate or Plan. A mode tunes tools and rules; it never decides what the tab is (that is its kind). The
+// Drawing, Facilitate, Illustrate or Plan. A mode tunes tools and rules; it never decides what the tab is (that is its kind). The
 // mode is the tab's, the same for everyone on it (`Tab.opensIn`, Diagram when absent).
 import type { Layer } from './layers';
 import { isEventStormingTab } from './event-storming';
@@ -15,7 +15,7 @@ export const EDITOR_MODE_CATALOGUE = [
   },
   {
     id: 'draw',
-    label: 'Draw',
+    label: 'Drawing',
     description: 'Sketch freehand with pens, tidied into shapes as you go.',
   },
   {
@@ -39,7 +39,7 @@ export type EditorMode = (typeof EDITOR_MODE_CATALOGUE)[number]['id'];
 
 export const EDITOR_MODES: readonly EditorMode[] = EDITOR_MODE_CATALOGUE.map((m) => m.id);
 
-/** "Draw": the mode's name as the interface shows it. */
+/** "Drawing": the mode's name as the interface shows it. */
 export function editorModeLabel(mode: EditorMode): string {
   return EDITOR_MODE_CATALOGUE.find((m) => m.id === mode)!.label;
 }
@@ -114,7 +114,7 @@ export function setTabOpensIn<T extends ModeTab & { id: string }>(tab: T, mode: 
   return { ...tab, opensIn: mode };
 }
 
-// The one gate the look reads, keyed on the viewer's effective editor mode: in Draw mode the
+// The one gate the look reads, keyed on the viewer's effective editor mode: in Drawing mode the
 // canvas pattern is the person's own (resolveViewBackdrop); everything else looks the same in both.
 export function hasBoardLook(mode: EditorMode): boolean {
   return mode === 'draw';

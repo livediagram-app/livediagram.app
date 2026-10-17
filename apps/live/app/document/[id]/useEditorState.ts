@@ -2957,7 +2957,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     styleNewElement: styleMemory.styleNewElement,
     onPlanCardPlace: placePaletteCard,
   });
-  // The Path tool (docs/specs/023-draw-mode/path-tool.md): a drawn path, a continued one, an edit.
+  // The Path tool (docs/specs/023-drawing-mode/path-tool.md): a drawn path, a continued one, an edit.
   const { commitPath, commitPathEdit } = usePathCommits({
     editsBlocked: structureCreateBlocked,
     commit: logo.drawCommit,
@@ -3142,7 +3142,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     layerInertIds,
   });
 
-  // Snap colours (docs/specs/023-draw-mode/draw-mode.md "Snap colours"): one commit, one undo step.
+  // Snap colours (docs/specs/023-drawing-mode/drawing-mode.md "Snap colours"): one commit, one undo step.
   const snapColours = useSnapColours({
     elements: activeTab.elements,
     inertIds: layerInertIds,
@@ -3150,7 +3150,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     commit,
   });
 
-  // The whiteboard dock (docs/specs/023-draw-mode/draw-mode.md): device-local pens, recognition and
+  // The whiteboard dock (docs/specs/023-drawing-mode/drawing-mode.md): device-local pens, recognition and
   // eraser mode, and the dock presses turned into ordinary editor calls.
   const whiteboardDock = useWhiteboard({
     activeTab,
@@ -3804,7 +3804,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     onOpenSearch: () => openSearchWithPrefetch(dialogs.setSearchOpen, loadAllTabs),
     onShortcutUsed: powerUserOffer.onShortcutUsed,
     enabled: keyboardEnabled,
-    // A whiteboard's keys are its dock's (docs/specs/023-draw-mode/draw-mode.md "Keyboard shortcuts").
+    // A whiteboard's keys are its dock's (docs/specs/023-drawing-mode/drawing-mode.md "Keyboard shortcuts").
     whiteboard: whiteboardDock.whiteboard
       ? {
           pickSelect: whiteboardDock.pickSelect,

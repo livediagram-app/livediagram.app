@@ -81,7 +81,7 @@ export type CommandContext = {
   // Event storming (docs/specs/021-event-storming/event-storming.md): the board-level verbs are offered only on one
   // of those boards, where they mean something.
   esBoard: boolean;
-  // A whiteboard (docs/specs/023-draw-mode/draw-mode.md): its dock replaces the format painter, so
+  // A whiteboard (docs/specs/023-drawing-mode/drawing-mode.md): its dock replaces the format painter, so
   // search does not offer it either.
   whiteboard?: boolean;
   // Plan mode (docs/specs/026-plan/plan-mode.md) leaves Eraser and Format out of the tool dropdown, so search

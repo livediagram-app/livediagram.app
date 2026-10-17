@@ -73,14 +73,14 @@ describe('creationIntentOf', () => {
     expect(creationIntentOf({})).toEqual({ mode: 'diagram', tabKind: 'diagram' });
   });
 
-  it('reads a general tab opening in Draw mode', () => {
+  it('reads a general tab opening in Drawing mode', () => {
     expect(creationIntentOf({ kind: 'diagram', opensIn: 'draw' })).toEqual({
       mode: 'draw',
       tabKind: 'diagram',
     });
   });
 
-  it('reads a legacy whiteboard tab as a general tab opening in Draw mode', () => {
+  it('reads a legacy whiteboard tab as a general tab opening in Drawing mode', () => {
     expect(creationIntentOf({ kind: 'whiteboard' })).toEqual({ mode: 'draw', tabKind: 'diagram' });
   });
 

@@ -48,20 +48,20 @@ of infographic pages applies to a logo page except where this spec says otherwis
 In Illustrate mode, while the tab has at least one logo page, the palette strip offers a **Logo** category, first of the Common band after Popular: "The tools a logo is
 made with: the pen, the pencil, text, the basic shapes and your markers."
 
-- **Pen**: the Path tool (click for corners, drag for curves), the same tool Draw mode's dock
+- **Pen**: the Path tool (click for corners, drag for curves), the same tool Drawing mode's dock
   holds.
 - **Freehand Pencil**.
 - **Text**, and the basic shapes: **Square**, **Circle** and **Diamond** (the same tiles as
   elsewhere; the rest stay in their own categories).
-- **Markers**: Draw mode's three (**Marker 1**, **Marker 2**, **Marker 3**), each in the colour and
+- **Markers**: Drawing mode's three (**Marker 1**, **Marker 2**, **Marker 3**), each in the colour and
   width the person gave it.
 
 Each tool puts itself down after one use and selects what it drew, as the pencil does, a marker
 included (a marker picked up
-in Draw mode, or from the Toolbar strip's Search elsewhere, stays in hand as before). Off a
+in Drawing mode, or from the Toolbar strip's Search elsewhere, stays in hand as before). Off a
 whiteboard a marker lines up as the pencil does: its first point snaps to nearby alignments (the
 dot shows before the press) and its stroke shows alignment guides as it grows. In the palette a
-held marker pressed again opens Draw mode's own flyout for it below its tile (colour and width); its changes are the marker's everywhere and re-arm it at once.
+held marker pressed again opens Drawing mode's own flyout for it below its tile (colour and width); its changes are the marker's everywhere and re-arm it at once.
 
 The palette follows the page someone moves to: **Logo** on a logo page, **Popular** on any other.
 They move to a page by going to it with its label or the page navigator, or by pressing on a page

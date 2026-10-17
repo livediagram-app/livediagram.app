@@ -41,7 +41,7 @@ type Point = { x: number; y: number };
 
 export type BoardSceneInsertDeps = {
   activeTab: Tab;
-  // The viewer works in Draw mode (docs/specs/007-editor/editor-modes.md): a paste lands the
+  // The viewer works in Drawing mode (docs/specs/007-editor/editor-modes.md): a paste lands the
   // whiteboard way (adaptive colours, hugging text).
   drawMode: boolean;
   editsBlocked: boolean;

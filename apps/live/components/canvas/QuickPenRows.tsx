@@ -1,6 +1,6 @@
 'use client';
 
-// The quick style panel's marker rows on a whiteboard (docs/specs/023-draw-mode/draw-mode.md "The
+// The quick style panel's marker rows on a whiteboard (docs/specs/023-drawing-mode/drawing-mode.md "The
 // quick style panel stays"): colour and width for the selected marker strokes, or for the marker in
 // hand when nothing is selected, so picking up a marker already offers its style. Quick choices
 // only, one row each: Marker colour is the nine stock colours, Ink first, then More colours (the
@@ -69,7 +69,7 @@ export function QuickPenRows({
   );
 }
 
-// A whiteboard's Stroke or Text colour row (docs/specs/023-draw-mode/draw-mode.md "The quick style
+// A whiteboard's Stroke or Text colour row (docs/specs/023-drawing-mode/drawing-mode.md "The quick style
 // panel stays"): the whiteboard's colours, as Marker colour offers them, custom colours in More
 // colours.
 export function BoardColourRow({

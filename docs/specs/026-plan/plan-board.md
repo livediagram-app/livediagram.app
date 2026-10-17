@@ -354,7 +354,7 @@ Input follows the person's editor mode (the [Editor modes](../007-editor/editor-
 
 - **In Plan mode** the board is for working on items. Pressing a card picks the card up; pressing the board's
   header or border picks up the board.
-- **In Diagram and Draw modes** the board is an element like any other: pressing anywhere on it selects and moves
+- **In Diagram and Drawing modes** the board is an element like any other: pressing anywhere on it selects and moves
   the board. Double-clicking a card still opens its item.
 
 In Plan mode:

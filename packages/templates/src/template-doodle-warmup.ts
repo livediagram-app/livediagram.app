@@ -1,4 +1,4 @@
-// Doodle Warm-Up (docs/specs/007-editor/templates-by-mode.md "Draw templates"): a meeting
+// Doodle Warm-Up (docs/specs/007-editor/templates-by-mode.md "Drawing templates"): a meeting
 // icebreaker, "Draw Your Teammate in 60 Seconds". The rules sit on a sticky note beside a drawn
 // stopwatch; six hand-drawn frames each carry a teammate's name, two already holding a quick
 // portrait (signed with who drew it and how fast) so the game reads at a glance; a "Best

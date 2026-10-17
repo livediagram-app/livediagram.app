@@ -66,7 +66,7 @@ export function makeCommitFreehand({
 }) {
   // Canvas-driven commit for the pen gesture. A whiteboard pen's raw samples land as they
   // are, with their pressures and streamline (`ink`), and draw as the same perfect-freehand
-  // outline the stroke showed while drawn (docs/specs/023-draw-mode/draw-mode.md "Pens"),
+  // outline the stroke showed while drawn (docs/specs/023-drawing-mode/drawing-mode.md "Pens"),
   // so release reshapes nothing. The diagram pencil and the highlighter hand over raw pointer
   // samples in canvas coords, which get:
   //   1. Ramer-Douglas-Peucker simplification with a tolerance
@@ -83,13 +83,13 @@ export function makeCommitFreehand({
   //   3. createFreehand to mint the element + commit.
   return (rawPoints: { x: number; y: number }[], recogniseShapesMode: boolean, drawn?: PenInk) => {
     // Disarm on a gesture too short to be a stroke, unless a whiteboard pen is HELD
-    // (docs/specs/023-draw-mode/draw-mode.md "Pens"), where a stray tap must not silently put it down.
+    // (docs/specs/023-drawing-mode/drawing-mode.md "Pens"), where a stray tap must not silently put it down.
     const whiteboardPen =
       pendingDraw?.type === 'freehand' && pendingDraw.variant === 'whiteboard' ? pendingDraw : null;
     const disarm = () => {
       if (!whiteboardPen) setPendingDraw(null);
     };
-    // A whiteboard pen's tap is a dot: one point is a stroke (docs/specs/023-draw-mode/draw-mode.md
+    // A whiteboard pen's tap is a dot: one point is a stroke (docs/specs/023-drawing-mode/drawing-mode.md
     // "Pens"). Every other pen needs a line.
     const fewestPoints = whiteboardPen ? 1 : 2;
     if (editsBlocked || rawPoints.length < fewestPoints) {
@@ -252,7 +252,7 @@ export type PenInk = Pick<FreehandElement, 'streamline'> & {
   keepInk?: true;
 };
 
-// What a whiteboard pen stroke becomes (docs/specs/023-draw-mode/draw-mode.md "Pens", "Shape
+// What a whiteboard pen stroke becomes (docs/specs/023-drawing-mode/drawing-mode.md "Pens", "Shape
 // recognition"): with recognition on, a stroke that reads as a shape is the
 // clean shape, unfilled, in the pen's colour and nearest weight; otherwise an
 // OPEN stroke (a written "o" is ink, not a filled shape) carrying the pen's

@@ -52,11 +52,11 @@ export type { ElementValidationIssue } from './validate-primitives';
 
 // Bounds. Generous vs any real document, tight vs an abuse payload.
 export const MAX_ELEMENTS_PER_TAB = 10_000;
-// A path (docs/specs/023-draw-mode/path-tool.md): a drawn one rarely passes 50 nodes.
+// A path (docs/specs/023-drawing-mode/path-tool.md): a drawn one rarely passes 50 nodes.
 export const MAX_PATH_NODES = 5_000;
 // A normalised path coordinate: handles may reach beyond the box, never absurdly far.
 export const PATH_COORD_MAX = 1e6;
-// A Shift-resized text box's scale on its label (docs/specs/023-draw-mode/draw-mode.md "Text boxes"):
+// A Shift-resized text box's scale on its label (docs/specs/023-drawing-mode/drawing-mode.md "Text boxes"):
 // a 14 px label reads from 1.4 px to 560 px, past any real board, short of an abuse payload.
 export const TEXT_SCALE_MIN = 0.1;
 export const TEXT_SCALE_MAX = 40;
@@ -230,7 +230,7 @@ const COMMON_FIELD_CHECKS: readonly FieldCheck[] = [
   { field: 'fillSwatch', valid: isQuickSwatchSlot, rule: 'a quick-swatch slot 1 to 6' },
   { field: 'textSwatch', valid: isQuickSwatchSlot, rule: 'a quick-swatch slot 1 to 6' },
   // A marker's named colour, and a text's or label's stock colour
-  // (docs/specs/023-draw-mode/draw-mode.md "The colour picker", "Imported and pasted content").
+  // (docs/specs/023-drawing-mode/drawing-mode.md "The colour picker", "Imported and pasted content").
   { field: 'penColour', valid: isPenColourName, rule: 'a pen colour name' },
   { field: 'penTextColour', valid: isPenColourName, rule: 'a pen colour name' },
   // A Participant's adder key (docs/specs/013-workspace/share-roles.md), stamped by the server.
@@ -400,7 +400,7 @@ function isPathNode(n: unknown): boolean {
   );
 }
 
-// A path (docs/specs/023-draw-mode/path-tool.md "The path element"): 2 to MAX_PATH_NODES nodes of
+// A path (docs/specs/023-drawing-mode/path-tool.md "The path element"): 2 to MAX_PATH_NODES nodes of
 // known mode with optional handles; a closed pair needs a handle to be more than a line.
 function pathIssue(el: Record<string, unknown>): ElementValidationIssue | null {
   if (!isBool(el.closed)) return issue('closed', 'a boolean');

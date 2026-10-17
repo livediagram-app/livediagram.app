@@ -1,7 +1,7 @@
 # Editor modes
 
 A general tab is drawn on in one of five **editor modes**: **Diagram**,
-**Draw**, **Facilitate**, **Illustrate** and **Plan**. A mode decides which tools and rules are in focus; it never decides
+**Drawing**, **Facilitate**, **Illustrate** and **Plan**. A mode decides which tools and rules are in focus; it never decides
 what the tab is. Like a drawing tool that switches between a pixel mode and a
 vector mode over the same picture, switching mode keeps every element exactly
 where it is and changes only how the next mark is made.
@@ -13,17 +13,17 @@ where it is and changes only how the next mark is made.
 | **tab kind**        | What a tab **is** ([Document](../006-document/document.md)). Reserved for specific uses.                                                                                                                                    |
 | **editor mode**     | How a general tab is **worked on** right now: `diagram`, `draw`, `illustrate`, `plan` or `facilitate` (`EditorMode`).                                                                                                       |
 | **Diagram mode**    | Structured drawing: the palette, shapes, arrows, icons, templates, snapping and guides.                                                                                                                                     |
-| **Draw mode**       | Freehand whiteboarding: the dock, preset pens, eraser, shape recognition ([Draw mode](../023-draw-mode/draw-mode.md)).                                                                                                      |
+| **Drawing mode**    | Freehand whiteboarding: the dock, preset pens, eraser, shape recognition ([Drawing mode](../023-drawing-mode/drawing-mode.md)).                                                                                             |
 | **Illustrate mode** | Pages on the canvas, of four kinds: infographic pages to lay out, article pages to write, slide pages to present and logo pages to design a logo on ([Illustrate pages](illustrate-pages.md), [Logo pages](logo-pages.md)). |
 | **Plan mode**       | Boards of items: Plan boards, cards, the item panel ([Plan mode](../026-plan/plan-mode.md)).                                                                                                                                |
 | **Facilitate mode** | Running a session with a team: the Collaborate elements, stickers and the Session strip ([Facilitate mode](../012-collaboration/facilitate-mode.md)).                                                                       |
 | **mode switch**     | The control beside the page switcher that changes the editor mode.                                                                                                                                                          |
 
-- "Whiteboard" names the activity and Draw mode's look, never a tab kind and
+- "Whiteboard" names the activity and Drawing mode's look, never a tab kind and
   never a type of document.
 - "Mode" on its own is ambiguous here (Zen mode, Presentation mode, Power user
   mode); in specs and code say **editor mode**. The interface says **Diagram**,
-  **Draw**, **Facilitate**, **Illustrate** and **Plan**.
+  **Drawing**, **Facilitate**, **Illustrate** and **Plan**.
 
 ## Kinds versus modes
 
@@ -34,9 +34,9 @@ where it is and changes only how the next mark is made.
   carries every element type; every mode works on it.
 - **Whiteboarding is a mode, not a kind.** `TabKind` is `'diagram' |
 'event-storming'`; there is no `'whiteboard'` kind.
-- **Content is shared between modes.** A stroke drawn in Draw mode is a
+- **Content is shared between modes.** A stroke drawn in Drawing mode is a
   `freehand` element in Diagram mode too, and a shape placed in Diagram mode
-  is there in Draw mode. Nothing is hidden, converted or locked by a switch.
+  is there in Drawing mode. Nothing is hidden, converted or locked by a switch.
 
 ## The mode switch
 
@@ -46,7 +46,7 @@ where it is and changes only how the next mark is made.
   - **Not on a phone.** A phone's top row belongs to the strip, so its menu card holds the menu
     button alone. A phone switches mode from the tab menu's mode rows (below); Shift+D needs a
     keyboard. The tour's Change Tab Mode step is skipped there.
-  - It stays up in Draw mode, so the switch never moves when the mode
+  - It stays up in Drawing mode, so the switch never moves when the mode
     changes.
   - Not in the tab bar or the Explorer.
 - **A dropdown chip** (`EditorModeSwitch`): a fixed-width chip showing only the current mode's
@@ -71,11 +71,11 @@ where it is and changes only how the next mark is made.
   - **Narrow (under 640px wide):** the preview is left out and the list stands alone, each row
     showing its description under its name.
   - **Each mode has a tint**, used only by the mode menu (the list's tiles and the preview's
-    picture): Diagram sky, Draw orange, Facilitate violet, Illustrate pink, Plan
+    picture): Diagram sky, Drawing orange, Facilitate violet, Illustrate pink, Plan
     emerald. The current row and the focus ring stay the brand colour.
 - **The mode descriptions** say what each mode is for, in the catalogue (`EDITOR_MODE_CATALOGUE`):
   - Diagram: "Flowcharts, architecture and org charts with snapping shapes."
-  - Draw: "Sketch freehand with pens, tidied into shapes as you go."
+  - Drawing: "Sketch freehand with pens, tidied into shapes as you go."
   - Facilitate: "Run a live session: timers, votes, polls and reveals."
   - Illustrate: "Lay out slides, infographics, articles and logos on pages."
   - Plan: "Boards of cards moving through columns, with types and fields."
@@ -83,7 +83,7 @@ where it is and changes only how the next mark is made.
   panel's rail ([Template starts](start-diagramming.md) "Changing mode"), where the chip is named
   and full width (the rail has no chrome around it to explain an icon) and opens the same menu. The tab menu's mode rows stay names only, so that menu stays
   short; the New Document wizard's mode cards are a choice of what to make, not a switch.
-- **One mode chosen:** Diagram, Draw, Facilitate, Illustrate or Plan.
+- **One mode chosen:** Diagram, Drawing, Facilitate, Illustrate or Plan.
   Exactly one is active.
 - **Switching is instant and lossless:** no dialog, no reload, and no element changes (the tab's
   mode is the one field it writes, with what the mode brings: "Where the mode lives"); the
@@ -96,7 +96,7 @@ where it is and changes only how the next mark is made.
 - **Zero layout shift:** the switch has a fixed size, and
   nothing next to it moves when the mode changes.
 - **Shift+D** moves to the next mode, wrapping round, shown in the switch's preview, `aria-keyshortcuts` and Settings ›
-  Keyboard; a switch by key is announced politely ("Draw mode"). It obeys
+  Keyboard; a switch by key is announced politely ("Drawing mode"). It obeys
   the character-key shortcuts setting.
 - **Accessible:** reachable by keyboard, its state exposed to assistive
   technology, its text and focus ring at least WCAG 2.2 AA.
@@ -112,7 +112,7 @@ Facilitating, Start Illustrating or Start Drawing (a pen in hand) ([Template sta
 Start Planning for Plan. A session that cannot add
 tabs (a tab-scoped link, docs/specs/013-workspace/tab-scoped-share-links.md) is offered no new tab: those rows show,
 inert (`aria-disabled`), and ask nothing. **Shift+D** steps only through the modes beside the tab's
-own (Diagram, Draw, Facilitate, Illustrate; on a Plan tab it does nothing). The tab menu's Mode lists all five, as
+own (Diagram, Drawing, Facilitate, Illustrate; on a Plan tab it does nothing). The tab menu's Mode lists all five, as
 the switch does, a mode across Plan's line asking for a new tab the same way.
 
 **Except on an empty tab.** A general tab with no elements has nothing either side's tools could not hold, so it
@@ -152,7 +152,7 @@ first element closes the line again. A Board, Sheet or Dashboard tab keeps its k
   left in place and ignored.
 - **A new tab opens in the mode it was made from.** A tab added from the tab bar's **+** or the command palette's
   **Create New Tab** opens in the mode of the tab its maker was on (the active tab's mode, for everyone on the new
-  tab): made from an Illustrate tab it is an Illustrate tab, from a Draw tab a Draw tab, from a Plan tab (a Board,
+  tab): made from an Illustrate tab it is an Illustrate tab, from a Drawing tab a Drawing tab, from a Plan tab (a Board,
   Sheet or Dashboard tab included) a Plan tab, and from an event-storming board, always Diagram, a Diagram tab. The
   **+** makes the tab straight away, with no picker: it is a general tab (never the source's kind) carrying the
   source's look ([Canvas and palette](../008-canvas/canvas-and-palette.md) "Selecting & adding"), and only its mode
@@ -161,7 +161,7 @@ first element closes the line again. A Board, Sheet or Dashboard tab keeps its k
   Facilitating, Start Illustrating, Start Planning: [Template starts](start-diagramming.md), [Plan
   mode](../026-plan/plan-mode.md#starting-a-board); `newTabOpening` in `apps/live/lib/new-tab-seed.ts`), whose
   search also finds every other mode's templates. Only the template chosen for it changes that:
-  every template opens in its own mode ([Templates by mode](templates-by-mode.md)), the **Whiteboard** in Draw,
+  every template opens in its own mode ([Templates by mode](templates-by-mode.md)), the **Whiteboard** in Drawing,
   Blank in Diagram, and an **Event Storming** board is always Diagram. **Duplicate** is not a new tab: the copy
   keeps the original's mode. Adding a tab is an Editor's alone: a Participant, a Viewer and any tab-scoped link add
   no tab ([Share roles](../013-workspace/share-roles.md), [Tab-scoped share
@@ -192,18 +192,18 @@ is stored on the element, so collaborators in different modes see the same
 element in the same colour.
 
 - **Each mode's default canvas.** The canvas colour is the tab's in every mode; the pattern behind it suits the
-  mode. Diagram shows the tab's pattern (the theme's dot grid until someone picks another). Draw shows the person's
-  own board pattern (graph paper until chosen, [Draw mode](../023-draw-mode/draw-mode.md#board-background)).
+  mode. Diagram shows the tab's pattern (the theme's dot grid until someone picks another). Drawing shows the person's
+  own board pattern (graph paper until chosen, [Drawing mode](../023-drawing-mode/drawing-mode.md#board-background)).
   Illustrate shows a **plain** surround, because its pages are the paper and a pattern behind them competes with
   the layout; Plan shows a **blank canvas** too, so boards, sheets and dashboards carry the page. Illustrate's
   and Plan's apply only while the tab keeps its theme's pattern: a pattern someone picked shows in every mode but
-  Draw. None is stored, so exports, thumbnails and other people's modes keep the tab's own (`MODE_PATTERNS`,
+  Drawing. None is stored, so exports, thumbnails and other people's modes keep the tab's own (`MODE_PATTERNS`,
   `resolveViewBackdrop`).
 - **Off-white light canvas.** The Default theme's light canvas is the board's
   off-white (`#fbfaf7`); its dark canvas stays `#0d121a`.
 - **Ink is one colour everywhere.** **Ink**, the drawing colour (`#1c1917`
   on a light canvas, `#e2e8f0` on a dark one), is the same on every theme and
-  stored by name. Any element can take it: in Draw mode from the pen and
+  stored by name. Any element can take it: in Drawing mode from the pen and
   quick style rows, in Diagram mode as the **eighth swatch, after the theme's
   colours**, in the quick style panel's colour rows and the element menu's
   colour rows.
@@ -211,7 +211,7 @@ element in the same colour.
     both modes.
   - Shapes keep their theme defaults: a shape added in Diagram mode is filled
     and outlined as today.
-- **Draw mode writes Ink, unfilled.** A shape, line or arrow made in Draw mode
+- **Drawing mode writes Ink, unfilled.** A shape, line or arrow made in Drawing mode
   is written with an Ink outline and no fill, so it looks the same in Diagram
   mode and to every collaborator.
 - **Marker colours are first-class.** The stock colours (Ink, Grey, Blue, Red,
@@ -224,8 +224,8 @@ element in the same colour.
   own: its theme's canvas, or the custom background colour when one is set;
   on the Default theme, the off-white or dark canvas.
 - **The pattern:** in Diagram mode, the tab's stored pattern, shared by
-  everyone. In Draw mode, the person's own: Plain, Dots or Grid as they last
-  chose it in Draw mode (synced preferences, Grid until chosen), not stored
+  everyone. In Drawing mode, the person's own: Plain, Dots or Grid as they last
+  chose it in Drawing mode (synced preferences, Grid until chosen), not stored
   on the tab, so choosing it changes nothing for anyone else.
 - **Exports, thumbnails and api or MCP images** use the tab's Diagram
   backdrop: its colour and stored pattern, whoever exports and in whichever
@@ -236,24 +236,24 @@ element in the same colour.
 - **Diagram mode** is the editor as described by
   [Canvas and palette](../008-canvas/canvas-and-palette.md),
   [Toolbar layout](toolbar-layout.md) and the canvas specs.
-- **Draw mode** is what the whiteboard was: the dock with its pens, shapes,
+- **Drawing mode** is what the whiteboard was: the dock with its pens, shapes,
   history and settings; the whiteboard's keyboard shortcuts; pen versus touch;
   picking by the drawn line; strokes that stay open; nothing animating in; no guides for pens; shape recognition and the two
-  erasers ([Draw mode](../023-draw-mode/draw-mode.md)).
+  erasers ([Drawing mode](../023-drawing-mode/drawing-mode.md)).
 - **What a mode writes, stays.** A rule that shapes content is stored on the
-  element when it is made, never read from the mode: a text box made in Draw
+  element when it is made, never read from the mode: a text box made in Drawing
   mode **hugs its text** in both modes and for everyone; one made in Diagram
   mode does not. A rule about input (what a click picks, which keys do what)
   follows the person's current mode.
 - **A text box's sizing** is one field, `TextElement.sizing`:
   - `'fit'`: the width follows the words up to the wrap width, and the height
-    hugs the lines (a text box clicked into place in Draw mode);
+    hugs the lines (a text box clicked into place in Drawing mode);
   - `'wrap'`: the width is set, and the height hugs the lines (dragged out or
-    resized in Draw mode);
+    resized in Drawing mode);
   - absent: a fixed box, its text wrapping inside it (Diagram mode).
   - It replaces `autoWidth`: `autoWidth: true` becomes `'fit'`; text on a
     migrated whiteboard without it becomes `'wrap'`, as it hugged there.
-- **Entering Draw mode**, by opening a tab or by switching, puts the active
+- **Entering Drawing mode**, by opening a tab or by switching, puts the active
   pen in hand on an empty tab and Select on a tab with content.
 - **Illustrate mode** is Diagram mode drawn as pages, with the palette
   narrowed (both below); every other rule, tool and shortcut is Diagram mode's.
@@ -263,14 +263,14 @@ element in the same colour.
 - **Facilitate mode** is Diagram mode with its own palette for running a session (the Collaborate
   and Stickers categories, which Diagram does not offer) and the Session strip's three tools
   ([Facilitate mode](../012-collaboration/facilitate-mode.md)).
-- **Each mode's mark**: Diagram a flowchart (two steps joined), Draw a marker,
+- **Each mode's mark**: Diagram a flowchart (two steps joined), Drawing a marker,
   Illustrate a page with a little chart above two lines of writing (its first two
   page kinds, infographic and article), Plan a board of three columns with a raised card, Facilitate a flipchart on an easel; the same glyph on the switch, the tab menu's Mode and the tab pill.
 - **No further cue:** the dock (in place of the palette) and the switch's
   own label say which mode is on; no tint, accent or notice is added.
 - **Leaving a mode puts its tool down**, as leaving a whiteboard did: a pen,
   the eraser or an armed shape never carries over into the other mode. A mode's tool can still
-  be **picked up** in another on purpose: the Toolbar strip's Search offers Draw mode's markers
+  be **picked up** in another on purpose: the Toolbar strip's Search offers Drawing mode's markers
   in Diagram, Illustrate and Plan ([Toolbar layout](toolbar-layout.md#search-every-element-type)),
   and one picked there is put down by a switch like any other.
 
@@ -311,7 +311,7 @@ holds.
 - **Every surface reads the layout:** the Toolbar strip, its category bar and flyouts (Diagram, Facilitate,
   Illustrate: [The category bar](toolbar-layout.md#the-category-bar), which shows the layout without Popular, with
   one-word names, Write and Draw as one, and Facilitate's session tools as Session) and its More popover (Plan).
-- Draw mode shows its own tools in place of the palette, so it borrows
+- Drawing mode shows its own tools in place of the palette, so it borrows
   Diagram's layout.
 
 Today the layouts differ as below. Diagram offers no **Stickers** and no **Collaborate**: both are Facilitate's ([Facilitate mode](../012-collaboration/facilitate-mode.md#the-palette)), though Search still finds and places them in Diagram. Within the shared categories,
@@ -342,7 +342,7 @@ and sets targets as often as a page reports them.
 | Shapes            | yes     | yes        | no   | yes                 |
 | My shapes         | yes     | yes        | no   | yes                 |
 | Write             | yes     | yes        | no   | yes (Write & Build) |
-| Draw              | yes     | no         | no   | yes                 |
+| Drawing           | yes     | no         | no   | yes                 |
 | Build             | yes     | yes        | no   | in Write            |
 | Components        | no      | yes        | no   | no                  |
 | Concepts          | yes     | yes        | no   | no                  |
@@ -459,7 +459,7 @@ actions, snapping, export, putting content onto a page, page slides) is
 
 ## Leaving Illustrate
 
-Diagram and Draw show no pages, so an editor's switch away from Illustrate on a tab that has
+Diagram and Drawing show no pages, so an editor's switch away from Illustrate on a tab that has
 something on it asks first:
 
 - **A tab with articles** asks Turn Articles Into Pages? (Convert, Keep as Articles, Cancel;
@@ -474,7 +474,7 @@ something on it asks first:
   screen.
 - An empty tab, a visitor or a locked tab switches straight away.
 - Confirming sends `Editor` · `Changed` · `LeaveIllustrateConfirmed`, beside the switch's own
-  `ModeDiagram` / `ModeDraw`.
+  `ModeDiagram` / `ModeDrawing`.
 
 ## Every mode, always offered
 
@@ -494,16 +494,16 @@ dashboard ([Telemetry](../017-telemetry/telemetry.md) "Retired features").
 ## Existing whiteboards
 
 - A stored tab with `kind: 'whiteboard'` reads as a general tab that opens in
-  Draw mode. Its elements, background and layers are unchanged.
+  Drawing mode. Its elements, background and layers are unchanged.
 - Imports that landed on a whiteboard (Excalidraw, Microsoft Whiteboard) land
-  on a general tab in Draw mode.
+  on a general tab in Drawing mode.
 - The **Blank Whiteboard** template (kind id `whiteboard`) creates a
-  general tab that opens in Draw mode, as the other Draw templates do
+  general tab that opens in Drawing mode, as the other Drawing templates do
   ([Templates by mode](templates-by-mode.md)).
 
 ## Telemetry ([Telemetry](../017-telemetry/telemetry.md))
 
-- `Editor` · `Changed` · `ModeDiagram` / `ModeDraw` / `ModeIllustrate` / `ModePlan` /
+- `Editor` · `Changed` · `ModeDiagram` / `ModeDrawing` / `ModeIllustrate` / `ModePlan` /
   `ModeFacilitate`, fired by
   the switch, Shift+D and the tab menu's Mode before the mode applies (never by a collaborator's
   switch arriving, an undo or a redo).
@@ -513,10 +513,10 @@ dashboard ([Telemetry](../017-telemetry/telemetry.md) "Retired features").
   orientation in Illustrate mode, `PageAdded` (an infographic page; `SlidePageAdded`,
   `ArticleAdded` and `LogoPageAdded` for the other kinds) by its add button, and `PageRemoved` by
   Delete Page.
-- Draw mode's own events are the **`Draw`** category (pens, shapes, eraser,
+- Drawing mode's own events are the **`Drawing`** category (pens, shapes, eraser,
   recognition, background, snap colours,
-  [Draw mode](../023-draw-mode/draw-mode.md#telemetry-telemetry--public-transparency-dashboard)).
-  It was named `Whiteboard`; the stored history is rewritten to `Draw` so the
+  [Drawing mode](../023-drawing-mode/drawing-mode.md#telemetry-telemetry--public-transparency-dashboard)).
+  It was named `Whiteboard`, then `Draw`; the stored history is rewritten to `Drawing` so the
   dashboard's lines continue.
 - Illustrate mode's events were named for Infographic mode (`ModeInfographic`,
   `OpensInInfographic`, `InfographicModeOn` / `Off`); migration
@@ -527,10 +527,16 @@ dashboard ([Telemetry](../017-telemetry/telemetry.md) "Retired features").
 
 - The help article **Editor Modes** (`/help/canvas/editor-modes/`) explains all five modes, the
   switch and the tab menu's Mode, and links to each mode's own article.
-- The mode is **Draw** on the switch and in Settings, where it names the
-  **Editor › Draw** sub-category (Dock Position) as the switch names it, and
-  **Draw mode** in prose: the help article (**Draw mode**, at a new address,
-  the old one redirecting) and the command palette.
+- The mode is **Drawing** on the switch and in Settings, where it names the
+  **Editor › Drawing** sub-category (Dock Position) as the switch names it, and
+  **Drawing mode** in prose: the help article (**Drawing mode**, `/help/canvas/drawing-mode/`)
+  and the command palette.
+- **Drawing** was called **Draw** until October 2026. The stored id stays `draw` (`opensIn`, the
+  `mode:draw` default-folder key and its `DefaultModeDraw` telemetry value, `/new?mode=draw`),
+  since only the name changed. The help articles moved to `/help/canvas/drawing-mode/` and
+  `/help/canvas/drawing-mode/drawing-tour/`, the old addresses redirecting, and the telemetry
+  moved with the name (see Telemetry). The palette's **Draw** category in Diagram and Facilitate
+  is a category of tools, not the mode, and keeps its name.
 - The template card is **Blank Whiteboard**, one of five blanks (Blank Diagram,
   Blank Whiteboard, Blank Session, Blank Illustration, Blank Plan), one per mode, that lead Popular
   ([Templates by mode](templates-by-mode.md)); the document it makes is named "Untitled
@@ -554,6 +560,6 @@ dashboard ([Telemetry](../017-telemetry/telemetry.md) "Retired features").
 
 ## References
 
-[Document](../006-document/document.md), [Draw mode](../023-draw-mode/draw-mode.md),
+[Document](../006-document/document.md), [Drawing mode](../023-drawing-mode/drawing-mode.md),
 [Event storming](../021-event-storming/event-storming.md),
 [Toolbar layout](toolbar-layout.md), [Zen mode](zen-mode.md).

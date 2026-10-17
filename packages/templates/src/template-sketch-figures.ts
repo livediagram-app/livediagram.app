@@ -1,4 +1,4 @@
-// The doodles the Draw templates share (docs/specs/007-editor/templates-by-mode.md "Draw
+// The doodles the Drawing templates share (docs/specs/007-editor/templates-by-mode.md "Drawing
 // templates"), each a handful of marker strokes from the sketch kit: stick figures in a few
 // poses, a lightbulb, crossed swords, an eye, a stopwatch, a laptop, a bug and quick portraits.
 // Every doodle is placed by its own anchor and seeded, so it is the same drawing wherever it

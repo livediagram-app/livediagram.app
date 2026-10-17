@@ -78,7 +78,7 @@ import { useUiScale } from '@/components/providers/ui-scale';
 import { toSurfacePx, uiScaleStyle } from '@/lib/ui-scale';
 import { useSnapGuides } from '@/hooks/canvas/useSnapGuideState';
 
-// Draw mode's dock shows only on a Draw tab, so its code loads on demand (lib/editor-deferred-code.ts
+// Drawing mode's dock shows only on a Drawing tab, so its code loads on demand (lib/editor-deferred-code.ts
 // fetches it as the editor mounts).
 const WhiteboardDock = dynamic(loadWhiteboardDock, { ssr: false });
 
@@ -325,8 +325,8 @@ export function CanvasChrome(props: CanvasChromeProps) {
     whiteboard: props.editorMode === 'draw',
   });
 
-  // Draw mode trades the palette, the strip and the theme controls for its
-  // dock (docs/specs/023-draw-mode/draw-mode.md "What a whiteboard shows").
+  // Drawing mode trades the palette, the strip and the theme controls for its
+  // dock (docs/specs/023-drawing-mode/drawing-mode.md "What a whiteboard shows").
   const whiteboard = props.editorMode === 'draw';
   // The palette's Edit Cards opens the Card Types popover from its button (docs/specs/026-plan/item-types.md).
   const cardTypesButtonRef = useCardTypesOpener(!zenMode && props.editorMode === 'plan', {
@@ -346,7 +346,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
   // The strip only renders with the chrome up.
   const stripShown = paletteShown && !chromeHidden;
   // The whiteboard's dock, absent for a view-role visitor (nothing to draw with) and while the
-  // chrome is away; at the top unless the user chose the bottom (docs/specs/023-draw-mode/draw-mode.md
+  // chrome is away; at the top unless the user chose the bottom (docs/specs/023-drawing-mode/drawing-mode.md
   // "Where the dock sits").
   const dockShown = whiteboard && !!props.whiteboardDock && !readOnly && !chromeHidden;
   const dockOnTop = dockShown && props.whiteboardDock?.position === 'top';
@@ -474,7 +474,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
             style={{
               ...(corner === 'bottom-right'
                 ? { bottom: cornerBottomInset(corner, cornerScale) }
-                : // The Draw dock is the strip's twin (its height, its scale), so the same clearance.
+                : // The Drawing dock is the strip's twin (its height, its scale), so the same clearance.
                   (stripSpansTop || dockSpansTop) && corner.startsWith('top')
                   ? { top: toolbarTopClearancePx(toolbarScale) }
                   : undefined),
@@ -606,7 +606,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
         />
       ) : null}
 
-      {/* The whiteboard's dock (docs/specs/023-draw-mode/draw-mode.md): top or bottom centre, in place
+      {/* The whiteboard's dock (docs/specs/023-drawing-mode/drawing-mode.md): top or bottom centre, in place
           of the palette. */}
       {dockShown && props.whiteboardDock ? (
         <WhiteboardDock
@@ -693,7 +693,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
             {/* The Session strip (docs/specs/012-collaboration/session-tools.md "The Session strip"): left of
                 Layers, or of the mode's own strip. Kept in Zen: a running session is the one piece of
                 chrome a facilitator still needs there. Facilitate has all three, Plan its Timer and
-                Vote, Illustrate a running Vote or Poll only; Diagram and Draw keep their bottom bar to
+                Vote, Illustrate a running Vote or Poll only; Diagram and Drawing keep their bottom bar to
                 their own tools. */}
             {props.sessionTools && stripTools ? (
               <div className="contents">

@@ -1,6 +1,6 @@
 'use client';
 
-// What each dock flyout holds (docs/specs/023-draw-mode/draw-mode.md "What a whiteboard shows"): a
+// What each dock flyout holds (docs/specs/023-drawing-mode/drawing-mode.md "What a whiteboard shows"): a
 // pen's colour and width, the eraser's mode, the Settings sections and a shape slot's menu. The
 // Shapes flyout has its own component (ShapesFlyout).
 
@@ -47,7 +47,7 @@ export function PenFlyoutBody({ pen, model }: { pen: WhiteboardPen; model: White
   return (
     <FlyoutRows>
       {/* The main pen always stays the board's ink: its flyout is the width only. The others get
-          the colour picker (docs/specs/023-draw-mode/draw-mode.md "The colour picker"). */}
+          the colour picker (docs/specs/023-drawing-mode/drawing-mode.md "The colour picker"). */}
       {penAdjustsColour(pen) ? (
         <ColourPicker
           value={pen.colour}
@@ -123,7 +123,7 @@ export function SettingsFlyoutBody({
           </FlyoutOption>
         ))}
       </FlyoutRow>
-      {/* The pen cursor (docs/specs/023-draw-mode/draw-mode.md "Pens"), each option showing itself. */}
+      {/* The pen cursor (docs/specs/023-drawing-mode/drawing-mode.md "Pens"), each option showing itself. */}
       <FlyoutRow label="Cursor" heading>
         {PEN_CURSOR_VARIANTS.map((v) => (
           <FlyoutOption
@@ -147,7 +147,7 @@ export function SettingsFlyoutBody({
           </FlyoutOption>
         ))}
       </FlyoutRow>
-      {/* A device-local setting (docs/specs/023-draw-mode/draw-mode.md "Shape recognition"). */}
+      {/* A device-local setting (docs/specs/023-drawing-mode/drawing-mode.md "Shape recognition"). */}
       <FlyoutRow label="Drawing" heading>
         {([false, true] as const).map((on) => (
           <FlyoutOption
@@ -167,7 +167,7 @@ export function SettingsFlyoutBody({
   );
 }
 
-// A shape slot's menu (docs/specs/023-draw-mode/draw-mode.md "Shape slots"): pin or unpin without
+// A shape slot's menu (docs/specs/023-drawing-mode/drawing-mode.md "Shape slots"): pin or unpin without
 // a drag.
 export function SlotMenuBody({ pinned, onChoose }: { pinned: boolean; onChoose: () => void }) {
   const label = pinned ? 'Unpin' : 'Pin to dock';

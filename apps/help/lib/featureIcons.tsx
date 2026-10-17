@@ -391,7 +391,7 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M5.5 17.5c1-2.2 2-2.2 2.8 0s1.9 2.2 2.8-0.3" />
     </Glyph>
   ),
-  'draw-mode': (
+  'drawing-mode': (
     <Glyph>
       <rect x="3" y="3.5" width="18" height="12" rx="1.5" />
       <path d="M6.5 10c1-2.2 2.3-2.2 3 0s2 2.2 3 0 2-2.2 3 0" />
@@ -462,8 +462,8 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <rect x="7" y="6" width="10" height="6" rx="1.5" strokeDasharray="1.6 1.4" />
     </Glyph>
   ),
-  // A pen over a squiggle with a dashed spotlight ring round it: a guided look at Draw.
-  'draw-tour': (
+  // A pen over a squiggle with a dashed spotlight ring round it: a guided look at Drawing.
+  'drawing-tour': (
     <Glyph>
       <path d="M4 17c2-3 4 1 6-2s3-4 5-1" />
       <path d="M15 4l5 5-7 7h-5v-5z" />

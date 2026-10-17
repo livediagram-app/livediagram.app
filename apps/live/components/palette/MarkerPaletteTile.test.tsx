@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 // A marker's tile, anywhere the palette shows it (docs/specs/007-editor/logo-pages.md "The Logo
-// palette"): pressed again while held, it opens Draw mode's colour and width.
+// palette"): pressed again while held, it opens Drawing mode's colour and width.
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { ReactNode } from 'react';

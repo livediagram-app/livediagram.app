@@ -1,4 +1,4 @@
-// The steps of the Draw tour (docs/specs/023-draw-mode/draw-tour.md "The steps"): a welcome card, the dock's Drawing
+// The steps of the Drawing tour (docs/specs/023-drawing-mode/drawing-tour.md "The steps"): a welcome card, the dock's Drawing
 // tools, the Quick Style panel, the dock's Shapes and Settings, then the outro. It places nothing; the one thing it
 // changes, a marker picked up to show Quick Style, it puts back down.
 
@@ -20,7 +20,7 @@ export const DRAW_TOUR_STEPS: DrawTourStep[] = [
   {
     id: 'welcome',
     card: 'welcome',
-    title: 'Getting started with Draw?',
+    title: 'Getting started with Drawing?',
     body: 'Want a quick tour of the pens, shapes and tools so you can sketch ideas in minutes?',
   },
   {
@@ -76,7 +76,7 @@ export function drawTourSteps({ mobile }: { mobile: boolean }): DrawTourStep[] {
   return DRAW_TOUR_STEPS.filter((step) => !(step.mobileSkip && mobile));
 }
 
-// Telemetry `type` token for a step-viewed event: 'drawing-tools' → 'DrawTourStepDrawingTools'.
+// Telemetry `type` token for a step-viewed event: 'drawing-tools' → 'DrawingTourStepDrawingTools'.
 export function drawTourStepTelemetryType(stepId: string): string {
-  return stepTelemetryType('DrawTourStep', stepId);
+  return stepTelemetryType('DrawingTourStep', stepId);
 }

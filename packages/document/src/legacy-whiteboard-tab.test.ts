@@ -12,7 +12,7 @@ import { migrateWhiteboardKind } from './legacy-whiteboard-tab';
 import { encodeStrokePoints } from './stroke-points';
 
 // A stored whiteboard tab (docs/specs/007-editor/editor-modes.md "Existing whiteboards") reads as
-// a general tab that opens in Draw, looking exactly as it did ("One look").
+// a general tab that opens in Drawing, looking exactly as it did ("One look").
 const board = (over: Record<string, unknown> = {}) =>
   ({ id: 't', name: 'Board', kind: 'whiteboard', elements: [], ...over }) as unknown as Tab;
 
@@ -72,7 +72,7 @@ describe('migrateWhiteboardKind', () => {
     vi.restoreAllMocks();
   });
 
-  it('makes a whiteboard a general tab that opens in Draw', () => {
+  it('makes a whiteboard a general tab that opens in Drawing', () => {
     const out = migrateWhiteboardKind(board({ backgroundPattern: 'graph' }));
     expect(out.kind).toBe('diagram');
     expect(out.opensIn).toBe('draw');
@@ -87,7 +87,7 @@ describe('migrateWhiteboardKind', () => {
   it('logs the migration with a recognisable fingerprint', () => {
     migrateWhiteboardKind(board());
     expect(console.info).toHaveBeenCalledWith(
-      '[editor-mode] whiteboard tab migrated to Draw',
+      '[editor-mode] whiteboard tab migrated to Drawing',
       expect.objectContaining({ tabId: 't' }),
     );
   });

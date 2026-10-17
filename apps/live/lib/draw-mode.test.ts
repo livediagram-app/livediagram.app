@@ -106,7 +106,7 @@ describe('drawBannerMessage', () => {
   });
 
   // The banner names the shape as the tile just picked does: the palette's Square and Circle (and the selection
-  // badge's), Draw mode's dock its Rectangle and Ellipse. Its own aliases (Rectangle, Oval) matched neither.
+  // badge's), Drawing mode's dock its Rectangle and Ellipse. Its own aliases (Rectangle, Oval) matched neither.
   it('names the shape as the tile that armed it', () => {
     expect(drawBannerMessage({ type: 'shape', kind: 'square' }, false)).toBe(
       'Tap to drop or drag to draw Square',
@@ -280,7 +280,7 @@ describe('opensForTyping', () => {
     expect(opensForTyping({ type: 'text' }, false)).toBe(true);
   });
 
-  it('opens a sticky for typing on a whiteboard only (docs/specs/023-draw-mode/draw-mode.md)', () => {
+  it('opens a sticky for typing on a whiteboard only (docs/specs/023-drawing-mode/drawing-mode.md)', () => {
     expect(opensForTyping({ type: 'sticky' }, true)).toBe(true);
     expect(opensForTyping({ type: 'sticky' }, false)).toBe(false);
   });
@@ -296,7 +296,7 @@ describe('the Highlighter (docs/specs/008-canvas/highlighter.md)', () => {
   });
 });
 
-describe('the Path tool (docs/specs/023-draw-mode/path-tool.md)', () => {
+describe('the Path tool (docs/specs/023-drawing-mode/path-tool.md)', () => {
   it('is held like a pen: no one-shot banner, and a finger pans once a pen is seen', () => {
     expect(isHeldPenIntent({ type: 'path' })).toBe(true);
     expect(isPathIntent({ type: 'path' })).toBe(true);

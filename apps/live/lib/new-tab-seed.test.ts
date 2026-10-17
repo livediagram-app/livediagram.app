@@ -50,7 +50,7 @@ describe('newTabSeed', () => {
 
   // docs/specs/007-editor/editor-modes.md "Where the mode lives": the look is the seed's, the mode
   // newTabOpening's (the creator's mode), never the source's stored field.
-  it('never carries an opening mode, even from a tab that opens in Draw', () => {
+  it('never carries an opening mode, even from a tab that opens in Drawing', () => {
     expect(newTabSeed({ ...source, opensIn: 'draw' }).opensIn).toBeUndefined();
   });
 

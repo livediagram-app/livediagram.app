@@ -206,11 +206,11 @@ describe('useMenu', () => {
           Diagram
         </button>
         <button role="menuitemradio" aria-checked="true" tabIndex={-1}>
-          Draw
+          Drawing
         </button>
       </Menu>,
     );
-    expect(focused()).toBe('Draw');
+    expect(focused()).toBe('Drawing');
   });
 
   it('is named by a header it owns before its trigger', () => {

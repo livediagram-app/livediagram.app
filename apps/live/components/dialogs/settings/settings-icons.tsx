@@ -200,7 +200,7 @@ export const CATEGORY_GLYPHS: Record<SettingsIconId, ReactNode> = {
 // are the toolbar's own (Lucide layers, as LayersStackIcon; the Collaborate
 // button's glyph), at 16px. The Map and Quick Style
 // have no toolbar button, so they take Lucide's map and palette from the
-// same family. Draw is the marker the editor mode switch shows for Draw
+// same family. Drawing is the marker the editor mode switch shows for Drawing
 // mode, so the row reads as that mode's settings. Notifications and API
 // Tokens keep the bell and key they carried as top-level tiles. Plain and untinted, not a tile: the tile belongs to
 // the top-level category above, and a second column of tiles would read as

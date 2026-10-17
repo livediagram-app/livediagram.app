@@ -1,8 +1,8 @@
 # Avatar tour
 
 A short, optional guided tour of [Avatar mode](avatar-mode.md), offered the first time a person walks as an
-avatar. It is the [Draw tour](../023-draw-mode/draw-tour.md)'s sibling: the same welcome card, anchored step cards,
-glide, dimming ring, Skip, Back and outro card, driven by the same engine. Where this spec is silent, the Draw
+avatar. It is the [Drawing tour](../023-drawing-mode/drawing-tour.md)'s sibling: the same welcome card, anchored step cards,
+glide, dimming ring, Skip, Back and outro card, driven by the same engine. Where this spec is silent, the Drawing
 tour's rules hold.
 
 ## Domain language
@@ -17,7 +17,7 @@ tour's rules hold.
 
 - **The first time a person is in Avatar mode**, which they enter by pressing a
   [Selection Mode button](../009-elements/mode-button.md) set to Avatar. The editor has to be usable (hydrated, no
-  welcome overlay, not an embed). Unlike the Draw tour it is offered **whatever the person's role**: the mode is
+  welcome overlay, not an embed). Unlike the Drawing tour it is offered **whatever the person's role**: the mode is
   a Viewer's as much as an Editor's, and a read-only canvas is the mode's normal state, not a reason to hold off.
 - **Not before the synced preferences are in**, so an answer given on another device holds on a new one.
 - **On its own, never at the same time as another tour**, and it waits while a template start panel is on screen.
@@ -25,7 +25,7 @@ tour's rules hold.
 - **Once ever per person**, through the synced `avatarTourSeen` user preference
   ([User preferences](../007-editor/user-preferences.md)): taken, skipped mid-way or declined, it never offers
   itself again, on any device.
-- **Replayable from Settings**: the **Avatar Tour** switch in Settings' **Tours** category, beside **Draw**,
+- **Replayable from Settings**: the **Avatar Tour** switch in Settings' **Tours** category, beside **Drawing**,
   built the same way (on means "not seen yet"). Turning it on from off and closing Settings runs the tour straight
   away when the person is in Avatar mode, or offers it the next time they enter it.
 
@@ -59,7 +59,7 @@ element by its `data-tour-id`. The exact strings live in `apps/live/components/t
 6. **You're Ready to Roam** (outro): a help-centre link to the Avatar mode article (new tab) and **Start
    walking**, which completes the tour.
 
-- A step whose target never appears is skipped, as in the Draw tour.
+- A step whose target never appears is skipped, as in the Drawing tour.
 - Step 2 opens the panel the way a person would (pressing the Avatar button); step 5 closes it so the character is
   in view. Back from step 5 opens it again. Leaving the tour (Skip, the outro) closes it if the tour opened it.
 - If the tour can no longer run where it started (the person leaves Avatar mode, or opens another tab) it ends as
@@ -77,7 +77,7 @@ bottom bar as the other tours' do.
 
 ## Telemetry ([Telemetry](../017-telemetry/telemetry.md))
 
-The Draw tour's funnel, with its own tokens:
+The Drawing tour's funnel, with its own tokens:
 
 - **Offer**: `UI` · `Opened` · `AvatarTourOffer` when its welcome card shows; `UI` · `Closed` · `AvatarTourOffer`
   on No.
@@ -91,4 +91,4 @@ The Draw tour's funnel, with its own tokens:
 ## Power user mode
 
 [Power user mode](../007-editor/power-user-mode.md) marks the Avatar tour seen alongside the Diagram, Plan,
-Facilitate and Draw tours.
+Facilitate and Drawing tours.

@@ -18,7 +18,7 @@ import { landTemplateOnTab, templateFollowerTabs } from './template-tab-set';
 type SetState<T> = Dispatch<SetStateAction<T>>;
 // The mode a chosen template's tab opens in (docs/specs/007-editor/editor-modes.md "Where the
 // mode lives"): the Whiteboard draws, every other template is a diagram, Blank included, even on
-// a tab that opened in Draw. An event-storming board has no mode to give (it is always Diagram).
+// a tab that opened in Drawing. An event-storming board has no mode to give (it is always Diagram).
 // Undefined leaves the tab as is.
 export function templateOpensIn(overrides: Pick<Tab, 'opensIn' | 'kind'>): EditorMode | undefined {
   if (overrides.opensIn) return overrides.opensIn;
@@ -95,8 +95,8 @@ export function useTemplateFlow(opts: {
     if ((tabs.find((t) => t.id === activeId)?.elements.length ?? 0) > 0) return;
     // Telemetry (docs/specs/017-telemetry/telemetry.md): a template was applied; `type` is the kind.
     track('Template', 'Used', titleCaseType(kind));
-    // A start on a tab is the new-tab entry (docs/specs/023-draw-mode/draw-mode.md "Telemetry").
-    if (kind === 'whiteboard') track('Draw', 'Created', 'NewTab');
+    // A start on a tab is the new-tab entry (docs/specs/023-drawing-mode/drawing-mode.md "Telemetry").
+    if (kind === 'whiteboard') track('Drawing', 'Created', 'NewTab');
     confirmName();
     // Dynamic-import the heavy builders module only when the user
     // actually picks a template. The ~1700 lines of build* code stays

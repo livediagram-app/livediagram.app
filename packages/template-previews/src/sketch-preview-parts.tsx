@@ -1,4 +1,4 @@
-// The marker look the Draw template tiles share (template-preview-11.tsx, template-preview-14.tsx):
+// The marker look the Drawing template tiles share (template-preview-11.tsx, template-preview-14.tsx):
 // the off-white board, the stock marker colours, a marker line's stroke and a stick figure.
 
 export const BOARD = 'rgb(251 250 247)';

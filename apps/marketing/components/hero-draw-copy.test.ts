@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { DRAW_COPY, HAND_GLYPHS } from './hero-draw-copy';
 
 const FONT = join(__dirname, '..', 'public', 'fonts', 'caveat-hero.woff2');
-// The subset's budget: it loads with the hero (the overview draws the Draw scene on first paint).
+// The subset's budget: it loads with the hero (the overview draws the Drawing scene on first paint).
 const FONT_BUDGET_BYTES = 20 * 1024;
 
 function used(): Set<string> {
@@ -18,10 +18,10 @@ function used(): Set<string> {
   return chars;
 }
 
-// The Draw window writes in a hand face subset to HAND_GLYPHS (hero-draw-copy.ts): a glyph the
+// The Drawing window writes in a hand face subset to HAND_GLYPHS (hero-draw-copy.ts): a glyph the
 // subset lacks would fall back to a system face mid-word, and one it carries but no word uses is
 // font weight for nothing.
-describe('the Draw window hand face', () => {
+describe('the Drawing window hand face', () => {
   it('carries every character the copy writes', () => {
     const missing = [...used()].filter((c) => !HAND_GLYPHS.includes(c));
     expect(missing).toEqual([]);

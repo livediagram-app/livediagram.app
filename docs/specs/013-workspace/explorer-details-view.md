@@ -32,11 +32,11 @@ by any column.
 - **Icon columns.** Type, Comments and Access are narrow columns of one icon each, with no words: their
   headers show the column's icon (shapes, a speech bubble, a key) in place of a title, still sortable,
   and name the column in a tooltip and for assistive technology. Each cell's icon names its value in a
-  tooltip and for assistive technology ("Draw", "3 comments", "Editor").
+  tooltip and for assistive technology ("Drawing", "3 comments", "Editor").
 - **Comments** show the count inside the bubble, up to 99, then "99+", centred on the bubble's body
   (not its tail). The bubble's outline is faint and the number in full contrast: the count is what
   matters.
-- **Type** is the mode of the tab written most recently, so a document worked in Draw last week and
+- **Type** is the mode of the tab written most recently, so a document worked in Drawing last week and
   in Plan today reads Plan. An event-storming board's mode is always Diagram. The mode's icon
   and name are the editor's own ([Editor modes](../007-editor/editor-modes.md)).
 - **Access** is the reader's own level ([Share roles](share-roles.md)): their own documents, team

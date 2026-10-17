@@ -1,5 +1,5 @@
 // Articles turned into Page elements (docs/specs/007-editor/article-pages.md "Leaving Illustrate"):
-// what an editor may choose when switching a tab with articles to Diagram or Draw, where pages and
+// what an editor may choose when switching a tab with articles to Diagram or Drawing, where pages and
 // their writing are not drawn. Each article page becomes a Page element (`shape: 'page'`) covering
 // its sheet and holding that page's writing as rich text (the article's title and subtitle as the
 // first page's masthead); the pages stay, as infographic pages, and every element on them stays

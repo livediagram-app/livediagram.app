@@ -68,7 +68,7 @@ type EraserDeps = {
   markCheckpoint: () => void;
   setSelectedId: (id: string | null) => void;
   setEditingId: (id: string | null) => void;
-  // On a whiteboard (docs/specs/023-draw-mode/draw-mode.md "Eraser"): a stroke is touched where its INK
+  // On a whiteboard (docs/specs/023-drawing-mode/drawing-mode.md "Eraser"): a stroke is touched where its INK
   // is, and Partial cuts strokes instead of removing them. Null elsewhere.
   whiteboard?: { mode: WhiteboardEraserMode } | null;
 };
@@ -114,7 +114,7 @@ export function useCanvasEraser(deps: EraserDeps) {
     const r = screenRadius / frame.zoom;
     const isProtected = (el: Element) =>
       el.locked === true || depsRef.current.layerInertIds.has(el.id);
-    // A path goes whole in either mode (docs/specs/023-draw-mode/path-tool.md "Selecting and erasing").
+    // A path goes whole in either mode (docs/specs/023-drawing-mode/path-tool.md "Selecting and erasing").
     let changed = false;
     for (const id of pathsTouched(activeTab.elements, from, at, r, isProtected)) {
       if (erasedRef.current.has(id)) continue;
@@ -210,7 +210,7 @@ export function useCanvasEraser(deps: EraserDeps) {
 
     // Tap mode (docs/specs/008-canvas/eraser-panel.md) is one press, one thing: the move listener is what
     // makes a two-pixel wobble take a neighbour with it, so it isn't attached. A whiteboard has no
-    // Eraser panel (docs/specs/023-draw-mode/draw-mode.md "Eraser"), so the Diagram eraser's Tap
+    // Eraser panel (docs/specs/023-drawing-mode/drawing-mode.md "Eraser"), so the Diagram eraser's Tap
     // setting never reaches it: a whiteboard eraser always sweeps.
     const tapOnly =
       !depsRef.current.whiteboard &&

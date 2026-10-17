@@ -1,7 +1,7 @@
 // Within reach (docs/specs/004-interface-design/within-reach.md; blueprint
 // docs/specs/004-interface-design/blueprints/within-reach.md): N most used items plus N recent ones,
 // no item twice. One rule for every surface that offers a short "what you want next" list: the
-// Draw-mode Shapes flyout and Explorer Home's Jump back in, in the browser and in the api worker.
+// Drawing-mode Shapes flyout and Explorer Home's Jump back in, in the browser and in the api worker.
 
 /** What a surface measures of an item: how much it was used, and when last. */
 export type WithinReachUse = { uses: number; lastUsedAt: number };

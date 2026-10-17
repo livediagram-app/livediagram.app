@@ -56,7 +56,7 @@ describe('getTheme under an appearance', () => {
 
 describe('resolveTabBackdrop', () => {
   // docs/specs/007-editor/editor-modes.md "One look": one backdrop colour, whatever the mode.
-  it('paints a tab that opens in Draw as itself', () => {
+  it('paints a tab that opens in Drawing as itself', () => {
     const t = tab({ opensIn: 'draw', theme: 'slate', backgroundColor: '#fdf2f8' });
     expect(resolveTabBackdrop(t).backgroundColor).toBe('#fdf2f8');
   });

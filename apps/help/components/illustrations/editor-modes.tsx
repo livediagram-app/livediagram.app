@@ -13,21 +13,21 @@ import { ModeMark, type Mode } from './mode-mark';
 // The five modes as the tab menu's mode rows list them: name, then the catalogue's description, wrapped.
 const OPENS_IN: { mode: Mode; lines: string[] }[] = [
   { mode: 'Diagram', lines: ['Flowcharts, architecture and org charts', 'with snapping shapes.'] },
-  { mode: 'Draw', lines: ['Sketch freehand with pens, tidied into', 'shapes as you go.'] },
+  { mode: 'Drawing', lines: ['Sketch freehand with pens, tidied into', 'shapes as you go.'] },
   { mode: 'Facilitate', lines: ['Run a live session: timers, votes, polls', 'and reveals.'] },
   { mode: 'Illustrate', lines: ['Lay out slides, infographics, articles', 'and logos on pages.'] },
   { mode: 'Plan', lines: ['Boards of cards moving through columns,', 'with types and fields.'] },
 ];
 
 /** The foot of the tab menu: the content rows (Import, Export, Clear), a hairline, then the five
- *  mode rows, each with its mark, name and what it is for, a dot on the tab's current one (Draw),
+ *  mode rows, each with its mark, name and what it is for, a dot on the tab's current one (Drawing),
  *  above the tab bar whose pill leads with the same mark. */
 export function TabModeMenuScene() {
   const mx = 150;
   const my = 10;
   const mw = 252;
   const rowH = 18;
-  const current: Mode = 'Draw';
+  const current: Mode = 'Drawing';
   let y = my + 6;
   const content = ['Import', 'Export', 'Clear'].map((label, i) => ({ label, y: y + i * rowH }));
   y += content.length * rowH;
@@ -127,7 +127,7 @@ export function TabModeMenuScene() {
         strokeWidth={1.5}
       />
       <g transform={`translate(${300} ${barY + 18})`}>
-        <ModeMark mode="Draw" className="stroke-brand-600" scale={0.5} />
+        <ModeMark mode="Drawing" className="stroke-brand-600" scale={0.5} />
       </g>
       <Label x={312} y={barY + 18} size={11} weight={600} tone="accent">
         Sketch

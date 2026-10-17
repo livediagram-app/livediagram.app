@@ -103,7 +103,7 @@ describe('whiteboardPointerRoute', () => {
 });
 
 describe('whiteboardShapeIntent', () => {
-  // docs/specs/023-draw-mode/draw-mode.md "Shapes": a pen is a separate tool; pens do not set the
+  // docs/specs/023-drawing-mode/drawing-mode.md "Shapes": a pen is a separate tool; pens do not set the
   // colour of the other tools.
   it('arms a board shape: ink, unfilled, default width, whatever pen was in hand', () => {
     expect(whiteboardShapeIntent('ellipse')).toEqual({
@@ -115,7 +115,7 @@ describe('whiteboardShapeIntent', () => {
   });
 });
 
-// docs/specs/007-editor/editor-modes.md "One look": Draw mode writes Ink, unfilled, onto what it
+// docs/specs/007-editor/editor-modes.md "One look": Drawing mode writes Ink, unfilled, onto what it
 // makes, so it looks the same in Diagram mode and to every collaborator.
 describe('boardShape', () => {
   it('writes an Ink outline and label by name, and no fill, on a shape', () => {
@@ -164,7 +164,7 @@ describe('boardShape', () => {
 });
 
 describe('whiteboardTakesTyping', () => {
-  // docs/specs/023-draw-mode/draw-mode.md "Keyboard shortcuts": on a whiteboard only a note or text
+  // docs/specs/023-drawing-mode/drawing-mode.md "Keyboard shortcuts": on a whiteboard only a note or text
   // box turns a keypress into typing; a selected shape or stroke leaves the key to the dock.
   it('lets a note or a text box take the keypress', () => {
     expect(whiteboardTakesTyping({ type: 'sticky' })).toBe(true);

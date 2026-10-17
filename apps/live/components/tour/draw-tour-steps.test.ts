@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { DRAW_TOUR_STEPS, drawTourSteps, drawTourStepTelemetryType } from './draw-tour-steps';
 
-// docs/specs/023-draw-mode/draw-tour.md "The steps"
-describe('the Draw tour steps', () => {
+// docs/specs/023-drawing-mode/drawing-tour.md "The steps"
+describe('the Drawing tour steps', () => {
   it('runs welcome, the Drawing tools, Quick Style, Shapes and Settings, then the outro', () => {
     expect(DRAW_TOUR_STEPS.map((s) => s.id)).toEqual([
       'welcome',
@@ -28,7 +28,7 @@ describe('the Draw tour steps', () => {
   it('offers itself as the Diagram tour does, and closes ready to draw', () => {
     expect(DRAW_TOUR_STEPS[0]).toMatchObject({
       card: 'welcome',
-      title: 'Getting started with Draw?',
+      title: 'Getting started with Drawing?',
     });
     expect(DRAW_TOUR_STEPS.at(-1)).toMatchObject({ card: 'outro', title: "You're ready to draw" });
   });
@@ -41,6 +41,6 @@ describe('the Draw tour steps', () => {
   });
 
   it('names its step views', () => {
-    expect(drawTourStepTelemetryType('drawing-tools')).toBe('DrawTourStepDrawingTools');
+    expect(drawTourStepTelemetryType('drawing-tools')).toBe('DrawingTourStepDrawingTools');
   });
 });

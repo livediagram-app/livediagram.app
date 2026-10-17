@@ -153,7 +153,7 @@ export type LandingSection = {
 
 /**
  * The feature categories, in the order the landing page tells them: collaborate,
- * then each way of working on a tab (Diagram, Draw, Illustrate's infographics, its
+ * then each way of working on a tab (Diagram, Drawing, Illustrate's infographics, its
  * slide decks and its documents, Plan's boards, then its sheets and forms). `page.tsx` renders one beat per entry and
  * alternates its background by index; `/features/<id>` renders each one's cards.
  */
@@ -811,9 +811,9 @@ export const LANDING_SECTIONS: LandingSection[] = [
     cta: 'Explore the whiteboard',
     title: 'A whiteboard that feels like paper',
     description:
-      'Switch a tab to Draw and the canvas becomes a whiteboard: three markers in hand, a pen that answers to pressure, and erasers that take a whole stroke or just a smudge. Sketch it rough, and let it snap to shape when you want it neat.',
+      'Switch a tab to Drawing and the canvas becomes a whiteboard: three markers in hand, a pen that answers to pressure, and erasers that take a whole stroke or just a smudge. Sketch it rough, and let it snap to shape when you want it neat.',
     metaDescription:
-      'Switch a tab to Draw for a whiteboard that feels like paper: three pressure-sensitive markers, smart erasers, and rough shapes that snap neat.',
+      'Switch a tab to Drawing for a whiteboard that feels like paper: three pressure-sensitive markers, smart erasers, and rough shapes that snap neat.',
     highlights: [
       'Three markers in hand',
       'Pressure-sensitive pens',
@@ -823,56 +823,56 @@ export const LANDING_SECTIONS: LandingSection[] = [
     items: [
       {
         art: <MarkersArt />,
-        href: '/help/canvas/draw-mode/',
+        href: '/help/canvas/drawing-mode/',
         title: 'Three markers in hand',
         description:
           'Keys 1, 2 and 3 pick up three markers, each in six widths from Fine to Broad. Marker 1 is ink; the other two take any of nine stock colours or a colour of your own.',
       },
       {
         art: <DrawDockArt />,
-        href: '/help/canvas/draw-mode/',
+        href: '/help/canvas/drawing-mode/',
         title: 'Shapes and text in the dock',
         description:
-          'Draw mode swaps the palette for a dock across the top: select, the three markers, text, the Path tool and the eraser, each on its own key, then the shapes you use. Pin up to seven favourites, an arrow and a rectangle to start, and the Shapes button offers the ones you pick most.',
+          'Drawing mode swaps the palette for a dock across the top: select, the three markers, text, the Path tool and the eraser, each on its own key, then the shapes you use. Pin up to seven favourites, an arrow and a rectangle to start, and the Shapes button offers the ones you pick most.',
       },
       {
         art: <PressureArt />,
-        href: '/help/canvas/draw-mode/',
+        href: '/help/canvas/drawing-mode/',
         title: 'Pressure-sensitive pens',
         description:
           'Draw with a stylus and the line thins and swells with how hard you press, the way ink does. A mouse or a finger keeps the width you chose.',
       },
       {
         art: <PencilArt />,
-        href: '/help/canvas/draw-mode/#shape-recognition',
+        href: '/help/canvas/drawing-mode/#shape-recognition',
         title: 'Sketch freehand, or let it snap to shape',
         description:
           'Switch on shape recognition and a rough circle, rectangle, triangle, diamond or line becomes a clean shape the moment you lift the pen. Hold still for half a second to preview it first. It starts off, so a sketch stays a sketch until you ask.',
       },
       {
         art: <ErasersArt />,
-        href: '/help/canvas/draw-mode/#the-two-erasers',
+        href: '/help/canvas/drawing-mode/#the-two-erasers',
         title: 'Two erasers',
         description:
           'The stroke eraser lifts a whole stroke in one touch; the partial eraser rubs out only what it passes over. Stickies, text and shapes are never cut in half.',
       },
       {
         art: <PathToolArt />,
-        href: '/help/canvas/draw-mode/#the-path-tool',
+        href: '/help/canvas/drawing-mode/#the-path-tool',
         title: 'Clean curves with the Path tool',
         description:
           'Press P for a vector pen, like the one in your design tool: draw a smooth curve, then edit any point as a corner, mirrored or aligned. For the line that has to be exact.',
       },
       {
         art: <PalmRejectionArt />,
-        href: '/help/canvas/draw-mode/#pen-finger-and-mouse',
+        href: '/help/canvas/drawing-mode/#pen-finger-and-mouse',
         title: 'Rest your palm on the screen',
         description:
           'Once you pick up a stylus, a single finger pans rather than draws, so a resting palm leaves no mark. Two fingers always pan and zoom.',
       },
       {
         art: <CanvasBackdropArt />,
-        href: '/help/canvas/draw-mode/#backgrounds',
+        href: '/help/canvas/drawing-mode/#backgrounds',
         title: 'A board in light or dark',
         description:
           'Put Plain, Dots or Grid behind your ink, a choice that is yours alone. Ink and the stock marker colours adjust so they read on a light board and a dark one.',

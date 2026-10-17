@@ -74,9 +74,9 @@ Each scaled surface reads its part's scale with `useUiScale(part)`, spreads
 `uiScaleStyle(scale)` into its ROOT's `style`, and converts every JS-computed
 screen-px length it writes on that root or a descendant with `toSurfacePx`.
 `panels`: `MovablePanel`, `QuickStylePanel`, `useDockPopovers`.
-`toolbar`: `ToolbarPalette`, `ToolbarExplorerButton`, and Draw mode's dock
+`toolbar`: `ToolbarPalette`, `ToolbarExplorerButton`, and Drawing mode's dock
 (`WhiteboardDock`, its `dock` variant; from
-[Draw mode](../../023-draw-mode/draw-mode.md#what-a-whiteboard-shows), which
+[Drawing mode](../../023-drawing-mode/drawing-mode.md#what-a-whiteboard-shows), which
 the spec's "Nothing else scales" list names: the dock at the toolbar scale,
 its flyouts at design size).
 `cornerButtons`: the cluster in `CanvasChrome`, `usePanelDock`.
@@ -134,7 +134,7 @@ What makes room for a scaled surface:
   `useUiScale('cornerButtons')`, so snap detection matches the landing.
 - `toolbarTopClearancePx(scale)` in `CanvasChrome`: `12 + 46 × scale + 10` at
   the toolbar's scale, the top corners' offset while the strip spans them.
-- A top Draw dock's corner offset is the same `toolbarTopClearancePx(scale)`: the dock is the
+- A top Drawing dock's corner offset is the same `toolbarTopClearancePx(scale)`: the dock is the
   strip's twin, its height at the toolbar's scale.
 - `useStripCrowdsCorners` takes a `scaleKey` (`"<toolbar>/<panels>"`) and
   `useStripTileLimit` the toolbar's `scale`, as effect dependencies: they

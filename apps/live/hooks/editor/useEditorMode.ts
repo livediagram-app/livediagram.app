@@ -41,7 +41,7 @@ export type EditorModeState = {
 // The telemetry type a switch into each mode fires.
 const MODE_EVENT: Record<EditorMode, string> = {
   diagram: 'ModeDiagram',
-  draw: 'ModeDraw',
+  draw: 'ModeDrawing',
   illustrate: 'ModeIllustrate',
   plan: 'ModePlan',
   facilitate: 'ModeFacilitate',

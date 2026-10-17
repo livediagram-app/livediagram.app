@@ -1,7 +1,7 @@
 /* The draw scene's own keyframes and classes (components/hero-draw-board.tsx); the shared hm-* build lives in ../hero-mode-animations.css. */
 
-/* Draw mode writes in a hand face (Caveat, the editor's "caveat" font). The hero carries a subset
-   holding only the glyphs its Draw window writes (components/hero-draw-copy.ts), about 18 KB,
+/* Drawing mode writes in a hand face (Caveat, the editor's "caveat" font). The hero carries a subset
+   holding only the glyphs its Drawing window writes (components/hero-draw-copy.ts), about 18 KB,
    fetched only when that window's text is drawn; until then the fallback hand stands in. */
 @font-face {
   font-family: 'Caveat Hero';

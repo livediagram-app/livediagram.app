@@ -307,7 +307,7 @@ due dates, Activity, email), because it lives on an element: a **margin note**.
 
 ## Leaving Illustrate
 
-Diagram and Draw draw no pages and no writing. An editor switching a tab with articles out of
+Diagram and Drawing draw no pages and no writing. An editor switching a tab with articles out of
 Illustrate (the mode switch, Shift+D or the tab menu's mode rows) is asked first, in a dialog **Turn Articles
 Into Pages?**:
 
@@ -398,7 +398,7 @@ ink").
   text in SVG output; rasterised in PNG, and in PDF, whose pages are images), with its zones'
   elements, its page number and its ruled lines; nothing of the editing chrome.
 - **The Map** shows each page's text as soft grey lines.
-- **Diagram and Draw modes** show the tab's elements as always; the writing belongs to the pages
+- **Diagram and Drawing modes** show the tab's elements as always; the writing belongs to the pages
   and shows only in Illustrate mode and on a presenting page slide (its zones' elements stay on the
   canvas where they are).
 - **Viewers** (a view role, a locked tab) read the writing and cannot change it; no caret, no
@@ -461,4 +461,4 @@ ink").
 - Headers and footers beyond page numbers, footnotes, a table of contents, columns, suggestions
   and tracked changes, find and replace, Word / Google Docs import.
 - Character-level merging of two people typing in the same paragraph at the same moment.
-- The writing in Diagram or Draw mode.
+- The writing in Diagram or Drawing mode.

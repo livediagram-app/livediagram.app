@@ -15,18 +15,18 @@ type WhiteboardPenGestureDeps = Pick<
 > & {
   viewportZoom: number;
   wrapperRef: RefObject<HTMLDivElement | null>;
-  // Whether the tab is in Draw mode. Leaving it mid-stroke finishes the stroke.
+  // Whether the tab is in Drawing mode. Leaving it mid-stroke finishes the stroke.
   whiteboard: boolean;
 };
 
-// The whiteboard pen's gesture (docs/specs/023-draw-mode/draw-mode.md "Pens", "Touch and pen
+// The whiteboard pen's gesture (docs/specs/023-drawing-mode/drawing-mode.md "Pens", "Touch and pen
 // input"; blueprint whiteboard-round-one "Pen ink"). The press makes one LiveStroke and sets it as
 // state once; after that every move adds its raw sample and pressure straight to the stroke and
 // notifies its subscribers (the ink, the recognition dwell), so drawing costs no React render. One
 // sample per move, as Excalidraw takes them: its streamline values are tuned to that rate. Release
 // commits the very samples the stroke showed, so what was drawn is what lands. Alt (Option) pressed
 // while the stroke is live flips it between ink and a shape ("Shape recognition"). A switch out of
-// Draw mode mid-stroke (one's own Shift+D, or a collaborator's) finishes the stroke first, as
+// Drawing mode mid-stroke (one's own Shift+D, or a collaborator's) finishes the stroke first, as
 // docs/specs/007-editor/editor-modes.md "Everyone follows a switch" says; putting the pen down
 // (Escape, another tool) discards it.
 export function useWhiteboardPenGesture({
@@ -67,7 +67,7 @@ export function useWhiteboardPenGesture({
   });
   const pinchingNow = useEffectEvent(() => isPinchingRef?.current === true);
   const commitStroke = useEffectEvent((stroke: LiveStroke) => {
-    // A tap is one point, and lands as a dot (docs/specs/023-draw-mode/draw-mode.md "Pens").
+    // A tap is one point, and lands as a dot (docs/specs/023-drawing-mode/drawing-mode.md "Pens").
     if (stroke.points.length === 0) return;
     debugLog(
       `[whiteboard] stroke ${stroke.pointer} samples=${stroke.points.length} pressure=${stroke.pressures ? 'yes' : 'no'}`,
@@ -81,7 +81,7 @@ export function useWhiteboardPenGesture({
     });
   });
 
-  // The tab left Draw mode with a stroke live: it lands as drawn so far. This runs before the
+  // The tab left Drawing mode with a stroke live: it lands as drawn so far. This runs before the
   // editor's own effect puts the pen down (a child's effects run first), so the commit still sees
   // the pen in hand, and the render-time discard above never fires for a mode switch.
   const wasWhiteboard = useRef(whiteboard);
@@ -126,7 +126,7 @@ export function useWhiteboardPenGesture({
       if (!mine(e)) return;
       if (pinchingNow()) pinched = true;
       if (pinched) return;
-      // Shift reshapes a locked shape perfect, from this move on (draw-mode.md "Shape
+      // Shift reshapes a locked shape perfect, from this move on (drawing-mode.md "Shape
       // recognition"); a move that only changes Shift still redraws.
       const shiftChanged = stroke.constrain(e.shiftKey);
       const p = canvasPoint(e);
@@ -153,7 +153,7 @@ export function useWhiteboardPenGesture({
       debugLog('[whiteboard] stroke discarded: cancel');
       setPenStroke(null);
     };
-    // Each Alt press flips the stroke (docs/specs/023-draw-mode/draw-mode.md "Shape recognition");
+    // Each Alt press flips the stroke (docs/specs/023-drawing-mode/drawing-mode.md "Shape recognition");
     // while it is held, holding still does not snap the stroke again, and releasing it changes
     // nothing else.
     const onKeyDown = (e: KeyboardEvent) => {

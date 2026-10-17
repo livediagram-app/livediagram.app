@@ -186,7 +186,7 @@ export type TemplateKind =
   // Personal objectives, written with a sentence formula and a SMART check,
   // balanced across life areas, with key results and a check-in rhythm.
   | 'objectives-planner'
-  // Whiteboard (docs/specs/023-draw-mode/draw-mode.md): a blank tab of the whiteboard KIND, drawn on
+  // Whiteboard (docs/specs/023-drawing-mode/drawing-mode.md): a blank tab of the whiteboard KIND, drawn on
   // with a dock of pens rather than the palette. Shown beside Blank as a
   // quick-pick, never inside a category grid.
   | 'whiteboard'
@@ -203,8 +203,8 @@ export type TemplateKind =
   | 'blank-article'
   | 'blank-infographic'
   | 'blank-logo'
-  // Draw templates (docs/specs/007-editor/templates-by-mode.md "Draw templates"): boards drawn with
-  // freehand strokes, stickies, text and stickers, opening in Draw mode.
+  // Drawing templates (docs/specs/007-editor/templates-by-mode.md "Drawing templates"): boards drawn with
+  // freehand strokes, stickies, text and stickers, opening in Drawing mode.
   | 'sketchnote'
   | 'rich-picture'
   | 'comic-strip'

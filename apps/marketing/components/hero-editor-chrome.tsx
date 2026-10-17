@@ -191,7 +191,7 @@ const NAMED_FROM: Partial<Record<HeroMode, string>> = {
 // The Palette in the Toolbar layout (docs/specs/007-editor/toolbar-layout.md): one strip at the top
 // centre of the canvas. In Diagram, Facilitate and Illustrate it is the category bar: the selection
 // mode, then the mode's categories (each its glyph and one-word name, a hairline between bands; the
-// glyphs alone where the window is narrow), then Search. Draw shows its dock instead, its drawing
+// glyphs alone where the window is narrow), then Search. Drawing shows its dock instead, its drawing
 // tools split from its shapes and its settings in a card of its own. A Plan tab brings its own bar
 // (hero-plan-bars.tsx): a board's, a Sheet's toolbar or a Form's status bar.
 export function ToolbarStrip({ mode, planTab = 'board' }: { mode: HeroMode; planTab?: PlanTab }) {
@@ -263,7 +263,7 @@ export function ToolbarStrip({ mode, planTab = 'board' }: { mode: HeroMode; plan
       </div>
     );
   }
-  // Draw: the dock.
+  // Drawing: the dock.
   return (
     <div className="pointer-events-none absolute inset-x-0 top-2 z-10 flex justify-center gap-1.5">
       <div className={strip}>

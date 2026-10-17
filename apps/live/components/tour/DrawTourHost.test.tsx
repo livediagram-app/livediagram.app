@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
-// The Draw tour's offer (docs/specs/023-draw-mode/draw-tour.md "Where it appears"): on
-// entering Draw, once, on its own (the Diagram tour never runs in Draw), never with another tour,
+// The Drawing tour's offer (docs/specs/023-drawing-mode/drawing-tour.md "Where it appears"): on
+// entering Drawing, once, on its own (the Diagram tour never runs in Drawing), never with another tour,
 // and rerun from Settings.
 
 import { act, cleanup, render } from '@testing-library/react';
@@ -65,7 +65,8 @@ const editor = (over: Record<string, unknown> = {}) => {
     ...over,
   };
 };
-const offered = () => track.mock.calls.some((c) => c[1] === 'Opened' && c[2] === 'DrawTourOffer');
+const offered = () =>
+  track.mock.calls.some((c) => c[1] === 'Opened' && c[2] === 'DrawingTourOffer');
 
 beforeEach(() => {
   vi.useFakeTimers();
@@ -87,7 +88,7 @@ afterEach(() => {
 });
 
 describe('DrawTourHost offer', () => {
-  it('offers itself after the settle delay when the person is in Draw', () => {
+  it('offers itself after the settle delay when the person is in Drawing', () => {
     editor();
     render(<DrawTourHost />);
     act(() => {
@@ -99,7 +100,7 @@ describe('DrawTourHost offer', () => {
     });
     expect(offered()).toBe(true);
     expect(stage.engine?.active).toBe(true);
-    expect(stage.helpHref).toBe('/help/canvas/draw-mode/');
+    expect(stage.helpHref).toBe('/help/canvas/drawing-mode/');
   });
 
   // docs/specs/007-editor/editor-tour.md "Dialogs come first".
@@ -119,7 +120,7 @@ describe('DrawTourHost offer', () => {
     expect(offered()).toBe(true);
   });
 
-  it('waits for the person to enter Draw', () => {
+  it('waits for the person to enter Drawing', () => {
     editor({ editorMode: { mode: 'diagram' } });
     const { rerender } = render(<DrawTourHost />);
     act(() => {
@@ -151,7 +152,7 @@ describe('DrawTourHost offer', () => {
     expect(offered()).toBe(false);
   });
 
-  // docs/specs/023-draw-mode/draw-tour.md "Where it appears": on its own, whatever other tours.
+  // docs/specs/023-drawing-mode/drawing-tour.md "Where it appears": on its own, whatever other tours.
   it('offers itself to someone who has not done the Diagram tour, even with its handoff owed', () => {
     markTourPending();
     editor({ userPreferences: {} });
@@ -188,7 +189,7 @@ describe('DrawTourHost offer', () => {
     expect(offered()).toBe(false);
   });
 
-  it('reruns from Settings in Draw', () => {
+  it('reruns from Settings in Drawing', () => {
     editor({ userPreferences: { tourSeen: true, drawTourSeen: true } });
     const { rerender } = render(<DrawTourHost />);
     act(() => {
@@ -204,7 +205,7 @@ describe('DrawTourHost offer', () => {
     expect(offered()).toBe(true);
   });
 
-  it('ignores a rerun outside Draw', () => {
+  it('ignores a rerun outside Drawing', () => {
     editor({ editorMode: { mode: 'diagram' } });
     render(<DrawTourHost />);
     act(() => requestDrawTourRelaunch());
@@ -229,20 +230,20 @@ describe('DrawTourHost end', () => {
     start();
     act(() => stage.engine!.skip());
     expect(writeUserPreferences).toHaveBeenCalledWith({ tourSeen: true, drawTourSeen: true }, 'me');
-    expect(track).toHaveBeenCalledWith('UI', 'Closed', 'DrawTourOffer');
+    expect(track).toHaveBeenCalledWith('UI', 'Closed', 'DrawingTourOffer');
   });
 
   it('starting runs the steps and completing sends the completion', async () => {
     start();
     act(() => stage.engine!.next());
-    expect(track).toHaveBeenCalledWith('UI', 'Started', 'DrawTour');
+    expect(track).toHaveBeenCalledWith('UI', 'Started', 'DrawingTour');
     // Every anchored step finds no target in this harness and is skipped, so Next runs to the end.
     await act(async () => {
       await vi.advanceTimersByTimeAsync(30000);
     });
     expect(stage.engine?.step?.id).toBe('outro');
     act(() => stage.engine!.next());
-    expect(track).toHaveBeenCalledWith('UI', 'Ended', 'DrawTourCompleted');
+    expect(track).toHaveBeenCalledWith('UI', 'Ended', 'DrawingTourCompleted');
     expect(writeUserPreferences).toHaveBeenCalledWith({ tourSeen: true, drawTourSeen: true }, 'me');
   });
 
@@ -267,12 +268,12 @@ describe('DrawTourHost end', () => {
     expect(offered()).toBe(true);
   });
 
-  it('ends as skipped when the person leaves Draw or the tab', () => {
+  it('ends as skipped when the person leaves Drawing or the tab', () => {
     const r = start();
     act(() => stage.engine!.next());
     editor({ editorMode: { mode: 'diagram' } });
     r.rerender(<DrawTourHost />);
-    expect(track).toHaveBeenCalledWith('UI', 'Ended', 'DrawTourSkipped');
+    expect(track).toHaveBeenCalledWith('UI', 'Ended', 'DrawingTourSkipped');
     expect(stage.engine?.active).toBe(false);
   });
 });

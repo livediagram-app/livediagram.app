@@ -65,7 +65,7 @@ export function ToolbarExplorerButton({
     <div
       data-dock-button=""
       // Chrome, not canvas: the canvas's capture-phase gestures skip a press inside a floating
-      // panel. Without it, a press here (the menu button, the mode switch's menu) with a Draw pen
+      // panel. Without it, a press here (the menu button, the mode switch's menu) with a Drawing pen
       // in hand started a stroke instead, and the switch back to Diagram never landed.
       data-floating-panel=""
       data-tour-id="dock-explorer"

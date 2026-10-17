@@ -1,4 +1,4 @@
-// More doodles for the Draw templates (docs/specs/007-editor/templates-by-mode.md "Draw
+// More doodles for the Drawing templates (docs/specs/007-editor/templates-by-mode.md "Drawing
 // templates"), split from template-sketch-figures.ts to keep each file cohesive: the lo-fi phone
 // and its UI marks (an image placeholder, a tap), feeling faces, the journey's stops (a fridge, a
 // van, a house, a gift), the pre-mortem's sinking ship, and the idea garden's leaf, fruit and

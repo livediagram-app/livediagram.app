@@ -135,7 +135,7 @@ export const TELEMETRY_CATEGORIES = [
   // 'Local'). Whether people ever come back for a deleted document is the
   // question; never a document or team name.
   'Trash',
-  // Draw mode (docs/specs/023-draw-mode/draw-mode.md), named 'Whiteboard' until its stored
+  // Drawing mode (docs/specs/023-drawing-mode/drawing-mode.md), named 'Whiteboard' until its stored
   // history was rewritten (migration 0061): a Whiteboard tab 'Created' (`type` how:
   // 'Template' | 'NewTab' | 'Import'), a pen 'Selected' ('Main' | 'Second' | 'Third'),
   // a pen, the eraser mode and the background 'Changed' ('PenColour' | 'PenWidth' |
@@ -143,9 +143,9 @@ export const TELEMETRY_CATEGORIES = [
   // 'BackgroundGrid', 'SnapColours') and shape recognition 'Toggled' ('RecognitionOn' |
   // 'RecognitionOff', and for one stroke 'RecogniseOnceKey' | 'RecogniseOnceChip' |
   // 'BreakShapeKey' | 'BreakShapeChip'). Presets only; never content.
-  'Draw',
+  'Drawing',
   // Editor modes (docs/specs/007-editor/editor-modes.md): a person switched a tab's editor mode,
-  // 'Changed' with 'ModeDiagram' | 'ModeDraw' | 'ModeIllustrate', fired before the mode applies.
+  // 'Changed' with 'ModeDiagram' | 'ModeDrawing' | 'ModeIllustrate', fired before the mode applies.
   'Editor',
   // Google Drive mirror (docs/specs/022-drive-mirror/drive-mirror.md, "Telemetry"):
   // 'Linked' / 'Unlinked' (connected / disconnected, typed by token path

@@ -15992,7 +15992,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "Page",
       "Cta",
       "Trash",
-      "Draw",
+      "Drawing",
       "Editor",
       "Drive",
       "Explorer",

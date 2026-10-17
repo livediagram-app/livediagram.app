@@ -31,7 +31,7 @@ const tab = (overrides: Partial<Tab> = {}): Tab => ({
   ...overrides,
 });
 
-// docs/specs/023-draw-mode/draw-mode.md "Shapes": the preview and the commit build one arrow.
+// docs/specs/023-drawing-mode/drawing-mode.md "Shapes": the preview and the commit build one arrow.
 describe('buildDressedDrawnArrow', () => {
   const thick = <T extends Element>(el: T): T => ({
     ...el,
@@ -41,7 +41,7 @@ describe('buildDressedDrawnArrow', () => {
   const board = { elements: [] as Element[], theme: themed, whiteboard: true };
 
   // Written in Ink by name (docs/specs/007-editor/editor-modes.md "One look").
-  it('is the drawn arrow in its tool style, in Ink in Draw mode', () => {
+  it('is the drawn arrow in its tool style, in Ink in Drawing mode', () => {
     const out = buildDressedDrawnArrow(
       { type: 'arrow', ends: 'to', board: true },
       10,
@@ -97,7 +97,7 @@ describe('buildDrawnArrow', () => {
   });
 
   it('draws a whiteboard line or arrow with the asked-for heads and no colour', () => {
-    // docs/specs/023-draw-mode/draw-mode.md: unpainted, so it takes the board's ink.
+    // docs/specs/023-drawing-mode/drawing-mode.md: unpainted, so it takes the board's ink.
     const arrow = buildDrawnArrow(10, 20, 150, 90, [], themed, { ends: 'to', unpainted: true });
     expect(arrow.arrowEnds).toBe('to');
     expect(arrow.strokeColor).toBeUndefined();
@@ -151,14 +151,14 @@ describe('buildDrawnComponent', () => {
 describe('buildDrawnBoxed', () => {
   const shapeIntent = { type: 'shape', kind: 'square' } as const;
 
-  // docs/specs/023-draw-mode/draw-mode.md "Text boxes": in Draw mode a text box hugs its text.
-  it('places a Draw mode text box empty, caret-sized, at the click', () => {
+  // docs/specs/023-drawing-mode/drawing-mode.md "Text boxes": in Drawing mode a text box hugs its text.
+  it('places a Drawing mode text box empty, caret-sized, at the click', () => {
     const out = buildDrawnBoxed({ type: 'text' }, 500, 300, 502, 301, null, tab(), true);
     // 14 px text in a 1.25 line: 17.5, rounded up, plus 2 px above and below.
     expect(out).toMatchObject({ label: '', sizing: 'fit', x: 496, y: 289, width: 8, height: 22 });
   });
 
-  it('sets a dragged Draw mode text box to the dragged width and one line', () => {
+  it('sets a dragged Drawing mode text box to the dragged width and one line', () => {
     const out = buildDrawnBoxed({ type: 'text' }, 100, 50, 340, 200, null, tab(), true);
     expect(out).toMatchObject({ label: '', sizing: 'wrap', x: 100, y: 50, width: 240, height: 22 });
   });

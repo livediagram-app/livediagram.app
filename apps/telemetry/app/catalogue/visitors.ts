@@ -341,52 +341,52 @@ export const FACILITATE_TOUR: MetricStack = {
   headline: FACILITATE_TOURS_STARTED,
 };
 
-// The Draw tour (docs/specs/023-draw-mode/draw-tour.md): its own funnel, beside the Facilitate tour's.
+// The Drawing tour (docs/specs/023-drawing-mode/drawing-tour.md): its own funnel, beside the Facilitate tour's.
 export const DRAW_TOUR_DECLINED = chart(
   'UI',
   'Closed',
-  'Draw Tours Declined',
-  'The Draw tour turned down on its welcome card, before it started.',
-  { types: ['DrawTourOffer'], rising: 'neutral' },
+  'Drawing Tours Declined',
+  'The Drawing tour turned down on its welcome card, before it started.',
+  { types: ['DrawingTourOffer'], rising: 'neutral' },
 );
 
 export const DRAW_TOURS_STARTED = chart(
   'UI',
   'Started',
-  'Draw Tours Started',
-  'The Draw tour started.',
-  { types: ['DrawTour'] },
+  'Drawing Tours Started',
+  'The Drawing tour started.',
+  { types: ['DrawingTour'] },
 );
 
 export const DRAW_TOUR_STEPS_VIEWED = chart(
   'UI',
   'View',
-  'Draw Tour Steps Viewed',
-  'A step of the Draw tour shown.',
-  { typeIn: (t) => (t ?? '').startsWith('DrawTourStep') },
+  'Drawing Tour Steps Viewed',
+  'A step of the Drawing tour shown.',
+  { typeIn: (t) => (t ?? '').startsWith('DrawingTourStep') },
 );
 
 export const DRAW_TOURS_COMPLETED = chart(
   'UI',
   'Ended',
-  'Draw Tours Completed',
-  'The Draw tour run to its last step.',
-  { types: ['DrawTourCompleted'] },
+  'Drawing Tours Completed',
+  'The Drawing tour run to its last step.',
+  { types: ['DrawingTourCompleted'] },
 );
 
 export const DRAW_TOURS_SKIPPED = chart(
   'UI',
   'Ended',
-  'Draw Tours Skipped',
-  'The Draw tour closed before its end.',
-  { types: ['DrawTourSkipped'], rising: 'neutral' },
+  'Drawing Tours Skipped',
+  'The Drawing tour closed before its end.',
+  { types: ['DrawingTourSkipped'], rising: 'neutral' },
 );
 
 export const DRAW_TOUR: MetricStack = {
   stack: true,
-  title: 'Draw Tour',
+  title: 'Drawing Tour',
   blurb:
-    'The first time in Draw mode: the Draw tour offered, stepped through, finished or skipped.',
+    'The first time in Drawing mode: the Drawing tour offered, stepped through, finished or skipped.',
   members: [
     DRAW_TOUR_OFFERED,
     DRAW_TOUR_DECLINED,
@@ -398,7 +398,7 @@ export const DRAW_TOUR: MetricStack = {
   headline: DRAW_TOURS_STARTED,
 };
 
-// The Forms tour (docs/specs/030-forms/forms.md "The Forms tour"): its own funnel, beside the Draw tour's.
+// The Forms tour (docs/specs/030-forms/forms.md "The Forms tour"): its own funnel, beside the Drawing tour's.
 export const FORM_TOUR_DECLINED = chart(
   'UI',
   'Closed',
@@ -455,7 +455,7 @@ export const FORM_TOUR: MetricStack = {
   headline: FORM_TOURS_STARTED,
 };
 
-// The Avatar tour (docs/specs/008-canvas/avatar-tour.md): its own funnel, beside the Draw tour's.
+// The Avatar tour (docs/specs/008-canvas/avatar-tour.md): its own funnel, beside the Drawing tour's.
 export const AVATAR_TOUR_DECLINED = chart(
   'UI',
   'Closed',

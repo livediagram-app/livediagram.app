@@ -1,4 +1,4 @@
-// The whiteboard dock's tool model (docs/specs/023-draw-mode/draw-mode.md "What a whiteboard shows"):
+// The whiteboard dock's tool model (docs/specs/023-drawing-mode/drawing-mode.md "What a whiteboard shows"):
 // which dock tool is in hand, derived from the editor's own canvas tool and
 // armed intent so the two can never disagree, plus the intents the dock arms
 // and the pen-versus-touch routing rule.
@@ -7,7 +7,7 @@ import { INK_PEN_COLOUR, type Element } from '@livediagram/document';
 import type { PendingDraw } from './draw-mode';
 import type { WhiteboardPen } from './whiteboard-prefs';
 
-// No highlighter: a whiteboard's pens are its markers (docs/specs/023-draw-mode/draw-mode.md).
+// No highlighter: a whiteboard's pens are its markers (docs/specs/023-drawing-mode/drawing-mode.md).
 export type WhiteboardTool = 'select' | 'pen' | 'path' | 'eraser' | 'sticky' | 'text' | 'shape';
 
 export function activeWhiteboardTool(
@@ -46,7 +46,7 @@ export function whiteboardPenIntent(
   };
 }
 
-// The eraser's brush on a whiteboard, in screen px (docs/specs/023-draw-mode/draw-mode.md "Eraser").
+// The eraser's brush on a whiteboard, in screen px (docs/specs/023-drawing-mode/drawing-mode.md "Eraser").
 export const WHITEBOARD_ERASER_RADIUS_PX: Readonly<Record<'stroke' | 'partial', number>> = {
   stroke: 10,
   partial: 16,
@@ -67,14 +67,14 @@ export const WHITEBOARD_SHAPES: readonly {
   { id: 'arrow', label: 'Arrow', intent: { type: 'arrow', ends: 'to' } },
 ];
 
-// A dock shape (docs/specs/023-draw-mode/draw-mode.md "Shapes"). A pen is a separate tool: pens do
+// A dock shape (docs/specs/023-drawing-mode/drawing-mode.md "Shapes"). A pen is a separate tool: pens do
 // not set the colour of the other tools, so a shape is armed plain.
 export function whiteboardShapeIntent(id: WhiteboardShapeId): PendingDraw {
   const shape = WHITEBOARD_SHAPES.find((s) => s.id === id)!;
   return { ...shape.intent, board: true } as PendingDraw;
 }
 
-// A shape, line, arrow or path as Draw mode writes it (docs/specs/007-editor/editor-modes.md "One
+// A shape, line, arrow or path as Drawing mode writes it (docs/specs/007-editor/editor-modes.md "One
 // look"): an Ink outline (and label) stored by name and no fill, written on the element so it looks
 // the same in Diagram mode and to every collaborator, at its default width until the quick style
 // panel says otherwise. Notes and text boxes keep their own colours.
@@ -97,13 +97,13 @@ export function boardShape<T extends Element>(el: T): T {
 }
 
 // On a whiteboard only a note or a text box turns a keypress into typing
-// (docs/specs/023-draw-mode/draw-mode.md "Keyboard shortcuts"): a shape just drawn stays selected,
+// (docs/specs/023-drawing-mode/drawing-mode.md "Keyboard shortcuts"): a shape just drawn stays selected,
 // and R, O, D and the rest must still pick the next tool rather than label it.
 export function whiteboardTakesTyping(el: Pick<Element, 'type'>): boolean {
   return el.type === 'sticky' || el.type === 'text';
 }
 
-// Microsoft Whiteboard's rule (docs/specs/023-draw-mode/draw-mode.md "Touch and pen input"): once a
+// Microsoft Whiteboard's rule (docs/specs/023-drawing-mode/drawing-mode.md "Touch and pen input"): once a
 // pen has been used on this device, a single finger pans rather than inks, so
 // a resting palm or a guiding finger never draws. `inking` is true while a pen,
 // the Path tool or the eraser is in hand.
@@ -115,7 +115,7 @@ export function whiteboardPointerRoute(input: {
   return input.pointerType === 'touch' && input.penSeen && input.inking ? 'pan' : 'ink';
 }
 
-// A pen stroke is picked by its drawn line, not its box (docs/specs/023-draw-mode/draw-mode.md
+// A pen stroke is picked by its drawn line, not its box (docs/specs/023-drawing-mode/drawing-mode.md
 // "Selecting"): the line catches pointers this far either side of it, in SCREEN px.
 export const STROKE_HIT_SCREEN_PX = 6;
 

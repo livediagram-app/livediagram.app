@@ -1,6 +1,6 @@
 // Loading a tab saved as `kind: 'whiteboard'` (docs/specs/007-editor/editor-modes.md "Existing
 // whiteboards"). Whiteboarding is an editor mode now, so such a tab becomes a general tab that
-// OPENS in Draw mode. Runs where stored tabs enter (./stored-tab), never in `stampTabKind`.
+// OPENS in Drawing mode. Runs where stored tabs enter (./stored-tab), never in `stampTabKind`.
 //
 // "One look": a board drew its unpainted shapes, lines and paths in the ink with no fill, as a
 // display projection. Diagram mode has no such projection, so those colours are written onto the
@@ -73,7 +73,7 @@ export function migrateWhiteboardKind<T extends Pick<Tab, 'elements' | 'backgrou
   const inked = Array.isArray(tab.elements)
     ? elements.filter((el, i) => el !== tab.elements[i]).length
     : 0;
-  console.info('[editor-mode] whiteboard tab migrated to Draw', { tabId: stored.id, inked });
+  console.info('[editor-mode] whiteboard tab migrated to Drawing', { tabId: stored.id, inked });
   return {
     ...tab,
     kind: 'diagram',

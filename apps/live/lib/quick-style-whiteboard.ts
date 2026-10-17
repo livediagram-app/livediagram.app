@@ -1,8 +1,8 @@
-// The quick style panel in Draw mode (docs/specs/023-draw-mode/draw-mode.md "The quick style panel
+// The quick style panel in Drawing mode (docs/specs/023-drawing-mode/drawing-mode.md "The quick style panel
 // stays"). Its Stroke and Text colour rows offer the stock colours, as Marker colour does: Ink and
 // the eight hued colours (each stored by name and drawn in its version for the canvas,
 // docs/specs/007-editor/editor-modes.md "One look"), then the tab's custom colours. Background keeps
-// the theme's fills, its first swatch "no fill", which is what Draw mode writes on its shapes.
+// the theme's fills, its first swatch "no fill", which is what Drawing mode writes on its shapes.
 import {
   isPenColourName,
   supportsBorderRadius,

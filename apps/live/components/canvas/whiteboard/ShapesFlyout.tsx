@@ -1,6 +1,6 @@
 'use client';
 
-// The Shapes flyout (docs/specs/023-draw-mode/draw-mode.md "What a whiteboard shows", "Shape
+// The Shapes flyout (docs/specs/023-drawing-mode/drawing-mode.md "What a whiteboard shows", "Shape
 // slots"): a search field, focused as the flyout opens (hover included), over the six slots in two
 // unlabelled rows, Recent over Most used (each row named for screen readers only). No name is
 // written under a shape: it is the entry's accessible name and its tooltip, as on every dock button. Typing replaces them with at most six of the catalogue's
@@ -33,7 +33,7 @@ export function ShapesFlyout({
 }: {
   ink: string;
   slots: ShapeSlots;
-  // A phone's pinned shapes past the bar's one, as a row above the slots (draw-mode.md "On a phone").
+  // A phone's pinned shapes past the bar's one, as a row above the slots (drawing-mode.md "On a phone").
   menuPins?: readonly WhiteboardShapeKey[];
   // Entries drag onto the bar's pinned side (not on a phone, whose bar shows one pin).
   canDrag?: boolean;

@@ -249,7 +249,7 @@ palette)` replaces `stroke` and `textColour` with `boardStroke` / `boardText`
   (text), parsed only as stock names.
 - **Telemetry** is unchanged: the row's own token, once per choice.
 
-## Corners row (Draw mode only)
+## Corners row (Drawing mode only)
 
 - `onWhiteboard` (`lib/quick-style-whiteboard.ts`, so Diagram mode never sees it) builds
   `sections.corners` (`{ value: QuickCorners | null }`) when any target takes a corner preset

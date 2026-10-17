@@ -1,6 +1,6 @@
 # Facilitate mode
 
-**Facilitate** is the fifth [editor mode](../007-editor/editor-modes.md), beside Diagram, Draw,
+**Facilitate** is the fifth [editor mode](../007-editor/editor-modes.md), beside Diagram, Drawing,
 Illustrate and Plan: how a general tab is worked on while a team runs a session on it, a
 retrospective, a town hall, a lean coffee, a workshop. It brings the tools that run a room into
 focus (timers, votes, polls, reveals, the Collaborate elements, stickers) and takes them out of
@@ -131,7 +131,7 @@ stop to draw):
 | Facilitate | Timer, Vote, Poll        |
 | Plan       | Timer, Vote              |
 | Diagram    | none                     |
-| Draw       | none (as today)          |
+| Drawing    | none (as today)          |
 | Illustrate | Vote, Poll while running |
 
 - **An event-storming board keeps all three.** It is a workshop board, always Diagram, with no
@@ -141,7 +141,7 @@ stop to draw):
   session button on it, or before the tab was switched out of Facilitate) runs as before and shows
   on its own canvas element, but its strip button and popover do not: watching turnout, ending a
   poll or keeping its results is done from Facilitate (or Plan for a timer or vote). This is the
-  same rule Draw already follows, and the price of a Diagram mode with no session chrome.
+  same rule Drawing already follows, and the price of a Diagram mode with no session chrome.
 - **Illustrate shows a running Vote or Poll only.** Nothing is started from its strip (the session
   buttons on a page do that), but once a vote or poll runs, its button and popover appear for
   everyone so it can be watched and ended, and go again when it ends. It never shows a Timer.
@@ -149,7 +149,7 @@ stop to draw):
 
 ## Templates
 
-Session templates open in Facilitate, as the Draw templates open in Draw
+Session templates open in Facilitate, as the Drawing templates open in Drawing
 ([Templates by mode](../007-editor/templates-by-mode.md)):
 
 - the Retrospectives family's `retrospective`, `start-stop-continue`, `mad-sad-glad`, `four-ls`
@@ -167,7 +167,7 @@ Session templates open in Facilitate, as the Draw templates open in Draw
   ([Virtual Office template](virtual-office-template.md)).
 
 Brainstorm mind maps stay in Diagram and the drawn warm-ups (`doodle-warmup`, `pre-mortem`,
-`idea-garden`) stay in Draw.
+`idea-garden`) stay in Drawing.
 
 **Blank Session** (kind `blank-session`) is Facilitate's blank: a general tab that opens in
 Facilitate with nothing on it, the document named "Untitled Session". It joins the blanks

@@ -1,7 +1,7 @@
 import type { Page } from '@playwright/test';
 import { dismissQuickTour, expect, expectNoPageErrors, test } from './fixtures';
 
-// docs/specs/023-draw-mode/draw-mode.md: a whiteboard shape is picked by its outline, yet a
+// docs/specs/023-drawing-mode/drawing-mode.md: a whiteboard shape is picked by its outline, yet a
 // double-click anywhere inside it writes in it, selected or not ("Selecting"); a tap with a marker
 // leaves a dot ("Pens"); and a cylinder's label grows down its body, under the lid
 // (docs/specs/008-canvas/canvas-and-palette.md "Shape primitives"). Dark mode.

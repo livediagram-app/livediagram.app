@@ -29,7 +29,7 @@ const tile = (id: string, dividerAfter = false): PaletteTileDef => ({
 });
 
 describe('the category bar', () => {
-  it('is Diagram’s, Facilitate’s and Illustrate’s strip, not Plan’s or Draw’s', () => {
+  it('is Diagram’s, Facilitate’s and Illustrate’s strip, not Plan’s or Drawing’s', () => {
     expect([...CATEGORY_BAR_MODES].sort()).toEqual(['diagram', 'facilitate', 'illustrate']);
   });
 

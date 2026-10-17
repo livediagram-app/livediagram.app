@@ -87,7 +87,7 @@ export const HELP_ARTICLES = {
   facilitateTour: 'canvas/facilitate-mode/facilitate-tour',
   // The event-storming board, its photo import review included (docs/specs/021-event-storming/event-storming.md).
   eventStormingBoards: 'canvas/event-storming-boards',
-  drawTour: 'canvas/draw-mode/draw-tour',
+  drawTour: 'canvas/drawing-mode/drawing-tour',
   avatarTour: 'selection-modes/avatar-mode/avatar-tour',
   illustrateTour: 'canvas/illustrate/illustrate-tour',
   links: 'canvas/links',
@@ -134,7 +134,7 @@ export const HELP_ARTICLES = {
   // Onboarding / empty states
   yourFirstDiagram: 'getting-started/your-first-diagram',
   templates: 'canvas/templates',
-  drawMode: 'canvas/draw-mode',
+  drawMode: 'canvas/drawing-mode',
   logoPages: 'canvas/illustrate/logo-pages',
   // Each page kind's Show Me links its own article (docs/specs/007-editor/illustrate-tour.md).
   slidePages: 'canvas/illustrate/slide-pages',
@@ -192,7 +192,7 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     description: 'What the tour shows you and how replaying works.',
   },
   drawTour: {
-    title: 'Learn about the Draw Tour',
+    title: 'Learn about the Drawing Tour',
     description: 'What the tour shows you and how replaying works.',
   },
   avatarTour: {
@@ -507,7 +507,7 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     description: 'How templates give you a themed starting point.',
   },
   drawMode: {
-    title: 'Learn about Draw mode',
+    title: 'Learn about Drawing mode',
     description: 'Switching modes, the dock, its pens and shapes, and where it sits.',
   },
   logoPages: {

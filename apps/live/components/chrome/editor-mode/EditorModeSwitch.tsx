@@ -2,7 +2,7 @@ import { useEditorModeState } from './editor-mode-context';
 import { ModeMenuChip } from './ModeMenuChip';
 
 // The mode switch (docs/specs/007-editor/editor-modes.md "The mode switch"): a dropdown chip
-// (ModeMenuChip), icon-only, beside the menu button (which stays up in Draw mode). It reads the editor's own resolved mode
+// (ModeMenuChip), icon-only, beside the menu button (which stays up in Drawing mode). It reads the editor's own resolved mode
 // (EditorModeProvider), so wherever it is placed it shows the mode the canvas is in.
 //
 // Renders nothing where no switch is offered: outside an editor, for a visitor who cannot edit,

@@ -9,7 +9,7 @@ import {
 } from './fixtures';
 
 // Editor modes end to end (docs/specs/007-editor/editor-modes.md), in dark mode: the chip beside the
-// menu button switches a general tab between Diagram and Draw, a stroke drawn in Draw stays in
+// menu button switches a general tab between Diagram and Drawing, a stroke drawn in Drawing stays in
 // Diagram, Shift+D toggles, the choice survives a reload, a new tab opens in its maker's mode,
 // a Plan board survives every switch, and the tab menu's Mode switches the tab for everyone at
 // once, with Undo switching it back. Synthesised content only.
@@ -71,7 +71,7 @@ async function openBlank(page: Page) {
   await dismissQuickTour(page);
 }
 
-async function chooseMode(page: Page, name: 'Diagram' | 'Draw' | 'Plan') {
+async function chooseMode(page: Page, name: 'Diagram' | 'Drawing' | 'Plan') {
   await chip(page).click();
   await page.getByRole('menuitemradio', { name: new RegExp(`^${name}`) }).click();
 }
@@ -127,13 +127,13 @@ test.describe('editor modes', () => {
     expectNoPageErrors(pageErrors);
   });
 
-  test('the chip switches to Draw, and a stroke drawn there stays in Diagram', async ({
+  test('the chip switches to Drawing, and a stroke drawn there stays in Diagram', async ({
     page,
     pageErrors,
   }) => {
     await openBlank(page);
-    await chooseMode(page, 'Draw');
-    await expect(chip(page)).toHaveAccessibleName('Editor mode: Draw');
+    await chooseMode(page, 'Drawing');
+    await expect(chip(page)).toHaveAccessibleName('Editor mode: Drawing');
     await expect(dock(page)).toBeVisible();
     await closeStart(page);
 
@@ -148,7 +148,7 @@ test.describe('editor modes', () => {
   });
 
   // Shift+D steps through the modes beside the tab's own and wraps: Plan stands apart, so a canvas tab with content
-  // cycles Diagram, Draw, Facilitate and Illustrate (docs/specs/007-editor/editor-modes.md "Plan stands apart").
+  // cycles Diagram, Drawing, Facilitate and Illustrate (docs/specs/007-editor/editor-modes.md "Plan stands apart").
   test('Shift+D moves to the next mode and wraps, and the choice survives a reload', async ({
     page,
     pageErrors,
@@ -156,12 +156,12 @@ test.describe('editor modes', () => {
     await openWithContent(page);
     await page.locator(CANVAS).click({ position: { x: 40, y: 40 } });
     await page.keyboard.press('Shift+D');
-    await expect(chip(page)).toHaveAccessibleName('Editor mode: Draw');
+    await expect(chip(page)).toHaveAccessibleName('Editor mode: Drawing');
     await expect(dock(page)).toBeVisible();
 
     await page.reload();
     await page.locator(CANVAS).waitFor();
-    await expect(chip(page)).toHaveAccessibleName('Editor mode: Draw');
+    await expect(chip(page)).toHaveAccessibleName('Editor mode: Drawing');
 
     await page.keyboard.press('Shift+D');
     await expect(chip(page)).toHaveAccessibleName('Editor mode: Facilitate');
@@ -200,10 +200,10 @@ test.describe('editor modes', () => {
   // docs/specs/007-editor/editor-modes.md "A new tab opens in the mode it was made from".
   test('a new tab opens in the mode it was made from', async ({ page, pageErrors }) => {
     await openBlank(page);
-    await chooseMode(page, 'Draw');
+    await chooseMode(page, 'Drawing');
     await page.getByRole('button', { name: 'Add tab' }).click();
     await expect(page.locator('[data-editor-tabbar]').getByText('Tab 2')).toBeVisible();
-    await expect(chip(page)).toHaveAccessibleName('Editor mode: Draw');
+    await expect(chip(page)).toHaveAccessibleName('Editor mode: Drawing');
     // On its mode's own start, with no Quick Start over it.
     await expect(page.getByRole('region', { name: 'Start Drawing' })).toBeVisible();
     expectNoPageErrors(pageErrors);
@@ -229,12 +229,15 @@ test.describe('editor modes', () => {
     // The Tab menu is a control menu, so each mode is a toggle button (docs/specs/004-interface-design/menus.md); they sit
     // in its Mode section, closed until opened.
     await page.getByRole('button', { name: /^Mode/ }).click();
-    await page.getByRole('group', { name: 'Mode' }).getByRole('button', { name: /^Draw/ }).click();
+    await page
+      .getByRole('group', { name: 'Mode' })
+      .getByRole('button', { name: /^Drawing/ })
+      .click();
     await page.keyboard.press('Escape');
-    await expect(chip(page)).toHaveAccessibleName('Editor mode: Draw');
+    await expect(chip(page)).toHaveAccessibleName('Editor mode: Drawing');
     await expect.poll(() => savedOpensIn(page), { timeout: 15_000 }).toBe('draw');
     // The other window follows the tab, live.
-    await expect(chip(other)).toHaveAccessibleName('Editor mode: Draw', { timeout: 15_000 });
+    await expect(chip(other)).toHaveAccessibleName('Editor mode: Drawing', { timeout: 15_000 });
 
     await page.locator(CANVAS).click({ position: { x: 40, y: 40 } });
     await page.keyboard.press('ControlOrMeta+z');
@@ -244,10 +247,10 @@ test.describe('editor modes', () => {
     expectNoPageErrors(pageErrors);
   });
 
-  // A Draw tool in hand never takes the press meant for the switch.
+  // A Drawing tool in hand never takes the press meant for the switch.
   test('switches back to Diagram with a marker in hand', async ({ page, pageErrors }) => {
     await openBlank(page);
-    await chooseMode(page, 'Draw');
+    await chooseMode(page, 'Drawing');
     await dock(page)
       .getByRole('button', { name: /^Marker 2/ })
       .click();

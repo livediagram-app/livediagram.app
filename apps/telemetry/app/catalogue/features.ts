@@ -212,31 +212,31 @@ export const PHOTO_IMPORT: MetricStack = {
   headline: PHOTOS_IMPORTED,
 };
 
-// Draw mode (docs/specs/023-draw-mode/draw-mode.md): Whiteboard tabs made, and which of the dock's
+// Drawing mode (docs/specs/023-drawing-mode/drawing-mode.md): Whiteboard tabs made, and which of the dock's
 // choices people reach for. Headed by the boards made; the rest are settings.
 export const WHITEBOARDS_CREATED = chart(
-  'Draw',
+  'Drawing',
   'Created',
   'Whiteboards Created',
   'A whiteboard tab made, from the New Document wizard or as a new tab.',
 );
 
 export const WHITEBOARD_PENS = chart(
-  'Draw',
+  'Drawing',
   'Selected',
   'Pens Picked',
   'A whiteboard pen picked up: the main, second or third pen.',
 );
 
 export const WHITEBOARD_SETTINGS = chart(
-  'Draw',
+  'Drawing',
   'Changed',
   'Pens, Eraser and Background',
   "A whiteboard pen's colour or width, the eraser mode or the board background changed.",
 );
 
 export const WHITEBOARD_RECOGNITION = chart(
-  'Draw',
+  'Drawing',
   'Toggled',
   'Shape Recognition',
   'Shape recognition switched on or off on a whiteboard.',
@@ -248,7 +248,7 @@ export const EDITOR_MODE_SWITCHES = chart(
   'Changed',
   'Editor Mode Switches',
   'A tab switched to another editor mode by the person working on it.',
-  { types: ['ModeDiagram', 'ModeDraw', 'ModeIllustrate', 'ModePlan', 'ModeFacilitate'] },
+  { types: ['ModeDiagram', 'ModeDrawing', 'ModeIllustrate', 'ModePlan', 'ModeFacilitate'] },
 );
 
 // The mode a tab opens in, set from the tab menu's Opens in (docs/specs/007-editor/editor-modes.md).
@@ -256,7 +256,7 @@ export const TAB_OPENS_IN = chart(
   'Tab',
   'Changed',
   'Opening Modes Set',
-  'A tab set to open in Diagram, Draw or Illustrate mode for everyone, from the tab menu.',
+  'A tab set to open in Diagram, Drawing or Illustrate mode for everyone, from the tab menu.',
   { types: ['OpensInDiagram', 'OpensInDraw', 'OpensInIllustrate', 'OpensInPlan'] },
 );
 
@@ -395,12 +395,12 @@ export const ILLUSTRATE_PAGE_BUILDING = chart(
 );
 
 // Leaving Illustrate past the pages warning (docs/specs/007-editor/editor-modes.md "Leaving
-// Illustrate"): how often people go on to Diagram or Draw once told their pages will not show.
+// Illustrate"): how often people go on to Diagram or Drawing once told their pages will not show.
 export const LEAVE_ILLUSTRATE_CONFIRMED = chart(
   'Editor',
   'Changed',
   'Illustrate Left Past the Warning',
-  'Someone switched an Illustrate tab with pages to Diagram or Draw after the warning that its pages do not show there.',
+  'Someone switched an Illustrate tab with pages to Diagram or Drawing after the warning that its pages do not show there.',
   { types: ['LeaveIllustrateConfirmed'] },
 );
 
@@ -478,9 +478,9 @@ export const ARTICLE_LOOKS = chart(
 
 export const WHITEBOARDS: MetricStack = {
   stack: true,
-  title: 'Draw Mode',
+  title: 'Drawing Mode',
   blurb:
-    'Whiteboard tabs made, mode switches, and the pens, erasers, backgrounds and recognition people use in Draw mode.',
+    'Whiteboard tabs made, mode switches, and the pens, erasers, backgrounds and recognition people use in Drawing mode.',
   members: [
     WHITEBOARDS_CREATED,
     EDITOR_MODE_SWITCHES,
@@ -1019,11 +1019,11 @@ export const FACILITATE_TOUR_OFFERED = opened(
   (t) => t === 'FacilitateTourOffer',
 );
 
-// The Draw tour's offer (docs/specs/023-draw-mode/draw-tour.md); charted in its funnel on the Visitors tab.
+// The Drawing tour's offer (docs/specs/023-drawing-mode/drawing-tour.md); charted in its funnel on the Visitors tab.
 export const DRAW_TOUR_OFFERED = opened(
-  'Draw Tour Offered',
-  'The Draw tour offered, the first time someone works in Draw mode.',
-  (t) => t === 'DrawTourOffer',
+  'Drawing Tour Offered',
+  'The Drawing tour offered, the first time someone works in Drawing mode.',
+  (t) => t === 'DrawingTourOffer',
 );
 
 // The Forms tour's offer (docs/specs/030-forms/forms.md "The Forms tour"); charted in its funnel on the Visitors tab.

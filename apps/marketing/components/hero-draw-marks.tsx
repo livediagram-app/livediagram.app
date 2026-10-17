@@ -1,6 +1,6 @@
 import { trustedHtml } from '@livediagram/ui';
-// The hand-drawn marks the hero's Draw window is made of (components/hero-draw-board.tsx), in the
-// look Draw mode gives them (docs/specs/023-draw-mode/draw-mode.md): marker strokes that wobble and
+// The hand-drawn marks the hero's Drawing window is made of (components/hero-draw-board.tsx), in the
+// look Drawing mode gives them (docs/specs/023-drawing-mode/drawing-mode.md): marker strokes that wobble and
 // overshoot their corners, stickies on the editor's pad colours with the paper-peel shadow, the
 // hand face, and a sticker on its die-cut plate. Every path is generated from a fixed seed, so the
 // wobble is the same on every render (and in the static HTML).
@@ -10,7 +10,7 @@ import { stickerArt, type StickerDef } from '@livediagram/icons';
 import { seededRandom } from '@livediagram/document';
 import { at } from '@/components/art-tokens';
 
-// Draw mode's hand face, the self-hosted Caveat subset (app/hero-scenes/draw.css).
+// Drawing mode's hand face, the self-hosted Caveat subset (app/hero-scenes/draw.css).
 export const HAND = "'Caveat Hero', Caveat, 'Segoe Print', 'Bradley Hand', cursive";
 
 // The inks, each as stroke and fill classes for both appearances: Marker 1 is the page's ink,

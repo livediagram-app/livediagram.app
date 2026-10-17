@@ -1,6 +1,6 @@
 'use client';
 
-// Snap colours (docs/specs/023-draw-mode/draw-mode.md "Snap colours"): the board's custom colours
+// Snap colours (docs/specs/023-drawing-mode/drawing-mode.md "Snap colours"): the board's custom colours
 // that can become stock colours, and the snap itself, as one commit (one undo step).
 
 import { useMemo } from 'react';
@@ -38,7 +38,7 @@ export function useSnapColours(deps: {
     if (result.changed === 0) return 0;
     commit((els) => (els === elements ? result.elements : snapTabColours(els, inertIds).elements));
     debugLog('[snap-colours] snapped', { colours: result.colours, elements: result.changed });
-    track('Draw', 'Changed', 'SnapColours');
+    track('Drawing', 'Changed', 'SnapColours');
     return result.colours;
   };
 

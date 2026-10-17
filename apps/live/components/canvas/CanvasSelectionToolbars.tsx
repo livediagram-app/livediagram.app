@@ -148,7 +148,7 @@ export function CanvasSelectionToolbars({
                 : undefined
             }
             hasText={selected ? elementHasText(selected) : false}
-            // A path's points (docs/specs/023-draw-mode/path-tool.md "Editing"): its edit mode, the
+            // A path's points (docs/specs/023-drawing-mode/path-tool.md "Editing"): its edit mode, the
             // Path tool put down first when it is still in hand.
             onEditPoints={
               // A combined shape edits as a whole (docs/specs/007-editor/logo-pages.md "Combine").

@@ -39,7 +39,7 @@ each be sized on their own (see "The setting"):
 Nothing else scales: not the canvas or its elements (the canvas has its
 own zoom), the tab bar and footer, the editor header, dialogs (Settings
 included), context menus, tooltips and hover cards, toasts, the selection
-toolbars that sit on elements. (Draw mode's dock is the strip's twin and
+toolbars that sit on elements. (Drawing mode's dock is the strip's twin and
 draws at the **toolbar** scale, its flyouts at design size.) Menus and tooltips
 opened FROM a scaled surface portal out of it, so they stay at their
 design size too.

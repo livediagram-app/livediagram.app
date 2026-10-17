@@ -9,7 +9,7 @@ default ([Surfaces](#surfaces)) are live.
 A **default folder** is where a person's new documents land when they create one without choosing
 a place. A person keeps one default per **default key**, and the key is chosen by how the new
 document opens and what it is made as: a document that opens in Diagram mode can land in "Diagrams",
-one that opens in Draw mode in "Sketches", and a retrospective in "Retros". Defaults belong to the
+one that opens in Drawing mode in "Sketches", and a retrospective in "Retros". Defaults belong to the
 person, not to a folder or a team: two teammates may send the same new documents to different places.
 
 ## Domain language
@@ -64,8 +64,8 @@ order:
 
 - **Captured once, at creation**, and never re-derived: content drawn afterwards does not move a
   document. The intent is recorded on the document ([Recorded intent](#recorded-intent)).
-  - `mode`: the editor mode the first tab opens in. `draw` for a tab that opens in Draw mode,
-    including a stored legacy `kind: 'whiteboard'` tab ([Draw mode](../023-draw-mode/draw-mode.md));
+  - `mode`: the editor mode the first tab opens in. `draw` for a tab that opens in Drawing mode,
+    including a stored legacy `kind: 'whiteboard'` tab ([Drawing mode](../023-drawing-mode/drawing-mode.md));
     `diagram` otherwise, including a document with no tab and an event-storming board.
   - `tabKind`: `event-storming` when the first tab is an
     [event-storming board](../021-event-storming/event-storming.md), read the way the document model
@@ -226,7 +226,7 @@ Each key has a label, the plural a sentence uses, and an icon, in list order:
 | Key                      | Label                 | In a sentence         | Icon                       |
 | ------------------------ | --------------------- | --------------------- | -------------------------- |
 | `mode:diagram`           | Diagrams              | diagrams              | The Diagram mode's icon    |
-| `mode:draw`              | Whiteboards           | whiteboards           | The Draw mode's icon       |
+| `mode:draw`              | Whiteboards           | whiteboards           | The Drawing mode's icon    |
 | `mode:illustrate`        | Illustrate pages      | Illustrate pages      | The Illustrate mode's icon |
 | `mode:plan`              | Plan boards           | Plan boards           | The Plan mode's icon       |
 | `mode:facilitate`        | Sessions              | sessions              | The Facilitate mode's icon |

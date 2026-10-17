@@ -195,7 +195,7 @@ export function SettingsDialog({
   // Tours › "Facilitate Tour" (docs/specs/012-collaboration/facilitate-tour.md): as Plan Tour.
   const facilitateTourSeen = settings.facilitateTourSeen === true;
   const facilitateTourSeenAtOpen = useRef(facilitateTourSeen);
-  // Tours › "Draw Tour" (docs/specs/023-draw-mode/draw-tour.md): as Plan Tour.
+  // Tours › "Drawing Tour" (docs/specs/023-drawing-mode/drawing-tour.md): as Plan Tour.
   const drawTourSeen = settings.drawTourSeen === true;
   const drawTourSeenAtOpen = useRef(drawTourSeen);
   // Tours › "Forms Tour" (docs/specs/030-forms/forms.md "The Forms tour"): as Plan Tour.

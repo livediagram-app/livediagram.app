@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { createEraseFrameReader } from './erase-frame';
 
-// docs/specs/023-draw-mode/draw-mode.md "Eraser": the brush stays under the pointer through a pan
+// docs/specs/023-drawing-mode/drawing-mode.md "Eraser": the brush stays under the pointer through a pan
 // or zoom mid-sweep.
 
 describe('createEraseFrameReader', () => {

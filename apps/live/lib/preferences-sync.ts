@@ -50,7 +50,7 @@ function entriesFreeing(sizes: readonly number[], excess: number): number {
 
 // The blob, trimmed to fit the api's cap: the oldest hidden-from-Recent ids go first (newest are
 // kept at the front, docs/specs/013-workspace/hide-from-recent.md), then the least recently used
-// shape picks (docs/specs/023-draw-mode/draw-mode.md "Shape slots"). Every other key is a choice
+// shape picks (docs/specs/023-drawing-mode/drawing-mode.md "Shape slots"). Every other key is a choice
 // the person made once and stays whole. Unchanged (the same object) when it already fits; when
 // trimming both lists cannot make it fit, the save is refused and the device copy is kept (see
 // above). Each pass drops as many entries as the excess needs and measures once, so trimming is

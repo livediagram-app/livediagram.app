@@ -1,4 +1,4 @@
-# Draw mode blueprint completeness
+# Drawing mode blueprint completeness
 
 ## whiteboard-round-one
 

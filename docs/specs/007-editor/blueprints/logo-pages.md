@@ -156,7 +156,7 @@ Exclude), **Wordmark**, **Logo Kit**.
 - The category's tab body is `PaletteLogoTab`: the non-marker tiles as `PaletteToolRows`, then
   **Markers**, each a `MarkerRow` over `PaletteToolRow` (now exported, with `onPress`, `anchor`
   and `expanded`): not held, `beginDraw({ ...whiteboardPenIntent(pen, recognise), once: true })`
-  from the model's pen; held (`markerArmed`), toggles Draw mode's `WhiteboardFlyout`
+  from the model's pen; held (`markerArmed`), toggles Drawing mode's `WhiteboardFlyout`
   (`placement: 'below'`, `scope: [data-palette-logo]`, opener `data-dock-item`
   `logo-marker-<id>`) with `PenFlyoutBody`, its `updatePen` wrapped to re-arm with the patch.
 - Alignment off a whiteboard: `isFreePenIntent(intent, whiteboard)` (`lib/draw-mode.ts`).

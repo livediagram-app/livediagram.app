@@ -1,9 +1,9 @@
 'use client';
 
 // The Logo category (docs/specs/007-editor/logo-pages.md "The Logo palette"), offered in Illustrate
-// mode while the tab has a logo page: the Pen and the Pencil, then Draw mode's three markers in this
+// mode while the tab has a logo page: the Pen and the Pencil, then Drawing mode's three markers in this
 // person's colours and widths. A marker is picked up for one stroke; pressed again while held, it
-// opens Draw mode's own flyout for it (colour and width), whose changes re-arm it at once.
+// opens Drawing mode's own flyout for it (colour and width), whose changes re-arm it at once.
 import { useContext, useState } from 'react';
 import { EditorContext } from '@/app/document/[id]/EditorContext';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
@@ -21,7 +21,7 @@ import { PaletteToolRow, PaletteToolRows } from './PaletteToolRows';
 // The tab's own box: the markers' flyout is placed against it.
 const SCOPE = '[data-palette-logo]';
 
-/** Whether the armed tool is this marker (Draw mode's pen, picked up with its colour and width). */
+/** Whether the armed tool is this marker (Drawing mode's pen, picked up with its colour and width). */
 function markerArmed(pending: PendingDraw | null | undefined, pen: WhiteboardPen): boolean {
   return (
     pending?.type === 'freehand' &&
@@ -87,7 +87,7 @@ function MarkerRow({
   );
 }
 
-/** The Logo category's marker tiles: Draw mode's markers, for one stroke each, in the live colours
+/** The Logo category's marker tiles: Drawing mode's markers, for one stroke each, in the live colours
  *  and widths (the dock model's; outside an editor, as this browser last set them). None while the
  *  category is not offered. */
 export function useLogoMarkerTiles(on: boolean): PaletteTileDef[] {
@@ -97,7 +97,7 @@ export function useLogoMarkerTiles(on: boolean): PaletteTileDef[] {
   const prefs = editor?.whiteboardDock.prefs ?? loadWhiteboardPrefs();
   return markerTiles(prefs, surface).map((def): PaletteTileDef =>
     def.action.type === 'marker'
-      ? { ...def, action: { ...def.action, once: true }, blurb: 'Your Draw mode marker' }
+      ? { ...def, action: { ...def.action, once: true }, blurb: 'Your Drawing mode marker' }
       : def,
   );
 }

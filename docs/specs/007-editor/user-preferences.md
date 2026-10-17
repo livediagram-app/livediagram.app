@@ -50,7 +50,7 @@ PRIMARY KEY`, `prefs TEXT NOT NULL` (serialised JSON blob),
     the oldest hidden-from-Recent ids go first
     ([Hide from Recent](../013-workspace/hide-from-recent.md)), then the
     least recently used shape picks
-    ([Draw mode, Shape slots](../023-draw-mode/draw-mode.md)); every
+    ([Drawing mode, Shape slots](../023-drawing-mode/drawing-mode.md)); every
     other key stays whole. A full account measured 4,967 characters,
     past which every save was refused. A trim logs
     `[preferences] trimmed to fit dropped=<n> length=<n>`.
@@ -267,8 +267,8 @@ type UserPreferences = {
   // The Facilitate tour's seen-guard (docs/specs/012-collaboration/facilitate-tour.md), as `planTourSeen`.
   // Surfaced in Settings as Tours › "Facilitate Tour" (inverted). Missing / undefined === not seen.
   facilitateTourSeen?: boolean;
-  // The Draw tour's seen-guard (docs/specs/023-draw-mode/draw-tour.md), as `facilitateTourSeen`.
-  // Surfaced in Settings as Tours › "Draw Tour" (inverted). Missing / undefined === not seen.
+  // The Drawing tour's seen-guard (docs/specs/023-drawing-mode/drawing-tour.md), as `facilitateTourSeen`.
+  // Surfaced in Settings as Tours › "Drawing Tour" (inverted). Missing / undefined === not seen.
   drawTourSeen?: boolean;
   // The Forms tour's seen-guard (docs/specs/030-forms/forms.md "The Forms tour"), as `drawTourSeen`; Show Me Around
   // in the form's cog panel reruns it. Missing / undefined === not seen.
@@ -306,7 +306,7 @@ type UserPreferences = {
     s?: Record<1 | 2 | 3 | 4 | 5 | 6, string>;
     f?: Record<1 | 2 | 3 | 4 | 5 | 6, string>;
   }[];
-  // The whiteboard dock (../023-draw-mode/draw-mode.md "Shape slots"): up to
+  // The whiteboard dock (../023-drawing-mode/drawing-mode.md "Shape slots"): up to
   // seven pinned shape keys (unset is the default pins, an empty list an
   // emptied side), and per shape key [times picked, last picked ms] for the
   // Shapes flyout's slots, at most 20 kept. Keys outside the whiteboard's
@@ -316,7 +316,7 @@ type UserPreferences = {
   // DEAD, like `customSwatches`: the markers' Custom colours are the document's
   // (../004-interface-design/colour-picker.md). Kept because it is already stored.
   whiteboardYourColours?: string[];
-  // Where a whiteboard's dock sits (../023-draw-mode/draw-mode.md "Where the
+  // Where a whiteboard's dock sits (../023-drawing-mode/drawing-mode.md "Where the
   // dock sits"): 'top' or 'bottom'. Unset, or anything but 'bottom', is the
   // top (lib/whiteboard-dock-prefs).
   whiteboardDockPosition?: 'top' | 'bottom';
@@ -325,7 +325,7 @@ type UserPreferences = {
   // ('top'), a row along its bottom edge ('footer') or none ('off'). Unset, or anything
   // else, is Top (lib/element-indicator-style).
   elementIndicatorStyle?: 'top' | 'footer' | 'off';
-  // Draw mode's pattern, the person's own (./editor-modes.md "One look"): Plain, Dots
+  // Drawing mode's pattern, the person's own (./editor-modes.md "One look"): Plain, Dots
   // or Grid, as last chosen from the dock's Settings; never stored on a tab. Unset, or
   // anything else, is Grid (lib/whiteboard-dock-prefs).
   drawPattern?: 'blank' | 'grid' | 'graph';
@@ -405,7 +405,7 @@ Missing key === undefined === default behaviour. Concretely:
   whatever it says, so its Settings row is desktop only. Emits
   `UI`/`Toggled`/`DockButtonNames{On,Off}`.
 - `drawPattern` undefined → Grid (`graph`) behind every tab the person works
-  on in Draw mode. The dock's Background row writes it; it emits the same
+  on in Drawing mode. The dock's Background row writes it; it emits the same
   Background events as before and changes nothing on the tab.
 - `alignmentGuides` undefined → guides on (the default). Setting it
   to `false` hides the faint guide lines during a move / resize; the
@@ -606,7 +606,7 @@ and the dialog stays as the one complete, browsable index of them.
   element indicators; a **Mouse** section: quick-add on hover, middle-mouse
   pan; then **Power User**: power user mode, with Minimal chrome and the preset
   readout nested under it while the mode is on; with the sub-categories
-  **Draw** (dock position, Top or Bottom) and **Illustrate** (a **Pages**
+  **Drawing** (dock position, Top or Bottom) and **Illustrate** (a **Pages**
   section: Contents, Sidebar or Button; then a **Logo Pages** section: Logo Guides, with Logo Guide Strength and the Guides Shown chips
   nested under it) and **Presenting** (the presenter settings: Slides, Playback and While Presenting,
   [Presentation mode](../012-collaboration/presentation-mode.md) "Presenter settings")), **Appearance** (theme, then an **Interface** section:
@@ -646,13 +646,13 @@ and the dialog stays as the one complete, browsable index of them.
 
   A category can hold **sub-categories** (`parent` on the sub-category's
   spec). **Editor** holds one per editor mode whose settings apply only to
-  that mode ([Editor modes](editor-modes.md)): **Draw** holds Dock Position,
-  since only Draw mode has a dock; **Illustrate** holds Contents and the logo
+  that mode ([Editor modes](editor-modes.md)): **Drawing** holds Dock Position,
+  since only Drawing mode has a dock; **Illustrate** holds Contents and the logo
   guides. A setting that applies in both modes
   stays on Editor itself; quick-add on hover, alignment guides, auto-attach
   arrows, middle-mouse pan and power user mode all act in both. There is no
   **Diagram** sub-category while no setting applies only to Diagram mode: a
-  category with no rows is never shown, and one is added beside Draw the day
+  category with no rows is never shown, and one is added beside Drawing the day
   a Diagram-only setting lands. **Account** holds **Notifications** and
   **API Tokens**: both belong to the person rather than the editor. Their
   category ids (`notifications`, `tokens`) predate the nesting and are
@@ -690,11 +690,11 @@ and the dialog stays as the one complete, browsable index of them.
   sub-category carries a plain 16px glyph rather than a tile: its panel's own
   mark in the editor (Lucide layers for Layers, the Collaborate button's
   glyph; the Map and Quick Style, which have no
-  toolbar button, take Lucide map and Lucide palette; Draw takes the
-  marker the editor mode switch shows for Draw mode; Notifications and
+  toolbar button, take Lucide map and Lucide palette; Drawing takes the
+  marker the editor mode switch shows for Drawing mode; Notifications and
   API Tokens keep the bell and key they carried as top-level tiles). Search matches a
   sub-category's rows on its parent's name too, and the canvas search names
-  it by path ("in Panels › Layers", "in Editor › Draw", "in Account ›
+  it by path ("in Panels › Layers", "in Editor › Drawing", "in Account ›
   API Tokens").
 
   Within a category, rows carry an optional **`section`** so a category
@@ -765,7 +765,7 @@ and the dialog stays as the one complete, browsable index of them.
   and read as broken.
 
   **Tours** is a category of its own: one switch per guided tour, **Diagram
-  Tour**, **Plan Tour**, **Facilitate Tour**, **Draw Tour**, **Avatar Tour** and
+  Tour**, **Plan Tour**, **Facilitate Tour**, **Drawing Tour**, **Avatar Tour** and
   **Illustrate Tour**, each with a line saying where it offers itself and a **Learn more**
   to its article, under one **Offer Again** section note: each tour offers
   itself once; switch one back on and close Settings to take it again, straight
@@ -787,8 +787,8 @@ and the dialog stays as the one complete, browsable index of them.
   track (`planTourTracks`), on forgetting them; it needs no handoff flag (the Plan tour offers itself in
   Plan once a board or Sheet is open), so closing the dialog only reruns it, when it was turned on from off
   ([Plan tour](../026-plan/plan-tour.md)). **Facilitate Tour** works the same way against
-  `facilitateTourSeen` ([Facilitate tour](../012-collaboration/facilitate-tour.md)), **Draw Tour** against
-  `drawTourSeen` ([Draw tour](../023-draw-mode/draw-tour.md)), **Forms Tour** against `formTourSeen` ([Forms](../030-forms/forms.md) "The Forms tour"), **Avatar Tour** against `avatarTourSeen`
+  `facilitateTourSeen` ([Facilitate tour](../012-collaboration/facilitate-tour.md)), **Drawing Tour** against
+  `drawTourSeen` ([Drawing tour](../023-drawing-mode/drawing-tour.md)), **Forms Tour** against `formTourSeen` ([Forms](../030-forms/forms.md) "The Forms tour"), **Avatar Tour** against `avatarTourSeen`
   ([Avatar tour](../008-canvas/avatar-tour.md)), and **Illustrate Tour** is built as Plan Tour is
   ([Illustrate tour](illustrate-tour.md)), one track per page kind: `illustrateTourKinds` lists the kinds answered.
   A multi-track tour's old single flag (`planTourSeen`, `illustrateTourSeen`) counts every track only while Power

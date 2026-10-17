@@ -34,7 +34,7 @@ items: columns, cards and the work moving through them' }`; `hasPlanLook(mode)`.
 - `PLAN` layout: `plan-cards`, `plan-boards`, landing on `plan-cards`; no Popular. The Cards body is
   `PalettePlanCardsTab` (the document's types, then Edit Cards); the Toolbar strip draws the same tiles and ends
   with `EditCardsStripButton`. Both call `openCardTypes()` (`hooks/plan/card-types-opener.ts`), which
-  `useCardTypesOpener` in `CanvasChrome` registers against the Card Types cluster button. Draw's shape dock excludes both categories.
+  `useCardTypesOpener` in `CanvasChrome` registers against the Card Types cluster button. Drawing's shape dock excludes both categories.
 - Card tiles no board takes: `cardTypesTakenOnTab(setups)` (`packages/items/src/board-card-types.ts`) reads the
   open tab's board set-ups (`normaliseBoardSetup`) to `{ kind: 'none' }` (no board), `{ kind: 'all' }` (a
   non-Archive board naming no Card Types) or `{ kind: 'some', types }` (the union of the non-Archive boards'

@@ -20,15 +20,15 @@ import { useStartPanelOpen } from '@/components/start/start-panel-open';
 export const OFFER_DELAY_MS = 800;
 
 const DRAW_TOUR_COPY = {
-  welcomeEyebrow: 'Draw tour',
-  helpHref: '/help/canvas/draw-mode/',
+  welcomeEyebrow: 'Drawing tour',
+  helpHref: '/help/canvas/drawing-mode/',
   finish: 'Start drawing',
 };
 
 const NO_API: DrawTourApi = {};
 
-// Orchestrates the Draw tour (docs/specs/023-draw-mode/draw-tour.md). Mounted once in
-// EditorView beside TourHost; renders nothing until a person who has not seen it is in Draw mode with an
+// Orchestrates the Drawing tour (docs/specs/023-drawing-mode/drawing-tour.md). Mounted once in
+// EditorView beside TourHost; renders nothing until a person who has not seen it is in Drawing mode with an
 // editor they can use, no other tour is on screen and the settle delay has passed, or the Settings row asks
 // for a rerun. Mirrors FacilitateTourHost. It places nothing: its steps point at the dock.
 export function DrawTourHost() {
@@ -41,7 +41,7 @@ export function DrawTourHost() {
     steps,
     apiRef,
     onStepView: (step) => track('UI', 'View', drawTourStepTelemetryType(step.id)),
-    onStart: () => track('UI', 'Started', 'DrawTour'),
+    onStart: () => track('UI', 'Started', 'DrawingTour'),
     onFinish: (outcome) => endTour(outcome),
   });
   const { active } = engine;
@@ -58,7 +58,7 @@ export function DrawTourHost() {
   const inDraw = ctx.editorMode.mode === 'draw';
   const seen = ctx.userPreferences?.drawTourSeen === true;
   // Held like the other tours while a start panel is on screen (docs/specs/007-editor/start-diagramming.md "The tours
-  // wait"); Draw has none of its own, so this only matters mid-switch.
+  // wait"); Drawing has none of its own, so this only matters mid-switch.
   const startPanelOpen = useStartPanelOpen();
   const canWork =
     ctx.hydrated &&
@@ -70,7 +70,7 @@ export function DrawTourHost() {
     !ctx.embedMode &&
     ctx.activeTab.locked !== true;
 
-  // Armed on entering Draw (or mounting in it), and by a relaunch; disarmed on leaving it or once
+  // Armed on entering Drawing (or mounting in it), and by a relaunch; disarmed on leaving it or once
   // offered. Adjusted during render when the mode changes.
   const [armed, setArmed] = useState(false);
   const [wasIn, setWasIn] = useState(false);
@@ -90,13 +90,14 @@ export function DrawTourHost() {
     ctx.setUserPreferences(next);
     ctx.writeUserPreferences(next, ctx.selfParticipant?.id ?? null);
     debugLog('[draw-tour] end', { outcome });
-    if (outcome === 'declined') track('UI', 'Closed', 'DrawTourOffer');
-    else track('UI', 'Ended', outcome === 'completed' ? 'DrawTourCompleted' : 'DrawTourSkipped');
+    if (outcome === 'declined') track('UI', 'Closed', 'DrawingTourOffer');
+    else
+      track('UI', 'Ended', outcome === 'completed' ? 'DrawingTourCompleted' : 'DrawingTourSkipped');
   };
   const endTourRef = useLatest(endTour);
   const engineRef = useLatest(engine);
 
-  // The offer: armed, in Draw, usable, not seen, and no other tour on screen. Another tour ending
+  // The offer: armed, in Drawing, usable, not seen, and no other tour on screen. Another tour ending
   // re-renders this through useActiveTour, so this tour follows it.
   useEffect(() => {
     if (!armed || active || seen) return;
@@ -105,13 +106,13 @@ export function DrawTourHost() {
       setArmed(false);
       debugLog('[draw-tour] offer');
       engineRef.current.start();
-      track('UI', 'Opened', 'DrawTourOffer');
+      track('UI', 'Opened', 'DrawingTourOffer');
     }, OFFER_DELAY_MS);
     return () => clearTimeout(t);
   }, [armed, active, seen, inDraw, canWork, otherTour, modalOpen, engineRef]);
 
-  // Settings rerun (the Tours › "Draw Tour" row, turned on from off + closed): offers again in
-  // Draw, and otherwise the next time the person enters it (the row has cleared the preference).
+  // Settings rerun (the Tours › "Drawing Tour" row, turned on from off + closed): offers again in
+  // Drawing, and otherwise the next time the person enters it (the row has cleared the preference).
   const inDrawRef = useLatest(inDraw);
   useEffect(() => {
     const onRelaunch = () => {
@@ -121,7 +122,7 @@ export function DrawTourHost() {
     return () => window.removeEventListener(DRAW_TOUR_RELAUNCH_EVENT, onRelaunch);
   }, [inDrawRef]);
 
-  // Ends as skipped when the tour can no longer run where it started: edit rights gone, Draw left,
+  // Ends as skipped when the tour can no longer run where it started: edit rights gone, Drawing left,
   // or another tab opened.
   const activeId = ctx.activeTab.id;
   const startedOnRef = useRef<string | null>(null);
@@ -142,7 +143,7 @@ export function DrawTourHost() {
   return (
     <TourStage
       engine={engine}
-      ariaPrefix="Draw tour"
+      ariaPrefix="Drawing tour"
       copy={DRAW_TOUR_COPY}
       welcomeArt={<DrawTourArt />}
     />

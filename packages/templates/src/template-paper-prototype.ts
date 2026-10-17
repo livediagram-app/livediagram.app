@@ -1,4 +1,4 @@
-// Paper Prototype (docs/specs/007-editor/templates-by-mode.md "Draw templates"): an app sketched
+// Paper Prototype (docs/specs/007-editor/templates-by-mode.md "Drawing templates"): an app sketched
 // before anyone builds it, the way a designer draws one on paper to put in front of users.
 // Sprout, a made-up plant-watering app, in three hand-drawn phone screens: the plant list, one
 // plant's detail and the reminder it sets. The UI is lo-fi marker work (boxes, scribbled copy,

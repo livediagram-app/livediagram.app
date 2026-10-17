@@ -377,7 +377,7 @@ export function EditorCanvasHost() {
   } = useEditorContext();
   // A pointer note's tip handle (docs/specs/009-elements/pointer-note.md).
   const { setPointerTip } = usePointerNoteSetters(commitElements, activeTab.elements);
-  // The viewer's editor mode (docs/specs/007-editor/editor-modes.md): Draw brings the dock and its
+  // The viewer's editor mode (docs/specs/007-editor/editor-modes.md): Drawing brings the dock and its
   // rules into focus; the board look keys on it through hasBoardLook.
   const drawMode = editorMode.mode === 'draw';
   // A shape dragged from My shapes (docs/specs/013-workspace/shape-libraries.md): resolved against the

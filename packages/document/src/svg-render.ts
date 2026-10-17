@@ -248,7 +248,7 @@ function svgBoxedFace(source: BoxedElement, opts: BoxedExportOptions): string {
     return `<g${opAttr}${rotAttr}>${svgFreehandShape(el, shape.stroke, shape.fill)}</g>`;
   }
   if (el.type === 'path' && shape.kind === 'rect') {
-    // The path's own curve (docs/specs/023-draw-mode/path-tool.md "Export").
+    // The path's own curve (docs/specs/023-drawing-mode/path-tool.md "Export").
     return `<g${opAttr}${rotAttr}>${svgPathElementShape(el, shape.stroke, shape.fill)}</g>`;
   }
   if (el.type === 'shape' && el.shape === 'code-block') {

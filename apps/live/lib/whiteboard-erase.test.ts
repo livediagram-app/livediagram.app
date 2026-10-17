@@ -116,7 +116,7 @@ describe('partialEraseStep', () => {
   });
 });
 
-describe('pathsTouched (docs/specs/023-draw-mode/path-tool.md "Selecting and erasing")', () => {
+describe('pathsTouched (docs/specs/023-drawing-mode/path-tool.md "Selecting and erasing")', () => {
   const path = (id: string, y: number, over: Partial<PathElement> = {}): PathElement => ({
     ...createPath(
       [

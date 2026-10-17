@@ -81,7 +81,7 @@ export function ToolbarSearchPanel({
   const [query, setQuery] = useState('');
   const [othersOpen, setOthersOpen] = useState(false);
   const [unavailableOpen, setUnavailableOpen] = useState(false);
-  // Draw mode's markers as this browser last set them, read once per opening.
+  // Drawing mode's markers as this browser last set them, read once per opening.
   const [pens] = useState(loadWhiteboardPrefs);
   const surface = useCanvasSurface();
   // Icons, Stickers and Technology load as a chunk of their own: re-rendered when it lands.

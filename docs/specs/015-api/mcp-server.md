@@ -759,7 +759,7 @@ with the points packed inside it ([Stroke points](../006-document/stroke-points.
 the MCP takes the box from the points and packs them through the stored-tab migration, before the element is
 checked, on every element path (`freehand-points.ts`), and an ops update giving a stroke new `points` sets its new box and block together, where a bare `points` field would have emptied the stroke. Points it cannot draw (none, more than
 `MAX_FREEHAND_POINTS`, or not number pairs) are refused naming the element. The format says a hand-drawn board
-starts from the `whiteboard` template, a tab in Draw mode, and that any box may carry a small `rotation`.
+starts from the `whiteboard` template, a tab in Drawing mode, and that any box may carry a small `rotation`.
 
 **Found by search.** A client that searches tools by text finds a tool by its name, description and schema, and
 ranks long ones down or leaves the largest out. So `create_document` leads with what it makes (a slide deck among

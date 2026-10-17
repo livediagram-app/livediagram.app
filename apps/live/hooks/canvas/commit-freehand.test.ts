@@ -130,7 +130,7 @@ describe('a whiteboard pen stroke', () => {
     expect(s.setSelectedId).not.toHaveBeenCalled();
   });
 
-  // docs/specs/023-draw-mode/draw-mode.md "Pens": a tap with a pen leaves a dot.
+  // docs/specs/023-drawing-mode/drawing-mode.md "Pens": a tap with a pen leaves a dot.
   it('lands a tap as a dot: a one-point stroke in the pen, with the pen kept in hand', () => {
     const s = setup(pen({ colour: 'blue' }));
     s.commit([{ x: 40, y: 60 }], false, { pressures: [0.7], streamline: 0.5 });
@@ -172,7 +172,7 @@ describe('a whiteboard pen stroke', () => {
     expect(s.setPendingDraw).not.toHaveBeenCalledWith(null);
   });
 
-  // docs/specs/007-editor/editor-modes.md "One look": a shape made in Draw mode is written in Ink.
+  // docs/specs/007-editor/editor-modes.md "One look": a shape made in Drawing mode is written in Ink.
   it('writes a main-pen shape in Ink by name', () => {
     const s = setup(pen({ recognise: true }));
     s.commit(loop, false);

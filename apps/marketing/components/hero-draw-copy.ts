@@ -1,4 +1,4 @@
-// Every word the hero's Draw window writes (components/hero-draw-board.tsx), in one place, because
+// Every word the hero's Drawing window writes (components/hero-draw-board.tsx), in one place, because
 // it is all set in a hand face self-hosted as a subset: public/fonts/caveat-hero.woff2 holds only
 // the glyphs in HAND_GLYPHS, so a word that needs another glyph would fall back to a system face.
 // hero-draw-copy.test.ts keeps the two in step. To regenerate the subset after changing the copy,

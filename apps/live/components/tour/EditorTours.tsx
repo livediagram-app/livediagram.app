@@ -23,7 +23,7 @@ const FormTourHost = dynamic(
   () => import('@/components/tour/FormTourHost').then((m) => m.FormTourHost),
   { ssr: false },
 );
-// The Draw tour (docs/specs/023-draw-mode/draw-tour.md): the same, the first time the person enters Draw.
+// The Drawing tour (docs/specs/023-drawing-mode/drawing-tour.md): the same, the first time the person enters Drawing.
 const DrawTourHost = dynamic(
   () => import('@/components/tour/DrawTourHost').then((m) => m.DrawTourHost),
   { ssr: false },

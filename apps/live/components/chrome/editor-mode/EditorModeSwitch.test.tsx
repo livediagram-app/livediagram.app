@@ -71,7 +71,7 @@ describe('EditorModeSwitch chip', () => {
     const rows = screen.getAllByRole('menuitemradio');
     expect(rows.map((row) => row.textContent)).toEqual([
       expect.stringMatching(/^Diagram/),
-      expect.stringMatching(/^Draw/),
+      expect.stringMatching(/^Drawing/),
       expect.stringMatching(/^Facilitate/),
       expect.stringMatching(/^Illustrate/),
       expect.stringMatching(/^Plan/),
@@ -104,7 +104,7 @@ describe('EditorModeSwitch chip', () => {
     fireEvent.click(chip());
     const preview = () => document.querySelector('[data-mode-preview]')!;
     expect(preview().textContent).not.toContain('⇧D');
-    fireEvent.pointerEnter(screen.getByRole('menuitemradio', { name: /^Draw/ }));
+    fireEvent.pointerEnter(screen.getByRole('menuitemradio', { name: /^Drawing/ }));
     expect(preview().textContent).toContain('⇧D');
   });
 
@@ -138,7 +138,7 @@ describe('EditorModeSwitch chip', () => {
   });
 
   it.each([
-    ['diagram', 'Draw', 'draw'],
+    ['diagram', 'Drawing', 'draw'],
     ['draw', 'Diagram', 'diagram'],
   ] as const)('from %s, choosing %s switches, closes and refocuses the chip', (from, row, to) => {
     const { onChange } = renderSwitch(from);
@@ -242,7 +242,7 @@ describe('EditorModeSwitch in the editor', () => {
 
   it("shows the tab's mode, and switches the tab from the menu", () => {
     render(<Host tab={freshTab({ opensIn: 'draw' })} />);
-    expect(chip().getAttribute('aria-label')).toBe('Editor mode: Draw');
+    expect(chip().getAttribute('aria-label')).toBe('Editor mode: Drawing');
     fireEvent.click(chip());
     fireEvent.click(screen.getByRole('menuitemradio', { name: /^Diagram/ }));
     expect(chip().getAttribute('aria-label')).toBe('Editor mode: Diagram');
@@ -306,7 +306,7 @@ describe('EditorModeSwitch and Plan', () => {
   it('still switches between the other modes', () => {
     const { onChange } = renderSwitch('diagram', { newTabIn: vi.fn() });
     fireEvent.click(chip());
-    fireEvent.click(screen.getByRole('menuitemradio', { name: /Draw/ }));
+    fireEvent.click(screen.getByRole('menuitemradio', { name: /Drawing/ }));
     expect(onChange).toHaveBeenCalledWith('draw');
   });
 });
@@ -334,7 +334,7 @@ describe('EditorModeSwitch for a session that cannot add tabs', () => {
     expect(screen.getByRole('menuitemradio', { name: /Plan/ }).getAttribute('aria-disabled')).toBe(
       'true',
     );
-    fireEvent.click(screen.getByRole('menuitemradio', { name: /Draw/ }));
+    fireEvent.click(screen.getByRole('menuitemradio', { name: /Drawing/ }));
     expect(onChange).toHaveBeenCalledWith('draw');
   });
 });

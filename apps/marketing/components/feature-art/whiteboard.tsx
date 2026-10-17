@@ -1,5 +1,5 @@
 // Feature art for the Whiteboard category (docs/specs/019-marketing/marketing-site.md,
-// docs/specs/023-draw-mode/draw-mode.md): Draw mode's three markers, a pressure-sensitive pen,
+// docs/specs/023-drawing-mode/drawing-mode.md): Drawing mode's three markers, a pressure-sensitive pen,
 // and the two erasers (the Path tool and palm rejection are in ./whiteboard-pen). Each is a finished little board at rest;
 // the fa-f-* loops only draw the strokes on and move the hands (mode-parts.tsx).
 
@@ -13,7 +13,7 @@ const STICKY_INK = '#422006';
 // Ink is the canvas's text colour: near-black on a light board, near-white on a dark one.
 const INK_STROKE = 'stroke-(--art-text)';
 
-// A marker as the Draw tools show it: a slanted body with its colour at the tip.
+// A marker as the Drawing tools show it: a slanted body with its colour at the tip.
 function MarkerGlyph({
   x,
   y,
@@ -91,7 +91,7 @@ export function MarkersArt() {
   ];
   return (
     <Stage>
-      {/* The Draw tools: the three markers (Marker 2 in hand) and the widths, Fine to Broad. */}
+      {/* The Drawing tools: the three markers (Marker 2 in hand) and the widths, Fine to Broad. */}
       <ToolStrip x={92} y={4} w={116}>
         {markers.map((m, i) => (
           <g key={m.key}>

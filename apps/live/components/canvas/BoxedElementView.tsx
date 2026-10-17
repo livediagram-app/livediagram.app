@@ -304,7 +304,7 @@ function BoxedElementViewImpl({
   // the theme default stroke. Shared by the ProgressView / RailView / RatingView
   // branches below so they all read the same accent.
   const accent = remoteBorderColor ?? own.stroke ?? defaultStrokeColor(element, surface);
-  // A path in its edit mode shows its nodes, not its box (docs/specs/023-draw-mode/path-tool.md).
+  // A path in its edit mode shows its nodes, not its box (docs/specs/023-drawing-mode/path-tool.md).
   const ringed = isSelected && !(element.type === 'path' && isEditing);
   const variant = describeVariant(
     element,
@@ -315,7 +315,7 @@ function BoxedElementViewImpl({
     finish,
   );
   // A whiteboard pen stroke and a path are picked by their drawn line, not their box
-  // (docs/specs/023-draw-mode/draw-mode.md "Selecting", path-tool.md "Selecting and erasing");
+  // (docs/specs/023-drawing-mode/drawing-mode.md "Selecting", path-tool.md "Selecting and erasing");
   // once selected, the box drags either as any element, and the line still catches pointers
   // outside the box, so a press on its outer half never falls to the board.
   const selected = isSelected || isMultiSelected;

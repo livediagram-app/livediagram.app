@@ -48,7 +48,7 @@ describe('adding a tab', () => {
     expect(add('diagram').added.opensIn).toBeUndefined();
   });
 
-  it('from Illustrate, Draw or Facilitate, opens in that same mode on its own start', () => {
+  it('from Illustrate, Drawing or Facilitate, opens in that same mode on its own start', () => {
     for (const mode of ['illustrate', 'draw', 'facilitate'] as const)
       expect(add(mode).added.opensIn).toBe(mode);
   });

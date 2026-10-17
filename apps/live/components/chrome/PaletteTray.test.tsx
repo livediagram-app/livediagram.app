@@ -107,7 +107,7 @@ describe('the palette tray', () => {
     expect(document.querySelector('[data-palette-tray]')).toBeNull();
   });
 
-  // docs/specs/007-editor/start-diagramming.md "Bringing it back": an empty Draw tab's pill stands clear of the dock,
+  // docs/specs/007-editor/start-diagramming.md "Bringing it back": an empty Drawing tab's pill stands clear of the dock,
   // which mounts a beat after the pill asks where it is. Only a resize measured it again, so the pill kept its no-dock
   // place and sat on the dock's tools.
   it('measures a toolbar that arrives after it was first asked for', async () => {

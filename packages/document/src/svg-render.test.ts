@@ -348,7 +348,7 @@ describe('renderElementsToSvg', () => {
 
   describe('freehand + silhouettes + rotation', () => {
     it('exports a whiteboard pen stroke as the canvas draws it: the filled pressure outline', () => {
-      // docs/specs/023-draw-mode/draw-mode.md "Pens": the same function as FreehandSvg.
+      // docs/specs/023-drawing-mode/drawing-mode.md "Pens": the same function as FreehandSvg.
       const el = {
         id: 'pen',
         type: 'freehand',

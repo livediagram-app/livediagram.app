@@ -305,7 +305,7 @@ export const PALETTE_LAYOUTS = {
   facilitate: FACILITATE,
 } as const;
 
-/** The layout a mode's palette shows. Draw mode shows its own tools, so it borrows Diagram's. */
+/** The layout a mode's palette shows. Drawing mode shows its own tools, so it borrows Diagram's. */
 function paletteLayoutFor(mode: EditorMode): PaletteLayout {
   return mode === 'draw' ? DIAGRAM : PALETTE_LAYOUTS[mode];
 }

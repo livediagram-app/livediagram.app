@@ -30,7 +30,7 @@ function FlyoutTip({
   );
 }
 
-// A flyout off the dock (docs/specs/023-draw-mode/draw-mode.md "What a whiteboard shows", "Where
+// A flyout off the dock (docs/specs/023-drawing-mode/drawing-mode.md "What a whiteboard shows", "Where
 // the dock sits"): on the board side of the dock (below a dock at the top, above one at the
 // bottom), a gap away, centred on its opener and kept inside the viewport; its tip on the edge
 // facing the dock, over the opener. Pure, from screen rects and the flyout's layout size.
@@ -70,7 +70,7 @@ type Place = {
   tip: { edge: 'top' | 'bottom'; offset: number };
 };
 
-// A Draw tool's settings (a pen, the eraser, Shapes, a slot's menu, Settings). Always portalled
+// A Drawing tool's settings (a pen, the eraser, Shapes, a slot's menu, Settings). Always portalled
 // and placed in screen px from its opener, so it draws at design size whatever the toolbar UI
 // scale zooms the dock to (docs/specs/007-editor/ui-scale.md) and escapes the dock's scroll clip:
 // off the dock's board side. The dock never moves for it. Focus

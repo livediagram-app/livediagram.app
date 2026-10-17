@@ -101,7 +101,7 @@ export function BrowserChrome({ stroke }: { stroke: string }) {
 export const FREEHAND_SVG_CLASS =
   'pointer-events-none absolute inset-0 h-full w-full overflow-visible';
 
-// The invisible line that catches pointers on a stroke (docs/specs/023-draw-mode/draw-mode.md
+// The invisible line that catches pointers on a stroke (docs/specs/023-drawing-mode/drawing-mode.md
 // "Selecting"): STROKE_HIT_SCREEN_PX either side of a line `penWidth` canvas px wide, at any zoom. It is
 // the one zoom-reading part of a stroke, so a zoom re-renders it and not the ink
 // (docs/specs/008-canvas/canvas-performance.md). `trim` takes a width the line already covers.
@@ -138,7 +138,7 @@ export function FreehandSvg({
   // them through the smoothing helper. `points.length < 2` collapses
   // to an empty path; the renderer then draws nothing, which is the
   // right behaviour for a degenerate single-click "stroke".
-  // A whiteboard pen stroke (docs/specs/023-draw-mode/draw-mode.md "Pens") is ink on the board:
+  // A whiteboard pen stroke (docs/specs/023-drawing-mode/drawing-mode.md "Pens") is ink on the board:
   // the filled perfect-freehand outline of its raw points and pressures (pen-stroke.ts), in canvas
   // coordinates in a viewBox on the element's own box (penStrokeSvg), so the canvas zoom scales it
   // like everything else, identically in every browser, and the outline's numbers never depend on
@@ -161,7 +161,7 @@ export function FreehandSvg({
         ? vbPoints.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ') +
           (element.closed ? ' Z' : '')
         : catmullRomToBezierPath(vbPoints, element.closed);
-  // A recorded pen width (a whiteboard pen, docs/specs/023-draw-mode/draw-mode.md) wins over the preset.
+  // A recorded pen width (a whiteboard pen, docs/specs/023-drawing-mode/drawing-mode.md) wins over the preset.
   const widthPx =
     element.penWidth ?? BORDER_STROKE_PX[element.strokeWidth ?? DEFAULT_BORDER_STROKE];
   // Highlighter recipe (docs/specs/008-canvas/highlighter.md): the marker owns width + translucency
@@ -191,7 +191,7 @@ export function FreehandSvg({
           {anim.defs}
           <path d={outline} fill={stroke} stroke="none" {...anim.mainProps} />
           {hitPenWidth !== undefined ? (
-            // Only the drawn line picks the stroke (docs/specs/023-draw-mode/draw-mode.md "Selecting"):
+            // Only the drawn line picks the stroke (docs/specs/023-drawing-mode/drawing-mode.md "Selecting"):
             // the outline, grown by the margin either side, catches pointers.
             <StrokeHitPath
               penWidth={hitPenWidth}

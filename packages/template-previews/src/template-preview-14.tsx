@@ -15,7 +15,7 @@ import {
   pen,
 } from './sketch-preview-parts';
 
-// Group 14: the second set of Draw templates (docs/specs/007-editor/templates-by-mode.md "Draw
+// Group 14: the second set of Drawing templates (docs/specs/007-editor/templates-by-mode.md "Drawing
 // templates"), drawn like group 11: the off-white board with marker lines in its stock colours.
 // Static SVG preview tiles, one branch per TemplateKind; TemplatePreview chains the groups with ??.
 

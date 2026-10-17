@@ -209,8 +209,8 @@ const FACILITATE_TOUR_STEP_SOURCE: string[] = [
         .join('')}`,
   );
 
-// The Draw tour's steps, as drawTourStepTelemetryType makes them (apps/live draw-tour-steps.ts,
-// docs/specs/023-draw-mode/draw-tour.md). The welcome card sends no step view.
+// The Drawing tour's steps, as drawTourStepTelemetryType makes them (apps/live draw-tour-steps.ts,
+// docs/specs/023-drawing-mode/drawing-tour.md). The welcome card sends no step view.
 // The Sankey tour (docs/specs/007-editor/element-tours.md): its canvas steps, then the Flows dialog's Show Me steps
 // it runs inside the dialog (each `flows-` prefixed), then its closing card.
 const pascal = (id: string) =>
@@ -277,7 +277,7 @@ const DRAW_TOUR_STEP_SOURCE: string[] = [
   .filter((id) => id !== 'welcome')
   .map(
     (id) =>
-      `DrawTourStep${id
+      `DrawingTourStep${id
         .split('-')
         .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
         .join('')}`,
@@ -764,7 +764,7 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   'apps/live/hooks/canvas/useTextStyleSetters.ts Element·Toggled': {
     values: ['Bold', 'Italic', 'Underline', 'Strikethrough'],
   },
-  'apps/live/hooks/canvas/useWhiteboard.ts Draw·Selected': {
+  'apps/live/hooks/canvas/useWhiteboard.ts Drawing·Selected': {
     values: ['Main', 'Second', 'Third'],
     open: 'penTelemetryType: the place of the pen in the dock, never its colour',
   },

@@ -17,8 +17,8 @@ import {
   type StickyPaper,
 } from '@/components/hero-draw-marks';
 
-// The hero's Draw window (docs/specs/019-marketing/marketing-site.md "Hero"): a sprint retro drawn
-// as a sketchnote in Draw mode's marks (docs/specs/023-draw-mode/draw-mode.md), every word in the
+// The hero's Drawing window (docs/specs/019-marketing/marketing-site.md "Hero"): a sprint retro drawn
+// as a sketchnote in Drawing mode's marks (docs/specs/023-drawing-mode/drawing-mode.md), every word in the
 // hand face. A title banner is drawn and lettered, four stickies land on the editor's pad colours,
 // the highlighter swipes a line, a teammate's blue marker rings the best note (their pen riding
 // the stroke) and arrows it to a red star, "Do more of this!"; then a Shout-outs box is drawn and

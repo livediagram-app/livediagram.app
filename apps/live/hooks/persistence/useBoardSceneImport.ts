@@ -23,7 +23,7 @@ export type { BoardImportProgress, NewBoardDocument } from '@/lib/board-scene-im
 export type BoardSceneImportDeps = {
   tabs: Tab[];
   activeId: string;
-  // The viewer works on the active tab in Draw mode (docs/specs/007-editor/editor-modes.md): a
+  // The viewer works on the active tab in Drawing mode (docs/specs/007-editor/editor-modes.md): a
   // scene lands the whiteboard way.
   drawMode: boolean;
   ownerId: string;
@@ -71,7 +71,7 @@ export function useBoardSceneImport(deps: BoardSceneImportDeps) {
       elements,
       theme: active.theme,
       ...(tabPatch.backgroundColor ? { backgroundColor: tabPatch.backgroundColor } : {}),
-      // In Draw mode the tab keeps its own background unless the scene names one.
+      // In Drawing mode the tab keeps its own background unless the scene names one.
       ...(whiteboard && scene.background?.pattern
         ? { backgroundPattern: tabPatch.backgroundPattern }
         : {}),

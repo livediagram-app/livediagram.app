@@ -17,7 +17,7 @@ import type { Tab } from './index';
 
 // Editor modes (docs/specs/007-editor/editor-modes.md): how a general tab is worked on.
 describe('editor modes', () => {
-  it('are Diagram, Draw, Facilitate, Illustrate and Plan, Diagram by default', () => {
+  it('are Diagram, Drawing, Facilitate, Illustrate and Plan, Diagram by default', () => {
     expect(EDITOR_MODES).toEqual(['diagram', 'draw', 'facilitate', 'illustrate', 'plan']);
     expect(DEFAULT_EDITOR_MODE).toBe('diagram');
   });
@@ -42,7 +42,7 @@ describe('opensInOf', () => {
     expect(opensInOf(undefined)).toBe('diagram');
   });
 
-  it('reads a tab that opens in Draw', () => {
+  it('reads a tab that opens in Drawing', () => {
     expect(opensInOf({ opensIn: 'draw' })).toBe('draw');
     expect(opensInOf({ kind: 'diagram', opensIn: 'draw' })).toBe('draw');
   });
@@ -71,7 +71,7 @@ describe('editorModeSwitchable', () => {
 });
 
 describe('hasBoardLook', () => {
-  it('gives Draw mode the board look and Diagram mode none', () => {
+  it('gives Drawing mode the board look and Diagram mode none', () => {
     expect(hasBoardLook('draw')).toBe(true);
     expect(hasBoardLook('diagram')).toBe(false);
   });
@@ -83,7 +83,7 @@ describe('the editor mode catalogue', () => {
     expect(EDITOR_MODE_CATALOGUE.map((m) => m.id)).toEqual(EDITOR_MODES);
     expect(EDITOR_MODES.map(editorModeLabel)).toEqual([
       'Diagram',
-      'Draw',
+      'Drawing',
       'Facilitate',
       'Illustrate',
       'Plan',

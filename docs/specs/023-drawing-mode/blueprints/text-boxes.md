@@ -1,6 +1,6 @@
 # Text boxes: blueprint
 
-Derived from [Draw mode](../draw-mode.md) "Text boxes". The spec decides; this file adds
+Derived from [Drawing mode](../drawing-mode.md) "Text boxes". The spec decides; this file adds
 engineering precision. Defaults applied where the spec is silent are ledgered in
 [DEFAULTS.md](DEFAULTS.md) and cited as `Tn`.
 
@@ -23,7 +23,7 @@ Scope, by file:
 | `apps/live/components/canvas/useRichTextSession.ts`     | Scaled px; reports the editor node after every change                                    |
 | `apps/live/components/rich-text/useRichTextDocument.ts` | Re-sets the caret when an Enter at the end opens the empty last line                     |
 | `apps/live/components/rich-text/rich-text-dom.ts`       | `reconcileTrailingNewline` says whether it added the line; `reassertSelection`           |
-| `apps/live/lib/draw-commit.ts`                          | `buildDrawnBoxed` places a Draw mode text box through `placedTextBox`                    |
+| `apps/live/lib/draw-commit.ts`                          | `buildDrawnBoxed` places a Drawing mode text box through `placedTextBox`                 |
 | `apps/live/app/document/[id]/useSelectionEditing.ts`    | `commitLabel` hugs or removes, in the label's one commit                                 |
 | `apps/live/hooks/canvas/boxed-drag-resolve.ts`          | `resizedElement`, `TextHugResize`                                                        |
 | `apps/live/hooks/canvas/useEditorDrag.ts`               | A lone hugging text box resizes through `resizedElement`                                 |

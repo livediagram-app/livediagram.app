@@ -3,7 +3,7 @@ import { dismissQuickTour, expect, expectNoPageErrors, openStartBlank, test } fr
 
 // A swatch row never wraps and is never clipped (docs/specs/008-canvas/quick-style-panel.md "Where
 // it sits"): the panel's width counts the targets, their gaps, the padding and the border exactly.
-// Checked for a diagram's rows (the theme's seven, Ink and More colours) and Draw mode's Marker
+// Checked for a diagram's rows (the theme's seven, Ink and More colours) and Drawing mode's Marker
 // colour rows (the nine stock colours and More colours, and the tab's eight custom colours).
 
 const YOURS = [

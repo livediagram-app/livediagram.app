@@ -1,10 +1,10 @@
 'use client';
 
-// One group of the whiteboard dock (docs/specs/023-draw-mode/draw-mode.md "What a whiteboard shows"):
+// One group of the whiteboard dock (docs/specs/023-drawing-mode/drawing-mode.md "What a whiteboard shows"):
 // a run of the dock's one card, between hairlines, and its own toolbar for assistive technology, one
 // Tab stop, the arrow keys walking its buttons (the WAI-ARIA toolbar pattern). Buttons are
 // fixed-size, so nothing moves under the pointer when a tool is picked. The card, the tiles and the
-// pressed look are the Toolbar layout strip's, so Draw's tools read as the other modes' palette.
+// pressed look are the Toolbar layout strip's, so Drawing's tools read as the other modes' palette.
 
 import {
   createContext,
@@ -77,7 +77,7 @@ export function DockToolbar({
         aria-label={label}
         aria-orientation="horizontal"
         data-dock-group={group}
-        // The Draw tour's anchors (docs/specs/023-draw-mode/draw-tour.md): dock-drawing, dock-shapes, dock-settings.
+        // The Drawing tour's anchors (docs/specs/023-drawing-mode/drawing-tour.md): dock-drawing, dock-shapes, dock-settings.
         data-tour-id={`dock-${group}`}
         onKeyDown={onKeyDown}
         // A run of the dock's card (DockBody draws the card and the hairlines between groups), its items 44px-tall
@@ -99,7 +99,7 @@ type DockButtonProps = {
   pressed?: boolean;
   // An opener: aria-expanded / aria-controls for its flyout.
   controls?: { id: string; expanded: boolean };
-  // The key that picks this tool (docs/specs/023-draw-mode/draw-mode.md "Keyboard shortcuts").
+  // The key that picks this tool (docs/specs/023-drawing-mode/drawing-mode.md "Keyboard shortcuts").
   shortcut?: string;
   // A right-click (or the context-menu key) on the button.
   onContext?: (el: HTMLElement) => void;

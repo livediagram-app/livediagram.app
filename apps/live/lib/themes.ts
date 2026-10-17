@@ -101,7 +101,7 @@ export function getTheme(
 // stores. A tab whose canvas is still its scheme's own (nobody has hand-picked a colour) follows the viewer's
 // appearance instead: the scheme's light half in light chrome, its dark half in dark
 // (docs/specs/011-theme/light-and-dark.md). It is the same in both editor modes
-// (docs/specs/007-editor/editor-modes.md "One look"); a viewer's Draw pattern is laid over it by
+// (docs/specs/007-editor/editor-modes.md "One look"); a viewer's Drawing pattern is laid over it by
 // resolveViewBackdrop. Nothing is written back —
 // the document keeps whichever half was current when the scheme was applied,
 // and every other viewer resolves it to their own.

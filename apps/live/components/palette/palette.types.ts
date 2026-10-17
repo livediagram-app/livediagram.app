@@ -117,7 +117,7 @@ export type PaletteProps = {
   // Highlighter (docs/specs/008-canvas/highlighter.md): the pencil gesture with the marker
   // variant. Same one-shot arm semantics as onBeginFreehand.
   onBeginHighlighter: () => void;
-  // Picks up one of Draw mode's markers outside Draw mode (the Toolbar strip's Search,
+  // Picks up one of Drawing mode's markers outside Drawing mode (the Toolbar strip's Search,
   // docs/specs/007-editor/toolbar-layout.md "Search: every element type").
   // `once`: picked up for one stroke (a logo page's palette), else held until put down.
   onBeginMarker: (penId: import('@/lib/whiteboard-prefs').WhiteboardPenId, once?: boolean) => void;
@@ -126,7 +126,7 @@ export type PaletteProps = {
   onCancelDraw?: () => void;
   // Polygon tool (docs/specs/008-canvas/polygon-tool.md): arms the click-to-place-vertices mode.
   onBeginPolygon: () => void;
-  // The Path tool (docs/specs/023-draw-mode/path-tool.md), a logo page's Pen in the palette.
+  // The Path tool (docs/specs/023-drawing-mode/path-tool.md), a logo page's Pen in the palette.
   onBeginPath: () => void;
   // Currently-queued draw-to-size intent, or null. When set, the
   // matching palette button (shape, text, sticky, image, arrow)

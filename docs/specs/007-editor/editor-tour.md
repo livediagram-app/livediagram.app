@@ -20,7 +20,7 @@ proved the better introduction.
 ## Where it appears
 
 - **Only in Diagram mode.** The tour is offered, and runs, only while the open tab is in Diagram mode. It is
-  never offered on a Draw, Facilitate, Illustrate or Plan tab, nor on a Board, Sheet or Dashboard tab (always
+  never offered on a Drawing, Facilitate, Illustrate or Plan tab, nor on a Board, Sheet or Dashboard tab (always
   in Plan); an offer owed there waits until the person is on a Diagram tab. Leaving Diagram mid-tour
   (switching the tab's mode, or opening a tab in another mode) ends it as skipped, since its steps point at
   chrome the other modes do not show.
@@ -29,7 +29,7 @@ proved the better introduction.
   (any path: Create or Skip), the tour is owed in that browser tab. A document that opens on a Diagram tab
   shows a centred **welcome offer card** once the editor is ready, and once its start is done (a template picked
   or Start Diagramming closed, [Template starts](start-diagramming.md) "The tours wait"): **Yes** starts the tour,
-  **No** dismisses it. A document made from a Plan, Draw, Illustrate or Facilitate template does not show it
+  **No** dismisses it. A document made from a Plan, Drawing, Illustrate or Facilitate template does not show it
   there; the offer stays owed and comes the first time the person works on a Diagram tab in that browser tab.
   There is no wizard toggle; the offer IS the opt-in, and declining must be one obvious, equal-weight click.
 - **The centred cards take the keyboard.** The welcome offer and the last card are dialogs over a dimmed editor, so
@@ -51,7 +51,7 @@ proved the better introduction.
   the next time the person is on a Diagram tab. The welcome card is always step 1, on a rerun too. Finishing
   the rerun turns it off again.
 - **One tour at a time.** The [Plan tour](../026-plan/plan-tour.md), the
-  [Facilitate tour](../012-collaboration/facilitate-tour.md), the [Draw tour](../023-draw-mode/draw-tour.md) and
+  [Facilitate tour](../012-collaboration/facilitate-tour.md), the [Drawing tour](../023-drawing-mode/drawing-tour.md) and
   the [Illustrate tour](illustrate-tour.md) are this tour's siblings; while any is on screen the others wait.
   Each belongs to its own mode, so none is owed to another: the others never wait for this tour's offer, and
   this tour never carries theirs.
@@ -183,7 +183,7 @@ menu alone.
 - **The primary buttons stay readable**: their label is white or near-black, whichever contrasts more with the
   accent.
 - **The ring** around a step's target is drawn in the same accent; the dim around it is unchanged.
-- This holds for the Diagram, Plan, Facilitate, Draw and Illustrate tours and the card type editor's Show Me,
+- This holds for the Diagram, Plan, Facilitate, Drawing and Illustrate tours and the card type editor's Show Me,
   which all draw through `TourStage` and `TourPopover`.
 
 ## Share roles

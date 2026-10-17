@@ -227,7 +227,7 @@ describe('TEMPLATES catalogue', () => {
     for (const kind of ALL_KINDS) {
       const tab = buildTemplatedTab(kind, 'brand', `tab-${kind}`, 'name');
       // 'blank' and 'whiteboard' are intentionally empty (docs/specs/007-editor/new-document-route.md,
-      // docs/specs/023-draw-mode/draw-mode.md); every other kind seeds content. Either way the
+      // docs/specs/023-drawing-mode/drawing-mode.md); every other kind seeds content. Either way the
       // switch must handle the union member.
       // An article's writing is tab data, not elements (templateCanvasOverrides).
       // A blank illustration is its one empty page, which asks what it is for.
@@ -254,7 +254,7 @@ describe('TEMPLATES catalogue', () => {
 });
 
 describe('templateCanvasOverrides', () => {
-  it('makes a general tab that opens in Draw, on a Grid board', () => {
+  it('makes a general tab that opens in Drawing, on a Grid board', () => {
     // docs/specs/007-editor/editor-modes.md "Where the mode lives": the opening mode and the Grid
     // land on every creation path through here (the template, a new tab, Quick Start, the MCP
     // worker); the tab stays a general one.

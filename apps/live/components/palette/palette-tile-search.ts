@@ -217,8 +217,8 @@ export function elementTileSections({
   mode: EditorMode;
   hasImage: boolean;
   planCardTiles?: readonly PaletteTileDef[];
-  // Draw mode's markers (palette-marker-tiles): Draw has no palette layout, and the strip that
-  // searches is never shown in Draw, so they are always another mode's.
+  // Drawing mode's markers (palette-marker-tiles): Drawing has no palette layout, and the strip that
+  // searches is never shown in Drawing, so they are always another mode's.
   drawTiles?: readonly PaletteTileDef[];
 }): ElementTileSearch {
   const visible = (t: PaletteTileDef) => hasImage || !t.needsImage;

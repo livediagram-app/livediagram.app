@@ -1,4 +1,4 @@
-// A path element and its anchors (docs/specs/023-draw-mode/path-tool.md "The path element"): the
+// A path element and its anchors (docs/specs/023-drawing-mode/path-tool.md "The path element"): the
 // element stores its nodes normalised to a box that wraps the drawn curve; every gesture works on
 // anchors in canvas px and hands them back through `pathGeometry`.
 import type { PathElement, PathNode, PathPoint } from './element-types';
@@ -150,7 +150,7 @@ export function pathWorldAnchors(el: PathElement, nodes: PathNode[] = el.nodes):
 }
 
 /**
- * A continued path (docs/specs/023-draw-mode/path-tool.md "Drawing"): the same element with the
+ * A continued path (docs/specs/023-drawing-mode/path-tool.md "Drawing"): the same element with the
  * drawn anchors, which are in world px, so any rotation is already in them and none is kept.
  */
 export function continuedPath(

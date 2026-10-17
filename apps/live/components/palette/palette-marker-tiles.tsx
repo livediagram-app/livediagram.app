@@ -1,6 +1,6 @@
-// Draw mode's markers as palette tiles, for the Toolbar strip's Search in the other modes
-// (docs/specs/007-editor/toolbar-layout.md "Search: every element type"). Draw mode has no palette:
-// its pens live in the whiteboard dock (docs/specs/023-draw-mode/draw-mode.md "Pens"), each with the
+// Drawing mode's markers as palette tiles, for the Toolbar strip's Search in the other modes
+// (docs/specs/007-editor/toolbar-layout.md "Search: every element type"). Drawing mode has no palette:
+// its pens live in the whiteboard dock (docs/specs/023-drawing-mode/drawing-mode.md "Pens"), each with the
 // colour and width this person gave it. A tile here is that pen as it is now, picked up exactly as
 // the dock picks it up (onBeginMarker), so a stroke drawn from it is the dock's stroke.
 import { penColourCss, type CanvasSurface } from '@livediagram/document';
@@ -27,9 +27,9 @@ export function markerTiles(prefs: WhiteboardPrefs, surface: CanvasSurface): Pal
       toolGroup: 'draw',
       label: name,
       caption: name,
-      // "marker pen whiteboard" so the words someone brings from Draw mode find it.
-      blurb: `A whiteboard marker pen from Draw mode (${look}).`,
-      description: `${name} from Draw mode, in its colour and width (${look}). It stays in your hand until you pick another tool or press Escape.`,
+      // "marker pen whiteboard" so the words someone brings from Drawing mode find it.
+      blurb: `A whiteboard marker pen from Drawing mode (${look}).`,
+      description: `${name} from Drawing mode, in its colour and width (${look}). It stays in your hand until you pick another tool or press Escape.`,
       // Its own colour, never the theme's tint.
       noTint: true,
       action: { type: 'marker', penId: pen.id, colour: pen.colour, width: pen.width },

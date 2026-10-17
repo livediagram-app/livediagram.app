@@ -28,7 +28,7 @@ describe('presetSummaryLines', () => {
       ['Diagram Tour', 'Off', 'Tours'],
       ['Plan Tour', 'Off', 'Tours'],
       ['Facilitate Tour', 'Off', 'Tours'],
-      ['Draw Tour', 'Off', 'Tours'],
+      ['Drawing Tour', 'Off', 'Tours'],
       ['Forms Tour', 'Off', 'Tours'],
       ['Avatar Tour', 'Off', 'Tours'],
       ['Illustrate Tour', 'Off', 'Tours'],

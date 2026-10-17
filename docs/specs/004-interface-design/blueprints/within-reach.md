@@ -3,7 +3,7 @@
 Derived from [Within reach](../within-reach.md). The spec decides; this file adds engineering precision. The
 surfaces that use the rule own their own blueprints ([Explorer Home, data](../../013-workspace/blueprints/explorer-home.md),
 [Explorer Home, view](../../013-workspace/blueprints/explorer-home-view.md),
-[Whiteboard dock](../../023-draw-mode/blueprints/whiteboard-dock.md)); this one is the allocation they share.
+[Whiteboard dock](../../023-drawing-mode/blueprints/whiteboard-dock.md)); this one is the allocation they share.
 
 Scope, by file:
 

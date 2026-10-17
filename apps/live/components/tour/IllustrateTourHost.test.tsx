@@ -148,7 +148,7 @@ describe('IllustrateTourHost offer', () => {
     ['locked', { activeTab: { id: 'tab1', locked: true } }],
     ['not hydrated', { hydrated: false }],
     ['embedded', { embedMode: true }],
-    ['in Draw', { editorMode: { mode: 'draw' } }],
+    ['in Drawing', { editorMode: { mode: 'draw' } }],
     ['before the synced preferences are in', { prefsSettled: false }],
   ])('makes no offer when %s', async (_why, over) => {
     editor(over);
@@ -178,7 +178,7 @@ describe('IllustrateTourHost offer', () => {
     expect(offered()).toBe(true);
   });
 
-  it('never runs beside the Draw tour', async () => {
+  it('never runs beside the Drawing tour', async () => {
     setActiveTour('draw', true);
     editor();
     render(<IllustrateTourHost />);

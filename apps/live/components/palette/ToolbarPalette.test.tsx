@@ -578,7 +578,7 @@ describe('ToolbarPalette', () => {
       expect(openSearch().textContent).toContain('No elements on this tab yet');
     });
 
-    it("picks up Draw mode's markers from the other modes' section", () => {
+    it("picks up Drawing mode's markers from the other modes' section", () => {
       const { h } = show();
       const popover = openSearch();
       type(popover, 'marker');

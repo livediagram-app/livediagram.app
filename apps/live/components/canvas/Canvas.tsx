@@ -592,7 +592,7 @@ function CanvasView(props: CanvasProps) {
               // (flicker) with the coplanar contents above them.
               data-iso={canvasTool === 'isometric' ? '' : undefined}
               // A whiteboard pen draws wherever it presses, so nothing under it swaps
-              // the pen cursor for its own (globals.css, docs/specs/023-draw-mode/draw-mode.md "Pens").
+              // the pen cursor for its own (globals.css, docs/specs/023-drawing-mode/drawing-mode.md "Pens").
               data-pen-in-hand={
                 (pendingDraw?.type === 'freehand' && pendingDraw.variant === 'whiteboard') ||
                 pendingDraw?.type === 'path'
@@ -613,7 +613,7 @@ function CanvasView(props: CanvasProps) {
                 // translateZ stack read as real extruded height.
                 transform: `scale(${viewportZoom}) translate(${viewportOffset.x}px, ${viewportOffset.y}px)${isoFragment}`,
                 ...(canvasTool === 'isometric' ? { transformStyle: 'preserve-3d' as const } : null),
-                // Draw-mode cursor: every intent gets a custom inline-SVG
+                // Drawing-mode cursor: every intent gets a custom inline-SVG
                 // cursor (crosshair at the pointer tip plus a small glyph
                 // hinting at what's about to land). Without this, tool
                 // intents inherited the default arrow cursor because the
@@ -710,7 +710,7 @@ function CanvasView(props: CanvasProps) {
               {/* Drafts, the logo page's guides and the avatars: editor-only, left out of an animated GIF
             (GifOmit). */}
               <GifOmit>
-                {/* The whiteboard pen's stroke being drawn (docs/specs/023-draw-mode/draw-mode.md "Pens"):
+                {/* The whiteboard pen's stroke being drawn (docs/specs/023-drawing-mode/drawing-mode.md "Pens"):
             in this transformed layer, after the elements, laid out as the stroke it lands as, so
             the same layer rasterises both and release changes no pixel. */}
                 {penStroke && isWhiteboardPenIntent(pendingDraw) ? (
@@ -721,7 +721,7 @@ function CanvasView(props: CanvasProps) {
                     zoom={viewportZoom}
                   />
                 ) : null}
-                {/* The path being drawn (docs/specs/023-draw-mode/path-tool.md), in the same layer. */}
+                {/* The path being drawn (docs/specs/023-drawing-mode/path-tool.md), in the same layer. */}
                 {pathTool.draftView ? <PathDraftLayer {...pathTool.draftView} /> : null}
                 {/* A logo page's guides, its snap points and Mirror's live twins (LogoCanvasOverlays). */}
                 {props.illustratePages ? (
@@ -850,7 +850,7 @@ function CanvasView(props: CanvasProps) {
             {canvasTool === 'eraser' ? (
               <EraserBrushRing
                 pos={eraserPos}
-                // A whiteboard's brush is fixed per mode (docs/specs/023-draw-mode/draw-mode.md "Eraser").
+                // A whiteboard's brush is fixed per mode (docs/specs/023-drawing-mode/drawing-mode.md "Eraser").
                 radius={
                   props.whiteboardDock
                     ? WHITEBOARD_ERASER_RADIUS_PX[props.whiteboardDock.prefs.eraserMode]
@@ -886,7 +886,7 @@ function CanvasView(props: CanvasProps) {
             <CanvasChrome
               {...props}
               // While a path is being drawn, Undo and Redo (the dock's and the corner's) step through its
-              // nodes, not the board (docs/specs/023-draw-mode/path-tool.md "Drawing").
+              // nodes, not the board (docs/specs/023-drawing-mode/path-tool.md "Drawing").
               {...(pathTool.history
                 ? {
                     canUndo: pathTool.history.canUndo,

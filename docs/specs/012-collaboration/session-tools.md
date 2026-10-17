@@ -310,7 +310,7 @@ a Dashboard tab, a timer or vote already running keeping its button so it can be
 editor included), so a vote or poll started from a session button on a page can be watched and
 ended (the Poll button, like the Poll panel anywhere, only for the poll's host and anyone who has
 answered: answering is what buys you the tally, and only the host ends it), and nothing is started from the strip there (the session buttons on the page do that); it
-never shows a Timer; **Diagram** and **Draw** have no strip, keeping their bottom bar to their own
+never shows a Timer; **Diagram** and **Drawing** have no strip, keeping their bottom bar to their own
 tools, even while a tool runs (a session button on the canvas still starts one there). A popover whose button
 leaves (a mode switch) closes.
 

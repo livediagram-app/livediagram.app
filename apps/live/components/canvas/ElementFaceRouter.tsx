@@ -468,7 +468,7 @@ export function ElementFaceRouter({
           {isEditing || label.length > 0 ? labelNode : null}
         </>
       ) : element.type === 'path' ? (
-        // A path (docs/specs/023-draw-mode/path-tool.md) draws its curve and takes no label.
+        // A path (docs/specs/023-drawing-mode/path-tool.md) draws its curve and takes no label.
         <PathSvg
           element={element}
           hitPenWidth={

@@ -17,7 +17,7 @@ import {
   pen,
 } from './sketch-preview-parts';
 
-// Group 11: the Draw templates (docs/specs/007-editor/templates-by-mode.md "Draw templates"),
+// Group 11: the Drawing templates (docs/specs/007-editor/templates-by-mode.md "Drawing templates"),
 // drawn as the whiteboard tile is: the off-white board with marker lines in its stock colours.
 // Static SVG preview tiles, one branch per TemplateKind; TemplatePreview chains the groups with ??.
 

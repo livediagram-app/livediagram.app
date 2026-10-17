@@ -52,7 +52,7 @@ describe('WhiteboardDock groups', () => {
     expect(bars[bars.length - 1]!.getAttribute('aria-label')).toBe('Settings');
   });
 
-  // docs/specs/023-draw-mode/draw-mode.md "What a whiteboard shows": one card, the other modes'
+  // docs/specs/023-drawing-mode/drawing-mode.md "What a whiteboard shows": one card, the other modes'
   // palette's, the groups between hairlines, a tool in hand marked as the palette marks one.
   it('draws the three groups in one card, a hairline between each, like the palette', () => {
     renderDock();
@@ -147,7 +147,7 @@ describe('WhiteboardDock drawing tools', () => {
   });
 
   it('draws a marker holding the ink in the ink, glyph and name alike', () => {
-    // docs/specs/023-draw-mode/draw-mode.md "The colour picker": any marker may take the ink.
+    // docs/specs/023-drawing-mode/drawing-mode.md "The colour picker": any marker may take the ink.
     const pens = DEFAULT_WHITEBOARD_PREFS.pens.map((p) =>
       p.id === 'second' ? { ...p, colour: null } : p,
     );
@@ -191,7 +191,7 @@ describe('WhiteboardDock drawing tools', () => {
     expect(m.updatePen).toHaveBeenCalledWith('second', { width: 1 });
   });
 
-  // docs/specs/023-draw-mode/draw-mode.md "Pens": each width reads apart, drawn as the quick style
+  // docs/specs/023-drawing-mode/drawing-mode.md "Pens": each width reads apart, drawn as the quick style
   // panel draws it (PenWidthIcon), not to scale, where 1 and 1.5 px looked the same.
   it('draws the six widths apart in the flyout, as the quick style panel does', () => {
     renderDock();
@@ -380,7 +380,7 @@ describe('WhiteboardDock settings', () => {
   });
 });
 
-// docs/specs/023-draw-mode/draw-mode.md "Where the dock sits".
+// docs/specs/023-drawing-mode/drawing-mode.md "Where the dock sits".
 describe('WhiteboardDock position', () => {
   const dock = () => document.querySelector<HTMLElement>('[data-whiteboard-dock]')!;
   const SEVEN = ['arrow', 'rectangle', 'ellipse', 'diamond', 'cylinder', 'line', 'star'] as const;
@@ -481,7 +481,7 @@ describe('offDock', () => {
 });
 
 // Its code loads on demand, so the top corners measure against it only once it is in the page
-// (CanvasChrome, docs/specs/023-draw-mode/draw-mode.md "Where the dock sits").
+// (CanvasChrome, docs/specs/023-drawing-mode/drawing-mode.md "Where the dock sits").
 describe('WhiteboardDock drawn', () => {
   it('says so in the commit it is first in the page, and only then', () => {
     let inPage: boolean[] = [];

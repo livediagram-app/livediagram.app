@@ -265,7 +265,7 @@ export async function importDocuments(
       for (const page of omitted) failures.push({ title: name, message: pageTooLarge(page) });
     }
     track('Document', 'Created', o.offline ? 'Offline' : 'Cloud');
-    if (source.kind === 'whiteboard') track('Draw', 'Created', 'Import');
+    if (source.kind === 'whiteboard') track('Drawing', 'Created', 'Import');
     const boardReport: BoardSceneReport = dates.unreadable
       ? addReports(prepared.report, {
           landed: {},
@@ -300,7 +300,7 @@ export async function importDocuments(
 }
 
 /**
- * Make every scene its own new document with one tab that opens in Draw mode, named and dated as its board,
+ * Make every scene its own new document with one tab that opens in Drawing mode, named and dated as its board,
  * filed in `folderId`. A board that cannot land is listed with its reason; the rest still do.
  */
 export async function importBoardsAsDocuments(

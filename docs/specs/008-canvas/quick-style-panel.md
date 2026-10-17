@@ -50,7 +50,7 @@ it leaves when the selection does. The colour swatches are the colour picker's o
 (WCAG 2.2, 2.5.8 target size), ten to a row with the targets touching. **The width is fixed, never
 the content's**, so the panel never resizes as its rows change, nor when the editor mode changes:
 every colour row lays out on the same ten columns (the theme's seven, Ink and **More colours** in
-Diagram mode, Ink, the eight hued stock colours and More colours in Draw mode, a Background row's
+Diagram mode, Ink, the eight hued stock colours and More colours in Drawing mode, a Background row's
 seven and More colours), a row of swatches never wraps and is never clipped (the
 width counts the targets, their gaps, 8 px of padding a side and a 1 px border a side, exactly). The panel-opacity preference
 ([User preferences](../007-editor/user-preferences.md)) fades it.
@@ -96,7 +96,7 @@ Top to bottom, each a small title over one row of option buttons:
 |                    | Arrows                                             | Solid / Dashed / Flowing              |
 | Text alignment     | Shapes with a label it moves (`supportsTextAlign`) | Left / Centre / Right (horizontal)    |
 | Icon alignment     | Shapes with icon                                   | Before / Above / After the label      |
-| Corners            | Free-corner shapes (Draw mode only)                | None / Small / Medium / Large         |
+| Corners            | Free-corner shapes (Drawing mode only)             | None / Small / Medium / Large         |
 | Highlighter colour | Highlight strokes, or the armed Highlighter        | Yellow / Green / Pink / Blue / Orange |
 | Highlighter width  | Highlight strokes, or the armed Highlighter        | Thin / Medium / Bold                  |
 | Actions            | Shapes + arrows + text elements                    | Clear Styles                          |
@@ -110,7 +110,7 @@ opens nothing.
 - **Flowing** is a dashed line with the marching-dashes flow animation (`strokeStyle: 'dashed'`,
   `flow: 'dashes'`). So the plain arrow and the animated dashed arrow are each one click, the two
   arrow looks people build most. Solid and Dashed clear any flow.
-- **Corners** (Draw mode only) sets the corner preset ([Corner radius](corner-radius.md)) of
+- **Corners** (Drawing mode only) sets the corner preset ([Corner radius](corner-radius.md)) of
   every selected element that takes one (`supportsBorderRadius`: rectangles, the browser frame,
   the web components with a rectangular surface) and leaves the rest. It earns its place on a
   whiteboard and nowhere else: a whiteboard's context menu offers no corners, so the panel is the
@@ -280,9 +280,9 @@ over, never refused, so they never hide the panel from the rest.
   the elements that do.
 - An option is **highlighted** when every supporting element has that value. When they disagree,
   nothing is highlighted: a mixed row claiming one value would be a lie.
-- **In Draw mode the Stroke and Text colour rows are the stock colours**: Ink, the eight hued
+- **In Drawing mode the Stroke and Text colour rows are the stock colours**: Ink, the eight hued
   colours and More colours (custom colours live in its picker), as Marker colour offers them
-  ([Draw mode](../023-draw-mode/draw-mode.md) "The quick style panel stays"); a stock colour,
+  ([Drawing mode](../023-drawing-mode/drawing-mode.md) "The quick style panel stays"); a stock colour,
   Ink included, is stored by name and marked by name, each swatch in its version for the canvas.
   A line with no colour of its own wears its theme default and marks none. Background keeps the
   theme's fills.
@@ -290,7 +290,7 @@ over, never refused, so they never hide the panel from the rest.
   choosing a swatch replaces the name with the swatch's colour. It is drawn in its version for the
   canvas in both modes ([One look](../007-editor/editor-modes.md#one-look)).
 - **On a whiteboard**, a mixed selection shows the **Marker colour** and **Marker width** rows for
-  its marker strokes ([Draw mode](../023-draw-mode/draw-mode.md) "The quick style panel
+  its marker strokes ([Drawing mode](../023-drawing-mode/drawing-mode.md) "The quick style panel
   stays") above the rows for everything else: Stroke, Background, Text colour, Stroke width, Stroke
   style, Text alignment and Icon alignment, each where it fits. The marker rows style only the
   strokes; the others never touch a stroke.

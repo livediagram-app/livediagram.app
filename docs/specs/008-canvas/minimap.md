@@ -12,7 +12,7 @@ lets you jump the viewport anywhere with a tap or drag.
   device-local persisted position; its default corner is **bottom-left**.
 - **When.** Shown when it's **enabled** (`showMinimap` preference, **on by
   default**), the tab has **at least 4 elements**, **on desktop** (hidden on
-  mobile, where the canvas is already edge-to-edge), and **in Diagram, Draw and Facilitate** only:
+  mobile, where the canvas is already edge-to-edge), and **in Diagram, Drawing and Facilitate** only:
   Illustrate has [Contents](../007-editor/illustrate-pages.md#contents) to find its pages, and a
   Plan board is a list rather than a space to find your way round, so neither shows the Map. It stacks with any other panel docked bottom-left rather than hiding
   behind it (the docking layout reflows them).

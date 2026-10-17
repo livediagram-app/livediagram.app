@@ -39,7 +39,7 @@ export function usePaletteStripBox(active = true): StripBox | null {
   return useToolbarBox(STRIP_CARD, active);
 }
 
-// Where a toolbar is on screen (the strip's card, Draw's dock), kept current as it or the window resizes; null while
+// Where a toolbar is on screen (the strip's card, Drawing's dock), kept current as it or the window resizes; null while
 // it is not on screen.
 export function useToolbarBox(selector: string, active = true): StripBox | null {
   const [box, setBox] = useState<StripBox | null>(() =>
@@ -71,7 +71,7 @@ export function useToolbarBox(selector: string, active = true): StripBox | null 
       }
       const next = measure(selector);
       setBox((prev) => (same(prev, next) ? prev : next));
-      // Not on screen yet (Draw's dock mounts a beat after an empty tab's pill asks for it): watch for it to
+      // Not on screen yet (Drawing's dock mounts a beat after an empty tab's pill asks for it): watch for it to
       // arrive, and stop watching once it has. Only a resize re-measured it before, so the pill kept its no-dock
       // place and sat on the dock's tools.
       if (card) arrival?.disconnect();

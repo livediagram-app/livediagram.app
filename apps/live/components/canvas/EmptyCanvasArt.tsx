@@ -2,7 +2,7 @@
 
 // The empty-canvas card's picture (docs/specs/007-editor/new-document-route.md "The empty-canvas hint"): a small scene
 // of what the tab's mode makes, in the brand's tints, as Start Planning's cards draw theirs. Diagram: two shapes joined
-// by an arrow to a decision; Facilitate: a board of stickies with a vote. Decorative. (The card never shows in Draw,
+// by an arrow to a decision; Facilitate: a board of stickies with a vote. Decorative. (The card never shows in Drawing,
 // whose dock is its own hint, nor in Illustrate or Plan, which have starts of their own.)
 import type { EditorMode } from '@livediagram/document';
 

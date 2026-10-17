@@ -1,7 +1,7 @@
 // Each editor mode's mark, shared by the scenes that draw the mode switch, its menu and the tab menu's
 // mode rows, so every figure shows the app's own icons.
 
-export type Mode = 'Diagram' | 'Draw' | 'Illustrate' | 'Plan' | 'Facilitate';
+export type Mode = 'Diagram' | 'Drawing' | 'Illustrate' | 'Plan' | 'Facilitate';
 
 /** Each mode's mark (packages/ui EDITOR_MODE_ICONS) on its 24-unit grid, centred on (0, 0) and
  *  drawn at `scale`: a flowchart, a marker, a page with a chart over two lines, a board, a
@@ -32,7 +32,7 @@ export function ModeMark({
             <rect x={13} y={13} width={8} height={8} rx={2} {...common} />
           </>
         );
-      case 'Draw':
+      case 'Drawing':
         return (
           <>
             <path d="M7 13 L15.5 4.5 L18 7 L9.5 15.5 L6.4 16 Z" {...common} />

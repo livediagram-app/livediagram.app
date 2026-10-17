@@ -23,7 +23,7 @@ export function outlineHit(
   return at.selected ? 'box-and-outline' : 'outline';
 }
 
-// A whiteboard shape is picked by its drawn outline (docs/specs/023-draw-mode/draw-mode.md
+// A whiteboard shape is picked by its drawn outline (docs/specs/023-drawing-mode/drawing-mode.md
 // "Selecting"): not yet selected, its wrapper lets pointers through; selected, its box catches them
 // too. This invisible copy of the outline (shape-hit.ts, the eraser's same
 // geometry) catches them 6 screen px either side of the line, plus anywhere on a

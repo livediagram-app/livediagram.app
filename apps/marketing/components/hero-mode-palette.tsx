@@ -1,7 +1,7 @@
 // What the scenes' Palette strip offers in each editor mode (docs/specs/007-editor/editor-modes.md
 // "The palette per mode", toolbar-layout.md "The category bar"): the mode's glyph and name for its
 // switch, then Diagram's, Facilitate's and Illustrate's category bars (each category's glyph and its
-// one-word name, in bands), Draw's dock in place of the palette, and none for Plan, whose tab brings
+// one-word name, in bands), Drawing's dock in place of the palette, and none for Plan, whose tab brings
 // its own bar (hero-plan-bars.tsx). Keyed by the editor's own EditorMode, so a new mode fails typecheck here. At the mock's
 // scale, drawn from the editor's own glyphs where it has them. The strip is ToolbarStrip
 // (hero-editor-chrome.tsx).
@@ -37,13 +37,13 @@ export type HeroMode = EditorMode;
 // Each mode's name and its glyph, the editor's own (EDITOR_MODE_ICONS).
 export const HERO_MODE: Record<HeroMode, { label: string; Icon: ComponentType<IconProps> }> = {
   diagram: { label: 'Diagram', Icon: EDITOR_MODE_ICONS.diagram },
-  draw: { label: 'Draw', Icon: EDITOR_MODE_ICONS.draw },
+  draw: { label: 'Drawing', Icon: EDITOR_MODE_ICONS.draw },
   facilitate: { label: 'Facilitate', Icon: EDITOR_MODE_ICONS.facilitate },
   illustrate: { label: 'Illustrate', Icon: EDITOR_MODE_ICONS.illustrate },
   plan: { label: 'Plan', Icon: EDITOR_MODE_ICONS.plan },
 };
 
-// `hint` is the shortcut the editor prints under the tile; `group` starts a new group in Draw's dock.
+// `hint` is the shortcut the editor prints under the tile; `group` starts a new group in Drawing's dock.
 export type Tile = {
   key: string;
   glyph: ReactNode;
@@ -52,7 +52,7 @@ export type Tile = {
   group?: boolean;
 };
 
-// A marker in its ink, as the Draw dock shows Marker 1, 2 and 3.
+// A marker in its ink, as the Drawing dock shows Marker 1, 2 and 3.
 // The black marker reads as near-white on the dark strip, as the editor lifts dark ink there.
 function Marker({ color, className }: { color?: string; className?: string }) {
   return <MarkerIcon size={14} style={color ? { color } : undefined} className={className} />;
@@ -83,7 +83,7 @@ function Highlighter() {
   );
 }
 
-// Draw's dock: its drawing tools, the blue marker in hand, then its shapes in a group of their own.
+// Drawing's dock: its drawing tools, the blue marker in hand, then its shapes in a group of their own.
 const DRAW_TILES: Tile[] = [
   { key: 'select', glyph: <SelectGlyph />, hint: 'V' },
   { key: 'm1', glyph: <Marker className="text-stone-900 dark:text-stone-100" />, hint: '1' },
@@ -97,7 +97,7 @@ const DRAW_TILES: Tile[] = [
   { key: 'note', glyph: <Shape kind="note" />, hint: 'N' },
 ];
 
-// Draw's dock, the one mode whose strip is still tiles.
+// Drawing's dock, the one mode whose strip is still tiles.
 export const DRAW_DOCK: readonly Tile[] = DRAW_TILES;
 
 // A category on the bar: its glyph (the editor's own, @livediagram/ui) and its one-word name.

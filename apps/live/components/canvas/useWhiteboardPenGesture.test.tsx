@@ -9,7 +9,7 @@ import { useWhiteboardPenGesture } from './useWhiteboardPenGesture';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
-// The whiteboard pen gesture (docs/specs/023-draw-mode/draw-mode.md "Pens", "Touch and pen input";
+// The whiteboard pen gesture (docs/specs/023-drawing-mode/drawing-mode.md "Pens", "Touch and pen input";
 // blueprint whiteboard-round-one "Pen ink").
 
 const PEN: PendingDraw = {
@@ -124,7 +124,7 @@ describe('useWhiteboardPenGesture', () => {
     expect(s.onCommitFreehand.mock.calls[0]![0]).toHaveLength(2);
   });
 
-  // docs/specs/023-draw-mode/draw-mode.md "Pens": a tap with a pen leaves a dot.
+  // docs/specs/023-drawing-mode/drawing-mode.md "Pens": a tap with a pen leaves a dot.
   it('commits a tap, a press lifted where it went down, as a one-point stroke', () => {
     vi.spyOn(console, 'info').mockImplementation(() => {});
     const s = setup();
@@ -184,7 +184,7 @@ describe('useWhiteboardPenGesture', () => {
 
   // docs/specs/007-editor/editor-modes.md "Everyone follows a switch": a stroke in progress is
   // finished first.
-  it('lands the stroke drawn so far when the tab leaves Draw mode mid-stroke', () => {
+  it('lands the stroke drawn so far when the tab leaves Drawing mode mid-stroke', () => {
     const debug = vi.spyOn(console, 'info').mockImplementation(() => {});
     const s = setup();
     s.press(10, 20);
@@ -217,7 +217,7 @@ describe('useWhiteboardPenGesture', () => {
     expect(debug).toHaveBeenCalledWith('[whiteboard] stroke pen samples=3 pressure=yes');
   });
 
-  // docs/specs/023-draw-mode/draw-mode.md "Shape recognition": Shift while reshaping.
+  // docs/specs/023-drawing-mode/drawing-mode.md "Shape recognition": Shift while reshaping.
   describe('with Shift while reshaping a locked shape', () => {
     const circle = {
       kind: 'circle' as const,
@@ -310,7 +310,7 @@ describe('useWhiteboardPenGesture', () => {
   });
 });
 
-// docs/specs/023-draw-mode/draw-mode.md "Shape recognition": Alt (Option) flips the stroke.
+// docs/specs/023-drawing-mode/drawing-mode.md "Shape recognition": Alt (Option) flips the stroke.
 describe('useWhiteboardPenGesture, with Alt', () => {
   /** A key event as the browser sends it; `defaultPrevented` says whether the page kept it. */
   const key = (type: 'keydown' | 'keyup', k = 'Alt', repeat = false) =>
@@ -338,7 +338,7 @@ describe('useWhiteboardPenGesture, with Alt', () => {
     s.send(down);
     expect(down.defaultPrevented).toBe(true);
     expect(stroke.shaped()?.kind).toBe('square');
-    expect(track).toHaveBeenCalledWith('Draw', 'Toggled', 'RecogniseOnceKey');
+    expect(track).toHaveBeenCalledWith('Drawing', 'Toggled', 'RecogniseOnceKey');
     const up = key('keyup');
     s.send(up);
     expect(up.defaultPrevented).toBe(true);
@@ -358,7 +358,7 @@ describe('useWhiteboardPenGesture, with Alt', () => {
     s.send(key('keydown'));
     expect(stroke.shaped()).toBeNull();
     expect(stroke.inkHeld()).toBe(true);
-    expect(track).toHaveBeenLastCalledWith('Draw', 'Toggled', 'BreakShapeKey');
+    expect(track).toHaveBeenLastCalledWith('Drawing', 'Toggled', 'BreakShapeKey');
     s.send(key('keyup'));
     expect(stroke.inkHeld()).toBe(false);
     s.send(pointer('pointerup', { x: 10, y: 30 }));

@@ -179,7 +179,7 @@ type PaletteTileAction =
   | { type: 'video'; provider?: EmbedProvider }
   | { type: 'sticker'; stickerId: string }
   | { type: 'polygon' }
-  // The Path tool (docs/specs/023-draw-mode/path-tool.md): a logo page's Pen (logo-pages.md).
+  // The Path tool (docs/specs/023-drawing-mode/path-tool.md): a logo page's Pen (logo-pages.md).
   | { type: 'path' }
   // `ends`: the Line tile's `'none'`; the Arrow tile leaves it to the tool's pointer at its end.
   | { type: 'arrow'; ends?: import('@livediagram/document').ArrowEnds }
@@ -201,7 +201,7 @@ type PaletteTileAction =
   | { type: 'tech-icon'; iconId: string }
   // A Plan board's header widget (docs/specs/026-plan/board-widgets.md): placed in a board's header,
   // never on the canvas.
-  // One of Draw mode's markers (docs/specs/023-draw-mode/draw-mode.md "Pens"), offered by the
+  // One of Drawing mode's markers (docs/specs/023-drawing-mode/drawing-mode.md "Pens"), offered by the
   // Toolbar strip's Search in the other modes (palette-marker-tiles.tsx): picked up as the dock
   // picks it up, in its colour and width. Never in PALETTE_TILES: a marker's colour and width are
   // the person's own, read when the Search opens.
@@ -600,7 +600,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     ),
   },
   // The Path tool as a logo page's Pen (docs/specs/007-editor/logo-pages.md "The Logo palette"):
-  // the same tool Draw mode's dock holds, in the Logo category only.
+  // the same tool Drawing mode's dock holds, in the Logo category only.
   {
     id: 'logo:pen',
     blurb: 'Click for corners, drag for curves',

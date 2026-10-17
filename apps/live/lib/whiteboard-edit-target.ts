@@ -1,4 +1,4 @@
-// What a double-click on a whiteboard's bare board edits (docs/specs/023-draw-mode/draw-mode.md
+// What a double-click on a whiteboard's bare board edits (docs/specs/023-drawing-mode/drawing-mode.md
 // "Selecting"). A whiteboard shape is picked by its drawn outline, so a press in its empty inside
 // reaches the board, not the shape; a double-click there still means the shape. So does the
 // double-click on a selected shape whose first click put it down.

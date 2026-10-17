@@ -46,7 +46,7 @@ describe('TabModeMenuRows', () => {
     const items = choices();
     expect(items.map((i) => i.textContent)).toEqual([
       expect.stringContaining('Diagram'),
-      expect.stringContaining('Draw'),
+      expect.stringContaining('Drawing'),
       expect.stringContaining('Facilitate'),
       expect.stringContaining('Illustrate'),
       expect.stringContaining('Plan'),
@@ -68,7 +68,7 @@ describe('TabModeMenuRows', () => {
 
   it('does nothing for the mode already chosen', () => {
     const { onChange } = setup();
-    fireEvent.click(screen.getByRole('button', { name: /^Draw/ }));
+    fireEvent.click(screen.getByRole('button', { name: /^Drawing/ }));
     expect(onChange).not.toHaveBeenCalled();
   });
 

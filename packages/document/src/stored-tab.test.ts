@@ -44,7 +44,7 @@ describe('migrateStoredTab', () => {
 });
 
 // docs/specs/007-editor/editor-modes.md "Existing whiteboards": every entry point reads a stored
-// whiteboard as a general tab that opens in Draw.
+// whiteboard as a general tab that opens in Drawing.
 describe('a stored whiteboard tab', () => {
   const whiteboard = () => ({
     id: 't',
@@ -53,7 +53,7 @@ describe('a stored whiteboard tab', () => {
     elements: [{ id: 's', type: 'shape', shape: 'circle', x: 0, y: 0, width: 1, height: 1 }],
   });
 
-  it('opens in Draw from storage', () => {
+  it('opens in Drawing from storage', () => {
     vi.spyOn(console, 'info').mockImplementation(() => {});
     const out = migrateStoredTab(whiteboard() as unknown as Tab);
     expect(out.kind).toBe('diagram');
@@ -61,7 +61,7 @@ describe('a stored whiteboard tab', () => {
     expect(out.elements[0]).toMatchObject({ penColour: 'ink', fillColor: 'transparent' });
   });
 
-  it('opens in Draw from outside (an api write, a peer, a file)', () => {
+  it('opens in Drawing from outside (an api write, a peer, a file)', () => {
     vi.spyOn(console, 'info').mockImplementation(() => {});
     const out = migrateIncomingTab(whiteboard()) as Tab;
     expect(out.kind).toBe('diagram');

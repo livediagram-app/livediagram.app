@@ -53,7 +53,7 @@ async function seed(page: Page, baseURL: string, owner: string, tab: Tab): Promi
     data: {
       id,
       name: `Reference board (${tab})`,
-      // The whiteboard series is a general tab opening in Draw mode (docs/specs/007-editor/editor-modes.md).
+      // The whiteboard series is a general tab opening in Drawing mode (docs/specs/007-editor/editor-modes.md).
       tabs: [
         {
           id: crypto.randomUUID(),

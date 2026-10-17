@@ -3,7 +3,7 @@ import type { PresentationOverlay as PresentationOverlayComponent } from '@/comp
 // The editor's code that loads on demand (docs/specs/016-platform/web-performance.md), in one place so each
 // surface's dynamic import and the prefetch below name the same module.
 //
-// - Content a board may draw as soon as it opens (Illustrate pages and their writing, the Draw dock, tables,
+// - Content a board may draw as soon as it opens (Illustrate pages and their writing, the Drawing dock, tables,
 //   facilitation panels): fetched as the editor mounts, alongside the document request, so a board that has
 //   one finds its code already in. A board without one pays nothing on the critical path.
 // - Surfaces someone opens (the Explorer, search, layers, the style panel, tool panels, presenting): fetched

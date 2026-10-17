@@ -26,7 +26,7 @@ describe('NewDocumentWizard', () => {
 
   it("creates a chosen mode's blank at once", () => {
     const p = wizard();
-    fireEvent.click(screen.getByRole('button', { name: /^Draw:/ }));
+    fireEvent.click(screen.getByRole('button', { name: /^Drawing:/ }));
     expect(p.onCreate).toHaveBeenCalledWith('whiteboard');
   });
 
@@ -75,7 +75,7 @@ describe('NewDocumentWizard', () => {
     const p = wizard({ busy: true, initialMode: 'plan' });
     expect(screen.getByRole('button', { name: /Creating/ })).toHaveProperty('disabled', true);
     expect(screen.getByRole('button', { name: /^Plan:/ }).getAttribute('aria-busy')).toBe('true');
-    fireEvent.click(screen.getByRole('button', { name: /^Draw:/ }));
+    fireEvent.click(screen.getByRole('button', { name: /^Drawing:/ }));
     fireEvent.keyDown(document, { key: 'Escape' });
     expect(p.onCreate).not.toHaveBeenCalled();
     expect(p.onBackOut).not.toHaveBeenCalled();

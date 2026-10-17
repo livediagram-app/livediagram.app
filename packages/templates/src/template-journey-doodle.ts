@@ -1,4 +1,4 @@
-// Journey Doodle (docs/specs/007-editor/templates-by-mode.md "Draw templates"): a customer's day
+// Journey Doodle (docs/specs/007-editor/templates-by-mode.md "Drawing templates"): a customer's day
 // drawn as a winding road, a customer journey map in marker. Ana gets her groceries delivered:
 // six stops along the road, each a little doodle with its time and what happened, and above each
 // a face for how it felt, joined by a line that rises and falls with her mood. The dip where it

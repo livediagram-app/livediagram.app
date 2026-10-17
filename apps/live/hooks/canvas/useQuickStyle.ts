@@ -100,7 +100,7 @@ export type QuickStyleApi = {
 // Everything the Quick Style view is built from but the selection, which its host reads from the store.
 export type QuickStyleDeps = {
   activeTab: Tab;
-  // The viewer works in Draw mode (docs/specs/007-editor/editor-modes.md): the board rows show.
+  // The viewer works in Drawing mode (docs/specs/007-editor/editor-modes.md): the board rows show.
   drawMode: boolean;
   theme: ThemeDefinition;
   editsBlocked: boolean;
@@ -140,8 +140,8 @@ export function useQuickStyle(
     [activeTab.elements, selectionIds],
   );
   const editsBlocked = deps.editsBlocked || (!!canStyle && selected.some((el) => !canStyle(el)));
-  // In Draw mode (docs/specs/023-draw-mode/draw-mode.md "The quick style panel stays") the
-  // defaults read as the board's ink, and the style memory is Draw mode's own
+  // In Drawing mode (docs/specs/023-drawing-mode/drawing-mode.md "The quick style panel stays") the
+  // defaults read as the board's ink, and the style memory is Drawing mode's own
   // (useStyleMemory's board scope), never Diagram mode's.
   const whiteboard = deps.drawMode;
   // The stock colours in their version for the canvas the tab paints

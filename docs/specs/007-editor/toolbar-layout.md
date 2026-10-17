@@ -37,7 +37,7 @@ and one category's tiles:
   rendered by the shared `PaletteTile`, so the strip and its popovers stay alike.
 - **Right: More (⋯ ▾)** (Plan), when the category has more than the strip shows.
 - **Far right: Search** (a magnifier), in every mode's strip but an event-storming board's (see
-  "Search: every element type"). Draw mode shows its dock instead of the strip, so it has none.
+  "Search: every element type"). Drawing mode shows its dock instead of the strip, so it has none.
 
 ## The category bar
 
@@ -157,7 +157,7 @@ A strip shows one category at a time, so finding an element means knowing which 
   Plan's Edit Cards), behind a divider, with a hover card ("Search Elements"). On a phone it
   stays put beside More while the tiles swipe.
 - **Not on an event-storming board:** the notation is the palette there, as the board hides the
-  pickers. Draw mode has no strip, so no Search.
+  pickers. Drawing mode has no strip, so no Search.
 - **Opening it clears the way**: a tile armed to place is let go (its "Tap to drop" banner goes), and the
   session timer's pill stands aside while the panel is open, since both sit where the panel hangs.
 - **The popover** hangs from the button's right edge like More's, 26rem wide (spanning the
@@ -179,11 +179,11 @@ A strip shows one category at a time, so finding an element means knowing which 
   carrying its sticker id). The catalogues load as a chunk of their own; the popover asks for it on
   opening and fills in when it lands. My shapes stays in its own category: it is the person's
   libraries, not a catalogue of the product.
-  **Draw mode's markers** join them: Draw has no palette layout (its pens are the dock's), so its
+  **Drawing mode's markers** join them: Drawing has no palette layout (its pens are the dock's), so its
   Marker 1, 2 and 3 are built as tiles when the popover opens, from this browser's pens, each in
   its colour and width (`palette-marker-tiles`). They are always another mode's, since the strip is
-  never shown in Draw. Picking one picks the pen up as the dock does, held until another tool,
-  Escape or a mode switch ([Draw mode](../023-draw-mode/draw-mode.md#pens)). The dock's other
+  never shown in Drawing. Picking one picks the pen up as the dock does, held until another tool,
+  Escape or a mode switch ([Drawing mode](../023-drawing-mode/drawing-mode.md#pens)). The dock's other
   tools are the palette's own already (Text, the shapes, the eraser), all but the Path tool, which
   the search does not offer. A
   tile matches on its name, label, blurb, description and the same synonym line the global Search
@@ -313,7 +313,7 @@ so a new page load starts on the mode's landing (Plan's Cards, or Boards while t
 ## The tab's name
 
 - On a desktop, the menu box (the Explorer button and the mode switch, top left) ends with the open tab's name, after a
-  hairline, in every mode: Diagram, Draw, Illustrate and Plan alike, as a board's name rides there
+  hairline, in every mode: Diagram, Drawing, Illustrate and Plan alike, as a board's name rides there
   ([The name rides in the menu box](../026-plan/plan-board.md)). It is the chrome's ink, 14 px at regular weight (never bold), cut short
   with an ellipsis past 16rem, and follows a rename at once. The box shows a name alone, never an icon beside it.
 - While a board, Sheet or view filling the tab (or maximised) has its own name in the box, that name shows instead,
@@ -352,7 +352,7 @@ on screen sideways as well as vertically, whatever the trigger's position.
 
 There is no layout choice. An earlier version offered a second layout, **Floating**, as the
 desktop default: the Palette as a draggable corner panel, the Explorer as a corner panel, Layers
-minimising into its cluster button, and Draw mode's tools inside the Palette panel. It was retired
+minimising into its cluster button, and Drawing mode's tools inside the Palette panel. It was retired
 because every new feature had to be built and kept working twice, and the strip had become the
 better layout. Its parts went with it:
 
@@ -431,7 +431,7 @@ their bottom-row buttons. What changes to fit the width:
   - While a mode banner sits in the tray, the top-centre stack starts below the tray instead.
   - While one of the strip's popovers is open (a category's flyout, More, a catalogue group, Search) the tray steps aside, as it does
     for the Explorer: it would cover the popover's top.
-  - Without a strip (Draw mode's dock, zen, read-only, the welcome flow) the messages stay the
+  - Without a strip (Drawing mode's dock, zen, read-only, the welcome flow) the messages stay the
     top-centre pills they are elsewhere.
 - Event-storming boards ([Event storming](../021-event-storming/event-storming.md)) hide the strip's pickers, and the strip shows the notation's tiles, led by
   the board's **Add from Photo** (an icon button with a hover card) where the deployment offers
@@ -501,7 +501,7 @@ their bottom-row buttons. What changes to fit the width:
   as they always do on a phone. Otherwise they keep their inset. Without it
   a docked panel (the Laser panel, say) sat under the strip's right end and
   could not be reached. A whiteboard's dock at the top gets the same
-  treatment ([Where the dock sits](../023-draw-mode/draw-mode.md#where-the-dock-sits)),
+  treatment ([Where the dock sits](../023-drawing-mode/drawing-mode.md#where-the-dock-sits)),
   its corners starting 76px down.
 - **Undo / Redo stay where they are**, in the bottom-right dock.
 - **A phone's toolbar items keep their size** (`PHONE_TOOLBAR_ITEMS`): 36px, the bottom-right

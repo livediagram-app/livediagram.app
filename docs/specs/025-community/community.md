@@ -96,7 +96,7 @@ The closed set, in display order. The id is stored; the label is shown.
 | `data`         | Data & Databases    | Entity diagrams, schemas, tables              |
 | `learning`     | Learning & Teaching | Explainers, lessons, study notes              |
 | `infographics` | Infographics        | Illustrate pages and articles                 |
-| `art`          | Drawing & Art       | Sketches, illustrations, Draw mode            |
+| `art`          | Drawing & Art       | Sketches, illustrations, Drawing mode         |
 | `other`        | Something Else      | Anything that fits nowhere above              |
 
 ## Tags

@@ -1,6 +1,6 @@
 # Whiteboard dock: blueprint
 
-Derived from [Draw mode](../draw-mode.md) "What a whiteboard shows", "Where the dock sits" and
+Derived from [Drawing mode](../drawing-mode.md) "What a whiteboard shows", "Where the dock sits" and
 "Shape slots". The dock's tools, pens, eraser and backgrounds are in
 [whiteboard-round-one](whiteboard-round-one.md); this file owns the dock's layout (three groups,
 top or bottom), the Shapes flyout with its search and the shape slots. Defaults applied where the spec is silent are ledgered in [DEFAULTS.md](DEFAULTS.md)
@@ -30,7 +30,7 @@ Scope, by file (all under `apps/live/` unless stated):
 | `components/canvas/CanvasChrome.tsx`                 | The dock; top corners and stack clear a top dock                                         |
 | `hooks/ui/useStripCrowdsCorners.ts`                  | Whether a top bar (the strip or a top dock) reaches a top corner                         |
 | `components/chrome/TopCenter.tsx`                    | `TopCenterStack` `below`: under the strip or under a top dock                            |
-| `components/dialogs/settings/settings-catalogue.ts`  | Editor › Draw sub-category: the Dock Position row                                        |
+| `components/dialogs/settings/settings-catalogue.ts`  | Editor › Drawing sub-category: the Dock Position row                                     |
 | `hooks/canvas/useWhiteboardDockPrefs.ts`             | Those preferences as state, written like every synced preference                         |
 | `hooks/canvas/useWhiteboard.ts`                      | `pickShape`, `pickSearchedShape`, `openShapes` and the dock prefs                        |
 | `lib/palette-search.ts`, `lib/search.ts`             | `SHAPE_TILES`, `shapeTileSearchItem`; `paletteRank` from `@livediagram/icons`, shared    |
@@ -408,10 +408,10 @@ border p-3 shadow-lg`, `w-max max-w-[min(20rem,calc(100vw-1.5rem))]`) with its t
   search placeholder
   and name "Search shapes", clear "Clear the shape search", empty "No shapes match “<words>”" (the shared empty state, with Clear Search); slot menu "Pin
   to dock", "Unpin"; hint "Seven shapes are pinned. Drag one out to swap."
-- Settings row: in the **Editor › Draw** sub-category (category id `draw`, `parent: 'editor'`,
-  no section), label "Dock Position", options "Top", "Bottom", description "Where Draw mode's dock
+- Settings row: in the **Editor › Drawing** sub-category (category id `draw`, `parent: 'editor'`,
+  no section), label "Dock Position", options "Top", "Bottom", description "Where Drawing mode's dock
   of pens, shapes and tools sits. Top keeps it where the Toolbar strip keeps its tools; Bottom
-  puts it closer to hand when drawing on a tablet. Only Draw mode has a dock, so Diagram mode is
+  puts it closer to hand when drawing on a tablet. Only Drawing mode has a dock, so Diagram mode is
   unchanged."
 
 ## Accessibility

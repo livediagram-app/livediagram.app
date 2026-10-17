@@ -1,7 +1,7 @@
 # Board scene: blueprint
 
 Derived from [Board scene](../board-scene.md), with the element-model delta it needs from
-[Draw mode](../../023-draw-mode/draw-mode.md) "Imported and pasted content". The spec's mapping
+[Drawing mode](../../023-drawing-mode/drawing-mode.md) "Imported and pasted content". The spec's mapping
 table is not restated; this file fixes the modules, types, constants, algorithms, wiring and tests.
 Defaults are ledgered in [DEFAULTS.md](DEFAULTS.md) (rows `B1` onwards).
 
@@ -308,7 +308,7 @@ Returns `{ insertScene(scene, at?), notice, dismissNotice }`; composed in `useEd
 `insertScene(scene)`:
 
 1. Read-only or a locked tab → no-op, returns `false`.
-2. Profile from the viewer's editor mode (`drawMode`: Draw lands `whiteboard`); placement at `at`, else the pointer, else the viewport centre;
+2. Profile from the viewer's editor mode (`drawMode`: Drawing lands `whiteboard`); placement at `at`, else the pointer, else the viewport centre;
    `room = MAX_ELEMENTS_PER_TAB - activeTab.elements.length`.
 3. `landBoardScene`; a rejection sets the notice to the rejection message and returns.
 4. Images: when there are requests, the notice shows "Pasting images {done} of {total}…" while
@@ -343,7 +343,7 @@ total }`; the text hug), then `createDocument({ id, name, tabs: [tab], folderId?
 savedAt? })` with one tab `{ name: 'Whiteboard', kind, backgroundPattern, elements,
 templateChosen: true }`. `createDocument` defaults to `apiCreateDocument` (cloud) or
   `offlineCreateDocument(.., { createdAt, savedAt, folderId })` (offline). Per document:
-  `track('Document', 'Created', 'Cloud' | 'Offline')` and `track('Draw', 'Created', 'Import')`.
+  `track('Document', 'Created', 'Cloud' | 'Offline')` and `track('Drawing', 'Created', 'Import')`.
   A rejected landing or a failed create is listed in `failures` (`{ title: name, message }`; a failed
   create "The document couldn't be created. Try again."), the rest still land; none landing is an
   `error` outcome. Reports and image reports add up (`addReports`, `addImageReports`); unreadable

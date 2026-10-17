@@ -1,4 +1,4 @@
-// Rich Picture (docs/specs/007-editor/templates-by-mode.md "Draw templates"): the systems-thinking
+// Rich Picture (docs/specs/007-editor/templates-by-mode.md "Drawing templates"): the systems-thinking
 // sketch of a messy problem (Checkland's Soft Systems Methodology), here a hospital ward whose
 // patients are medically fit by mid-morning but go home late in the afternoon. The system sits
 // in a drawn cloud at the centre; the people caught up in it stand round it as stick figures,

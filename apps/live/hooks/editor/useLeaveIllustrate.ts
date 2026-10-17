@@ -1,10 +1,10 @@
 // Leaving Illustrate on a tab with articles (docs/specs/007-editor/article-pages.md "Leaving
-// Illustrate"): Diagram and Draw draw no pages and no writing, so an editor's switch away asks
+// Illustrate"): Diagram and Drawing draw no pages and no writing, so an editor's switch away asks
 // first. Convert turns every article into Page elements (measured from the writing as laid out
 // now) in the same tab edit as the switch; Keep switches with the articles left as they are, for Illustrate;
 // Cancel stays. A tab with content but no articles asks a lighter question, a confirmation beside
 // the mode switch (docs/specs/007-editor/editor-modes.md "Leaving Illustrate"): its pages do not
-// show in Diagram or Draw, so what is on them may not look the same; Switch or Cancel. A visitor, a
+// show in Diagram or Drawing, so what is on them may not look the same; Switch or Cancel. A visitor, a
 // locked tab or an empty tab switches straight away. An article with a locked page is held as it is
 // (docs/specs/007-editor/illustrate-pages.md "Locking a page"): Convert leaves it an article, and a
 // tab whose articles are all held asks only the lighter question.

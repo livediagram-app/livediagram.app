@@ -97,7 +97,7 @@ export const ALTERNATIVES: Alternative[] = [
       { label: 'Real-time multiplayer', us: 'Yes', them: 'Yes' },
       {
         label: 'Ink',
-        us: 'Pressure-sensitive markers in Draw mode',
+        us: 'Pressure-sensitive markers in Drawing mode',
         them: 'Natural pen inking, strongest on Windows',
       },
       {
@@ -115,7 +115,7 @@ export const ALTERNATIVES: Alternative[] = [
     usBest: [
       'Your boards outlive the retirement: import a board export and each board becomes a document of its own, named and dated as the board, with pen strokes, colours, sticky notes, text, shapes and images all editable.',
       'No Microsoft account, no sign-up, no install: open a link and start drawing.',
-      'Draw mode is a plain whiteboard: three pressure-sensitive markers, text, an eraser and shapes on a plain, dotted or grid board, light or dark.',
+      'Drawing mode is a plain whiteboard: three pressure-sensitive markers, text, an eraser and shapes on a plain, dotted or grid board, light or dark.',
       'Real-time multiplayer with live cursors, comments and a laser pointer, for anyone with the link.',
       'Three kinds of link: Editor, Participant (add stickies, write and vote without reshaping the board, handy for a class) or view-only.',
       'For a class: quizzes with a countdown and a reveal of who got it right, live polls, an anonymous idea box and a shared timer.',
@@ -143,7 +143,7 @@ export const ALTERNATIVES: Alternative[] = [
       {
         heading: 'A whiteboard that grows into more',
         paragraphs: [
-          'Draw mode is a plain whiteboard, close to what Whiteboard users are used to: pick a marker, draw, erase, add text and shapes. But the same tab can switch to Diagram mode when a sketch needs structure, with shapes and arrows that stay attached as you move things. A document holds as many tabs as you need, grouped into folders, and Presentation mode turns elements from any tab into a slide deck.',
+          'Drawing mode is a plain whiteboard, close to what Whiteboard users are used to: pick a marker, draw, erase, add text and shapes. But the same tab can switch to Diagram mode when a sketch needs structure, with shapes and arrows that stay attached as you move things. A document holds as many tabs as you need, grouped into folders, and Presentation mode turns elements from any tab into a slide deck.',
           'For sessions, switch a tab to Facilitate, the mode for running a room: there are templates for retrospectives, Lean Coffee and town hall Q&A, and a facilitator can run a shared timer, votes, polls and quizzes for the room, with the right answer revealed when the time is up.',
         ],
       },
@@ -170,7 +170,7 @@ export const ALTERNATIVES: Alternative[] = [
       },
       {
         q: 'Does livediagram work with a pen or stylus?',
-        a: 'Yes. Draw mode has three pressure-sensitive markers, so a pen on a tablet or touchscreen draws thick and thin lines as you press. It runs in the browser, so there is nothing to install on any device.',
+        a: 'Yes. Drawing mode has three pressure-sensitive markers, so a pen on a tablet or touchscreen draws thick and thin lines as you press. It runs in the browser, so there is nothing to install on any device.',
       },
       {
         q: 'When should I stay with Microsoft Whiteboard?',
@@ -222,7 +222,7 @@ export const ALTERNATIVES: Alternative[] = [
       "It's free and MIT-licensed, so you can self-host it instead of paying per seat.",
       'Open a link and draw, with no sign-up wall in front of the canvas, even to create a document.',
       'Real-time multiplayer, live cursors and comments come standard, not gated behind a plan.',
-      'Five ways to work one tab: Diagram for structure, Draw for freehand whiteboarding, Facilitate for running a session with your team, Illustrate for designed pages, and Plan for boards of cards, spreadsheets and dashboards.',
+      'Five ways to work one tab: Diagram for structure, Drawing for freehand whiteboarding, Facilitate for running a session with your team, Illustrate for designed pages, and Plan for boards of cards, spreadsheets and dashboards.',
       'Participant links let a workshop add stickies, write and vote without being able to reshape the board.',
       'Assign action items to teammates on the canvas itself, tracked beside comments in the Collaborate panel.',
       'Workshop tools built in: Facilitate mode, a facilitator role, a shared timer, dot-voting, live polls, planning-poker estimate cards, temperature checks, quizzes, an anonymous idea box and a Q&A board.',
@@ -235,7 +235,7 @@ export const ALTERNATIVES: Alternative[] = [
       {
         heading: 'One workspace, five ways to work',
         paragraphs: [
-          'Miro grew into a broad workspace: boards, workshops, docs, tables, video walkthroughs and a marketplace of apps. livediagram covers the same ground in one document with tabs, and each tab works in one of five modes. Diagram for structure, with arrows that stay attached and re-route as you move things. Draw for freehand whiteboarding with pressure-sensitive markers. Facilitate for running the workshop itself: timers, dot votes, polls and reveals. Illustrate for designed pages: infographics, written documents and slide decks. Plan for boards of cards with WIP limits and swimlanes, beside Sheets with real formulas that can read the cards, and dashboards that bring them together.',
+          'Miro grew into a broad workspace: boards, workshops, docs, tables, video walkthroughs and a marketplace of apps. livediagram covers the same ground in one document with tabs, and each tab works in one of five modes. Diagram for structure, with arrows that stay attached and re-route as you move things. Drawing for freehand whiteboarding with pressure-sensitive markers. Facilitate for running the workshop itself: timers, dot votes, polls and reveals. Illustrate for designed pages: infographics, written documents and slide decks. Plan for boards of cards with WIP limits and swimlanes, beside Sheets with real formulas that can read the cards, and dashboards that bring them together.',
           'Workshops are built in rather than bolted on. A facilitator can run the room with a shared timer, dot-voting, live polls, planning-poker estimate cards, quizzes, a Q&A board and responses kept hidden until the reveal, and templates cover retrospectives, Lean Coffee, town hall Q&A and event storming, including turning a photo of a sticky-note wall into notes. When the session ends, the actions it produced are assigned on the board and the plan picks up on the next tab.',
         ],
       },
@@ -399,9 +399,9 @@ export const ALTERNATIVES: Alternative[] = [
     name: 'Excalidraw',
     title: 'Excalidraw alternative · livediagram',
     description:
-      'A more structured Excalidraw alternative: the same free, open-source, no-sign-up spirit, with templates, themes, tabs, folders and a freehand Draw mode.',
+      'A more structured Excalidraw alternative: the same free, open-source, no-sign-up spirit, with templates, themes, tabs, folders and a freehand Drawing mode.',
     h1: 'A more structured Excalidraw alternative',
-    lede: 'Excalidraw is a much-loved open-source whiteboard with a hand-drawn feel. livediagram shares the open-source, free, no-sign-up spirit, but leans structured: start from a template, theme the whole canvas, split work across tabs, and keep documents in folders, with a freehand Draw mode when you just want to sketch.',
+    lede: 'Excalidraw is a much-loved open-source whiteboard with a hand-drawn feel. livediagram shares the open-source, free, no-sign-up spirit, but leans structured: start from a template, theme the whole canvas, split work across tabs, and keep documents in folders, with a freehand Drawing mode when you just want to sketch.',
     rows: [
       { label: 'Open source', us: 'Yes, MIT-licensed', them: 'Yes, MIT-licensed' },
       {
@@ -437,8 +437,8 @@ export const ALTERNATIVES: Alternative[] = [
       'Start from a real template (flowchart, kanban, retro, org chart…) instead of a blank page: 110 of them.',
       'Keep a whole project together: several tabs in one document, organised in folders, with per-tab layers.',
       '24 themes recolour the whole canvas, shapes and arrows, in one click.',
-      'Draw mode is a plain whiteboard: pressure-sensitive markers, an eraser and shapes on a plain, dotted or grid board, light or dark.',
-      'Sketching tools beyond the marker: a Path tool for clean curves, optional shape recognition, an eraser that takes a whole stroke or just part of one, and Draw templates such as Sketchnote, Rich Picture and Comic Strip.',
+      'Drawing mode is a plain whiteboard: pressure-sensitive markers, an eraser and shapes on a plain, dotted or grid board, light or dark.',
+      'Sketching tools beyond the marker: a Path tool for clean curves, optional shape recognition, an eraser that takes a whole stroke or just part of one, and Drawing templates such as Sketchnote, Rich Picture and Comic Strip.',
       'Paste an Excalidraw copy straight onto a tab, or import .excalidraw files as documents of their own.',
       'Built-in charts, an icon library, comments, assigned actions and a slide-deck Presentation mode, without add-ons.',
       'Smart alignment guides and snapping line everything up as you drag.',
@@ -455,14 +455,14 @@ export const ALTERNATIVES: Alternative[] = [
       {
         heading: 'Keep the sketch when you want it',
         paragraphs: [
-          "The hand-drawn look is Excalidraw's signature, and if that aesthetic is the point, Excalidraw wins it outright. But sketching itself isn't exclusive to it. Any livediagram tab can switch into Draw mode, a plain whiteboard with three pressure-sensitive markers, text, an eraser and shapes, on a plain, dotted or grid board in light or dark. In Diagram mode, the Freehand pen keeps a stroke exactly as drawn and the Shape Pen tidies a rough box into a clean element on release.",
+          "The hand-drawn look is Excalidraw's signature, and if that aesthetic is the point, Excalidraw wins it outright. But sketching itself isn't exclusive to it. Any livediagram tab can switch into Drawing mode, a plain whiteboard with three pressure-sensitive markers, text, an eraser and shapes, on a plain, dotted or grid board in light or dark. In Diagram mode, the Freehand pen keeps a stroke exactly as drawn and the Shape Pen tidies a rough box into a clean element on release.",
           'Switching mode never changes the document: the same tab can hold a structured diagram and the freehand notes scribbled over it.',
         ],
       },
       {
         heading: 'Bring your Excalidraw boards along',
         paragraphs: [
-          'An Excalidraw copy pasted onto a tab, or a file dropped on it, lands as whiteboard-native content in Draw mode. A .excalidraw file (or a PNG or SVG exported with the scene embedded) imports with shapes, arrows, text and connections intact, and the Explorer can import Excalidraw files as documents of their own. Each import ends with a report of anything that changed on the way in.',
+          'An Excalidraw copy pasted onto a tab, or a file dropped on it, lands as whiteboard-native content in Drawing mode. A .excalidraw file (or a PNG or SVG exported with the scene embedded) imports with shapes, arrows, text and connections intact, and the Explorer can import Excalidraw files as documents of their own. Each import ends with a report of anything that changed on the way in.',
           'Export goes the other way too: any diagram or whiteboard tab saves back out as a .excalidraw file. Excalidraw has fewer element types, so richer livediagram elements simplify on the way out.',
         ],
       },
@@ -487,7 +487,7 @@ export const ALTERNATIVES: Alternative[] = [
       },
       {
         q: 'Can I get the hand-drawn look in livediagram?',
-        a: "Partially. Draw mode is a freehand whiteboard with pressure-sensitive markers, and in Diagram mode the Shape Pen tidies a rough sketch into a clean shape. But livediagram's shapes are clean and themed by design; if the signature sketchy aesthetic is what you want, Excalidraw is the better pick.",
+        a: "Partially. Drawing mode is a freehand whiteboard with pressure-sensitive markers, and in Diagram mode the Shape Pen tidies a rough sketch into a clean shape. But livediagram's shapes are clean and themed by design; if the signature sketchy aesthetic is what you want, Excalidraw is the better pick.",
       },
       {
         q: 'Can I import my Excalidraw files?',
@@ -756,7 +756,7 @@ export const ALTERNATIVES: Alternative[] = [
       'Free with no file limits and no seats: every feature, for everyone.',
       'Open a link and start, no account needed, even to create a document.',
       'Structured diagrams that stay tidy: shapes and arrows that stay attached, alignment guides, 24 one-click themes and 140 templates.',
-      'Five ways to work one tab: Diagram for structure, Draw for freehand whiteboarding, Facilitate for running a session with your team, Illustrate for designed pages, and Plan for boards of cards.',
+      'Five ways to work one tab: Diagram for structure, Drawing for freehand whiteboarding, Facilitate for running a session with your team, Illustrate for designed pages, and Plan for boards of cards.',
       'Workshop tools built in: Facilitate mode, a facilitator role, a shared timer, dot-voting, live polls, planning-poker estimate cards, temperature checks, quizzes, an anonymous idea box and a Q&A board.',
       'Participant links: the room adds stickies, writes and votes, and nobody can reshape the board by accident.',
       'Run the meeting on the board: an agenda that starts the timer for each segment, a roll call, a random picker and decision records, plus around 190 emoji stickers and 32 word badges.',
@@ -774,7 +774,7 @@ export const ALTERNATIVES: Alternative[] = [
       {
         heading: 'A whiteboard that keeps going',
         paragraphs: [
-          'FigJam is excellent for loose, freeform boards. livediagram’s Draw mode is a plain whiteboard too, with pressure-sensitive markers, sticky notes, text and shapes, but the same document carries on after the brainstorm. Switch a tab to Diagram when a sketch needs structure, with arrows that stay attached and themes that restyle the whole canvas in one click; to Plan when the ideas become cards on a board, with a Sheet beside it; or to Illustrate for the write-up and the slides.',
+          'FigJam is excellent for loose, freeform boards. livediagram’s Drawing mode is a plain whiteboard too, with pressure-sensitive markers, sticky notes, text and shapes, but the same document carries on after the brainstorm. Switch a tab to Diagram when a sketch needs structure, with arrows that stay attached and themes that restyle the whole canvas in one click; to Plan when the ideas become cards on a board, with a Sheet beside it; or to Illustrate for the write-up and the slides.',
           'Start from one of 140 templates, from retrospectives and story maps to flowcharts and system architecture, and split larger work across tabs, folders and layers.',
         ],
       },

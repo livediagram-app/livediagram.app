@@ -45,7 +45,7 @@ describe('useEditorMode', () => {
     act(() => h.hook.result.current.setMode('draw'));
     expect(h.tab().opensIn).toBe('draw');
     expect(h.commitTabs).toHaveBeenCalledTimes(1);
-    expect(events).toEqual([['Editor', 'Changed', 'ModeDraw']]);
+    expect(events).toEqual([['Editor', 'Changed', 'ModeDrawing']]);
     expect(modeAtEvent).toEqual([undefined]);
     h.hook.rerender();
     expect(h.hook.result.current.mode).toBe('draw');

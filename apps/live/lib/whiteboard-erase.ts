@@ -1,4 +1,4 @@
-// One step of the whiteboard eraser (docs/specs/023-draw-mode/draw-mode.md "Eraser"): a brush of radius
+// One step of the whiteboard eraser (docs/specs/023-drawing-mode/drawing-mode.md "Eraser"): a brush of radius
 // `r` swept from `a` to `b`, in canvas coords. Stroke mode removes the strokes
 // whose INK the brush crosses, and the shapes whose drawn outline or visible fill
 // it touches (shape-hit.ts, the same outline selecting picks by); Partial cuts strokes. Everything else is the
@@ -37,7 +37,7 @@ export function strokesTouched(
 
 /**
  * Ids of the unprotected paths the brush touches: a path is erased whole in either mode
- * (docs/specs/023-draw-mode/path-tool.md "Selecting and erasing").
+ * (docs/specs/023-drawing-mode/path-tool.md "Selecting and erasing").
  */
 export function pathsTouched(
   elements: readonly Element[],
@@ -53,7 +53,7 @@ export function pathsTouched(
 
 /**
  * Ids of the unprotected shapes the brush touches where they are drawn: along their
- * outline, or on a visible fill (docs/specs/023-draw-mode/draw-mode.md "Eraser").
+ * outline, or on a visible fill (docs/specs/023-drawing-mode/drawing-mode.md "Eraser").
  */
 export function shapesTouched(
   elements: readonly Element[],
@@ -72,7 +72,7 @@ export function shapesTouched(
 
 /**
  * The element list with every touched stroke cut, or null when nothing changed. Arrows pinned to a
- * cut stroke follow it in the same step (docs/specs/023-draw-mode/draw-mode.md "Eraser"): a stroke
+ * cut stroke follow it in the same step (docs/specs/023-drawing-mode/drawing-mode.md "Eraser"): a stroke
  * erased whole takes its unprotected pinned arrows with it, as Stroke mode does; a stroke split into
  * pieces turns each end pinned to it into a free end where it was drawn, so no arrow is left pinned
  * to an id that no longer exists.

@@ -12,7 +12,7 @@ import { Frame } from './shared';
 // sky-700: white text on it reads at AA, where sky-500 does not.
 const PICKED = '#0369a1';
 const VIEW = '0 0 300 96';
-// The editor's own modes, in its order (Facilitate after Draw), so the menu never drifts from the app.
+// The editor's own modes, in its order (Facilitate after Drawing), so the menu never drifts from the app.
 const MODES = EDITOR_MODES.map(editorModeLabel);
 const ROW = 14.4;
 

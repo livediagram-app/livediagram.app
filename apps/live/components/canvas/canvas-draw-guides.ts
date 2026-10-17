@@ -44,7 +44,7 @@ interface DrawGuideInputs {
   // produced; the in-progress draw's own guides/snaps are merged on top.
   snapGuides: AlignmentGuide[];
   snapTargets: SnapTarget[];
-  // Draw mode: a whiteboard pen draws freely, with no guides. Elsewhere a marker guides like the
+  // Drawing mode: a whiteboard pen draws freely, with no guides. Elsewhere a marker guides like the
   // pencil. Absent counts as a whiteboard.
   whiteboard?: boolean;
 }

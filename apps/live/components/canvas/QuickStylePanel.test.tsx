@@ -300,7 +300,7 @@ describe('QuickStylePanel on a whiteboard: the marker rows', () => {
   });
 
   it('offers the whiteboard’s colours on Stroke and Text colour, one row each', () => {
-    // docs/specs/023-draw-mode/draw-mode.md "The quick style panel stays".
+    // docs/specs/023-drawing-mode/drawing-mode.md "The quick style panel stays".
     const board = { value: 'blue' as const, options: stockOptions(PALETTE) };
     const quickStyle = {
       ...api(undefined, ['s1']),
@@ -350,7 +350,7 @@ describe('QuickStylePanel on a whiteboard: the marker rows', () => {
   });
 
   it('offers the nine stock colours and More colours in one row, with no Custom colours row', () => {
-    // docs/specs/023-draw-mode/draw-mode.md "The quick style panel stays": quick choices only; the
+    // docs/specs/023-drawing-mode/drawing-mode.md "The quick style panel stays": quick choices only; the
     // colour picker behind More colours holds the custom colours.
     render(<QuickStylePanel quickStyle={api(second)} hidden={false} />);
     const colour = screen.getByRole('group', { name: 'Marker colour' });

@@ -91,7 +91,7 @@ knows it, else "Tab Window".
 | ---------- | ----------------------------------------------------- |
 | Illustrate | **Media**: Tab Window, after Image, before the embeds |
 | Diagram    | none (Search still finds and places it)               |
-| Draw       | none                                                  |
+| Drawing    | none                                                  |
 | Facilitate | none                                                  |
 | Plan       | none                                                  |
 

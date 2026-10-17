@@ -1,6 +1,6 @@
 'use client';
 
-// A marker's colour (docs/specs/023-draw-mode/draw-mode.md "The colour picker"): the one colour
+// A marker's colour (docs/specs/023-drawing-mode/drawing-mode.md "The colour picker"): the one colour
 // picker (docs/specs/004-interface-design/colour-picker.md) with the strong standard colours by
 // name, each in its version for the board, Custom colours from the document, and + with the
 // hard-to-see warning. Ink is the pen's null colour.

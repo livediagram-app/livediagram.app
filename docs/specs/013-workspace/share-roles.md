@@ -80,7 +80,7 @@ capabilities, the Participant palette, the room) keep a new feature from widenin
 ## The Participant palette
 
 - **One category, Participate**, holding just what a Participant may add, as the palette's own tiles: an Event
-  Storming board's coloured notes, else Sticky and Text (whatever the mode's Popular holds); then Image. On every mode, Draw included. No Search, no More. A mind map grows from a selected node (Tab, Enter, or Add
+  Storming board's coloured notes, else Sticky and Text (whatever the mode's Popular holds); then Image. On every mode, Drawing included. No Search, no More. A mind map grows from a selected node (Tab, Enter, or Add
   child and Add sibling on its toolbar), not from a tile. Each tile works as an Editor's does: dragged onto the
   canvas it lands where it is let go; pressed, it arms a tap to drop or a drag to draw.
 - **The selection modes it needs**: Select, Hand, Laser, Spotlight, Isometric and Zen. Eraser, Format

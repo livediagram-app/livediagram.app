@@ -1,4 +1,4 @@
-// Sketchnote (docs/specs/007-editor/templates-by-mode.md "Draw templates"): visual notes taken
+// Sketchnote (docs/specs/007-editor/templates-by-mode.md "Drawing templates"): visual notes taken
 // during a talk, "How We Ship on Fridays", the way a sketchnoter fills a page live. A ribbon
 // banner carries the title over the speaker and date; the big idea sits in a blue cloud at the
 // centre; three framed areas (Key Points, Quotes, Questions) hang off it on drawn arrows; a

@@ -5,7 +5,7 @@ import { track } from './telemetry';
 
 vi.mock('./telemetry', () => ({ track: vi.fn() }));
 
-// docs/specs/023-draw-mode/draw-mode.md "Shape recognition": Alt (Option), or the chip on a
+// docs/specs/023-drawing-mode/drawing-mode.md "Shape recognition": Alt (Option), or the chip on a
 // touch screen, flips the stroke being drawn between ink and the shape it reads as.
 type P = { x: number; y: number };
 const square = (): P[] => {
@@ -62,13 +62,13 @@ describe('flipStrokeRecognition', () => {
     const listener = vi.fn();
     stroke.subscribe(listener);
     flipStrokeRecognition(stroke, 1.5, 'key');
-    expect(track).toHaveBeenLastCalledWith('Draw', 'Toggled', 'RecogniseOnceKey');
+    expect(track).toHaveBeenLastCalledWith('Drawing', 'Toggled', 'RecogniseOnceKey');
     flipStrokeRecognition(stroke, 1.5, 'chip');
-    expect(track).toHaveBeenLastCalledWith('Draw', 'Toggled', 'BreakShapeChip');
+    expect(track).toHaveBeenLastCalledWith('Drawing', 'Toggled', 'BreakShapeChip');
     flipStrokeRecognition(stroke, 1.5, 'chip');
-    expect(track).toHaveBeenLastCalledWith('Draw', 'Toggled', 'RecogniseOnceChip');
+    expect(track).toHaveBeenLastCalledWith('Drawing', 'Toggled', 'RecogniseOnceChip');
     flipStrokeRecognition(stroke, 1.5, 'key');
-    expect(track).toHaveBeenLastCalledWith('Draw', 'Toggled', 'BreakShapeKey');
+    expect(track).toHaveBeenLastCalledWith('Drawing', 'Toggled', 'BreakShapeKey');
     expect(listener).toHaveBeenCalledTimes(4);
   });
 

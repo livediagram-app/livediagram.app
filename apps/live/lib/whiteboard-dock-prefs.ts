@@ -1,6 +1,6 @@
-// The whiteboard dock's synced preferences (docs/specs/023-draw-mode/draw-mode.md "Shape slots",
+// The whiteboard dock's synced preferences (docs/specs/023-drawing-mode/drawing-mode.md "Shape slots",
 // "Where the dock sits"): the pinned shape kinds and the pick counts behind the Shapes flyout's
-// slots, where the dock sits, and Draw mode's pattern. They live in the
+// slots, where the dock sits, and Drawing mode's pattern. They live in the
 // user's preferences blob (lib/user-preferences.ts), so they follow a signed-in user across devices
 // and stay in this browser for a guest. Read through here, never directly: a stored value is only
 // trusted once parsed.
@@ -83,8 +83,8 @@ export function withWhiteboardDockPosition(
 // The dock's wrapper, as wide as its groups: what the top corners are measured against.
 export const WHITEBOARD_DOCK_SELECTOR = '[data-whiteboard-dock]';
 
-// Draw mode's pattern (docs/specs/007-editor/editor-modes.md "One look"): the person's own Plain,
-// Dots or Grid, as they last chose it in Draw mode, never stored on a tab. Grid until chosen.
+// Drawing mode's pattern (docs/specs/007-editor/editor-modes.md "One look"): the person's own Plain,
+// Dots or Grid, as they last chose it in Drawing mode, never stored on a tab. Grid until chosen.
 export const DRAW_PATTERNS = [
   'blank',
   'grid',

@@ -71,7 +71,7 @@ describe('TabPill out of scope', () => {
 describe('TabPill opening-mode icon', () => {
   it.each([
     ['Diagram', undefined, FlowchartIcon],
-    ['Draw', 'draw' as const, MarkerIcon],
+    ['Drawing', 'draw' as const, MarkerIcon],
   ])('leads with the %s mode icon', (_, opensIn, Icon) => {
     const expected = render(<Icon size={12} />).container.querySelector('svg')!.innerHTML;
     cleanup();

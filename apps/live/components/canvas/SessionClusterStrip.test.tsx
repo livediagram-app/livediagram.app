@@ -136,7 +136,7 @@ describe('Illustrate: a running Vote or Poll only', () => {
 });
 
 describe('sessionStripTools', () => {
-  it('offers all three in Facilitate, Timer and Vote in Plan, none in Diagram or Draw', () => {
+  it('offers all three in Facilitate, Timer and Vote in Plan, none in Diagram or Drawing', () => {
     expect(sessionStripTools('facilitate')).toEqual({ timer: true, vote: true, poll: true });
     expect(sessionStripTools('plan')).toEqual({ timer: true, vote: true, poll: false });
     expect(sessionStripTools(undefined)).toBeNull();

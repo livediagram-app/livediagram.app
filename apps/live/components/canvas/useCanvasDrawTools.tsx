@@ -26,7 +26,7 @@ type CanvasDrawToolsInput = {
 >;
 
 // The canvas's drawing gestures, composed in their order of precedence: the Path tool
-// (docs/specs/023-draw-mode/path-tool.md), then a polygon's click-to-place (docs/specs/008-canvas/polygon-tool.md), then
+// (docs/specs/023-drawing-mode/path-tool.md), then a polygon's click-to-place (docs/specs/008-canvas/polygon-tool.md), then
 // the draw-to-size or stamp of an armed tile (docs/specs/021-event-storming/event-storming.md Phase 4), with
 // Illustrate's off-page presses and the Format tool's page press ahead of them all.
 export function useCanvasDrawTools({
@@ -80,7 +80,7 @@ export function useCanvasDrawTools({
       viewportZoom,
       onCommitPolygon,
     });
-  // The Path tool (docs/specs/023-draw-mode/path-tool.md), in front of both: see usePathTool.
+  // The Path tool (docs/specs/023-drawing-mode/path-tool.md), in front of both: see usePathTool.
   const pathTool = usePathTool({
     pendingDraw,
     canvasTool,

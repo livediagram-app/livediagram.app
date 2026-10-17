@@ -196,7 +196,7 @@ used:
 - **Metrics, visualisations, notes and the written cards**: a Dashboard's **Add to Slot** and its slot menu's **Add a
   Slot** ([Plan tabs](plan-tabs.md#dashboard-tab)).
 
-The Explorer menu keeps its corner on a phone, as on a whiteboard. Draw mode's shape dock leaves the Plan categories
+The Explorer menu keeps its corner on a phone, as on a whiteboard. Drawing mode's shape dock leaves the Plan categories
 out: they frame items, not ink.
 
 A board placed by any of these paths takes its preset's set-up: a column takes the status the tab already has of its

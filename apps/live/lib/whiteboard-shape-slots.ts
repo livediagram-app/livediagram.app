@@ -1,4 +1,4 @@
-// The dock's shape slots (docs/specs/023-draw-mode/draw-mode.md "Shape slots"): the default pins,
+// The dock's shape slots (docs/specs/023-drawing-mode/drawing-mode.md "Shape slots"): the default pins,
 // which kinds fill the Shapes flyout's six slots (Most used, Recent), how a pick is recorded, and
 // where a shape dragged onto the bar lands. Pure; the dock prefs (lib/whiteboard-dock-prefs.ts) store the results and
 // the slot drag (useShapeSlotDrag) measures.
@@ -16,11 +16,11 @@ export type ShapePicks = Readonly<Partial<Record<WhiteboardShapeKey, readonly [n
 
 export const PINNED_SHAPES_MAX = 7;
 
-// The pinned side of a user who never changed it (docs/specs/023-draw-mode/draw-mode.md "Shape slots").
+// The pinned side of a user who never changed it (docs/specs/023-drawing-mode/drawing-mode.md "Shape slots").
 export const DEFAULT_PINNED_SHAPES: readonly WhiteboardShapeKey[] = ['arrow', 'rectangle'];
 
 // A phone's dock keeps only the first pinned shape on the bar; the rest move to the top of the
-// Shapes flyout, so the bar fits the width (docs/specs/023-draw-mode/draw-mode.md "On a phone").
+// Shapes flyout, so the bar fits the width (docs/specs/023-drawing-mode/drawing-mode.md "On a phone").
 const PHONE_BAR_PINS = 1;
 
 export function splitPhonePins(pinned: readonly WhiteboardShapeKey[]): {

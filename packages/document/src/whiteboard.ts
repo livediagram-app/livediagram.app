@@ -1,7 +1,7 @@
-// Draw mode (docs/specs/023-draw-mode/draw-mode.md): the canvases its stock colours are tuned
+// Drawing mode (docs/specs/023-drawing-mode/drawing-mode.md): the canvases its stock colours are tuned
 // for, its Plain / Dots / Grid backgrounds and its pens' weights. Pure data and pure functions; the
 // editor owns the dock and the device-local pens. There is one look in both editor modes
-// (docs/specs/007-editor/editor-modes.md "One look"): Draw mode writes its colours onto what it
+// (docs/specs/007-editor/editor-modes.md "One look"): Drawing mode writes its colours onto what it
 // makes, and every renderer resolves stock colours by name (./stock-colours).
 import { BORDER_STROKE_PX, type BorderStroke } from './border-style';
 import { DARK_CANVAS_BACKGROUND_COLOR, DEFAULT_BACKGROUND_COLOR } from './canvas-colors';
@@ -18,7 +18,7 @@ export const WHITEBOARD_BOARD: Readonly<Record<Appearance, string>> = {
 export const WHITEBOARD_INK: Readonly<Record<Appearance, string>> = PEN_INK;
 type WhiteboardBackground = 'plain' | 'dots' | 'grid';
 
-// Draw mode's Background row: each choice is a canvas pattern, the person's own in Draw mode
+// Drawing mode's Background row: each choice is a canvas pattern, the person's own in Drawing mode
 // (docs/specs/007-editor/editor-modes.md "One look").
 export const WHITEBOARD_BACKGROUNDS: readonly {
   id: WhiteboardBackground;
@@ -30,7 +30,7 @@ export const WHITEBOARD_BACKGROUNDS: readonly {
   { id: 'grid', label: 'Grid', pattern: 'graph' },
 ];
 
-// A new whiteboard starts on Grid (docs/specs/023-draw-mode/draw-mode.md "Board background"),
+// A new whiteboard starts on Grid (docs/specs/023-drawing-mode/drawing-mode.md "Board background"),
 // written onto the tab when it is made (templateCanvasOverrides), so it never changes later.
 export const WHITEBOARD_DEFAULT_PATTERN: BackgroundPattern = 'graph';
 

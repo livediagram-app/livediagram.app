@@ -52,7 +52,7 @@ Scope, by file:
 | `apps/live/components/canvas/whiteboard/WhiteboardDock.tsx` | The Path tool button (`ShapePenIcon`); Select's edit-mode glyph (`EditPointsIcon`)                                                |
 | `apps/live/components/palette/palette-icons.tsx`            | `ShapePenIcon` (the Shape Pen tile's icon, shared with the dock), `EditPointsIcon`                                                |
 | `apps/telemetry/app/event-explanations.ts`                  | Sentences for the four events                                                                                                     |
-| `apps/help/app/canvas/draw-mode/page.mdx`                   | The Path tool section                                                                                                             |
+| `apps/help/app/canvas/drawing-mode/page.mdx`                | The Path tool section                                                                                                             |
 
 ## Domain and naming
 
@@ -193,7 +193,7 @@ instead; releasing Space resumes shaping from the node's new place. Release ends
   draft ending, empties the redo list. `usePathDrawGesture.history`
   (`{ canUndo: true, canRedo, undo, redo }`, null without a draft) replaces `canUndo` / `canRedo` /
   `onUndo` / `onRedo` on `CanvasChrome`, so the corner cluster (the only Undo and Redo buttons, in
-  Draw mode too) steps through the draft too.
+  Drawing mode too) steps through the draft too.
 - Space, Alt, Shift: read from the pointer events and a Space key flag.
 
 **Rubber band**: while not dragging, the last node to `cursor` (Shift: constrained) as a cubic
@@ -309,7 +309,7 @@ With the Path tool in hand, the draft is editable (as in Figma):
 
 - `activeWhiteboardTool`: `pendingDraw.type === 'path'` → `'path'`.
 - `useWhiteboard.pickPath()`: `setCanvasTool('select')`, `beginDraw({ type: 'path' })`, track
-  `Draw·Selected·Path`. Leaving a whiteboard tab cancels a path intent as it does a pen.
+  `Drawing·Selected·Path`. Leaving a whiteboard tab cancels a path intent as it does a pen.
 - The dock button, in the Shapes group after the sticky note (the dock's own blueprint places it):
   key `path`, label "Path tool", shortcut `P`,
   `aria-pressed` when the tool is `path`, icon `ShapePenIcon` at `DOCK_ICON_PX`: the one component
@@ -342,7 +342,7 @@ With the Path tool in hand, the draft is editable (as in Figma):
 ### Style
 
 - Created in Ink by name, unfilled: `boardShape(createPath(...))` writes `penColour: 'ink'` and
-  `fillColor: 'transparent'` (the Path tool is a Draw mode tool), then the remembered Draw style; it
+  `fillColor: 'transparent'` (the Path tool is a Drawing mode tool), then the remembered Drawing style; it
   looks the same in Diagram mode ([One look](../../007-editor/editor-modes.md#one-look)).
 - Quick style: `isQuickStyleTarget` includes an unlocked path. Sections: stroke, width, style (solid,
   dashed, dotted) always; background when `closed`. Apply and clear as for a shape.

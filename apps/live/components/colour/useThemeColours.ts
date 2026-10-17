@@ -2,7 +2,7 @@
 
 // The Theme Palette of every picker in the editor (docs/specs/004-interface-design/colour-picker.md "The
 // colours"): the active tab's theme colours, named by colour words. The same colours the element menu's colour
-// rows offer (useColourPalette), so a Plan card, a Draw marker and a shape all open on one Theme Palette.
+// rows offer (useColourPalette), so a Plan card, a Drawing marker and a shape all open on one Theme Palette.
 import { useContext, useMemo } from 'react';
 import { EditorContext } from '@/app/document/[id]/EditorContext';
 import { getTheme, themePresetColors } from '@/lib/themes';

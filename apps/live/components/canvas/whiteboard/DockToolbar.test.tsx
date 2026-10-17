@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-// A whiteboard dock pill (docs/specs/023-draw-mode/draw-mode.md "What a whiteboard shows") on a touch
+// A whiteboard dock pill (docs/specs/023-drawing-mode/drawing-mode.md "What a whiteboard shows") on a touch
 // screen (docs/specs/004-interface-design/touch-targets.md): its 36px buttons reach 44px-tall tap areas,
 // as the Toolbar layout strip's tiles do, and a tool's shortcut letter is not drawn.
 

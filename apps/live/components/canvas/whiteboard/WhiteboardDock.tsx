@@ -1,6 +1,6 @@
 'use client';
 
-// Draw mode's tools (docs/specs/023-draw-mode/draw-mode.md "What a whiteboard shows"): three
+// Drawing mode's tools (docs/specs/023-drawing-mode/drawing-mode.md "What a whiteboard shows"): three
 // groups, Drawing tools, Shapes and Settings (Undo and Redo live in the bottom bar), each its own
 // toolbar with one Tab stop. The groups sit side by side in a floating bar at the top centre, or
 // the bottom centre by choice ("Where the dock sits"), the strip's height at the toolbar UI scale;

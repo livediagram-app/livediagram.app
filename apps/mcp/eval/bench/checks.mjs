@@ -134,7 +134,7 @@ export function pagesOf(snap) {
   return out;
 }
 
-// The tab is drawn hand-made: a Draw tab, or a sketch finish.
+// The tab is drawn hand-made: a Drawing tab, or a sketch finish.
 export function sketched(tab) {
   return /finish=sketch|mode=draw/.test(tab.outline?.split('\n')[0] ?? '');
 }

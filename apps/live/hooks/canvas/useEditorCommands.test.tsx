@@ -106,7 +106,7 @@ describe('useEditorCommands', () => {
     expect(second).toHaveBeenCalledTimes(1);
   });
 
-  // docs/specs/007-editor/editor-modes.md: Draw mode has no format painter.
+  // docs/specs/007-editor/editor-modes.md: Drawing mode has no format painter.
   it('follows the editor mode, not the tab', () => {
     ctx = editor({ editorMode: { mode: 'draw', setMode: vi.fn(), canSwitch: true } });
     const draw = ids(run().result.current.commandItems);

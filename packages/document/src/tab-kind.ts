@@ -8,7 +8,7 @@ import type { Layer } from './layers';
 import { isEventStormingTab } from './event-storming';
 
 // Whiteboarding is an editor mode, not a kind (docs/specs/007-editor/editor-modes.md): a stored
-// 'whiteboard' is migrated on read into a general tab that opens in Draw (./legacy-whiteboard-tab).
+// 'whiteboard' is migrated on read into a general tab that opens in Drawing (./legacy-whiteboard-tab).
 // Board, Sheet and Dashboard are the Plan tab kinds (docs/specs/026-plan/plan-tabs.md), and Form
 // (docs/specs/030-forms/forms.md).
 export type TabKind = 'diagram' | 'event-storming' | 'board' | 'sheet' | 'dashboard' | 'form';

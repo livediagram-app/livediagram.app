@@ -87,7 +87,7 @@ describe('importScenesAsNewDocuments', () => {
     expect(untitled!.tabs[0]!.elements).toHaveLength(2);
     expect(calls.refreshed).toBe(1);
     expect(track).toHaveBeenCalledWith('Document', 'Created', 'Cloud');
-    expect(track).toHaveBeenCalledWith('Draw', 'Created', 'Import');
+    expect(track).toHaveBeenCalledWith('Drawing', 'Created', 'Import');
     expect(outcome).toMatchObject({
       status: 'done',
       documents: [
@@ -178,7 +178,7 @@ describe('importSceneIntoActiveTab', () => {
     expect(calls.replaced[0]!.elements[0]).toMatchObject({ fillColor: 'transparent' });
   });
 
-  it('keeps the tab’s own pattern in Draw mode unless the scene names one', async () => {
+  it('keeps the tab’s own pattern in Drawing mode unless the scene names one', async () => {
     const board = setup({ backgroundPattern: 'grid' }, { drawMode: true });
     await board.api.importSceneIntoActiveTab(boardScene([square]));
     expect(board.calls.replaced[0]!.backgroundPattern).toBeUndefined();

@@ -33,7 +33,7 @@ export * from './feature-art/infographics';
 export * from './feature-art/infographics-export';
 export * from './feature-art/logo';
 export * from './feature-art/article';
-// The mode categories (docs/specs/019-marketing/marketing-site.md "Story beats"): Draw's markers and
+// The mode categories (docs/specs/019-marketing/marketing-site.md "Story beats"): Drawing's markers and
 // erasers, Plan's boards, and the writing and slides of Illustrate's articles and slide pages.
 export * from './feature-art/whiteboard';
 export * from './feature-art/whiteboard-pen';
@@ -55,7 +55,7 @@ export * from './feature-art/storming';
 export * from './feature-art/canvas-data';
 export * from './feature-art/reach';
 // Plan cards beyond the board, Sheets beyond formulas, Forms beyond the build, Illustrate pages beyond
-// layouts, and Draw's dock.
+// layouts, and Drawing's dock.
 export * from './feature-art/plan-more';
 export * from './feature-art/sheet-more';
 export * from './feature-art/forms-more';

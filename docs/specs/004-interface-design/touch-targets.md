@@ -23,8 +23,8 @@ floor at 24px; the editor aims past it, because a diagram editor is used with a 
   header buttons (`MovablePanelHeader`, `SettingsPopover`), the dialog close in both shapes
   (`DialogCloseButton`), search clear and dismiss buttons, and Add tab. Resize handles have their
   own 16px pad on a coarse pointer (canvas element parts).
-- **Every canvas toolbar pads its items.** The Palette strip, the Draw dock's pills (`DockToolbar`)
-  and the menu button's own card in Draw (`ToolbarExplorerButton`) all carry `PHONE_TOOLBAR_ITEMS`;
+- **Every canvas toolbar pads its items.** The Palette strip, the Drawing dock's pills (`DockToolbar`)
+  and the menu button's own card in Drawing (`ToolbarExplorerButton`) all carry `PHONE_TOOLBAR_ITEMS`;
   the selection toolbar's 32px buttons (`SelectionPopover`) get `touch-target-y`, as do the tab pill,
   the role pill (Editing / Viewing), the tour card's buttons and an Illustrate page's lock and cog.
   The Plan cogs (a column's, Board Settings, a Sheet's) and the empty-tab card's close take the
@@ -48,7 +48,7 @@ floor at 24px; the editor aims past it, because a diagram editor is used with a 
   (`[@media(hover:none)]`), quietly where it would crowd. A canvas comment bubble's quick delete stays hover-only:
   shown on every bubble it would invite a mistaken tap, and the open thread offers Delete.
 - **Keyboard hints are not drawn on a touch screen.** A tile's always-on shortcut letter (the Palette
-  strip, the Draw dock and its flyouts, a picker's corner key) teaches a key there is no keyboard to
+  strip, the Drawing dock and its flyouts, a picker's corner key) teaches a key there is no keyboard to
   press, so it carries `pointer-coarse:hidden`; `aria-keyshortcuts` stays for a paired keyboard.
 - **Text fields are 16px on a touch screen.** iOS zooms the page into any focused field under 16px and
   leaves it zoomed, so a search box drawn at 14 or 15px reads at 16px under `pointer: coarse` (the

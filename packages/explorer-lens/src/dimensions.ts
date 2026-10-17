@@ -71,7 +71,7 @@ export const DIMENSION_LABELS: Record<LensDimension, string> = {
 export const VALUE_LABELS = {
   'opens-in': {
     diagram: 'Diagram',
-    draw: 'Draw',
+    draw: 'Drawing',
     facilitate: 'Facilitate',
     illustrate: 'Illustrate',
     plan: 'Plan',

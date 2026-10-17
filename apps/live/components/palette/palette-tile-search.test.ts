@@ -148,7 +148,7 @@ describe('searchElementTiles', () => {
   });
 });
 
-describe("Draw mode's markers", () => {
+describe("Drawing mode's markers", () => {
   const drawTiles = markerTiles(DEFAULT_WHITEBOARD_PREFS, 'light');
 
   it("are found by name, always as another mode's", () => {

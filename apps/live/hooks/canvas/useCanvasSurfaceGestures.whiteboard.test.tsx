@@ -8,7 +8,7 @@ import type { PendingDraw } from '@/lib/draw-mode';
 import { penSeen, resetPenSeenForTests } from '@/lib/pen-seen';
 import { useCanvasSurfaceGestures } from './useCanvasSurfaceGestures';
 
-// docs/specs/023-draw-mode/draw-mode.md "Touch and pen input".
+// docs/specs/023-drawing-mode/drawing-mode.md "Touch and pen input".
 const PEN: PendingDraw = {
   type: 'freehand',
   variant: 'whiteboard',
@@ -111,7 +111,7 @@ describe('whiteboard pen versus touch', () => {
 });
 
 // A held marker must not ink under the bottom-right cluster: pressing Undo drew a dot there, and
-// the click then undid the dot instead of the stroke (docs/specs/023-draw-mode/draw-mode.md "Pens").
+// the click then undid the dot instead of the stroke (docs/specs/023-drawing-mode/drawing-mode.md "Pens").
 describe('the bottom-right cluster is chrome, not canvas', () => {
   it('starts no stroke when Undo is pressed with a marker held', () => {
     const s = setup(true);

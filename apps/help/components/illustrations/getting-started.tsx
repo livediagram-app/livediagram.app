@@ -32,7 +32,7 @@ export function NewDocumentWelcome() {
         {/* The five mode cards, three then two, every one the same build and height: a plate
             on top, then the name and its number key. Diagram, where most start, leads and is
             chosen; its plate holds a small flow. */}
-        {(['Diagram', 'Draw', 'Facilitate', 'Illustrate', 'Plan'] as const).map((mode, i) => {
+        {(['Diagram', 'Drawing', 'Facilitate', 'Illustrate', 'Plan'] as const).map((mode, i) => {
           const top = i < 3;
           const w = top ? 106 : 164;
           const x = 42 + (top ? i * (w + 9) : (i - 3) * (w + 8));

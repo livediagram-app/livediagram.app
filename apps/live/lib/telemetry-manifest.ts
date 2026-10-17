@@ -60,12 +60,12 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Document·Removed',
   'Document·Renamed',
   'Document·Shared',
-  // Draw mode (docs/specs/023-draw-mode/draw-mode.md): a Whiteboard tab created (Template /
+  // Drawing mode (docs/specs/023-drawing-mode/drawing-mode.md): a Whiteboard tab created (Template /
   // NewTab / Import), a pen picked, the eraser mode or background changed, recognition toggled.
-  'Draw·Changed',
-  'Draw·Created',
-  'Draw·Selected',
-  'Draw·Toggled',
+  'Drawing·Changed',
+  'Drawing·Created',
+  'Drawing·Selected',
+  'Drawing·Toggled',
   'Document·Undone',
   // Google Drive mirror (docs/specs/022-drive-mirror/drive-mirror.md, "Telemetry").
   'Drive·Applied',
@@ -74,7 +74,7 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Drive·Linked',
   'Drive·Opened',
   'Drive·Unlinked',
-  // Editor modes (docs/specs/007-editor/editor-modes.md): a tab switched to Diagram or Draw.
+  // Editor modes (docs/specs/007-editor/editor-modes.md): a tab switched to Diagram or Drawing.
   'Editor·Changed',
   // Explorer filters (docs/specs/013-workspace/explorer-filters.md "Telemetry"): a facet gained a value.
   'Explorer·Selected',

@@ -1,6 +1,6 @@
-# Draw mode (the whiteboard)
+# Drawing mode (the whiteboard)
 
-**Draw mode** is the [editor mode](../007-editor/editor-modes.md) built for
+**Drawing mode** is the [editor mode](../007-editor/editor-modes.md) built for
 plain, freehand whiteboarding: pick up a pen and draw, with the simplicity of
 Microsoft Whiteboard. Any general tab can be switched into it from the mode
 switch beside the page switcher, and back to Diagram mode, and it is where
@@ -8,18 +8,18 @@ imported Microsoft Whiteboard boards open
 ([Microsoft Whiteboard import](../020-import-export/whiteboard-import.md)).
 
 Whiteboarding is a mode, not a tab kind: there is no `kind: 'whiteboard'`.
-A stored tab that carries it reads as a general tab that opens in Draw mode
+A stored tab that carries it reads as a general tab that opens in Drawing mode
 ([Existing whiteboards](../007-editor/editor-modes.md#existing-whiteboards)).
 The mode tunes **tools and rules**; it does not fork the document model.
 Strokes are `freehand` elements, notes are stickies, text is `text`, shapes
 are shapes. So realtime, comments, layers, export, share links, Offline Mode
-and the [Google Drive mirror](../022-drive-mirror/drive-mirror.md) work in Draw
-mode without Draw-specific code.
+and the [Google Drive mirror](../022-drive-mirror/drive-mirror.md) work in Drawing
+mode without Drawing-specific code.
 
-In the rest of this spec, **a whiteboard** means a general tab in Draw mode.
+In the rest of this spec, **a whiteboard** means a general tab in Drawing mode.
 
 The feature is built and then tuned in rounds with the operator. This spec
-states what Draw mode is; values that only use can settle (exact colours,
+states what Drawing mode is; values that only use can settle (exact colours,
 pen widths, dock spacing) are named constants, tuned in place.
 
 ## Why a mode
@@ -27,7 +27,7 @@ pen widths, dock spacing) are named constants, tuned in place.
 - **Mixable.** A workshop often needs a free sketch next to a tidy diagram,
   often on the same canvas. A mode lets one tab hold both, and lets a person
   move between drawing and diagramming without a new tab.
-- **No second editor.** Every editor feature reads the same elements, so Draw
+- **No second editor.** Every editor feature reads the same elements, so Drawing
   mode inherits fixes and features for free and nothing drifts.
 - **Kinds stay rare.** A tab kind is kept for a very specific use with its own
   notation, as event storming has; whiteboarding needs only other tools in
@@ -35,26 +35,26 @@ pen widths, dock spacing) are named constants, tuned in place.
 
 ## Creating one
 
-- **New Document wizard:** choosing **Draw** on the wizard's Mode step ([New document
-  route](../007-editor/new-document-route.md) "Choosing a mode") makes a document with one tab in Draw mode, from the
+- **New Document wizard:** choosing **Drawing** on the wizard's Mode step ([New document
+  route](../007-editor/new-document-route.md) "Choosing a mode") makes a document with one tab in Drawing mode, from the
   **Blank Whiteboard** template (kind id `whiteboard`, a blank builder and a preview tile, `packages/templates`).
-- **Start Drawing:** an empty Draw tab offers its templates in **Start Drawing** ([Template
+- **Start Drawing:** an empty Drawing tab offers its templates in **Start Drawing** ([Template
   starts](../007-editor/start-diagramming.md)): Blank Whiteboard first under Recommended, then **Visual Notes**,
   **Workshops** and **Prototypes**, with the pen staying in hand around it. The × starts from the blank whiteboard,
   and a top-centre pill brings it back while the tab is empty.
 - **New tab:** a new tab opens on its mode's start; another mode's start finds **Blank Whiteboard** and every
-  Draw template by search ([Template starts](../007-editor/start-diagramming.md#found-in-other-modes)).
+  Drawing template by search ([Template starts](../007-editor/start-diagramming.md#found-in-other-modes)).
 - **No theme step.** A new whiteboard starts on the default theme; the tab looks the same in either mode
   ([Appearance](#appearance)).
 - **Import:** a Microsoft Whiteboard import makes each board its own new
-  document with one tab that opens in Draw mode, named and dated after the board, and Excalidraw pasted onto a whiteboard lands as its own
+  document with one tab that opens in Drawing mode, named and dated after the board, and Excalidraw pasted onto a whiteboard lands as its own
   marks (see [Imported and pasted content](#imported-and-pasted-content)).
 - **Any tab:** the mode switch (beside the menu button) turns any general
   tab into a whiteboard and back ([Editor modes](../007-editor/editor-modes.md)).
 
 ## What a whiteboard shows
 
-A whiteboard trades the palette for Draw's own tools: one **floating dock**, centred across the
+A whiteboard trades the palette for Drawing's own tools: one **floating dock**, centred across the
 **top** of the canvas by default (see [Where the dock sits](#where-the-dock-sits)), like Microsoft
 Whiteboard's. It is the strip's twin: the **same height** as the Diagram strip (its buttons the
 strip's tile size) and drawn at the **toolbar UI scale** ([UI scale](../007-editor/ui-scale.md)), so
@@ -62,7 +62,7 @@ switching modes never changes the size of the bar at the top. Its flyouts are no
 at their design size, like every menu opened from a scaled surface. Every flyout has a **tip**
 pointing at the button that opened it, on the edge facing the dock, over its button.
 
-- **Hidden in Draw mode:** the Toolbar strip (the dock replaces it), the format painter, the Highlighter tile with the palette's catalogue (a whiteboard's pens are its markers), the Theme &
+- **Hidden in Drawing mode:** the Toolbar strip (the dock replaces it), the format painter, the Highlighter tile with the palette's catalogue (a whiteboard's pens are its markers), the Theme &
   canvas brush and the theme-mode banner, the tool panels (the eraser's
   settings live in the dock's flyout instead) and the empty-canvas banner (the dock is the hint). The header,
   tab bar, Explorer (its menu button keeps its corner on a phone),
@@ -70,7 +70,7 @@ pointing at the button that opened it, on the edge facing the dock, over its but
   they are about the document, not about drawing.
 - **The quick style panel stays** ([Quick style panel](../008-canvas/quick-style-panel.md)):
   it is how a shape, line or text box gets another colour or width once
-  drawn, since the pens colour only their own strokes. In Draw mode its
+  drawn, since the pens colour only their own strokes. In Drawing mode its
   **Stroke** and **Text colour** rows offer the **stock colours**, the same
   choices as Marker colour: **Ink** first, then the eight hued colours in the
   standard order, Red to Pink (each stored by name, drawn in its version for the
@@ -105,8 +105,8 @@ pointing at the button that opened it, on the edge facing the dock, over its but
   tools**, **shapes** and **settings** (the cog on its own). **It looks like the other modes'
   palette** ([Toolbar layout](../007-editor/toolbar-layout.md)): the same card, the same 36 px
   tiles and hairlines, and a tool in hand marked as the palette marks its active tool (a soft
-  brand fill with a hairline ring), so Draw reads as the same product. What it holds and how it
-  behaves stay Draw's own (pens that stay in hand, flyouts, pinned shapes). Each group is still
+  brand fill with a hairline ring), so Drawing reads as the same product. What it holds and how it
+  behaves stay Drawing's own (pens that stay in hand, flyouts, pinned shapes). Each group is still
   its own toolbar for assistive technology ("Drawing tools", "Shapes", "Settings"), each one Tab
   stop with arrow keys moving within it.
 - **Drawing tools, left to right:**
@@ -165,7 +165,7 @@ pointing at the button that opened it, on the edge facing the dock, over its but
   the Path tool are always in the drawing tools bar; nothing hides them.
 - **No highlighter.** A whiteboard's pens are its markers, so the dock has
   none (search does not offer the format painter either), and a Highlighter
-  armed from the palette in Diagram mode is put down on entering Draw mode,
+  armed from the palette in Diagram mode is put down on entering Drawing mode,
   like any palette arm.
 - The dock never moves when a tool is picked: flyouts open on the board side
   of it (**below** a dock at the top, **above** one at the bottom), and each
@@ -184,16 +184,16 @@ pointing at the button that opened it, on the edge facing the dock, over its but
   Toolbar strip sits in Diagram mode
   ([Toolbar layout](../007-editor/toolbar-layout.md)), so a whiteboard's tools
   are where the rest of the product keeps them.
-- **Bottom by choice**: Settings, **Editor › Draw** (the sub-category for
-  settings that apply only in Draw mode,
+- **Bottom by choice**: Settings, **Editor › Drawing** (the sub-category for
+  settings that apply only in Drawing mode,
   [User preferences](../007-editor/user-preferences.md)), the row **Dock
   Position** (**Top** / **Bottom**). The bottom is closer to
   hand when drawing on a tablet and leaves the top of the board free. Only
-  Draw mode has a dock, so nothing in Diagram mode moves with it.
+  Drawing mode has a dock, so nothing in Diagram mode moves with it.
 - **Stored per user** in the synced preferences
   ([User preferences](../007-editor/user-preferences.md)) as
   `whiteboardDockPosition`; unset, or any value but `bottom`, is the top. A
-  change applies at once, on every tab in Draw mode.
+  change applies at once, on every tab in Drawing mode.
 - **At the top:**
   - it keeps clear of the Explorer's menu button in the top-left corner: on
     a phone or a tablet it starts to the button's right, so a tablet in
@@ -269,7 +269,7 @@ Explorer Home's Jump Back In.
   so they follow the user across devices; a guest keeps them in this
   browser. Only kinds from the palette's shape catalogue are stored; unknown
   kinds are dropped on read.
-- **Telemetry:** `Draw` · `Changed` · `ShapePinned` / `ShapeUnpinned`
+- **Telemetry:** `Drawing` · `Changed` · `ShapePinned` / `ShapeUnpinned`
   (never the kind).
 - **On a phone** (below `sm`, the dock only; `splitPhonePins`), the bar keeps **only the first
   pinned shape** (Arrow, by default) and the rest move into the **Shapes** flyout as a **Pinned**
@@ -317,11 +317,11 @@ Explorer Home's Jump Back In.
   - **Each width is pictured the same wherever it is chosen** (the marker's popover and the quick
     style panel's Marker width row, `PenWidthIcon`): as a line in six even steps, thinnest first,
     not to scale. Drawn to scale, 1 and 1.5 px looked identical in the popover.
-- **The markers outside Draw mode:** the Toolbar strip's Search offers Marker 1, 2 and 3 in the
+- **The markers outside Drawing mode:** the Toolbar strip's Search offers Marker 1, 2 and 3 in the
   other modes ([Toolbar layout](../007-editor/toolbar-layout.md#search-every-element-type)), each
   as this browser last set it. Picking one picks the pen up exactly as the dock does (the same pen
   intent, colour, width and recognition), held until another tool, Escape or a mode switch puts it
-  down. Its colour and width are changed here, in Draw mode, not from the search.
+  down. Its colour and width are changed here, in Drawing mode, not from the search.
 - **Right-clicking a pen resets it** to how it started (its starting colour
   and Medium), without picking it up; a pen already as it started is left
   alone. The context-menu key and Shift+F10 on the focused button do the same.
@@ -458,12 +458,12 @@ Explorer Home's Jump Back In.
   a drawn shape teaches its kind the same way, as in Diagram mode. Clear
   styles with a tool in hand puts its kind back to plain ink. Line and arrow
   share one remembered style, as all arrows do.
-- Draw mode keeps **its own style memory**, apart from Diagram mode's:
-  whiteboarding is a different activity, so Draw mode's styles never dress a
-  Diagram mode shape, nor Diagram mode's a Draw mode one, for any shape kind,
-  tool style or restyle, in the same document or another. Leaving Draw mode
+- Drawing mode keeps **its own style memory**, apart from Diagram mode's:
+  whiteboarding is a different activity, so Drawing mode's styles never dress a
+  Diagram mode shape, nor Diagram mode's a Drawing mode one, for any shape kind,
+  tool style or restyle, in the same document or another. Leaving Drawing mode
   puts its shape, line or arrow tool down, as it puts a pen down, so Diagram
-  mode never previews or names its next shape the Draw way; the panel's
+  mode never previews or names its next shape the Drawing way; the panel's
   "Next rectangle" always shows the style of the mode you are in.
 - A **recognised** shape (see [Shape recognition](#shape-recognition)) is
   different: it is a pen stroke tidied up, so it keeps that pen's colour and
@@ -509,7 +509,7 @@ Explorer Home's Jump Back In.
 
 ## Text boxes
 
-A text box made in Draw mode **hugs its text**: its box, and so its selection
+A text box made in Drawing mode **hugs its text**: its box, and so its selection
 ring and handles, sit just around the words, with only enough padding to grab
 and read it comfortably. Hugging is stored on the text box as its **sizing**
 ([A text box's sizing](../007-editor/editor-modes.md)), so the box hugs in
@@ -590,7 +590,7 @@ author sets on an element on purpose still plays.
   fragment.
 - A stroke the browser cancels (`pointercancel`, for example when the system
   takes the touch over) is discarded.
-- A stroke the tab leaves Draw mode during (one's own Shift+D or switch, a
+- A stroke the tab leaves Drawing mode during (one's own Shift+D or switch, a
   collaborator's switch, an undo or redo that switches) is finished first: it
   lands as drawn so far ([Editor modes](../007-editor/editor-modes.md)
   "Everyone follows a switch"). Putting the pen down mid-stroke (Escape,
@@ -692,7 +692,7 @@ The eraser offers **both** modes, switched in its flyout:
   what Alt does; the pen stays down and the stroke carries on. The chip
   leaves when the pen moves on or lifts. A mouse stroke has Alt and shows no
   chip.
-- **Telemetry:** `Draw` · `Toggled` · `RecogniseOnceKey`,
+- **Telemetry:** `Drawing` · `Toggled` · `RecogniseOnceKey`,
   `RecogniseOnceChip`, `BreakShapeKey` or `BreakShapeChip`.
 
 ## Board background
@@ -703,7 +703,7 @@ The eraser offers **both** modes, switched in its flyout:
   synced preferences as `drawPattern`
   ([User preferences](../007-editor/user-preferences.md)) and **Grid** until
   chosen. It is never stored on the tab, so choosing it changes nothing for
-  anyone else, and it is the pattern of every tab that person works on in Draw
+  anyone else, and it is the pattern of every tab that person works on in Drawing
   mode ([One look](../007-editor/editor-modes.md#one-look)).
 - In Diagram mode the tab's own stored pattern shows again, shared by
   everyone. Exports, thumbnails and api or MCP images always use the tab's
@@ -713,7 +713,7 @@ The eraser offers **both** modes, switched in its flyout:
 
 ## Appearance
 
-Draw mode has **one look with Diagram mode**
+Drawing mode has **one look with Diagram mode**
 ([One look](../007-editor/editor-modes.md#one-look)): the tab's theme, its
 canvas colour and its elements look the same in either mode and to every
 collaborator. A mode changes what is written into new content and the
@@ -733,7 +733,7 @@ pattern behind it, never the colour of what is already there.
 - **Marker 1** draws in Ink, and so does any pen stroke or text box with no
   colour of its own, in both modes. Markers 2 and 3 keep the colour they drew
   with.
-- **What Draw mode makes is written in Ink.** A shape, line, arrow or path
+- **What Drawing mode makes is written in Ink.** A shape, line, arrow or path
   from the dock (and a shape or line a stroke is recognised as) is stored
   with an Ink outline by name and no fill (a shape's label in Ink too), so it
   looks the same in Diagram mode.
@@ -840,7 +840,7 @@ where people learn the keys), and carries it in `aria-keyshortcuts`.
 
 ## Telemetry ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md))
 
-Preset-enum events only, never content, under a `Draw` category (named `Whiteboard` until its stored history was rewritten):
+Preset-enum events only, never content, under a `Drawing` category (named `Whiteboard`, then `Draw`, until its stored history was rewritten):
 
 | Event                     | Action     | Type                                                     |
 | ------------------------- | ---------- | -------------------------------------------------------- |
@@ -860,7 +860,7 @@ through the ordinary `Element` / `Added` events.
 
 ## Help centre ([Help app](../018-help/help-app.md))
 
-One article, **Draw mode** (`/help/canvas/draw-mode/`; the old `/help/canvas/whiteboards/`
+One article, **Drawing mode** (`/help/canvas/drawing-mode/`; the old `/help/canvas/whiteboards/`
 redirects to it): switching modes (the switch beside the tabs, Shift+D, Opens in), starting a
 drawing, the dock, pens, pen versus touch, the two erasers, shape recognition, backgrounds, light
 and dark and snapping custom colours. Registered per
@@ -868,11 +868,11 @@ and dark and snapping custom colours. Registered per
 
 ## Rounds
 
-Draw mode is built in rounds and tuned with the operator between them.
+Drawing mode is built in rounds and tuned with the operator between them.
 
 - **Round one** (built, being tuned): the mode and its switch
   ([Editor modes](../007-editor/editor-modes.md)), the template, the dock with every tool above, pen versus touch, the one look,
-  the backgrounds, telemetry and the help article. Entering Draw mode on an
+  the backgrounds, telemetry and the help article. Entering Drawing mode on an
   empty tab, by opening it or by switching, puts the active pen in hand; a
   tab with content opens on Select.
   The dock sits at the top, or at the bottom by choice

@@ -328,7 +328,7 @@ export function ArrowsArt() {
 
 /* ──────────────── Drawing, guides, backdrops ──────────────── */
 
-// Shape recognition in Draw mode: a rough box drawn in marker, lifted the moment the pen does and
+// Shape recognition in Drawing mode: a rough box drawn in marker, lifted the moment the pen does and
 // replaced by the clean shape it meant, beside the Shape recognition switch and a legend of what
 // it knows.
 export function PencilArt() {

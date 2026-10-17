@@ -1,4 +1,4 @@
-// A text box that fits or wraps hugs its text (docs/specs/023-draw-mode/draw-mode.md "Text boxes",
+// A text box that fits or wraps hugs its text (docs/specs/023-drawing-mode/drawing-mode.md "Text boxes",
 // docs/specs/007-editor/editor-modes.md "A text box's sizing"), in either editor mode:
 // the box is the text's own line box plus a little padding, never a default size. This module
 // is the pure geometry: what the box is for a measured block of text, where a click or a drag
@@ -82,7 +82,7 @@ export function hugCommittedText(
   return { ...el, ...hugTextSize(el, measure(el)) };
 }
 
-// A new Draw mode text box, empty and about to be typed into. A click puts the caret at the
+// A new Drawing mode text box, empty and about to be typed into. A click puts the caret at the
 // click (the box's left edge a padding to its left, its one line centred on it) and the box
 // widens with the text. A drag sets the width from the dragged box; the height is one line.
 export function placedTextBox(

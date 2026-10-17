@@ -26,7 +26,7 @@ type PanAndMarquee = ReturnType<typeof useCanvasPanAndMarquee>;
 
 // The bottom-right cluster (Undo / Redo, Layers, Theme & Canvas, Zoom) is chrome, never canvas.
 // Its buttons stop the press only in the bubble phase, after the capture intercept: without this,
-// a held Draw mode marker inked a dot under Undo and the click then undid that dot instead of the
+// a held Drawing mode marker inked a dot under Undo and the click then undid that dot instead of the
 // stroke the person meant (and an armed eraser, shape or spotlight acted under the button too).
 const inCornerCluster = (target: EventTarget | null): boolean =>
   !!(target as Element | null)?.closest?.('[data-zoom-cluster]');
@@ -68,7 +68,7 @@ export function useCanvasSurfaceGestures({
   // Settings › Controls: middle-button drag pans the canvas (default on).
   middleMousePan: boolean;
   pendingDraw: CanvasProps['pendingDraw'];
-  // The active tab is a whiteboard (docs/specs/023-draw-mode/draw-mode.md "Touch and pen input").
+  // The active tab is a whiteboard (docs/specs/023-drawing-mode/drawing-mode.md "Touch and pen input").
   whiteboard?: boolean;
   viewportOffset: { x: number; y: number };
   viewportZoom: number;
@@ -88,7 +88,7 @@ export function useCanvasSurfaceGestures({
   // claimed the press (see useCanvasDrawGesture).
   beginPendingDrawGesture: (e: ReactPointerEvent) => boolean;
   // A mode that owns every primary press on the canvas while it is open (a path's edit mode,
-  // docs/specs/023-draw-mode/path-tool.md "Editing"); true when it claimed the press.
+  // docs/specs/023-drawing-mode/path-tool.md "Editing"); true when it claimed the press.
   interceptPress?: (e: ReactPointerEvent) => boolean;
   onEraseStart?: CanvasProps['onEraseStart'];
   onCanvasContextMenu?: (x: number, y: number) => void;
@@ -201,7 +201,7 @@ export function useCanvasSurfaceGestures({
     // gesture.
     const surface = mainRef && 'current' in mainRef ? mainRef.current : null;
     if (surface && e.target instanceof Node && !surface.contains(e.target)) return;
-    // Whiteboard (docs/specs/023-draw-mode/draw-mode.md "Touch and pen input"): once a pen has been
+    // Whiteboard (docs/specs/023-drawing-mode/drawing-mode.md "Touch and pen input"): once a pen has been
     // used, a single finger pans instead of inking, so a resting palm never
     // draws. The pen itself, and a mouse, always ink.
     if (whiteboard && e.button === 0) {
@@ -312,7 +312,7 @@ export function useCanvasSurfaceGestures({
       );
       return;
     }
-    // Whiteboard, Select in hand (docs/specs/023-draw-mode/draw-mode.md "Selecting"): Shift + press always
+    // Whiteboard, Select in hand (docs/specs/023-drawing-mode/drawing-mode.md "Selecting"): Shift + press always
     // drags a selection box that adds to the selection, even when it starts on an element, and a
     // Shift-click on an element toggles it. A handle keeps its own Shift behaviour.
     if (

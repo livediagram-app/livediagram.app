@@ -2,7 +2,7 @@
 
 // Leaving Illustrate on a tab with content but no articles (docs/specs/007-editor/editor-modes.md
 // "Leaving Illustrate"): a small card hanging from the mode switch that asked, since Diagram and
-// Draw show no pages and what is changed there may not fit back onto them. A warning glyph, a
+// Drawing show no pages and what is changed there may not fit back onto them. A warning glyph, a
 // question for a title, one plain sentence, and the two ways out: Cancel, or Switch (the target
 // mode's glyph on it). Escape or an outside press stays. With no switch on screen (zen, a
 // Shift+D press), the same card sits centred near the top of the screen.

@@ -1,6 +1,6 @@
 # Templates by mode
 
-Every template opens in one [editor mode](editor-modes.md): **Diagram**, **Draw**,
+Every template opens in one [editor mode](editor-modes.md): **Diagram**, **Drawing**,
 **Facilitate**, **Illustrate** or **Plan**. The New Document wizard asks for the mode itself
 ([New document route](new-document-route.md) "Choosing a mode"), and each mode's templates wait on an empty tab in
 its own start ([Template starts](start-diagramming.md)), so someone who came to sketch or to make a poster sees only
@@ -13,7 +13,7 @@ what starts there. A search on a start also finds the other modes' templates, ea
 - `templateEditorMode(kind)` in `packages/templates` is the one place it is declared. The template's
   canvas overrides (`templateCanvasOverrides`) take `opensIn` from it, so the mode a card shows and
   the mode the tab opens in can never disagree.
-- Draw templates: Blank Whiteboard and the eight [Draw templates](#draw-templates) below.
+- Drawing templates: Blank Whiteboard and the eight [Drawing templates](#drawing-templates) below.
 - Illustrate templates: Blank Illustration, the four [blanks of a page kind](#blanks-of-a-page-kind), Article,
   Slide deck, Logo design, Group card and the
   eight [Illustrate templates](#illustrate-templates) below.
@@ -41,7 +41,7 @@ start ([Template starts](start-diagramming.md)), and is what the New Document wi
 | Template           | Kind id              | Opens in   | What it makes                                                                  |
 | ------------------ | -------------------- | ---------- | ------------------------------------------------------------------------------ |
 | Blank Diagram      | `blank`              | Diagram    | An empty canvas (was "Blank Canvas").                                          |
-| Blank Whiteboard   | `whiteboard`         | Draw       | An empty board to draw on (was "Whiteboard").                                  |
+| Blank Whiteboard   | `whiteboard`         | Drawing    | An empty board to draw on (was "Whiteboard").                                  |
 | Blank Session      | `blank-session`      | Facilitate | An empty tab in Facilitate, named "Untitled Session".                          |
 | Blank Illustration | `blank-illustration` | Illustrate | One empty page that asks what it is for (Infographic, Article, Slide or Logo). |
 | Blank Plan         | `blank-plan`         | Plan       | An empty Plan tab that opens on Start Planning.                                |
@@ -94,9 +94,9 @@ Spreadsheet):
   Mind map, Flowchart, Kanban Board, Sailboat retrospective, Budget Planner, Org chart, Sketchnote, Article. Under a
   mode, its own list ([Template categories](../008-canvas/canvas-and-palette.md#template-categories)).
 
-## Draw templates
+## Drawing templates
 
-Drawn with the marks a person makes in Draw mode: freehand strokes (with a slight hand wobble, so
+Drawn with the marks a person makes in Drawing mode: freehand strokes (with a slight hand wobble, so
 the board reads as drawn, not ruled), sticky notes, text and stickers. Each is a real example to
 draw over, not an empty frame.
 

@@ -94,7 +94,7 @@ describe('useShapeDrawing highlighter', () => {
 });
 
 // docs/specs/007-editor/toolbar-layout.md "Search: every element type": a marker picked from the
-// strip's Search outside Draw mode is the dock's own pen, as this browser last set it.
+// strip's Search outside Drawing mode is the dock's own pen, as this browser last set it.
 describe('useShapeDrawing marker', () => {
   it("picks up the pen in its saved colour and width, with the pen's recognition", () => {
     saveWhiteboardPrefs({

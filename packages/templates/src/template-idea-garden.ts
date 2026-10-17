@@ -1,4 +1,4 @@
-// Idea Garden (docs/specs/007-editor/templates-by-mode.md "Draw templates"): a brainstorm grown as
+// Idea Garden (docs/specs/007-editor/templates-by-mode.md "Drawing templates"): a brainstorm grown as
 // a drawn tree. The question is written at the roots ("How might we get more people cycling to
 // work?"); four branches are the themes the ideas fell into; each idea is a leaf with its words
 // inside; the ideas the group voted best hang as fruit (a red apple with a star, its votes beside

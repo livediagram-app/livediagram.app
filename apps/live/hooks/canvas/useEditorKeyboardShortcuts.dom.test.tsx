@@ -123,7 +123,7 @@ describe('onShortcutUsed', () => {
   });
 });
 
-describe('whiteboard keys (docs/specs/023-draw-mode/draw-mode.md "Keyboard shortcuts")', () => {
+describe('whiteboard keys (docs/specs/023-drawing-mode/drawing-mode.md "Keyboard shortcuts")', () => {
   const board = () => {
     const wb = {
       pickSelect: vi.fn(),
@@ -280,7 +280,7 @@ describe('Shift+D', () => {
     expect(addShape).not.toHaveBeenCalled();
   });
 
-  it('still reaches Draw mode, whose dock owns the plain keys', () => {
+  it('still reaches Drawing mode, whose dock owns the plain keys', () => {
     const onCycleEditorMode = vi.fn();
     const { bag } = deps({ selectedId: null, onCycleEditorMode, whiteboard: {} as never });
     renderHook(() => useEditorKeyboardShortcuts(bag));

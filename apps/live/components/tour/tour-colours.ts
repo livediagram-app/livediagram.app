@@ -1,6 +1,6 @@
 // A tour's card in the active tab's colours (docs/specs/007-editor/editor-tour.md "Look"): the start panels' palette
 // (useStartPalette) as the CSS variables TourPopover and TourStage paint from, so every tour (Diagram, Plan,
-// Facilitate, Draw, Illustrate, the card type tour) reads as part of the tab it runs on. Pure.
+// Facilitate, Drawing, Illustrate, the card type tour) reads as part of the tab it runs on. Pure.
 import type { CSSProperties } from 'react';
 import { contrastRatio, isLightColor, type PlanPalette } from '@livediagram/document';
 

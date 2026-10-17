@@ -5,7 +5,7 @@
 // index.ts re-exports them, so every existing importer is unaffected.
 
 // The light canvas is the board's off-white (docs/specs/007-editor/editor-modes.md "One look"), so
-// Diagram and Draw mode share one backdrop.
+// Diagram and Drawing mode share one backdrop.
 export const DEFAULT_BACKGROUND_COLOR = '#fbfaf7';
 export const DEFAULT_PATTERN_COLOR = '#cbd5e1'; // slate-300
 

@@ -1506,7 +1506,7 @@ export const articles: Article[] = [
     slug: 'editor-modes',
     title: 'Editor Modes',
     description:
-      'Diagram, Draw, Facilitate, Illustrate and Plan: what each mode is for, the mode switch, Shift+D and Opens in.',
+      'Diagram, Drawing, Facilitate, Illustrate and Plan: what each mode is for, the mode switch, Shift+D and Opens in.',
     keywords:
       'editor mode editor modes mode switch switch mode change mode modes diagram draw illustrate plan facilitate session shift+d shift d cycle next mode opens in open in default mode per tab per person tab pill mode icon whiteboard sketch pages infographic boards kanban phone mobile view only read only kind template leave illustrate switch to diagram confirm convert pages workflow way of working',
     category: 'Canvas',
@@ -1514,8 +1514,8 @@ export const articles: Article[] = [
     group: 'Modes and Boards',
   },
   {
-    slug: 'draw-mode',
-    title: 'Draw Mode',
+    slug: 'drawing-mode',
+    title: 'Drawing Mode',
     description:
       'Freehand drawing on any tab: switch modes, then a dock of pens, a Path tool, erasers and shapes.',
     keywords:
@@ -1590,15 +1590,15 @@ export const articles: Article[] = [
     parentSlug: 'plan-mode',
   },
   {
-    slug: 'draw-tour',
-    title: 'The Draw Tour',
+    slug: 'drawing-tour',
+    title: 'The Drawing Tour',
     description:
-      "A short, optional walkthrough of Draw mode's dock, offered the first time you work in Draw and replayable from Settings.",
+      "A short, optional walkthrough of Drawing mode's dock, offered the first time you work in Drawing and replayable from Settings.",
     keywords:
       'draw tour tour walkthrough onboarding intro introduction getting started guide tutorial first time learn draw mode whiteboard sketch pen pens marker markers highlighter eraser path tool shapes sticky dock settings background cursor shape recognition replay rerun settings accessibility',
     category: 'Canvas',
-    categorySlug: 'canvas/draw-mode',
-    parentSlug: 'draw-mode',
+    categorySlug: 'canvas/drawing-mode',
+    parentSlug: 'drawing-mode',
   },
   {
     slug: 'facilitate-tour',

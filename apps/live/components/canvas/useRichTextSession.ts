@@ -158,7 +158,7 @@ export function useRichTextSession({
   });
   useLayoutEffect(() => mountSession(), []);
 
-  // The live text, out to a text box that grows with it (docs/specs/023-draw-mode/draw-mode.md
+  // The live text, out to a text box that grows with it (docs/specs/023-drawing-mode/drawing-mode.md
   // "Text boxes"): after every change to the text or its formatting, before the frame paints, so
   // the box never trails what was typed.
   useLayoutEffect(() => {

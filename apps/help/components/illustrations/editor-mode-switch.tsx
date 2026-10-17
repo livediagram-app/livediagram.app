@@ -1,6 +1,6 @@
-// Editor-mode illustrations for the Canvas articles on Draw mode and Illustrate Mode
+// Editor-mode illustrations for the Canvas articles on Drawing mode and Illustrate Mode
 // (docs/specs/018-help/help-app.md): the mode switch beside the menu button with its menu open, the
-// list of modes and the preview of one (chrome/editor-mode/ModeMenu.tsx), and Draw mode's dock
+// list of modes and the preview of one (chrome/editor-mode/ModeMenu.tsx), and Drawing mode's dock
 // across the top of the canvas (canvas/whiteboard/WhiteboardDock.tsx). Real labels throughout: the
 // five modes, a mode's description and tools, ⇧D in the preview, the dock's tools and their keys.
 
@@ -12,7 +12,7 @@ import { ModeMark, type Mode } from './mode-mark';
 // The modes in the switch's order (the catalogue's), each with its tint in the menu.
 const MODES: { mode: Mode; tile: string; mark: string }[] = [
   { mode: 'Diagram', tile: 'fill-sky-100', mark: 'stroke-sky-700' },
-  { mode: 'Draw', tile: 'fill-orange-100', mark: 'stroke-orange-700' },
+  { mode: 'Drawing', tile: 'fill-orange-100', mark: 'stroke-orange-700' },
   { mode: 'Facilitate', tile: 'fill-violet-100', mark: 'stroke-violet-700' },
   { mode: 'Illustrate', tile: 'fill-pink-100', mark: 'stroke-pink-700' },
   { mode: 'Plan', tile: 'fill-emerald-100', mark: 'stroke-emerald-700' },
@@ -20,7 +20,7 @@ const MODES: { mode: Mode; tile: string; mark: string }[] = [
 
 /** The mode switch beside the menu button in the top-left card, its menu open: the list of the
  *  five modes (the current one checked, Plan marked as a new tab) and the preview of the one under
- *  the pointer, Draw: its picture, name with ⇧D, description and tools. */
+ *  the pointer, Drawing: its picture, name with ⇧D, description and tools. */
 export function ModeSwitchScene() {
   const mx = 40;
   const my = 54;
@@ -104,7 +104,7 @@ export function ModeSwitchScene() {
           </g>
         );
       })}
-      {/* The preview of Draw */}
+      {/* The preview of Drawing */}
       <rect
         x={px + 10}
         y={my + 10}
@@ -121,7 +121,7 @@ export function ModeSwitchScene() {
         strokeLinecap="round"
       />
       <Label x={px + 10} y={my + 76} size={12} weight={600} tone="strong">
-        Draw
+        Drawing
       </Label>
       <rect
         x={px + pw - 34}
@@ -156,7 +156,7 @@ export function ModeSwitchScene() {
     </Scene>
   );
 }
-// --- Draw mode's dock --------------------------------------------------------------------------
+// --- Drawing mode's dock --------------------------------------------------------------------------
 
 /** One dock button: a glyph, with its key in the corner. */
 function DockTool({
@@ -217,7 +217,7 @@ function Marker({ cls }: { cls: string }) {
   );
 }
 
-/** Draw mode's dock across the top of the canvas: the drawing tools, the pinned shapes and Shapes, and
+/** Drawing mode's dock across the top of the canvas: the drawing tools, the pinned shapes and Shapes, and
  *  Settings, each with its key, over a board with a pen stroke on it. */
 export function DrawDockScene() {
   const y = 22;

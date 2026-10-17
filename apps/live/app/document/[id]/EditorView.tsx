@@ -227,7 +227,7 @@ export function EditorView() {
   // Retarget the brand-* accent (buttons, rings, focus) to the active tab's
   // theme so the editor chrome matches the document (docs/specs/011-theme/canvas-and-theme-dialog.md).
   // One look in both editor modes (docs/specs/007-editor/editor-modes.md "One look"), so the accent
-  // follows the tab's theme in Draw mode too.
+  // follows the tab's theme in Drawing mode too.
   useEditorAccent(activeTab.theme);
   // The viewer's own light / dark chrome (docs/specs/007-editor/live-app.md). Read here because the
   // Default theme resolves through it — see the canvas surface below.

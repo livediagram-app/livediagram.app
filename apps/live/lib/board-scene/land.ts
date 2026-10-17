@@ -37,7 +37,7 @@ export type LandOptions = {
   room?: number;
 };
 export type BoardSceneTabPatch = {
-  // A whiteboard profile's tab opens in Draw mode (docs/specs/007-editor/editor-modes.md
+  // A whiteboard profile's tab opens in Drawing mode (docs/specs/007-editor/editor-modes.md
   // "Existing whiteboards"); it stays a general tab.
   opensIn?: EditorMode;
   name: string;

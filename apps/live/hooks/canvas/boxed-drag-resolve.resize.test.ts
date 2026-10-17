@@ -128,8 +128,8 @@ describe('resolveBoxedResize, a multi-selection with Shift', () => {
   });
 });
 
-// A text box that fits or wraps hugs its text through a resize (docs/specs/023-draw-mode/
-// draw-mode.md "Text boxes"), in either editor mode: the frame's bounds set the width, the height
+// A text box that fits or wraps hugs its text through a resize (docs/specs/023-drawing-mode/
+// drawing-mode.md "Text boxes"), in either editor mode: the frame's bounds set the width, the height
 // is the text's, and Shift scales the text instead.
 describe('resizedElement', () => {
   const hello = {

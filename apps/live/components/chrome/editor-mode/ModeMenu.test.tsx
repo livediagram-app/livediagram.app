@@ -64,15 +64,15 @@ describe('ModeMenu preview', () => {
     open('diagram');
     expect(preview().className).toMatch(/(^| )hidden( |$)/);
     expect(preview().className).toMatch(/sm:flex/);
-    const description = document.getElementById(row('Draw').getAttribute('aria-describedby')!)!;
+    const description = document.getElementById(row('Drawing').getAttribute('aria-describedby')!)!;
     expect(description.className).toMatch(/sm:sr-only/);
     expect(description.className).not.toMatch(/(^| )sr-only( |$)/);
   });
 
   it('switches from a clicked row, and closes', () => {
     const { onChange } = open('diagram');
-    fireEvent.pointerEnter(row('Draw'));
-    fireEvent.click(row('Draw'));
+    fireEvent.pointerEnter(row('Drawing'));
+    fireEvent.click(row('Drawing'));
     expect(onChange).toHaveBeenCalledWith('draw');
     expect(screen.queryByRole('menu')).toBeNull();
   });
@@ -82,7 +82,7 @@ describe('ModeMenu preview', () => {
     const menu = screen.getByRole('menu');
     fireEvent.keyDown(menu, { key: 'Home' });
     fireEvent.keyDown(menu, { key: 'ArrowDown' });
-    expect(document.activeElement).toBe(row('Draw'));
+    expect(document.activeElement).toBe(row('Drawing'));
     fireEvent.keyDown(menu, { key: 'Enter' });
     expect(onChange).toHaveBeenCalledWith('draw');
     expect(screen.queryByRole('menu')).toBeNull();
@@ -95,7 +95,7 @@ describe('ModeMenu across Plan’s line', () => {
   it('marks Plan as a new tab on a tab with content, and its row opens one', async () => {
     const { onChange, newTabIn } = open('diagram');
     expect(row('Plan').querySelector('[data-new-tab-mark]')).not.toBeNull();
-    expect(row('Draw').querySelector('[data-new-tab-mark]')).toBeNull();
+    expect(row('Drawing').querySelector('[data-new-tab-mark]')).toBeNull();
     expect(
       document.getElementById(row('Plan').getAttribute('aria-describedby')!)?.textContent,
     ).toContain('Opens in a new tab.');
@@ -129,8 +129,8 @@ describe('ModeMenu across Plan’s line', () => {
       />,
     );
     fireEvent.click(screen.getByRole('button', { name: /mode:/ }));
-    expect(row('Draw').getAttribute('aria-disabled')).toBe('true');
-    fireEvent.click(row('Draw'));
+    expect(row('Drawing').getAttribute('aria-disabled')).toBe('true');
+    fireEvent.click(row('Drawing'));
     expect(onChange).not.toHaveBeenCalled();
     expect(screen.getByRole('menu')).toBeTruthy();
   });
@@ -139,7 +139,9 @@ describe('ModeMenu across Plan’s line', () => {
 describe('ModeMenu on a start panel', () => {
   it('opens the same menu from the named chip', () => {
     open('draw', { labelled: true });
-    expect(screen.getByRole('button', { name: 'Tab mode: Draw' }).textContent).toContain('Draw');
+    expect(screen.getByRole('button', { name: 'Tab mode: Drawing' }).textContent).toContain(
+      'Drawing',
+    );
     expect(preview().dataset.modePreview).toBe('draw');
     expect(screen.getAllByRole('menuitemradio')).toHaveLength(5);
   });

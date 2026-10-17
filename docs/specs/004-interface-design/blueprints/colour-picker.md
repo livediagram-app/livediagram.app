@@ -85,7 +85,7 @@ ColourPicker({
 | Surface                        | File                                                                                                         | Leading                              | Standard                                                                                                                                         | Value                                                                      |
 | ------------------------------ | ------------------------------------------------------------------------------------------------------------ | ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------- |
 | Element menu colour rows       | `components/palette/context-menu-input-rows.tsx` (`ColourRow`)                                               | `transparent` "No … colour"          | `tone` prop (soft on Background, Heading, caption and cell background), by name where the row stores names (`ink` prop), else hex for the canvas | id via `onCommit` / `onChange`                                             |
-| Draw pen flyout                | `components/canvas/whiteboard/ColourPicker.tsx`                                                              | none                                 | strong by name for the board                                                                                                                     | `null` = Ink                                                               |
+| Drawing pen flyout             | `components/canvas/whiteboard/ColourPicker.tsx`                                                              | none                                 | strong by name for the board                                                                                                                     | `null` = Ink                                                               |
 | Quick Style More colours       | `components/canvas/QuickMoreColours.tsx`                                                                     | none                                 | strong by name (soft hex on Background, soft light hex on Highlighter)                                                                           | `setColour(role, id)`, `setPenColour`, `setBoard*`, `setHighlighterColour` |
 | Quick Style custom swatch      | `components/canvas/SwatchOverridePopover.tsx`                                                                | n/a (editor only)                    | n/a                                                                                                                                              | Use saves and closes                                                       |
 | Plan card type                 | `components/plan/ColourSwatches.tsx` (`TypeColourButton`)                                                    | none                                 | strong light hex                                                                                                                                 | hex                                                                        |
@@ -162,15 +162,15 @@ from typed constants; nothing is injected as markup.
 
 Constants (`apps/live/components/colour/colour-metrics.ts`):
 
-| Constant                 | Value | Why                           |
-| ------------------------ | ----- | ----------------------------- |
-| `SWATCH_TARGET_PX`       | 24    | the touch-targets floor       |
-| `SWATCH_CHIP_PX`         | 20    | the Draw and Quick Style chip |
-| `SWATCH_GAP_PX`          | 4     | the Draw row                  |
-| `COLOURS_PER_ROW`        | 10    | one row of standard colours   |
-| `COLOUR_PICKER_WIDTH`    | 276   | 10 × 24 + 9 × 4               |
-| `COLOUR_POPOVER_PADDING` | 12    | the popover's inset           |
-| `YOUR_COLOURS_MAX`       | 12    | the old per-user cap          |
+| Constant                 | Value | Why                              |
+| ------------------------ | ----- | -------------------------------- |
+| `SWATCH_TARGET_PX`       | 24    | the touch-targets floor          |
+| `SWATCH_CHIP_PX`         | 20    | the Drawing and Quick Style chip |
+| `SWATCH_GAP_PX`          | 4     | the Drawing row                  |
+| `COLOURS_PER_ROW`        | 10    | one row of standard colours      |
+| `COLOUR_PICKER_WIDTH`    | 276   | 10 × 24 + 9 × 4                  |
+| `COLOUR_POPOVER_PADDING` | 12    | the popover's inset              |
+| `YOUR_COLOURS_MAX`       | 12    | the old per-user cap             |
 
 Headings: 10px, semibold, uppercase, slate-500, 6px above their row. Quick Style: `QUICK_ROW_TARGETS` = 10 (Ink, eight
 hued, More colours), so the panel is 258px.
@@ -184,7 +184,7 @@ hued, More colours), so the panel is 258px.
 
 ## Observability
 
-Picks are reported by each surface's own write path (`track('Element', 'Changed', ...)`, `track('Draw', 'Changed',
+Picks are reported by each surface's own write path (`track('Element', 'Changed', ...)`, `track('Drawing', 'Changed',
 'PenColour')`); the picker itself adds no event.
 
 ## Testing
@@ -201,7 +201,7 @@ Picks are reported by each surface's own write path (`track('Element', 'Changed'
 | no new pickers: no colour well, editor only in the picker | `apps/live/components/colour/one-picker.test.ts`                                                                                            |
 | element menu rows                                         | `components/palette/context-menu-input-rows.test.tsx`                                                                                       |
 | Quick Style rows, More colours, keys                      | `components/canvas/QuickStylePanel.test.tsx`, `hooks/canvas/useQuickStyle.test.tsx`                                                         |
-| Draw marker picker                                        | `components/canvas/whiteboard/ColourPicker.test.tsx`, `WhiteboardDock.test.tsx`                                                             |
+| Drawing marker picker                                     | `components/canvas/whiteboard/ColourPicker.test.tsx`, `WhiteboardDock.test.tsx`                                                             |
 | Plan surfaces                                             | `ColourSwatches.test.tsx`, `ItemFieldEditor.colour.test.tsx`, `PlanColumnPopover.colour.test.tsx`, `packages/items/src/item-colour.test.ts` |
 | page background and article                               | `page-background-section.test.tsx`, `components/canvas/article/article-colours.test.tsx`                                                    |
 | laser and colour wells                                    | `LaserColourRow.test.tsx`, `lib/laser-config.test.ts`, `components/palette/colour-wells.test.tsx`                                           |

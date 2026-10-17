@@ -85,7 +85,7 @@ describe('withWhiteboardDockPrefs', () => {
   });
 });
 
-// docs/specs/023-draw-mode/draw-mode.md "Where the dock sits".
+// docs/specs/023-drawing-mode/drawing-mode.md "Where the dock sits".
 describe('the dock position', () => {
   it('offers the top and the bottom, top first', () => {
     expect(WHITEBOARD_DOCK_POSITIONS).toEqual(['top', 'bottom']);
@@ -114,8 +114,8 @@ describe('the dock position', () => {
   });
 });
 
-// Draw mode's pattern is the person's own (docs/specs/007-editor/editor-modes.md "One look"):
-// Plain, Dots or Grid as last chosen in Draw mode, synced, Grid until chosen.
+// Drawing mode's pattern is the person's own (docs/specs/007-editor/editor-modes.md "One look"):
+// Plain, Dots or Grid as last chosen in Drawing mode, synced, Grid until chosen.
 describe('readDrawPattern', () => {
   it('is Grid until chosen', () => {
     expect(readDrawPattern({})).toBe('graph');

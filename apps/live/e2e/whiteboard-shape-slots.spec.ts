@@ -1,7 +1,7 @@
 import type { Page } from '@playwright/test';
 import { dismissQuickTour, expect, expectNoPageErrors, test } from './fixtures';
 
-// The shape slots (docs/specs/023-draw-mode/draw-mode.md "Shape slots"), a Within reach set
+// The shape slots (docs/specs/023-drawing-mode/drawing-mode.md "Shape slots"), a Within reach set
 // (docs/specs/004-interface-design/within-reach.md) worked out by the shared `withinReach`. The dock
 // bar shows the pins and the Shapes button; the six slots live in the Shapes flyout, the recent row
 // over the most used. With the default pins, Most used starts Ellipse, Diamond, Cylinder and Recent

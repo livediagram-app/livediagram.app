@@ -92,14 +92,14 @@ export type CanvasProps = {
   // The tab’s tab kind (docs/specs/021-event-storming/event-storming.md), which decides whether this canvas
   // presents as an event-storming board.
   tabKind?: TabKind;
-  // The viewer's editor mode on the tab (docs/specs/007-editor/editor-modes.md): Draw trades the
+  // The viewer's editor mode on the tab (docs/specs/007-editor/editor-modes.md): Drawing trades the
   // palette, the strip and the tool panels for the dock, and keeps the canvas still.
   editorMode?: EditorMode;
   // Illustrate mode's A4 pages and their edits (docs/specs/007-editor/editor-modes.md "The
   // pages"), present only in that mode.
   illustratePages?: import('@/hooks/editor/useIllustratePages').IllustratePagesView | null;
   // The whiteboard dock's model and the board's ink for this appearance
-  // (docs/specs/023-draw-mode/draw-mode.md), present on a whiteboard tab.
+  // (docs/specs/023-drawing-mode/drawing-mode.md), present on a whiteboard tab.
   whiteboardDock?: import('@/hooks/canvas/useWhiteboard').WhiteboardDockModel;
   whiteboardInk?: string;
   // The tab's timeline lane stack (docs/specs/021-event-storming/event-storming.md Phase 6) when lanes are on, else
@@ -379,12 +379,12 @@ export type CanvasProps = {
   // Highlighter variant of the pencil (docs/specs/008-canvas/highlighter.md) + the polygon
   // click-to-place tool (docs/specs/008-canvas/polygon-tool.md), armed from the palette tiles.
   onBeginHighlighter: () => void;
-  // One of Draw mode's markers, picked up from the Toolbar strip's Search in another mode.
+  // One of Drawing mode's markers, picked up from the Toolbar strip's Search in another mode.
   // `once`: picked up for one stroke (a logo page's palette), else held until put down.
   onBeginMarker: (penId: import('@/lib/whiteboard-prefs').WhiteboardPenId, once?: boolean) => void;
   onBeginShapePen: () => void;
   onBeginPolygon: () => void;
-  // The Path tool (docs/specs/023-draw-mode/path-tool.md), a logo page's Pen in the palette.
+  // The Path tool (docs/specs/023-drawing-mode/path-tool.md), a logo page's Pen in the palette.
   onBeginPath: () => void;
   // Draw-to-size mode. Picking any palette element except the annotation
   // (docs/specs/008-canvas/canvas-and-palette.md "Placement on add") stashes the intent here; the canvas then
@@ -424,7 +424,7 @@ export type CanvasProps = {
   // vertices in canvas coords (no simplification — the user placed
   // each one) plus whether the loop closed on the start vertex.
   onCommitPolygon: (vertices: { x: number; y: number }[], closed: boolean) => void;
-  // The Path tool (docs/specs/023-draw-mode/path-tool.md): a drawn or continued path lands, an
+  // The Path tool (docs/specs/023-drawing-mode/path-tool.md): a drawn or continued path lands, an
   // edit-mode gesture lands, and how a new path is dressed (style memory), so the path being
   // drawn shows the style it will land with.
   onCommitPath: (commit: import('@/components/canvas/path/usePathDrawGesture').PathCommit) => void;
@@ -435,7 +435,7 @@ export type CanvasProps = {
   ) => void;
   onDressPath?: <T extends import('@livediagram/document').Element>(el: T) => T;
   // The line or arrow a draw would land if released now, as the canvas would show it
-  // (docs/specs/023-draw-mode/draw-mode.md "Shapes"), drawn in place of a stand-in while the drag
+  // (docs/specs/023-drawing-mode/drawing-mode.md "Shapes"), drawn in place of a stand-in while the drag
   // is in flight. From lib/drawn-arrow-preview.
   previewDrawnArrow?: (
     intent: Extract<PendingDraw, { type: 'arrow' }>,
@@ -598,7 +598,7 @@ export type CanvasProps = {
   // select/drag) and hands the screen coords here to start an erase
   // gesture; the gesture's move/release are tracked by useCanvasEraser.
   // `frame`: reads where the canvas sits on screen, per sample of the sweep (the whiteboard's
-  // geometric erase, docs/specs/023-draw-mode/draw-mode.md; lib/erase-frame).
+  // geometric erase, docs/specs/023-drawing-mode/drawing-mode.md; lib/erase-frame).
   onEraseStart?: (
     clientX: number,
     clientY: number,

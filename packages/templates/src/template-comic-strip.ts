@@ -1,4 +1,4 @@
-// Comic Strip (docs/specs/007-editor/templates-by-mode.md "Draw templates"): a six-panel product
+// Comic Strip (docs/specs/007-editor/templates-by-mode.md "Drawing templates"): a six-panel product
 // story, "Maya Finds the Bug", drawn the way a team sketches a user story on a whiteboard. Each
 // panel is a hand-drawn frame with a caption on a yellow note in its corner (when and what), stick
 // figures that act it out, speech or thought bubbles for what they say, and a sticker for the

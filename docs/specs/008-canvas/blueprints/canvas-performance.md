@@ -293,7 +293,7 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
   ignored by `chromium`; `pnpm perf:canvas` runs it against the e2e stack. Its pure parts
   (`reference-board.ts`, `budget.ts`, `trace-tasks.ts`) have unit tests beside them, which the
   live app's Vitest runs: it excludes only `e2e/**/*.spec.ts`.
-- It seeds one document per series (`whiteboard`: a tab opening in Draw mode; `diagram`), each the reference board, through
+- It seeds one document per series (`whiteboard`: a tab opening in Drawing mode; `diagram`), each the reference board, through
   the api, and opens it as its owner at 1440 × 900, dark, the CPU throttled 4× before load.
 - **Open** (`openBoard`): `REPEATS` (5) opens per tab, each in a fresh browser context; the row is
   `medianOfRuns` of the five. The gesture rows run on the last one. Before load, an init script

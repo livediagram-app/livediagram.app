@@ -23,7 +23,7 @@ export type SessionSegment = 'session-timer' | 'session-vote' | 'session-poll';
 // board, a workshop that is always Diagram and cannot switch; Timer and Vote in Plan, where cards take
 // the dots, only while `planVoting` (usePlanVoting: a board on the tab made for voting, or a session running);
 // in Illustrate, Vote and Poll only while one runs (`runningOnly`), so a vote or poll started from a
-// session button there can be watched and ended; none in Diagram or Draw, even while a tool runs.
+// session button there can be watched and ended; none in Diagram or Drawing, even while a tool runs.
 export type SessionStripTools = {
   timer: boolean;
   vote: boolean;

@@ -641,17 +641,17 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
     ],
   },
   {
-    // Settings that apply only in Draw mode (docs/specs/007-editor/user-preferences.md):
-    // a setting that acts in both modes stays on Editor itself. Named Draw, as the mode
+    // Settings that apply only in Drawing mode (docs/specs/007-editor/user-preferences.md):
+    // a setting that acts in both modes stays on Editor itself. Named Drawing, as the mode
     // switch names it (docs/specs/007-editor/editor-modes.md "Naming in the interface").
     // There is no Diagram sibling while no setting applies only to Diagram mode.
     id: 'draw',
-    label: 'Draw',
+    label: 'Drawing',
     parent: 'editor',
     rows: [
       {
-        // docs/specs/023-draw-mode/draw-mode.md "Where the dock sits": only Draw mode has a dock,
-        // so only Draw mode moves with this.
+        // docs/specs/023-drawing-mode/drawing-mode.md "Where the dock sits": only Drawing mode has a dock,
+        // so only Drawing mode moves with this.
         kind: 'choice',
         key: 'whiteboardDockPosition',
         keywords:
@@ -1172,10 +1172,10 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         helpArticle: 'facilitateTour',
       }),
       tourSwitch('drawTourSeen', {
-        label: 'Draw Tour',
-        event: { category: 'UI', on: 'DrawTourSeenOff', off: 'DrawTourSeenOn' },
+        label: 'Drawing Tour',
+        event: { category: 'UI', on: 'DrawingTourSeenOff', off: 'DrawingTourSeenOn' },
         keywords: 'tour walkthrough onboarding tutorial draw whiteboard pen sketch replay',
-        description: 'The first time you work in Draw.',
+        description: 'The first time you work in Drawing.',
         helpArticle: 'drawTour',
       }),
       tourSwitch('formTourSeen', {

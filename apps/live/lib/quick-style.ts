@@ -87,7 +87,7 @@ export type QuickStyleView = {
   caption?: string;
 };
 
-// An unlocked shape, arrow, text element or path (docs/specs/023-draw-mode/path-tool.md "Style"):
+// An unlocked shape, arrow, text element or path (docs/specs/023-drawing-mode/path-tool.md "Style"):
 // the only elements the panel styles.
 export function isQuickStyleTarget(el: Element): el is QuickStyleTarget {
   return (

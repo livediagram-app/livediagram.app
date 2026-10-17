@@ -41,8 +41,8 @@ type ShapeDrawingDeps = {
   canvasTool: CanvasTool;
   setCanvasTool: (tool: CanvasTool) => void;
   activeTab: Tab;
-  // The viewer works in Draw mode (docs/specs/007-editor/editor-modes.md): what is drawn is
-  // written the Draw way (unpainted ink, no fill, hugging text, a sticky open for typing).
+  // The viewer works in Drawing mode (docs/specs/007-editor/editor-modes.md): what is drawn is
+  // written the Drawing way (unpainted ink, no fill, hugging text, a sticky open for typing).
   drawMode: boolean;
   // Every draw lands through the functional `commit` (live elements): the
   // commit closure is frozen for the whole
@@ -140,9 +140,9 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
     // frozen for the whole gesture, so writing gesture-start elements
     // wholesale would revert anything that landed mid-drag. New
     // elements default to the FRONT of z-order (see addBoxed).
-    // A shape drawn in Draw mode starts as plain ink, unfilled (a pen never colours
-    // it), then wears the style chosen for its tool, which Draw mode keeps
-    // apart from Diagram mode's (docs/specs/023-draw-mode/draw-mode.md "Shapes").
+    // A shape drawn in Drawing mode starts as plain ink, unfilled (a pen never colours
+    // it), then wears the style chosen for its tool, which Drawing mode keeps
+    // apart from Diagram mode's (docs/specs/023-drawing-mode/drawing-mode.md "Shapes").
     const whiteboard = drawMode;
     const dress = <T extends Element>(el: T): T =>
       styleNewElement(whiteboard ? boardShape(el) : el);
@@ -282,7 +282,7 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
       colour: highlighterColour,
       width: highlighterWidth,
     });
-  // One of Draw mode's markers, picked up in another mode from the Toolbar strip's Search
+  // One of Drawing mode's markers, picked up in another mode from the Toolbar strip's Search
   // (docs/specs/007-editor/toolbar-layout.md "Search: every element type"): the dock's own pen
   // intent, in the pen's colour and width as this browser last set them, held until put down.
   const beginMarker = (penId: WhiteboardPenId, once?: boolean) => {
@@ -314,7 +314,7 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
   // intent. The vertex accumulation lives canvas-side
   // (useCanvasPolygonGesture); this just arms the mode.
   // The Path tool from a palette (a logo page's, docs/specs/007-editor/logo-pages.md "The Logo
-  // palette"): the same tool Draw mode's dock holds.
+  // palette"): the same tool Drawing mode's dock holds.
   const beginPath = () => {
     if (editsBlocked) return;
     beginDraw({ type: 'path' });

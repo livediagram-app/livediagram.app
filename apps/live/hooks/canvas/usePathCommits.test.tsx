@@ -46,7 +46,7 @@ describe('usePathCommits', () => {
     s.api.commitPath({ anchors: [corner(0, 0), corner(10, 10)], closed: false, continuing: null });
     expect(s.commit).toHaveBeenCalledTimes(1);
     expect(s.els()).toHaveLength(1);
-    // Written in Ink by name, unfilled, as Draw mode writes what it makes
+    // Written in Ink by name, unfilled, as Drawing mode writes what it makes
     // (docs/specs/007-editor/editor-modes.md "One look").
     expect(s.els()[0]).toMatchObject({
       type: 'path',

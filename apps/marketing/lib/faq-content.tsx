@@ -51,7 +51,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
     items: [
       {
         q: 'What is livediagram?',
-        a: 'A free, real-time canvas for diagrams, whiteboards, illustrations and plans. Every document is a stack of tabs, and each tab can be worked on in five modes: Diagram for shapes and arrows, Draw for freehand whiteboarding, Facilitate for running a session with your team, Illustrate for designed pages, and Plan for boards of cards. Your team can join any of them live.',
+        a: 'A free, real-time canvas for diagrams, whiteboards, illustrations and plans. Every document is a stack of tabs, and each tab can be worked on in five modes: Diagram for shapes and arrows, Drawing for freehand whiteboarding, Facilitate for running a session with your team, Illustrate for designed pages, and Plan for boards of cards. Your team can join any of them live.',
       },
       {
         q: 'Do I need an account to use livediagram?',
@@ -76,13 +76,13 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         a: (
           <>
             It runs in any modern browser, with nothing to install. A laptop, desktop or tablet
-            gives you the full editor, and a tablet with a pen is lovely in Draw mode. Small phone
-            screens are best for viewing and light edits. See{' '}
+            gives you the full editor, and a tablet with a pen is lovely in Drawing mode. Small
+            phone screens are best for viewing and light edits. See{' '}
             <a href="/help/supported-devices/">supported devices</a>.
           </>
         ),
         aText:
-          'It runs in any modern browser, with nothing to install. A laptop, desktop or tablet gives you the full editor, and a tablet with a pen is lovely in Draw mode. Small phone screens are best for viewing and light edits. See supported devices.',
+          'It runs in any modern browser, with nothing to install. A laptop, desktop or tablet gives you the full editor, and a tablet with a pen is lovely in Drawing mode. Small phone screens are best for viewing and light edits. See supported devices.',
       },
       {
         q: 'Are there keyboard shortcuts?',
@@ -168,7 +168,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'What are the five modes?',
-        a: 'Diagram is for structured shapes, connectors and layouts. Draw is a freehand whiteboard with pressure-sensitive markers. Facilitate runs a session with your team, with timers, dot votes, polls and reveals to hand. Illustrate lays out designed pages like posters and slides. Plan turns a tab into boards of cards with columns, WIP limits and quick add, beside spreadsheets with formulas. A mode belongs to the tab, so everyone on it works in the same one, and each tab of a document can have its own.',
+        a: 'Diagram is for structured shapes, connectors and layouts. Drawing is a freehand whiteboard with pressure-sensitive markers. Facilitate runs a session with your team, with timers, dot votes, polls and reveals to hand. Illustrate lays out designed pages like posters and slides. Plan turns a tab into boards of cards with columns, WIP limits and quick add, beside spreadsheets with formulas. A mode belongs to the tab, so everyone on it works in the same one, and each tab of a document can have its own.',
       },
       {
         q: 'Can I organise a big document?',
@@ -292,14 +292,14 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         q: 'Can I use it as a whiteboard?',
         a: (
           <>
-            Yes. Switch a tab to Draw for a plain whiteboard: three pressure-sensitive markers,
+            Yes. Switch a tab to Drawing for a plain whiteboard: three pressure-sensitive markers,
             text, an eraser and shapes, on a plain, dotted or grid board in light or dark. With a
             stylus, a resting palm never leaves a mark. See{' '}
-            <a href="/help/canvas/draw-mode/">Draw mode</a>.
+            <a href="/help/canvas/drawing-mode/">Drawing mode</a>.
           </>
         ),
         aText:
-          'Yes. Switch a tab to Draw for a plain whiteboard: three pressure-sensitive markers, text, an eraser and shapes, on a plain, dotted or grid board in light or dark. With a stylus, a resting palm never leaves a mark. See Draw mode.',
+          'Yes. Switch a tab to Drawing for a plain whiteboard: three pressure-sensitive markers, text, an eraser and shapes, on a plain, dotted or grid board in light or dark. With a stylus, a resting palm never leaves a mark. See Drawing mode.',
       },
       {
         q: 'Is there a spreadsheet?',
