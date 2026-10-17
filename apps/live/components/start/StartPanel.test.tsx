@@ -109,3 +109,16 @@ describe('a start search, in other modes', () => {
     expect(onOtherModeTemplate).toHaveBeenCalledWith('facilitate', 'sailboat');
   });
 });
+
+// docs/specs/007-editor/live-app.md "A phone held sideways": the panel keeps its desktop clearances everywhere but a
+// phone held sideways, where they left its list 56px tall. jsdom does no layout, so this holds the classes.
+describe('the start panel on a phone held sideways', () => {
+  it('clears only the strip and lies over the bottom cluster', () => {
+    diagram();
+    const panel = screen.getByRole('textbox', { name: 'Find a template' }).closest('section')!;
+    const wrapper = panel.parentElement!;
+    expect(wrapper.className).toContain('landscape-phone:pt-16');
+    expect(wrapper.className).toContain('landscape-phone:pb-2');
+    expect(wrapper.className).toContain('landscape-phone:z-[var(--z-overlay)]');
+  });
+});
