@@ -114,7 +114,7 @@ export function useTeamLibrary(
         onChange.current?.();
         return folder;
       } catch (err) {
-        fail('create-folder', FOLDER_FAILURE.create, err);
+        fail('create-folder', FOLDER_FAILURE.create(name), err);
         return undefined;
       }
     },
@@ -128,12 +128,12 @@ export function useTeamLibrary(
         await apiUpdateFolder(ownerId, id, { name: name.trim() });
         track('Folder', 'Renamed', 'Team');
       } catch (err) {
-        fail('rename-folder', FOLDER_FAILURE.rename, err);
+        fail('rename-folder', FOLDER_FAILURE.rename(folders.find((f) => f.id === id)?.name), err);
       }
       await refresh();
       onChange.current?.();
     },
-    [ownerId, refresh, onChange, fail],
+    [ownerId, folders, refresh, onChange, fail],
   );
 
   const moveFolder = useCallback(
@@ -144,12 +144,12 @@ export function useTeamLibrary(
         track('Folder', 'Moved', 'Team');
       } catch (err) {
         logMoveFailure('folder', ` folder=${id}`, err);
-        toast.error(FOLDER_FAILURE.move);
+        toast.error(FOLDER_FAILURE.move(folders.find((f) => f.id === id)?.name));
       }
       await refresh();
       onChange.current?.();
     },
-    [ownerId, refresh, onChange, toast],
+    [ownerId, folders, refresh, onChange, toast],
   );
 
   const deleteFolder = useCallback(
@@ -159,12 +159,12 @@ export function useTeamLibrary(
         await apiDeleteFolder(ownerId, id);
         track('Folder', 'Deleted', 'Team');
       } catch (err) {
-        fail('delete-folder', FOLDER_FAILURE.delete, err);
+        fail('delete-folder', FOLDER_FAILURE.delete(folders.find((f) => f.id === id)?.name), err);
       }
       await refresh();
       onChange.current?.();
     },
-    [ownerId, refresh, onChange, fail],
+    [ownerId, folders, refresh, onChange, fail],
   );
 
   // Re-folder a document WITHIN the team (folderId null = the team's
@@ -177,12 +177,12 @@ export function useTeamLibrary(
         track('Team', 'Moved', 'Document');
       } catch (err) {
         logMoveFailure('team-document', ` document=${documentId}`, err);
-        toast.error(DOCUMENT_FAILURE.move);
+        toast.error(DOCUMENT_FAILURE.move(liveDocs.find((d) => d.id === documentId)?.name));
       }
       await refresh();
       onChange.current?.();
     },
-    [ownerId, teamId, refresh, onChange, toast],
+    [ownerId, teamId, liveDocs, refresh, onChange, toast],
   );
 
   // Delete a team document, to the team's Trash. Any joined member may delete it
@@ -212,12 +212,16 @@ export function useTeamLibrary(
         await apiSaveDocumentMeta(ownerId, { id: documentId, name: trimmed });
         track('Document', 'Renamed');
       } catch (err) {
-        fail('rename-document', DOCUMENT_FAILURE.rename, err);
+        fail(
+          'rename-document',
+          DOCUMENT_FAILURE.rename(liveDocs.find((d) => d.id === documentId)?.name),
+          err,
+        );
       }
       await refresh();
       onChange.current?.();
     },
-    [ownerId, refresh, onChange, fail],
+    [ownerId, liveDocs, refresh, onChange, fail],
   );
 
   // Duplicate a team document, keeping the copy IN the team alongside
@@ -226,14 +230,15 @@ export function useTeamLibrary(
   const duplicateDocument = useCallback(
     async (documentId: string) => {
       if (!ownerId) return;
-      const sourceFolderId = liveDocs.find((d) => d.id === documentId)?.folderId ?? null;
+      const source = liveDocs.find((d) => d.id === documentId);
+      const sourceFolderId = source?.folderId ?? null;
       const newId = await duplicateDocumentApi(ownerId, documentId, {
         teamId,
         folderId: sourceFolderId,
       });
       if (!newId) {
         console.warn('[team-library] duplicate-document failed', { document: documentId });
-        toast.error(DOCUMENT_FAILURE.duplicate);
+        toast.error(DOCUMENT_FAILURE.duplicate(source?.name));
         return;
       }
       track('Document', 'Duplicated');

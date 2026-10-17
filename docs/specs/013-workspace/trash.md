@@ -15,16 +15,18 @@ on the spot, or go and fetch it back.
 A document delete asks nothing first, the same everywhere (the Explorer, the editor, the Explorer panel, the team
 library): it only moves the document to the Trash, so a question would guard nothing that is lost.
 
-- **Document deleted** shows once the delete has landed, with **Undo** (`apps/live/lib/document-delete-undo.ts`,
-  `offerDeleteUndo`). Undo restores it from the Trash exactly as Restore does (`Trash·Restored`, typed by the Trash it
-  was in), closes the toast and says **Document restored**; a restore that fails says "Could not restore the document.
-  It is still in the Trash, in Settings." The toast waits until it is closed (an action toast, WCAG 2.2.1), and the
-  "Show notifications" preference silences it like any other, leaving the Trash.
+- **“Roadmap” deleted** shows once the delete has landed, naming the document
+  ([Toasts](../004-interface-design/toasts.md#naming-what-it-acted-on); "Document deleted" when it has no name), with
+  **Undo** (`apps/live/lib/document-delete-undo.ts`, `offerDeleteUndo`). Undo restores it from the Trash exactly as
+  Restore does (`Trash·Restored`, typed by the Trash it was in), closes the toast and says **“Roadmap” restored**; a
+  restore that fails says "Could not restore “Roadmap”. It is in the Trash, in Settings." The toast stays up for the
+  answer time (10 seconds, paused while hovered or focused) and then goes, leaving the Trash; the "Show
+  notifications" preference silences it like any other.
 - From a list (the Explorer, the editor's Explorer panel, `/new`), the row leaves at once, and Undo puts it back where it
-  was. A delete that fails puts the row back and says "Could not delete the document. Try again." (logged
+  was. A delete that fails puts the row back and says "Could not delete “Roadmap”. Try again." (logged
   `[explorer] delete-failed, row restored`).
 - Deleting the document open in the editor takes the editor to the Explorer, which offers the same toast on arrival:
-  the delete is handed over in `sessionStorage` for 30 seconds (`handOffDeleteUndo`, `takeDeleteUndo`,
+  the delete, with the document's name, is handed over in `sessionStorage` for 30 seconds (`handOffDeleteUndo`, `takeDeleteUndo`,
   `useDeleteUndoHandoff`).
 - A team document deleted from the team library goes to the team's Trash, and its Undo restores it there.
 

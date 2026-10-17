@@ -5,7 +5,7 @@ import { useEffect } from 'react';
 import { ToastProvider, useToast, type ToastOffer } from './useToast';
 import { readUserPreferences, writeUserPreferences } from '@/lib/user-preferences';
 import { TOAST_EXIT_HOLD_MS } from '@/components/toast/ToastStack';
-import { TOAST_TIMEOUT_MS } from '@/components/toast/toast-queue';
+import { TOAST_ANSWER_TIMEOUT_MS, TOAST_TIMEOUT_MS } from '@/components/toast/toast-queue';
 
 // A toast leaves by playing its exit; jsdom never fires animationend, so the exit hold removes it.
 function afterExit() {
@@ -14,7 +14,7 @@ function afterExit() {
   });
 }
 
-// The offer toast (docs/specs/007-editor/power-user-mode.md): two actions, and no timeout.
+// The offer toast (docs/specs/007-editor/power-user-mode.md): two actions, and the longer answer timeout.
 
 function Offer({ offer }: { offer: ToastOffer }) {
   const toast = useToast();
@@ -49,12 +49,19 @@ afterEach(() => {
 });
 
 describe('toast.offer', () => {
-  it('stays until answered, however long it waits', () => {
-    renderOffer();
+  it('stays for the answer time, then leaves unanswered', () => {
+    const offer = renderOffer();
     act(() => {
-      vi.advanceTimersByTime(60_000);
+      vi.advanceTimersByTime(TOAST_ANSWER_TIMEOUT_MS - 1);
     });
     expect(screen.getByText('Power user mode: fewer labels.')).toBeTruthy();
+    act(() => {
+      vi.advanceTimersByTime(1);
+    });
+    afterExit();
+    expect(screen.queryByText('Power user mode: fewer labels.')).toBeNull();
+    expect(offer.onConfirm).not.toHaveBeenCalled();
+    expect(offer.onDecline).not.toHaveBeenCalled();
   });
 
   it('confirms once and goes', () => {
@@ -105,7 +112,7 @@ describe('toast.offer', () => {
 });
 
 // The action toast (docs/specs/024-agents/blueprints/agent-changesets.md "Clients"): an info toast
-// with buttons, upserted in place by key, with no timeout (WCAG 2.2.1).
+// with buttons, upserted in place by key, up for the longer answer time.
 describe('toast.action', () => {
   function Actions({ spec }: { spec: Parameters<ReturnType<typeof useToast>['action']>[0] }) {
     const toast = useToast();
@@ -118,7 +125,7 @@ describe('toast.action', () => {
     actions: [{ label: 'Undo', ariaLabel: "Undo Webber's changes", onSelect }],
   });
 
-  it('stays until dismissed, however long it waits, and runs its action', () => {
+  it('stays for the answer time and runs its action', () => {
     const onSelect = vi.fn();
     render(
       <ToastProvider>
@@ -126,11 +133,24 @@ describe('toast.action', () => {
       </ToastProvider>,
     );
     act(() => {
-      vi.advanceTimersByTime(60_000);
+      vi.advanceTimersByTime(TOAST_ANSWER_TIMEOUT_MS - 1);
     });
     expect(screen.getByRole('status').textContent).toContain('Webber changed 3 elements');
     fireEvent.click(screen.getByRole('button', { name: "Undo Webber's changes" }));
     expect(onSelect).toHaveBeenCalledTimes(1);
+  });
+
+  it('times out after the answer time, never staying for good', () => {
+    render(
+      <ToastProvider>
+        <Actions spec={spec('Webber changed 3 elements')} />
+      </ToastProvider>,
+    );
+    act(() => {
+      vi.advanceTimersByTime(TOAST_ANSWER_TIMEOUT_MS);
+    });
+    afterExit();
+    expect(screen.queryByText('Webber changed 3 elements')).toBeNull();
   });
 
   it('replaces the toast with the same key in place', () => {

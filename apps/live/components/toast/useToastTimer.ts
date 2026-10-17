@@ -2,7 +2,7 @@
 
 // A toast's timeout (docs/specs/004-interface-design/toasts.md "Timing"): runs for `ms`, holds while
 // `paused` (hovered, focused, or the page hidden) and resumes with the time it had left, never a fresh
-// start. `ms` null is a toast that waits: no timer at all. A new `ms` (an action toast replaced with no
+// start. `ms` null is no timer at all (a toast already leaving). A new `ms` (an action toast replaced with no
 // buttons) starts over.
 import { useEffect, useRef } from 'react';
 import { useLatest } from '@/hooks/ui/useLatest';

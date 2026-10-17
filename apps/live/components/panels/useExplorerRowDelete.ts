@@ -50,8 +50,12 @@ export function useExplorerRowDelete({
           });
           window.setTimeout(resolve, 220);
         }),
-      // An Undo brings a team row back: it was only hidden here.
-      { onRestored: () => setDeletedTeamIds((prev) => withoutId(prev, id)) },
+      // An Undo brings a team row back: it was only hidden here. The name is for the toast, which the personal
+      // list cannot name a team row from.
+      {
+        name: teamDocuments.find((d) => d.id === id)?.name,
+        onRestored: () => setDeletedTeamIds((prev) => withoutId(prev, id)),
+      },
     );
   };
 
@@ -78,7 +82,7 @@ export function useExplorerRowDelete({
     exitingDocumentIds,
     deletedTeamIds,
     // A row's Delete: no question first (docs/specs/013-workspace/trash.md "Deleting"), the row slides out and the
-    // "Document deleted" toast offers it back.
+    // "“Roadmap” deleted" toast offers it back.
     deleteRow: onDeleteDocument ? runDelete : undefined,
   };
 }

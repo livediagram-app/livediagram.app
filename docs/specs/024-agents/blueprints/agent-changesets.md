@@ -278,7 +278,7 @@ included) starts a reveal and a toast.
 Toast coalescing (`coalesceChangesetToast`): the key is `agentKey` for an agent changeset, else the changeset id.
 An op whose key has an entry with `lastAt` within `CHANGESET_TOAST_COALESCE_MS` adds its id and count to that toast
 and updates it in place (`toast.action` with the same `key`); otherwise a new entry replaces that key's toast, so
-one token has at most one toast. The toast stays until dismissed or replaced.
+one token has at most one toast. The toast goes after `TOAST_ANSWER_TIMEOUT_MS`, or when dismissed or replaced.
 
 **Show**: `track('Agent', 'Opened', 'Toast')`, switch to the tab when it is not active (`selectTab`), then
 `fitToBounds` over the union of `elementBounds` of the toast's touched elements still present, `maxZoom: 1` (CS34).
@@ -614,7 +614,8 @@ rows wait with their document and go with its purge (cascade). A tab unlinked fr
 - The toast is `role="status"` in the existing `aria-live="polite"` stack; its message is the announcement. Buttons
   carry visible labels and `aria-label` "Show {name}'s changes" / "Undo {name}'s changes"; both are native buttons,
   keyboard reachable, Enter and Space activate. Focus is never moved to the toast.
-- The toast has no timeout (WCAG 2.2.1); it goes when dismissed or replaced by a newer burst from the same token.
+- The toast times out after `TOAST_ANSWER_TIMEOUT_MS` (10 s), held while hovered, focused or hidden (WCAG 2.2.1);
+  it also goes when dismissed or replaced by a newer burst from the same token. The changes stay in the history.
 - The outline is `aria-hidden`; it supplements the toast. Its 2 px stroke in a participant colour is drawn over a
   1 px halo in the canvas surface colour so it meets 3:1 against any element fill (WCAG 1.4.11).
 - Motion: the outline fades in and out over the motion blueprint's short duration (CS37); under
