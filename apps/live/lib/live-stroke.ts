@@ -12,6 +12,7 @@ import {
   type RecognisedShape,
 } from '@livediagram/document';
 import { adjustRecognised, shiftRatio } from './recognition-preview';
+import { createListeners } from '@/lib/listeners';
 
 type Point = { x: number; y: number };
 
@@ -68,7 +69,7 @@ export function createLiveStroke(
   const streamline = PEN_STREAMLINE[pointer];
   const points: Point[] = [];
   const pressures: number[] | null = pointer === 'pen' ? [] : null;
-  const listeners = new Set<() => void>();
+  const listeners = createListeners();
   let snap: { shape: RecognisedShape; grab: Point } | null = null;
   let broken = false;
   let held = false;
@@ -97,12 +98,9 @@ export function createLiveStroke(
       return true;
     },
     ink: (width) => ({ points, pressures: pressures ?? undefined, width, streamline }),
-    subscribe(listener) {
-      listeners.add(listener);
-      return () => listeners.delete(listener);
-    },
+    subscribe: listeners.subscribe,
     notify() {
-      for (const listener of listeners) listener();
+      listeners.notify();
     },
     snapTo(shape) {
       const grab = points[points.length - 1];

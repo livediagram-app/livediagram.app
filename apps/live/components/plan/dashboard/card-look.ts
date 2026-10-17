@@ -8,7 +8,7 @@ import type { CSSProperties } from 'react';
 
 // The inks, over the cards' slate text. Whole-class selectors, so `placeholder:text-slate-400` or
 // `dark:text-slate-100` never match one by accident.
-export const CARD_INK_CLASSES =
+const CARD_INK_CLASSES =
   '[&_.text-slate-900]:!text-[color:var(--card-ink)] [&_.text-slate-800]:!text-[color:var(--card-ink)] [&_.text-slate-700]:!text-[color:var(--card-ink)] [&_.text-slate-600]:!text-[color:var(--card-ink-soft)] [&_.text-slate-500]:!text-[color:var(--card-ink-soft)] [&_.text-slate-400]:!text-[color:var(--card-ink-soft)] [&_::placeholder]:!text-[color:var(--card-ink-soft)]';
 
 // The card's own surface: its fill, border and shadow over the slot card's (DashboardSlotView SLOT_CARD).

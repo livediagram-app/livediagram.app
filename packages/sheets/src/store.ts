@@ -30,7 +30,7 @@ export type SheetWrite =
   | { kind: 'layout'; changes: LayoutChange[]; cells?: CellChange[] }
   | { kind: 'title'; title: string };
 
-export type ApplyContext = { now: number; by: SheetPerson };
+type ApplyContext = { now: number; by: SheetPerson };
 
 export type Applied = {
   sheet: Sheet;

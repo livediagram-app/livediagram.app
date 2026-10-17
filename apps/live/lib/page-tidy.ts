@@ -42,15 +42,15 @@ const r2 = (n: number) => Math.round(n * 100) / 100;
 /** The grid what lines up with nothing sits on, and sizes round to: canvas px. */
 export const PAGE_TIDY_GRID = 4;
 /** "Nearly lined up": a share of the page's short side (about 10 px on A4). */
-export const PAGE_TIDY_ALIGN_FRACTION = 0.012;
+const PAGE_TIDY_ALIGN_FRACTION = 0.012;
 /** The tolerance's floor, so a tiny page still tidies 4 px of drift. */
-export const PAGE_TIDY_ALIGN_MIN = 4;
+const PAGE_TIDY_ALIGN_MIN = 4;
 /** Gaps are evened when their spread is within this share of their mean (or the tolerance). */
-export const PAGE_TIDY_GAP_SPREAD = 0.25;
+const PAGE_TIDY_GAP_SPREAD = 0.25;
 /** "A similar size": the largest at most this many times the smallest, on each side. */
-export const PAGE_TIDY_SIMILAR_RATIO = 1.5;
+const PAGE_TIDY_SIMILAR_RATIO = 1.5;
 /** Passes per level before it settles; each pass only ever moves less. */
-export const PAGE_TIDY_PASSES = 6;
+const PAGE_TIDY_PASSES = 6;
 
 type Frame = {
   box: Rect;
@@ -373,7 +373,7 @@ function tidyLevel(
 }
 
 /** Passes over the whole page until a pass changes nothing, so a second Tidy Up never does. */
-export const PAGE_TIDY_RUNS = 10;
+const PAGE_TIDY_RUNS = 10;
 
 /** The page's elements tidied (see the header). The same array when nothing would change. */
 export function tidyPageElements(elements: Element[], input: PageTidyInput): Element[] {

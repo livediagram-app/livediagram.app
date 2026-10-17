@@ -4,25 +4,21 @@
 // usePlanCoverWiring as the tab opens or is renamed, read by TabNameInBox. A module store, like plan-tab-list-store.ts.
 import { useLayoutEffect, useSyncExternalStore } from 'react';
 import { useLatest } from '@/hooks/ui/useLatest';
+import { createListeners } from '@/lib/listeners';
 
 let name = '';
-const listeners = new Set<() => void>();
+const listeners = createListeners();
 
 export function setActiveTabName(next: string): void {
   if (next === name) return;
   name = next;
-  for (const l of listeners) l();
-}
-
-function subscribe(listener: () => void): () => void {
-  listeners.add(listener);
-  return () => listeners.delete(listener);
+  listeners.notify();
 }
 
 const get = () => name;
 const none = () => '';
 export function useActiveTabName(): string {
-  return useSyncExternalStore(subscribe, get, none);
+  return useSyncExternalStore(listeners.subscribe, get, none);
 }
 
 // Renaming the open tab from the menu box (a click on its name), for someone who may change the document's tabs; null

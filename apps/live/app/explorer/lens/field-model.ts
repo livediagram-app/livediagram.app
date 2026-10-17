@@ -14,10 +14,10 @@ import {
 } from '@livediagram/explorer-lens';
 
 /** The field's two parts: the pills as one string of tokens, and the draft with its caret. */
-export type FieldParts = { tokens: string; draft: string; draftCaret: number };
+type FieldParts = { tokens: string; draft: string; draftCaret: number };
 
 /** A lens string and where the caret stands in it. */
-export type FieldWrite = { input: string; caret: number };
+type FieldWrite = { input: string; caret: number };
 
 const WHITESPACE = /\s/;
 

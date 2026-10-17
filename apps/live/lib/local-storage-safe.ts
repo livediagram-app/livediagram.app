@@ -80,3 +80,19 @@ export function safeJson(raw: string): unknown {
     return null;
   }
 }
+
+// A stored (or received) settings object: the JSON text or the value itself, as a record, or null when it is
+// not an object. Settings parse field by field from it, so one unrecognised value costs that field alone.
+export function storedRecord(raw: unknown): Record<string, unknown> | null {
+  const parsed: unknown = typeof raw === 'string' ? safeJson(raw) : raw;
+  return parsed && typeof parsed === 'object' ? (parsed as Record<string, unknown>) : null;
+}
+
+// A stored field that must be one of a closed list of options, or the fallback.
+export function pickOption<T extends string>(
+  value: unknown,
+  options: readonly { id: T }[],
+  fallback: T,
+): T {
+  return options.some((option) => option.id === value) ? (value as T) : fallback;
+}

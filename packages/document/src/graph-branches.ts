@@ -131,7 +131,7 @@ function besideTrunks(elements: Element[]): Element[] {
 // back on itself.
 export const BRANCH_CLEAR = 24;
 
-export type BranchOptions = {
+type BranchOptions = {
   // The flow's direction: exits leave the point toward it, the others the sides across it.
   axis: 'TB' | 'LR';
   // The exits that may move (a flow's unlabelled exits share a trunk and stay).

@@ -10,7 +10,7 @@ import { roomFetch } from './room-client';
 import type { Env } from './types';
 
 // The api never waits on one room longer than this.
-export const ROOM_ACCESS_CLOSE_TIMEOUT_MS = 3_000;
+const ROOM_ACCESS_CLOSE_TIMEOUT_MS = 3_000;
 // A team's documents are closed this many rooms at a time, so a large library is a steady trickle
 // of small calls rather than one burst. Production's largest team holds 20 documents (2026-10-06).
 export const TEAM_ROOM_CLOSE_CONCURRENCY = 10;
@@ -18,7 +18,7 @@ export const TEAM_ROOM_CLOSE_CONCURRENCY = 10;
 // session on a document past the cap still ends at its next join, which the gates refuse.
 export const TEAM_ROOM_CLOSE_MAX_DOCUMENTS = 500;
 
-export async function closeRoomSessions(
+async function closeRoomSessions(
   env: Env,
   documentId: string,
   close: AccessCloseMatch,

@@ -59,8 +59,7 @@ export type LogoLayoutId =
   | 'logo-mark-peaks'
   | 'logo-mark-star';
 
-export type LogoLayoutCategoryId =
-  'logo-lockups' | 'logo-wordmarks' | 'logo-emblems' | 'logo-marks';
+type LogoLayoutCategoryId = 'logo-lockups' | 'logo-wordmarks' | 'logo-emblems' | 'logo-marks';
 
 export const LOGO_LAYOUT_CATEGORIES: readonly { id: LogoLayoutCategoryId; label: string }[] = [
   { id: 'logo-lockups', label: 'Lockups' },
@@ -69,7 +68,7 @@ export const LOGO_LAYOUT_CATEGORIES: readonly { id: LogoLayoutCategoryId; label:
   { id: 'logo-marks', label: 'Marks' },
 ];
 
-export type LogoLayout = {
+type LogoLayout = {
   id: PageLayoutId;
   label: string;
   category: LogoLayoutCategoryId;

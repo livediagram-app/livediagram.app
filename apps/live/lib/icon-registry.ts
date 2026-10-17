@@ -28,6 +28,7 @@ import {
   type StickerDef,
   type TechIconDef,
 } from '@livediagram/icons';
+import { createListeners } from '@/lib/listeners';
 
 // Everything derived from the loaded chunks, assembled once. Kept in one
 // object (not four nullable module vars) so "loaded" is a single state flip —
@@ -46,7 +47,7 @@ type LoadedCatalogs = {
 
 let loaded: LoadedCatalogs | null = null;
 let loadPromise: Promise<void> | null = null;
-const listeners = new Set<() => void>();
+const listeners = createListeners();
 
 // Starts (or joins) the catalogue load. Memoized: every caller after the
 // first gets the same in-flight promise, so the chunk is fetched once.
@@ -81,7 +82,7 @@ export function ensureIconCatalogs(): Promise<void> {
         };
         // Snapshot the listener set: a notified component may unsubscribe /
         // resubscribe synchronously and Set iteration mid-mutation is fragile.
-        for (const listener of [...listeners]) listener();
+        listeners.notify();
       })
       .catch((err) => {
         console.error('livediagram: failed to load the icon catalogues', err);
@@ -98,12 +99,7 @@ export function isIconCatalogsLoaded(): boolean {
 }
 
 // useSyncExternalStore subscribe: notifies when the catalogues arrive.
-export function subscribeIconCatalogs(listener: () => void): () => void {
-  listeners.add(listener);
-  return () => {
-    listeners.delete(listener);
-  };
-}
+export const subscribeIconCatalogs = listeners.subscribe;
 
 // Sync line-art lookup: undefined until the chunk lands (or for an unknown
 // id). icons.ts's `getIcon` layers the placeholder fallback on top.

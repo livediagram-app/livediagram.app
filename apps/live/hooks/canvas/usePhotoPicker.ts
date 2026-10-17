@@ -26,7 +26,7 @@ import { useLatest } from '@/hooks/ui/useLatest';
 // deliberately re-opening it never notices.
 const PICKER_SETTLE_MS = 500;
 
-export type PhotoPicker = {
+type PhotoPicker = {
   inputRef: React.RefObject<HTMLInputElement | null>;
   open: () => void;
   onChange: (event: ChangeEvent<HTMLInputElement>) => void;

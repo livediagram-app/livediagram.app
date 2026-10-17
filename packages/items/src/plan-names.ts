@@ -130,7 +130,7 @@ const BUILT_IN_ALIASES: Readonly<Record<string, string>> = {
   owner: 'assignee',
 };
 
-export interface FieldNaming {
+interface FieldNaming {
   statuses: readonly PlanStatusName[];
   items: readonly Item[];
 }

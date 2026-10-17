@@ -11,7 +11,7 @@ import type { DriveAccessToken } from '@livediagram/api-schema';
 import { ApiError } from '../api/core';
 import { DRIVE_TOKEN_RENEW_BEFORE_MS } from './cadence';
 
-export type DriveTokenErrorKind =
+type DriveTokenErrorKind =
   | 'needs_reconnect'
   | 'needs_resume'
   | 'not_connected'

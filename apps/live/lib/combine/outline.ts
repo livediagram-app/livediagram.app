@@ -18,7 +18,7 @@ import {
 } from '@livediagram/document';
 
 // No traced outline strays further than this from its shape, in canvas px.
-export const COMBINE_TOLERANCE_PX = 0.25;
+const COMBINE_TOLERANCE_PX = 0.25;
 
 export type Ring = [number, number][];
 

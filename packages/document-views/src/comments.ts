@@ -10,7 +10,7 @@ import type { ViewModel } from './model';
 import { attrValue, jsonString } from './text';
 import { depthFirst } from './tree';
 
-export type CommentsOptions = { budget?: number; door?: ViewDoor; all?: boolean };
+type CommentsOptions = { budget?: number; door?: ViewDoor; all?: boolean };
 
 const THREAD = { one: 'thread', many: 'threads' };
 const COMMENT = { one: 'comment', many: 'comments' };

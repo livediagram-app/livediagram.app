@@ -26,7 +26,7 @@ const FACILITATOR_KEY = 'facilitator';
 type Announce = { reason: 'claim' | 'grant' | 'release' | 'left' | 'state'; by?: string };
 
 /** What the baton needs from the room around it. */
-export type RoomFacilitatorDeps = {
+type RoomFacilitatorDeps = {
   storage: DurableObjectStorage;
   broadcast: (payload: ServerMessage, except?: WebSocket) => void;
   sendTo: (ws: WebSocket, payload: ServerMessage) => void;
@@ -39,7 +39,7 @@ export type RoomFacilitatorDeps = {
 };
 
 /** What the baton rules need to know about one session. */
-export function askerOf(session: SessionAttachment): Asker {
+function askerOf(session: SessionAttachment): Asker {
   return {
     presenceId: session.presence?.id ?? session.presenceId,
     role: session.verifiedRole,

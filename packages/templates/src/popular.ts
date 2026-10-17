@@ -5,7 +5,7 @@
 import type { EditorMode } from '@livediagram/document';
 import { TEMPLATES, type TemplateKind } from './templates';
 
-export type PopularChoice = 'all' | EditorMode;
+type PopularChoice = 'all' | EditorMode;
 
 export const POPULAR_BY_MODE: Readonly<Record<PopularChoice, readonly TemplateKind[]>> = {
   // The five blanks lead, one per mode in mode order (EDITOR_MODES), so the picker needs no separate blank card.

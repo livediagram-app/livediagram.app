@@ -18,9 +18,9 @@ import {
 // which the UI never says, "dark mode" for Theme, "transparency" for panel
 // opacity, "hotkey" for shortcuts: the same trick the help registry uses.
 
-export type SettingsSearchCategory = SettingsCategorySpec & { matchCount: number };
+type SettingsSearchCategory = SettingsCategorySpec & { matchCount: number };
 
-export type SettingsSearchResult = {
+type SettingsSearchResult = {
   // True once the query is worth filtering on. A one-character query matches
   // almost everything, so it would flash the whole list into "results" and
   // teach the reader nothing.

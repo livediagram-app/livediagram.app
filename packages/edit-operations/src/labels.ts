@@ -5,7 +5,7 @@
 
 import { capLabel, labelBoxSize, type Element } from '@livediagram/document';
 
-export type LabelWrite = { label: string; note?: string; capped: boolean };
+type LabelWrite = { label: string; note?: string; capped: boolean };
 
 // The label to store, and the note it ends with when the whole text moved there. `note` is the note
 // the element ends with otherwise.

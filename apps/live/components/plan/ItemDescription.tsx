@@ -14,7 +14,7 @@ import { NoteRichTextEditor } from '@/components/notes/NoteRichTextEditor';
 import { NoteRichText } from '@/components/notes/NoteRichText';
 
 // Quiet time after the last keystroke before the description is written.
-export const DESCRIPTION_SAVE_MS = 800;
+const DESCRIPTION_SAVE_MS = 800;
 
 export function descriptionRuns(item: Item): TextRun[] {
   const rich = item.fields[DESCRIPTION_RICH_FIELD];

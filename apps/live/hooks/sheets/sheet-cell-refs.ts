@@ -3,17 +3,18 @@
 // once the cell is gone), and listens for the Comments panel asking it to bring a cell into view. A Sheet not drawn
 // yet has no namer, and its cell threads read by the Sheet's title alone.
 import { useSyncExternalStore } from 'react';
+import { createListeners } from '@/lib/listeners';
 
 type Namer = (cell: string) => string | null;
 
 const namers = new Map<string, Namer>();
 const focusers = new Map<string, (cell: string) => void>();
-const listeners = new Set<() => void>();
+const listeners = createListeners();
 let version = 0;
 
 function changed() {
   version++;
-  for (const l of listeners) l();
+  listeners.notify();
 }
 
 // A drawn Sheet's namer, kept while it is drawn; a new layout registers a new one. Returns the unregister.
@@ -33,15 +34,10 @@ export function cellRefOf(elementId: string, cell: string): string | null | unde
   return name ? name(cell) : undefined;
 }
 
-function subscribe(l: () => void) {
-  listeners.add(l);
-  return () => listeners.delete(l);
-}
-
 // The A1 of a cell key, kept current as Sheets are drawn and their layouts move.
 export function useCellRef(elementId: string, cell: string | undefined): string | null | undefined {
   useSyncExternalStore(
-    subscribe,
+    listeners.subscribe,
     () => version,
     () => version,
   );

@@ -4,9 +4,9 @@
 import type { ChangesetRequest } from '@livediagram/api-schema';
 import { isRecord, startsWithMermaidHeader } from '@livediagram/document';
 
-export type SourceKind = 'operations' | 'graph' | 'mermaid' | 'elements' | 'replace';
+type SourceKind = 'operations' | 'graph' | 'mermaid' | 'elements' | 'replace';
 
-export type ClassifiedSource =
+type ClassifiedSource =
   | { kind: SourceKind; body: Pick<ChangesetRequest, 'operations' | 'replace'> }
   | { kind: 'unknown' };
 

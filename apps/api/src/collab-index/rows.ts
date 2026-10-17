@@ -19,7 +19,7 @@ import {
   type Element,
 } from '@livediagram/document';
 
-export type CollabActionRow = {
+type CollabActionRow = {
   elementId: string;
   actionId: string;
   elementLabel: string;
@@ -36,7 +36,7 @@ export type CollabActionRow = {
   updatedAt: number;
 };
 
-export type CollabThreadRow = {
+type CollabThreadRow = {
   elementId: string;
   elementLabel: string;
   resolved: boolean;
@@ -55,7 +55,7 @@ export type CollabThreadRow = {
   latestAt: number;
 };
 
-export type CollabIndexRows = {
+type CollabIndexRows = {
   actions: CollabActionRow[];
   threads: CollabThreadRow[];
 };

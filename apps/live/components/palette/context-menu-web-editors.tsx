@@ -143,7 +143,7 @@ function RowListEditor<T>({
   );
 }
 
-export function StatsEditor({
+function StatsEditor({
   stats,
   onChange,
 }: {

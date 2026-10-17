@@ -45,6 +45,24 @@ export const BOARD_TOO_BIG = 'This board is too big for one document';
 /** Image progress, and which board of how many it belongs to when several import at once. */
 export type BoardImportProgress = ImportImageProgress & { board?: number; boards?: number };
 
+/** An import panel's step while boards are being made: which board of how many, and its images when it has any. */
+export type BoardImportingStep = {
+  step: 'importing';
+  board: number;
+  boards: number;
+  images?: { done: number; total: number };
+};
+
+/** The importing step a progress report puts the panel on (`boards` when the report does not say). */
+export function importingStepOf(p: BoardImportProgress, boards = 1): BoardImportingStep {
+  return {
+    step: 'importing',
+    board: p.board ?? 1,
+    boards: p.boards ?? boards,
+    ...(p.total > 0 ? { images: { done: p.done, total: p.total } } : {}),
+  };
+}
+
 /** A new document as the import creates it. */
 export type NewBoardDocument = {
   id: string;
@@ -122,7 +140,7 @@ export async function finishLanding(
   return { elements, images };
 }
 
-export type BoardDocumentsImport = {
+type BoardDocumentsImport = {
   ownerId: string;
   // Offline Mode documents (in this browser), or cloud ones.
   offline: boolean;

@@ -141,14 +141,6 @@ export function defaultScheme(appearance: Appearance = 'light'): ThemeDefinition
   return appearance === 'dark' ? DEFAULT_SCHEME_DARK : DEFAULT_SCHEME_LIGHT;
 }
 
-/** The colours a scheme paints the canvas with (its backdrop, minus the layout). */
-export function schemeBackdrop(scheme: ThemeDefinition): {
-  backgroundColor: string;
-  patternColor: string;
-} {
-  return { backgroundColor: scheme.backgroundColor, patternColor: scheme.patternColor };
-}
-
 // Is this canvas still one the DEFAULT scheme painted — either half of it —
 // rather than one somebody chose? Both halves count, because a tab saved by a
 // viewer in dark chrome carries the dark half and is no less untouched for it.
@@ -207,7 +199,7 @@ export function getBuiltInTheme(
 // every theme (same rule `addBoxed` applies to ad-hoc sticky creation),
 // and an image renders its bytes so its colour fields are inert (see
 // ImageElement in @livediagram/document).
-export type ThemeColourField = {
+type ThemeColourField = {
   element: 'fillColor' | 'strokeColor' | 'textColor';
   theme: 'elementFill' | 'elementStroke' | 'elementText';
 };
@@ -383,7 +375,7 @@ export function switchThemeElement(
 // chosen canvas pattern — e.g. reset Graph back to the theme's Grid, or
 // blank it entirely for Mono — which reads as "changing the theme loses
 // the canvas grid".
-export type TabBackdrop = {
+type TabBackdrop = {
   backgroundColor?: string;
   backgroundPattern?: BackgroundPattern;
   patternColor?: string;

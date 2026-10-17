@@ -3,7 +3,7 @@
 import type { FormDefinition } from './model';
 
 // The settings a live form keeps open to change.
-export const SETTINGS_KEYS = ['closesAt', 'limit', 'confirmation', 'closedMessage'] as const;
+const SETTINGS_KEYS = ['closesAt', 'limit', 'confirmation', 'closedMessage'] as const;
 
 function withoutSettings(form: FormDefinition): Record<string, unknown> {
   const rest: Record<string, unknown> = { ...form };

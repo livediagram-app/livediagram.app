@@ -49,7 +49,7 @@ function subscribeKey(key: string, cb: () => void): () => void {
   };
 }
 
-export function readLocalStorageValue(key: string): string | null {
+function readLocalStorageValue(key: string): string | null {
   return written.get(key) ?? readLocalStorageSafe(key);
 }
 

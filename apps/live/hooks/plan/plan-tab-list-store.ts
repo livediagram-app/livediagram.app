@@ -6,12 +6,13 @@
 // renamed or turned), never an element moved.
 import { useSyncExternalStore } from 'react';
 import { tabKindOf, type DashboardTabOf, type Tab } from '@livediagram/document';
+import { createListeners } from '@/lib/listeners';
 
 export type PlanTabEntry = { id: string; name: string; of: DashboardTabOf };
 
 const EMPTY: readonly PlanTabEntry[] = [];
 let list: readonly PlanTabEntry[] = EMPTY;
-const listeners = new Set<() => void>();
+const listeners = createListeners();
 
 // The Board, Sheet and Diagram tabs of `tabs` (every tab but a Dashboard: a diagram or an Event Storming board shows
 // as a Diagram), in tab-bar order.
@@ -31,16 +32,11 @@ const keyOf = (l: readonly PlanTabEntry[]) => l.map((e) => `${e.of}:${e.id}:${e.
 export function setPlanTabList(next: readonly PlanTabEntry[]): void {
   if (keyOf(next) === keyOf(list)) return;
   list = next.length ? next : EMPTY;
-  for (const l of listeners) l();
-}
-
-function subscribe(listener: () => void): () => void {
-  listeners.add(listener);
-  return () => listeners.delete(listener);
+  listeners.notify();
 }
 
 const read = () => list;
 const serverEmpty = () => EMPTY;
 export function usePlanTabList(): readonly PlanTabEntry[] {
-  return useSyncExternalStore(subscribe, read, serverEmpty);
+  return useSyncExternalStore(listeners.subscribe, read, serverEmpty);
 }

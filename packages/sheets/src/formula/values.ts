@@ -60,7 +60,7 @@ export function scalarOf(v: Value): Scalar {
 }
 
 // Numbers in text keep 15 significant digits, so 0.1 + 0.2 reads 0.3.
-export function roundSignificant(n: number): number {
+function roundSignificant(n: number): number {
   if (n === 0 || !Number.isFinite(n)) return n;
   return Number(n.toPrecision(15));
 }

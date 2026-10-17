@@ -14,7 +14,7 @@ import {
 import type { StarterCell } from '../sheet-starters';
 
 // How many days since someone was last contacted before they are due a follow-up.
-export const FOLLOW_UP_DAYS = 14;
+const FOLLOW_UP_DAYS = 14;
 
 export function contactsDesign(today: number): SheetDesign {
   const people: [string, string, string, string, string, string, number, string][] = [
@@ -210,7 +210,7 @@ export function guestsDesign(): SheetDesign {
 }
 
 // The pass mark (an average at or over it passes) and the grade boundaries, best first.
-export const PASS_MARK = 60;
+const PASS_MARK = 60;
 const GRADES: readonly [string, number][] = [
   ['A', 90],
   ['B', 80],

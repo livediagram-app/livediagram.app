@@ -50,7 +50,7 @@ export const DASHBOARD_BACKGROUNDS = ['plain', 'tint'] as const;
 export type DashboardBackground = (typeof DASHBOARD_BACKGROUNDS)[number];
 export type DashboardLayout = { rows: DashboardRow[]; background?: 'tint' };
 
-export type IdMaker = () => string;
+type IdMaker = () => string;
 
 const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
 
@@ -431,7 +431,7 @@ export function dashboardReadingNeighbour(
 
 // Where a moved slot goes (DashboardPage's drag): onto another slot (the two swap what they hold; spans stay), into a
 // gap in a row (`index`, 0 its left end), or between rows as a row of its own (`index`, 0 above the first).
-export type DashboardMoveTarget =
+type DashboardMoveTarget =
   | { kind: 'slot'; slotId: string }
   | { kind: 'slot-gap'; rowId: string; index: number }
   | { kind: 'row-gap'; index: number };

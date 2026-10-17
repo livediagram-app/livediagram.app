@@ -10,7 +10,7 @@ import { dayKey, dayNumber } from './plan-view-dates';
 export type CalendarField = 'due' | 'start';
 
 // The calendar views and the field each places by.
-export const CALENDAR_FIELDS: Readonly<Partial<Record<PlanViewId, CalendarField>>> = {
+const CALENDAR_FIELDS: Readonly<Partial<Record<PlanViewId, CalendarField>>> = {
   calendar: 'due',
   'start-calendar': 'start',
 };

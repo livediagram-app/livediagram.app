@@ -157,7 +157,7 @@ function typedSearch(): boolean {
   );
 }
 
-export type CategoryBarState = ReturnType<typeof useCategoryBar>;
+type CategoryBarState = ReturnType<typeof useCategoryBar>;
 
 /** The bar's buttons, a divider between the bands (Popular, then Common, Structure, Decorate). */
 export function CategoryBarButtons({

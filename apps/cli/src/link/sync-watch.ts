@@ -20,7 +20,7 @@ import { readCoverage, type Coverage } from './coverage';
 import type { LinkFile } from './link-file';
 import { runSyncPass, type PassResult } from './sync-run';
 
-export type WatchOptions = {
+type WatchOptions = {
   io: CliIo;
   // Its log prints `[sync] …`.
   ctx: VerbContext;

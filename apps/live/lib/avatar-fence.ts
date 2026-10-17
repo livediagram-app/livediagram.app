@@ -22,7 +22,7 @@ import {
 // half-width, so a character stops AT a fence rather than standing in it. Measured on the Regular
 // character (its sprite scale, FENCE_REACH_SCALE); a Small or Tall one keeps its own feet's width.
 export const FENCE_REACH = 12;
-export const FENCE_REACH_SCALE = 1.5;
+const FENCE_REACH_SCALE = 1.5;
 
 /** The reach of a character drawn at `scale` (avatarScale of its Size). */
 export function fenceReachFor(scale: number): number {
@@ -34,7 +34,7 @@ export function fenceReachFor(scale: number): number {
 // the step, not a distance, so a display's refresh rate (a 4.3 px step a frame at 60 Hz, 1.1 px at
 // 240 Hz) never decides whether a walk slides. 0.06 is the 0.25 px of a 60 Hz step it replaced: about
 // 3.4 degrees off head-on.
-export const FENCE_STALL_SHARE = 0.06;
+const FENCE_STALL_SHARE = 0.06;
 
 /** Whether a frame that moved `moved` px of a wanted `step` px made no progress. */
 export function fenceStalled(moved: number, step: number): boolean {

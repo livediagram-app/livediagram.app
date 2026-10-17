@@ -3,7 +3,7 @@
 import { DAY_NAMES, MONTH_NAMES, dateFromSerial, serialFromDate } from './dates';
 import type { CellInput } from './sheet';
 
-export type SeriesSource = (CellInput | undefined)[];
+type SeriesSource = (CellInput | undefined)[];
 
 type Series = (k: number) => CellInput | undefined; // k: 0-based index past the source's end
 

@@ -16,9 +16,9 @@ import { track } from '@/lib/telemetry';
 import { useLatest } from '@/hooks/ui/useLatest';
 import { jumpBackInSet, type JumpBackInSet } from './home-model';
 
-export type HomeStatus = 'loading' | 'ready' | 'error';
+type HomeStatus = 'loading' | 'ready' | 'error';
 
-export type HomeData = {
+type HomeData = {
   status: HomeStatus;
   jumpBackIn: JumpBackInSet;
   whatHappened: HomeGroup[];

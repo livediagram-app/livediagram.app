@@ -2,7 +2,7 @@
 // is typed, those starting with it first, then those holding it, case aside; at most DROPDOWN_ASSIST_MAX.
 import { rangeOptions, validationRuleAt, type Workbook } from '@livediagram/sheets';
 
-export const DROPDOWN_ASSIST_MAX = 8;
+const DROPDOWN_ASSIST_MAX = 8;
 
 export function dropdownMatches(
   wb: Workbook,

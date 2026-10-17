@@ -69,7 +69,7 @@ export function withElementsMoved(
   });
 }
 
-export type MeasuredZone = { id: string; index: number; x: number; y: number };
+type MeasuredZone = { id: string; index: number; x: number; y: number };
 
 // Under this far (canvas px) a measured zone has not moved: layout noise, not a change.
 const SETTLE_TOLERANCE = 0.75;

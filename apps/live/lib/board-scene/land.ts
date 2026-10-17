@@ -26,7 +26,7 @@ export type { BoardScenePlacement } from './placement';
 export type { BoardSceneReport } from './report';
 
 // A landed whiteboard's name when its scene has no title: the template's own.
-export const SCENE_DEFAULT_TITLE = 'Whiteboard';
+const SCENE_DEFAULT_TITLE = 'Whiteboard';
 
 export type BoardSceneProfile = 'whiteboard' | 'diagram';
 export type LandOptions = {
@@ -50,8 +50,8 @@ export type LandedBoardScene = {
   report: BoardSceneReport;
   tabPatch: BoardSceneTabPatch;
 };
-export type BoardSceneRejection = 'too-many-elements';
-export type LandResult =
+type BoardSceneRejection = 'too-many-elements';
+type LandResult =
   | ({ ok: true } & LandedBoardScene)
   | { ok: false; rejection: BoardSceneRejection; message: string };
 

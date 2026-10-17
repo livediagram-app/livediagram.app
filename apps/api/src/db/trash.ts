@@ -14,13 +14,13 @@ import { documentsTimelineSweepStatement } from './timeline';
 
 // Ids per purge batch: one json_each list bound into three statements, so the
 // statement count is flat however many documents go. 100 ids is ~4 KB bound.
-export const TRASH_PURGE_BATCH = 100;
+const TRASH_PURGE_BATCH = 100;
 // Batches per cron run: 20 x 100 = 2,000 purges a day, at ~4 D1 queries and
 // one R2 call per batch, far inside the 1,000-query invocation limit. A larger
 // backlog drains over the following days, oldest first.
-export const TRASH_PURGE_MAX_BATCHES = 20;
+const TRASH_PURGE_MAX_BATCHES = 20;
 
-export type TrashedDocumentMeta = {
+type TrashedDocumentMeta = {
   id: string;
   ownerId: string;
   teamId: string | null;

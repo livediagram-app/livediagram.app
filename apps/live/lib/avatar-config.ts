@@ -10,7 +10,12 @@
 // Colour is deliberately NOT here: the shirt takes the participant's presence
 // colour so a character matches its owner's cursor and name chip.
 
-import { readLocalStorageSafe, safeJson, writeLocalStorageSafe } from './local-storage-safe';
+import {
+  readLocalStorageSafe,
+  pickOption,
+  storedRecord,
+  writeLocalStorageSafe,
+} from './local-storage-safe';
 import { randomPick } from './random';
 
 // The costume vocabulary itself lives in @livediagram/api-schema, because the
@@ -129,11 +134,10 @@ export function avatarScale(size: AvatarSize): number {
 // much of the canvas the character covers, so it starts Regular and stays a
 // deliberate choice.
 export function randomAvatarConfig(): AvatarConfig {
-  const pick = randomPick;
   return {
-    gender: pick(AVATAR_GENDERS)?.id ?? DEFAULT_AVATAR_CONFIG.gender,
-    clothing: pick(AVATAR_CLOTHING)?.id ?? DEFAULT_AVATAR_CONFIG.clothing,
-    hair: pick(AVATAR_HAIR)?.id ?? DEFAULT_AVATAR_CONFIG.hair,
+    gender: randomPick(AVATAR_GENDERS)?.id ?? DEFAULT_AVATAR_CONFIG.gender,
+    clothing: randomPick(AVATAR_CLOTHING)?.id ?? DEFAULT_AVATAR_CONFIG.clothing,
+    hair: randomPick(AVATAR_HAIR)?.id ?? DEFAULT_AVATAR_CONFIG.hair,
     size: DEFAULT_AVATAR_CONFIG.size,
   };
 }
@@ -145,16 +149,13 @@ const STORAGE_KEY = 'livediagram:v2:avatar-config';
 // only that field rather than resetting the whole character. Pure, so the
 // fallbacks are unit-testable without touching storage.
 export function parseAvatarConfig(raw: unknown): AvatarConfig {
-  const parsed: unknown = typeof raw === 'string' ? safeJson(raw) : raw;
-  if (!parsed || typeof parsed !== 'object') return { ...DEFAULT_AVATAR_CONFIG };
-  const o = parsed as Record<string, unknown>;
-  const pick = <T extends string>(value: unknown, options: readonly { id: T }[], fallback: T): T =>
-    options.some((opt) => opt.id === value) ? (value as T) : fallback;
+  const o = storedRecord(raw);
+  if (!o) return { ...DEFAULT_AVATAR_CONFIG };
   return {
-    gender: pick(o.gender, AVATAR_GENDERS, DEFAULT_AVATAR_CONFIG.gender),
-    clothing: pick(o.clothing, AVATAR_CLOTHING, DEFAULT_AVATAR_CONFIG.clothing),
-    hair: pick(o.hair, AVATAR_HAIR, DEFAULT_AVATAR_CONFIG.hair),
-    size: pick(o.size, AVATAR_SIZES, DEFAULT_AVATAR_CONFIG.size),
+    gender: pickOption(o.gender, AVATAR_GENDERS, DEFAULT_AVATAR_CONFIG.gender),
+    clothing: pickOption(o.clothing, AVATAR_CLOTHING, DEFAULT_AVATAR_CONFIG.clothing),
+    hair: pickOption(o.hair, AVATAR_HAIR, DEFAULT_AVATAR_CONFIG.hair),
+    size: pickOption(o.size, AVATAR_SIZES, DEFAULT_AVATAR_CONFIG.size),
   };
 }
 

@@ -15,8 +15,8 @@ import {
 } from '@livediagram/ui';
 import { AnchoredPopover } from '@/components/primitives/AnchoredPopover';
 
-export type FilterField = { id: string; label: string };
-export type FilterValue = { key: string; label: string; count: number };
+type FilterField = { id: string; label: string };
+type FilterValue = { key: string; label: string; count: number };
 
 const POPOVER_PX = 260;
 // Past this many rows, a box to narrow them.

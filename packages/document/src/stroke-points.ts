@@ -5,10 +5,10 @@
 // Pure; one reader and one writer for the editor, the api worker, the MCP server and the imports.
 
 export const STROKE_POINTS_VERSION = 1;
-export const STROKE_POINTS_HEADER_BYTES = 2;
-export const STROKE_POINTS_PRESSURE_FLAG = 0b0000_0001;
-export const STROKE_POINT_STEPS = 65_535;
-export const STROKE_PRESSURE_STEPS = 255;
+const STROKE_POINTS_HEADER_BYTES = 2;
+const STROKE_POINTS_PRESSURE_FLAG = 0b0000_0001;
+const STROKE_POINT_STEPS = 65_535;
+const STROKE_PRESSURE_STEPS = 255;
 /** A stored coordinate is within this fraction of its box's side of where it was written. */
 export const STROKE_POINT_MAX_ERROR = 1 / (2 * STROKE_POINT_STEPS);
 /** A stored pressure is within this of the pressure written. */
@@ -55,7 +55,7 @@ export type StrokePointsRejection =
   | 'ragged'
   | 'too-many-points';
 
-export type StrokePointsParse =
+type StrokePointsParse =
   { ok: true; points: StrokePoints } | { ok: false; rejection: StrokePointsRejection };
 
 // --- base64 (standard alphabet, `=` padding, canonical only) -------------------------------

@@ -22,7 +22,7 @@ export function opensSide(def: PaletteTileDef): boolean {
   return !!def.variants?.length || def.action.type === 'open';
 }
 
-export type ItemProps = {
+type ItemProps = {
   def: PaletteTileDef;
   actions: PaletteTileActions;
   pendingDraw: PendingDraw | null;

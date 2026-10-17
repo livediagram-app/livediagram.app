@@ -13,7 +13,7 @@ import { TitlePopoverButton, titleButtonClass } from './TitlePopoverButton';
 
 const NotesIcon = lucideGlyph(lucideFileText, 14);
 
-export const ADD_NOTES = 'Add Notes';
+const ADD_NOTES = 'Add Notes';
 export const NOTES = 'Notes';
 
 // The title-bar room it takes (24 px and the gap, or named beside its icon), so the page's label

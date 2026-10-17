@@ -9,7 +9,7 @@ import type { ShapeKind } from './shape-kind';
 import type { Point } from './geometry-primitives';
 
 export type Side = 'n' | 'e' | 's' | 'w';
-export type AnchorClass = 'corner' | 'quarter' | 'middle';
+type AnchorClass = 'corner' | 'quarter' | 'middle';
 
 type AnchorInfo = {
   cls: AnchorClass;

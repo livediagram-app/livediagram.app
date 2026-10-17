@@ -22,7 +22,7 @@ import type { ViewModel } from './model';
 import { commentText, readComment } from './comments';
 import { cellText, jsonString } from './text';
 
-export type ShowOptions = { budget?: number; door?: ViewDoor };
+type ShowOptions = { budget?: number; door?: ViewDoor };
 
 const LINE = { one: 'line', many: 'lines' };
 
@@ -239,7 +239,7 @@ function blockLines(el: Element, fields: Record<string, unknown>): ViewLine[] {
   return lines;
 }
 
-export type ShownElement = Omit<ShowView, 'header'>;
+type ShownElement = Omit<ShowView, 'header'>;
 
 // One printed element of the model in full: its lines after the header, and its JSON.
 export function showElement(

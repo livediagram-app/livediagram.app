@@ -12,7 +12,7 @@ import { useElementFinish } from './CanvasFinishContext';
 // sets no width, Sketch draws its line and its triangle / line heads by hand. The same rules as the export's
 // svgArrow (packages/document/src/svg-render-arrows.ts), so the canvas and a download agree.
 
-export type ArrowFinishPaint = {
+type ArrowFinishPaint = {
   /** The line's width before the selected-state bump, px. */
   baseStrokeWidth: number;
   /** The sketched line and heads, or null when the arrow draws as a plain path. */

@@ -4,7 +4,7 @@ import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { ExcalidrawImportPanel } from './ExcalidrawImportPanel';
 import type { ImportScenes } from '@/hooks/persistence/useMsWhiteboardImport';
 
-export const EXCALIDRAW_IMPORT_TITLE = 'Import from Excalidraw';
+const EXCALIDRAW_IMPORT_TITLE = 'Import from Excalidraw';
 
 // The Explorer's Excalidraw import as a dialog (docs/specs/020-import-export/excalidraw-import-export.md
 // "Import as new documents"): host-agnostic, the host supplies the commit (one document per file).

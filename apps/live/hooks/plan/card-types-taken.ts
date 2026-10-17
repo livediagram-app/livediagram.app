@@ -13,27 +13,23 @@ import {
 } from '@livediagram/items';
 import type { Element } from '@livediagram/document';
 import { usePlan } from '@/components/plan/PlanContext';
+import { createListeners } from '@/lib/listeners';
 
 // Before any tab has published (a palette outside the editor): every type is taken, so nothing greys out.
 let taken: CardTypesTaken = { kind: 'all' };
 let key = 'all';
-const listeners = new Set<() => void>();
+const listeners = createListeners();
 
 export function setCardTypesTaken(next: CardTypesTaken): void {
   const k = cardTypesTakenKey(next);
   if (k === key) return;
   taken = next;
   key = k;
-  for (const l of listeners) l();
+  listeners.notify();
 }
 
-export function getCardTypesTaken(): CardTypesTaken {
+function getCardTypesTaken(): CardTypesTaken {
   return taken;
-}
-
-function subscribe(l: () => void): () => void {
-  listeners.add(l);
-  return () => listeners.delete(l);
 }
 
 // CanvasChrome: publishes the active tab's reading as its elements change (cheap: its boards' set-ups only).
@@ -55,7 +51,7 @@ export function usePublishCardTypesTaken(elements: readonly Element[]): void {
 export function usePlanCardTileDisabled(
   action: { type: string; kind?: string; plan?: string } | undefined,
 ): { reason: string } | undefined {
-  const current = useSyncExternalStore(subscribe, getCardTypesTaken, getCardTypesTaken);
+  const current = useSyncExternalStore(listeners.subscribe, getCardTypesTaken, getCardTypesTaken);
   const plan = usePlan();
   if (action?.type !== 'shape' || action.kind !== 'plan-card' || !action.plan) return undefined;
   const label = typeIn(plan?.types ?? ITEM_TYPES, action.plan).label;

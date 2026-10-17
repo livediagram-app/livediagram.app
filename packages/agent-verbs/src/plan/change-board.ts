@@ -27,7 +27,7 @@ import { apiRefusalOf } from './api-refusal';
 import { readPlanState } from './plan-state';
 import { tabPath } from '../verbs/shared';
 
-export interface ChangeBoardInput extends Omit<BoardChange, 'types' | 'swimlanes'> {
+interface ChangeBoardInput extends Omit<BoardChange, 'types' | 'swimlanes'> {
   // Its swimlanes, as the board's menu names them: none, assignee, type, priority, status (or "column"), or a field
   // by name ("Severity").
   swimlanes?: string;
@@ -41,7 +41,7 @@ export interface ChangeBoardInput extends Omit<BoardChange, 'types' | 'swimlanes
 // What a board that names no card types takes, in answers, and what change_board takes to show every type again.
 export const EVERY_TYPE = 'every type';
 
-export type ChangeBoardResult =
+type ChangeBoardResult =
   | {
       ok: true;
       tabId: string;

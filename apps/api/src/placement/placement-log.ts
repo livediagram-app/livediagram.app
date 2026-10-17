@@ -11,7 +11,7 @@ import type {
 } from '@livediagram/api-schema';
 import type { DefaultSkip, PlacementDecision } from './placement-types';
 
-export type PlacementScope = 'personal' | 'team';
+type PlacementScope = 'personal' | 'team';
 
 /** The space a raw or resolved `teamId` names, for the log line. */
 export function placementScope(teamId: unknown): PlacementScope {

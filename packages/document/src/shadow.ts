@@ -26,7 +26,7 @@ export const SHADOW_LIMITS = { offset: 24, blur: 48 } as const;
 // The fixed shadow ink: slate-900, matching the UI's text ink. A single
 // colour keeps shadows reading as shade under every theme and keeps the
 // model to four sliders (docs/specs/008-canvas/element-shadows.md leaves a colour picker as follow-up).
-export const SHADOW_COLOR_RGB = '15, 23, 42';
+const SHADOW_COLOR_RGB = '15, 23, 42';
 
 export function clampShadow(s: ElementShadow): ElementShadow {
   return {
@@ -37,7 +37,7 @@ export function clampShadow(s: ElementShadow): ElementShadow {
   };
 }
 
-export type ShadowPresetId = 'soft' | 'drop' | 'lifted' | 'hard';
+type ShadowPresetId = 'soft' | 'drop' | 'lifted' | 'hard';
 
 // The tile presets (docs/specs/008-canvas/element-shadows.md). Soft / Drop / Lifted are elevation steps;
 // Hard is the zero-blur offset "poster" shadow. A separate None tile

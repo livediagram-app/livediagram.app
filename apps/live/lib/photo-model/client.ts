@@ -21,13 +21,13 @@ import type { BoundaryFailure, BoundaryOutcome, WorkerRequest, WorkerResponse } 
 // second on a desktop CPU; eight times that covers a slow laptop, and the
 // warm-up on opening the picker usually has the runtime loaded before a photo
 // is chosen. Past it the author is waiting on a correction, not a result.
-export const BOUNDARY_TIMEOUT_MS = 8000;
+const BOUNDARY_TIMEOUT_MS = 8000;
 
 type WorkingImage = { width: number; height: number; data: Uint8ClampedArray };
 
 type Pending = (outcome: BoundaryOutcome) => void;
 
-export type BoundaryClient = {
+type BoundaryClient = {
   // Start the worker loading its runtime, so it is ready when a photo comes.
   warm: () => void;
   cuesFor: (image: WorkingImage, opts?: { timeoutMs?: number }) => Promise<BoundaryOutcome>;

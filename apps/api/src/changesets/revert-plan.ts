@@ -13,7 +13,7 @@ import type { ChangesetFingerprints } from '../db/changesets';
 // differs from the after-image) is left as it is and listed as kept; the rest are reverted. Taking
 // the before-image keeps the current element's live fields (CS44). Pure.
 
-export type RevertPlan = { elements: Element[]; reverted: number; kept: RevertKept[] };
+type RevertPlan = { elements: Element[]; reverted: number; kept: RevertKept[] };
 
 export function planRevert(
   current: Tab,

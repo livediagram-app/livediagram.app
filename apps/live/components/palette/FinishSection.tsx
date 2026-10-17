@@ -48,7 +48,7 @@ const FOLLOW_TAB = 'follow-tab';
 const finishOfRow = (id: string): Finish | null => (isFinish(id) ? id : null);
 
 /** One line on what each finish does, under its name. */
-export const FINISH_DETAILS: Record<Finish, string> = {
+const FINISH_DETAILS: Record<Finish, string> = {
   flexible: 'Soft and rounded',
   professional: 'Square and fine',
   sketch: 'Drawn by hand',

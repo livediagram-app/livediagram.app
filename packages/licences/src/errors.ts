@@ -1,6 +1,6 @@
 // Every way the generator refuses to publish an incomplete page
 // (docs/specs/002-project-scope/blueprints/third-party-licences.md "Errors and edge cases").
-export type LicencesErrorCode =
+type LicencesErrorCode =
   | 'BundlerFailed'
   | 'AnalyzeDataMissing'
   | 'AnalyzeFormatUnrecognised'

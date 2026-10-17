@@ -58,7 +58,7 @@ export function mcpResultText(
 }
 
 // One op of `update_document`'s ops mode, as the model sends it.
-export type McpOp = {
+type McpOp = {
   op: 'add' | 'update' | 'remove';
   element?: Record<string, unknown>;
   elementId?: string;

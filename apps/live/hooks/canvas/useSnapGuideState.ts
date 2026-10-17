@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from '
 import type { AlignmentGuide, DistributionGuide } from '@livediagram/document';
 import { sameDistGuides, sameGuides, sameTargets } from '@/lib/drag-geometry';
 import type { SnapTarget } from '@/components/canvas/Canvas.types';
+import { createListeners } from '@/lib/listeners';
 
 // Cosmetic snap-guide overlay state for the active drag gesture (alignment
 // guides, equal-spacing guides, and arrow-endpoint snap markers), all
@@ -39,15 +40,10 @@ const NO_GUIDES: SnapGuides = { snapGuides: [], distGuides: [], snapTargets: [] 
 
 export function createSnapGuideStore(): SnapGuideStore {
   let value = NO_GUIDES;
-  const listeners = new Set<() => void>();
+  const listeners = createListeners();
   return {
     get: () => value,
-    subscribe(cb) {
-      listeners.add(cb);
-      return () => {
-        listeners.delete(cb);
-      };
-    },
+    subscribe: listeners.subscribe,
     set(next) {
       const merged: SnapGuides = {
         snapGuides:
@@ -70,7 +66,7 @@ export function createSnapGuideStore(): SnapGuideStore {
       )
         return;
       value = merged;
-      for (const cb of listeners) cb();
+      listeners.notify();
     },
   };
 }

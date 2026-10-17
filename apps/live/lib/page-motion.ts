@@ -16,7 +16,7 @@ import {
   type ThemeDefinition,
 } from '@livediagram/document';
 
-export type PageMotionEntry = {
+type PageMotionEntry = {
   id: PageMotion;
   label: string;
   // What it does, for its tooltip.

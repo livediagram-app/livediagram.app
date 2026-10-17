@@ -7,7 +7,7 @@ import { rgbToLabInto, type Lab } from './lab';
 // hand-labelled walls: 240 to 253 score the same (the night photo's ceiling
 // lamp stops dragging its cells' floors, two fewer spurious boxes there), and
 // 250 sits in that band; 255 alone misses the lamp's soft edge.
-export const BLOWN_OUT = 250;
+const BLOWN_OUT = 250;
 
 // What one region of a photograph is made of: the saturation and value
 // histograms of its lit pixels, and the mean hue direction of its DULL ones —

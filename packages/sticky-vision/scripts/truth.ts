@@ -71,7 +71,7 @@ export function meetsBar(s: Score): boolean {
 const REPO_ROOT = resolve(fileURLToPath(new URL('../../..', import.meta.url)));
 const TASK = 'event-storming';
 
-export function truthsRoot(): string | null {
+function truthsRoot(): string | null {
   const candidates = [
     process.env.VISION_TRUTHS_DIR,
     resolve(REPO_ROOT, '..', 'vision-model-truths'),

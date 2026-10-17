@@ -30,6 +30,7 @@ import { SelectionPopover } from '@/components/canvas/SelectionPopover';
 import { useInsertionSlot } from '@/lib/insertion-preview';
 import { useElementTourOffer } from '@/lib/element-tour-offer';
 import { ElementTourOffer } from '@/components/tour/ElementTourOffer';
+import { elementSelector } from '@/lib/canvas-selectors';
 
 // The floating selection toolbars (docs/specs/008-canvas/canvas-and-palette.md): the single-selection popover
 // and the marquee multi-selection toolbar, each riding a sibling wrapper
@@ -222,7 +223,7 @@ export function CanvasSelectionToolbars({
                       // element. Fall back to the button coords if the
                       // element node can't be found.
                       const rect = document
-                        .querySelector(`[data-element-id="${selected.id}"]`)
+                        .querySelector(elementSelector(selected.id))
                         ?.getBoundingClientRect();
                       const anchor = rect ? elementMenuAnchor(rect) : { x, y };
                       onOpenElementContextMenu(selected.id, anchor.x, anchor.y);

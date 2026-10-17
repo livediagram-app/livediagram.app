@@ -8,9 +8,9 @@ import {
   type StrokePointsRejection,
 } from './stroke-points';
 
-export type DescribedStrokePoint = { nx: number; ny: number; p?: number };
+type DescribedStrokePoint = { nx: number; ny: number; p?: number };
 
-export type DescribedStrokePoints =
+type DescribedStrokePoints =
   | { ok: true; version: number; pressure: boolean; points: DescribedStrokePoint[] }
   | { ok: false; rejection: StrokePointsRejection };
 

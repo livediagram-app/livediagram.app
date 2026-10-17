@@ -16,7 +16,7 @@ const BOTTOM_Y = 25;
 // How far each face drifts out when the prism is fully open: the lid and the
 // bottom fold in viewBox units, the sides as a share of the cube's half-width.
 // Large enough to read as "opened up" at the 28px header size (about 4px).
-export const PRISM_EXPLODE = { top: 40, bottom: 30, side: 0.36 } as const;
+const PRISM_EXPLODE = { top: 40, bottom: 30, side: 0.36 } as const;
 
 type Plan = readonly [number, number];
 
@@ -43,7 +43,7 @@ const BOTTOM_CORNERS: readonly Plan[] = [
   [-1, -1],
 ];
 
-export type PrismPose = {
+type PrismPose = {
   // Turn about the vertical axis, in degrees.
   turn: number;
   // How open the prism is, 0 (closed) to 1.

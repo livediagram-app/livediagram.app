@@ -22,11 +22,11 @@ export type CredentialDetails = {
 export type StoredCredential = CredentialDetails & SavedToken;
 
 export type CredentialSource = 'env' | 'keychain' | 'file';
-export type Credential = { token: string; source: CredentialSource };
+type Credential = { token: string; source: CredentialSource };
 
 type CredentialsFile = { version: 1; profiles: Record<string, StoredCredential> };
 
-export const credentialsPath = (io: CliIo) => `${configDir(io)}/credentials.json`;
+const credentialsPath = (io: CliIo) => `${configDir(io)}/credentials.json`;
 
 async function readFile(io: CliIo): Promise<CredentialsFile> {
   const path = credentialsPath(io);

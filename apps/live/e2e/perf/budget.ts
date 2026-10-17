@@ -2,12 +2,12 @@
 // over what the probe measures, and the report it renders. Pure: the probe measures, this judges.
 
 // docs/specs/008-canvas/blueprints/canvas-performance.md "Constants and configuration".
-export const LONG_TASK_MS = 50;
-export const DRAG_MEDIAN_FRAME_MS = 33;
-export const SELECT_TASK_MS = 100;
-export const OPEN_INTERACTIVE_MS = 3000;
+const LONG_TASK_MS = 50;
+const DRAG_MEDIAN_FRAME_MS = 33;
+const SELECT_TASK_MS = 100;
+const OPEN_INTERACTIVE_MS = 3000;
 // docs/specs/008-canvas/blueprints/DEFAULTS.md D66.
-export const IDLE_WORK_MS = 5;
+const IDLE_WORK_MS = 5;
 
 export type Gesture =
   | 'open'
@@ -31,7 +31,7 @@ export type Measurement = {
   openMs?: number;
 };
 
-export type BudgetRow = Measurement & { rule: string; measured: string; pass: boolean };
+type BudgetRow = Measurement & { rule: string; measured: string; pass: boolean };
 
 type Metric = 'longestTaskMs' | 'medianFrameMs' | 'idleWorkMs' | 'openMs';
 type Limit = { metric: Metric; max: number; label: string };

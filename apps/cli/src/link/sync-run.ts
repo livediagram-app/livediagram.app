@@ -36,7 +36,7 @@ import type { PlanInput, SyncAction } from './sync-plan';
 import { surveyLink } from './sync-survey';
 import { sha256 } from '../sync/pull-file';
 
-export type PassOptions = {
+type PassOptions = {
   io: CliIo;
   // Its log prints `[sync] …`.
   ctx: VerbContext;

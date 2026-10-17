@@ -15,7 +15,7 @@ import type { PlanPalette } from '../plan-palette';
 
 const PlusGlyph = lucideGlyph(lucidePlus, 14);
 // How long a new card's bar runs, in days.
-export const GANTT_NEW_CARD_DAYS = 7;
+const GANTT_NEW_CARD_DAYS = 7;
 
 const day = (d: Date) =>
   `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;

@@ -3,7 +3,7 @@
 // error code. A 5xx or a request that never completed is reported through `onFailure`; a 4xx is the
 // caller's to handle, never reported.
 
-export type ApiClientOptions = {
+type ApiClientOptions = {
   // Where the api answers: `https://livediagram-api/api` over the MCP's binding, the host's api base for the CLI.
   baseUrl: string;
   fetch: (request: Request) => Promise<Response>;

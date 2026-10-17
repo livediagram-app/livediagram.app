@@ -125,7 +125,7 @@ export function DashboardSettings({
   );
 }
 
-export function DashboardSettingsPanel({
+function DashboardSettingsPanel({
   name,
   layout,
   actions,

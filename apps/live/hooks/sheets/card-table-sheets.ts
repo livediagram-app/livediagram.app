@@ -6,9 +6,10 @@
 // shows cards. A module store; listeners hear only a real change.
 import { useMemo, useSyncExternalStore } from 'react';
 import type { Element } from '@livediagram/document';
+import { createListeners } from '@/lib/listeners';
 
 let held: ReadonlySet<string> = new Set();
-const listeners = new Set<() => void>();
+const listeners = createListeners();
 
 // The sheet drawn now holds a card table, or not.
 export function markCardTableSheet(sheetId: string, has: boolean): void {
@@ -17,20 +18,16 @@ export function markCardTableSheet(sheetId: string, has: boolean): void {
   if (has) next.add(sheetId);
   else next.delete(sheetId);
   held = next;
-  for (const l of listeners) l();
+  listeners.notify();
 }
 
 // Every mark forgotten (a test, a document left).
 export function forgetCardTableSheets(): void {
   if (held.size === 0) return;
   held = new Set();
-  for (const l of listeners) l();
+  listeners.notify();
 }
 
-function subscribe(listener: () => void): () => void {
-  listeners.add(listener);
-  return () => listeners.delete(listener);
-}
 const get = () => held;
 
 // Whether `elements` include something that shows cards: a board, a view, or a Sheet holding a card table.
@@ -48,6 +45,6 @@ export function showsCards(
 }
 
 export function useTabShowsCards(elements: readonly Element[]): boolean {
-  const sheets = useSyncExternalStore(subscribe, get, get);
+  const sheets = useSyncExternalStore(listeners.subscribe, get, get);
   return useMemo(() => showsCards(elements, sheets), [elements, sheets]);
 }

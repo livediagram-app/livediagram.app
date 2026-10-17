@@ -124,8 +124,8 @@ export function edgeToArrow(e: GraphEdge, id: string): ArrowElement {
 // layout's peer sizing then gives a whole tier the size its longest label
 // needs. A diamond's text only fits its inner half, so it gets more room.
 // The side of an unlabelled circle node (see graphToElements).
-export const DOT_SIZE = 28;
-export const FINAL_STATE_SIZE = 34;
+const DOT_SIZE = 28;
+const FINAL_STATE_SIZE = 34;
 const CHAR_PX = 7.4;
 // Capitals set about 30% wider than the average glyph CHAR_PX assumes, so an
 // all-caps name ("TEAM_MEMBER", an ER table) was sized short and wrapped

@@ -13,10 +13,10 @@ import type { Env } from '../types';
 import { readStoredTab } from '../changesets/stored-tab';
 import { SUBMIT_ATTEMPTS } from '../changesets/submit';
 
-export const FORM_LOCKED_MESSAGE =
+const FORM_LOCKED_MESSAGE =
   'This form is taking responses, so only its settings can change. Close it first: its link stays.';
 
-export type AgentFormResult = { status: number; body: Record<string, unknown> };
+type AgentFormResult = { status: number; body: Record<string, unknown> };
 
 const refused = (status: number, error: string, message: string, extra = {}): AgentFormResult => ({
   status,

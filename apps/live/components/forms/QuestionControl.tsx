@@ -16,7 +16,7 @@ import {
 } from '@livediagram/forms';
 import { RatingInput } from './RatingInput';
 
-export type QuestionControlProps = {
+type QuestionControlProps = {
   question: PublicQuestion;
   value: unknown;
   other: string;

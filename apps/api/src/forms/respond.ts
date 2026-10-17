@@ -32,7 +32,7 @@ const refuse = (body: FormResponseRefusal, status: number) => json(body, { statu
 const FORM_PERSON_COLOR = '#0284c7';
 
 // The person a response's card names as its maker: the form itself, never a respondent.
-export function formPerson(code: string, form: Pick<FormDefinition, 'heading'>): ItemPerson {
+function formPerson(code: string, form: Pick<FormDefinition, 'heading'>): ItemPerson {
   return {
     id: `form:${code.slice(0, 8)}`,
     name: `${form.heading} form`.slice(0, 80),

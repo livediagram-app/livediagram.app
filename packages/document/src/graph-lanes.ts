@@ -20,7 +20,7 @@ import { isBoxed, type BoxedElement, type Element } from './index';
 
 // The swimlane template's grid: header strip (as wide as the longest lane title needs, between the bounds), padding
 // inside a lane, gaps between columns and lanes.
-export const LANES_GUTTER = 176;
+const LANES_GUTTER = 176;
 const LANES_GUTTER_MIN = 120;
 const GUTTER_TEXT_PAD = 40;
 const LANE_PAD = 28;

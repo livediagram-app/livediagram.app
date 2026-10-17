@@ -28,7 +28,7 @@ export function barLabel(categoryId: string, label: string): string {
 /** How a flyout lays its tiles out: a grid of pictures where the glyph IS the answer (a square explains a square),
  *  or cards with a one-line blurb where it is not (a Sankey's glyph does not explain a Sankey). The same rule as the
  *  category bodies' (docs/specs/010-palette/palette-top-level-categories.md "Rows, not tiles"). */
-export type FlyoutLayout = 'grid' | 'cards';
+type FlyoutLayout = 'grid' | 'cards';
 
 // The grid categories and their columns: Popular's twelve as three even rows of four, Shapes five to a row.
 const GRID_COLUMNS: Readonly<Record<string, number>> = { popular: 4, shapes: 5 };
@@ -132,7 +132,7 @@ export function flyoutGroups(categoryId: string, tiles: readonly PaletteTileDef[
   return groups.map((run) => ({ id: run[0]!.id, title: GROUP_NAMES[run[0]!.id]!, tiles: run }));
 }
 // An item's place in the flyout, for arrow-key moves: the centre of its box.
-export type FlyoutPoint = { x: number; y: number };
+type FlyoutPoint = { x: number; y: number };
 
 /** The index the arrow key moves focus to among the flyout's items (in reading order, across its groups), or null
  *  to stay. Left and Right step through the list; Up and Down move to the nearest item in the row above or below,

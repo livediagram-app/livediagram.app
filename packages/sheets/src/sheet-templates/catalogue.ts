@@ -33,9 +33,9 @@ export type SheetStartId = (typeof SHEET_STARTS)[number];
 
 // Setup Sheet's headings over its templates.
 export const SHEET_TEMPLATE_GROUPS = ['Money', 'Work', 'People and Life'] as const;
-export type SheetTemplateGroup = (typeof SHEET_TEMPLATE_GROUPS)[number];
+type SheetTemplateGroup = (typeof SHEET_TEMPLATE_GROUPS)[number];
 
-export type SheetTemplateInfo = {
+type SheetTemplateInfo = {
   id: SheetTemplateId;
   name: string;
   line: string;

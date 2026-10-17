@@ -8,7 +8,7 @@ import type { SheetStore } from './sheet-store-client';
 export const PRESENCE_THROTTLE_MS = 120;
 
 // `at`: when it was heard (the name tag shows for a while after a move, then hides until hovered).
-export type PeerSelection = {
+type PeerSelection = {
   tabId: string;
   sheetId: string;
   ranges: IdRange[];

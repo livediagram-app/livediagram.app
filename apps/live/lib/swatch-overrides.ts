@@ -59,7 +59,7 @@ export type ThemeSwatchOverrides = {
 export type SwatchOverrideStore = ThemeSwatchOverrides[];
 
 // A theme id is a built-in id or `custom:<uuid>` (43 chars).
-export const SWATCH_OVERRIDE_MAX_THEME_ID = 64;
+const SWATCH_OVERRIDE_MAX_THEME_ID = 64;
 export const SWATCH_OVERRIDE_MAX_THEMES = 8;
 // The store's share of the 4 KB preferences blob: recent-exclusions can take
 // ~2.4 KB, so this keeps every other preference writable.

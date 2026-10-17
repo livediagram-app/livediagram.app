@@ -10,7 +10,7 @@ import { HoverCard } from '@livediagram/ui';
 import { CHROME_BTN, CHROME_BTN_LABELLED, ChromeLabel } from './chrome-button';
 import { OpenExternalIcon } from './EmbedChrome';
 
-export function reconnectLine(workbenchName: string): string {
+function reconnectLine(workbenchName: string): string {
   return `Reconnect in ${workbenchName} to keep editing.`;
 }
 

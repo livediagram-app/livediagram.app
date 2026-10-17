@@ -11,11 +11,11 @@ import { tagColourHex, tagWash } from './tag-colour';
 
 // At most this many chips on a row or card before +N (spec "Where tags show"). Safe range 1 to 3: past that a row's
 // name truncates to nothing on a phone.
-export const ROW_CHIP_MAX = 2;
+const ROW_CHIP_MAX = 2;
 // At most this many dots on a narrow panel row.
-export const PANEL_DOT_MAX = 3;
+const PANEL_DOT_MAX = 3;
 
-export function useTagHex(colour: string): string {
+function useTagHex(colour: string): string {
   const { appearance } = useAppearance();
   return tagColourHex(colour, appearance);
 }

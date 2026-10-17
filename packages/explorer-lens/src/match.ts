@@ -18,7 +18,7 @@ const DAY_MS = 86_400_000;
 /** The fields of a document summary the lens reads. `opensIn`, `tabKind` and `templateFamily` are
  *  the recorded creation intent; absent, null or retired values read as unknown. A document in
  *  this browser (Offline Mode) has no team, so it reads as `mine`. */
-export type LensDocumentSummary = {
+type LensDocumentSummary = {
   name: string;
   savedAt: number;
   ownerId: string;

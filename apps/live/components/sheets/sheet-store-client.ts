@@ -61,7 +61,7 @@ type WriteOpts = {
 const CREATE_TAB_RETRIES = 4;
 const CREATE_TAB_RETRY_MS = 800;
 
-export type SheetStoreDeps = {
+type SheetStoreDeps = {
   scope: SheetsScope;
   self: () => SheetPerson | null;
   locale: string;

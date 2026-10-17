@@ -58,7 +58,7 @@ export const CUSTOM_KIND_LABELS: Record<CustomFieldKind, string> = {
 };
 
 // The kinds with options (docs/specs/030-forms/forms.md "New card field kinds").
-export const hasOptions = (kind: CustomFieldKind) => kind === 'choice' || kind === 'multichoice';
+const hasOptions = (kind: CustomFieldKind) => kind === 'choice' || kind === 'multichoice';
 
 // A full-width dashed "add" row (Add Type, Add Field, Add Tab): plain to spot, quiet until hovered.
 export const DASHED_ADD_BUTTON =
@@ -68,7 +68,7 @@ export const ICON_BUTTON =
   'flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-slate-500 transition enabled:hover:bg-slate-100 enabled:hover:text-slate-800 disabled:opacity-30 dark:text-slate-400 dark:enabled:hover:bg-slate-800 dark:enabled:hover:text-slate-100';
 
 // Choice's options as typed, one a line, read back trimmed and without blanks or repeats.
-export function optionsFrom(text: string): string[] {
+function optionsFrom(text: string): string[] {
   const seen = new Set<string>();
   const out: string[] = [];
   for (const raw of text.split('\n')) {

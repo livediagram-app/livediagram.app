@@ -18,7 +18,7 @@ import { CARD_TYPES_SAVE_ATTEMPTS, isCardTypesStale, itemTypesPath } from './pla
 type BoardLike = Parameters<typeof catalogueWithBoardTypes>[1][number];
 
 // What the caller has just read: the document's stored catalogue (null: not chosen).
-export interface KnownCardTypes {
+interface KnownCardTypes {
   stored: ItemTypeCatalogue | null;
   // The catalogue's revision as read (the document's `itemTypesRev`); absent saves whatever is stored.
   rev?: number;

@@ -47,6 +47,7 @@ import {
 import { useSelectTab } from '@/app/document/[id]/useSelectTab';
 import { brushPageId, pageBrushPreview, pagePaintPress } from '@/lib/format-page-brush';
 import { useDeadPageBrush } from '@/hooks/editor/useDeadPageBrush';
+import { elementSelector } from '@/lib/canvas-selectors';
 
 // The Canvas element's wiring, lifted out of EditorView (which carried
 // ~500 lines of prop plumbing for it). Reads everything straight from
@@ -738,7 +739,7 @@ export function EditorCanvasHost() {
                 isReadOnly
                   ? undefined
                   : (elementId) => {
-                      const node = document.querySelector(`[data-element-id="${elementId}"]`);
+                      const node = document.querySelector(elementSelector(elementId));
                       if (!(node instanceof HTMLElement)) return;
                       const { x, y } = elementMenuAnchor(node.getBoundingClientRect());
                       setContextMenu({ mode: 'element', elementId, x, y });

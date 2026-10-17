@@ -20,13 +20,13 @@ import { bringBoardCardTypes } from './brought-types';
 import { readPlanState } from './plan-state';
 import { tabPath } from '../verbs/shared';
 
-export interface AddBoardInput extends Omit<BoardRequest, 'types'> {
+interface AddBoardInput extends Omit<BoardRequest, 'types'> {
   tabId?: string;
   // Card types by id or name.
   types?: readonly string[];
 }
 
-export type AddBoardResult =
+type AddBoardResult =
   | {
       ok: true;
       tabId: string;

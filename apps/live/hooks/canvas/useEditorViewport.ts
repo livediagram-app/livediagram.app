@@ -121,7 +121,7 @@ type EditorViewportApi = {
 };
 
 // How long a Focus glide takes (docs/specs/026-plan/plan-board.md "Focus").
-export const FIT_GLIDE_MS = 420;
+const FIT_GLIDE_MS = 420;
 
 export function useEditorViewport(deps: EditorViewportDeps): EditorViewportApi {
   // In the browser only (docs/specs/003-system-architecture/react-state-and-effects.md "Rendering in the browser

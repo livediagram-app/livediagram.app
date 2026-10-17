@@ -16,7 +16,7 @@ import { HoverCard, PictureDisc, IDENTITY_FILL, identityVars } from '@livediagra
 // clearance, which is exactly how the Estimate card ended up with a vote value
 // touching the ring. Rule of thumb: a gap between an avatar and text wants
 // 8px+, and between two avatars 12px+.
-export const AVATAR_RING_OVERHANG_PX = 4;
+const AVATAR_RING_OVERHANG_PX = 4;
 
 type ParticipantAvatarProps = {
   participant: Participant;

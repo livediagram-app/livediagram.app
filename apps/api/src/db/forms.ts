@@ -152,7 +152,7 @@ export async function deleteFormLinksForTab(
   return res.meta?.changes ?? 0;
 }
 
-export const FORM_HOUR_MS = 60 * 60 * 1000;
+const FORM_HOUR_MS = 60 * 60 * 1000;
 
 // Takes the next response number, within the form's hourly cap and its Response Limit (`limit`, null for none or for
 // a preview): one guarded UPDATE, so two responses at once never share a number and neither cap is passed. Null when

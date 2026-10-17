@@ -433,11 +433,11 @@ export function useAutosave(opts: {
 }
 
 // The autosave's debounce: none while the page is in the background, where it may not live to the next.
-export const SAVE_DEBOUNCE_MS = 600;
+const SAVE_DEBOUNCE_MS = 600;
 const saveDelayMs = () =>
   typeof document !== 'undefined' && document.visibilityState === 'hidden' ? 0 : SAVE_DEBOUNCE_MS;
 
 // 5s, 10s, 20s, 40s, then a minute between attempts.
-export function saveRetryDelayMs(attempt: number): number {
+function saveRetryDelayMs(attempt: number): number {
   return Math.min(60_000, 5_000 * 2 ** attempt);
 }

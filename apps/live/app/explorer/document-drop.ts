@@ -3,7 +3,7 @@
 // library) and a folder in it (null = the space's root).
 export type DropPlace = { teamId: string | null; folderId: string | null };
 
-export type DropPlan =
+type DropPlan =
   // The document is already there: nothing to do, nothing to say.
   | 'already-there'
   // A team's library lives on the server; a document only in this browser can't land there.

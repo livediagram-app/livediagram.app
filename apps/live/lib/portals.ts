@@ -14,7 +14,7 @@
 
 import type { Element, ShapeElement, Tab } from '@livediagram/document';
 
-export type PortalBox = { x: number; y: number; width: number; height: number; label?: string };
+type PortalBox = { x: number; y: number; width: number; height: number; label?: string };
 
 // Every portal on the tab, in element order — the candidate list the "where does
 // this portal lead?" picker offers.
@@ -36,7 +36,7 @@ export function portalName(elements: Element[], portal: ShapeElement): string {
 // cheapest way to build a walkable multi-tab presentation. Element ids are
 // unique across the whole document, so the stored `portalTarget` needs no tab
 // component — the tab is looked up, not recorded.
-export type PortalSite = { tabId: string; tabName: string; portal: ShapeElement };
+type PortalSite = { tabId: string; tabName: string; portal: ShapeElement };
 
 // Every portal in the document, tab by tab, in tab then element order.
 export function portalSites(tabs: Tab[]): PortalSite[] {
@@ -51,7 +51,7 @@ export function portalSites(tabs: Tab[]): PortalSite[] {
 
 // The site a portal leads to, searched across every tab. Same rules as the
 // single-tab resolve below: own target first, then whoever points at it.
-export function resolvePortalSite(tabs: Tab[], portal: ShapeElement): PortalSite | null {
+function resolvePortalSite(tabs: Tab[], portal: ShapeElement): PortalSite | null {
   const sites = portalSites(tabs);
   const own = sites.find((s) => s.portal.id === portal.portalTarget);
   if (portal.portalTarget && portal.portalTarget !== portal.id && own) return own;
@@ -95,7 +95,7 @@ function isPortal(el: Element | undefined): ShapeElement | null {
 // back the other way would find a same-tab partner and never look further. With
 // no tabs to search — an embed, an export, a surface handed one tab — it
 // resolves within `elements` alone and reports the caller's own tab id.
-export type PortalDestination = {
+type PortalDestination = {
   portal: ShapeElement;
   tabId: string | undefined;
   elements: Element[];

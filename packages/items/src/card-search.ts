@@ -46,7 +46,7 @@ export function isCardSearchFilters(v: unknown): v is CardSearchFilter[] {
 }
 
 // A field a filter can be added on: its grouping, its field, and its name.
-export interface CardSearchField {
+interface CardSearchField {
   by: SwimlaneBy;
   field?: string;
   label: string;

@@ -65,6 +65,7 @@ import { trackDuplicated } from '@/lib/element-telemetry';
 import type { useToast } from '@/hooks/ui/useToast';
 import { useLatest } from '@/hooks/ui/useLatest';
 import { isTypingTarget } from '@/lib/typing-target';
+import { CANVAS_ROOT_SELECTOR } from '@/lib/canvas-selectors';
 
 type ImageDescriptor = {
   id: string;
@@ -558,7 +559,7 @@ export function useClipboard(deps: ClipboardDeps) {
       if (primaryPaste.current?.isPrimarySelectionPaste()) return;
       const target = e.target as Element | null;
       if (!(target instanceof HTMLElement) || !target.isContentEditable) return;
-      if (!target.closest('[data-canvas-a11y-root]')) return;
+      if (!target.closest(CANVAS_ROOT_SELECTOR)) return;
       const excalidraw = pasteRef.current.canPasteScene
         ? excalidrawTextFromPaste(e.clipboardData ?? null)
         : null;

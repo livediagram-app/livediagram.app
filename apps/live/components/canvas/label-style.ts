@@ -51,13 +51,12 @@ export const TEXT_ALIGN: Record<TextAlignX, 'left' | 'center' | 'right'> = {
 // these) and every exported label came out about two thirds the size it was
 // drawn at. Re-exported here so the canvas's label renderers keep importing
 // them from the module they always have.
-export const FIXED_FONT_PX: Record<
+const FIXED_FONT_PX: Record<
   Exclude<import('@livediagram/document').TextSizePreset, 'scale'>,
   number
 > = LABEL_FONT_PX;
 
-export const MULTI_FONT_PX: Record<import('@livediagram/document').TextSizePreset, number> =
-  NOTE_FONT_PX;
+const MULTI_FONT_PX: Record<import('@livediagram/document').TextSizePreset, number> = NOTE_FONT_PX;
 
 // Per-run sm/md/lg map to the same px table the element's base size uses,
 // so a run's size override reads consistently against its neighbours; xs is RUN_XS_PX on every

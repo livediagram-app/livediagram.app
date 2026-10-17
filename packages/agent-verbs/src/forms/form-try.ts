@@ -24,7 +24,7 @@ import { guarded, readingOf } from './form-calls';
 import { refuse, resolveQuestion, type FormRefusal } from './form-names';
 import type { BoardRef, FormWorld } from './form-world';
 
-export type FormTryDone = {
+type FormTryDone = {
   ok: true;
   documentId: string;
   tabId: string;
@@ -39,7 +39,7 @@ export type FormTryDone = {
   itemId: string | null;
   lines: string[];
 };
-export type FormTryResult = FormTryDone | FormRefusal;
+type FormTryResult = FormTryDone | FormRefusal;
 
 const listed = (q: FormQuestion) => `"${promptOf(q)}" (${q.id})`;
 

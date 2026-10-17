@@ -28,7 +28,7 @@ import { deref } from '../formula/fn';
 import type { Frame, RangeRef } from './frame';
 import { maySpill } from './spill-shape';
 
-export type WorkbookOptions = {
+type WorkbookOptions = {
   sheets: readonly Sheet[];
   locale: string;
   // Today and now in the viewer's local time, as a serial.

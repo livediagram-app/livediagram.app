@@ -2,7 +2,7 @@
 // (docs/specs/007-editor/live-app.md "Mobile chrome"): a long-press that opened a menu, a drag that
 // caught an alignment snap, a delete. Android only: Safari has no Vibration API, so it is a no-op
 // there, as it is on any device without a motor or a fine pointer (a mouse never buzzes).
-export type HapticKind = 'press' | 'snap' | 'delete';
+type HapticKind = 'press' | 'snap' | 'delete';
 
 // Durations in ms: a tick for a snap, a firmer tap for a press, a double pulse for a delete.
 const PATTERNS: Record<HapticKind, number | number[]> = {

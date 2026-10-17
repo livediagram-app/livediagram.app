@@ -25,7 +25,7 @@ export const AGENT_PRESENCE_REQUEST_CODES = [
 export type AgentPresenceRequestCode = (typeof AGENT_PRESENCE_REQUEST_CODES)[number];
 
 // The PUT body, parsed: status trimmed (null for none), focus as given (refs, prefixes or ids), ttl in ms.
-export type AgentPresenceRequest = { status: string | null; focus: string[]; ttlMs: number };
+type AgentPresenceRequest = { status: string | null; focus: string[]; ttlMs: number };
 
 // What the PUT answers (PR10).
 export type AgentPresenceResult = {

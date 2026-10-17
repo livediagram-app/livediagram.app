@@ -27,7 +27,7 @@ export type RosterEntry = {
   personTag: string | null;
 };
 
-export type RosterFrame = {
+type RosterFrame = {
   ws: WebSocket;
   participants: ParticipantPresence[];
   agents: ReturnType<typeof agentRosterFor>;

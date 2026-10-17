@@ -66,7 +66,7 @@ export const PEN_INK: Readonly<Record<Appearance, string>> = {
 // the light board's version is clearly darker than the dark board's.
 export const PEN_STOCK_CONTRAST = 6;
 // WCAG 1.4.11: under this, a custom colour is hard to see on a board.
-export const PEN_MIN_CONTRAST = 3;
+const PEN_MIN_CONTRAST = 3;
 
 // The boards the versions are tuned against: WHITEBOARD_BOARD, repeated here to keep this a leaf
 // (a test pins them equal).

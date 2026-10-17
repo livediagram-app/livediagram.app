@@ -17,11 +17,10 @@ import {
   type FlowchartStepToolbar,
 } from '@/components/flowchart/FlowchartStepButtons';
 import { Divider, PopoverButton } from '@/components/canvas/SelectionPopoverButton';
-
-type Bounds = { x: number; y: number; width: number; height: number };
+import type { Rect } from '@livediagram/document';
 
 type SelectionPopoverProps = {
-  bounds: Bounds;
+  bounds: Rect;
   canvasOffset: { x: number; y: number };
   zoom: number;
   // Hidden while the selection moves: measures nothing until it ends (useEdgeAwarePlacement).

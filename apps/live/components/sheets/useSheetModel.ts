@@ -38,7 +38,7 @@ import { sheetPresenceFor } from './sheet-presence-store';
 import { markCardTableSheet } from '@/hooks/sheets/card-table-sheets';
 import { CSV_TRUNCATED, csvWrites } from './sheet-csv';
 
-export type SheetModel = {
+type SheetModel = {
   store: SheetStore;
   sheet: Sheet | undefined;
   workbook: Workbook;

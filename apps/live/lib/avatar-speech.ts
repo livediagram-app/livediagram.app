@@ -7,9 +7,9 @@ import { clampSayText, countWords, sayOneLine, withinSayLimits } from '@livediag
 import { AVATAR_HEIGHT, type AvatarPoint } from '@/lib/avatar-walk';
 
 // Flight time: 4 s up to two words, 0.15 s more for each further word, at most 10 s.
-export const SPEECH_BASE_MS = 4000;
-export const SPEECH_PER_WORD_MS = 150;
-export const SPEECH_FREE_WORDS = 2;
+const SPEECH_BASE_MS = 4000;
+const SPEECH_PER_WORD_MS = 150;
+const SPEECH_FREE_WORDS = 2;
 export const SPEECH_MAX_MS = 10_000;
 // The bubble rises at a steady pace, in screen px (it is drawn at reading size whatever the zoom).
 export const SPEECH_RISE_PX_PER_S = 18;
@@ -20,16 +20,16 @@ export const SPEECH_SWAY_PERIOD_MS = 2400;
 export const SPEECH_FADE_FRACTION = 1 / 3;
 // The pop on sending and the tail letting go (D109).
 export const SPEECH_POP_MS = 220;
-export const SPEECH_TAIL_FADE_MS = 400;
+const SPEECH_TAIL_FADE_MS = 400;
 const SPEECH_POP_FROM = 0.6;
 // Between one message and the next.
 export const SPEECH_COOLDOWN_MS = 1500;
 // At most this many of one person's bubbles on screen; a further one hurries the oldest away (D110).
-export const SPEECH_MAX_PER_PERSON = 3;
+const SPEECH_MAX_PER_PERSON = 3;
 export const SPEECH_OVERFLOW_FADE_MS = 300;
-export const SPEECH_SEEN_IDS_CAP = 200;
+const SPEECH_SEEN_IDS_CAP = 200;
 // Canvas px between the top of the head and the bubble's tail, at size scale 1 (D111).
-export const SPEECH_HEAD_GAP = 8;
+const SPEECH_HEAD_GAP = 8;
 // The word count past which the composer shows its counter.
 export const SPEECH_COUNTER_FROM_WORDS = 40;
 
@@ -74,7 +74,7 @@ export function bubbleEndsAt(b: SpeechBubble): number {
     : Math.min(natural, b.leavingAt + SPEECH_OVERFLOW_FADE_MS);
 }
 
-export type BubbleMotion = {
+type BubbleMotion = {
   // Screen px up from the start point.
   rise: number;
   // Screen px either side.

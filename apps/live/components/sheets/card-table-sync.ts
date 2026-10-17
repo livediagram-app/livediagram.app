@@ -83,7 +83,7 @@ export function pullChanges(sheet: Sheet, plan: CardPlan): CellChange[] {
   return out;
 }
 
-export type CardCreate = {
+type CardCreate = {
   tableId: string;
   row: string;
   type: string;
@@ -93,13 +93,13 @@ export type CardCreate = {
 
 // What this person's write means for the card tables: the rows it edited become drafts (saved to their cards with
 // the row's Save), and a deleted linked row's card goes to the Trash.
-export type PushPlan = {
+type PushPlan = {
   drafts: { tableId: string; row: string }[];
   trash: string[];
 };
 
 // What a row's Save writes: a patch to its card, or a new card; or why it cannot ("No column 'Doing'").
-export type RowSave =
+type RowSave =
   | { kind: 'patch'; id: string; patch: ItemPatch }
   | { kind: 'create'; create: CardCreate }
   | { kind: 'none' }

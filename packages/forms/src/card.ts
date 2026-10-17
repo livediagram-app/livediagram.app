@@ -60,11 +60,11 @@ function fieldValue(q: FormQuestion, value: AnswerValue, field: CustomFieldDef):
 }
 
 // What a Preview's card is marked with (docs/specs/030-forms/forms.md "Preview"), before its title.
-export const PREVIEW_TITLE_PREFIX = 'Preview: ';
+const PREVIEW_TITLE_PREFIX = 'Preview: ';
 
 const cut = (s: string, max: number) => (s.length > max ? `${s.slice(0, max - 1)}…` : s);
 
-export interface ResponseCard {
+interface ResponseCard {
   type: string;
   fields: ItemFields;
 }

@@ -31,7 +31,7 @@ export const IMAGE_REFS_BACKFILL_SETTLE_MS = 60 * 60 * 1000;
 // Wall-clock budget per run; the cron allows far more, and the rest waits a day.
 export const IMAGE_REFS_BACKFILL_BUDGET_MS = 60 * 1000;
 
-export type ImageRefsBackfillResult = { state: 'settling' | 'running' | 'complete' };
+type ImageRefsBackfillResult = { state: 'settling' | 'running' | 'complete' };
 
 export async function runImageRefsBackfill(
   env: Env,

@@ -481,7 +481,7 @@ export function resolveOAuthCompleteUrl(
 // sign-up, an extra step) navigates from that page instead, so the
 // destination has to travel there too or the user lands on a default and
 // loses where they were going (an MCP consent, issue #612).
-export const SSO_CALLBACK_PATH = '/sso-callback';
+const SSO_CALLBACK_PATH = '/sso-callback';
 export function ssoCallbackUrl(searchParams: { get: (key: string) => string | null }): string {
   const redirect = searchParams.get('redirect_url');
   return isSafeInternalPath(redirect)

@@ -11,7 +11,7 @@ import { useRef } from 'react';
 //
 // 500 ms keeps a fast drag collapsed into one step while two discrete
 // clicks 500+ ms apart stay separate steps.
-export const BURST_CHECKPOINT_WINDOW_MS = 500;
+const BURST_CHECKPOINT_WINDOW_MS = 500;
 
 export function useBurstCheckpoint(markCheckpoint: () => void): (key: string) => void {
   const windows = useRef<Record<string, number | undefined>>({});

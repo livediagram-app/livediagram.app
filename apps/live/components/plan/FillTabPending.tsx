@@ -8,6 +8,7 @@
 import { createContext, useCallback, useContext, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useFillsTab } from '@/hooks/plan/plan-cover-store';
+import { CANVAS_ROOT_SELECTOR } from '@/lib/canvas-selectors';
 
 // The element whose view is loading, set by ShapeContentRouter's OffDashboard around it.
 export const FillTabElementContext = createContext<string | null>(null);
@@ -24,7 +25,7 @@ function PendingCover({ id }: { id: string }) {
   const fills = useFillsTab(id);
   const [canvas, setCanvas] = useState<HTMLElement | null>(null);
   const mark = useCallback((node: HTMLElement | null) => {
-    if (node) setCanvas(node.closest<HTMLElement>('[data-canvas-a11y-root]'));
+    if (node) setCanvas(node.closest<HTMLElement>(CANVAS_ROOT_SELECTOR));
   }, []);
   if (!fills) return null;
   return (

@@ -24,7 +24,7 @@ const KEY_ICON_W = 56;
 
 // What each shape kind means in a key, in the order a key lists them, with its miniature's height: a flowchart's
 // ISO 5807 meanings, and the plainer ones a diagram of systems reads by. A graph's own `key` names override either.
-export const KEY_MEANING: readonly (readonly [string, string, number])[] = [
+const KEY_MEANING: readonly (readonly [string, string, number])[] = [
   ['stadium', 'Start or end', 24],
   ['square', 'Step', 30],
   ['diamond', 'Decision', 34],

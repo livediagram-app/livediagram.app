@@ -18,7 +18,7 @@ export type BoardPlace = {
   dragging: boolean;
 };
 
-export type BoardLook = {
+type BoardLook = {
   columns: BoardColumnLayout;
   // The board's own card size, or Minimal on a phone.
   cardSize: CardSize | undefined;

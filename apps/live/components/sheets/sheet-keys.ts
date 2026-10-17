@@ -11,7 +11,7 @@ export type KeyLike = {
   altKey: boolean;
 };
 
-export type SheetKeyCommand =
+type SheetKeyCommand =
   | { kind: 'move'; dir: Dir; jump: boolean; extend: boolean }
   | { kind: 'tab'; back: boolean }
   | { kind: 'enter'; back: boolean }

@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 // One gleam across the wordmark each time the logo is pointed at
 // (docs/specs/004-interface-design/brand-mark.md, "Size and motion"). Paced
 // for reading, beside the prism's turn in motion.md's list of hover stories.
-export const SHIMMER_MS = 900;
+const SHIMMER_MS = 900;
 
 const easeInOut = (t: number) => (t < 0.5 ? 4 * t ** 3 : 1 - (-2 * t + 2) ** 3 / 2);
 

@@ -61,7 +61,7 @@ export type SidebarLayoutInput = {
   surface?: 'page' | 'panel';
 };
 
-export type SidebarGroupLayout = { id: SidebarGroupId; rows: SidebarRowKind[] };
+type SidebarGroupLayout = { id: SidebarGroupId; rows: SidebarRowKind[] };
 
 export function sidebarGroups(input: SidebarLayoutInput): SidebarGroupLayout[] {
   const { signedIn, signInAvailable, pendingInvites, offlineDocuments, selected } = input;

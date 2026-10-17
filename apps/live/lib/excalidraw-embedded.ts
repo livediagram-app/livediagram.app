@@ -6,7 +6,7 @@
 
 export type ExcalidrawContainer = 'json' | 'png' | 'svg';
 
-export type ExtractedScene =
+type ExtractedScene =
   { ok: true; text: string; container: ExcalidrawContainer } | { ok: false; error: string };
 
 const MIME = 'application/vnd.excalidraw+json';

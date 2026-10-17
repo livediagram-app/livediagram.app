@@ -6,10 +6,10 @@ import { eventStormingKindOf } from './event-storming';
 import type { Element } from './index';
 import { ELEMENT_TYPES, SHAPE_KINDS } from './validate';
 
-export const SLUG_ID_PATTERN = /^[a-z][a-z0-9_-]{0,23}$/;
+const SLUG_ID_PATTERN = /^[a-z][a-z0-9_-]{0,23}$/;
 export const SLUG_ID_MAX_LENGTH = 24;
 export const REF_MIN_LENGTH = 4;
-export const REF_NEAREST_MAX = 5;
+const REF_NEAREST_MAX = 5;
 // What a kind word slugs to when it holds nothing a slug can (an unknown kind's `?`).
 const SLUG_FALLBACK_BASE = 'element';
 const SAFE_REF_PATTERN = /^[A-Za-z0-9_-]+$/;
@@ -25,7 +25,7 @@ export type RefTable = {
   readonly refOf: (id: string) => string;
 };
 
-export type RefResolution =
+type RefResolution =
   | { kind: 'found'; id: string }
   | { kind: 'ambiguous'; input: string; candidates: string[]; stale: boolean }
   | { kind: 'not-found'; input: string; nearest: string[] };

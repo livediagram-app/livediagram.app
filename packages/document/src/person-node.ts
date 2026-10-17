@@ -10,8 +10,6 @@ import type { LayoutRect } from './web-components';
 
 export type MindLook = 'person';
 
-export const isMindLook = (v: unknown): v is MindLook => v === 'person';
-
 export function isPersonNode(el: Element): boolean {
   return el.type === 'shape' && el.shape === 'mind-node' && el.mindLook === 'person';
 }

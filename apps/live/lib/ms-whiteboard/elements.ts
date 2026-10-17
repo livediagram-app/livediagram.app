@@ -205,7 +205,7 @@ function readTable(node: WbNode, at: Placed): WbElement {
 }
 
 /** One canvas child, or `unknown` when its type or its required fields are not readable. */
-export function readElement(node: WbNode): WbElement {
+function readElement(node: WbNode): WbElement {
   const unknown = { kind: 'unknown', type: node.type } as const;
   if (node.type === MSWB_TYPE.inkGroup) return readInk(node) ?? unknown;
   if (node.type === MSWB_TYPE.polygon) {

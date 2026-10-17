@@ -46,7 +46,7 @@ const MOVES = new Set([
 ]);
 
 /** The frame each tile rests on, by set and value; anything unlisted rests at 0.3. */
-export const ANIMATION_PREVIEW_FRAME: Readonly<Record<string, number>> = {
+const ANIMATION_PREVIEW_FRAME: Readonly<Record<string, number>> = {
   'shape:pulse': 0.12,
   'shape:blink': 0.5,
   'shape:glow': 0.5,

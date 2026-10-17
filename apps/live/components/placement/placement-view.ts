@@ -24,7 +24,7 @@ export function hasSpaceOverview({ showPersonal, teams }: PlacementSpaces): bool
 }
 
 /** The view a surface shows with nothing more specific to open: the overview, else its one space. */
-export function spaceRootView(spaces: PlacementSpaces): PlacementView {
+function spaceRootView(spaces: PlacementSpaces): PlacementView {
   if (hasSpaceOverview(spaces)) return { space: null, stack: [] };
   return {
     space: spaces.showPersonal ? PERSONAL_SPACE : (spaces.teams[0]?.id ?? PERSONAL_SPACE),

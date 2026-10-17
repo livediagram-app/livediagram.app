@@ -57,7 +57,7 @@ export type SheetChartChange = {
 };
 
 // The chart types that draw one series, the first (sheet.md "Charts"); line, area and scatter draw them all.
-export const ONE_SERIES_TYPES: readonly ChartType[] = ['column', 'bar', 'pie', 'doughnut'];
+const ONE_SERIES_TYPES: readonly ChartType[] = ['column', 'bar', 'pie', 'doughnut'];
 
 // What a chart of a one-series type shows of several value columns, said in its answer.
 export function seriesNote(type: ChartType, values: readonly string[]): string {
@@ -78,7 +78,7 @@ export function paletteOfHeader(fill: string | undefined): ChartPaletteId | unde
 // The palette a chart takes when none is given: its table's family for a chart of one series, but none (the vivid
 // default, whose colours tell apart) for lines, areas and points of several series, which one family's near shades
 // would not.
-export function defaultPalette(
+function defaultPalette(
   type: ChartType,
   series: number,
   family: ChartPaletteId | undefined,

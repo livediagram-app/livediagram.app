@@ -26,7 +26,7 @@ import {
 export const MAX_TAB_ID_LEN = 128;
 
 // What a client sent in its `hello`, before any of it is believed.
-export type ClaimedPresence = Partial<ParticipantPresence> | null | undefined;
+type ClaimedPresence = Partial<ParticipantPresence> | null | undefined;
 
 // Build the presence the room will store for a session, from what the client
 // claimed plus what the server already knows about it.
@@ -106,7 +106,7 @@ export function resolveCatchup(
 }
 
 /** One session's sliding-window frame counter. Resets on hibernation. */
-export type RateWindow = { count: number; windowStart: number };
+type RateWindow = { count: number; windowStart: number };
 
 // The per-session flood cap, as a pure decision: given the window a socket is
 // currently in and the time now, may this frame through, and what is the

@@ -29,7 +29,7 @@ import { isBoxed, type ArrowElement, type BoxedElement, type Element } from './i
 export const FRAME_PAD = 32;
 export const FRAME_TOP = 64;
 
-export type ClusteredLayoutOptions = {
+type ClusteredLayoutOptions = {
   direction?: LayoutDirection;
   makeEdgeId?: () => string;
   // The template look graph input wears (graph-authoring.ts); absent for the editor's Mermaid import.

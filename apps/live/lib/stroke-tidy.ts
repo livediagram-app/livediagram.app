@@ -24,10 +24,10 @@ import type { TidyGuides } from './logo-guide-snapping';
 type Point = { x: number; y: number };
 
 // The share of a stroke's size its corners may stray from the drawn line, and the floor in px.
-export const TIDY_TOLERANCE = 0.05;
-export const TIDY_MIN_TOLERANCE_PX = 2;
+const TIDY_TOLERANCE = 0.05;
+const TIDY_MIN_TOLERANCE_PX = 2;
 // A segment this close to level or upright, in degrees, is made exactly so.
-export const TIDY_SQUARE_DEGREES = 12;
+const TIDY_SQUARE_DEGREES = 12;
 const SQUARE = Math.tan((TIDY_SQUARE_DEGREES * Math.PI) / 180);
 
 /** The look a line keeps as a path: its stroke colour, width and style (a marker's width rounded

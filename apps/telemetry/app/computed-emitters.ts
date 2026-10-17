@@ -31,7 +31,7 @@ import { FORM_STARTERS, QUESTION_TYPE_TELEMETRY } from '@livediagram/forms';
 import { MCP_TOOL_VERBS } from '@livediagram/agent-verbs/mcp';
 import { CANVAS_CONTROLS } from './event-vocab';
 
-export type ComputedValues = {
+type ComputedValues = {
   values: readonly (string | null)[];
   // Why the list is samples rather than the whole set. Unset: it is the set.
   open?: string;
@@ -178,7 +178,7 @@ export const TOUR_STEP_SOURCE: string[] = [
 
 // The Plan tour's steps, as planTourStepTelemetryType makes them (apps/live plan-tour-steps.ts,
 // docs/specs/026-plan/plan-tour.md), both tracks; the two outros share one id. The welcome card sends no step view.
-export const PLAN_TOUR_STEP_SOURCE: string[] = [
+const PLAN_TOUR_STEP_SOURCE: string[] = [
   ...new Set(
     [...read('live/components/tour/plan-tour-steps.ts').matchAll(/^ {4}id: '([a-z-]+)',/gm)].map(
       (m) => m[1]!,
@@ -196,7 +196,7 @@ export const PLAN_TOUR_STEP_SOURCE: string[] = [
 
 // The Facilitate tour's steps, as facilitateTourStepTelemetryType makes them (apps/live
 // facilitate-tour-steps.ts, docs/specs/012-collaboration/facilitate-tour.md). The welcome card sends no step view.
-export const FACILITATE_TOUR_STEP_SOURCE: string[] = [
+const FACILITATE_TOUR_STEP_SOURCE: string[] = [
   ...read('live/components/tour/facilitate-tour-steps.ts').matchAll(/^ {4}id: '([a-z-]+)',/gm),
 ]
   .map((m) => m[1]!)
@@ -218,7 +218,7 @@ const pascal = (id: string) =>
     .split('-')
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join('');
-export const SANKEY_TOUR_STEP_SOURCE: string[] = [
+const SANKEY_TOUR_STEP_SOURCE: string[] = [
   ...[
     ...read('live/components/tour/sankey-element-tour-steps.ts').matchAll(
       /canvasStep\(\s*'([a-z-]+)'/g,
@@ -270,7 +270,7 @@ export const ELEMENT_TOUR_STEP_SOURCE: string[] = [
   ...conceptTourSteps('PortalTour', 'portal-tour-steps.ts'),
 ];
 
-export const DRAW_TOUR_STEP_SOURCE: string[] = [
+const DRAW_TOUR_STEP_SOURCE: string[] = [
   ...read('live/components/tour/draw-tour-steps.ts').matchAll(/^ {4}id: '([a-z-]+)',/gm),
 ]
   .map((m) => m[1]!)
@@ -286,7 +286,7 @@ export const DRAW_TOUR_STEP_SOURCE: string[] = [
 // The Forms tour's steps, as formTourStepTelemetryType makes them (apps/live form-tour-steps.ts,
 // docs/specs/030-forms/forms.md "The Forms tour"). Its steps are top-level consts, so their ids sit two spaces in.
 // The welcome card sends no step view.
-export const FORM_TOUR_STEP_SOURCE: string[] = [
+const FORM_TOUR_STEP_SOURCE: string[] = [
   ...read('live/components/tour/form-tour-steps.ts').matchAll(/^ {2}id: '([a-z-]+)',/gm),
 ]
   .map((m) => m[1]!)
@@ -301,7 +301,7 @@ export const FORM_TOUR_STEP_SOURCE: string[] = [
 
 // The Avatar tour's steps, as avatarTourStepTelemetryType makes them (apps/live avatar-tour-steps.ts,
 // docs/specs/008-canvas/avatar-tour.md). The welcome card sends no step view.
-export const AVATAR_TOUR_STEP_SOURCE: string[] = [
+const AVATAR_TOUR_STEP_SOURCE: string[] = [
   ...read('live/components/tour/avatar-tour-steps.ts').matchAll(/^ {4}id: '([a-z-]+)',/gm),
 ]
   .map((m) => m[1]!)
@@ -322,7 +322,7 @@ const camel = (id: string) =>
     .split('-')
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join('');
-export const ILLUSTRATE_TOUR_STEP_SOURCE: string[] = (
+const ILLUSTRATE_TOUR_STEP_SOURCE: string[] = (
   ['slide', 'infographic', 'article', 'logo'] as const
 ).flatMap((kind) =>
   [...read(`live/components/tour/${kind}-tour-steps.ts`).matchAll(/^ +id: '([a-z-]+)',/gm)]

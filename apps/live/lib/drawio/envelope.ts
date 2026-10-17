@@ -4,7 +4,8 @@
 // an SVG carrying one in `content`, or a PNG carrying one in a text chunk.
 
 import { parseInert } from '@livediagram/ui/trusted-types';
-import { BudgetExceeded, base64Bytes, decompressDiagram, type ByteBudget } from './inflate';
+import { BudgetExceeded, type ByteBudget } from '@/lib/inflate';
+import { base64Bytes, decompressDiagram } from './inflate';
 import { extractPngDiagram, isPng } from './png';
 import { DrawioRefused } from './refusals';
 
@@ -13,9 +14,9 @@ export type DrawioInput = { kind: 'text'; text: string } | { kind: 'bytes'; byte
 /** What the file says about itself: the mxfile's `name` and `modified` (ISO) attributes. */
 export type DrawioMeta = { name?: string; modified?: string };
 
-export type DrawioSource = { pages: DrawioPageSource[]; meta: DrawioMeta };
+type DrawioSource = { pages: DrawioPageSource[]; meta: DrawioMeta };
 
-export type DrawioPageSource = {
+type DrawioPageSource = {
   id: string;
   name: string;
   /** The page's `mxGraphModel`; null for a page with no content. */
@@ -142,7 +143,7 @@ export async function readDrawioSource(
 }
 
 /** How much of a file the sniff reads: room for a BOM, an XML declaration and the root element. */
-export const DRAWIO_SNIFF_CHARS = 4096;
+const DRAWIO_SNIFF_CHARS = 4096;
 
 /**
  * What a file is, by its content alone (never its name: a Drive save has no extension): a draw.io
@@ -188,7 +189,7 @@ const SKIPPED_BEFORE_ROOT: readonly (readonly [open: string, close: string])[] =
  * XML declarations and processing instructions, comments and a doctype with `indexOf`, so it reads
  * any head in linear time; null when the head ends first or holds no element.
  */
-export function rootTagOf(head: string): { tag: string; attrs: string } | null {
+function rootTagOf(head: string): { tag: string; attrs: string } | null {
   let i = 0;
   for (;;) {
     while (isSpace(head[i])) i++;

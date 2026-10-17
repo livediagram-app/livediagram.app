@@ -16,7 +16,7 @@ export type FindOptions = { budget?: number; door?: ViewDoor };
 
 const LINE = { one: 'line', many: 'lines' };
 
-export function normaliseFind(text: string): string {
+function normaliseFind(text: string): string {
   return text.normalize('NFKC').toLowerCase();
 }
 

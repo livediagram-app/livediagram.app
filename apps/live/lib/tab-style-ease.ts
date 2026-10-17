@@ -6,7 +6,7 @@
 // canvas in globals.css), so it costs nothing the rest of the time; Reduce motion turns it off.
 
 /** How long a style change eases its colours (the long motion token). */
-export const STYLE_TRANSITION_MS = 250;
+const STYLE_TRANSITION_MS = 250;
 const TRANSITION_CLASS = 'lvd-style-transition';
 let transitionTimer: ReturnType<typeof setTimeout> | null = null;
 

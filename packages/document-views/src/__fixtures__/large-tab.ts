@@ -3,7 +3,7 @@
 import type { Element, Endpoint, Tab } from '@livediagram/document';
 import { checkoutElements, CHECKOUT_TAB_ID } from './checkout-tab';
 
-export const LARGE_COPIES = 10;
+const LARGE_COPIES = 10;
 const COPY_OFFSET_X = 1700;
 
 // FNV-1a with a murmur finaliser, as 8 hex characters.

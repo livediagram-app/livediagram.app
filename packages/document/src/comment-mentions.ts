@@ -89,7 +89,7 @@ export function sanitizeMentions(value: unknown): CommentMention[] | undefined {
 
 // Split a comment's text into plain runs and the `@handle` runs that match
 // one of its mentions, for the chip rendering. Unmatched `@words` stay plain.
-export type MentionSegment = { text: string; mention?: CommentMention };
+type MentionSegment = { text: string; mention?: CommentMention };
 
 export function mentionSegments(
   text: string,

@@ -146,7 +146,7 @@ you act for them.`,
   },
 } as const;
 
-export type GuideTopic = keyof typeof GUIDE_TOPICS;
+type GuideTopic = keyof typeof GUIDE_TOPICS;
 
 export const GUIDE_TOPIC_NAMES = Object.keys(GUIDE_TOPICS) as GuideTopic[];
 

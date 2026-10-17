@@ -22,11 +22,11 @@ import { TEMPLATE_CONTENT_LAYER_ID, TEMPLATE_SCAFFOLD_LAYER_ID } from './templat
 export const WIREFRAME_MUTED = '#64748b';
 
 // The annotation note sticky: amber, like a paper note stuck on the print.
-export const ANNOTATION_NOTE = { fill: '#fde68a', text: '#451a03' } as const;
+const ANNOTATION_NOTE = { fill: '#fde68a', text: '#451a03' } as const;
 
 // Pin diameter: big enough for a two-digit number, small enough to perch on
 // a 36px control without hiding it.
-export const ANNOTATION_PIN = 28;
+const ANNOTATION_PIN = 28;
 
 type ShapeExtra = Partial<ShapeElement>;
 type TextExtra = Partial<TextElement>;

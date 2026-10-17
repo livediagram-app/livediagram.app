@@ -23,8 +23,7 @@ export const CURRENCY_SYMBOLS = [
 
 export type FormatHint = { nf: NumberFormatKind; cur?: string };
 
-export type LiteralRead =
-  { kind: 'clear' } | { kind: 'value'; input: CellInput; hint?: FormatHint };
+type LiteralRead = { kind: 'clear' } | { kind: 'value'; input: CellInput; hint?: FormatHint };
 
 type Separators = { group: string; decimal: string };
 const SEPARATORS = new Map<string, Separators>();

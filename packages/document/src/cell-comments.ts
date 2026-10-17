@@ -14,12 +14,12 @@ import type { CommentThread } from './comments';
 export const CELL_THREADS_MAX = 1000;
 // A cell key: a row id and a column id (@livediagram/sheets AXIS_ID_PATTERN each), repeated here so the document
 // package never imports the engine.
-export const CELL_KEY_PATTERN = /^[a-z0-9]{4,12}:[a-z0-9]{4,12}$/;
+const CELL_KEY_PATTERN = /^[a-z0-9]{4,12}:[a-z0-9]{4,12}$/;
 
 export type CellCommentThreads = Record<string, CommentThread>;
 
 // One thread an element holds: its own (no cell) or a cell's.
-export type ThreadEntry = { cell?: string; thread: CommentThread };
+type ThreadEntry = { cell?: string; thread: CommentThread };
 
 export function isCellKey(value: unknown): value is string {
   return typeof value === 'string' && CELL_KEY_PATTERN.test(value);

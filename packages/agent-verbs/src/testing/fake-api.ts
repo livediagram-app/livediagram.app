@@ -27,7 +27,7 @@ export function fakeApi(routes: Record<string, unknown>): ApiClient & { calls: s
   return Object.assign(api, { calls });
 }
 
-export type FakeContext = VerbContext & {
+type FakeContext = VerbContext & {
   notices: string[];
   slept: number[];
   clock: { now: number };

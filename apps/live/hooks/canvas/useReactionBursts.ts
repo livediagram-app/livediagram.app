@@ -16,7 +16,7 @@ import { isReaction, REACTION_DEFAULT, type Reaction } from '@livediagram/docume
 // smear, which is both what it looks like it should do and what stops a
 // leaning-on-the-button moment from putting two hundred spans on the canvas.
 
-export type ActiveBurst = { reaction: Reaction; seed: number };
+type ActiveBurst = { reaction: Reaction; seed: number };
 
 export function useReactionBursts(): {
   bursts: Map<string, ActiveBurst>;

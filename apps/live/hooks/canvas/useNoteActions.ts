@@ -41,7 +41,7 @@ type NoteActionsDeps = {
   ) => void;
 };
 
-export type NoteActionsApi = {
+type NoteActionsApi = {
   addNextNote: (fromId: string, side: EsSide) => void;
   setEsKindOf: (id: string, kind: EventStormingNoteKind) => void;
 };

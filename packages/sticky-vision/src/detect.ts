@@ -50,7 +50,7 @@ export type DetectedSticky = {
   confidence: number;
 };
 
-export type DetectOptions = {
+type DetectOptions = {
   // Run a grey-world white balance first. DEFAULT OFF, and that is a finding
   // rather than an oversight: on a real workshop wall — brown kraft paper —
   // the balance takes the wall for a neutral surface and "corrects" the brown

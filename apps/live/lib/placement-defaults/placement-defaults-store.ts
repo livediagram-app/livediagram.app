@@ -13,6 +13,7 @@ import { ApiError } from '@/lib/api/core';
 import { debugLog } from '@/lib/debug-log';
 import { track } from '@/lib/telemetry';
 import type { PlacementDefaults } from './default-destination';
+import { createListeners } from '@/lib/listeners';
 
 export type PlacementDefaultsStatus = 'idle' | 'loading' | 'ready' | 'failed';
 
@@ -23,22 +24,19 @@ export type PlacementDefaultsState = {
 };
 
 /** Which surface changed a default: for the log line only. */
-export type DefaultSurface = 'menu' | 'settings';
+type DefaultSurface = 'menu' | 'settings';
 
 const IDLE: PlacementDefaultsState = { ownerId: null, status: 'idle', defaults: new Map() };
 
 let state: PlacementDefaultsState = IDLE;
-const listeners = new Set<() => void>();
+const listeners = createListeners();
 
 function publish(next: PlacementDefaultsState): void {
   state = next;
-  for (const listener of listeners) listener();
+  listeners.notify();
 }
 
-export function subscribePlacementDefaults(listener: () => void): () => void {
-  listeners.add(listener);
-  return () => listeners.delete(listener);
-}
+export const subscribePlacementDefaults = listeners.subscribe;
 
 export function placementDefaultsSnapshot(): PlacementDefaultsState {
   return state;

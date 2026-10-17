@@ -47,9 +47,9 @@ const TONED_HUES: readonly { hue: number; name: string }[] = [
 const SATURATION_RANGE = [0.45, 0.85] as const;
 const LIGHTNESS_RANGE = { light: [0.36, 0.52], dark: [0.6, 0.74] } as const;
 // A derived stroke must read against its canvas (WCAG 1.4.11 non-text).
-export const QUICK_STROKE_MIN_CONTRAST = 3;
+const QUICK_STROKE_MIN_CONTRAST = 3;
 // A derived background must keep the theme's label readable (WCAG 1.4.3).
-export const QUICK_FILL_MIN_TEXT_CONTRAST = 4.5;
+const QUICK_FILL_MIN_TEXT_CONTRAST = 4.5;
 // How much of the hue a background carries: over white on light paper, so a
 // background reads as a clean tint whatever the theme's own fill; over the
 // theme's fill on dark paper, where a white base would glare.

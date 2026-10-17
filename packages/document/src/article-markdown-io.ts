@@ -21,7 +21,7 @@ const FRONT_MATTER = /^---[ \t]*\n([\s\S]*?)\n---[ \t]*(?:\n|$)/;
 const ZONE_LINE = /^\[zone ([^\]\s]{1,64})\]$/;
 const PAGE_BREAK_LINE = /^\\pagebreak$/;
 
-export type ArticleFromMarkdown =
+type ArticleFromMarkdown =
   | {
       blocks: ArticleBlock[];
       // Zones of `current` the text keeps, and those it leaves out (to be removed with their elements).

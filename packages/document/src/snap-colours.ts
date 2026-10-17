@@ -6,7 +6,7 @@ import type { Element } from './index';
 import { isCustomPenColour, nearestPenColour } from './pen-colours';
 
 /** One kind's colour field that can hold a custom hex or a stock name. */
-export type SnapColourField = {
+type SnapColourField = {
   applies: (el: Element) => boolean;
   // The custom colour, an exact `#rrggbb`.
   hex: 'strokeColor' | 'textColor';

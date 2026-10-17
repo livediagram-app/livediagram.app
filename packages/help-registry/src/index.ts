@@ -227,14 +227,9 @@ export const categories: Category[] = [
   },
 ];
 
-// The two ways the category list partitions by `kind`, derived once here so the
-// home + features pages don't each re-spell the predicate. Feature-guide
-// categories (the card grids), and the support categories (About, Getting
-// Started, ...) minus Contact, which the home renders as its own CTA.
+// The feature-guide categories (the card grids), derived once here so the
+// features page doesn't re-spell the predicate.
 export const featureCategories: Category[] = categories.filter((c) => c.kind === 'feature');
-export const supportCategories: Category[] = categories.filter(
-  (c) => c.kind !== 'feature' && c.slug !== 'contact',
-);
 
 export const articles: Article[] = [
   // ---- User Interface ----

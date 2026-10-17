@@ -14,7 +14,7 @@ import type { ChangesetFingerprints, MergeEntry } from '../db/changesets';
 // after, and their version stands (`superseded`). Taking it keeps the save's live fields, which the
 // fingerprint ignores (CS44). Pure and idempotent.
 
-export type MergeResult = { tab: Tab; merged: number; superseded: number };
+type MergeResult = { tab: Tab; merged: number; superseded: number };
 
 export function mergeChangesetsIntoSave(save: Tab, entries: readonly MergeEntry[]): MergeResult {
   let elements = save.elements;

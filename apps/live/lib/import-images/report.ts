@@ -27,7 +27,7 @@ export const importImagePlaceholderCount = (report: ImportImageReport): number =
 export const importImageReportTotal = (report: ImportImageReport): number =>
   report.imported + report.deduped + importImagePlaceholderCount(report);
 
-export type ImportImageReportCopy = {
+type ImportImageReportCopy = {
   lines: string[];
   failures: { failure: ImportImageFailure; count: number; sentence: string }[];
   hint: string | null;

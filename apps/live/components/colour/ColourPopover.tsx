@@ -9,7 +9,7 @@ import { AnchoredPopover } from '@/components/primitives/AnchoredPopover';
 import { ColourPicker, type ColourPickerProps } from './ColourPicker';
 import { COLOUR_PICKER_WIDTH, COLOUR_POPOVER_PADDING } from './colour-metrics';
 
-export const COLOUR_POPOVER_WIDTH = COLOUR_PICKER_WIDTH + 2 * COLOUR_POPOVER_PADDING + 2;
+const COLOUR_POPOVER_WIDTH = COLOUR_PICKER_WIDTH + 2 * COLOUR_POPOVER_PADDING + 2;
 
 export function ColourPopover({
   anchor,

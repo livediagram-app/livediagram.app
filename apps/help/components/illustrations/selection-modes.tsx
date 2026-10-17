@@ -43,7 +43,7 @@ const TOOLS = [
   { key: 'zen', label: 'Zen', shortcut: 'Z', band: 2, Glyph: ZenGlyph },
 ] as const;
 
-export type ToolKey = (typeof TOOLS)[number]['key'];
+type ToolKey = (typeof TOOLS)[number]['key'];
 
 const BANDS = ['EDIT', 'PRESENT', 'PREVIEW'] as const;
 

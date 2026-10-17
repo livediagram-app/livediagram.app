@@ -15,7 +15,7 @@ const FORMATS = {
   long: { day: 'numeric', month: 'long', year: 'numeric' },
 } as const satisfies Record<string, Intl.DateTimeFormatOptions>;
 
-export type DayLabelStyle = keyof typeof FORMATS;
+type DayLabelStyle = keyof typeof FORMATS;
 
 // One formatter per style, made on first use: a board labels every card's dates on each render, and
 // `toLocaleDateString` builds a formatter per call (2000 labels: 65 ms against 12 ms cached).

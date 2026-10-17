@@ -3,16 +3,17 @@
 // every api response's headers (apiFetch) and the realtime room's `format` message; read by the new
 // version prompt and the stale build navigation. Module state: one page, one server.
 import { DOCUMENT_FORMAT, parseBuildId, parseDocumentFormat } from '@livediagram/api-schema';
+import { createListeners } from '@/lib/listeners';
 
 /** The build id this editor was built with; null when the build set none (local development). */
 export const EDITOR_BUILD_ID: string | null = parseBuildId(process.env.NEXT_PUBLIC_BUILD_ID);
 
 let highestFormat: number | null = null;
 let latestBuild: string | null = null;
-const listeners = new Set<() => void>();
+const listeners = createListeners();
 
 const notify = () => {
-  for (const listener of listeners) listener();
+  listeners.notify();
 };
 
 /** Records a format number from the server; anything unparsable is ignored, and only a rise notifies. */
@@ -54,10 +55,7 @@ export function runningStaleBuild(): boolean {
   return isStaleBuild(EDITOR_BUILD_ID, latestBuild);
 }
 
-export function subscribeServerRelease(listener: () => void): () => void {
-  listeners.add(listener);
-  return () => listeners.delete(listener);
-}
+export const subscribeServerRelease = listeners.subscribe;
 
 export function resetServerReleaseForTests(): void {
   highestFormat = null;

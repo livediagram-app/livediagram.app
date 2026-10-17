@@ -16,6 +16,7 @@ import {
   type Point,
   type Tab,
   frameHeadingRect,
+  type Rect,
 } from '@livediagram/document';
 import { lintTab } from '../lint';
 import { prepareLintContext } from '../context';
@@ -97,8 +98,6 @@ function sharesEnd(a: ArrowElement, b: ArrowElement): boolean {
   const mine = [arrowEndKey(a.from), arrowEndKey(a.to)].filter((k): k is string => !!k);
   return [arrowEndKey(b.from), arrowEndKey(b.to)].some((k) => !!k && mine.includes(k));
 }
-
-type Rect = { x: number; y: number; width: number; height: number };
 
 const inside = (p: Point, r: Rect) =>
   p.x > r.x && p.x < r.x + r.width && p.y > r.y && p.y < r.y + r.height;

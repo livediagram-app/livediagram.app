@@ -109,7 +109,7 @@ async function tokenFromStdin(io: CliIo): Promise<string> {
   return token;
 }
 
-export type LoginInput = { withToken?: boolean; device?: boolean };
+type LoginInput = { withToken?: boolean; device?: boolean };
 
 // Sign in (blueprint "Credentials"): a token by the browser (default), the device grant (`--device`) or stdin
 // (`--with-token`); checked with the api, stored, and the token it replaces revoked.
@@ -176,7 +176,7 @@ export async function login(
   return { host: profile.host, account: current.accountName ?? current.accountId };
 }
 
-export const TOKEN_EXPIRY_WARN_DAYS = 14;
+const TOKEN_EXPIRY_WARN_DAYS = 14;
 const DAY_MS = 86_400_000;
 
 export async function status(

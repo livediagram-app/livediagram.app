@@ -39,7 +39,7 @@ import type { ArrowElement, Element } from './index';
 
 // Arrowhead reference points (where each head should aim from), honouring
 // curve / elbow handles so heads sit tangent to the rendered path.
-export function arrowHeadRefs(
+function arrowHeadRefs(
   arrow: ArrowElement,
   from: { x: number; y: number },
   to: { x: number; y: number },

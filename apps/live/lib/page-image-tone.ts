@@ -3,7 +3,7 @@
 // ink is chosen against. Browser-only (Image, canvas); its averaging is pure and tested.
 
 // The side the picture is drawn down to: enough to average, nothing to decode twice.
-export const PAGE_IMAGE_TONE_SAMPLE = 16;
+const PAGE_IMAGE_TONE_SAMPLE = 16;
 // A slow picture is not waited for: the page reads as mid grey instead.
 const TONE_TIMEOUT_MS = 4000;
 

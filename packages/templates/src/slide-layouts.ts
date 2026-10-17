@@ -74,7 +74,7 @@ export type SlideLayoutId =
   | 'slide-thanks-image'
   | 'slide-resources';
 
-export type SlideLayoutCategoryId =
+type SlideLayoutCategoryId =
   'slide-openers' | 'slide-content' | 'slide-data' | 'slide-steps' | 'slide-closers';
 
 export const SLIDE_LAYOUT_CATEGORIES: readonly { id: SlideLayoutCategoryId; label: string }[] = [

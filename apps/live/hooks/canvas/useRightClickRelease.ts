@@ -39,8 +39,7 @@ import type { MouseEvent as ReactMouseEvent, PointerEvent as ReactPointerEvent }
 // the armed menu is dropped rather than opening wherever the button came up.
 const DRAG_SLOP_PX = 8;
 
-export type RightClickDecision =
-  { kind: 'open' } | { kind: 'arm'; button: number; x: number; y: number };
+type RightClickDecision = { kind: 'open' } | { kind: 'arm'; button: number; x: number; y: number };
 
 /** What a `contextmenu` event should do: open straight away (the release is
  *  already behind us, or there was never a pointer), or arm and wait for the

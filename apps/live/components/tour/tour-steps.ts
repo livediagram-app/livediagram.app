@@ -45,7 +45,7 @@ export async function ensurePaletteOpen() {
   await waitForSelector('[data-tour-id="palette"]');
 }
 
-export const closeDropdown = (menuId: string, triggerId: string) => {
+const closeDropdown = (menuId: string, triggerId: string) => {
   if (findTour(menuId)) clickTour(triggerId);
 };
 

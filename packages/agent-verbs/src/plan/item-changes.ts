@@ -42,7 +42,7 @@ export type ItemChange =
   | { op: 'move'; item: string; status: string; before?: string }
   | { op: 'delete'; item: string };
 
-export interface ItemChangesResult {
+interface ItemChangesResult {
   applied: string[];
   // The items as they stand after the changes, for a caller that answers them.
   touched: Item[];

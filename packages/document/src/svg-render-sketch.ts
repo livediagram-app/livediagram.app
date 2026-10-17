@@ -8,7 +8,7 @@ import { SKETCH_HATCH_OPACITY, sketchElementPaint, type SketchDrawing } from './
 import type { ExportShape } from './svg-render-describe';
 import { r2, xmlEscape } from './svg-render-primitives';
 
-export function svgSketchDrawing(
+function svgSketchDrawing(
   at: { x: number; y: number },
   drawing: SketchDrawing,
   paint: { fill: string; stroke: string; strokePx: number; dash: string | null },
@@ -74,7 +74,7 @@ export const SKETCH_FACE_FILTER = {
 } as const;
 
 /** The face wobble as an SVG <filter>. */
-export function svgSketchFaceFilter(): string {
+function svgSketchFaceFilter(): string {
   const f = SKETCH_FACE_FILTER;
   return (
     `<filter id="${f.id}" x="-${f.margin}" y="-${f.margin}" width="${100 + 2 * parseFloat(f.margin)}%" height="${100 + 2 * parseFloat(f.margin)}%">` +

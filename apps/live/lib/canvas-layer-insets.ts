@@ -7,10 +7,10 @@
 import { topStripInset } from './top-strip-inset';
 
 export type LayerInsets = { top: number; right: number; bottom: number; left: number };
-export const NO_INSETS: LayerInsets = { top: 0, right: 0, bottom: 0, left: 0 };
+const NO_INSETS: LayerInsets = { top: 0, right: 0, bottom: 0, left: 0 };
 
 type Box = { left: number; top: number; right: number; bottom: number };
-export type ChromeBox = { kind: 'top' | 'panel' | 'bottom'; box: Box };
+type ChromeBox = { kind: 'top' | 'panel' | 'bottom'; box: Box };
 
 // The top row's menu button and mode menu (ToolbarExplorerButton); the strip itself is read by topStripInset.
 export const TOP_ROW_SELECTOR = '[data-toolbar-menu]';
@@ -23,7 +23,7 @@ export const PANEL_SELECTOR = '[data-layout-chrome]';
 // to the canvas's foot.
 // A panel wider than this share of the canvas is a sheet across it (a phone), not a side panel: it pushes the top or
 // bottom instead. Half of the canvas plus a margin: no side panel is ever that wide on a desktop (they are 18-24rem).
-export const WIDE_PANEL_SHARE = 0.6;
+const WIDE_PANEL_SHARE = 0.6;
 // At most this share of the canvas is given up on each axis, so the element always keeps most of the screen even
 // with every panel open on a small one.
 export const MAX_INSET_SHARE = 0.45;
@@ -78,15 +78,15 @@ export function layerInsets(
 export type HeaderBand = { height: number; left: number; mid: number; stripEnd: number };
 
 // The cover's padding around the element on a desktop (CanvasCover's sm:p-3); a band is only laid out that wide.
-export const COVER_PAD_PX = 12;
+const COVER_PAD_PX = 12;
 // The room the header's content keeps from the menu and the strip.
-export const BAND_GAP_PX = 12;
+const BAND_GAP_PX = 12;
 // The least room the band needs for a title (its widgets truncating) between the menu and the strip; and the room the
 // header's own controls (a Gantt's scale and window, Restore, the cog) are given before they are measured.
 export const BAND_MID_MIN_PX = 140;
 export const BAND_RIGHT_MIN_PX = 280;
 // Below this canvas width the cover's padding is a phone's (p-2) and the strip holds the menu: no band.
-export const BAND_CANVAS_MIN_PX = 640;
+const BAND_CANVAS_MIN_PX = 640;
 
 // The band for `canvas` with the menu and strip where they are, given the element's side insets; null when the menu
 // is missing, the menu or strip is not in the top row, or they leave too little room (the element then starts below
@@ -132,7 +132,7 @@ export function headerBand(
 export type PhoneRow = { height: number; left: number };
 
 // The cover's padding around the element on a phone (CanvasCover's p-2).
-export const PHONE_COVER_PAD_PX = 8;
+const PHONE_COVER_PAD_PX = 8;
 // The least room a phone's header needs after the menu: a short title and the header's controls (Restore, the cog).
 export const PHONE_ROW_MIN_PX = 160;
 
@@ -164,7 +164,7 @@ export const NO_LAYOUT: CanvasLayout = { insets: NO_INSETS, band: null };
 
 const STRIP_SELECTOR = '[data-toolbar-palette]:not(.hidden)';
 // The menu box's slot for the element's name (MenuNameSlot).
-export const MENU_NAME_SLOT_SELECTOR = '[data-menu-name-slot]';
+const MENU_NAME_SLOT_SELECTOR = '[data-menu-name-slot]';
 // A covering element's header controls (band-controls.ts), the only ones measured.
 export const BAND_CONTROLS_SELECTOR = '[data-canvas-cover] [data-band-controls]';
 
@@ -254,6 +254,6 @@ export function sameLayout(a: CanvasLayout, b: CanvasLayout): boolean {
   );
 }
 
-export function sameInsets(a: LayerInsets, b: LayerInsets): boolean {
+function sameInsets(a: LayerInsets, b: LayerInsets): boolean {
   return a.top === b.top && a.right === b.right && a.bottom === b.bottom && a.left === b.left;
 }

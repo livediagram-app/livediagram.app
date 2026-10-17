@@ -29,7 +29,7 @@ const GROUPED_ROWS = [
     summary: "mirror a link's documents into the repo",
   },
 ] as const;
-export const NAMED_ONLY = [
+const NAMED_ONLY = [
   'board',
   'sheet',
   'page',

@@ -28,7 +28,7 @@ import type { CleanupKind } from '@/lib/tab-cleanup';
 import type { CleanupVerdict } from '@/lib/tidy-verdict';
 import { loadTidyEngine, tidyEngine } from '@/lib/tidy-engine';
 
-export type CleanupPreviewApi = {
+type CleanupPreviewApi = {
   /** Lay the tab out as this cleanup would, without committing anything. */
   previewCleanup: (kind: CleanupKind) => void;
   /** Put the tab back as it was. Safe to call with no preview in flight. */

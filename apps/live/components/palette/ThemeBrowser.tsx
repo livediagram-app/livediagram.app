@@ -17,7 +17,7 @@ import { CustomThemeCard, NewThemeCard, ThemeCard } from '@/components/palette/t
 const PICKER_THEMES = THEMES.filter((t) => !t.seasonal);
 
 /** How many theme tiles one carousel page holds: a 3 x 3 grid. */
-export const THEMES_PER_PAGE = 9;
+const THEMES_PER_PAGE = 9;
 
 type Item =
   | { kind: 'built-in'; theme: ThemeDefinition }

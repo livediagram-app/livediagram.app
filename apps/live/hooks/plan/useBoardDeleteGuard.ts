@@ -42,7 +42,7 @@ export function boardDeleteCopy(
 }
 
 // The guard, for elements on the active tab or (a tab being deleted) on `tabId`.
-export type BoardDeleteGuard = (
+type BoardDeleteGuard = (
   targetIds: ReadonlySet<string>,
   tabId?: string,
 ) => ReturnType<SheetDeleteGuard>;

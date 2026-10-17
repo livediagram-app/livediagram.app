@@ -637,7 +637,7 @@ export function supportsBorderControls(element: Element): boolean {
 // Kinds that take an inline icon but place it themselves, so its position (`iconPosition`) is not the user's to set:
 // a card's media slot and a callout's badge (docs/specs/009-elements/card.md), a header's logo, a boundary's tab
 // (docs/specs/009-elements/boundary.md). Their Icon position controls would write a field nothing reads.
-export const SELF_PLACED_ICON_SHAPES: ReadonlySet<string> = new Set([
+const SELF_PLACED_ICON_SHAPES: ReadonlySet<string> = new Set([
   'card',
   'callout',
   'site-header',

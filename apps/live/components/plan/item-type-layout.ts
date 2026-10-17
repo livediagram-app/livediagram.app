@@ -12,7 +12,7 @@ import {
 } from '@livediagram/items';
 
 // The fields a tab can hold: never the title (it heads the panel) or votes (they live on the card).
-export const NOT_TABBABLE = new Set(['title', 'votes']);
+const NOT_TABBABLE = new Set(['title', 'votes']);
 
 export type LayoutDraft = { fields: string[]; custom: CustomFieldDef[]; tabs: ItemTypeTab[] };
 

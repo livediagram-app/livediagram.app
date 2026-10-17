@@ -3,7 +3,7 @@
 // in the URL while Settings is open, so a page left for another site and
 // reached again with Back reopens it. These read it and take it away on close.
 
-export type SettingsLink = { category: string; section: string | null };
+type SettingsLink = { category: string; section: string | null };
 
 export function readSettingsLink(search: string): SettingsLink | null {
   const params = new URLSearchParams(search);

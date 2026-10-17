@@ -46,7 +46,7 @@ export type SketchDrawing = {
  *  that the label on it stays readable (docs/specs/008-canvas/finish.md "Sketch"). */
 export const SKETCH_HATCH_OPACITY = 0.15;
 
-export type SketchElementOptions = {
+type SketchElementOptions = {
   /** The border width in px (0 draws no outline). */
   strokePx: number;
   /** The corner the element's box draws at, px (box kinds only). */
@@ -63,7 +63,7 @@ const isSeeThrough = (fill: string) => fill === 'transparent' || fill === 'none'
 
 /** The sketch of a boxed element, or null for a kind Sketch leaves as drawn (text, images, freehand,
  *  self-painting faces). */
-export function sketchElement(el: BoxedElement, o: SketchElementOptions): SketchDrawing | null {
+function sketchElement(el: BoxedElement, o: SketchElementOptions): SketchDrawing | null {
   const seed = sketchSeed(el.id);
   const w = el.width;
   const h = el.height;
@@ -179,13 +179,13 @@ export function sketchElementPaint(
 
 /** The arrowhead shapes Sketch redraws as two loose strokes; circles and diamonds keep their marks because
  *  they carry meaning (UML composition, ER cardinality). */
-export const SKETCHED_HEAD_SHAPES: ReadonlySet<ArrowheadShape> = new Set([
+const SKETCHED_HEAD_SHAPES: ReadonlySet<ArrowheadShape> = new Set([
   'triangle',
   'triangle-hollow',
   'line',
 ]);
 
-export type SketchArrowOptions = {
+type SketchArrowOptions = {
   /** The line's width, px. */
   strokePx: number;
   /** The head preset and shape, sized like the marker: `ARROWHEAD_SIZE_PX[size]` line widths long. */

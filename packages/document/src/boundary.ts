@@ -11,7 +11,7 @@ export const BOUNDARY_STYLES: readonly BoundaryStyle[] = ['tab', 'inset', 'c4'];
 // The wash a boundary with no fill of its own takes: 6% of its accent, so a boundary nested in another
 // reads deeper as the two washes stack.
 export const BOUNDARY_TINT = 0.06;
-export const BOUNDARY_TAB_H = 26;
+const BOUNDARY_TAB_H = 26;
 
 export function isBoundaryStyle(v: unknown): v is BoundaryStyle {
   return v === 'tab' || v === 'inset' || v === 'c4';
@@ -21,7 +21,7 @@ export function boundaryStyleOf(el: ShapeElement): BoundaryStyle {
   return isBoundaryStyle(el.boundaryStyle) ? el.boundaryStyle : 'tab';
 }
 
-export type BoundaryLayout = {
+type BoundaryLayout = {
   tab: LayoutRect | null;
   icon: LayoutRect | null;
   title: LayoutRect;

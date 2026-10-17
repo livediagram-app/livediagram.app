@@ -7,7 +7,7 @@
 // tag with `[^>]*` runs between the attributes backtracked polynomially on markup full of `<svg`
 // (CodeQL js/polynomial-redos), and the markup carries tab content.
 
-export type SvgFrame = { width: number; height: number; origin: { x: number; y: number } };
+type SvgFrame = { width: number; height: number; origin: { x: number; y: number } };
 
 export const SVG_FRAME_FALLBACK: SvgFrame = { width: 800, height: 600, origin: { x: 0, y: 0 } };
 

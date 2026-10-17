@@ -21,7 +21,7 @@ const percent = (ratio: number) => {
   return pct === 0 ? '<1%' : `${pct.toLocaleString()}%`;
 };
 
-export type TrendReading = { tone: keyof typeof TONES; arrow: '▲' | '▼' | '→'; amount: string };
+type TrendReading = { tone: keyof typeof TONES; arrow: '▲' | '▼' | '→'; amount: string };
 
 /** Which way a count moved, how to colour it, and how to word the change. */
 export function readTrend(now: number, before: number, rising: Rising = 'good'): TrendReading {

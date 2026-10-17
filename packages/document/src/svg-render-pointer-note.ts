@@ -9,7 +9,7 @@ import { r2, xmlEscape } from './svg-render-primitives';
 type Shape = BoxedElement & { type: 'shape' };
 
 /** The tip dot's radius (D190: a 7 px dot). */
-export const POINTER_TIP_DOT_R = 3.5;
+const POINTER_TIP_DOT_R = 3.5;
 
 export function svgPointerNote(el: Shape, o: { stroke: string }): string {
   const tip = pointerTipOf(el);

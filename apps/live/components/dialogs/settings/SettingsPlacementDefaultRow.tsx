@@ -27,7 +27,7 @@ import type { SettingsPlacementDefaultRowSpec } from './settings-catalogue';
 export type SettingsPlacementLists = ReturnType<typeof usePlacementOptions>;
 
 /** Where new documents of this entry go, in words. */
-export function destinationText(destination: DefaultDestination): string {
+function destinationText(destination: DefaultDestination): string {
   switch (destination.kind) {
     case 'root':
       return 'My documents';

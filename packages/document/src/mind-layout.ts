@@ -27,11 +27,11 @@ import type { ArrowElement, Element, ElementId, ShapeElement } from './index';
 
 /** How far a node may sit from its laid-out slot and still count as tidy.
  *  Rounding in the layout itself is the only drift a tidy map ever has. */
-export const MIND_TIDY_TOLERANCE = 1;
+const MIND_TIDY_TOLERANCE = 1;
 
 /** Where a node that is not on the canvas yet slots into its siblings: right
  *  after `after` (Enter inserts the next line), else at the end (Tab). */
-export type MindOrderHint = { id: ElementId; after?: ElementId };
+type MindOrderHint = { id: ElementId; after?: ElementId };
 
 export type MindPoint = { x: number; y: number };
 /** Top-left position per node of the map, root included. */

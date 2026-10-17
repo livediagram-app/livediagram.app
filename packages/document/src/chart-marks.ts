@@ -169,7 +169,7 @@ export function barMarks(
   };
 }
 
-export type LineVariant = 'line' | 'area' | 'scatter';
+type LineVariant = 'line' | 'area' | 'scatter';
 
 export type LineMarks = {
   plot: { x: number; y: number; w: number; h: number };

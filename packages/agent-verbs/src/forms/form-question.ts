@@ -45,7 +45,7 @@ type Setting = Exclude<keyof QuestionInput, 'type' | 'prompt' | 'help' | 'requir
 
 // The settings each type has, as its settings block shows them.
 const TEXT_BOX: readonly Setting[] = ['placeholder'];
-export const TYPE_SETTINGS: Readonly<Record<QuestionType, readonly Setting[]>> = {
+const TYPE_SETTINGS: Readonly<Record<QuestionType, readonly Setting[]>> = {
   short: TEXT_BOX,
   paragraph: TEXT_BOX,
   number: ['placeholder', 'min', 'max', 'whole'],

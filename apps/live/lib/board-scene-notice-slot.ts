@@ -7,11 +7,11 @@
 // The gap between the notice and what it sits above.
 export const NOTICE_GAP_PX = 8;
 // The dock's own lift, mirrored for a canvas without one.
-export const DOCKLESS_LIFT_PX = 68;
-export const DOCKLESS_WIDE_LIFT_PX = 16;
-export const DOCKLESS_WIDE_MIN_PX = 1760;
+const DOCKLESS_LIFT_PX = 68;
+const DOCKLESS_WIDE_LIFT_PX = 16;
+const DOCKLESS_WIDE_MIN_PX = 1760;
 
-export type NoticeSlotInput = {
+type NoticeSlotInput = {
   viewportWidth: number;
   viewportHeight: number;
   // The dock's top edge in viewport px, when a dock is on screen.

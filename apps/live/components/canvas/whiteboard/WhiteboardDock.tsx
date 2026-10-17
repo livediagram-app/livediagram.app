@@ -57,7 +57,7 @@ const WRAPPER_PLACEMENT: Record<WhiteboardDockPosition, string> = {
     'bottom-[4.25rem] left-1/2 -translate-x-1/2 max-w-[calc(100%-1.5rem)] min-[1760px]:bottom-4',
 };
 
-export type WhiteboardDockProps = {
+type WhiteboardDockProps = {
   model: WhiteboardDockModel;
   // The board's ink for this appearance: what the main pen draws with.
   ink: string;

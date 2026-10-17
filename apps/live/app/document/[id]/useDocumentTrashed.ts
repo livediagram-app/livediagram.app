@@ -13,7 +13,7 @@ import { track } from '@/lib/telemetry';
 import { debugLog } from '@/lib/debug-log';
 import { isDocumentDeleted } from '@/lib/document-tombstones';
 
-export type DocumentTrashedState = {
+type DocumentTrashedState = {
   trashed: boolean;
   setDocumentTrashed: (trashed: boolean) => void;
   // The reader's Trash row for this document, or null when they may not

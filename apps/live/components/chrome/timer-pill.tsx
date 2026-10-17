@@ -14,7 +14,7 @@ import { Glyph } from '@livediagram/ui';
 // re-render.
 
 /** Icon buttons, shared so the two surfaces cannot drift on the glyphs either. */
-export function TimerCloseIcon() {
+function TimerCloseIcon() {
   return (
     <Glyph size={14} units={16}>
       <path d="M4.5 4.5l7 7M11.5 4.5l-7 7" />
@@ -22,7 +22,7 @@ export function TimerCloseIcon() {
   );
 }
 
-export function TimerPauseIcon() {
+function TimerPauseIcon() {
   return (
     <Glyph size={14} units={16} filled>
       <rect x="4" y="3" width="3" height="10" rx="1" />
@@ -39,7 +39,7 @@ export function TimerPlayIcon() {
   );
 }
 
-export function TimerResetIcon() {
+function TimerResetIcon() {
   return (
     <Glyph size={14} units={16}>
       <path d="M2.5 8a5.5 5.5 0 1 0 1.7-4" />

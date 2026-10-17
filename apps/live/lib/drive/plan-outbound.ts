@@ -39,9 +39,9 @@ export type OutboundOp =
   | { op: 'trash-file'; item: DriveItem }
   | { op: 'finish-tombstone'; row: SeenRow };
 
-export type OutboundPlan = { ops: OutboundOp[]; nextDueAt: number | null };
+type OutboundPlan = { ops: OutboundOp[]; nextDueAt: number | null };
 
-export type OutboundOptions = {
+type OutboundOptions = {
   now: number;
   // A flush writes every changed document now, ignoring idle and interval.
   flush: boolean;

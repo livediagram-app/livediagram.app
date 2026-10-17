@@ -5,7 +5,7 @@ import type { useEditorState } from './useEditorState';
 
 // Derived from the page's orchestration hook so the value type stays in
 // lockstep with the provider + consumers, no hand-maintained field list.
-export type EditorContextValue = ReturnType<typeof useEditorState>;
+type EditorContextValue = ReturnType<typeof useEditorState>;
 
 const EditorContext = createContext<EditorContextValue | null>(null);
 

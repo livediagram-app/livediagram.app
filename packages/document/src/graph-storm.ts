@@ -26,7 +26,7 @@ import type { Element } from './index';
 
 // The lanes, top to bottom: who and what they look at, what they ask for, what it acts on, what happened, how the
 // business reacts, and the open questions underneath.
-export const STORM_LANE_ORDER: readonly EventStormingNoteKind[] = [
+const STORM_LANE_ORDER: readonly EventStormingNoteKind[] = [
   'actor',
   'read-model',
   'command',
@@ -46,9 +46,9 @@ const LEADS: ReadonlySet<EventStormingNoteKind> = new Set([
   'external-system',
 ]);
 // The space between two columns: a note's worth of the board's gutter, so each moment reads apart.
-export const STORM_COLUMN_GAP = ES_NOTE_GAP * 3;
+const STORM_COLUMN_GAP = ES_NOTE_GAP * 3;
 
-export type StormNode = GraphNode & { esKind?: string };
+type StormNode = GraphNode & { esKind?: string };
 
 const isKind = (k: string | undefined): k is EventStormingNoteKind =>
   STORM_LANE_ORDER.includes(k as EventStormingNoteKind);

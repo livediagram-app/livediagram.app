@@ -6,11 +6,11 @@
 import type { SharedTabsSummary } from '@livediagram/api-schema';
 import { apiSharedTabs } from './api-client';
 
-export type SharedTabsAction = 'delete' | 'offline';
+type SharedTabsAction = 'delete' | 'offline';
 
 // How long a confirmation waits for the counts before opening without them.
 // One small indexed read; past this the dialog matters more than the sentence.
-export const SHARED_TABS_NOTICE_TIMEOUT_MS = 1500;
+const SHARED_TABS_NOTICE_TIMEOUT_MS = 1500;
 
 export function sharedTabsNotice(
   { tabs, documents: liveDocs }: SharedTabsSummary,

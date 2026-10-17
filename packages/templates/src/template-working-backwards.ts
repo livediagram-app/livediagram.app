@@ -103,7 +103,7 @@ Fewer than one in five first-time customers ordering again within a month of the
 
 // The PR/FAQ's blocks, each with an id of its own and the same on every build: the first two headings are the title
 // and subtitle, the divider the page break before the FAQs.
-export function workingBackwardsBlocks(): ArticleBlock[] {
+function workingBackwardsBlocks(): ArticleBlock[] {
   return parseMarkdownBlocks(PRFAQ.trim()).map((block, i): ArticleBlock => {
     const id = `b-prfaq-${i + 1}`;
     if (block.type === 'divider') return { id, type: 'pageBreak' };

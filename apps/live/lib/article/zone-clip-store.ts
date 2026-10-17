@@ -6,9 +6,10 @@
 // keeps its identity while its values do.
 import { useSyncExternalStore } from 'react';
 import type { PageRect } from '@livediagram/document';
+import { createListeners } from '@/lib/listeners';
 
 let clips: ReadonlyMap<string, PageRect> = new Map();
-const listeners = new Set<() => void>();
+const listeners = createListeners();
 
 const same = (a: PageRect, b: PageRect) =>
   a.x === b.x && a.y === b.y && a.width === b.width && a.height === b.height;
@@ -26,20 +27,13 @@ export function publishZoneClips(next: ReadonlyMap<string, PageRect>): void {
   }
   if (!changed) return;
   clips = out;
-  for (const l of listeners) l();
+  listeners.notify();
 }
-
-const subscribe = (l: () => void) => {
-  listeners.add(l);
-  return () => {
-    listeners.delete(l);
-  };
-};
 
 /** The rect an element is clipped to (a drawing zone it is in), or undefined. */
 export function useZoneClip(id: string): PageRect | undefined {
   return useSyncExternalStore(
-    subscribe,
+    listeners.subscribe,
     () => clips.get(id),
     () => undefined,
   );

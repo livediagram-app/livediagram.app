@@ -7,7 +7,7 @@
 import { useRef, type ReactNode } from 'react';
 import { CloseIcon, SearchIcon, Tooltip } from '@livediagram/ui';
 
-export type SearchChip = {
+type SearchChip = {
   key: string;
   // "Card Type" and "Project", read "Card Type: Project".
   field: string;

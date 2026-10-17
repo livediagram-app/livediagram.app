@@ -13,7 +13,7 @@ import { useLatest } from '@/hooks/ui/useLatest';
 import { PATH_DOUBLE_PRESS_MS, PATH_DRAG_THRESHOLD_PX } from '@/lib/path-draw';
 
 // How long a finger rests on a node before it is a long-press (the canvas long-press's own).
-export const PATH_LONG_PRESS_MS = 500;
+const PATH_LONG_PRESS_MS = 500;
 import {
   PATH_NODE_HIT_PX,
   PATH_SNAP_PX,

@@ -17,14 +17,14 @@ import { SearchControlButton } from './SearchControlButton';
 // docs/specs/004-interface-design/menus.md): arrows move, Enter chooses, Escape closes and focus returns to the
 // trigger, a click outside closes. A pick either closes the menu (one choice) or leaves it open (several).
 
-export type SearchMenuRow<T> = {
+type SearchMenuRow<T> = {
   id: T;
   key: string;
   label: string;
   count?: number | null;
   checked: boolean;
 };
-export type SearchMenuGroup<T> = { heading?: string; rows: SearchMenuRow<T>[] };
+type SearchMenuGroup<T> = { heading?: string; rows: SearchMenuRow<T>[] };
 
 const GROUP_LABEL =
   'px-2.5 pb-1 pt-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400';

@@ -17,7 +17,7 @@ import type { Folder } from '@livediagram/api-schema';
 // its rows; this is navigation and creation, and the two only meet through the
 // current spot.
 
-export type TeamLibraryCrumb = { label: string; onClick?: () => void };
+type TeamLibraryCrumb = { label: string; onClick?: () => void };
 
 export function TeamLibraryHeader({
   crumbs,

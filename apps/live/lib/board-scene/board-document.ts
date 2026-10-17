@@ -19,7 +19,7 @@ const parse = (iso: string | undefined): number | undefined => {
   return Number.isFinite(ms) ? ms : Number.NaN;
 };
 
-export type BoardDocumentDates = {
+type BoardDocumentDates = {
   createdAt?: number;
   savedAt?: number;
   // A date was given and could not be used: the document is dated today.

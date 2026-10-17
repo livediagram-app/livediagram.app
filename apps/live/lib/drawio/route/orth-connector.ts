@@ -65,7 +65,7 @@ const SIDE_MASK = 480;
 const CENTER_MASK = 512;
 
 /** mxEdgeStyle.getJettySize: how far an end runs straight out of its shape. */
-export function jettySize(edge: EdgeRouting, isSource: boolean): number {
+function jettySize(edge: EdgeRouting, isSource: boolean): number {
   const value =
     styleValue(edge.style, isSource ? 'sourceJettySize' : 'targetJettySize') ??
     styleValue(edge.style, 'jettySize') ??

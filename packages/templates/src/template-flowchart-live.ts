@@ -11,7 +11,7 @@ import {
   type ShapeElement,
 } from '@livediagram/document';
 
-export type LiveFlowchart = {
+type LiveFlowchart = {
   elements: Element[];
   bounds: { x: number; y: number; width: number; height: number };
 };

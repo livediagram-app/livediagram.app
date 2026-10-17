@@ -1,6 +1,7 @@
 'use client';
 
 import { useSyncExternalStore } from 'react';
+import { createListeners } from '@/lib/listeners';
 
 // The timeline lane an in-flight drag is LANDING ON (docs/specs/021-event-storming/event-storming.md Phase 6), for
 // the overlay that lights it. Same discipline as `insertion-preview.ts`: this
@@ -25,7 +26,7 @@ export type LanePreview = {
 };
 
 let preview: LanePreview | null = null;
-const listeners = new Set<() => void>();
+const listeners = createListeners();
 
 // Cheap value equality: a drag re-resolves the same lane on every pointer
 // move, and the overlay must not re-render at pointer rate for no change.
@@ -44,23 +45,16 @@ function same(a: LanePreview | null, b: LanePreview | null): boolean {
 export function setLanePreview(next: LanePreview | null): void {
   if (same(preview, next)) return;
   preview = next;
-  for (const l of listeners) l();
+  listeners.notify();
 }
 
 export function getLanePreview(): LanePreview | null {
   return preview;
 }
 
-function subscribe(l: () => void): () => void {
-  listeners.add(l);
-  return () => {
-    listeners.delete(l);
-  };
-}
-
 export function useLanePreview(): LanePreview | null {
   return useSyncExternalStore(
-    subscribe,
+    listeners.subscribe,
     () => preview,
     () => null,
   );

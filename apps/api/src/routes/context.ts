@@ -275,7 +275,7 @@ export async function ownsDocument(
 // share-link visitor: editing content via a link is one thing, deciding who else
 // gets in or destroying the document is owner/team-only. The member leg is checked
 // against the verified account id, never the header, like ownsDocument.
-export async function managesDocument(
+async function managesDocument(
   ctx: RouteContext,
   liveDoc: Pick<DocumentDTO, 'ownerId' | 'teamId'>,
 ): Promise<boolean> {

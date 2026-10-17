@@ -1,6 +1,7 @@
 import type { ElementTourApi } from './element-tour-api';
-import { conceptOutro, inElement, inTheMenu, onGraphic } from './concept-element-tour-steps';
+import { conceptOutro, inTheMenu, onGraphic } from './concept-element-tour-steps';
 import type { TourStepOf } from './tour-step';
+import { elementSelector } from '@/lib/canvas-selectors';
 
 // The Mind Map tour (docs/specs/007-editor/element-tours.md "The Mind Map tour"), on a selected mind node: growing a
 // map from the keyboard (Tab, Enter) or the toolbar, a branch carried as one, and the Mind Map menu's shapes, spacing,
@@ -24,7 +25,7 @@ export function mindNodeTourSteps(ctx: MindNodeTourContext): TourStepOf<ElementT
       'node',
       'A Node That Knows Its Parent',
       'A mind node belongs to a map: every node grown from it is joined to it by a line, and the map keeps itself tidy as it grows.',
-      inElement(id),
+      elementSelector(id),
     ),
     onGraphic(
       'child',
@@ -46,7 +47,7 @@ export function mindNodeTourSteps(ctx: MindNodeTourContext): TourStepOf<ElementT
       'branch',
       ctx.hasChildren ? 'Move a Whole Branch' : 'Branches Move as One',
       `Drag a node and ${ctx.hasChildren ? 'its whole branch comes with it' : 'every node grown from it comes too'}: a branch is one idea.`,
-      inElement(id),
+      elementSelector(id),
     ),
     ...(ctx.hasMore
       ? [

@@ -39,7 +39,7 @@ export function toolbarButtonClass(active: boolean, extra = ''): string {
 // editor reads alike.
 export const TOOLBAR_DIVIDER = <span className={TOOLBAR_DIVIDER_CLASS} aria-hidden />;
 
-export type RunToggle = {
+type RunToggle = {
   key: RunBoolKey;
   label: string;
   description: string;
@@ -50,7 +50,7 @@ export type RunToggle = {
 // the subset it offers rather than restating the entries: the label toolbar
 // takes all four, the note toolbar the first three (a note has no
 // strikethrough).
-export const RUN_TOGGLES: Record<RunBoolKey, RunToggle> = {
+const RUN_TOGGLES: Record<RunBoolKey, RunToggle> = {
   bold: { key: 'bold', label: 'Bold', description: 'Bold the selected text.', icon: <BoldIcon /> },
   italic: {
     key: 'italic',

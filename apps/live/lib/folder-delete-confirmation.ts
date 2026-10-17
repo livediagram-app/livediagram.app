@@ -5,7 +5,7 @@
 import type { PlacementDefaultKey } from '@livediagram/api-schema';
 import { defaultKeyEntry, inListOrder, joinNouns } from './placement-defaults/default-key-entries';
 
-export type FolderDeleteInput = {
+type FolderDeleteInput = {
   name: string;
   /** The parent folder's name; null for a top-level folder. */
   parentName: string | null;
@@ -19,7 +19,7 @@ function destination({ parentName, scope }: FolderDeleteInput): string {
   return scope === 'team' ? "the team's root" : 'My documents';
 }
 
-export function folderDeleteMessage(input: FolderDeleteInput): string {
+function folderDeleteMessage(input: FolderDeleteInput): string {
   const lines = [`Its documents and subfolders move to ${destination(input)}.`];
   const keys = inListOrder(input.defaultKeys ?? []);
   if (keys.length > 0) {

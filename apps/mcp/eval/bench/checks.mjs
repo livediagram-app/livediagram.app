@@ -146,7 +146,7 @@ function sheetText(sheet) {
 }
 
 // One lowercase string of every word the run made, wherever it sits (elements, cards, sheets, forms, pages).
-export function allText(snap) {
+function allText(snap) {
   const out = [];
   for (const d of snap.documents ?? []) {
     out.push(d.name);
@@ -183,14 +183,10 @@ export function typesOf(snap) {
   return (snap.documents ?? []).flatMap((d) => d.items?.types ?? []);
 }
 
-// A card type (by name) and its custom fields' names, lowercase.
+// A card type, by name.
 export function typeNamed(snap, word) {
   const re = asRegex(word);
   return typesOf(snap).find((t) => re.test(t.name)) ?? null;
-}
-
-export function customFieldNames(type) {
-  return (type?.custom ?? []).map((f) => lc(f.name));
 }
 
 export function hasField(type, word) {
@@ -225,7 +221,7 @@ export function cellsOf(sheet) {
   return sheet.read?.cells ?? [];
 }
 
-export function formulasOf(sheet) {
+function formulasOf(sheet) {
   return cellsOf(sheet).filter((c) => typeof c.input === 'string' && c.input.startsWith('='));
 }
 

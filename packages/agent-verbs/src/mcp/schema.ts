@@ -656,7 +656,7 @@ export const findDocumentsShape = {
 export const READ_DOCUMENT_DEFAULT_BUDGET = 8000;
 
 // The longest edit-operations text update_document takes: room for a few hundred lines.
-export const EDITS_MAX_CHARS = 40_000;
+const EDITS_MAX_CHARS = 40_000;
 
 export const readDocumentShape = {
   documentId: z.string().describe('The document id (from find_documents).'),

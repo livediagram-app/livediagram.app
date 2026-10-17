@@ -33,7 +33,7 @@ export interface BoardRequest {
   types?: readonly string[];
 }
 
-export interface PlacedBoard {
+interface PlacedBoard {
   id: string;
   type: 'shape';
   shape: 'plan-board';
@@ -44,7 +44,7 @@ export interface PlacedBoard {
   planBoard: PlanBoardSetup;
 }
 
-export type BoardRefusal = { ok: false; code: 'board_invalid'; message: string };
+type BoardRefusal = { ok: false; code: 'board_invalid'; message: string };
 
 interface Box {
   x?: unknown;

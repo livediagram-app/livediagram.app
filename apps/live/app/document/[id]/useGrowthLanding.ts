@@ -31,7 +31,7 @@ export type GrowthHookOpts = {
 // Clear of the palette and the Quick Style panel docked along the canvas's sides, so an element
 // grown past the edge scrolls into the open, not under a panel
 // (docs/specs/009-elements/mind-node.md "Following the growth").
-export const GROWTH_REVEAL_SIDE_MARGIN = 300;
+const GROWTH_REVEAL_SIDE_MARGIN = 300;
 
 // A plain-text label, replacing any formatted runs the element carried.
 export const labelled = (el: Element, label: string): Element =>

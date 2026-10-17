@@ -20,7 +20,7 @@ const SHEET_W = 1100;
 const SHEET_H = 560;
 
 // The templates that make one, each named for its kind (and its Sheet's template start).
-export type CompanionTemplateKind = 'threat-model' | 'metric-tree' | 'value-stream-map';
+type CompanionTemplateKind = 'threat-model' | 'metric-tree' | 'value-stream-map';
 
 export const TEMPLATE_COMPANION_SHEETS: Readonly<Record<CompanionTemplateKind, Companion>> = {
   'threat-model': { diagram: 'Threat Model', sheet: 'Threat Register', start: 'threat-model' },

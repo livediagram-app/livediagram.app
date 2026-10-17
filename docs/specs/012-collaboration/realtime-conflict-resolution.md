@@ -224,7 +224,7 @@ verified end-to-end and turned on properly, not carried as dormant code.
   (`handleQaWrite` → `qa-board-write.ts`). The full description is
   [API app → Realtime model](../015-api/api.md#realtime-model).
 - `apps/api/src/room-client.ts` — the worker's calls into the room: the ledger
-  merge on a tab PUT (`mergeRoomLedger`, driven by `X-Room-Cursor`), the
+  merge on a tab PUT (`fetchRoomLedger` + `applyRoomLedger`, driven by `X-Room-Cursor`), the
   view-role comment relay (`relayElementDelta`) and share-link broadcasts.
 - `apps/live` — `tab-broadcast-ops.ts` (emit), `tab-save-flow.ts` (a save's
   ledger deltas sequenced before its PUT, its element ops after) + the room

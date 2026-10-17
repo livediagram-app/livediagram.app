@@ -60,7 +60,7 @@ const SHEET_CHROME = {
 } as const;
 const SHEET_FRAME_MAX = { width: 1800, height: 1400 } as const;
 
-export interface AddSheetInput {
+interface AddSheetInput {
   tabId?: string;
   title?: string;
   // The first cells, from A1: rows of values, or CSV text (a tab-separated first line reads as TSV).
@@ -70,7 +70,7 @@ export interface AddSheetInput {
   design?: SheetDesignInput;
 }
 
-export type AddSheetResult =
+type AddSheetResult =
   | {
       ok: true;
       tabId: string;

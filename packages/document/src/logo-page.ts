@@ -5,11 +5,11 @@ import type { ShapeElement } from './element-types';
 import { LOGO_SAFE_FRACTION, type LaidOutPage, type PageRect } from './illustrate-page';
 
 // The keylines as shares of the artboard's side: the keyline circle is inscribed in the safe area.
-export const LOGO_KEYLINE_CIRCLE = 0.8;
-export const LOGO_INNER_CIRCLE = 0.5;
-export const LOGO_KEYLINE_SQUARE = 0.64;
+const LOGO_KEYLINE_CIRCLE = 0.8;
+const LOGO_INNER_CIRCLE = 0.5;
+const LOGO_KEYLINE_SQUARE = 0.64;
 // The grid's divisions each way.
-export const LOGO_GRID_DIVISIONS = 8;
+const LOGO_GRID_DIVISIONS = 8;
 
 export type GuideLine = { x1: number; y1: number; x2: number; y2: number };
 export type GuideCircle = { cx: number; cy: number; r: number };

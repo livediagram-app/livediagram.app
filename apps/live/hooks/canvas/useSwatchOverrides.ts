@@ -24,7 +24,7 @@ export type SwatchOverridesApi = {
   clearOverride: (role: QuickSwatchRole, slot: QuickSwatchSlot) => void;
 };
 
-export function withSwatchOverrideStore(
+function withSwatchOverrideStore(
   prefs: UserPreferences,
   store: SwatchOverrideStore,
 ): UserPreferences {

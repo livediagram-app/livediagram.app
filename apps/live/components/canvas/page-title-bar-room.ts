@@ -11,10 +11,10 @@ import { pageNotesRoom } from './PageNotesButton';
 import { pageTidyUpRoom } from './PageTidyUpButton';
 
 // Screen px: the cog's width plus a gap, and the narrowest a label is still worth showing.
-export const COG_ROOM = 32;
+const COG_ROOM = 32;
 export const LABEL_MIN = 40;
 
-export type TitleBarButtons = {
+type TitleBarButtons = {
   // Someone may edit: the cog and the lock show.
   edit: boolean;
   locked: boolean;

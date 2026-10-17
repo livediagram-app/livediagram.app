@@ -36,7 +36,7 @@ async function readTab(client, documentId, tab) {
   return out;
 }
 
-export async function snapshotDocument(client, documentId) {
+async function snapshotDocument(client, documentId) {
   const first = resultJson(await client.call('read_document', { documentId, format: 'json' }));
   if (!first) return { id: documentId, missing: true };
   const tabs = [];

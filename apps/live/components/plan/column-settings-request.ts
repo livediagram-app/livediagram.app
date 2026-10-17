@@ -2,12 +2,14 @@
 // settings"): + Add Column After closes its popover and asks the new column's head to open its own, named
 // fresh. The new head reads the request when it mounts (the set-up change draws it), or as it is made should
 // the head already be on screen. One request at a time; the head that takes it clears it.
+import { createListeners } from '@/lib/listeners';
+
 let pending: string | null = null;
-const listeners = new Set<() => void>();
+const listeners = createListeners();
 
 export function requestColumnSettings(columnId: string): void {
   pending = columnId;
-  for (const l of listeners) l();
+  listeners.notify();
 }
 
 // The request for `columnId`, taken (cleared) when it matches.
@@ -17,7 +19,4 @@ export function takeColumnSettingsRequest(columnId: string): boolean {
   return true;
 }
 
-export function subscribeColumnSettingsRequest(listener: () => void): () => void {
-  listeners.add(listener);
-  return () => listeners.delete(listener);
-}
+export const subscribeColumnSettingsRequest = listeners.subscribe;

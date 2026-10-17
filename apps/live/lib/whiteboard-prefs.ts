@@ -9,7 +9,12 @@ import {
   type PenColour,
   type PenColourName,
 } from '@livediagram/document';
-import { readLocalStorageSafe, safeJson, writeLocalStorageSafe } from './local-storage-safe';
+import {
+  readLocalStorageSafe,
+  safeJson,
+  storedRecord,
+  writeLocalStorageSafe,
+} from './local-storage-safe';
 import {
   DEFAULT_PEN_CURSOR,
   PEN_CURSOR_VARIANTS,
@@ -151,9 +156,8 @@ function parsePens(raw: unknown): WhiteboardPen[] {
 }
 
 export function parseWhiteboardPrefs(raw: unknown): WhiteboardPrefs {
-  const parsed: unknown = typeof raw === 'string' ? safeJson(raw) : raw;
-  if (!parsed || typeof parsed !== 'object') return DEFAULT_WHITEBOARD_PREFS;
-  const o = parsed as Record<string, unknown>;
+  const o = storedRecord(raw);
+  if (!o) return DEFAULT_WHITEBOARD_PREFS;
   return {
     pens: parsePens(o.pens),
     activePenId: PEN_IDS.includes(o.activePenId as WhiteboardPenId)

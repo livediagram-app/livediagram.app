@@ -17,12 +17,7 @@ import {
 } from './geometry';
 import { styleNumber, styleValue, type CellState } from './state';
 
-export type Perimeter = (
-  bounds: Box,
-  vertex: CellState,
-  next: Pt,
-  orthogonal: boolean,
-) => Pt | null;
+type Perimeter = (bounds: Box, vertex: CellState, next: Pt, orthogonal: boolean) => Pt | null;
 
 /** mxPerimeter.RectanglePerimeter */
 export const rectanglePerimeter: Perimeter = (bounds, _vertex, next, orthogonal) => {
@@ -214,7 +209,7 @@ function shapeSize(vertex: CellState, fraction: number, fixedPx: number) {
 }
 
 /** Shapes.js mxPerimeter.ParallelogramPerimeter */
-export const parallelogramPerimeter: Perimeter = (bounds, vertex, next, orthogonal) => {
+const parallelogramPerimeter: Perimeter = (bounds, vertex, next, orthogonal) => {
   const { fixed, size } = shapeSize(vertex, 0.2, 20);
   const { x, y, width: w, height: h } = bounds;
   const direction = directionOf(vertex);
@@ -242,7 +237,7 @@ export const parallelogramPerimeter: Perimeter = (bounds, vertex, next, orthogon
 };
 
 /** Shapes.js mxPerimeter.TrapezoidPerimeter */
-export const trapezoidPerimeter: Perimeter = (bounds, vertex, next, orthogonal) => {
+const trapezoidPerimeter: Perimeter = (bounds, vertex, next, orthogonal) => {
   const { fixed, size } = shapeSize(vertex, 0.2, 20);
   const { x, y, width: w, height: h } = bounds;
   const direction = directionOf(vertex);
@@ -290,7 +285,7 @@ export const trapezoidPerimeter: Perimeter = (bounds, vertex, next, orthogonal) 
 };
 
 /** Shapes.js mxPerimeter.StepPerimeter */
-export const stepPerimeter: Perimeter = (bounds, vertex, next, orthogonal) => {
+const stepPerimeter: Perimeter = (bounds, vertex, next, orthogonal) => {
   const { fixed, size } = shapeSize(vertex, 0.2, 20);
   const { x, y, width: w, height: h } = bounds;
   const cx = centreX(bounds);
@@ -348,7 +343,7 @@ export const stepPerimeter: Perimeter = (bounds, vertex, next, orthogonal) => {
 };
 
 /** Shapes.js mxPerimeter.HexagonPerimeter2 */
-export const hexagonPerimeter2: Perimeter = (bounds, vertex, next, orthogonal) => {
+const hexagonPerimeter2: Perimeter = (bounds, vertex, next, orthogonal) => {
   const { fixed, size } = shapeSize(vertex, 0.25, 20);
   const { x, y, width: w, height: h } = bounds;
   const cx = centreX(bounds);
@@ -384,7 +379,7 @@ export const hexagonPerimeter2: Perimeter = (bounds, vertex, next, orthogonal) =
 };
 
 /** Shapes.js mxPerimeter.CalloutPerimeter: the rectangle above the callout's pointer. */
-export const calloutPerimeter: Perimeter = (bounds, vertex, next, orthogonal) => {
+const calloutPerimeter: Perimeter = (bounds, vertex, next, orthogonal) => {
   const size = Math.max(0, Math.min(bounds.height, styleNumber(vertex.style, 'size', 30)));
   const inner = directedBounds(
     bounds,

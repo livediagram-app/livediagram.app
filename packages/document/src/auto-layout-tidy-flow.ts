@@ -14,8 +14,8 @@ import { rankTidyComponent, type SideSpec } from './auto-layout-tidy-rank';
 
 // Gaps in a tidied flow. A hand-drawn flowchart sits tighter than graph input's 90 / 56: the
 // checkout template's rows are 44 apart and its side column 110 (a labelled exit).
-export const TIDY_RANK_GAP = 56;
-export const TIDY_SIBLING_GAP = 48;
+const TIDY_RANK_GAP = 56;
+const TIDY_SIBLING_GAP = 48;
 // Room a label needs either side of it along its line, and the width one character takes at the
 // label's default 12 px (a measured average; a label is a word or two, so an estimate is enough).
 export const LABEL_PAD = 28;
@@ -32,7 +32,7 @@ export const labelRoom = (label: string | undefined): { w: number; h: number } =
   };
 };
 
-export type TidyFlowComponent = PlacedComponent & {
+type TidyFlowComponent = PlacedComponent & {
   side: Map<ElementId, SideSpec>;
   back: Edge[];
   /** Each long forward edge's lane centres on the cross axis, one per rank it passes, keyed `from->to`. */

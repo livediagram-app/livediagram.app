@@ -5,6 +5,7 @@ import { Portal } from '@livediagram/ui';
 import type { TextRun } from '@livediagram/document';
 import { NoteRichText } from '@/components/notes/NoteRichText';
 import { VIEWPORT_EDGE_MARGIN as EDGE_MARGIN } from '@/lib/clamp-to-viewport';
+import { elementSelector } from '@/lib/canvas-selectors';
 
 // The fixed note glyph inside an annotation marker (docs/specs/009-elements/annotations.md). A small
 // speech bubble with text lines, tinted by the marker's stroke colour.
@@ -58,7 +59,7 @@ export function AnnotationHoverNote({
 
   useLayoutEffect(() => {
     const update = () => {
-      const node = document.querySelector(`[data-element-id="${elementId}"]`);
+      const node = document.querySelector(elementSelector(elementId));
       if (!node) return;
       const rect = node.getBoundingClientRect();
       const left = Math.max(

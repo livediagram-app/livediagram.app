@@ -7,18 +7,11 @@
 
 import type { SlideTransition } from '@/lib/presentation-config';
 
-// The node a slide transition captures: the canvas surface.
-export const SLIDE_SURFACE_SELECTOR = '[data-canvas-a11y-root]';
 // Longest the first slide waits for fullscreen to land before it arrives anyway (a refused request).
 export const SETTLE_FAILSAFE_MS = 600;
 
-export const SLIDE_TRANSITION_TYPES = [
-  'slide-in',
-  'slide-forward',
-  'slide-back',
-  'slide-fade',
-] as const;
-export type SlideTransitionType = (typeof SLIDE_TRANSITION_TYPES)[number];
+const SLIDE_TRANSITION_TYPES = ['slide-in', 'slide-forward', 'slide-back', 'slide-fade'] as const;
+type SlideTransitionType = (typeof SLIDE_TRANSITION_TYPES)[number];
 
 /** The surface's View Transition classes, by transition type: the slide types animate, nothing else does. */
 export const SLIDE_VIEW_TRANSITION_UPDATE: Record<SlideTransitionType | 'default', string> = {

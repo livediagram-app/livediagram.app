@@ -6,7 +6,12 @@
 // not on the document. Unlike the pen it is NOT published — Spotlight is a view
 // aid for the person using it, so there is nothing on the wire (docs/specs/008-canvas/canvas-and-palette.md).
 
-import { readLocalStorageSafe, safeJson, writeLocalStorageSafe } from './local-storage-safe';
+import {
+  readLocalStorageSafe,
+  pickOption,
+  storedRecord,
+  writeLocalStorageSafe,
+} from './local-storage-safe';
 
 export type SpotlightSize = 'small' | 'medium' | 'large';
 export type SpotlightDim = 'soft' | 'normal' | 'dark' | 'blackout';
@@ -107,21 +112,16 @@ export function spotlightSizeOf(radius: number): SpotlightSize | null {
 
 // --- Parsing ----------------------------------------------------------------
 
-function pick<T extends string>(value: unknown, options: readonly { id: T }[], fallback: T): T {
-  return options.some((option) => option.id === value) ? (value as T) : fallback;
-}
-
 // Field by field, so one unrecognised token costs that field rather than the
 // whole look. Pure, so the fallbacks are testable without touching storage.
 export function parseSpotlightConfig(raw: unknown): SpotlightConfig {
-  const parsed: unknown = typeof raw === 'string' ? safeJson(raw) : raw;
-  if (!parsed || typeof parsed !== 'object') return { ...DEFAULT_SPOTLIGHT_CONFIG };
-  const o = parsed as Record<string, unknown>;
+  const o = storedRecord(raw);
+  if (!o) return { ...DEFAULT_SPOTLIGHT_CONFIG };
   return {
-    size: pick(o.size, SPOTLIGHT_SIZES, DEFAULT_SPOTLIGHT_CONFIG.size),
-    dim: pick(o.dim, SPOTLIGHT_DIMS, DEFAULT_SPOTLIGHT_CONFIG.dim),
-    edge: pick(o.edge, SPOTLIGHT_EDGES, DEFAULT_SPOTLIGHT_CONFIG.edge),
-    shape: pick(o.shape, SPOTLIGHT_SHAPES, DEFAULT_SPOTLIGHT_CONFIG.shape),
+    size: pickOption(o.size, SPOTLIGHT_SIZES, DEFAULT_SPOTLIGHT_CONFIG.size),
+    dim: pickOption(o.dim, SPOTLIGHT_DIMS, DEFAULT_SPOTLIGHT_CONFIG.dim),
+    edge: pickOption(o.edge, SPOTLIGHT_EDGES, DEFAULT_SPOTLIGHT_CONFIG.edge),
+    shape: pickOption(o.shape, SPOTLIGHT_SHAPES, DEFAULT_SPOTLIGHT_CONFIG.shape),
   };
 }
 

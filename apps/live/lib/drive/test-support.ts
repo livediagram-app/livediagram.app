@@ -54,7 +54,7 @@ export class Clock {
 }
 
 // Timers the test advances by hand.
-export class ManualTimers implements Timers {
+class ManualTimers implements Timers {
   private tasks: { at: number; fn: () => void; id: number }[] = [];
   private seq = 0;
   private readonly clock: Clock;
@@ -298,7 +298,7 @@ export class FakeLivediagram {
 }
 
 // A token source straight from the fake: always a fresh valid token.
-export function fakeTokens(google: FakeGoogle, user = OWNER): TokenSource {
+function fakeTokens(google: FakeGoogle, user = OWNER): TokenSource {
   return { get: async () => google.issueAccessToken(user) };
 }
 

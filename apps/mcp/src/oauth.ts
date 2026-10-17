@@ -21,7 +21,7 @@ import { handleDeviceToken, registerDeviceRoutes } from './oauth-device';
 // ---- KV record shapes (all short-lived) ----
 // A redirect URI a client may use: one it registered exactly, or, for a registered http loopback URI, the same
 // scheme, host and path on any port (RFC 8252 §7.3: a native app listens on whatever port it was given).
-export function redirectUriAllowed(registered: readonly string[], uri: string): boolean {
+function redirectUriAllowed(registered: readonly string[], uri: string): boolean {
   if (registered.includes(uri)) return true;
   let asked: URL;
   try {

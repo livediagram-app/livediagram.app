@@ -5,11 +5,11 @@ import type { Rng } from './rng';
 // light (exposure, colour cast, a gradient across the wall, a hard shadow
 // edge, night), focus and sensor noise.
 
-export type Homography = number[];
+type Homography = number[];
 
 // The 3x3 matrix (row-major, h33 = 1) taking four source points onto four
 // destination points: the standard 8-unknown linear system.
-export function homographyFrom(src: [number, number][], dst: [number, number][]): Homography {
+function homographyFrom(src: [number, number][], dst: [number, number][]): Homography {
   const a: number[][] = [];
   const b: number[] = [];
   for (let i = 0; i < 4; i += 1) {
@@ -36,7 +36,7 @@ export function homographyFrom(src: [number, number][], dst: [number, number][])
   return [...b.map((v, i) => v / a[i]![i]!), 1];
 }
 
-export function applyHomography(h: Homography, x: number, y: number): [number, number] {
+function applyHomography(h: Homography, x: number, y: number): [number, number] {
   const w = h[6]! * x + h[7]! * y + h[8]!;
   return [(h[0]! * x + h[1]! * y + h[2]!) / w, (h[3]! * x + h[4]! * y + h[5]!) / w];
 }

@@ -4,7 +4,7 @@ import { posRangeOf } from '../layout';
 import type { IdRange, SheetLayout } from '../sheet';
 
 type Entry<T> = { rule: T; r1: number; r2: number };
-export type RuleIndex<T> = ReadonlyMap<number, readonly Entry<T>[]>;
+type RuleIndex<T> = ReadonlyMap<number, readonly Entry<T>[]>;
 
 const INDEXES = new WeakMap<SheetLayout, WeakMap<readonly IdRange[], RuleIndex<IdRange>>>();
 

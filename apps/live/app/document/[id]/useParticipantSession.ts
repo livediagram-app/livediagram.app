@@ -9,7 +9,7 @@ import { resolveEditorCapabilities } from '@/lib/editor-capabilities';
 // commit passes through, so a gesture the room would refuse never lands on screen. An Editor and a Viewer pass
 // through untouched: an Editor's commit is never checked, and a Viewer's never reaches here.
 // How often a Participant is told a gesture was held back: once for a burst (a drag, a held key), not per frame.
-export const HELD_BACK_NOTICE_MS = 4000;
+const HELD_BACK_NOTICE_MS = 4000;
 export const HELD_BACK_NOTICE =
   'As a participant you can add and write, move stickies, and remove what you added.';
 

@@ -42,7 +42,7 @@ export const MAX_CLIPBOARD_ELEMENTS = 2000;
 // JSON.parse rather than after.
 export const MAX_CLIPBOARD_BYTES = 4_000_000;
 
-export type ClipboardEnvelope = {
+type ClipboardEnvelope = {
   schemaVersion: number;
   kind: typeof CLIPBOARD_KIND;
   copiedAt: number;
@@ -107,7 +107,7 @@ export function serialiseElements(elements: Element[]): string {
 // element, is what pastes. The marker still displaces a stale image, and it
 // lets the window that made the copy tell its own copy from anything copied
 // since.
-export type ClipboardWrite = { text: string; inAppOnly: boolean };
+type ClipboardWrite = { text: string; inAppOnly: boolean };
 
 export function clipboardWriteFor(elements: Element[], copyId: string): ClipboardWrite {
   if (elements.length <= MAX_CLIPBOARD_ELEMENTS) {

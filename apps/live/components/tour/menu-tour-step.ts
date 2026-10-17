@@ -1,6 +1,7 @@
-import { inElement, onGraphic } from './concept-element-tour-steps';
+import { onGraphic } from './concept-element-tour-steps';
 import type { ElementTourApi } from './element-tour-api';
 import type { TourStepOf } from './tour-step';
+import { elementSelector } from '@/lib/canvas-selectors';
 
 // What a round-two element tour knows of where it runs (docs/specs/007-editor/element-tours.md "Menu steps on the
 // elements of round two").
@@ -17,7 +18,7 @@ export function menuStep(
 ): TourStepOf<ElementTourApi> {
   return env.hasMore
     ? onGraphic(id, title, `More, then ${body}`, '#selection-more-actions')
-    : onGraphic(id, title, `Right-click it, then ${body}`, inElement(env.elementId));
+    : onGraphic(id, title, `Right-click it, then ${body}`, elementSelector(env.elementId));
 }
 
 // "Click" or "Tap", "Double-click" or "Double-tap", as the screen is pressed.

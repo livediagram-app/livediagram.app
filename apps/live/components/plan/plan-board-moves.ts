@@ -41,7 +41,7 @@ export function laneOfItem(projection: BoardProjection, itemId: string): string 
 }
 
 // The card after an item in its cell, or null at the end (or when the board does not show it).
-export function nextInCell(projection: BoardProjection, itemId: string): string | null {
+function nextInCell(projection: BoardProjection, itemId: string): string | null {
   for (const c of projection.columns)
     for (const l of c.lanes) {
       const i = l.items.findIndex((x) => x.id === itemId);

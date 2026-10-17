@@ -522,13 +522,8 @@ export { base64ToBytes, bytesToBase64, bytesToBase64Url, randomBase64Url } from 
 // workers render tabs with, and the header size it budgets pixels by (see ./image-sniff.ts, ./embed-images.ts,
 // ./image-size.ts).
 export { sniffImageType } from './image-sniff';
-export { imagePixelSize, type PixelSize } from './image-size';
-export {
-  embedTabImages,
-  tabImageIds,
-  type EmbedImageLimits,
-  type EmbedImageSource,
-} from './embed-images';
+export { imagePixelSize } from './image-size';
+export { embedTabImages, tabImageIds, type EmbedImageSource } from './embed-images';
 
 // Shared display-casing for preset values (template ids, theme names,
 // telemetry action / type enums). One definition so the live editor and

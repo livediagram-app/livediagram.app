@@ -26,7 +26,7 @@ export async function hashWorkbenchSecret(secret: string): Promise<string> {
 // The logged handle of a session: its id's first 8 characters, never the secret.
 export const sessionPrefixOf = (sessionId: string) => sessionId.slice(0, 8);
 
-export type WorkbenchSessionRefusal = 'unknown' | 'revoked' | 'expired';
+type WorkbenchSessionRefusal = 'unknown' | 'revoked' | 'expired';
 
 // One indexed read. The token's own state decides `revoked`; the session's expiry `expired`. A read-only
 // token lowers the level to view whatever the session row says.

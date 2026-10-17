@@ -44,11 +44,11 @@ import type {
 } from './index';
 
 /** Clear of a lane's border on every side of its body (blueprint D169). */
-export const FLOWCHART_LANE_PAD = 32;
+const FLOWCHART_LANE_PAD = 32;
 /** A lane is never thinner than one holding a single Process: 72 plus the pad each side, rounded. */
 export const FLOWCHART_LANE_MIN = 140;
 /** A lane shorter than this along the flow reads as a box (blueprint D170). */
-export const FLOWCHART_LANE_MIN_LENGTH = 600;
+const FLOWCHART_LANE_MIN_LENGTH = 600;
 
 export type FlowchartLaneRect = {
   x: number;
@@ -229,7 +229,7 @@ export function layoutFlowchart(
 }
 
 /** Clear of the steps a loop runs past (blueprint D174). */
-export const FLOWCHART_LOOP_GAP = 40;
+const FLOWCHART_LOOP_GAP = 40;
 
 /**
  * The connectors that run back to an earlier step: a depth-first walk from the reference step, then

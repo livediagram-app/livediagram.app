@@ -74,7 +74,7 @@ export const HERO_DEFAULT_CAPTION: HeroCaption = {
 };
 
 // Trim + bound a row string the way every write path should.
-export function clampWebText(s: string): string {
+function clampWebText(s: string): string {
   return s.replace(/\s+/g, ' ').trim().slice(0, WEB_TEXT_MAX);
 }
 
@@ -85,7 +85,7 @@ export type LayoutRect = Rect;
 // Stat row: the cards share the width equally with a fixed gap, and the
 // value's size follows the card height, so a taller row gets bigger numbers
 // rather than more empty card. Rects are element-relative.
-export const STAT_GAP = 16;
+const STAT_GAP = 16;
 export function statRowLayout(
   width: number,
   height: number,
@@ -111,7 +111,7 @@ export function statRowLayout(
 // between neighbouring circles, and the diameter follows the smaller of the
 // height and the step spacing, so adding a step on a narrow element shrinks
 // the circles instead of overlapping them.
-export type ProcessStepLayout = { cx: number; cy: number; r: number; caption: LayoutRect };
+type ProcessStepLayout = { cx: number; cy: number; r: number; caption: LayoutRect };
 export function processLayout(
   width: number,
   height: number,
@@ -155,7 +155,7 @@ export function processLayout(
 // right rather than overlapping the brand. Widths are estimated from the
 // character count (a headless renderer has no DOM to measure), and the canvas
 // view positions from the same rects so the two agree.
-export const HEADER_BRAND_MIN = 90;
+const HEADER_BRAND_MIN = 90;
 export function headerLayout(
   width: number,
   height: number,

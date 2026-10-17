@@ -21,6 +21,7 @@ import { TourStage } from './TourStage';
 import { useTourEngine, type TourOutcome } from './useTourEngine';
 import { useLatest } from '@/hooks/ui/useLatest';
 import { useStartPanelOpen } from '@/components/start/start-panel-open';
+import { elementSelector } from '@/lib/canvas-selectors';
 
 // Orchestrates the Diagram tour (docs/specs/007-editor/editor-tour.md; the welcome tour until October 2026).
 // Mounted once in EditorView; renders nothing until the open tab is in Diagram mode and either the /new
@@ -68,7 +69,7 @@ export function TourHost() {
         elementId = el.id;
       }
       ctx.setSelectedId(elementId);
-      const node = await waitForSelector(`[data-element-id="${elementId}"]`, 2000);
+      const node = await waitForSelector(elementSelector(elementId), 2000);
       const r = node?.getBoundingClientRect();
       // Open beside the element; the menu clamps itself into the viewport.
       ctx.setContextMenu({

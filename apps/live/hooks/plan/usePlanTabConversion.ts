@@ -10,7 +10,7 @@ import { convertPlanTab, isConvertiblePlanTab } from '@/lib/plan-tab-conversion'
 import { useToast } from '@/hooks/ui/useToast';
 import { track } from '@/lib/telemetry';
 
-export const PLAN_TAB_CONVERTED_MESSAGE = 'This tab was updated to the new Plan layout.';
+const PLAN_TAB_CONVERTED_MESSAGE = 'This tab was updated to the new Plan layout.';
 
 export function usePlanTabConversion({
   activeTab,

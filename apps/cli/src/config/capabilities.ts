@@ -11,7 +11,7 @@ import type { Profile } from './profiles';
 
 export const CAPABILITIES_CACHE_TTL_MS = 3_600_000;
 
-export type HostCapabilities = {
+type HostCapabilities = {
   apiBase: string;
   authEnabled: boolean;
   oauthIssuer?: string;

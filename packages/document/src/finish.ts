@@ -34,7 +34,7 @@ export function isFinish(v: unknown): v is Finish {
 }
 
 /** The element types that carry their own finish (the spec's "Where it is set"). */
-export const FINISH_ELEMENT_TYPES: ReadonlySet<Element['type']> = new Set([
+const FINISH_ELEMENT_TYPES: ReadonlySet<Element['type']> = new Set([
   'shape',
   'arrow',
   'text',

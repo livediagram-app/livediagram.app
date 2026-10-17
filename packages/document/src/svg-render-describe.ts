@@ -47,7 +47,7 @@ export const EXPORT_PADDING = 32;
 export const EXPORT_BG = DEFAULT_BACKGROUND_COLOR;
 export const EXPORT_IMAGE_FILL = '#f1f5f9'; // slate-100 placeholder body
 export const EXPORT_IMAGE_STROKE = '#94a3b8'; // slate-400 placeholder dashes
-export const EXPORT_IMAGE_LABEL = '#64748b'; // slate-500 alt-text label
+const EXPORT_IMAGE_LABEL = '#64748b'; // slate-500 alt-text label
 
 // `image` carries the resolved bitmap render info: `href` is a data URL when a
 // caller has supplied the bytes (the bitmap is embedded), else undefined (a
@@ -102,7 +102,7 @@ export type ResolveStickerArt = (stickerId: string) => ExportStickerArt | undefi
 // emoji (a reaction pad's) draws it from this instead of as text. Absent, or answering nothing, the glyph is text.
 export type ResolveEmojiArt = (glyph: string) => { viewBox: string; markup: string } | undefined;
 
-export type BoxedExport = { opacity: number; shape: ExportShape; label: ExportLabel | null };
+type BoxedExport = { opacity: number; shape: ExportShape; label: ExportLabel | null };
 
 // What an export needs from its caller beyond the element itself: the three
 // art resolvers, and the tab's default font (docs/specs/004-interface-design/fonts.md) — an element without

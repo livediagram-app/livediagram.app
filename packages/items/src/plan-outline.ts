@@ -31,7 +31,7 @@ export interface PlanStatusName {
   name: string;
 }
 
-export interface PlanOutline {
+interface PlanOutline {
   boards: PlanBoardOutline[];
   statuses: PlanStatusName[];
   types: readonly ItemTypeDef[];
@@ -47,7 +47,7 @@ const kindOf = (setup: PlanBoardSetup): PlanBoardKind =>
   setup.archive ? 'archive' : setup.allCards ? 'all-cards' : 'board';
 
 // A tab's Plan board set-ups, with their element ids, in canvas order; a damaged set-up is skipped.
-export function boardSetupsOfTab(
+function boardSetupsOfTab(
   elements: readonly unknown[],
 ): { elementId: string; setup: PlanBoardSetup }[] {
   const out: { elementId: string; setup: PlanBoardSetup }[] = [];

@@ -119,7 +119,7 @@ export function imageRefIndexDocumentStatement(env: Env, documentId: string): D1
 
 // ---------- Backfill state --------------------------------------------
 
-export type ImageRefsBackfillRow = {
+type ImageRefsBackfillRow = {
   created_at: number;
   cursor: number;
   completed_at: number | null;

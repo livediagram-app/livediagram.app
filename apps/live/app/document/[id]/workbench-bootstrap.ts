@@ -14,7 +14,7 @@ import { ensureCollabKey } from '@/lib/local-identity';
 
 type SetState<T> = Dispatch<SetStateAction<T>>;
 
-export type WorkbenchBootstrapDeps = {
+type WorkbenchBootstrapDeps = {
   workbench: Pick<WorkbenchSession, 'documentId' | 'tabId' | 'level' | 'person'>;
   seed: (
     selfId: string,

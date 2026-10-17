@@ -69,7 +69,7 @@ export function normalizeFolderOrder<T extends Pick<Tab, 'folder'>>(tabs: T[]): 
 
 // One render entry for the tab bar: either a single loose tab or a
 // folder with its (contiguous) members.
-export type TabRun<T> = { kind: 'loose'; tab: T } | { kind: 'folder'; name: string; tabs: T[] };
+type TabRun<T> = { kind: 'loose'; tab: T } | { kind: 'folder'; name: string; tabs: T[] };
 
 // Coalesce a *normalized* list into render groups by walking it once
 // and merging maximal adjacent same-folder runs. (Call

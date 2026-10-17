@@ -9,11 +9,11 @@
 import { relativeSince } from '../relative-time';
 import type { DriveMirrorStatus } from './engine';
 
-export const DRIVE_NOT_SYNCED_YET = 'Not synced yet';
+const DRIVE_NOT_SYNCED_YET = 'Not synced yet';
 
 // The widest values the status's time realistically shows, so it keeps one
 // width while connected.
-export const DRIVE_SINCE_SAMPLES = [
+const DRIVE_SINCE_SAMPLES = [
   'just now',
   '< 1 min ago',
   '59 mins ago',
@@ -25,9 +25,9 @@ export const DRIVE_SINCE_SAMPLES = [
 
 export const DRIVE_CONNECT_FAILED = "Couldn't reach Google. Check your connection and try again.";
 export const DRIVE_CONNECT_CANCELLED = "Connection cancelled. Connect whenever you're ready.";
-export const DRIVE_OFFLINE = "Can't reach Google Drive. Trying again automatically.";
+const DRIVE_OFFLINE = "Can't reach Google Drive. Trying again automatically.";
 export const DRIVE_NEEDS_RECONNECT = 'Google Drive needs reconnecting. Your files are safe.';
-export const DRIVE_NEEDS_RESUME = 'Syncing paused in this browser. Resume to continue.';
+const DRIVE_NEEDS_RESUME = 'Syncing paused in this browser. Resume to continue.';
 export const DRIVE_NOTICE_TEXT = "Moved to a Drive folder livediagram can't see.";
 
 export function driveConnectedText(rootName: string | null): string {
@@ -39,10 +39,10 @@ export function driveConnectedText(rootName: string | null): string {
 // How long ago the last sync was, without counting seconds: "just now" for
 // the first 15 seconds, "< 1 min ago" until a minute has passed, then the usual
 // wording. The row re-renders exactly at those two moments (driveSinceSteps).
-export const DRIVE_JUST_NOW_MS = 15_000;
-export const DRIVE_UNDER_A_MINUTE_MS = 60_000;
+const DRIVE_JUST_NOW_MS = 15_000;
+const DRIVE_UNDER_A_MINUTE_MS = 60_000;
 
-export function driveSince(at: number, now: number): string {
+function driveSince(at: number, now: number): string {
   const ago = now - at;
   if (ago < DRIVE_JUST_NOW_MS) return 'just now';
   if (ago < DRIVE_UNDER_A_MINUTE_MS) return '< 1 min ago';
@@ -53,7 +53,7 @@ export function driveSince(at: number, now: number): string {
 // minute, for timers that land exactly on them.
 export const DRIVE_SINCE_STEPS_MS = [DRIVE_JUST_NOW_MS, DRIVE_UNDER_A_MINUTE_MS] as const;
 
-export type DriveSyncPhase = 'not-connected' | 'connected' | 'attention';
+type DriveSyncPhase = 'not-connected' | 'connected' | 'attention';
 
 export function driveSyncPhase(status: DriveMirrorStatus): DriveSyncPhase {
   switch (status.state) {
@@ -75,7 +75,7 @@ export type DriveStatusText = { text: string; warn: boolean };
 const plain = (text: string): DriveStatusText => ({ text, warn: false });
 const warn = (text: string): DriveStatusText => ({ text, warn: true });
 
-export const DRIVE_STATUS = {
+const DRIVE_STATUS = {
   checking: plain('Checking…'),
   notConnected: plain('Not connected'),
   connecting: plain('Connecting…'),
@@ -120,12 +120,12 @@ export function driveStatusOptions(
 // Connecting… (one place for the state, never two).
 export const DRIVE_PROBLEM_LABELS = ['Reconnect', 'Resume'] as const;
 
-export type DriveProblemAction = 'reconnect' | 'resume' | 'showFolder' | null;
+type DriveProblemAction = 'reconnect' | 'resume' | 'showFolder' | null;
 
 // The second line: only while something is wrong, with what to press.
-export type DriveProblem = { text: string; action: DriveProblemAction; failed?: true };
+type DriveProblem = { text: string; action: DriveProblemAction; failed?: true };
 
-export type DriveSyncCopy = {
+type DriveSyncCopy = {
   phase: DriveSyncPhase;
   status: DriveStatusText;
   problem: DriveProblem | null;

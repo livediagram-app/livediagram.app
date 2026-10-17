@@ -8,7 +8,7 @@ import { formatLintReport, lintSummaryLine } from '@livediagram/diagram-lint';
 import { apiJson } from './api';
 import type { Env } from './env';
 
-export const LINT_UNAVAILABLE = 'lint unavailable';
+const LINT_UNAVAILABLE = 'lint unavailable';
 
 export function lintLineOf(report: LintReport | null): string {
   return report ? lintSummaryLine(report) : LINT_UNAVAILABLE;

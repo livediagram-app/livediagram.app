@@ -232,7 +232,7 @@ export function expensesDesign(today: number): SheetDesign {
 
 // How many years the Loan Calculator's schedule lists, and its term to start (a shorter term leaves the rows past it
 // empty; the chart reads them as nothing).
-export const LOAN_YEARS = 30;
+const LOAN_YEARS = 30;
 
 export function loanDesign(): SheetDesign {
   // The schedule's body on rows 11 to 40.

@@ -163,7 +163,7 @@ export function PlanSupportedCardsSettings({ element }: { element: ShapeElement 
 }
 
 // The Card Layout section: the card size (what a card shows at each size is its type's Display).
-export function PlanCardLayoutSettings({ element }: { element: ShapeElement }) {
+function PlanCardLayoutSettings({ element }: { element: ShapeElement }) {
   const board = useBoard(element);
   if (!board) return null;
   const { setup, set } = board;
@@ -190,7 +190,7 @@ const FormIcon = lucideGlyph(lucideClipboardList, 16);
 
 // The four sections, in order, for the element menu and the cog alike. `shows` leaves one out where it has nothing
 // (Supported Cards on an Archive board).
-export const PLAN_BOARD_SECTIONS: readonly {
+const PLAN_BOARD_SECTIONS: readonly {
   id: 'board-setup' | 'columns' | 'swimlanes' | 'supported-cards' | 'card-layout';
   title: string;
   icon: ReactNode;

@@ -12,7 +12,7 @@ export type TileSource = {
   classes: Uint8Array;
 };
 
-export type TileView = {
+type TileView = {
   originX: number;
   originY: number;
   // Output pixels per source pixel: 2 zooms in, 0.5 zooms out.

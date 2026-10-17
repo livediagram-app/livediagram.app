@@ -77,6 +77,6 @@ export function ThumbnailLoader({ seed }: { seed: string }) {
 
 // A stable offset into the cycle for this document: FNV-1a over the id.
 // Stable across renders and mounts, so a remount doesn't jump the phase.
-export function phaseMs(seed: string): number {
+function phaseMs(seed: string): number {
   return fnv1aString(seed) % CYCLE_MS;
 }

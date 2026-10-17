@@ -6,6 +6,7 @@
 import { useRef, useState } from 'react';
 import type { ImportChecklistRow } from '@/components/dialogs/ImportChecklist';
 import type { BoardImportProgress } from '@/hooks/persistence/useBoardSceneImport';
+import { importingStepOf, type BoardImportingStep } from '@/lib/board-scene-import';
 import type { DrawioFiles, DrawioLibraryFile } from '@/lib/drawio/files';
 import type { ShapeLibrariesImported } from '@/lib/drawio/library-store';
 import type { DrawioDocumentFile } from '@/lib/drawio/new-document';
@@ -39,7 +40,7 @@ export type DrawioImportStep =
       failures: Failure[];
       checked: ReadonlySet<string>;
     }
-  | { step: 'importing'; board: number; boards: number; images?: { done: number; total: number } };
+  | BoardImportingStep;
 
 type DoneOutcome = Extract<ImportOutcome, { status: 'done' }>;
 
@@ -77,13 +78,7 @@ export function useDrawioFileImport(deps: {
   const [state, setState] = useState<DrawioImportStep>({ step: 'pick' });
   const read = useRef<DrawioFiles | null>(null);
 
-  const onProgress = (p: BoardImportProgress) =>
-    setState({
-      step: 'importing',
-      board: p.board ?? 1,
-      boards: p.boards ?? 1,
-      ...(p.total > 0 ? { images: { done: p.done, total: p.total } } : {}),
-    });
+  const onProgress = (p: BoardImportProgress) => setState(importingStepOf(p));
 
   const run = async (checked: ReadonlySet<string>) => {
     const files = read.current!;

@@ -1,7 +1,7 @@
 // The benchmark's report, from a scored round: how each model did, how each task did, and what keeps failing.
 // Pure: results in, Markdown out. "Recurring" means two or more runs, the bar a finding needs before it earns a fix.
 
-export const RECURRING = 2;
+const RECURRING = 2;
 
 const UUID = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/g;
 
@@ -29,7 +29,7 @@ function median(values) {
 const pct = (n, d) => (d ? `${Math.round((100 * n) / d)}%` : 'n/a');
 const fixed = (x, digits = 1) => (x === null || x === undefined ? 'n/a' : x.toFixed(digits));
 
-export function passFraction(run) {
+function passFraction(run) {
   if (run.checks.length === 0) return null;
   return run.checks.filter((c) => c.pass).length / run.checks.length;
 }

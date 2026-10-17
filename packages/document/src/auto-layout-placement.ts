@@ -24,7 +24,7 @@ const SWEEP_PAIRS = 4;
 const SIDE_HOLD = 6;
 const SIDE_PULL = 0.25;
 
-export type CrossAxisOptions = {
+type CrossAxisOptions = {
   /** The gap between two neighbours in a rank, in rank order; `gap` when absent. */
   gapBetween?: (a: ElementId, b: ElementId) => number;
   /** Side steps, held beside their node. */

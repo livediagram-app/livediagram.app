@@ -6,7 +6,7 @@ import { formArt } from '@livediagram/plan-art';
 import { previewFonts } from './preview-fonts';
 import { svgToPngBase64 } from './render';
 
-export type FormImage = { type: 'image'; data: string; mimeType: 'image/png' };
+type FormImage = { type: 'image'; data: string; mimeType: 'image/png' };
 
 // The form's picture, or null for a tab that holds no form.
 export async function formPreview(

@@ -15,7 +15,7 @@ export type CanvasSelectionInput = Omit<
   'selectedId' | 'multiSelectedIds' | 'canvasCovered'
 >;
 
-export type CanvasSelectionView = ReturnType<typeof deriveCanvasSelection>;
+type CanvasSelectionView = ReturnType<typeof deriveCanvasSelection>;
 
 const whole = <T>(s: T) => s;
 

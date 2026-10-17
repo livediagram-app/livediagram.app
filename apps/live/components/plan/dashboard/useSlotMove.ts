@@ -27,7 +27,7 @@ export function moveScrollStep(y: number, top: number, bottom: number): number {
   return 0;
 }
 
-export type SlotMoving = {
+type SlotMoving = {
   slotId: string;
   zone: DashboardZone | null;
   mark: ZoneMark | null;

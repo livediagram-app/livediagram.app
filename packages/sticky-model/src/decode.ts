@@ -11,7 +11,7 @@ import { CLASS, noteFromCore, type Rect } from './mask';
 
 export type DecodeMode = 'core' | 'grow';
 
-export type DecodeOptions = {
+type DecodeOptions = {
   mode: DecodeMode;
   // Smaller core blobs are specks of noise, not notes.
   minCorePixels: number;

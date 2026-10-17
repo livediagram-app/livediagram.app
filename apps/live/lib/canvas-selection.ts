@@ -4,7 +4,12 @@
 // selection bounds, and every "should this chrome show?" predicate the
 // Canvas render reads. Lifted out of Canvas.tsx so this decision logic
 // is unit-testable in isolation (the component itself has no tests).
-import { isFixedSizeElement, sheetDrawnChartIds, isChipShape } from '@livediagram/document';
+import {
+  isFixedSizeElement,
+  sheetDrawnChartIds,
+  isChipShape,
+  type Rect,
+} from '@livediagram/document';
 import {
   elementBounds,
   isBoxed,
@@ -13,8 +18,6 @@ import {
   type Element,
   type ElementId,
 } from '@livediagram/document';
-
-type Bounds = { x: number; y: number; width: number; height: number };
 
 type CanvasSelection = {
   // First element (in z-order) of an active marquee multi-selection,
@@ -25,7 +28,7 @@ type CanvasSelection = {
   selected: Element | null;
   selectionScope: 'single' | 'multi';
   selectedIsBoxed: boolean;
-  selectionBounds: Bounds | null;
+  selectionBounds: Rect | null;
   selectedLocked: boolean;
   // Single-selection popover + plus-button visibility.
   showPopover: boolean;
@@ -36,17 +39,17 @@ type CanvasSelection = {
   showAnchorsFor: (id: string) => boolean;
   // Union (multi-selection) resize-handle state.
   unionResizeIds: ReadonlySet<string> | null;
-  unionResizeBounds: Bounds | null;
+  unionResizeBounds: Rect | null;
   unionResizePrimaryId: string | null;
   showUnionResize: boolean;
   // Floating multi-selection toolbar anchor + visibility. Spans arrows too,
   // so it shows for arrow-only / mixed marquees (the resize box above does not).
-  multiToolbarBounds: Bounds | null;
+  multiToolbarBounds: Rect | null;
   showMultiToolbar: boolean;
 };
 
 // The modes that decide whether a selected element shows its grips.
-export type GripContext = {
+type GripContext = {
   editingId: string | null;
   isPaintMode: boolean;
   tabLocked: boolean;
@@ -100,7 +103,7 @@ export function deriveCanvasSelection(input: {
   // Where an arrow's label is drawn, if it has one. The label belongs to its
   // line (docs/specs/008-canvas/arrow-labels.md), so the floating toolbars
   // clear it as they clear the line.
-  labelRectOf?: (id: ElementId) => Bounds | null;
+  labelRectOf?: (id: ElementId) => Rect | null;
   // An element that never shows quick-connect pluses, beyond the rules below: an object in an
   // article's writing connects to nothing (docs/specs/007-editor/article-pages.md "Zones").
   plusBlocked?: (el: Element) => boolean;
@@ -127,7 +130,7 @@ export function deriveCanvasSelection(input: {
 
   // An element's selection extent (docs/specs/008-canvas/arrow-labels.md): an arrow spans
   // its label too.
-  const selectionExtent = (el: Element): Bounds => {
+  const selectionExtent = (el: Element): Rect => {
     const own = elementBounds(el, elements);
     const label = el.type === 'arrow' ? labelRectOf?.(el.id) : null;
     return label ? unionRects([own, label])! : own;
@@ -143,7 +146,7 @@ export function deriveCanvasSelection(input: {
     null;
   const selectionScope: 'single' | 'multi' = multiSelectedIds.size > 0 ? 'multi' : 'single';
   const selectedIsBoxed = selected ? isBoxed(selected) : false;
-  const selectionBounds: Bounds | null = selected ? selectionExtent(selected) : null;
+  const selectionBounds: Rect | null = selected ? selectionExtent(selected) : null;
 
   // A chart that sits in a Sheet is drawn and worked in its Sheet (docs/specs/029-sheets/sheet.md "Charts"): selected
   // there to open its element menu, it has no box on the canvas to float chrome over.

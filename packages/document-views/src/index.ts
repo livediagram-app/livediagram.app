@@ -5,15 +5,11 @@ export * from './constants';
 export { estimateTokens, type ViewFit, type ViewResult } from './budget';
 export { buildViewModel, headerFactsOf, type ViewContext, type ViewModel } from './model';
 export { headerLine, type HeaderFacts } from './header';
-export { renderView, type RenderedView, type ViewRefusal, type ViewRequest } from './render-view';
-export { overviewView, editedAge, type OverviewDocument, type OverviewTabInput } from './overview';
-export { diffView, type DiffContext } from './diff';
+export { renderView, type ViewRequest } from './render-view';
+export { overviewView, editedAge, type OverviewTabInput } from './overview';
+export { diffView } from './diff';
 export { PERSON_ID_FIELDS } from './show';
 export { commentHosts, threadListingLines } from './comments';
-export {
-  selectionReference,
-  type SelectionReference,
-  type SelectionReferenceInput,
-} from './selection-reference';
+export { selectionReference } from './selection-reference';
 export { pagesView } from './pages';
-export { elementFindTexts, normaliseFind } from './find';
+export { elementFindTexts } from './find';

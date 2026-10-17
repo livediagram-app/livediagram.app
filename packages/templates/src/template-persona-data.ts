@@ -5,14 +5,14 @@
 
 // A tinted section: its hue family, the deep header ink, a line-art glyph and
 // the sticky paper + ink its notes are written on.
-export type PersonaHue = {
+type PersonaHue = {
   fill: string;
   stroke: string;
   header: string;
   sticky: { fill: string; text: string };
 };
 
-export type PersonaSection = PersonaHue & {
+type PersonaSection = PersonaHue & {
   label: string;
   hint: string;
   icon: string;

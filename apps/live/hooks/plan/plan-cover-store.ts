@@ -8,8 +8,9 @@
 import { useSyncExternalStore } from 'react';
 import type { PlanTabKind } from '@livediagram/document';
 import { getMaximisedPlanId, getMaximisedPlanKind, subscribeMaximisedPlan } from './maximised-plan';
+import { createListeners } from '@/lib/listeners';
 
-export type PlanCover = {
+type PlanCover = {
   // The board or Sheet filling the open tab, or null, and which it is.
   fillTabId: string | null;
   fillTabKind: 'Board' | 'Sheet' | 'View' | null;
@@ -18,7 +19,7 @@ export type PlanCover = {
 };
 
 let cover: PlanCover = { fillTabId: null, fillTabKind: null, planKind: null };
-const listeners = new Set<() => void>();
+const listeners = createListeners();
 
 // Publishes the open tab's cover; listeners hear only a real change.
 export function setPlanCover(next: PlanCover): void {
@@ -29,14 +30,14 @@ export function setPlanCover(next: PlanCover): void {
   )
     return;
   cover = next;
-  for (const l of listeners) l();
+  listeners.notify();
 }
 
 function subscribe(listener: () => void): () => void {
-  listeners.add(listener);
+  const offCover = listeners.subscribe(listener);
   const off = subscribeMaximisedPlan(listener);
   return () => {
-    listeners.delete(listener);
+    offCover();
     off();
   };
 }
@@ -67,7 +68,7 @@ export function isSheetCovering(): boolean {
 
 // The board covering the canvas (maximised, or filling its tab), or null: the palette gives way to that board's cards
 // (docs/specs/026-plan/plan-board.md "The palette follows what fills the screen").
-export function getCoveringBoardId(): string | null {
+function getCoveringBoardId(): string | null {
   if (getMaximisedPlanKind() === 'Board') return getMaximisedPlanId();
   return cover.fillTabKind === 'Board' ? cover.fillTabId : null;
 }

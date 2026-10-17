@@ -1,4 +1,5 @@
 import { useSyncExternalStore } from 'react';
+import { createListeners } from '@/lib/listeners';
 
 // Which tab pill is mid-drag, for surfaces outside the tab bar that answer the drag: the side by
 // side drop zone (docs/specs/007-editor/split-view.md). The tab bar's HTML5 drag owns the gesture;
@@ -6,23 +7,18 @@ import { useSyncExternalStore } from 'react';
 // one) is in flight without reading dataTransfer, which the browser hides until drop.
 
 let draggedTabId: string | null = null;
-const listeners = new Set<() => void>();
+const listeners = createListeners();
 
 export function setDraggedTab(tabId: string | null): void {
   if (draggedTabId === tabId) return;
   draggedTabId = tabId;
-  for (const listener of listeners) listener();
+  listeners.notify();
 }
 
 function getDraggedTab(): string | null {
   return draggedTabId;
 }
 
-function subscribe(listener: () => void) {
-  listeners.add(listener);
-  return () => listeners.delete(listener);
-}
-
 export function useDraggedTab(): string | null {
-  return useSyncExternalStore(subscribe, getDraggedTab, () => null);
+  return useSyncExternalStore(listeners.subscribe, getDraggedTab, () => null);
 }

@@ -7,7 +7,7 @@ import type {
 } from '@/hooks/persistence/useDrawioFileImport';
 import { DrawioImportPanel } from './DrawioImportPanel';
 
-export const DRAWIO_IMPORT_TITLE = 'Import from draw.io';
+const DRAWIO_IMPORT_TITLE = 'Import from draw.io';
 
 // The Explorer's draw.io import as a dialog (docs/specs/020-import-export/drawio-import.md "Import as
 // new documents"): host-agnostic, the host supplies the commit (one document per diagram file).

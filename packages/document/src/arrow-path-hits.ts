@@ -16,13 +16,13 @@ import { anchorOutline, connectorBox, pointInsideLocalOutline } from './shape-ou
 
 // A path must go more than this deep inside an outline to count as passing
 // through it: touching an anchor or running along an edge does not.
-export const PATH_INSIDE_INSET_PX = 2;
+const PATH_INSIDE_INSET_PX = 2;
 // Sampling step along a segment clipped to the shape; not coarser than the
 // inset, so a path cannot slip between samples deeper than the tolerance.
-export const PATH_SAMPLE_STEP_PX = 2;
-export const PATH_MAX_SAMPLES_PER_SEGMENT = 512;
+const PATH_SAMPLE_STEP_PX = 2;
+const PATH_MAX_SAMPLES_PER_SEGMENT = 512;
 // Two paths meeting within this distance of an end point meet, not cross.
-export const CROSSING_ENDPOINT_TOLERANCE_PX = 1;
+const CROSSING_ENDPOINT_TOLERANCE_PX = 1;
 
 // The arrow as rendered, between its true anchor points (no fan offset).
 export function arrowPolyline(arrow: ArrowElement, index: ElementIndex): Point[] {

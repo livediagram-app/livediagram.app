@@ -192,7 +192,7 @@ holds a changeset's after-images is unchanged by it.
 2. Gate, migrate, `isValidTab`, `bodyExceedsCap`, strip `rev`, `documentId`, `orderIndex`, `updatedAt` from the
    body (CS32). Parse `X-Changeset-Seen` (CS19).
 3. Attempt: in parallel `getTab` and the records after the seen revision; `mergeChangesetsIntoSave` on the
-   received tab; then `mergeRoomLedger` on its result (changesets first, so the before-image compare sees the
+   received tab; then `applyRoomLedger` on its result (changesets first, so the before-image compare sees the
    save as sent); then the existing name cap, empty-tab backstop, `preferNewerQaAll`, `rewriteCommentAuthors`.
 4. Write with `upsertTabAtRev(..., existingTab?.rev ?? 0)`. On `tab_rev_stale` repeat step 3 once, then
    `409 tab_busy` (CS4); the editor's autosave already retries any non-403 failure (`saveFailureStatus`).
@@ -230,7 +230,7 @@ rename sends (tabs in order, with their folders), through `/mutation`; a failure
 ### Rooms for every server-stored document
 
 - `roomStubFor(env, documentId)` returns a stub for every document; the `shareable`/`teamId` gate goes. Its
-  callers (`mergeRoomLedger`, `relayElementDelta`, `broadcastDocumentTrashed`, `relayChangeset`,
+  callers (`fetchRoomLedger`, `relayElementDelta`, `broadcastDocumentTrashed`, `relayChangeset`,
   `readRoomSelections`) take the document id; `relayTabRename` is a rename's.
 - The editor opens its room when `hydrated && documentId && documentServerStored`, where
   `documentServerStored = fetched.ownerId !== OFFLINE_OWNER_ID` (set in `useIdentityBootstrap`, false for a

@@ -1,60 +1,6 @@
-// Inflating draw.io payloads in the browser with DecompressionStream, under a
-// byte budget shared by the whole import (a zip-bomb guard)
-// (docs/specs/020-import-export/blueprints/drawio-import.md step 3).
-
-export class BudgetExceeded extends Error {
-  constructor() {
-    super('draw.io payload inflates beyond the import limit');
-    this.name = 'BudgetExceeded';
-  }
-}
-
-/** Remaining inflate allowance, in bytes. */
-export class ByteBudget {
-  #remaining: number;
-  constructor(bytes: number) {
-    this.#remaining = bytes;
-  }
-  take(bytes: number): void {
-    this.#remaining -= bytes;
-    if (this.#remaining < 0) throw new BudgetExceeded();
-  }
-}
-
-export async function inflateBytes(
-  bytes: Uint8Array,
-  format: 'deflate' | 'deflate-raw',
-  budget: ByteBudget,
-): Promise<Uint8Array> {
-  const source = new ReadableStream<BufferSource>({
-    start(controller) {
-      controller.enqueue(new Uint8Array(bytes)); // a copy on its own ArrayBuffer, as BufferSource wants
-      controller.close();
-    },
-  });
-  const reader = source.pipeThrough(new DecompressionStream(format)).getReader();
-  const chunks: Uint8Array[] = [];
-  let total = 0;
-  try {
-    for (;;) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      budget.take(value.length);
-      chunks.push(value);
-      total += value.length;
-    }
-  } catch (error) {
-    await reader.cancel().catch(() => undefined);
-    throw error;
-  }
-  const out = new Uint8Array(total);
-  let at = 0;
-  for (const c of chunks) {
-    out.set(c, at);
-    at += c.length;
-  }
-  return out;
-}
+// Decoding draw.io payloads (docs/specs/020-import-export/blueprints/drawio-import.md step 3): base64, then
+// inflated under the import's byte budget (lib/inflate.ts).
+import { inflateBytes, type ByteBudget } from '@/lib/inflate';
 
 export const latin1 = (bytes: Uint8Array): string => new TextDecoder('latin1').decode(bytes);
 

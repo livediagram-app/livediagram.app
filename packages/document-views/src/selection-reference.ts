@@ -9,7 +9,7 @@ import { textField } from './fields';
 import { buildViewModel, type ViewModel } from './model';
 import { jsonString } from './text';
 
-export type SelectionReferenceInput = {
+type SelectionReferenceInput = {
   documentId: string;
   documentName: string;
   tab: Tab;
@@ -20,7 +20,7 @@ export type SelectionReferenceInput = {
   selectedIds: readonly string[];
 };
 
-export type SelectionReference = { text: string; count: number };
+type SelectionReference = { text: string; count: number };
 
 function item(model: ViewModel, el: Element): string {
   const label = textField(el, 'label');

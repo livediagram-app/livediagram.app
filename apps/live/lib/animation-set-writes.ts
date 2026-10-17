@@ -104,7 +104,7 @@ export function withSetAnimationRepeat(el: Element, set: AnimationSetId, repeat:
 }
 
 /** Whether a stored Repeat field means the animation loops, by the set's default. */
-export function setRepeats(set: AnimationSetId, stored: unknown): boolean {
+function setRepeats(set: AnimationSetId, stored: unknown): boolean {
   return set === 'text' ? stored === true : stored !== false;
 }
 

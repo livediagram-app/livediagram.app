@@ -3,7 +3,7 @@
 import type { GifFrame } from './gif-timeline';
 
 // The header, the loop extension and the trailer, near enough.
-export const GIF_HEADER_BYTES = 800;
+const GIF_HEADER_BYTES = 800;
 // How long the options rest before the estimate is worked out again.
 export const GIF_ESTIMATE_DELAY_MS = 250;
 

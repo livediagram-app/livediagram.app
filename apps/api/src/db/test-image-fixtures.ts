@@ -16,7 +16,7 @@ export const CUTOFF = NOW - 30 * DAY;
 export const OLD = CUTOFF - DAY;
 export const YOUNG = CUTOFF + DAY;
 
-export type Bucket = { delete: ReturnType<typeof vi.fn> };
+type Bucket = { delete: ReturnType<typeof vi.fn> };
 
 export function setup(opts: { before0050?: boolean } = {}): SqliteD1 & { bucket: Bucket } {
   const bucket: Bucket = { delete: vi.fn(async () => {}) };

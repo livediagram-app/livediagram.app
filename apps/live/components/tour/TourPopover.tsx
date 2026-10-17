@@ -24,7 +24,7 @@ export type TourCardCopy = {
 // its own way, in place of the single accept button.
 export type TourWelcomeChoice = { id: string; label: string; onPick: () => void };
 
-export const WELCOME_TOUR_COPY: TourCardCopy = {
+const WELCOME_TOUR_COPY: TourCardCopy = {
   welcomeEyebrow: 'Diagram tour',
   accept: 'Yes',
   decline: 'No',

@@ -7,7 +7,7 @@ import { SETTINGS_CATEGORIES, type SettingsRowSpec } from './settings-catalogue'
 // one line per preset setting, read through that setting's own Settings row
 // so the value can never disagree with the row it points at.
 
-export type PresetSummaryLine = {
+type PresetSummaryLine = {
   setting: PowerUserPresetSetting;
   rowKey: string;
   categoryId: SettingsCategoryId;

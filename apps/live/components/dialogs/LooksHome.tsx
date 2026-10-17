@@ -23,7 +23,7 @@ import { type LookSettings, type TabLook, type TabLookId } from '@/lib/tab-looks
 import { LooksCarousel } from './LooksCarousel';
 
 /** The panels a Fine-tune row opens. */
-export type LookPanel = 'theme' | 'finish' | 'font' | 'canvas';
+type LookPanel = 'theme' | 'finish' | 'font' | 'canvas';
 
 const SIZE_LABELS: Record<TextSizePreset, string> = {
   scale: 'scaled',

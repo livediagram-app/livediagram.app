@@ -28,7 +28,7 @@ export type PlanPart = {
 type PlanShape = BoxedElement & { type: 'shape' };
 
 // `#12 Title`, a card face's words.
-export const planCardText = (item: Item | undefined): string =>
+const planCardText = (item: Item | undefined): string =>
   item ? `#${item.key} ${itemTitle(item).trim() || 'Untitled'}` : 'Card not found';
 
 // A Plan card's label, or undefined without the items (it then exports as its bare box).

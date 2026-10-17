@@ -40,7 +40,7 @@ const CloseGlyph = lucideGlyph(lucideX, 16);
 
 type Glyph = ReturnType<typeof lucideGlyph>;
 
-export type StartPanelCategory<C extends string> = {
+type StartPanelCategory<C extends string> = {
   id: C;
   name: string;
   line: string;

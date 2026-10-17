@@ -11,7 +11,7 @@ import { communityTelemetry } from '@/lib/telemetry';
 // answered, so "loading" is derived and a stale answer is dropped. `Community·Opened·Post` fires once
 // per post that loads.
 
-export type PostLoad =
+type PostLoad =
   | { status: 'loading' }
   | { status: 'notFound' }
   | { status: 'error' }

@@ -71,7 +71,7 @@ export function notFound(): Response {
 // `json` so the live app's blob-URL fetch works cross-origin in dev; the
 // caller picks the `Cache-Control` (private + long for the owner
 // thumbnail, public + short for the live share image).
-export const SVG_CSP =
+const SVG_CSP =
   "default-src 'none'; style-src 'unsafe-inline' https://fonts.googleapis.com; " +
   'font-src https://fonts.gstatic.com; img-src data:; sandbox';
 

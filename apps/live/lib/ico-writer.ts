@@ -5,7 +5,7 @@
 const HEADER_BYTES = 6;
 const ENTRY_BYTES = 16;
 
-export type IcoImage = { size: number; png: Uint8Array };
+type IcoImage = { size: number; png: Uint8Array };
 
 /** The .ico file holding these PNGs, smallest first as given. A side of 256 is written as 0, as
  *  the format asks. */

@@ -45,9 +45,9 @@ export type PhotoAddition = {
   height: number;
 };
 
-export type PhotoDifference = { detectedId: number; boardId: string; boardText: string };
+type PhotoDifference = { detectedId: number; boardId: string; boardText: string };
 
-export type PhotoReconciliation = {
+type PhotoReconciliation = {
   matches: PhotoMatch[];
   additions: PhotoAddition[];
   transform: PhotoTransform;

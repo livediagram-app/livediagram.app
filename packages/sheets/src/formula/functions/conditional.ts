@@ -70,7 +70,7 @@ export function maskedNumbers(values: ValueArray, mask: boolean[]): number[] | S
 }
 
 // args as (range, criterion) pairs from `start`; odd counts are #N/A.
-export function pairsFrom(args: EvalValue[], start: number): [EvalValue, EvalValue][] | null {
+function pairsFrom(args: EvalValue[], start: number): [EvalValue, EvalValue][] | null {
   const rest = args.slice(start);
   if (rest.length === 0 || rest.length % 2 !== 0) return null;
   const out: [EvalValue, EvalValue][] = [];

@@ -172,7 +172,7 @@ export async function setDriveConnectionStatus(
 
 // The connection and every mirrored item of the owner, in one batch. The
 // Drive files themselves stay (docs/specs/022-drive-mirror/drive-mirror.md).
-export function driveOwnerRemovalStatements(env: Env, ownerId: string): D1PreparedStatement[] {
+function driveOwnerRemovalStatements(env: Env, ownerId: string): D1PreparedStatement[] {
   return [
     env.DB.prepare('DELETE FROM drive_items WHERE owner_id = ?').bind(ownerId),
     env.DB.prepare('DELETE FROM drive_connections WHERE owner_id = ?').bind(ownerId),

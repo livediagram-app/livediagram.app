@@ -10,7 +10,7 @@
 // Kept pure and separate from PaneHeader.tsx so the branch is unit-testable
 // without mounting the header (docs/specs/003-system-architecture/testing.md).
 
-export type PaneCreateMode =
+type PaneCreateMode =
   { kind: 'none' } | { kind: 'menu' } | { kind: 'single'; action: 'document' | 'folder' };
 
 export function paneCreateMode(opts: {

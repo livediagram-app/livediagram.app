@@ -6,9 +6,9 @@ import { recogniseBoardStroke } from './recognition-preview';
 import { track } from './telemetry';
 import { debugLog } from '@/lib/debug-log';
 
-export type RecognitionFlip = 'recognised' | 'broken';
+type RecognitionFlip = 'recognised' | 'broken';
 /** How the flip was asked for: the Alt key, or a tap on the chip. */
-export type RecognitionFlipVia = 'key' | 'chip';
+type RecognitionFlipVia = 'key' | 'chip';
 
 /**
  * A shown shape breaks back to ink, exactly as drawn so far; ink is recognised at once and locks

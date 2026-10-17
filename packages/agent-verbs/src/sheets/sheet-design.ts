@@ -88,7 +88,7 @@ export type SheetDesignInput = {
   freeze?: number;
 };
 
-export type DesignBuilt =
+type DesignBuilt =
   { ok: true; writes: SheetWrite[]; line: string; charts: SheetChartOut[] } | SheetRefusal;
 
 // Whether a tab's canvas is dark (a design is tinted for it); a tab with no colour of its own is light.
@@ -97,7 +97,7 @@ export const darkCanvas = (background: string | undefined): boolean =>
 
 // The accent and look a design takes when it names none.
 export const DESIGN_ACCENT_DEFAULT: SheetAccent = 'blue';
-export const DESIGN_LOOK_DEFAULT: SheetLook = 'banded';
+const DESIGN_LOOK_DEFAULT: SheetLook = 'banded';
 // The blank row between stacked blocks.
 const BLOCK_GAP_ROWS = 1;
 // The deepest main table whose header a design freezes by default: one lower down would freeze most of the view.

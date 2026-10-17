@@ -19,7 +19,7 @@ import { TownHallBoard } from './hero-townhall-board';
 export type { HeroSceneKey } from './hero-scene-data';
 
 // The scene's live document, drawn in the window (hero-scene-data.ts holds the rest).
-export type HeroScene = HeroSceneData & { Board: ComponentType<{ portrait?: boolean }> };
+type HeroScene = HeroSceneData & { Board: ComponentType<{ portrait?: boolean }> };
 
 const BOARDS: Record<HeroSceneKey, ComponentType<{ portrait?: boolean }>> = {
   diagram: DiagramBoard,

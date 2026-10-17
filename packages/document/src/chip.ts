@@ -10,7 +10,7 @@ import { labelFontPx } from './label-font';
 import { isLightColor } from './colors';
 import type { Element, ShapeElement, TextSize } from './index';
 
-export type ChipShape = 'badge' | 'step';
+type ChipShape = 'badge' | 'step';
 export type ChipLook = 'solid' | 'ink' | 'outline' | 'tinted' | 'quiet';
 export const CHIP_LOOKS: readonly ChipLook[] = ['solid', 'ink', 'outline', 'tinted', 'quiet'];
 

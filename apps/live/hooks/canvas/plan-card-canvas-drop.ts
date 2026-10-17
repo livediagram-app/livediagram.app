@@ -7,7 +7,7 @@ import type { Element } from '@livediagram/document';
 // How far the pointer travels before a release counts as a drop rather than a click.
 const PLAN_CARD_DROP_TRAVEL_PX = 4;
 
-export type PlanCardCanvasDrop = { card: Element; status: string; boardId?: string };
+type PlanCardCanvasDrop = { card: Element; status: string; boardId?: string };
 
 export function planCardCanvasDropAt(
   elements: readonly Element[],

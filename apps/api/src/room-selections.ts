@@ -11,7 +11,7 @@ const KEY_PREFIX = 'selection:';
 // An element id longer than this is no element of ours; the same clamp the room puts on tab ids.
 const MAX_ELEMENT_ID_LEN = 128;
 
-export type StoredSelection = { tabId: string | null; elementIds: string[] };
+type StoredSelection = { tabId: string | null; elementIds: string[] };
 
 // What the room knows about one live session, off its attachment.
 export type LiveSession = { name: string; color: string; personTag: string | null };

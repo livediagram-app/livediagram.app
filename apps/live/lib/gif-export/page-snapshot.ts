@@ -38,7 +38,7 @@ const PAGE_SELECTOR = '[data-illustrate-page-id]';
 const ELEMENT_SELECTOR = '[data-element-id]';
 const TAG = 'data-gif-id';
 
-export type SnapshotOptions = {
+type SnapshotOptions = {
   width: number;
   height: number;
   // The tab's fonts as @font-face rules with data: URLs (embeddedFontFaceCss).

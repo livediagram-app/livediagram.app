@@ -7,12 +7,12 @@ import { lintGraph } from './lint';
 import { lintVerdict } from './format';
 import type { LintLogger } from './log';
 
-export const COMPARE_DIMENSIONS = ['direction', 'groups', 'lines'] as const;
-export type CompareDimension = (typeof COMPARE_DIMENSIONS)[number];
+const COMPARE_DIMENSIONS = ['direction', 'groups', 'lines'] as const;
+type CompareDimension = (typeof COMPARE_DIMENSIONS)[number];
 
-export type CompareVariant = { direction: 'down' | 'right'; groups: boolean; lines: ArrowStyle };
+type CompareVariant = { direction: 'down' | 'right'; groups: boolean; lines: ArrowStyle };
 
-export type CompareRow = {
+type CompareRow = {
   label: string;
   variant: CompareVariant;
   measures: LintMeasures;

@@ -26,7 +26,7 @@ type PagesTab = Pick<Tab, 'elements'> & {
 };
 
 /** Why a background cannot go onto a page: a logo page takes no picture. */
-export type BackgroundCopyRefusal = 'unknown_page' | 'locked' | 'picture_not_offered';
+type BackgroundCopyRefusal = 'unknown_page' | 'locked' | 'picture_not_offered';
 
 /** The patch that gives `target` this whole background, the paper included (an absent fill or
  *  pattern clears the target's), or null when the target cannot take it. A logo page takes no
@@ -59,7 +59,7 @@ export function pageBackgroundCopied<T extends PagesTab>(
   return pageBackgroundSet(tab, toPageId, patch, memory);
 }
 
-export type BackgroundSpread<T> =
+type BackgroundSpread<T> =
   | {
       tab: T;
       memory?: InkMemory;

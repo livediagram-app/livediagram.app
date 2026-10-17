@@ -35,7 +35,7 @@ import type { ArrowElement, Element, ElementId, ShapeElement } from './index';
 
 export type FlowchartGrowth = 'next' | 'parallel';
 
-export type FlowchartStepPlan = {
+type FlowchartStepPlan = {
   step: ShapeElement;
   connector: ArrowElement;
   /** The chart's layout with the step and its connector in it. */
@@ -56,7 +56,7 @@ const stepOf = (elements: readonly Element[], id: ElementId) => {
  * selected one came from (its first incoming connector), else the selected step itself, since a step
  * nothing leads to has no branch to sit beside.
  */
-export function flowchartGrowthSource(
+function flowchartGrowthSource(
   elements: readonly Element[],
   from: ShapeElement,
   kind: FlowchartGrowth,
@@ -215,7 +215,7 @@ export function setFlowchartDirection(
 }
 
 /** What a new lane is titled: "Lane <n>". */
-export const flowchartLaneTitle = (n: number) => `Lane ${n}`;
+const flowchartLaneTitle = (n: number) => `Lane ${n}`;
 
 /**
  * Add Lane (docs/specs/009-elements/flowchart.md "Swimlanes"). A chart without lanes gets two, every

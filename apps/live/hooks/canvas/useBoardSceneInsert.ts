@@ -58,7 +58,7 @@ export type BoardSceneInsertDeps = {
   hugText?: HugText;
 };
 
-export type BoardSceneInsertApi = {
+type BoardSceneInsertApi = {
   /**
    * Lands a scene on the active tab, centred on `at` (a drop's release point, the canvas menu's
    * point) when given, else the pointer, else the middle of the view; resolves true when anything

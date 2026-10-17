@@ -3,7 +3,7 @@
 // hidden arrow, however long the chain (VW10): a printed end never names a hidden element's ref.
 import { visibleLayerElements, type Element, type Layer } from '@livediagram/document';
 
-export type Partition = { printed: Element[]; hidden: Element[] };
+type Partition = { printed: Element[]; hidden: Element[] };
 
 // The ids an arrow's pinned ends name; none for anything else.
 export function pinnedIds(el: Element): string[] {

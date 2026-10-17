@@ -4,7 +4,7 @@
 // the capture-phase pointerup and lowered on the next macrotask covers exactly
 // that paste and nothing after it.
 
-export interface PrimarySelectionPasteWatch {
+interface PrimarySelectionPasteWatch {
   isPrimarySelectionPaste: () => boolean;
   dispose: () => void;
 }

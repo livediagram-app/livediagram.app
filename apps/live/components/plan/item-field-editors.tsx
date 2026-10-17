@@ -26,7 +26,7 @@ import {
 } from '@livediagram/items';
 
 // One undo step per pause in typing (blueprint DEFAULTS D8).
-export const ITEM_EDIT_DEBOUNCE_MS = 400;
+const ITEM_EDIT_DEBOUNCE_MS = 400;
 
 // A save may report whether it landed: false (refused, by the store or the api) puts the field back to what is
 // saved, so it never shows a value nobody kept.

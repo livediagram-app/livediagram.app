@@ -11,6 +11,7 @@ import { isBoxed, type Element } from '@livediagram/document';
 import type { EditorContextMenuState } from '@/components/palette/EditorContextMenu';
 import { editMenuAnchor } from '@/lib/context-menu-anchor';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
+import { elementSelector } from '@/lib/canvas-selectors';
 
 export function useEditModeContextMenu({
   editingId,
@@ -60,7 +61,7 @@ export function useEditModeContextMenu({
       // offsetLeft/offsetWidth are layout values that ignore transforms, so
       // project those through the canvas layer's on-screen rect instead (the
       // layer's own scale is its bounding width over its layout width).
-      const node = document.querySelector(`[data-element-id="${editingId}"]`);
+      const node = document.querySelector(elementSelector(editingId));
       if (!(node instanceof HTMLElement)) return;
       const layer = node.offsetParent;
       if (!(layer instanceof HTMLElement) || layer.offsetWidth === 0) return;

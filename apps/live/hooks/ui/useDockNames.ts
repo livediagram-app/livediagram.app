@@ -7,7 +7,7 @@ import { useMediaQuery } from '@livediagram/ui';
 // live-app.md "Named on a wide desktop"): only from this width up. Narrower, a laptop's canvas
 // would lose its lower middle to the names (at 1280 px the named strips reach x 446), so the
 // buttons stay icons, as on a phone.
-export const DOCK_NAMES_MIN_WIDTH = 1440;
+const DOCK_NAMES_MIN_WIDTH = 1440;
 const QUERY = `(min-width: ${DOCK_NAMES_MIN_WIDTH}px)`;
 
 // The reader's Settings > Appearance > Button Labels (`dockButtonNames`), on outside a provider. It

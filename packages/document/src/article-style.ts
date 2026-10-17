@@ -32,13 +32,13 @@ export const ARTICLE_PARAGRAPH_SPACE: Readonly<Record<ArticleParagraphSpacing, n
   normal: 0.75,
   wide: 1.5,
 };
-export const ARTICLE_MARGIN_PX: Readonly<Record<ArticleMargins, number>> = {
+const ARTICLE_MARGIN_PX: Readonly<Record<ArticleMargins, number>> = {
   narrow: 48,
   normal: 96,
   wide: 144,
 };
 
-export type ResolvedArticleStyle = {
+type ResolvedArticleStyle = {
   headingFont: string;
   bodyFont: string;
   // Null: the tab theme's accent.
@@ -137,10 +137,7 @@ export function resolveArticleStyle(style: ArticleStyle | undefined): ResolvedAr
 }
 
 /** A look applied: every field it sets, keeping the article's accent, margins and page numbers. */
-export function withArticleLook(
-  style: ArticleStyle | undefined,
-  look: ArticleLookId,
-): ArticleStyle {
+function withArticleLook(style: ArticleStyle | undefined, look: ArticleLookId): ArticleStyle {
   const { label: _label, ruled: _ruled, ...fields } = ARTICLE_LOOKS[look];
   void _label;
   void _ruled;

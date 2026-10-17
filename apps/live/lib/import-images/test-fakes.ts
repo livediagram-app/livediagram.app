@@ -3,9 +3,9 @@
 import type { DecodedImage, ImageCodec } from './types';
 
 export const PNG_HEAD = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 13];
-export const JPEG_HEAD = [0xff, 0xd8, 0xff, 0xe0, 0, 0x10, 0x4a, 0x46, 0x49, 0x46, 0, 1];
-export const WEBP_HEAD = [0x52, 0x49, 0x46, 0x46, 0, 0, 0, 0, 0x57, 0x45, 0x42, 0x50];
-export const GIF_HEAD = [0x47, 0x49, 0x46, 0x38, 0x39, 0x61, 0, 0, 0, 0, 0, 0];
+const JPEG_HEAD = [0xff, 0xd8, 0xff, 0xe0, 0, 0x10, 0x4a, 0x46, 0x49, 0x46, 0, 1];
+const WEBP_HEAD = [0x52, 0x49, 0x46, 0x46, 0, 0, 0, 0, 0x57, 0x45, 0x42, 0x50];
+const GIF_HEAD = [0x47, 0x49, 0x46, 0x38, 0x39, 0x61, 0, 0, 0, 0, 0, 0];
 
 const HEAD_BY_TYPE: Record<string, number[]> = {
   'image/png': PNG_HEAD,
@@ -22,7 +22,7 @@ export function fakeImageBlob(type: string, size: number): Blob {
   return new Blob([bytes], { type });
 }
 
-export type FakeCodecOptions = {
+type FakeCodecOptions = {
   // Natural size decode reports; null = the browser can't decode it.
   size?: { width: number; height: number } | null;
   // Bytes an encode returns per output type; null = encode fails.

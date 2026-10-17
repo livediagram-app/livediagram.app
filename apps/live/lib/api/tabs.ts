@@ -180,7 +180,7 @@ async function savedRevOf(res: Response): Promise<number | null> {
 // (computeTabSaveDiff); empty sets fire nothing.
 // The keepalive bodies an unload flush sends at most: browsers allow 64 KB in all per page; the rest is
 // headroom for another keepalive request in flight. Safe range: 32 KB to 63 KB.
-export const KEEPALIVE_BUDGET_BYTES = 60 * 1024;
+const KEEPALIVE_BUDGET_BYTES = 60 * 1024;
 
 export function flushDocumentSavesBeacon(args: {
   ownerId: string;

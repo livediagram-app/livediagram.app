@@ -19,7 +19,7 @@ import {
 
 export type TemplateStartMode = 'diagram' | 'draw' | 'facilitate' | 'illustrate';
 
-export type TemplateStartGroup = {
+type TemplateStartGroup = {
   id: string;
   name: string;
   line: string;
@@ -27,7 +27,7 @@ export type TemplateStartGroup = {
   kinds: readonly TemplateKind[];
 };
 
-export type TemplateStart = {
+type TemplateStart = {
   // The mode's blank: Recommended's first card, which starts from nothing.
   blank: TemplateKind;
   // Recommended, then every group holding a template.

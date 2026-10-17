@@ -42,7 +42,7 @@ import {
 } from '@/components/palette/palette-dashboard-tiles';
 import { dashboardItemOf, type DashboardItem } from '@/hooks/plan/dashboard-drop';
 import { fitKindOf, fitsSlot, type SlotFitKind, type SlotSize } from '@/hooks/plan/slot-fit';
-export { fitsSlot, SLOT_FIT } from '@/hooks/plan/slot-fit';
+export { fitsSlot } from '@/hooks/plan/slot-fit';
 import { usePlanTabList } from '@/hooks/plan/plan-tab-list-store';
 
 // The Dashboard item a palette tile stands for, or null for one a slot does not take.

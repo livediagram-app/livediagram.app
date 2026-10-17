@@ -210,7 +210,7 @@ export async function getTabData(
 // How a tab write moves the revision (docs/specs/024-agents/agent-changesets.md "The tab revision"):
 // `advance` from whatever is stored, or to exactly `expected + 1`, which the trigger
 // `tabs_rev_advances` turns into a compare-and-swap (CS3).
-export type TabRevWrite = { advance: true } | { expected: number };
+type TabRevWrite = { advance: true } | { expected: number };
 
 // The statements of one tab write. Splits the live-app's Tab type into columns + a `data` JSON
 // blob (everything except id + name) so list queries can return summaries without parsing element
