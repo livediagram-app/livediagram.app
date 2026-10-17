@@ -773,6 +773,7 @@ export {
 export * from './theme-graph';
 export * from './themes';
 export * from './theme-halves';
+export * from './label-backdrop';
 export * from './theme-presets';
 // A Form tab's look: its theme, finish and font as the builder and the form link's page draw them.
 export * from './form-look';
