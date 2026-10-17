@@ -12,6 +12,7 @@ import {
   Glyph,
   GlyphDisc,
   Portal,
+  Tooltip,
 } from '@livediagram/ui';
 import { useRef, useState, useCallback } from 'react';
 import type { ElementAction } from '@livediagram/document';
@@ -198,13 +199,23 @@ export function ActionPopover({
                 ) : null}
               </>
             )}
-            <FooterButton onClick={onEdit} icon={<PencilIcon />} label="Edit" />
+            {/* Icon only, so Won't Do fits beside Complete. */}
+            <Tooltip label="Edit">
+              <button
+                type="button"
+                aria-label="Edit action"
+                onClick={onEdit}
+                className="inline-flex items-center rounded-md border border-slate-200 px-2 py-1.5 text-slate-600 transition hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+              >
+                <PencilIcon />
+              </button>
+            </Tooltip>
             <span className="flex-1" />
             {confirmingDelete ? (
               <button
                 type="button"
                 onClick={onDelete}
-                className="inline-flex items-center gap-1.5 rounded-md border border-slate-200 px-2.5 py-1.5 text-[11px] font-medium text-slate-600 transition hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+                className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-md border border-slate-200 px-2.5 py-1.5 text-[11px] font-medium text-slate-600 transition hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
               >
                 <TrashIcon size={11} />
                 Confirm
@@ -239,7 +250,7 @@ function FooterButton({
     <button
       type="button"
       onClick={onClick}
-      className="inline-flex items-center gap-1.5 rounded-md border border-slate-200 px-2.5 py-1.5 text-[11px] font-medium text-slate-600 transition hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+      className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-md border border-slate-200 px-2.5 py-1.5 text-[11px] font-medium text-slate-600 transition hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
     >
       {icon}
       {label}
