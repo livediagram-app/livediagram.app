@@ -139,13 +139,15 @@ export function HomeHero({ active = true }: { active?: boolean }) {
           <h1
             id={HEADING_ID}
             // Two lines held whichever greeting it is, so the first run's and the ordinary one swap without a shift.
-            className="min-h-[2lh] max-w-3xl text-4xl font-extrabold leading-[1.02] tracking-[-0.04em] text-[#17153a] sm:text-5xl lg:text-[3.5rem] dark:text-white"
+            // Whole-pixel line heights (about 1.02 of each size), so the hero's height, and everything under it, lands
+            // on whole pixels whatever the font: the sidebar's tiles fail the optical audit on a fraction.
+            className="min-h-[2lh] max-w-3xl text-4xl leading-[37px] font-extrabold tracking-[-0.04em] text-[#17153a] sm:text-5xl sm:leading-[49px] lg:text-[3.5rem] lg:leading-[57px] dark:text-white"
           >
             {firstRun
               ? `${WELCOME_COPY.greeting} ${WELCOME_COPY.question}`
               : `${greeting} ${HERO_COPY.question}`}
           </h1>
-          <p className="min-h-[2lh] max-w-2xl text-[17px] leading-relaxed text-slate-600 dark:text-slate-300">
+          <p className="min-h-[2lh] max-w-2xl text-[17px] leading-[28px] text-slate-600 dark:text-slate-300">
             {firstRun ? WELCOME_COPY.lead : HERO_COPY.lead}
           </p>
           <div className="max-w-2xl">
