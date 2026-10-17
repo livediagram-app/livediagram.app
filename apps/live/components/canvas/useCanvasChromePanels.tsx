@@ -18,6 +18,7 @@ import { useCanvasToolPanels } from './useCanvasToolPanels';
 import { stripSegmentGone, type SessionStripTools } from './SessionClusterStrip';
 import { tidyUpOffered } from './tidy-up-actions';
 import { useContentsChrome } from './useContentsChrome';
+import { useWithheldExplorerCloses } from './useWithheldExplorerCloses';
 
 // Layers is a popover most visits never open: mounted from its first opening on (its code fetched once the
 // editor is idle, lib/editor-deferred-code.ts), and kept mounted after.
@@ -331,8 +332,11 @@ export function useCanvasChromePanels({
   const explorerOpen = activeDockPanel === 'explorer';
   const [explorerOpened, setExplorerOpened] = useState(explorerOpen);
   if (explorerOpen && !explorerOpened) setExplorerOpened(true);
+  // Withheld (the workbench frame, a phone held sideways), an open Explorer closes.
+  const explorerHidden = !!props.explorerHidden;
+  useWithheldExplorerCloses(explorerHidden, explorerOpen, closeDockPanel);
   const explorerEl =
-    zenMode || props.explorerHidden || !explorerOpened ? null : (
+    zenMode || explorerHidden || !explorerOpened ? null : (
       <LazyExplorer
         recentExcludedIds={userPreferences.recentExcludedIds ?? []}
         onToggleRecentExclusion={onToggleRecentExclusion}

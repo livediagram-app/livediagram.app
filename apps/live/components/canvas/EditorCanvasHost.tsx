@@ -29,6 +29,7 @@ import { getTheme, themeChartPalette, themeViewMap, type ThemeId } from '@/lib/t
 import { resolveViewBackdrop } from '@/lib/view-backdrop';
 import { readDrawPattern } from '@/lib/whiteboard-dock-prefs';
 import { useAppearance } from '@/hooks/ui/useAppearance';
+import { useIsLandscapePhone } from '@/hooks/ui/useIsMobileViewport';
 import { Canvas } from '@/components/canvas/Canvas';
 import { useStableObject } from '@/hooks/ui/useStableObject';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
@@ -438,6 +439,7 @@ export function EditorCanvasHost() {
   // canvas repaint when it changes — resolveViewBackdrop would otherwise read a
   // module store nothing re-renders for.
   const { appearance } = useAppearance();
+  const landscapePhone = useIsLandscapePhone();
   // The Collaborate panel's jump to a conversation card (docs/specs/012-collaboration/assigned-actions.md §5):
   // true when the row's element is that kind of card, now centred in view.
   const jumpToCard = (id: string, shape: 'comment-pin' | 'action-card'): boolean => {
@@ -1276,7 +1278,9 @@ export function EditorCanvasHost() {
               // withheld so the ZoomControls dock doesn't offer an exit
               // from a mode the embed can't actually leave.
               zenMode={zenMode || embedMode}
-              explorerHidden={workbenchMode}
+              // A phone held sideways has no Explorer at all (docs/specs/007-editor/live-app.md "A phone
+              // held sideways"): too short for it, and no way to bring it back; turn the phone upright.
+              explorerHidden={workbenchMode || landscapePhone}
               onToggleZen={embedMode ? undefined : toggleZenMode}
               aiPanel={
                 aiCapable && userPreferences.aiAssistanceEnabled && aiPanelVisible && !isReadOnly

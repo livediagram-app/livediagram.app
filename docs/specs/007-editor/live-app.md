@@ -242,9 +242,17 @@ that makes a sideways phone a phone at all (above): the tallest phone held sidew
 and a desktop window however short (a fine pointer) never fold. `orientation: landscape` keeps an
 upright phone whose layout shrinks for its keyboard (an older Android) from folding mid-typing.
 
-- **What stays.** Everything on the canvas stays where it is: the strip across the top (the menu
-  button for the Explorer, the palette, its Search), the bottom-right cluster (Undo, Redo, the
-  Session strip, Layers, the Theme & Canvas brush, Fit), the menus and the dialogs.
+- **What stays.** Everything else on the canvas stays where it is: the strip across the top (the
+  palette, its Search), the bottom-right cluster (Undo, Redo, the Session strip, Layers, the Theme
+  & Canvas brush, Fit), the menus and the dialogs.
+- **What goes for good: the menu button and the Explorer.** At this height the Explorer has no
+  room to be useful, so the menu button is not drawn (in the strip's row or, without a strip, the
+  corner) and the strip starts at the left gutter in its place. Unlike the bars, nothing brings
+  it back while the phone is sideways: not the handle, not a tour. An Explorer open when the
+  phone turns closes. Turning the phone upright brings the button back. `EditorCanvasHost` sets
+  `explorerHidden` from `useIsLandscapePhone` (`hooks/ui/useIsMobileViewport.ts`, the
+  `LANDSCAPE_PHONE_MEDIA_QUERY` above), the same gate the workbench frame uses; the palette keeps
+  the phone's swiping row without the menu card (`leading` of `null`).
 - **The bars handle.** A small card at the canvas's top-right corner (12px in, and past a landscape
   notch's side inset and below the top inset; a 36px button with a 44px tap area) holds a chevron:
   **Show Header and Tabs**. Pressing it brings both bars back where they always are: the canvas
