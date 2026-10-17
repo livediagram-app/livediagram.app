@@ -588,7 +588,7 @@ export function ExplorerPageLayout() {
       <TreeRow x={sx} y={134} w={sw} label="My documents" glyph="folder" active chevron="open" />
       <TreeRow x={sx} y={152} w={sw} label="Projects" glyph="folder" level={1} chevron="closed" />
       <TreeRow x={sx} y={170} w={sw} label="Design" glyph="team" chevron="closed" />
-      <TreeRow x={sx} y={188} w={sw} label="New team" glyph="plus" />
+      <TreeRow x={sx} y={188} w={sw} label="New Team" glyph="plus" />
       <GroupTitle x={sx + 12} y={220}>
         MORE
       </GroupTitle>
@@ -895,7 +895,7 @@ export function CardViewGrid() {
 }
 
 /** The Change Folder dialog: the destination browser opened at the space, a folder selected, the
- *  New Subfolder entry following the selection, and Move here. */
+ *  New Subfolder entry following the selection, and Move Here. */
 export function MoveToFolderScene() {
   const x = 44;
   const y = 12;
@@ -966,7 +966,7 @@ export function MoveToFolderScene() {
         strokeWidth={1.5}
       />
       <Button x={x + w - 166} y={y + 190} w={70} h={24} label="Cancel" />
-      <Button x={x + w - 88} y={y + 190} w={74} h={24} label="Move here" variant="primary" />
+      <Button x={x + w - 88} y={y + 190} w={74} h={24} label="Move Here" variant="primary" />
     </Scene>
   );
 }

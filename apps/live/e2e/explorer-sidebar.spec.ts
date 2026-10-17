@@ -4,7 +4,7 @@ import { expect, expectNoPageErrors, mintSignedGuest, ownerHeaders, test } from 
 
 // The Explorer sidebar for a guest (docs/specs/013-workspace/explorer-structure.md), in dark
 // mode: the three groups as ARIA trees, the keyboard model, Minimal chrome's separators, and the
-// mobile drawer. The signed-in rows (teams, New team, the nudge) are e2e/clerk-stub/explorer-sidebar.
+// mobile drawer. The signed-in rows (teams, New Team, the nudge) are e2e/clerk-stub/explorer-sidebar.
 
 const nav = (page: Page) => page.getByRole('navigation', { name: 'Explorer' }).first();
 const tree = (page: Page, name: string) => nav(page).getByRole('tree', { name });
@@ -46,9 +46,9 @@ test.describe('explorer sidebar', () => {
       'Timeline',
       'Shared with me',
     ]);
-    // A guest on a deployment without sign-in: My documents only, no teams, no New team.
+    // A guest on a deployment without sign-in: My documents only, no teams, no New Team.
     expect((await rowNames(page, 'Spaces'))[0]).toBe('My documents');
-    await expect(row(page, 'New team')).toHaveCount(0);
+    await expect(row(page, 'New Team')).toHaveCount(0);
     // This browser holds nothing yet, so it is hidden.
     expect(await rowNames(page, 'More')).toEqual(['Tags', 'Library', 'Trash']);
     // My documents starts open on its root folders: no Unsorted or Generated bucket.

@@ -52,7 +52,7 @@ In scope:
   single-line field no Enter key, so tapping away is the only submit
   gesture there); blurring it empty, or pressing Escape, cancels. The dialog opens with the subject's current placement
   pre-selected ("always something selected"), at the level that lists it when it is a folder
-  ([Save locations](../006-document/save-locations.md), "It opens where its selection is"); the "Move here" button
+  ([Save locations](../006-document/save-locations.md), "It opens where its selection is"); the "Move Here" button
   stays disabled until the choice changes, and double-clicking a
   destination card commits the move in one gesture. Shared by the
   /explorer page, the editor's Explorer, and the team library —
@@ -379,7 +379,7 @@ it stays in view as the dashboard scrolls; Settings opens the same synced
 - **Sidebar (left, fixed width):** the navigation tree of [Explorer structure](explorer-structure.md):
   Overview (Home, Inbox, Timeline, Shared with me), Spaces (My documents with
   its root folders beneath it, each team with its
-  folders, New team), and More (This browser, Tags, Library, Trash). Each folder
+  folders, New Team), and More (This browser, Tags, Library, Trash). Each folder
   row carries an ellipsis menu with Rename, New subfolder, Change Folder,
   Use as default for ([Default folders](default-folders.md#use-as-default-for)), Delete. The Image gallery (under Library) degrades to an empty state
   when the api worker reports 503, e.g. a self-host without R2.

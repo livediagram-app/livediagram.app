@@ -316,7 +316,7 @@ function ShellChrome({ children }: { children: ReactNode }) {
       <TeamFormModal
         open={teamModalOpen}
         title="New Team"
-        submitLabel="Create team"
+        submitLabel="Create Team"
         onSubmit={(values) => {
           setTeamModalOpen(false);
           void hookCreateTeam(values).then((team) => {

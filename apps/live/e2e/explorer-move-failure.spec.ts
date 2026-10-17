@@ -37,7 +37,7 @@ test('a folder move the api refuses says so', async ({ page, pageErrors, baseURL
       ? route.fulfill({ status: 503, body: '{"error":"unavailable"}' })
       : route.fallback(),
   );
-  await dialog.getByRole('button', { name: 'Move here' }).click();
+  await dialog.getByRole('button', { name: 'Move Here' }).click();
 
   await expect(page.getByText('Could not move the folder. Try again.')).toBeVisible();
   await expect

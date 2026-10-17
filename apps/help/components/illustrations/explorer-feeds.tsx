@@ -773,7 +773,7 @@ export function SharedWithMeTable() {
 }
 
 /** The sidebar's Spaces group when signed in: My documents, each team (expandable to its shared
- *  folders, with a member count), Invites while one waits, and New team. */
+ *  folders, with a member count), Invites while one waits, and New Team. */
 export function TeamSpacesSidebar() {
   const x = 100;
   const w = 220;
@@ -841,7 +841,7 @@ export function TeamSpacesSidebar() {
       <Label x={x + w - 39} y={169} anchor="middle" size={10} weight={700} tone="muted">
         1
       </Label>
-      {/* New team: a plus, last in Spaces. */}
+      {/* New Team: a plus, last in Spaces. */}
       <path
         d={`M${x + 16} 188 v10 M${x + 11} 193 h10`}
         className="stroke-slate-400"
@@ -849,7 +849,7 @@ export function TeamSpacesSidebar() {
         strokeLinecap="round"
       />
       <Label x={x + 32} y={193} size={10} weight={500} tone="body">
-        New team
+        New Team
       </Label>
     </Scene>
   );

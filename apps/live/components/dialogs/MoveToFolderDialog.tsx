@@ -151,7 +151,7 @@ export function MoveToFolderDialog({
           Cancel
         </Button>
         <Button size="sm" disabled={placement === current} onClick={() => commit(placement)}>
-          Move here
+          Move Here
         </Button>
       </div>
     </Dialog>

@@ -53,7 +53,7 @@ reached from Home's What Happened (**See Timeline**). The retired `/explorer/act
 | My documents | `/explorer/all`, the My documents root | The root folders        | None                       |
 | Each team    | `/explorer/team?id=<id>`               | The team's root folders | Member count, when above 1 |
 | Invites      | `/explorer/invites`                    | None                    | Pending invites            |
-| New team     | The New team form (a dialog)           | None                    | None                       |
+| New Team     | The New Team form (a dialog)           | None                    | None                       |
 
 - **The My documents root** lists its root folders, then its root documents, newest first. A team's root does the
   same for the team. The old Unsorted, Generated and Dynamic addresses still answer: `/explorer/unsorted` and
@@ -70,9 +70,9 @@ reached from Home's What Happened (**See Timeline**). The retired `/explorer/act
   ([Default folders](default-folders.md#the-default-marker)), personal and team folder rows alike.
 - **Invites** shows only while the reader has a pending invite (or is on the Invites view). An invite also reaches the
   reader through Home and email.
-- **New team** is the group's last row, for signed-in readers only.
+- **New Team** is the group's last row, for signed-in readers only.
 - A **guest**, on a deployment with sign-in configured, sees the sign-in nudge ("Sign in to access Teams") as the
-  group's last item instead of New team. A deployment without sign-in shows neither.
+  group's last item instead of New Team. A deployment without sign-in shows neither.
 
 ### More
 
@@ -119,7 +119,7 @@ its own (**Timeline**).
 | My documents  | Yes                        | Yes                           | Yes                      |
 | Teams         | None                       | None                          | One row per team         |
 | Invites       | No                         | No                            | While one is pending     |
-| New team      | No                         | No                            | Yes                      |
+| New Team      | No                         | No                            | Yes                      |
 | Sign-in nudge | Yes                        | No                            | No                       |
 | This browser  | While it holds documents   | While it holds documents      | While it holds documents |
 | Library       | Yes                        | Yes                           | Yes                      |
@@ -153,7 +153,7 @@ nothing moves on its own.
 
 Every row reserves a fixed **chevron gutter** before its icon, whether or not it can expand. So every top-level row's
 icon sits on one column, and an expandable row (My documents, a team, Library) lines up with a plain one (Home, Trash,
-New team). Each level of nesting indents the whole row (gutter, icon and label) by one step.
+New Team). Each level of nesting indents the whole row (gutter, icon and label) by one step.
 
 On a touch screen the chevron moves to the row's far end instead, after any trailing action, as a disclosure the full
 row's height and 44 px wide, and no row reserves a gutter. Every icon at a level then sits on the column of its
@@ -173,7 +173,7 @@ The sidebar follows the WAI-ARIA tree pattern, one tree per group:
 - **Right** expands a collapsed row; on an expanded row it moves to the first child.
 - **Left** collapses an expanded row; on a collapsed or plain row it moves to the parent row.
 - **Home / End** move to the first / last visible row.
-- **Enter** and **Space** activate the row: open its view, toggle Library, or open the New team form.
+- **Enter** and **Space** activate the row: open its view, toggle Library, or open the New Team form.
 - **Typing a character** moves to the next row whose label starts with it.
 - **Shift+F10** or the **Menu** key opens a folder row's (or My documents') menu, the same menu as its `⋯` button and a
   right-click.
@@ -183,7 +183,7 @@ The sidebar follows the WAI-ARIA tree pattern, one tree per group:
 ## Mobile drawer
 
 Below the `sm` breakpoint the sidebar is hidden and the pane header's menu button opens it as a drawer from the left:
-the same groups, rows, rules and keyboard model. Picking a view, or New team, closes the drawer; so do its Close button
+the same groups, rows, rules and keyboard model. Picking a view, or New Team, closes the drawer; so do its Close button
 and the backdrop.
 
 ## The editor's Explorer
@@ -227,7 +227,7 @@ The rail opens with **New Document** (one click to a new document; a "New" chip 
 sidebar's three groups, Overview, Spaces and More, as one column of entries: Home, Inbox, Timeline,
 Shared with me; My documents and each team; This browser, Tags, Library and Trash. Shared with me and This browser carry
 their counts (the panel reads no other feed until its section is shown). No
-Invites, New team or sign-in nudge: those are the Explorer page's.
+Invites, New Team or sign-in nudge: those are the Explorer page's.
 
 - **Every entry is a mode of the pane.** Picking one shows it in the pane; none leaves the editor. The picked entry is
   marked (`aria-current`) and is remembered for this viewer in this browser, so the panel reopens on it.

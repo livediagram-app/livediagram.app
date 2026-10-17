@@ -18,7 +18,7 @@ import { useMyDocumentsMenu } from './useMyDocumentsMenu';
 import { useExplorerDropTarget } from '../useExplorerDropTarget';
 
 // Spaces (docs/specs/013-workspace/explorer-structure.md): My documents and each team as
-// root folders, then Invites and New team, or the guest's sign-in nudge.
+// root folders, then Invites and New Team, or the guest's sign-in nudge.
 // `rows` (from sidebarGroups) decides which show.
 export function SpacesGroup({
   rows,

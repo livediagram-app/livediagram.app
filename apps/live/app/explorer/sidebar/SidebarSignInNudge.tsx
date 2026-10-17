@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { SignInIcon } from '@/components/chrome/AuthControls';
 import { useAuthHrefs } from '@/components/chrome/auth-shared';
 
-// The guest's sign-in nudge, last in Spaces in place of New team
+// The guest's sign-in nudge, last in Spaces in place of New Team
 // (docs/specs/013-workspace/explorer-structure.md); sidebarGroups decides when it shows.
 export function SidebarSignInNudge() {
   const { signInHref } = useAuthHrefs();

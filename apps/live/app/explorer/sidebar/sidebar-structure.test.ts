@@ -39,11 +39,11 @@ describe('sidebarGroups', () => {
     expect(rowsOf(SIGNED_IN, 'overview')).toEqual(['home', 'inbox', 'timeline', 'shared']);
   });
 
-  it('gives a signed-in reader My documents, teams and New team last', () => {
+  it('gives a signed-in reader My documents, teams and New Team last', () => {
     expect(rowsOf(SIGNED_IN, 'spaces')).toEqual(['myDocuments', 'teams', 'newTeam']);
   });
 
-  it('gives a guest the sign-in nudge instead of teams and New team', () => {
+  it('gives a guest the sign-in nudge instead of teams and New Team', () => {
     expect(rowsOf(GUEST, 'spaces')).toEqual(['myDocuments', 'signInNudge']);
   });
 
@@ -51,7 +51,7 @@ describe('sidebarGroups', () => {
     expect(rowsOf({ ...GUEST, signInAvailable: false }, 'spaces')).toEqual(['myDocuments']);
   });
 
-  it('shows Invites before New team only while an invite is pending', () => {
+  it('shows Invites before New Team only while an invite is pending', () => {
     expect(rowsOf({ ...SIGNED_IN, pendingInvites: 2 }, 'spaces')).toEqual([
       'myDocuments',
       'teams',
@@ -100,7 +100,7 @@ describe('sidebarGroups in the floating Explorer panel', () => {
     expect(rowsOf(PANEL, 'overview')).toEqual(['home', 'inbox', 'timeline', 'shared']);
   });
 
-  it('shows the spaces but no Invites or New team', () => {
+  it('shows the spaces but no Invites or New Team', () => {
     expect(rowsOf(PANEL, 'spaces')).toEqual(['myDocuments', 'teams']);
   });
 
