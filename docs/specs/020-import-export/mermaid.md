@@ -131,6 +131,14 @@ LR` line sets the layout direction (TB default).
   it to "SHARE_LINK text code text document_id…"). An alias in square brackets after the name (`BOOK_AUTHOR[Book
 author]`, `a["Customer account"]`), wherever the entity is named (its block, a relationship, a bare line), is
   the title shown; the name stays its id. Without one the title is the name.
+- **Every way Mermaid's own docs write them**: a name in double quotes (`"Order line"`, a bare line or either end
+  of a relationship) is an entity named by its words; a `:::class` after a name is styling and is skipped, never
+  the reason a line is missed; a relationship's operator may sit against its names (`id1||--||id2`); and the words
+  Mermaid allows for a cardinality read as its symbols do (`only one` / `1` as `||`, `zero or one` / `one or zero`
+  as `|o`, `zero or more` / `zero or many` / `many(0)` / `0+` as `}o`, `one or more` / `one or many` / `many(1)` /
+  `1+` as `}|`), joined by `to` (identifying) or `optionally to` (non-identifying, dashed):
+  `CAR 1 to zero or more NAMED-DRIVER : allows`. Found importing the examples in Mermaid's ER documentation, five
+  of which were refused as "No entities found".
 - **Relationships**: `A ||--o{ B : label` becomes an edge labelled with its verb alone (none with no verb): the
   ER ends say the multiplicity, which the label spelled out in words (`places · 1 : 0..*`) while the heads could
   only say "many".
