@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-// "Invite by link" (docs/specs/013-workspace/teams.md): each open starts clean, so a reopened dialog
+// "Invite by Link" (docs/specs/013-workspace/teams.md): each open starts clean, so a reopened dialog
 // never shows the previous session's "Copied" or error.
 
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';

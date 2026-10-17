@@ -209,11 +209,11 @@ export function TeamPane({
               <button
                 type="button"
                 onClick={() => setLinkOpen(true)}
-                aria-label="Invite by link"
+                aria-label="Invite by Link"
                 className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium text-brand-700 transition hover:bg-brand-50 dark:text-brand-300 dark:hover:bg-brand-500/10"
               >
                 <LinkIcon />
-                <span className="hidden sm:inline">Invite by link</span>
+                <span className="hidden sm:inline">Invite by Link</span>
               </button>
             ) : null}
             <EllipsisTriggerButton

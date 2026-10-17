@@ -3,8 +3,8 @@ import { test, expect, expectNoPageErrors } from '../fixtures';
 import { freshUserId, installClerkStub, type StubUser } from './clerk-stub';
 
 // The Explorer sidebar on a deployment with sign-in (docs/specs/013-workspace/explorer-structure.md),
-// against the Clerk-enabled export: a signed-in member sees each team as a root folder and New team
-// last; a signed-out visitor sees the sign-in nudge in New team's place.
+// against the Clerk-enabled export: a signed-in member sees each team as a root folder and New Team
+// last; a signed-out visitor sees the sign-in nudge in New Team's place.
 
 test.use({ colorScheme: 'dark', viewport: { width: 1280, height: 800 } });
 
@@ -64,7 +64,7 @@ test('a signed-in member sees teams as root folders and New Team last', async ({
   ]);
   await expect(nav(page).getByRole('link', { name: /Sign in to access Teams/ })).toHaveCount(0);
 
-  // A team with folders expands to them; New team opens the form.
+  // A team with folders expands to them; New Team opens the form.
   const guild = nav(page).getByRole('treeitem', { name: 'Design guild' });
   await expect(guild).toHaveAttribute('aria-expanded', 'false');
   await guild.focus();

@@ -16,7 +16,7 @@ on the `nav`.
 | `apps/live/app/explorer/sidebar/SidebarRow.tsx`                          | `SidebarRow`: one `treeitem` with the chevron gutter (the row's end on a touch screen), icon, label, badge, trailing slot and child `group`                                                                                                                                          |
 | `apps/live/app/explorer/sidebar/OverviewGroup.tsx`                       | Home, Inbox, Timeline, Shared With Me                                                                                                                                                                                                                                                |
 | `apps/live/app/explorer/sidebar/inbox-badge.ts`                          | `inboxBadge(feed)`: the Inbox pill, 0 included, nothing while loading or failed                                                                                                                                                                                                      |
-| `apps/live/app/explorer/sidebar/SpacesGroup.tsx`                         | My Documents (its root folders), teams, Invites, New team, the sign-in nudge                                                                                                                                                                                                         |
+| `apps/live/app/explorer/sidebar/SpacesGroup.tsx`                         | My Documents (its root folders), teams, Invites, New Team, the sign-in nudge                                                                                                                                                                                                         |
 | `apps/live/app/explorer/sidebar/TeamRows.tsx`                            | `TeamRows`, one `TeamRow` per team: a drop target opening its folders on a resting drag                                                                                                                                                                                              |
 | `apps/live/app/explorer/sidebar/MoreGroup.tsx`                           | This browser, Library (Tags with one row per tag, `TagRows.tsx`, then Image Gallery, Themes, Shape Libraries), Trash                                                                                                                                                                 |
 | `apps/live/app/explorer/sidebar/SidebarFolderSubtree.tsx`                | A personal folder row, its menu, and its subfolders                                                                                                                                                                                                                                  |
@@ -91,7 +91,7 @@ name of the view (`kind: 'offline'`), whose row reads "This Browser".
    (state adjusted in render, not an effect). Toggling is `toggleExpand(key)`; `expand(key)` opens idempotently, used to
    reveal a new folder's parent (My Documents for a root folder).
 4. **Row activation** (click on the label area, or Enter / Space): `go(node)` for a view row, `toggleExpand` for
-   Library, `setTeamModalOpen(true)` and `setMobileNavOpen(false)` for New team, `window.location.assign` for a team
+   Library, `setTeamModalOpen(true)` and `setMobileNavOpen(false)` for New Team, `window.location.assign` for a team
    folder. Home also clears the Timeline unread count. Each activation calls `trackSidebar(row)` first.
 5. **Chevron**: a click on the gutter toggles that row; it never activates it. My Documents is expandable only while it
    has a root folder (the page) or a root folder or document (the panel).
@@ -182,7 +182,7 @@ export function initialExpanded(selected: SelectedNode): Set<string>;
 | Focus on a row whose parent collapses by mouse        | The element unmounts; focus returns to `body`; the next Tab enters on the tab stop |
 | Keys while renaming a folder                          | The input's; the hook ignores them                                                 |
 | Two instances (desktop + drawer)                      | Ids from `useId`; each `nav` roves independently                                   |
-| Guest on a deployment without sign-in                 | No teams, no New team, no nudge                                                    |
+| Guest on a deployment without sign-in                 | No teams, no New Team, no nudge                                                    |
 
 ## Security and trust
 
@@ -222,7 +222,7 @@ shadow-none`, label `text-white`, tile `bg-sky-500 text-white`. Every other row 
   title row (the brand prism mark at 18 px, `text-sm font-semibold text-white`), the line `text-[12.5px] leading-normal
 text-[#a9b8d0]`; focus ring `outline-sky-400`.
 - Container: the `aside`'s sticky box has no border, background, shadow or padding beyond `px-1 py-1`.
-- New team: a row with `PlusIcon`, label "New Team".
+- New Team: a row with `PlusIcon`, label "New Team".
 - Header search: the lens field left of the account control; below `sm` its own row under the header.
 
 ## Accessibility
@@ -246,7 +246,7 @@ creation).
 | Rule                                                 | Test                                                                                                                                                                                                                                                                  |
 | ---------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Group order and row order                            | `sidebar-structure.test.ts`                                                                                                                                                                                                                                           |
-| Guest vs signed in (teams, New team, nudge, Invites) | `sidebar-structure.test.ts`                                                                                                                                                                                                                                           |
+| Guest vs signed in (teams, New Team, nudge, Invites) | `sidebar-structure.test.ts`                                                                                                                                                                                                                                           |
 | This browser hidden when empty, kept while selected  | `sidebar-structure.test.ts`                                                                                                                                                                                                                                           |
 | Titles vs separators per mode                        | `sidebar-structure.test.ts`, `SidebarGroup.test.tsx`                                                                                                                                                                                                                  |
 | Initial expansion and Library views                  | `sidebar-structure.test.ts`, `useSidebarExpansion.test.tsx`                                                                                                                                                                                                           |

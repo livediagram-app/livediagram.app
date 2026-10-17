@@ -25,7 +25,7 @@ Two D1 tables, owned by the api worker (migration `0019_teams.sql`):
 Teams are keyed by Clerk user ids and invites are keyed by email, so the whole feature requires a verified Clerk session:
 
 - Every `/api/teams*` endpoint requires a verified Clerk Bearer token. The guest `X-Owner-Id` path gets `401 sign_in_required`. This does NOT violate [Auth + guest access](../014-identity/auth-and-guest-access.md)'s no-sign-in-wall rule: the canvas and everything else stays guest-accessible; only the Teams surface asks for an account.
-- In the Explorer sidebar, guests see the sign-in nudge ("Sign in to access Teams") at the end of the Spaces group instead of team rows and New team ([Explorer structure](explorer-structure.md)). Clerk-disabled self-host deployments ([Open source + distribution](../002-project-scope/open-source-and-business-model.md)) show neither.
+- In the Explorer sidebar, guests see the sign-in nudge ("Sign in to access Teams") at the end of the Spaces group instead of team rows and New Team ([Explorer structure](explorer-structure.md)). Clerk-disabled self-host deployments ([Open source + distribution](../002-project-scope/open-source-and-business-model.md)) show neither.
 
 ### Email claim
 
@@ -89,7 +89,7 @@ A second way in, alongside per-address invites: a **shareable link** an admin ac
 - **Resolve (open)**: `GET /api/teams/invite-link/:token` returns `{ team, memberCount, alreadyMember }` when the token is on and unexpired, else `404`. This one endpoint sits **above** the sign-in gate — a token holder must see _what_ they're joining before they sign in, and the token is the credential, so naming the team to whoever holds it is fine. `alreadyMember` is computed against the caller's verified id when present, else false, and is true only for a **joined** membership: someone whose email invite is still pending is offered **Join**, which accepts it.
 - **Join (signed-in)**: `POST /api/teams/invite-link/:token/join` adds the caller as a **joined** member and returns `{ teamId, alreadyMember }`. Idempotent: an existing membership is a no-op, and a pending email invite for the caller is accepted in place rather than duplicated. Guests get `401` (teams are Clerk-only); an invalid/expired token `404`s.
 - **The landing page** is the top-level `/join?token=<token>` route (outside the Explorer chrome, see [Router app](../016-platform/router-app.md)), so the signed-out flow renders its own card instead of being bounced by the explorer's auth gate. It resolves the token, then shows: **Join / Decline** to a signed-in non-member (Join → the team page; Decline → back to their documents); "already a member" with an Open-team link; or, to a signed-out visitor, why an account is needed plus **Sign in** / **Create an account** links whose `redirect_url` carries the same `/join?token=…` URL, so auth returns them here to finish joining. An off / expired / unknown token shows an "invite link isn't valid" card.
-- **Explorer UI**: the team detail page header gains an **"Invite by link"** button (admins only, to the left of the overflow menu) opening a modal (`TeamInviteLinkDialog`) that turns the link on, copies the URL, shows the expiry, and turns it off.
+- **Explorer UI**: the team detail page header gains an **"Invite by Link"** button (admins only, to the left of the overflow menu) opening a modal (`TeamInviteLinkDialog`) that turns the link on, copies the URL, shows the expiry, and turns it off.
 
 ## Roles and permissions
 
@@ -156,7 +156,7 @@ The pane title row reads "Recent Documents" for the recent section (renamed from
 overview ([Save Locations](../006-document/save-locations.md)), and that overview carries a **New Team** tile after
 the team cards for signed-in users: an inline name field that creates the
 team and enters it, so "put this document in a new team" is one flow rather
-than a detour through the sidebar's New team form. The sidebar form stays
+than a detour through the sidebar's New Team form. The sidebar form stays
 for the organisation field and invites.
 
 ## Telemetry
