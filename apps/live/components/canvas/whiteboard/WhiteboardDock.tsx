@@ -260,6 +260,7 @@ export function WhiteboardDock({ model, ink, onDrawn }: WhiteboardDockProps) {
     <div
       data-floating-panel=""
       data-whiteboard-dock=""
+      data-region="palette"
       data-dock-position={model.position}
       onPointerDown={(e) => e.stopPropagation()}
       onContextMenu={(e) => {

@@ -3,6 +3,22 @@
 import { useEffect, useState, type RefObject } from 'react';
 import type { MovablePanelProps } from './MovablePanel.types';
 
+// How high a bottom-anchored panel may grow: to the canvas's top edge (below the header), and below the palette strip
+// or the Drawing dock where they overlap it across, so its header never slides under them on a short window (a laptop
+// zoomed to 200%, docs/specs/007-editor/panel-docking.md "Default layout").
+export function bottomPanelTopLimit(panelRect: Pick<DOMRect, 'left' | 'right'>): number {
+  const canvas = document.querySelector('main[data-region="canvas"], main[aria-label="Canvas"]');
+  let top = canvas ? canvas.getBoundingClientRect().top : 0;
+  for (const el of document.querySelectorAll(
+    '[data-toolbar-palette] [data-tour-id="palette"], [data-whiteboard-dock]',
+  )) {
+    const r = el.getBoundingClientRect();
+    if (r.height > 0 && panelRect.right > r.left && panelRect.left < r.right)
+      top = Math.max(top, r.bottom);
+  }
+  return top;
+}
+
 // The panel's geometry measurement, lifted out of MovablePanel: the body
 // max-height cap, so the scrollable body never runs under the tab bar /
 // zoom controls. Returns the computed cap.
@@ -58,7 +74,9 @@ export function useMovablePanelMeasure({
         ? dockedCorner === 'bottom-left' || dockedCorner === 'bottom-right'
         : position === null && defaultCorner.startsWith('bottom');
       if (bottomAnchored) {
-        setBodyMaxH(Math.max(panelRect.bottom - headerH - GAP * 2, 80));
+        setBodyMaxH(
+          Math.max(panelRect.bottom - bottomPanelTopLimit(panelRect) - headerH - GAP * 2, 80),
+        );
         return;
       }
       const tabbar = document.querySelector('[data-editor-tabbar]');

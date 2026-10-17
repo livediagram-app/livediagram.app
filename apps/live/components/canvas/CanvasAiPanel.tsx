@@ -25,7 +25,7 @@ export function CanvasAiPanel({
     <MovablePanel
       title="AI Assistant"
       position={wiring.position}
-      defaultCorner="top-right-stacked"
+      defaultCorner="bottom-right"
       width="w-auto sm:w-64"
       collapsible
       onMoveTo={aiPanel.onMove}

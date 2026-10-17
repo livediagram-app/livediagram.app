@@ -36,6 +36,15 @@
   }
 }
 
+/* A short window, whatever the pointer: a phone held sideways, or a desktop browser zoomed to 200% (720x450). Panels
+ * that need their height (the start panel, docs/specs/007-editor/start-diagramming.md "On a short window") trim
+ * their clearances here. */
+@custom-variant short-window {
+  @media (max-height: 499px) {
+    @slot;
+  }
+}
+
 /* Scan the shared UI package so utility classes used only inside its
  * components (e.g. the <Brand> mark's hover-rotate) are generated here too.
  * Tailwind v4 skips node_modules, where the workspace package is symlinked. */

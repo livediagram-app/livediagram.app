@@ -10,10 +10,10 @@ import type { HelpArticleKey } from '@/lib/help-articles';
 //
 // These five are the panels that exist only while their tool does (docs/specs/008-canvas/laser-panel.md for
 // the Laser, docs/specs/008-canvas/avatar-mode.md for Avatar, and the same shape for the rest). They are
-// deliberately identical outside their bodies — same corner, same width, same
-// collapse behaviour — because the top-right
-// column has to read as one edge rather than five panels that each drifted a
-// little.
+// deliberately identical outside their bodies (same corner, same width, same
+// collapse behaviour) because the bottom-right column, above the bottom
+// cluster, has to read as one edge rather than five panels that each drifted
+// a little.
 //
 // All five wrote that out by hand: the same props in the same order,
 // differing only in `title`. This is the second half of the job
@@ -60,9 +60,8 @@ export function ModePanel({
     <MovablePanel
       title={title}
       position={position}
-      defaultCorner="top-right-stacked"
-      // Matches the Palette this stacks under, so the top-right column reads as
-      // one edge rather than two.
+      defaultCorner="bottom-right"
+      // One width for the whole bottom-right column, so it reads as one edge.
       width="w-auto sm:w-64"
       onMoveTo={onMoveTo}
       onReset={onReset}

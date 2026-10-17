@@ -201,6 +201,10 @@ They are kept for the browser tab only and read once (`start-query.ts`).
 - **On a phone** the panel is a sheet risen from the bottom edge (`animate-sheet-up`), full width below the top bar,
   over the tab bar, clear of the home indicator, with the grab handle every phone sheet has. A start that cannot
   close (Start Planning) settles back when dragged.
+- **On a short window** (under 500px tall, whatever the pointer: a phone held sideways, or a laptop zoomed to 200%,
+  720×450) the panel clears only the palette strip's height (`pt-16`) and lies over the bottom cluster (`pb-2`, the
+  overlay layer), as on a sideways phone. With the desktop clearances (8.5rem above, 7rem below) a 450px window left
+  the cards 96px, less than one card, so zooming the browser made the start unusable.
 
 ## Telemetry
 

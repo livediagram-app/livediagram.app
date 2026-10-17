@@ -20,18 +20,19 @@ describe('panel-layout', () => {
     // The top-left holds the menu button, not a panel (docs/specs/007-editor/toolbar-layout.md).
     expect(layout.corners['top-left']).toEqual([]);
     // Vote and Poll open over the Session strip (docs/specs/012-collaboration/session-tools.md), not here.
-    expect(layout.corners['top-right']).toEqual(['ai']);
+    // The AI panel and the tool panels home bottom-right (docs/specs/007-editor/panel-docking.md "Default layout").
+    expect(layout.corners['top-right']).toEqual([]);
     expect(layout.corners['bottom-left']).toEqual(['minimap']);
-    expect(layout.corners['bottom-right']).toEqual(['collaborate']);
+    expect(layout.corners['bottom-right']).toEqual(['collaborate', 'ai']);
     expect(layout.free).toEqual({});
   });
 
   it('docks a panel to the bottom of a corner stack, removing it from its old spot', () => {
-    const next = dockPanel(defaultPanelLayout(), 'ai', 'bottom-right');
+    const next = dockPanel(defaultPanelLayout(), 'ai', 'top-right');
     // Left its old corner...
-    expect(next.corners['top-right']).toEqual([]);
+    expect(next.corners['bottom-right']).toEqual(['collaborate']);
     // ...and joined below whatever is in the target corner.
-    expect(next.corners['bottom-right']).toEqual(['collaborate', 'ai']);
+    expect(dockPanel(next, 'laser', 'top-right').corners['top-right']).toEqual(['ai', 'laser']);
   });
 
   it('a panel lives in exactly one place (free clears its corner)', () => {
@@ -55,19 +56,24 @@ describe('panel-layout', () => {
   });
 
   it('reflow: removing a stacked panel shifts the rest up', () => {
-    // Stack two in the top-right, then move the first away; the second leads the stack.
-    const stacked = dockPanel(defaultPanelLayout(), 'laser', 'top-right');
-    expect(stacked.corners['top-right']).toEqual(['ai', 'laser']);
+    // Stack two in the bottom-right, then move the first away; the second leads the stack.
+    const stacked = dockPanel(defaultPanelLayout(), 'laser', 'bottom-right');
+    expect(stacked.corners['bottom-right']).toEqual(['collaborate', 'ai', 'laser']);
     const next = dockPanel(stacked, 'ai', 'top-left');
-    expect(next.corners['top-right']).toEqual(['laser']);
+    expect(next.corners['bottom-right']).toEqual(['collaborate', 'laser']);
   });
 
   it('resolves an unmentioned panel to its default corner', () => {
     const layout: PanelLayout = { corners: normalizePanelLayout({}).corners, free: {} };
     expect(resolvePlacement(layout, 'ai')).toEqual({
       mode: 'corner',
-      corner: 'top-right',
+      corner: 'bottom-right',
     });
+  });
+
+  it('homes every tool panel and the AI panel bottom-right', () => {
+    for (const id of ['ai', 'laser', 'spotlight', 'eraser', 'format', 'slide-deck'] as const)
+      expect(DEFAULT_PANEL_CORNER[id]).toBe('bottom-right');
   });
 
   describe('normalize', () => {

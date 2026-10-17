@@ -481,6 +481,7 @@ function CanvasView(props: CanvasProps) {
             // panels render inside it and must keep normal SR navigation.
             tabIndex={0}
             aria-label="Canvas"
+            data-region="canvas"
             data-canvas-a11y-root=""
             onPointerMove={handlePointerMoveCanvas}
             onPointerLeave={handlePointerLeaveCanvas}
