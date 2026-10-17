@@ -45,10 +45,12 @@ export function JumpBackInStrip({
   }, [tiles.length]);
 
   return (
-    <div className="relative">
+    // On a phone the strip runs to the screen's edges (the page's 16 px padding given back), so a card scrolls out
+    // at the edge under the fade rather than being cut off short of it.
+    <div className="relative -mx-4 sm:mx-0">
       <div
         ref={ref}
-        className={`scrollbar-slim -mx-1 flex ${STRIP_HEIGHT} snap-x gap-3 overflow-x-auto px-1 pb-2 pt-1`}
+        className={`scrollbar-slim flex ${STRIP_HEIGHT} scroll-px-4 snap-x gap-3 overflow-x-auto px-4 pb-2 pt-1 sm:-mx-1 sm:scroll-px-1 sm:px-1`}
       >
         {tiles.length === 0 ? (
           // The heading alone: the strip's height holds no second line. With nothing to show, no See More either.

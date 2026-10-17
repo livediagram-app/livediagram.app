@@ -78,15 +78,20 @@ export function HomeHero({ active = true }: { active?: boolean }) {
       />
       <div className="relative mx-auto flex w-full max-w-7xl flex-wrap items-center gap-10 px-4 pb-12 pt-6 sm:px-6 lg:pb-14">
         <div className="flex min-w-0 flex-[999_1_32rem] flex-col gap-5">
-          <div className="flex flex-wrap items-center gap-2">
+          {/* A phone: the menu button and Help share their own row, so the pills never push Help onto a line
+              of its own. */}
+          <div className="-mb-2 flex items-center justify-between sm:hidden">
             <button
               type="button"
               onClick={() => setMobileNavOpen(true)}
               aria-label={HERO_COPY.openNav}
-              className={`-ml-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-slate-600 transition hover:bg-white hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white sm:hidden ${FOCUS_RING}`}
+              className={`-ml-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-slate-600 transition hover:bg-white hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white ${FOCUS_RING}`}
             >
               <HamburgerIcon />
             </button>
+            <HelpArticleLink article="timeline" variant="button" />
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
             {firstRun ? (
               // What is true of every start; nothing to follow, so not links.
               <>
@@ -124,8 +129,9 @@ export function HomeHero({ active = true }: { active?: boolean }) {
                 </InAppLink>
               );
             })}
-            {/* Help ends the row below `lg`; from `lg` it stands at the hero's top right, over the sheets. */}
-            <span className="ml-auto lg:hidden">
+            {/* Help ends the pills' row from `sm` to `lg`; from `lg` it stands at the hero's top right, over the
+                sheets; on a phone it sits beside the menu button above. */}
+            <span className="ml-auto hidden sm:inline-flex lg:hidden">
               <HelpArticleLink article="timeline" variant="button" />
             </span>
           </div>

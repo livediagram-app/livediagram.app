@@ -14,7 +14,7 @@ export function heroGreeting(hour: number): string {
 
 export const HERO_COPY = {
   question: 'What are we picking up?',
-  lead: 'Jump Back Into what you use most, or see what changed while you were away.',
+  lead: 'Jump back into what you use most, or see what changed while you were away.',
   newDocument: 'New Document',
   // The page header's words for the same drawer button.
   openNav: 'Browse sections',
