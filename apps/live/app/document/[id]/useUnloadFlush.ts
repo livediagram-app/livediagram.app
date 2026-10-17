@@ -15,6 +15,15 @@ import { commitOpenEdit } from '@/lib/open-edit';
 import { useLatest } from '@/hooks/ui/useLatest';
 import { computeTabSaveDiff } from './editor-page-helpers';
 import { relayParticipantChanges } from './tab-save-flow';
+import { isSaveFailing } from '@/lib/save-health';
+
+/** Whether leaving now asks first: changes the server has not taken, while the last save failed or the browser is
+ *  offline. */
+export const shouldWarnOnLeave = (
+  unsaved: boolean,
+  saveFailing: boolean,
+  online: boolean,
+): boolean => unsaved && (saveFailing || !online);
 
 export function useUnloadFlush(opts: {
   hydrated: boolean;
@@ -39,23 +48,30 @@ export function useUnloadFlush(opts: {
   const flushedRef = useRef<{ tabs: Tab[]; name: string } | null>(null);
 
   useEffect(() => {
-    const flush = () => {
+    // What the server has not taken yet, or null where nothing may be sent.
+    const unsaved = () => {
       const o = latest.current;
-      if (!o.hydrated || !o.documentId || o.isReadOnly) return;
-      if (o.writesForbiddenRef.current) return;
+      if (!o.hydrated || !o.documentId || o.isReadOnly) return null;
+      if (o.writesForbiddenRef.current) return null;
       // The user just deleted this document (navigating to /explorer fires beforeunload): don't send its
       // tabs back and re-create it.
-      if (isDocumentDeleted(o.documentId)) return;
-      const flushed = flushedRef.current;
-      if (flushed && flushed.tabs === o.tabs && flushed.name === o.documentName) return;
-      const { changedTabs, deletedIds, orderChanged, nameChanged, hasChanges } = computeTabSaveDiff(
+      if (isDocumentDeleted(o.documentId)) return null;
+      const diff = computeTabSaveDiff(
         o.lastSavedTabsRef.current,
         o.tabs,
         o.lastSavedNameRef.current,
         o.documentName,
         o.loadedTabIdsRef.current,
       );
-      if (!hasChanges) return;
+      return diff.hasChanges ? diff : null;
+    };
+    const flush = () => {
+      const o = latest.current;
+      const flushed = flushedRef.current;
+      if (flushed && flushed.tabs === o.tabs && flushed.name === o.documentName) return;
+      const diff = unsaved();
+      if (!diff || !o.documentId) return;
+      const { changedTabs, deletedIds, orderChanged, nameChanged } = diff;
       flushedRef.current = { tabs: o.tabs, name: o.documentName };
       // A Participant's changes go to the open room at once; it has no beacon to send.
       if (o.participant) {
@@ -86,10 +102,21 @@ export function useUnloadFlush(opts: {
       flushSync(() => commitOpenEdit());
       flush();
     };
-    window.addEventListener('beforeunload', leave);
+    // Closing while saves fail or the browser is offline: the browser's own "Leave site?" first
+    // (docs/specs/007-editor/load-recovery.md "Leaving with unsaved changes asks first"). Never in the healthy
+    // case, a save in flight on a working connection, or people learn to click through it.
+    const beforeUnload = (e: BeforeUnloadEvent) => {
+      leave();
+      if (shouldWarnOnLeave(unsaved() !== null, isSaveFailing(), navigator.onLine)) {
+        e.preventDefault();
+        // Older browsers ask only when returnValue is set.
+        e.returnValue = '';
+      }
+    };
+    window.addEventListener('beforeunload', beforeUnload);
     window.addEventListener('pagehide', leave);
     return () => {
-      window.removeEventListener('beforeunload', leave);
+      window.removeEventListener('beforeunload', beforeUnload);
       window.removeEventListener('pagehide', leave);
       // Unmounted (another page of the app): what the debounce still held goes now.
       flush();

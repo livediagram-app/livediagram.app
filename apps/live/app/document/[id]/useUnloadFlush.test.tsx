@@ -11,7 +11,8 @@ vi.mock('@/lib/api-client', () => ({
 }));
 vi.mock('@/lib/document-tombstones', () => ({ isDocumentDeleted: () => false }));
 
-const { useUnloadFlush } = await import('./useUnloadFlush');
+const { useUnloadFlush, shouldWarnOnLeave } = await import('./useUnloadFlush');
+const { noteSaveFailing } = await import('@/lib/save-health');
 const { useCommitOnLeave } = await import('@/hooks/ui/useCommitOnLeave');
 
 const tab = (label: string): Tab => ({
@@ -101,5 +102,53 @@ describe('useUnloadFlush', () => {
     window.dispatchEvent(new Event('pagehide'));
     view.unmount();
     expect(flush).not.toHaveBeenCalled();
+  });
+});
+
+// docs/specs/007-editor/load-recovery.md "Leaving with unsaved changes asks first".
+describe('the leave prompt', () => {
+  const setOnline = (online: boolean) =>
+    Object.defineProperty(navigator, 'onLine', { value: online, configurable: true });
+  const leave = () => {
+    const e = new Event('beforeunload', { cancelable: true });
+    window.dispatchEvent(e);
+    return e.defaultPrevented;
+  };
+  beforeEach(() => {
+    flush.mockClear();
+    noteSaveFailing(false);
+    setOnline(true);
+  });
+
+  it('asks with unsaved changes while saves fail or the browser is offline', () => {
+    expect(shouldWarnOnLeave(true, true, true)).toBe(true);
+    expect(shouldWarnOnLeave(true, false, false)).toBe(true);
+    expect(shouldWarnOnLeave(true, false, true)).toBe(false);
+    expect(shouldWarnOnLeave(false, true, false)).toBe(false);
+  });
+
+  it('raises the prompt while the last save failed, still flushing what it can', () => {
+    const view = mount([tab('typed')]);
+    noteSaveFailing(true);
+    expect(leave()).toBe(true);
+    expect(flush).toHaveBeenCalledOnce();
+    view.unmount();
+  });
+
+  it('raises the prompt offline', () => {
+    const view = mount([tab('typed')]);
+    setOnline(false);
+    expect(leave()).toBe(true);
+    view.unmount();
+  });
+
+  it('never asks in the healthy case, or with everything saved', () => {
+    const view = mount([tab('typed')]);
+    expect(leave()).toBe(false);
+    view.unmount();
+    noteSaveFailing(true);
+    const saved = mount([tab('saved')]);
+    expect(leave()).toBe(false);
+    saved.unmount();
   });
 });
