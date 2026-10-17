@@ -127,6 +127,8 @@ Two words, two owners, and the naming is deliberate: **Appearance** is yours, a 
 
 ## Header actions
 
+A long document name truncates with an ellipsis; it never pushes the actions: they keep their full width at every screen size, a phone included, and the name takes what is left.
+
 The right edge of the header holds Share (owner), Copy (visitor), and Sign in or the account control as full-height, edge-flush actions, each an icon stacked over a small label (`HEADER_ACTION_BTN` in `apps/live/components/chrome/header-action.tsx`); Share fills brand while the document is shared. Pill, gradient, bordered and ink-button restyles were tried and dropped in favour of this simpler look.
 
 The account menu's **Account** item opens the host page's own Settings dialog on the Account category, in place (the editor via `openSettingsOn('account')`, the Explorer via its settings state); it navigates to `/explorer?settings=account` only when the host passes no handler.
