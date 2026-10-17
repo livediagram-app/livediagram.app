@@ -231,7 +231,17 @@ export function layoutClusteredGraph(
     contractedArrows.push(edgeToArrow({ from, to, label: e.label }, `contracted-${i}`));
   });
 
-  const contracted = autoLayoutElements([...frames, ...freeNodes, ...contractedArrows], {
+  // In the order the graph wrote them, a group where its first member was: a loop is broken where it was written
+  // to start, not at whichever group came first (frames listed ahead of the free nodes started every loop at one).
+  const written = new Map(graph.nodes.map((n, i) => [n.id, i] as const));
+  const at = (el: BoxedElement) =>
+    Math.min(
+      ...(frameIds.has(el.id)
+        ? clusters.find((c) => c.id === el.id)!.members.map((m) => written.get(m) ?? Infinity)
+        : [written.get(el.id) ?? Infinity]),
+    );
+  const blocks = [...frames, ...freeNodes].sort((a, b) => at(a) - at(b));
+  const contracted = autoLayoutElements([...blocks, ...contractedArrows], {
     direction,
     fixedSizeIds: new Set([...frameIds, ...sized]),
   });

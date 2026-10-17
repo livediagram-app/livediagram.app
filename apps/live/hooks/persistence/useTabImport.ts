@@ -258,21 +258,23 @@ export function useTabImport({
     if (format === 'excalidraw') return importExcalidraw(text, onProgress);
 
     if (format === 'mermaid') {
-      const { parseMermaid, layoutClusteredGraph, rederiveColorPresetForTheme, turnBack } =
-        await import('@livediagram/document');
-      const parsed = parseMermaid(text);
+      const {
+        graphFromMermaid,
+        layoutGraph,
+        MERMAID_UNSUPPORTED_ERROR,
+        rederiveColorPresetForTheme,
+      } = await import('@livediagram/document');
+      const parsed = graphFromMermaid(text);
       if (!parsed.ok) return { status: 'error', error: parsed.error };
-      // Uncoloured elements inherit the tab's theme at render, so no
-      // explicit recolour is needed; only a preset-bound node (a state
-      // diagram's solid start / end dot) takes its colours from the theme
-      // now. The cluster-aware layout honours the flowchart direction
-      // (TB / LR) and draws subgraphs as frames.
+      // Sequence diagrams are the agents' only, for now (docs/specs/020-import-export/mermaid.md).
+      if (parsed.graph.style === 'sequence')
+        return { status: 'error', error: MERMAID_UNSUPPORTED_ERROR };
+      // The layout an agent's Mermaid gets (graph-input.ts layoutGraph): the flowchart direction, subgraphs as
+      // frames, and lines that bend round the boxes, a line back to an earlier step round the outside. Labels stay
+      // as written. Uncoloured elements inherit the tab's theme at render, so no explicit recolour is needed; only
+      // a preset-bound node (a state diagram's solid start / end dot) takes its colours from the theme now.
       const theme = getTheme(active?.theme);
-      // An ER relationship laid out hub first is turned back to the way it was written (er-hub-first.ts).
-      const elements = turnBack(
-        layoutClusteredGraph(parsed.graph, { direction: parsed.direction }),
-        parsed.graph.edges,
-      ).map((el) =>
+      const elements = layoutGraph(parsed.graph, { wholeLabels: true }).map((el) =>
         el.type === 'shape' && el.colorPreset ? rederiveColorPresetForTheme(el, theme) : el,
       );
       replaceActiveTabContent({

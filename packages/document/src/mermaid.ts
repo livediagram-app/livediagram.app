@@ -256,7 +256,7 @@ const STATE_HEADER_RE = /^\s*stateDiagram(?:-v2)?\b/i;
 const ER_HEADER_RE = /^\s*erDiagram\b/i;
 const UNSUPPORTED_RE =
   /^\s*(sequenceDiagram|classDiagram|gantt|pie|journey|mindmap|timeline|quadrantChart)\b/i;
-const UNSUPPORTED_ERROR =
+export const MERMAID_UNSUPPORTED_ERROR =
   'Only Mermaid flowcharts (graph / flowchart), state diagrams (stateDiagram), and ER diagrams (erDiagram) are supported — not sequence / class / gantt / etc.';
 
 // Whether the first meaningful line is a header the importer reads as a graph: a flowchart, a state diagram or an
@@ -293,7 +293,7 @@ function parseMermaidDialect(text: string): ParseMermaidResult {
     if (readFlowchartHeader(line) !== null) break; // flowchart — parse below
     if (STATE_HEADER_RE.test(line)) return parseStateDiagram(lines);
     if (ER_HEADER_RE.test(line)) return parseErDiagram(lines);
-    if (UNSUPPORTED_RE.test(line)) return { ok: false, error: UNSUPPORTED_ERROR };
+    if (UNSUPPORTED_RE.test(line)) return { ok: false, error: MERMAID_UNSUPPORTED_ERROR };
   }
   return parseFlowchart(lines);
 }
@@ -315,13 +315,18 @@ function parseFlowchart(lines: string[]): ParseMermaidResult {
   // Subgraphs inside another, folded into it: said back to an agent rather than dropped silently.
   let folded = 0;
 
+  // Nodes some subgraph has already claimed.
+  const claimed = new Set<string>();
   const touch = (id: string) => {
     if (!nodes.has(id)) {
       nodes.set(id, { id, label: id, shape: 'square' });
       implicit.add(id);
-      // Mermaid semantics: a node belongs to the subgraph it was first
-      // mentioned in.
-      if (currentCluster) currentCluster.members.push(id);
+    }
+    // Mermaid semantics: a node belongs to the first subgraph that mentions it, wherever it was first written
+    // (`A --> B` above a `subgraph` that uses B still puts B inside); mentions outside every subgraph claim nothing.
+    if (currentCluster && !claimed.has(id)) {
+      claimed.add(id);
+      currentCluster.members.push(id);
     }
     return nodes.get(id)!;
   };
@@ -463,7 +468,7 @@ function parseFlowchart(lines: string[]): ParseMermaidResult {
   }
 
   if (sawOtherDialect) {
-    return { ok: false, error: UNSUPPORTED_ERROR };
+    return { ok: false, error: MERMAID_UNSUPPORTED_ERROR };
   }
 
   // An edge to a subgraph id pins to its frame.

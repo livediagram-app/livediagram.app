@@ -82,8 +82,9 @@ only the sweep direction differs).
   as a **frame** shape ([Canvas and palette](../008-canvas/canvas-and-palette.md)) drawn around its member nodes, laid out as a
   cluster: members are laid out among themselves, the cluster participates in
   the top-level flow as one block, and the frame is sized around the result.
-  A node belongs to the subgraph where it was **first defined** (matching
-  Mermaid). Edges may reference a subgraph id — the arrow pins to the frame.
+  A node belongs to the **first subgraph that mentions it** (matching
+  Mermaid), wherever it was first written: `A --> C` above a `subgraph Kitchen` whose block uses `C` still puts
+  `C` in Kitchen; mentions outside every subgraph claim nothing. Edges may reference a subgraph id — the arrow pins to the frame.
   Nested subgraphs fold into their top-level ancestor (frames import one
   level deep); through the MCP the reply says so (`notes`: "2 nested subgraphs folded into their outer group:
   groups draw one level deep"), rather than dropping the nesting silently. On export, each frame becomes a `subgraph` block containing
@@ -178,6 +179,19 @@ a `sequenceDiagram` and draws it the way the sequence diagram template does.
 - **Limits**: at most 30 participants and 300 messages, notes and fragment lines; past them the parser refuses
   naming the limit.
 
+## Layout
+
+The editor's import lays a graph out exactly as an agent's Mermaid is laid out ([MCP server](../015-api/mcp-server.md)
+§4.7, `graphFromMermaid` then `layoutGraph`): the flowchart direction, subgraphs as frames, the template look, and
+lines that bend round the boxes, a line back to an earlier step going round the outside rather than straight behind
+the boxes between. One difference: an import keeps every label **as written** (`layoutGraph`'s `wholeLabels`),
+where an agent's long label is cut to a heading with its full text in the node's note. A front-matter `title:`
+heads the drawing, as it does for an agent. A sequence diagram is still refused by the editor's import (above).
+
+A loop through a group starts where the Mermaid starts it: the contracted layout takes its blocks in the order the
+graph wrote them (a group where its first member was), so the first-written node leads, not whichever group came
+first.
+
 ## The engine lives in `packages/document`
 
 Pure, tested, reusable (import UI today; the MCP or public API could adopt it):
@@ -194,8 +208,10 @@ Pure, tested, reusable (import UI today; the MCP or public API could adopt it):
 triangle|circle|cross`); `GraphNode` carries an optional `link` URL —
   all additive, so every existing `graphToElements` caller (the MCP) is
   untouched.
+- **`layoutGraph(graph, { wholeLabels: true })`** (graph-input.ts), over **`graphFromMermaid(text)`**: the
+  import's entry, shared with the MCP ("Layout" above).
 - **`layoutClusteredGraph(graph, { direction })`** (auto-layout-clusters.ts) —
-  the import's composition point. Without clusters it's exactly
+  the layered composition point `layoutGraph` builds on. Without clusters it's exactly
   `graphToElements` + `autoLayoutElements({ direction })`. With clusters it
   lays out each cluster's members, contracts each cluster to one
   block-sized node, lays out the contracted graph (via a new
@@ -285,7 +301,8 @@ after Mermaid?").
 ## Node boxes and text
 
 A graph's nodes (a Mermaid import, the MCP's graph input) are sized to their
-labels and set in one fixed text size (`sm`), not the shape default that
+labels and set in one text size for the whole graph (`md`, the templates' size, up to `LOOK_MD_MAX_NODES` nodes;
+`sm` past it, so a large system still fits), not the shape default that
 scales text to fill each box: fitted boxes with scaling text made a short
 heading huge beside a long one set small (`labelBoxSize` in `graph-authoring.ts`).
 The clustered layout **keeps those sizes** rather than stretching each box to
