@@ -867,6 +867,7 @@ export * from './fonts';
 // helpers a presentation is built from. Kept here rather than in apps/live
 // because the api and the MCP worker can answer the same questions.
 export * from './slide-deck';
+export * from './slide-deck-pages';
 export * from './lane-seam-snapping';
 // Refs, slug ids, kind words, derived containment and the style keys (docs/specs/024-agents/document-views.md):
 // how views, edit operations and the lint name and place elements alike.
