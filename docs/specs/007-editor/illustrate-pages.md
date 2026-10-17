@@ -1424,9 +1424,29 @@ separate pages. It is explicit: never run on entering the mode.
 
 ## Slides
 
-- In Illustrate mode the Slide Deck panel adds slides **a page at a time**: a page picker (each
-  page by its label) and **Add as slide**, in place of "Select elements to make a slide". An empty
-  deck says "No slides yet. Pick a page, then press **Add as slide**."
+- **Slide pages are the deck's slides, in page order.** Every slide page (`kind: 'slide'`) of an
+  Illustrate tab has a page slide in the deck, whoever made the page: a Slide Deck template, Add
+  Page, a duplicate, a layout, an agent, a peer or an undo. A Slide Deck template opens ready to
+  present. A tab's page slides run in its page order: move a page and its slide moves with it. The
+  slots those slides take in the deck keep their places among the other slides (another tab's, an
+  element slide, a card); only which page fills which slot follows the pages, and a new slide
+  page's slide joins the tab's run (its last slot, or the deck's end for a tab with none yet).
+  `deckFollowingPages` (`slide-deck-pages.ts`), run whenever a loaded Illustrate tab's pages or
+  their kinds change (`deckPagesKey`), never on an element edit, and only once the document and
+  its stored deck have loaded, so the pass builds on the stored deck. An Editor's pass is saved; a
+  Viewer or Participant sees the same deck without writing it. A slide page's slide is named by
+  its tab and page (`pageSlideIdFor`), so two editors adding it at once write the same slide.
+  - Dragging a slide page's slide in the Slide Deck moves its page in the tab
+    (`pageMoveForDeckOrder`): just after the page whose slide now comes before it, else before
+    the page whose slide comes after it; nothing moves while it already sits between them.
+  - A slide page's only slide has no Delete (it would come straight back); **Hide** leaves it out
+    of the show. A copy of it, and a slide of any other page, delete as before.
+  - A slide of a deleted page stays where it is, empty, as below; the follow pass never removes a
+    slide.
+- In Illustrate mode the Slide Deck panel also adds slides **a page at a time**, for the pages that
+  are not slide pages (an infographic, article or logo page): a page picker (each page by its
+  label) and **Add as slide**, in place of "Select elements to make a slide". Such a page slide
+  takes its place in the page order too once it is in the deck.
 - A **page slide** (`Slide.pageId`, docs/specs/012-collaboration/presentation-mode.md) is the page,
   resolved live: it shows whatever is on the page now and is framed to exactly the page, so it
   follows the page's edits, reorders and size changes. Its row reads `<tab> · <page label>`, the
@@ -1439,9 +1459,8 @@ separate pages. It is explicit: never run on entering the mode.
   says "The page stays.", and a duplicate counts as `UI · Added · PageSlide`.
 - **A slide page's deck button**: first in its title bar, left of Layout and Background, for an
   editor on a desktop, a slide page shows its place in the deck, named beside its icon while the
-  title bar has room. While the deck has no slide of the page (on this tab) it is **Add to Slides**
-  (the Slide Deck icon), which adds the page slide at the deck's end, as Add as slide does. Once
-  the deck has one it toggles that slide's visibility in the presentation: **Hide in Slides** (an
+  title bar has room. The deck always has a slide of a slide page, so the button
+  toggles that slide's visibility in the presentation: **Hide in Slides** (an
   open eye) or **Show in Slides** (a crossed eye), the same as the slide's Visibility in the Slide
   Deck. Telemetry as the Slide Deck's own (`UI · Added · PageSlide`, `UI · Toggled · SlideHidden /
 SlideShown`).

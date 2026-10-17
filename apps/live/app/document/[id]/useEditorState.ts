@@ -1,6 +1,7 @@
 'use client';
 
 import { useFocusNewPlanElement } from '@/hooks/plan/useFocusNewPlanElement';
+import { tabsWithPageMoved, useDeckFollowsPages } from './useDeckFollowsPages';
 import { voteTallies } from '@/hooks/plan/vote-tally';
 import { useMergeDuplicateStatuses } from '@/hooks/plan/useMergeDuplicateStatuses';
 import { usePresetCardTypes } from '@/hooks/plan/usePresetCardTypes';
@@ -1581,6 +1582,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
       setUserPreferences(commitUserPreferences(userPreferences, next, selfParticipant.id)),
     tabs,
     framePage: (_tabId, pageId) => framePageRef.current?.(pageId),
+    movePage: (tabId, pageId, unitIndex) =>
+      commitTabs((ts) => tabsWithPageMoved(ts, tabId, pageId, unitIndex)),
     plan: slideThumbnailPlan,
     activeTabId: activeId,
     setActiveId,
@@ -1610,6 +1613,14 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   useEffect(() => {
     hydrateStoredDeck();
   }, [hasStoredDeck, documentId]);
+  // After the hydration above, so the stored deck is what the deck's follow pass builds on.
+  useDeckFollowsPages({
+    tabs,
+    ready: hydrated,
+    hasStoredDeck,
+    documentId,
+    followPages: slideDeck.followPages,
+  });
 
   // What the presentation is showing right now, if anything.
   const presentingStep =

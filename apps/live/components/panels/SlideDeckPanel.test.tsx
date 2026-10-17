@@ -19,9 +19,14 @@ globalThis.ResizeObserver ??= class {
 } as unknown as typeof ResizeObserver;
 
 const noop = () => {};
-function state(deck: Deck, pageLabels = new Map<string, string | null>()): SlideDeckState {
+function state(
+  deck: Deck,
+  pageLabels = new Map<string, string | null>(),
+  ownPageSlideIds = new Set<string>(),
+): SlideDeckState {
   return {
     deck,
+    ownPageSlideIds,
     openSlideId: null,
     openSlideInEditor: noop,
     runnable: [],
@@ -69,8 +74,8 @@ function panel(deck: Deck, labels?: Map<string, string | null>, withPages = true
 describe('SlideDeckPanel on an Illustrate tab', () => {
   it('names the page picker button in the empty hint', () => {
     panel({ slides: [] });
-    expect(screen.getByText(/pick any page below and press/).textContent).toBe(
-      'Add your slide pages in one go, or pick any page below and press Add as slide.',
+    expect(screen.getByText(/pick it below and press/).textContent).toBe(
+      'Slide pages join the deck on their own. For any other page, pick it below and press Add as slide.',
     );
   });
 
@@ -108,6 +113,28 @@ describe('SlideDeckPanel on an Illustrate tab', () => {
     fireEvent.click(screen.getByLabelText('Delete'));
     expect(screen.getByText(/The page stays\./)).toBeTruthy();
     expect(screen.queryByText(/on the canvas/)).toBeNull();
+  });
+
+  // docs/specs/007-editor/illustrate-pages.md "Slides": a slide page's own slide would come straight back.
+  it("offers no Delete on a slide page's own slide, Hide still there", () => {
+    render(
+      <SlideDeckPanel
+        state={state(
+          { slides: [{ id: 's1', tabId: 'a', elementIds: [], pageId: 'p1' }] },
+          new Map([['s1', pages[0]!.label]]),
+          new Set(['s1']),
+        )}
+        tabs={tabs}
+        activeTabId="a"
+        isReadOnly={false}
+        pages={pages}
+        position={null}
+        onMoveTo={noop}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /Options for/ }));
+    expect(screen.queryByLabelText('Delete')).toBeNull();
+    expect(screen.getByText('Visibility')).toBeTruthy();
   });
 
   it('still offers selection edits on a slide of elements', () => {
@@ -157,21 +184,5 @@ describe('the Slide Deck popover', () => {
     expect(screen.getByLabelText('Has speaker notes')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Present from slide 2' }));
     expect(start).toHaveBeenCalledWith('s2');
-  });
-
-  it('adds every slide page not yet in the deck at once', () => {
-    const newPageSlide = vi.fn();
-    popover(
-      { slides: [{ id: 's1', tabId: 'a', elementIds: [], pageId: 'p1' }] },
-      { newPageSlide },
-      [
-        { id: 'p1', label: 'Page 1', slide: true },
-        { id: 'p2', label: 'Page 2', slide: true },
-        { id: 'p3', label: 'Page 3', slide: true },
-        { id: 'p4', label: 'Page 4' },
-      ],
-    );
-    fireEvent.click(screen.getByRole('button', { name: /Add All 2 Slide Pages/ }));
-    expect(newPageSlide.mock.calls.map((c): unknown => c[0])).toEqual(['p2', 'p3']);
   });
 });

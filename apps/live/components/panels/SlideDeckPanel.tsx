@@ -86,6 +86,7 @@ export function SlideDeckPanel({
     setSlideNotes,
     setSlideMinutes,
     deleteSlide,
+    ownPageSlideIds,
     toggleSlideHidden,
     duplicateSlide,
     reorderSlides,
@@ -137,29 +138,6 @@ export function SlideDeckPanel({
   const totalMinutes = deck.slides.reduce((n, sl) => n + (sl.hidden ? 0 : (sl.minutes ?? 0)), 0);
   // A deck spanning tabs names each slide's tab.
   const spansTabs = new Set(deck.slides.map((sl) => sl.tabId)).size > 1;
-  // The active tab's slide pages not yet in the deck, for Add All Slide Pages.
-  const inDeck = new Set(
-    deck.slides.filter((sl) => sl.tabId === activeTabId && sl.pageId).map((sl) => sl.pageId),
-  );
-  const missingSlidePages = (pages ?? []).filter((p) => p.slide && !inDeck.has(p.id));
-  const addAll = () => {
-    track('UI', 'Added', 'AllPageSlides');
-    for (const p of missingSlidePages) newPageSlide(p.id);
-  };
-  const addAllButton =
-    !isReadOnly && missingSlidePages.length > 0 ? (
-      <button
-        type="button"
-        onClick={addAll}
-        className="flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-brand-300 bg-brand-50/60 px-3 py-2 text-xs font-semibold text-brand-700 transition hover:border-brand-400 hover:bg-brand-50 focus-visible:outline-2 focus-visible:outline-brand-600 dark:border-brand-500/40 dark:bg-brand-500/10 dark:text-brand-200 dark:hover:bg-brand-500/20"
-      >
-        <SlideDeckIcon />
-        {missingSlidePages.length === 1
-          ? 'Add the Slide Page'
-          : `Add All ${missingSlidePages.length} Slide Pages`}
-      </button>
-    ) : null;
-
   return (
     <ModePanel
       title="Slide Deck"
@@ -204,16 +182,16 @@ export function SlideDeckPanel({
               Build your deck
             </p>
             <p className="max-w-[18rem] text-xs leading-snug text-slate-500 dark:text-slate-400">
-              {/* Each way in names the button it has: an Illustrate tab adds a page at a time. */}
+              {/* Each way in names the button it has: on an Illustrate tab a slide page joins on its own
+                  (docs/specs/007-editor/illustrate-pages.md "Slides"), any other page a page at a time. */}
               {pages
-                ? 'Add your slide pages in one go, or pick any page below and press'
+                ? 'Slide pages join the deck on their own. For any other page, pick it below and press'
                 : 'Select what you want on the first slide, then press'}{' '}
               <span className="font-medium text-slate-700 dark:text-slate-200">
                 {pages ? 'Add as slide' : 'New slide'}
               </span>
               .
             </p>
-            {addAllButton}
           </div>
         ) : (
           <div
@@ -258,10 +236,13 @@ export function SlideDeckPanel({
                         onRemoveSelection={() => removeFromSlide(slide.id, currentSelectionIds)}
                         onToggleHidden={() => toggleSlideHidden(slide.id)}
                         onDuplicate={() => duplicateSlide(slide.id)}
-                        onDelete={(anchor) =>
-                          anchor
-                            ? setConfirmDelete({ id: slide.id, anchor })
-                            : deleteSlide(slide.id)
+                        onDelete={
+                          ownPageSlideIds.has(slide.id)
+                            ? undefined
+                            : (anchor) =>
+                                anchor
+                                  ? setConfirmDelete({ id: slide.id, anchor })
+                                  : deleteSlide(slide.id)
                         }
                       />
                     )
@@ -334,7 +315,6 @@ export function SlideDeckPanel({
           </label>
         ) : null}
 
-        {deck.slides.length > 0 ? addAllButton : null}
         {!isReadOnly && pages ? (
           <PageSlidePicker pages={pages} onAdd={newPageSlide} />
         ) : !isReadOnly ? (

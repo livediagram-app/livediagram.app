@@ -21,8 +21,11 @@ const idsOf = (s: Selection) => selectionIds(s.selectedId, s.multiSelectedIds);
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import {
+  deckFollowingPages,
   EMPTY_DECK,
   firstDeck,
+  pageMoveForDeckOrder,
+  slidePageOwnSlideIds,
   illustratePagesOf,
   pageLabel,
   parseStoredPresentation,
@@ -86,6 +89,7 @@ export function useSlideDeck({
   loadAllTabs,
   plan,
   framePage,
+  movePage,
   prefs,
   commitPrefs,
 }: {
@@ -109,6 +113,9 @@ export function useSlideDeck({
   /** Frames an Illustrate page of a tab in the view (as its label's press does), once that tab is
    *  the active one. Absent where nothing frames pages. */
   framePage?: (tabId: string, pageId: string) => void;
+  /** Moves a tab's page to a unit index (pageMovedTo), for a page slide dragged in the deck: the deck follows the
+   *  pages, so a drag there moves the page (docs/specs/007-editor/illustrate-pages.md "Slides"). */
+  movePage?: (tabId: string, pageId: string, unitIndex: number) => void;
 }) {
   const [deck, setDeck] = useState<Deck>(EMPTY_DECK);
   // Which slide the PANEL has open. Separate from the presentation's own
@@ -138,6 +145,7 @@ export function useSlideDeck({
   // Hydration guard. Seeding the deck from the server must not look like an
   // edit, or opening a document would immediately PUT the deck straight back.
   const hydratedRef = useRef(false);
+  const tabsRef = useLatest(tabs);
   const saveTimer = useRef<number | null>(null);
   const saveRef = useLatest(saveDeck);
 
@@ -153,6 +161,8 @@ export function useSlideDeck({
     (next: Deck | ((prev: Deck) => Deck)) => {
       setDeck((prev) => {
         const resolved = typeof next === 'function' ? next(prev) : next;
+        // Nothing changed (a follow pass with the deck already in step): nothing to save.
+        if (resolved === prev) return prev;
         if (saveTimer.current !== null) window.clearTimeout(saveTimer.current);
         saveTimer.current = window.setTimeout(() => {
           const stored = storePresentation(resolved);
@@ -170,6 +180,18 @@ export function useSlideDeck({
     },
     [],
   );
+
+  // The deck follows the slide pages (docs/specs/007-editor/illustrate-pages.md "Slides"): each in the deck, a tab's
+  // page slides in its page order. An editor saves it; a viewer only sees it, the same deck an editor would store.
+  // Built on the deck as it stands when the update runs, so a stored deck hydrated in the same pass is the base.
+  const followPages = useCallback(() => {
+    const follow = (prev: Deck) => deckFollowingPages(prev, tabsRef.current);
+    if (isReadOnly) setDeck(follow);
+    else commitDeck(follow);
+  }, [commitDeck, isReadOnly, tabsRef]);
+  // The slides a slide page holds in the deck, which the panel offers Hide for rather than Delete.
+  // One pass over the deck and the loaded Illustrate tabs' pages: about 0.1 ms at the 100-page cap.
+  const ownPageSlideIds = useMemo(() => slidePageOwnSlideIds(deck, tabs), [deck, tabs]);
 
   // --- What the panel renders -----------------------------------------------
 
@@ -412,11 +434,21 @@ export function useSlideDeck({
         if (moved) slides.splice(toIndex, 0, moved);
         return { slides };
       });
+      // A page slide dragged out of its page's order moves its page, and the deck then follows the pages: the two
+      // orders are one (docs/specs/007-editor/illustrate-pages.md "Slides").
+      const slides = [...deckRef.current.slides];
+      const from = slides.findIndex((s) => s.id === fromId);
+      if (from >= 0 && toIndex >= 0 && toIndex < slides.length) {
+        const [moved] = slides.splice(from, 1);
+        if (moved) slides.splice(toIndex, 0, moved);
+        const move = pageMoveForDeckOrder({ slides }, fromId, tabsRef.current);
+        if (move) movePage?.(move.tabId, move.pageId, move.unitIndex);
+      }
       // One event per completed drag, not per position crossed: the reorder
       // only commits on release, so this is already once per gesture.
       track('UI', 'Moved', 'Slide');
     },
-    [commitDeck, isReadOnly],
+    [commitDeck, deckRef, isReadOnly, movePage, tabsRef],
   );
 
   /**
@@ -502,6 +534,8 @@ export function useSlideDeck({
     setSlideNotes,
     setSlideMinutes,
     deleteSlide,
+    ownPageSlideIds,
+    followPages,
     toggleSlideHidden,
     duplicateSlide,
     reorderSlides,
