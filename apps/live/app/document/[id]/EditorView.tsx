@@ -654,13 +654,15 @@ export function EditorView() {
                                       <EditorTours />
                                     </AreaErrorBoundary>
 
-                                    {/* Guest sign-in nudge (docs/specs/014-identity/sign-in-encouragement.md), delayed ~5 min. Lifted above
-          the 48px tab bar (pb-16) and over the canvas chrome (z-[var(--z-overlay)]). */}
+                                    {/* Guest sign-in nudge (docs/specs/014-identity/sign-in-encouragement.md), delayed ~5 min. Stands on
+          the bottom chrome (the tab bar, the Undo / session cluster, the dock) rather than over it, above the canvas
+          (z-[var(--z-overlay)]). */}
                                     {showSignInBanner ? (
                                       <SignInBanner
                                         surface="Editor"
                                         onDismiss={dismissSignIn}
-                                        placementClassName="bottom-0 z-[var(--z-overlay)] pb-16"
+                                        placementClassName="z-[var(--z-overlay)]"
+                                        standOnChrome
                                       />
                                     ) : null}
                                     {/* What a pasted board brought across (docs/specs/020-import-export/board-scene.md). */}
