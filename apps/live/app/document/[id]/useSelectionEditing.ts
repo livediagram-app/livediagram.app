@@ -1,5 +1,5 @@
 import type { Selection } from '@/lib/selection-store';
-import type { Dispatch, SetStateAction } from 'react';
+import { useRef, type Dispatch, type SetStateAction } from 'react';
 import { isUntitledDocumentName } from '@livediagram/templates';
 import {
   hasRichFormatting,
@@ -57,6 +57,9 @@ export function useSelectionEditing(opts: {
   // the dock.
   drawMode: boolean;
   commit: (updater: (els: Element[]) => Element[]) => void;
+  // Discards the newest history step without a redo entry (useDocumentHistory's historyCancel): how an Escape takes
+  // back type-to-edit's seed commit, so the label is as it was and the peers are told so.
+  discardLastStep: () => void;
   // Non-history tab mutator: the first-label tab auto-rename rides the
   // label commit as a side effect, not as its own undo step — a second
   // history frame made Cmd+Z look like a no-op (it undid only the
@@ -132,6 +135,7 @@ export function useSelectionEditing(opts: {
     // type-to-edit) opens the inline editor for them.
     const el = activeTab.elements.find((e) => e.id === elementId);
     if (el && el.type === 'shape' && !opensInlineLabelEditor(el.shape)) return;
+    seeded.current = null;
     setSelectedId(elementId);
     // Double-click / Space edit: select-all so a retype replaces the label.
     setEditCursorAtEnd(false);
@@ -163,6 +167,7 @@ export function useSelectionEditing(opts: {
   };
 
   const commitLabel = (elementId: string, typed: string, typedRuns?: TextRun[]) => {
+    seeded.current = null;
     // Saved without whitespace at either end (docs/specs/008-canvas/canvas-and-palette.md "Rich text
     // labels"): a dangling newline or space serves no purpose, and the display drops a trailing one.
     const { label, runs } = trimLabel(typed, typedRuns);
@@ -254,7 +259,43 @@ export function useSelectionEditing(opts: {
     if (trimmed) adoptLayerName(elementId, trimmed);
   };
 
-  const cancelEdit = () => setEditingId(null);
+  // Type-to-edit's seed (docs/specs/008-canvas/canvas-and-palette.md "Type-to-edit"): the element as the seed wrote
+  // it, and the label and runs it replaced. Typing goes on in the editor, which commits only on leaving, so until then
+  // the element is exactly what the seed wrote, and an Escape puts back what it replaced.
+  const seeded = useRef<{
+    wrote: Element;
+    label: string | undefined;
+    richText: TextRun[] | undefined;
+  } | null>(null);
+
+  const cancelEdit = () => {
+    const seed = seeded.current;
+    seeded.current = null;
+    setEditingId(null);
+    if (!seed) return;
+    const el = activeTab.elements.find((e) => e.id === seed.wrote.id);
+    const seedLabel = (seed.wrote as { label?: string }).label;
+    if (!el || (el as { label?: string }).label !== seedLabel) return;
+    // Untouched since: the seed is the newest step, so discarding it is the whole cancel (no redo entry, as a
+    // cancelled drag). Otherwise something else changed the element on top of it: write the label back alone.
+    if (JSON.stringify(el) === JSON.stringify(seed.wrote)) {
+      debugLog(`[edit] type-to-edit cancelled; seed step discarded on ${el.id}`);
+      opts.discardLastStep();
+      return;
+    }
+    debugLog(`[edit] type-to-edit cancelled; label written back on ${el.id}`);
+    commit((els) =>
+      els.map((e) => {
+        if (e.id !== el.id) return e;
+        const { richText: _seed, ...base } = e as typeof e & { richText?: TextRun[] };
+        return {
+          ...base,
+          ...(seed.label === undefined ? {} : { label: seed.label }),
+          ...(seed.richText ? { richText: seed.richText } : {}),
+        };
+      }),
+    );
+  };
 
   const typeIntoSelected = (elementId: string, char: string): boolean => {
     if (opts.tabLocked || !writable(elementId)) return false;
@@ -272,13 +313,16 @@ export function useSelectionEditing(opts: {
     // Type-to-edit REPLACES the whole label with the typed char, so any
     // per-range `richText` from a prior edit must be dropped — otherwise the
     // editor would re-open against the stale runs instead of the seed char.
-    commit((els) =>
-      els.map((e) => {
-        if (e.id !== elementId) return e;
-        const { richText: _drop, ...base } = e as typeof e & { richText?: unknown };
-        return { ...base, label: char };
-      }),
-    );
+    const seed = (e: Element): Element => {
+      const { richText: _drop, ...base } = e as typeof e & { richText?: unknown };
+      return { ...base, label: char };
+    };
+    commit((els) => els.map((e) => (e.id === elementId ? seed(e) : e)));
+    seeded.current = {
+      wrote: seed(el),
+      label: (el as { label?: string }).label,
+      richText: (el as { richText?: TextRun[] }).richText,
+    };
     setSelectedId(elementId);
     // Seeded with the first char → caret at end, NOT select-all, so the
     // next keystroke appends instead of replacing it.
