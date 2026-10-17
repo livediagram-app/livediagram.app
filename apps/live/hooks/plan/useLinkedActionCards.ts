@@ -29,6 +29,7 @@ import { track } from '@/lib/telemetry';
 import { useLatest } from '@/hooks/ui/useLatest';
 import type { CollabDeepLink } from '@/lib/collab-deep-link';
 import type { PlanItems } from './usePlanItems';
+import { PLAN_SWEEP_MAX_TABS } from './usePlanTabSweep';
 import {
   actionsBoardIn,
   applyActionChanges,
@@ -36,7 +37,7 @@ import {
   placedActions,
   removeAction,
   restoreAction,
-  unloadedBoardTabIds,
+  unloadedTabIds,
   type CollectingBoard,
   type PlacedAction,
 } from './linked-actions';
@@ -77,6 +78,8 @@ export function useLinkedActionCards(deps: {
   commitTabs: (fn: (ts: Tab[]) => Tab[]) => void;
   tickTabs: (fn: (ts: Tab[]) => Tab[]) => void;
   markTabLoaded: (id: string) => void;
+  // Brings the card types a new board names into the document's catalogue (usePresetCardTypes): the Action type.
+  bringCardTypes: (elements: Tab['elements']) => void;
   loadTabs: (only?: readonly string[]) => Promise<unknown>;
   arrive: (link: CollabDeepLink) => void;
   announceBoard: (message: string, open: () => void) => void;
@@ -109,14 +112,15 @@ export function useLinkedActionCards(deps: {
     };
   }, [placed, people]);
 
-  // A document with actions reads its Board tabs, so an Actions board on a tab nobody opened is found (and its
-  // cards' items loaded) rather than a second one made.
-  const boardTabsAsked = useRef(false);
+  // A document with actions reads its other tabs once, so an Actions board on a tab nobody opened is found (and its
+  // cards' items loaded). Bounded as the Plan sweep is (usePlanTabSweep): a longer document finds its board when the
+  // board's tab is opened, or when someone adds an action (noteActionAdded reads every tab first).
+  const tabsAsked = useRef(false);
   useEffect(() => {
-    if (board || !placed.length || boardTabsAsked.current) return;
-    const ids = unloadedBoardTabIds(tabs, loadedTabIds);
+    if (board || !placed.length || tabsAsked.current || tabs.length > PLAN_SWEEP_MAX_TABS) return;
+    const ids = unloadedTabIds(tabs, loadedTabIds);
     if (!ids.length) return;
-    boardTabsAsked.current = true;
+    tabsAsked.current = true;
     void live.current.loadTabs(ids);
   }, [board, placed.length, tabs, loadedTabIds, live]);
 
@@ -196,34 +200,42 @@ export function useLinkedActionCards(deps: {
     return () => clearTimeout(timer);
   }, [canHeal, board, items.status, items.store, placed, people, live]);
 
+  // One board in the making at a time: a second action added while the first's tabs load waits on nothing and adds
+  // nothing.
+  const making = useRef(false);
   const noteActionAdded = (tabId: string) => {
+    if (making.current) return;
+    making.current = true;
     void (async () => {
-      const now = live.current;
-      if (!now.canMakeBoard || now.board) return;
-      const unloaded = unloadedBoardTabIds(now.tabs, now.loadedTabIds);
-      if (unloaded.length) await now.loadTabs(unloaded);
-      const from = live.current.tabs.find((t) => t.id === tabId);
-      const made = actionsBoardTab(from, now.statusNames);
-      let added = false;
-      // Checked against the newest tabs, inside the commit: a board a fetch just brought is never doubled.
-      now.commitTabs((ts) => {
-        if (actionsBoardIn(ts)) return ts;
-        added = true;
-        return [...ts, made];
-      });
-      if (!added) return;
-      now.markTabLoaded(made.id);
-      track('Action', 'Linked', 'Board');
-      debugLog('[linked] board.made', { tabId: made.id });
-      now.announceBoard('Added to Your Actions Board', () =>
-        live.current.arrive({
-          at: { tabId: made.id, elementId: made.elements[0]!.id },
-          open: null,
-          itemId: null,
-        }),
-      );
-      // Every action already in the document gets its card as its tab loads: a document with a board sweeps its tabs
-      // in once (usePlanTabSweep, bounded), and the heal reads each as it lands.
+      try {
+        const now = live.current;
+        if (!now.canMakeBoard || now.board) return;
+        const unloaded = unloadedTabIds(now.tabs, now.loadedTabIds);
+        if (unloaded.length) await now.loadTabs(unloaded);
+        // Read after the fetch: a board on a tab it just brought is never doubled.
+        const after = live.current;
+        if (actionsBoardIn(after.tabs)) return;
+        const made = actionsBoardTab(
+          after.tabs.find((t) => t.id === tabId),
+          after.statusNames,
+        );
+        after.commitTabs((ts) => (actionsBoardIn(ts) ? ts : [...ts, made]));
+        after.markTabLoaded(made.id);
+        after.bringCardTypes(made.elements);
+        track('Action', 'Linked', 'Board');
+        debugLog('[linked] board.made', { tabId: made.id });
+        after.announceBoard('Added to Your Actions Board', () =>
+          live.current.arrive({
+            at: { tabId: made.id, elementId: made.elements[0]!.id },
+            open: null,
+            itemId: null,
+          }),
+        );
+        // Every action already in the document gets its card as its tab loads: a document with a board sweeps its
+        // tabs in once (usePlanTabSweep, bounded), and the heal reads each as it lands.
+      } finally {
+        making.current = false;
+      }
     })();
   };
 

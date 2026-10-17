@@ -8,7 +8,7 @@ import {
   placedActions,
   removeAction,
   restoreAction,
-  unloadedBoardTabIds,
+  unloadedTabIds,
 } from './linked-actions';
 
 // docs/specs/026-plan/linked-boards.md: the canvas half of the Actions board.
@@ -84,14 +84,10 @@ describe('actionsBoardIn', () => {
   });
 });
 
-describe('unloadedBoardTabIds', () => {
-  it('names Board tabs whose content has not loaded', () => {
-    const tabs = [
-      tab('t1', [], { kind: 'board' }),
-      tab('t2', [], { kind: 'board' }),
-      tab('t3', []),
-    ];
-    expect(unloadedBoardTabIds(tabs, new Set(['t2']))).toEqual(['t1']);
+describe('unloadedTabIds', () => {
+  it('names every tab whose content has not loaded', () => {
+    const tabs = [tab('t1', []), tab('t2', []), tab('t3', [])];
+    expect(unloadedTabIds(tabs, new Set(['t2']))).toEqual(['t1', 't3']);
   });
 });
 

@@ -39,10 +39,11 @@ export function actionsBoardIn(tabs: readonly Tab[]): CollectingBoard | null {
   return collectingBoard(boards, 'actions') ?? null;
 }
 
-// Tabs whose content is not here yet and could hold a board: what is fetched before deciding there is no Actions
-// board, so a second one is never made beside one on a tab nobody has opened.
-export function unloadedBoardTabIds(tabs: readonly Tab[], loaded: ReadonlySet<string>): string[] {
-  return tabs.filter((t) => t.kind === 'board' && !loaded.has(t.id)).map((t) => t.id);
+// Tabs whose content is not here yet, and so could hold the Actions board: what is fetched before deciding there is
+// none, so a second one is never made beside one on a tab nobody has opened. Every unloaded tab, since a document's
+// summary does not say which tabs are Board tabs.
+export function unloadedTabIds(tabs: readonly Tab[], loaded: ReadonlySet<string>): string[] {
+  return tabs.filter((t) => !loaded.has(t.id)).map((t) => t.id);
 }
 
 // The element's actions with `fn` applied to the one named `actionId`: written back as an Action panel's list or an

@@ -109,6 +109,7 @@ function setUp(initial: {
       tabs = fn(tabs);
     }),
     markTabLoaded: vi.fn(),
+    bringCardTypes: vi.fn(),
     loadTabs: vi.fn(async () => {}),
     arrive: vi.fn(),
     announceBoard: vi.fn(),
@@ -162,6 +163,7 @@ describe('useLinkedActionCards', () => {
     expect(made).toMatchObject({ name: 'Actions', kind: 'board' });
     expect(actionsBoardIn(h.tabs())?.tabId).toBe(made.id);
     expect(h.spies.markTabLoaded).toHaveBeenCalledWith(made.id);
+    expect(h.spies.bringCardTypes).toHaveBeenCalledWith(made.elements);
     expect(h.spies.announceBoard).toHaveBeenCalledWith(
       'Added to Your Actions Board',
       expect.any(Function),
@@ -181,7 +183,23 @@ describe('useLinkedActionCards', () => {
     expect(h.tabs()).toHaveLength(2);
   });
 
-  it('reads unopened Board tabs before deciding there is no board', async () => {
+  it('finishes making the board when the commit applies later, as React applies it', async () => {
+    const h = setUp({ tabs: [canvas([action('a1')])] });
+    const queued: ((ts: Tab[]) => Tab[])[] = [];
+    h.spies.commitTabs.mockImplementation((fn) => {
+      queued.push(fn);
+    });
+    await act(async () => {
+      h.result.current.noteActionAdded('t1');
+      await Promise.resolve();
+    });
+    expect(queued).toHaveLength(1);
+    expect(h.spies.markTabLoaded).toHaveBeenCalledOnce();
+    expect(h.spies.bringCardTypes).toHaveBeenCalledOnce();
+    expect(h.spies.announceBoard).toHaveBeenCalledOnce();
+  });
+
+  it('reads unopened tabs before deciding there is no board', async () => {
     const h = setUp({
       tabs: [canvas([action('a1')]), { id: 'tb', name: 'Actions', elements: [], kind: 'board' }],
       unloaded: ['tb'],

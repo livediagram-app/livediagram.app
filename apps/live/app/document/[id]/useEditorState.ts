@@ -2279,36 +2279,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     planNeeded,
     itemTypes.types.map((t) => t.id),
   );
-  // The Actions board (docs/specs/026-plan/linked-boards.md): every action has a card on it, kept together.
-  const editorLevel = hydrated && participant.can.level === 'edit' && !workbenchMode;
-  const linkedActions = useLinkedActionCards({
-    tabs,
-    loadedTabIds,
-    board: actionsBoard,
-    items: planItems,
-    canHeal: editorLevel,
-    canMakeBoard: editorLevel && !isStructureReadOnly,
-    statusNames: planStatusNames,
-    commitTabs,
-    tickTabs,
-    markTabLoaded,
-    loadTabs: loadAllTabs,
-    arrive: (link) => {
-      if (link.at) setActiveId(link.at.tabId);
-      arriveAtLink(link);
-    },
-    announceBoard: (message, open) =>
-      toast.action({
-        key: 'actions-board',
-        message,
-        actions: [{ label: 'Open Board', onSelect: open }],
-      }),
-  });
-  useAssignRef(linkedActionsRef, linkedActions);
-  const linkedPlan = useMemo(
-    () => ({ placeOf: linkedActions.placeOf, showOnCanvas: linkedActions.showOnCanvas }),
-    [linkedActions.placeOf, linkedActions.showOnCanvas],
-  );
   // One name, one state: duplicate states merge into the first. See useMergeDuplicateStatuses.
   useMergeDuplicateStatuses({
     tabs,
@@ -2328,6 +2298,37 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     catalogue: itemTypes.catalogue,
     saveCatalogue: itemTypes.saveCatalogue,
   });
+  // The Actions board (docs/specs/026-plan/linked-boards.md): every action has a card on it, kept together.
+  const editorLevel = hydrated && participant.can.level === 'edit' && !workbenchMode;
+  const linkedActions = useLinkedActionCards({
+    tabs,
+    loadedTabIds,
+    board: actionsBoard,
+    items: planItems,
+    canHeal: editorLevel,
+    canMakeBoard: editorLevel && !isStructureReadOnly,
+    statusNames: planStatusNames,
+    commitTabs,
+    tickTabs,
+    markTabLoaded,
+    bringCardTypes: presetCardTypes.bring,
+    loadTabs: loadAllTabs,
+    arrive: (link) => {
+      if (link.at) setActiveId(link.at.tabId);
+      arriveAtLink(link);
+    },
+    announceBoard: (message, open) =>
+      toast.action({
+        key: 'actions-board',
+        message,
+        actions: [{ label: 'Open Board', onSelect: open }],
+      }),
+  });
+  useAssignRef(linkedActionsRef, linkedActions);
+  const linkedPlan = useMemo(
+    () => ({ placeOf: linkedActions.placeOf, showOnCanvas: linkedActions.showOnCanvas }),
+    [linkedActions.placeOf, linkedActions.showOnCanvas],
+  );
   // Assignees: the members of your teams (docs/specs/026-plan/items.md "Who may do what").
   const teamPeople = useTeamPeople(selfParticipant.id, planNeeded && !workbenchMode, !!clerkUserId);
   // Whether a Plan board covers the canvas (docs/specs/026-plan/plan-board.md "Fill Tab"): see usePlanCoverWiring.

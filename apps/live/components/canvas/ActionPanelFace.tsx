@@ -10,7 +10,7 @@ import { CollabAccentScope } from '@/components/canvas/collab/collab-accent';
 import { CelebrationBurst } from '@/components/canvas/collab/CelebrationBurst';
 import { ActionRow } from '@/components/canvas/collab/action/ActionRow';
 import { ActionGlyph, BoardGlyph, PlusGlyph } from '@/components/canvas/collab/action/action-parts';
-import { tint } from '@/components/canvas/collab/collab-chrome';
+import { CollabCaption, tint } from '@/components/canvas/collab/collab-chrome';
 import {
   AccentBar,
   EmptyRows,
@@ -74,10 +74,15 @@ export function ActionPanelFace({
   ) : open > 0 ? (
     `${open} open`
   ) : undefined;
+  // Beside the Board chip a caption is drawn as the panel draws a plain one.
   const aside =
     onOpenBoard && actions.length > 0 ? (
       <span className="flex items-center gap-1.5">
-        {status}
+        {typeof status === 'string' ? (
+          <CollabCaption textColor={textColor}>{status}</CollabCaption>
+        ) : (
+          status
+        )}
         <BoardChip onPress={onOpenBoard} textColor={textColor} />
       </span>
     ) : (

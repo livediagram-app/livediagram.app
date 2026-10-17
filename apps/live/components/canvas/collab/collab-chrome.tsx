@@ -191,12 +191,7 @@ export function CollabPanel({
               {/* A plain caption ("3 notes") takes the quiet caps style; a node
                   (the Decision record's status badge) is drawn as given. */}
               {typeof aside === 'string' ? (
-                <span
-                  className="text-[10px] font-medium uppercase tracking-[0.06em] opacity-55"
-                  style={{ color: textColor }}
-                >
-                  {aside}
-                </span>
+                <CollabCaption textColor={textColor}>{aside}</CollabCaption>
               ) : (
                 (aside ?? null)
               )}
@@ -265,5 +260,23 @@ export function CollabButton({
     >
       {children}
     </button>
+  );
+}
+
+// A panel header's plain caption ("3 notes"), in the quiet caps style.
+export function CollabCaption({
+  textColor,
+  children,
+}: {
+  textColor: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <span
+      className="text-[10px] font-medium uppercase tracking-[0.06em] opacity-55"
+      style={{ color: textColor }}
+    >
+      {children}
+    </span>
   );
 }
