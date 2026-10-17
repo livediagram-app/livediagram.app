@@ -12,6 +12,7 @@ import {
 } from '@/lib/illustrate-tour';
 import { track } from '@/lib/telemetry';
 import { setActiveTour, useActiveTour } from '@/lib/tour-active';
+import { useAnyModalOpen } from '@/lib/modal-guard';
 import { rebaseUserPreferences } from '@/lib/user-preferences';
 import type { PageTourApi, PageTourStep } from './page-tour-api';
 import { resetPageTour, tidyPageTour } from './page-tour-dom';
@@ -74,6 +75,8 @@ export function IllustrateTourHost() {
   // One tour at a time: publish this one while it is on screen, and wait while another is.
   const shown = useActiveTour();
   const otherTour = shown !== null && shown !== 'illustrate';
+  // Dialogs come first (docs/specs/007-editor/editor-tour.md): the offer waits for the last one to close.
+  const modalOpen = useAnyModalOpen();
   useEffect(() => {
     setActiveTour('illustrate', active);
   }, [active]);
@@ -142,7 +145,7 @@ export function IllustrateTourHost() {
   // offered, and its track's steps loaded. Never over the first page's own kind choice: choosing arms it again.
   useEffect(() => {
     if (!armed || active || !anyUnseen) return;
-    if (!inIllustrate || !canWork || otherTour) return;
+    if (!inIllustrate || !canWork || otherTour || modalOpen) return;
     let cancelled = false;
     let tries = 0;
     let t: ReturnType<typeof setTimeout>;
@@ -181,7 +184,7 @@ export function IllustrateTourHost() {
       cancelled = true;
       clearTimeout(t);
     };
-  }, [armed, active, anyUnseen, inIllustrate, canWork, otherTour, engineRef, prefsRef]);
+  }, [armed, active, anyUnseen, inIllustrate, canWork, otherTour, modalOpen, engineRef, prefsRef]);
 
   // Settings rerun (the Tours › "Illustrate Tour" row, turned on from off + closed): offers again in Illustrate, and
   // otherwise the next time the person enters it (the row has cleared the preferences).
