@@ -212,6 +212,21 @@ Every failed save also reaches error telemetry exactly once
 (`Http*`, `Network.*`, `Auth.NoSessionToken`) isn't counted again, and
 anything else thrown on the save path reports as `SaveFailed.<Kind>`.
 
+### A tab too big to save says so
+
+A **413** (`payload_too_large`) is the server refusing a tab over its row cap
+([Tab size](../015-api/api.md#tab-size), `MAX_TAB_BYTES`, just under 2 MB: about 5,000 labelled shapes). It is
+neither a connection problem nor a refusal of the person: the same tab, made smaller, saves. It used to toast
+"Couldn't save your changes. Check your connection." and retry every minute, a save that could never land.
+
+So it gets its own `tooLarge` save status (`saveFailureStatus` in `save-failure.ts`):
+
+- The toast reads "This tab is too big to save. Move some of it to another tab." It fires on the transition into
+  `tooLarge`, as the others do.
+- No retry timer: only an edit can change the size, and the next edit's save tries again (and lands once the tab
+  is back under the cap, clearing the status).
+- The last-chance flush on the way out still runs; it is refused the same way and changes nothing.
+
 ### Autosave guard: never persist an unloaded tab
 
 The loading overlay above protects the **active** tab. A separate, subtler

@@ -21,6 +21,11 @@ describe('saveFailureStatus', () => {
     expect(saveFailureStatus(new SessionTokenUnavailableError())).toBe('unauthenticated');
   });
 
+  // per-tab-storage.md "A tab too big to save says so": only a smaller tab saves.
+  it('reads a 413 as a tab too big to save', () => {
+    expect(saveFailureStatus(new ApiError('save tab', 413, 'payload_too_large'))).toBe('tooLarge');
+  });
+
   it('reads everything else as a failure worth retrying', () => {
     expect(saveFailureStatus(new ApiError('save tab', 500, null))).toBe('error');
     expect(saveFailureStatus(new TypeError('Failed to fetch'))).toBe('error');

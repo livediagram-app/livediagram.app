@@ -239,6 +239,31 @@ describe('useAutosave after a failed save', () => {
   });
 });
 
+// per-tab-storage.md "A tab too big to save says so": a 413 waits for an edit, never a timer.
+describe('useAutosave with a tab too big to save', () => {
+  it('does not retry on a timer, and saves again on the next edit', async () => {
+    const { ApiError } = await import('@/lib/api-client');
+    const TooLarge = ApiError as unknown as new (action: string, status: number) => Error;
+    apiSaveTab.mockImplementationOnce(() => Promise.reject(new TooLarge('save tab', 413)));
+    const { useSubject } = setup();
+    const view = renderHook(({ tabs }) => useSubject(tabs, 0), {
+      initialProps: { tabs: [tab('mine')] },
+    });
+    await act(async () => {
+      vi.advanceTimersByTime(600);
+    });
+    await act(async () => {
+      vi.advanceTimersByTime(120_000);
+    });
+    expect(apiSaveTab).toHaveBeenCalledTimes(1);
+    view.rerender({ tabs: [tab('smaller')] });
+    await act(async () => {
+      vi.advanceTimersByTime(600);
+    });
+    expect(apiSaveTab).toHaveBeenCalledTimes(2);
+  });
+});
+
 // docs/specs/016-platform/new-version-prompt.md: "Reload" waits until nothing edited is unsaved.
 describe('hasUnsavedChanges', () => {
   it('is true while an edit waits out the debounce or its save is in flight, false once saved', async () => {
