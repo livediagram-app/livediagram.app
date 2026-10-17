@@ -145,9 +145,11 @@ export function expectNoPageErrors(pageErrors: string[]): void {
   expect(pageErrors, `unexpected page errors:\n${pageErrors.join('\n')}`).toEqual([]);
 }
 
-// The wizard is a static export: its buttons are in the HTML before React attaches their handlers, and
-// a click in that gap does nothing, more often the busier the machine. React tags every element it
-// has hydrated with a `__reactProps$` key; wait for it on the element about to be used.
+// The wizard is a static export: its buttons are in the HTML before React attaches their handlers. A mode
+// card clicked in that gap is kept and acted on at hydration (new-document-route.md "A choice before
+// hydration"), but every other control's click in that gap does nothing, more often the busier the
+// machine. React tags every element it has hydrated with a `__reactProps$` key; wait for it on the
+// element about to be used.
 export async function untilHydrated(locator: Locator): Promise<void> {
   await expect
     .poll(() =>

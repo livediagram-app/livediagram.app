@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useEffectEvent, useRef, useState, type RefObject } from 'react';
+import { isEditorPath } from '@/lib/legacy-editor-path';
 
 // The side effects of LANDING on a tab (hydration, a tab switch, or the
 // active tab's elements finishing their lazy load), lifted out of
@@ -43,6 +44,8 @@ export function useTabEntryEffects({
   useEffect(() => {
     if (!hydrated || !activeId || typeof window === 'undefined') return;
     const url = new URL(window.location.href);
+    // An address that names no document (new-document-route.md "Unknown addresses") has no tab to pin.
+    if (!isEditorPath(url.pathname)) return;
     if (url.hash === `#t=${activeId}`) return;
     url.hash = `t=${activeId}`;
     window.history.replaceState({}, '', url.toString());

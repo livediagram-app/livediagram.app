@@ -23,6 +23,7 @@ import { EditorView } from './EditorView';
 import { useEditorState } from './useEditorState';
 import { surfaceFlags, type EditorSurface } from './editor-surface';
 import { MentionContext } from '@/components/canvas/collab/comment/MentionContext';
+import { isEditorPath } from '@/lib/legacy-editor-path';
 
 const NotFound = dynamic(() => import('@/components/chrome/NotFound').then((m) => m.NotFound), {
   ssr: false,
@@ -177,17 +178,23 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
   }
 
   if (documentNotFound) {
+    // An address that names no document is a missing page, not a missing document.
+    const page = !isEditorPath(window.location.pathname);
     // The create-new escape opens the full app in a new tab from a frame
     // (rather than navigating the host page's iframe), in place otherwise.
     return !appChrome ? (
       <EmbedShell>
         <NotFound
+          page={page}
           onCreateNew={() => window.open(`${window.location.origin}/new`, '_blank', 'noopener')}
         />
       </EmbedShell>
     ) : (
-      <StatusShell title="Document not found" explorer={fullExplorer}>
-        <NotFound onCreateNew={() => window.location.assign(`${window.location.origin}/new`)} />
+      <StatusShell title={page ? 'Page not found' : 'Document not found'} explorer={fullExplorer}>
+        <NotFound
+          page={page}
+          onCreateNew={() => window.location.assign(`${window.location.origin}/new`)}
+        />
       </StatusShell>
     );
   }

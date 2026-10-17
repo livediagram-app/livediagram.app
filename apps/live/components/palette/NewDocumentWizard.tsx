@@ -1,11 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useLayoutEffect, useState } from 'react';
 import { Button, CloseIcon, useEscape } from '@livediagram/ui';
 import type { EditorMode } from '@livediagram/document';
 import { BLANK_TEMPLATE_FOR_MODE, type TemplateKind } from '@livediagram/templates';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { useModalGuard } from '@/hooks/ui/useModalGuard';
+import { takeEarlyModeChoice } from '@/app/new/early-mode-choice';
 import { CanvasModalCard } from './CanvasModalCard';
 import { NewDocumentModeStep } from './NewDocumentModeStep';
 import { FolderOpenIcon, SparkleIcon, Spinner } from './template-picker-icons';
@@ -43,6 +44,13 @@ export function NewDocumentWizard({
     if (next) setChosen(next);
     onCreate(BLANK_TEMPLATE_FOR_MODE[next ?? 'diagram']);
   };
+  // A card clicked before hydration is chosen now, before the browser can hand React another event.
+  useLayoutEffect(() => {
+    const early = takeEarlyModeChoice();
+    if (early) create(early);
+    // Once, as the wizard mounts.
+    // oxlint-disable-next-line react/exhaustive-deps
+  }, []);
   useEscape(() => {
     if (!busy) onBackOut();
   });

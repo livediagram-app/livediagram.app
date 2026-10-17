@@ -117,10 +117,19 @@ editor mounts, reads the real id from `window.location.pathname`
 about), and loads the document via the API. The address bar stays
 on `/document/<uuid>`; nothing about the URL needs to lie.
 
-Behaviour for genuinely-unknown routes (e.g. `/live/typo`) is
-benign: the editor mounts, tries to load a document with id `typo`,
-the API 404s, the in-app `<NotFound>` card surfaces — branded with
-a "Create a new document" CTA.
+### Unknown addresses
+
+A genuinely unknown address (a mistyped page, `/explorer/mine`, or a page an
+older build had) reaches the editor through the same slot. It names no
+document (`documentIdFromPath` reads no id off anything but
+`/document/<id>`) and carries no share link, so the editor shows the in-app
+`<NotFound>` card over the Explorer at once, titled **Page not found**
+("There is no page at this address. Open a document from the Explorer or
+start fresh.") with its "Create a new document" button, and asks the API for
+nothing. Only the editor's own empty route (`/document`,
+`/document/placeholder`) hands off to `/new`. Before, every address without a
+document id went to `/new`, so a mistyped or retired page opened the New
+Document wizard with no word of what went wrong.
 
 ### A failed load is not a missing document
 
@@ -366,6 +375,17 @@ There is **no template picker over the editor**. An empty tab's templates are on
 shows over the canvas. (The in-editor **Quick Start**, the whole catalogue across every mode in one modal, was
 removed with the starts' **Something Else**: each start already holds every template of its mode, and the mode
 switch reaches the others.)
+
+### A choice before hydration
+
+`/new` is a static export, so the mode cards are on screen before React attaches their handlers. A card clicked in
+that gap is **kept, not lost**: an inline script in the page (`app/new/early-mode-choice.ts`), running as the HTML
+parses, takes a click on a mode card until the wizard mounts, remembers the mode, and shows the progress cursor. The
+wizard's first layout effect turns the script off and creates the remembered mode, exactly as if the click had landed
+after hydration. The script listens on `window` in the capture phase, ahead of React's root listener, so a click it
+takes never also reaches the card, and only one document is made. Before this, a click in the gap did nothing and said
+nothing, and the slower the device the wider the gap (issue #238). Number keys pressed before hydration are not kept:
+the cards are not focused until the wizard mounts.
 
 ### The empty-canvas hint
 
