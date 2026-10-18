@@ -32,6 +32,15 @@ describe('SignInBanner', () => {
     expect(wrapper.className).toContain(`[body[${TOUR_CARD_ATTR}]_&]:hidden`);
   });
 
+  // docs/specs/014-identity/sign-in-encouragement.md: a panel opened from the chrome reaches up into the banner's band.
+  it('steps aside while a panel opened from the chrome is open', () => {
+    render(<SignInBanner surface="Editor" onDismiss={() => {}} />);
+    const wrapper = screen.getByText('Sign in to access Teams & AI').closest('.fixed')!;
+    expect(wrapper.className).toContain(
+      '[body:has([data-dock-button]_[aria-expanded=true])_&]:hidden',
+    );
+  });
+
   // docs/specs/004-interface-design/toasts.md "Placement": the toasts stand on the banner while it shows, rather
   // than landing on its words ("Document deleted · Undo" did). Its card is bottom chrome, and it says when it comes
   // and goes so a toast already up moves with it.

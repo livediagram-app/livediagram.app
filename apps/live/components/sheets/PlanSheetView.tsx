@@ -249,6 +249,19 @@ function SheetParts({
   const input = useFormulaInput(actions);
   const c = useSheetController();
   useCardTableSync(c, setCardPush);
+  // A Sheet filling the view (its tab, or maximised) takes the focus when nothing else holds it, so typing goes into
+  // its active cell at once: an Empty Sheet is "a blank grid, ready to type into" (docs/specs/029-sheets/sheet.md "Keyboard").
+  const { focusGrid, maximised } = c;
+  useEffect(() => {
+    if (!canEdit || !maximised) return;
+    // A frame later: maximising moves the Sheet into the overlay, and a moved node loses the focus.
+    const frame = requestAnimationFrame(() => {
+      const active = document.activeElement;
+      if (active && active !== document.body) return;
+      focusGrid();
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [canEdit, maximised, focusGrid]);
   const file = useRef<HTMLInputElement | null>(null);
   const [importText, setImportText] = useState<string | null>(null);
   // Where the last pointed reference sits in the draft, so a drag grows it into a range.

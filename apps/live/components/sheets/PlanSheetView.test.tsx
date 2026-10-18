@@ -186,6 +186,41 @@ describe('the faces', () => {
   });
 });
 
+// docs/specs/029-sheets/sheet.md "Keyboard": a Sheet filling the view takes the focus when nothing else holds it.
+describe('the focus when the Sheet fills the view', () => {
+  const grid = () => screen.getByLabelText('Budget grid');
+  it('goes to the grid of a maximised Sheet, so typing lands in its active cell', async () => {
+    fetchSheets.mockResolvedValue([sheetJson('sheetAAAA')]);
+    draw(element({ sheetId: 'sheetAAAA' }), bridge());
+    await screen.findByText('Budget');
+    expect(document.activeElement).not.toBe(grid());
+    act(() => maximisePlanElement('el1', 'Sheet'));
+    await waitFor(() => expect(document.activeElement).toBe(grid()));
+  });
+
+  it('is left where it is when something else holds it', async () => {
+    fetchSheets.mockResolvedValue([sheetJson('sheetAAAA')]);
+    const elsewhere = document.createElement('input');
+    document.body.appendChild(elsewhere);
+    elsewhere.focus();
+    draw(element({ sheetId: 'sheetAAAA' }), bridge());
+    await screen.findByText('Budget');
+    act(() => maximisePlanElement('el1', 'Sheet'));
+    await act(async () => {});
+    expect(document.activeElement).toBe(elsewhere);
+    elsewhere.remove();
+  });
+
+  it('is not taken by a Sheet someone may only read', async () => {
+    fetchSheets.mockResolvedValue([sheetJson('sheetAAAA')]);
+    draw(element({ sheetId: 'sheetAAAA' }), bridge({ canEdit: false }));
+    await screen.findByText('Budget');
+    act(() => maximisePlanElement('el1', 'Sheet'));
+    await act(async () => {});
+    expect(document.activeElement).toBe(document.body);
+  });
+});
+
 describe('the grid', () => {
   it('draws the sheet with its toolbar and formula bar in Plan mode', async () => {
     fetchSheets.mockResolvedValue([sheetJson('sheetAAAA')]);

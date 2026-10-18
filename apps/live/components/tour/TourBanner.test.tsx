@@ -46,6 +46,15 @@ describe('TourBanner', () => {
     before.remove();
   });
 
+  it('takes no focus on a press either, so a click on No leaves the person where they were working', () => {
+    const { onSkip } = open();
+    const no = screen.getByRole('button', { name: 'No' });
+    const press = fireEvent.mouseDown(no);
+    expect(press).toBe(false); // default prevented: the browser moves no focus to the button
+    fireEvent.click(no);
+    expect(onSkip).toHaveBeenCalled();
+  });
+
   it('tells the body it is up, so the sign-in banner steps aside, and stands as the toasts’ floor', () => {
     const { view } = open();
     expect(document.body.hasAttribute(TOUR_CARD_ATTR)).toBe(true);

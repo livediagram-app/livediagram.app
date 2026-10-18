@@ -83,6 +83,9 @@ export function TourBanner({
         role="dialog"
         aria-label={title}
         onPointerDown={(e) => e.stopPropagation()}
+        // No focus taken by a press either: a click on No or Yes leaves the focus where the person was working (a
+        // Sheet's grid, a field), where it would otherwise fall to the page as the banner goes.
+        onMouseDown={(e) => e.preventDefault()}
         // The sign-in banner's look in the tab's own accent: a gradient from it to a deeper shade, in the ink that
         // reads on it (tour-colours inkOn).
         style={{

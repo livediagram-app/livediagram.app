@@ -199,7 +199,7 @@ export default function BuildWithAiPage() {
               </p>
               <div className="mt-6 flex flex-wrap gap-3">
                 <a
-                  href="/get-started/"
+                  href="/get-started"
                   className={buttonClassName({ size: 'cta-sm', className: 'shadow-sm' })}
                 >
                   <ButtonContent>Create a free account</ButtonContent>

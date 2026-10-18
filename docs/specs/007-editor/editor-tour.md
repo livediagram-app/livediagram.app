@@ -36,7 +36,7 @@ proved the better introduction.
   sign-in banner is (`TourBanner`): one wide row (up to 768 px) at the bottom centre, standing on whatever chrome is
   there (the tab bar, the bottom-right cluster), with the tour's own picture small at its left, then its eyebrow,
   title and words, then its buttons at the right (**No** and **Yes**, or the help link and the finish button); on a
-  phone they stack, the picture left out. No backdrop, no focus taken, so someone who would rather carry on working simply does, and answers when they like. Tab reaches
+  phone they stack, the picture left out. No backdrop, no focus taken (not even by a press on its buttons, so answering it leaves the focus where the person was working), so someone who would rather carry on working simply does, and answers when they like. Tab reaches
   their buttons. They are the toasts' floor while up, and the sign-in banner, which takes the same place, steps aside
   meanwhile: the two are never on screen together. A step card leaves focus alone too: it points at a real control
   the person is about to use.

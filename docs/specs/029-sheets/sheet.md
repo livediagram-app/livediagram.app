@@ -414,6 +414,8 @@ A finger has no hover and no right button, and its drag pans the cells, so selec
   on, never into the cells it covers.
 - While the grid has focus, its keys are the grid's: the canvas's single-key shortcuts (tools, Delete for the
   element) do not fire. Escape hands the keys back to the canvas.
+- A Sheet that fills the view (its Sheet tab, or maximised) takes the focus when it opens and nothing else holds it,
+  for someone who may edit: typing goes into the active cell at once, so an Empty Sheet is ready to type into.
 
 ### Clipboard
 
