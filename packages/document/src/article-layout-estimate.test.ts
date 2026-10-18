@@ -6,7 +6,7 @@ import {
   wrapEstimated,
 } from './article-layout-estimate';
 import { pagesWithWriting, renderPagesToSvg } from './svg-render-pages';
-import { layOutIllustratePages, illustratePagesOf } from './illustrate-page';
+import { layOutPages, pagesOf } from './page';
 import type { Tab } from './index';
 
 // docs/specs/015-api/mcp-server.md §5: an article page's writing estimated without a browser, set as
@@ -40,14 +40,14 @@ function article(
   return {
     id: 't',
     name: 'T',
-    opensIn: 'illustrate',
+    opensIn: 'pages',
     pages,
     articles: { f: { blocks, ...(opts.style ? { style: opts.style } : {}) } },
     elements: [],
   } as unknown as Tab;
 }
 
-const laid = (tab: Tab) => layOutIllustratePages(illustratePagesOf(tab));
+const laid = (tab: Tab) => layOutPages(pagesOf(tab));
 const texts = (ops: ReturnType<typeof estimateArticle>['ops'], id: string) =>
   (ops.get(id) ?? []).flatMap((o) => (o.k === 'text' ? [o.text] : []));
 

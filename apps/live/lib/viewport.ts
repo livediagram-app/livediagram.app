@@ -85,7 +85,7 @@ export function computeFitBelow(
 }
 
 // A frame computed for the canvas less `insets.left` and `insets.right` screen px at its sides (the
-// Contents panel laid over it: docs/specs/007-editor/illustrate-pages.md "Contents"), moved so it lands
+// Contents panel laid over it: docs/specs/007-editor/pages-mode.md "Contents"), moved so it lands
 // in the band between them rather than in the whole canvas. Compute the frame on `{ width: w - left -
 // right, height }`; with the centred transform a canvas x lands at `w/2 + z(x + offset.x - w/2)`, so
 // the band's middle (`(left - right)/2` right of the canvas's) adds `(left + right)/2` for the

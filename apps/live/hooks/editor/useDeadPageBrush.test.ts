@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { pageBrush } from '@/lib/format-page-brush';
 import { useDeadPageBrush } from './useDeadPageBrush';
 
-// docs/specs/007-editor/illustrate-pages.md "Copying a background": a brush whose page has gone holds nothing.
+// docs/specs/007-editor/pages-mode.md "Copying a background": a brush whose page has gone holds nothing.
 describe('useDeadPageBrush', () => {
   it('empties a page brush once its page goes, so the next press works at once', () => {
     const set = vi.fn();

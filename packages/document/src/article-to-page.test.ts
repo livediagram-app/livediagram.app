@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { articleBlocksAsRuns, withArticlesAsPages } from './article-to-page';
 import type { ArticleBlock } from './article-flow';
-import type { IllustratePage } from './illustrate-page';
+import type { Page } from './page';
 import type { Element, ShapeElement } from './index';
 
 const blocks: ArticleBlock[] = [
@@ -23,7 +23,7 @@ describe('articles turned into Page elements', () => {
   });
 
   it('makes a Page per article page, the title as its masthead, and drops the writing', () => {
-    const pages: IllustratePage[] = [
+    const pages: Page[] = [
       { id: 'a', orientation: 'portrait', kind: 'article', flow: 'f' },
       { id: 'b', orientation: 'portrait', kind: 'article', flow: 'f' },
     ];
@@ -50,9 +50,9 @@ describe('articles turned into Page elements', () => {
     expect(out.pages.every((p) => p.kind === 'infographic' && !p.flow)).toBe(true);
   });
 
-  // docs/specs/007-editor/article-pages.md "Leaving Illustrate": a lock holds an article as it is.
+  // docs/specs/007-editor/article-pages.md "Leaving Pages": a lock holds an article as it is.
   it('keeps an article with a locked page as an article, its pages and margin notes untouched', () => {
-    const pages: IllustratePage[] = [
+    const pages: Page[] = [
       { id: 'a', orientation: 'portrait', kind: 'article', flow: 'f' },
       { id: 'b', orientation: 'portrait', kind: 'article', flow: 'g', locked: true },
       { id: 'c', orientation: 'portrait', kind: 'article', flow: 'g' },
@@ -96,7 +96,7 @@ describe('articles turned into Page elements', () => {
   });
 
   it('leaves a tab whose every article is locked alone', () => {
-    const pages: IllustratePage[] = [
+    const pages: Page[] = [
       { id: 'a', orientation: 'portrait', kind: 'article', flow: 'f', locked: true },
     ];
     const tab = { elements: [], pages, articles: { f: { blocks } } };

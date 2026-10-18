@@ -31,7 +31,7 @@ const CAPABILITIES = [
   {
     icon: lucideGlyph(lucidePresentation, 20),
     title: 'Slides, posters and logos',
-    body: 'Decks from ready-made slide layouts, infographics and logo artboards, all on Illustrate pages you can polish by hand.',
+    body: 'Decks from ready-made slide layouts, infographics and logo artboards, all on pages you can polish by hand.',
   },
   {
     icon: lucideGlyph(lucideFileText, 20),

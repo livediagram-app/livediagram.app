@@ -175,7 +175,7 @@ sighting with a changed address (§4), resets the count to zero.
   blue-700, flat `#0ea5e9` where a client drops gradients), the logo mark beside
   the "live"/"diagram" wordmark in the header, a brand-50 page behind the card,
   and a footer under the card with the lockup again, the tagline ("Diagram,
-  draw and illustrate together, live. Free and open source.") and a link to the
+  draw and make pages together, live. Free and open source.") and a link to the
   site. Both lockups link to `APP_BASE_URL`. The mark is a transparent 64px PNG
   (`/email/livediagram-mark-64.png`, shown at 28px in the header and 22px in
   the footer) served by the marketing app and written by `pnpm icons:brand`,

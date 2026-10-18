@@ -4,25 +4,25 @@ import {
   createPinnedArrow,
   createShape,
   elementIdsOnPage,
-  layOutIllustratePages,
+  layOutPages,
   type Element,
-  type IllustratePage,
+  type Page,
   type Tab,
 } from '@livediagram/document';
 import { pageElementBuckets } from './page-element-buckets';
 import { slideThumbFor, tabArrowLabels } from './slide-thumb';
 
-// docs/specs/007-editor/illustrate-pages.md "Contents" "Cost": each page's picture draws from its own
+// docs/specs/007-editor/pages-mode.md "Contents" "Cost": each page's picture draws from its own
 // elements, found in one walk, and draws exactly what the whole tab would.
 
 function deck(pageCount: number, perPage: number): Tab {
-  const pages = Array.from({ length: pageCount }, (_, i): IllustratePage => ({
+  const pages = Array.from({ length: pageCount }, (_, i): Page => ({
     id: `p${i}`,
     orientation: 'landscape',
     kind: 'slide',
     size: 'slide',
   }));
-  const laid = layOutIllustratePages(pages);
+  const laid = layOutPages(pages);
   const elements: Element[] = [];
   for (const page of laid) {
     for (let k = 0; k < perPage; k++) {
@@ -49,7 +49,7 @@ function deck(pageCount: number, perPage: number): Tab {
 describe('pageElementBuckets', () => {
   it('puts each element on the page elementIdsOnPage reads, in the tab order', () => {
     const tab = deck(4, 5);
-    const laid = layOutIllustratePages(tab.pages!);
+    const laid = layOutPages(tab.pages!);
     const buckets = pageElementBuckets(tab.elements, laid);
     for (const page of laid) {
       const own = elementIdsOnPage(tab.elements, laid, page.id);
@@ -63,7 +63,7 @@ describe('pageElementBuckets', () => {
     // A connector from page 0's first box to page 1's: its middle lies between the pages, so a
     // second arrow pinned to it, on page 1, needs it and both its ends.
     const across = { ...createPinnedArrow('p0-n0', 'e', 'p1-n1', 'w'), id: 'across' } as Element;
-    const laid = layOutIllustratePages(tab.pages!);
+    const laid = layOutPages(tab.pages!);
     const onArrow = {
       id: 'onArrow',
       type: 'arrow',
@@ -92,7 +92,7 @@ describe('pageElementBuckets', () => {
 
   it('draws every page exactly as from the whole tab', () => {
     const tab = deck(3, 6);
-    const laid = layOutIllustratePages(tab.pages!);
+    const laid = layOutPages(tab.pages!);
     const buckets = pageElementBuckets(tab.elements, laid);
     const labels = tabArrowLabels(tab);
     for (const page of laid) {
@@ -113,7 +113,7 @@ describe('pageElementBuckets', () => {
   const BUCKET_BUDGET_MS = 25;
   it(`walks ${WORST_PAGES} pages of ${WORST_PER_PAGE} boxes and their connectors inside ${cpuBudgetMs(BUCKET_BUDGET_MS)} ms`, () => {
     const tab = deck(WORST_PAGES, WORST_PER_PAGE);
-    const laid = layOutIllustratePages(tab.pages!);
+    const laid = layOutPages(tab.pages!);
     for (let pass = 0; pass < 3; pass++) pageElementBuckets(tab.elements, laid);
     const best = Math.min(
       ...[0, 1, 2].map(() => cpuMsOf(() => void pageElementBuckets(tab.elements, laid))),

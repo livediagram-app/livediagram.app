@@ -24,7 +24,7 @@ export type InternalRoom = {
 
 // The room ops the worker originates through /mutation: a view-role visitor's comment, an agent
 // changeset, a tab rename (docs/specs/024-agents/agent-changesets.md), an agent's article writing
-// (docs/specs/024-agents/illustrate-for-agents.md).
+// (docs/specs/024-agents/pages-for-agents.md).
 const WORKER_MUTATION_KINDS = new Set([
   'el-delta',
   'changeset',

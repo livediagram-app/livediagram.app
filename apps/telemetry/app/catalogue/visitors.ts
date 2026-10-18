@@ -13,7 +13,7 @@ import {
   DRAW_TOUR_OFFERED,
   FORM_TOUR_OFFERED,
   AVATAR_TOUR_OFFERED,
-  ILLUSTRATE_TOUR_OFFERED,
+  PAGES_TOUR_OFFERED,
   ELEMENT_TOURS_OFFERED,
   POWER_USER_OFFERED,
   NEW_VERSION_OFFERED,
@@ -512,61 +512,61 @@ export const AVATAR_TOUR: MetricStack = {
   headline: AVATAR_TOURS_STARTED,
 };
 
-// The Illustrate tour (docs/specs/007-editor/illustrate-tour.md): its own funnel, beside the Illustrate tour's.
-export const ILLUSTRATE_TOUR_DECLINED = chart(
+// The Pages tour (docs/specs/007-editor/pages-tour.md): its own funnel, beside the Pages tour's.
+export const PAGES_TOUR_DECLINED = chart(
   'UI',
   'Closed',
-  'Illustrate Tours Declined',
-  'The Illustrate tour turned down on its welcome card, before it started.',
-  { types: ['IllustrateTourOffer'], rising: 'neutral' },
+  'Pages Tours Declined',
+  'The Pages tour turned down on its welcome card, before it started.',
+  { types: ['PagesTourOffer'], rising: 'neutral' },
 );
 
-export const ILLUSTRATE_TOURS_STARTED = chart(
+export const PAGES_TOURS_STARTED = chart(
   'UI',
   'Started',
-  'Illustrate Tours Started',
-  'The Illustrate tour started.',
-  { types: ['IllustrateTour'] },
+  'Pages Tours Started',
+  'The Pages tour started.',
+  { types: ['PagesTour'] },
 );
 
-export const ILLUSTRATE_TOUR_STEPS_VIEWED = chart(
+export const PAGES_TOUR_STEPS_VIEWED = chart(
   'UI',
   'View',
-  'Illustrate Tour Steps Viewed',
-  'A step of the Illustrate tour shown.',
-  { typeIn: (t) => (t ?? '').startsWith('IllustrateTourStep') },
+  'Pages Tour Steps Viewed',
+  'A step of the Pages tour shown.',
+  { typeIn: (t) => (t ?? '').startsWith('PagesTourStep') },
 );
 
-export const ILLUSTRATE_TOURS_COMPLETED = chart(
+export const PAGES_TOURS_COMPLETED = chart(
   'UI',
   'Ended',
-  'Illustrate Tours Completed',
-  'The Illustrate tour run to its last step.',
-  { types: ['IllustrateTourCompleted'] },
+  'Pages Tours Completed',
+  'The Pages tour run to its last step.',
+  { types: ['PagesTourCompleted'] },
 );
 
-export const ILLUSTRATE_TOURS_SKIPPED = chart(
+export const PAGES_TOURS_SKIPPED = chart(
   'UI',
   'Ended',
-  'Illustrate Tours Skipped',
-  'The Illustrate tour closed before its end.',
-  { types: ['IllustrateTourSkipped'], rising: 'neutral' },
+  'Pages Tours Skipped',
+  'The Pages tour closed before its end.',
+  { types: ['PagesTourSkipped'], rising: 'neutral' },
 );
 
-export const ILLUSTRATE_TOUR: MetricStack = {
+export const PAGES_TOUR: MetricStack = {
   stack: true,
-  title: 'Illustrate Tour',
+  title: 'Pages Tour',
   blurb:
-    'The first time in Illustrate mode: the Illustrate tour offered, stepped through, finished or skipped.',
+    'The first time in Pages mode: the Pages tour offered, stepped through, finished or skipped.',
   members: [
-    ILLUSTRATE_TOUR_OFFERED,
-    ILLUSTRATE_TOUR_DECLINED,
-    ILLUSTRATE_TOURS_STARTED,
-    ILLUSTRATE_TOUR_STEPS_VIEWED,
-    ILLUSTRATE_TOURS_COMPLETED,
-    ILLUSTRATE_TOURS_SKIPPED,
+    PAGES_TOUR_OFFERED,
+    PAGES_TOUR_DECLINED,
+    PAGES_TOURS_STARTED,
+    PAGES_TOUR_STEPS_VIEWED,
+    PAGES_TOURS_COMPLETED,
+    PAGES_TOURS_SKIPPED,
   ],
-  headline: ILLUSTRATE_TOURS_STARTED,
+  headline: PAGES_TOURS_STARTED,
 };
 
 // Element tours (docs/specs/007-editor/element-tours.md): a tour of one element type, offered beside a selected one.
@@ -707,7 +707,7 @@ export const ONBOARDING_TOURS: MetricStack = {
     DRAW_TOURS_STARTED,
     FORM_TOURS_STARTED,
     AVATAR_TOURS_STARTED,
-    ILLUSTRATE_TOURS_STARTED,
+    PAGES_TOURS_STARTED,
     ELEMENT_TOURS_STARTED,
     SHOW_ME_TOURS_STARTED,
   ],

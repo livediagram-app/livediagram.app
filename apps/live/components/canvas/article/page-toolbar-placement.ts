@@ -69,7 +69,7 @@ export function usePageToolbarPlacement({
     const unsubscribe = subscribeCanvasGesture(schedule);
     const follow = () => {
       const el = bar.current;
-      const sheet = document.querySelector(`[data-illustrate-page-id="${CSS.escape(pageId)}"]`);
+      const sheet = document.querySelector(`[data-page-id="${CSS.escape(pageId)}"]`);
       const canvas = document.querySelector(CANVAS_ROOT_SELECTOR);
       if (!el || !sheet || !canvas) return;
       const r = sheet.getBoundingClientRect();

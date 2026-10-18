@@ -23,7 +23,7 @@ import { requestFacilitateTourRelaunch } from '@/lib/facilitate-tour';
 import { requestFormTourRelaunch } from '@/lib/form-tour';
 import { requestDrawTourRelaunch } from '@/lib/draw-tour';
 import { requestAvatarTourRelaunch } from '@/lib/avatar-tour';
-import { illustrateTourOwed, requestIllustrateTourRelaunch } from '@/lib/illustrate-tour';
+import { pagesTourOwed, requestPagesTourRelaunch } from '@/lib/pages-tour';
 import { track } from '@/lib/telemetry';
 import {
   visibleCategories,
@@ -204,9 +204,9 @@ export function SettingsDialog({
   // Tours › "Avatar Tour" (docs/specs/008-canvas/avatar-tour.md): as Plan Tour.
   const avatarTourSeen = settings.avatarTourSeen === true;
   const avatarTourSeenAtOpen = useRef(avatarTourSeen);
-  // Tours › "Illustrate Tour" (docs/specs/007-editor/illustrate-tour.md): as Plan Tour.
-  const illustrateTourSeen = !illustrateTourOwed(settings);
-  const illustrateTourSeenAtOpen = useRef(illustrateTourSeen);
+  // Tours › "Pages Tour" (docs/specs/007-editor/pages-tour.md): as Plan Tour.
+  const pagesTourSeen = !pagesTourOwed(settings);
+  const pagesTourSeenAtOpen = useRef(pagesTourSeen);
   const close = () => {
     if (!tourSeen) {
       markTourPending();
@@ -217,7 +217,7 @@ export function SettingsDialog({
     if (!drawTourSeen && drawTourSeenAtOpen.current) requestDrawTourRelaunch();
     if (!formTourSeen && formTourSeenAtOpen.current) requestFormTourRelaunch();
     if (!avatarTourSeen && avatarTourSeenAtOpen.current) requestAvatarTourRelaunch();
-    if (!illustrateTourSeen && illustrateTourSeenAtOpen.current) requestIllustrateTourRelaunch();
+    if (!pagesTourSeen && pagesTourSeenAtOpen.current) requestPagesTourRelaunch();
     onClose();
   };
 

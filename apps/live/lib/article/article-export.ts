@@ -8,7 +8,7 @@ import {
   articleMarginPx,
   articleTopMarginPx,
   articlesOf,
-  illustratePagesOf,
+  pagesOf,
   resolveArticleStyle,
   resolveFontStack,
   type LaidOutPage,
@@ -38,7 +38,7 @@ export function pageWriting(tab: Tab, page: LaidOutPage): PageWriting | null {
     x >= r.x - 1 && x <= r.x + r.width + 1 && y >= r.y - 1 && y <= r.y + r.height + 1;
   const ops = snap.filter((op) => (op.k === 'line' ? on(op.x1, op.y1) : on(op.x, op.y)));
   const style = resolveArticleStyle(doc.style);
-  const own = illustratePagesOf(tab).filter((p) => p.flow === page.flow);
+  const own = pagesOf(tab).filter((p) => p.flow === page.flow);
   if (style.pageNumbers) {
     const n = own.findIndex((p) => p.id === page.id) + 1;
     ops.push({

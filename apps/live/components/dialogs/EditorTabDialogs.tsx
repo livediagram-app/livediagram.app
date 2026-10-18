@@ -9,8 +9,8 @@ import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { useIsOfflineDocument } from '@/hooks/persistence/useIsOfflineDocument';
 import { tabAsSeen } from '@/lib/export-as-seen';
 import { panelEnabled } from '@/lib/user-preferences';
-import { LeaveIllustrateDialog } from '@/components/dialogs/LeaveIllustrateDialog';
-import { LeaveIllustrateConfirm } from '@/components/dialogs/LeaveIllustrateConfirm';
+import { LeavePagesDialog } from '@/components/dialogs/LeavePagesDialog';
+import { LeavePagesConfirm } from '@/components/dialogs/LeavePagesConfirm';
 
 const ExportTabDialog = dynamic(
   () => import('@/components/dialogs/ExportTabDialog').then((m) => m.ExportTabDialog),
@@ -39,7 +39,7 @@ export function EditorTabDialogs() {
     userPreferences,
     exportOpen,
     exportScope,
-    illustratePages,
+    pagesMode,
     activeTab,
     tabs,
     loadAllTabs,
@@ -67,7 +67,7 @@ export function EditorTabDialogs() {
     setDocumentSharePassword,
     setShareDialogOpen,
     syncToCloud,
-    leaveIllustrate,
+    leavePages,
     setSelectedId,
     setMultiSelectedIds,
   } = useEditorContext();
@@ -91,8 +91,8 @@ export function EditorTabDialogs() {
 
   return (
     <>
-      <LeaveIllustrateDialog leave={leaveIllustrate} />
-      <LeaveIllustrateConfirm leave={leaveIllustrate} />
+      <LeavePagesDialog leave={leavePages} />
+      <LeavePagesConfirm leave={leavePages} />
       {exportOpen ? (
         <ExportTabDialog
           // Export what the author is LOOKING at: a tab on the Default colour
@@ -107,9 +107,9 @@ export function EditorTabDialogs() {
               : {}),
           })}
           scope={exportScope}
-          // In Illustrate mode the whole tab exports as its pages
-          // (docs/specs/007-editor/illustrate-pages.md "Export").
-          pages={exportScope === 'tab' ? illustratePages?.pages : undefined}
+          // In Pages mode the whole tab exports as its pages
+          // (docs/specs/007-editor/pages-mode.md "Export").
+          pages={exportScope === 'tab' ? pagesMode?.pages : undefined}
           documentName={documentName}
           // A Dashboard's slots that show another tab draw it (docs/specs/026-plan/plan-tabs.md "Export").
           documentTabs={tabs}
@@ -128,10 +128,10 @@ export function EditorTabDialogs() {
           tabName={activeTab.name}
           onImportFile={importIntoActiveTab}
           onImportText={importTextIntoActiveTab}
-          // Illustrate mode and a Dashboard tab import a livediagram tab only: the other formats are diagrams
-          // (docs/specs/007-editor/illustrate-pages.md "Import", docs/specs/026-plan/plan-tabs.md "Import and
+          // Pages mode and a Dashboard tab import a livediagram tab only: the other formats are diagrams
+          // (docs/specs/007-editor/pages-mode.md "Import", docs/specs/026-plan/plan-tabs.md "Import and
           // Export of a Dashboard").
-          formats={illustratePages || activeTab.kind === 'dashboard' ? ['json'] : undefined}
+          formats={pagesMode || activeTab.kind === 'dashboard' ? ['json'] : undefined}
           onClose={() => setImportOpen(false)}
         />
       ) : null}

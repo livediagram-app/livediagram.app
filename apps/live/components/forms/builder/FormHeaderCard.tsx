@@ -4,7 +4,7 @@
 // colour and style changed from Change Cover), then the heading (the tab's name too) and description, edited in
 // place. A later section's header is SectionHeader.
 import { useContext, useMemo, useState } from 'react';
-import type { IllustratePage, PageBackground } from '@livediagram/document';
+import type { Page, PageBackground } from '@livediagram/document';
 import {
   FORM_DESCRIPTION_MAX,
   FORM_HEADING_MAX,
@@ -17,7 +17,7 @@ import { patchForm, deleteSection, updateSection } from '@livediagram/forms';
 import { AnchoredPopover } from '@/components/primitives/AnchoredPopover';
 import { BackgroundSection } from '@/components/canvas/page-background-section';
 import { EditorContext } from '@/app/document/[id]/EditorContext';
-import { themeBackgroundPresets } from '@/lib/illustrate-page-paint';
+import { themeBackgroundPresets } from '@/lib/page-paint';
 import { getTheme } from '@/lib/themes';
 import { FormCoverBand } from '../FormCoverBand';
 import { LinkedText } from '../LinkedText';
@@ -59,7 +59,7 @@ export function FormHeaderCard({ sections }: { sections: number }) {
   const themeId = useContext(EditorContext)?.activeTab?.theme;
   const themePresets = useMemo(() => themeBackgroundPresets(getTheme(themeId)), [themeId]);
   // The cover as the slide's Background section reads a page: a wide slide wearing it.
-  const coverPage: IllustratePage = {
+  const coverPage: Page = {
     id: 'form-cover',
     orientation: 'landscape',
     kind: 'slide',
@@ -112,7 +112,7 @@ export function FormHeaderCard({ sections }: { sections: number }) {
               ) : null}
             </div>
             <div className="overflow-y-auto px-4 py-3">
-              {/* A slide's Background and Pattern (docs/specs/007-editor/illustrate-pages.md "Backgrounds"), no picture. */}
+              {/* A slide's Background and Pattern (docs/specs/007-editor/pages-mode.md "Backgrounds"), no picture. */}
               <BackgroundSection
                 page={coverPage}
                 only={COVER_CATEGORIES}

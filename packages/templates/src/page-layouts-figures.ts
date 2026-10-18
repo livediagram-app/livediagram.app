@@ -1,4 +1,4 @@
-// The figure layouts (docs/specs/007-editor/illustrate-pages.md "Layouts"): a pictogram, a ranking,
+// The figure layouts (docs/specs/007-editor/pages-mode.md "Layouts"): a pictogram, a ranking,
 // a cycle and a funnel. Same contract as page-layouts.ts: the page's content box in, uncoloured
 // elements out, a tall page stacking and a wide one setting side by side. Each figure ends in the
 // source line its numbers owe.

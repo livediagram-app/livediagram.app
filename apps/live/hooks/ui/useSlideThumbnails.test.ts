@@ -51,7 +51,7 @@ describe('useSlideThumbnails', () => {
     expect(result.current).toBe(first);
   });
 
-  // docs/specs/007-editor/illustrate-pages.md "Slides": a page slide is drawn as the page exports,
+  // docs/specs/007-editor/pages-mode.md "Slides": a page slide is drawn as the page exports,
   // so a dark page's uncoloured elements take light ink.
   it("inks a page slide's elements for its page's surface", () => {
     const shape = { ...createShape('square', -40, -40), id: 'ink' };

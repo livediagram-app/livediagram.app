@@ -1,4 +1,4 @@
-// A slide's animated background in a PNG or PDF export (docs/specs/007-editor/illustrate-pages.md
+// A slide's animated background in a PNG or PDF export (docs/specs/007-editor/pages-mode.md
 // "Animated backgrounds"): its parts (lib/page-motion-parts.ts) painted onto the export canvas,
 // still, as they stand when the slide opens (lib/page-motion-frame.ts), over the page's gradient
 // and under everything on it. Browser-only (canvas 2D); the parts and poses are tested pure.

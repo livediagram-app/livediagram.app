@@ -17,7 +17,7 @@ import {
 } from './hero-article-parts';
 
 // The hero's Article window (docs/specs/019-marketing/marketing-site.md "Hero"): a long read written
-// in Illustrate mode (docs/specs/007-editor/article-pages.md), on two A4 pages, each under the
+// in Pages mode (docs/specs/007-editor/article-pages.md), on two A4 pages, each under the
 // editor's label row. On page 1 a kicker and a two-line title are typed, the subtitle and byline
 // land, a header image wipes in, the intro is written line by line, then a heading and its bullets.
 // The article runs on to page 2: a checklist ticks, a quote sets in behind its rule, a figure's bars

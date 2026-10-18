@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 // The page toolbar's page (docs/specs/007-editor/article-pages.md "The page toolbar"): the hovered article page, else
-// one the Article tour's toolbar step pins (docs/specs/007-editor/illustrate-tour.md "Article track").
+// one the Article tour's toolbar step pins (docs/specs/007-editor/pages-tour.md "Article track").
 import { act, cleanup, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import {

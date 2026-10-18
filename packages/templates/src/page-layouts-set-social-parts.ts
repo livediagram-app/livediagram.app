@@ -1,4 +1,4 @@
-// Parts the Social set's layouts share (docs/specs/007-editor/illustrate-pages.md "Layouts"): big
+// Parts the Social set's layouts share (docs/specs/007-editor/pages-mode.md "Layouts"): big
 // page-sized type, a headline stacked over several lines at one size, a pill, the account's handle
 // row every post signs off with, and a column that pins its first and last parts to its ends and
 // centres the rest between them. Social posts are mostly Square, Portrait post (4:5) and Story

@@ -1,6 +1,6 @@
 'use client';
 
-// An infographic or slide page's Layout button beside its cog (docs/specs/007-editor/illustrate-pages.md
+// An infographic or slide page's Layout button beside its cog (docs/specs/007-editor/pages-mode.md
 // "Beside the cog", "Layouts"): the page's layouts by category in a popover anchored to the button
 // (a bottom sheet on a phone), as Background opens its swatches. Hovering a tile previews it on the
 // page; a press places it (over anything there, one undo step back) and closes the popover; closing it

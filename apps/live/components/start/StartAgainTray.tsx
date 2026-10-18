@@ -1,7 +1,7 @@
 'use client';
 
 // Bringing a template start back (docs/specs/007-editor/start-diagramming.md "Bringing it back"): once its × has
-// closed it, an empty Diagram, Facilitate or Illustrate tab says so in the palette tray, hanging from the strip as the
+// closed it, an empty Diagram, Facilitate or Pages tab says so in the palette tray, hanging from the strip as the
 // mode banners do, with Show Templates to open its start again. It goes with the emptiness: the first element ends
 // it. Without a strip on screen (Draw's dock) it is the same message as a top-centre pill, as a mode banner falls
 // back to (ModeBanner).

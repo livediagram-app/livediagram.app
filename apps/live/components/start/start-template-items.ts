@@ -1,7 +1,7 @@
 // What an empty tab's template start offers (docs/specs/007-editor/start-diagramming.md): Start Diagramming on a
-// Diagram tab, Start Facilitating on a Facilitate tab, Start Illustrating on an Illustrate tab. Every listed template
+// Diagram tab, Start Facilitating on a Facilitate tab, Start Making Pages on a Pages tab. Every listed template
 // of the mode, a rail over them (Recommended, then groups) and the search across them. Diagram's groups are the
-// catalogue's categories; Facilitate's and Illustrate's templates nearly all share one, so they group their own way
+// catalogue's categories; Facilitate's and Pages mode's templates nearly all share one, so they group their own way
 // (OWN_GROUPS). Drawn from the template
 // catalogue, so a new template joins its mode's panel with no change here. Pure: the panel draws what these return.
 import {
@@ -17,7 +17,7 @@ import {
   type TemplateKind,
 } from '@livediagram/templates';
 
-export type TemplateStartMode = 'diagram' | 'draw' | 'facilitate' | 'illustrate';
+export type TemplateStartMode = 'diagram' | 'draw' | 'facilitate' | 'pages';
 
 type TemplateStartGroup = {
   id: string;
@@ -40,19 +40,19 @@ const RECOMMENDED_LINE: Record<TemplateStartMode, string> = {
   diagram: 'The quickest ways to start, picked for most diagrams.',
   draw: 'The quickest ways to start sketching, picked for most people.',
   facilitate: 'The quickest ways to run a session, picked for most teams.',
-  illustrate: 'The quickest ways to make something to share, picked for most people.',
+  pages: 'The quickest ways to make something to share, picked for most people.',
 };
 
 // Recommended leaves these to their group (Timeline, under Timelines).
 const NOT_RECOMMENDED: ReadonlySet<TemplateKind> = new Set(['timeline']);
 
-// Start Illustrating's Recommended opens on two blanks of a page kind in place of the Popular shelf's Blank Illustration
+// Start Making Pages' Recommended opens on two blanks of a page kind in place of the Popular shelf's Blank Illustration
 // and Article: a page already of its kind is the quicker start (docs/specs/007-editor/start-diagramming.md
 // "Recommended and groups"). The shelf itself, shared with the Quick Start and the gallery, is unchanged.
 const RECOMMENDED_SWAPS: Partial<
   Record<TemplateStartMode, ReadonlyMap<TemplateKind, TemplateKind>>
 > = {
-  illustrate: new Map<TemplateKind, TemplateKind>([
+  pages: new Map<TemplateKind, TemplateKind>([
     ['blank-illustration', 'blank-infographic'],
     ['article', 'blank-article'],
   ]),
@@ -61,7 +61,7 @@ const RECOMMENDED_SWAPS: Partial<
 type OwnGroup = { id: string; name: string; line: string; kinds: readonly TemplateKind[] };
 
 // The modes whose templates nearly all share one catalogue category (Workshops, Presentations) group them their own
-// way: Facilitate by the session each runs, Illustrate by what each makes, each Illustrate group but Posters and Design led by
+// way: Facilitate by the session each runs, Pages by what each makes, each Pages group but Posters and Design led by
 // its blank of a page kind. A template of the mode in none of its groups is placed in the last.
 const OWN_GROUPS: Readonly<Record<Exclude<TemplateStartMode, 'diagram'>, readonly OwnGroup[]>> = {
   facilitate: [
@@ -152,7 +152,7 @@ const OWN_GROUPS: Readonly<Record<Exclude<TemplateStartMode, 'diagram'>, readonl
       kinds: ['paper-prototype'],
     },
   ],
-  illustrate: [
+  pages: [
     {
       id: 'slides',
       name: 'Slides',
@@ -258,5 +258,5 @@ export const TEMPLATE_STARTS: Readonly<Record<TemplateStartMode, TemplateStart>>
   diagram: build('diagram'),
   draw: build('draw'),
   facilitate: build('facilitate'),
-  illustrate: build('illustrate'),
+  pages: build('pages'),
 };

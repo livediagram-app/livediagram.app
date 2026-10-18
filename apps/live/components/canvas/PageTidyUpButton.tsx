@@ -1,8 +1,8 @@
 'use client';
 
 // An infographic or slide page's Tidy, its icon alone, left of the lock and cog in the title bar
-// (docs/specs/007-editor/illustrate-pages.md "Tidy"), shown only while a press would change
-// something: a press aligns and spaces what is on the page, one edit (illustratePageEdits.tidyPage, the pure lib/page-tidy.ts). On a desktop pointer,
+// (docs/specs/007-editor/pages-mode.md "Tidy"), shown only while a press would change
+// something: a press aligns and spaces what is on the page, one edit (pageEdits.tidyPage, the pure lib/page-tidy.ts). On a desktop pointer,
 // hovering it shows the tidied page in place; leaving it puts the page back. An Editor's alone: the
 // title bar shows controls only to someone who may edit, and the button checks the session's
 // `can` itself.
@@ -10,7 +10,7 @@ import { useContext, useEffect, useRef } from 'react';
 import { lucideBrushCleaning } from '@livediagram/icons/lucide';
 import { lucideGlyph, Tooltip } from '@livediagram/ui';
 import { EditorContext } from '@/app/document/[id]/EditorContext';
-import type { IllustratePageEdits } from '@/hooks/editor/illustrate-page-edits';
+import type { PageEdits } from '@/hooks/editor/page-edits';
 import { titleButtonClass } from './TitlePopoverButton';
 
 const TidyUpIcon = lucideGlyph(lucideBrushCleaning, 14);
@@ -32,7 +32,7 @@ export function PageTidyUpButton({
 }: {
   pageId: string;
   // The pages view's edits (absent ones render nothing).
-  edit: Pick<IllustratePageEdits, 'tidyPage' | 'previewTidy'>;
+  edit: Pick<PageEdits, 'tidyPage' | 'previewTidy'>;
 }) {
   const editor = useContext(EditorContext);
   const { tidyPage, previewTidy } = edit;

@@ -139,13 +139,13 @@ no animation.
 A new category, **Concepts**, in the Structure band: **Layer Stack**, **Pyramid**, **Funnel**, **Cycle**, **Hub and
 Spoke**, **Onion**, **Chevrons**. The Funnel
 tile places a Pyramid with the Funnel variant (the variant is the decision, so it gets its own tile). The
-**Sankey** ([Sankey diagram](sankey.md)) joins them last, in Diagram and Illustrate: a flow drawn as wide as what it
+**Sankey** ([Sankey diagram](sankey.md)) joins them last, in Diagram and Pages: a flow drawn as wide as what it
 carries explains an idea the way a funnel or a cycle does.
 
 | Mode       | Concepts |
 | ---------- | -------- |
 | Diagram    | yes      |
-| Illustrate | yes      |
+| Pages      | yes      |
 | Plan       | no       |
 | Facilitate | no       |
 

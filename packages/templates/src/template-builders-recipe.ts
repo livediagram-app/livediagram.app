@@ -1,5 +1,5 @@
 // Recipe Card template (kind `recipe-card`, docs/specs/007-editor/templates-by-mode.md
-// "Illustrate templates"): a recipe to share, a made-up weeknight bake, that opens in Illustrate
+// "Pages templates"): a recipe to share, a made-up weeknight bake, that opens in Pages
 // on two pages sized for a feed: a Square page for the dish and a Portrait post (4:5) page for
 // the method, so the pair posts as a carousel.
 //
@@ -14,7 +14,7 @@
 //
 // Pure: () -> Element[], placed on the card's pages (recipeCardPages) whatever centre is passed.
 
-import type { Element, IllustratePage } from '@livediagram/document';
+import type { Element, Page } from '@livediagram/document';
 import type { Kit } from './page-layout-kit';
 import { CARD_SHADOW, iconDisc, lockedFill, panel } from './template-page-design';
 import { pageKits, templatePage } from './template-page-kit';
@@ -60,7 +60,7 @@ const STEPS = [
 const TIP = 'Make it a day ahead. It is even better warmed through, with crusty bread.';
 
 /** The card's pages: the dish on a Square page, the method on a Portrait post (4:5) page. */
-export function recipeCardPages(): IllustratePage[] {
+export function recipeCardPages(): Page[] {
   return [
     templatePage(1, 'square', 'portrait', 'The Dish', {
       fill: { kind: 'gradient', from: '#fff7ed', to: '#ffe4e6', angle: 160 },

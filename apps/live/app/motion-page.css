@@ -1,5 +1,5 @@
 /*
- * A slide's animated backgrounds (docs/specs/007-editor/illustrate-pages.md "Animated
+ * A slide's animated backgrounds (docs/specs/007-editor/pages-mode.md "Animated
  * backgrounds"), drawn by components/canvas/PageMotionLayer.tsx. Canvas motion, not chrome: the
  * chrome motion budget does not read this file (apps/live/motion-budget.test.ts lists it).
  *

@@ -1,5 +1,5 @@
 // The view Fit to Screen lands on (docs/specs/008-canvas/canvas-and-palette.md "Zoom & pan"): every boxed element on
-// the tab in view, clear of the Palette strip over the canvas's top and beside Illustrate's Contents panel. Shared by
+// the tab in view, clear of the Palette strip over the canvas's top and beside Pages mode's Contents panel. Shared by
 // the Fit button (hooks/canvas/useEditorViewport) and a double-tap's fit back out to the whole tab
 // (hooks/canvas/useDoubleTapZoom), so both land on the same view.
 
@@ -34,7 +34,7 @@ export function tabFitView(canvas: HTMLElement | null, elements: Element[]): Vie
   const inset = topChromeInset(rect, strip && strip.width > 0 ? strip : null);
   // Padded by the strip's depth on every side, not centred below it: the content stays centred (as before the
   // strip was considered) and clears both the strip and the bottom chrome of the same depth.
-  // Beside Illustrate's Contents sidebar, never under it (docs/specs/007-editor/illustrate-pages.md
+  // Beside Pages mode's Contents sidebar, never under it (docs/specs/007-editor/pages-mode.md
   // "Contents"): the fit fills what shows beside it.
   const sides = sideChromeInsets(canvas);
   return besideSideInsets(

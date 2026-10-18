@@ -37,7 +37,7 @@ describe('tabStatsOf', () => {
     expect(tabStatsOf({ kind: 'event-storming', opensIn: 'draw', elements: [] }, '{}').mode).toBe(
       'diagram',
     );
-    expect(tabStatsOf({ opensIn: 'infographic', elements: [] }, '{}').mode).toBe('illustrate');
+    expect(tabStatsOf({ opensIn: 'infographic', elements: [] }, '{}').mode).toBe('pages');
   });
 
   it('counts a body without an elements array as empty', () => {

@@ -95,9 +95,9 @@ export type CanvasProps = {
   // The viewer's editor mode on the tab (docs/specs/007-editor/editor-modes.md): Draw trades the
   // palette, the strip and the tool panels for the dock, and keeps the canvas still.
   editorMode?: EditorMode;
-  // Illustrate mode's A4 pages and their edits (docs/specs/007-editor/editor-modes.md "The
+  // Pages mode's A4 pages and their edits (docs/specs/007-editor/editor-modes.md "The
   // pages"), present only in that mode.
-  illustratePages?: import('@/hooks/editor/useIllustratePages').IllustratePagesView | null;
+  pagesMode?: import('@/hooks/editor/usePagesMode').PagesModeView | null;
   // The whiteboard dock's model and the board's ink for this appearance
   // (docs/specs/023-draw-mode/draw-mode.md), present on a whiteboard tab.
   whiteboardDock?: import('@/hooks/canvas/useWhiteboard').WhiteboardDockModel;
@@ -700,7 +700,7 @@ export type CanvasProps = {
   // Wrap up the Format canvas tool (the palette tool): drops back to the
   // tool active before it. Drives the format-tool mode banner's "Done" button.
   onExitFormatTool: () => void;
-  // The Format tool's press on an Illustrate page's paper (docs/specs/007-editor/illustrate-pages.md
+  // The Format tool's press on a page's paper (docs/specs/007-editor/pages-mode.md
   // "Copying a background"): arms or paints that page's background. Absent where pages cannot be
   // painted (another mode, a person who may not edit them), so such a press is an empty-canvas one.
   onFormatPagePress?: (pageId: string) => void;

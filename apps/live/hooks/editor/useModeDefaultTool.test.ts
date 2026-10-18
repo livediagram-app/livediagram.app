@@ -7,7 +7,7 @@ describe('modeDefaultTool', () => {
     expect(modeDefaultTool('plan', false)).toBe('pan');
     expect(modeDefaultTool('diagram', false)).toBe('select');
     expect(modeDefaultTool('draw', false)).toBe('select');
-    expect(modeDefaultTool('illustrate', false)).toBe('select');
+    expect(modeDefaultTool('pages', false)).toBe('select');
   });
 
   it('starts every mode on Hand on a phone', () => {

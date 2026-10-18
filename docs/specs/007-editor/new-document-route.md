@@ -196,7 +196,7 @@ knowing about when adding another.
 1. User clears the active tab's content (or opens a tab that was
    created empty).
 2. An Editor sees the mode's start in the middle of the canvas (Start Diagramming,
-   Start Facilitating, Start Illustrating, Start Planning; [Template starts](start-diagramming.md));
+   Start Facilitating, Start Making Pages, Start Planning; [Template starts](start-diagramming.md));
    a Participant or Viewer the empty-canvas card ([The empty-canvas hint](#the-empty-canvas-hint)).
 
 ### Document not found
@@ -318,7 +318,7 @@ browsed before signing up.
 
 - **Heading:** "What are you making today?"
 - **Five mode cards**, in the order every mode list shows them (`EDITOR_MODES`: Diagram, Draw, Facilitate,
-  Illustrate, Plan), three then two from 640px (a six-track grid: the first row's cards take two tracks each, the
+  Pages, Plan), three then two from 640px (a six-track grid: the first row's cards take two tracks each, the
   second row's three, `modeCardSpan`; one column on a phone). Every card has the same build and, across both rows,
   the same height (`auto-rows-fr`), so **Diagram**, first there and where most start, leads the top row as an equal
   rather than a wide, short strip. The cards carry no template names and no "Most Popular" badge.
@@ -397,7 +397,7 @@ The **empty-canvas hint** is a calm **card in the middle of the canvas** (`Empty
 active tab has no elements to someone who cannot edit it: an Editor gets the mode's start instead ([Template
 starts](start-diagramming.md)). A **Viewer** reads "Nothing here yet. The owner can build it out, and your view
 updates live."; a **Participant** is pointed at a sticky, text or an image. It shows in Diagram and Facilitate; Draw
-(its dock is the hint, [Draw mode](../023-draw-mode/draw-mode.md)), Illustrate and Plan show none. It offers no action
+(its dock is the hint, [Draw mode](../023-draw-mode/draw-mode.md)), Pages and Plan show none. It offers no action
 of its own: an Editor's empty tab shows its start instead, and **Help** on a desktop. It goes once the
 canvas has content, and a **Close** (×) in its top right corner closes it for good on that tab for this person in
 this browser (a per-browser list of the last 200 closed keys, `livediagram:v2:empty-card-dismissed` in localStorage,
@@ -664,7 +664,7 @@ theme for a new tab.
 - `/new?template=whiteboard` → no wizard; a document created whose tab opens
   in Draw mode ([Editor modes](editor-modes.md)), the Ink pen in hand.
 - `/new?mode=draw` → the wizard, the Draw card chosen; Create makes a Draw tab.
-- `/new?mode=illustrate&q=article` → the wizard, Illustrate chosen; on the new document Start Illustrating
+- `/new?mode=pages&q=article` → the wizard, Pages chosen; on the new document Start Making Pages
   opens with its search reading "article".
 - `/new?mode=sideways` → the plain wizard, no card chosen.
 - `/new?browse=brainstorm` → the plain wizard: the Brainstorm collection (and `?browse=`) was

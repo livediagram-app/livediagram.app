@@ -9,7 +9,7 @@ import { freehandCanvasPoints, freehandStrokePoints } from './freehand-points';
 import { encodeStrokePoints } from './stroke-points';
 import { pathContours, pathOfContours, pathWorldAnchors } from './path-element';
 import type { PathAnchor } from './path-geometry';
-import type { LaidOutPage, PageRect } from './illustrate-page';
+import type { LaidOutPage, PageRect } from './page';
 import { MIRROR_AXIS_TOLERANCE } from './element-mirror';
 import type { GuideLine } from './logo-page';
 

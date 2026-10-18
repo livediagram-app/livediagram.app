@@ -174,13 +174,13 @@ async function planContentFor(
 export async function tabPreview(
   tab: Tab,
   auth?: { env: Env; token: string; documentId?: string },
-  // One page of an Illustrate tab to draw alone (read_document's `page`); every page when absent.
+  // One page of a Pages tab to draw alone (read_document's `page`); every page when absent.
   page?: LaidOutPage,
 ): Promise<(TextBlock | ImageBlock)[]> {
   // A Form tab draws as its form, as respondents see it.
   const form = await formPreview(tab);
   if (form) return [form];
-  // An Illustrate tab draws as its pages (svg-render-pages.ts), as the editor exports them.
+  // A Pages tab draws as its pages (svg-render-pages.ts), as the editor exports them.
   if (laidOutPagesOf(tab).length > 0) {
     // Its pictures, its Plan cards and sheets (a sheet or a sheet-linked chart on a page draws what it holds, as on any
     // tab) and its faces, fetched together rather than one after another.

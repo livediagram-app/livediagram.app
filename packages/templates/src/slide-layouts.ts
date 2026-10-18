@@ -1,4 +1,4 @@
-// Slide layouts (docs/specs/007-editor/illustrate-pages.md "Slide layouts"): the layouts a slide
+// Slide layouts (docs/specs/007-editor/pages-mode.md "Slide layouts"): the layouts a slide
 // page starts from, at least nine to a category. Seven built for a slide here, more in the
 // category files (slide-layouts-openers.ts and its siblings), the rest the infographic layouts
 // that already set things side by side on a landscape page, filed under the slide categories. Pure builders like

@@ -20,7 +20,7 @@ import { EditorState, Selection, TextSelection, type Transaction } from 'prosemi
 import { EditorView } from 'prosemirror-view';
 import { gapCursor } from 'prosemirror-gapcursor';
 import {
-  MAX_ILLUSTRATE_PAGES,
+  MAX_PAGES,
   applyArticleOps,
   diffArticleFlow,
   type ArticleBlock,
@@ -99,7 +99,7 @@ export type ArticleEditorProps = {
   flow: string;
   // The article's pages, laid out, in order.
   pages: LaidOutPage[];
-  // The tab holds as many pages as it can (MAX_ILLUSTRATE_PAGES): no page is added for writing that
+  // The tab holds as many pages as it can (MAX_PAGES): no page is added for writing that
   // runs past the last.
   atPageLimit?: boolean;
   doc: ArticleFlow;
@@ -692,7 +692,7 @@ function PageLimitNotice({ page }: { page: LaidOutPage }) {
       }}
     >
       <span className="rounded-md bg-amber-50 px-2 py-1 text-xs font-medium text-amber-800 ring-1 ring-amber-200 dark:bg-amber-500/15 dark:text-amber-200 dark:ring-amber-500/30">
-        This tab has reached {MAX_ILLUSTRATE_PAGES} pages: the writing below this line is hidden
+        This tab has reached {MAX_PAGES} pages: the writing below this line is hidden
       </span>
     </div>
   );

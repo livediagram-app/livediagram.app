@@ -28,7 +28,7 @@ export function isDataImageId(imageId: string | null | undefined): boolean {
 }
 
 // Every picture a tab names: its image elements' and its pages' backgrounds
-// (docs/specs/007-editor/illustrate-pages.md "Image backgrounds").
+// (docs/specs/007-editor/pages-mode.md "Image backgrounds").
 export function tabImageIds(tab: Tab): string[] {
   const ids = new Set<string>(pageImageIds(tab.pages));
   for (const el of tab.elements) if (el.type === 'image' && el.imageId) ids.add(el.imageId);

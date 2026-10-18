@@ -479,8 +479,8 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <circle cx="12" cy="12" r="10" strokeDasharray="1.6 1.4" />
     </Glyph>
   ),
-  // A page with its colour band under a dashed spotlight ring: a guided look at Illustrate.
-  'illustrate-tour': (
+  // A page with its colour band under a dashed spotlight ring: a guided look at Pages.
+  'pages-tour': (
     <Glyph>
       <rect x="7" y="4" width="10" height="14" rx="1" />
       <path d="M7 7.5h10M9.5 11h5M9.5 13.5h3" />
@@ -531,7 +531,7 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
     </Glyph>
   ),
   // A page with a title and a bar chart: the poster an infographic becomes.
-  illustrate: (
+  'pages-mode': (
     <Glyph>
       <rect x="5" y="2.5" width="14" height="19" rx="1.5" />
       <path d="M8 6.5h8" />

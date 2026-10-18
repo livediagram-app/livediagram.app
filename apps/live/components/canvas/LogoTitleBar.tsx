@@ -79,7 +79,7 @@ export function LogoTitleBar({
 }: {
   pageId: string;
   tools: LogoToolsView;
-  // Whether the title bar has room to name them (IllustratePages); absent, a desktop does.
+  // Whether the title bar has room to name them (CanvasPages); absent, a desktop does.
   labelled?: boolean;
 }) {
   // Mirror and Guides name themselves on a desktop with room; a phone keeps them icon-only.
@@ -114,7 +114,7 @@ export function LogoTitleBar({
       >
         <GuidesIcon />
       </LogoGuidesButton>
-      {/* Tidy last, its icon alone, left of the lock and cog, as on every Illustrate page. */}
+      {/* Tidy last, its icon alone, left of the lock and cog, as on every page. */}
       {editor && selection ? (
         <TidyUpButton canTidyUp={editor.canTidyUp} tidyUp={editor.tidyUpSelected} />
       ) : null}

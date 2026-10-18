@@ -28,8 +28,8 @@ type ImportTabDialogProps = {
     text: string,
     onProgress: (progress: ImportImageProgress) => void,
   ) => Promise<ImportOutcome>;
-  // The formats offered, in catalogue order; absent offers every one. Illustrate mode and a Dashboard tab offer
-  // JSON only (docs/specs/007-editor/illustrate-pages.md "Import", docs/specs/026-plan/plan-tabs.md "Import and
+  // The formats offered, in catalogue order; absent offers every one. Pages mode and a Dashboard tab offer
+  // JSON only (docs/specs/007-editor/pages-mode.md "Import", docs/specs/026-plan/plan-tabs.md "Import and
   // Export of a Dashboard"); a single format opens straight at its panel.
   formats?: readonly Format[];
   onClose: () => void;

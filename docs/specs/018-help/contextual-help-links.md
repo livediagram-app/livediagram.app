@@ -122,7 +122,7 @@ Grouped by priority; each links the keyed article.
 **Onboarding / empty states**
 
 - Empty-canvas card -> `your-first-diagram`
-- Template starts -> `templates` (Start Facilitating, Start Illustrating)
+- Template starts -> `templates` (Start Facilitating, Start Making Pages)
 - Settings - Keyboard category (was the Shortcuts dialog) -> `keyboard-shortcuts`
 - Sign-in reasons modal -> `guest-vs-account`
 

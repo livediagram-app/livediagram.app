@@ -1,5 +1,5 @@
 // One slide's picture (docs/specs/012-collaboration/presentation-mode.md, docs/specs/007-editor/
-// illustrate-pages.md "Contents"): its elements drawn by the headless renderer the exports use,
+// pages-mode.md "Contents"): its elements drawn by the headless renderer the exports use,
 // framed to the slide (a page slide to its page, on its background). Shared by the Slide Deck's
 // rows and the Contents popover's page thumbnails, so a page looks the same in both. The markup is
 // our own renderer's output (user text is xmlEscaped inside it), so injecting it is safe.
@@ -7,8 +7,8 @@ import {
   r2,
   resolveSlide,
   slideFrame,
-  illustratePagesOf,
-  layOutIllustratePages,
+  pagesOf,
+  layOutPages,
   arrowLabelFontStack,
   arrowLabelPass,
   svgArrow,
@@ -57,7 +57,7 @@ export function slideThumbFor(slide: Slide, tab: Tab, opts: SlideThumbOptions): 
   // disappears under the box it points at.
   const parts: string[] = [];
   const page = slide.pageId
-    ? layOutIllustratePages(illustratePagesOf(tab)).find((p) => p.id === slide.pageId)
+    ? layOutPages(pagesOf(tab)).find((p) => p.id === slide.pageId)
     : undefined;
   // A page's surface sets its ink, as the export draws it: light ink on a dark page.
   let surface: CanvasSurface = 'light';

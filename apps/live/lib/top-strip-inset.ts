@@ -1,4 +1,4 @@
-// How far the Toolbar layout's top strip reaches down over the canvas: a page (useIllustratePages) or a board
+// How far the Toolbar layout's top strip reaches down over the canvas: a page (usePagesMode) or a board
 // column (frame-board-column.ts) framed on screen centres below it.
 // The Toolbar layout's strip lies over the canvas's top edge; the page centres below it.
 const TOP_STRIP_SELECTOR = '[data-toolbar-palette]:not(.hidden)';

@@ -1,14 +1,14 @@
 # Logo pages blueprint
 
-Derived from [Logo pages](../logo-pages.md). The Illustrate page machinery it extends is in
-[Illustrate pages](illustrate-pages.md); this blueprint names only what the logo kind adds or
+Derived from [Logo pages](../logo-pages.md). The page machinery it extends is in
+[Pages](pages-mode.md); this blueprint names only what the logo kind adds or
 changes.
 
 ## Domain and naming
 
 | Spec term            | Identifier                                                                                               |
 | -------------------- | -------------------------------------------------------------------------------------------------------- |
-| logo page            | `IllustratePage` with `kind: 'logo'`; `PageKind` member `'logo'`                                         |
+| logo page            | `Page` with `kind: 'logo'`; `PageKind` member `'logo'`                                                   |
 | artboard             | `PageSizeId` `'logo'`; `LOGO_SIDE` (1024)                                                                |
 | safe area            | `pageMargin(page)` for the `'logo'` size (`LOGO_SAFE_FRACTION`)                                          |
 | construction guides  | `LogoGuides` (geometry, `logoGuides(rect)`); views `LogoGuidesSvg`, `LogoPageGuides`                     |
@@ -32,8 +32,8 @@ Exclude), **Wordmark**, **Logo Kit**.
 
 | Constant                                   | Value                                         | Where                                                      | Provenance / safe range                                          |
 | ------------------------------------------ | --------------------------------------------- | ---------------------------------------------------------- | ---------------------------------------------------------------- |
-| `LOGO_SIDE`                                | 1024                                          | `packages/document/src/illustrate-page.ts`                 | The largest common app-icon master; 512 to 2048                  |
-| `LOGO_SAFE_FRACTION`                       | 0.1                                           | `packages/document/src/illustrate-page.ts`                 | Spec; 0.05 to 0.15                                               |
+| `LOGO_SIDE`                                | 1024                                          | `packages/document/src/page.ts`                            | The largest common app-icon master; 512 to 2048                  |
+| `LOGO_SAFE_FRACTION`                       | 0.1                                           | `packages/document/src/page.ts`                            | Spec; 0.05 to 0.15                                               |
 | `LOGO_KEYLINE_CIRCLE`                      | 0.8 (diameter / side)                         | `packages/document/src/logo-page.ts`                       | Inscribed in the safe area                                       |
 | `LOGO_INNER_CIRCLE`                        | 0.5                                           | `packages/document/src/logo-page.ts`                       | Spec                                                             |
 | `LOGO_KEYLINE_SQUARE`                      | 0.64                                          | `packages/document/src/logo-page.ts`                       | Spec (Material's 18/24 of the 20/24 live area, rounded)          |
@@ -64,7 +64,7 @@ Exclude), **Wordmark**, **Logo Kit**.
 
 ## Data and persistence
 
-- `IllustratePage.kind: 'logo'`, stored. `parsePage` reads a logo page as `{ id, orientation:
+- `Page.kind: 'logo'`, stored. `parsePage` reads a logo page as `{ id, orientation:
 'portrait', size: 'logo', background (fill only), name, kind: 'logo' }` and the lock fields
   (`locked`, `startedBlank`): any other stored size, a
   pattern and a flow are dropped. A non-logo page stored with `size: 'logo'` is read as A4
@@ -94,7 +94,7 @@ Exclude), **Wordmark**, **Logo Kit**.
 
 ### Page model (`packages/document`)
 
-- `illustrate-page.ts`: `PageKind`, `PAGE_SIZES.logo`, `LOGO_PAGE_SIZE_IDS`, `pageSizesFor`,
+- `page.ts`: `PageKind`, `PAGE_SIZES.logo`, `LOGO_PAGE_SIZE_IDS`, `pageSizesFor`,
   `parsePage` logo branch, `pageKindOf`, `newLogoPage(id)`, `PAGE_KIND_LABEL.logo = 'Logo'`,
   `pageMargin` (`LOGO_SAFE_FRACTION` for the logo size). The label reads `1024 x 1024 · Logo`.
 - `article-pages.ts` `withPageKindChosen(tab, pageId, 'logo', flow)`: the only page becomes
@@ -103,14 +103,14 @@ Exclude), **Wordmark**, **Logo Kit**.
   square, the grid's 14 inner lines); `logoPageSnapBoxes(pages)` (boxes `logo-inner:<id>`,
   `logo-keyline:<id>`); `logoPageAt(pages, point)`.
 
-### Page edits (`apps/live/hooks/editor/illustrate-page-edits.ts`)
+### Page edits (`apps/live/hooks/editor/page-edits.ts`)
 
 - `KIND_CHOSEN_EVENT.logo = 'PageKindLogo'`, `KIND_ADDED_EVENT.logo = 'LogoPageAdded'`.
 - `addPage('logo')` appends `newLogoPage(id)`; the infographic model skips logo pages.
 - `setSize` refuses any size on a logo page and `'logo'` on any other; `setOrientation` refuses;
   `setBackground` refuses a pattern on a logo page.
 - `removePage` (every kind, user request): before the commit, `onGoTo` the page before the deleted
-  one (its unit's last page), or the next unit's first page when the first goes; `useIllustratePages`
+  one (its unit's last page), or the next unit's first page when the first goes; `usePagesMode`
   frames it with a glide once it is in the row (`frame(page, false, true)`).
 - No quick-connect pluses: `LayerSelectionChrome` skips `QuickConnectPluses` while
   `onLogoPage(pages, selectionBounds)` (the selection's centre on a logo page, `logoPageAt`).
@@ -121,10 +121,10 @@ Exclude), **Wordmark**, **Logo Kit**.
   lay the cards out two by two (Up / Down step a row, `KIND_COLUMNS`). The first-page card and the
   in-page layout card are solid (`bg-white`, `dark:bg-slate-900`); the layout card's list scrolls
   past 380 px.
-- `IllustratePagePanel.tsx`: a logo page has the Background and Layouts tabs (`pagePanelTabs`
+- `PagePanel.tsx`: a logo page has the Background and Layouts tabs (`pagePanelTabs`
   drops Page: one size, no orientation); Pattern is hidden for logo. The cog asks for `'page'`,
   which a logo page lacks, so the panel opens on its first tab, Background (`tabs[0]`).
-- `IllustratePages.tsx`: a logo page's title bar holds, before the cog, `LogoTitleBar pageId`
+- `CanvasPages.tsx`: a logo page's title bar holds, before the cog, `LogoTitleBar pageId`
   (Beside the cog, below), its room reserved by `logoTitleBarRoom`; an
   empty logo page draws its guides first in the page's own box (under its cards); the layout card
   shows on an empty logo page.
@@ -134,12 +134,12 @@ Exclude), **Wordmark**, **Logo Kit**.
 - Merged and combined pen strokes: `combine.ts` `styleOf` gives a freehand without a `strokeColor`
   its `penColour` (else `INK_PEN_COLOUR`) and `strokeWidth: 'none'`; `resolveStockColours` fills a
   closed path with no outline from its `penColour` per surface.
-- `PALETTE_CATEGORIES` gains `logo` (Common band, `LogoTabIcon`, a pen nib); the Illustrate layout
+- `PALETTE_CATEGORIES` gains `logo` (Common band, `LogoTabIcon`, a pen nib); the Pages layout
   lists it after Popular with `tiles: ['logo:pen', 'tools:pencil', 'tools:text', 'shapes:square', 'shapes:circle',
 'shapes:diamond']` and `logoOnly: true`.
   `paletteCategoriesFor(mode, { esBoard, logoPages })` drops a `logoOnly` entry unless
   `logoPages`. `PaletteProps.logoPages` (picked by `ToolbarPalette`) is
-  `illustratePages.pages.some(kind === 'logo')`, passed by `CanvasChrome`.
+  `pagesMode.pages.some(kind === 'logo')`, passed by `CanvasChrome`.
 - `logo:pen` (section `logo`, `ShapePenIcon`): action `{ type: 'path' }`, handled by
   `PaletteTileActions.beginPath`, threaded from `useShapeDrawing.beginPath` (`beginDraw({ type:
 'path' })`) through `useEditorState`, `EditorCanvasHost`, `onBeginPath` and
@@ -164,12 +164,12 @@ Exclude), **Wordmark**, **Logo Kit**.
   pre-press dot unless free; `Canvas` passes the live stroke's points as `penPoints` off a
   whiteboard, and `computeDrawGuides({ whiteboard })` guides off their box.
 - `useLogoPaletteSwitch(pages, active)` (`hooks/canvas/useLogoPaletteSwitch.ts`), called by
-  `IllustratePages` (an editor, not bare), returns `pageShown(page)`, which `IllustratePages`'
+  `CanvasPages` (an editor, not bare), returns `pageShown(page)`, which `CanvasPages`'
   `goToPage` (the page label and the `PageNavigator`) calls after `focusPage`. It keeps the page
   someone was last on (a press off every page keeps it) and, when that changes, asks
   (`requestPaletteCategory`, in a zero timeout, after React renders; a timeout so a background
   tab answers) for `'logo'` on a logo page, else `'popular'`: on `pageShown` and a capture-phase
-  window `pointerdown` on a sheet (`[data-illustrate-page-id]`), counted only when its target is
+  window `pointerdown` on a sheet (`[data-page-id]`), counted only when its target is
   the canvas itself (inside `[data-canvas-content]`, or `[data-canvas-a11y-root]`), never chrome
   floating over a page. A logo page id not seen before asks for `'logo'`. On the first render
   with pages, the page under the canvas centre (`[data-canvas-a11y-root]`), else the first, asks
@@ -204,22 +204,22 @@ buildPageLayout(layout, page) }, { page })`, memoised on the layout, the page's 
   `LAYOUT_CARD_MARGIN` either side, else `EMPTY_PAGE_LAYOUTS_WIDTH` (340, two columns).
 - Start From Scratch: `EmptyPageLayouts` renders `DashedAddButton` (`components/primitives/
 DashedAddButton.tsx`, shared with `AddCardTypeButton`) labelled **Start From Scratch** on a logo page,
-  calling `onBlank`: `IllustratePages` tracks `UI · Closed · EmptyPageLayoutsBlank` and calls
-  `edit.startBlank(pageId)`, which sets `IllustratePage.startedBlank: true` (refused on a locked
+  calling `onBlank`: `CanvasPages` tracks `UI · Closed · EmptyPageLayoutsBlank` and calls
+  `edit.startBlank(pageId)`, which sets `Page.startedBlank: true` (refused on a locked
   page); `showsLayoutCard` skips a page with it. Hide stays the session-only `layoutsHidden`.
 
 ### Show Me (`apps/live/components/tour/PageTour.tsx`, `logo-tour-steps.ts`)
 
-- A logo page's Show Me is one of the page Show Mes ([Illustrate tour](../illustrate-tour.md)):
-  `IllustratePages` calls `usePageTour(editable)` and hands every page's panel
+- A logo page's Show Me is one of the page Show Mes ([Pages tour](../pages-tour.md)):
+  `CanvasPages` calls `usePageTour(editable)` and hands every page's panel
   `showMe={{ button: <PageShowMeButton tour kind onStart={() => freeze(pageId, kind)} />, article }}`, which
-  `IllustratePagePanel` heads beside the labelled `HelpArticleLink` (`PAGE_TOUR_HELP.logo`: `logoPages`, "Logo Pages
+  `PagePanel` heads beside the labelled `HelpArticleLink` (`PAGE_TOUR_HELP.logo`: `logoPages`, "Logo Pages
   Help"); `PageTourStage` (overlay layer) is mounted once.
 - `freeze(pageId, 'logo')` imports `page-tour-steps` at the press and fixes `logoTourSteps(combineShowing)`
   (`combineShowing`: `[aria-label="Combine shapes"]` is in the DOM): `layouts` (rings `[data-page-panel]`, `requires`
   the page's cog, `prepare` opens the panel on Layouts through `requestPagePanel`, `cleanup` closes it), `guides` and
   `mirror` (the page's `[data-logo-title-bar]` buttons by name), `combine` (the Combine button, else an unanchored
-  card), `outro`. The same steps follow `LOGO_WELCOME` as the Illustrate tour's Logo track.
+  card), `outro`. The same steps follow `LOGO_WELCOME` as the Pages tour's Logo track.
 - `UI · Started · LogoTour` on the press; `UI · Ended · LogoTourCompleted` / `LogoTourSkipped` on
   finish.
 
@@ -243,7 +243,7 @@ DashedAddButton.tsx`, shared with `AddCardTypeButton`) labelled **Start From Scr
 
 - Mounted by `LogoCanvasOverlays` (`components/canvas/LogoCanvasOverlays.tsx`, `Canvas`'s one
   mount for a logo page's canvas-layer overlays: `LogoPageGuides`, `GuideSnapPoints` and the two
-  live twins) for an editor in Illustrate. While
+  live twins) for an editor in Pages. While
   `drawsOntoGuides(pendingDraw)` (the Path tool, or a freehand intent that is not the highlighter
   or the shape pen) and `logo.snapPoint` exists, it follows the pointer (window `pointermove`, one
   update a frame) in canvas px; over a logo page with `guidesOn`, it draws the page's
@@ -324,7 +324,7 @@ on)` (which also calls `preloadCombineEngine()` when turned on), `mirrorPages`
   while mirror is on, `mirrorAxisLines(page.rect, mirror)` solid at full opacity, 1.5 px, a faint
   centre line under a solid one skipped.
 - `LogoPageGuides({ view, bare })` (mounted by `LogoCanvasOverlays`, after the elements) draws the
-  guides of logo pages **with content**; `IllustratePages` draws an empty logo page's inside its
+  guides of logo pages **with content**; `CanvasPages` draws an empty logo page's inside its
   own box. `showsLogoGuides(view, bare, pageId)`: not bare (zen, presenting, isometric), an editor,
   Show Guides on for that page.
 - `useLogoEditor` appends `logoPageSnapBoxes(guidedPages)` (the logo pages with Show Guides on) to
@@ -432,7 +432,7 @@ page, count)`.
 
 ## Interfaces and contracts
 
-- `newLogoPage(id: string): IllustratePage`.
+- `newLogoPage(id: string): Page`.
 - `logoGuides(rect: PageRect): LogoGuides`; `logoPageSnapBoxes(pages): ShapeElement[]`;
   `logoPageAt(pages, point): LaidOutPage | undefined`.
 - `mirrorElement<T extends BoxedElement>(el: T, axisX: number): T`; `twinFor(el, pages, use)`.
@@ -496,7 +496,7 @@ Measured (vitest on this branch):
   `Exclude Shapes`, `Mirror Copy`; Export card **Logo Kit** ("An SVG, PNGs from 16 to 1024 px and a
   favicon.ico, in one .zip."), subtitle "Download a logo page as an SVG, PNGs and a favicon.",
   button **Download .zip**.
-- Settings: Editor, then **Illustrate**, one **Logo Pages** section: the Logo Guides switch (with
+- Settings: Editor, then **Pages**, one **Logo Pages** section: the Logo Guides switch (with
   `alsoIn` "a logo page's Guides button": the guides live in the Guides popover beside the cog, not
   the page panel), and nested under it while it is on, Logo Guide Strength and **Guides Shown**, a
   `toggleGroup` of one chip per guide (Centre Lines, Diagonals, Safe Area, Circles, Square, Grid), each
@@ -521,7 +521,7 @@ Measured (vitest on this branch):
 ## Observability
 
 - `[combine]` warnings: `load failed`, `op failed` (op, element and point counts), `too detailed`.
-- `[logo-kit]` warnings on a failed raster or export; `[illustrate-page]` debug logs on refusals.
+- `[logo-kit]` warnings on a failed raster or export; `[page]` debug logs on refusals.
 - Telemetry as the spec lists; dashboard charts Logo Tools Used, Mirrored Drawings, Logo Mirror
   Switched, Logo Mirror Set Up, Logo Tours Started (with Show Me Tours Started), the Settings rows,
   and the existing Other Panels Opened and Exports.
@@ -530,7 +530,7 @@ Measured (vitest on this branch):
 
 | Spec rule                                         | Test                                                                                                                           |
 | ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| Logo page parsed, artboard, no pattern, label     | `packages/document/src/illustrate-page-logo.test.ts`                                                                           |
+| Logo page parsed, artboard, no pattern, label     | `packages/document/src/page-logo.test.ts`                                                                                      |
 | Guide geometry, snap boxes, page under a point    | `packages/document/src/logo-page.test.ts`                                                                                      |
 | Mirror rules                                      | `packages/document/src/element-mirror.test.ts`, `element-symmetry.test.ts`, `apps/live/lib/mirror-commit.test.ts`              |
 | Mirror popover and per-page settings              | `apps/live/components/canvas/LogoMirrorPopover.test.tsx`, `apps/live/hooks/editor/useLogoTools.pages.test.tsx`                 |
@@ -538,7 +538,7 @@ Measured (vitest on this branch):
 | Wordmark fields, clamps, arc geometry, validation | `packages/document/src/wordmark.test.ts`                                                                                       |
 | Wordmark in export                                | `packages/document/src/svg-render-wordmark.test.ts`                                                                            |
 | Combined paths: draw, hit, validate               | `packages/document/src/path-contours.test.ts`                                                                                  |
-| Page edits, the delete glide                      | `apps/live/hooks/editor/illustrate-page-edits.test.ts`                                                                         |
+| Page edits, the delete glide                      | `apps/live/hooks/editor/page-edits.test.ts`                                                                                    |
 | Logo layouts fit the safe area                    | `apps/live/lib/logo-layouts.test.ts`                                                                                           |
 | Combine ops, style, empty, too detailed, budget   | `apps/live/lib/combine/combine.test.ts`, `apps/live/hooks/canvas/useCombineShapes.test.ts`                                     |
 | Wordmark controls and patch                       | `apps/live/components/palette/WordmarkSection.test.tsx`, `apps/live/lib/style-presets-wordmark.test.ts`                        |

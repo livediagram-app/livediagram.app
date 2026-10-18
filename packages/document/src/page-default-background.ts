@@ -1,11 +1,11 @@
-// The background a new infographic page starts on (docs/specs/007-editor/illustrate-pages.md
+// The background a new infographic page starts on (docs/specs/007-editor/pages-mode.md
 // "A new page's background"): the tab theme's Mist gradient, a light wash of its accent, so a fresh
 // page looks designed rather than bare while dark text and the theme's ink still read on it. Pure:
 // every path that makes a page (adding one, choosing the first page's kind, a template, an AI
 // tool) lands the same background.
 import { shade, tint } from './colors';
-import { illustratePagesOf, pageKindOf, type PageBackground } from './illustrate-page';
-import { PAGE_GRADIENT_ANGLE } from './illustrate-page-paint';
+import { pagesOf, pageKindOf, type PageBackground } from './page';
+import { PAGE_GRADIENT_ANGLE } from './page-paint';
 import type { Tab, ThemeDefinition } from './index';
 
 // The accent a theme without its own stroke paints in (the brand blue).
@@ -62,7 +62,7 @@ export function withDefaultPageBackgrounds<T extends Partial<Pick<Tab, 'pages'>>
   theme: Partial<Pick<ThemeDefinition, 'elementStroke' | 'palette'>>,
   ids?: ReadonlySet<string>,
 ): T {
-  const pages = illustratePagesOf(tab);
+  const pages = pagesOf(tab);
   let changed = false;
   const next = pages.map((p) => {
     if (p.background || p.flow || pageKindOf(p) !== 'infographic') return p;

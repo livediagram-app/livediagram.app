@@ -1,6 +1,6 @@
 // The writing of an article page (docs/specs/007-editor/article-pages.md): an article's blocks in
 // order and its style, stored once per article on the tab (`Tab.articles[flow]`), shared by every
-// page of the article (`IllustratePage.flow`). Pure data and its reading: whatever is stored is
+// page of the article (`Page.flow`). Pure data and its reading: whatever is stored is
 // read defensively, so a malformed block, run or field is dropped rather than trusted.
 
 // Block and article limits (docs/specs/007-editor/article-pages.md "Blocks"). An article this

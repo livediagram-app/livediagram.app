@@ -3,7 +3,7 @@ import { isBoxed, unionBoxedBounds, unionRects, type Element } from '@livediagra
 import { isContentOffScreen } from '@/lib/viewport';
 import { useObservedSize } from '@/hooks/canvas/useObservedSize';
 
-// True while every element on the tab, and every Illustrate page (an empty page, or an article's
+// True while every element on the tab, and every page (an empty page, or an article's
 // writing, is content too), is panned / zoomed entirely out of view, and there is something to see. Drives the "bring it back"
 // nudge above the Fit button (OffscreenContentHint).
 //

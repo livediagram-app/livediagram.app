@@ -1,4 +1,4 @@
-// The Explainers layouts (docs/specs/007-editor/illustrate-pages.md "Layouts"), category
+// The Explainers layouts (docs/specs/007-editor/pages-mode.md "Layouts"), category
 // 'explainers': pages that teach or explain one thing. Pure builders on the shared kit
 // (page-layout-kit.ts), laid out in proportions of the page's content box so each fits every size
 // and orientation, in the tab's theme. The builders live in three files by kind: diagrams,

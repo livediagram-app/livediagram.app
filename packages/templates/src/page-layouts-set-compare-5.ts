@@ -1,4 +1,4 @@
-// Compare layouts, part five (docs/specs/007-editor/illustrate-pages.md "Layouts"): Scorecard and
+// Compare layouts, part five (docs/specs/007-editor/pages-mode.md "Layouts"): Scorecard and
 // Venn. Same contract as page-layouts.ts: the page's content box in, uncoloured elements out, in
 // proportions of the box so each fits every size and orientation; a wide page sets things side by
 // side where a stack would be squashed.

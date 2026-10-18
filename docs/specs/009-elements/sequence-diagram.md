@@ -106,7 +106,7 @@ unless Repeat is on. CSS only (a clip from the top); reduced motion and every ex
 | Mode       | Where                                        |
 | ---------- | -------------------------------------------- |
 | Diagram    | **Build**: Sequence Diagram, after Flowchart |
-| Illustrate | none                                         |
+| Pages      | none                                         |
 | Plan       | none                                         |
 | Facilitate | none (Search still finds and places it)      |
 

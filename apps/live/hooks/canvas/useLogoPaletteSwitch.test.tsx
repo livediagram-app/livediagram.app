@@ -3,7 +3,7 @@
 // docs/specs/007-editor/logo-pages.md "The Logo palette": the palette turns to Logo.
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { layOutIllustratePages, newLogoPage, type LaidOutPage } from '@livediagram/document';
+import { layOutPages, newLogoPage, type LaidOutPage } from '@livediagram/document';
 import { onPaletteCategoryRequest } from '@/lib/palette-category-request';
 import { useLogoPaletteSwitch } from './useLogoPaletteSwitch';
 
@@ -20,14 +20,14 @@ afterEach(() => {
   document.body.innerHTML = '';
 });
 
-const infographic = layOutIllustratePages([{ id: 'i', orientation: 'portrait' }]);
-const both = layOutIllustratePages([{ id: 'i', orientation: 'portrait' }, newLogoPage('l')]);
+const infographic = layOutPages([{ id: 'i', orientation: 'portrait' }]);
+const both = layOutPages([{ id: 'i', orientation: 'portrait' }, newLogoPage('l')]);
 
 // A sheet on screen for each page, side by side, 100 px wide.
 function sheets(pages: readonly LaidOutPage[]) {
   pages.forEach((p, i) => {
     const el = document.createElement('div');
-    el.setAttribute('data-illustrate-page-id', p.id);
+    el.setAttribute('data-page-id', p.id);
     el.getBoundingClientRect = () =>
       ({ left: i * 200, right: i * 200 + 100, top: 0, bottom: 100 }) as DOMRect;
     document.body.appendChild(el);
@@ -77,10 +77,7 @@ describe('useLogoPaletteSwitch', () => {
   });
 
   it('asks on opening when the page in view is a logo page, and again a little later', () => {
-    const logoFirst = layOutIllustratePages([
-      newLogoPage('l'),
-      { id: 'i', orientation: 'portrait' },
-    ]);
+    const logoFirst = layOutPages([newLogoPage('l'), { id: 'i', orientation: 'portrait' }]);
     renderHook(() => useLogoPaletteSwitch(logoFirst, true));
     vi.runAllTimers();
     expect(asked).toEqual(['logo', 'logo']);

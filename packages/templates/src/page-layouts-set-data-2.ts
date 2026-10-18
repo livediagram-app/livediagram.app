@@ -1,4 +1,4 @@
-// More Data layouts, continued (docs/specs/007-editor/illustrate-pages.md "Layouts"): a market
+// More Data layouts, continued (docs/specs/007-editor/pages-mode.md "Layouts"): a market
 // share breakdown and a stat mosaic. Same contract as page-layouts-set-data.ts: the page's
 // content box in, uncoloured elements out (a change's green or rose aside), each ending in the
 // source line its numbers owe.
