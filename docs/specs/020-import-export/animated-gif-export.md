@@ -1,16 +1,16 @@
 # Animated GIF export
 
-An Illustrate tab's pages exported as one **animated GIF**: each page held for a set time, one after another, with
+A Pages tab's pages exported as one **animated GIF**: each page held for a set time, one after another, with
 the deck's transition between them, looping forever. Everything that moves on a page moves in the GIF: an animated
-background ([Illustrate pages](../007-editor/illustrate-pages.md) "Animated backgrounds") and every element
+background ([Pages](../007-editor/pages-mode.md) "Animated backgrounds") and every element
 animation ([Element animations](../028-animation/element-animations.md)) run as they run on the canvas. A GIF plays
 anywhere an image does (a chat message, an email, a README, a social post), which a deck does not.
 
 ## Where it is offered
 
-- **Illustrate mode only.** The Export dialog's Illustrate formats ([Illustrate pages](../007-editor/illustrate-pages.md)
+- **Pages mode only.** The Export dialog's Pages formats ([Pages](../007-editor/pages-mode.md)
   "Export") gain a **GIF** card after SVG: PDF, PNG, SVG, GIF, JSON (then Logo Kit while the tab has a logo page).
-  Outside Illustrate the card is never shown.
+  Outside Pages the card is never shown.
 - Card copy: **GIF**, "An animated image of the pages, moving as they move on the canvas."
 - Every page kind exports: slides, infographic, article and logo pages. A logo page's see-through paper exports white
   (GIF transparency is one bit and would fringe every soft edge).
@@ -95,8 +95,8 @@ The GIF card opens an options-and-download panel, like PNG's, with the shared ba
 
 ## Telemetry
 
-`Document · Exported · IllustrateGIF` (one page) and `IllustrateGIFPages` (all pages), as the other page formats
-([Illustrate pages](../007-editor/illustrate-pages.md) "Telemetry"). Never a page name, size in bytes or hold.
+`Document · Exported · PagesGIF` (one page) and `PagesGIFPages` (all pages), as the other page formats
+([Pages](../007-editor/pages-mode.md) "Telemetry"). Never a page name, size in bytes or hold.
 
 ## Non-goals
 

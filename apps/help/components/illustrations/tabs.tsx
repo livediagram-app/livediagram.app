@@ -445,7 +445,7 @@ export function TabMenu() {
     null,
     'Diagram',
     'Draw',
-    'Illustrate',
+    'Pages',
     'Plan',
   ];
   return (

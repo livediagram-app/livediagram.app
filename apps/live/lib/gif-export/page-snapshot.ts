@@ -1,4 +1,4 @@
-// One page of an Illustrate tab, captured for the animated GIF export (docs/specs/020-import-export/blueprints/
+// One page of a Pages tab, captured for the animated GIF export (docs/specs/020-import-export/blueprints/
 // animated-gif-export.md "The snapshot"): the canvas's own rendering of the page, cloned once, with every CSS
 // animation on it recorded so a frame can pin each one at any moment of the page's clock. A frame is then an SVG
 // whose <foreignObject> holds the clone, drawn into a canvas (page-frames.ts).
@@ -34,7 +34,7 @@ const INHERITED = [
   'text-rendering',
 ];
 // The page's own animation markers.
-const PAGE_SELECTOR = '[data-illustrate-page-id]';
+const PAGE_SELECTOR = '[data-page-id]';
 const ELEMENT_SELECTOR = '[data-element-id]';
 const TAG = 'data-gif-id';
 
@@ -54,7 +54,7 @@ export async function snapshotPage(
   { width, height, fontCss, images, css }: SnapshotOptions,
   doc: Document = document,
 ): Promise<PageSnapshot> {
-  const node = doc.querySelector<HTMLElement>(`[data-illustrate-page-id="${CSS.escape(pageId)}"]`);
+  const node = doc.querySelector<HTMLElement>(`[data-page-id="${CSS.escape(pageId)}"]`);
   const root = node?.closest<HTMLElement>('[data-canvas-root]');
   const content = root?.querySelector<HTMLElement>('[data-canvas-content]');
   if (!node || !root || !content) throw new GifExportError('page-missing');

@@ -4,7 +4,7 @@ import { PAGE_MOTIONS } from '@livediagram/document';
 import { blurredDisc, paintMotionFrame, rgba, type MotionFrameCache } from './page-motion-canvas';
 
 // A slide's animated background painted still for the PNG and PDF export (docs/specs/007-editor/
-// illustrate-pages.md "Animated backgrounds"). The canvas is a recorder here; the paint was checked
+// pages-mode.md "Animated backgrounds"). The canvas is a recorder here; the paint was checked
 // side by side with the moving layer in a browser.
 
 type Call = { name: string; args: unknown[] };

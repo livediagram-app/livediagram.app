@@ -15,7 +15,7 @@ import type { PaletteTileDef } from './palette-tile-defs';
 
 // The category flyout's arrangement (docs/specs/007-editor/toolbar-layout.md "The category bar").
 
-const tiles = (mode: 'diagram' | 'facilitate' | 'illustrate', id: string): PaletteTileDef[] =>
+const tiles = (mode: 'diagram' | 'facilitate' | 'pages', id: string): PaletteTileDef[] =>
   paletteCategoriesFor(mode).find((c) => c.id === id)?.tiles ?? [];
 
 const tile = (id: string, dividerAfter = false): PaletteTileDef => ({
@@ -29,8 +29,8 @@ const tile = (id: string, dividerAfter = false): PaletteTileDef => ({
 });
 
 describe('the category bar', () => {
-  it('is Diagram’s, Facilitate’s and Illustrate’s strip, not Plan’s or Draw’s', () => {
-    expect([...CATEGORY_BAR_MODES].sort()).toEqual(['diagram', 'facilitate', 'illustrate']);
+  it('is Diagram’s, Facilitate’s and Pages’s strip, not Plan’s or Draw’s', () => {
+    expect([...CATEGORY_BAR_MODES].sort()).toEqual(['diagram', 'facilitate', 'pages']);
   });
 
   it('names every category in one word', () => {

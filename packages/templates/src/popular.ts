@@ -33,7 +33,7 @@ export const POPULAR_BY_MODE: Readonly<Record<PopularChoice, readonly TemplateKi
     'idea-garden',
     'rich-picture',
   ],
-  illustrate: [
+  pages: [
     'blank-illustration',
     'article',
     'blank-slide-deck',

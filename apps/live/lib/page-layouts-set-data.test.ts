@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { Element, ShapeElement } from '@livediagram/document';
 import { PAGE_LAYOUTS } from '@livediagram/templates';
 
-// docs/specs/007-editor/illustrate-pages.md "Layouts": the further Data layouts, each a real
+// docs/specs/007-editor/pages-mode.md "Layouts": the further Data layouts, each a real
 // chart or table with the source line its numbers owe, arranged side by side on a wide page.
 const PORTRAIT = { x: 0, y: 0, width: 1000, height: 1414 };
 const LANDSCAPE = { x: 0, y: 0, width: 1414, height: 1000 };

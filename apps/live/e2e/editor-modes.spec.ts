@@ -148,7 +148,7 @@ test.describe('editor modes', () => {
   });
 
   // Shift+D steps through the modes beside the tab's own and wraps: Plan stands apart, so a canvas tab with content
-  // cycles Diagram, Draw, Facilitate and Illustrate (docs/specs/007-editor/editor-modes.md "Plan stands apart").
+  // cycles Diagram, Draw, Facilitate and Pages (docs/specs/007-editor/editor-modes.md "Plan stands apart").
   test('Shift+D moves to the next mode and wraps, and the choice survives a reload', async ({
     page,
     pageErrors,
@@ -166,9 +166,9 @@ test.describe('editor modes', () => {
     await page.keyboard.press('Shift+D');
     await expect(chip(page)).toHaveAccessibleName('Editor mode: Facilitate');
     await page.keyboard.press('Shift+D');
-    await expect(chip(page)).toHaveAccessibleName('Editor mode: Illustrate');
+    await expect(chip(page)).toHaveAccessibleName('Editor mode: Pages');
     await page.keyboard.press('Shift+D');
-    // Leaving Illustrate with content on the tab asks first (docs/specs/007-editor/illustrate-pages.md).
+    // Leaving Pages with content on the tab asks first (docs/specs/007-editor/pages-mode.md).
     await page.getByRole('button', { name: 'Switch', exact: true }).click();
     await expect(chip(page)).toHaveAccessibleName('Editor mode: Diagram');
     expectNoPageErrors(pageErrors);

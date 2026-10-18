@@ -1,6 +1,6 @@
 'use client';
 
-// The page panel's Layouts (docs/specs/007-editor/illustrate-pages.md "Layouts", "Slide layouts"):
+// The page panel's Layouts (docs/specs/007-editor/pages-mode.md "Layouts", "Slide layouts"):
 // the page's catalogue (a slide page's slide layouts, else the infographic ones) by
 // category, as /new browses templates: the categories first (each a card fronted by its first
 // layout, with a count), then one category's layouts, each previewed for this page, with a way
@@ -16,7 +16,7 @@ import {
 import { CountBadge } from '@livediagram/ui';
 import { LayoutThumb } from './infographic-layout-thumb';
 import { BackBar } from '@/components/primitives/BackBar';
-import { PanelSection } from './illustrate-page-panel-sections';
+import { PanelSection } from './page-panel-sections';
 import { prefetchWhenIdle } from '@/lib/idle-prefetch';
 
 // The placeholders a page's carried content is told apart from, gathered once while the layouts

@@ -1,6 +1,6 @@
 'use client';
 
-// The Logo category (docs/specs/007-editor/logo-pages.md "The Logo palette"), offered in Illustrate
+// The Logo category (docs/specs/007-editor/logo-pages.md "The Logo palette"), offered in Pages
 // mode while the tab has a logo page: the Pen and the Pencil, then Draw mode's three markers in this
 // person's colours and widths. A marker is picked up for one stroke; pressed again while held, it
 // opens Draw mode's own flyout for it (colour and width), whose changes re-arm it at once.

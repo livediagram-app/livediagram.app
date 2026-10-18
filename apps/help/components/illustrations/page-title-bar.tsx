@@ -1,4 +1,4 @@
-// The Illustrate page title bar's buttons (docs/specs/007-editor/illustrate-pages.md "Beside the
+// The page title bar's buttons (docs/specs/007-editor/pages-mode.md "Beside the
 // cog"), drawn once for every scene that shows a page: Layout (PageLayoutsButton.tsx, the
 // panels-top-left glyph), Tidy (PageTidyUpButton.tsx, the broom), Background
 // (PageBackgroundButton.tsx, the paint roller) and the page's padlock (PageLockButton.tsx). Each

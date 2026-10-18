@@ -100,7 +100,7 @@ Nothing per tick: the tint is a constant, so a boundary costs one face and no bo
 ## Presentation and UX
 
 Menu section **Boundary** (Tools flyout): **Tab**, **Inset**, **C4** tiles. Palette: Build → **Boundary** after Frame
-and Lane (Diagram); left out of Illustrate's Build. Placeholder for the meta line: "Meta line".
+and Lane (Diagram); left out of Pages mode's Build. Placeholder for the meta line: "Meta line".
 
 ## Accessibility
 

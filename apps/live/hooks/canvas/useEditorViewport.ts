@@ -116,7 +116,7 @@ type EditorViewportApi = {
   ) => void;
   // Centre a canvas point, keeping our own zoom (docs/specs/012-collaboration/bring-focus.md).
   centreOn: (at: { x: number; y: number }) => void;
-  // Is that point already in the middle of this view? With its page (Illustrate), is that page framed?
+  // Is that point already in the middle of this view? With its page (Pages), is that page framed?
   isCentredOn: (at: { x: number; y: number }, page?: PageRect | null) => boolean;
 };
 
@@ -305,7 +305,7 @@ export function useEditorViewport(deps: EditorViewportDeps): EditorViewportApi {
     const inset = topChromeInset(rect, strip && strip.width > 0 ? strip : null);
     // Padded by the strip's depth on every side, not centred below it: the content stays centred (as before the
     // strip was considered) and clears both the strip and the bottom chrome of the same depth.
-    // Beside Illustrate's Contents sidebar, never under it (docs/specs/007-editor/illustrate-pages.md
+    // Beside Pages mode's Contents sidebar, never under it (docs/specs/007-editor/pages-mode.md
     // "Contents"): the fit fills what shows beside it.
     const node = canvasMainRef.current;
     const sides = node ? sideChromeInsets(node) : NO_SIDE_INSETS;

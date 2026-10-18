@@ -68,7 +68,7 @@
 - [x] Constants and configuration
 - [x] Defaults ledger
 
-## illustrate-pages
+## pages
 
 - [x] Domain and naming
 - [x] Behaviour and state

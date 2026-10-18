@@ -1,4 +1,4 @@
-// Parts the Covers set shares (docs/specs/007-editor/illustrate-pages.md "Layouts"): the
+// Parts the Covers set shares (docs/specs/007-editor/pages-mode.md "Layouts"): the
 // typographic pieces a cover is made of (a tracked capitals line, a headline fitted over a number of
 // lines, an accent rule, a hairline, a double frame) and a labelled field. Every piece is theme
 // painted: an accent rule is a banner with no words, a hairline and a frame are strokes only.

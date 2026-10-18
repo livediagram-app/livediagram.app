@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { articleLocked, isArticleLocked, lockedArticleFlows } from './article-lock';
 
-// docs/specs/007-editor/illustrate-pages.md "Locking a page": locking any page of an article
+// docs/specs/007-editor/pages-mode.md "Locking a page": locking any page of an article
 // holds the whole article, from any of its pages.
 const pages = [
   { id: 'i', kind: 'infographic' },

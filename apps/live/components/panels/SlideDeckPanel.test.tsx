@@ -5,7 +5,7 @@ import type { Deck } from '@livediagram/document';
 import type { SlideDeckState } from '@/app/document/[id]/useSlideDeck';
 import { SlideDeckPanel } from './SlideDeckPanel';
 
-// docs/specs/007-editor/illustrate-pages.md "Slides": the Slide Deck panel on an Illustrate tab.
+// docs/specs/007-editor/pages-mode.md "Slides": the Slide Deck panel on a Pages tab.
 vi.mock('@/components/plan/PlanContext', () => ({ usePlan: () => undefined }));
 vi.mock('@/hooks/canvas/useSelectionStore', () => ({ useSelectionOf: () => new Set() }));
 vi.mock('@/lib/telemetry', () => ({ track: () => {} }));
@@ -71,7 +71,7 @@ function panel(deck: Deck, labels?: Map<string, string | null>, withPages = true
   );
 }
 
-describe('SlideDeckPanel on an Illustrate tab', () => {
+describe('SlideDeckPanel on a Pages tab', () => {
   it('names the page picker button in the empty hint', () => {
     panel({ slides: [] });
     expect(screen.getByText(/pick it below and press/).textContent).toBe(
@@ -79,7 +79,7 @@ describe('SlideDeckPanel on an Illustrate tab', () => {
     );
   });
 
-  it('keeps the selection hint off an Illustrate tab', () => {
+  it('keeps the selection hint off a Pages tab', () => {
     panel({ slides: [] }, undefined, false);
     expect(screen.getByText(/first slide, then press/).textContent).toContain(
       'then press New slide.',
@@ -115,7 +115,7 @@ describe('SlideDeckPanel on an Illustrate tab', () => {
     expect(screen.queryByText(/on the canvas/)).toBeNull();
   });
 
-  // docs/specs/007-editor/illustrate-pages.md "Slides": a slide page's own slide would come straight back.
+  // docs/specs/007-editor/pages-mode.md "Slides": a slide page's own slide would come straight back.
   it("offers no Delete on a slide page's own slide, Hide still there", () => {
     render(
       <SlideDeckPanel

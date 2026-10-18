@@ -1,7 +1,7 @@
 // The tab menu's "Mode" (docs/specs/007-editor/editor-modes.md "Where the mode lives"): the tab's
 // editor mode, the same for everyone, chosen from its menu. Choosing one switches the tab exactly as
 // the mode switch does (one tab edit, one undo step): the active tab through the editor's own
-// switch, so leaving Illustrate asks first as it does there; another tab directly.
+// switch, so leaving Pages asks first as it does there; another tab directly.
 import { editorModeSwitchable, opensInOf, type EditorMode, type Tab } from '@livediagram/document';
 import type { TabModeChoice } from '@/components/chrome/TabModeMenuRows';
 import { debugLog } from '@/lib/debug-log';
@@ -12,7 +12,7 @@ export function useTabModeMenu(deps: {
   canEdit: boolean;
   commitTabs: (map: (ts: Tab[]) => Tab[]) => void;
   activeId: string;
-  // The editor's own switch for the active tab (useEditorMode, with useLeaveIllustrate's questions).
+  // The editor's own switch for the active tab (useEditorMode, with useLeavePages's questions).
   switchActive: (mode: EditorMode) => void;
   // A new tab in a mode, for a mode across Plan's line; absent where the session cannot add tabs.
   newTabIn?: ((mode: EditorMode) => void) | undefined;

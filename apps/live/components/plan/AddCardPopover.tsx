@@ -1,7 +1,7 @@
 'use client';
 
 // "Add a card" (docs/specs/026-plan/plan-board.md "Working on a board"): a cell's Add card button
-// opens this menu, as Illustrate's + opens "Add a page". It offers the card types the board shows,
+// opens this menu, as Pages mode's + opens "Add a page". It offers the card types the board shows,
 // each a tile with its glyph on its colour; choosing one adds a card of it (titled "New task"...) at
 // the end of the cell, to be titled in place or in its panel. Built on the shared PortalMenu and
 // option list (OptionRows), so arrow keys, Escape, focus return and an outside press behave as every other

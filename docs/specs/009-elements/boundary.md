@@ -57,7 +57,7 @@ title takes the **Text** set.
 | Mode       | Where                                     |
 | ---------- | ----------------------------------------- |
 | Diagram    | **Build**: Boundary, after Frame and Lane |
-| Illustrate | none (it organises a diagram, not a page) |
+| Pages      | none (it organises a diagram, not a page) |
 | Plan       | none                                      |
 | Facilitate | none (Search still finds and places it)   |
 

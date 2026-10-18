@@ -135,7 +135,7 @@ resolveTabWindow: names, items })` sized by `svgFrameOf`.
 | Status, one fetch per tab, retry, choose, open, gate            | `apps/live/components/canvas/tab-window/tab-window-context.test.tsx`                              |
 | Export targets, arts, nesting, drawing in the tab SVG           | `apps/live/components/dialogs/useTabWindowExport.test.ts`                                         |
 | What plays in a window, its classes and style, stills elsewhere | `apps/live/components/canvas/tab-window/tab-window-motion.test.ts`                                |
-| Palette tile in Illustrate's Media only, not a whiteboard shape | `palette-tile-defs.test.tsx`, `toolbar-strip-tiles.test.ts`, `whiteboard-shape-catalogue.test.ts` |
+| Palette tile in Pages mode's Media only, not a whiteboard shape | `palette-tile-defs.test.tsx`, `toolbar-strip-tiles.test.ts`, `whiteboard-shape-catalogue.test.ts` |
 
 ## Constants and configuration
 

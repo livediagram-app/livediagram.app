@@ -1,7 +1,7 @@
-// Which Illustrate page an element is on (docs/specs/007-editor/illustrate-pages.md "Arrows stay on
+// Which page an element is on (docs/specs/007-editor/pages-mode.md "Arrows stay on
 // one page"): the page its centre lies on, else none. Pure.
 import { elementBounds } from './geometry';
-import type { LaidOutPage } from './illustrate-page';
+import type { LaidOutPage } from './page';
 import type { Element } from './index';
 
 type Point = { x: number; y: number };

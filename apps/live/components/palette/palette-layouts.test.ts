@@ -16,9 +16,9 @@ import {
 import { tileById, tilesForCategory } from './palette-tile-defs';
 
 // The palette per mode (docs/specs/007-editor/editor-modes.md "The palette per mode").
-const ids = (mode: 'diagram' | 'illustrate' | 'plan' | 'facilitate', esBoard = false) =>
+const ids = (mode: 'diagram' | 'pages' | 'plan' | 'facilitate', esBoard = false) =>
   paletteCategoriesFor(mode, { esBoard }).map((c) => c.id);
-const tileIds = (mode: 'diagram' | 'illustrate' | 'plan', category: string) =>
+const tileIds = (mode: 'diagram' | 'pages' | 'plan', category: string) =>
   paletteCategoriesFor(mode)
     .find((c) => c.id === category)!
     .tiles!.map((t) => t.id);
@@ -60,9 +60,9 @@ describe('palette layouts', () => {
     expect(write.tiles!.slice(-3)[0]!.id).toBe('components:callout');
   });
 
-  it('offers every Data tile in Facilitate and Illustrate', () => {
+  it('offers every Data tile in Facilitate and Pages', () => {
     const data = tilesForCategory('data').map((t) => t.id);
-    for (const mode of ['facilitate', 'illustrate'] as const)
+    for (const mode of ['facilitate', 'pages'] as const)
       expect(
         paletteCategoriesFor(mode)
           .find((c) => c.id === 'data')!
@@ -185,8 +185,8 @@ describe('palette layouts', () => {
     expect(paletteCategoryOffered('diagram', 'event-storming')).toBe(false);
   });
 
-  it('narrows Illustrate to the categories a visual page is made of', () => {
-    expect(ids('illustrate')).toEqual([
+  it('narrows Pages to the categories a visual page is made of', () => {
+    expect(ids('pages')).toEqual([
       'popular',
       'shapes',
       'my-shapes',
@@ -204,23 +204,19 @@ describe('palette layouts', () => {
 
   it('lands every mode on its Popular, a board on its notation', () => {
     expect(paletteLandingCategory('diagram', false)).toBe('popular');
-    expect(paletteLandingCategory('illustrate', false)).toBe('popular');
+    expect(paletteLandingCategory('pages', false)).toBe('popular');
     expect(paletteLandingCategory('diagram', true)).toBe('event-storming');
   });
 
   it('holds the same tile in different categories per mode: Page is in Write for Diagram only', () => {
     expect(tileIds('diagram', 'write')).toContain('tools:page');
-    expect(tileIds('illustrate', 'write')).not.toContain('tools:page');
-    expect(tileIds('illustrate', 'write')).toEqual([
-      'tools:text',
-      'tools:sticky',
-      'tools:pointer-note',
-    ]);
+    expect(tileIds('pages', 'write')).not.toContain('tools:page');
+    expect(tileIds('pages', 'write')).toEqual(['tools:text', 'tools:sticky', 'tools:pointer-note']);
   });
 
   // Every Popular tile is in another category of its mode too: the category bar has no Popular.
   it('offers every Popular tile in another category of its mode', () => {
-    for (const mode of ['diagram', 'facilitate', 'illustrate'] as const) {
+    for (const mode of ['diagram', 'facilitate', 'pages'] as const) {
       const cats = paletteCategoriesFor(mode);
       const elsewhere = new Set(
         cats.filter((c) => c.id !== 'popular').flatMap((c) => (c.tiles ?? []).map((t) => t.id)),
@@ -231,15 +227,15 @@ describe('palette layouts', () => {
     }
   });
 
-  it('files the Sankey under Concepts, not Build, in Diagram and Illustrate', () => {
-    for (const mode of ['diagram', 'illustrate'] as const) {
+  it('files the Sankey under Concepts, not Build, in Diagram and Pages', () => {
+    for (const mode of ['diagram', 'pages'] as const) {
       expect(tileIds(mode, 'concepts').at(-1), mode).toBe('tools:sankey');
       expect(tileIds(mode, 'build'), mode).not.toContain('tools:sankey');
     }
   });
 
-  it('leaves mind nodes, lanes, frames, annotations and entities out of Illustrate', () => {
-    const everywhere = paletteCategoriesFor('illustrate').flatMap((c) =>
+  it('leaves mind nodes, lanes, frames, annotations and entities out of Pages', () => {
+    const everywhere = paletteCategoriesFor('pages').flatMap((c) =>
       (c.tiles ?? []).map((t) => t.id),
     );
     for (const id of [
@@ -251,18 +247,14 @@ describe('palette layouts', () => {
     ]) {
       expect(everywhere, id).not.toContain(id);
     }
-    expect(tileIds('illustrate', 'build')).toEqual([
-      'tools:table',
-      'tools:stack',
-      'tools:timeline',
-    ]);
+    expect(tileIds('pages', 'build')).toEqual(['tools:table', 'tools:stack', 'tools:timeline']);
     expect(tileIds('diagram', 'build')).toContain('tools:mind-node');
     expect(tileIds('diagram', 'write')).toContain('tools:annotation');
   });
 
   it("leaves Media's embeds out of Diagram, keeping its own two", () => {
     expect(tileIds('diagram', 'media')).toEqual(['tools:image', 'tools:avatar']);
-    expect(tileIds('illustrate', 'media')).toContain('media:embed-youtube');
+    expect(tileIds('pages', 'media')).toContain('media:embed-youtube');
   });
 
   it('defaults a category to its own tiles', () => {
@@ -286,11 +278,11 @@ describe('palette layouts', () => {
     ]);
   });
 
-  it('picks twelve Popular tiles, each reachable from another Illustrate category', () => {
-    const popular = tileIds('illustrate', 'popular');
+  it('picks twelve Popular tiles, each reachable from another Pages category', () => {
+    const popular = tileIds('pages', 'popular');
     expect(popular).toHaveLength(12);
     const reachable = new Set(
-      paletteCategoriesFor('illustrate')
+      paletteCategoriesFor('pages')
         .filter((c) => c.id !== 'popular')
         .flatMap((c) => (c.tiles ?? []).map((t) => t.id)),
     );
@@ -327,7 +319,7 @@ describe('palette layouts', () => {
     expect(paletteLandingCategory('plan', false, false)).toBe('plan-boards');
     expect(paletteLandingCategory('diagram', false, false)).toBe('popular');
     expect(paletteLandingCategory('plan', true, false)).toBe('event-storming');
-    for (const mode of ['diagram', 'illustrate'] as const) {
+    for (const mode of ['diagram', 'pages'] as const) {
       expect(ids(mode)).not.toContain('plan-boards');
       expect(ids(mode)).not.toContain('plan-cards');
       expect(ids(mode)).not.toContain('plan-visualisations');
@@ -363,9 +355,9 @@ describe('palette layouts', () => {
     }
   });
 
-  it('offers Logo in Illustrate only while the tab has a logo page (logo-pages.md)', () => {
-    expect(ids('illustrate')).not.toContain('logo');
-    const withLogo = paletteCategoriesFor('illustrate', { logoPages: true });
+  it('offers Logo in Pages only while the tab has a logo page (logo-pages.md)', () => {
+    expect(ids('pages')).not.toContain('logo');
+    const withLogo = paletteCategoriesFor('pages', { logoPages: true });
     const logo = withLogo.find((c) => c.id === 'logo')!;
     expect(logo.tiles!.map((t) => t.id)).toEqual([
       'logo:pen',

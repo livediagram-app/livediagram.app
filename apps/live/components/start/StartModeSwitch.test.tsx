@@ -31,14 +31,14 @@ describe('StartModeSwitch', () => {
     expect(chip.getAttribute('data-tour-id')).toBeNull();
     fireEvent.click(chip);
     expect(screen.getByRole('menu').className).toMatch(/top-full/);
-    fireEvent.click(screen.getByRole('menuitemradio', { name: /Illustrate/ }));
-    expect(setMode).toHaveBeenCalledWith('illustrate');
+    fireEvent.click(screen.getByRole('menuitemradio', { name: /Pages/ }));
+    expect(setMode).toHaveBeenCalledWith('pages');
   });
 
   it('switches inside a start-mode transition, so the start cross-fades', () => {
     const setMode = mount('diagram');
     fireEvent.click(screen.getByRole('button', { name: /^Tab mode: Diagram/ }));
-    fireEvent.click(screen.getByRole('menuitemradio', { name: /Illustrate/ }));
+    fireEvent.click(screen.getByRole('menuitemradio', { name: /Pages/ }));
     expect(transition).toHaveBeenCalledWith('start-mode', expect.any(Function));
     expect(setMode).toHaveBeenCalledOnce();
   });

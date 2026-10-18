@@ -16,7 +16,7 @@ export const LINT_CODES = [
   'flow-backwards',
   'aspect-extreme',
   'colour-on-themed',
-  // An Illustrate tab only (its pages' text).
+  // A Pages tab only (its pages' text).
   'text-overflow',
 ] as const;
 export type LintCode = (typeof LINT_CODES)[number];

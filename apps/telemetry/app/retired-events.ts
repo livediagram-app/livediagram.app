@@ -38,12 +38,12 @@ const PALETTE_FAVOURITES_UI = new Set([
 const PALETTE_FAVOURITES_HELP_ID = 'favourites';
 
 // Settings › Experimental (removed 2026-10-06, docs/specs/007-editor/editor-modes.md "Every mode,
-// always offered"): the category opening and its Illustrate Mode and Plan Mode switches. Every mode
+// always offered"): the category opening and its Pages Mode and Plan Mode switches. Every mode
 // is always offered now; the modes themselves, and their own events, carry on.
 const EXPERIMENTAL_SETTINGS_UI = new Set([
   'Opened|SettingsExperimental',
-  'Toggled|IllustrateModeOn',
-  'Toggled|IllustrateModeOff',
+  'Toggled|PagesModeOn',
+  'Toggled|PagesModeOff',
   'Toggled|PlanModeOn',
   'Toggled|PlanModeOff',
 ]);
@@ -61,7 +61,7 @@ const LOCATION_STEP_AND_QUICK_START_UI = new Set([
   'Toggled|TemplateModeDiagram',
   'Toggled|TemplateModeDraw',
   'Toggled|TemplateModeFacilitate',
-  'Toggled|TemplateModeIllustrate',
+  'Toggled|TemplateModePages',
   'Toggled|TemplateModePlan',
 ]);
 

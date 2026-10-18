@@ -3,8 +3,8 @@ import { renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import {
   createShape,
-  illustratePagesOf,
-  layOutIllustratePages,
+  pagesOf,
+  layOutPages,
   type ArticleBlock,
   type Tab,
 } from '@livediagram/document';
@@ -18,7 +18,7 @@ vi.mock('@/lib/article/article-editor-store', () => ({
   forgetZonesReleased: vi.fn(),
 }));
 
-// docs/specs/007-editor/illustrate-pages.md "Locking a page": an element dropped on an unlocked
+// docs/specs/007-editor/pages-mode.md "Locking a page": an element dropped on an unlocked
 // page of an article with a locked page stays where it is, a loose element; the article's writing
 // takes nothing in.
 const blocks: ArticleBlock[] = [{ id: 'p', type: 'paragraph', runs: [{ text: 'Hello' }] }];
@@ -43,7 +43,7 @@ const base = (locked: boolean): Tab =>
 function dropOnFirstPage(locked: boolean) {
   handle.insertZone.mockReset();
   const before = base(locked);
-  const pages = layOutIllustratePages(illustratePagesOf(before));
+  const pages = layOutPages(pagesOf(before));
   const first = pages[0]!.rect;
   const shape = createShape('square', first.x + first.width / 2 - 40, first.y + 300);
   const after = { ...before, elements: [shape] } as Tab;

@@ -63,17 +63,17 @@ This is **render-on-read**, not render-on-save, on purpose:
 - **Cheap steady state.** Once cached, reads are a straight R2 stream
   until the next save.
 
-### Illustrate tabs
+### Pages tabs
 
-A first tab in Illustrate (pages: infographics, slides, logos, articles)
+A first tab in Pages (pages: infographics, slides, logos, articles)
 snapshots as **its first page alone**, drawn as the page export draws it
-(`renderPageToSvg`, [Illustrate pages](../007-editor/illustrate-pages.md) "Export"): the page's sheet and
+(`renderPageToSvg`, [Pages](../007-editor/pages-mode.md) "Export"): the page's sheet and
 background, an article page's estimated writing, and the elements reaching
 onto it, cut at its edges, at the page's own size. Drawing the whole canvas
 instead put every page side by side, which at thumbnail size shrank to a
 row of slivers nobody could recognise; a deck is recognised by its cover.
 The same rule holds wherever this renderer serves a preview: the Explorer
-thumbnail, the default live image, a `?tab=` live image of an Illustrate
+thumbnail, the default live image, a `?tab=` live image of a Pages
 tab, and the Community snapshot. Only the first page's images are read for
 it (its elements' images and its picture background), so a long deck of
 photos costs one page's R2 reads.

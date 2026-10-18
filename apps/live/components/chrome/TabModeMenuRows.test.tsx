@@ -48,7 +48,7 @@ describe('TabModeMenuRows', () => {
       expect.stringContaining('Diagram'),
       expect.stringContaining('Draw'),
       expect.stringContaining('Facilitate'),
-      expect.stringContaining('Illustrate'),
+      expect.stringContaining('Pages'),
       expect.stringContaining('Plan'),
     ]);
     expect(items.map((i) => i.getAttribute('aria-pressed'))).toEqual([

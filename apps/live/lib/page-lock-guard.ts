@@ -1,7 +1,7 @@
-// The editor's side of locked pages (docs/specs/007-editor/illustrate-pages.md "Locking a page"):
-// the commit choke point passes each edit of the guarded tab (the active one, in Illustrate mode)
+// The editor's side of locked pages (docs/specs/007-editor/pages-mode.md "Locking a page"):
+// the commit choke point passes each edit of the guarded tab (the active one, in Pages mode)
 // through guardLockedPages, and says once in a while why something was held back.
-import { guardLockedPages, illustratePagesOf, type Tab } from '@livediagram/document';
+import { guardLockedPages, pagesOf, type Tab } from '@livediagram/document';
 import { debugLog } from '@/lib/debug-log';
 
 // `onBlocked` is called inside the commit's state update: it must defer anything that sets state.
@@ -19,12 +19,7 @@ export function guardLockedPagesIn(
   const before = prev.find((t) => t.id === guard.tabId);
   const after = next[at];
   if (!before || !after || before === after) return next;
-  const r = guardLockedPages(
-    before.elements,
-    after.elements,
-    illustratePagesOf(before),
-    illustratePagesOf(after),
-  );
+  const r = guardLockedPages(before.elements, after.elements, pagesOf(before), pagesOf(after));
   if (!r.blocked) return next;
   debugLog('[page-lock] edit held back', { tabId: guard.tabId });
   guard.onBlocked();

@@ -1,6 +1,6 @@
 'use client';
 
-// "Add a page" (docs/specs/007-editor/illustrate-pages.md "Page kinds"): the + after the last page
+// "Add a page" (docs/specs/007-editor/pages-mode.md "Page kinds"): the + after the last page
 // opens this small popover offering the four kinds of page, each a card with a miniature of it and a
 // line under its name. Arrow keys move between them, Enter or a press chooses, Escape or an outside
 // press closes. On a phone it is a bottom sheet.

@@ -1,8 +1,8 @@
 // Editor-mode illustrations for the Canvas article on Editor Modes (docs/specs/018-help/help-app.md,
 // docs/specs/007-editor/editor-modes.md): the tab menu's mode rows, the five modes at its foot
 // (chrome/TabModeMenuRows.tsx), the tab pill leading with the mode icon (TabModeIcon.tsx), and the
-// confirmation card that hangs from the mode switch when an editor leaves Illustrate on a tab with
-// pages (dialogs/LeaveIllustrateConfirm.tsx). The mode switch itself is `ModeSwitchScene` in
+// confirmation card that hangs from the mode switch when an editor leaves Pages on a tab with
+// pages (dialogs/LeavePagesConfirm.tsx). The mode switch itself is `ModeSwitchScene` in
 // editor-mode-switch.tsx. Real labels throughout: the modes' names and one-line descriptions from the
 // mode catalogue (packages/document/src/editor-mode.ts), and the card's title, sentence and buttons.
 
@@ -15,7 +15,7 @@ const OPENS_IN: { mode: Mode; lines: string[] }[] = [
   { mode: 'Diagram', lines: ['Flowcharts, architecture and org charts', 'with snapping shapes.'] },
   { mode: 'Draw', lines: ['Sketch freehand with pens, tidied into', 'shapes as you go.'] },
   { mode: 'Facilitate', lines: ['Run a live session: timers, votes, polls', 'and reveals.'] },
-  { mode: 'Illustrate', lines: ['Lay out slides, infographics, articles', 'and logos on pages.'] },
+  { mode: 'Pages', lines: ['Lay out slides, infographics, articles', 'and logos on pages.'] },
   { mode: 'Plan', lines: ['Boards of cards moving through columns,', 'with types and fields.'] },
 ];
 
@@ -142,9 +142,9 @@ export function TabModeMenuScene() {
   );
 }
 
-/** Leaving Illustrate on a tab with pages: the card hanging from the mode switch beside the menu
+/** Leaving Pages on a tab with pages: the card hanging from the mode switch beside the menu
  *  button, asking "Switch to Diagram?", with Cancel and Switch (the Diagram mark on it). */
-export function LeaveIllustrateScene() {
+export function LeavePagesScene() {
   const cx = 24;
   const cy = 50;
   const cw = 292;
@@ -153,8 +153,8 @@ export function LeaveIllustrateScene() {
   const pointerX = 55;
   return (
     <Scene w={460} h={200}>
-      <MenuCard x={12} y={8} mode="Illustrate" />
-      {/* An Illustrate page on the canvas */}
+      <MenuCard x={12} y={8} mode="Pages" />
+      {/* A page on the canvas */}
       <rect x={350} y={40} width={80} height={112} rx={2} className="fill-white stroke-slate-200" />
       <rect x={362} y={70} width={10} height={20} className="fill-brand-200" />
       <rect x={376} y={58} width={10} height={32} className="fill-brand-400" />
@@ -196,7 +196,7 @@ export function LeaveIllustrateScene() {
       {[
         "Diagram mode doesn't show pages. Changes",
         'you make there may not fit back onto your',
-        'pages when you return to Illustrate.',
+        'pages when you return to Pages.',
       ].map((line, i) => (
         <Label key={line} x={cx + 48} y={cy + 40 + i * 13} size={10} tone="body">
           {line}

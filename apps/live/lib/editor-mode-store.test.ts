@@ -15,8 +15,8 @@ describe('resolveEditorMode', () => {
   });
 
   it('gives a view-role visitor and everyone on a locked tab the mode, with no switch', () => {
-    expect(resolveEditorMode({ tab: { id: 't', opensIn: 'illustrate' }, canEdit: false })).toEqual({
-      mode: 'illustrate',
+    expect(resolveEditorMode({ tab: { id: 't', opensIn: 'pages' }, canEdit: false })).toEqual({
+      mode: 'pages',
       canSwitch: false,
     });
     expect(

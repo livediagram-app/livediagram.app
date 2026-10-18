@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { layOutIllustratePages, type Element } from '@livediagram/document';
+import { layOutPages, type Element } from '@livediagram/document';
 import { templateCanvasOverrides } from '@livediagram/templates';
 import { buildTemplate } from './template-builders';
 
@@ -110,11 +110,9 @@ describe('web page wireframe template', () => {
 });
 
 describe('slide deck template', () => {
-  // The slides are Illustrate pages (canvas-and-palette.md "Templates on pages"), not drawn cards.
+  // The slides are pages (canvas-and-palette.md "Templates on pages"), not drawn cards.
   const els = buildTemplate('slide-deck', 0, 0);
-  const slides = layOutIllustratePages(templateCanvasOverrides('slide-deck').pages!).map(
-    (p) => p.rect,
-  );
+  const slides = layOutPages(templateCanvasOverrides('slide-deck').pages!).map((p) => p.rect);
   const onSlide = (i: number) => els.filter((el) => contains(slides[i]!, centre(el as Box)));
 
   it('lays six 16:9 slides in a row, read left to right', () => {

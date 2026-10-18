@@ -7,7 +7,7 @@ import type { BoxedElement } from './index';
 import { decodeStrokePoints } from './stroke-points-cache';
 import { encodeStrokePoints } from './stroke-points';
 import { logoPageAt } from './logo-page';
-import type { LaidOutPage } from './illustrate-page';
+import type { LaidOutPage } from './page';
 
 // An element whose centre is this close to the axis (a share of the artboard's width) already
 // sits on it: mirroring it would only stack a copy on itself.

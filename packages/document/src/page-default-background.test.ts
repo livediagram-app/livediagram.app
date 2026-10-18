@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { contrastRatio } from './colors';
 import { getBuiltInTheme, THEMES } from './themes';
-import { illustratePagesOf } from './illustrate-page';
+import { pagesOf } from './page';
 import { PEN_INK } from './pen-colours';
 import {
   defaultPageBackground,
@@ -9,7 +9,7 @@ import {
   withDefaultPageBackgrounds,
 } from './page-default-background';
 
-// docs/specs/007-editor/illustrate-pages.md "A new page's background".
+// docs/specs/007-editor/pages-mode.md "A new page's background".
 describe("a new infographic page's background", () => {
   it("is the theme's Mist gradient, light enough that the page's ink reads on every built-in theme", () => {
     for (const t of THEMES) {
@@ -52,7 +52,7 @@ describe("a new infographic page's background", () => {
       ],
     };
     const out = withDefaultPageBackgrounds(tab, theme, new Set(['p1', 'p2', 'p3']));
-    const pages = illustratePagesOf(out);
+    const pages = pagesOf(out);
     expect(pages[0]!.background).toEqual(defaultPageBackground(theme));
     expect(pages[1]!.background).toEqual(tab.pages[1]!.background);
     expect(pages[2]!.background).toBeUndefined();

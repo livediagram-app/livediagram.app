@@ -1,4 +1,4 @@
-// The compare layouts (docs/specs/007-editor/illustrate-pages.md "Layouts"): pros and cons, before
+// The compare layouts (docs/specs/007-editor/pages-mode.md "Layouts"): pros and cons, before
 // and after, and a feature matrix. Same contract as page-layouts.ts: the page's content box in,
 // elements out, a tall page stacking and a wide one setting side by side. Only a tick's green and
 // a cross's rose are fixed, since there the colour is the meaning.

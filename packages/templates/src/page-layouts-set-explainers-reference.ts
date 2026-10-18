@@ -1,4 +1,4 @@
-// The Explainers reference layouts (docs/specs/007-editor/illustrate-pages.md "Layouts"): a Cheat
+// The Explainers reference layouts (docs/specs/007-editor/pages-mode.md "Layouts"): a Cheat
 // Sheet (grouped shortcuts on keycaps), a Glossary (terms A to Z, each under its letter) and Myths
 // and Facts (each myth beside the fact that corrects it). Same contract as page-layouts.ts: the
 // page's content box in, uncoloured elements out, laid out in proportions of the box.

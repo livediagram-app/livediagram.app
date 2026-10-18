@@ -21,7 +21,7 @@ export const NEW_DOCUMENT_MODES: readonly EditorMode[] = EDITOR_MODES;
 const PITCH: Record<EditorMode, string> = {
   diagram: 'Flowcharts, mind maps, org charts and architecture, snapped neatly into place.',
   draw: 'A freehand whiteboard: pens, highlighters and shapes that tidy themselves.',
-  illustrate: 'Pages to design: infographics, slides, articles and logos.',
+  pages: 'Pages to design: infographics, slides, articles and logos.',
   plan: 'Boards, sheets and dashboards for the work in motion.',
   facilitate: 'Run a collaborative session with your team, from workshops to retros.',
 };

@@ -474,7 +474,7 @@ export type RoomOp =
   // `created`: the article is new (its first frames): a receiver without it takes it, where puts
   // for an article it no longer has (removed meanwhile) are dropped. `agent`: an agent wrote it (set
   // by the api relay alone), so an editor that is not its writer still grows its pages
-  // (docs/specs/024-agents/illustrate-for-agents.md "Pages for the writing").
+  // (docs/specs/024-agents/pages-for-agents.md "Pages for the writing").
   | {
       kind: 'article';
       tabId: string;

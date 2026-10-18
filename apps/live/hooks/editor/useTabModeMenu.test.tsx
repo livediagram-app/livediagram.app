@@ -40,8 +40,8 @@ describe('useTabModeMenu', () => {
 
   it('switches the active tab through the editor’s own switch', () => {
     const { hook, switchActive, commitTabs } = setup([drawTab, general]);
-    act(() => hook.result.current.choiceFor(drawTab)!.onChange('illustrate'));
-    expect(switchActive).toHaveBeenCalledWith('illustrate');
+    act(() => hook.result.current.choiceFor(drawTab)!.onChange('pages'));
+    expect(switchActive).toHaveBeenCalledWith('pages');
     expect(commitTabs).not.toHaveBeenCalled();
   });
 
@@ -54,11 +54,11 @@ describe('useTabModeMenu', () => {
       ] as unknown as Element[],
     };
     const { hook, tabs, commitTabs } = setup([drawTab, wide]);
-    act(() => hook.result.current.choiceFor(wide)!.onChange('illustrate'));
+    act(() => hook.result.current.choiceFor(wide)!.onChange('pages'));
     expect(commitTabs).toHaveBeenCalledTimes(1);
-    expect(tabs()[1]).toMatchObject({ opensIn: 'illustrate', pages: [{ size: 'fit' }] });
+    expect(tabs()[1]).toMatchObject({ opensIn: 'pages', pages: [{ size: 'fit' }] });
     expect(tabs()[0]).toBe(drawTab);
-    expect(track).toHaveBeenCalledWith('Editor', 'Changed', 'ModeIllustrate');
+    expect(track).toHaveBeenCalledWith('Editor', 'Changed', 'ModePages');
   });
 
   it('does nothing for the mode the tab is already in', () => {

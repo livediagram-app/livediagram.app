@@ -176,8 +176,8 @@ export function useGifExport({
           ? baseName
           : `${baseName} - ${sanitizeFilename(exportPageLabel(page, pages.length))}`;
       downloadBlob(new Blob([bytes as BlobPart], { type: 'image/gif' }), `${name}.gif`);
-      if (scope === 'all') track('Document', 'Exported', 'IllustrateGIFPages');
-      else track('Document', 'Exported', 'IllustrateGIF');
+      if (scope === 'all') track('Document', 'Exported', 'PagesGIFPages');
+      else track('Document', 'Exported', 'PagesGIF');
       setPhase({ kind: 'idle' });
       onDone();
     } catch (err) {

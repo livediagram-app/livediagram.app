@@ -1,7 +1,7 @@
 # Facilitate mode
 
 **Facilitate** is the fifth [editor mode](../007-editor/editor-modes.md), beside Diagram, Draw,
-Illustrate and Plan: how a general tab is worked on while a team runs a session on it, a
+Pages and Plan: how a general tab is worked on while a team runs a session on it, a
 retrospective, a town hall, a lean coffee, a workshop. It brings the tools that run a room into
 focus (timers, votes, polls, reveals, the Collaborate elements, stickers) and takes them out of
 Diagram, so Diagram is about diagrams.
@@ -132,7 +132,7 @@ stop to draw):
 | Plan       | Timer, Vote              |
 | Diagram    | none                     |
 | Draw       | none (as today)          |
-| Illustrate | Vote, Poll while running |
+| Pages      | Vote, Poll while running |
 
 - **An event-storming board keeps all three.** It is a workshop board, always Diagram, with no
   switch, so it could never reach Facilitate's strip; the tab kind brings the strip itself.
@@ -142,7 +142,7 @@ stop to draw):
   on its own canvas element, but its strip button and popover do not: watching turnout, ending a
   poll or keeping its results is done from Facilitate (or Plan for a timer or vote). This is the
   same rule Draw already follows, and the price of a Diagram mode with no session chrome.
-- **Illustrate shows a running Vote or Poll only.** Nothing is started from its strip (the session
+- **Pages shows a running Vote or Poll only.** Nothing is started from its strip (the session
   buttons on a page do that), but once a vote or poll runs, its button and popover appear for
   everyone so it can be watched and ended, and go again when it ends. It never shows a Timer.
 - A popover whose button leaves (a mode switch, the tool ending) closes, as today.

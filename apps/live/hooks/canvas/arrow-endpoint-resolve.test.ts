@@ -1,15 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import {
-  layOutIllustratePages,
-  newLogoPage,
-  type ArrowElement,
-  type Element,
-} from '@livediagram/document';
+import { layOutPages, newLogoPage, type ArrowElement, type Element } from '@livediagram/document';
 import { resolveArrowEndpointDrag } from './arrow-endpoint-resolve';
 
-// docs/specs/007-editor/illustrate-pages.md "Arrows stay on one page": an arrow's dragged end pins
+// docs/specs/007-editor/pages-mode.md "Arrows stay on one page": an arrow's dragged end pins
 // to nothing on a page other than its other end's.
-const pages = layOutIllustratePages([newLogoPage('a'), newLogoPage('b')]);
+const pages = layOutPages([newLogoPage('a'), newLogoPage('b')]);
 const centre = (i: number) => {
   const r = pages[i]!.rect;
   return { x: r.x + r.width / 2, y: r.y + r.height / 2 };
@@ -61,7 +56,7 @@ describe('resolveArrowEndpointDrag across pages', () => {
     expect(drag(topOf(otherTarget), true)).toMatchObject({ kind: 'free' });
   });
 
-  it('pins anywhere outside Illustrate mode', () => {
+  it('pins anywhere outside Pages mode', () => {
     expect(drag(topOf(otherTarget), false)).toMatchObject({ kind: 'pinned', elementId: 'o' });
   });
 });

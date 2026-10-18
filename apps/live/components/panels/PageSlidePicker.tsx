@@ -1,6 +1,6 @@
 'use client';
 
-// The Slide Deck panel's way in on an Illustrate tab (docs/specs/007-editor/illustrate-pages.md
+// The Slide Deck panel's way in on a Pages tab (docs/specs/007-editor/pages-mode.md
 // "Slides"): pick a page, add it as a slide. In place of "select elements to make a slide": a page
 // is already the unit an infographic is built in.
 import { useState } from 'react';

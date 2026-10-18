@@ -19,7 +19,7 @@ import {
   type UserPreferences,
 } from '@/lib/user-preferences';
 import { isPowerUserMode, setPowerUserMode } from '@/lib/power-user-mode';
-import { ILLUSTRATE_TOUR_KINDS, illustrateTourOwed } from '@/lib/illustrate-tour';
+import { PAGES_TOUR_KINDS, pagesTourOwed } from '@/lib/pages-tour';
 import { PLAN_TOUR_TRACKS, planTourOwed } from '@/lib/plan-tour';
 import {
   ELEMENT_TOUR_KINDS,
@@ -74,7 +74,7 @@ import {
 } from '@/lib/cloud-sync/providers';
 
 // One logo guide's switch (docs/specs/007-editor/logo-pages.md "Construction guides"): a tile in
-// Settings > Editor > Illustrate's Guides Shown grid, as in a logo page's Guides popover. The token
+// Settings > Editor > Pages mode's Guides Shown grid, as in a logo page's Guides popover. The token
 // is written out per guide so the telemetry dashboard reads it.
 function logoGuidePart(
   part: LogoGuidePart,
@@ -458,8 +458,8 @@ function elementTourSwitch(
 const ELEMENT_TOURS_SECTION = 'Element Tours';
 
 function tourTracksSwitch(
-  key: 'planTourSeen' | 'illustrateTourSeen' | 'elementToursSeen',
-  tracksKey: 'planTourTracks' | 'illustrateTourKinds' | 'elementTourKinds',
+  key: 'planTourSeen' | 'pagesTourSeen' | 'elementToursSeen',
+  tracksKey: 'planTourTracks' | 'pagesTourKinds' | 'elementTourKinds',
   tracks: readonly string[],
   owed: (p: UserPreferences) => boolean,
   row: Pick<SettingsToggleRowSpec, 'label' | 'description' | 'helpArticle' | 'keywords' | 'event'>,
@@ -483,7 +483,7 @@ type TourSeenKey =
   | 'drawTourSeen'
   | 'formTourSeen'
   | 'avatarTourSeen'
-  | 'illustrateTourSeen'
+  | 'pagesTourSeen'
   | 'elementToursSeen';
 
 // A presenter setting's row (docs/specs/012-collaboration/presentation-mode.md "Settings"): read and written through
@@ -671,14 +671,14 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
     ],
   },
   {
-    // Illustrate mode's own settings (docs/specs/007-editor/logo-pages.md "Construction guides"):
+    // Pages mode's own settings (docs/specs/007-editor/logo-pages.md "Construction guides"):
     // the master switch, then how strong and which guides, nested under it.
-    id: 'illustrate',
-    label: 'Illustrate',
+    id: 'pages',
+    label: 'Pages',
     parent: 'editor',
     rows: [
       {
-        // docs/specs/007-editor/illustrate-pages.md "Contents": the sidebar's minimise and the
+        // docs/specs/007-editor/pages-mode.md "Contents": the sidebar's minimise and the
         // popover's dock button write the same choice.
         kind: 'choice',
         key: 'contentsPlacement',
@@ -1193,21 +1193,15 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         description: 'The first time you walk as an avatar.',
         helpArticle: 'avatarTour',
       }),
-      tourTracksSwitch(
-        'illustrateTourSeen',
-        'illustrateTourKinds',
-        ILLUSTRATE_TOUR_KINDS,
-        illustrateTourOwed,
-        {
-          label: 'Illustrate Tour',
-          event: { category: 'UI', on: 'IllustrateTourSeenOff', off: 'IllustrateTourSeenOn' },
-          keywords:
-            'tour walkthrough onboarding tutorial illustrate pages slides infographic article logo present replay',
-          description:
-            'The first time you work on each kind of page: slides, infographics, articles and logos.',
-          helpArticle: 'illustrateTour',
-        },
-      ),
+      tourTracksSwitch('pagesTourSeen', 'pagesTourKinds', PAGES_TOUR_KINDS, pagesTourOwed, {
+        label: 'Pages Tour',
+        event: { category: 'UI', on: 'PagesTourSeenOff', off: 'PagesTourSeenOn' },
+        keywords:
+          'tour walkthrough onboarding tutorial pages pages slides infographic article logo present replay',
+        description:
+          'The first time you work on each kind of page: slides, infographics, articles and logos.',
+        helpArticle: 'pagesTour',
+      }),
       // Element tours (docs/specs/007-editor/element-tours.md "Settings"): their own closed section, one switch for
       // them all over one per toured kind.
       tourTracksSwitch(

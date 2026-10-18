@@ -17,8 +17,8 @@ import {
 } from './article-style';
 import { isLightColor } from './colors';
 import { resolveFontStack } from './fonts';
-import { legibleOn, pageFillTone } from './illustrate-page-content';
-import type { LaidOutPage } from './illustrate-page';
+import { legibleOn, pageFillTone } from './page-content';
+import type { LaidOutPage } from './page';
 
 // An average glyph's advance as a share of the font size (a bold one a little wider), as the headless renders
 // estimate a label (svg-render-primitives' LABEL_ESTIMATE_CHAR_EM).

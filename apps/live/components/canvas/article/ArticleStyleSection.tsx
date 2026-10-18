@@ -15,7 +15,7 @@ import {
 } from '@livediagram/document';
 import { ACTIVE_SEGMENT, CheckIcon, SEGMENT_TRACK, Select, Tooltip } from '@livediagram/ui';
 import { SegmentSlider } from '@/components/primitives/SegmentSlider';
-import { PanelSection } from '../illustrate-page-panel-sections';
+import { PanelSection } from '../page-panel-sections';
 import { ColourPicker } from '@/components/colour/ColourPicker';
 import { standardGroup } from '@/components/colour/colour-options';
 import { useDocumentColours } from '@/hooks/ui/useDocumentColours';

@@ -1,5 +1,5 @@
-// The designed-page parts the Illustrate templates share (docs/specs/007-editor/templates-by-mode.md
-// "Illustrate templates"): the poster, the year in review, the résumé and the recipe card are
+// The designed-page parts the Pages templates share (docs/specs/007-editor/templates-by-mode.md
+// "Pages templates"): the poster, the year in review, the résumé and the recipe card are
 // finished deliverables in their own colours rather than theme-painted layouts, so they build
 // from the same few pieces: a locked fill, a plain panel, a tinted glyph, a glyph on a disc and a
 // soft card shadow. Every fill that carries a design sets `themeLockFill`, so a theme switch

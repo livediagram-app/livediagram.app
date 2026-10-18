@@ -1,6 +1,6 @@
 # Article pages
 
-An **article page** is the second kind of page in Illustrate mode ([Illustrate pages](illustrate-pages.md)
+An **article page** is the second kind of page in Pages mode ([Pages](pages-mode.md)
 "Page kinds"): a page to **write** on, like a page of a Google Doc or a Word document. Most of it
 is text, typed straight onto the page with no text boxes to place or size; pictures, charts,
 tables and drawings go into the writing from the palette or the toolbar and sit in it inline or
@@ -12,21 +12,21 @@ a text element): the text here is the page's own, one continuous piece of writin
 
 ## Domain language
 
-| Term              | Means                                                                                                                                           |
-| ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| **article page**  | A page of kind `article` (`IllustratePage.kind`).                                                                                               |
-| **article**       | One or more article pages in a row, linked by one **flow** id (`IllustratePage.flow`), and the writing that flows through them (`ArticleFlow`). |
-| **lead page**     | An article's first page in the row. Positions inside the article are measured from its top-left corner.                                         |
-| **writing**       | The article's text: its **blocks** in order (`ArticleFlow.blocks`).                                                                             |
-| **block**         | One unit of the writing, with an id (`ArticleBlock`): a paragraph, a list item, a code block, a divider, a page break or a zone.                |
-| **run**           | A stretch of a block's text with the same formatting (`ArticleRun`).                                                                            |
-| **zone**          | A block that holds canvas elements instead of text: an **object zone** hugs one object; a **drawing zone** is an area to draw and connect in.   |
-| **wrap**          | How a zone sits in the writing: **In Line** (on its own line), **Wrap Left** or **Wrap Right** (the text runs down beside it).                  |
-| **article style** | The article's look (`ArticleFlow.style`): fonts, accent, text size, spacing, heading rules, margins, page numbers.                              |
-| **look**          | A named article style to start from (Clean, Classic, Report, Notebook, Bold).                                                                   |
-| **page toolbar**  | The formatting bar at the top of the page being written on.                                                                                     |
-| **margin note**   | A comment thread or an action on a stretch of the writing: a marker in the page's right margin beside that text, which carries a `note` mark.   |
-| **writer**        | The person whose edit changed the writing's layout; only they write the layout's consequences (zone moves, pages added or removed).             |
+| Term              | Means                                                                                                                                         |
+| ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| **article page**  | A page of kind `article` (`Page.kind`).                                                                                                       |
+| **article**       | One or more article pages in a row, linked by one **flow** id (`Page.flow`), and the writing that flows through them (`ArticleFlow`).         |
+| **lead page**     | An article's first page in the row. Positions inside the article are measured from its top-left corner.                                       |
+| **writing**       | The article's text: its **blocks** in order (`ArticleFlow.blocks`).                                                                           |
+| **block**         | One unit of the writing, with an id (`ArticleBlock`): a paragraph, a list item, a code block, a divider, a page break or a zone.              |
+| **run**           | A stretch of a block's text with the same formatting (`ArticleRun`).                                                                          |
+| **zone**          | A block that holds canvas elements instead of text: an **object zone** hugs one object; a **drawing zone** is an area to draw and connect in. |
+| **wrap**          | How a zone sits in the writing: **In Line** (on its own line), **Wrap Left** or **Wrap Right** (the text runs down beside it).                |
+| **article style** | The article's look (`ArticleFlow.style`): fonts, accent, text size, spacing, heading rules, margins, page numbers.                            |
+| **look**          | A named article style to start from (Clean, Classic, Report, Notebook, Bold).                                                                 |
+| **page toolbar**  | The formatting bar at the top of the page being written on.                                                                                   |
+| **margin note**   | A comment thread or an action on a stretch of the writing: a marker in the page's right margin beside that text, which carries a `note` mark. |
+| **writer**        | The person whose edit changed the writing's layout; only they write the layout's consequences (zone moves, pages added or removed).           |
 
 An **article** is named so to keep **document** for what it already means across the app: the
 livediagram file that holds tabs ([Document](../006-document/document.md)). The interface says
@@ -39,7 +39,7 @@ livediagram file that holds tabs ([Document](../006-document/document.md)). The 
   A4 portrait (or the last page's paper size and orientation when it is A4, US Letter or A3), on
   plain paper, with an empty **Title** and an empty paragraph, the caret in the title, the view
   framing the page.
-- `IllustratePage.flow` names the article a page belongs to; every page of one article carries
+- `Page.flow` names the article a page belongs to; every page of one article carries
   the same flow, and the pages of a flow always sit together in the row, in order. The writing is
   stored once, on the tab: `Tab.articles[flow]` (`ArticleFlow = { blocks, style? }`).
 - **Shared by its pages**: size, orientation, background and pattern, and the style. Changing any
@@ -63,7 +63,7 @@ livediagram file that holds tabs ([Document](../006-document/document.md)). The 
   least one page.
 - **Page break**: a block that ends its page; what follows starts at the top of the next page,
   which is added if needed.
-- **Limit**: a tab holds at most **100** pages (`MAX_ILLUSTRATE_PAGES`). At the limit no page is
+- **Limit**: a tab holds at most **100** pages (`MAX_PAGES`). At the limit no page is
   added: the writing past the last page's foot is cut off at it, and a notice sits at the foot of
   that page, "This tab has reached 100 pages: the writing below this line is hidden", until
   pages are freed. Nothing is lost: the blocks are kept.
@@ -305,10 +305,10 @@ due dates, Activity, email), because it lives on an element: a **margin note**.
 - **Never printed**: exports leave the markers out and the text untinted.
 - A tint is never taken from a paste.
 
-## Leaving Illustrate
+## Leaving Pages
 
 Diagram and Draw draw no pages and no writing. An editor switching a tab with articles out of
-Illustrate (the mode switch, Shift+D or the tab menu's mode rows) is asked first, in a dialog **Turn Articles
+Pages (the mode switch, Shift+D or the tab menu's mode rows) is asked first, in a dialog **Turn Articles
 Into Pages?**:
 
 - **Turn Into Pages** (the default button): every article page becomes a **Page** element
@@ -318,15 +318,15 @@ Into Pages?**:
   colours kept; the article's title and subtitle become the first Page's masthead. Zones' elements
   stay where they are, on top; margin-note markers become ordinary annotations. The pages stay, as
   infographic pages; the writing goes. One edit (undo brings the articles back), then the switch.
-- **Keep as Articles**: the switch, the articles left as they are for Illustrate.
+- **Keep as Articles**: the switch, the articles left as they are for Pages.
 - **Cancel**: no switch.
 
-**A lock holds an article as it is** ([Illustrate pages](illustrate-pages.md) "Locking a page"):
+**A lock holds an article as it is** ([Pages](pages-mode.md) "Locking a page"):
 an article with any page locked is never turned. **Turn Into Pages** turns the other articles and
 leaves it an article, its pages, writing and margin notes untouched, for when the tab is back in
-Illustrate; and it is not asked of at all when every article on the tab has a locked page: the
+Pages; and it is not asked of at all when every article on the tab has a locked page: the
 switch asks only the lighter confirmation a tab with content but no articles asks
-([Editor modes](editor-modes.md) "Leaving Illustrate").
+([Editor modes](editor-modes.md) "Leaving Pages").
 
 A visitor, a locked tab, or a tab with no articles switches straight away.
 
@@ -383,27 +383,27 @@ At Normal text size, before line spacing:
 | code     | 14        | 400    | 0.5 / 0.75, monospace        |
 
 Small and Large scale every size by 14/16 and 18/16. Text is drawn in the page's ink: dark on a
-light page, light on a dark one ([Illustrate pages](illustrate-pages.md) "A dark page has light
+light page, light on a dark one ([Pages](pages-mode.md) "A dark page has light
 ink").
 
 ## Everywhere a page goes
 
 - **Reordering, duplicating, deleting** an article page act on its whole article
-  ([Illustrate pages](illustrate-pages.md) "Page actions").
+  ([Pages](pages-mode.md) "Page actions").
 - **Slides**: any page of an article can be added as a page slide; it shows that page as it is
   now, the writing on it included.
 - **Present**: an article page presents like any page, its writing drawn, no toolbar, no caret,
-  from any mode (a page slide presenting outside Illustrate shows its writing too).
+  from any mode (a page slide presenting outside Pages shows its writing too).
 - **Export**: PDF, PNG and SVG draw an article page's writing exactly as on screen (text as real
   text in SVG output; rasterised in PNG, and in PDF, whose pages are images), with its zones'
   elements, its page number and its ruled lines; nothing of the editing chrome.
 - **The Map** shows each page's text as soft grey lines.
 - **Diagram and Draw modes** show the tab's elements as always; the writing belongs to the pages
-  and shows only in Illustrate mode and on a presenting page slide (its zones' elements stay on the
+  and shows only in Pages mode and on a presenting page slide (its zones' elements stay on the
   canvas where they are).
 - **Viewers** (a view role, a locked tab) read the writing and cannot change it; no caret, no
   toolbar, no zone bar. **A locked page** makes its whole article read the same way for everyone
-  ([Illustrate pages](illustrate-pages.md) "Locking a page"), from any of its pages: no caret, no
+  ([Pages](pages-mode.md) "Locking a page"), from any of its pages: no caret, no
   page toolbar (hovered or worked on), no zone bar, nothing taken into its writing (an element
   dropped on one of its unlocked pages stays a loose element), and its page count and zones held as
   they are.
@@ -436,15 +436,15 @@ ink").
   last 3 s (`WRITER_WINDOW_MS`): typing in it, or a zone, style or page edit of it. Having the
   caret in it is not writing: two people in one article never both add a page for one overflow.
   The two exceptions, an agent's write and a writer who left before settling, are grown by the
-  first editor to lay the article out ([Illustrate for agents](../024-agents/illustrate-for-agents.md#pages-for-the-writing)).
+  first editor to lay the article out ([Pages for agents](../024-agents/pages-for-agents.md#pages-for-the-writing)).
 - **Agents** read an article as Markdown and write it from Markdown
-  ([Illustrate for agents](../024-agents/illustrate-for-agents.md)); their writing arrives as anyone's.
+  ([Pages for agents](../024-agents/pages-for-agents.md)); their writing arrives as anyone's.
 
 ## Telemetry
 
 - `Tab · Changed · ArticleAdded` (the add popover's Article); `ArticleLook<Name>` (Clean,
   Classic, Report, Notebook, Bold); `ArticleStyle` (any other style field); `ArticlesToPages`
-  (**Turn Into Pages** on leaving Illustrate).
+  (**Turn Into Pages** on leaving Pages).
 - `Element · Added · Article<Insert>` for an insert from the toolbar's Insert, the slash menu or
   a palette drop: `ArticleImage`, `ArticleTable`, `ArticleChart`, `ArticleCallout`,
   `ArticleSticky`, `ArticleDrawing`, `ArticleObject`, `ArticleDivider`, `ArticlePageBreak`,

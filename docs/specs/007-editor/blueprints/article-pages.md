@@ -2,15 +2,15 @@
 
 Derived from [Article pages](../article-pages.md). Implementation detail only; the spec owns every
 design decision. The page model, the row, page kinds and page actions are
-[Illustrate pages](illustrate-pages.md); the mode and its switch are [Editor modes](editor-modes.md).
+[Pages](pages-mode.md); the mode and its switch are [Editor modes](editor-modes.md).
 
 ## Domain and naming
 
 | Term                     | Identifier                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Article page             | `IllustratePage` with `kind: 'article'` and `flow`; `isArticlePage(page)`, `pageKindOf(page)`, `packages/document/src/illustrate-page.ts`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| Article page             | `Page` with `kind: 'article'` and `flow`; `isArticlePage(page)`, `pageKindOf(page)`, `packages/document/src/page.ts`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 | Article (its writing)    | `ArticleFlow` (`{ blocks, style? }`), `Tab.articles?: Record<flow, ArticleFlow>`, read through `articlesOf(tab)`, `packages/document/src/article-flow.ts`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| Flow id                  | `IllustratePage.flow`; minted by `nextArticleFlowId(taken)` (`art-` + 8 hex)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| Flow id                  | `Page.flow`; minted by `nextArticleFlowId(taken)` (`art-` + 8 hex)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | Lead page                | The flow's first page in the row (`articlePages(tab, flow)[0]`); `flowFrame(pages, margin)` measures from it                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | Block                    | `ArticleBlock` (union of `ArticleParagraphBlock`, `ArticleListBlock`, `ArticleCodeBlock`, `ArticleDividerBlock`, `ArticlePageBreakBlock`, `ArticleZoneBlock`)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | Block id                 | `nextArticleBlockId(taken)` (`b-` + 8 hex); `withFreshArticleBlockIds(flow)` on a copy                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
@@ -40,10 +40,10 @@ design decision. The page model, the row, page kinds and page actions are
 | Broadcast / apply        | `tabArticleOps` (`packages/api-schema/src/article-frames.ts`, re-exported by `tab-broadcast-ops.ts`); `wholeTabOp`, `META_SKIP`, `mergeRemoteTab` (`tab-broadcast-ops.ts`); `applyRoomOpToTabs` case `'article'` (`room-op-apply.ts`)                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 | The articles view        | `ArticlesView`, `useArticles`, `ArticleInsert`, `ZoneAction`, `ArticleStyleChange`, `apps/live/hooks/editor/useArticles.ts`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
 | Intake                   | `useArticleIntake`, `apps/live/hooks/editor/useArticleIntake.ts`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
-| Leaving Illustrate       | `useLeaveIllustrate`, `LeaveIllustrate` (`hooks/editor/useLeaveIllustrate.ts`); `LeaveIllustrateDialog`, and the lighter `LeaveIllustrateConfirm` ([Editor modes](editor-modes.md)) (`components/dialogs/`)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| Leaving Pages            | `useLeavePages`, `LeavePages` (`hooks/editor/useLeavePages.ts`); `LeavePagesDialog`, and the lighter `LeavePagesConfirm` ([Editor modes](editor-modes.md)) (`components/dialogs/`)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | The writing (editor)     | `ArticleEditor` (lazy), `FlowLayout`, `FocusRequest`, `apps/live/components/canvas/article/ArticleEditor.tsx`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | Every article on the tab | `ArticleFlows` (`ArticleFlows.tsx`): paper press layer, editors, `PageToolbar`, `ZoneBar`, `ZoneResizeGrips`, drop carets                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| A finger on a page       | `useTouchPagePan` (`useTouchPagePan.ts`), given `IllustratePagesView.panFrom`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| A finger on a page       | `useTouchPagePan` (`useTouchPagePan.ts`), given `PagesModeView.panFrom`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | Editor schema            | `articleSchema` (nodes `doc paragraph list_item code_block divider page_break zone text hard_break`; marks `link bold italic underline strike code sup sub color note highlight`), `lib/article/article-schema.ts`                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | Blocks ↔ editor          | `blockToNode`, `blocksToDoc`, `nodeToBlock`, `docToBlocks`, `lib/article/article-convert.ts`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | Commands                 | `lib/article/article-commands.ts` (`setBlockStyle`, `toggleList`, `shiftLevel`, `setAlign`, `toggle*`, `setLink`, `setTextColor`, `setHighlight`, `clearFormatting`, `insertBlocksAfterCaret`, `enter`, `backspaceAtStart`, `deleteAtEnd`, `tab`, `shiftTab`, `lineBreak`, `selectAll`, `selectionStateOf`, `ArticleSelectionState`)                                                                                                                                                                                                                                                                                                                                                       |
@@ -60,8 +60,8 @@ design decision. The page model, the row, page kinds and page actions are
 | Style tab                | `ArticleStyleSection` (`part: 'style' \| 'text'`), the Accent `ColourPicker`, `components/canvas/article/ArticleStyleSection.tsx`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 | Carets                   | `caretOf`, `resolveCaret`, `ArticleCaretPlace` (`article-caret.ts`); local and peer store (`article-carets-store.ts`); `articlePeersPlugin`, `setArticlePeers`, `onlyPeers` (`article-peers.ts`); `useArticleCaretBroadcast` (`hooks/collab/`)                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 | Export of the writing    | `ArticleDrawOp`, `snapshotWriting`, `snapshotBars` (`article-snapshot.ts`); `articleOpsToSvg`, `drawArticleOps` (`article-draw.ts`); `pageWriting`, `pageWritingBars`, `pageRulingOf` (`article-export.ts`)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
-| Reading frame (phone)    | `computeReadingFrame(rect, page, insetTop, margin)`, `apps/live/lib/viewport.ts`; `IllustratePagesView.readPage`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
-| Absent-writer grow       | `markArticleGrow`, `isArticleGrowPending`, `clearArticleGrow` (`lib/article/article-grow-store.ts`); `shouldGrowForAbsentWriter` (`article-pages.ts`); owned by the [Illustrate for agents blueprint](../../024-agents/blueprints/illustrate-for-agents.md)                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| Reading frame (phone)    | `computeReadingFrame(rect, page, insetTop, margin)`, `apps/live/lib/viewport.ts`; `PagesModeView.readPage`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| Absent-writer grow       | `markArticleGrow`, `isArticleGrowPending`, `clearArticleGrow` (`lib/article/article-grow-store.ts`); `shouldGrowForAbsentWriter` (`article-pages.ts`); owned by the [Pages for agents blueprint](../../024-agents/blueprints/pages-for-agents.md)                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 | Article template         | `packages/templates/src/article-template.ts`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 
 "Article" in code, specs and the interface for the kind of page and its run of pages; "document"
@@ -119,14 +119,14 @@ is `break-after: column` (`article-pages.css`).
 | `ARTICLE_CARET_MAX_ID_LEN`              | 256                                    | `packages/api-schema/src/article-caret.ts`; D43                                               |
 | `ARTICLE_CARET_MAX_OFFSET`              | 1,000,000                              | `article-caret.ts`; D43                                                                       |
 | `ARTICLE_FRAME_CHARS`                   | 200,000 characters per `article` frame | `packages/api-schema/src/article-frames.ts`; D42, under the room's `MAX_MESSAGE_CHARS` (256K) |
-| `MAX_ILLUSTRATE_PAGES`                  | 100                                    | `illustrate-page.ts`; spec "Limit"                                                            |
-| Page number                             | 12 px, half the bottom margin          | `IllustratePages.tsx`, `pageWriting`; D46                                                     |
+| `MAX_PAGES`                             | 100                                    | `page.ts`; spec "Limit"                                                                       |
+| Page number                             | 12 px, half the bottom margin          | `CanvasPages.tsx`, `pageWriting`; D46                                                         |
 | Turn Into Pages text colour             | `#1f2937`                              | `articleAsPages`; D54                                                                         |
 
 ## Data and persistence
 
-- **Stored**: `IllustratePage.kind: 'article'` and `flow` on each page of an article
-  ([Illustrate pages blueprint](illustrate-pages.md)), and `Tab.articles[flow] = { blocks,
+- **Stored**: `Page.kind: 'article'` and `flow` on each page of an article
+  ([Pages blueprint](pages-mode.md)), and `Tab.articles[flow] = { blocks,
 style? }`. Saved with the tab (D1 row, `MAX_TAB_BYTES` has the last word), carried in the
   OpenAPI `Tab` schema (`ArticleFlow`, generated). Defaults are absent, never stored: `style:
 'body'`, `align: 'left'`, `level: 0`, `wrap: 'inline'`, zone `align: 'center'`, an empty style.
@@ -152,13 +152,13 @@ style? }`. Saved with the tab (D1 row, `MAX_TAB_BYTES` has the last word), carri
     booleans, the five enums); an empty style is dropped.
 - **Pages read**: an article page with no readable flow reads as an article of its own (its id);
   `withArticlesTogether` puts a flow's pages in one run at its first page, each taking the
-  first's size, orientation and background ([Illustrate pages blueprint](illustrate-pages.md)).
+  first's size, orientation and background ([Pages blueprint](pages-mode.md)).
 - **Sync** (`tabBroadcastOps`): `articles` is in `META_SKIP`, so never in a `tab-meta` patch; a
   whole-tab op is sent without it (`wholeTabOp`), followed by `tabArticleOps`. `tabArticleOps`
   compares `articles` by identity first; per flow gone: `{ kind: 'article', removed: true }`; per
   flow changed: `diffArticleFlow(was, now)` chunked into frames under `ARTICLE_FRAME_CHARS`
   (ops in order; frames compose), each frame of a flow the sender did not have before marked
-  `created: true`; the api's relay of an agent's write (`apps/api/src/changesets/illustrate.ts`)
+  `created: true`; the api's relay of an agent's write (`apps/api/src/changesets/pages.ts`)
   builds its frames with the same `tabArticleOps(before, after, { agent: true })`, each marked
   `agent: true`. Receiving (`applyRoomOpToTabs`): a flow that is not an id changes nothing; a
   removal deletes an own-property flow; ops are read through `parseArticleOps` (each `put` block
@@ -192,15 +192,15 @@ style? }`. Saved with the tab (D1 row, `MAX_TAB_BYTES` has the last word), carri
 ### Composition (`useEditorState`)
 
 - `localEditSeqRef` counts this person's `commitTabs` (never a remote op, an undo or a tick).
-- `useArticles({ activeTab, on: illustratePages !== null || presentingPage !== null, pages:
-illustratePages?.pages ?? presentPages, localEditSeq, placeAt, canEdit: !isReadOnly, commitTabs,
+- `useArticles({ activeTab, on: pagesMode !== null || presentingPage !== null, pages:
+pagesMode?.pages ?? presentPages, localEditSeq, placeAt, canEdit: !isReadOnly, commitTabs,
 tickTabs, undo, redo, clearSelection, openNote })` returns `ArticlesView`, or null when neither
-  Illustrate mode nor a presenting page slide; it is spread onto the pages view
-  (`illustratePages.articles`). `canEdit` is `!isReadOnly`, false for a Participant as for a Viewer
+  Pages mode nor a presenting page slide; it is spread onto the pages view
+  (`pagesMode.articles`). `canEdit` is `!isReadOnly`, false for a Participant as for a Viewer
   (writing is an Editor's, spec "Share roles"; the room drops a Participant's `article` op too).
 - `openNote(id, kind)`: a comment opens `openComments(id)`; an action opens its popover when the
   marker has actions, else `openAssignActionDialog(id)`.
-- A new article's title takes the caret: `useIllustratePages({ onArticleCreated })` calls
+- A new article's title takes the caret: `usePagesMode({ onArticleCreated })` calls
   `articles.requestFocus(flow, 'start')` (through `articleFocusRef`); the editor that takes it calls
   `onFocusTaken(seq)` and `focusTaken` clears the request, so a remounted editor never takes it
   again.
@@ -213,7 +213,7 @@ tickTabs, undo, redo, clearSelection, openNote })` returns `ArticlesView`, or nu
   keyed by flow; created once (refs for everything it reads).
 - **Box**: one `.article-flow` element positioned at `flowFrame(pages, margin)`: `x/y` the lead's
   corner plus margin and top, `column-count` = pages, `column-gap` = `2 * margin +
-ILLUSTRATE_PAGE_GAP`, so the browser breaks lines between pages and wraps text round floated
+PAGE_GAP`, so the browser breaks lines between pages and wraps text round floated
   zones; `height` the page less top and bottom margins.
   Writing past the last column waits under the page clip (`pagesClipPath`).
 - **Commit**: `dispatchTransaction` schedules `flush` `ARTICLE_IDLE_COMMIT_MS` after a local doc
@@ -322,7 +322,7 @@ caretOf(state))` (editable only), and `setActiveArticle({ handle, pageId, select
 - `useOffPagePressClears`: a capture-phase pointerdown off the active article's sheets and off
   every `[data-article-keep-active]` (the toolbar, its popovers, the zone bar, the page's cog row
   and panel) runs `clearActiveArticle(flow)`.
-- Placement each frame (rAF while a page is active) against `[data-illustrate-page-id]`: desktop,
+- Placement each frame (rAF while a page is active) against `[data-page-id]`: desktop,
   centred in the top margin (`topRoomOf(pageId)` = `articleTopMarginPx(style) * zoom`), scaled
   `clamp(TOOLBAR_MIN_SCALE, (room - 2 * MARGIN_PAD) / h, 1)`, kept inside the page and the canvas
   (`maxWidth`, scrolls sideways), hidden when its page's top is out of the canvas or under the
@@ -332,7 +332,7 @@ caretOf(state))` (editable only), and `setActiveArticle({ handle, pageId, select
   While it shows, the root carries `data-article-toolbar-top` and `article-pages.css` hides
   `[data-toolbar-palette]`; `topStripInset` reads a hidden strip as no inset, so the reading frame
   gives its room to the page.
-- A finger on the writing or its paper (`useTouchPagePan`, given `IllustratePagesView.panFrom`):
+- A finger on the writing or its paper (`useTouchPagePan`, given `PagesModeView.panFrom`):
   primary touch only; past `TOUCH_PAN_SLOP` it begins `panFrom()` and a `'pan'` canvas gesture and
   moves the view by the drag (one commit per frame); a release short of it is a tap (the paper's
   `focusAt`, the writing's `onWritingPress` after the browser's caret); a cancel or a second
@@ -342,7 +342,7 @@ caretOf(state))` (editable only), and `setActiveArticle({ handle, pageId, select
 - Buttons never take focus (`onMouseDown` preventDefault); `handle.run` refocuses the writing.
   ⌘K (`requestArticleLink`) opens the link field; ⌘⌥M (`requestArticleComment`) adds a comment
   when text is selected. A menu closes with the article (`!active`).
-- **More › Article style**: flush, then `requestStylePanel(pageId)`; `IllustratePages` opens that
+- **More › Article style**: flush, then `requestStylePanel(pageId)`; `CanvasPages` opens that
   page's panel on Style.
 - **Insert**: blocks through `handle.insert` (divider; page break + paragraph; quote paragraph;
   code block); objects through `articles.insertObject(handle.flow, what)`, and Comment / Assign
@@ -353,7 +353,7 @@ caretOf(state))` (editable only), and `setActiveArticle({ handle, pageId, select
 
 - **Intake** (`useArticleIntake`, a `useLayoutEffect` on the tab): runs only after a local edit
   (`localEditSeq` moved, or an element gesture from `ELEMENT_GESTURES` just ended, measured from
-  its start), on the same tab, in Illustrate mode, editable. In one `tickTabs` (folded into the
+  its start), on the same tab, in Pages mode, editable. In one `tickTabs` (folded into the
   edit's undo step):
   1. `objectsDraggedOut(before, now)`: each object zone whose object's centre left the zone onto
      the same article's pages: `handle.moveZone(zoneId, at)`; landed: `withZoneLanded` and the
@@ -451,16 +451,16 @@ pagesNeeded)` (adds pages like the last; removes trailing pages with no elements
 - Ruling: `pageSheetStyle(background, { pitch: articleBodyLinePx, inset: margin, top })` and the
   export's `pageExportFrame({ ruling })` draw Lines on the body baseline pitch inside the margins.
 
-### Leaving Illustrate (`useLeaveIllustrate`)
+### Leaving Pages (`useLeavePages`)
 
 Wraps `useEditorMode(...)`. `setMode(next)` asks (sets `pending`) only when the mode is
-`'illustrate'`, `next` is not, the person may edit, the tab is unlocked and has an article with
+`'pages'`, `next` is not, the person may edit, the tab is unlocked and has an article with
 no locked page (`articleLocked`); a tab whose articles are all held, or with elements, asks the
 lighter `confirming` instead; else it switches. `convert`: per flow not held, `takeBlocks()` then
 `blocksByPage()` (a held article's editor is never read, and the updater writes no typed blocks
 into a flow held by then); `ArticlesToPages`; then ONE
 switch, `rawSet(pending, t => withArticlesAsPages(t', splits))`, so the conversion and the switch
-are one tab edit (one undo puts the tab back in Illustrate with its articles). `keep` switches;
+are one tab edit (one undo puts the tab back in Pages with its articles). `keep` switches;
 `cancel` clears. Shift+D and the tab menu's Mode on the active tab reach the wrapped `setMode`, so
 they ask too.
 
@@ -494,7 +494,7 @@ caret)`; `syncArticlePeople(participants)` names and colours carets and drops th
   `useArticleLaidOutSeq()` (as do slide thumbnails, `useSlideThumbnails`).
 - **Present** (`presentedPages(view, tab, presentingPageId, articles)`, `lib/presented-pages.ts`):
   the view narrowed to the page, `rowPages` the whole row (the writing lays out across all its
-  pages), `articles.editable: false`. Outside Illustrate mode the sheets are built from the tab and
+  pages), `articles.editable: false`. Outside Pages mode the sheets are built from the tab and
   the `ArticlesView` passed in (`useArticles` is on while a page slide presents).
 - **Phone framing**: `ArticleFlows` calls `view.readPage(pageId)` once each time the writing takes
   focus on a phone (`computeReadingFrame` with the margin, so the column fills the width), gliding
@@ -523,11 +523,11 @@ ops): ArticleFlow` (never empty). For any `a`, `b`: `applyArticleOps(a, diffArti
   ops, each `put` block parsed as a stored one.
 - `parseArticleCaret(op): ArticleCaret | null`: `tabId` an id; `flow: null` allowed; else `flow`
   and `blockId` ids (1 to 256 chars) and `offset` an integer in 0..1,000,000.
-- `ArticlesView` (null outside Illustrate): see `useArticles.ts`; every action is a no-op for a
+- `ArticlesView` (null outside Pages): see `useArticles.ts`; every action is a no-op for a
   person who cannot edit or a locked tab.
-- `LeaveIllustrate`: `{ pending, convert, keep, cancel, confirming, confirmSwitch, cancelSwitch }`
-  (the last three drive the lighter `LeaveIllustrateConfirm`; `confirmSwitch` tracks
-  `Editor · Changed · LeaveIllustrateConfirmed`).
+- `LeavePages`: `{ pending, convert, keep, cancel, confirming, confirmSwitch, cancelSwitch }`
+  (the last three drive the lighter `LeavePagesConfirm`; `confirmSwitch` tracks
+  `Editor · Changed · LeavePagesConfirmed`).
 
 ## Errors and edge cases
 
@@ -547,7 +547,7 @@ ops): ArticleFlow` (never empty). For any `a`, `b`: `applyArticleOps(a, diffArti
 | Two people in one paragraph                        | Last commit wins for that block (spec non-goal: no character merge)                                     |
 | A block op naming a missing neighbour              | Placed by the other neighbour, its old index, or the end                                                |
 | A frame over the room's cap                        | Ops split into `ARTICLE_FRAME_CHARS` frames; a single larger block is not split                         |
-| Writing past the page limit                        | `withArticlePageCount` stops at `MAX_ILLUSTRATE_PAGES`; the rest is clipped from view                   |
+| Writing past the page limit                        | `withArticlePageCount` stops at `MAX_PAGES`; the rest is clipped from view                              |
 | Trailing page that holds elements                  | Kept; trailing removal stops at it                                                                      |
 | Zone measured on a page not yet added              | Waits (`withZonesSettled` skips it) until the settle that adds the page                                 |
 | A zone moving into another's old place             | Members read before any move: neither steals the other's elements                                       |
@@ -562,7 +562,7 @@ ops): ArticleFlow` (never empty). For any `a`, `b`: `applyArticleOps(a, diffArti
 | Caret for a block that went                        | `resolveCaret` null: not drawn                                                                          |
 | Caret from someone not in the room, or another tab | Not drawn                                                                                               |
 | `getBoundingClientRect` / `coordsAtPos` throws     | Caught: caret page falls back to the first page, caret rect null                                        |
-| Leaving Illustrate on a locked tab or as a visitor | Switches straight away (no dialog)                                                                      |
+| Leaving Pages on a locked tab or as a visitor      | Switches straight away (no dialog)                                                                      |
 | Stale dev bundle                                   | Not a code path; restart the dev server (wipe `.next-dev`)                                              |
 
 ## Security and trust
@@ -606,7 +606,7 @@ ops): ArticleFlow` (never empty). For any `a`, `b`: `applyArticleOps(a, diffArti
   view whose clip changed re-renders.
 - Page toolbar and drop carets follow by rAF while shown, writing styles directly (no React
   render per frame).
-- At most `MAX_ILLUSTRATE_PAGES` (100) pages; one editor per article, columns per page.
+- At most `MAX_PAGES` (100) pages; one editor per article, columns per page.
 
 ## Presentation and UX
 
@@ -669,10 +669,10 @@ failure is a silent no-op with a debug log).
 - `debugLog` fingerprints (all `[article]`): `writing mounted`, `writing committed`, `layout
 settled`, `zone changed`, `floating elements put in the writing`, `margin note added`, `zone
 moved`, `style changed`, `zone took elements in`, `object dropped in the writing`, `zone drag
-ended`, `articles turned into pages`. Page-level edits log `[illustrate-page] …` (Illustrate
+ended`, `articles turned into pages`. Page-level edits log `[page] …` (Pages
   pages blueprint).
 - Telemetry as the spec's Telemetry section, charted in `apps/telemetry/app/catalogue/features.ts`
-  (`ILLUSTRATE_PAGES`: `ArticleAdded`, `ArticlesToPages`, `PageKind*`; `ARTICLE_INSERTS`;
+  (`PAGES`: `ArticleAdded`, `ArticlesToPages`, `PageKind*`; `ARTICLE_INSERTS`;
   `ARTICLE_FORMATTING`; `ARTICLE_LOOKS`), explained in `event-explanations.ts`. Never text.
 
 ## Testing
@@ -688,7 +688,7 @@ ended`, `articles turned into pages`. Page-level edits log `[illustrate-page] �
 | Zones settle with their elements, never swap, drawing clip, objects whole                                                                                                                                          | `packages/document/src/article-zones.test.ts`                                                                                        |
 | Margin notes: place, follow, stack, untint, go with their text                                                                                                                                                     | `packages/document/src/article-notes.test.ts`                                                                                        |
 | Turn Into Pages                                                                                                                                                                                                    | `packages/document/src/article-to-page.test.ts`                                                                                      |
-| Article pages read, flow fallback, kept together                                                                                                                                                                   | `packages/document/src/illustrate-page.test.ts` "page kinds"                                                                         |
+| Article pages read, flow fallback, kept together                                                                                                                                                                   | `packages/document/src/page.test.ts` "page kinds"                                                                                    |
 | Blocks to editor and back, identity kept                                                                                                                                                                           | `apps/live/lib/article/article-convert.test.ts`                                                                                      |
 | Pasted Markdown, safe links only, plain text                                                                                                                                                                       | `packages/document/src/article-markdown.test.ts`                                                                                     |
 | Writing synced as block ops, frames, never in tab-meta, merge keeps ours                                                                                                                                           | `apps/live/app/document/[id]/tab-broadcast-ops.test.ts` "articles"                                                                   |
@@ -698,28 +698,28 @@ ended`, `articles turned into pages`. Page-level edits log `[illustrate-page] �
 | Peer carets drawn as decorations, follow their block                                                                                                                                                               | `apps/live/lib/article/article-peers.test.ts`                                                                                        |
 | Caret broadcast throttled, null on leaving, hidden by a vote                                                                                                                                                       | `apps/live/hooks/collab/useArticleCaretBroadcast.test.tsx`                                                                           |
 | `article-caret` on the wire                                                                                                                                                                                        | `packages/api-schema/src/article-caret.test.ts`; room relay `apps/api/src/document-room.test.ts`                                     |
-| Into pages never takes an article's pages                                                                                                                                                                          | `packages/document/src/illustrate-paginate.test.ts` "never replaces a locked page or an article page"                                |
+| Into pages never takes an article's pages                                                                                                                                                                          | `packages/document/src/paginate.test.ts` "never replaces a locked page or an article page"                                           |
 | Export cuts a drawing at its zone                                                                                                                                                                                  | `apps/live/lib/export-tab.test.ts` "an article page export cuts a drawing off at its zone"                                           |
 | A finger on a page: pans past the slop, a tap short of it, a second finger or a cancel no tap                                                                                                                      | `apps/live/components/canvas/article/useTouchPagePan.test.tsx`                                                                       |
 | Reading frame                                                                                                                                                                                                      | `apps/live/lib/viewport.test.ts` "computeReadingFrame"                                                                               |
-| Article edits through the page panel (add, turn, paint, move, delete)                                                                                                                                              | `apps/live/hooks/editor/illustrate-page-edits.test.ts` "documents"                                                                   |
+| Article edits through the page panel (add, turn, paint, move, delete)                                                                                                                                              | `apps/live/hooks/editor/page-edits.test.ts` "documents"                                                                              |
 | A locked page holds its article: every entry point refused, a lock landing mid-commit holds, inserts counted once in                                                                                               | `apps/live/hooks/editor/useArticles.locks.test.ts`                                                                                   |
 | Nothing taken into a held article's writing; an unlocked one takes a drop in                                                                                                                                       | `apps/live/hooks/editor/useArticleIntake.locks.test.ts`                                                                              |
 | Held articles by page and by tab                                                                                                                                                                                   | `apps/live/lib/article/article-lock.test.ts`                                                                                         |
 | Turn Into Pages keeps a held article, its pages and notes; all held: the same tab                                                                                                                                  | `packages/document/src/article-to-page.test.ts`                                                                                      |
-| Leaving with held articles: the lighter question, held writing never taken                                                                                                                                         | `apps/live/hooks/editor/useLeaveIllustrate.test.ts`                                                                                  |
+| Leaving with held articles: the lighter question, held writing never taken                                                                                                                                         | `apps/live/hooks/editor/useLeavePages.test.ts`                                                                                       |
 | Slash-menu block inserts counted as the toolbar's                                                                                                                                                                  | `apps/live/lib/article/article-telemetry.test.ts`                                                                                    |
 | ⌘Enter ticks the to-do at the caret, falls through elsewhere                                                                                                                                                       | `apps/live/lib/article/article-commands.todo.test.ts`                                                                                |
 | Zone grip arrow keys step a block up or down, nowhere past the ends                                                                                                                                                | `apps/live/components/canvas/article/zone-step.test.ts`                                                                              |
 | Absent-writer grow: only a marked, unlocked flow short of pages, never the writer's own                                                                                                                            | `article-pages.test.ts` "growing an article for an absent writer"; the mark from an agent's frame, `room-op-apply.test.ts`           |
-| Page edits reach every page of an article; Article added on the last paper size, else A4 portrait; duplicate and delete whole, never the last unit or a locked page                                                | `packages/document/src/illustrate-edits.test.ts`                                                                                     |
+| Page edits reach every page of an article; Article added on the last paper size, else A4 portrait; duplicate and delete whole, never the last unit or a locked page                                                | `packages/document/src/pages-edits.test.ts`                                                                                          |
 | Reordering moves an article as one unit, by any page's label                                                                                                                                                       | `apps/live/hooks/canvas/usePageReorderDrag.test.ts` "reorderSlot with documents"                                                     |
-| An article page's panel has Page, Background, Style and Text                                                                                                                                                       | `apps/live/components/canvas/IllustratePagePanel.tabs.test.tsx`                                                                      |
-| A page held by its article's lock: Delete disabled with the reason                                                                                                                                                 | `apps/live/components/canvas/IllustratePagePanel.locks.test.tsx` "a page held by its article lock"                                   |
+| An article page's panel has Page, Background, Style and Text                                                                                                                                                       | `apps/live/components/canvas/PagePanel.tabs.test.tsx`                                                                                |
+| A page held by its article's lock: Delete disabled with the reason                                                                                                                                                 | `apps/live/components/canvas/PagePanel.locks.test.tsx` "a page held by its article lock"                                             |
 | Toolbar Colour: each picker titled on screen (Text Colour, Highlight), Default and Accent before the strong colours, No highlight before the soft ones; the Style tab's Accent leads with Theme, previews on hover | `apps/live/components/canvas/article/article-colours.test.tsx`                                                                       |
 | A margin note's marker carries no badge strip                                                                                                                                                                      | `apps/live/components/canvas/useElementIndicators.test.ts` "gives an annotation no note indicator, and a margin note nothing at all" |
-| Present from any mode: an article page with its writing, read only                                                                                                                                                 | `apps/live/lib/presented-pages.test.ts` "outside Illustrate, presents an article page with its writing, read only"                   |
-| Agents read and write an article as Markdown                                                                                                                                                                       | `packages/document/src/article-markdown-io.test.ts`; `packages/edit-operations/src/illustrate/article-write.test.ts`                 |
+| Present from any mode: an article page with its writing, read only                                                                                                                                                 | `apps/live/lib/presented-pages.test.ts` "outside Pages, presents an article page with its writing, read only"                        |
+| Agents read and write an article as Markdown                                                                                                                                                                       | `packages/document/src/article-markdown-io.test.ts`; `packages/edit-operations/src/pages/article-write.test.ts`                      |
 | `article` is a mutation op (never relayed from a view-role session)                                                                                                                                                | `apps/api/src/document-room.test.ts` "lets no document-mutating op kind into the presence set" (generic, every mutation kind)        |
 
 **Gaps** (spec rules with no deterministic test; browser-checked only):
@@ -743,7 +743,7 @@ ended`, `articles turned into pages`. Page-level edits log `[illustrate-page] �
 - "Share roles": the room refusing a Participant's `article` op has only the generic test above.
 - "Everywhere a page goes": the exported writing (`snapshotWriting`, `articleOpsToSvg`,
   `drawArticleOps`), the Map and thumbnail bars.
-- The leave dialog's rendering (`LeaveIllustrateDialog`) and the writer rule's `local` in
+- The leave dialog's rendering (`LeavePagesDialog`) and the writer rule's `local` in
   `ArticleEditor` (the pure grow decision is tested).
 
 ## Assets and external resources

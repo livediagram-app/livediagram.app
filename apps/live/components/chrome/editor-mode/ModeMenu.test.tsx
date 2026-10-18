@@ -46,8 +46,8 @@ describe('ModeMenu preview', () => {
 
   it('follows keyboard focus too', () => {
     open('diagram');
-    fireEvent.focus(row('Illustrate'));
-    expect(preview().dataset.modePreview).toBe('illustrate');
+    fireEvent.focus(row('Pages'));
+    expect(preview().dataset.modePreview).toBe('pages');
   });
 
   it('is hidden from assistive technology and holds no button', () => {

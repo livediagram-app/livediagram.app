@@ -39,10 +39,10 @@ const AvatarTourHost = dynamic(
   () => import('@/components/tour/AvatarTourHost').then((m) => m.AvatarTourHost),
   { ssr: false },
 );
-// The Illustrate tour (docs/specs/007-editor/illustrate-tour.md): the same, the first time the person enters
-// Illustrate.
-const IllustrateTourHost = dynamic(
-  () => import('@/components/tour/IllustrateTourHost').then((m) => m.IllustrateTourHost),
+// The Pages tour (docs/specs/007-editor/pages-tour.md): the same, the first time the person enters
+// Pages.
+const PagesTourHost = dynamic(
+  () => import('@/components/tour/PagesTourHost').then((m) => m.PagesTourHost),
   { ssr: false },
 );
 
@@ -55,7 +55,7 @@ export function EditorTours() {
   const mountDrawTour = useEverTrue(editorMode.mode === 'draw');
   const mountFormTour = useEverTrue(activeTab.kind === 'form');
   const mountAvatarTour = useEverTrue(canvasTool === 'avatar');
-  const mountIllustrateTour = useEverTrue(editorMode.mode === 'illustrate');
+  const mountPagesTour = useEverTrue(editorMode.mode === 'pages');
   return (
     <>
       <TourHost />
@@ -70,7 +70,7 @@ export function EditorTours() {
       <PendingFormStart />
       {/* The Avatar tour (docs/specs/008-canvas/avatar-tour.md): the first time a person walks as an avatar. */}
       {mountAvatarTour ? <AvatarTourHost /> : null}
-      {mountIllustrateTour ? <IllustrateTourHost /> : null}
+      {mountPagesTour ? <PagesTourHost /> : null}
       <ElementTourHost />
     </>
   );

@@ -1,4 +1,4 @@
-// A minimal Zip writer for downloads (docs/specs/007-editor/illustrate-pages.md "Export": every
+// A minimal Zip writer for downloads (docs/specs/007-editor/pages-mode.md "Export": every
 // page as PNG or SVG in one file). Stored entries only: images are already compressed, so
 // deflating them again would cost time for nothing. Pure and browser-safe; the counterpart of
 // zip-reader.ts.

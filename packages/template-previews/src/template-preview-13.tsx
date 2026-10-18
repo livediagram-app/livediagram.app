@@ -2,8 +2,8 @@ import type { ReactElement } from 'react';
 import type { TemplateKind } from '@livediagram/templates';
 import { pv } from './motion';
 
-// Group 13: the infographic Illustrate templates (docs/specs/007-editor/templates-by-mode.md
-// "Illustrate templates"): Data Story, How It Works, Versus and Social Carousel. Like group 12,
+// Group 13: the infographic Pages templates (docs/specs/007-editor/templates-by-mode.md
+// "Pages templates"): Data Story, How It Works, Versus and Social Carousel. Like group 12,
 // each draws its pages as sheets in their own proportions (A4, Story 9:16, Portrait post 4:5,
 // Square) with the designed content sketched in, in the template's own colours. Static SVG
 // preview tiles (one branch per TemplateKind; see template-preview.tsx for who renders them);

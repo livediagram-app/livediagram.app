@@ -60,7 +60,7 @@ const DRAWINGS: Element[][] = [
   [box('a', 0, 0, { fillColor: '#123456', strokeColor: '#654321' })],
 ];
 
-// The codes only an Illustrate tab is linted for, each on a page's text.
+// The codes only a Pages tab is linted for, each on a page's text.
 const PAGE_DRAWINGS: Element[][] = [
   [
     {
@@ -98,7 +98,7 @@ describe('tab fixes', () => {
     ...PAGE_DRAWINGS.map((elements): Tab => ({
       id: 't',
       name: 'T',
-      opensIn: 'illustrate',
+      opensIn: 'pages',
       elements,
     })),
   ].flatMap((tab) => lint(tab).findings.map((finding) => ({ finding, tab })));

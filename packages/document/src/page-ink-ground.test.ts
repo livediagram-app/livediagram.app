@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { pageFillTone } from './illustrate-page-content';
+import { pageFillTone } from './page-content';
 import { gradientPosition, pageGroundUnder, PAPER_TONE } from './page-ink-ground';
 
-// docs/specs/007-editor/illustrate-pages.md "Re-inking": what the page is under an element.
+// docs/specs/007-editor/pages-mode.md "Re-inking": what the page is under an element.
 const rect = { x: 100, y: 200, width: 400, height: 800 };
 
 describe('page ground', () => {

@@ -1,6 +1,6 @@
 import { defineProject } from '@livediagram/vitest-config';
 
-// Pure and small: every line and branch is covered (docs/specs/007-editor/illustrate-pages.md "Backgrounds").
+// Pure and small: every line and branch is covered (docs/specs/007-editor/pages-mode.md "Backgrounds").
 export default defineProject({
   test: {
     coverage: {

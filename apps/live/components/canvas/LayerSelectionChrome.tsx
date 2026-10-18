@@ -48,7 +48,7 @@ export function LayerSelectionChrome({
   nextNote: { blocked: boolean; onAdd: ComponentProps<typeof NextNoteButtons>['onAdd'] } | null;
   pluses: Omit<PlusesProps, 'selectedElement' | 'bounds' | 'zoom'>;
   onBeginDrag: ComponentProps<typeof UnionResizeHandles>['onBeginDrag'];
-  // The Illustrate pages: a selection on a logo page shows no quick-connect pluses
+  // The pages: a selection on a logo page shows no quick-connect pluses
   // (docs/specs/007-editor/logo-pages.md "A logo page"), a mark not a diagram.
   pages?: readonly LaidOutPage[] | null;
 }) {

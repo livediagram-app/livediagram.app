@@ -26,7 +26,7 @@ import {
   firstDeck,
   pageMoveForDeckOrder,
   slidePageOwnSlideIds,
-  illustratePagesOf,
+  pagesOf,
   pageLabel,
   parseStoredPresentation,
   presentableSlides,
@@ -62,13 +62,13 @@ export type SlideDeckState = ReturnType<typeof useSlideDeck>;
  */
 export function pageSlideLabels(deck: Deck, tabs: readonly Tab[]): Map<string, string | null> {
   const out = new Map<string, string | null>();
-  const pagesByTab = new Map<string, ReturnType<typeof illustratePagesOf>>();
+  const pagesByTab = new Map<string, ReturnType<typeof pagesOf>>();
   for (const slide of deck.slides) {
     if (!slide.pageId) continue;
     let pages = pagesByTab.get(slide.tabId);
     if (!pages) {
       const tab = tabs.find((t) => t.id === slide.tabId);
-      pages = tab ? illustratePagesOf(tab) : [];
+      pages = tab ? pagesOf(tab) : [];
       pagesByTab.set(slide.tabId, pages);
     }
     const at = pages.findIndex((p) => p.id === slide.pageId);
@@ -110,11 +110,11 @@ export function useSlideDeck({
   loadAllTabs?: () => Promise<unknown>;
   /** The document's items and types, for a Plan board's thumbnail. */
   plan?: ThumbnailPlan;
-  /** Frames an Illustrate page of a tab in the view (as its label's press does), once that tab is
+  /** Frames a page of a tab in the view (as its label's press does), once that tab is
    *  the active one. Absent where nothing frames pages. */
   framePage?: (tabId: string, pageId: string) => void;
   /** Moves a tab's page to a unit index (pageMovedTo), for a page slide dragged in the deck: the deck follows the
-   *  pages, so a drag there moves the page (docs/specs/007-editor/illustrate-pages.md "Slides"). */
+   *  pages, so a drag there moves the page (docs/specs/007-editor/pages-mode.md "Slides"). */
   movePage?: (tabId: string, pageId: string, unitIndex: number) => void;
 }) {
   const [deck, setDeck] = useState<Deck>(EMPTY_DECK);
@@ -181,7 +181,7 @@ export function useSlideDeck({
     [],
   );
 
-  // The deck follows the slide pages (docs/specs/007-editor/illustrate-pages.md "Slides"): each in the deck, a tab's
+  // The deck follows the slide pages (docs/specs/007-editor/pages-mode.md "Slides"): each in the deck, a tab's
   // page slides in its page order. An editor saves it; a viewer only sees it, the same deck an editor would store.
   // Built on the deck as it stands when the update runs, so a stored deck hydrated in the same pass is the base.
   const followPages = useCallback(() => {
@@ -190,7 +190,7 @@ export function useSlideDeck({
     else commitDeck(follow);
   }, [commitDeck, isReadOnly, tabsRef]);
   // The slides a slide page holds in the deck, which the panel offers Hide for rather than Delete.
-  // One pass over the deck and the loaded Illustrate tabs' pages: about 0.1 ms at the 100-page cap.
+  // One pass over the deck and the loaded Pages tabs' pages: about 0.1 ms at the 100-page cap.
   const ownPageSlideIds = useMemo(() => slidePageOwnSlideIds(deck, tabs), [deck, tabs]);
 
   // --- What the panel renders -----------------------------------------------
@@ -236,7 +236,7 @@ export function useSlideDeck({
     track('UI', 'Added', 'Slide');
   }, [activeTabId, commitDeck, isReadOnly, readSelection]);
 
-  // An Illustrate page as a slide (docs/specs/007-editor/illustrate-pages.md "Slides"): the slide
+  // A page as a slide (docs/specs/007-editor/pages-mode.md "Slides"): the slide
   // is the page, resolved live, so it follows the page's content wherever the page goes.
   const newPageSlide = useCallback(
     (pageId: string) => {
@@ -435,7 +435,7 @@ export function useSlideDeck({
         return { slides };
       });
       // A page slide dragged out of its page's order moves its page, and the deck then follows the pages: the two
-      // orders are one (docs/specs/007-editor/illustrate-pages.md "Slides").
+      // orders are one (docs/specs/007-editor/pages-mode.md "Slides").
       const slides = [...deckRef.current.slides];
       const from = slides.findIndex((s) => s.id === fromId);
       if (from >= 0 && toIndex >= 0 && toIndex < slides.length) {

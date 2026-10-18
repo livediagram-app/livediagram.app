@@ -5,7 +5,7 @@ import { pv } from './motion';
 // Group 20: the blanks of a page kind (docs/specs/007-editor/templates-by-mode.md "Blanks of a page kind"): Blank
 // Slide Deck, Blank Article, Blank Infographic and Blank Logo. Each draws its one empty page in its own proportions
 // (a 16:9 slide, an A4 page, the square artboard) with the dashed edge, faint guides and sky "+" of Blank
-// Illustration's page, so the Illustrate blanks read as a set. Hover story: the guides light up, what the page is for.
+// Illustration's page, so the Pages blanks read as a set. Hover story: the guides light up, what the page is for.
 // Static SVG preview tiles, one branch per TemplateKind; TemplatePreview chains the groups with ??.
 
 const EDGE = 'rgb(148 163 184)';

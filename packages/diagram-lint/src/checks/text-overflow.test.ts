@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { Element } from '@livediagram/document';
 import { lint, of, tabOf } from '../fixtures/build';
 
-// LN text-overflow: on an Illustrate tab a text element's words fit its box; on any tab no two texts print over each
+// LN text-overflow: on a Pages tab a text element's words fit its box; on any tab no two texts print over each
 // other.
 const text = (id: string, x: number, y: number, label: string, extra: object = {}): Element => ({
   id,
@@ -14,7 +14,7 @@ const text = (id: string, x: number, y: number, label: string, extra: object = {
   label,
   ...extra,
 });
-const page = (...els: Element[]) => ({ ...tabOf(...els), opensIn: 'illustrate' as const });
+const page = (...els: Element[]) => ({ ...tabOf(...els), opensIn: 'pages' as const });
 
 describe('text-overflow', () => {
   it('names a page’s text that needs more lines than its box holds, with the height that holds it', () => {
@@ -124,7 +124,7 @@ describe('text-overflow', () => {
     ).toHaveLength(1);
   });
 
-  it('stays quiet on text that fits, set to scale, blank, or off an Illustrate tab', () => {
+  it('stays quiet on text that fits, set to scale, blank, or off a Pages tab', () => {
     const fits = text('f', 0, 0, 'Short');
     const scaled = text('s', 0, 100, 'A heading long enough to wrap onto three or more lines', {
       textSize: 'scale',

@@ -43,7 +43,7 @@ import { usePhotoDraftView } from '@/lib/photo-draft-preview';
 import { ZoomedLaserOverlay, ZoomedRemoteCursor } from '@/components/canvas/view-readers';
 import { useInsertShift } from '@/hooks/canvas/useInsertShift';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
-import { IllustratePageClip } from '@/components/canvas/IllustratePageClip';
+import { PageClip } from '@/components/canvas/PageClip';
 import { CardVoteProvider, type CardVote } from '@/components/plan/CardVoteContext';
 import {
   SheetChartsContext,
@@ -575,16 +575,14 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
             above all boxes inside a single SVG layer). Each arrow
             gets its own <svg> overlay; pointer events on the SVG are
             disabled in CSS, only the inner arrow line picks them up. */}
-          {/* Illustrate mode cuts elements off at the page edges (IllustratePageClip); not in the
+          {/* Pages mode cuts elements off at the page edges (PageClip); not in the
           isometric view, whose 3D stack a clip would flatten. */}
-          <IllustratePageClip
+          <PageClip
             pages={
-              props.illustratePages && props.canvasTool !== 'isometric'
-                ? props.illustratePages.pages
-                : null
+              props.pagesMode && props.canvasTool !== 'isometric' ? props.pagesMode.pages : null
             }
             // A page under a layout preview shows only the preview.
-            hiddenPageId={props.illustratePages?.layoutPreview?.pageId ?? null}
+            hiddenPageId={props.pagesMode?.layoutPreview?.pageId ?? null}
             elements={elements}
             layers={tabLayers}
           >
@@ -621,7 +619,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
               fontEpoch={fontEpoch}
               stackedIds={stackedIds}
             />
-          </IllustratePageClip>
+          </PageClip>
 
           {/* Editor-only marks, left out of an animated GIF (GifOmit). */}
           <GifOmit>
@@ -696,7 +694,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
                 onAppendWebRow,
               }}
               onBeginDrag={onBeginDrag}
-              pages={props.illustratePages?.pages}
+              pages={props.pagesMode?.pages}
             />
           </SelectionGripsLayer>
         </SelectionGripsContext.Provider>

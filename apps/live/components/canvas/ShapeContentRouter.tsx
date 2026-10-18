@@ -166,10 +166,10 @@ export function ShapeContentRouter({
   // An icon's glyph moves aside for its caption from the moment the label is typed.
   const iconCaptioned = iconMakesRoomForLabel(element.label, !!isEditing);
   // The paper under this shape, for colours it doesn't carry (docs/specs/007-editor/live-app.md): its
-  // Illustrate page's where that page has a fill, else the canvas's.
+  // Page's where that page has a fill, else the canvas's.
   const surface = useElementSurface(element.id);
   // A chart on a filled page is drawn adapted to what it sits on (docs/specs/007-editor/
-  // illustrate-pages.md "Charts adapt as they are drawn"): its series in its view, its text here.
+  // pages-mode.md "Charts adapt as they are drawn"): its series in its view, its text here.
   const chartGround = useChartGround(element.id);
   const chartText = chartTextInk(textColor, chartGround);
   // A sketched silhouette is the SketchOverlay's (docs/specs/008-canvas/finish.md); Professional thins an

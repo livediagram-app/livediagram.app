@@ -4,14 +4,14 @@
 // layouts"): what pressing it puts on the page.
 import { cleanup, render } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
-import { layOutIllustratePages, newLogoPage, type Tab } from '@livediagram/document';
+import { layOutPages, newLogoPage, type Tab } from '@livediagram/document';
 import { LOGO_LAYOUTS } from '@livediagram/templates';
 import { LayoutRenderThumb, layoutRenderSvg } from './layout-render-thumb';
 import { LayoutThumb } from './infographic-layout-thumb';
 
 afterEach(() => cleanup());
 
-const [page] = layOutIllustratePages([newLogoPage('l')]);
+const [page] = layOutPages([newLogoPage('l')]);
 const tab = { id: 't', name: 'T', elements: [], pages: [newLogoPage('l')] } as unknown as Tab;
 
 describe('logo layout tiles', () => {

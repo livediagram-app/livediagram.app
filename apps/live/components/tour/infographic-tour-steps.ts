@@ -1,4 +1,4 @@
-// The Infographic track of the Illustrate tour (docs/specs/007-editor/illustrate-tour.md "Infographic track"): on the
+// The Infographic track of the Pages tour (docs/specs/007-editor/pages-tour.md "Infographic track"): on the
 // person's own page, its name, the Layout and Background popovers opened to choose from, its size in the panel, the +
 // and the Slide Deck. Each control stays live, so a pick made while its step is up is kept.
 import type { PageTourStep } from './page-tour-api';
@@ -76,7 +76,7 @@ export function infographicTourSteps(): PageTourStep[] {
     {
       id: 'outro',
       card: 'outro',
-      title: "You're ready to illustrate",
+      title: "You're ready to make pages",
       body: 'Pick a layout and make it yours. The help centre has more on pages, layouts and slides.',
     },
   ];

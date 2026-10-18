@@ -1,4 +1,4 @@
-// People and Ideas layouts, part two (docs/specs/007-editor/illustrate-pages.md "Layouts"): values,
+// People and Ideas layouts, part two (docs/specs/007-editor/pages-mode.md "Layouts"): values,
 // an idea board, a user persona and shout-outs. Pure builders on the shared kit, laid out in
 // proportions of the page's content box so each fits every size and orientation.
 import type { Element } from '@livediagram/document';

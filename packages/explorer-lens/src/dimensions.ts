@@ -73,7 +73,7 @@ export const VALUE_LABELS = {
     diagram: 'Diagram',
     draw: 'Draw',
     facilitate: 'Facilitate',
-    illustrate: 'Illustrate',
+    pages: 'Pages',
     plan: 'Plan',
   },
   kind: { 'event-storming': 'Event Storming' },

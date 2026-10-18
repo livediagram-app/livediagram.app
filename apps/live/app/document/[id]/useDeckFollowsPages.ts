@@ -1,6 +1,6 @@
 'use client';
 
-// The deck follows the slide pages (docs/specs/007-editor/illustrate-pages.md "Slides"): every slide page is in the
+// The deck follows the slide pages (docs/specs/007-editor/pages-mode.md "Slides"): every slide page is in the
 // deck, a tab's page slides in its page order, whoever made or moved the pages (a template, Add Page, a reorder, a
 // peer, an agent, an undo). One pass whenever the pages change, never on an element edit.
 

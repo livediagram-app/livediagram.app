@@ -64,7 +64,7 @@ describe('UseAsDefaultMenu', () => {
       'Diagrams',
       'Whiteboards',
       'Sessions',
-      'Illustrate pages',
+      'Pages documents',
       'Plan boards',
       'Event Storming boards',
       'Retrospectives',
