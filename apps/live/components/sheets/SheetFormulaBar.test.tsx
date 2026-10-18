@@ -55,6 +55,27 @@ describe('the formula bar', () => {
     expect(h.ctl().selection.ranges).toEqual([{ r1: 3, c1: 1, r2: 5, c2: 3 }]);
   });
 
+  // A formula the cell cannot take (a missing bracket) kept its editor open while the name box moved the selection on:
+  // every key after it went nowhere. The name box saves an open edit first, as a press on another cell does.
+  it('saves an open edit before going where the name box says, and keeps one that cannot be saved', () => {
+    show(h);
+    withGrid();
+    const go = (text: string) => {
+      fireEvent.focus(nameBox());
+      fireEvent.change(nameBox(), { target: { value: text } });
+      fireEvent.keyDown(nameBox(), { key: 'Enter' });
+    };
+    act(() => h.ctl().setEditing({ r: 0, c: 3, origin: 'cell', draft: '=(1+2' }));
+    go('C5');
+    expect(h.ctl().editing).toMatchObject({ r: 0, c: 3, draft: '=(1+2' });
+    expect(h.ctl().selection.active).toEqual({ r: 0, c: 0 });
+    act(() => h.ctl().setEditing({ r: 0, c: 3, origin: 'cell', draft: '=2+2' }));
+    go('C5');
+    expect(h.ctl().editing).toBeNull();
+    expect(h.value('D1')).toBe(4);
+    expect(h.ctl().selection.active).toEqual({ r: 4, c: 2 });
+  });
+
   it('names the selection with a new name, selects a named range, and says why a name cannot be one', () => {
     show(h, { at: 'C2' });
     withGrid();

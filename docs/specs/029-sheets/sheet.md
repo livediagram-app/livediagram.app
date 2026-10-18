@@ -290,6 +290,10 @@ inset, as the menu box's mode tile does), and to its right the chosen category's
   for a new name, names the selection ([Named ranges](#named-ranges)). A name that cannot be one says why in a toast
   ("Names start with a letter or _, then letters, digits, _ or .", "That reads as a cell reference", "Another range on
   this sheet is called that").
+- **An open edit is saved before the name box moves.** Enter in the name box saves the cell being edited first, as a
+  press on another cell does; an edit that cannot be saved (a formula missing its bracket) stays open, back in it
+  with its error, and the selection does not move. Escape there also returns to the edit. Before, the edit was left
+  open while the selection moved, and every key after it went nowhere.
 - **fx** and the bar show the active cell's input (a formula as typed, a number unformatted); editing there edits
   the cell, as typing in it does. It grows to three lines for a long input, then scrolls.
 
