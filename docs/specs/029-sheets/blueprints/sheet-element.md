@@ -140,7 +140,7 @@ SheetSelectionLayer.tsx  selection, fill handle, copy and cut marquee, reference
                          peer name tags, filter buttons
 SheetCellEditor.tsx      in-place editor (textarea + coloured overlay), FunctionAssist (list and argument hint),
                          parse error line
-SheetMenus.tsx           header menus (with Resize…), the filter menu and the Sort Range dialog
+SheetMenus.tsx           header menus (with Resize…), the filter menu and the Custom Sort dialog
 SheetCellMenu.tsx        the cell menu: MenuHeader (the selection, its cell count), a MenuToolbar (Cut, Copy, Paste,
                          Paste Values, Clear Contents, Clear Formatting), plain MenuActionRows grouped by
                          MenuGroupSeparator (insert either side, delete, merge or unmerge) and plain
