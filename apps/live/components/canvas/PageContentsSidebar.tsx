@@ -20,7 +20,7 @@ import { usePageContents } from '@/hooks/ui/usePageContents';
 import { pageInView } from '@/lib/page-contents';
 import { useViewportStoreIfAny } from '@/hooks/canvas/useViewportStore';
 import { CONTENTS_SIDEBAR_WIDTH, type ContentsSide } from '@/lib/contents-placement';
-import { sideInsetsOf } from '@/lib/side-chrome-insets';
+import { restingRect, sideInsetsOf } from '@/lib/side-chrome-insets';
 import { ContentsAddPage } from './ContentsAddPage';
 import { ContentsFind, ContentsList } from './PageContentsList';
 
@@ -64,7 +64,7 @@ export function PageContentsSidebar({
       view.pages,
       viewport.get(),
       { width: canvas.width, height: canvas.height },
-      sideInsetsOf(canvas, el.getBoundingClientRect()),
+      sideInsetsOf(canvas, restingRect(el)),
     );
   };
   const [here] = useState<string | undefined>(() => view.pages[0]?.id);
