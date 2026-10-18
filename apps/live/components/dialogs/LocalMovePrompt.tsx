@@ -18,7 +18,7 @@ export function LocalMovePrompt({ enabled = true }: { enabled?: boolean }) {
   const { phase } = prompt;
   if (phase.kind === 'idle') return null;
 
-  const title = 'Move Local Documents to Your Account?';
+  const title = 'Move Documents in This Browser to Your Account?';
   if (phase.kind === 'moving') {
     return (
       <Dialog open onClose={() => {}} ariaLabel={title} size="md">
@@ -77,7 +77,7 @@ export function LocalMovePrompt({ enabled = true }: { enabled?: boolean }) {
       </DialogHeader>
       <div className="px-6 py-5">
         <ImportChecklist
-          legend="documents in This Browser"
+          legend="Documents in This Browser"
           rows={prompt.rows}
           checked={prompt.checked}
           onToggle={prompt.toggle}

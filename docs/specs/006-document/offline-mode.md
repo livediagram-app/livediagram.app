@@ -23,7 +23,7 @@ Nobody is asked when creating a document; the default decides:
 - The **New Document** wizard ([Dedicated route for new-document creation](../007-editor/new-document-route.md#one-step-wizard))
   asks only for a mode and creates the document in the default location for who is creating
   ([Save Locations](save-locations.md)): **This Browser** for a guest, **livediagram** for a signed-in person.
-  Either moves later: **Take Offline** makes a cloud document This Browser, **Sync Document** puts a one in This Browser on
+  Either moves later: **Take Offline** moves a cloud document into This Browser, **Sync Document** puts one in This Browser on
   livediagram.
 - The links that create without the wizard (`/new?template=`, `/new?blank=1`,
   [Dedicated route for new-document creation → Start Blank](../007-editor/new-document-route.md#start-blank-skip-the-wizard))
@@ -239,7 +239,7 @@ uploads anything by itself; the dialog explains and asks, for a guest and a
 signed-in person alike:
 
 - **The gate.** Share on a document in This Browser opens the Share dialog on its
-  offline gate (`ShareOfflineGate`): **This Document Is Offline**, "It is saved only
+  offline gate (`ShareOfflineGate`): **This Document Is in This Browser**, "It is saved only
   in this browser, so there is nothing to share yet. Sync it to livediagram to
   share it: share links, real-time collaboration and the live image all need it
   on our servers. You can take it offline again any time.", with **Sync Document**
