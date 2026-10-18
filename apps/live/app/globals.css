@@ -933,9 +933,9 @@ html[data-presenting][data-hide-pointer][data-pointer-idle] [data-presentation-s
 :root {
   --ld-timeline-danger: #dc2626;
   --ld-timeline-danger-soft: rgb(220 38 38 / 0.09);
-  --ld-timeline-structural: #d97706;
+  --ld-timeline-structural: #b45309;
   --ld-timeline-structural-soft: rgb(217 119 6 / 0.1);
-  --ld-timeline-create: #059669;
+  --ld-timeline-create: #047857;
   --ld-timeline-create-soft: rgb(5 150 105 / 0.09);
   --ld-timeline-neutral: #64748b;
   --ld-timeline-neutral-soft: rgb(100 116 139 / 0.07);

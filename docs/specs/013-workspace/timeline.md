@@ -1531,7 +1531,9 @@ livediagram has a class-based dark mode ([Live app](../007-editor/live-app.md)),
 Toolkit which is dark-only, so every tint needs two, and dark mode
 lifts the bold value (a 600-weight hue goes muddy on slate-900) while
 dropping the soft one (an alpha tint over a dark surface reads far
-stronger than the same alpha over white). `eventTone` reads the var
+stronger than the same alpha over white). In light mode each bold value is a 700 step where the 600 fell short:
+it labels a card's reason in 12 px text, so amber (`#b45309`) and emerald (`#047857`) read at 4.5:1 or better on
+white and on their own tint. `eventTone` reads the var
 with a fallback baked into the package, so the components render
 standalone.
 
