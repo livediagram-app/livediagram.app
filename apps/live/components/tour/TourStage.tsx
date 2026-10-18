@@ -39,18 +39,7 @@ export function TourStage<Api>({
   const ringLayer = step.layer ?? layer;
   return (
     <Portal>
-      {step.card ? (
-        // Focus backdrop for the bookend cards: a SUBTLE full-screen tint
-        // (much lighter than Dialog's, the canvas should stay visible)
-        // that draws the eye to the card and absorbs stray clicks until
-        // it's answered. Deliberately NOT a click-to-dismiss surface:
-        // with the once-ever done-guard, a stray backdrop click must
-        // never count as a permanent decline.
-        <div
-          aria-hidden
-          className="fixed inset-0 z-[var(--z-overlay)] animate-fade-in bg-slate-900/15 dark:bg-slate-950/25"
-        />
-      ) : null}
+      {/* The bookend cards ask nothing of the editor (TourPopover): no backdrop behind them. */}
       {targetRect ? (
         // The spotlight: a ring around the target whose giant box-shadow
         // dims everything else. pointer-events-none so the user can still

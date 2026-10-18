@@ -9,6 +9,8 @@ import {
   type ReactNode,
 } from 'react';
 import { clamp, type PlanPalette } from '@livediagram/document';
+import { announceToastFloorChange, BOTTOM_CHROME_SELECTOR } from '@/components/toast/toast-floor';
+import { useChromeFloor } from '@/components/toast/useToastFloor';
 import { tourColourVars } from './tour-colours';
 import { placeTourPopover } from './tour-position';
 import { TourHelpArt } from './TourHelpArt';
@@ -41,9 +43,27 @@ const WELCOME_TOUR_COPY: TourCardCopy = {
   finish: 'Start diagramming',
 };
 
+// The bookend card's width (w-[21rem]), the column it must clear the bottom chrome in.
+const BOOKEND_WIDTH_PX = 336;
+// On the body while a bookend card is up (SignInBanner steps aside).
+export const TOUR_CARD_ATTR = 'data-tour-card-open';
+
+/** Where a bookend card stands: centred, its bottom on the chrome floor (`floor` px above the viewport's bottom). */
+export function bookendPlace(
+  size: { width: number; height: number },
+  viewport: { width: number; height: number },
+  floor: number,
+): { left: number; top: number } {
+  return {
+    left: (viewport.width - size.width) / 2,
+    top: Math.max(0, viewport.height - floor - size.height),
+  };
+}
+
 // The tour's step card (docs/specs/007-editor/editor-tour.md). Two faces:
-// - welcome: the centred offer card ("Yes" / "No"),
-//   no step count, dots, or Back — declining must be one obvious click.
+// - welcome: the offer card ("Yes" / "No"), no step count, dots, or Back: declining must be one obvious click. It
+//   and the last card stand at the bottom centre on the bottom chrome, as the sign-in banner does, and ask nothing of
+//   the editor: no backdrop, no focus taken, so someone who carries on working simply leaves them there.
 // - step: step count, title, copy, dots, Back / Next / Skip, anchored to
 //   the highlighted target.
 // Positioning is measured two-pass (render off-screen, measure, place)
@@ -53,8 +73,7 @@ const WELCOME_TOUR_COPY: TourCardCopy = {
 // A caret on the popover's edge points at the target, so the card reads
 // as attached to what it explains — on phones the narrow viewport means
 // side placements never fit, so steps naturally land below (or above)
-// their target with the caret pointing up at it. The bookend cards stay
-// centred everywhere.
+// their target with the caret pointing up at it.
 export function TourPopover({
   stepNumber,
   stepCount,
@@ -80,7 +99,7 @@ export function TourPopover({
   // replays exactly once per step change.
   stepId: string;
   stepDir: 'forward' | 'backward';
-  // Bookend cards ('welcome' / 'outro'): centred, no count/dots/Back,
+  // Bookend cards ('welcome' / 'outro'): at the bottom, no count/dots/Back,
   // with their own illustration + button set. Undefined = a normal step.
   card?: 'welcome' | 'outro';
   title: string;
@@ -115,28 +134,28 @@ export function TourPopover({
   // from the corner (a first-paint animation gate).
   const [animatePos, setAnimatePos] = useState(false);
 
-  // The centred cards take the keyboard (docs/specs/007-editor/editor-tour.md): the offer and the last card are
-  // dialogs over a dimmed editor, so focus moves onto the card (not a button: a stray Enter accepts nothing) and goes
-  // back where it was when the card goes. A step card leaves focus on the control it points at.
+  // The bookend cards stand at the bottom centre, on whatever chrome is there (the tab bar, the bottom-right
+  // cluster), and are the toasts' floor while up (docs/specs/004-interface-design/toasts.md "Placement"). The body
+  // says one is up, so the sign-in banner, which takes the same place, steps aside meanwhile (SignInBanner).
+  const floor = useChromeFloor(!!card, 0, BOTTOM_CHROME_SELECTOR, BOOKEND_WIDTH_PX);
   useEffect(() => {
     if (!card) return;
-    const card$ = ref.current;
-    if (!card$) return;
-    const before = document.activeElement;
-    card$.focus({ preventScroll: true });
+    document.body.setAttribute(TOUR_CARD_ATTR, '');
+    announceToastFloorChange();
     return () => {
-      if (!card$.contains(document.activeElement) && document.activeElement !== document.body)
-        return;
-      if (before instanceof HTMLElement && before.isConnected)
-        before.focus({ preventScroll: true });
+      document.body.removeAttribute(TOUR_CARD_ATTR);
+      announceToastFloorChange();
     };
-  }, [card, stepId]);
+  }, [card]);
 
   // Escape is the card's way out (docs/specs/007-editor/editor-tour.md): it declines the offer, skips the tour from
   // a step and finishes it from the last card, as their buttons do. Not while the key is editing something, where
-  // Escape puts the text back (an element tour asks for exactly that), nor when something else already took it.
+  // Escape puts the text back (an element tour asks for exactly that), nor when something else already took it. A
+  // bookend card asks nothing of the editor, so there it takes Escape only from inside itself: someone working past
+  // the offer keeps Escape for their own work.
   const onEscape = useEffectEvent((e: KeyboardEvent) => {
     if (e.key !== 'Escape' || e.defaultPrevented) return;
+    if (card && !ref.current?.contains(document.activeElement)) return;
     const t = e.target;
     if (t instanceof HTMLElement && (t.isContentEditable || t.closest('input, textarea, select')))
       return;
@@ -155,6 +174,10 @@ export function TourPopover({
     const place = () => {
       const size = { width: node.offsetWidth, height: node.offsetHeight };
       const viewport = { width: window.innerWidth, height: window.innerHeight };
+      if (card) {
+        setPos({ ...bookendPlace(size, viewport, floor), caret: null });
+        return;
+      }
       if (!targetRect) {
         setPos({
           left: (viewport.width - size.width) / 2,
@@ -185,18 +208,18 @@ export function TourPopover({
       cancelAnimationFrame(raf);
       window.removeEventListener('resize', place);
     };
-  }, [targetRect, stepId]);
+  }, [targetRect, stepId, card, floor]);
 
   return (
     <div
       ref={ref}
       data-tour-popover=""
+      {...(card ? { 'data-toast-floor': '' } : {})}
       role="dialog"
       aria-label={card ? title : `${ariaPrefix} step ${stepNumber} of ${stepCount}: ${title}`}
-      tabIndex={card ? -1 : undefined}
       onPointerDown={(e) => e.stopPropagation()}
       className={`pointer-events-auto fixed z-[var(--z-toast)] flex outline-none max-w-[calc(100vw-1.5rem)] flex-col gap-2 rounded-xl border border-[var(--tour-border)] bg-[var(--tour-card)] p-4 text-[var(--tour-text)] shadow-2xl shadow-slate-900/20 dark:shadow-black/40 ${
-        card ? 'w-[21rem]' : 'w-80'
+        card ? 'w-[21rem] animate-fly-up-in' : 'w-80'
       } ${animatePos ? 'transition-[left,top] duration-long ease-out' : ''}`}
       style={{
         ...tourColourVars(palette),

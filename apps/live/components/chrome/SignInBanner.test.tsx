@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, render } from '@testing-library/react';
+import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('@/components/chrome/auth-shared', () => ({
@@ -22,6 +22,14 @@ describe('SignInBanner', () => {
     expect(
       view.getByText('Share with your team, build with AI, sync across devices.'),
     ).toBeTruthy();
+  });
+
+  // docs/specs/014-identity/sign-in-encouragement.md: a tour's offer takes the same place, so the banner steps aside.
+  it('hides while a tour card is up', async () => {
+    const { TOUR_CARD_ATTR } = await import('@/components/tour/TourPopover');
+    render(<SignInBanner surface="Editor" onDismiss={() => {}} />);
+    const wrapper = screen.getByText('Sign in to access Teams & AI').closest('.fixed')!;
+    expect(wrapper.className).toContain(`[body[${TOUR_CARD_ATTR}]_&]:hidden`);
   });
 
   // docs/specs/004-interface-design/toasts.md "Placement": the toasts stand on the banner while it shows, rather
