@@ -306,7 +306,7 @@ update_document. search_icons finds icon ids for "iconId" and a graph node's "ic
 list_items reads a document's boards, their columns by name, its cards and its
 card types; change_items adds, edits and moves cards, naming columns, card
 types, fields and people as the board shows them; add_board puts a board on a
-tab (a preset or columns by name) and change_board changes one (title, columns,
+tab in Plan (a preset or columns by name) and change_board changes one (title, columns,
 the card types it shows); change_card_types adds and edits card types and their
 custom fields. A board shows only the card types it takes. A Plan template (kanban, project-planner, bug-triage)
 makes a document with boards ready to fill. Sheets (spreadsheets on a tab) have

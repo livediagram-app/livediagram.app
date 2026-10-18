@@ -1,5 +1,5 @@
 // Adding a Plan board (docs/specs/026-plan/plan-agents.md "Adding a board"): placed by placeBoard on the tab named,
-// else the first tab holding a board, else the first tab, as one changeset through the api (live to anyone with
+// else the first tab holding a board, else the first tab, which must be in Plan, as one changeset through the api (live to anyone with
 // the tab open). Card types are named as everywhere else.
 import type { ApiClient } from '@livediagram/api-client';
 import {
@@ -9,6 +9,7 @@ import {
   type DocumentResponse,
   type TabResponse,
 } from '@livediagram/api-schema';
+import { tabTakesPlanOnly } from '@livediagram/document';
 import {
   READY_MADE_CARD_TYPES,
   placeBoard,
@@ -69,6 +70,13 @@ export async function addBoard(
       types.push(t.type.id);
     }
     const { tab } = await api.json<TabResponse>(tabPath(documentId, tabId));
+    // A board goes only on a tab in Plan (docs/specs/026-plan/plan-tabs.md "Only in Plan").
+    if (!tabTakesPlanOnly(tab))
+      return {
+        ok: false,
+        code: 'tab_not_plan',
+        message: `"${tab.name}" is not a Plan tab, and a board goes only on a tab in Plan. Add a Board tab with add_tab and template "kanban" (or another board template).`,
+      };
     const placed = placeBoard(
       { ...input, ...(input.types ? { types } : {}) },
       tab.elements,

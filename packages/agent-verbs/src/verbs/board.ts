@@ -24,7 +24,7 @@ export const boardAdd = defineVerb({
     tab: z
       .string()
       .optional()
-      .describe('The tab id; the first tab with a board, else the first tab'),
+      .describe('The tab id, a tab in Plan; the first tab with a board, else the first tab'),
     preset: z
       .enum(PLAN_BOARD_PRESET_IDS)
       .optional()

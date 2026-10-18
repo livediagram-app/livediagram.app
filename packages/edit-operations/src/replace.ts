@@ -18,7 +18,7 @@ import {
   landWorkshopArrivals,
   normaliseElements,
   resolveGraphInput,
-  sheetsAddedOutsidePlan,
+  planOnlyAddedOutsidePlan,
   tabKindOf,
   type Element,
   type GraphInput,
@@ -35,7 +35,7 @@ import { readForm, type FormDefinition } from '@livediagram/forms';
 import { dashboardSpecIssue } from './dashboard-body';
 import { tabRejection } from './finalise';
 import { graphBodyIssue } from './graph-body';
-import { invalidResult, sheetOutsidePlan, tabLocked } from './rejections';
+import { invalidResult, planOnlyOutsidePlan, tabLocked } from './rejections';
 import { addedLine, lineNaming, removedLine } from './results';
 import type { ApplyOutcome, EditLog, ReplaceBody, ReplaceOptions } from './types';
 import type { DashboardSpec } from '@livediagram/templates';
@@ -234,8 +234,8 @@ export function applyReplace(
     );
   const next = nextTab(tab, built, options);
   if (!isValidTab(next)) return refuse(tabRejection(next));
-  const offPlan = sheetsAddedOutsidePlan(tab?.elements ?? [], next);
-  if (offPlan.length) return refuse(sheetOutsidePlan(offPlan));
+  const offPlan = planOnlyAddedOutsidePlan(tab?.elements ?? [], next);
+  if (offPlan.length) return refuse(planOnlyOutsidePlan(offPlan));
   log('[edit-ops] replace', { source, elements: next.elements.length });
   const before = tab?.elements ?? [];
   const elementOps = diffToElementOps(before, next.elements);

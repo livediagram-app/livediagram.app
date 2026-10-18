@@ -106,6 +106,7 @@ function api(
       tab: {
         id: 't1',
         name: 'Board',
+        opensIn: 'plan',
         elements: [
           { id: 'e', x: 0, y: 0, width: 100, height: 50 },
           {
@@ -132,7 +133,9 @@ function api(
         rev: 7,
       },
     },
-    [`/documents/${D}/tabs/t2`]: { tab: { id: 't2', name: 'Other', elements: [], rev: 1 } },
+    [`/documents/${D}/tabs/t2`]: {
+      tab: { id: 't2', name: 'Other', opensIn: 'plan', elements: [], rev: 1 },
+    },
     [`/documents/${D}/tabs/t1/changesets`]: (r: Request) =>
       record(r, { changeset: { id: 'cs1', rev: 8 } }),
     [`/documents/${D}/tabs/t2/changesets`]: (r: Request) =>
@@ -499,6 +502,22 @@ describe('addBoard', () => {
     if (!r.ok) throw new Error(r.message);
     const put = seen.find((s) => s.method === 'PUT')!;
     expect((put.body as { expectedRev: number }).expectedRev).toBe(3);
+  });
+
+  // docs/specs/026-plan/plan-tabs.md "Only in Plan".
+  it('refuses a tab not in Plan, sending no changeset', async () => {
+    const { api: a, seen } = api({
+      [`/documents/${D}/tabs/t2`]: {
+        tab: { id: 't2', name: 'Other', opensIn: 'draw', elements: [], rev: 1 },
+      },
+    });
+    expect(await addBoard(a, D, { tabId: 't2', preset: 'todo' }, 'mcp')).toEqual({
+      ok: false,
+      code: 'tab_not_plan',
+      message:
+        '"Other" is not a Plan tab, and a board goes only on a tab in Plan. Add a Board tab with add_tab and template "kanban" (or another board template).',
+    });
+    expect(seen.filter((r) => r.method === 'POST')).toEqual([]);
   });
 
   it('takes a tab, and refuses an unknown tab, type or preset', async () => {

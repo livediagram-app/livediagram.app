@@ -34,11 +34,11 @@ import { useEffect, useRef, useState, type RefObject } from 'react';
 import {
   duplicateElements,
   sheetDrawnChartIds,
-  tabTakesSheets,
+  tabTakesPlanOnly,
   withMindBranches,
   withSheetCharts,
   withAttached,
-  withoutSheets,
+  withoutPlanOnly,
   type Element,
   type Tab,
 } from '@livediagram/document';
@@ -235,14 +235,14 @@ export function useClipboard(deps: ClipboardDeps) {
     track('Element', 'Copied');
   };
 
-  // A Sheet goes only on a tab in Plan (docs/specs/029-sheets/sheet.md "Only in Plan"): onto any other tab a paste
-  // leaves out its Sheets and the charts they draw, and says so.
+  // A board or Sheet goes only on a tab in Plan (docs/specs/026-plan/plan-tabs.md "Only in Plan"): onto any other tab a
+  // paste leaves out its boards, its Sheets and the charts they draw, and says so.
   const onlyWhatTheTabTakes = (copied: Element[]): Element[] => {
-    if (tabTakesSheets(activeTab)) return copied;
-    const { kept, sheets } = withoutSheets(copied);
-    if (sheets === 0) return copied;
-    debugLog('[clipboard] sheets left out', { sheets });
-    toast.info(sheetsLeftOutMessage(sheets));
+    if (tabTakesPlanOnly(activeTab)) return copied;
+    const { kept, boards, sheets } = withoutPlanOnly(copied);
+    if (boards + sheets === 0) return copied;
+    debugLog('[clipboard] plan work left out', { boards, sheets });
+    toast.info(planOnlyLeftOutMessage(boards, sheets));
     return kept;
   };
 
@@ -615,8 +615,12 @@ export function useClipboard(deps: ClipboardDeps) {
   };
 }
 
-export function sheetsLeftOutMessage(sheets: number): string {
-  return sheets === 1
-    ? 'Sheets stay on Plan tabs, so the sheet was left out'
-    : 'Sheets stay on Plan tabs, so the sheets were left out';
+// "Boards and sheets stay on Plan tabs, so the board and the sheets were left out".
+export function planOnlyLeftOutMessage(boards: number, sheets: number): string {
+  const named = [
+    ...(boards ? [boards === 1 ? 'the board' : 'the boards'] : []),
+    ...(sheets ? [sheets === 1 ? 'the sheet' : 'the sheets'] : []),
+  ];
+  const many = boards + sheets > 1;
+  return `Boards and sheets stay on Plan tabs, so ${named.join(' and ')} ${many ? 'were' : 'was'} left out`;
 }

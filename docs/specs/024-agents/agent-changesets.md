@@ -147,12 +147,14 @@ A changeset on a tab bound to a source in strict compatibility
 capabilities before the write; a result holding residue is refused `422 not_expressible`, naming each element and
 field, and nothing is applied. A relaxed tab is never refused for residue.
 
-## Sheets only in Plan
+## Boards and Sheets only in Plan
 
-A Sheet element goes only on a tab in Plan ([Sheet](../029-sheets/sheet.md#only-in-plan)). A changeset, operations or
-replace, whose result holds a Sheet element the tab did not hold before, on a tab not in Plan, is refused
-`422 invalid_value`, naming each such element, with the hint to add a Sheet tab with `add_tab` instead; nothing is
-applied. Sheets a tab already holds are left alone, and a replace that makes a Plan tab (a Sheet template) passes.
+A Plan board or a Sheet goes only on a tab in Plan ([Plan tabs](../026-plan/plan-tabs.md#only-in-plan)). A changeset,
+operations or replace, whose result holds a board or Sheet the tab did not hold before, on a tab not in Plan, is
+refused `422 invalid_value`, naming each such element, with the hint to add a Board or Sheet tab with `add_tab`
+instead; nothing is applied. So is a Plan template replaced over an existing tab not in Plan. Boards and Sheets a tab
+already holds are left alone, and a replace that makes a new tab from a Plan template passes, the template making it a
+Plan tab.
 
 ## Revert
 

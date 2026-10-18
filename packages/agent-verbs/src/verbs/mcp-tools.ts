@@ -312,7 +312,7 @@ export const mcpAddBoard = mcpTool('add_board', {
   behaviour: 'write',
   title: 'Add a Plan board',
   description:
-    'Put a Plan board on a tab: a preset (kanban, todo, sprint, bug-triage, retro, roadmap, weekly...) or ' +
+    'Put a Plan board on a tab in Plan (any other tab is refused): a preset (kanban, todo, sprint, bug-triage, retro, roadmap, weekly...) or ' +
     'columns by name, placed beside what the tab holds. A column named like one the document already ' +
     'has shares it, so its cards show on both. Then add cards with change_items.',
   inputSchema: addBoardShape,

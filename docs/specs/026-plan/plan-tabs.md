@@ -86,6 +86,27 @@ A Board tab and its board, and a Sheet tab and its sheet, share **one name**:
 - A board renamed by an agent (`change_board`) changes the board alone; the tab follows the next time either is
   renamed in the editor.
 
+## Only in Plan
+
+A Plan board and a Sheet are placed only on a tab in Plan (`opensInOf(tab) === 'plan'`: a Board, Sheet or Dashboard
+tab, or a general tab in Plan). A tab keeps its mode once it has content
+([Editor modes](../007-editor/editor-modes.md#the-mode-switch)), and a board's cards and a Sheet's cells take input only
+in Plan, so one on a Diagram, Draw, Facilitate or Pages tab could never be worked there. Every way in keeps to it
+(`tabTakesPlanOnly`, `planOnlyAddedOutsidePlan` and `withoutPlanOnly` in `packages/document/src/plan-only.ts`):
+
+- **The palette, Search and a dropped CSV** are Plan mode's already: Search lists boards and Sheets in another mode
+  greyed out, "Only in Plan Mode".
+- **A paste** onto a tab in another mode leaves out every board and Sheet it holds, and the charts those Sheets draw,
+  and pastes the rest. It says what it left out: "Boards and sheets stay on Plan tabs, so the board was left out"
+  ("the sheet", "the boards", "the board and the sheets", ...). A paste holding nothing else pastes nothing, with the
+  same notice. Logged as `[clipboard] plan work left out` with the counts.
+- **An agent** is refused: `add_board` and `add_sheet` onto a tab in another mode answer `tab_not_plan`, before
+  anything is made ([Plan agents](plan-agents.md), [Sheet store](../029-sheets/sheet-store.md#agents)), and any
+  changeset (`update_document`, a template over an existing tab, the api) that would leave a new board or Sheet on
+  such a tab is refused `invalid_value`, naming the elements, with the hint to add a Board or Sheet tab instead
+  ([Agent changesets](../024-agents/agent-changesets.md#boards-and-sheets-only-in-plan)).
+- Boards and Sheets a tab already holds are left alone.
+
 ## Dashboard tab
 
 - The tab's `dashboard` holds its **rows**, top to bottom; each row its **slots**, left to right. Drawn over the

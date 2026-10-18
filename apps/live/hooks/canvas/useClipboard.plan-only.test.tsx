@@ -2,12 +2,12 @@
 import { act, cleanup, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { Element, StickyElement, Tab } from '@livediagram/document';
-import { sheetsLeftOutMessage, useClipboard } from './useClipboard';
+import { planOnlyLeftOutMessage, useClipboard } from './useClipboard';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn(), titleCaseType: (s: string) => s }));
 
-// docs/specs/029-sheets/sheet.md "Only in Plan": a paste onto a tab not in Plan leaves out its Sheets and says so;
-// a tab in Plan takes them.
+// docs/specs/026-plan/plan-tabs.md "Only in Plan": a paste onto a tab not in Plan leaves out its boards and Sheets
+// and says so; a tab in Plan takes them.
 
 const note: StickyElement = {
   id: 'note',
@@ -27,6 +27,15 @@ const sheet = {
   width: 960,
   height: 560,
   planSheet: { sheetId: 'sheetAAAAAAAA' },
+} as Element;
+const board = {
+  id: 'board',
+  type: 'shape',
+  shape: 'plan-board',
+  x: 300,
+  y: 600,
+  width: 640,
+  height: 420,
 } as Element;
 
 function harness(tab: Partial<Tab>) {
@@ -59,16 +68,16 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe('pasting a Sheet', () => {
+describe('pasting a board or a Sheet', () => {
   it('leaves it out on a tab in Diagram, pastes the rest, and says so', () => {
     const log = vi.spyOn(console, 'info').mockImplementation(() => {});
     const h = harness({});
     act(() => h.result.current.pasteFromClipboard([note, sheet]));
     expect(h.shapes()).toEqual(['sticky']);
     expect(h.toast.info).toHaveBeenCalledWith(
-      'Sheets stay on Plan tabs, so the sheet was left out',
+      'Boards and sheets stay on Plan tabs, so the sheet was left out',
     );
-    expect(log).toHaveBeenCalledWith('[clipboard] sheets left out', { sheets: 1 });
+    expect(log).toHaveBeenCalledWith('[clipboard] plan work left out', { boards: 0, sheets: 1 });
   });
 
   it('pastes nothing when the Sheet was all it held, still saying so', () => {
@@ -79,10 +88,20 @@ describe('pasting a Sheet', () => {
     expect(h.toast.info).toHaveBeenCalledTimes(1);
   });
 
-  it('pastes it on a tab in Plan', () => {
+  it('leaves a board out too, naming both', () => {
+    vi.spyOn(console, 'info').mockImplementation(() => {});
+    const h = harness({ opensIn: 'facilitate' });
+    act(() => h.result.current.pasteFromClipboard([note, board, sheet]));
+    expect(h.shapes()).toEqual(['sticky']);
+    expect(h.toast.info).toHaveBeenCalledWith(
+      'Boards and sheets stay on Plan tabs, so the board and the sheet were left out',
+    );
+  });
+
+  it('pastes them on a tab in Plan', () => {
     const h = harness({ opensIn: 'plan' });
-    act(() => h.result.current.pasteFromClipboard([note, sheet]));
-    expect(h.shapes()).toEqual(['sticky', 'plan-sheet']);
+    act(() => h.result.current.pasteFromClipboard([note, board, sheet]));
+    expect(h.shapes()).toEqual(['sticky', 'plan-board', 'plan-sheet']);
     expect(h.toast.info).not.toHaveBeenCalled();
   });
 
@@ -93,7 +112,12 @@ describe('pasting a Sheet', () => {
     expect(h.toast.info).not.toHaveBeenCalled();
   });
 
-  it('counts the sheets it left out', () => {
-    expect(sheetsLeftOutMessage(2)).toBe('Sheets stay on Plan tabs, so the sheets were left out');
+  it('counts what it left out', () => {
+    expect(planOnlyLeftOutMessage(2, 0)).toBe(
+      'Boards and sheets stay on Plan tabs, so the boards were left out',
+    );
+    expect(planOnlyLeftOutMessage(1, 3)).toBe(
+      'Boards and sheets stay on Plan tabs, so the board and the sheets were left out',
+    );
   });
 });
