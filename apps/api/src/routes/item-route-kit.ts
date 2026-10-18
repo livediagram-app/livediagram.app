@@ -1,7 +1,7 @@
 // The item routes' shared parts (item-routes.ts, item-patches-route.ts, item-comment-routes.ts): who the caller is
 // and what they reach, the refusals, the writer's signature and the room relay. A body is read by @livediagram/items'
 // write checks (write-checks.ts), which an offline document runs too.
-import { itemForRoom, itemForViewer } from '@livediagram/document';
+import { isSafeColourValue, itemForRoom, itemForViewer } from '@livediagram/document';
 import {
   isArchived,
   isTrashed,
@@ -128,7 +128,7 @@ export async function writer(ctx: RouteContext, owner: string): Promise<ItemPers
   return {
     id: await itemPersonId(owner),
     name: p?.name ?? 'Someone',
-    color: p?.color ?? '#94a3b8',
+    color: p?.color && isSafeColourValue(p.color) ? p.color : '#94a3b8',
   };
 }
 

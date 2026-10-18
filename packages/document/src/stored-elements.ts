@@ -10,6 +10,7 @@ import { migrateLegacyModeButtons } from './legacy-mode-buttons';
 import { migrateLegacyStrokePoints } from './legacy-stroke-points';
 import { migrateLegacyTextSizing } from './legacy-text-sizing';
 import { dropUnturnableRotation } from './unturnable-rotation';
+import { dropUnsafeColours } from './unsafe-colours';
 import type { Element } from './index';
 
 export function migrateStoredElements(elements: Element[]): Element[] {
@@ -22,12 +23,14 @@ export function migrateStoredElements(elements: Element[]): Element[] {
  *  in its one-element list, so settling it alone would detach every badge, step and pointer note from its host. The
  *  whole list is settled afterwards. */
 export function migrateStoredElementsUnsettled(elements: Element[]): Element[] {
-  return dropUnturnableRotation(
-    stampLegacyEsKinds(
-      migrateLegacyModeButtons(
-        migrateLegacyTextSizing(
-          migrateLegacyStrokePoints(
-            dropLegacyDocks(migrateLegacyGroups(migrateLegacyCallouts(elements))),
+  return dropUnsafeColours(
+    dropUnturnableRotation(
+      stampLegacyEsKinds(
+        migrateLegacyModeButtons(
+          migrateLegacyTextSizing(
+            migrateLegacyStrokePoints(
+              dropLegacyDocks(migrateLegacyGroups(migrateLegacyCallouts(elements))),
+            ),
           ),
         ),
       ),

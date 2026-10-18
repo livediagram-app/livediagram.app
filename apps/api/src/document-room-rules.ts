@@ -12,6 +12,7 @@
 // or storage. The room stays the owner of everything stateful: minting the
 // seq, trimming the log, serialising the attachment, broadcasting.
 
+import { isSafeColourValue } from '@livediagram/document';
 import { MAX_PARTICIPANT_KEY_LEN } from './limits';
 import {
   isProfilePictureUrl,
@@ -51,7 +52,11 @@ export function helloPresence(
   const presence: ParticipantPresence = {
     id: session.presenceId,
     name: typeof c.name === 'string' ? c.name.slice(0, MAX_PARTICIPANT_NAME_LEN) : '',
-    color: typeof c.color === 'string' ? c.color.slice(0, MAX_COLOR_LEN) : '',
+    // A colour that could load something from outside is no colour (@livediagram/document unsafe-colours.ts).
+    color:
+      typeof c.color === 'string' && isSafeColourValue(c.color)
+        ? c.color.slice(0, MAX_COLOR_LEN)
+        : '',
     role: session.verifiedRole,
   };
   if (typeof c.tabId === 'string') presence.tabId = c.tabId.slice(0, MAX_TAB_ID_LEN);

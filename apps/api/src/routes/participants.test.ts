@@ -105,6 +105,20 @@ describe('handleParticipants', () => {
     expect(res.status).toBe(400);
   });
 
+  it('PUT 400 on a name or colour that is not a string, or a colour that could load something', async () => {
+    for (const body of [
+      { name: {}, color: '#abc' },
+      { name: 'Ann', color: 7 },
+      { name: 'Ann', color: 'red),url(//tracker.example/x),linear-gradient(red' },
+    ]) {
+      const res = await handleParticipants(
+        makeCtx('PUT', '/api/participants/owner-1', { owner: 'owner-1', body }),
+      );
+      expect(res.status).toBe(400);
+    }
+    expect(db.upsertParticipant).not.toHaveBeenCalled();
+  });
+
   it('PUT 200 when the caller updates their own participant', async () => {
     db.getParticipant.mockResolvedValue(null);
     const res = await handleParticipants(
