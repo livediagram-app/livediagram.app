@@ -56,6 +56,8 @@ export function useSelectionEditing(opts: {
   // The viewer works in Draw mode (docs/specs/007-editor/editor-modes.md): plain keys belong to
   // the dock.
   drawMode: boolean;
+  // The element whose label editor is open, if any: what an Escape leaves.
+  editingId: string | null;
   commit: (updater: (els: Element[]) => Element[]) => void;
   // Discards the newest history step without a redo entry (useDocumentHistory's historyCancel): how an Escape takes
   // back type-to-edit's seed commit, so the label is as it was and the peers are told so.
@@ -280,6 +282,17 @@ export function useSelectionEditing(opts: {
     const seed = seeded.current;
     seeded.current = null;
     setEditingId(null);
+    // An empty text box that hugs its text goes when Escape leaves it, as when a click leaves it
+    // (docs/specs/023-draw-mode/draw-mode.md "Text boxes"): nothing would show where it stands.
+    const left = opts.editingId
+      ? activeTab.elements.find((e) => e.id === opts.editingId)
+      : undefined;
+    if (!seed && left && hugsText(left) && (left.label ?? '').trim() === '') {
+      debugLog('[text-hug] removed an empty text box on Escape', left.id);
+      commit((els) => els.filter((e) => e.id !== left.id));
+      setSelectedId(null);
+      return;
+    }
     if (!seed) return;
     const el = activeTab.elements.find((e) => e.id === seed.wrote.id);
     const seedLabel = (seed.wrote as { label?: string }).label;
