@@ -41,6 +41,10 @@ function mergeFields(receiving: Tab, imported: Tab): Tab {
     ...(imported.kind === 'dashboard' && imported.dashboard
       ? { dashboard: imported.dashboard }
       : {}),
+    // A Form tab's form travels too (docs/specs/030-forms/forms.md "restored from a file"): without it the tab came in as
+    // a Form tab with no form. Its link stays the original's; the copy is unpublished, its destination chosen again
+    // when the document does not hold it.
+    ...(imported.kind === 'form' && imported.form ? { form: imported.form } : {}),
     // The mode the tab opens in travels with it (docs/specs/007-editor/editor-modes.md).
     opensIn: imported.opensIn ?? receiving.opensIn,
     layers: imported.layers ?? receiving.layers,
