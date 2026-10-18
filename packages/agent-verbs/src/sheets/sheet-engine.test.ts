@@ -46,8 +46,12 @@ function setup(
   const api = fakeApi(
     Object.assign(server.routes, {
       ...tabsOfA,
-      [`/documents/${DOC_A}/tabs/${ONE}`]: { tab: { id: ONE, elements: [SHEET_EL], rev: 3 } },
-      [`/documents/${DOC_A}/tabs/${TWO}`]: { tab: { id: TWO, elements: [], rev: 1 } },
+      [`/documents/${DOC_A}/tabs/${ONE}`]: {
+        tab: { id: ONE, opensIn: 'plan', elements: [SHEET_EL], rev: 3 },
+      },
+      [`/documents/${DOC_A}/tabs/${TWO}`]: {
+        tab: { id: TWO, opensIn: 'plan', elements: [], rev: 1 },
+      },
       [`/documents/${DOC_A}/tabs/${TWO}/changesets`]: { changeset: null },
       [`/documents/${DOC_A}/tabs/${ONE}/changesets`]: async (r: Request) => {
         sent.push(await r.json());
@@ -673,6 +677,25 @@ describe('adding a sheet', () => {
     await expect(addSheet(api, DOC_A, {}, 'mcp')).rejects.toThrow();
   });
 
+  it('refuses a tab not in Plan before making anything', async () => {
+    const { api, server } = setup();
+    const diagram = { tab: { id: TWO, name: 'Details', opensIn: 'draw', elements: [], rev: 1 } };
+    server.routes[`/documents/${DOC_A}/tabs/${TWO}`] = diagram;
+    expect(await addSheet(api, DOC_A, { tabId: TWO, rows: [['a']] }, 'mcp')).toEqual({
+      ok: false,
+      code: 'tab_not_plan',
+      message:
+        '"Details" is not a Plan tab, and a Sheet goes only on a tab in Plan. Add a Sheet tab with add_tab and template "blank-spreadsheet", then fill it with change_sheet.',
+    });
+    // A tab with no mode is in Diagram, so the first tab is refused when none is named.
+    server.routes[`/documents/${DOC_A}/tabs/${ONE}`] = {
+      tab: { id: ONE, name: 'Overview', elements: [SHEET_EL], rev: 3 },
+    };
+    expect(await addSheet(api, DOC_A, {}, 'mcp')).toMatchObject({ code: 'tab_not_plan' });
+    expect(server.creates).toEqual([]);
+    expect(server.writes).toEqual([]);
+  });
+
   it('refuses an unknown tab, and a formula it cannot read before making anything', async () => {
     const { api, server } = setup();
     expect(await addSheet(api, DOC_A, { tabId: 'nope' }, 'mcp')).toMatchObject({
@@ -689,6 +712,9 @@ describe('adding a sheet', () => {
     const api = fakeApi(
       Object.assign(server.routes, {
         ...tabsOfA,
+        [`/documents/${DOC_A}/tabs/${ONE}`]: {
+          tab: { id: ONE, opensIn: 'plan', elements: [], rev: 1 },
+        },
         [`/documents/${DOC_A}/sheets`]: (r: Request) =>
           r.method === 'POST'
             ? Response.json({ error: 'sheets_full' }, { status: 413 })

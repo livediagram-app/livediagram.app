@@ -82,7 +82,6 @@ function bridge(): SheetsBridge {
     placeElement: vi.fn(),
     tickElements: vi.fn((_map: (els: Element[]) => Element[]) => {}),
     commitElements: vi.fn(),
-    switchToPlan: vi.fn(),
     selectElement: vi.fn(),
     sheetRetitled: vi.fn(),
     attach: vi.fn(() => () => {}),

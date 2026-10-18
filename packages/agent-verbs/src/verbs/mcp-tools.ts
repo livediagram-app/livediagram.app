@@ -394,7 +394,7 @@ export const mcpAddSheet = mcpTool('add_sheet', {
   behaviour: 'write',
   title: 'Add a sheet',
   description:
-    'Put a new Sheet (a spreadsheet) on a tab, beside what the tab holds, titled uniquely on the tab: blank, ' +
+    'Put a new Sheet (a spreadsheet) on a tab in Plan (any other tab is refused), beside what the tab holds, titled uniquely on the tab: blank, ' +
     'filled from A1 with rows of values or CSV text read as typed, or laid out from a design as a template is ' +
     '(change_sheet’s design), the Sheet sized to show it. Then read and change it with read_sheet and change_sheet. ' +
     'A document of its own sheet is create_document with the blank-spreadsheet template, its sheet "Sheet 1".',

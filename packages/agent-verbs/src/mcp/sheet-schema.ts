@@ -580,7 +580,9 @@ export const addSheetShape = {
   tabId: z
     .string()
     .optional()
-    .describe('The tab to put it on; defaults to the first tab with a sheet, else the first tab.'),
+    .describe(
+      'The tab to put it on, which must be in Plan; defaults to the first tab with a sheet, else the first tab.',
+    ),
   title: z
     .string()
     .optional()
