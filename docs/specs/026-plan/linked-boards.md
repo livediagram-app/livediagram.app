@@ -79,8 +79,10 @@ Each action has exactly one linked card, made of the **Action** type:
   that has no column after it).
 - A card in a status the Actions board does not show (moved there on another board, or in the Trash) does not change
   its action.
-- **The action goes, its card goes to the Trash**: deleting the action, or the element or tab holding it, trashes its
-  card, marked as the link's doing. If the action comes back (an undo), the card comes back from the Trash with it.
+- **The action goes, its card stays**: deleting the action, or the element or tab holding it (an Action panel full of
+  them, say), leaves its card on the board where it is, with everything on it, as a card of its own: no link, no
+  banner, its assignee its own to change. The board is the record of the work, and a canvas tidy-up never empties
+  it. If the action comes back (an undo), the heal finds the card by its id and links them again.
 - **The card goes to the Trash, its action leaves the canvas**: every way of deleting a card trashes it
   ([Items](items.md) "Trash"), and a person trashing a linked card takes its action off the canvas. Restoring the card,
   or undoing the trash, in the same session puts the action back on its element. Archiving a card leaves its action.
