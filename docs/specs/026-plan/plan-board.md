@@ -544,7 +544,8 @@ A board can be maximised to work on it without the rest of the canvas around it.
   so the middle of the header is the title's and widgets'. Its controls (the view's own, Maximise or Restore, the cog)
   sit together at its right end straight on the header, with no card of their own, its buttons the palette's tile size
   (36 px); the last one stands as far in from the element's right edge as the menu's first does from its left. In the
-  band the menu box drops its card too (no border, no fill, no shadow, no hue), so the top row reads as the board's,
+  band the menu box and the palette (a mode's strip, or a board's cards) drop their cards too (no border, no fill, no
+  shadow, no hue), so the top row reads as the board's,
   view's or sheet's own header: the menu and name at the left, the controls at the right, and a hairline under it all
   (a board's header draws one there, as a Sheet's and a view's always have). The bottom-right buttons (Undo, the Plan strip, Theme, Zoom) move inside its frame while it covers the canvas: 16
   px further in and 20 px further up than on a canvas, clear of its edge and its scrollbar (not on a Dashboard's

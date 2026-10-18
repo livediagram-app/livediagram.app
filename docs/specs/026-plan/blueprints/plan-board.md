@@ -280,7 +280,9 @@ cancelled` (Escape, pointercancel). `pressed → idle` on pointerup without movi
   `BAND_HEADER_END` (`[[data-header-band]_&]:pr-px`) on those three headers, so the last control's edge is 5 px from the
   element's right as the menu's first is from its left; `PlanBoardHeader` also takes `[[data-header-band]_&]:border-b`
   in `palette.border`. The menu box takes `BAND_FLUSH` (`toolbar-surface.ts`: `[[data-band-blend]_&]:` transparent
-  fill and border, important) after `BAND_BLEND`.
+  fill and border, important) after `BAND_BLEND`; `ToolbarPalette`'s card and `BoardCardsStrip` take `BAND_STRIP_FLUSH`
+  (`[[data-strip-in-band]_&]:` transparent fill and border, no shadow), `setStripEnd` setting `data-strip-in-band` on
+  the canvas `main` and `clearStripEnd` removing it.
   **The name in the menu box** (`apps/live/components/plan/menu-name-slot.tsx`): `ToolbarExplorerButton` (not inline,
   not a phone) renders `MenuNameSlot` (`data-menu-name-slot`, `max-w-[16rem]`, a hairline, `empty:hidden`), its node a
   module store (`setMenuNameSlot`, `useMenuNameSlot`). `CanvasCover` calls `announceHeaderBand()` when its band comes or

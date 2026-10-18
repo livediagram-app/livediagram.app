@@ -6,7 +6,7 @@
 // board's controls card (the cog), and wearing the board's hue as the menu box does (BAND_TINT).
 import { boardAddTypes, normaliseBoardSetup } from '@livediagram/items';
 import type { Element } from '@livediagram/document';
-import { BAND_TINT, TOOLBAR_CARD } from '@/components/chrome/toolbar-surface';
+import { BAND_STRIP_FLUSH, BAND_TINT, TOOLBAR_CARD } from '@/components/chrome/toolbar-surface';
 import { usePlan } from '@/components/plan/PlanContext';
 import { PaletteTile, type PaletteTileActions } from './PaletteTileGrid';
 import { planCardTile } from './palette-plan-tiles';
@@ -35,7 +35,7 @@ export function BoardCardsStrip({
       data-floating-panel=""
       role="group"
       aria-label="Add Cards"
-      className={`${TOOLBAR_CARD} ${BAND_TINT}`}
+      className={`${TOOLBAR_CARD} ${BAND_TINT} ${BAND_STRIP_FLUSH}`}
     >
       {types.map((t) => {
         const def = planCardTile(t);

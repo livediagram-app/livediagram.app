@@ -25,6 +25,12 @@ export const BAND_BLEND =
 export const BAND_FLUSH =
   '[[data-band-blend]_&]:bg-transparent! [[data-band-blend]_&]:border-transparent!';
 
+/** The palette in a header band (its strip, or a board's cards strip), on the element's header beside the flush menu
+ *  and controls: no card of its own either, so the top row is one header. Keyed on `data-strip-in-band`, set on the
+ *  canvas by CanvasCover while the strip sits in the band (never on a phone's row, where the strip is elsewhere). */
+export const BAND_STRIP_FLUSH =
+  '[[data-strip-in-band]_&]:bg-transparent! [[data-strip-in-band]_&]:border-transparent! [[data-strip-in-band]_&]:shadow-none!';
+
 /** The hairline between groups of controls. */
 export const TOOLBAR_DIVIDER = 'mx-0.5 h-6 w-px shrink-0 bg-slate-200 dark:bg-slate-700';
 
