@@ -75,7 +75,8 @@ export function SignInBanner({
           eat clicks meant for the pane behind; the card re-enables
           them for itself. */}
       <div
-        className={`pointer-events-none fixed inset-x-0 flex justify-center px-4 ${placementClassName}`}
+        // Steps aside while a tour's offer or last card is up: both stand at the bottom centre (TourPopover).
+        className={`pointer-events-none fixed inset-x-0 flex justify-center px-4 [body[data-tour-card-open]_&]:hidden ${placementClassName}`}
         style={standOnChrome ? { bottom: chromeFloor } : undefined}
       >
         <div

@@ -27,6 +27,13 @@ vi.mock('./TourPopover', () => ({
     return null;
   },
 }));
+// The offer and the last card are the banner's (TourBanner): read the same way.
+vi.mock('./TourBanner', () => ({
+  TourBanner: (props: NonNullable<typeof popover.props>) => {
+    popover.props = props;
+    return null;
+  },
+}));
 vi.mock('./tour-dom', () => ({
   findTour: () => null,
   waitForSelector: async () => null,
