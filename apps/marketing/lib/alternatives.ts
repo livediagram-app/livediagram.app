@@ -314,7 +314,7 @@ export const ALTERNATIVES: Alternative[] = [
       { label: 'Open source', us: 'Yes, MIT-licensed', them: 'No' },
       {
         label: 'Mind-map editing',
-        us: 'Tab for a child, Enter for a sibling, four layouts, an editable outline',
+        us: 'Tab for a child, Enter for a sibling, six layouts, an editable outline',
         them: 'Keyboard-first, with many map structures',
       },
       {
@@ -340,7 +340,7 @@ export const ALTERNATIVES: Alternative[] = [
     ],
     usBest: [
       'Brainstorm together in real time, with live cursors and comments, by sharing one link: nobody needs an account.',
-      'Map from the keyboard: Tab adds a child and Enter a sibling, four layouts (Tree, Balanced, Downward and Bubble) and Tidy Map keep it neat.',
+      'Map from the keyboard: Tab adds a child and Enter a sibling, six layouts (Tree, Leftward, Balanced, Downward, Upward and Bubble) and Tidy Map keep it neat.',
       'Edit Outline opens the whole map as an indented list: rename, nest and reorder there, then save it back to the map in one step.',
       'More than mind maps: flowcharts, freehand whiteboards, Plan boards of cards, timelines, wireframes and charts in the same document.',
       'Nothing to install: open a link in any browser and start.',

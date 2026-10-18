@@ -8,8 +8,14 @@ import { createSelectionStore } from '@/lib/selection-store';
 // The hook follows the store, so the editor root does not render for it
 // (docs/specs/008-canvas/blueprints/selection-store.md "Above the canvas").
 
-const { announce } = vi.hoisted(() => ({ announce: vi.fn() }));
-vi.mock('@/lib/announcer', () => ({ announce }));
+const { announce, heard } = vi.hoisted(() => ({ announce: vi.fn(), heard: { nonce: 0 } }));
+vi.mock('@/lib/announcer', () => ({
+  announce: (message: string) => {
+    heard.nonce += 1;
+    announce(message);
+  },
+  getAnnouncementSnapshot: () => ({ message: '', nonce: heard.nonce }),
+}));
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 const { useCanvasA11y } = await import('./useCanvasA11y');
 
@@ -101,6 +107,26 @@ describe('useCanvasA11y announcements', () => {
       vi.runAllTimers();
     });
     expect(announce).toHaveBeenCalledTimes(1);
+  });
+
+  it("leaves a verb's own word standing when its clear comes with it", async () => {
+    const selection = setup();
+    const { announce: say } = await import('@/lib/announcer');
+    act(() => selection.setSelectedId(a.id));
+    act(() => {
+      vi.runAllTimers();
+    });
+    act(() => {
+      selection.setSelectedId(null);
+      say("Deleted 'Login'");
+    });
+    act(() => {
+      vi.runAllTimers();
+    });
+    expect(announce.mock.calls.map(([m]): unknown => m)).toEqual([
+      expect.stringMatching(/^Selected .*Login/),
+      "Deleted 'Login'",
+    ]);
   });
 
   it('says nothing on mount with nothing selected', () => {

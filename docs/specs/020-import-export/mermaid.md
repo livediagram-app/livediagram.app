@@ -96,7 +96,12 @@ only the sweep direction differs).
   forms (`click A someJsFunction`) are skipped — there's no code to call.
 - Lines it doesn't understand (`classDef`, `style`, `linkStyle`,
   `direction`, comments `%%`) are skipped, not fatal: a real-world paste
-  imports its graph and ignores the decoration. A `%%` inside a
+  imports its graph and ignores the decoration. So is a class written on a node (`a:::hot --> b`, `a[Label]:::hot`):
+  the edge after it still lands.
+- **Statements** end at a newline or a `;`, as in Mermaid: `graph TD; A-->B; B-->C;` is three statements. A `;`
+  inside a label (quoted, in a node's brackets or an edge's `|…|`) is label text.
+- **Markdown strings** (``A["`**Bold** text`"]``) keep their words: the backticks and the `**` / `__` / `*` / `_`
+  emphasis marks are dropped. A `%%` inside a
   double-quoted label is label text, not a comment.
 
 ## State diagram coverage (import)

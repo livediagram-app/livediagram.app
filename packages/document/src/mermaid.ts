@@ -23,6 +23,7 @@ import { readFlowchartHeader, readInlineLabel } from './mermaid-scan';
 import { parseErDiagram } from './mermaid-er';
 import {
   cleanLine,
+  mermaidStatements,
   decodeLabel,
   directionOf,
   framedClusters,
@@ -262,8 +263,7 @@ export const MERMAID_UNSUPPORTED_ERROR =
 // Whether the first meaningful line is a header the importer reads as a graph: a flowchart, a state diagram or an
 // ER diagram. The CLI tells a Mermaid file from edit operations by it (docs/specs/015-api/blueprints/cli.md CLI71).
 export function startsWithMermaidHeader(text: string): boolean {
-  const first = text
-    .split('\n')
+  const first = mermaidStatements(text)
     .map(cleanLine)
     .find((line) => line !== '');
   if (first === undefined) return false;
@@ -281,7 +281,7 @@ export function parseMermaid(text: string): ParseMermaidResult {
 }
 
 function parseMermaidDialect(text: string): ParseMermaidResult {
-  const lines = text.split('\n');
+  const lines = mermaidStatements(text);
 
   // Dispatch on the diagram-type header: the state + ER dialects get their
   // own parsers (they're still node/edge graphs); non-graph types get a
@@ -354,17 +354,23 @@ function parseFlowchart(lines: string[]): ParseMermaidResult {
     }
     return { id: head.id, rest: head.rest };
   };
+  // A node's class, `a:::hot` or `a[Label]:::hot`, is styling, skipped like `classDef` (the tab theme owns colours):
+  // read past it, so the edge after it still lands.
+  const readStyledNodeRef = (s: string): { id: string; rest: string } | null => {
+    const ref = readNodeRef(s);
+    return ref ? { id: ref.id, rest: ref.rest.replace(/^:::[A-Za-z0-9_-]+/, '') } : null;
+  };
 
   // A `&`-fanned group of node references: `A & B & C`.
   const readNodeGroup = (s: string): { ids: string[]; rest: string } | null => {
-    const first = readNodeRef(s);
+    const first = readStyledNodeRef(s);
     if (!first) return null;
     const ids = [first.id];
     let rest = first.rest;
     for (;;) {
       const amp = /^\s*&\s*/.exec(rest);
       if (!amp) break;
-      const next = readNodeRef(rest.slice(amp[0].length));
+      const next = readStyledNodeRef(rest.slice(amp[0].length));
       if (!next) break;
       ids.push(next.id);
       rest = next.rest;
