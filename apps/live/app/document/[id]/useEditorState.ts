@@ -2045,6 +2045,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     frameFirstPageRef,
     documentId: documentId ?? undefined,
     viewport,
+    snapSuspended: () => presenting || followingRef.current !== null,
   });
   // What a locked page holds is inert, as on a locked layer (Pages mode only).
   const pageLockedIds = usePageLockedIds(activeTab.elements, pagesMode?.pages ?? null);

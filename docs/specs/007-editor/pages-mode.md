@@ -1087,7 +1087,8 @@ under reduced motion.
 
 **Framing beside it**: a page framed on screen (a press in the list, the pages row's arrows,
 opening the tab) centres in what shows beside the sidebar, never under it. Docking it (from the
-popover, opening the tab, dragging it to the other side) frames the page in view again beside it;
+popover, opening the tab, dragging it to the other side) frames the page in view again beside it,
+measured where the sidebar comes to rest rather than mid-slide;
 minimising it frames that page again across the whole canvas. **Fit** (the zoom cluster's, and
 Shift+1) frames the page nearest the middle of what shows, not the whole tab.
 
@@ -1303,6 +1304,24 @@ is while the rest of the tab is worked on.
   move; a page just added glides into view the same way, and under reduced motion each lands at
   once. A second press mid-glide starts from where the view has got to. For everyone who can see
   the pages; not in zen or isometric view.
+- **The view rests on a page**: the canvas never comes to rest between pages, beyond the row, or
+  zoomed out past a page. Pan and zoom as freely as ever while a hand is on it (a drag, a finger, a
+  pinch, a wheel or trackpad); the moment it lets go, the view glides (`VIEW_GLIDE_MS`, at once
+  under reduced motion) onto one page:
+  - **Which page**: the one holding the middle of what shows (beside the Contents sidebar), else
+    the nearest. From a page seen whole, a pan of a fifth of the view's width toward a neighbour,
+    or a quicker flick of at least 24 px, turns to that neighbour, as swiping a slide deck does, so
+    getting to the next page never needs a long drag. A pinch or a zoom never turns the page.
+  - **At least whole**: zoomed out past the page's fit (or within 2% of it), the view fits that
+    page, exactly as its label, Fit and the pages row's arrows frame it. Zoomed in further than fit
+    stays zoomed in: the page is kept across what shows, its edges never pulled more than 104 px
+    (`READING_TOP_ROOM`, the reading frame's own top room) inside the view's edges, and centred
+    along a side it is now narrower than.
+  - **Whenever the view rests**: the same holds after anything else that moves the view (the zoom
+    cluster's buttons, the Map, the arrow keys) once the view has rested 250 ms with no pointer
+    held. Not while following someone (their view is the follow's, and a move of your own would
+    end it), and nowhere outside Pages mode.
+  - For everyone who can see the pages, on a phone and a desktop alike; no setting.
 - **Back to the page you were on**: landing on a tab of pages (switching back to it, a reload,
   entering the mode) fits the page you were last on rather than the first, so moving between tabs
   never loses your place. The page you are on is the one under the middle of the view (else the
@@ -1364,7 +1383,8 @@ are diagram formats and are not offered.
 `PageKindLogo` (the first page's own choice);
 `Document · Exported · PagesPNG / PagesSVG / PagesPDF / PagesGIF` (one page) and
 `PagesPNGPages / PagesSVGPages / PagesPDFPages / PagesGIFPages` (all pages);
-`UI · Added · PageSlide`; `UI · Opened · SlideDeck`; `Tab · Aligned · PageTidyUp` (an infographic
+`UI · Added · PageSlide`; `UI · Opened · SlideDeck`; `UI · Used · PageSwipe` (a short pan or a flick
+turning to the neighbouring page, never the snap itself); `Tab · Aligned · PageTidyUp` (an infographic
 page's Tidy); `UI · Closed · EmptyPageLayouts` (the in-page
 **Start From a Layout** card's Hide). Never a colour, name or layout content.
 A logo page's own events are in [Logo pages](logo-pages.md) "Telemetry".

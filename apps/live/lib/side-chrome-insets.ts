@@ -12,7 +12,29 @@ export const NO_SIDE_INSETS: SideInsets = { left: 0, right: 0 };
 export function sideChromeInsets(canvas: HTMLElement): SideInsets {
   const panel = document.querySelector<HTMLElement>(CONTENTS_SIDEBAR_SELECTOR);
   if (!panel) return NO_SIDE_INSETS;
-  return sideInsetsOf(canvas.getBoundingClientRect(), panel.getBoundingClientRect());
+  return sideInsetsOf(canvas.getBoundingClientRect(), restingRect(panel));
+}
+
+/** Where a panel rests, its `translate` left out: dropped on the other side (or docking), the
+ *  sidebar slides home over 200 ms, and a page framed meanwhile must centre beside where it will
+ *  be, not where it has got to. */
+export function restingRect(el: HTMLElement): {
+  left: number;
+  right: number;
+  top: number;
+  bottom: number;
+} {
+  const r = el.getBoundingClientRect();
+  const [dx = 0, dy = 0] = translateOf(getComputedStyle(el).translate);
+  return { left: r.left - dx, right: r.right - dx, top: r.top - dy, bottom: r.bottom - dy };
+}
+
+/** The px of a computed `translate` ("12px", "12px -4px", "none"). */
+export function translateOf(value: string | undefined): [number, number] {
+  if (!value || value === 'none') return [0, 0];
+  const [x = '0', y = '0'] = value.trim().split(/\s+/);
+  const px = (v: string) => (v.endsWith('px') ? Number.parseFloat(v) || 0 : 0);
+  return [px(x), px(y)];
 }
 
 /** The pure measure behind sideChromeInsets: a panel in the canvas's left half covers its left up
