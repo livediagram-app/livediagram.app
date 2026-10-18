@@ -50,6 +50,17 @@ describe('StartFromTemplates', () => {
     mount('workshop');
     expect(screen.getByRole('heading', { name: 'Start a Workshop' })).toBeTruthy();
   });
+
+  it('closes on Escape once its search has nothing to clear', () => {
+    mount('diagram');
+    const search = screen.getByRole('textbox', { name: 'Find a template' });
+    fireEvent.change(search, { target: { value: 'mind' } });
+    fireEvent.keyDown(search, { key: 'Escape' });
+    expect((search as HTMLInputElement).value).toBe('');
+    expect(screen.getByRole('heading', { name: 'Start Diagramming' })).toBeTruthy();
+    fireEvent.keyDown(search, { key: 'Escape' });
+    expect(screen.queryByRole('heading', { name: 'Start Diagramming' })).toBeNull();
+  });
 });
 
 describe('StartFromTemplates, switching category', () => {

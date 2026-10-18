@@ -237,6 +237,14 @@ export function StartPanel<C extends string>({
     <div className="pointer-events-none absolute inset-0 z-[var(--z-panel)] flex items-center justify-center p-4 pb-28 pt-[8.5rem] max-sm:z-[var(--z-overlay)] max-sm:items-end max-sm:px-0 max-sm:pb-0 max-sm:pt-20 short-window:z-[var(--z-overlay)] short-window:pb-2 short-window:pt-16">
       <section
         aria-labelledby={titleId}
+        // Escape closes a start that can close, as its × does, once the search has nothing to clear (the search box
+        // takes the first Escape) and outside an open menu (the mode menu's Escape closes only the menu).
+        onKeyDown={(e) => {
+          if (e.key !== 'Escape' || !onClose || e.defaultPrevented) return;
+          if ((e.target as HTMLElement).closest?.('[role="menu"]')) return;
+          e.stopPropagation();
+          onClose();
+        }}
         // One height whatever the category shows, so the panel never jumps as it changes.
         className={`pointer-events-auto flex h-full max-h-[46rem] w-full max-w-5xl flex-col overflow-hidden rounded-3xl border shadow-2xl max-sm:max-h-none max-sm:rounded-b-none max-sm:rounded-t-2xl max-sm:border-b-0 ${
           swapped ? '' : 'animate-dialog-in max-sm:animate-sheet-up'

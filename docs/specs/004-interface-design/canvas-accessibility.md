@@ -50,9 +50,11 @@ delete, undo, label edit via Space) that already work on a selection.
 - A new **visually-hidden polite live region** on the canvas (the toast
   stack is unsuitable: it's visual, auto-dismissing, and gated behind the
   "Show notifications" preference).
-- Announced: selection changes (single: `Selected Square "Login"`; multi:
+- Announced: selection changes (single: `Selected Square "Login"`, an arrow with what it joins, `Selected an
+  Arrow from 'Travel' to 'Hotel'`, so walking a map's connectors says where each runs (`describeSelected`); multi:
   a short summary such as `Selected 3 elements`; cleared: `Selection cleared`), keyboard
-  delete (`Deleted …`), and undo / redo.
+  delete (`Deleted …`), and undo / redo. A clear that comes with a verb that said what happened (a delete) is
+  not also spoken as `Selection cleared`, which would land over the verb's word.
 - Implementation: `hooks/canvas/useCanvasA11y.ts` (traversal + announcement
   state, composed in `useEditorState`) + a small
   `components/canvas/CanvasLiveRegion.tsx`.

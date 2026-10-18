@@ -10,6 +10,7 @@ import {
 import {
   describeMany,
   describeOne,
+  describeSelected,
   elementAriaLabel,
   kindLabel,
   shapeKindLabel,
@@ -90,5 +91,33 @@ describe('shapeKindLabel', () => {
   it('reads a shape kind as prose, for the Shape tiles of the element menu', () => {
     expect(shapeKindLabel('square')).toBe('Square');
     expect(shapeKindLabel('pie-chart')).toBe('Pie chart');
+  });
+});
+
+describe('describeSelected', () => {
+  const pinned = (elementId: string) => ({ kind: 'pinned' as const, elementId, anchor: 'e' as const });
+  const travel = { ...createShape('square', 0, 0), id: 'travel', label: 'Travel' };
+  const hotel = { ...createShape('square', 0, 0), id: 'hotel', label: 'Team\n offsite' };
+  const blank = { ...createShape('square', 0, 0), id: 'blank' };
+
+  it('names what a pinned arrow joins, its own label first', () => {
+    const a = { ...arrow(), from: pinned('travel'), to: pinned('hotel') };
+    expect(describeSelected(a, [travel, hotel])).toBe("an Arrow from 'Travel' to 'Team offsite'");
+    expect(describeSelected({ ...a, label: 'yes' }, [travel, hotel])).toBe(
+      "an Arrow 'yes' from 'Travel' to 'Team offsite'",
+    );
+  });
+
+  it('leaves out a free end, an unlabelled end and a missing one', () => {
+    expect(describeSelected({ ...arrow(), to: pinned('travel') }, [travel])).toBe(
+      "an Arrow to 'Travel'",
+    );
+    expect(describeSelected({ ...arrow(), from: pinned('blank'), to: pinned('gone') }, [blank])).toBe(
+      'an Arrow',
+    );
+  });
+
+  it('is describeOne for anything else', () => {
+    expect(describeSelected(travel, [travel])).toBe("'Travel'");
   });
 });
