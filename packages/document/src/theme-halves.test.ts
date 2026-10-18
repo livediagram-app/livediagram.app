@@ -92,8 +92,8 @@ describe('a preset-styled box in the other half', () => {
     expect(viewed.fillColor).toBe(dark.fill);
     // Default paints with the stock colours, which the canvas then draws for its surface.
     const drawn = resolveStockColours({ ...createShape('square', 0, 0), ...viewed }, 'dark');
-    expect(isLightColor(drawn.fillColor!)).toBe(false);
-    expect(contrastRatio(drawn.textColor!, drawn.fillColor!)).toBeGreaterThanOrEqual(4.5);
+    expect(isLightColor(drawn.fillColor)).toBe(false);
+    expect(contrastRatio(drawn.textColor, drawn.fillColor)).toBeGreaterThanOrEqual(4.5);
   });
 
   it('leaves a Paper card, white in both halves, white', () => {
