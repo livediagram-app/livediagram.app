@@ -431,6 +431,29 @@ describe('mermaidFromTab', () => {
     expect(back.graph.nodes[0]!.label).toBe('Array[0]');
   });
 
+  it('keeps a document and a triangle through a round trip, in the attribute form', () => {
+    // Neither has a bracket, so both used to export as a square box and came back square.
+    const out = mermaidFromTab({
+      elements: graphToElements({
+        nodes: [
+          { id: 'a', label: 'Email {receipt}, sent', shape: 'document' },
+          { id: 'b', label: 'Warn', shape: 'triangle' },
+        ],
+        edges: [{ from: 'a', to: 'b' }],
+      }),
+    });
+    expect(out).toContain('n1@{ shape: doc, label: "Email {receipt#125;, sent" }');
+    expect(out).toContain('n2@{ shape: tri, label: "Warn" }');
+    const back = parseMermaid(out);
+    expect(back.ok).toBe(true);
+    if (!back.ok) return;
+    expect(back.graph.nodes.map((n) => [n.label, n.shape])).toEqual([
+      ['Email {receipt}, sent', 'document'],
+      ['Warn', 'triangle'],
+    ]);
+    expect(back.graph.edges).toHaveLength(1);
+  });
+
   it('keeps the shape when a bracket in the label sits inside a multi-char pair', () => {
     // The follow-on trap. A stadium is `(["…"])`, so the plain `(`/`)` pair
     // also matches its opening — and on `(["Retry (3)"])` that pair's closer

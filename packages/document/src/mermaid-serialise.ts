@@ -23,6 +23,13 @@ const SHAPE_TO_BRACKET: Record<string, [string, string]> = {
   trapezoid: ['[/"', '"\\]'],
 };
 
+// Our shape kinds with no bracket but a v11.3 attribute-form name the import reads back (mermaid.ts
+// AT_SHAPE_NAMES), so a document or a triangle keeps its shape across a round trip.
+const SHAPE_TO_AT_NAME: Record<string, string> = {
+  document: 'doc',
+  triangle: 'tri',
+};
+
 // Element label -> Mermaid quoted-label text. `&` first so the entities it
 // introduces aren't double-escaped; newlines become <br/>. A `#` that would
 // read as an entity code is itself written as one (`#35;`), and `%%` (a
@@ -43,6 +50,10 @@ const BLANK_LABEL = ' ';
 // Mermaid ids must be plain tokens; map our arbitrary element ids to n1, n2…
 // deterministically by first appearance.
 function mermaidNodeText(id: string, label: string, shape: string): string {
+  const atName = SHAPE_TO_AT_NAME[shape];
+  // The attribute form's body ends at the first `}`, so a label's own is written as its entity code.
+  if (atName)
+    return `${id}@{ shape: ${atName}, label: "${escapeLabel(label).replace(/\}/g, '#125;')}" }`;
   const [open, close] = SHAPE_TO_BRACKET[shape] ?? SHAPE_TO_BRACKET.square!;
   return `${id}${open}${escapeLabel(label)}${close}`;
 }
