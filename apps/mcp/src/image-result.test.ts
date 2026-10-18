@@ -59,7 +59,7 @@ describe('tabFontIds', () => {
 });
 
 describe('tabPreview', () => {
-  it('draws an Illustrate tab as its pages, its content and faces fetched together', async () => {
+  it('draws a Pages tab as its pages, its content and faces fetched together', async () => {
     drawn.length = 0;
     const tab = {
       id: 't',
@@ -76,7 +76,7 @@ describe('tabPreview', () => {
           label: 'On slide',
         },
       ],
-      opensIn: 'illustrate',
+      opensIn: 'pages',
       pages: [{ id: 'p1', orientation: 'landscape', kind: 'slide', size: 'slide' }],
     } as never;
     const blocks = await tabPreview(tab);
@@ -115,7 +115,7 @@ describe('tabPreview', () => {
     expect(fetched).toEqual(['/images/img-a', '/images/img-b', '/images/img-c']);
   });
 
-  it('budgets the pictures on an Illustrate tab’s pages too', async () => {
+  it('budgets the pictures on a Pages tab’s pages too', async () => {
     drawn.length = 0;
     const shot = (id: string, x: number) => ({
       id,
@@ -129,7 +129,7 @@ describe('tabPreview', () => {
     const tab = {
       id: 't',
       name: 'Deck',
-      opensIn: 'illustrate',
+      opensIn: 'pages',
       elements: [shot('a', 40), shot('b', 480)],
       pages: [{ id: 'p1', orientation: 'landscape', kind: 'slide', size: 'slide' }],
     } as never;

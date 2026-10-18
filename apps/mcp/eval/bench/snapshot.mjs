@@ -3,11 +3,11 @@
 import { resultJson, resultText } from './mcp-client.mjs';
 
 // The outline's first line: `tab 6cb1 "Name" · 0 elements · kind=form (read_form) · mode=plan · rev 1`, or for an
-// Illustrate tab `tab 3be5 "Deck" · 53 elements: 53 boxes · illustrate 6 pages: 6 slide (view pages) · rev 5`.
+// Pages tab `tab 3be5 "Deck" · 53 elements: 53 boxes · mode=pages · 6 pages: 6 slide (view pages) · rev 5`.
 export function parseTabHeader(line) {
   const kind = /kind=([\w-]+)/.exec(line)?.[1] ?? null;
-  const pages = /· illustrate (\d+) pages?: ([^(]+)\(/.exec(line);
-  const mode = pages ? 'illustrate' : (/mode=([\w-]+)/.exec(line)?.[1] ?? null);
+  const pages = /· (\d+) pages?: ([^(]+)\(/.exec(line);
+  const mode = pages ? 'pages' : (/mode=([\w-]+)/.exec(line)?.[1] ?? null);
   const pageKinds = {};
   for (const m of (pages?.[2] ?? '').matchAll(/(\d+) ([\w-]+)/g)) pageKinds[m[2]] = Number(m[1]);
   return { kind, mode, ...(pages ? { pageCount: Number(pages[1]), pageKinds } : {}) };
@@ -29,7 +29,7 @@ async function readTab(client, documentId, tab) {
   };
   if (kind === 'form')
     out.form = resultJson(await client.call('read_form', { documentId, tab: tab.id }));
-  if (mode === 'illustrate')
+  if (mode === 'pages')
     out.pages = resultText(
       await client.call('read_document', { documentId, tabId: tab.id, view: 'pages' }),
     );

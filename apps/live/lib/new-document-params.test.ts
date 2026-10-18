@@ -58,7 +58,8 @@ describe('choosePlacementAgainUrl (docs/specs/007-editor/new-document-route.md)'
 describe('wizardPresetMode / wizardPresetQuery', () => {
   it('reads a known mode, and ignores an unknown one', () => {
     expect(wizardPresetMode('?mode=draw')).toBe('draw');
-    expect(wizardPresetMode('?folder=f1&mode=illustrate&via=Home.HeroBuild')).toBe('illustrate');
+    expect(wizardPresetMode('?folder=f1&mode=pages&via=Home.HeroBuild')).toBe('pages');
+    expect(wizardPresetMode('?mode=illustrate')).toBe('pages');
     expect(wizardPresetMode('?mode=sideways')).toBeNull();
     expect(wizardPresetMode('')).toBeNull();
   });

@@ -1,4 +1,4 @@
-// A slide's animated backgrounds (docs/specs/007-editor/illustrate-pages.md "Animated
+// A slide's animated backgrounds (docs/specs/007-editor/pages-mode.md "Animated
 // backgrounds") as data: every motion's moving parts, where each sits, what it is painted with and
 // how it moves. Pure, so the two places that draw a motion read the same parts: the motion layer on
 // the canvas (components/canvas/PageMotionLayer.tsx, moving) and the PNG / PDF export

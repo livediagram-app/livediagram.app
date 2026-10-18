@@ -25,7 +25,7 @@ import {
 import { computeSnapTargets, NO_ALIGN_EXCLUDE } from '@/lib/drag-geometry';
 import type { SnapTarget } from '@/components/canvas/Canvas.types';
 
-// What an arrow's dragged end may join (docs/specs/007-editor/illustrate-pages.md "Arrows stay on
+// What an arrow's dragged end may join (docs/specs/007-editor/pages-mode.md "Arrows stay on
 // one page"): with pages, only what is on its other end's page or on none. Boxes are filtered by
 // their centre (cheap, every frame); an arrow's page is resolved only when one is hit (`joins`).
 function reachableFrom(
@@ -82,8 +82,8 @@ export function resolveArrowEndpointDrag({
   // The user's alignment-guides preference (guides only; snapping to the
   // other endpoint still applies).
   guidesOn: boolean;
-  // Illustrate mode's pages (docs/specs/007-editor/illustrate-pages.md "Arrows stay on one page"):
-  // the end joins nothing on a page other than its other end's. Absent outside Illustrate.
+  // Pages mode's pages (docs/specs/007-editor/pages-mode.md "Arrows stay on one page"):
+  // the end joins nothing on a page other than its other end's. Absent outside Pages.
   pages?: readonly LaidOutPage[] | null;
 }): {
   endpoint: Endpoint;

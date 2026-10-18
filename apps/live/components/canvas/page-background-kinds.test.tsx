@@ -4,7 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { PageFill } from '@livediagram/document';
 import { BackgroundKinds, kindPreview } from './page-background-kinds';
 
-// docs/specs/007-editor/illustrate-pages.md "Backgrounds": the kinds are tiles, each picturing what it makes.
+// docs/specs/007-editor/pages-mode.md "Backgrounds": the kinds are tiles, each picturing what it makes.
 afterEach(cleanup);
 
 const gradient: PageFill = { kind: 'gradient', from: '#112233', to: '#445566', angle: 90 };

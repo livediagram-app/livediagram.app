@@ -48,7 +48,7 @@ export function tabImageIds(tab: Pick<Tab, 'elements'> & Partial<Pick<Tab, 'page
   return [
     ...new Set([
       ...tab.elements.flatMap((el) => (el.type === 'image' && el.imageId ? [el.imageId] : [])),
-      // A page's picture background (docs/specs/007-editor/illustrate-pages.md "Image backgrounds").
+      // A page's picture background (docs/specs/007-editor/pages-mode.md "Image backgrounds").
       ...pageImageIds(tab.pages),
     ]),
   ];

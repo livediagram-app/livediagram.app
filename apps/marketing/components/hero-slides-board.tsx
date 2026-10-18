@@ -1,8 +1,8 @@
 import { FONT, YOU, at } from '@/components/art-tokens';
 import { CursorMark } from '@/components/hero-cursor';
 
-// The hero's Slide Decks window (docs/specs/019-marketing/marketing-site.md "Hero"): a 16:9 slide page in Illustrate
-// (docs/specs/007-editor/illustrate-pages.md) builds up, its title typed and three big numbers landing, the deck's
+// The hero's Slide Decks window (docs/specs/019-marketing/marketing-site.md "Hero"): a 16:9 slide page in Pages
+// (docs/specs/007-editor/pages-mode.md) builds up, its title typed and three big numbers landing, the deck's
 // pages filling the strip under it; then you press Present and the slide takes the screen, its page count and Notes
 // at its foot. Every piece plays at its own --d (hero-mode-animations.css); a phone draws the same deck smaller.
 

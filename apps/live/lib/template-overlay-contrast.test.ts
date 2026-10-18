@@ -18,7 +18,7 @@ import { tabAsSeen } from './export-as-seen';
 // what is actually drawn behind it: its own fill when it has one, else the topmost filled element it sits on (a
 // panel, a lane, a card), else the canvas. A label with no colour of its own takes the half's ink, so a pale panel
 // under it sank its text on a dark canvas (the Flowchart's key, the Journey's row names, the Gantt's tasks).
-// Illustrate templates are left out: their words sit on pages with their own paper.
+// Pages templates are left out: their words sit on pages with their own paper.
 
 /** The floor for a label against what is behind it: WCAG's large-text and non-text minimum. Below it a label is
  *  unreadable, not just quiet; quieter captions above it are a design choice. */

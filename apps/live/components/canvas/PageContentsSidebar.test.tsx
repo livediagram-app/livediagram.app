@@ -1,15 +1,15 @@
 // @vitest-environment jsdom
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
-import { layOutIllustratePages, type IllustratePage } from '@livediagram/document';
-import type { IllustratePagesView } from '@/hooks/editor/useIllustratePages';
+import { layOutPages, type Page } from '@livediagram/document';
+import type { PagesModeView } from '@/hooks/editor/usePagesMode';
 import { ViewportStoreProvider } from '@/hooks/canvas/useViewportStore';
 import { createViewportStore } from '@/lib/viewport-store';
 import { CONTENTS_FOLLOW_SETTLE_MS, PageContentsSidebar } from './PageContentsSidebar';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
-// docs/specs/007-editor/illustrate-pages.md "Contents": docked as a sidebar down the canvas's left.
+// docs/specs/007-editor/pages-mode.md "Contents": docked as a sidebar down the canvas's left.
 afterEach(() => {
   cleanup();
   vi.useRealTimers();
@@ -25,8 +25,8 @@ beforeAll(() => {
   });
 });
 
-const laid = layOutIllustratePages(
-  Array.from({ length: 3 }, (_, i): IllustratePage => ({
+const laid = layOutPages(
+  Array.from({ length: 3 }, (_, i): Page => ({
     id: `p${i + 1}`,
     orientation: 'landscape',
     kind: 'slide',
@@ -56,7 +56,7 @@ function show({
     pages: laid,
     focusPage,
     ...(canEdit ? { edit, deck } : {}),
-  } as unknown as IllustratePagesView;
+  } as unknown as PagesModeView;
   render(
     <ViewportStoreProvider store={store}>
       <PageContentsSidebar

@@ -1,6 +1,6 @@
 // The Working Backwards template (docs/specs/008-canvas/canvas-and-palette.md "Templates"): Amazon's PR/FAQ, written
 // for a FreshBox launch (the Business Model Canvas's meal-kit business) before anything is built. An article tab that
-// opens in Illustrate: the press release, the Customer FAQ and, after a page break, the Internal FAQ, closing on a
+// opens in Pages: the press release, the Customer FAQ and, after a page break, the Internal FAQ, closing on a
 // to-do list for the review. Written as Markdown and read by the article's own Markdown reader, so the words stay easy
 // to edit here; the first two lines become the title and subtitle, and the one divider the page break.
 // Pure data: the tab's pages and writing, merged in by templateCanvasOverrides.
@@ -113,7 +113,7 @@ function workingBackwardsBlocks(): ArticleBlock[] {
   });
 }
 
-/** The Working Backwards template's pages and writing (opens in Illustrate, in the Report look). */
+/** The Working Backwards template's pages and writing (opens in Pages, in the Report look). */
 export function workingBackwardsOverrides(): Partial<Tab> {
   return articleTabOverrides(FLOW_ID, workingBackwardsBlocks(), { look: 'report' });
 }

@@ -1,7 +1,7 @@
 'use client';
 
 // An empty tab's template start (docs/specs/007-editor/start-diagramming.md): Start Diagramming on a Diagram tab, Start
-// Facilitating on a Facilitate tab, Start Illustrating on an Illustrate tab, each a start panel (StartPanel) as Start
+// Facilitating on a Facilitate tab, Start Making Pages on a Pages tab, each a start panel (StartPanel) as Start
 // Planning is Plan's. Recommended (the mode's blank first) and its groups beside a grid of the mode's templates, each its
 // preview over its name and line; a search across them and every other mode's templates (otherModeMatches); the × starts
 // from nothing. Choosing a template lands it on the tab at once, another mode's switching the tab to that mode.
@@ -99,10 +99,10 @@ const COPY: Record<
     noMatch: 'session templates',
     help: 'templates',
   },
-  illustrate: {
-    title: 'Start Illustrating',
+  pages: {
+    title: 'Start Making Pages',
     line: 'Pick something to make, or close this to start from a blank page.',
-    noMatch: 'illustration templates',
+    noMatch: 'page templates',
     help: 'templates',
   },
 };

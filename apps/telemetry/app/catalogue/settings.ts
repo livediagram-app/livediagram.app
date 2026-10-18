@@ -78,12 +78,12 @@ export const EDITOR_SETTINGS = settingsStack(
     changed(
       'ContentsPlacement',
       'Contents Placement',
-      "Illustrate's Contents docked as a sidebar or minimised to its button.",
+      "Pages mode's Contents docked as a sidebar or minimised to its button.",
     ),
     changed(
       'ContentsSide',
       'Contents Side',
-      "Illustrate's Contents sidebar dragged to the canvas's left or right edge.",
+      "Pages mode's Contents sidebar dragged to the canvas's left or right edge.",
     ),
     toggle(
       'UI',
@@ -299,7 +299,7 @@ export const ACCESSIBILITY_SETTINGS = settingsStack('Accessibility Settings', 'M
 // Tutorials before). Each switch's tokens track its PREFERENCE, so switching a tour on is `…SeenOff`.
 export const TOURS_SETTINGS = settingsStack(
   'Tours Settings',
-  'The Diagram, Plan, Facilitate, Draw and Illustrate tours switched back on or off.',
+  'The Diagram, Plan, Facilitate, Draw and Pages tours switched back on or off.',
   [
     toggle(
       'UI',
@@ -338,10 +338,10 @@ export const TOURS_SETTINGS = settingsStack(
     ),
     toggle(
       'UI',
-      'IllustrateTourSeenOff',
-      'IllustrateTourSeenOn',
-      'Illustrate Tour',
-      'The Illustrate tour switched back on or off.',
+      'PagesTourSeenOff',
+      'PagesTourSeenOn',
+      'Pages Tour',
+      'The Pages tour switched back on or off.',
     ),
   ],
 );

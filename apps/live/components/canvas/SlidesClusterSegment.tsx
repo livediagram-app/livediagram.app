@@ -3,14 +3,14 @@
 import { SlideDeckIcon } from '@/components/palette/palette-icons';
 import { ClusterPopoverSegment } from './ClusterPopoverButton';
 
-// Whether the Slides button shows: once at least one page is a slide (illustrate-pages.md "Slides button"), since
+// Whether the Slides button shows: once at least one page is a slide (pages-mode.md "Slides button"), since
 // until then the deck has nothing to hold.
 export function showsSlidesButton(pages: readonly { kind?: string }[]): boolean {
   return pages.some((p) => p.kind === 'slide');
 }
 
-// The Slides button in the bottom-right cluster, in Illustrate mode (docs/specs/007-editor/
-// illustrate-pages.md "Slides"): an infographic is likely to be presented, so its deck sits one
+// The Slides button in the bottom-right cluster, in Pages mode (docs/specs/007-editor/
+// pages-mode.md "Slides"): an infographic is likely to be presented, so its deck sits one
 // press away, where Layers sits in the other modes. The second segment of the pages strip
 // (PagesClusterStrip), after Contents.
 export function SlidesClusterSegment(props: {
@@ -25,7 +25,7 @@ export function SlidesClusterSegment(props: {
       hoverTitle="Open Slides"
       hoverDescription="Build a slide deck from your pages and present it."
       icon={<SlideDeckIcon />}
-      // The Illustrate tour's anchor (docs/specs/007-editor/illustrate-tour.md).
+      // The Pages tour's anchor (docs/specs/007-editor/pages-tour.md).
       dataTourId="slides"
       {...props}
     />

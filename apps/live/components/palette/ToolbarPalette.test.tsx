@@ -318,13 +318,13 @@ describe('ToolbarPalette', () => {
   });
 
   // The palette per mode (docs/specs/007-editor/editor-modes.md "The palette per mode").
-  it('offers the mock-up kit and the charts in Illustrate mode only', () => {
+  it('offers the mock-up kit and the charts in Pages mode only', () => {
     show();
     expect(barNames()).not.toContain('Devices');
     expect(barNames()).not.toContain('Components');
     expect(barNames()).not.toContain('Data');
     cleanup();
-    show({ mode: 'illustrate' });
+    show({ mode: 'pages' });
     expect(barNames()).toEqual([
       'Shapes',
       'Write',
@@ -498,7 +498,7 @@ describe('ToolbarPalette', () => {
       });
 
     it("ends the strip in every mode's palette, and not on an event-storming board", () => {
-      for (const mode of ['diagram', 'illustrate', 'plan'] as const) {
+      for (const mode of ['diagram', 'pages', 'plan'] as const) {
         show({ mode });
         const buttons = within(strip()).getAllByRole('button');
         expect(buttons.at(-1)?.getAttribute('aria-label'), mode).toBe('Search elements');

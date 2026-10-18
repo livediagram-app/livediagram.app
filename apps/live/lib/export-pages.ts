@@ -1,4 +1,4 @@
-// Exporting an Illustrate tab's pages (docs/specs/007-editor/illustrate-pages.md "Export"): all
+// Exporting a Pages tab's pages (docs/specs/007-editor/pages-mode.md "Export"): all
 // of them or one, as a PDF, or as PNG / SVG images (one file, or a .zip of every page). Turns the
 // dialog's choice into the one file to download.
 import { pageLabel, type LaidOutPage, type Tab } from '@livediagram/document';

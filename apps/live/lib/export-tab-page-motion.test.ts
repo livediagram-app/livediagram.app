@@ -1,8 +1,8 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { layOutIllustratePages, type Tab } from '@livediagram/document';
+import { layOutPages, type Tab } from '@livediagram/document';
 
-// A slide's animated background in its exports (docs/specs/007-editor/illustrate-pages.md
+// A slide's animated background in its exports (docs/specs/007-editor/pages-mode.md
 // "Animated backgrounds"): the PNG and PDF paint it as the slide opens over the gradient, the SVG
 // embeds the same frame under the pattern, and a PDF of a deck paints a repeated one once. The
 // painting itself is page-motion-canvas's; here it is stood in for.
@@ -68,7 +68,7 @@ const deck = (fill: object = animated, pattern?: 'dots') => {
     background: { fill, ...(pattern ? { pattern } : {}) },
   }));
   const tab = { id: 't', name: 'Deck', elements: [], pages } as unknown as Tab;
-  return { tab, laid: layOutIllustratePages(pages as never) };
+  return { tab, laid: layOutPages(pages as never) };
 };
 
 describe('PNG and PDF', () => {

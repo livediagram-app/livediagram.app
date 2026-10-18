@@ -4,14 +4,14 @@ import { describe, expect, it, vi } from 'vitest';
 import type { Tab } from '@livediagram/document';
 import { useDeckFollowsPages } from './useDeckFollowsPages';
 
-// docs/specs/007-editor/illustrate-pages.md "Slides": one follow pass when the pages change, none on an element edit
+// docs/specs/007-editor/pages-mode.md "Slides": one follow pass when the pages change, none on an element edit
 // and none before the document has loaded.
 const tab = (pageIds: string[], elements: unknown[] = []) =>
   ({
     id: 't',
     name: 'Deck',
     elements,
-    opensIn: 'illustrate',
+    opensIn: 'pages',
     pages: pageIds.map((id) => ({ id, orientation: 'landscape', kind: 'slide' })),
   }) as unknown as Tab;
 

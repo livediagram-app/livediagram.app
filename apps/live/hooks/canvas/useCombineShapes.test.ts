@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { layOutIllustratePages, type Element } from '@livediagram/document';
+import { layOutPages, type Element } from '@livediagram/document';
 import { combinableSelection } from './useCombineShapes';
 
 // docs/specs/007-editor/logo-pages.md "Combine": offered for two or more combinable, unlocked
 // elements whose centres are all on one logo page.
 describe('combinableSelection', () => {
-  const pages = layOutIllustratePages([
+  const pages = layOutPages([
     { id: 'l', orientation: 'portrait', size: 'logo', kind: 'logo' },
     { id: 'i', orientation: 'portrait' },
   ]);
@@ -28,7 +28,7 @@ describe('combinableSelection', () => {
     ]);
   });
 
-  it('is null outside Illustrate, for one element, across pages, or with a locked one', () => {
+  it('is null outside Pages, for one element, across pages, or with a locked one', () => {
     expect(combinableSelection(els, new Set(['a', 'b']), null)).toBeNull();
     expect(combinableSelection(els, new Set(['a']), pages)).toBeNull();
     expect(combinableSelection(els, new Set(['a', 'c']), pages)).toBeNull();

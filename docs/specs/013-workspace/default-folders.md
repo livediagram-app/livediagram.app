@@ -41,7 +41,7 @@ order:
 | --------------------- | ------------------------ |
 | Diagrams              | `mode:diagram`           |
 | Whiteboards           | `mode:draw`              |
-| Illustrate pages      | `mode:illustrate`        |
+| Pages documents       | `mode:pages`             |
 | Plan boards           | `mode:plan`              |
 | Sessions              | `mode:facilitate`        |
 | Event Storming boards | `kind:event-storming`    |
@@ -227,7 +227,7 @@ Each key has a label, the plural a sentence uses, and an icon, in list order:
 | ------------------------ | --------------------- | --------------------- | -------------------------- |
 | `mode:diagram`           | Diagrams              | diagrams              | The Diagram mode's icon    |
 | `mode:draw`              | Whiteboards           | whiteboards           | The Draw mode's icon       |
-| `mode:illustrate`        | Illustrate pages      | Illustrate pages      | The Illustrate mode's icon |
+| `mode:pages`             | Pages documents       | Pages documents       | The Pages mode's icon      |
 | `mode:plan`              | Plan boards           | Plan boards           | The Plan mode's icon       |
 | `mode:facilitate`        | Sessions              | sessions              | The Facilitate mode's icon |
 | `kind:event-storming`    | Event Storming boards | Event Storming boards | A sticky note              |
@@ -301,7 +301,7 @@ The wizard makes the chosen mode's blank, and the template is picked afterwards 
   context). It is written for a
   cloud document made from a mode's blank, never for This Browser or a template link (`/new?template=`), which is
   filed by its template at creation.
-- **The first template picked from a start screen** (Start Diagramming, Drawing, Facilitating, Illustrating, or
+- **The first template picked from a start screen** (Start Diagramming, Drawing, Facilitating, Making Pages, or
   Start Planning's templates) on that first tab takes the note. When the person did not choose the folder, the
   precedence is resolved again for the template's intent, as the server resolves it (kind, then template, then mode
   default, `templatePickMoveTarget`), and the document **moves** to the default that answers, when it is somewhere
@@ -360,7 +360,7 @@ new <these>", opened by Settings' Change.
 
 ## Telemetry ([Telemetry](../017-telemetry/telemetry.md))
 
-- `Folder` · `Changed` · `DefaultModeDiagram` / `DefaultModeDraw` / `DefaultModeIllustrate` /
+- `Folder` · `Changed` · `DefaultModeDiagram` / `DefaultModeDraw` / `DefaultModePages` /
   `DefaultModePlan` / `DefaultModeFacilitate` / `DefaultKindEventStorming` /
   `DefaultTemplateRetrospective` / `DefaultTemplateKanban`, fired by the surface that sets a
   default, before the write.

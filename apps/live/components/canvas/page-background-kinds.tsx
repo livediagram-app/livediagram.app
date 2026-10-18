@@ -1,6 +1,6 @@
 'use client';
 
-// The Background section's kinds (docs/specs/007-editor/illustrate-pages.md "Backgrounds"): Solid, Gradient,
+// The Background section's kinds (docs/specs/007-editor/pages-mode.md "Backgrounds"): Solid, Gradient,
 // Image and Animated as a row of tiles, each a small sheet showing what it makes, its name under it, the way
 // the Pattern tiles below them read. A sheet shows the page's own fill when it is of that kind, so the
 // chosen tile pictures the page, and otherwise the theme's colour.
@@ -8,8 +8,8 @@ import type { CSSProperties } from 'react';
 import { lucideImage, lucideSparkles } from '@livediagram/icons/lucide';
 import { lucideGlyph } from '@livediagram/ui';
 import type { PageFill } from '@livediagram/document';
-import { fillCss, type BackgroundCategory } from '@/lib/illustrate-page-paint';
-import { tileClass } from './illustrate-page-panel-sections';
+import { fillCss, type BackgroundCategory } from '@/lib/page-paint';
+import { tileClass } from './page-panel-sections';
 
 const ImageGlyph = lucideGlyph(lucideImage, 14);
 const SparklesGlyph = lucideGlyph(lucideSparkles, 13);

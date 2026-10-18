@@ -1,6 +1,6 @@
 'use client';
 
-// Contents docked as a sidebar down the canvas's left (docs/specs/007-editor/illustrate-pages.md
+// Contents docked as a sidebar down the canvas's left (docs/specs/007-editor/pages-mode.md
 // "Contents"), the way a slide editor shows its slides: a filmstrip of every page, the page in view
 // marked and followed as the view moves, a press gliding there. Where a desktop shows Contents until
 // the person minimises it to its cluster button (lib/contents-placement.ts); a phone never has it.
@@ -15,7 +15,7 @@ import { HoverCard, lucideGlyph } from '@livediagram/ui';
 import { useUiScale } from '@/components/providers/ui-scale';
 import { toSurfacePx, uiScaleStyle } from '@/lib/ui-scale';
 import type { PageThumbTab } from '@/hooks/ui/usePageThumbnails';
-import type { IllustratePagesView } from '@/hooks/editor/useIllustratePages';
+import type { PagesModeView } from '@/hooks/editor/usePagesMode';
 import { usePageContents } from '@/hooks/ui/usePageContents';
 import { pageInView } from '@/lib/page-contents';
 import { useViewportStoreIfAny } from '@/hooks/canvas/useViewportStore';
@@ -41,7 +41,7 @@ export function PageContentsSidebar({
   onMoveToSide,
   onMinimise,
 }: {
-  view: IllustratePagesView;
+  view: PagesModeView;
   tab: PageThumbTab;
   // Where it starts, in screen px from the canvas's top: below the Toolbar strip.
   top: number;

@@ -131,7 +131,7 @@ export type BoxedExportOptions = {
   // built-in one, which is what a caller with no theme in hand wants.
   chartPalette?: readonly string[];
   // What each chart on a filled page sits on, by element id (chartPageGrounds): its series and text
-  // are drawn adapted to it, as the canvas draws them (docs/specs/007-editor/illustrate-pages.md
+  // are drawn adapted to it, as the canvas draws them (docs/specs/007-editor/pages-mode.md
   // "Charts adapt as they are drawn"). Absent, a chart is drawn in its colours as they are.
   chartGrounds?: ReadonlyMap<string, readonly string[]>;
   // The document's items, for the Plan board and Plan card (docs/specs/026-plan/plan-board.md). Without

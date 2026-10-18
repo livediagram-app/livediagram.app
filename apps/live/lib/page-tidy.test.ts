@@ -1,19 +1,13 @@
-// An infographic page's Tidy Up (docs/specs/007-editor/illustrate-pages.md "Tidy").
+// An infographic page's Tidy Up (docs/specs/007-editor/pages-mode.md "Tidy").
 import { describe, expect, it } from 'vitest';
-import {
-  isBoxed,
-  layOutIllustratePages,
-  pageMargin,
-  type Element,
-  type IllustratePage,
-} from '@livediagram/document';
+import { isBoxed, layOutPages, pageMargin, type Element, type Page } from '@livediagram/document';
 import { buildPageLayout, PAGE_LAYOUTS } from '@livediagram/templates';
 import { PAGE_TIDY_GRID, tidyPageElements, type PageTidyInput } from './page-tidy';
 import { cpuBudgetMs, cpuMsOf } from '@livediagram/vitest-config/cpu-time';
 
 // A4 portrait: the page is 794 x 1123 centred on the origin, its margin 56, so the content box runs
 // x -341..341, y -505.5..505.5, and the tolerance is 0.012 x 794, about 9.5 px.
-const [A4] = layOutIllustratePages([{ id: 'p', orientation: 'portrait' }]);
+const [A4] = layOutPages([{ id: 'p', orientation: 'portrait' }]);
 const BOX = { left: -341, right: 341, top: -505.5, bottom: 505.5 };
 
 const shape = (id: string, x: number, y: number, width = 100, height = 80, more = {}): Element =>
@@ -198,11 +192,11 @@ describe('tidyPageElements', () => {
 
 // Every infographic layout as the layouts build it, jittered the way a few drags leave a page.
 describe('tidyPageElements on real layouts', () => {
-  const pages = layOutIllustratePages([
+  const pages = layOutPages([
     { id: 'portrait', orientation: 'portrait' },
     { id: 'landscape', orientation: 'landscape' },
     { id: 'square', orientation: 'portrait', size: 'square' },
-  ] as IllustratePage[]);
+  ] as Page[]);
   const random = (seed: number) => () => (seed = (seed * 16807) % 2147483647) / 2147483647;
   const jitter = (els: Element[], amp: number, seed: number) => {
     const next = random(seed);

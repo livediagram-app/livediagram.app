@@ -70,24 +70,24 @@ function trackTextExport(format: TextFormat, tab: Pick<Tab, 'kind'>): void {
   else track('Document', 'Exported', EXPORT_LABEL[format]);
 }
 
-// An Illustrate tab's pages exported (docs/specs/007-editor/illustrate-pages.md "Telemetry"): one
+// A Pages tab's pages exported (docs/specs/007-editor/pages-mode.md "Telemetry"): one
 // page, or all of them.
-const ILLUSTRATE_EXPORT_LABEL: Record<ImageFormat, string> = {
-  png: 'IllustratePNG',
-  svg: 'IllustrateSVG',
-  pdf: 'IllustratePDF',
+const PAGE_EXPORT_LABEL: Record<ImageFormat, string> = {
+  png: 'PagesPNG',
+  svg: 'PagesSVG',
+  pdf: 'PagesPDF',
 };
-const ILLUSTRATE_PAGES_EXPORT_LABEL: Record<ImageFormat, string> = {
-  png: 'IllustratePNGPages',
-  svg: 'IllustrateSVGPages',
-  pdf: 'IllustratePDFPages',
+const PAGES_EXPORT_LABEL: Record<ImageFormat, string> = {
+  png: 'PagesPNGPages',
+  svg: 'PagesSVGPages',
+  pdf: 'PagesPDFPages',
 };
 
-// The formats Illustrate mode exports to (docs/specs/007-editor/illustrate-pages.md "Export"):
+// The formats Pages mode exports to (docs/specs/007-editor/pages-mode.md "Export"):
 // its pages, and the tab itself as JSON. Diagram-tool formats are not offered.
-const ILLUSTRATE_FORMATS: readonly Format[] = ['pdf', 'png', 'svg', 'gif', 'file'];
-// The page formats' card copy in Illustrate mode, which speaks of pages rather than the tab.
-const ILLUSTRATE_CARD_COPY: Partial<Record<Format, string>> = {
+const PAGES_FORMATS: readonly Format[] = ['pdf', 'png', 'svg', 'gif', 'file'];
+// The page formats' card copy in Pages mode, which speaks of pages rather than the tab.
+const PAGES_CARD_COPY: Partial<Record<Format, string>> = {
   pdf: 'Every page in one PDF, or a single page, ready to print or share.',
   png: 'A high-resolution image of a page, or a .zip with one per page.',
   svg: 'A scalable vector image of a page, or a .zip with one per page.',
@@ -115,7 +115,7 @@ type ExportTabDialogProps = {
   // image options then leave out "Hidden layers", and hidden layers stay out
   // of the export as they stay off the canvas.
   offerHiddenLayers?: boolean;
-  // Illustrate mode's pages (docs/specs/007-editor/illustrate-pages.md "Export"): PDF, PNG and
+  // Pages mode's pages (docs/specs/007-editor/pages-mode.md "Export"): PDF, PNG and
   // SVG export all pages or one chosen page, each exactly its sheet. Absent elsewhere.
   pages?: LaidOutPage[];
   // The document's tabs, for a Dashboard's slots that show one (docs/specs/026-plan/plan-tabs.md "Export") and for
@@ -186,7 +186,7 @@ const CARDS: { kind: Format; title: string; description: string }[] = [
     description: 'A single-page PDF of this tab, ready to print or share.',
   },
   {
-    // Illustrate mode only (docs/specs/020-import-export/animated-gif-export.md "Where it is offered").
+    // Pages mode only (docs/specs/020-import-export/animated-gif-export.md "Where it is offered").
     kind: 'gif',
     title: 'GIF',
     description: 'An animated image of the pages, moving as they move on the canvas.',
@@ -313,14 +313,14 @@ export function ExportTabDialog({
   const hasLogoPage = !!pages?.some((p) => p.kind === 'logo');
   const cards = pages
     ? [
-        // A GIF animates the pages, so an Illustrate tab with none yet (First Page Choice) offers no GIF.
-        ...ILLUSTRATE_FORMATS.filter((kind) => kind !== 'gif' || pages.length > 0),
+        // A GIF animates the pages, so a Pages tab with none yet (First Page Choice) offers no GIF.
+        ...PAGES_FORMATS.filter((kind) => kind !== 'gif' || pages.length > 0),
         ...(hasLogoPage ? (['logo-kit'] as const) : []),
       ].map((kind) => {
         const card = CARDS.find((c) => c.kind === kind)!;
-        return { ...card, description: ILLUSTRATE_CARD_COPY[kind] ?? card.description };
+        return { ...card, description: PAGES_CARD_COPY[kind] ?? card.description };
       })
-    : // Off Illustrate there are no pages, so no logo page and no GIF: never the Logo Kit or GIF. A Plan tab offers
+    : // Off Pages there are no pages, so no logo page and no GIF: never the Logo Kit or GIF. A Plan tab offers
       // its own formats, CSV among them; any other tab has no cards or cells, so its CSV was an empty file.
       CARDS.filter((c) =>
         planImage.formats
@@ -455,9 +455,7 @@ export function ExportTabDialog({
         track(
           'Document',
           'Exported',
-          pageScope === 'all'
-            ? ILLUSTRATE_PAGES_EXPORT_LABEL[format]
-            : ILLUSTRATE_EXPORT_LABEL[format],
+          pageScope === 'all' ? PAGES_EXPORT_LABEL[format] : PAGE_EXPORT_LABEL[format],
         );
         onClose();
         return;
@@ -570,7 +568,7 @@ export function ExportTabDialog({
             busy={busy || !windows.ready}
             error={error}
             checkerboard={seeThrough && page?.kind === 'logo'}
-            // Illustrate mode has no Layers, so no "Hidden layers" option: hidden layers stay
+            // Pages mode has no Layers, so no "Hidden layers" option: hidden layers stay
             // out, as they stay off its canvas.
             hasHiddenLayers={
               !pages &&

@@ -1,18 +1,18 @@
 # Logo pages
 
-A **logo page** is the fourth kind of page in Illustrate mode ([Illustrate pages](illustrate-pages.md)
+A **logo page** is the fourth kind of page in Pages mode ([Pages](pages-mode.md)
 "Page kinds"): a square artboard to design a logo on. It is laid out like an infographic page,
 with ordinary elements, and adds tools a logo needs and an infographic does not: **construction
 guides** to build a balanced mark, **mirror** drawing for symmetry, **wordmark** type (tracking,
 weight, case, text on an arc), **combining** shapes into one mark, and a **logo
-kit** export. Everything [Illustrate pages](illustrate-pages.md) says
+kit** export. Everything [Pages](pages-mode.md) says
 of infographic pages applies to a logo page except where this spec says otherwise.
 
 ## Domain language
 
 | Term                    | Means                                                                                                                                                      |
 | ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **logo page**           | A page of kind `logo` (`IllustratePage.kind`).                                                                                                             |
+| **logo page**           | A page of kind `logo` (`Page.kind`).                                                                                                                       |
 | **artboard**            | The logo page's sheet: always the `logo` size, 1024 x 1024 px.                                                                                             |
 | **safe area**           | The square inside the artboard, inset 10% from each edge, that the mark should stay within. It is the logo page's margin.                                  |
 | **construction guides** | The lines and keyline shapes drawn over a logo page to build on (below). A view, never elements.                                                           |
@@ -34,7 +34,7 @@ of infographic pages applies to a logo page except where this spec says otherwis
   The page label reads `<name or Page n> · 1024 x 1024 · Logo`.
 - **Background**: the Background swatches as on any page. A logo page offers **no pattern** (a
   pattern is a page decoration, never part of a mark) and **no picture** (its Background has no
-  Image category, [Illustrate pages](illustrate-pages.md) "Image backgrounds"); a stored pattern or
+  Image category, [Pages](pages-mode.md) "Image backgrounds"); a stored pattern or
   picture on a logo page is dropped.
 - **Margin**: a logo page's margin is its **safe area**, 10% of its side (102 px), in place of the
   7% other pages use. Layouts fit it and snapping offers it.
@@ -45,7 +45,7 @@ of infographic pages applies to a logo page except where this spec says otherwis
 
 ## The Logo palette
 
-In Illustrate mode, while the tab has at least one logo page, the palette strip offers a **Logo** category, first of the Common band after Popular: "The tools a logo is
+In Pages mode, while the tab has at least one logo page, the palette strip offers a **Logo** category, first of the Common band after Popular: "The tools a logo is
 made with: the pen, the pencil, text, the basic shapes and your markers."
 
 - **Pen**: the Path tool (click for corners, drag for curves), the same tool Draw mode's dock
@@ -173,14 +173,14 @@ The placeholder name is **Brand**, its initials **BR**, the tagline **Your tagli
 **Show Guides** is per page: a logo page shows its construction guides to someone who may edit it
 while Show Guides is on for that page. Each page keeps its own choice (each person's, in this
 browser, the latest 200 pages); a page with no choice of its own follows the **Logo Guides**
-setting (Settings, Editor, then Illustrate; on by default). Snapping to a page's keylines and
+setting (Settings, Editor, then Pages; on by default). Snapping to a page's keylines and
 drawing onto its guides go with them. They are drawn **over** the artwork, in a cyan that reads on any page, one
 screen pixel wide at any zoom, and take no presses. On an **empty** page (no artwork yet) they are
 drawn under the page's own cards (the layout invitation), which are solid in light and dark.
 
 Each person chooses **which guides show** (any of the parts below) and their **Strength**:
 **Faint**, **Medium** (the default) or **Strong** (the grid always fainter than the rest), in the
-page's Guides popover and in Settings, under Editor, then Illustrate.
+page's Guides popover and in Settings, under Editor, then Pages.
 
 - **Centre lines**: the vertical and horizontal centre lines.
 - **Diagonals**: corner to corner, both ways.
@@ -287,7 +287,7 @@ its range is refused by the document's validation, as any malformed field is.
 
 ## Combine
 
-- **Where**: in Illustrate mode, when the selection is two or more **combinable** elements on the
+- **Where**: in Pages mode, when the selection is two or more **combinable** elements on the
   same logo page: the multi-selection toolbar shows a **Combine** button opening the four
   operations, the multi-selection context menu has a **Combine** section with them, and the command
   palette offers each (`Unite Shapes`, `Subtract Shapes`, `Intersect Shapes`, `Exclude Shapes`).
@@ -379,7 +379,7 @@ clean, as one edit:
 - Editing a combined path's points one by one; a mirror axis or centre anywhere but the artboard's
   centre lines and centre; Mirror Copy across any line but the vertical centre line;
   linked twins that follow each other's edits.
-- Combining on pages other than logo pages, or outside Illustrate mode.
+- Combining on pages other than logo pages, or outside Pages mode.
 - A brand palette or colour generator; the tab's theme and the colour pickers do this job.
 - An SVG favicon or a web manifest in the kit.
 - A combined shape's holes in an Excalidraw export, which draws its first contour only.

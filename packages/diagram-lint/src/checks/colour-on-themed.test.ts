@@ -141,9 +141,9 @@ describe('colour-on-themed, judged on what set the colour', () => {
     ]);
   });
 
-  it('is no finding on an Illustrate tab, whose pages are coloured by design', () => {
+  it('is no finding on a Pages tab, whose pages are coloured by design', () => {
     expect(
-      of(lint({ ...themed('ocean', coloured('a', 0)), opensIn: 'illustrate' }), 'colour-on-themed'),
+      of(lint({ ...themed('ocean', coloured('a', 0)), opensIn: 'pages' }), 'colour-on-themed'),
     ).toEqual([]);
   });
 });

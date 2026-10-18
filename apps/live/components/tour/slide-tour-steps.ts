@@ -1,4 +1,4 @@
-// The Slides track of the Illustrate tour (docs/specs/007-editor/illustrate-tour.md "Slides track"): on the person's own
+// The Slides track of the Pages tour (docs/specs/007-editor/pages-tour.md "Slides track"): on the person's own
 // slide, it opens the Layout and Background popovers to choose from, points at the deck button, the + and the Slide
 // Deck, where the deck is presented. Each control stays live, so a pick made while its step is up is kept.
 import type { PageTourStep } from './page-tour-api';

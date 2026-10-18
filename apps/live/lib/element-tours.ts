@@ -8,7 +8,7 @@ import type { UserPreferences } from './user-preferences';
 // Element tours (docs/specs/007-editor/element-tours.md): a tour of one complex element type, offered beside the
 // selection toolbar the first time a person selects one. Each toured kind offers itself once ever: the synced
 // `elementTourKinds` lists the kinds answered (Play or Cancel); `elementToursSeen` counts them all only for a power
-// user (tourTrackSeen), as the Illustrate tour's kinds do.
+// user (tourTrackSeen), as the Pages tour's kinds do.
 
 export const ELEMENT_TOUR_KINDS = [
   'sankey',

@@ -208,7 +208,7 @@ export function useElementHelpers(opts: {
     // the target alone rather than committing an empty change per tap.
     if (!formatPaintsAnything(formatConfig)) return;
     // A page's background in the brush paints pages, not elements: the brush is kept
-    // (docs/specs/007-editor/illustrate-pages.md "Copying a background").
+    // (docs/specs/007-editor/pages-mode.md "Copying a background").
     if (brushPageId(formatSourceId)) return;
     const keepSource = formatConfig.mode === 'keep';
     const source = activeTab.elements.find((el) => el.id === formatSourceId);

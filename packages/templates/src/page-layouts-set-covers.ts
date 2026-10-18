@@ -1,4 +1,4 @@
-// More Covers layouts (docs/specs/007-editor/illustrate-pages.md "Layouts"), category 'covers':
+// More Covers layouts (docs/specs/007-editor/pages-mode.md "Layouts"), category 'covers':
 // pure builders on the shared kit (page-layout-kit.ts), laid out in proportions of the page's
 // content box so each fits every size and orientation, in the tab's theme. The builders live in
 // page-layouts-set-covers-docs.ts (document fronts) and page-layouts-set-covers-print.ts (print

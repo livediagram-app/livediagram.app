@@ -99,12 +99,12 @@ export type EditorDragDeps = {
   // unaffected). Tracked via ref so a mid-drag toggle takes effect on
   // the next pointermove without re-attaching listeners.
   alignmentGuidesRef: React.RefObject<boolean>;
-  // Illustrate mode's page lines (illustratePageSnapBoxes): what a move or resize snaps to
+  // Pages mode's page lines (pageSnapBoxes): what a move or resize snaps to
   // besides other elements. Null outside the mode.
   pageSnapBoxes?: Element[] | null;
-  // Illustrate mode's laid-out pages: an arrow's end joins nothing on another page than its other
-  // end's (docs/specs/007-editor/illustrate-pages.md "Arrows stay on one page"). Null outside it.
-  illustratePages?: readonly LaidOutPage[] | null;
+  // Pages mode's laid-out pages: an arrow's end joins nothing on another page than its other
+  // end's (docs/specs/007-editor/pages-mode.md "Arrows stay on one page"). Null outside it.
+  pagesMode?: readonly LaidOutPage[] | null;
   // Set to true while a 2-finger pinch is active. The move handler
   // checks this and cancels any in-flight drag so a pinch-to-zoom
   // gesture that starts on an element doesn't also move it.

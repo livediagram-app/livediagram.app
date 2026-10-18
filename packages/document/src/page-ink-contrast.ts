@@ -1,4 +1,4 @@
-// The colour arithmetic of re-inking a page's content (docs/specs/007-editor/illustrate-pages.md
+// The colour arithmetic of re-inking a page's content (docs/specs/007-editor/pages-mode.md
 // "Re-inking"): the least change to a colour, keeping its hue, that reaches a contrast against
 // every tone it may sit on. Pure.
 import { contrastRatio, hexToRgb, rgbToHex, shade, tint } from './colors';

@@ -1,5 +1,5 @@
 // Editor modes (docs/specs/007-editor/editor-modes.md): how a general tab is worked on, Diagram,
-// Draw, Facilitate, Illustrate or Plan. A mode tunes tools and rules; it never decides what the tab is (that is its kind). The
+// Draw, Facilitate, Pages or Plan. A mode tunes tools and rules; it never decides what the tab is (that is its kind). The
 // mode is the tab's, the same for everyone on it (`Tab.opensIn`, Diagram when absent).
 import type { Layer } from './layers';
 import { isEventStormingTab } from './event-storming';
@@ -24,8 +24,8 @@ export const EDITOR_MODE_CATALOGUE = [
     description: 'Run a live session: timers, votes, polls and reveals.',
   },
   {
-    id: 'illustrate',
-    label: 'Illustrate',
+    id: 'pages',
+    label: 'Pages',
     description: 'Lay out slides, infographics, articles and logos on pages.',
   },
   {
@@ -77,9 +77,13 @@ export function isEditorMode(v: unknown): v is EditorMode {
   return EDITOR_MODES.includes(v as EditorMode);
 }
 
-// Illustrate mode was called Infographic mode, and stored as `infographic` wherever a mode is kept
-// (a tab's opensIn, a remembered mode, a placement-default key).
-const LEGACY_EDITOR_MODES: Readonly<Record<string, EditorMode>> = { infographic: 'illustrate' };
+// Pages mode was called Illustrate mode, and Infographic mode before that, and stored as `illustrate` or
+// `infographic` wherever a mode is kept (a tab's opensIn, a remembered mode, a placement-default key,
+// a `/new?mode=` link).
+const LEGACY_EDITOR_MODES: Readonly<Record<string, EditorMode>> = {
+  illustrate: 'pages',
+  infographic: 'pages',
+};
 
 /** A stored mode as today's id: a current id as it is, a legacy one renamed, anything else
  *  undefined. Read every stored mode through this. */
@@ -120,10 +124,10 @@ export function hasBoardLook(mode: EditorMode): boolean {
   return mode === 'draw';
 }
 
-// Illustrate mode draws the canvas as pages on a surround (docs/specs/007-editor/editor-modes.md
+// Pages mode draws the canvas as pages on a surround (docs/specs/007-editor/editor-modes.md
 // "The pages"); a view of the tab, like the board look, never stored.
 export function hasPageLook(mode: EditorMode): boolean {
-  return mode === 'illustrate';
+  return mode === 'pages';
 }
 
 // Plan mode works Plan boards as a planning tool (docs/specs/026-plan/plan-mode.md): pressing a card

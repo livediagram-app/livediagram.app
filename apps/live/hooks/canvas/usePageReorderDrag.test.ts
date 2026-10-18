@@ -1,12 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { layOutIllustratePages } from '@livediagram/document';
+import { layOutPages } from '@livediagram/document';
 import { reorderSlot } from './usePageReorderDrag';
 
-// docs/specs/007-editor/illustrate-pages.md "Getting around the pages": a dragged label's page
+// docs/specs/007-editor/pages-mode.md "Getting around the pages": a dragged label's page
 // lands after every other page whose centre is left of its own.
-const pages = layOutIllustratePages(
-  ['a', 'b', 'c'].map((id) => ({ id, orientation: 'portrait' as const })),
-);
+const pages = layOutPages(['a', 'b', 'c'].map((id) => ({ id, orientation: 'portrait' as const })));
 const centre = (i: number) => pages[i]!.rect.x + pages[i]!.rect.width / 2;
 
 describe('reorderSlot', () => {
@@ -19,7 +17,7 @@ describe('reorderSlot', () => {
 });
 
 describe('reorderSlot with documents', () => {
-  const row = layOutIllustratePages([
+  const row = layOutPages([
     { id: 'a', orientation: 'portrait' },
     { id: 'd1', orientation: 'portrait', kind: 'article', flow: 'f' },
     { id: 'd2', orientation: 'portrait', kind: 'article', flow: 'f' },

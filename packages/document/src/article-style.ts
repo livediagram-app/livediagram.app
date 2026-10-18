@@ -4,7 +4,7 @@
 // the exports read the same numbers.
 import { articlesOf } from './article-flow';
 import { withArticleFlow } from './article-pages';
-import { illustratePagesOf, withIllustratePages } from './illustrate-page';
+import { pagesOf, withPages } from './page';
 import type { Tab } from './index';
 import type {
   ArticleLineSpacing,
@@ -203,7 +203,7 @@ export function withArticleStyleChanged<
   const ruledBefore = was?.look === 'notebook';
   const ruledNow = 'look' in change && ARTICLE_LOOKS[change.look].ruled;
   if (ruledNow !== ruledBefore && 'look' in change) {
-    const pages = illustratePagesOf(next).map((p) => {
+    const pages = pagesOf(next).map((p) => {
       if (p.flow !== flow) return p;
       const background = { ...p.background };
       if (ruledNow) background.pattern = 'lines';
@@ -212,7 +212,7 @@ export function withArticleStyleChanged<
       void _b;
       return background.fill || background.pattern ? { ...own, background } : own;
     });
-    next = withIllustratePages(next, pages);
+    next = withPages(next, pages);
   }
   return next;
 }

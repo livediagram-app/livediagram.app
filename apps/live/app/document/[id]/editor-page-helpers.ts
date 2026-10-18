@@ -146,7 +146,7 @@ function sameTabContent(prev: Tab | undefined, current: Tab): boolean {
     const b = current.elements[i];
     if (a !== b && JSON.stringify(a) !== JSON.stringify(b)) return false;
   }
-  // The rest of the tab key by key, identity first too: an Illustrate tab's articles and pages are large,
+  // The rest of the tab key by key, identity first too: a Pages tab's articles and pages are large,
   // and serialising all of it on both sides every autosave cost the most when nothing in it had changed.
   const prevMeta = prev as unknown as Record<string, unknown>;
   const currentMeta = current as unknown as Record<string, unknown>;

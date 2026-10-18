@@ -1,5 +1,5 @@
 // An article's writing as the Markdown agents read and write (docs/specs/024-agents/
-// illustrate-for-agents.md "write_article", "Reading: the pages view"): the editor's paste reading
+// pages-for-agents.md "write_article", "Reading: the pages view"): the editor's paste reading
 // (article-markdown) plus what only an agent's text carries, front matter for the title and
 // subtitle, `\pagebreak` lines and `[zone <id>]` lines standing for the article's zones. Both ways
 // are pure; reading back what was written keeps every block's type, style, list, level, check and

@@ -34,7 +34,7 @@ export function useCanvasSurface(): CanvasSurface {
   return useContext(CanvasSurfaceContext);
 }
 
-// Illustrate pages with a fill of their own (docs/specs/007-editor/illustrate-pages.md "A dark page
+// Pages with a fill of their own (docs/specs/007-editor/pages-mode.md "A dark page
 // has light ink"): the surface of each element on one, by id, over the canvas's own.
 const PageSurfacesContext = createContext<ReadonlyMap<string, CanvasSurface> | null>(null);
 
@@ -59,7 +59,7 @@ export function useElementSurface(elementId: string): CanvasSurface {
   return useContext(PageSurfacesContext)?.get(elementId) ?? canvas;
 }
 
-// What each chart on a page with a fill sits on (docs/specs/007-editor/illustrate-pages.md "Charts
+// What each chart on a page with a fill sits on (docs/specs/007-editor/pages-mode.md "Charts
 // adapt as they are drawn"), by id: the tones its series and text are adapted to as it is drawn.
 const ChartGroundsContext = createContext<ReadonlyMap<string, readonly string[]> | null>(null);
 
