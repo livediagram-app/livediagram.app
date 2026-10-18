@@ -15,7 +15,7 @@ export function inkOn(accent: string): string {
   return light >= dark ? LIGHT_INK : DARK_INK;
 }
 
-// WCAG AA for the button labels (docs/specs/004-interface-design/accessibility.md).
+// WCAG AA for the button labels (docs/specs/004-interface-design/color-scheme.md).
 const LABEL_CONTRAST_MIN = 4.5;
 
 // The accent as a label on a white button (the banner's primary button): the accent itself where it reads there, else

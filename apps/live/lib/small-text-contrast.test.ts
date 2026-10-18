@@ -3,7 +3,7 @@ import { fileURLToPath } from 'node:url';
 import { join, relative } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
-// Small text in the editor's chrome reads at WCAG AA (4.5:1, docs/specs/004-interface-design/accessibility.md).
+// Small text in the editor's chrome reads at WCAG AA (4.5:1, docs/specs/004-interface-design/color-scheme.md).
 // slate-300 and slate-400 are too pale for text on the white and near-white surfaces the chrome uses (2.6:1 at best),
 // and slate-500 too pale on a slate-100 or slate-200 chip (4.3:1 and 3.9:1). This scans every class string that sets a
 // small text size and fails one that pairs it with those light-mode colours; a `dark:` (or other variant) colour, a
