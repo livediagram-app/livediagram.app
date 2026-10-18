@@ -63,6 +63,17 @@ describe('StartFromTemplates', () => {
   });
 });
 
+// docs/specs/007-editor/start-diagramming.md "On a phone": the sheet stands on the tab bar, so the tabs stay in reach.
+describe('StartFromTemplates on a phone', () => {
+  it('stands its sheet on the tab bar rather than over it', () => {
+    mount('diagram');
+    const panel = screen.getByRole('heading', { name: 'Start Diagramming' }).closest('section')!;
+    const frame = panel.parentElement!;
+    expect(frame.className).toContain('max-sm:pb-[var(--start-floor)]');
+    expect(frame.style.getPropertyValue('--start-floor')).toMatch(/^calc\(3rem \+ /);
+  });
+});
+
 describe('StartFromTemplates, switching category', () => {
   it('opens the picked category at the top of its cards', () => {
     mount('diagram');

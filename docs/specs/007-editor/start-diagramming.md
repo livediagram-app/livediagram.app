@@ -203,9 +203,10 @@ They are kept for the browser tab only and read once (`start-query.ts`).
   ([Diagram tour](editor-tour.md) "Look").
 - **Entrance.** The panel rises in with the dialog entrance (`animate-dialog-in`; a fade alone under reduced
   motion), and its cards and rail cascade in after it (`lvd-cascade`).
-- **On a phone** the panel is a sheet risen from the bottom edge (`animate-sheet-up`), full width below the top bar,
-  over the tab bar, clear of the home indicator, with the grab handle every phone sheet has. A start that cannot
-  close (Start Planning) settles back when dragged.
+- **On a phone** the panel is a sheet risen from the bottom (`animate-sheet-up`), full width below the top bar,
+  standing on the tab bar, with the grab handle every phone sheet has. A start that cannot close (Start Planning)
+  settles back when dragged. The tab bar stays in reach: over it, a new Plan tab's start left no way back to the
+  document's other tabs, nor to the tab's menu, but choosing a template.
 - **On a short window** (under 500px tall, whatever the pointer: a phone held sideways, or a laptop zoomed to 200%,
   720×450) the panel clears only the palette strip's height (`pt-16`) and lies over the bottom cluster (`pb-2`, the
   overlay layer), as on a sideways phone. With the desktop clearances (8.5rem above, 7rem below) a 450px window left

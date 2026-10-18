@@ -231,10 +231,17 @@ export function StartPanel<C extends string>({
   );
   return (
     // Clear of the top chrome (the menu button and the palette strip, 8.5rem down) and the bottom clusters. On a phone,
-    // over the tab bar and docked to the bottom edge below the top bar, as the phone's sheets are. On a short window
+    // a sheet below the top bar standing on the tab bar. On a short window
     // (a phone held sideways, 390px tall with its bars folded, or a desktop zoomed to 200%, 450px) those two clearances
-    // left the list 56px to 96px: there it clears only the strip and lies over the bottom cluster.
-    <div className="pointer-events-none absolute inset-0 z-[var(--z-panel)] flex items-center justify-center p-4 pb-28 pt-[8.5rem] max-sm:z-[var(--z-overlay)] max-sm:items-end max-sm:px-0 max-sm:pb-0 max-sm:pt-20 short-window:z-[var(--z-overlay)] short-window:pb-2 short-window:pt-16">
+    // left the list 56px to 96px: there it clears only the strip and lies over the bottom cluster, clear of the home
+    // indicator, the one place it still meets the bottom edge.
+    <div
+      className="pointer-events-none absolute inset-0 z-[var(--z-panel)] flex items-center justify-center p-4 pb-28 pt-[8.5rem] max-sm:z-[var(--z-overlay)] max-sm:items-end max-sm:px-0 max-sm:pb-[var(--start-floor)] max-sm:pt-20 short-window:z-[var(--z-overlay)] short-window:pb-2 short-window:pt-16"
+      // On a phone the sheet stands on the tab bar (its 48px row and the bottom inset, as TabBar sizes itself), so
+      // the tabs stay in reach: Start Planning cannot close, and over the bar it left a new tab no way back to the
+      // others but a template.
+      style={{ '--start-floor': `calc(3rem + ${safeInset('bottom')})` } as CSSProperties}
+    >
       <section
         aria-labelledby={titleId}
         // Escape closes a start that can close, as its × does, once the search has nothing to clear (the search box
@@ -246,13 +253,13 @@ export function StartPanel<C extends string>({
           onClose();
         }}
         // One height whatever the category shows, so the panel never jumps as it changes.
-        className={`pointer-events-auto flex h-full max-h-[46rem] w-full max-w-5xl flex-col overflow-hidden rounded-3xl border shadow-2xl max-sm:max-h-none max-sm:rounded-b-none max-sm:rounded-t-2xl max-sm:border-b-0 ${
+        className={`pointer-events-auto flex h-full max-h-[46rem] w-full max-w-5xl flex-col overflow-hidden rounded-3xl border shadow-2xl max-sm:max-h-none max-sm:rounded-b-none max-sm:rounded-t-2xl max-sm:border-b-0 short-window:pb-[var(--start-inset)] ${
           swapped ? '' : 'animate-dialog-in max-sm:animate-sheet-up'
         }`}
         style={
           {
             ...sheet.style,
-            paddingBottom: safeInset('bottom'),
+            '--start-inset': safeInset('bottom'),
             backgroundColor: palette.card,
             borderColor: palette.border,
             color: palette.text,
