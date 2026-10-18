@@ -24,6 +24,14 @@ const SPARKLE = (
     <path d="M12 3l1.9 6.1L20 11l-6.1 1.9L12 19l-1.9-6.1L4 11l6.1-1.9z" />
   </Icon>
 );
+const PEOPLE = (
+  <Icon>
+    <circle cx="9" cy="8" r="3" />
+    <path d="M3 19a6 6 0 0 1 12 0" />
+    <circle cx="17" cy="9" r="2.5" />
+    <path d="M16 14.2a4.5 4.5 0 0 1 5 4.8" />
+  </Icon>
+);
 const PAGE = (
   <Icon>
     <rect x="5" y="3" width="14" height="18" rx="2" />
@@ -54,6 +62,13 @@ export const ACCOUNT_PITCH_ROWS: readonly PitchRow[] = [
     lead: 'Every device',
     title: 'Your documents sync',
     line: 'Start on a laptop, pick up on a phone.',
+  },
+  {
+    tone: 'violet',
+    icon: PEOPLE,
+    lead: 'Teams',
+    title: 'Create and join teams',
+    line: 'Share a workspace with the people you work with.',
   },
   {
     tone: 'sky',

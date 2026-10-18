@@ -79,13 +79,26 @@ the marketing site's "No Catch" night section:
   sits at the top right, because the canvas never needs an account. It goes back to the page's `?redirect_url` when
   that is safe and is not itself a signed-in-only page (`/oauth/*`, `/workbench/*`), and to `/new` otherwise
   (`guestReturnHref`). The connect pages have no guest link: they only work signed in.
-- **The card.** A frosted card holding the page's title (the `h1`: "Welcome back", "Create your account", "Check your
+- **The card.** A near-opaque card (no backdrop blur, so the lines moving behind it never make it repaint) holding the page's title (the `h1`: "Welcome back", "Create your account", "Check your
   email" on the code step), an optional line under it, the error or notice, the form and the cross-link footer.
-- **The pitch.** Beside the card, an eyebrow, a heading and three promise rows, each a tinted icon, a coloured lead
-  and a line. The account pages say what an account adds ("No catch": every device, AI tools, 0 paywalls); the connect
+- **The pitch.** Beside the card, an eyebrow, a heading and its promise rows (four on the account pages, three on the connect pages), each a tinted icon, a coloured lead
+  and a line. The account pages say what an account adds ("No catch": every device, teams to create and join, AI tools, 0 paywalls); the connect
   pages say what connecting means ("Connect": live, your call, revoke any time). The pitch holds no controls.
-- **Two decorative lines** trace in slowly behind the content on wide screens: hidden from assistive technology, still
-  under reduced motion, and absent below the `lg` breakpoint.
+- **Decorative lines keep drawing** behind the content on wide screens, in any direction: four slots each take a
+  random route that enters through one edge and leaves through another, bending across the stage on the way
+  (`randomTrace`, `components/chrome/auth-lines.ts`). A route draws in, holds, then trails off the far edge over 14
+  seconds, and its slot takes a fresh route the moment it ends; the first round starts the slots a quarter cycle apart,
+  so a new line is always on its way. Routes are chosen in the browser after mount. They are hidden from assistive
+  technology and absent below the `lg` breakpoint. Under reduced motion (the OS setting or the person's own preference)
+  two fixed routes through the margins stand still, fully drawn, and nothing moves.
+- **The entrance** draws the page in a beat at a time, at the marketing hero's pace
+  ([Motion](../004-interface-design/motion.md#content-pacing)): the header, eyebrow and heading rise in, the card lands
+  with a slight tilt and overshoot like a shape dropped on the canvas, the promise rows slide in like stickies being
+  placed and each row's icon pops once its row has landed. Everything has settled by about 660ms; under reduced motion
+  the page simply appears.
+- **Large screens.** From `2xl` the frame widens to 88rem, the pitch heading grows, the promise rows sit in a
+  two-by-two grid and the card gains room; from 1920px the whole frame (not the lines) is zoomed 1.2 times, and 1.35
+  times from 2400px, so a big monitor is filled at a readable size rather than left with a small island.
 - **Both themes.** Dark mode wears the Midnight palette (the root carries `data-palette="midnight"` while the frame is
   mounted, as on the Explorer; [Colour scheme](../004-interface-design/color-scheme.md#explorer-midnight)), so the
   page is the night section itself. Light mode is the same layout on a pale dotted ground (`slate-100`) with a white
