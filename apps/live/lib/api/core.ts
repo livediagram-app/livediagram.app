@@ -416,9 +416,15 @@ export class ApiError extends Error {
 }
 
 // The ApiError for a non-2xx, reported to error telemetry on the way out.
-async function failedResponse(res: Response, action: string): Promise<ApiError> {
+// `expected`: a refusal the caller retries (a sheet's create racing its tab's first save), reported only if it is
+// still there on the last try, so a race the retry settles counts as no error.
+async function failedResponse(
+  res: Response,
+  action: string,
+  expected?: (code: string | null) => boolean,
+): Promise<ApiError> {
   const code = await readErrorCode(res);
-  reportApiError(res.status, action, code);
+  if (!expected?.(code)) reportApiError(res.status, action, code);
   const err = new ApiError(action, res.status, code);
   markReported(err);
   return err;
@@ -428,9 +434,13 @@ async function failedResponse(res: Response, action: string): Promise<ApiError> 
 // an `ApiError` (status + the worker's error token) on non-2xx,
 // otherwise parse JSON. The `action` string gets baked into the thrown
 // message so debugging keeps the caller's intent without a stack walk.
-export async function expectOk<T>(res: Response, action: string): Promise<T> {
+export async function expectOk<T>(
+  res: Response,
+  action: string,
+  expected?: (code: string | null) => boolean,
+): Promise<T> {
   if (!res.ok) {
-    throw await failedResponse(res, action);
+    throw await failedResponse(res, action, expected);
   }
   return (await res.json()) as T;
 }

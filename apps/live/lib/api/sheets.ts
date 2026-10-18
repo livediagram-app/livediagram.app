@@ -89,6 +89,8 @@ export async function createSheet(
   scope: SheetsScope,
   create: SheetCreateRequest,
   by: SheetPerson,
+  // The create will be retried if its tab is not saved yet: that refusal is no error to report.
+  { tabMayBeUnsaved = false }: { tabMayBeUnsaved?: boolean } = {},
 ): Promise<SheetJson> {
   if (await isOfflineId(scope.documentId))
     return (await offline()).offlineCreateSheet(scope.documentId, create, by);
@@ -97,7 +99,13 @@ export async function createSheet(
     headers: await apiHeaders(scope.ownerId, { share: scope.shareCode, body: true }),
     body: JSON.stringify(create),
   });
-  return (await expectOk<SheetResponse>(res, 'sheet create')).sheet;
+  return (
+    await expectOk<SheetResponse>(
+      res,
+      'sheet create',
+      (code) => tabMayBeUnsaved && code === 'tab_not_found',
+    )
+  ).sheet;
 }
 
 export async function writeSheet(

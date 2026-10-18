@@ -31,7 +31,7 @@ import {
   tabForWire,
 } from './core';
 import { resetApiWriteListeners, subscribeApiWrites } from './write-signal';
-import { setApiWarningReporter } from './error-report';
+import { setApiErrorReporter, setApiWarningReporter } from './error-report';
 
 const H = (h: HeadersInit) => h as Record<string, string>;
 
@@ -192,6 +192,27 @@ describe('expectOk / expectOkOrNull / expectOkVoid', () => {
     expect(await expectOkOrNull(err(404), 'read')).toBeNull();
     expect(await expectOkOrNull<{ a: number }>(ok({ a: 2 }), 'read')).toEqual({ a: 2 });
     await expect(expectOkOrNull(err(500), 'read')).rejects.toBeInstanceOf(ApiError);
+  });
+
+  it('expectOk throws but reports nothing for a refusal the caller expects and retries', async () => {
+    const reported: string[] = [];
+    setApiErrorReporter((type) => reported.push(type));
+    try {
+      const expected = (code: string | null) => code === 'tab_not_found';
+      await expect(
+        expectOk(err(404, 'tab_not_found'), 'sheet create', expected),
+      ).rejects.toMatchObject({
+        status: 404,
+        code: 'tab_not_found',
+      });
+      expect(reported).toEqual([]);
+      await expect(
+        expectOk(err(404, 'sheet_not_found'), 'sheet create', expected),
+      ).rejects.toBeInstanceOf(ApiError);
+      expect(reported).toEqual(['Http404.SheetCreate.SheetNotFound']);
+    } finally {
+      setApiErrorReporter(null);
+    }
   });
 
   it('expectOkVoid resolves on 2xx and throws otherwise', async () => {
