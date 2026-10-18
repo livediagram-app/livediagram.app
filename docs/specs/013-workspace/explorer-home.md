@@ -151,6 +151,10 @@ the **4 most used** and the **4 most recent**, no document twice.
   a large card's thumbnail, at the right end of a compact card, and at the top right of a phone tile's thumbnail. A
   right-click anywhere on the card opens it too. Under a mouse the button shows while the card is hovered or has
   keyboard focus; on touch it always shows. It is a button beside the card's link, never inside it.
+  - The menu opens **beside the card**, out of its way, never over it: to the card's right with its top level with
+    the card's, or to its left when the right has no room. Only when neither side has room (a phone, a narrow
+    window) does it hang below the ⋯ as other menus do. Either way it stays inside the window. The ⋯ and a
+    right-click open it in the same place.
   - **Rename** edits the name in place on the card, as on an Explorer card; while renaming, the card does not open.
   - What changes shows at once: a renamed document shows its new name, and a document moved to the Trash or taken
     off Shared With Me leaves Jump Back In (and comes back if the move is undone).
