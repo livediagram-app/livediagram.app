@@ -52,6 +52,7 @@ export function ShareDialog({
   syncReady = true,
   community,
   communityListed = false,
+  teamDocument = false,
   passwordLockedReason,
   onClose,
 }: ShareDialogProps) {
@@ -176,6 +177,7 @@ export function ShareDialog({
             passes={activeLinks.length}
             password={sharePasswordSet}
             community={communityListed}
+            team={teamDocument}
           />
         }
       >

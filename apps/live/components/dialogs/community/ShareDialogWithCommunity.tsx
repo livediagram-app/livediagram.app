@@ -38,7 +38,7 @@ export function ShareDialogWithCommunity({
   const picture = usePublishedPicture();
   const [publishing, setPublishing] = useState(false);
 
-  if (!communityOn) return <ShareDialog {...share} />;
+  if (!communityOn) return <ShareDialog {...share} teamDocument={teamDocument} />;
 
   if (publishing && documentId) {
     return (
@@ -61,6 +61,7 @@ export function ShareDialogWithCommunity({
   return (
     <ShareDialog
       {...share}
+      teamDocument={teamDocument}
       passwordLockedReason={
         community.post?.state === 'listed' ? communityCodeMessage('community_published') : null
       }

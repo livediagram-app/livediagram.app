@@ -151,8 +151,8 @@ alongside Clerk + the guest header:
    checked again in the UPDATE's WHERE, so a burst of MCP tool calls (3 to 6
    api requests each) costs one write a minute rather than one per request.
    Its only reader, the Settings token card, works at day grain. (A token and a JWT can't both be the bearer.) An `lvd_`
-   bearer with no such row (unknown, revoked or expired) is refused there and
-   then with `401 invalid_token` and `WWW-Authenticate: Bearer
+   bearer with no such row (unknown, revoked or expired), or one too short to be a token at all (cut short or
+   mistyped when pasted), is refused there and then with `401 invalid_token` and `WWW-Authenticate: Bearer
 error="invalid_token"`, on every route: it never falls through to the guest
    path or to no owner, so a script holding a dead token is told so.
 3. Else the guest `X-Owner-Id` path — now requiring a valid HMAC signature on
