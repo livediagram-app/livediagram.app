@@ -1,7 +1,7 @@
 // Explorer structure illustrations (docs/specs/018-help/help-app.md): the full-page Explorer's
 // sidebar groups and pane header, the editor's Explorer popover, the filter lens on Search
 // results, the card view with a folder's preview mosaic, the Change Folder dialog and the folder
-// menu's Use as default for. Every label is the real one from apps/live (sidebar-structure.ts,
+// menu's Use as Default for. Every label is the real one from apps/live (sidebar-structure.ts,
 // PaneHeader.tsx, ViewToggle.tsx, ExplorerHeaderMenu.tsx, MoveToFolderDialog.tsx,
 // folder-actions-menu.tsx, default-key-entries.ts and the explorer-lens catalogue).
 //
@@ -971,13 +971,13 @@ export function MoveToFolderScene() {
   );
 }
 
-/** A folder's menu with Use as default for open: the "New documents that open as" list, one
+/** A folder's menu with Use as Default for open: the "New documents that open as" list, one
  *  checkable entry per kind of new document. */
 export function UseAsDefaultScene() {
   const mx = 16;
   const my = 16;
   const mw = 156;
-  const items = ['Rename', 'New Subfolder', 'Change Folder', 'Use as default for'];
+  const items = ['Rename', 'New Subfolder', 'Change Folder', 'Use as Default for'];
   const kinds = [
     'Diagrams',
     'Whiteboards',

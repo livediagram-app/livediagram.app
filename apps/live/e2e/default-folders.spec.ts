@@ -89,7 +89,7 @@ test.describe('default folders', () => {
     await expect(row).toBeVisible({ timeout: 30_000 });
 
     await row.locator('[data-tree-row]').first().click({ button: 'right' });
-    await page.getByRole('menuitem', { name: 'Use as default for' }).click();
+    await page.getByRole('menuitem', { name: 'Use as Default for' }).click();
     await expect(page.getByText('New documents that open as')).toBeVisible();
     await page.getByRole('menuitemcheckbox', { name: 'Retrospectives' }).click();
     await expect(page.getByRole('menuitemcheckbox', { name: 'Retrospectives' })).toHaveAttribute(
@@ -110,7 +110,7 @@ test.describe('default folders', () => {
       .locator('[data-tree-row]')
       .first()
       .click({ button: 'right' });
-    await page.getByRole('menuitem', { name: 'Use as default for' }).click();
+    await page.getByRole('menuitem', { name: 'Use as Default for' }).click();
     await expect(page.getByRole('menuitemcheckbox', { name: 'Diagrams' })).toHaveAttribute(
       'aria-disabled',
       'true',

@@ -229,7 +229,9 @@ triangle|circle|cross`); `GraphNode` carries an optional `link` URL —
   at top level) are swept into rows below the laid-out graph instead of
   piling at the origin.
 - **`mermaidFromTab(tab)`** → a `flowchart TD` string. Boxed nodes become
-  `id["label"]` with the bracket for their shape; frames become `subgraph`
+  `id["label"]` with the bracket for their shape; a document or a triangle, which have no bracket, is written in the
+  attribute form the import reads (`id@{ shape: doc, label: "…" }`, `tri`), a `}` in its label as `#125;`, so the
+  shape survives a round trip; frames become `subgraph`
   blocks; arrows become `from --> to` with `|label|`, choosing the operator
   from the arrow's real stroke/ends/head fields (dashed → `-.->`, thick →
   `==>`, no head → `---`, both heads → `<-->`, head-at-from exports with the

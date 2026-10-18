@@ -31,8 +31,13 @@ export function planTabKindOf(tab: Pick<Tab, 'kind'>): PlanTabKind | null {
   return kind === 'board' || kind === 'sheet' || kind === 'dashboard' ? kind : null;
 }
 
+// A Form tab: the form is no element, so its canvas is empty and every picture or outline of it was blank; only the
+// JSON carries it (and imports back as the form).
+const FORM_TAB_FORMATS = ['file'] as const satisfies readonly ExportFormatKey[];
+
 // The formats offered for the tab, in the dialog's order; undefined offers every one (any other tab).
 export function exportFormatsFor(tab: Pick<Tab, 'kind'>): readonly ExportFormatKey[] | undefined {
+  if (tabKindOf(tab) === 'form') return FORM_TAB_FORMATS;
   const kind = planTabKindOf(tab);
   return kind ? PLAN_TAB_FORMATS[kind] : undefined;
 }

@@ -263,6 +263,13 @@ describe('applyReplace refusals', () => {
     expect(refusal({ template: 7 }).code).toBe('invalid_value');
   });
 
+  // docs/specs/030-forms/forms.md "As templates": a form template starts a form, which only the editor makes.
+  it('refuses a form template as made in the editor only, saying how its form is made', () => {
+    const rejection = refusal({ template: 'contact-form' });
+    expect(rejection.details).toEqual(['template="contact-form": made in the editor only']);
+    expect(rejection.hint).toContain('make it with add_form (starter "contact")');
+  });
+
   it('refuses elements that are not a list, or an element the format does not allow', () => {
     expect(refusal({ elements: 'x' }).details).toEqual(['elements: expected an array of elements']);
     expect(refusal({ elements: [{ id: 'x', type: 'sticky' }] }).details).toEqual([

@@ -17,6 +17,8 @@ const tabFlag = z
   .optional()
   .describe('The Form tab, by name or id; the first when omitted');
 const HINT = 'read the form with: livediagram form get <doc>';
+// A document with no Form tab has no form to read: the hint makes one instead.
+const NO_FORM_HINT = 'make one with: livediagram form add <doc> --starter contact';
 
 const readingOutput = z.object({
   documentId: z.string(),
@@ -39,7 +41,7 @@ function outputOf(ctx: VerbContext, result: FormCallResult): ReadingOutput {
       status: result.code.endsWith('_unknown') || result.code === 'form_tab_none' ? 404 : 400,
       code: result.code,
       message: result.message,
-      hint: HINT,
+      hint: result.code === 'form_tab_none' ? NO_FORM_HINT : HINT,
     });
   const r: FormReading = result.reading;
   return {

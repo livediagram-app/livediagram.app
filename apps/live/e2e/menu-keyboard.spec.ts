@@ -63,7 +63,7 @@ test.describe('menus by keyboard', () => {
     await page.setViewportSize({ width: 1280, height: 800 });
   });
 
-  test('the folder menu and its Use as default for submenu', async ({
+  test('the folder menu and its Use as Default for submenu', async ({
     page,
     pageErrors,
     baseURL,
@@ -83,7 +83,7 @@ test.describe('menus by keyboard', () => {
         - menuitem "Rename"
         - menuitem "New Subfolder"
         - menuitem "Change Folder"
-        - menuitem "Use as default for"
+        - menuitem "Use as Default for"
         - separator
         - menuitem "Delete"
     `);
@@ -93,7 +93,7 @@ test.describe('menus by keyboard', () => {
     await expect(menu.getByRole('menuitem', { name: 'Delete' })).toBeFocused();
     await page.keyboard.press('Home');
     await page.keyboard.press('u');
-    const useAs = menu.getByRole('menuitem', { name: 'Use as default for' });
+    const useAs = menu.getByRole('menuitem', { name: 'Use as Default for' });
     await expect(useAs).toBeFocused();
     await expect(useAs).toHaveAttribute('aria-haspopup', 'menu');
     await shot(page, 'after-folder-menu-focus');
@@ -246,7 +246,7 @@ test.describe('menus by keyboard', () => {
     await expect(sub.getByRole('menuitemcheckbox', { name: 'Diagrams' })).toBeFocused();
     // The drill-down's header draws first but reads last, so focus opened on the first entry.
     const items = await sub.getByRole('menuitem').or(sub.getByRole('menuitemcheckbox')).all();
-    expect(await items.at(-1)!.getAttribute('aria-label')).toBe('Close Use as default for');
+    expect(await items.at(-1)!.getAttribute('aria-label')).toBe('Close Use as Default for');
     await shot(page, 'after-phone-folder-submenu');
     await page.keyboard.press('Escape');
     await expect(sub).toHaveCount(0);

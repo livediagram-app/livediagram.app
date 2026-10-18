@@ -21,7 +21,7 @@ export type FolderActionBundle = {
   newSubfolder: () => void;
   move: () => void;
   delete: () => void;
-  // "Use as default for" (docs/specs/013-workspace/default-folders.md); absent until the defaults load.
+  // "Use as Default for" (docs/specs/013-workspace/default-folders.md); absent until the defaults load.
   defaults?: DefaultFolderMenu;
 };
 export type FolderActions = (f: Folder, anchor: HTMLElement | null) => FolderActionBundle;

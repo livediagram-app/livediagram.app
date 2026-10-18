@@ -15,6 +15,10 @@ describe('the formats a tab exports to', () => {
     expect(exportFormatsFor({ kind: 'dashboard' })).toEqual(['png', 'svg', 'pdf', 'file']);
   });
 
+  it('offers a Form tab only the JSON, the one format that carries its form', () => {
+    expect(exportFormatsFor({ kind: 'form' })).toEqual(['file']);
+  });
+
   it('never offers a Plan tab Mermaid or Excalidraw', () => {
     for (const kind of ['board', 'sheet', 'dashboard'] as const)
       for (const f of ['mermaid', 'excalidraw', 'logo-kit', 'gif'] as const)

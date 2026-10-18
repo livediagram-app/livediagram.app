@@ -212,7 +212,13 @@ describe('document rename, share, rm and restore', () => {
 
 describe('tab add, rename and rm', () => {
   it('adds a tab as a replace changeset on a new id, based on revision 0', async () => {
-    const { seen, route } = recorder(() => Response.json(written('+ n1  square "A"')));
+    const { seen, route } = recorder(() =>
+      Response.json(
+        written(
+          `+ n1  square "A"\nrev 0→1 · cs_1 · lint clean · revert: livediagram changeset revert ${DOC_A} cs_1`,
+        ),
+      ),
+    );
     const api = fakeApi({
       ...library,
       ...tabsOfA,
@@ -227,7 +233,10 @@ describe('tab add, rename and rm', () => {
       base: { rev: 0 },
       summary: 'Board',
     });
-    expect(tabAdd.text!(out)).toEqual(['+ n1  square "A"']);
+    // Named first, and undone by tab rm: a revert would take its elements and leave the tab.
+    expect(tabAdd.text!(out)).toEqual([
+      `+ tab new-1 "Board"\n+ n1  square "A"\nrev 0→1 · cs_1 · lint clean · undo: livediagram tab rm ${DOC_A} new-1`,
+    ]);
     expect(tabAdd.quiet!(out)).toEqual(['cs_1']);
     expect(tabAdd.quiet!({ ...out, changeset: null })).toEqual([]);
   });

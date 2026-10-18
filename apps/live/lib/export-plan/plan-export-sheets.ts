@@ -9,7 +9,7 @@ import {
   type SheetRenderModel,
   type Tab,
 } from '@livediagram/document';
-import { renderFrameWindow, sheetFramesOf } from '@livediagram/sheets';
+import { renderFrameWindow, sheetContentSize, sheetFramesOf } from '@livediagram/sheets';
 import type { SheetStore } from '@/components/sheets/sheet-store-client';
 import { sheetMetricShown } from '@/components/plan/dashboard/sheet-metric-shown';
 import type { SheetMetricArt } from '@livediagram/plan-art';
@@ -27,6 +27,22 @@ export function sheetModelsFor(
     if (!sheet) continue;
     const model = renderFrameWindow(store.workbook(sheet.tabId), frame);
     if (model) out.set(frame.sheetId, model);
+  }
+  return out;
+}
+
+// The grid each framed Sheet's cells fill, by sheet id (sheetContentSize): a Sheet tab's image grows its Sheet to it,
+// so every filled cell is in the picture, as the tab shows it. A sheet the store has not loaded, or an empty one, is
+// left out (it keeps its frame's size).
+export function sheetContentsFor(
+  elements: readonly Element[],
+  store: Pick<SheetStore, 'sheet'>,
+): Map<string, { width: number; height: number }> {
+  const out = new Map<string, { width: number; height: number }>();
+  for (const frame of sheetFramesOf(elements)) {
+    const sheet = store.sheet(frame.sheetId);
+    const size = sheet ? sheetContentSize(sheet) : null;
+    if (size) out.set(frame.sheetId, size);
   }
   return out;
 }

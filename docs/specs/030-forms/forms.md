@@ -100,7 +100,10 @@ Slate) and a `/new?template=` link as it is from Start Planning. A form template
 editor starts the starter's form on it: from the template step at once, from `/new` once the new document's tab is
 open (the starter waits in `sessionStorage` under the tab's id, `lib/pending-form-start.ts`). The tab's name, when it
 has one of its own, names the form and its Responses tab. Only the editor can start a form (its card type, its sheet),
-so form templates are `editorOnly`: left out of the agents' catalogue (`list_templates`).
+so form templates are `editorOnly`: left out of the agents' catalogue (`list_templates`), and refused where an agent
+names one (`create_document`, `add_tab`, a changeset's `replace`, the CLI's `--template`) with how its form is made
+instead: "`contact-form` starts a form, which only the editor makes from a template: make it with add_form (starter
+`contact`)". Built there, it was an empty Plan tab and no form.
 
 **From a board**: a Board tab's board (not an All Cards or Archive one) offers **New Form** as its own row at the end of
 its cog's menu, for an Editor. It makes a Blank form named "<Board> Form" on a new Form tab right after the board's

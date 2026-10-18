@@ -67,9 +67,9 @@ describe('slide pages', () => {
   });
 
   it('are labelled as slides', () => {
-    expect(pageLabel(newSlidePage('s'), 0, 1)).toBe('Slide (16:9) · Slide');
+    expect(pageLabel(newSlidePage('s'), 0, 1)).toBe('Slide (16:9)');
     expect(pageLabel({ ...newSlidePage('s', 'slide-classic'), name: 'Intro' }, 1, 3)).toBe(
-      'Intro · Classic slide (4:3) · Slide',
+      'Intro · Classic slide (4:3)',
     );
   });
 });

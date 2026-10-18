@@ -131,7 +131,10 @@ export function FormStatusBar({
               className="flex shrink-0 cursor-pointer items-center gap-1.5 rounded-md px-1.5 py-0.5 font-medium text-amber-800 hover:bg-amber-50 dark:text-amber-200 dark:hover:bg-amber-500/10"
             >
               <WarningIcon aria-hidden />
-              Problems<span className="max-sm:hidden"> with this Form</span>
+              {/* One flex item, so the button's gap falls after the icon and never inside the words. */}
+              <span>
+                Problems<span className="max-sm:hidden"> with this Form</span>
+              </span>
             </button>
           </Tooltip>
         ) : null}

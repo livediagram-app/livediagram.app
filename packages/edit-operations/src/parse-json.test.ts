@@ -82,7 +82,7 @@ describe('validateEditOperations', () => {
     ).toEqual([
       'add takes exactly one of "kind", "element" (in a line: add <kind> key=value…)',
       'add takes exactly one of "kind", "element" (in a line: add <kind> key=value…)',
-      'move takes exactly one of "place", "by" (in a line: a placement such as below=n3, or by=dx,dy)',
+      'move takes exactly one of "place", "by" (in a line: a placement such as below:n3 or right-of:n3, or by=dx,dy)',
       'rewire takes at least one of "from", "to" (in a line: from=<x>, to=<y> or both)',
       'order takes exactly one of "to", "above", "below" (in a line: front, back, above=<x> or below=<x>)',
       'wrap takes at most one of "absorb", "makeRoom" (in a line: absorb or make-room)',

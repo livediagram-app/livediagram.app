@@ -1,7 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { Workbook, sheetFromJson, type Sheet } from '@livediagram/sheets';
 import type { DashboardLayout, Tab } from '@livediagram/document';
-import { sheetMetricsFor, sheetModelsFor, sheetTabsToLoad } from './plan-export-sheets';
+import {
+  sheetContentsFor,
+  sheetMetricsFor,
+  sheetModelsFor,
+  sheetTabsToLoad,
+} from './plan-export-sheets';
+import { sheetContentSize } from '@livediagram/sheets';
 import { shape } from '@livediagram/plan-art/test-fixtures';
 
 // docs/specs/026-plan/plan-tabs.md "Export", docs/specs/029-sheets/sheet.md "Exports and images": an image draws the
@@ -56,6 +62,13 @@ const metricLayout = (sheetId: string): DashboardLayout => ({
 });
 
 describe('the Sheets an image reads', () => {
+  it('measures the grid each framed Sheet’s cells fill, leaving out one it has not loaded', () => {
+    const missing = shape('m', 'plan-sheet', { planSheet: { sheetId: 'not-loaded' } });
+    const contents = sheetContentsFor([sheetEl, missing], store);
+    expect([...contents.keys()]).toEqual(['sheet-one']);
+    expect(contents.get('sheet-one')).toEqual(sheetContentSize(budget));
+  });
+
   it('works out each framed Sheet’s cells from the store, leaving out one it has not loaded', () => {
     const models = sheetModelsFor(
       [sheetEl, shape('t', 'plan-sheet', { planSheet: { sheetId: 'not-loaded' } })],

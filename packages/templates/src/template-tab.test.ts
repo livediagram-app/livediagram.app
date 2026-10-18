@@ -12,6 +12,7 @@ import {
 } from './template-tab';
 import { templateTabs } from './build-template';
 import { TEMPLATES } from './templates';
+import { templateCatalogue } from './template-catalogue';
 
 // Templates drawn from sketches (the sailboat scene) carry freehand strokes: what the MCP writes
 // from a template must be a tab the api accepts, its strokes packed
@@ -52,8 +53,21 @@ describe('resolveTemplate', () => {
     expect(resolveTemplate('nope')).toBeNull();
   });
 
-  it('lists every kind for the refusal', () => {
-    expect(validTemplateKinds().split(', ')).toEqual(TEMPLATES.map((t) => t.kind));
+  it('lists every kind an agent may build for the refusal, as the catalogue does', () => {
+    expect(validTemplateKinds().split(', ')).toEqual(
+      templateCatalogue().templates.map((t) => t.kind),
+    );
+  });
+
+  // docs/specs/030-forms/forms.md "As templates": only the editor starts a form, so an agent's form template was an
+  // empty Plan tab with no form. It is refused, saying how the form is made.
+  it('refuses a form template, pointing at add_form with its starter', () => {
+    expect(TEMPLATES.some((t) => t.kind === 'contact-form')).toBe(true);
+    expect(resolveTemplate('contact-form')).toBeNull();
+    expect(validTemplateKinds().split(', ')).not.toContain('contact-form');
+    expect(closestTemplatesHint('contact-form')).toBe(
+      '"contact-form" starts a form, which only the editor makes from a template: make it with add_form (starter "contact"). ',
+    );
   });
 });
 

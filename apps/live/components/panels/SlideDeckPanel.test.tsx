@@ -95,11 +95,11 @@ describe('SlideDeckPanel on a Pages tab', () => {
         ],
       },
       new Map([
-        ['s1', 'Launch · Slide (16:9) · Slide'],
+        ['s1', 'Launch · Slide (16:9)'],
         ['s2', null],
       ]),
     );
-    expect(screen.getByText(/There · Launch · Slide \(16:9\) · Slide/)).toBeTruthy();
+    expect(screen.getByText(/There · Launch · Slide \(16:9\)/)).toBeTruthy();
     expect(screen.getByText(/Here · Page deleted/)).toBeTruthy();
   });
 

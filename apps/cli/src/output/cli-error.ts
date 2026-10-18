@@ -2,6 +2,7 @@
 // lines, one runnable fix, and the exit code. Printed to stderr as text, or as one JSON object with --json.
 
 import type { ExitCode } from './exit-codes';
+import { inCliWords } from './tool-names';
 
 export type CliFailure = {
   exit: ExitCode;
@@ -22,7 +23,14 @@ export class CliError extends Error {
   }
 }
 
-export function formatError(failure: CliFailure, json: boolean): string {
+export function formatError(given: CliFailure, json: boolean): string {
+  // The shared engine's refusals name MCP tools; here they read as the commands that do the same.
+  const failure: CliFailure = {
+    ...given,
+    message: inCliWords(given.message),
+    ...(given.lines ? { lines: given.lines.map(inCliWords) } : {}),
+    ...(given.hint ? { hint: inCliWords(given.hint) } : {}),
+  };
   if (json)
     return `${JSON.stringify({
       error: failure.code,

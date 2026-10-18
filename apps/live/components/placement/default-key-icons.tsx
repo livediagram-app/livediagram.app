@@ -51,5 +51,5 @@ export function DefaultKeyIcon({
   return <Icon size={size} />;
 }
 
-/** The "Use as default for" row's icon (blueprint D118). */
+/** The "Use as Default for" row's icon (blueprint D118). */
 export const UseAsDefaultIcon = lucideGlyph(lucideFolderCheck, 16);

@@ -284,7 +284,7 @@ describe('useMenu submenus', () => {
               aria-controls={subOpen ? 'sub' : undefined}
               onClick={() => setSubOpen((o) => !o)}
             >
-              Use as default for
+              Use as Default for
             </button>
             {subOpen ? <SubMenu onClose={() => setSubOpen(false)} /> : null}
           </Menu>
@@ -310,7 +310,7 @@ describe('useMenu submenus', () => {
   it('opens with Right Arrow, focuses inside, and Left Arrow comes back to the trigger', () => {
     render(<Tree />);
     key('ArrowDown');
-    expect(focused()).toBe('Use as default for');
+    expect(focused()).toBe('Use as Default for');
     key('ArrowRight');
     expect(focused()).toBe('Diagrams');
     expect(document.getElementById('sub')?.getAttribute('data-menu-parent')).toBe(
@@ -318,7 +318,7 @@ describe('useMenu submenus', () => {
     );
     key('ArrowLeft');
     expect(document.getElementById('sub')).toBeNull();
-    expect(focused()).toBe('Use as default for');
+    expect(focused()).toBe('Use as Default for');
   });
 
   it('closes only the submenu on Escape', () => {
@@ -329,7 +329,7 @@ describe('useMenu submenus', () => {
     key('Escape');
     expect(document.getElementById('sub')).toBeNull();
     expect(screen.getByRole('menu')).toBeTruthy();
-    expect(focused()).toBe('Use as default for');
+    expect(focused()).toBe('Use as Default for');
   });
 
   it('closes the whole tree on Tab', () => {
@@ -348,7 +348,7 @@ describe('useMenu submenus', () => {
     key('ArrowRight');
     key('ArrowLeft');
     key('ArrowRight');
-    screen.getByText<HTMLElement>('Use as default for').focus();
+    screen.getByText<HTMLElement>('Use as Default for').focus();
     key('Enter');
     expect(focused()).toBe('Diagrams');
   });

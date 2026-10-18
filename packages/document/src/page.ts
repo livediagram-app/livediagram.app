@@ -456,8 +456,8 @@ export function pageSizeLabel(page: Pick<Page, 'orientation' | 'size'>): string 
 }
 
 /** The label above a page: its name, or "Page n" once there are several, then its size, where it
- *  has one its orientation, and its kind but for an infographic page ("Page 2 · A4 · Landscape",
- *  "Launch · Square · Article"). */
+ *  has one its orientation, and its kind but for an infographic page or where the size names it
+ *  ("Page 2 · A4 · Landscape", "Launch · Square · Article", "Intro · Slide (16:9)"). */
 export function pageLabel(
   page: Pick<Page, 'orientation' | 'size' | 'name' | 'kind'>,
   index: number,
@@ -466,16 +466,20 @@ export function pageLabel(
   const parts: string[] = [];
   if (page.name) parts.push(page.name);
   else if (count > 1) parts.push(`Page ${index + 1}`);
-  parts.push(pageSizeLabel(page));
+  const sizeLabel = pageSizeLabel(page);
+  parts.push(sizeLabel);
   const size = page.size ?? 'a4';
   // A size whose name already says which way it faces (the social and wide formats) needs no
   // orientation after it; nor does a square.
   if (pageHasOrientation(page) && (size === 'a4' || size === 'letter' || size === 'a3')) {
     parts.push(page.orientation === 'portrait' ? 'Portrait' : 'Landscape');
   }
-  // The kind closes it, but for an infographic page, the plain page: its title bar keeps the room.
+  // The kind closes it, but for an infographic page, the plain page: its title bar keeps the room. Nor where the size
+  // already names it: a slide's sizes say Slide, and "Slide (16:9) · Slide" said it twice.
   const kind = pageKindOf(page);
-  if (kind !== 'infographic') parts.push(PAGE_KIND_LABEL[kind]);
+  const kindLabel = PAGE_KIND_LABEL[kind];
+  if (kind !== 'infographic' && !sizeLabel.toLowerCase().includes(kindLabel.toLowerCase()))
+    parts.push(kindLabel);
   return parts.join(' · ');
 }
 

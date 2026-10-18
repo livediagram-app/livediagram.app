@@ -239,10 +239,10 @@ Each key has a label, the plural a sentence uses, and an icon, in list order:
 - Lists of entries in a sentence join with commas and a final "and": "diagrams, whiteboards and
   retrospectives".
 
-### Use as default for
+### Use as Default for
 
 - **Every folder menu** (the one shared folder menu of the Explorer page's rows and cards, the
-  sidebar tree, the editor's Explorer panel and a team's library) carries **Use as default for**,
+  sidebar tree, the editor's Explorer panel and a team's library) carries **Use as Default for**,
   which opens a submenu titled **New documents that open as** listing the five entries, each a
   checkable item, checked when this folder is that key's default.
   - Choosing an unchecked entry makes this folder the key's default; a key points at one folder,
@@ -287,7 +287,7 @@ it has no Location step and shows no folder browser.
 - **A context is explicit.** A `/new?folder=` or `?team=` link files the document there, in livediagram, ahead of
   any default.
 - **Where to change it.** Settings > Documents > Default Folders ([Settings](#settings)), the folder menus' **Use as
-  default for** and My Documents' own menu. The wizard itself sets nothing.
+  Default for** and My Documents' own menu. The wizard itself sets nothing.
 - None of this applies to **This Browser**: an offline document has no folder ([Non-goals](#non-goals)).
 
 ### A template picked after creation

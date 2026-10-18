@@ -5,7 +5,7 @@ import type { PlacementDefaultKey } from '@livediagram/api-schema';
 import { PortalMenu } from '@/components/primitives/PortalMenu';
 import { UseAsDefaultMenu } from './UseAsDefaultMenu';
 
-// The submenu (docs/specs/013-workspace/default-folders.md "Use as default for"): the six entries
+// The submenu (docs/specs/013-workspace/default-folders.md "Use as Default for"): the six entries
 // as checkable items under "New documents that open as".
 
 beforeAll(() => {

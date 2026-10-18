@@ -49,8 +49,12 @@ const NO_MAP = new Map<string, string>();
 type SheetReads = {
   models: ReadonlyMap<string, SheetRenderModel>;
   metrics: ReadonlyMap<string, SheetMetricArt>;
+  // The grid each Sheet's cells fill (sheetContentsFor): a Sheet tab's image grows its Sheet to it.
+  contents: ReadonlyMap<string, { width: number; height: number }>;
+  // The Sheets framed (sheetKey) when read: the cells fit that frame, so a grown one is read again.
+  key: string;
 };
-const NO_READS: SheetReads = { models: new Map(), metrics: new Map() };
+const NO_CONTENTS = new Map<string, { width: number; height: number }>();
 
 export function usePlanImageExport(
   tab: Tab,
@@ -68,6 +72,7 @@ export function usePlanImageExport(
   // The tab as laid out: the figures from Sheets join once they are read.
   const metrics = reads?.metrics;
   const models = reads?.models;
+  const contents = reads?.contents;
   // Keyed on the cards and types alone: the context value also changes with presence and the open card.
   const planItems = plan?.items;
   const planTypes = plan?.types;
@@ -81,6 +86,7 @@ export function usePlanImageExport(
             themeOf: getTheme,
             ...(metrics ? { metrics } : {}),
             ...(models ? { sheetHeads: (id: string) => !models.get(id)?.hideHeaders } : {}),
+            ...(contents ? { sheetContent: (id: string) => contents.get(id) ?? null } : {}),
             renderDiagram: (shown) =>
               renderTabToSvg(tabAsSeen(shown), {
                 pattern: false,
@@ -88,11 +94,12 @@ export function usePlanImageExport(
               }),
           })
         : null,
-    [whole, tab, documentTabs, now, metrics, models, planItems, planTypes],
+    [whole, tab, documentTabs, now, metrics, models, contents, planItems, planTypes],
   );
   const imageTab = image?.tab ?? tab;
-  // The Sheets the image frames, each at its size: what the read below depends on (the figures it reads change the
-  // image, never this, so a read never asks for another).
+  // The Sheets the image frames, each at its size: what the read below depends on. The figures it reads never change
+  // this; the content sizes it reads may grow a Sheet once, which reads its cells again for the grown frame, and the
+  // next read finds the same sizes, so it settles there.
   const sheetKey = imageTab.elements
     .flatMap((el) => {
       const id = (el as { planSheet?: { sheetId?: string } }).planSheet?.sheetId;
@@ -116,6 +123,7 @@ export function usePlanImageExport(
   useEffect(() => {
     if (!needsSheets || !bridge) return;
     let live = true;
+    const key = sheetKey;
     void readSheets().then((next) => {
       if (live) setReads(next);
     });
@@ -127,7 +135,7 @@ export function usePlanImageExport(
           import('@/components/sheets/sheet-store-client'),
           import('@/lib/export-plan/plan-export-sheets'),
         ]);
-        if (!bridge) return NO_READS;
+        if (!bridge) return { models: new Map(), metrics: new Map(), contents: NO_CONTENTS, key };
         const store = sheetStoreOf(bridge);
         const tabs = documentTabs.length ? documentTabs : [tab];
         await Promise.all(
@@ -138,12 +146,14 @@ export function usePlanImageExport(
         const next = {
           models: sheets.sheetModelsFor(imageRef.current.elements, store),
           metrics: sheets.sheetMetricsFor(tab.dashboard, tabs, store, bridge.locale),
+          contents: sheets.sheetContentsFor(imageRef.current.elements, store),
+          key,
         };
         debugLog('[export] sheets read', { models: next.models.size, metrics: next.metrics.size });
         return next;
       } catch (e) {
         debugLog('[export] sheets.read.failed', { error: e instanceof Error ? e.name : 'unknown' });
-        return NO_READS;
+        return { models: new Map(), metrics: new Map(), contents: NO_CONTENTS, key };
       }
     }
     return () => {
@@ -181,6 +191,7 @@ export function usePlanImageExport(
     plain: !!image,
     opts,
     // Without a sheets bridge (outside the editor) a Sheet draws its frame alone, so nothing is awaited.
-    ready: !needsSheets || !bridge || !!reads,
+    // Ready once the Sheets are read for the frames now drawn: a Sheet grown by its content waits for its cells.
+    ready: !needsSheets || !bridge || reads?.key === sheetKey,
   };
 }
