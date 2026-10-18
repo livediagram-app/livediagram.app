@@ -39,6 +39,43 @@ export function cleanLine(rawLine: string): string {
 }
 
 const SEMICOLON = ';'.charCodeAt(0);
+
+// The statements of a Mermaid text, one a line. Mermaid ends a statement at a newline or a `;`, so
+// `graph TD; A-->B; B-->C;` (the form its own docs often use) is three lines here. A `;` inside a label (quoted, in a
+// node's brackets or an edge's `|…|`) is label text and never splits: our own export writes `#35;124;` there.
+export function mermaidStatements(text: string): string[] {
+  const out: string[] = [];
+  for (const raw of text.split('\n')) {
+    let start = 0;
+    let quoted = false;
+    let piped = false;
+    let depth = 0;
+    for (let i = 0; i < raw.length; i++) {
+      const c = raw[i];
+      if (c === '"') quoted = !quoted;
+      if (quoted) continue;
+      if (c === '|') piped = !piped;
+      else if (c === '[' || c === '(' || c === '{') depth += 1;
+      else if (c === ']' || c === ')' || c === '}') depth = Math.max(0, depth - 1);
+      else if (c === ';' && !piped && depth === 0) {
+        out.push(raw.slice(start, i));
+        start = i + 1;
+      }
+    }
+    out.push(raw.slice(start));
+  }
+  return out;
+}
+
+// Mermaid's markdown string, `"\`**bold** text\`"`: the backticks and the emphasis marks are Mermaid's formatting,
+// not the label's words.
+export function plainMarkdownString(label: string): string {
+  if (label.length < 2 || !label.startsWith('`') || !label.endsWith('`')) return label;
+  return label
+    .slice(1, -1)
+    .replace(/(\*\*|__)(.+?)\1/g, '$2')
+    .replace(/(^|[^*_\w])([*_])(\S(?:.*?\S)?)\2(?![*_\w])/g, '$1$3');
+}
 const QUOTE = '"'.charCodeAt(0);
 const PERCENT = '%'.charCodeAt(0);
 
@@ -67,7 +104,7 @@ export function decodeLabel(s: string): string {
   if (t.startsWith('"') && t.endsWith('"') && t.length >= 2) t = t.slice(1, -1);
   // A blank quoted label (`n1[" "]`, how the export writes an unlabelled node) is no label.
   if (!t.trim()) return '';
-  return t
+  return plainMarkdownString(t)
     .replace(/<br\s*\/?>/gi, '\n')
     .replace(/&quot;/g, '"')
     .replace(/#(\d+);/g, decodeEntityCode)
