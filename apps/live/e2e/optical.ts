@@ -101,6 +101,9 @@ async function setHideRule(page: Page, css: string | null) {
 export async function auditOptical(page: Page): Promise<OpticalReport> {
   // The audit tags the DOM; tagging a tree React is still hydrating reads as a hydration mismatch.
   await page.waitForLoadState('networkidle');
+  // Text is measured by its glyphs: before the web font has swapped in, a fallback font's cap band sits a pixel or
+  // so off, which failed "the Explorer" and "the New Document wizard" now and then on CI and never locally.
+  await page.evaluate(() => document.fonts.ready.then(() => undefined));
   await page.mouse.move(0, 0);
   const { probes, stacks } = await page.evaluate(discover, {
     attr: PROBE_ATTR,
