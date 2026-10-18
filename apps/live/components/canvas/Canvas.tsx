@@ -5,6 +5,7 @@ import { CanvasFinishProvider } from './CanvasFinishContext';
 import { LongPressRing } from '@/components/primitives/LongPressRing';
 import { useViewportOf, useViewportStore } from '@/hooks/canvas/useViewportStore';
 import { useDoubleTapZoom } from '@/hooks/canvas/useDoubleTapZoom';
+import { useSmallElementDoubleTap } from '@/hooks/canvas/useSmallElementDoubleTap';
 import { useCallback, useEffect, useMemo, useRef, ViewTransition } from 'react';
 import { isAnimatedPattern } from '@livediagram/document';
 import { tabBackgroundStyle, worldPatternOrigin } from '@/lib/canvas-backgrounds';
@@ -397,7 +398,8 @@ function CanvasView(props: CanvasProps) {
   // Bare-surface press routing (capture intercepts, background context
   // menu, pan-vs-marquee) lives in useCanvasSurfaceGestures; the JSX
   // below mounts its handlers verbatim.
-  const zoomInOn = useDoubleTapZoom(mainRef, viewportStore);
+  const doubleTap = useDoubleTapZoom(mainRef, viewportStore, { id: props.activeTabId, elements });
+  const smallElementTap = useSmallElementDoubleTap(doubleTap.onElement);
   const stickyPeel = useStickyPeelVars();
   const surface = useCanvasSurfaceGestures({
     canvasTool,
@@ -435,7 +437,7 @@ function CanvasView(props: CanvasProps) {
         { x, y },
         {
           edit: props.onBeginEdit,
-          board: byFinger ? (bx, by) => zoomInOn({ x: bx, y: by }) : onCanvasDoubleClick,
+          board: byFinger ? (bx, by) => doubleTap.onCanvas({ x: bx, y: by }) : onCanvasDoubleClick,
         },
       ),
   });
@@ -487,7 +489,10 @@ function CanvasView(props: CanvasProps) {
             onPointerLeave={handlePointerLeaveCanvas}
             onDragOver={paletteDrop.onDragOver}
             onDrop={paletteDrop.onDrop}
-            onPointerDownCapture={surface.onPointerDownCapture}
+            onPointerDownCapture={(e) => {
+              surface.onPointerDownCapture(e);
+              if (!e.isPropagationStopped()) smallElementTap.onPointerDownCapture(e);
+            }}
             // A dark backdrop deepens the sticky paper-peel (docs/specs/008-canvas/canvas-and-palette.md): the shadow
             // ink is tuned for light paper and vanishes on a dark wall. Flagged
             // here so the peel's CSS can respond without knowing about themes.
@@ -503,6 +508,8 @@ function CanvasView(props: CanvasProps) {
               if (handlePolygonDoubleClick() || pathTool.handlePathDoubleClick()) return;
               surface.onSurfaceDoubleClick(e);
             }}
+            // A finger's double-tap on an element too small to work on frames it before it edits (useSmallElementDoubleTap).
+            onDoubleClickCapture={smallElementTap.onDoubleClickCapture}
             // focus-visible ring only: pointer focus stays outline-free, but a
             // keyboard user Tabbing to the canvas sees where they landed.
             // overflow-clip, not overflow-hidden: a hidden box still scrolls (focus revealing a label
