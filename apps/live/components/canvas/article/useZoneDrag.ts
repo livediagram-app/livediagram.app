@@ -27,7 +27,7 @@ export function screenToCanvasBySheet(
   clientX: number,
   clientY: number,
 ): { x: number; y: number } | null {
-  const sheet = document.querySelector(`[data-illustrate-page-id="${CSS.escape(page.id)}"]`);
+  const sheet = document.querySelector(`[data-page-id="${CSS.escape(page.id)}"]`);
   if (!sheet) return null;
   const r = sheet.getBoundingClientRect();
   return { x: page.rect.x + (clientX - r.left) / zoom, y: page.rect.y + (clientY - r.top) / zoom };

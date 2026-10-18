@@ -1,4 +1,4 @@
-// The Explainers lesson layouts (docs/specs/007-editor/illustrate-pages.md "Layouts"): a Fact File
+// The Explainers lesson layouts (docs/specs/007-editor/pages-mode.md "Layouts"): a Fact File
 // (an image, a table of key facts and one surprising one), a Lesson Summary (objectives, key
 // points, key words and a quiz question) and Formula Explained (a rule set large, each term led to
 // its meaning, and a worked example). Same contract as page-layouts.ts: the page's content box in,

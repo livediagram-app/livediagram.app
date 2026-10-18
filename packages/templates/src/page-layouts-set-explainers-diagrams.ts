@@ -1,4 +1,4 @@
-// The Explainers diagram layouts (docs/specs/007-editor/illustrate-pages.md "Layouts"): Anatomy (an
+// The Explainers diagram layouts (docs/specs/007-editor/pages-mode.md "Layouts"): Anatomy (an
 // image whose parts leader lines name), How It Works (an image with numbered hotspots and their
 // key) and Key Concepts (a hub idea and the six that make it up). Same contract as page-layouts.ts:
 // the page's content box in, uncoloured elements out, laid out in proportions of the box.

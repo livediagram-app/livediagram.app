@@ -92,7 +92,7 @@ const POWER_USER_PRESET = {
   drawTourSeen: { drawTourSeen: true },
   formTourSeen: { formTourSeen: true },
   avatarTourSeen: { avatarTourSeen: true },
-  illustrateTourSeen: { illustrateTourSeen: true },
+  pagesTourSeen: { pagesTourSeen: true },
   elementToursSeen: { elementToursSeen: true },
   aiSuggestedPrompts: { aiSuggestedPrompts: false },
   minimalChrome: { minimalChrome: true },

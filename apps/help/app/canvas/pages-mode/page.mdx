@@ -1,0 +1,164 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { PagesScene, PagePanelScene } from '@/components/illustrations/pages';
+
+export const metadata = helpMetadata({
+  title: 'Pages Mode',
+  description:
+    'Pages mode lays a tab out as pages: infographics, slides and articles in print and social sizes, with layouts and photo backgrounds, to export or present.',
+  path: '/help/canvas/pages-mode/',
+});
+
+<ArticleLayout
+  title="Pages Mode"
+  description="Work on a tab as pages: size them, paint them, start each from a layout, then export or present them."
+  categoryTitle="Canvas"
+  categorySlug="canvas"
+  subArticles={getSubArticles('pages-mode')}
+>
+
+**Pages mode** is a way of working on a tab, made for building finished visuals: a poster, a one-pager, a set of social posts or a short deck. Instead of an endless canvas you work on **pages**, sheets laid out in a row, each one a picture you build up and then export or present. It is one of five modes, beside **Diagram**, **Draw**, **Plan** and **Facilitate**, and like them it never changes what is on the tab: the same elements are there in every mode. It is on for everyone, with nothing to turn on first. It used to be called **Illustrate mode**.
+
+## Four Kinds of Page
+
+- **Infographic**: a sheet to lay out freely, starting from a layout if you like. Everything on this page is about infographic pages unless it says otherwise.
+- **Article**: a page to write on, like a document, its writing flowing onto new pages as it grows. See [Writing Articles](/help/canvas/pages-mode/articles/).
+- **Slide**: one slide of a deck, always landscape in a slide size (16:9, or the classic 4:3). It starts from its own **slide layouts** (Title Slide, Section Header, Title and Bullets, Two Columns, Image and Text, Statement, Thank You and more), has no portrait to turn to, and joins the slide deck in one press. See [Slide Pages](/help/canvas/pages-mode/slide-pages/).
+- **Logo**: a square artboard (1024 x 1024) to design a logo on, with construction guides, mirror drawing, wordmark type, combining shapes and a logo kit export. See [Logo Pages](/help/canvas/pages-mode/logo-pages/).
+
+A tab's first page asks **What Is This Page For?** while it is the only page and still empty; after that, every page keeps the kind it was made with.
+
+## Switching to Pages Mode
+
+- **On an empty tab's start**, press the mode switch at the top of its list and choose **Pages** (or press **Shift+D** until you reach it). A tab with something on it keeps its mode, so add a new tab for your pages. See [Editor Modes](/help/canvas/editor-modes/#choosing-a-mode).
+- **Show a diagram on a page** with a [Tab Window](/help/canvas/pages-mode/tab-windows/): it follows every change to the tab it shows.
+- **Everyone switches together.** The mode belongs to the tab, so everyone on it moves to Pages with you, and **Undo** switches the tab back to the mode it was in.
+- People who can only view a tab follow its mode. Event storming boards have no switch.
+
+## Starting From a Template
+
+Choose **Pages** in the New Document wizard, or switch an empty tab to Pages, and the tab opens on **Start Making Pages**: every Pages template, grouped by what it makes (**Slides**, **Infographics**, **Articles**, **Posters**, **Logos**), with **Recommended** first and a search. No page is drawn behind it until you choose. **Recommended** leads with **Blank Infographic**, **Blank Article** and **Blank Slide Deck**, each one empty page of that kind with nothing to choose; **Blank Logo** is first under **Logos**, and the **Article** template, one article page, is under **Articles** ([Templates](/help/canvas/templates/)). The **×** leaves one empty page, ready to ask what it is for. Deleting the last page empties the tab and brings Start Making Pages back.
+
+## Your Content, Put Onto a Page
+
+Switching modes never changes your content. Switch a tab that already has a diagram, a mind map or a sketch on it into Pages mode, and if it does not fit the first page, a page is made **around it, where it is**: nothing moves, shrinks or is scaled. The page is A4 when the content fits on it, and otherwise **Fit to Content**, a page exactly the size of your board plus a margin all round. Back in Diagram mode the board looks just as it did.
+
+It happens in the same step as the switch, and a message says so: **Undo** switches the tab back to the mode it came from, with no page. Content you later leave off the pages (in the space around them) stays where you put it.
+
+**Split Into Pages** breaks a Fit to Content page into separate pages, from its page panel. Things joined by arrows, or sitting close together, stay together; each group gets a page of its own, A4 when it fits or Fit to Content when it does not, turned portrait or landscape to suit its shape, in reading order (top to bottom, then left to right). Each group moves onto its page at its own size, never scaled. At most 20 pages are made in one go; anything left over shares the last of them.
+
+## Pages
+
+<Figure caption="Two pages in a row, each labelled above its corner with its buttons and cog opposite, the navigator under the first and the + after the last.">
+  <PagesScene />
+</Figure>
+
+- **Add a page** with the **+** after the last page, or the **+** at the end of the palette strip, and choose **Infographic**, **Article**, **Slide** or **Logo** in **Add a Page**. A new infographic page takes the last one's size and orientation, and every new page **carries over the background** of the page before it (its colour, gradient or picture, and its pattern; a logo page takes the fill without the pattern), so a series keeps its look. It is the new page's own from then on. With no background to carry over, a new infographic page starts on a soft gradient in your theme's colour (the Theme Mist gradient); a new slide, article or logo page starts on plain paper. A tab holds up to 100 pages.
+- **Each page's label** sits above its top-left corner: its name, or "Page 2", then its size ("A4 · Portrait", "Square", "Story (9:16)"), then "Article", "Slide" or "Logo" on those kinds of page. An infographic page, the plain page, leaves its kind off, so its title bar keeps the room for its buttons. **Press the label** to fit that page to the screen.
+- **Drag a label sideways to reorder the pages.** A blue bar in the gap shows where the page will land; let go and it moves there with everything on it. **Escape** cancels.
+- **Content belongs to its page.** Anything whose centre is on a page moves with it when the pages around it change, and whatever hangs off a page's edge is cut off at the edge, on screen and in exports, as if the pages were the only paper.
+- **Arrows stay on one page.** An arrow's end pins to an element only when that element is on the same page as the arrow's other end; elements on another page show no connection points, so the end stays free where you drop it.
+- **The page navigator** under each page (once there are two or more) shows "2 of 5" between **Previous page** and **Next page**, each fitting that page to the screen.
+- **Back where you left off.** Come back to a tab of pages, from another tab or after a reload, and it opens on the page you were last on rather than the first. Each person's place is their own, kept in this browser.
+- **Snapping:** move or resize an element and it snaps to its page's edges, centre lines and margins, with the same guides as lining up with other elements.
+- **The title bar** above each page holds its buttons, ending in the padlock and the cog: see [Beside the Cog](#beside-the-cog).
+- The Layers panel and its button are not offered in Pages mode; in their place is the **Slides** button (see [Exporting and Presenting Pages](/help/canvas/pages-mode/exporting-pages/)).
+- In [Zen mode](/help/tools/zen-mode/) and while presenting, the pages show on their own, without labels, cogs or buttons.
+
+## Contents
+
+In Pages mode, **Contents** lists every page in the tab, each with a picture of the page as it is, its number and its name. The page you are looking at is highlighted.
+
+On a computer, once a tab has more than one page, Contents sits as a sidebar against the left edge of the canvas, the way a slide editor shows its slides, and keeps highlighting the page you are on as you move around. Drag it by its title to pin it to the right edge instead. Press **Minimise** at its top to tuck it into a **Contents** button in the bottom-right corner, beside the theme button; press that button for the same list, and **Dock as Sidebar** at its top to bring the sidebar back. Livediagram remembers which you chose, on every document and every device you sign in on (and which side, on this device). You can also choose in **Settings › Editor › Pages**. On a phone, Contents is always the button.
+
+- **Go to a page**: press its row, or move with the arrow keys and press Enter. The canvas glides there. On a computer the list stays open so you can hop around, and the page lands beside the sidebar rather than under it; on a phone it closes so you can see the page.
+- **Fit**: in Pages mode, **Fit** in the bottom-right corner fits the page you are nearest, beside the sidebar.
+- **Find a page**: with more than six pages, type in **Find a Page** to narrow the list by a page's name, kind or number, or by any words on it.
+- **Page actions**: in the sidebar, rest the pointer on a page for **Duplicate**, **Lock** and **Delete** beside its name. In the popover, its **⋯** button holds the same, plus **Add to Slides** for a slide not yet in the deck.
+- **Add a page**: rest the pointer on **Add Page** at the foot (or press it) for Infographic, Slide, Article and Logo. The new page lands after the last one and the list marks it.
+
+Anyone can open Contents to find their way round. Only Editors see the page actions and **Add Page**.
+
+## Beside the Cog
+
+An infographic or slide page's title bar, above its top-right corner, holds the buttons you reach for most, so you rarely need its panel:
+
+- **Layout** opens the page's layouts in a popover: press a category, hover a layout to preview it on the page, press it to place it. It is there on every page, empty or not, and placing a layout replaces what is on the page at once (one **Undo** brings it back). A slide page offers the [slide layouts](/help/canvas/pages-mode/slide-pages/#slide-layouts). See [Infographic Layouts](/help/canvas/pages-mode/infographic-layouts/).
+- **Tidy** (the broom, just left of the padlock and the cog, on infographic and slide pages while there is something to straighten) straightens the page in one press: it nudges anything poking past the margins back inside, lines up edges that nearly line up, evens out gaps that are nearly even, and settles the rest on a fine grid. It keeps your layout, never moves anything far, never makes things overlap, and leaves locked and turned elements where they are. Hover it to see the tidied page first; a page that is already tidy says so and nothing changes.
+- **Background** opens the page's backgrounds and patterns in a popover, with the same hover previews as the panel (see [Backgrounds and Patterns](#backgrounds-and-patterns)). It stays open for another pick.
+- The **padlock** locks the page ([Locking a Page](#locking-a-page)), and the **cog** opens the page panel.
+
+While the page is wide enough on screen, each button shows its name beside its icon; zoom out, or use a phone, and they drop to their icons (hover one for its name). On a phone, Layout and Background open as a sheet from the bottom of the screen. A locked page shows no Layout, Tidy Up or Background button. Only Editors see these buttons: Participants and Viewers see the pages without them.
+
+A logo page has its own buttons here instead (**Tidy** for a drawing, **Mirror** and **Guides**, and **Start From a Layout** while it is empty): see [Logo Pages](/help/canvas/pages-mode/logo-pages/). An article page keeps its background in its panel.
+
+## The Page Panel
+
+Press the cog above a page's top-right corner to open its panel, which opens beside the page so the page stays in view (on a phone it slides up from the bottom of the screen). At the top is the page's **name** (leave it empty to go back to "Page 2"). Below it, what the page offers:
+
+- An **infographic** page: its size and orientation. Its layouts and background are on the **Layout** and **Background** buttons beside the cog.
+- A **slide** page: the **Page** and **Background** tabs. Its layouts are on the **Layout** button.
+- An **article** page: the **Page**, **Background**, **Style** and **Text** tabs (see [Writing Articles](/help/canvas/pages-mode/articles/)).
+- A **logo** page: the **Background** and **Layouts** tabs, with no size to choose (see [Logo Pages](/help/canvas/pages-mode/logo-pages/)).
+
+Along the bottom are the page's actions.
+
+<Figure caption="An infographic page's panel beside its page: the name, the Size tiles and the orientation, then the page actions.">
+  <PagePanelScene />
+</Figure>
+
+### Size and Orientation
+
+The page's settings start with the **Size** tiles, each drawn to scale:
+
+| Size   | For                                                         |
+| ------ | ----------------------------------------------------------- |
+| A4     | Print, the default                                          |
+| Letter | US Letter, for print in North America                       |
+| A3     | Posters                                                     |
+| Square | Square social posts                                         |
+| Post   | Portrait posts for Instagram and LinkedIn (4:5)             |
+| Story  | Stories (9:16); turned landscape it reads Widescreen (16:9) |
+| Fit    | Fit to Content: sized around the board it was made for      |
+
+**Fit** shows only on a page already in it, the page made around your board when it entered Pages mode; choose another size and it is gone for good. Slide sizes belong to slide pages: a deck is made of [slide pages](/help/canvas/pages-mode/slide-pages/), which offer only **Slide** (16:9) and **Classic** (4:3), and no orientation. (An infographic page made before this, still on the Slide size, keeps that tile until you move it off.) A logo page is always its 1024 x 1024 artboard, so it shows no sizes at all.
+
+Below them, **Portrait** and **Landscape** turn the page (a square page, a slide size and Fit to Content have no orientation). Changing a page's size or orientation keeps everything on it: content that still fits stays as it is, and content that no longer fits is scaled down as one to fit inside the margins, its text with it. Nothing is cut off.
+
+### Backgrounds and Patterns
+
+Every kind of page has the same backgrounds, sorted into **Solid**, **Gradient** and **Image** at the top of the backgrounds (a logo page has no Image); they open on the kind the page has now. An infographic page keeps them on the **Background** button beside its cog; a slide page has that button and its panel's **Background** tab; article and logo pages have the **Background** tab.
+
+- **Solid**: **Paper** (the plain page) leading your tab theme's colours, then a row of light colours and a row of dark ones (the same colours every colour picker in livediagram offers), the colours already used in the document, and **Add a custom colour** (four coloured dots) for a **custom colour** of your own.
+- **Gradient**: a **Theme** group of fourteen gradients drawn from your tab's theme colours, light ones first, then bold and deep ones (change the tab's theme and these follow it), then a **Gradients** group of thirteen presets, from Sunrise and Peach to Night, Forest and Ember, plus the rainbow swatch for a **custom gradient**: pick its **From** and **To** colours from the same colours, turn its **Angle**, or **Swap** the two.
+- **Image**: a photo covering the whole page. Search openly licensed pictures (only ones shaped like your page come back, tall for a portrait page and wide for a landscape one), or **Upload an Image** of your own. Hover a result to see it on the page. Over the picture, an **Overlay** keeps your content readable: **None** leaves it bare, **Light** or **Dark** washes it, **Tint** washes it in your theme's colour, and **Fade** fades it to white towards the bottom; **Strength** sets how much, and a new picture starts with a 60% wash. **Position** chooses which part of a tall picture stays in view (**Top**, **Centre** or **Bottom**). A searched picture shows its creator and licence under it, with links to its source. To change it, search or upload again under **Replace Image**; **Remove** puts the page back on plain paper.
+- **Pattern**, over any of them: **None**, **Dots**, **Grid** or **Lines**, drawn faintly so they never fight the content.
+
+**Hover a swatch to preview it** on the page; press it to keep it. A dark background keeps the page readable: elements without colours of their own are drawn in light ink on it, and text, arrows and icons you coloured yourself are lightened if they would no longer stand out (or darkened again on a light page). On a bright or mid-tone colour, such as teal or yellow, icons, progress bars and outlines are lightened or darkened the same way, keeping their hue, and charts adjust their colours as they are drawn.
+
+### Page Actions
+
+Along the bottom of the panel: **Split Into Pages** (on a Fit to Content page only, see above), **Duplicate page** (a copy right after it, with everything on it), **Move page left**, **Move page right** and **Delete page** (the page and everything on it; the pages after it close the gap, and the view glides to the page before it so you are never left looking at empty canvas). On an article page the same four act on the whole article. Each one is a single step that **Undo** reverses.
+
+## Locking a Page
+
+Press the padlock beside a page's cog to **lock** it; it reads **Locked** while it is. A locked page, of any kind, stays as it is:
+
+- What is on it can't be selected, moved, changed or deleted, and nothing new can be drawn, dropped or pasted onto it (a short notice says why).
+- Its name, size, orientation, background and layout can't change, and it can't be deleted. You can still move it along the row or duplicate it (the copy is unlocked).
+- Locking a page of an article makes the article's writing read-only.
+
+Press the padlock again to unlock it. The lock is part of the document, so everyone you share it with sees the page locked too.
+
+## Leaving Pages Mode
+
+A tab with something on its pages stays in Pages. To work on the same ideas in Diagram, Draw or Facilitate, add a tab and choose that mode on its start; a [Tab Window](/help/canvas/pages-mode/tab-windows/) on a page can show that tab live. An empty Pages tab switches straight away from its start.
+
+## Good to Know
+
+- Everything else works as always: sharing, live collaboration, comments, undo and redo. Collaborators see your pages and their changes live.
+- The mode belongs to the tab: everyone on it is in Pages mode with you, and sees the pages as you build them.
+- People who can only view a tab see the pages but not their cogs, buttons or the **+**.
+
+</ArticleLayout>

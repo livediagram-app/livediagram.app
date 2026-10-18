@@ -1,4 +1,4 @@
-// The Covers set's document fronts (docs/specs/007-editor/illustrate-pages.md "Layouts"): a report
+// The Covers set's document fronts (docs/specs/007-editor/pages-mode.md "Layouts"): a report
 // cover, a proposal cover, a case study cover and a contents page. Same contract as
 // page-layouts.ts: the page's content box in, uncoloured elements out, a tall page stacking and a
 // wide one setting side by side.

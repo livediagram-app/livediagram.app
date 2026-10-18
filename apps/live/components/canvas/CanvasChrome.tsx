@@ -271,12 +271,12 @@ export function CanvasChrome(props: CanvasChromeProps) {
   // buttons with them (Undo / Redo stay). Read once here and handed to
   // useCanvasChromePanels, so a button and its panel share one value.
   const panelsOn = {
-    // Not in Illustrate mode: a page is laid out by its pages, not layers
-    // (docs/specs/007-editor/illustrate-pages.md). Not in Plan mode either: a board is worked by its
+    // Not in Pages mode: a page is laid out by its pages, not layers
+    // (docs/specs/007-editor/pages-mode.md). Not in Plan mode either: a board is worked by its
     // columns and cards, not a stacking order (docs/specs/026-plan/plan-mode.md).
     layers:
       panelEnabled(settings, 'layersPanelEnabled') &&
-      !props.illustratePages &&
+      !props.pagesMode &&
       props.editorMode !== 'plan',
     collaborate: panelEnabled(settings, 'collaboratePanelEnabled'),
   };
@@ -421,7 +421,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
   const toolbarScale = useUiScale('toolbar');
   const panelScale = useUiScale('panels');
   const cornerScale = useUiScale('cornerButtons');
-  // Beside Illustrate's Contents sidebar when it is pinned right (useContentsChrome), never under it.
+  // Beside Pages mode's Contents sidebar when it is pinned right (useContentsChrome), never under it.
   const clusterX =
     clusterInset.x +
     (contentsDocked && contentsSide === 'right' ? CONTENTS_SIDEBAR_WIDTH * panelScale : 0);
@@ -478,7 +478,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
                   (stripSpansTop || dockSpansTop) && corner.startsWith('top')
                   ? { top: toolbarTopClearancePx(toolbarScale) }
                   : undefined),
-              // Beside Illustrate's Contents sidebar, never under it.
+              // Beside Pages mode's Contents sidebar, never under it.
               ...(contentsDocked && corner.endsWith(contentsSide)
                 ? { [contentsSide]: contentsSidebarClearancePx(panelScale) }
                 : undefined),
@@ -546,9 +546,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
         stamp={stamp}
         whiteboardInk={whiteboard ? props.whiteboardInk : undefined}
         mirrorPages={
-          props.illustratePages
-            ? mirroredLogoPages(props.illustratePages.pages, props.illustratePages.logo)
-            : null
+          props.pagesMode ? mirroredLogoPages(props.pagesMode.pages, props.pagesMode.logo) : null
         }
         wrapperRef={wrapperRef}
         mainSize={props.mainSize}
@@ -599,7 +597,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
           pendingDraw={pendingDraw}
           esBoard={props.esBoard}
           esBoardControls={props.esBoardControls}
-          logoPages={!!props.illustratePages?.pages.some((p) => p.kind === 'logo')}
+          logoPages={!!props.pagesMode?.pages.some((p) => p.kind === 'logo')}
           themeTint={paletteTint}
           leading={menuInStrip ? explorerMenuButton : undefined}
           tabElements={elements}
@@ -694,7 +692,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
             {/* The Session strip (docs/specs/012-collaboration/session-tools.md "The Session strip"): left of
                 Layers, or of the mode's own strip. Kept in Zen: a running session is the one piece of
                 chrome a facilitator still needs there. Facilitate has all three, Plan its Timer and
-                Vote, Illustrate a running Vote or Poll only; Diagram and Draw keep their bottom bar to
+                Vote, Pages a running Vote or Poll only; Diagram and Draw keep their bottom bar to
                 their own tools. */}
             {props.sessionTools && stripTools ? (
               <div className="contents">
@@ -728,12 +726,12 @@ export function CanvasChrome(props: CanvasChromeProps) {
                 />
               </div>
             ) : null}
-            {/* Contents and Slides (docs/specs/007-editor/illustrate-pages.md "Contents", "Slides"): in Illustrate
+            {/* Contents and Slides (docs/specs/007-editor/pages-mode.md "Contents", "Slides"): in Pages
                 mode, one strip where Layers would be. Contents for every role and on a phone too; Slides on a
                 desktop only, as the Slide Deck itself is, and an Editor's, since building and presenting a deck
                 runs the session (docs/specs/013-workspace/share-roles.md), once a page is a slide: before that
                 the deck has nothing to hold. */}
-            {!zenMode && props.illustratePages ? (
+            {!zenMode && props.pagesMode ? (
               <PagesClusterStrip
                 contents={
                   // Docked as the sidebar, Contents has no button (useContentsChrome).
@@ -747,7 +745,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
                 slides={
                   !isMobile &&
                   !readOnly &&
-                  showsSlidesButton(props.illustratePages.pages) &&
+                  showsSlidesButton(props.pagesMode.pages) &&
                   props.slideDeck ? (
                     <SlidesClusterSegment
                       popoverOpen={activeDockPanel === 'slides'}

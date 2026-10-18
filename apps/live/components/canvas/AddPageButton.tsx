@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useRef, useState } from 'react';
-import { ILLUSTRATE_PAGE_GAP, type PageKind } from '@livediagram/document';
+import { PAGE_GAP, type PageKind } from '@livediagram/document';
 import { PlusIcon, Tooltip } from '@livediagram/ui';
 import { AddPagePopover } from './AddPagePopover';
 
@@ -9,7 +9,7 @@ import { AddPagePopover } from './AddPagePopover';
 const ADD_PAGE_SIZE = 36;
 const ADD_PAGE_CLEARANCE = 12;
 
-// The + after the last page (docs/specs/007-editor/illustrate-pages.md "Adding a page"): opens
+// The + after the last page (docs/specs/007-editor/pages-mode.md "Adding a page"): opens
 // "Add a page" (AddPagePopover) to choose the kind. Held at one screen size whatever the zoom.
 export function AddPageButton({
   lastRight,
@@ -30,8 +30,7 @@ export function AddPageButton({
   // not sit on the row's axis, so the row's axis alone left the button by its top); zoomed far out (a
   // phone's fit) the gap is narrower than the button, which then keeps clear of the page by
   // ADD_PAGE_CLEARANCE screen px rather than covering its edge.
-  const x =
-    lastRight + Math.max(ILLUSTRATE_PAGE_GAP / 2, (ADD_PAGE_SIZE / 2 + ADD_PAGE_CLEARANCE) / zoom);
+  const x = lastRight + Math.max(PAGE_GAP / 2, (ADD_PAGE_SIZE / 2 + ADD_PAGE_CLEARANCE) / zoom);
   const [open, setOpen] = useState(false);
   const button = useRef<HTMLButtonElement>(null);
   const getAnchor = useCallback(() => button.current, []);
@@ -51,7 +50,7 @@ export function AddPageButton({
           aria-haspopup="dialog"
           aria-expanded={open}
           data-add-page-trigger
-          // The Illustrate tour's anchor (docs/specs/007-editor/illustrate-tour.md).
+          // The Pages tour's anchor (docs/specs/007-editor/pages-tour.md).
           data-tour-id="add-page"
           onClick={() => setOpen((o) => !o)}
           className={`flex h-9 w-9 items-center justify-center rounded-full shadow-md ring-1 transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 ${

@@ -880,7 +880,7 @@ not in Sheet Settings, not anywhere.
 A Sheet is Plan's, so a Sheet element is only ever placed on a tab in Plan (`opensInOf(tab) === 'plan'`: a Sheet tab,
 a Dashboard, or a general tab in Plan). A tab's mode is kept once it has content
 ([Editor modes](../007-editor/editor-modes.md#the-mode-switch)), so a Sheet on a Diagram, Draw, Facilitate or
-Illustrate tab could never be edited there. Every way in keeps to it (`tabTakesSheets`, `sheetsAddedOutsidePlan` in
+Pages tab could never be edited there. Every way in keeps to it (`tabTakesSheets`, `sheetsAddedOutsidePlan` in
 `packages/document/src/sheet-placement.ts`):
 
 - **The palette and a dropped CSV** are Plan mode's already.

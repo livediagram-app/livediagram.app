@@ -1,4 +1,4 @@
-// The words on each Illustrate page, for Contents' Find a Page (docs/specs/007-editor/illustrate-pages.md
+// The words on each page, for Contents' Find a Page (docs/specs/007-editor/pages-mode.md
 // "Contents"). Apart from lib/page-contents.ts so the editor's own framing code, which reads the page in
 // view, never loads the find helpers: only the Contents list does, and only while a search is typed.
 import {

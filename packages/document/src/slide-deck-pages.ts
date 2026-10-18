@@ -1,10 +1,10 @@
-// The deck follows a tab's slide pages (docs/specs/007-editor/illustrate-pages.md "Slides"): every slide page is in the
+// The deck follows a tab's slide pages (docs/specs/007-editor/pages-mode.md "Slides"): every slide page is in the
 // deck, and a tab's page slides run in its page order. Pure, so the editor runs it on every change to the pages and a
 // viewer reads the same deck an editor would store.
 
 import { pageUnits } from './article-pages';
 import { opensInOf } from './editor-mode';
-import { illustratePagesOf, type IllustratePage } from './illustrate-page';
+import { pagesOf, type Page } from './page';
 import type { Tab } from './index';
 import type { Deck, Slide } from './slide-deck';
 
@@ -12,22 +12,22 @@ import type { Deck, Slide } from './slide-deck';
 // same slide and the deck they each save is the same deck.
 export const pageSlideIdFor = (tabId: string, pageId: string): string => `page:${tabId}:${pageId}`;
 
-// The tabs whose pages the deck follows: Illustrate tabs whose pages have loaded. A tab not yet loaded carries no
+// The tabs whose pages the deck follows: Pages tabs whose pages have loaded. A tab not yet loaded carries no
 // `pages`, and reading it would take its page slides for slides of deleted pages. Read once per `pages` array: an
 // element edit keeps the array, so the deck's per-edit checks cost a lookup, not a parse of every page.
-const readPages = new WeakMap<object, IllustratePage[]>();
-function followedPages(tab: Tab): IllustratePage[] | null {
-  if (opensInOf(tab) !== 'illustrate' || !Array.isArray(tab.pages)) return null;
+const readPages = new WeakMap<object, Page[]>();
+function followedPages(tab: Tab): Page[] | null {
+  if (opensInOf(tab) !== 'pages' || !Array.isArray(tab.pages)) return null;
   // An empty list reads as the default first page, which takes the tab's orientation: not cached.
-  if (tab.pages.length === 0) return illustratePagesOf(tab);
+  if (tab.pages.length === 0) return pagesOf(tab);
   const known = readPages.get(tab.pages);
   if (known) return known;
-  const pages = illustratePagesOf(tab);
+  const pages = pagesOf(tab);
   readPages.set(tab.pages, pages);
   return pages;
 }
 
-const isSlidePage = (p: IllustratePage) => p.kind === 'slide';
+const isSlidePage = (p: Page) => p.kind === 'slide';
 
 // One line per followed tab, its pages in order with the slide pages marked: what the deck follows, so a caller can
 // re-run the deck only when it changes, not on every element edit.

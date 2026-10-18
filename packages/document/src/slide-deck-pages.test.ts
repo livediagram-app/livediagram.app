@@ -7,18 +7,18 @@ import {
   slidePageOwnSlideIds,
 } from './slide-deck-pages';
 import type { Deck, Slide } from './slide-deck';
-import type { IllustratePage } from './illustrate-page';
+import type { Page } from './page';
 import type { Tab } from './index';
 
-// docs/specs/007-editor/illustrate-pages.md "Slides": slide pages are in the deck, in page order.
+// docs/specs/007-editor/pages-mode.md "Slides": slide pages are in the deck, in page order.
 
-const slidePage = (id: string): IllustratePage => ({ id, orientation: 'landscape', kind: 'slide' });
-const infoPage = (id: string): IllustratePage => ({
+const slidePage = (id: string): Page => ({ id, orientation: 'landscape', kind: 'slide' });
+const infoPage = (id: string): Page => ({
   id,
   orientation: 'portrait',
   kind: 'infographic',
 });
-const deckTab = (id: string, pages: IllustratePage[] | undefined, mode = 'illustrate'): Tab =>
+const deckTab = (id: string, pages: Page[] | undefined, mode = 'pages'): Tab =>
   ({ id, name: id, elements: [], opensIn: mode, ...(pages ? { pages } : {}) }) as Tab;
 const pageSlide = (tabId: string, pageId: string, extra: Partial<Slide> = {}): Slide => ({
   id: `s-${tabId}-${pageId}`,
@@ -82,7 +82,7 @@ describe('deckFollowingPages', () => {
     expect(after.slides.map((s) => s.id)).toEqual(['s-t-a', 's-t-gone', 'copy', 's-t-b']);
   });
 
-  it('leaves alone a tab not in Illustrate, a tab not yet loaded, and a deck already in step', () => {
+  it('leaves alone a tab not in Pages, a tab not yet loaded, and a deck already in step', () => {
     const before: Deck = { slides: [pageSlide('t', 'b'), pageSlide('t', 'a')] };
     const pages = [slidePage('a'), slidePage('b')];
     expect(deckFollowingPages(before, [deckTab('t', pages, 'diagram')])).toBe(before);

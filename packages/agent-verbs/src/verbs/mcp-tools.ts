@@ -23,7 +23,7 @@ import {
   changePagesShape,
   writeArticleOutput,
   writeArticleShape,
-} from '../mcp/illustrate-schema';
+} from '../mcp/pages-schema';
 import { listImagesOutput, listImagesShape } from '../mcp/image-schema';
 import {
   addTabOutput,
@@ -404,14 +404,14 @@ export const mcpAddSheet = mcpTool('add_sheet', {
 
 export const mcpChangePages = mcpTool('change_pages', {
   behaviour: 'destructive',
-  title: 'Change Illustrate pages',
+  title: 'Change pages',
   description:
-    'Build a slide deck or presentation, an infographic or a logo: change the pages of a tab in Illustrate mode, in ' +
+    'Build a slide deck or presentation, an infographic or a logo: change the pages of a tab in Pages mode, in ' +
     'order, as one edit. Each change is an object with its "op" (never a bare string): add {kind, layout, ...} an ' +
     'infographic, slide or logo page, set {page, name, size, orientation, background, locked}, layout ' +
     '{page, layout}, move {page, to}, duplicate {page}, delete {page}, apply_background_to_all {page} (every ' +
     "other page of its kind, every slide say, takes that page's background). A tab in another mode, named by tabId, " +
-    'is switched into Illustrate. The answer gives every page with its rectangle in canvas coordinates, the ' +
+    'is switched into Pages. The answer gives every page with its rectangle in canvas coordinates, the ' +
     "same as an element's x and y in update_document (the layout view prints positions from the content's " +
     'corner instead). A layout fills a page with sample text: read_document view "pages" lists it, with each ' +
     "list's items, to replace. A layout's colours are the tab's theme (create_document's and add_tab's theme: " +
@@ -425,7 +425,7 @@ export const mcpWriteArticle = mcpTool('write_article', {
   behaviour: 'destructive',
   title: 'Write an article',
   description:
-    'Write an article (a document of text on pages, in Illustrate mode) from Markdown: a new one, or replace ' +
+    'Write an article (a document of text on pages, in Pages mode) from Markdown: a new one, or replace ' +
     'or append to one named by id or title, with its look. The editor flows the text onto as many pages as ' +
     'it needs. read_document with view "pages" shows each article as Markdown to edit and write back. Not for ' +
     'slides: an article flows as running text, where a slide deck is slide pages, made with change_pages.',

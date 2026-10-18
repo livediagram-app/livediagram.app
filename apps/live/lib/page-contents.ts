@@ -1,4 +1,4 @@
-// The Contents popover's list (docs/specs/007-editor/illustrate-pages.md "Contents"): a row per
+// The Contents popover's list (docs/specs/007-editor/pages-mode.md "Contents"): a row per
 // page in row order, what each says about itself, which page is in view, and the Find a Page
 // narrowing. Pure: pages and the view in, rows out.
 import {
@@ -8,7 +8,7 @@ import {
   pageSizeLabel,
   pageUnits,
   type ArticleFlow,
-  type IllustratePage,
+  type Page,
   type LaidOutPage,
   type PageKind,
 } from '@livediagram/document';
@@ -122,15 +122,15 @@ export function pageInView(
 }
 
 /** The place (among the row's units, 0 first) a page dropped beside the row at `drop.index` moves
- *  to, or null when it stays put (docs/specs/007-editor/illustrate-pages.md "Contents"). A page moves
+ *  to, or null when it stays put (docs/specs/007-editor/pages-mode.md "Contents"). A page moves
  *  with its unit: an article's pages go together, so a drop beside any of its pages is a drop beside
  *  the whole article. */
 export function contentsDropUnit(
-  pages: readonly Pick<IllustratePage, 'id' | 'flow'>[],
+  pages: readonly Pick<Page, 'id' | 'flow'>[],
   pageId: string,
   drop: RowDrop,
 ): number | null {
-  const units = pageUnits(pages as IllustratePage[]);
+  const units = pageUnits(pages as Page[]);
   const unitOf = (id: string) => units.findIndex((u) => u.pageIds.includes(id));
   const from = unitOf(pageId);
   const target = pages[drop.index];

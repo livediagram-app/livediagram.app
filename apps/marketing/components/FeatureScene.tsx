@@ -23,7 +23,7 @@ const BOARD_LOADERS: Record<HeroSceneKey, () => Promise<ComponentType>> = {
   diagram: () => import('./hero-diagram-board').then((m) => m.DiagramBoard),
   draw: () => import('./hero-draw-board').then((m) => m.DrawBoard),
   mindmap: () => import('./hero-mindmap-board').then((m) => m.MindMapBoard),
-  infographic: () => import('./hero-illustrate-page').then((m) => m.InfographicPages),
+  infographic: () => import('./hero-page').then((m) => m.InfographicPages),
   slides: () => import('./hero-slides-board').then((m) => m.SlidesBoard),
   article: () => import('./hero-article-page').then((m) => m.ArticlePage),
   plan: () => import('./hero-plan-board').then((m) => m.PlanBoard),

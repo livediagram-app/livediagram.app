@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { storePresentation, type Deck, type Tab } from '@livediagram/document';
 import { pageSlideLabels, useSlideDeck } from './useSlideDeck';
 
-// docs/specs/007-editor/illustrate-pages.md "Slides": a page slide is its page. Its row names the
+// docs/specs/007-editor/pages-mode.md "Slides": a page slide is its page. Its row names the
 // page from the slide's own tab, pressing it frames the page, and a copy of it counts as a page
 // slide.
 const track = vi.fn<typeof import('@/lib/telemetry').track>();

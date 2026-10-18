@@ -46,8 +46,8 @@ describe('ModeMenu preview', () => {
 
   it('follows keyboard focus too', () => {
     open('diagram');
-    fireEvent.focus(row('Illustrate'));
-    expect(preview().dataset.modePreview).toBe('illustrate');
+    fireEvent.focus(row('Pages'));
+    expect(preview().dataset.modePreview).toBe('pages');
   });
 
   it('is hidden from assistive technology and holds no button', () => {
@@ -137,7 +137,7 @@ describe('ModeMenu across Plan’s line', () => {
 });
 
 describe('ModeMenu on a start panel', () => {
-  it('opens from the named chip, which the Leave Illustrate confirmation hangs from', () => {
+  it('opens from the named chip, which the Leave Pages confirmation hangs from', () => {
     open('draw');
     const chip = screen.getByRole('button', { name: 'Tab mode: Draw' });
     expect(chip.textContent).toContain('Draw');

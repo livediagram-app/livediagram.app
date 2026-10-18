@@ -2,7 +2,7 @@
 // colour painted as a slide's is (pageSheetStyle, and PageMotionLayer for a moving one), or a thin band of the form
 // colour without one. Pure drawing, shared by the builder, Preview and the form page.
 import type { FormCover } from '@livediagram/forms';
-import { pageSheetStyle } from '@/lib/illustrate-page-paint';
+import { pageSheetStyle } from '@/lib/page-paint';
 import dynamic from 'next/dynamic';
 
 // A moving cover's motion, fetched only when a cover moves: every motion's drawing stays out of the form page's

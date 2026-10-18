@@ -56,11 +56,11 @@ export function SlideDeckPanel({
   tabs: { id: string; name: string }[];
   activeTabId: string;
   isReadOnly: boolean;
-  // The active tab's pages while it is shown in Illustrate mode: slides are then added a page at
+  // The active tab's pages while it is shown in Pages mode: slides are then added a page at
   // a time (PageSlidePicker) rather than from a selection, and its slide pages all at once.
   pages?: readonly { id: string; label: string; slide?: boolean }[];
 } & ModePanelProps) {
-  // The Illustrate popover: room for large pictures, headlines and Present from Here.
+  // The Pages popover: room for large pictures, headlines and Present from Here.
   const roomy = placement.asPopover === true;
   // An item slide's card, read live from the items (docs/specs/012-collaboration/presentation-mode.md
   // "Item slides").
@@ -142,7 +142,7 @@ export function SlideDeckPanel({
     <ModePanel
       title="Slide Deck"
       helpArticle="slideDeck"
-      // The Illustrate tour's Present step rings it (docs/specs/007-editor/illustrate-tour.md).
+      // The Pages tour's Present step rings it (docs/specs/007-editor/pages-tour.md).
       dataTourId="slide-deck"
       // The SAME presenter settings the HUD's cog carries, reachable BEFORE
       // you start. Discovering "Actual size" or "Auto-advance" mid-talk means
@@ -182,8 +182,8 @@ export function SlideDeckPanel({
               Build your deck
             </p>
             <p className="max-w-[18rem] text-xs leading-snug text-slate-500 dark:text-slate-400">
-              {/* Each way in names the button it has: on an Illustrate tab a slide page joins on its own
-                  (docs/specs/007-editor/illustrate-pages.md "Slides"), any other page a page at a time. */}
+              {/* Each way in names the button it has: on a Pages tab a slide page joins on its own
+                  (docs/specs/007-editor/pages-mode.md "Slides"), any other page a page at a time. */}
               {pages
                 ? 'Slide pages join the deck on their own. For any other page, pick it below and press'
                 : 'Select what you want on the first slide, then press'}{' '}

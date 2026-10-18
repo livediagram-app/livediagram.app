@@ -40,7 +40,7 @@ describe('operations', () => {
   });
 
   it('refuses it in every mode but Plan', () => {
-    for (const opensIn of ['draw', 'facilitate', 'illustrate'] as const)
+    for (const opensIn of ['draw', 'facilitate', 'pages'] as const)
       expect(refused(run({ ...checkoutFlow(), opensIn }, [addSheet('s1')])).code).toBe(
         'invalid_value',
       );

@@ -1,6 +1,6 @@
 // What the scenes' Palette strip offers in each editor mode (docs/specs/007-editor/editor-modes.md
 // "The palette per mode", toolbar-layout.md "The category bar"): the mode's glyph and name for its
-// switch, then Diagram's, Facilitate's and Illustrate's category bars (each category's glyph and its
+// switch, then Diagram's, Facilitate's and Pages mode's category bars (each category's glyph and its
 // one-word name, in bands), Draw's dock in place of the palette, and none for Plan, whose tab brings
 // its own bar (hero-plan-bars.tsx). Keyed by the editor's own EditorMode, so a new mode fails typecheck here. At the mock's
 // scale, drawn from the editor's own glyphs where it has them. The strip is ToolbarStrip
@@ -39,7 +39,7 @@ export const HERO_MODE: Record<HeroMode, { label: string; Icon: ComponentType<Ic
   diagram: { label: 'Diagram', Icon: EDITOR_MODE_ICONS.diagram },
   draw: { label: 'Draw', Icon: EDITOR_MODE_ICONS.draw },
   facilitate: { label: 'Facilitate', Icon: EDITOR_MODE_ICONS.facilitate },
-  illustrate: { label: 'Illustrate', Icon: EDITOR_MODE_ICONS.illustrate },
+  pages: { label: 'Pages', Icon: EDITOR_MODE_ICONS.pages },
   plan: { label: 'Plan', Icon: EDITOR_MODE_ICONS.plan },
 };
 
@@ -137,7 +137,7 @@ export const MODE_BAR: Partial<Record<HeroMode, readonly (readonly BarCategory[]
       { key: 'session', label: 'Session', Icon: BehaviourTabIcon },
     ],
   ],
-  illustrate: [
+  pages: [
     [
       { key: 'shapes', label: 'Shapes', Icon: ShapesTabIcon },
       { key: 'write', label: 'Write', Icon: WriteTabIcon },

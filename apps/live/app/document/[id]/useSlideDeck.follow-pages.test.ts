@@ -5,7 +5,7 @@ import { pageSlideIdFor, storePresentation, type Deck, type Tab } from '@livedia
 import { useSlideDeck } from './useSlideDeck';
 import { tabsWithPageMoved } from './useDeckFollowsPages';
 
-// docs/specs/007-editor/illustrate-pages.md "Slides": slide pages are in the deck in page order, an editor saves that,
+// docs/specs/007-editor/pages-mode.md "Slides": slide pages are in the deck in page order, an editor saves that,
 // a viewer only sees it, and a page slide dragged in the deck moves its page.
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 vi.mock('@/hooks/ui/useSlideThumbnails', () => ({ useSlideThumbnails: () => new Map() }));
@@ -16,7 +16,7 @@ const deckTab = (pageIds: string[]) =>
     id: 't',
     name: 'Deck',
     elements: [],
-    opensIn: 'illustrate',
+    opensIn: 'pages',
     pages: pageIds.map(slide),
   }) as unknown as Tab;
 

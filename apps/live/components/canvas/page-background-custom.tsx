@@ -1,6 +1,6 @@
 'use client';
 
-// The Background section's custom gradient editor (docs/specs/007-editor/illustrate-pages.md
+// The Background section's custom gradient editor (docs/specs/007-editor/pages-mode.md
 // "Backgrounds"): From and To, each a swatch button opening the one colour picker
 // (docs/specs/004-interface-design/colour-picker.md), the Angle, and Swap. Each previews while
 // changed and commits once.

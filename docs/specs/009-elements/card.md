@@ -94,7 +94,7 @@ their own.
 | Mode       | Where                                                       |
 | ---------- | ----------------------------------------------------------- |
 | Diagram    | **Build**: Card; **Write**: Callout (the preset)            |
-| Illustrate | **Components**: Card and Callout; **Popular** keeps Callout |
+| Pages      | **Components**: Card and Callout; **Popular** keeps Callout |
 | Plan       | none                                                        |
 | Facilitate | none (Search still finds and places it)                     |
 

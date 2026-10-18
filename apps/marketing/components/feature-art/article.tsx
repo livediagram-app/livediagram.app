@@ -1,4 +1,4 @@
-// Feature art for writing on Illustrate's article pages (docs/specs/019-marketing/marketing-site.md,
+// Feature art for writing on Pages mode's article pages (docs/specs/019-marketing/marketing-site.md,
 // docs/specs/007-editor/article-pages.md): an article page with its toolbar, writing in progress
 // and the / block menu open. Split out of ./infographics by subject; built on ./page-kit so the
 // page reads as paper on the canvas in light and in dark.

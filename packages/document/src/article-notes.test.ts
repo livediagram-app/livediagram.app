@@ -9,14 +9,14 @@ import {
   articleNoteIds,
   withNotesSettled,
 } from './article-notes';
-import { layOutIllustratePages, type IllustratePage } from './illustrate-page';
+import { layOutPages, type Page } from './page';
 import type { ArticleBlock } from './article-flow';
 
-const pages: IllustratePage[] = [
+const pages: Page[] = [
   { id: 'a1', orientation: 'portrait', kind: 'article', flow: 'f' },
   { id: 'a2', orientation: 'portrait', kind: 'article', flow: 'f' },
 ];
-const laid = layOutIllustratePages(pages);
+const laid = layOutPages(pages);
 const blocks: ArticleBlock[] = [
   { id: 'b', type: 'paragraph', runs: [{ text: 'The ' }, { text: 'budget', note: 'n1' }] },
 ];

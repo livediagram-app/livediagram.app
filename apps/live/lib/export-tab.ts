@@ -15,10 +15,10 @@ import {
   arrowLabelPass,
   articlesOf,
   drawingZoneClips,
-  illustratePagesOf,
+  pagesOf,
   isBoxed,
   isDrawingElement,
-  layOutIllustratePages,
+  layOutPages,
   layerBands,
   layerOpacityOf,
   shade,
@@ -92,7 +92,7 @@ export type ImageExportOpts = {
   // Google stylesheet by @import, which only a browser opening the file
   // directly will honour.
   fontCss?: string;
-  // One Illustrate page to export (docs/specs/007-editor/illustrate-pages.md "Export"): the
+  // One page to export (docs/specs/007-editor/pages-mode.md "Export"): the
   // frame becomes exactly its sheet, painted with its background; isometric and the tab's own
   // backdrop do not apply.
   page?: LaidOutPage;
@@ -153,7 +153,7 @@ import { articleOpsToSvg, drawArticleOps } from './article/article-draw';
 function exportZoneClips(tab: Tab, page: LaidOutPage | undefined): Map<string, PageRect> {
   if (!page) return new Map();
   return drawingZoneClips(
-    layOutIllustratePages(illustratePagesOf(tab)),
+    layOutPages(pagesOf(tab)),
     articlesOf(tab),
     tab.elements,
     isDrawingElement,
@@ -285,7 +285,7 @@ export async function renderTabToCanvas(
   const iso = opts.isometric && !frame ? isoCanvasMatrix() : null;
   const draw = iso ? isoProjectBounds(bounds, iso) : bounds;
   // 2x for crisp output, lowered so no side passes the largest canvas every browser draws (a Fit to
-  // Content page reaches 19200 px, docs/specs/007-editor/illustrate-pages.md "Sizes").
+  // Content page reaches 19200 px, docs/specs/007-editor/pages-mode.md "Sizes").
   const scale = exportScale(opts.scale ?? 2, draw.w + pad * 2, draw.h + pad * 2);
   const w = (draw.w + pad * 2) * scale;
   const h = (draw.h + pad * 2) * scale;
@@ -320,7 +320,7 @@ export async function renderTabToCanvas(
       // The paper behind it is already down: a failed paint must never abort the export.
     }
     // A slide's animated background, still as the slide opens, over its gradient and under all on
-    // it (docs/specs/007-editor/illustrate-pages.md "Animated backgrounds").
+    // it (docs/specs/007-editor/pages-mode.md "Animated backgrounds").
     const pageFill = opts.page?.background?.fill;
     if (opts.page && pageFill?.kind === 'gradient' && pageFill.motion) {
       const r = opts.page.rect;
@@ -563,7 +563,7 @@ function svgBoxedExtrusion(el: BoxedElement, surface: CanvasSurface): string {
 // three image formats under the current isometric / pattern options.
 // A slide's animated background in the SVG export: a picture of its gradient with the motion as
 // it stands when the slide opens, as the PNG and PDF paint it (docs/specs/007-editor/
-// illustrate-pages.md "Animated backgrounds"). Nothing where no canvas can draw it, leaving the
+// pages-mode.md "Animated backgrounds"). Nothing where no canvas can draw it, leaving the
 // gradient.
 function pageMotionSvg(page: LaidOutPage | undefined): string {
   const fill = page?.background?.fill;

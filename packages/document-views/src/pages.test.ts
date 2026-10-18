@@ -1,30 +1,25 @@
 import { describe, expect, it } from 'vitest';
 import type { PagesView } from '@livediagram/api-schema';
-import {
-  layOutIllustratePages,
-  type Element,
-  type IllustratePage,
-  type Tab,
-} from '@livediagram/document';
+import { layOutPages, type Element, type Page, type Tab } from '@livediagram/document';
 import { shapeAt } from './__fixtures__/build';
 import { itemLines } from './pages';
 import { renderView } from './render-view';
 
-// docs/specs/024-agents/illustrate-for-agents.md "Reading: the pages view".
+// docs/specs/024-agents/pages-for-agents.md "Reading: the pages view".
 
-const pages: IllustratePage[] = [
+const pages: Page[] = [
   { id: 'page-cover', orientation: 'landscape', size: 'slide', kind: 'slide', name: 'Cover' },
   { id: 'page-logo', orientation: 'portrait', size: 'logo', kind: 'logo', locked: true },
   { id: 'page-art1', orientation: 'portrait', kind: 'article', flow: 'art-1' },
   { id: 'page-art2', orientation: 'portrait', kind: 'article', flow: 'art-1' },
 ];
-const cover = layOutIllustratePages(pages)[0]!.rect;
+const cover = layOutPages(pages)[0]!.rect;
 
-const illustrateTab = (): Tab =>
+const pagesTab = (): Tab =>
   ({
     id: 'tab-deck',
     name: 'Deck',
-    opensIn: 'illustrate',
+    opensIn: 'pages',
     pages,
     elements: [shapeAt('square', 'aaaa1111', cover.x + 100, cover.y + 100)],
     articles: {
@@ -67,10 +62,10 @@ describe('the items of an element’s lists', () => {
 
 describe('the pages view', () => {
   it('lists each page with its rectangle and the refs on it, then each article as Markdown', () => {
-    const out = pagesOf(illustrateTab());
+    const out = pagesOf(pagesTab());
     const lines = out.text.split('\n');
     expect(lines[0]).toBe(
-      'tab tab-deck "Deck" · 1 element: 1 box · illustrate 4 pages: 1 slide, 1 logo, 2 article (view pages) · rev 7',
+      'tab tab-deck "Deck" · 1 element: 1 box · mode=pages · 4 pages: 1 slide, 1 logo, 2 article (view pages) · rev 7',
     );
     expect(lines[1]).toBe(
       `page 1 "Cover" page-cover · slide Slide (16:9) · at ${cover.x},${cover.y} 1920x1080 · 1 element`,
@@ -93,23 +88,23 @@ describe('the pages view', () => {
     expect(out.text).toMatch(/layouts slide: slide-title, /);
     expect(out.text).toMatch(/layouts logo: /);
     const json = out.json as PagesView;
-    expect(json.illustrate).toBe(true);
+    expect(json.pagesMode).toBe(true);
     expect(json.pages[0]).toMatchObject({ place: 1, kind: 'slide', refs: ['aaaa1111'] });
     expect(json.articles[0]!.markdown.startsWith('---\ntitle: Brief')).toBe(true);
     expect(json.layouts.map((l) => l.kind)).toEqual(['slide', 'logo']);
   });
 
   it('names a landscape page, its paint, its elements; a one-page article; no layouts for articles alone', () => {
-    const page: IllustratePage = {
+    const page: Page = {
       id: 'page-wide',
       orientation: 'landscape',
       background: { fill: { kind: 'solid', color: '#0f172a' } },
     };
-    const r = layOutIllustratePages([page])[0]!.rect;
+    const r = layOutPages([page])[0]!.rect;
     const tab = {
       id: 'tab-wide',
       name: 'Wide',
-      opensIn: 'illustrate',
+      opensIn: 'pages',
       pages: [page],
       elements: [
         shapeAt('square', 'cccc3333', r.x + 50, r.y + 50),
@@ -127,7 +122,7 @@ describe('the pages view', () => {
     const articleOnly = {
       id: 'tab-art',
       name: 'Notes',
-      opensIn: 'illustrate',
+      opensIn: 'pages',
       pages: [{ id: 'a', orientation: 'portrait', kind: 'article', flow: 'f' }],
       articles: { f: { blocks: [{ id: 'b', type: 'paragraph', runs: [{ text: 'Hi' }] }] } },
       elements: [],
@@ -138,7 +133,7 @@ describe('the pages view', () => {
   });
 
   it('keeps to a budget, saying what it left out', () => {
-    const out = pagesOf(illustrateTab(), 60);
+    const out = pagesOf(pagesTab(), 60);
     expect(out.text).toMatch(/hidden/);
     expect((out.json as PagesView).elision).not.toBeNull();
   });
@@ -150,6 +145,6 @@ describe('the pages view', () => {
     if (!cli.ok || !mcp.ok) throw new Error('refused');
     expect(cli.text).toContain('page set adds pages');
     expect(mcp.text).toContain('change_pages adds pages');
-    expect(cli.json).toMatchObject({ illustrate: false, pages: [], articles: [] });
+    expect(cli.json).toMatchObject({ pagesMode: false, pages: [], articles: [] });
   });
 });

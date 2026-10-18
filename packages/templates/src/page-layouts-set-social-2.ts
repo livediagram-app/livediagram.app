@@ -1,4 +1,4 @@
-// Social posts, part one (docs/specs/007-editor/illustrate-pages.md "Layouts"): a tip of the day,
+// Social posts, part one (docs/specs/007-editor/pages-mode.md "Layouts"): a tip of the day,
 // a milestone thank-you, an event countdown, a welcome for a new hire and a carousel's cover. Same
 // contract as page-layouts.ts: the page's content box in, uncoloured elements out. Built first for
 // Square, Portrait post (4:5) and Story (9:16) pages, a tall page stacking one big message down the

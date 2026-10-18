@@ -3,7 +3,7 @@
 // docs/specs/007-editor/logo-pages.md "Drawing onto the guides": where a drawing can start.
 import { act, cleanup, render } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
-import { DEFAULT_MIRROR, layOutIllustratePages, newLogoPage } from '@livediagram/document';
+import { DEFAULT_MIRROR, layOutPages, newLogoPage } from '@livediagram/document';
 import type { LogoToolsView } from '@/hooks/editor/useLogoTools';
 import { logoGuideSnapper } from '@/lib/logo-guide-snapping';
 import { pageMirrorMaps, toScreen } from './MirrorReflection';
@@ -11,7 +11,7 @@ import { drawsOntoGuides, GuideSnapPoints, SNAP_POINTS_NEAR_PX } from './GuideSn
 
 afterEach(() => cleanup());
 
-const pages = layOutIllustratePages([newLogoPage('l')]);
+const pages = layOutPages([newLogoPage('l')]);
 const page = pages[0]!.rect;
 const cx = page.x + page.width / 2;
 const cy = page.y + page.height / 2;

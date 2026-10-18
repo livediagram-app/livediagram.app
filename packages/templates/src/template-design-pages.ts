@@ -1,5 +1,5 @@
 // The Design templates' pages (docs/specs/007-editor/templates-by-mode.md "Design templates"): the
-// Floor Plan, Storyboard and the three wireframes open in Illustrate, each on one infographic page
+// Floor Plan, Storyboard and the three wireframes open in Pages, each on one infographic page
 // sized for what it is. The screens (web page, laptop, phone flow) sit on a Widescreen (16:9) page,
 // the shape they are shown on; the floor plan and the storyboard on an A3 landscape sheet, the paper
 // a plan and a shoot's boards are printed on. Each drawing keeps its own builder and its own size
@@ -7,12 +7,7 @@
 // measured, then again centred on its page.
 //
 // Pure: kind in, pages or elements out.
-import {
-  elementBounds,
-  layOutIllustratePages,
-  type Element,
-  type IllustratePage,
-} from '@livediagram/document';
+import { elementBounds, layOutPages, type Element, type Page } from '@livediagram/document';
 import { templatePage } from './template-page-kit';
 import type { TemplateKind } from './templates';
 
@@ -25,7 +20,7 @@ type DesignTemplateKind =
 const STUDIO = { fill: { kind: 'solid', color: '#f8fafc' } } as const;
 const DRAFTING = { pattern: 'grid' } as const;
 
-const DESIGN_PAGES: Readonly<Record<DesignTemplateKind, IllustratePage>> = {
+const DESIGN_PAGES: Readonly<Record<DesignTemplateKind, Page>> = {
   'floor-plan': templatePage(1, 'a3', 'landscape', 'Floor Plan', DRAFTING),
   storyboard: templatePage(1, 'a3', 'landscape', 'Storyboard'),
   'browser-wireframe': templatePage(1, 'wide', 'landscape', 'Landing Page', STUDIO),
@@ -38,7 +33,7 @@ export function isDesignTemplate(kind: TemplateKind): kind is DesignTemplateKind
 }
 
 /** A Design template's one page. */
-export function designTemplatePages(kind: DesignTemplateKind): IllustratePage[] {
+export function designTemplatePages(kind: DesignTemplateKind): Page[] {
   return [DESIGN_PAGES[kind]];
 }
 
@@ -48,7 +43,7 @@ export function buildOnDesignPage(
   kind: DesignTemplateKind,
   build: (cx: number, cy: number) => Element[],
 ): Element[] {
-  const [page] = layOutIllustratePages(designTemplatePages(kind));
+  const [page] = layOutPages(designTemplatePages(kind));
   const { x, y, width, height } = page!.rect;
   const probe = build(0, 0);
   let x0 = Infinity;

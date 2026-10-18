@@ -1,4 +1,4 @@
-// The social layouts (docs/specs/007-editor/illustrate-pages.md "Layouts"): an announcement, a
+// The social layouts (docs/specs/007-editor/pages-mode.md "Layouts"): an announcement, a
 // "Did you know?" fact and a save the date. Same contract as page-layouts.ts: the page's content box
 // in, uncoloured elements out, a tall page stacking and a wide one setting side by side. Each is a
 // single block, centred down the page so nothing floats in empty space.

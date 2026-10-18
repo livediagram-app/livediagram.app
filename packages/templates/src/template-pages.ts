@@ -1,8 +1,8 @@
-// Which templates open in Illustrate on pages of their own (docs/specs/008-canvas/
+// Which templates open in Pages on pages of their own (docs/specs/008-canvas/
 // canvas-and-palette.md "Templates on pages"), and on which pages. The builders place their
 // elements on exactly these pages; templateCanvasOverrides ships them, so every application path
 // (the picker, /new, the MCP worker) lands the pages and the elements together.
-import type { IllustratePage } from '@livediagram/document';
+import type { Page } from '@livediagram/document';
 import { liveCardPages } from './template-builders-livecard';
 import { logoDesignPages } from './template-builders-logo';
 import { slideDeckPages } from './template-builders-slides';
@@ -19,7 +19,7 @@ import type { TemplateKind } from './templates';
 import { designTemplatePages, isDesignTemplate } from './template-design-pages';
 
 /** The pages a template opens on, or undefined for a template drawn on the open canvas. */
-export function templatePages(kind: TemplateKind): IllustratePage[] | undefined {
+export function templatePages(kind: TemplateKind): Page[] | undefined {
   switch (kind) {
     case 'slide-deck':
       return slideDeckPages();

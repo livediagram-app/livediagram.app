@@ -1,4 +1,4 @@
-// More Data layouts (docs/specs/007-editor/illustrate-pages.md "Layouts"), category 'data':
+// More Data layouts (docs/specs/007-editor/pages-mode.md "Layouts"), category 'data':
 // pure builders on the shared kit (page-layout-kit.ts), laid out in proportions of the page's
 // content box so each fits every size and orientation, in the tab's theme. A KPI dashboard and a
 // trend story here; a market share breakdown and a stat mosaic in page-layouts-set-data-2.ts.

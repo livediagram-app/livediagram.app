@@ -1,5 +1,5 @@
 // Which colours of an element re-inking measures, and how (docs/specs/007-editor/
-// illustrate-pages.md "Re-inking"): the floors and targets of text, lines, marks and cards, the
+// pages-mode.md "Re-inking"): the floors and targets of text, lines, marks and cards, the
 // shape kinds each rule reaches, and the elements left as they are. Pure.
 import { isLegacyEmojiIconId, isTechIconId } from '@livediagram/icons';
 import { defaultFillColor, defaultStrokeColor, type CanvasSurface } from './colors';

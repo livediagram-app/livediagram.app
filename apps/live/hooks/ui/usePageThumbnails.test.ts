@@ -1,30 +1,25 @@
 // @vitest-environment jsdom
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import {
-  createShape,
-  layOutIllustratePages,
-  type Element,
-  type IllustratePage,
-} from '@livediagram/document';
+import { createShape, layOutPages, type Element, type Page } from '@livediagram/document';
 import * as slideThumb from '@/lib/slide-thumb';
 import { usePageThumbnails, type PageThumbTab } from './usePageThumbnails';
 
 vi.mock('@/hooks/ui/useIconCatalogs', () => ({ useIconCatalogs: () => true }));
 
-// docs/specs/007-editor/illustrate-pages.md "Contents" "Cost".
+// docs/specs/007-editor/pages-mode.md "Contents" "Cost".
 afterEach(() => {
   vi.restoreAllMocks();
   vi.useRealTimers();
 });
 
-const pages: IllustratePage[] = ['p1', 'p2', 'p3'].map((id) => ({
+const pages: Page[] = ['p1', 'p2', 'p3'].map((id) => ({
   id,
   orientation: 'landscape',
   kind: 'slide',
   size: 'slide',
 }));
-const laid = layOutIllustratePages(pages);
+const laid = layOutPages(pages);
 const boxOn = (i: number, id: string, label = id): Element => ({
   ...createShape('square', laid[i]!.rect.x + 50, laid[i]!.rect.y + 50),
   id,

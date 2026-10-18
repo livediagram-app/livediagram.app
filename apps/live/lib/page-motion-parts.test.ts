@@ -6,7 +6,7 @@ import { motionPaint } from './page-motion';
 import { motionParts, waveLine, wavePath, type MotionNode } from './page-motion-parts';
 
 // Every motion's parts, read by both the moving layer and the still export (docs/specs/007-editor/
-// illustrate-pages.md "Animated backgrounds").
+// pages-mode.md "Animated backgrounds").
 
 const paint = motionPaint({ from: '#1e3a8a', to: '#4c1d95' });
 const flat = (nodes: readonly MotionNode[]): MotionNode[] =>

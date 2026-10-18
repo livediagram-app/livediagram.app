@@ -9,9 +9,9 @@ import {
 import { Prims } from '@livediagram/ui';
 import { FONT } from '@/components/art-tokens';
 
-// The pieces every page of the hero's Infographic window is built from (hero-illustrate-page.tsx):
-// the page as Illustrate mode shows it (its name row above, with the lock and settings, and its
-// pager below; docs/specs/007-editor/illustrate-pages.md), the running footer, a heading, and a
+// The pieces every page of the hero's Infographic window is built from (hero-page.tsx):
+// the page as Pages mode shows it (its name row above, with the lock and settings, and its
+// pager below; docs/specs/007-editor/pages-mode.md), the running footer, a heading, and a
 // Lucide glyph placed on the page. The palette is the Year in Review template's, so the scene reads
 // as the template it opens.
 
@@ -59,7 +59,7 @@ export function InfoIcon({
   );
 }
 
-// A page as Illustrate shows it on the canvas: its name row above (name, size, orientation and
+// A page as Pages shows it on the canvas: its name row above (name, size, orientation and
 // kind, then the lock and the page's settings), the sheet with its shadow, and its pager below.
 export function InfoSheet({
   x,

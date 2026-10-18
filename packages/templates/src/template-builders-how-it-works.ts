@@ -1,5 +1,5 @@
 // How It Works template (kind `how-it-works`, docs/specs/007-editor/templates-by-mode.md
-// "Illustrate templates"): one Story (9:16) portrait page explaining a made-up neighbourhood
+// "Pages templates"): one Story (9:16) portrait page explaining a made-up neighbourhood
 // lending app, Borrowbox, in five steps from first tap to done, sized for a story or a phone
 // screen. It reads top to bottom:
 //
@@ -19,7 +19,7 @@
 import {
   createPinnedArrow,
   type Element,
-  type IllustratePage,
+  type Page,
   type ShapeElement,
 } from '@livediagram/document';
 import type { Kit } from './page-layout-kit';
@@ -70,7 +70,7 @@ const EXPLAINER_PAGE = templatePage(1, 'wide', 'portrait', 'How It Works', {
 });
 
 /** The explainer's page: one Story (9:16) portrait page on a warm-to-lavender wash. */
-export function howItWorksPages(): IllustratePage[] {
+export function howItWorksPages(): Page[] {
   return [EXPLAINER_PAGE];
 }
 

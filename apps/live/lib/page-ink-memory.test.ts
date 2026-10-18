@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { InkMemory } from '@livediagram/document';
 import { pageInkMemory, rememberPageInk } from './page-ink-memory';
 
-// docs/specs/007-editor/illustrate-pages.md "Re-inking", "Going back": a session memory per tab,
+// docs/specs/007-editor/pages-mode.md "Re-inking", "Going back": a session memory per tab,
 // bounded.
 const one = (id: string): InkMemory =>
   new Map([[id, { textColor: { from: '#000000', to: '#ffffff' } }]]);

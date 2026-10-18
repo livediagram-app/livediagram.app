@@ -1,16 +1,11 @@
 // @vitest-environment jsdom
-// The Illustrate tour's tracks (docs/specs/007-editor/illustrate-tour.md "The steps"): one per page kind, as Show Me
+// The Pages tour's tracks (docs/specs/007-editor/pages-tour.md "The steps"): one per page kind, as Show Me
 // runs them and behind a welcome card as the tour offers them, left without a control that is not on screen.
 import { describe, expect, it } from 'vitest';
 import { readPinnedPageToolbar } from '@/components/canvas/article/page-toolbar-presence';
 import type { PageTourApi } from './page-tour-api';
-import {
-  illustrateTourSteps,
-  pageTourSteps,
-  shownPageTourSteps,
-  stepShown,
-} from './page-tour-steps';
-import { illustrateTourStepTelemetryType } from './IllustrateTourHost';
+import { pagesTourSteps, pageTourSteps, shownPageTourSteps, stepShown } from './page-tour-steps';
+import { pagesTourStepTelemetryType } from './PagesTourHost';
 
 const api: PageTourApi = { pageId: 'p1', openPanel: () => {}, closePanel: () => {} };
 const NOW = { combineShowing: false };
@@ -85,10 +80,10 @@ describe('the tracks', () => {
 
 describe('what the tour starts with', () => {
   it('opens the offer on the track’s own welcome card', () => {
-    const steps = illustrateTourSteps('slide', NOW, api, everything);
+    const steps = pagesTourSteps('slide', NOW, api, everything);
     expect(steps[0]).toMatchObject({ id: 'welcome', card: 'welcome' });
     expect(steps[0]!.title).toBe('Getting started with slides?');
-    expect(illustrateTourSteps('article', NOW, api, everything)[0]!.title).toBe(
+    expect(pagesTourSteps('article', NOW, api, everything)[0]!.title).toBe(
       'Getting started with articles?',
     );
   });
@@ -106,7 +101,7 @@ describe('what the tour starts with', () => {
       seen.push(sel);
       return true;
     });
-    expect(seen).toEqual(['[data-illustrate-page-id="p1"] button[aria-label="Layout"]']);
+    expect(seen).toEqual(['[data-page-id="p1"] button[aria-label="Layout"]']);
   });
 
   it('always keeps a card with nothing to point at', () => {
@@ -117,11 +112,9 @@ describe('what the tour starts with', () => {
 
 describe('telemetry', () => {
   it('names the track in each step view', () => {
-    expect(illustrateTourStepTelemetryType('slide', 'add-page')).toBe(
-      'IllustrateTourStepSlideAddPage',
-    );
-    expect(illustrateTourStepTelemetryType('infographic', 'page-size')).toBe(
-      'IllustrateTourStepInfographicPageSize',
+    expect(pagesTourStepTelemetryType('slide', 'add-page')).toBe('PagesTourStepSlideAddPage');
+    expect(pagesTourStepTelemetryType('infographic', 'page-size')).toBe(
+      'PagesTourStepInfographicPageSize',
     );
   });
 });

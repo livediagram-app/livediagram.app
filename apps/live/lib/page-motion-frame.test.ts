@@ -11,7 +11,7 @@ import {
 } from './page-motion-frame';
 
 // Where an animated background stands as the slide opens (docs/specs/007-editor/
-// illustrate-pages.md "Animated backgrounds"): the export draws this still. The poses were checked
+// pages-mode.md "Animated backgrounds"): the export draws this still. The poses were checked
 // against Chrome's own computed transforms for every part of all twenty-four motions.
 
 describe('openingPhase', () => {

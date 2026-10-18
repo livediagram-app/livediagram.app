@@ -1,4 +1,4 @@
-// Social posts, part two (docs/specs/007-editor/illustrate-pages.md "Layouts"): a product
+// Social posts, part two (docs/specs/007-editor/pages-mode.md "Layouts"): a product
 // spotlight, a behind-the-scenes mosaic, a giveaway and a webinar promo. Same contract as page-layouts.ts:
 // the page's content box in, uncoloured elements out, built first for Square, Portrait post (4:5)
 // and Story (9:16) pages, a tall page stacking and a wide one setting the picture beside the words.

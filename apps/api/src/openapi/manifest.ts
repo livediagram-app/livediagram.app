@@ -65,6 +65,9 @@ export interface RouteSpec {
    *  first-party-only / internal endpoint). Surfaced in the doc so integrators
    *  can see the supported surface at a glance. */
   tokenUsable?: boolean;
+  /** An old address still served for clients that predate a rename; documented so they are not
+   *  surprised, marked so nobody new calls it. */
+  deprecated?: boolean;
   query?: QueryParam[];
   requestSchema?: BodySchema;
   responseSchema?: BodySchema;
@@ -581,15 +584,29 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'POST',
+    path: '/documents/{id}/tabs/{tabId}/pages',
+    segment: 'documents',
+    tag: 'Documents',
+    summary:
+      'Change the pages of a tab (add, set, lay out, move, duplicate, delete; up to 50, as one edit) or write an article from Markdown. Switches the tab into Pages and reaches everyone with the document open. Answers each page with its rectangle on the canvas.',
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    requestSchema: ref('PagesRequest'),
+    responseSchema: 'PagesAnswer',
+    statuses: [200, 400, 401, 403, 404, 409, 410, 413],
+  },
+  {
+    method: 'POST',
     path: '/documents/{id}/tabs/{tabId}/illustrate',
     segment: 'documents',
     tag: 'Documents',
     summary:
-      'Change the Illustrate pages of a tab (add, set, lay out, move, duplicate, delete; up to 50, as one edit) or write an article from Markdown. Switches the tab into Illustrate and reaches everyone with the document open. Answers each page with its rectangle on the canvas.',
+      'The address of the pages call before Illustrate mode became Pages mode, kept for older clients. Use /documents/{id}/tabs/{tabId}/pages.',
     auth: 'guest-or-clerk',
     tokenUsable: true,
-    requestSchema: ref('IllustrateRequest'),
-    responseSchema: 'IllustrateAnswer',
+    deprecated: true,
+    requestSchema: ref('PagesRequest'),
+    responseSchema: 'PagesAnswer',
     statuses: [200, 400, 401, 403, 404, 409, 410, 413],
   },
   {

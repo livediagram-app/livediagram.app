@@ -6,7 +6,7 @@
 import {
   ARTICLE_TOP_MIN_PX,
   articleMarginPx,
-  ILLUSTRATE_PAGE_GAP,
+  PAGE_GAP,
   type ArticleStyle,
   type LaidOutPage,
 } from '@livediagram/document';
@@ -37,7 +37,7 @@ export function flowFrame(pages: readonly LaidOutPage[], margin: number): FlowFr
   // The top keeps room for the page toolbar above the first line (articleTopMarginPx).
   const top = Math.min(Math.max(m, ARTICLE_TOP_MIN_PX), pageH * 0.375);
   const columnWidth = pageW - 2 * m;
-  const gap = 2 * m + ILLUSTRATE_PAGE_GAP;
+  const gap = 2 * m + PAGE_GAP;
   const count = pages.length;
   return {
     x: lead.rect.x + m,

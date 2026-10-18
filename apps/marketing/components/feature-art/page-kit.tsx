@@ -197,7 +197,7 @@ export function Cursor({
   );
 }
 
-// The serif an article or report headline is set in (Illustrate's Classic and Report looks).
+// The serif an article or report headline is set in (Pages mode's Classic and Report looks).
 export const SERIF = 'ui-serif, Georgia, Cambria, "Times New Roman", serif';
 
 // The small caption over a page, as the editor labels its pages.

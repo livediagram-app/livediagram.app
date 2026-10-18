@@ -1,4 +1,4 @@
-// Posters layouts, part four (docs/specs/007-editor/illustrate-pages.md "Layouts"): a big sale, a
+// Posters layouts, part four (docs/specs/007-editor/pages-mode.md "Layouts"): a big sale, a
 // workplace notice and a motivational poster. Pure builders on the shared kit: the page's content
 // box in, uncoloured elements out, a tall page stacking and a squarer or wide one side by side.
 import type { Element } from '@livediagram/document';

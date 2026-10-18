@@ -1,4 +1,4 @@
-// Slide steps and time (docs/specs/007-editor/illustrate-pages.md "Slide layouts", Steps and
+// Slide steps and time (docs/specs/007-editor/pages-mode.md "Slide layouts", Steps and
 // Time): how a thing unfolds, besides Process, Timeline, Roadmap, Funnel, Cycle and Project Plan.
 // Pure builders on the slide kit, in units of the slide's height.
 import { createPinnedArrow, type Element, type ShapeElement } from '@livediagram/document';

@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { createShape } from './shape-factory';
-import { newSlidePage } from './illustrate-page';
+import { newSlidePage } from './page';
 import { laidOutPagesOf, pagesPerRow, renderPageToSvg, renderPagesToSvg } from './svg-render-pages';
 import type { Tab } from './index';
 
-// docs/specs/015-api/mcp-server.md §5: an Illustrate tab drawn as its pages, each as it exports.
+// docs/specs/015-api/mcp-server.md §5: a Pages tab drawn as its pages, each as it exports.
 const portrait = (id: string, extra: object = {}) => ({
   id,
   orientation: 'portrait',
@@ -14,10 +14,10 @@ const portrait = (id: string, extra: object = {}) => ({
 });
 
 function tab(pages: object[], elements: Tab['elements'] = []): Tab {
-  return { id: 't', name: 'T', opensIn: 'illustrate', pages, elements } as unknown as Tab;
+  return { id: 't', name: 'T', opensIn: 'pages', pages, elements } as unknown as Tab;
 }
 
-describe('an Illustrate tab drawn as its pages', () => {
+describe('a Pages tab drawn as its pages', () => {
   it('embeds a page’s picture background from the image resolver', () => {
     const id = 'a'.repeat(32);
     const t = tab([
@@ -30,7 +30,7 @@ describe('an Illustrate tab drawn as its pages', () => {
     expect(svg).toContain('data:image/png;base64,QUJD');
   });
 
-  it('has pages only in Illustrate', () => {
+  it('has pages only in Pages', () => {
     expect(laidOutPagesOf({ id: 't', name: 'T', elements: [] })).toEqual([]);
     expect(laidOutPagesOf(tab([portrait('a')])).map((p) => p.id)).toEqual(['a']);
     expect(renderPagesToSvg({ id: 't', name: 'T', elements: [] })).toBeNull();

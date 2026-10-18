@@ -1,4 +1,4 @@
-// Feature illustrations for Illustrate's pages beyond layouts (docs/specs/007-editor/illustrate-pages.md):
+// Feature illustrations for Pages mode's pages beyond layouts (docs/specs/007-editor/pages-mode.md):
 // pages played as an animated GIF, a live window onto another tab, a page tidied in one press, the
 // Contents sidebar, and a talk kept to time while presenting.
 

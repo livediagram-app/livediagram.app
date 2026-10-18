@@ -3,7 +3,7 @@
 import { trustedHtml } from '@livediagram/ui';
 
 // A layout previewed on its page while its tile is hovered (docs/specs/007-editor/
-// illustrate-pages.md "Layouts"): the layout built for the page, drawn over the whole sheet in the
+// pages-mode.md "Layouts"): the layout built for the page, drawn over the whole sheet in the
 // page's own background so it covers what is there now, through the same renderer the exports
 // use. A picture only: nothing is placed, nothing enters the history, and it goes when the hover
 // does. The page's own words and pictures are carried into it as placing it would carry them
@@ -23,7 +23,7 @@ import {
 } from '@livediagram/document';
 import type { PageLayoutId } from '@livediagram/templates';
 import { resolveIconArtLoaded, resolveStickerArtLoaded } from '@/lib/icon-registry';
-import { pageSheetStyle } from '@/lib/illustrate-page-paint';
+import { pageSheetStyle } from '@/lib/page-paint';
 import { PageMotionLayer } from './PageMotionLayer';
 import { buildPageLayoutOver } from '@livediagram/templates';
 import { useCanvasSurface } from './CanvasSurfaceContext';

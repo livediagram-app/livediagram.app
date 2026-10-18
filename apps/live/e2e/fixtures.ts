@@ -60,20 +60,20 @@ export async function enableDebugLogs(context: BrowserContext): Promise<void> {
   );
 }
 
-// The Draw, Avatar, Forms, Illustrate and element tours (docs/specs/023-draw-mode/draw-tour.md, docs/specs/008-canvas/avatar-tour.md,
-// docs/specs/030-forms/forms.md, docs/specs/007-editor/illustrate-tour.md) offer themselves 800 ms into their modes and their overlays would take the presses of every spec there; they have
+// The Draw, Avatar, Forms, Pages and element tours (docs/specs/023-draw-mode/draw-tour.md, docs/specs/008-canvas/avatar-tour.md,
+// docs/specs/030-forms/forms.md, docs/specs/007-editor/pages-tour.md) offer themselves 800 ms into their modes and their overlays would take the presses of every spec there; they have
 // their own unit tests. Marked seen for every page of the context.
 async function markModeToursSeen(context: BrowserContext): Promise<void> {
   await context.addInitScript(() => {
     const key = 'livediagram:user-preferences:v1';
     try {
       const prefs = JSON.parse(localStorage.getItem(key) ?? '{}') as Record<string, unknown>;
-      // The Illustrate tour offers each page kind once (lib/tour-tracks.ts): every kind answered.
+      // The Pages tour offers each page kind once (lib/tour-tracks.ts): every kind answered.
       if (
         prefs.drawTourSeen !== true ||
         prefs.avatarTourSeen !== true ||
         prefs.formTourSeen !== true ||
-        !Array.isArray(prefs.illustrateTourKinds) ||
+        !Array.isArray(prefs.pagesTourKinds) ||
         !Array.isArray(prefs.elementTourKinds)
       )
         localStorage.setItem(
@@ -83,8 +83,8 @@ async function markModeToursSeen(context: BrowserContext): Promise<void> {
             drawTourSeen: true,
             avatarTourSeen: true,
             formTourSeen: true,
-            illustrateTourSeen: true,
-            illustrateTourKinds: ['slide', 'infographic', 'article', 'logo'],
+            pagesTourSeen: true,
+            pagesTourKinds: ['slide', 'infographic', 'article', 'logo'],
             // Element tours (docs/specs/007-editor/element-tours.md): the offer beside a Sankey's toolbar.
             elementTourKinds: [
               'sankey',

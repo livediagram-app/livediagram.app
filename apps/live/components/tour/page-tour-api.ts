@@ -1,7 +1,7 @@
-// What a page's tour steps drive (docs/specs/007-editor/illustrate-tour.md): the tour page, and its panel opened on a
-// tab or closed. Shared by every track and by both ways a track runs: offered (IllustrateTourHost) and from the
+// What a page's tour steps drive (docs/specs/007-editor/pages-tour.md): the tour page, and its panel opened on a
+// tab or closed. Shared by every track and by both ways a track runs: offered (PagesTourHost) and from the
 // page's panel (Show Me, PageTour.tsx).
-import type { PagePanelTab } from '@/components/canvas/IllustratePagePanel';
+import type { PagePanelTab } from '@/components/canvas/PagePanel';
 import type { TourStepOf } from './tour-step';
 
 export type PageTourApi = {

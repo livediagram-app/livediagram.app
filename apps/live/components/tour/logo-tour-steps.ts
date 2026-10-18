@@ -1,5 +1,5 @@
-// The steps of Show Me on a logo page (docs/specs/007-editor/logo-pages.md "Show Me"), and the Illustrate tour's Logo
-// track (docs/specs/007-editor/illustrate-tour.md "Logo track"): a tour of the logo tools, run on the page itself.
+// The steps of Show Me on a logo page (docs/specs/007-editor/logo-pages.md "Show Me"), and the Pages tour's Logo
+// track (docs/specs/007-editor/pages-tour.md "Logo track"): a tour of the logo tools, run on the page itself.
 // Each step rings a real control of the page it was started on, which stays usable, so the person can pick a layout
 // or turn the guides on while the step is up.
 import type { PageTourApi, PageTourStep } from './page-tour-api';

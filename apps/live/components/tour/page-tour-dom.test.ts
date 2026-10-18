@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-// The page tour's DOM (docs/specs/007-editor/illustrate-tour.md "The steps"): a popover opened once per step by its
+// The page tour's DOM (docs/specs/007-editor/pages-tour.md "The steps"): a popover opened once per step by its
 // real button and closed only if the step opened it, and the + the Add step points at.
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { addPageAnchor, closeTitlePopover, openTitlePopover, resetPageTour } from './page-tour-dom';
@@ -46,7 +46,7 @@ describe('addPageAnchor', () => {
 describe('title popovers', () => {
   const page = () => {
     place(
-      '<div data-illustrate-page-id="p1"><button aria-label="Layout" aria-expanded="false"></button></div>',
+      '<div data-page-id="p1"><button aria-label="Layout" aria-expanded="false"></button></div>',
     );
     const button = document.querySelector<HTMLButtonElement>('button[aria-label="Layout"]')!;
     const click = vi.fn(() =>

@@ -15,7 +15,7 @@
 // Activity, Collaborate), and `bottom` (the distance from the canvas's bottom
 // edge to the button's top) tells the panel to hang there.
 // How far below the canvas's top the Toolbar strip ends, with a gap: where what sits under the strip
-// starts (the top corner stacks when the strip crowds them, Illustrate's Contents sidebar). The strip
+// starts (the top corner stacks when the strip crowds them, Pages mode's Contents sidebar). The strip
 // sits 12px down and is 46px tall; 68px leaves a 10px gap. It is drawn at the UI scale
 // (docs/specs/007-editor/ui-scale.md), so only its height scales.
 export const toolbarTopClearancePx = (scale: number) => 12 + 46 * scale + 10;

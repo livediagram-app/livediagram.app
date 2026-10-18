@@ -111,7 +111,7 @@ describe('TourHost offer', () => {
   });
 
   // docs/specs/007-editor/editor-tour.md "Where it appears": Diagram mode only.
-  it.each(['draw', 'illustrate', 'plan', 'facilitate'])(
+  it.each(['draw', 'pages', 'plan', 'facilitate'])(
     'makes no offer on a tab in %s, and keeps it owed for a Diagram tab',
     (mode) => {
       markTourPending();

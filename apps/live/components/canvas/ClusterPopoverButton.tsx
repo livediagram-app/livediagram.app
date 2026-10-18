@@ -6,7 +6,7 @@ import { CLUSTER_STRIP, CLUSTER_CONTROL_REST } from '@/components/canvas/cluster
 import { useDockNames } from '@/hooks/ui/useDockNames';
 
 // A bottom-right cluster button that opens a panel as a popover hanging ABOVE it, as the Layers
-// button does, and shows pressed while it is open: Slides in Illustrate mode, Card Types in Plan
+// button does, and shows pressed while it is open: Slides in Pages mode, Card Types in Plan
 // mode, each where Layers sits in the other modes. Two or more can share one frame, as Undo and Redo
 // do (ClusterStrip of ClusterPopoverSegments): Plan's Find a Card and Card Types.
 //

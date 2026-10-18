@@ -1,6 +1,6 @@
 'use client';
 
-// The Export dialog's pages in Illustrate mode (docs/specs/007-editor/illustrate-pages.md
+// The Export dialog's pages in Pages mode (docs/specs/007-editor/pages-mode.md
 // "Export"): All pages or One page (the shared segmented control), with One page the page itself,
 // and a line saying what the download will be. With All pages a page is still picked, for the
 // preview.

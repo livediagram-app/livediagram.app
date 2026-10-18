@@ -5,7 +5,7 @@ import { PagesClusterStrip } from './PagesClusterStrip';
 import { ContentsClusterSegment } from './ContentsClusterSegment';
 import { SlidesClusterSegment } from './SlidesClusterSegment';
 
-// Illustrate's pages strip (docs/specs/007-editor/illustrate-pages.md "Contents", "Slides"): Contents and Slides in
+// Pages mode's pages strip (docs/specs/007-editor/pages-mode.md "Contents", "Slides"): Contents and Slides in
 // one frame, each opening its own popover.
 
 afterEach(cleanup);

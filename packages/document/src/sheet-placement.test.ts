@@ -54,7 +54,7 @@ describe('tabTakesSheets', () => {
   });
 
   it('refuses every other mode, and a tab with no mode (Diagram)', () => {
-    for (const opensIn of ['diagram', 'draw', 'facilitate', 'illustrate'])
+    for (const opensIn of ['diagram', 'draw', 'facilitate', 'pages'])
       expect(tabTakesSheets({ opensIn })).toBe(false);
     expect(tabTakesSheets({})).toBe(false);
   });

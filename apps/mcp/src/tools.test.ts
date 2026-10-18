@@ -72,8 +72,8 @@ const BOARD = {
     hideWriting: false,
   },
 };
-// In Illustrate mode, so the Illustrate tools find it (docs/specs/024-agents/illustrate-for-agents.md).
-const TAB = { id: 't_1', name: 'Tab 1', rev: 1, opensIn: 'illustrate', elements: [BOARD] };
+// In Pages mode, so the Pages tools find it (docs/specs/024-agents/pages-for-agents.md).
+const TAB = { id: 't_1', name: 'Tab 1', rev: 1, opensIn: 'pages', elements: [BOARD] };
 const PLAN = {
   boards: [
     {
@@ -146,8 +146,8 @@ function okResponse(request: Request): Response {
   if (path.endsWith('/share')) {
     return json({ link: { code: 'abc', role: 'view', expiresAt: null } });
   }
-  // An Illustrate edit (docs/specs/024-agents/illustrate-for-agents.md "The route").
-  if (path.endsWith('/illustrate')) {
+  // A Pages edit (docs/specs/024-agents/pages-for-agents.md "The route").
+  if (path.endsWith('/pages')) {
     const article = { flow: 'art-1', title: 'A', pages: [1], blocks: 1, words: 1, look: null };
     return json({
       tab: { id: 't_1', rev: 2 },
@@ -303,7 +303,7 @@ describe('registerTools', () => {
     const seen: Record<string, Emitted[]> = {};
     for (const tool of registered) {
       const before = emitted.length;
-      // A Sheet goes only on a tab in Plan: the Form tab is one, Tab 1 is in Illustrate.
+      // A Sheet goes only on a tab in Plan: the Form tab is one, Tab 1 is in Pages.
       const args = tool.name === 'add_sheet' ? { ...ARGS, tabId: 'f_1' } : ARGS;
       const result = (await tool.handler(args, AUTHED)) as { isError?: boolean };
       // Guards the harness itself: a tool that failed here would pass the
@@ -405,7 +405,7 @@ describe('tool annotations', () => {
     read_sheet: 'read',
     change_sheet: 'destructive',
     add_sheet: 'write',
-    // docs/specs/024-agents/illustrate-for-agents.md: change_pages deletes pages and replaces their
+    // docs/specs/024-agents/pages-for-agents.md: change_pages deletes pages and replaces their
     // content; write_article replaces an article's text.
     change_pages: 'destructive',
     write_article: 'destructive',

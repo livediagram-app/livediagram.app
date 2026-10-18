@@ -10,7 +10,7 @@
 
 import type { Item, ItemTypeDef } from '@livediagram/items';
 import { svgPlanSheet, type SheetRenderModel } from './svg-render-plan-sheet';
-import { PAGE_EXPORT_PAPER, type PageExportFrame } from './illustrate-page-frame';
+import { PAGE_EXPORT_PAPER, type PageExportFrame } from './page-frame';
 import { svgPlanBoard, svgPlanCard, svgPlanView } from './svg-render-plan';
 import { svgTabWindow, type ResolveTabWindow } from './tab-window';
 import {
@@ -607,7 +607,7 @@ export function renderElementsToSvg(
     resolvePlanArt?: ResolvePlanArt;
     // Each tab window's tab (docs/specs/009-elements/tab-window.md "Exports"); its frame named for its tab without.
     resolveTabWindow?: ResolveTabWindow;
-    // One Illustrate page as an export draws it (illustrate-page-frame.ts, svg-render-pages.ts): the drawing is the
+    // One page as an export draws it (page-frame.ts, svg-render-pages.ts): the drawing is the
     // page's rect, painted with its background, its elements inked for it; only the elements reaching it are drawn.
     // `writingSvg` goes over the page and under every element (an article's writing).
     frame?: PageExportFrame & { writingSvg?: string };

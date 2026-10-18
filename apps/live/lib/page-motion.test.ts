@@ -2,12 +2,12 @@ import { describe, expect, it } from 'vitest';
 import {
   contrastRatio,
   getBuiltInTheme,
-  illustratePagesOf,
+  pagesOf,
   PAGE_MOTIONS,
   sameFill,
   type PageFill,
 } from '@livediagram/document';
-import { backgroundCategoryOf, isCustomGradient } from './illustrate-page-paint';
+import { backgroundCategoryOf, isCustomGradient } from './page-paint';
 import {
   colouringOf,
   hueTurned,
@@ -18,7 +18,7 @@ import {
   PAGE_MOTION_COLOURINGS,
 } from './page-motion';
 
-// docs/specs/007-editor/illustrate-pages.md "Animated backgrounds".
+// docs/specs/007-editor/pages-mode.md "Animated backgrounds".
 const theme = getBuiltInTheme('ocean');
 
 describe('animated backgrounds', () => {
@@ -33,8 +33,7 @@ describe('animated backgrounds', () => {
     const tab = {
       pages: [{ id: 'p', orientation: 'landscape', kind: 'slide', background: { fill } }],
     };
-    const back = illustratePagesOf(JSON.parse(JSON.stringify(tab)) as typeof tab)[0]!.background!
-      .fill!;
+    const back = pagesOf(JSON.parse(JSON.stringify(tab)) as typeof tab)[0]!.background!.fill!;
     expect(back).toEqual(fill);
     const still = { ...fill, motion: undefined } as PageFill;
     expect(sameFill(fill, still)).toBe(false);
@@ -60,7 +59,7 @@ describe('animated backgrounds', () => {
         },
       ],
     };
-    expect(illustratePagesOf(tab)[0]!.background!.fill).not.toHaveProperty('motion');
+    expect(pagesOf(tab)[0]!.background!.fill).not.toHaveProperty('motion');
   });
 
   it('finds the colouring a fill is in, for this theme', () => {
@@ -87,7 +86,7 @@ describe('animated backgrounds', () => {
 
 describe('animated background speed', () => {
   const read = (speed: unknown) =>
-    illustratePagesOf({
+    pagesOf({
       pages: [
         {
           id: 'p',

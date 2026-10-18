@@ -1,5 +1,5 @@
 // The editor's session memory of what re-inking replaced, per tab (docs/specs/007-editor/
-// illustrate-pages.md "Re-inking", "Going back"): so a page taken to Midnight and back to the
+// pages-mode.md "Re-inking", "Going back"): so a page taken to Midnight and back to the
 // paper gets every colour back as the author chose it. Never stored in the document; gone on a
 // reload. Bounded: a tab's memory holds at most one entry per element on it (pageInkFor drops the
 // ids no longer on the tab), and at most MAX_TABS tabs are remembered.

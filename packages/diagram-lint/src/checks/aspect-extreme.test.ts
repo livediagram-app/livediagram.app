@@ -43,9 +43,9 @@ describe('aspect-extreme', () => {
     expect(of(lint(tabOf(...flat), { source: 'graph' }), 'aspect-extreme')).toEqual([]);
   });
 
-  it('stays quiet on an Illustrate tab, whose pages fix its shape (a row of slides)', () => {
+  it('stays quiet on a Pages tab, whose pages fix its shape (a row of slides)', () => {
     const row = tabOf(box('a', 0, 0), box('b', 600, 0), box('c', 1200, 0));
-    expect(of(lint({ ...row, opensIn: 'illustrate' }), 'aspect-extreme')).toEqual([]);
+    expect(of(lint({ ...row, opensIn: 'pages' }), 'aspect-extreme')).toEqual([]);
   });
 
   it('stays quiet on a tab whose boxes sit in frames, which no layout keeps', () => {

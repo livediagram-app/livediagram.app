@@ -16,7 +16,7 @@ const CANVAS_STYLESHEETS = [
   'app/motion-drawing.css',
   'app/motion-media.css',
   'app/motion-table.css',
-  // A slide's animated backgrounds (docs/specs/007-editor/illustrate-pages.md "Animated backgrounds").
+  // A slide's animated backgrounds (docs/specs/007-editor/pages-mode.md "Animated backgrounds").
   'app/motion-page.css',
   // The account and connect pages' entrance and lines (docs/specs/014-identity/auth-and-guest-access.md).
   'app/auth-motion.css',
