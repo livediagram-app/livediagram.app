@@ -24,7 +24,15 @@ export const POPULAR_BY_MODE: Readonly<Record<PopularChoice, readonly TemplateKi
     'sketchnote',
     'article',
   ],
-  diagram: ['blank', 'flowchart', 'mindmap', 'orgchart', 'swot', 'timeline', 'system-architecture'],
+  diagram: [
+    'blank',
+    'flowchart',
+    'mindmap',
+    'orgchart',
+    'gantt',
+    'timeline',
+    'system-architecture',
+  ],
   draw: [
     'whiteboard',
     'sketchnote',

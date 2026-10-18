@@ -16,6 +16,7 @@ import {
   ConceptsTabIcon,
   DataTabIcon,
   DevicesTabIcon,
+  DiagramsTabIcon,
   DrawTabIcon,
   EDITOR_MODE_ICONS,
   Glyph,
@@ -109,11 +110,13 @@ export const MODE_BAR: Partial<Record<HeroMode, readonly (readonly BarCategory[]
   diagram: [
     [
       { key: 'shapes', label: 'Shapes', Icon: ShapesTabIcon },
+      { key: 'write', label: 'Write', Icon: WriteTabIcon },
       { key: 'draw', label: 'Draw', Icon: DrawTabIcon },
     ],
     [
-      { key: 'build', label: 'Build', Icon: BuildTabIcon },
+      { key: 'diagrams', label: 'Diagrams', Icon: DiagramsTabIcon },
       { key: 'concepts', label: 'Concepts', Icon: ConceptsTabIcon },
+      { key: 'layout', label: 'Layout', Icon: BuildTabIcon },
     ],
     [
       { key: 'icons', label: 'Icons', Icon: IconsTabIcon },
@@ -124,6 +127,7 @@ export const MODE_BAR: Partial<Record<HeroMode, readonly (readonly BarCategory[]
   facilitate: [
     [
       { key: 'shapes', label: 'Shapes', Icon: ShapesTabIcon },
+      { key: 'write', label: 'Write', Icon: WriteTabIcon },
       { key: 'draw', label: 'Draw', Icon: DrawTabIcon },
     ],
     [

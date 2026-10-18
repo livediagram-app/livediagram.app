@@ -25,6 +25,21 @@ The **Flowchart** ([The flowchart](../009-elements/flowchart.md)) joined later, 
 drops a Start that grows into a chart from the keyboard and lays itself out. Like the Mind Node it is
 in Diagram mode and left out of Pages, where a page, not a process, is being arranged.
 
+## In Diagram: Diagrams and Layout
+
+Diagram mode offers Build as two categories ([Editor modes](../007-editor/editor-modes.md#the-palette-per-mode)).
+Grown to fifteen tiles there, one Build put the structures you type into beside the containers and labels you set
+them in. **Diagrams** holds the first (Mind node, Org chart, Flowchart, Sequence, Table, Entity), **Layout** the
+second (Lane, Frame, Stack, Boundary, Timeline, then Diagram key, Card, Badge, Step number). Tile ids are
+unchanged. Facilitate offers the same **Layout** (no Diagrams).
+
+## In Pages: no Build
+
+Pages offers no Build. Of its tiles a page uses three, and each sits with its neighbours instead: the **Stack**
+ends **Components** (it lines up the page blocks), the **Timeline** and the **Table** end **Data**, under
+"Timelines and Tables" (a page reports along a track and in rows as often as in a chart). So no mode offers Build
+itself today; it remains the catalogue home of these tiles.
+
 ## Why it exists
 
 These five were filed by **what they look like**, and it scattered them: the

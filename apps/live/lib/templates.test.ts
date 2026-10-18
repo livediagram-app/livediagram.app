@@ -327,10 +327,12 @@ describe('templateCanvasOverrides', () => {
       backgroundOpacity: 0.4,
     });
     // Layered templates (docs/specs/006-document/layers.md) additionally carry their Tab.layers.
+    // A sticky-note board the room fills in opens in Facilitate (docs/specs/007-editor/templates-by-mode.md).
     expect(templateCanvasOverrides('swot')).toEqual({
       backgroundPattern: 'graph',
       backgroundOpacity: 0.4,
       layers: templateLayers('swot'),
+      opensIn: 'facilitate',
     });
     expect(templateCanvasOverrides('gantt')).toEqual({
       backgroundPattern: 'graph',
@@ -398,6 +400,7 @@ describe('templateCanvasOverrides', () => {
       // The quieter of the lines rule (0.6) and the stage softening (0.8).
       backgroundOpacity: 0.6,
       layers: templateLayers('journey'),
+      opensIn: 'facilitate',
     });
   });
 

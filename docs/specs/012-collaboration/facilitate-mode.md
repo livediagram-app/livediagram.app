@@ -81,21 +81,25 @@ mode as today:
 Facilitate's layout, in order (no Concepts: concept graphics lay out an idea for a diagram, which a session does not
 stop to draw):
 
-| Band        | Categories                                                    |
-| ----------- | ------------------------------------------------------------- |
-| _(none)_    | Popular                                                       |
-| Common      | Shapes, My shapes (with a shape library), Write & Build, Draw |
-| Decorate    | Icons, Stickers, Media                                        |
-| Dynamic     | Data                                                          |
-| Collaborate | Ask, Tools, Record, React, Selection Mode, Navigate           |
+| Band        | Categories                                            |
+| ----------- | ----------------------------------------------------- |
+| _(none)_    | Popular                                               |
+| Common      | Shapes, My shapes (with a shape library), Write, Draw |
+| Structure   | Layout                                                |
+| Decorate    | Icons, Stickers, Media                                |
+| Dynamic     | Data                                                  |
+| Collaborate | Ask, Tools, Record, React, Selection Mode, Navigate   |
 
 - **Popular** (the landing category), fixed: Square, Sticky note, Text, Frame, Arrow, Image, then behind a divider **Ask**,
   **Tools**, **Record** and **React** as openers ([Editor modes](../007-editor/editor-modes.md) "Popular"): each draws its category's glyph
   with a chevron and opens that category's tiles in a popover under it, on a desktop and a phone.
-- **Write & Build and Draw hold what a session uses, not what a diagram or a page does.** Write & Build is Write
-  and Build as one category (Write's place and glyph): Text and Sticky note, then behind a divider Table, Checklist and Frame
-  (no Page, no Annotation, no Mind node, no Flowchart, no Lane, no Timeline, no Sankey); Draw is Pencil,
-  Highlighter, Arrow and Line (no Shape Pen, no Polygon). Search still finds those left out and places them, as it
+- **Write and Draw hold what a session uses, not what a diagram or a page does.** Write is Text, Sticky note and
+  Pointer note, then behind a divider Table and Checklist (no Page, no Annotation); Draw is Pencil, Highlighter, Arrow
+  and Line (no Shape Pen, no Polygon).
+- **Layout is Diagram's** ([The Build palette category](../010-palette/build-category.md)): Lane, Frame, Stack,
+  Boundary, Timeline, then Diagram key, Card, Badge and Step number. A board is laid out in frames and lanes, and its
+  notes labelled, as a diagram is. No Diagrams: mind maps and flowcharts build a diagram, which a session does not
+  stop for. Search still finds those left out and places them, as it
   does any other mode's tile.
 - **The Collaborate elements are six categories, not one.** Each group of
   [Collaborate](../010-palette/palette-top-level-categories.md#collaborate-one-category-fully-grouped)
@@ -108,8 +112,7 @@ stop to draw):
   - **Selection Mode**: one button per selection mode.
   - **Navigate**: Portal, Bring focus, Chair, Desk, Sofa, Fence, Link card.
 - **On the strip, the category bar** ([Toolbar layout](../007-editor/toolbar-layout.md#the-category-bar)) shows the
-  layout as **Shapes, Draw · Icons, Stickers, Media · Data · Ask, Session**: no Popular; Write & Build and Draw as
-  one category, **Draw**, its flyout a Write section then a Draw section; and Tools, Record, React, Selection Mode
+  layout as **Shapes, Write, Draw · Layout · Icons, Stickers, Media · Data · Ask, Session**: no Popular; and Tools, Record, React, Selection Mode
   and Navigate gathered into **Session**, browsed in two panes (the groups down the side, a search across all of
   them). **Ask** keeps its own button: putting a question to the room is the session's main act.
 
@@ -157,9 +160,9 @@ Session templates open in Facilitate, as the Draw templates open in Draw
 - `town-hall`, `lean-coffee`, `crazy-eights`, `meeting-agenda`, `workshop-board` and `brainstorm`;
 - the boards that ship a dot vote, `affinity-map`, `prioritization-matrix` and `risk-matrix`, since
   only a mode with a Session strip can watch, end and keep that vote;
-- the boards a team fills in together: `incident-postmortem`, `user-persona`, `objectives-planner`,
-  `roadmap`, `raci-matrix`, `user-story-map`, `business-model-canvas`, `stakeholder-map` and
-  `opportunity-solution-tree` (grouped in Start Facilitating under Retrospectives, Workshops, Planning
+- the boards a team fills in together: `incident-postmortem`, `user-persona`, `empathy-map`, `journey`,
+  `objectives-planner`, `roadmap`, `raci-matrix`, `user-story-map`, `swot`, `business-model-canvas`,
+  `stakeholder-map` and `opportunity-solution-tree` (grouped in Start Facilitating under Retrospectives, Workshops, Planning
   and Strategy, [Templates by mode](../007-editor/templates-by-mode.md#facilitate-templates));
 - the quizzes and games, `pub-quiz`, `icebreaker-questions`, `two-truths-and-a-lie`, `would-you-rather` and
   `people-bingo` ([Quiz and game templates](quiz-and-game-templates.md));

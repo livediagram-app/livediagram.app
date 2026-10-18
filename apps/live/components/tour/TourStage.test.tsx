@@ -167,7 +167,12 @@ describe('TourStage', () => {
   it('declines the offer, skips from a step and finishes from the last card on Escape', () => {
     const offer = engine({ id: 'welcome', card: 'welcome', title: 'Welcome', body: '' });
     const { unmount } = render(<TourStage engine={offer} />);
+    // The offer asks nothing of the editor: Escape elsewhere is the editor's own.
     fireEvent.keyDown(document, { key: 'Escape' });
+    expect(offer.skip).not.toHaveBeenCalled();
+    const no = screen.getByRole('button', { name: 'No' });
+    no.focus();
+    fireEvent.keyDown(no, { key: 'Escape' });
     expect(offer.skip).toHaveBeenCalledOnce();
     unmount();
     const step = engine({ id: 'a', title: 'A', body: '' });
@@ -177,7 +182,9 @@ describe('TourStage', () => {
     second.unmount();
     const outro = engine({ id: 'outro', card: 'outro', title: 'Done', body: '' });
     render(<TourStage engine={outro} />);
-    fireEvent.keyDown(document, { key: 'Escape' });
+    const inCard = screen.getByRole('dialog').querySelector('button')!;
+    inCard.focus();
+    fireEvent.keyDown(inCard, { key: 'Escape' });
     expect(outro.next).toHaveBeenCalledOnce();
     expect(outro.skip).not.toHaveBeenCalled();
   });

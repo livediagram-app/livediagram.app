@@ -106,7 +106,14 @@ const OWN_GROUPS: Readonly<Record<Exclude<TemplateStartMode, 'diagram'>, readonl
       id: 'workshops',
       name: 'Workshops',
       line: 'Hands-on formats for ideas and design work.',
-      kinds: ['brainstorm', 'crazy-eights', 'affinity-map', 'user-persona'],
+      kinds: [
+        'brainstorm',
+        'crazy-eights',
+        'affinity-map',
+        'user-persona',
+        'empathy-map',
+        'journey',
+      ],
     },
     {
       id: 'planning',
@@ -119,6 +126,7 @@ const OWN_GROUPS: Readonly<Record<Exclude<TemplateStartMode, 'diagram'>, readonl
       name: 'Strategy',
       line: 'Map the business, the people and the opportunities.',
       kinds: [
+        'swot',
         'business-model-canvas',
         'value-proposition-canvas',
         'stakeholder-map',
