@@ -10,6 +10,8 @@ import {
 } from 'react';
 import { MOTION_MS } from '@livediagram/tailwind-config/motion';
 import { useEdgeDividers } from './useEdgeDividers';
+import { tileEnterAnimation } from './palette-tile-finish';
+import { useTabFinish } from '@/components/canvas/CanvasFinishContext';
 
 // The moving part of the Toolbar layout's strip (docs/specs/007-editor/toolbar-layout.md): the tiles of the
 // current category plus its More button. Switching category can take the
@@ -62,6 +64,7 @@ export function ToolbarStripRail({
   leavingItems: ReactNode[] | null;
 }) {
   const contentRef = useRef<HTMLDivElement>(null);
+  const enter = tileEnterAnimation(useTabFinish());
   const railRef = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState<number | null>(null);
   // Off for the first measured frame, so the strip doesn't animate itself
@@ -188,11 +191,7 @@ export function ToolbarStripRail({
             key={keys[i]}
             data-rail-key={keys[i]}
             className={`flex ${
-              switched
-                ? 'stagger-enter animate-pop-in'
-                : entering.has(keys[i]!)
-                  ? 'animate-pop-in'
-                  : ''
+              switched ? `stagger-enter ${enter}` : entering.has(keys[i]!) ? enter : ''
             }`}
             style={{ '--stagger-i': i } as React.CSSProperties}
           >

@@ -9,6 +9,13 @@ import type { PaletteTileDef } from './palette-tile-defs';
 /** The id of the one SVG filter Sketch tiles are drawn through. */
 export const SKETCH_TILE_FILTER_ID = 'lvd-sketch-tile';
 
+/** How a tile enters (the flyout's cascade, the strip's): a pop-in, except under Sketch, where it fades. A Sketch glyph
+ *  is drawn through an SVG filter, and Chrome could keep a filtered glyph rasterised at a pop-in's early, tiny scale,
+ *  stretched into a blurred square once the tile reached full size: a different tile each time, as the frames fell. */
+export function tileEnterAnimation(finish: Finish | undefined): string {
+  return finish === 'sketch' ? 'animate-fade-in' : 'animate-pop-in';
+}
+
 /** Whether a tile's glyph is full-colour art, which Professional leaves as drawn. */
 function isColourArt(action: PaletteTileDef['action']): boolean {
   return action.type === 'tech-icon' || action.type === 'sticker';

@@ -63,11 +63,11 @@ describe('hover intent', () => {
     show();
     fireEvent.pointerEnter(button('Shapes'), mouse);
     fireEvent.pointerLeave(button('Shapes'), mouse);
-    fireEvent.pointerEnter(button('Build'), mouse);
+    fireEvent.pointerEnter(button('Layout'), mouse);
     wait(HOVER_OPEN_MS - 10);
     expect(flyout()).toBeNull();
     wait(20);
-    expect(heading()).toBe('Build');
+    expect(heading()).toBe('Layout');
   });
 
   it('moves an open flyout to the next category at once, and ignores a touch', () => {
@@ -76,7 +76,7 @@ describe('hover intent', () => {
     wait(HOVER_OPEN_MS);
     fireEvent.pointerEnter(button('Concepts'), mouse);
     expect(heading()).toBe('Concepts');
-    fireEvent.pointerEnter(button('Build'), { pointerType: 'touch' });
+    fireEvent.pointerEnter(button('Layout'), { pointerType: 'touch' });
     expect(heading()).toBe('Concepts');
   });
 
@@ -101,11 +101,11 @@ describe('hover intent', () => {
     wait(HOVER_CLOSE_MS * 2);
     expect(heading()).toBe('Shapes');
     // Pointing at another category still moves it there, and it stays pinned.
-    fireEvent.pointerEnter(button('Build'), mouse);
-    expect(heading()).toBe('Build');
-    fireEvent.pointerLeave(button('Build'), mouse);
+    fireEvent.pointerEnter(button('Layout'), mouse);
+    expect(heading()).toBe('Layout');
+    fireEvent.pointerLeave(button('Layout'), mouse);
     wait(HOVER_CLOSE_MS * 2);
-    expect(heading()).toBe('Build');
+    expect(heading()).toBe('Layout');
     fireEvent.pointerDown(document.body);
     expect(flyout()).toBeNull();
   });
@@ -146,9 +146,9 @@ describe('hover intent', () => {
     show();
     fireEvent.pointerDown(button('Shapes'), { pointerType: 'touch' });
     fireEvent.click(button('Shapes'), { detail: 1 });
-    fireEvent.pointerDown(button('Build'), { pointerType: 'touch' });
-    fireEvent.click(button('Build'), { detail: 1 });
-    expect(heading()).toBe('Build');
+    fireEvent.pointerDown(button('Layout'), { pointerType: 'touch' });
+    fireEvent.click(button('Layout'), { detail: 1 });
+    expect(heading()).toBe('Layout');
   });
 
   it('keeps a second mouse click on the open category from closing it', () => {
@@ -194,7 +194,7 @@ describe('minimal chrome (docs/specs/007-editor/power-user-mode.md)', () => {
     fireEvent.click(button('Shapes'), { detail: 1 });
     const square = within(flyout()!).getByRole('button', { name: 'Add Square' });
     expect(square.textContent).not.toContain('Square');
-    fireEvent.click(button('Build'), { detail: 1 });
+    fireEvent.click(button('Diagrams'), { detail: 1 });
     expect(
       within(flyout()!).getAllByRole('button', { name: /Mind Node/ })[0]!.textContent,
     ).toContain('Mind Node');
@@ -206,8 +206,8 @@ describe('the keyboard', () => {
     show();
     button('Shapes').focus();
     fireEvent.keyDown(button('Shapes'), { key: 'ArrowRight' });
-    expect(document.activeElement).toBe(button('Draw'));
-    fireEvent.keyDown(button('Draw'), { key: 'ArrowLeft' });
+    expect(document.activeElement).toBe(button('Write'));
+    fireEvent.keyDown(button('Write'), { key: 'ArrowLeft' });
     fireEvent.keyDown(button('Shapes'), { key: 'ArrowLeft' });
     // Wraps round to the last.
     expect(document.activeElement).toBe(button('Media'));
@@ -221,8 +221,8 @@ describe('the keyboard', () => {
     fireEvent.click(button('Shapes'), { detail: 0 });
     expect(heading()).toBe('Shapes');
     fireEvent.keyDown(button('Shapes'), { key: 'ArrowRight' });
-    expect(heading()).toBe('Draw');
-    fireEvent.click(button('Draw'), { detail: 0 });
+    expect(heading()).toBe('Write');
+    fireEvent.click(button('Write'), { detail: 0 });
     expect(flyout()).toBeNull();
   });
 
@@ -254,7 +254,7 @@ describe('the keyboard', () => {
 describe('a tile’s side panel', () => {
   it('opens Card’s presets beside the flyout, keeping the flyout open', () => {
     const h = show();
-    fireEvent.click(button('Build'), { detail: 1 });
+    fireEvent.click(button('Layout'), { detail: 1 });
     const card = within(flyout()!).getByRole('button', { name: 'Add Card' });
     expect(card.getAttribute('draggable')).toBeNull();
     fireEvent.click(card);
@@ -272,12 +272,12 @@ describe('a tile’s side panel', () => {
 
   it('opens on a rest, closes on a rest on another tile, and a second press closes it', () => {
     show();
-    fireEvent.click(button('Build'), { detail: 1 });
+    fireEvent.click(button('Layout'), { detail: 1 });
     const card = within(flyout()!).getByRole('button', { name: 'Add Card' });
     fireEvent.pointerEnter(card);
     wait(200);
     expect(side()).not.toBeNull();
-    fireEvent.pointerEnter(within(flyout()!).getByRole('button', { name: 'Add Table' }));
+    fireEvent.pointerEnter(within(flyout()!).getByRole('button', { name: 'Add Frame' }));
     wait(HOVER_CLOSE_MS);
     expect(side()).toBeNull();
     fireEvent.click(card);
@@ -288,7 +288,7 @@ describe('a tile’s side panel', () => {
 
   it('drops the side panel when the flyout moves to another category', () => {
     show();
-    fireEvent.click(button('Build'), { detail: 1 });
+    fireEvent.click(button('Layout'), { detail: 1 });
     fireEvent.click(within(flyout()!).getByRole('button', { name: 'Add Badge' }));
     expect(side()).not.toBeNull();
     fireEvent.pointerEnter(button('Shapes'), mouse);
