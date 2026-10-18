@@ -1,4 +1,4 @@
-// The Article template (docs/specs/007-editor/article-pages.md "An article"): a tab that opens in
+// The Project Brief template (kind `article`, docs/specs/007-editor/article-pages.md "An article"): a tab that opens in
 // Illustrate mode on one article page, written as a short project brief so the page shows what
 // the writing does (a title and subtitle, headings, lists, a quote) rather than an empty sheet.
 // Pure data: the tab's pages and writing, merged in by templateCanvasOverrides.
@@ -63,7 +63,7 @@ export function articleTabOverrides(
   return { opensIn: 'illustrate', pages, articles: { [flow]: doc } };
 }
 
-/** The Article template's pages and writing (opens in Illustrate). */
+/** The Project Brief template's pages and writing (opens in Illustrate). */
 export function articleTemplateOverrides(): Partial<Tab> {
   return articleTabOverrides(FLOW_ID, briefBlocks());
 }

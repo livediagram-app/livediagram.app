@@ -53,7 +53,7 @@ draws them.
 Recommended is the mode's Popular shelf (`popularKindsFor`, the picks the marketing gallery leads with), **its blank
 first**, less **Timeline**, which is left to its group. Start Illustrating swaps two of the shelf's picks for blanks
 of a page kind, a page already of its kind being the quicker start: **Blank Infographic** in place of Blank
-Illustration and **Blank Article** in place of the Article template, so it leads Blank Infographic, Blank Article,
+Illustration and **Blank Article** in place of the Project Brief template, so it leads Blank Infographic, Blank Article,
 Blank Slide Deck. The shelf itself (the gallery's) is unchanged. The groups (`components/start/start-template-items.ts`,
 `TEMPLATE_STARTS`):
 

@@ -86,7 +86,7 @@ edit each. Anything put on the page first (a layout, an element) is choosing Inf
 offer goes while the page has content, and comes back if it is emptied while still unchosen. The
 empty page's layout invitation waits until the choice is made. Not offered in zen or isometric
 view, nor on a second page (a page added from the + is chosen in the popover).
-The **Article** template in /new starts a tab that opens in Illustrate mode with one article.
+The **Project Brief** template (kind `article`) in /new starts a tab that opens in Illustrate mode with one article.
 
 ## The page panel
 
