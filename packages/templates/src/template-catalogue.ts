@@ -27,13 +27,19 @@ type TemplateCatalogue = {
 };
 
 export function templateCatalogue(): TemplateCatalogue {
+  const templates: TemplateCatalogue['templates'] = TEMPLATES.filter(
+    (t) => !t.hidden && !t.editorOnly,
+  ).map((t) => ({
+    kind: t.kind,
+    title: t.title,
+    description: t.description,
+    category: templateCategory(t.kind) ?? 'blanks',
+  }));
+  // Only the categories something is listed in: Forms holds only editor-only templates, so an agent was offered an
+  // empty category.
+  const used = new Set<string>(templates.map((t) => t.category));
   return {
-    categories: [...TEMPLATE_CATEGORIES, BLANKS_CATALOGUE_CATEGORY],
-    templates: TEMPLATES.filter((t) => !t.hidden && !t.editorOnly).map((t) => ({
-      kind: t.kind,
-      title: t.title,
-      description: t.description,
-      category: templateCategory(t.kind) ?? 'blanks',
-    })),
+    categories: [...TEMPLATE_CATEGORIES, BLANKS_CATALOGUE_CATEGORY].filter((c) => used.has(c.id)),
+    templates,
   };
 }
