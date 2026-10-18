@@ -82,10 +82,8 @@ describe('what the tour starts with', () => {
   it('opens the offer on the track’s own welcome card', () => {
     const steps = pagesTourSteps('slide', NOW, api, everything);
     expect(steps[0]).toMatchObject({ id: 'welcome', card: 'welcome' });
-    expect(steps[0]!.title).toBe('Getting started with slides?');
-    expect(pagesTourSteps('article', NOW, api, everything)[0]!.title).toBe(
-      'Getting started with articles?',
-    );
+    expect(steps[0]!.title).toBe('New to slides?');
+    expect(pagesTourSteps('article', NOW, api, everything)[0]!.title).toBe('New to articles?');
   });
 
   it('leaves out a step whose control is not on screen (no Slides button on a phone)', () => {

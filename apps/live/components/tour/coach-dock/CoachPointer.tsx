@@ -4,7 +4,7 @@
 // control, with no dim around it, and the step's number on a badge at its top-left corner, the same number the dock
 // reads ("1 of 4"), so the two read as one. Neither takes a press. The ring glides between steps as the engine's
 // target moves; the badge stays inside the window.
-import { Portal } from '@livediagram/ui';
+import { GlyphDisc, Portal } from '@livediagram/ui';
 import type { TourTargetRect } from '../useTourEngine';
 import { BADGE_SIZE_PX, RING_PAD_PX } from './coach-dock-copy';
 
@@ -37,14 +37,15 @@ export function CoachPointer({
         className={`pointer-events-none fixed animate-fade-in rounded-xl border-2 border-brand-600 shadow-[0_0_0_4px_rgb(2_132_199/0.2)] dark:border-brand-400 dark:shadow-[0_0_0_4px_rgb(56_189_248/0.22)] ${glide} ${layerClass}`}
         style={ring}
       />
-      <span
+      <GlyphDisc
         aria-hidden
         data-coach-badge=""
-        className={`pointer-events-none fixed grid animate-fade-in place-items-center rounded-full bg-brand-700 text-[11px] font-semibold tabular-nums text-white shadow-sm ring-2 ring-white dark:bg-brand-400 dark:text-slate-900 dark:ring-slate-900 ${glide} ${layerClass}`}
-        style={{ ...badge, width: BADGE_SIZE_PX, height: BADGE_SIZE_PX }}
+        size={BADGE_SIZE_PX}
+        className={`pointer-events-none fixed animate-fade-in bg-brand-700 text-[11px] font-semibold tabular-nums text-white shadow-sm ring-2 ring-white dark:bg-brand-400 dark:text-slate-900 dark:ring-slate-900 ${glide} ${layerClass}`}
+        style={badge}
       >
         {n}
-      </span>
+      </GlyphDisc>
     </Portal>
   );
 }
