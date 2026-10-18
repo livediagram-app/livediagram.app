@@ -30,8 +30,8 @@ The editor is real:
 - **Whiteboards** (Draw mode): plain freehand whiteboarding on a general tab: three preset pressure markers, text, the Path tool, an eraser and shapes in one dock, on a plain, dotted or grid board, light or dark. See [Draw mode](../023-draw-mode/draw-mode.md).
 - **Plan mode** ([Plan mode](../026-plan/plan-mode.md)): the fourth editor mode, for running work on boards. A
   **Plan board** draws a document's **items** (tasks, bugs, notes, ideas, kept in their own D1 table with an open
-  field bag, or inside an offline document) as columns of cards: drag between columns and rows, WIP limits, quick add
-  with `@name #label !priority ~points`, an item panel, voting and hide-writing for retros, presence on cards, one undo
+  field bag, or inside an offline document) as columns of cards: drag between columns and rows, WIP limits, Add Card
+  (pick a card type, then name it in the item panel), an item panel, voting and hide-writing for retros, presence on cards, one undo
   timeline with the canvas, ten Plan templates (boards set up for their use, opening on example cards), and item verbs for the CLI and MCP
   ([Items](../026-plan/items.md), [Plan board](../026-plan/plan-board.md)).
 - **Sheets** ([Sheet](../029-sheets/sheet.md)): a Plan-mode spreadsheet tab on the canvas, kept in its own D1 store:
