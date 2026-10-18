@@ -31,6 +31,8 @@ vi.mock('./tour-dom', () => ({
   findTour: () => null,
   waitForSelector: async () => document.body,
 }));
+const viewport = vi.hoisted(() => ({ phone: false }));
+vi.mock('@/hooks/ui/useIsMobileViewport', () => ({ useIsMobileViewport: () => viewport.phone }));
 const ctx = vi.hoisted(() => ({ current: {} as Record<string, unknown> }));
 vi.mock('@/app/document/[id]/EditorContext', () => ({ useEditorContext: () => ctx.current }));
 
@@ -81,6 +83,7 @@ beforeEach(() => {
 });
 afterEach(() => {
   cleanup();
+  viewport.phone = false;
   vi.clearAllMocks();
   setActiveTour('draw', false);
   setActiveTour('element', false);
@@ -124,6 +127,15 @@ describe('ElementTourHost offer', () => {
     mount();
     act(() => store.setSelectedId('sk1'));
     expect(elementTourOffer()).toBeNull();
+  });
+
+  it('never offers a tour on a phone', () => {
+    viewport.phone = true;
+    editor();
+    mount();
+    act(() => store.setSelectedId('sk1'));
+    expect(elementTourOffer()).toBeNull();
+    expect(track).not.toHaveBeenCalledWith('UI', 'Opened', 'SankeyTourOffer');
   });
 
   it('makes no offer for a multi-selection', () => {

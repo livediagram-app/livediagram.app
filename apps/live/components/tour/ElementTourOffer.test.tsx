@@ -29,11 +29,6 @@ describe('ElementTourOffer', () => {
     expect(o.dismiss).toHaveBeenCalledTimes(1);
   });
 
-  it('keeps the word for assistive tech only on a phone', () => {
-    render(<ElementTourOffer offer={offer()} />);
-    expect(screen.getByText('Tour').className).toContain('max-sm:sr-only');
-  });
-
   it('gives its buttons the toolbar touch targets', () => {
     render(<ElementTourOffer offer={offer()} />);
     for (const name of ['Take the Tour', 'No Thanks'])

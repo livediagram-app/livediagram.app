@@ -35,16 +35,18 @@ The toured kinds: the [Sankey diagram](../009-elements/sankey.md), and the
   and **Cancel** (a cross), each with a hover card: Play is **Take the Tour** ("A short tour of how a Sankey diagram
   works, on this one."), Cancel is **No Thanks** ("Hide this tour. Settings › Tours offers it again."). Play wears
   the tab's accent, as the primary choice.
-- **On a phone** the word Tour is kept for assistive technology only (`sr-only`), so the offer is three glyph
-  buttons wide. When the two toolbars together are wider than the canvas less its margins, the offer wraps onto its
-  own line, centred, on the far side from the element (above the selection toolbar when that sits above the
-  element, below it when below), so it never covers the element and never runs off screen. Its buttons keep the
-  selection toolbar's 44px touch targets.
+- **On a phone** (narrower than 640px, or a phone held sideways: `useIsMobileViewport`) no element tour is offered at
+  all: the selection toolbar alone fills the width there. Nothing is answered, so the offer still comes on a wider
+  screen.
+- **On a narrow canvas** (a tablet in a split view), when the two toolbars together are wider than the canvas less its
+  margins, the offer wraps onto its own line, centred, on the far side from the element (above the selection toolbar
+  when that sits above the element, below it when below), so it never covers the element and never runs off screen.
+  Its buttons keep the selection toolbar's 44px touch targets.
 - **When it shows**, all of these hold:
   - exactly one element is selected, of a toured kind, and its selection toolbar is showing;
   - the person may edit it (for a Sankey, `canEditSankey`: an Editor, on an unlocked diagram);
   - the person has not answered this kind's tour (below);
-  - the editor is usable: hydrated, the synced preferences in, no welcome overlay, not an embed;
+  - the editor is usable: hydrated, the synced preferences in, no welcome overlay, not an embed, not on a phone;
   - no guided tour is running (`useActiveTour`), no start panel is open, and no dialog is open (the modal guard,
     [Diagram tour](editor-tour.md) "Dialogs come first"): the offer comes back once the last dialog closes.
 - **It fades in** with the selection toolbar, and away with it (a move, a quick-connect ring).

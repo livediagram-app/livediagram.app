@@ -25,8 +25,7 @@ export function ElementTourOffer({ offer }: { offer: Offer }) {
     >
       <span className="flex h-8 items-center gap-1.5 pl-1.5 pr-1 text-[12px] font-medium text-slate-600 dark:text-slate-300">
         <FootprintsIcon />
-        {/* The word on a desktop; a phone keeps it for assistive tech, so the offer stays three glyphs wide. */}
-        <span className="max-sm:sr-only">Tour</span>
+        <span>Tour</span>
       </span>
       <HoverCard
         title="Take the Tour"

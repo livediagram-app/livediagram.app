@@ -984,6 +984,11 @@ When a shape is selected, a small **popover menu** appears next to it with actio
 
 - **Position:** above the shape if there is room between the shape and the canvas top edge, and it would not sit on the floating chrome over the canvas (the palette toolbar, a panel: any `data-floating-panel`); otherwise below it, as at the header. Horizontally centred on the shape.
 - **Layout:** small rounded panel with the same styling language as the palette (border, shadow).
+- **Overflow:** the buttons sit in a strip at most **95vw** wide. When they outgrow it (a flowchart step's full set
+  on a phone) the strip scrolls sideways under a finger or trackpad, with no visible scrollbar, and the card and its
+  caption stay put. A dropdown in the strip (a flowchart step's Step Type and Lane) hangs its menu from the card, so
+  the strip's clip never cuts it off; it opens under its trigger however far the strip is scrolled, and closes if the
+  strip scrolls while it is open.
 - The popover follows the shape during drag/resize — its position is derived from the shape's current bounds.
 - Clicking inside the popover never deselects.
 
