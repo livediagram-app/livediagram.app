@@ -28,6 +28,11 @@ function variance(ns: number[], sample: boolean): number | SheetError {
   return s / (ns.length - (sample ? 1 : 0));
 }
 
+// The least and greatest of a list. Never `Math.min(...ns)`: past ~120,000 arguments the spread overflows the stack,
+// and a formula over two full arrays or a few large ranges reaches that.
+const smallest = (ns: readonly number[]): number => ns.reduce((m, n) => (n < m ? n : m), Infinity);
+const largest = (ns: readonly number[]): number => ns.reduce((m, n) => (n > m ? n : m), -Infinity);
+
 function sorted(ns: number[]): number[] {
   return [...ns].sort((a, b) => a - b);
 }
@@ -67,7 +72,7 @@ function ifs(kind: 'avg' | 'min' | 'max') {
     if (isError(ns)) return ns;
     if (kind === 'avg') return ns.length === 0 ? err('#DIV/0!') : mean(ns);
     if (ns.length === 0) return 0;
-    return kind === 'min' ? Math.min(...ns) : Math.max(...ns);
+    return kind === 'min' ? smallest(ns) : largest(ns);
   });
 }
 
@@ -109,8 +114,8 @@ export const STATS_FUNCTIONS: Record<string, FnDef> = {
     }
     return best === null ? err('#N/A', 'No value repeats') : best;
   }),
-  MIN: aggregate((ns) => (ns.length === 0 ? 0 : Math.min(...ns))),
-  MAX: aggregate((ns) => (ns.length === 0 ? 0 : Math.max(...ns))),
+  MIN: aggregate((ns) => (ns.length === 0 ? 0 : smallest(ns))),
+  MAX: aggregate((ns) => (ns.length === 0 ? 0 : largest(ns))),
   COUNT: fn(1, MANY, (args, f) => {
     let n = 0;
     for (const a of args) {

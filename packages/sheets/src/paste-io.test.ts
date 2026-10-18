@@ -104,6 +104,13 @@ describe('copy and paste', () => {
     expect(b.v('D4')).toBe(6);
     expect(big.truncated).toBe(false);
   });
+  it('takes a paste of more rows than a spread call holds, truncated to the sheet', () => {
+    const b = book({ A1: '7' }, { rows: 3, cols: 2 });
+    const id = b.sheets[0]!.id;
+    const rows = Array.from({ length: 150_000 }, (_, i) => [String(i)]);
+    const pasted = pasteExternal(b.wb, id, { r1: 0, c1: 0, r2: 0, c2: 0 }, rows, 'all', seeded());
+    expect(pasted?.truncated).toBe(true);
+  });
   it('moves cut cells, and formulas follow them', () => {
     const b = book({
       'Sheet 1': { A1: '5', A2: '=A1*2', C1: '=SUM(A1:A2)' },

@@ -241,7 +241,8 @@ export function summarise(values: readonly number[], stat: ColumnStat): number |
   if (values.length === 0) return null;
   if (stat === 'sum') return values.reduce((a, b) => a + b, 0);
   if (stat === 'average') return values.reduce((a, b) => a + b, 0) / values.length;
-  return stat === 'min' ? Math.min(...values) : Math.max(...values);
+  // A loop, not a spread: a column's values can outnumber what a spread call takes.
+  return values.reduce((m, n) => (stat === 'min' ? Math.min(m, n) : Math.max(m, n)));
 }
 
 type ColumnTrend = {

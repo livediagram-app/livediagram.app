@@ -207,7 +207,8 @@ export function pasteExternal(
 ): PasteResult | null {
   const sheet = wb.sheet(sheetId);
   if (!sheet || rows.length === 0) return null;
-  const width = Math.max(...rows.map((r) => r.length));
+  // A loop, not a spread: a pasted file can have more rows than a spread call takes.
+  const width = rows.reduce((w, r) => Math.max(w, r.length), 0);
   const size = tiles(sel, rows.length, width);
   const g = grow(sheet, { r: sel.r1, c: sel.c1 }, size.rows, size.cols, rand);
   const ctx = wb.ctxFor(sheetId);

@@ -28,6 +28,12 @@ describe('maths', () => {
     ['=SUMPRODUCT(A1:A3, B1:B3)', 140],
     ['=ABS(-4)', 4],
     ['=ROUND(2.675, 2)', 2.68],
+    ['=ROUND(987654321, -4)', 987650000],
+    ['=ROUNDUP(987654321, -4)', 987660000],
+    ['=ROUNDDOWN(-987654321, -4)', -987650000],
+    ['=CEILING(0.3, 0.1)', 0.3],
+    ['=FLOOR(0.7, 0.1)', 0.7],
+    ['=MROUND(0.3, 0.1)', 0.3],
     ['=ROUND(-2.5)', -3],
     ['=ROUND(1234, -2)', 1200],
     ['=ROUNDUP(3.21, 1)', 3.3],
@@ -55,6 +61,11 @@ describe('maths', () => {
     ['=0.1+0.2=0.3', true],
   ])('%s is %s', (f, out) => {
     expect(calc(f, DATA)).toEqual(out);
+  });
+  it('takes MIN and MAX of more values than a spread call holds', () => {
+    expect(calc('=MAX(SEQUENCE(100000), SEQUENCE(100000))')).toBe(100000);
+    expect(calc('=MIN(SEQUENCE(100000), -SEQUENCE(100000))')).toBe(-100000);
+    expect(calc('=MAXIFS(SEQUENCE(100000), SEQUENCE(100000), ">0")')).toBe(100000);
   });
   it('works out irrational results', () => {
     close(calc('=EXP(1)'), Math.E);
