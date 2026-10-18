@@ -44,6 +44,11 @@ delete, undo, label edit via Space) that already work on a selection.
   shared naming helpers in `lib/element-names.ts` (`kindLabel` /
   `describeOne`): `Square "Login"`, `Sticky note`, `Arrow
 "yes"`. Arrows carry the same on their SVG group.
+- An element whose face holds controls of its own is a named `role="group"` instead (`elementRole`): the session
+  buttons (timer, vote, poll), checklists, temperature checks, agendas, Q&A boards, quizzes, reaction pads, pickers,
+  reveals, decision records and mode buttons, an embed, a link card, and an image still waiting for its picture. An
+  img's children are presentational, so as pictures their Start, tick and Ask buttons and the Q&A note field could
+  not be reached with a screen reader.
 
 ## Live announcements
 

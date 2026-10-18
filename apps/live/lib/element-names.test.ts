@@ -6,12 +6,14 @@ import {
   createShape,
   createSticky,
   createText,
+  type Element,
 } from '@livediagram/document';
 import {
   describeMany,
   describeOne,
   describeSelected,
   elementAriaLabel,
+  elementRole,
   kindLabel,
   shapeKindLabel,
 } from './element-names';
@@ -123,5 +125,59 @@ describe('describeSelected', () => {
 
   it('is describeOne for anything else', () => {
     expect(describeSelected(travel, [travel])).toBe("'Travel'");
+  });
+});
+
+// docs/specs/004-interface-design/canvas-accessibility.md "Names on elements": an img's children are presentational,
+// so an element whose face holds controls is a named group, and one that is only drawn stays a picture.
+describe('elementRole', () => {
+  const shape = (kind: string) =>
+    ({ id: 's', type: 'shape', shape: kind, x: 0, y: 0, width: 10, height: 10 }) as Element;
+  it('keeps a drawn element a picture', () => {
+    expect(elementRole(shape('square'))).toBe('img');
+    expect(
+      elementRole({
+        id: 'i',
+        type: 'image',
+        imageId: 'pic',
+        x: 0,
+        y: 0,
+        width: 1,
+        height: 1,
+      }),
+    ).toBe('img');
+  });
+
+  it('makes an element with controls on its face a group', () => {
+    for (const kind of [
+      'session-button',
+      'checklist',
+      'qa-board',
+      'agenda',
+      'quiz',
+      'reaction-pad',
+    ])
+      expect(elementRole(shape(kind))).toBe('group');
+    expect(
+      elementRole({
+        id: 'i',
+        type: 'image',
+        imageId: null,
+        x: 0,
+        y: 0,
+        width: 1,
+        height: 1,
+      }),
+    ).toBe('group');
+    expect(
+      elementRole({
+        id: 'v',
+        type: 'video',
+        x: 0,
+        y: 0,
+        width: 1,
+        height: 1,
+      } as unknown as Element),
+    ).toBe('group');
   });
 });

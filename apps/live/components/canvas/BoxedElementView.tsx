@@ -34,7 +34,7 @@ import { LaneGutter } from '@/components/canvas/LaneGutter';
 import { uprightTitleFrame } from '@/components/canvas/upright-title';
 import { EntityView } from '@/components/canvas/entity/EntityView';
 import { openEntityFieldAt } from '@/components/canvas/entity/entity-double-click';
-import { elementAriaLabel } from '@/lib/element-names';
+import { elementAriaLabel, elementRole } from '@/lib/element-names';
 import { captionBandAlignY, captionBandClass } from '@/components/primitives/icon-band';
 import { LockBadge, SelectionChromeLayer } from '@/components/canvas/element-parts';
 import { isSvgRenderedShape } from '@/components/canvas/shape-svg-overlay';
@@ -447,8 +447,9 @@ function BoxedElementViewImpl({
       data-insert-shift={insertShiftAnimates ? '' : undefined}
       data-stack-glide={stackGlide ? '' : undefined}
       // Screen-reader name (docs/specs/004-interface-design/canvas-accessibility.md): same naming the change log uses,
-      // so 'Square "Login"' reads consistently across both surfaces.
-      role="img"
+      // so 'Square "Login"' reads consistently across both surfaces. A face with controls of its own is a named group,
+      // so its buttons stay reachable.
+      role={elementRole(element)}
       aria-label={elementAriaLabel(element)}
       // Frames are tagged so isometric mode can settle them just under the
       // base plane (globals.css [data-iso] rule): a frame's big surface is

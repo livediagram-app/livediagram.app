@@ -3,7 +3,7 @@
 // aria-labels and live announcements read the same names everywhere, so
 // they can't drift.
 
-import type { BoxedElement, Element } from '@livediagram/document';
+import type { BoxedElement, Element, ShapeKind } from '@livediagram/document';
 
 // Display kind for an element — capitalised, no article. Shapes
 // surface their concrete sub-kind ('Square', 'Diamond'…) so a name
@@ -117,4 +117,31 @@ export function elementAriaLabel(el: Element): string {
   const kind = kindLabel(el);
   const label = ('label' in el && typeof el.label === 'string' ? el.label : '').trim();
   return label ? `${kind} "${label}"` : kind;
+}
+
+// The kinds whose face carries controls of its own: a timer's Start, a checklist's ticks, a poll's Ask, a Q&A board's
+// note field, an agenda's items, a quiz's answer, a reaction pad's button, a picker's draw, a reveal, a decision
+// record's settings and a mode button.
+const CONTROL_FACE_SHAPES: ReadonlySet<string> = new Set<ShapeKind>([
+  'session-button',
+  'checklist',
+  'temperature',
+  'agenda',
+  'qa-board',
+  'reaction-pad',
+  'quiz',
+  'picker',
+  'reveal',
+  'decision',
+  'mode-button',
+]);
+
+/** The wrapper's role (docs/specs/004-interface-design/canvas-accessibility.md "Names on elements"): a picture
+ *  (`img`, one concise name) for an element that is only drawn, and a named `group` for one whose face holds
+ *  controls, since an img's children are presentational and a screen reader could not reach the controls. */
+export function elementRole(el: Element): 'img' | 'group' {
+  if (el.type === 'video' || el.type === 'link-card') return 'group';
+  if (el.type === 'image') return el.imageId ? 'img' : 'group';
+  if (el.type === 'shape' && CONTROL_FACE_SHAPES.has(el.shape)) return 'group';
+  return 'img';
 }
