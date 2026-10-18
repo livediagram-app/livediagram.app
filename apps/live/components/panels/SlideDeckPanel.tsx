@@ -267,7 +267,7 @@ export function SlideDeckPanel({
                   setNotesForId(null);
                   notesTracked.current = null;
                 }}
-                className="cursor-pointer text-[10px] font-medium text-slate-400 transition hover:text-slate-700 dark:hover:text-slate-200"
+                className="cursor-pointer text-[10px] font-medium text-slate-500 dark:text-slate-400 transition hover:text-slate-700 dark:hover:text-slate-200"
               >
                 Done
               </button>
@@ -295,7 +295,7 @@ export function SlideDeckPanel({
                 decided while WRITING the talk rather than while giving it.
                 Blank means no target, which is most slides. */}
             <span className="flex items-center gap-2 px-0.5 pt-0.5">
-              <span className="text-[10px] text-slate-400">Budget</span>
+              <span className="text-[10px] text-slate-500 dark:text-slate-400">Budget</span>
               <input
                 type="number"
                 min={0}
@@ -308,7 +308,7 @@ export function SlideDeckPanel({
                 aria-label={`Minutes budgeted for ${slideName(notesSlide, deck.slides.indexOf(notesSlide))}`}
                 className="w-14 rounded-md border border-slate-200 bg-white px-1.5 py-0.5 text-[11px] tabular-nums text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-brand-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
               />
-              <span className="text-[10px] text-slate-400">
+              <span className="text-[10px] text-slate-500 dark:text-slate-400">
                 min · shown in the HUD if you turn the budget on
               </span>
             </span>

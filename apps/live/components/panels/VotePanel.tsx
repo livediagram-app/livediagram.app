@@ -157,7 +157,7 @@ export function VotePanel({
             gets the readout only — not disabled buttons, which would just
             advertise something they can't do. */}
         {readOnly || !isHost ? (
-          <p className="text-[10px] leading-snug text-slate-400">
+          <p className="text-[10px] leading-snug text-slate-500 dark:text-slate-400">
             {vote.revealed
               ? 'The host is walking through the results.'
               : 'Only the person who started this vote, or the facilitator, can end it.'}
@@ -317,7 +317,7 @@ function VoteTurnout({ vote, participantCount }: { vote: TabVote; participantCou
                   />
                 ))}
               </span>
-              <span className="shrink-0 text-[10px] tabular-nums text-slate-400 dark:text-slate-400">
+              <span className="shrink-0 text-[10px] tabular-nums text-slate-500 dark:text-slate-400">
                 {budget - spent} left
               </span>
             </li>
@@ -325,7 +325,7 @@ function VoteTurnout({ vote, participantCount }: { vote: TabVote; participantCou
         </ul>
       ) : null}
 
-      <p className="text-[10px] leading-snug text-slate-400 dark:text-slate-400">
+      <p className="text-[10px] leading-snug text-slate-500 dark:text-slate-400">
         {notStarted > 0
           ? `${notStarted} ${notStarted === 1 ? 'person hasn’t' : 'people haven’t'} voted yet`
           : started === 0
@@ -357,7 +357,7 @@ function VoteResultsList({
   const plan = usePlan();
   if (results.length === 0) {
     return (
-      <p className="text-[11px] italic text-slate-400 dark:text-slate-400">
+      <p className="text-[11px] italic text-slate-500 dark:text-slate-400">
         No dots were cast on this tab.
       </p>
     );

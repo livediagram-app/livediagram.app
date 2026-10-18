@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { contrastRatio, planPalette } from '@livediagram/document';
-import { inkOn, tourColourVars } from './tour-colours';
+import { accentOnWhite, inkOn, tourColourVars } from './tour-colours';
 
 // docs/specs/007-editor/editor-tour.md "Look": the tour card wears the active tab's colours.
 describe('tour colours', () => {
@@ -21,6 +21,17 @@ describe('tour colours', () => {
     }
     expect(inkOn('#1d4ed8')).toBe('#ffffff');
     expect(inkOn('#fde047')).toBe('#0f172a');
+  });
+
+  it('keeps the banner button label readable on its white button, a dark tab’s pale accent included', () => {
+    for (const accent of ['#60a5fa', '#fde047', '#e2e8f0', '#1d4ed8', '#b45309', '#22d3ee']) {
+      expect(contrastRatio(accentOnWhite(accent), '#ffffff'), accent).toBeGreaterThanOrEqual(4.5);
+    }
+    // An accent that already reads is kept as it is.
+    expect(accentOnWhite('#1d4ed8')).toBe('#1d4ed8');
+    const dark = planPalette('dark', { fill: '#1e293b', stroke: '#60a5fa', text: '#e2e8f0' });
+    const vars = tourColourVars(dark) as Record<string, string>;
+    expect(contrastRatio(vars['--tour-accent-on-white']!, '#ffffff')).toBeGreaterThanOrEqual(4.5);
   });
 
   it('falls back on brightness for a colour it cannot read as hex', () => {

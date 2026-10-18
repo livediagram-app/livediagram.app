@@ -99,7 +99,7 @@ export function BoardColumnsSection({
         id={`${element.id}-columns`}
       >
         On This Board
-        <span className="rounded-full bg-slate-100 px-1.5 text-[10px] tabular-nums text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+        <span className="rounded-full bg-slate-100 px-1.5 text-[10px] tabular-nums text-slate-600 dark:bg-slate-800 dark:text-slate-400">
           {setup.columns.length}
         </span>
       </p>
@@ -123,7 +123,7 @@ export function BoardColumnsSection({
                 requestColumnSettings(c.id);
               }}
             >
-              <span className="w-3.5 shrink-0 text-right text-[11px] tabular-nums text-slate-400 dark:text-slate-400">
+              <span className="w-3.5 shrink-0 text-right text-[11px] tabular-nums text-slate-500 dark:text-slate-400">
                 {i + 1}
               </span>
               <StatusSwatch colour={c.color} />

@@ -212,7 +212,7 @@ export function CommentRowItem({
           >
             {label}
           </span>
-          <span className="shrink-0 text-[11px] text-slate-400">
+          <span className="shrink-0 text-[11px] text-slate-500 dark:text-slate-400">
             {formatRelativeTimeCompact(now - row.latestAt)}
           </span>
         </span>

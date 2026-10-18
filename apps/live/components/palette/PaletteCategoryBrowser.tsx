@@ -163,7 +163,9 @@ export function PaletteCategoryBrowser<T>({
         />
       </div>
       {loading ? (
-        <p className="px-1 py-2 text-center text-[11px] text-slate-400">{loadingMessage}</p>
+        <p className="px-1 py-2 text-center text-[11px] text-slate-500 dark:text-slate-400">
+          {loadingMessage}
+        </p>
       ) : matches ? (
         // Searching cuts across categories, so it replaces the whole
         // navigation with one flat grid of hits — a breadcrumb would be lying

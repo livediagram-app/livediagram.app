@@ -85,7 +85,7 @@ export function ShareRolePicker({
           <span className="text-sm font-semibold text-slate-800 dark:text-slate-100">
             {pass.title}
           </span>
-          <span className="truncate text-[11px] leading-snug text-slate-500 dark:text-slate-400">
+          <span className="truncate text-[11px] leading-snug text-slate-600 dark:text-slate-400">
             {pass.blurb}
           </span>
         </span>
@@ -136,7 +136,7 @@ export function ShareRolePicker({
                     <span className={`text-[13px] font-semibold ${option.text}`}>
                       {option.title}
                     </span>
-                    <span className="text-[11px] leading-snug text-slate-500 dark:text-slate-400">
+                    <span className="text-[11px] leading-snug text-slate-600 dark:text-slate-400">
                       {option.blurb}
                     </span>
                   </span>

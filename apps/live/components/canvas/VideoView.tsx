@@ -182,7 +182,7 @@ function BlockedNotice({ target }: { target: EmbedTarget }) {
       <span className="text-[11px] font-medium text-slate-200">
         {target.label} isn&apos;t loading
       </span>
-      <span className="max-w-full text-[10px] leading-snug text-slate-400">
+      <span className="max-w-full text-[10px] leading-snug text-slate-500 dark:text-slate-400">
         Many sites refuse to be shown inside another page, and some are just slow. Either way the
         site decides, not the canvas.
       </span>
@@ -218,7 +218,7 @@ function BlockedGlyph() {
 function LoadCard({ target, onLoad }: { target: EmbedTarget; onLoad: () => void }) {
   return (
     <div className="pointer-events-none flex h-full w-full flex-col items-center justify-center gap-2 rounded-[inherit] px-3 text-center">
-      <span className="inline-flex items-center rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-semibold text-slate-300">
+      <span className="inline-flex items-center rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-semibold text-slate-500 dark:text-slate-400">
         <span className="text-optical-line text-optical-caps">{target.label}</span>
       </span>
       <button
@@ -377,7 +377,9 @@ function EmptyState({
       {url ? (
         <>
           <span className="text-[11px] font-medium text-slate-200">Can&apos;t embed that link</span>
-          <span className="w-full truncate text-[10px] text-slate-400">{url}</span>
+          <span className="w-full truncate text-[10px] text-slate-500 dark:text-slate-400">
+            {url}
+          </span>
         </>
       ) : (
         <>
@@ -391,7 +393,7 @@ function EmptyState({
                 ? `add a ${named} link`
                 : 'add a link'}
           </span>
-          <span className="text-[10px] leading-snug text-slate-400">
+          <span className="text-[10px] leading-snug text-slate-500 dark:text-slate-400">
             {provider
               ? EMBED_PROVIDER_HINT[provider]
               : 'YouTube, Vimeo, Loom, Figma, Google Docs, or any website'}

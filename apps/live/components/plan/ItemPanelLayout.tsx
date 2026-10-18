@@ -69,7 +69,7 @@ export function ItemDetailsRow({
 export function ItemMeta({ item, now }: { item: Item; now: number }) {
   const response = readFromForm(item.fields[FROM_FORM_FIELD]);
   return (
-    <div className="mt-5 flex flex-col gap-1.5 border-t border-slate-200/80 pt-3 text-[11px] text-slate-400 dark:border-slate-700/80">
+    <div className="mt-5 flex flex-col gap-1.5 border-t border-slate-200/80 pt-3 text-[11px] text-slate-500 dark:text-slate-400 dark:border-slate-700/80">
       <div className="flex items-center gap-1.5">
         Created by <PersonDisc person={item.createdBy} />
         <span className="font-medium text-slate-600 dark:text-slate-300">

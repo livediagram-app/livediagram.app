@@ -90,7 +90,7 @@ function InlineCreateTile({
         <span className={`${row ? 'min-w-0 flex-1' : 'w-full'} truncate text-xs font-medium`}>
           {label}
         </span>
-        <span className="shrink-0 text-[10px] text-slate-300 dark:text-slate-400">{sub}</span>
+        <span className="shrink-0 text-[10px] text-slate-500 dark:text-slate-400">{sub}</span>
       </button>
     );
   }
@@ -143,7 +143,7 @@ function InlineCreateTile({
           row ? 'h-4 min-w-0 flex-1 py-0 text-left leading-4' : 'w-full py-1 text-center'
         } bg-transparent px-0 text-xs text-slate-800 outline-none placeholder:text-slate-400 dark:text-slate-100 dark:placeholder:text-slate-400`}
       />
-      <span className="shrink-0 text-[10px] text-slate-400 dark:text-slate-400">
+      <span className="shrink-0 text-[10px] text-slate-500 dark:text-slate-400">
         {busy ? 'Creating…' : 'Enter to create'}
       </span>
     </div>
@@ -289,7 +289,7 @@ export function PlacementCard({
       {/* In a row the badge sits beside the name; on a tile it takes its own
           line between name and caption, where the narrow track has room. */}
       {badge}
-      <span className="shrink-0 text-[10px] text-slate-400">{sub}</span>
+      <span className="shrink-0 text-[10px] text-slate-500 dark:text-slate-400">{sub}</span>
     </button>
   );
 }

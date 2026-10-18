@@ -104,7 +104,7 @@ function ModeCard({
           <kbd
             aria-hidden
             data-mode-key
-            className={`ml-auto h-5 min-w-5 items-center justify-center rounded border border-slate-200 px-1 text-[10px] font-medium text-slate-400 dark:border-slate-700 dark:text-slate-400 ${creating ? 'hidden' : 'hidden sm:flex'}`}
+            className={`ml-auto h-5 min-w-5 items-center justify-center rounded border border-slate-200 px-1 text-[10px] font-medium text-slate-500 dark:border-slate-700 dark:text-slate-400 ${creating ? 'hidden' : 'hidden sm:flex'}`}
           >
             {/* Trimmed to its cap band, so centring lands on the digit, whatever the face (optical-alignment.md). */}
             <span className="text-optical-centre">{index + 1}</span>

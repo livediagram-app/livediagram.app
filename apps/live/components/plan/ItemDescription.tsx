@@ -82,7 +82,7 @@ export function ItemDescription({
       <button
         type="button"
         onClick={() => setEditing(true)}
-        className="group -mx-3 flex w-[calc(100%+1.5rem)] cursor-text items-center gap-2 rounded-lg px-3 py-2 text-left text-[13px] text-slate-400 transition hover:bg-slate-50 hover:text-slate-600 dark:hover:bg-slate-800/50 dark:hover:text-slate-300"
+        className="group -mx-3 flex w-[calc(100%+1.5rem)] cursor-text items-center gap-2 rounded-lg px-3 py-2 text-left text-[13px] text-slate-500 dark:text-slate-400 transition hover:bg-slate-50 hover:text-slate-600 dark:hover:bg-slate-800/50 dark:hover:text-slate-300"
       >
         <PencilIcon size={14} />
         Add a description…

@@ -386,7 +386,7 @@ export function PhotoReviewOverlay({
           // box is a blank overlay.
           <div
             data-testid="photo-loading"
-            className="absolute inset-0 flex animate-pulse items-center justify-center gap-2 text-xs text-slate-300"
+            className="absolute inset-0 flex animate-pulse items-center justify-center gap-2 text-xs text-slate-500 dark:text-slate-400"
           >
             <span
               aria-hidden

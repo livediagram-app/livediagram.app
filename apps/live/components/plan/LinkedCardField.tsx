@@ -161,7 +161,7 @@ export function LinkedCardField({
             ) : null}
             {linked ? (
               <>
-                <span className="shrink-0 rounded bg-slate-100 px-1 text-[11px] font-medium tabular-nums text-slate-500 dark:bg-slate-800">
+                <span className="shrink-0 rounded bg-slate-100 px-1 text-[11px] font-medium tabular-nums text-slate-600 dark:bg-slate-800">
                   #{linked.key}
                 </span>
                 <span className="min-w-0 flex-1 truncate font-medium text-slate-800 dark:text-slate-100">

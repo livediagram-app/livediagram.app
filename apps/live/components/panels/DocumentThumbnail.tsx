@@ -268,7 +268,7 @@ function BlankCanvasIllustration() {
       </svg>
       {/* Container-queried: only where the box is wide enough to hold
           the words without crowding the sketch (a card, not a row). */}
-      <span className="hidden text-[11px] font-medium text-slate-400 @min-[140px]:block">
+      <span className="hidden text-[11px] font-medium text-slate-500 dark:text-slate-400 @min-[140px]:block">
         Nothing drawn yet
       </span>
     </span>

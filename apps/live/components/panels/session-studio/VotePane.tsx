@@ -89,7 +89,7 @@ export function VoteSetupBody({
             onChange={setStacking}
             options={STACKING_OPTIONS}
           />
-          <span className="text-[10px] leading-snug text-slate-400">
+          <span className="text-[10px] leading-snug text-slate-500 dark:text-slate-400">
             {stacking === 'one'
               ? `Each person backs ${dots} different items, one dot apiece.`
               : 'People can pile several dots on one item they feel strongly about.'}
@@ -108,7 +108,7 @@ export function VoteSetupBody({
               ...voteLayers.map((l) => ({ value: l.id, label: l.name })),
             ]}
           />
-          <span className="text-[10px] leading-snug text-slate-400">
+          <span className="text-[10px] leading-snug text-slate-500 dark:text-slate-400">
             {layerId
               ? 'Only this layer takes dots. The rest stay visible, dimmed.'
               : 'Every votable element on the tab takes dots.'}

@@ -162,7 +162,7 @@ export function ActionPopover({
               <span className="block truncate text-xs font-medium text-slate-700 dark:text-slate-200">
                 {mine ? 'Assigned to you' : `Assigned to ${assigneeName}`}
               </span>
-              <span className="block truncate text-[10px] text-slate-400">
+              <span className="block truncate text-[10px] text-slate-500 dark:text-slate-400">
                 {assignerName ? `by ${assignerName} · ` : ''}
                 {formatRelativeTimeCompact(now - action.createdAt)}
               </span>

@@ -43,6 +43,11 @@ Slate complements sky cleanly (both are cool-toned). Use for text, borders, surf
 
 In dark mode the three surface stops are the blue-slate of the [dark palette](#dark-palette-steel) instead.
 
+Small text (13 px and under) in the editor's chrome reads at WCAG 2.2 AA, 4.5:1, in light mode: never `slate-300`
+or `slate-400` on a light surface (2.6:1 at best on white), and `slate-600`, not `slate-500`, on a `slate-100` or
+`slate-200` chip or track (`slate-500` there is 4.3:1 and 3.9:1). A test in `apps/live/lib/small-text-contrast.test.ts`
+holds the class strings to it. A label in a tab's accent on a white button deepens the accent until it reads at 4.5:1.
+
 ## Semantic colors
 
 Reserved for status — never used decoratively.

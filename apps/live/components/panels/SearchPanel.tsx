@@ -346,7 +346,7 @@ export function SearchPanel({
                           <ThisBrowserPill asLabel />
                         ) : null}
                         {item.kind === 'element' ? (
-                          <span className="shrink-0 text-[10px] text-slate-400 dark:text-slate-400">
+                          <span className="shrink-0 text-[10px] text-slate-500 dark:text-slate-400">
                             on {item.tabName}
                           </span>
                         ) : null}
@@ -354,17 +354,17 @@ export function SearchPanel({
                             does not say where picking it will land you, and
                             two settings can read alike out of context. */}
                         {item.kind === 'setting' ? (
-                          <span className="shrink-0 text-[10px] text-slate-400 dark:text-slate-400">
+                          <span className="shrink-0 text-[10px] text-slate-500 dark:text-slate-400">
                             in {item.categoryLabel}
                           </span>
                         ) : null}
                         {(item.kind === 'folder' || item.kind === 'document') && item.team ? (
-                          <span className="shrink-0 text-[10px] text-slate-400 dark:text-slate-400">
+                          <span className="shrink-0 text-[10px] text-slate-500 dark:text-slate-400">
                             in {item.team.name}
                           </span>
                         ) : null}
                         {item.kind === 'tab' && item.isCurrent ? (
-                          <span className="shrink-0 text-[10px] text-slate-400 dark:text-slate-400">
+                          <span className="shrink-0 text-[10px] text-slate-500 dark:text-slate-400">
                             current
                           </span>
                         ) : null}

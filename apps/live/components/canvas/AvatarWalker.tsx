@@ -154,7 +154,7 @@ export function AvatarWalker({
           // Away: a slow Zz rising over the head (a CSS loop, still under reduced motion).
           <div
             aria-hidden
-            className="animate-avatar-zz pointer-events-none absolute z-10 text-[11px] font-bold italic text-slate-400"
+            className="animate-avatar-zz pointer-events-none absolute z-10 text-[11px] font-bold italic text-slate-500 dark:text-slate-400"
             style={{
               left: box.offsetX + 8 * scale,
               top: box.offsetY - AVATAR_HEIGHT * scale - 24,

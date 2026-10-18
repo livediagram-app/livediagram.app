@@ -69,7 +69,7 @@ export function LinkCardView({
 
   if (!link) {
     return (
-      <div className="pointer-events-none absolute inset-0 flex items-center justify-center px-3 text-center text-[12px] font-medium text-slate-400 dark:text-slate-400">
+      <div className="pointer-events-none absolute inset-0 flex items-center justify-center px-3 text-center text-[12px] font-medium text-slate-500 dark:text-slate-400">
         Double-click to add a link
       </div>
     );
@@ -105,7 +105,7 @@ export function LinkCardView({
         >
           {title}
         </p>
-        <p className="truncate text-[10px] text-slate-400 dark:text-slate-400">{destination}</p>
+        <p className="truncate text-[10px] text-slate-500 dark:text-slate-400">{destination}</p>
       </div>
       {onFollow ? (
         // Right-arrow affordance: nudges right on hover so the row reads as a

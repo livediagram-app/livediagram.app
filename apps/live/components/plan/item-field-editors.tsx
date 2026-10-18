@@ -144,7 +144,7 @@ export function DebouncedText({
     left !== null && maxLength !== undefined && draft.length >= maxLength * 0.9 ? (
       <span
         aria-live="polite"
-        className={`mt-1 block text-right text-[11px] tabular-nums ${left === 0 ? 'text-amber-700 dark:text-amber-300' : 'text-slate-400 dark:text-slate-400'}`}
+        className={`mt-1 block text-right text-[11px] tabular-nums ${left === 0 ? 'text-amber-700 dark:text-amber-300' : 'text-slate-500 dark:text-slate-400'}`}
       >
         {left === 0
           ? `${maxLength} characters, the most it takes`
@@ -447,7 +447,9 @@ export function ChecklistEditor({
               {r.done ? <CheckIcon size={11} /> : null}
             </button>
             {disabled ? (
-              <span className={`flex-1 text-[13px] ${r.done ? 'text-slate-400 line-through' : ''}`}>
+              <span
+                className={`flex-1 text-[13px] ${r.done ? 'text-slate-500 dark:text-slate-400 line-through' : ''}`}
+              >
                 {r.text}
               </span>
             ) : (

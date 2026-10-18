@@ -101,7 +101,9 @@ export function SheetCellMenu({
     <ContextMenu position={at} label="Cell menu" onClose={onClose} flush>
       <MenuHeader
         title={words.title}
-        aside={<span className="text-[11px] text-slate-400">{words.count}</span>}
+        aside={
+          <span className="text-[11px] text-slate-500 dark:text-slate-400">{words.count}</span>
+        }
       />
       <MenuToolbar>
         {c.canEdit ? (

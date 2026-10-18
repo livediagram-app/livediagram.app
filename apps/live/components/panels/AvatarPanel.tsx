@@ -96,7 +96,7 @@ function ActionRow({
             >
               {item.label}
               {item.shortcut ? (
-                <kbd className="rounded border border-slate-200 px-1 text-[10px] font-medium text-slate-400 dark:border-slate-700">
+                <kbd className="rounded border border-slate-200 px-1 text-[10px] font-medium text-slate-500 dark:text-slate-400 dark:border-slate-700">
                   {item.shortcut}
                 </kbd>
               ) : null}
@@ -291,7 +291,7 @@ export function AvatarPanel({
               <MessageIcon />
               Send a Message
               {isMobile ? null : (
-                <kbd className="ml-auto rounded border border-slate-200 px-1 text-[10px] font-medium text-slate-400 dark:border-slate-700">
+                <kbd className="ml-auto rounded border border-slate-200 px-1 text-[10px] font-medium text-slate-500 dark:text-slate-400 dark:border-slate-700">
                   Enter
                 </kbd>
               )}

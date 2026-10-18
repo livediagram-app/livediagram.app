@@ -148,13 +148,14 @@ export function TourBanner({
   );
 }
 
-// The banner's primary button, as the sign-in banner's: a white button with its label in the accent.
+// The banner's primary button, as the sign-in banner's: a white button with its label in the accent (deepened where the
+// accent alone would not read on white, tour-colours accentOnWhite).
 function BannerButton({ onClick, children }: { onClick: () => void; children: ReactNode }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className="inline-flex cursor-pointer items-center justify-center rounded-lg bg-white px-4 py-2 text-sm font-semibold text-[var(--tour-accent)] shadow-sm transition hover:bg-white/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+      className="inline-flex cursor-pointer items-center justify-center rounded-lg bg-white px-4 py-2 text-sm font-semibold text-[var(--tour-accent-on-white)] shadow-sm transition hover:bg-white/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
     >
       {children}
     </button>

@@ -159,7 +159,7 @@ export function PresentationElementPopover({
                     {action.description}
                   </span>
                 ) : null}
-                <span className="pl-3 text-[10px] text-slate-400 dark:text-slate-400">
+                <span className="pl-3 text-[10px] text-slate-500 dark:text-slate-400">
                   {action.assignee.name ?? 'Teammate'} · {ACTION_STATUS_LABELS[action.status]}
                 </span>
               </li>

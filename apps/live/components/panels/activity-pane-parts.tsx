@@ -276,7 +276,7 @@ function ActivityRowShell({
               {detail}
             </span>
           ) : null}
-          <span className="mt-1 flex min-w-0 items-center gap-1.5 text-[11px] text-slate-400 dark:text-slate-400">
+          <span className="mt-1 flex min-w-0 items-center gap-1.5 text-[11px] text-slate-500 dark:text-slate-400">
             <PlaceChip place={place} />
             <span className="truncate">
               {where ?? ('elementLabel' in place ? `${place.elementLabel} · ${place.tabName}` : '')}
@@ -295,7 +295,7 @@ function ActivityRowShell({
               </GlyphDisc>
             </HoverCard>
           ) : null}
-          <span className="text-[10px] text-slate-400 dark:text-slate-400">
+          <span className="text-[10px] text-slate-500 dark:text-slate-400">
             {formatRelativeTimeShort(now - at)}
           </span>
         </span>
