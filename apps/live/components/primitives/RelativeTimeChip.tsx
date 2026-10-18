@@ -18,7 +18,10 @@ export function RelativeTimeChip({ at }: { at: number }) {
   return (
     // Centred on its cap band (optical-alignment.md), so the time sits
     // level with the badges and marks beside it.
-    <span className="text-optical-line max-w-full truncate text-[11px] uppercase tracking-wider text-slate-500 dark:text-slate-400">
+    <span
+      data-relative-time=""
+      className="text-optical-line max-w-full truncate text-[11px] uppercase tracking-wider text-slate-500 dark:text-slate-400"
+    >
       {relativeSince(at, now)}
     </span>
   );
