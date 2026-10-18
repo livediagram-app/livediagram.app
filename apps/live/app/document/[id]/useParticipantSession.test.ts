@@ -33,4 +33,20 @@ describe('useParticipantSession', () => {
     expect(notify).toHaveBeenCalledTimes(1);
     expect(notify).toHaveBeenCalledWith(HELD_BACK_NOTICE);
   });
+
+  // An Editor previewing as a Participant (docs/specs/007-editor/live-app.md#role-pill): no key from the room, so the
+  // preview's own; a room key, once held, wins.
+  it('takes the preview key while the room gives none', () => {
+    const { result } = renderHook(() =>
+      useParticipantSession('participate', undefined, 'preview-p1'),
+    );
+    expect(result.current.adderKey).toBe('preview-p1');
+    expect(result.current.can.addContent).toBe(true);
+    const added = tab([theirs, { id: 'n', type: 'sticky', ...box }]);
+    expect(result.current.guardCommit(tab([theirs]), added)?.elements[1]).toMatchObject({
+      addedBy: 'preview-p1',
+    });
+    act(() => result.current.setAdderKey('a'.repeat(32)));
+    expect(result.current.adderKey).toBe('a'.repeat(32));
+  });
 });
