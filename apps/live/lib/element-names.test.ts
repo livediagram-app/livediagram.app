@@ -95,7 +95,11 @@ describe('shapeKindLabel', () => {
 });
 
 describe('describeSelected', () => {
-  const pinned = (elementId: string) => ({ kind: 'pinned' as const, elementId, anchor: 'e' as const });
+  const pinned = (elementId: string) => ({
+    kind: 'pinned' as const,
+    elementId,
+    anchor: 'e' as const,
+  });
   const travel = { ...createShape('square', 0, 0), id: 'travel', label: 'Travel' };
   const hotel = { ...createShape('square', 0, 0), id: 'hotel', label: 'Team\n offsite' };
   const blank = { ...createShape('square', 0, 0), id: 'blank' };
@@ -112,9 +116,9 @@ describe('describeSelected', () => {
     expect(describeSelected({ ...arrow(), to: pinned('travel') }, [travel])).toBe(
       "an Arrow to 'Travel'",
     );
-    expect(describeSelected({ ...arrow(), from: pinned('blank'), to: pinned('gone') }, [blank])).toBe(
-      'an Arrow',
-    );
+    expect(
+      describeSelected({ ...arrow(), from: pinned('blank'), to: pinned('gone') }, [blank]),
+    ).toBe('an Arrow');
   });
 
   it('is describeOne for anything else', () => {

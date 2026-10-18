@@ -81,12 +81,7 @@ export function describeSelected(el: Element, elements: readonly Element[]): str
   const label = (el.label ?? '').trim();
   const from = endName(el.from);
   const to = endName(el.to);
-  return [
-    one,
-    label ? `'${label}'` : '',
-    from ? `from '${from}'` : '',
-    to ? `to '${to}'` : '',
-  ]
+  return [one, label ? `'${label}'` : '', from ? `from '${from}'` : '', to ? `to '${to}'` : '']
     .filter(Boolean)
     .join(' ');
 }
