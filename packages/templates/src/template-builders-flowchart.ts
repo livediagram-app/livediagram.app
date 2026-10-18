@@ -13,7 +13,6 @@ import {
   type ShapeElement,
 } from '@livediagram/document';
 import { liveFlowchart } from './template-flowchart-live';
-import { PAPER_INK } from './template-inks';
 
 // Flowchart: a checkout, the process everyone has been through, drawn with
 // the five ISO 5807 symbols a flowchart actually uses, each keeping ONE look
@@ -128,8 +127,11 @@ export function buildFlowchart(cx: number, cy: number): Element[] {
     },
   ];
 
-  // The key: one miniature per symbol, in the diagram's own presets, on a
-  // quiet card level with the top of the flow. Plain shapes, not steps.
+  // The key: one miniature per symbol, in the diagram's own presets, in a
+  // hairline frame level with the top of the flow. Plain shapes, not steps.
+  // The frame is see-through, so each miniature sits on the canvas as its step
+  // does and matches it in a dark theme too (a pale card turned them into dark
+  // blots that matched nothing).
   const keyX = left + probe.width + keyGap;
   const key: Element[] = [
     {
@@ -137,7 +139,7 @@ export function buildFlowchart(cx: number, cy: number): Element[] {
       width: keyW,
       height: keyH,
       label: '',
-      fillColor: '#f8fafc',
+      fillColor: 'transparent',
       strokeColor: '#cbd5e1',
     },
     {
@@ -147,7 +149,7 @@ export function buildFlowchart(cx: number, cy: number): Element[] {
       label: 'Key',
       textSize: 'md',
       textBold: true,
-      textColor: PAPER_INK,
+      textColor: MUTED,
       textAlignX: 'left',
     },
   ];
