@@ -62,6 +62,7 @@ import type { EditorContextMenuProps } from './EditorContextMenu.types';
 import { useContextMenuScaffold } from './useContextMenuScaffold';
 import { useCoversCanvas } from '@/hooks/plan/plan-cover-store';
 import { ElementContentSections } from './ElementContentSections';
+import { ElementMenuQuickBar } from './ElementMenuQuickBar';
 import { ElementAppearanceSections } from './ElementAppearanceSections';
 import { MirrorCopyGlyph } from '@/components/canvas/logo-glyphs';
 import { MultiSelectionContextMenu } from './MultiSelectionContextMenu';
@@ -171,6 +172,14 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
         flush
         anchorBottom={anchorBottom}
       >
+        {/* The quick bar (docs/specs/008-canvas/element-menu-quick-bar.md): Assign Action, Comment, Link and Note, and
+            Clear Styles at its right, above every category rather than folded into Collaborate and Resources. */}
+        <ElementMenuQuickBar
+          target={target}
+          props={props}
+          attachments={showCollaborateGroup}
+          onClose={onClose}
+        />
         {/* Layer — pinned FIRST in the menu (before the type-specific
             categories, which render conditionally and so would otherwise
             shuffle Layer's position around). Groups front/back + opacity +
@@ -427,7 +436,6 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
           onClose={onClose}
           hasImage={hasImage}
           hasLink={hasLink}
-          showCollaborateGroup={showCollaborateGroup}
           sectionProps={sectionProps}
           colorProps={colorProps}
           textColorHandlers={textColorHandlers}
