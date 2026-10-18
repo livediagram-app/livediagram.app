@@ -177,6 +177,16 @@ describe('graph input caps', () => {
 });
 
 // The benchmark's F1: the instructions once gave "retro" as an example, and models passed it as a template kind.
+// A model read "flowchart roles toned (start, end, decision)" as the node's `role` field, which draws a person card:
+// the instructions name a flowchart step's kind by its shape, and say what `role` is for.
+describe('SERVER_INSTRUCTIONS on flowchart steps', () => {
+  it('names a step by its shape and keeps "role" for a person', () => {
+    expect(SERVER_INSTRUCTIONS).not.toMatch(/flowchart roles/);
+    expect(SERVER_INSTRUCTIONS).toMatch(/flowchart steps toned by their "shape"/);
+    expect(SERVER_INSTRUCTIONS).toMatch(/"role" is a person's job title/);
+  });
+});
+
 describe('SERVER_INSTRUCTIONS template examples', () => {
   it('names only kinds create_document takes', () => {
     const list = /not a node\/edge graph \(([^)]*)\)/.exec(SERVER_INSTRUCTIONS)?.[1] ?? '';
