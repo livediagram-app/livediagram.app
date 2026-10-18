@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-// The editor header's badge for a document saved only in this browser reads "Local only", matching
+// The editor header's badge for a document saved only in this browser reads "Local Only", matching
 // the Explorer's pill (docs/specs/006-document/offline-mode.md#local-only-badge--explorer).
 
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
@@ -11,10 +11,10 @@ import { SharedBadge } from './SharedBadge';
 afterEach(cleanup);
 
 describe('SharedBadge', () => {
-  it('reads Local only for a document in this browser, never Offline', () => {
+  it('reads Local Only for a document in this browser, never Offline', () => {
     render(<SharedBadge shareable={false} offline />);
     const badge = screen.getByText(LOCAL_ONLY_LABEL).closest('[tabindex]') as HTMLElement;
-    expect(badge.textContent).toContain('Local only');
+    expect(badge.textContent).toContain('Local Only');
     expect(badge.textContent).not.toContain('Offline');
   });
 
@@ -24,7 +24,7 @@ describe('SharedBadge', () => {
     expect(badge.querySelector('svg')).not.toBeNull();
   });
 
-  it('is named Local only and described with the pill sentence', () => {
+  it('is named Local Only and described with the pill sentence', () => {
     render(<SharedBadge shareable={false} offline />);
     const badge = screen.getByText(LOCAL_ONLY_LABEL).closest('[tabindex]') as HTMLElement;
     expect(badge.getAttribute('aria-label')).toBe(LOCAL_ONLY_LABEL);
@@ -50,7 +50,7 @@ describe('SharedBadge', () => {
 
 // docs/specs/025-community/community.md: listed in the Community, the document is public.
 describe('SharedBadge in the Community', () => {
-  it('reads Public while listed, over Shared, and Local only still wins', () => {
+  it('reads Public while listed, over Shared, and Local Only still wins', () => {
     render(<SharedBadge shareable community />);
     expect(screen.getByText('Public')).toBeTruthy();
     expect(screen.queryByText('Shared')).toBeNull();

@@ -796,7 +796,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Form|Opened|NotTakingFull':
     "Someone pressed a form's Not Taking Responses warning: its document held as many cards as it can.",
   'Form|Moved|SyncedToShare':
-    'Someone synced a Local only document from Share Form, so its form could be published.',
+    'Someone synced a Local Only document from Share Form, so its form could be published.',
   'Form|Sent|Response':
     'Someone filled in a form through its link, and the response became a card on its board.',
   'Form|Sent|Dropped':
@@ -2354,7 +2354,7 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Form|Toggled': 'Someone switched Accepting Responses on or off for a published form.',
   'Form|Opened': "Someone pressed a form's Not Taking Responses warning, to see why and fix it.",
   'Form|Moved':
-    'Someone synced a Local only document from Share Form, so its form could be published.',
+    'Someone synced a Local Only document from Share Form, so its form could be published.',
   'Form|Sent': 'A response came in through a form link.',
   'Form|Reported': 'Someone reported a form they were sent.',
   'Activity|Selected': "Someone clicked a row in the Explorer's Inbox, jumping to what it's about.",

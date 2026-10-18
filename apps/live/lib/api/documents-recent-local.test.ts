@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 // docs/specs/019-marketing/returning-visitor.md: the landing page's note of recent diagrams asks the
-// server for snapshots of cloud documents only. A Local only document has none, and a guest's new
+// server for snapshots of cloud documents only. A Local Only document has none, and a guest's new
 // documents start local (docs/specs/006-document/offline-mode.md), so asking would 404 on every save.
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -25,7 +25,7 @@ afterEach(() => {
 });
 
 describe('apiListDocuments recent snapshots', () => {
-  it('never asks the server for a Local only document’s snapshot', async () => {
+  it('never asks the server for a Local Only document’s snapshot', async () => {
     __setOfflineBackend(memBackend());
     await offlineCreateDocument({ id: 'local-1', name: 'Sketch' }, 5);
     const seen: string[] = [];

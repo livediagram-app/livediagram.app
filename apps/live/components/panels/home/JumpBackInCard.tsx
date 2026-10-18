@@ -3,7 +3,7 @@
 // One document of Jump Back In on a desktop or tablet (docs/specs/013-workspace/explorer-home.md "Jump Back In"): a
 // card with its snapshot thumbnail, its name and the quiet line that says why it is there. Large for a most used
 // document (the thumbnail over the words), compact for a recent one (the thumbnail beside them). One link named by
-// the document (plus Local only for one stored here), the quiet line its description. No tooltip: the name is
+// the document (plus Local Only for one stored here), the quiet line its description. No tooltip: the name is
 // already written under the picture.
 // The phone's strip keeps JumpBackInTile.
 

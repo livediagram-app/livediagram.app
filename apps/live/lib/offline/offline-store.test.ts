@@ -218,7 +218,7 @@ describe('offlineDeleteIfUnchanged (Sync Document, docs/specs/006-document/offli
   });
 });
 
-// The move prompt's cheap gate (docs/specs/014-identity/auth-and-guest-access.md "Moving Local only
+// The move prompt's cheap gate (docs/specs/014-identity/auth-and-guest-access.md "Moving Local Only
 // documents after signing in"): a count off the cached index, never a full read.
 describe('offlineIdCount', () => {
   it('counts the documents this browser holds', async () => {

@@ -10,8 +10,8 @@ has no Location step: every new document is stored in the default location for w
 moves between the two afterwards with [Offline Mode](offline-mode.md)'s **Sync Document** and **Take Offline**.
 (The wizard used to end on a Location step with a Save location chooser, a tile per location, the Local Browser
 data-loss warning and a folder browser; it was removed, as most people answered it with the default before they had
-anything on the canvas. A Local only document still says what it is on the document itself: the editor header's
-**Local only** badge and its legend, [Offline Mode](offline-mode.md#local-only-badge--explorer).)
+anything on the canvas. A Local Only document still says what it is on the document itself: the editor header's
+**Local Only** badge and its legend, [Offline Mode](offline-mode.md#local-only-badge--explorer).)
 
 | Location          | What it means                                                                                                |
 | ----------------- | ------------------------------------------------------------------------------------------------------------ |
@@ -37,7 +37,7 @@ Why a guest starts local: [Auth + guest access → Guest documents start local](
 - Before Clerk has answered, `signedIn` is the `__client_uat` hint
   ([Who is a guest, before Clerk answers](../014-identity/auth-and-guest-access.md#who-is-a-guest-before-clerk-answers)).
   A browser that looks signed in waits for the settled answer before creating, so a signed-in person is never handed
-  a Local only document; a guest never waits.
+  a Local Only document; a guest never waits.
 - There is no per-person override: no setting chooses the store. Where a document is **filed** on livediagram is the
   person's to set, in Settings > Documents > Default Folders ([Default folders](../013-workspace/default-folders.md)).
   A preference that once did both, "Always save new documents in <place> and skip this step" (`skipLocationStep`),

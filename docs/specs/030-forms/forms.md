@@ -586,7 +586,7 @@ board settings, for switching back.
 | Edit Form on a live form (stops it taking responses)     | ✓                                      |             |        |
 | See the response count, which opens the destination      | ✓                                      | ✓           | ✓      |
 | See Not Taking Responses, which opens its fix            | ✓                                      |             |        |
-| Sync a Local only document from Share Form               | ✓                                      |             |        |
+| Sync a Local Only document from Share Form               | ✓                                      |             |        |
 | Fill in the form through its link                        | anyone with the link, signed in or not |             |        |
 
 A Participant or Viewer sees the form drawn as the form link draws it (working, but sending nothing and making no

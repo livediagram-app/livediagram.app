@@ -364,10 +364,10 @@ The lens on `/explorer`, over `@livediagram/explorer-lens`. Files:
 
 | View         | Base list (before the lens)                                                                                                                        |
 | ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `all`        | Unset: root folders, then root documents (`folderId === null`, not local only). Set: every own document in the tree, local-only root ones excepted |
+| `all`        | Unset: root folders, then root documents (`folderId === null`, not Local Only). Set: every own document in the tree, Local Only root ones excepted |
 | `folder`     | Unset: subfolders and documents in the folder. Set: every document in the folder's subtree (`scopeDocuments`)                                      |
 | `team`       | The team library at the open spot; set: every document in the spot's subtree                                                                       |
-| `offline`    | Every local-only document                                                                                                                          |
+| `offline`    | Every Local Only document                                                                                                                          |
 | `recent`     | Own, team and shared rows not hidden from Recent, newest first; the first `RECENT_LIMIT` (12) after the lens                                       |
 | `favourites` | Starred own and team rows                                                                                                                          |
 | `search`     | Own, team and shared rows, newest first, no cap                                                                                                    |
@@ -376,7 +376,7 @@ The lens on `/explorer`, over `@livediagram/explorer-lens`. Files:
 The subjects suggestions mark against are the rows a set lens would reach: a scoped view's whole scope, the team
 sweep's rows of the open team, and on a view with no lens the `search` list. `lensSubjectOf(row, viewerId)`: a
 `shared` row is `sharedSubject`; a team row (`team` or `teamId`) is `documentSubject` with its team id and owner; every
-other row, local only included, is `documentSubject` with `teamId: null` and the reader as owner. Folder rows are hidden
+other row, Local Only included, is `documentSubject` with `teamId: null` and the reader as owner. Folder rows are hidden
 while the lens is set (`D83`).
 
 ### Behaviour and state

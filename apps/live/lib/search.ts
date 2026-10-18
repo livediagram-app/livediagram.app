@@ -28,7 +28,7 @@ const SETTINGS_LIMIT = 6;
 // Internal-only input shapes for the by-name match inputs. Several
 // share the same {id, name} shape but stay distinct so a future
 // schema change to one doesn't silently propagate to the others.
-// `localOnly`: saved only in this browser (Offline Mode); the result carries the Local only pill
+// `localOnly`: saved only in this browser (Offline Mode); the result carries the Local Only pill
 // (docs/specs/006-document/offline-mode.md#local-only-pill).
 type SearchInputDocument = { id: string; name: string; localOnly?: boolean };
 type SearchInputFolder = { id: string; name: string };

@@ -177,7 +177,7 @@ export default function NewDocumentPage() {
   // query names one we don't know, the layout effect lifts it before the
   // first post-hydration paint and the wizard shows as normal.
   const bypassKind = useSyncExternalStore(subscribeNever, bypassKindFromUrl, noBypass);
-  // Where a new document is stored: Local only for a guest (docs/specs/006-document/save-locations.md), decided at
+  // Where a new document is stored: Local Only for a guest (docs/specs/006-document/save-locations.md), decided at
   // commit.
   const { resolveSaveLocation } = useNewDocumentLocation({ authLoaded, clerkUserId });
   useLayoutEffect(() => {
@@ -321,7 +321,7 @@ export default function NewDocumentPage() {
     markNameConfirmed();
     // Never create as the 'pending' placeholder — see resolveSelf above.
     const settleIdentity = resolveSelf;
-    // A Local only document has no owner on the server to wait for (docs/specs/006-document/offline-mode.md
+    // A Local Only document has no owner on the server to wait for (docs/specs/006-document/offline-mode.md
     // "Instant open"): identity settles in the background while it opens. A cloud create needs the owner.
     const cloudOwner = offline ? null : await settleIdentity();
     if (offline) {

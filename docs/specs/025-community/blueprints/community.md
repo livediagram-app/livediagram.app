@@ -293,7 +293,7 @@ Editor (`apps/live`):
   Remove.
 - Public badge: `apps/live/lib/community-state-store.ts` (an external store, seeded from the document fetch and
   updated by the Community section on publish or remove) feeds `SharedBadge`'s `community` state, labelled **Public**,
-  which wins over Private, Shared and Team (only Local only beats it).
+  which wins over Private, Shared and Team (only Local Only beats it).
 - `resolveDocumentSession` (`apps/live/app/document/[id]/editor-page-helpers.ts`) takes `community`: a community
   link resolves to a non-owner view session for everyone, the author included, so neither the post page's embed nor
   Open Document can edit the document; `CommunitySession.ownDocumentId` gives the author Edit Your Document in the bar.

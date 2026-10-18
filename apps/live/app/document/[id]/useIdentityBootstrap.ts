@@ -143,7 +143,7 @@ export function useIdentityBootstrap(opts: {
   // The bootstrap runs once auth has settled (and again on a password retry), reading everything else as
   // it is at that moment: an effect event, so the setters and values it reads are never triggers.
   const runRef = useRef(0);
-  // `early`: a Local only document opening before auth has settled (docs/specs/006-document/offline-mode.md
+  // `early`: a Local Only document opening before auth has settled (docs/specs/006-document/offline-mode.md
   // "Instant open"). It has no owner on the server to wait for, so it loads under the placeholder
   // participant and settleEarlyIdentity resolves who is reading once auth answers.
   const bootstrap = useEffectEvent((early = false) => {
@@ -342,7 +342,7 @@ export function useIdentityBootstrap(opts: {
       // than hitting /api/participants again on every wrong guess.
       let self: Participant;
       if (early) {
-        // A Local only document reads from this browser whoever is reading: the identity follows.
+        // A Local Only document reads from this browser whoever is reading: the identity follows.
         self = selfParticipant;
       } else if (selfParticipant.id !== 'self') {
         // Already resolved — skip the network round-trip.
@@ -642,7 +642,7 @@ export function useIdentityBootstrap(opts: {
     // Auth may have answered while the local index loaded: then the ordinary bootstrap has run.
     if (runRef.current !== 0) return;
     earlyOpen.current = true;
-    debugLog('[load] early open of a Local only document');
+    debugLog('[load] early open of a Local Only document');
     bootstrap(true);
   });
   // Once auth answers after an early open: who is reading, their lists, and the guest naming nudge,

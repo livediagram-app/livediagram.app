@@ -119,10 +119,10 @@ describe('PanelExplorerTree', () => {
     expect(assign).not.toHaveBeenCalled();
   });
 
-  it('marks a document in this browser Local only, with what it means', () => {
+  it('marks a document in this browser Local Only, with what it means', () => {
     render(<Harness section={{ kind: 'browser' }} />);
     expect(rows()).toEqual([`Workshop notes. ${LOCAL_ONLY_DESCRIPTION}`]);
-    expect(screen.getByText('Local only')).toBeTruthy();
+    expect(screen.getByText('Local Only')).toBeTruthy();
   });
 
   it('lists what is shared with the reader', () => {

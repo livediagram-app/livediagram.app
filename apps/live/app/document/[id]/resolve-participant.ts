@@ -6,7 +6,7 @@ import { randomColor, randomName, type Participant } from '@/lib/identity';
 // settled: the Clerk userId when signed in, else the guest's SERVER-SIGNED id (minting one on a first
 // visit, upgrading a legacy unsigned id) so the eventual sign-up migrate can prove possession; then
 // the stored participant row, seeded or re-synced as needed. Lifted out of useIdentityBootstrap so a
-// Local only document can open first and resolve this in the background
+// Local Only document can open first and resolve this in the background
 // (docs/specs/006-document/offline-mode.md "Instant open").
 export async function resolveParticipant(opts: {
   clerkUserId: string | null | undefined;

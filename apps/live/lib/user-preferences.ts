@@ -368,7 +368,7 @@ export function writeUserPreferences(prefs: UserPreferences, ownerId?: string | 
   }
   // The editor in a workbench never writes preferences to the api (docs/specs/013-workspace/
   // blueprints/workbench-embeds.md, I9): the frame's choices stay in the frame. Nor under the 'self'
-  // placeholder a Local only document opens with before the reader is known
+  // placeholder a Local Only document opens with before the reader is known
   // (docs/specs/006-document/offline-mode.md "Instant open"): that row would be everybody's.
   if (ownerId && ownerId !== 'self' && !getWorkbenchConfinement()) savePreferences(ownerId, fitted);
 }

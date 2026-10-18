@@ -1,5 +1,5 @@
 // What one tab contributes to the collaboration index (docs/specs/013-workspace/inbox.md §2), and what
-// a Local only document's tab contributes to the Inbox read in the browser (§2.6).
+// a Local Only document's tab contributes to the Inbox read in the browser (§2.6).
 //
 // A pure projection of the tab's elements into the rows `collab_actions`
 // and `collab_threads` hold: one per element carrying an action, one per

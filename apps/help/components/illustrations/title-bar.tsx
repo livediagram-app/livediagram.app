@@ -231,7 +231,7 @@ const STOPS = [
 ] as const;
 
 /** The legend that opens under the visibility pill, for a Shared document: the hero with its
- *  reach rings, the four audiences from Just you to Everyone with Link filled to, Local only
+ *  reach rings, the four audiences from Just you to Everyone with Link filled to, Local Only
  *  apart beneath them, and Change Who Can See This for the owner. */
 export function VisibilityLegendFigure() {
   const cardX = 70;
@@ -388,13 +388,13 @@ export function VisibilityLegendFigure() {
         );
       })}
 
-      {/* Local only, apart from the scale. */}
+      {/* Local Only, apart from the scale. */}
       <rect x={82} y={212} width={256} height={28} rx={8} className="fill-slate-50" />
       <circle cx={97} cy={226} r={9} className="fill-white stroke-amber-200" strokeWidth={1} />
       <BrowserGlyph x={97} y={226} cls="stroke-amber-600" />
       <Label x={112} y={227} size={9} tone="body">
         <tspan fontWeight={700} className="fill-slate-800">
-          Or Local only
+          Or Local Only
         </tspan>
         : never leaves this browser.
       </Label>

@@ -7,7 +7,7 @@ import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { DialogFooter } from '@/components/dialogs/DialogFooter';
 import { SyncDocumentPrompt } from './SyncDocumentPrompt';
 
-// The Share dialog's offline gate (docs/specs/006-document/offline-mode.md "Sharing a Local only
+// The Share dialog's offline gate (docs/specs/006-document/offline-mode.md "Sharing a Local Only
 // document"). An offline document is stored only in this browser, so there are no links to mint until it
 // is synced. The gate says so and offers Sync Document (SyncDocumentPrompt, which Share Form draws too); the
 // sync converts the open document in place ("Syncing in place"), with no reload, and the Share dialog swaps the

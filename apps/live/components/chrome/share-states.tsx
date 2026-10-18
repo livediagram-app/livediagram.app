@@ -49,7 +49,7 @@ export const SHARE_STATE_META: Record<
     dot: 'text-pink-500',
   },
   // Offline Mode (docs/specs/006-document/offline-mode.md): saved only in this browser, never on the
-  // server. The Local only pill's words, sentence and amber tone (text 4.5:1 on its fill, ring 3:1).
+  // server. The Local Only pill's words, sentence and amber tone (text 4.5:1 on its fill, ring 3:1).
   offline: {
     label: LOCAL_ONLY_LABEL,
     description: LOCAL_ONLY_DESCRIPTION,
@@ -64,7 +64,7 @@ export const STATE_CHIP_HEIGHT_PX = 19;
 
 // The icon carries its colour itself: a wrapper would hide the svg from the chip's edge compensation.
 export function StateDot({ state, className }: { state: ShareState; className: string }) {
-  // The Local only pill's own glyph: a browser window.
+  // The Local Only pill's own glyph: a browser window.
   if (state === 'offline') return <ThisBrowserIcon size={10} />;
   return state === 'private' ? (
     <PrivateDotIcon className={className} />

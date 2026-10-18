@@ -105,7 +105,7 @@ reached from Home's What Happened (**See Timeline**). The retired `/explorer/act
 
 - **This Browser** shows only while this browser holds at least one offline document, or while its view is the current
   one (so the highlighted row never vanishes under the reader). Its documents are the reader's own
-  ([Local only documents](#local-only-documents)).
+  ([Local Only documents](#local-only-documents)).
 - **Library** has no view of its own: activating it expands or collapses it. It opens by itself when one of its
   pages is the current view, the Tags pages included.
 - **Tags** is Library's first row, always shown (so it can be found before the first tag). It opens the Tags page and
@@ -252,7 +252,7 @@ Top to bottom:
    a phone's sheet drops the `⋯` menu, every entry of it a tap away there already.
 2. **The Current Document card**, when a document is open: its thumbnail, the label "Current Document", the
    document's **name**, "Updated <relative time>". The document's **visibility badge** (the editor header's badge:
-   Private, Shared, Team, Public or Local only, with its legend, [Offline Mode](../006-document/offline-mode.md)) sits
+   Private, Shared, Team, Public or Local Only, with its legend, [Offline Mode](../006-document/offline-mode.md)) sits
    at the right of the label's row and its `⋯` (the document menu) at the right of the date's, so the name has the
    card's whole width. The badge's legend opens over everything, right-aligned under it, never clipped
    by the panel.
@@ -315,7 +315,7 @@ compact size, skeleton rows while loading, and one line with **Try Again** when 
   `⋯` shows on hover or focus under a mouse, always on a touch screen.
 - **Rows with documents**: a document row shows its thumbnail and "Updated <relative time>"; activating it opens the
   document; it carries the document menu, its favourite star and, for an offline
-  document, the Local only pill; the open document's row is the current one. A folder row shows its counts ("2
+  document, the Local Only pill; the open document's row is the current one. A folder row shows its counts ("2
   folders · 5 documents") and opens the folder in the pane; Up and Down move between rows.
 - **Filing.** One of the reader's own document rows drags onto a personal folder row (resting on it opens it), or onto
   the My Documents rail entry to file it at the root ([Folders: drag-and-drop](folders.md#the-editors-explorer-editor--new)).
@@ -350,15 +350,15 @@ opens its menu. A folder's breadcrumb is a `nav` named "Folder path". The footer
 The panel is the reader's own: it lists their documents and views whatever the open document's share role. Renaming
 from the card follows the editor's rename (an Editor only); a Participant or Viewer sees the name as text.
 
-## Local only documents
+## Local Only documents
 
 A document saved only in this browser ([Offline Mode](../006-document/offline-mode.md)) is the reader's own: it counts
 wherever the reader's own documents count (Space `mine`, owner "You"), the same as a document in My Documents. Every
 row and card of one, wherever it is listed (folders, This browser, Recent and Favourites, Search results, the
-editor's Explorer, the Trash), carries the **Local only** pill
-([Offline Mode: Local only pill](../006-document/offline-mode.md#local-only-pill)).
+editor's Explorer, the Trash), carries the **Local Only** pill
+([Offline Mode: Local Only pill](../006-document/offline-mode.md#local-only-pill)).
 
-The editor header names such a document with the matching **Local only** badge. Home's "Jump Back In" carries the
+The editor header names such a document with the matching **Local Only** badge. Home's "Jump Back In" carries the
 same pill (`LocalOnlyPill`) on the document's thumbnail ([Explorer Home](explorer-home.md)).
 
 ## Telemetry

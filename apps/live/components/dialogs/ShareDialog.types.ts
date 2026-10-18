@@ -45,7 +45,7 @@ export type ShareDialogProps = {
   // conversion (offline -> cloud), after which the real share options apply.
   offline?: boolean;
   onSyncToCloud?: () => Promise<void>;
-  // Whether the reader is known yet, so Sync Document can run (a Local only document opens before it is,
+  // Whether the reader is known yet, so Sync Document can run (a Local Only document opens before it is,
   // docs/specs/006-document/offline-mode.md "Instant open").
   syncReady?: boolean;
   // The Community band (docs/specs/025-community/community.md "Publishing"), drawn beneath the

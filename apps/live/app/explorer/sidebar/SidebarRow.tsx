@@ -66,7 +66,7 @@ export function SidebarRow({
   // the field's, not a navigation.
   renaming?: boolean;
   onContextMenu?: (e: React.MouseEvent) => void;
-  // A sentence a screen reader hears after the name (the Local only pill's meaning).
+  // A sentence a screen reader hears after the name (the Local Only pill's meaning).
   description?: string;
   // Extra handlers on the row's own line: a drag source, a drop target.
   rowProps?: HTMLAttributes<HTMLDivElement>;

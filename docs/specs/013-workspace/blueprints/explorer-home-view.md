@@ -368,7 +368,7 @@ rgba(2,132,199,0.45)] -translate-y-0.5` (`motion-safe:` on the transform), `dura
   thumbnail `h-11 w-16 shrink-0 rounded-lg`; name `text-sm font-semibold truncate`; quiet line `text-xs` muted.
 - Lists: Most Used `grid grid-cols-2 gap-4 lg:grid-cols-4`, Recent `grid grid-cols-2 gap-2.5 lg:grid-cols-4`. Their
   container holds `JUMP_BACK_IN_MIN_HEIGHT` so neither the load nor a short group moves what follows (`D168`).
-  Local only: `LocalOnlyPill asLabel` absolutely in the thumbnail's bottom-left corner (4 px inset).
+  Local Only: `LocalOnlyPill asLabel` absolutely in the thumbnail's bottom-left corner (4 px inset).
 - Strip: a scroller `scrollbar-slim -mx-1 flex h-28 snap-x gap-3 overflow-x-auto px-1 pb-2 pt-1`; the `ul` inside it
   `flex gap-3`; tiles `w-32 shrink-0 snap-start` with a 128 × 80 thumbnail. See More tile: the same 128 × 80 box,
   dashed slate border, a chevron-right icon over "See More" (`text-xs font-medium`), the label also as its name.
@@ -399,7 +399,7 @@ tracking-[0.08em] text-slate-500 pt-3`), entries in a `ul` with 4 px between.
 
 - Each section is a `section aria-labelledby` its `h2` (**Jump Back In**, **What Happened**): two region landmarks.
 - Jump Back In: one `ul aria-labelledby` the heading, grid or strip; each `li` one link whose accessible name is the
-  document name ("Payments architecture", plus ", Local only" for a local one, from the pill label); a `Tooltip`
+  document name ("Payments architecture", plus ", Local Only" for a local one, from the pill label); a `Tooltip`
   shows the full name; the quiet line is the link's `aria-describedby`. On a desktop or tablet each group is its own
   `ul aria-labelledby` its label (**Most Used**, **Recent**) inside the section; the strip stays one list named by the
   section's heading.

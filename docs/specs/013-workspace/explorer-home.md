@@ -41,7 +41,7 @@ Top to bottom, left column:
 
 - **Status pills**, two, each a link with a coloured dot:
   - the person's documents: "1 document" / "N documents" (My Documents, the person's own space, this browser's
-    Local only documents not counted), opening **My Documents**; a green dot;
+    Local Only documents not counted), opening **My Documents**; a green dot;
   - the Inbox: "Inbox is clear" when no open action is assigned to the person, else "N open in your Inbox", the
     sidebar's Inbox count ([Inbox](inbox.md)), opening the **Inbox**; a sky dot.
   - A pill is drawn once its count is known: never "0 documents" while the lists load or after the list failed to, nor "Inbox is clear" for an
@@ -136,7 +136,7 @@ the **4 most used** and the **4 most recent**, no document twice.
 - Only documents the person can open now: never one in the Trash, nor one whose share link has lapsed or whose
   team they have left.
 - A document stored only in this browser ([Offline Mode](../006-document/offline-mode.md)) takes part with this
-  browser's own record of its opens and edits ([Opens](#opens)), and carries the **Local only** pill on its
+  browser's own record of its opens and edits ([Opens](#opens)), and carries the **Local Only** pill on its
   thumbnail, as every other row and card of one does.
 - Each document is a **card**: its snapshot thumbnail, its name, and one quiet line that says why it is there.
   The full name is its accessible name, and no tooltip repeats the name written under the picture; the quiet line is
@@ -348,7 +348,7 @@ The help centre's [Home](../../../apps/help/app/explorer/timeline/page.mdx) arti
 
 - Each section is a landmark (`section`) named by its heading (**Jump Back In**, **What Happened**).
 - Jump Back In's documents are one list named **Jump Back In**; each document is one link named by its document's
-  name (plus **Local only** for a document stored only here). No row or group carries a label of its own.
+  name (plus **Local Only** for a document stored only here). No row or group carries a label of its own.
 - A summary entry's expanded list is the region its disclosure button controls (`aria-controls`).
 - Keyboard order follows the reading order: See More (desktop and tablet), Jump Back In's documents in their order
   (then the See More tile on a phone), then What Happened.

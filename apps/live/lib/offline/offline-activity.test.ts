@@ -11,7 +11,7 @@ import {
 } from './offline-activity';
 import { memBackend, testRecord, testTab } from './offline-test-utils';
 
-// The Inbox's read of Local only documents (docs/specs/013-workspace/inbox.md §2.6): the server's rules, applied
+// The Inbox's read of Local Only documents (docs/specs/013-workspace/inbox.md §2.6): the server's rules, applied
 // in the browser, with the reader owning every document.
 
 afterEach(() => __setOfflineBackend(null));
@@ -302,7 +302,7 @@ describe('readOfflineActivity', () => {
     timeout.mockRestore();
   });
 
-  it('reads nothing when the browser holds no Local only documents', async () => {
+  it('reads nothing when the browser holds no Local Only documents', async () => {
     __setOfflineBackend(memBackend());
     expect(await readOfflineActivity(['guest-1'])).toEqual({
       actions: [],

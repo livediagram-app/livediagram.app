@@ -135,7 +135,7 @@ describe('ActivityPane', () => {
 
   // docs/specs/013-workspace/inbox.md §1, §2.6: a row from a document saved only in this browser says so, as a
   // label inside the row's link; a cloud row carries no pill.
-  it('marks a Local only row with the Local only pill, and no other row', () => {
+  it('marks a Local Only row with the Local Only pill, and no other row', () => {
     render(
       <ActivityPane
         feed={feed({
@@ -147,11 +147,11 @@ describe('ActivityPane', () => {
       />,
     );
     const local = linkTo('Action local');
-    expect(local.textContent).toContain('Local only');
+    expect(local.textContent).toContain('Local Only');
     expect(local.querySelector('a')).toBeNull();
     expect(local.getAttribute('href')).toBe('/document/d1#t=t1&el=e-local&open=action');
-    expect(linkTo('Action cloud').textContent).not.toContain('Local only');
-    expect(screen.getAllByText('Local only')).toHaveLength(1);
+    expect(linkTo('Action cloud').textContent).not.toContain('Local Only');
+    expect(screen.getAllByText('Local Only')).toHaveLength(1);
   });
 
   it("lists a card's comment thread as a card row that opens the card", () => {

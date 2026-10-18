@@ -17,7 +17,7 @@ import { usePaneDocumentMenu } from './usePaneDocumentMenu';
 
 // A document row of the editor's Explorer pane (docs/specs/013-workspace/explorer-structure.md "The pane"): its
 // thumbnail, name and last save; activating it opens the document; it carries the one document menu (⋯,
-// right-click, Shift+F10), its star and, saved only in this browser, the Local only pill. The open document's row
+// right-click, Shift+F10), its star and, saved only in this browser, the Local Only pill. The open document's row
 // is the current one.
 export function PanelDocumentItem({
   document: doc,

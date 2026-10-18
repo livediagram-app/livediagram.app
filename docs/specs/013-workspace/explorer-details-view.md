@@ -21,7 +21,7 @@ by any column.
 
 | Column   | A document shows                                                                 | A folder shows                          |
 | -------- | -------------------------------------------------------------------------------- | --------------------------------------- |
-| Name     | Its name (a link that opens it), favourite star, Local only and Made by AI pills | Its name (opens it), default marker     |
+| Name     | Its name (a link that opens it), favourite star, Local Only and Made by AI pills | Its name (opens it), default marker     |
 | Type     | The mode its most recently written tab is in, as the mode's icon                 | The folder icon                         |
 | Comments | A speech bubble holding how many comments its tabs hold; empty for none          | Empty                                   |
 | Access   | The reader's level as a small, muted role icon: Editor, Participant or Viewer    | Empty                                   |

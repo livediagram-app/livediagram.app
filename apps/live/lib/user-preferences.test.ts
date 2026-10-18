@@ -223,7 +223,7 @@ describe('writeUserPreferences (server sync)', () => {
     expect(mockedPut).not.toHaveBeenCalled();
   });
 
-  // docs/specs/006-document/offline-mode.md "Instant open": a Local only document opens under the
+  // docs/specs/006-document/offline-mode.md "Instant open": a Local Only document opens under the
   // 'self' placeholder, which is nobody's preferences row.
   it("keeps the write local under the 'self' placeholder", () => {
     mockBrowser();

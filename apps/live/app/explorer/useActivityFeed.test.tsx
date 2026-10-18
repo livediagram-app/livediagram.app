@@ -142,9 +142,9 @@ describe('useActivityFeed', () => {
     expect(result.current.youAssigned.map((a) => a.id)).toEqual(['theirs']);
   });
 
-  // docs/specs/013-workspace/inbox.md §2.6: this browser's Local only documents list among the server's rows,
+  // docs/specs/013-workspace/inbox.md §2.6: this browser's Local Only documents list among the server's rows,
   // in the same order, marked local, and count toward the badge's list.
-  it('merges Local only rows in among the server rows, marked local', async () => {
+  it('merges Local Only rows in among the server rows, marked local', async () => {
     apiListActivity.mockResolvedValue({
       actions: [{ ...action('cloud', { assignedToMe: true, createdByMe: false }), updatedAt: 2 }],
       threads: [],

@@ -335,7 +335,7 @@ templates, and bring no card types. Whether the Sheet fills its tab is decided p
   table says.
 - **The sheet is made with the document.** The template's Sheet element names its start (`start` on the element,
   [Sheet store](../029-sheets/sheet-store.md#template-starts)); every path that makes the tabs makes the sheet
-  from it there and then: the New Document wizard (stored with the document, cloud or Local only), a start screen (as
+  from it there and then: the New Document wizard (stored with the document, cloud or Local Only), a start screen (as
   it adds the tabs), and agents (the MCP's `create_document` and `add_tab`, the api's seeded create). So the sheet
   is there for everyone, an agent's `read_sheet` included, the moment the document is.
 - The eight added with the template catalogue's categories (Invoice, Expense Report, Loan Calculator, Sales Pipeline,

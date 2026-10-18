@@ -311,7 +311,7 @@ type DocumentPlace = Located<
 >;
 
 // Which document the row is from; a team document's chip leads with the
-// team glyph so the source of the work reads at a glance. A Local only document's chip is followed by the Local
+// team glyph so the source of the work reads at a glance. A Local Only document's chip is followed by the Local
 // only pill, as a label since the whole row is a link (docs/specs/006-document/offline-mode.md#local-only-pill).
 function PlaceChip({ place }: { place: DocumentPlace }) {
   return (

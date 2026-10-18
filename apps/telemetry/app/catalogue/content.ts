@@ -189,7 +189,7 @@ export const SAVED_TO_CLOUD = chart(
   { types: ['SavedToCloud'], rising: 'neutral' },
 );
 
-// The move prompt after signing in (docs/specs/014-identity/auth-and-guest-access.md "Moving Local only
+// The move prompt after signing in (docs/specs/014-identity/auth-and-guest-access.md "Moving Local Only
 // documents after signing in"): offered (homed with the other opens, features.ts), taken, or put off.
 // Each document it moves is a Saved to Cloud.
 export const LOCAL_MOVE_ACCEPTED = chart(
@@ -1073,7 +1073,7 @@ export const FORMS_SYNCED_TO_SHARE = chart(
   'Form',
   'Moved',
   'Documents Synced to Share a Form',
-  'A Local only document synced from Share Form, so its form could be published.',
+  'A Local Only document synced from Share Form, so its form could be published.',
   { types: ['SyncedToShare'] },
 );
 

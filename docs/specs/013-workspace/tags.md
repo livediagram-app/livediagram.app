@@ -72,7 +72,7 @@ A small panel (an anchored popover named "Tags for <document>") that stays open 
   Pressing a chip opens that tag's page; it never opens the document. On a phone a list row shows the dots below
   instead, so the name keeps its room; cards keep their chips. When a row is squeezed its name truncates first and
   the chips then truncate their names too, each down to its dot and a few letters, so they never run over the badges
-  beside them (Local only, Made by AI, the folder).
+  beside them (Local Only, Made by AI, the folder).
 - **In the editor's Explorer panel** a row shows up to three **dots** after its name (the panel row is narrow), with a
   tooltip naming the tags. They are not buttons.
 

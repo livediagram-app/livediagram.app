@@ -45,7 +45,7 @@ describe('buildSearchResults', () => {
     { id: 'f2', name: 'Personal' },
   ];
 
-  it('marks a document saved only in this browser as Local only (docs/specs/006-document/offline-mode.md#local-only-pill)', () => {
+  it('marks a document saved only in this browser as Local Only (docs/specs/006-document/offline-mode.md#local-only-pill)', () => {
     const out = buildSearchResults({
       query: 'notes',
       documents: [

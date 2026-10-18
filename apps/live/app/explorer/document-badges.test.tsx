@@ -29,7 +29,7 @@ describe('VisibilityBadge', () => {
 });
 
 describe('VisibilityBadge on a document in this browser', () => {
-  it('leaves the state to the Local only pill (docs/specs/006-document/offline-mode.md#local-only-pill)', () => {
+  it('leaves the state to the Local Only pill (docs/specs/006-document/offline-mode.md#local-only-pill)', () => {
     const local = { ...PRIVATE, ownerId: 'offline' } as PaneDocument;
     const { container } = render(<VisibilityBadge document={local} />);
     expect(container.textContent).toBe('');

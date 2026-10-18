@@ -3,7 +3,7 @@
 // The visibility pill's legend (docs/specs/006-document/offline-mode.md "The visibility legend"): who can see
 // this document. A hero in the current state's tone draws its reach as rings around you, lit out to how far
 // the document goes; under it the audiences sit on one scale from Just You to Everyone, the current stop
-// filled to, and hovering a stop shows that audience in the hero. Local only stands apart below, the
+// filled to, and hovering a stop shows that audience in the hero. Local Only stands apart below, the
 // deliberate opt-out; then, for someone who may share, Change Who Can See This opens Share. For the eye only:
 // the pill carries the current state's words for assistive technology and opens Share itself.
 import { useState, type ReactNode } from 'react';
@@ -17,7 +17,7 @@ const LinkGlyph = lucideGlyph(lucideLink, 14);
 const TeamGlyph = lucideGlyph(lucideUsers, 14);
 const GlobeGlyph = lucideGlyph(lucideGlobe, 14);
 
-// The audiences from narrowest to widest; Local only is the opt-out beside them.
+// The audiences from narrowest to widest; Local Only is the opt-out beside them.
 const LADDER: readonly ShareState[] = ['private', 'shared', 'team', 'community'];
 
 // Each state's look: its glyph, its stop on the scale, the hero's wash, and its ink for the rings.
@@ -236,7 +236,7 @@ function ReachScale({
   );
 }
 
-// Local only, apart from the scale: the document never leaves this browser.
+// Local Only, apart from the scale: the document never leaves this browser.
 function LocalOnlyRow({
   current,
   onPeek,
