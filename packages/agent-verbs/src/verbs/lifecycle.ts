@@ -272,7 +272,7 @@ export const tabAdd = defineVerb({
   id: 'tab.add',
   summary: 'Add a tab, empty or from a graph, Mermaid, elements or a template',
   description:
-    'Adds a tab to a document as one changeset on a new tab, filled from -f (a graph, Mermaid or elements) or --template; empty without either. Prints the result lines and the revert command.',
+    'Adds a tab to a document as one changeset on a new tab, filled from -f (a graph, Mermaid or elements) or --template; empty without either. Prints the tab, the result lines and the tab rm that undoes it.',
   behaviour: 'write',
   input: z.object({
     doc: docArg,
@@ -305,8 +305,14 @@ export const tabAdd = defineVerb({
       { replace: { ...source, name: input.name } },
       { ...(input as WriteFlags), base: 0 },
     );
+    // Reverting the changeset takes the tab's elements back but leaves the tab, so the footer names what removes it.
+    const footer = response.text.replace(
+      /revert: livediagram changeset revert \S+ \S+$/m,
+      `undo: livediagram tab rm ${document.id} ${target.tabId}`,
+    );
     return {
-      text: response.text,
+      // The tab first, as `tab rename` names it: an empty tab has no element lines, so this is all that says which.
+      text: `+ tab ${target.tabId} ${JSON.stringify(input.name)}\n${footer}`,
       dryRun: response.dryRun,
       changeset: response.changeset && { id: response.changeset.id, rev: response.changeset.rev },
     };
@@ -320,7 +326,8 @@ export const tabAdd = defineVerb({
       'livediagram tab add "Auth flow" Details -f detail.mmd',
       'livediagram tab add 3f9c Board --template kanban',
     ],
-    prints: 'the result lines, then the revision, lint verdict and revert command',
+    prints:
+      '+ tab <id> "<name>", the result lines, then the revision, lint verdict and the tab rm that undoes it',
   },
 });
 
