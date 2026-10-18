@@ -90,9 +90,7 @@ test('a Sheet tab takes a formula, works it out, keeps it, and fills the tab', a
   await page.goto(`/document/${id}`);
   await page.locator(CANVAS).waitFor();
   await dismissQuickTour(page);
-  await expect(page.getByRole('button', { name: /^Editor mode: / })).toHaveAccessibleName(
-    'Editor mode: Plan',
-  );
+  await expect(page.locator('[data-editor-mode]')).toHaveAttribute('data-editor-mode', 'plan');
 
   const grid = page.getByRole('grid', { name: 'Budget grid' });
   await expect(grid).toBeVisible();

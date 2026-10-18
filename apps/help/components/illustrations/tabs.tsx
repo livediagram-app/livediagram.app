@@ -1,7 +1,7 @@
 // Tabs-category illustrations (docs/specs/018-help/help-app.md): the tab bar and its tab pills,
 // tab folders and their upward fan, the tab menu (toolbar over full-width rows split into groups),
 // the Add to Folder / Add to Document / Import / Export dialogs, cross-tab links, a locked tab,
-// and a before/after cleanup. Labels are the editor's own (TabPortalMenu, TabModeMenuRows,
+// and a before/after cleanup. Labels are the editor's own (TabPortalMenu,
 // TabOrganiseDialogs, ImportTabDialog, ExportTabDialog).
 // Composed only from the shared primitives so the house style holds.
 
@@ -358,22 +358,19 @@ export function RenamingTab() {
 }
 
 /** The tab menu's full-width rows, in groups parted by a hairline: one entry per row, `null` for
- *  a separator. `highlight` tints one row as if under the pointer; `checked` dots the current
- *  mode. */
+ *  a separator. `highlight` tints one row as if under the pointer. */
 function MenuRowList({
   x,
   y,
   w,
   rows,
   highlight,
-  checked,
 }: {
   x: number;
   y: number;
   w: number;
   rows: (string | null)[];
   highlight?: string;
-  checked?: string;
 }) {
   let cy = y;
   const out: ReactNode[] = [];
@@ -417,9 +414,6 @@ function MenuRowList({
         >
           {r}
         </Label>
-        {r === checked ? (
-          <circle cx={x + w - 14} cy={cy + 9} r={3} className="fill-brand-500" />
-        ) : null}
       </g>,
     );
     cy += 18;
@@ -428,28 +422,16 @@ function MenuRowList({
 }
 
 /** The tab menu: the quick-action toolbar (Rename, Duplicate, Paste, Lock Tab, Delete) over
- *  full-width rows in three groups (folders and documents, content, the mode), opened from the
+ *  full-width rows in two groups (folders and documents, content), opened from the
  *  active tab's ⋯ button. */
 export function TabMenu() {
-  const barY = 258;
+  const barY = 178;
   const mx = 150;
   const my = 10;
   const mw = 200;
-  const rows = [
-    'Add to Folder',
-    'Add to Document',
-    null,
-    'Import',
-    'Export',
-    'Clear',
-    null,
-    'Diagram',
-    'Draw',
-    'Pages',
-    'Plan',
-  ];
+  const rows = ['Add to Folder', 'Add to Document', null, 'Import', 'Export', 'Clear'];
   return (
-    <Scene w={420} h={310}>
+    <Scene w={420} h={230}>
       <TabBar y={barY} w={420} />
       <TabPill x={14} y={barY + 8} w={64} label="Draft" />
       <TabPill x={252} y={barY + 8} w={98} label="Overview" active />
@@ -459,7 +441,7 @@ export function TabMenu() {
         x={mx}
         y={my}
         width={mw}
-        height={232}
+        height={152}
         rx={8}
         className="fill-white stroke-slate-200"
         strokeWidth={1.5}
@@ -576,7 +558,7 @@ export function TabMenu() {
         className="stroke-slate-200"
         strokeWidth={1.5}
       />
-      <MenuRowList x={mx} y={my + 46} w={mw} rows={rows} checked="Diagram" />
+      <MenuRowList x={mx} y={my + 46} w={mw} rows={rows} />
       <Label x={14} y={30} size={10} tone="muted">
         Rename, Duplicate,
       </Label>

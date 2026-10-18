@@ -27,8 +27,6 @@ describe('StartModeSwitch', () => {
     const setMode = mount('diagram');
     const chip = screen.getByRole('button', { name: /^Tab mode: Diagram/ });
     expect(chip.textContent).toContain('Diagram');
-    // Not the tours' anchor: that is the top chrome's chip.
-    expect(chip.getAttribute('data-tour-id')).toBeNull();
     fireEvent.click(chip);
     expect(screen.getByRole('menu').className).toMatch(/top-full/);
     fireEvent.click(screen.getByRole('menuitemradio', { name: /Pages/ }));

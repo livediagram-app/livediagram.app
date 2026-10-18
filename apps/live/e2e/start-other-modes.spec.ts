@@ -4,8 +4,8 @@ import { createInMode, expect, expectNoPageErrors, test } from './fixtures';
 // modes"): they show under In Other Modes, each saying where it leads, and choosing one lands it and switches the tab
 // to that mode, Plan's line included while the tab is empty.
 
-const chip = (page: import('@playwright/test').Page) =>
-  page.getByRole('button', { name: /^Editor mode: / });
+// The open tab's editor mode, as the editor marks it.
+const mode = (page: import('@playwright/test').Page) => page.locator('[data-editor-mode]');
 
 test.beforeEach(async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
@@ -47,7 +47,7 @@ test('Start Diagramming finds a Facilitate template and switches the tab to it',
   await expect(card).toContainText('Opens in Facilitate');
   await card.click();
   await expect(start).toBeHidden();
-  await expect(chip(page)).toHaveAccessibleName('Editor mode: Facilitate');
+  await expect(mode(page)).toHaveAttribute('data-editor-mode', 'facilitate');
   await expect(page.locator('[data-canvas-a11y-root]').getByRole('img').first()).toBeVisible();
   expectNoPageErrors(pageErrors);
 });
@@ -66,6 +66,6 @@ test('Start Planning finds a Diagram template and the tab crosses out of Plan', 
     .getByRole('button', { name: /^Flowchart in Diagram:/ })
     .click();
   await expect(start).toBeHidden();
-  await expect(chip(page)).toHaveAccessibleName('Editor mode: Diagram');
+  await expect(mode(page)).toHaveAttribute('data-editor-mode', 'diagram');
   expectNoPageErrors(pageErrors);
 });

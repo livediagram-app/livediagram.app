@@ -6,13 +6,8 @@
 import { act, cleanup, render } from '@testing-library/react';
 import { useSyncExternalStore } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import {
-  SKETCH_INK_MAX_WAIT_MS,
-  SKETCH_INK_SETTLE_MS,
-  SketchFace,
-  inkCopyOf,
-  sketchInkCopy,
-} from './SketchFace';
+import { SketchFace, inkCopyOf, sketchInkCopy } from './SketchFace';
+import { SKETCH_INK_MAX_WAIT_MS, SKETCH_INK_SETTLE_MS } from './settle-watch';
 
 afterEach(() => {
   cleanup();

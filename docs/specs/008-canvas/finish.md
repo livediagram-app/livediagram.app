@@ -98,6 +98,11 @@ element leaves unset, plus how a line is drawn (Sketch, Marker).
   face that keeps changing (a quiz's countdown) does not drag its moving parts back. Photos inside a face (an avatar, a link card's preview, a video's poster) are not wobbled,
   and a tab window's content keeps the finish of the tab it shows. Exports draw the same two layers.
 
+- **In WebKit** (Safari, and every browser on an iPhone or iPad), which runs a live wobble filter again on every
+  repaint (a pan at iPhone resolution took 220-400 ms a frame), the canvas draws no live wobble. Icons and stickers
+  keep theirs, drawn once into a still picture and redrawn only when the art changes. A face is not split: it draws
+  as it does under Flexible, its lettering in the handwriting font, inside its hand-drawn outline and shading. Other
+  browsers and every export are unchanged.
 - **Not affected:** freehand strokes (already hand-drawn) and images (photos, not drawings).
 - **Selection, hit testing, anchors and snapping** use the element's true geometry, never the wobble, so a
   sketched element is selected, connected and aligned exactly as a Flexible one.
@@ -196,4 +201,6 @@ five paths per body with no filter, so it costs about what Sketch does.
 A sketched face costs one still copy of its DOM, taken once it settles (so a zoom, which restyles faces every
 frame, copies each once afterwards), and one light wobble filter. On a Sketch tab of 200 charts, copying every face
 takes 6-14 ms, a pan costs nothing, and a zoom keeps every task under 50 ms; the icons' heavier two-pass wobble
-broke that budget on faces, so faces take one pass.
+broke that budget on faces, so faces take one pass. WebKit is the exception: it re-runs a live filter on every
+repaint wherever it is layered, so there the wobble is drawn into still pictures (icons and stickers) or left out
+(faces), and a Sketch pan costs what a Flexible one does.

@@ -25,7 +25,6 @@ const PortalMenu = dynamic(() => import('./TabPortalMenu').then((m) => m.PortalM
   ssr: false,
 });
 import { TabPill, type TabPillCtx } from './TabPill';
-import type { TabModeChoice } from './TabModeMenuRows';
 import type { AccessLevel } from '@livediagram/api-schema';
 import { deleteTabWarning } from '@/hooks/forms/forms-feeding';
 
@@ -105,9 +104,6 @@ type TabBarProps = {
   // Flip tab.locked. Disables every mutator until toggled back on.
   // The lock icon appears on the tab itself + on every element.
   onToggleLockTab: () => void;
-  // The tab menu's Mode choice for a tab (docs/specs/007-editor/editor-modes.md), absent
-  // where it is not offered (an event-storming board, a visitor who cannot edit).
-  modeChoiceFor?: (tab: Tab) => TabModeChoice | undefined;
   // Move `sourceId` next to `targetId`. `placeBefore` (default true) picks
   // which side of the target it lands on — the tab bar sets it from the
   // pointer position so the drop matches the insertion caret. Omitting it
@@ -166,7 +162,6 @@ export function TabBar({
   otherDocuments,
   onCopyTabTo,
   onToggleLockTab,
-  modeChoiceFor,
   onReorder,
   readOnly = false,
   isOutOfScope,
@@ -225,7 +220,6 @@ export function TabBar({
     deleteWarning: deleteTabWarning(tabs, tab.id),
     canClearContent: activeTabHasContent && !tab.locked,
     locked: tab.locked === true,
-    modeChoice: modeChoiceFor?.(tab),
     // A Plan tab's cards are its document's items: it is not added to another document
     // (docs/specs/026-plan/plan-mode.md "Switching modes keeps the tab").
     planTab: hasPlanContent(tab.elements, null),

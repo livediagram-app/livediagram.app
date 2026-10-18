@@ -259,6 +259,31 @@ heads, sketchedHeads, headFill, inkOpacity }`; Sketch: `lineOver` empty, `headFi
   `TabWindowFace` marks its drawing and its Open button `data-sketch-skip`.
 - `SketchFilterDefs` also renders `SKETCH_FACE_FILTER` (`svg-render-sketch.ts`): one `feTurbulence` (octaves 1,
   seed 7, base frequency 0.12) and one `feDisplacementMap` (scale 3) over a 5% margin.
+- WebKit (spec "In WebKit"): `lib/live-filter-cost.ts` `liveFiltersRedrawOnRepaint()` is true when `window` has
+  `GestureEvent` (WebKit's own; `navigator.vendor` is not used, since jsdom answers Apple too). When it holds,
+  `BoxedElementView` passes `active={false}` to `SketchFace` (the face draws whole), and `ShapeContentRouter` wraps
+  icon and sticker art in `components/canvas/SketchArtPicture.tsx` instead of the `filter: url(#lvd-sketch-tile)`
+  div. `SketchArtPicture` renders an empty `[data-sketch-art-picture]` div (`aria-hidden`, `inert`, no pointer
+  events) then a hider div holding the live art, all `absolute inset-0` in a `relative h-full w-full` box (the box
+  the filtered div was). In a layout effect `sketchArtPictureCopy(live)` clones the art and swaps each top-level
+  `<svg>` for a `<span>` carrying the drawing's class and style (`display: block`, `position: relative`) that holds an
+  `<img>` (`alt=""`, a `data:image/svg+xml` URL of `sketchArtPictureMarkup(svg)`). The markup is the drawing at
+  its `clientWidth` x `clientHeight` (fill and stroke resolved from computed style wherever a class, `var(...)` or
+  `currentColor` set them; `color` from the drawing; ids and classes stripped) inside
+  `<g filter="url(#lvd-sketch-art)">` and `svgSketchArtFilter()` (`svg-render-sketch.ts`, the export's filter, so
+  the picture wobbles as the export does; its units are the picture's, so the scale changes only sharpness), in a
+  viewBox past the drawing by `SKETCH_ART_PICTURE_MARGIN` on each side. The image is laid out `scale` times the
+  margin-padded box (`left`/`top` at minus the margin, `width`/`height` at `(1 + 2 x margin) x scale x 100%`) and
+  shrunk by `transform: scale(1 / scale)` from its top left, because a filter in a picture runs at one pixel per
+  laid-out pixel. `scale = sketchArtRasterScale(longest side, devicePixelRatio x canvas zoom)`: the ceiling of the
+  screen pixels per CSS pixel, at most `SKETCH_ART_PICTURE_MAX_SCALE` and what keeps the padded side within
+  `SKETCH_ART_PICTURE_MAX_PX`, at least 1. The copy is re-taken through `watchUntilSettled(live, take, { resize: true })`
+  and replaces the pictures only when its markup changed; the hider is `visibility: hidden` while pictures show.
+  Art with a running animation (`getAnimations({ subtree: true })`) or a drawing with no size yet gets no copy: the
+  live art shows, unwobbled.
+- `components/canvas/settle-watch.ts`: `watchUntilSettled(live, take, { resize })`, the settle wait `SketchFace` and
+  `SketchArtPicture` share (a `MutationObserver` on the subtree, and a `ResizeObserver` after its first report when
+  `resize` is set), with `SKETCH_INK_SETTLE_MS` and `SKETCH_INK_MAX_WAIT_MS`.
 - Lettering of faces: the `BoxedElementView` wrapper sets `fontFamily` to the element's resolved stack when there is
   one, so words a face writes itself inherit it.
 
@@ -345,6 +370,10 @@ sticky and table.
   the export's two copies repeat identical gradient definitions, which resolve to the first.
 - A face that animates in CSS: the copy carries the same classes, so its ink animates too (restarted at each copy).
 - Hover and press tints on a face's controls are not drawn (the ink is a still copy); focus rings are.
+- WebKit: a face is drawn whole, unwobbled. Icon or sticker art that animates, or whose drawing has no size yet, shows
+  live and unwobbled until a settle finds it still and sized. A zoom changes no attribute in the art, so a picture
+  keeps the raster scale it was taken at until its art next changes or resizes; zoomed past that, it softens.
+- A browser without `ResizeObserver`: a resized icon's picture follows its next change instead.
 
 ## Security and trust
 
@@ -375,6 +404,13 @@ Cosmetic fields only; no user content reaches the geometry beyond numbers. Parti
   pan costs nothing. A zoom restyles 80 of those faces every frame (14,800 mutations); the settle wait copies each
   once after the gesture rather than once a frame. Re-measure on a GPU-backed browser before raising the filter's
   cost.
+- WebKit (measured on a static build, Playwright WebKit at 390 x 844 and device scale 3, the Cloud Architecture
+  template, three Hand-tool pans): before, a Sketch pan's frames were p50 220-260 ms, p90 310-404 ms (Flexible: 14 /
+  15-20 ms), the GPU process 4.3-6.1 s of CPU against 0.2 s. Turning the filters off took it to Flexible's; flat
+  noise (no `feTurbulence`) still left 113-160 ms p90, and promoting the filtered parts or the world to their own
+  layers made it worse (hitches to 940 ms). With pictures and whole faces: p50 14 ms, p90 19-20 ms, GPU 0.3-0.4 s,
+  matching Flexible in the same runs. Chromium at the same size showed no difference between the finishes, before or
+  after. Each picture is one decode per settle; at most `SKETCH_ART_PICTURE_MAX_PX` squared pixels.
 
 ## Presentation and UX
 
@@ -431,6 +467,9 @@ per command letter.
 | export split, body placement, tab window frame, defs, fonts  | `packages/document/src/svg-render-sketch.test.ts`                                                        |
 | ink copy, settle and longest wait, single render             | `apps/live/components/canvas/SketchFace.test.tsx`                                                        |
 | face split per finish, element font on the wrapper           | `apps/live/components/canvas/BoxedElementView.sketch-face.test.tsx`                                      |
+| WebKit: faces whole, icons as pictures, elsewhere unchanged  | `apps/live/components/canvas/BoxedElementView.sketch-face.test.tsx`                                      |
+| WebKit is told by `GestureEvent`                             | `apps/live/lib/live-filter-cost.test.ts`                                                                 |
+| pictures: markup, colours, ids, scale, margin, settle, reuse | `apps/live/components/canvas/SketchArtPicture.test.tsx`                                                  |
 
 ## Constants and configuration
 
@@ -471,6 +510,9 @@ per command letter.
 | `SKETCH_FACE_FILTER.numOctaves` | 1                | two passes broke the zoom budget on a 200-chart board (measured)       | 1                       |
 | `SKETCH_INK_SETTLE_MS`          | 120              | past a zoom frame or a keystroke, quicker than the eye follows         | 80 to 200               |
 | `SKETCH_INK_MAX_WAIT_MS`        | 1000             | a face that never settles still follows within a second                | 500 to 2000             |
+| `SKETCH_ART_PICTURE_MARGIN`     | 0.15             | the art filter's own region, so a wobbled edge is never clipped        | 0.1 to 0.2              |
+| `SKETCH_ART_PICTURE_MAX_SCALE`  | 4                | covers a 3x phone screen at 100% zoom with room to zoom in             | 2 to 4                  |
+| `SKETCH_ART_PICTURE_MAX_PX`     | 1024             | a big sticker's picture stays about 4 MB of pixels                     | 512 to 2048             |
 
 ## Assets and external resources
 

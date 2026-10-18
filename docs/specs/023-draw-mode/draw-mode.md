@@ -49,8 +49,8 @@ pen widths, dock spacing) are named constants, tuned in place.
 - **Import:** a Microsoft Whiteboard import makes each board its own new
   document with one tab that opens in Draw mode, named and dated after the board, and Excalidraw pasted onto a whiteboard lands as its own
   marks (see [Imported and pasted content](#imported-and-pasted-content)).
-- **Any tab:** the mode switch (beside the menu button) turns any general
-  tab into a whiteboard and back ([Editor modes](../007-editor/editor-modes.md)).
+- **Any empty tab:** the mode switch on its start turns a general tab into a whiteboard before anything is on it,
+  and a new tab made from a Draw tab opens in Draw ([Editor modes](../007-editor/editor-modes.md)).
 
 ## What a whiteboard shows
 
@@ -861,7 +861,7 @@ through the ordinary `Element` / `Added` events.
 ## Help centre ([Help app](../018-help/help-app.md))
 
 One article, **Draw mode** (`/help/canvas/draw-mode/`; the old `/help/canvas/whiteboards/`
-redirects to it): switching modes (the switch beside the tabs, Shift+D, Opens in), starting a
+redirects to it): choosing the mode on an empty tab's start (or Shift+D there), starting a
 drawing, the dock, pens, pen versus touch, the two erasers, shape recognition, backgrounds, light
 and dark and snapping custom colours. Registered per
 [Register a help article](../../instructions/register-a-help-article.md).

@@ -12,17 +12,12 @@ import {
   EDITOR_MODE_ICONS,
 } from '@livediagram/ui';
 import { TOOLBAR_TRIGGER_TONE } from '@/components/palette/PaletteDropdown';
-import {
-  EDITOR_MODE_KEYSHORTCUT,
-  MODE_SWITCH_FOCUS,
-  type EditorModeSwitchProps,
-} from './editor-mode-copy';
+import { EDITOR_MODE_KEYSHORTCUT, type EditorModeSwitchProps } from './editor-mode-copy';
 import { ModeMenu } from './ModeMenu';
 import { useLockedModePick } from './useLockedModePick';
 
-// The mode switch (docs/specs/007-editor/editor-modes.md "The mode switch"): a dropdown chip
-// showing the current mode's glyph and a chevron (icon only in the top chrome, named on a start
-// panel's rail), that opens the mode menu (ModeMenu) DOWNWARD, hanging from the chip's left edge:
+// The mode switch (docs/specs/007-editor/editor-modes.md "The mode switch"): a dropdown chip on a
+// start panel's rail showing the current mode's glyph, its name and a chevron, that opens the mode menu (ModeMenu) DOWNWARD, hanging from the chip's left edge:
 // a list of the modes and a preview of one. No hover card, which would cover the menu. The chip
 // wears the strip's faint dropdown tint (docs/specs/007-editor/toolbar-layout.md "Look"), so it
 // reads as a menu.
@@ -30,17 +25,13 @@ import { useLockedModePick } from './useLockedModePick';
 // Menu button pattern (docs/specs/004-interface-design/menus.md): the chip is a menu button, the rows
 // are `menuitemradio`, and the shared hooks give it the menu keyboard: opening focuses the checked
 // row, choosing or Escape returns focus to the chip, Tab closes it. An outside press closes it.
-
-// `labelled` shows the mode's name beside its glyph, where the chip has room and no top chrome around it to explain it
-// (a start panel's rail).
 export function ModeMenuChip({
   mode,
   onChange,
   lockedReason,
   newTabIn,
   crossPlan = false,
-  labelled = false,
-}: EditorModeSwitchProps & { labelled?: boolean }) {
+}: EditorModeSwitchProps) {
   // On a tab that keeps its mode, another mode is a new tab in it, asked first (docs/specs/026-plan/plan-tabs.md).
   const pickLocked = useLockedModePick({ mode, lockedReason, newTabIn });
   const {
@@ -76,12 +67,12 @@ export function ModeMenuChip({
       <button
         ref={setTrigger}
         type="button"
-        // The tours' anchor is the top chrome's chip, never a start panel's.
-        data-tour-id={labelled ? undefined : 'editor-mode'}
+        // What the Leave Pages confirmation hangs from (LeavePagesConfirm).
+        data-mode-switch=""
         aria-haspopup="menu"
         aria-expanded={open}
-        // A start screen's switch is named for the tab it sets, so the top chrome's "Editor mode" stays the one.
-        aria-label={labelled ? `Tab mode: ${label}` : `Editor mode: ${label}`}
+        // Named for the tab it sets.
+        aria-label={`Tab mode: ${label}`}
         aria-keyshortcuts={EDITOR_MODE_KEYSHORTCUT}
         onClick={() => {
           readZoom();
@@ -91,16 +82,12 @@ export function ModeMenuChip({
           if (!open) readZoom();
           onTriggerKeyDown(event);
         }}
-        // Labelled, it is a full-bleed row filling the edge it sits on (a start panel's rail top): square, taller,
-        // its focus ring drawn inside so the panel's edge never clips it.
-        className={`flex w-full items-center transition-colors ${
-          labelled
-            ? 'h-12 justify-start gap-2.5 rounded-none px-5 text-[13px] font-medium focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand-600 dark:focus-visible:outline-brand-400'
-            : `h-9 justify-center gap-1 rounded-md px-1.5 ${MODE_SWITCH_FOCUS}`
-        } ${TOOLBAR_TRIGGER_TONE}`}
+        // A full-bleed row filling the edge it sits on (a start panel's rail top): square, tall, its focus ring
+        // drawn inside so the panel's edge never clips it.
+        className={`flex h-12 w-full items-center justify-start gap-2.5 rounded-none px-5 text-[13px] font-medium transition-colors focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand-600 dark:focus-visible:outline-brand-400 ${TOOLBAR_TRIGGER_TONE}`}
       >
         <Icon aria-hidden />
-        {labelled ? <span className="flex-1 text-left">{label}</span> : null}
+        <span className="flex-1 text-left">{label}</span>
         <ChevronDownIcon
           aria-hidden
           className={`transition-transform duration-micro motion-reduce:transition-none ${
@@ -120,7 +107,7 @@ export function ModeMenuChip({
           onClose={close}
           crossPlan={crossPlan}
           lockedReason={lockedReason}
-          fill={labelled}
+          fill
           // No new tab to offer (a session that cannot add tabs, such as a tab-scoped link): the
           // locked rows are inert.
           {...(newTabIn

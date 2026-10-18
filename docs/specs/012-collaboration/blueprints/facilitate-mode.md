@@ -40,7 +40,7 @@ Collaborate elements keep `toolGroup: 'behaviour'` and their `tileGroup`s; their
 ## Behaviour and state
 
 - **No new state.** The mode is `Tab.opensIn = 'facilitate'`, written by the existing switch,
-  Shift+D, tab menu Mode and template overrides. Everything else derives from the mode.
+  Shift+D on an empty tab, a start's switch and template overrides. Everything else derives from the mode.
 - **Gates:** `hasBoardLook`, `hasPageLook`, `hasPlanInput` are all `false` for `facilitate`; it
   takes Diagram's look and input. `useModeDefaultTool` starts it on Select (Hand on a phone), as
   Diagram.
@@ -139,19 +139,19 @@ export const EDITOR_MODE_ICONS: Record<EditorMode, IconComponent>; // key type d
 
 ## Testing
 
-| Spec rule                                                                                 | Test                                                                                                                   |
-| ----------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| Five modes, order, labels, Shift+D wraps                                                  | `packages/document/src/editor-mode.test.ts`, `hooks/editor/editor-mode-shortcut.test.ts`                               |
-| Facilitate's palette layout and Popular                                                   | `components/palette/palette-layouts.test.ts`                                                                           |
-| Diagram drops Stickers + Collaborate, keeps Icons, Comment panel and Action card in Write | `palette-layouts.test.ts`                                                                                              |
-| Search still finds them in Diagram                                                        | `palette-tile-search.test.ts`, `palette-catalogue-search.test.ts`                                                      |
-| Strip per mode; Diagram none while running                                                | `components/canvas/SessionClusterStrip.test.tsx`                                                                       |
-| Strip kept on an event-storming board                                                     | `SessionClusterStrip.test.tsx`                                                                                         |
-| Share roles in Facilitate                                                                 | `SessionClusterStrip.test.tsx` (view role), `palette-layouts.test.ts` (participant tiles), `EditorModeSwitch.test.tsx` |
-| Templates open in Facilitate; blank                                                       | `apps/live/lib/templates.test.ts`, `packages/templates/src/popular.test.ts`                                            |
-| Default folder key + label                                                                | `default-key-entries.test.ts`, api-schema `placement-defaults.test.ts`                                                 |
-| Explorer Opens in chip                                                                    | `packages/explorer-lens` tests                                                                                         |
-| OpenAPI enum current                                                                      | `apps/api` `manifest.test.ts`                                                                                          |
+| Spec rule                                                                                 | Test                                                                                                                       |
+| ----------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| Five modes, order, labels, Shift+D wraps                                                  | `packages/document/src/editor-mode.test.ts`, `hooks/editor/editor-mode-shortcut.test.ts`                                   |
+| Facilitate's palette layout and Popular                                                   | `components/palette/palette-layouts.test.ts`                                                                               |
+| Diagram drops Stickers + Collaborate, keeps Icons, Comment panel and Action card in Write | `palette-layouts.test.ts`                                                                                                  |
+| Search still finds them in Diagram                                                        | `palette-tile-search.test.ts`, `palette-catalogue-search.test.ts`                                                          |
+| Strip per mode; Diagram none while running                                                | `components/canvas/SessionClusterStrip.test.tsx`                                                                           |
+| Strip kept on an event-storming board                                                     | `SessionClusterStrip.test.tsx`                                                                                             |
+| Share roles in Facilitate                                                                 | `SessionClusterStrip.test.tsx` (view role), `palette-layouts.test.ts` (participant tiles), `StartModeSwitch.menu.test.tsx` |
+| Templates open in Facilitate; blank                                                       | `apps/live/lib/templates.test.ts`, `packages/templates/src/popular.test.ts`                                                |
+| Default folder key + label                                                                | `default-key-entries.test.ts`, api-schema `placement-defaults.test.ts`                                                     |
+| Explorer Opens in chip                                                                    | `packages/explorer-lens` tests                                                                                             |
+| OpenAPI enum current                                                                      | `apps/api` `manifest.test.ts`                                                                                              |
 
 ## Defaults ledger
 

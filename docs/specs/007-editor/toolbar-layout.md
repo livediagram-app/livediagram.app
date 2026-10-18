@@ -20,9 +20,8 @@ and one category's tiles:
  Explorer            (Undo/Redo, Layers, zoom: the bottom-right cluster)
 ```
 
-- **Top left, before the strip: the menu button and the editor mode
-  switch** ([The mode switch](editor-modes.md#the-mode-switch)), in one card. On a phone the card
-  holds the menu button alone.
+- **Top left, before the strip: the menu button**, in a card with the tab's name. No mode switch sits there: a
+  tab's mode is chosen on its start while it is empty ([The mode switch](editor-modes.md#the-mode-switch)).
   On a phone that card sits at the far left of the strip's row, the strip beside it (below).
 - **Left: the selection mode.** The canvas-tool picker (Select / Hand /
   Eraser / Format / Laser / Spotlight / Isometric / Zen (Avatar only while in it), [Tile grids for the palette dropdowns](../004-interface-design/dropdown-tile-grid.md))
@@ -376,8 +375,7 @@ button always was. It gets the same chrome as a desktop ([Live app](live-app.md)
 panels in their corners, Layers and Collaborate as popovers over
 their bottom-row buttons. What changes to fit the width:
 
-- **The menu button gets its own card, left of the strip,** without the mode switch: the tab
-  menu's Opens in switches mode on a phone ([The mode switch](editor-modes.md#the-mode-switch)).
+- **The menu button gets its own card, left of the strip.**
   The card sits at the left gutter and the strip follows it 8px to the right,
   left-aligned rather than centred, so the two read as separate toolbars on
   one row. There is no room for a corner card above a strip that needs the

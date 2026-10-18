@@ -5,7 +5,6 @@
 import type { ReactNode } from 'react';
 import { Label, Panel, Scene, Tile } from './primitives';
 import { SelectGlyph } from './palette-modes-parts';
-import { ModeMark, type Mode } from './mode-mark';
 
 // The strip's element tiles, drawn as the simple outlines the real tiles use.
 function ShapeGlyph({
@@ -187,18 +186,8 @@ export function stripCategory(x: number, name: string): { left: number; w: numbe
 }
 
 /** The top-left card, its top-left corner at (x, y): the menu button (☰) and, unless `menuOnly`
- *  (a phone), the editor mode switch beside it. 62 wide (34 menu-only) and 32 tall. */
-export function MenuCard({
-  x,
-  y,
-  menuOnly = false,
-  mode = 'Diagram',
-}: {
-  x: number;
-  y: number;
-  menuOnly?: boolean;
-  mode?: Mode;
-}) {
+ *  (a phone), the open tab's name beside it. 62 wide (34 menu-only) and 32 tall. */
+export function MenuCard({ x, y, menuOnly = false }: { x: number; y: number; menuOnly?: boolean }) {
   return (
     <g>
       <rect
@@ -217,18 +206,18 @@ export function MenuCard({
         strokeLinecap="round"
       />
       {!menuOnly && (
-        <Pill x={x + 28} y={y + 4} w={30}>
-          {/* The current mode's mark, as the switch shows it. */}
-          <g transform={`translate(${x + 38} ${y + 16})`}>
-            <ModeMark mode={mode} className="stroke-brand-600" scale={0.45} />
-          </g>
-        </Pill>
+        <>
+          <line x1={x + 29} y1={y + 9} x2={x + 29} y2={y + 23} className="stroke-slate-200" />
+          <Label x={x + 34} y={y + 16} size={10} tone="strong">
+            Tab 1
+          </Label>
+        </>
       )}
     </g>
   );
 }
 
-/** The editor's top row and bottom row: the menu button and the editor mode switch top-left,
+/** The editor's top row and bottom row: the menu button and the tab's name top-left,
  *  the strip across the top (ending in Search), and Undo and Redo, Layers and the Theme
  *  paintbrush, then the zoom bottom-right. */
 export function ToolbarLayoutOverview() {

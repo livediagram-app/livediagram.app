@@ -256,7 +256,7 @@ export async function startEventStormingRow(page: Page): Promise<void> {
 // the flag (a reload after declining it, a document opened by URL) nothing is owed, and this returns
 // at once instead of waiting out a timeout. With it, wait until the offer shows, or until the flag
 // clears without one (the tour already seen). The offer is the Diagram tour's, so a tab in another mode
-// keeps it owed without showing it (the mode switch says which mode the tab is in).
+// keeps it owed without showing it (the editor marks which mode the tab is in).
 export async function dismissQuickTour(page: Page): Promise<void> {
   const decline = page.getByRole('button', { name: /^no$/i }).first();
   const owed = () => page.evaluate((key) => sessionStorage.getItem(key) === '1', TOUR_PENDING_KEY);

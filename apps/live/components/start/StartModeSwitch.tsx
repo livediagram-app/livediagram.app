@@ -22,7 +22,6 @@ export function StartModeSwitch() {
         }
         newTabIn={editorMode.newTabIn}
         crossPlan={editorMode.crossPlan}
-        labelled
         {...(editorMode.canSwitch ? {} : { lockedReason: editorMode.lockedReason })}
       />
     </div>

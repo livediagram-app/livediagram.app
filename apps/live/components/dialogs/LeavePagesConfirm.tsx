@@ -27,11 +27,9 @@ const GAP = 10;
 // Where the card sits with no switch to hang from: this far down the screen.
 const FALLBACK_TOP = 72;
 
-// The mode switch on screen, beside the menu button.
+// The mode switch on screen, on a start panel's rail.
 function visibleModeSwitch(): HTMLElement | null {
-  for (const el of Array.from(
-    document.querySelectorAll<HTMLElement>('[data-tour-id="editor-mode"]'),
-  ))
+  for (const el of Array.from(document.querySelectorAll<HTMLElement>('[data-mode-switch]')))
     if (el.getClientRects().length > 0) return el;
   return null;
 }
@@ -94,7 +92,7 @@ function SwitchCard({
   }, []);
   useEscape(onCancel);
   // A press on the switch itself is the switch's (it reopens its menu), not a cancel.
-  useClickOutside(ref, onCancel, true, '[data-tour-id="editor-mode"]');
+  useClickOutside(ref, onCancel, true, '[data-mode-switch]');
   const label = editorModeLabel(mode);
   const ModeIcon = EDITOR_MODE_ICONS[mode];
   return (

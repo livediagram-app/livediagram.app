@@ -301,7 +301,7 @@ The wizard makes the chosen mode's blank, and the template is picked afterwards 
   context). It is written for a
   cloud document made from a mode's blank, never for Local Browser or a template link (`/new?template=`), which is
   filed by its template at creation.
-- **The first template picked from a start screen** (Start Diagramming, Drawing, Facilitating, Illustrating, or
+- **The first template picked from a start screen** (Start Diagramming, Drawing, Facilitating, Making Pages, or
   Start Planning's templates) on that first tab takes the note. When the person did not choose the folder, the
   precedence is resolved again for the template's intent, as the server resolves it (kind, then template, then mode
   default, `templatePickMoveTarget`), and the document **moves** to the default that answers, when it is somewhere

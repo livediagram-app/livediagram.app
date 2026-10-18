@@ -84,7 +84,7 @@ export function ShortcutsToggle() {
 }
 
 /** The palette strip across the top of the canvas, Diagram's category bar, with the menu button and
- *  the Diagram mode switch in their card to its left. */
+ *  the tab's name in their card to its left. */
 export function CommandPalette() {
   return (
     <Scene w={420} h={190}>

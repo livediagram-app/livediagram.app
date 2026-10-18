@@ -1506,9 +1506,9 @@ export const articles: Article[] = [
     slug: 'editor-modes',
     title: 'Editor Modes',
     description:
-      'Diagram, Draw, Facilitate, Pages and Plan: what each mode is for, the mode switch, Shift+D and Opens in.',
+      'Diagram, Draw, Facilitate, Pages and Plan: what each mode is for, choosing one on an empty tab, and Opens in.',
     keywords:
-      'editor mode editor modes mode switch switch mode change mode modes diagram draw pages plan facilitate session shift+d shift d cycle next mode opens in open in default mode per tab per person tab pill mode icon whiteboard sketch pages infographic boards kanban phone mobile view only read only kind template leave pages switch to diagram confirm convert pages workflow way of working',
+      'editor mode editor modes mode switch switch mode change mode choose mode new tab tab window modes diagram draw pages plan facilitate session shift+d shift d cycle next mode opens in open in default mode per tab per person tab pill mode icon whiteboard sketch pages infographic boards kanban phone mobile view only read only kind template leave pages switch to diagram confirm convert pages workflow way of working',
     category: 'Canvas',
     categorySlug: 'canvas',
     group: 'Modes and Boards',

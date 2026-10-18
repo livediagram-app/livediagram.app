@@ -461,7 +461,7 @@ lighter `confirming` instead; else it switches. `convert`: per flow not held, `t
 into a flow held by then); `ArticlesToPages`; then ONE
 switch, `rawSet(pending, t => withArticlesAsPages(t', splits))`, so the conversion and the switch
 are one tab edit (one undo puts the tab back in Pages with its articles). `keep` switches;
-`cancel` clears. Shift+D and the tab menu's Mode on the active tab reach the wrapped `setMode`, so
+`cancel` clears. Shift+D and a start's mode switch on the active tab reach the wrapped `setMode`, so
 they ask too.
 
 ### Collaboration

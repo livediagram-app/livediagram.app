@@ -1,24 +1,19 @@
-import {
-  EDITOR_MODES,
-  editorModeLabel,
-  modesBesidePlanRule,
-  nextEditorMode,
-} from '@livediagram/document';
+import { EDITOR_MODES, editorModeLabel, nextEditorMode } from '@livediagram/document';
 import type { EditorModeState } from './useEditorMode';
 
 // Shift+D (docs/specs/007-editor/editor-modes.md "The mode switch"): move to the next editor mode
 // and say so in the polite live region ("Draw mode"), since a key gives no visual hint of what it
-// did to someone who cannot see the switch. Null where the switch is not offered (a view-role
-// visitor, an event-storming board), so the key does nothing there.
+// did to someone who cannot see the switch. Only on an empty tab, where the start's own switch is: a tab with
+// content keeps its mode, and a new tab is the way to work on it in another. Null elsewhere (a tab with content, a
+// view-role visitor, an event-storming board), so the key does nothing there.
 export function editorModeShortcut(
   { mode, setMode, canSwitch, crossPlan }: EditorModeState,
   announce: (message: string) => void,
 ): (() => void) | null {
-  // Only the modes beside the tab's own (never into or out of Plan): on a Plan tab, none. An empty tab cycles them all.
-  const modes = crossPlan ? EDITOR_MODES : modesBesidePlanRule(mode);
-  if (!canSwitch || modes.length < 2) return null;
+  // An empty tab (crossPlan) cycles every mode.
+  if (!canSwitch || !crossPlan) return null;
   return () => {
-    const next = nextEditorMode(mode, 1, modes);
+    const next = nextEditorMode(mode, 1, EDITOR_MODES);
     setMode(next);
     announce(`${editorModeLabel(next)} mode`);
   };

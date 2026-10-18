@@ -54,6 +54,7 @@ import { useElementSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { useElementFinish } from '@/components/canvas/CanvasFinishContext';
 import { SketchOverlay, useSketchPaint } from '@/components/canvas/SketchOverlay';
 import { SketchFace } from '@/components/canvas/SketchFace';
+import { liveFiltersRedrawOnRepaint } from '@/lib/live-filter-cost';
 import { AccentEdgeOverlay } from '@/components/canvas/AccentEdgeOverlay';
 import { PointerNoteOverlay } from '@/components/canvas/PointerNoteOverlay';
 import { useTagColours } from '@/components/canvas/TagColoursContext';
@@ -552,8 +553,11 @@ function BoxedElementViewImpl({
         />
       ) : null}
       {/* Under Sketch everything the element draws over its body is drawn by hand, its words crisp
-          (docs/specs/008-canvas/finish.md "Every other face is drawn by hand too"). */}
-      <SketchFace active={finish === 'sketch' && finishSplitsFace(element)}>
+          (docs/specs/008-canvas/finish.md "Every other face is drawn by hand too"); in WebKit, which re-runs
+          the face's wobble on every repaint, it is drawn as it is (finish.md "In WebKit"). */}
+      <SketchFace
+        active={finish === 'sketch' && finishSplitsFace(element) && !liveFiltersRedrawOnRepaint()}
+      >
         <AccentEdgeOverlay
           element={withTagAccent(element, tagColours)}
           stroke={own.stroke ?? defaultStrokeColor(element, surface)}
