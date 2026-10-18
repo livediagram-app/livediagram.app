@@ -121,7 +121,8 @@ async function shapeOf(panel: Loc) {
   };
   return {
     width: card.width,
-    row: await rel(':scope > div:first-child'),
+    // The label line: the first line of the settings cell, above the problem line that may come and go.
+    row: await rel('[data-settings-cell] > div:first-child'),
     status: await rel('[data-drive-status]'),
     actions: await rel('[data-drive-actions]'),
     primary: await rel('[data-drive-primary]'),
@@ -751,9 +752,9 @@ test('a document row lines up its visibility badge, its time and its sync mark o
         );
       // The smallest ancestor holding the time and the visibility badge too.
       let row: Element | null = node;
-      while (row && !(row.querySelector('.text-optical-line.text-slate-400') && badgeIn(row)))
+      while (row && !(row.querySelector('[data-relative-time]') && badgeIn(row)))
         row = row.parentElement;
-      const time = row!.querySelector('.text-optical-line.text-slate-400')!;
+      const time = row!.querySelector('[data-relative-time]')!;
       const badge = badgeIn(row!)!;
       const icon = node.querySelector('svg')!;
       const badgeIcon = badge.querySelector('svg')!;
