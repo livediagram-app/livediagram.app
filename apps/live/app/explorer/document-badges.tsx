@@ -87,8 +87,8 @@ export function FolderChip({ label, onOpen }: { label: string; onOpen: () => voi
 // concise hover card explaining what the state means. Public wins, as in the
 // editor header (docs/specs/025-community/community.md "In the Explorer"): a
 // listed document is the widest audience there is. An offline document has
-// none: its Local only pill says it
-// (docs/specs/006-document/offline-mode.md#local-only-pill).
+// none: its This Browser pill says it
+// (docs/specs/006-document/offline-mode.md#this-browser-pill).
 // Whether a row's document is one the Google Drive mirror copies
 // (docs/specs/022-drive-mirror/drive-mirror.md, "Who and what"): the user's
 // own, in My Documents, saved in the cloud. Team documents, documents
@@ -128,8 +128,8 @@ export function VisibilityBadge({
   const base = iconOnly
     ? `${badgeBase.replace('optical-edges ', '').replace('gap-1 ', '').replace('px-2 ', '')} w-[calc(1lh+0.25rem)] justify-center`
     : badgeBase;
-  // A document saved only in this browser carries the Local only pill beside its name
-  // instead (docs/specs/006-document/offline-mode.md#local-only-pill).
+  // A document saved only in this browser carries the This Browser pill beside its name
+  // instead (docs/specs/006-document/offline-mode.md#this-browser-pill).
   if (liveDoc.ownerId === OFFLINE_OWNER_ID) return null;
   if (liveDoc.communityListed && communityOn) {
     return (

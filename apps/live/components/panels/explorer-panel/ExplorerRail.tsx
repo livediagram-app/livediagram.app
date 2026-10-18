@@ -59,7 +59,7 @@ export function ExplorerRail({
   groups: PanelSectionGroup[];
   selected: PanelSection;
   onPick: (s: PanelSection) => void;
-  // A count beside an entry (Shared With Me, This browser), by section key.
+  // A count beside an entry (Shared With Me, This Browser), by section key.
   badges: Record<string, number | undefined>;
   teamName: (id: string) => string | undefined;
   divider: SidebarDivider;

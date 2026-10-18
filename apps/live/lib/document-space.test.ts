@@ -1,15 +1,15 @@
-// Where a listed document belongs to the reader (docs/specs/013-workspace/explorer-structure.md#local-only-documents).
+// Where a listed document belongs to the reader (docs/specs/013-workspace/explorer-structure.md#documents-in-this-browser).
 
 import { describe, expect, it } from 'vitest';
-import { documentSpace, isLocalOnly, readerAccessOf } from './document-space';
+import { documentSpace, isInThisBrowser, readerAccessOf } from './document-space';
 
-describe('isLocalOnly', () => {
+describe('isInThisBrowser', () => {
   it('recognises a document saved only in this browser', () => {
-    expect(isLocalOnly({ ownerId: 'offline' })).toBe(true);
+    expect(isInThisBrowser({ ownerId: 'offline' })).toBe(true);
   });
 
   it('rejects a cloud document', () => {
-    expect(isLocalOnly({ ownerId: 'user_1' })).toBe(false);
+    expect(isInThisBrowser({ ownerId: 'user_1' })).toBe(false);
   });
 });
 

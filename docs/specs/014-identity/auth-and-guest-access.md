@@ -170,31 +170,31 @@ opposite, rows nobody can reach once the account is gone, so the server data sti
 
 ## Guest documents start local
 
-A guest's new document is **Local only** by default ([Offline Mode](../006-document/offline-mode.md), [Save Locations](../006-document/save-locations.md#the-default-depends-on-who-is-creating)): saved in this browser, never sent to the server until the guest asks for it.
+A guest's new document is **This Browser** by default ([Offline Mode](../006-document/offline-mode.md), [Save Locations](../006-document/save-locations.md#the-default-depends-on-who-is-creating)): saved in this browser, never sent to the server until the guest asks for it.
 
-**Why.** A guest cloud document is keyed to the browser's guest id in `localStorage`. Clearing site data loses that id, and with it every document under it: the server keeps the rows for good, but nobody can reach them again. Many first visits are someone trying the product out, so most of those rows are orphans the moment they are written. A Local only document is exactly as durable for a guest (the same clear wipes IndexedDB), costs the server nothing, and opens without a round trip ([Offline Mode → Instant open](../006-document/offline-mode.md#instant-open)).
+**Why.** A guest cloud document is keyed to the browser's guest id in `localStorage`. Clearing site data loses that id, and with it every document under it: the server keeps the rows for good, but nobody can reach them again. Many first visits are someone trying the product out, so most of those rows are orphans the moment they are written. A document in This Browser is exactly as durable for a guest (the same clear wipes IndexedDB), costs the server nothing, and opens without a round trip ([Offline Mode → Instant open](../006-document/offline-mode.md#instant-open)).
 
 - **Only with sign-in enabled.** Local first applies in the hybrid mode, where a guest has an account to move to. A guest-only deployment ([Three deployment modes](#three-deployment-modes)) keeps livediagram as the default: there is no account to come to, so the server is the only place a document is kept beyond the browser, and the operator chose to run one.
 - **Signed-in people are unchanged.** Their default stays livediagram.
-- **Moving to the server is always the guest's own act**: Sync Document (from the Share dialog, which explains why first, [Offline Mode → Sharing a Local only document](../006-document/offline-mode.md#sharing-a-local-only-document), or the Explorer), or the prompt after signing in (below). No guest document is uploaded silently.
+- **Moving to the server is always the guest's own act**: Sync Document (from the Share dialog, which explains why first, [Offline Mode → Sharing a document in This Browser](../006-document/offline-mode.md#sharing-a-document-in-this-browser), or the Explorer), or the prompt after signing in (below). No guest document is uploaded silently.
 - **Nothing is purged.** Guest cloud documents already on the server stay where they are; this changes where new ones start, not what happens to old ones.
 
 ### Who is a guest, before Clerk answers
 
 Clerk loads deferred, so `/new` cannot wait for `useAuth` without making every create slower. It reads Clerk's own `__client_uat` cookie instead (`apps/live/lib/signed-in-hint.ts`): clerk-js writes it on the app's origin, readable from script, as `0` when signed out and the last sign-in time when signed in (checked against the dev instance on 2026-10-10: `__client_uat=0` plus a suffixed `__client_uat_<key>` twin, both `httpOnly=false`).
 
-- **No `__client_uat*` cookie, or every one is `0`**: a guest. The create goes ahead at once, Local only.
+- **No `__client_uat*` cookie, or every one is `0`**: a guest. The create goes ahead at once, This Browser.
 - **Any non-zero value**: probably signed in. The create waits for auth to settle (as it always has) and then uses the settled answer.
-- The hint only decides a default. Every request still authenticates the real way, and a guest whose cookie misleads gets a Local only document, the safe direction.
+- The hint only decides a default. Every request still authenticates the real way, and a guest whose cookie misleads gets a document in This Browser, the safe direction.
 
-### Moving Local only documents after signing in
+### Moving documents in This Browser after signing in
 
-Signing in never moves a Local only document by itself ([Offline Mode → Auth / guest interaction](../006-document/offline-mode.md#auth--guest-interaction)). Instead, once auth has settled signed in (and the guest migrate above has settled), a page that shows the Explorer or the editor checks this browser's Local only documents. If there are any, it offers to move them:
+Signing in never moves a document in This Browser by itself ([Offline Mode → Auth / guest interaction](../006-document/offline-mode.md#auth--guest-interaction)). Instead, once auth has settled signed in (and the guest migrate above has settled), a page that shows the Explorer or the editor checks this browser's documents in This Browser. If there are any, it offers to move them:
 
-- **Move Local Documents to Your Account?** A dialog lists each Local only document (name, last edited), every one ticked, with **Move** and **Not Now**.
-- **Move** runs Sync Document ([Offline Mode → Save to server](../006-document/offline-mode.md#save-to-server-offline--cloud)) on each ticked document in turn, showing progress. A document that fails stays Local only and is named in the result; the rest move.
-- **Not Now** is remembered for this account in this browser (`livediagram:v2:local-move-dismissed:<userId>`), with the count of Local only documents at the time. The dialog comes back only when that count grows, so a person who keeps a deliberate Local only document is not asked again about it.
-- The same move is always reachable by hand: **Sync Document** on any Local only document.
+- **Move Local Documents to Your Account?** A dialog lists each document in This Browser (name, last edited), every one ticked, with **Move** and **Not Now**.
+- **Move** runs Sync Document ([Offline Mode → Save to server](../006-document/offline-mode.md#save-to-server-offline--cloud)) on each ticked document in turn, showing progress. A document that fails stays This Browser and is named in the result; the rest move.
+- **Not Now** is remembered for this account in this browser (`livediagram:v2:local-move-dismissed:<userId>`), with the count of documents in This Browser at the time. The dialog comes back only when that count grows, so a person who keeps a deliberate document in This Browser is not asked again about it.
+- The same move is always reachable by hand: **Sync Document** on any document in This Browser.
 
 ## Implications for how we build
 

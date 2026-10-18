@@ -270,7 +270,7 @@ async function _apiListDocumentsWithTeamRecent(ownerId: string): Promise<Documen
     const offlineIds = new Set(offline.map((o) => o.id));
     const documents = [...offline, ...liveDocs.filter((d) => !offlineIds.has(d.id))];
     // The landing page's returning-visitor fan reads this (docs/specs/019-marketing/returning-visitor.md).
-    // A Local only document has no server snapshot, so it is drawn here from the offline store
+    // A document in This Browser has no server snapshot, so it is drawn here from the offline store
     // (lib/local-snapshot.ts, loaded only when one is wanted) rather than asked of the server, where it
     // could only 404 (once per save, since the version is in the key). A guest's documents start local.
     rememberRecentDiagrams([...documents, ...teamRecent], (id, savedAt) =>

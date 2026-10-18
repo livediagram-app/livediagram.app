@@ -1,9 +1,9 @@
 import { readLocalStorageSafe, writeLocalStorageSafe } from '@/lib/local-storage-safe';
 
 // "Not Now" on the move prompt after signing in (docs/specs/014-identity/auth-and-guest-access.md "Moving
-// Local only documents after signing in"), remembered per account in this browser with the count of
-// Local only documents at the time. The prompt comes back only when that count grows, so a deliberate
-// Local only document is never asked about twice.
+// documents in This Browser after signing in"), remembered per account in this browser with the count of
+// documents in This Browser at the time. The prompt comes back only when that count grows, so a deliberate
+// document in This Browser is never asked about twice.
 
 const PREFIX = 'livediagram:v2:local-move-dismissed:';
 
