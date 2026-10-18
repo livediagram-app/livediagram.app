@@ -10,7 +10,7 @@ import type { PlanPalette } from '../plan-palette';
 import type { PlanContextValue } from '../PlanContext';
 import { CountBadge, Tooltip } from '@livediagram/ui';
 import { IN_BOX_TITLE_CLASS, InMenuBox } from '../menu-name-slot';
-import { BAND_CONTROLS_CLASS, bandControlsProps } from '../band-controls';
+import { BAND_CONTROLS_CLASS, BAND_HEADER_END, bandControlsProps } from '../band-controls';
 
 // The phase colours and the overdue red (phase-colours.ts), shared with the views' still pictures.
 import { OVERDUE_RED, PHASE_COLOURS } from '@livediagram/plan-art';
@@ -114,7 +114,7 @@ export function ViewFrame({
       <div
         // In a header band (maximised, MaximisedPlanLayer's --plan-band-*), as tall as the top row, after the menu,
         // its title and count stopping short of the palette strip.
-        className="flex h-[var(--plan-band-h,2.5rem)] shrink-0 items-center gap-2 border-b pl-[var(--plan-band-left,0.75rem)] pr-3"
+        className={`flex h-[var(--plan-band-h,2.5rem)] shrink-0 items-center gap-2 border-b pl-[var(--plan-band-left,0.75rem)] pr-3 ${BAND_HEADER_END}`}
         style={{ borderColor: palette.border }}
       >
         <span className="flex min-w-0 max-w-[var(--plan-band-mid,none)] items-center gap-2">
@@ -161,7 +161,7 @@ export function ViewFrame({
           // A view's own controls give way first in a narrow slot (a phone): they scroll sideways, while Maximise and
           // the cog always stay in reach.
           <span
-            {...bandControlsProps(palette)}
+            {...bandControlsProps()}
             className={`ml-auto flex min-w-0 items-center gap-1 ${BAND_CONTROLS_CLASS}`}
           >
             {aside ? (

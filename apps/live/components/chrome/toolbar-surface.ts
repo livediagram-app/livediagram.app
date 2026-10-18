@@ -19,6 +19,12 @@ export const BAND_TINT =
 export const BAND_BLEND =
   '[[data-band-blend]_&]:bg-[var(--band-surface)]! [[data-band-blend]_&]:border-[var(--band-line)]! [[data-band-blend]_&]:shadow-none!';
 
+/** The menu box in a header band, on the element's own header (docs/specs/026-plan/plan-board.md "The header holds the
+ *  top row"): no card of its own, no border and no fill, so its controls sit straight on the header the way the
+ *  element's controls do at the other end. Keyed on CanvasCover's `data-band-blend`, as BAND_BLEND is. */
+export const BAND_FLUSH =
+  '[[data-band-blend]_&]:bg-transparent! [[data-band-blend]_&]:border-transparent!';
+
 /** The hairline between groups of controls. */
 export const TOOLBAR_DIVIDER = 'mx-0.5 h-6 w-px shrink-0 bg-slate-200 dark:bg-slate-700';
 
