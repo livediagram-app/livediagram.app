@@ -88,12 +88,15 @@ for every row.
   the notch `(x0 + p, ch / 2)`; label rect from `x0 + (i > 0 ? p : 0) + 4` to `x0 + sw - p - 4`, the full height; note
   rect from `x0 + (i > 0 ? p : 0)` to `x0 + sw - p` (centred under the label), `y = ch + 8` to `h`; label px `round(clamp(ch * 0.24, 10, 18))`, note px
   `round(clamp(labelPx * 0.8, 10, 14))`.
-- `timelineLayout(w, h, n)`: as the spec's "Timeline" (D13 to D16): spine at `h / 2` to `w - head * 0.2`, head
-  `clamp(h * 0.06, 6, 12)`; `slot = max(1, w - 1.5 * head) / n`; dot `i` at `(slot * (i + 0.5), h / 2)`, `dotR =
-clamp(min(h * 0.055, slot * 0.14), 5, 12)`; even `i` above; `room = h / 2 - dotR - 4`, stem `max(6, min(room * 0.3,
-28))`; words `width = min(min(w, slot * 1.9), max(slot * 0.95, 2 * min(x, w - x)))`, `left = clamp(x - width / 2, 0,
-w - width)`; note `notePx * 1.5` tall next to the stem's end (4 px gap), label `min(room - stem - noteH - 4, labelPx
-  - 4.2)`tall beyond it;`labelPx = round(clamp(h * 0.075, 11, 17))`, `notePx = round(clamp(labelPx * 0.8, 10, 14))`.
+- `timelineLayout(w, h, n)`: as the spec's "Timeline" (D13 to D16).
+  - Spine at `h / 2`, from 0 to `w - head * 0.2`; arrowhead `head = clamp(h * 0.06, 6, 12)` long at `(w, h / 2)`.
+  - Slots: `slot = max(1, w - 1.5 * head) / n`; dot `i` at `(slot * (i + 0.5), h / 2)`, radius
+    `clamp(min(h * 0.055, slot * 0.14), 5, 12)`; even `i` above the spine, odd below.
+  - Stem: `room = h / 2 - dotR - 4`, length `max(6, min(room * 0.3, 28))`, from the dot's edge outward.
+  - Words: `width = min(min(w, slot * 1.9), max(slot * 0.95, 2 * min(x, w - x)))`, centred on the dot and clamped
+    inside the element; the when `notePx * 1.5` tall, 4 px past the stem's end; the name `labelPx * 1.6` tall (or what
+    is left of its half) right against the when.
+  - Type: `labelPx = round(clamp(h * 0.075, 11, 17))`, `notePx = round(clamp(labelPx * 0.8, 10, 14))`.
 
 ### Writes
 

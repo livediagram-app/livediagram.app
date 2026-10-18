@@ -18,14 +18,13 @@ type Line = (
 ) => ReactNode;
 
 // The Timeline (docs/specs/009-elements/concept-graphics.md "Timeline"): the spine and its arrowhead in the accent,
-// then each milestone in reading order (so Build brings them in left to right), a dot in the ramp ringed in the fill,
+// then each milestone in reading order (so Build brings them in left to right), a dot in the accent ringed in the fill,
 // its stem, its when in the accent and its name in the ink, taking turns above and below the spine. The export draws
 // the same from the same layout (svg-render-timeline.ts).
 export function ConceptTimelineBody({
   width,
   height,
   rows,
-  ramp,
   accent,
   fill,
   ink,
@@ -34,7 +33,6 @@ export function ConceptTimelineBody({
   width: number;
   height: number;
   rows: readonly ConceptRow[];
-  ramp: readonly { fill: string; text: string }[];
   accent: string;
   fill: string;
   ink: string;
@@ -82,7 +80,7 @@ export function ConceptTimelineBody({
                   cx={m.dot.x}
                   cy={m.dot.y}
                   r={l.dotR}
-                  fill={ramp[i]!.fill}
+                  fill={accent}
                   stroke={fill}
                   strokeWidth={3}
                 />

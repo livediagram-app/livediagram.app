@@ -173,7 +173,7 @@ export function svgConcept(
       .join('');
     return discs + labels;
   }
-  if (el.shape === 'timeline-rail') return svgTimeline(el, rows, ramp, { ...o, fontFamily });
+  if (el.shape === 'timeline-rail') return svgTimeline(el, rows, { ...o, fontFamily });
   if (el.shape === 'chevrons') {
     const notes = rows.some((r) => !!r.note);
     const l = chevronLayout(el.width, el.height, n, notes);

@@ -290,7 +290,6 @@ export function ConceptFace({
         width={W}
         height={H}
         rows={rows}
-        ramp={ramp}
         accent={accent}
         fill={fill}
         ink={ink}

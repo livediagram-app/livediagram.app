@@ -50,8 +50,9 @@ export function timelineLayout(w: number, h: number, n: number): TimelineLayout 
     const stemLen = Math.max(6, Math.min(room * 0.3, 28));
     const width = Math.min(wordsW, Math.max(slot * 0.95, Math.min(x, w - x) * 2));
     const left = clamp(x - width / 2, 0, Math.max(0, w - width));
-    // The name takes what is left of its half once the stem and the when are placed, never more than three lines.
-    const labelH = Math.max(0, Math.min(room - stemLen - noteH - gap, labelPx * 4.2));
+    // The name sits right against its when, one line tall (it shrinks to fit, then ellipses, as every concept row),
+    // within what is left of its half once the stem and the when are placed.
+    const labelH = Math.max(0, Math.min(room - stemLen - noteH - gap, labelPx * 1.6));
     if (above) {
       const y2 = y - dotR;
       const y1 = y2 - stemLen;

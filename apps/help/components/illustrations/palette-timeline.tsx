@@ -5,20 +5,19 @@ import { Label, Scene } from './primitives';
 // The Timeline as dropping one draws it (docs/specs/009-elements/concept-graphics.md "Timeline"): the numbers are
 // `timelineLayout(380, 170, 4)` from @livediagram/document, pinned here so the figure is what the editor draws;
 // rerun that call and paste its numbers if the layout ever changes. The spine and arrowhead in the accent, a dot per
-// milestone shading along the ramp and ringed in the paper, a stem out to its when (in the accent) and its name.
+// milestone in the accent and ringed in the paper, a stem out to its when (in the accent) and its name.
 const TIMELINE = {
   y: 85,
   spineEnd: 378,
   head: 10.2,
   dotR: 9.4,
   milestones: [
-    { x: 45.6, above: true, s1: 54.2, s2: 75.7, ny: 42.7, ly: 19.6 },
-    { x: 136.8, above: false, s1: 94.4, s2: 115.8, ny: 127.3, ly: 150.4 },
-    { x: 227.9, above: true, s1: 54.2, s2: 75.7, ny: 42.7, ly: 19.6 },
-    { x: 319.1, above: false, s1: 94.4, s2: 115.8, ny: 127.3, ly: 150.4 },
+    { x: 45.6, above: true, s1: 54.2, s2: 75.7, ny: 42.7, ly: 24.8 },
+    { x: 136.8, above: false, s1: 94.4, s2: 115.8, ny: 127.3, ly: 145.2 },
+    { x: 227.9, above: true, s1: 54.2, s2: 75.7, ny: 42.7, ly: 24.8 },
+    { x: 319.1, above: false, s1: 94.4, s2: 115.8, ny: 127.3, ly: 145.2 },
   ],
 } as const;
-const TIMELINE_DOTS = ['fill-brand-600', 'fill-brand-500', 'fill-brand-400', 'fill-brand-300'];
 
 function Timeline({
   x,
@@ -61,7 +60,7 @@ function Timeline({
             cx={m.x}
             cy={t.y}
             r={t.dotR}
-            className={`${TIMELINE_DOTS[i]} stroke-white`}
+            className="fill-brand-500 stroke-white"
             strokeWidth={3}
           />
           <Label x={m.x} y={m.ny + 3.5} anchor="middle" size={10} weight={700} tone="accent">

@@ -108,14 +108,14 @@ export matches the editor. Text re-wraps and re-sizes with the element; it never
 - **The spine** runs across the middle (`y = h / 2`) to an arrowhead at the right edge, `clamp(h * 0.06, 6, 12)` long:
   time runs that way. It is drawn in the accent at 55%, 3 px, round-capped.
 - **The milestones** sit in even slots along the spine short of the arrowhead (`slot = (w - 1.5 * head) / n`, the
-  `i`th at `slot * (i + 0.5)`). Each is a dot of radius `clamp(min(h * 0.055, slot * 0.14), 5, 12)` in its ramp colour,
-  ringed 3 px in the fill so it sits clear of the spine.
+  `i`th at `slot * (i + 0.5)`). Each is a dot of radius `clamp(min(h * 0.055, slot * 0.14), 5, 12)` in the accent,
+  ringed 3 px in the fill so it sits clear of the spine (a ramp would fade the last dots into the paper).
 - **They take turns**: the first above the spine, the next below, and so on, so words on one side are two slots apart
   and each may take up to `1.9` slots' width, centred on its dot (narrowing near an end to stay centred inside the
   element, never under `0.95` of a slot). A stem (`max(6, min(room * 0.3, 28))` long, the accent at 50%, 1.5 px) runs
-  from the dot out to the words: its **when** nearest the stem, in the accent, bold, at `round(clamp(labelPx * 0.8, 10,
-14))`, then its **name** beyond, in the ink, semibold, at `round(clamp(h * 0.075, 11, 17))`, given what is left of
-  its half (at most about three lines' height). A when that is cleared leaves the name alone.
+  from the dot out to the words: its **when** nearest the stem, in the accent, bold, at
+  `round(clamp(labelPx * 0.8, 10, 14))`, then its **name** right against it, in the ink, semibold, at `round(clamp(h * 0.075, 11, 17))`, one line tall
+  (shrinking to fit, then ellipsed, as every concept row). A when that is cleared leaves the name alone.
 - **Build** brings the milestones in left to right; **Pulse** lights each in turn. A Timeline is borderless and takes
   no fill of its own.
 - **From the Timeline rail.** A timeline rail saved before (its `railCount` points and `railLabels`) opens as a

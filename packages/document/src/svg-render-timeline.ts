@@ -1,5 +1,5 @@
 // A Timeline in the headless render (docs/specs/009-elements/concept-graphics.md "Timeline"), from the same layout the
-// canvas face uses: the spine and its arrowhead in the accent, each milestone a dot in the ramp ringed in the fill so
+// canvas face uses: the spine and its arrowhead in the accent, each milestone a dot in the accent ringed in the fill so
 // it sits clear of the spine, a stem out to its when (in the accent) and its name (in the ink). The rest frame.
 
 import { arrowheadPoints, conceptFitPx, type ConceptRow } from './concept';
@@ -13,7 +13,6 @@ type Shape = BoxedElement & { type: 'shape' };
 export function svgTimeline(
   el: Shape,
   rows: readonly ConceptRow[],
-  ramp: readonly { fill: string; text: string }[],
   o: { stroke: string; fill: string; labelColor: string; fontFamily?: string },
 ): string {
   const l = timelineLayout(el.width, el.height, rows.length);
@@ -28,7 +27,7 @@ export function svgTimeline(
       let out =
         `<line x1="${r2(el.x + m.dot.x)}" y1="${r2(el.y + m.stem.y1)}" x2="${r2(el.x + m.dot.x)}" y2="${r2(el.y + m.stem.y2)}"` +
         ` stroke="${xmlEscape(o.stroke)}" stroke-opacity="0.5" stroke-width="1.5"/>` +
-        `<circle cx="${r2(el.x + m.dot.x)}" cy="${r2(el.y + m.dot.y)}" r="${r2(l.dotR)}" fill="${xmlEscape(ramp[i]!.fill)}"` +
+        `<circle cx="${r2(el.x + m.dot.x)}" cy="${r2(el.y + m.dot.y)}" r="${r2(l.dotR)}" fill="${xmlEscape(o.stroke)}"` +
         ` stroke="${xmlEscape(o.fill)}" stroke-width="3"/>`;
       if (row.note)
         out += webLine(
