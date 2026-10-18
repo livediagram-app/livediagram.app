@@ -38,7 +38,7 @@ export type TabLookId =
   | 'sketchbook'
   | 'greenboard'
   | 'picnic'
-  | 'neon'
+  | 'mural'
   | 'field-notes'
   // Seasonal looks (lib/seasonal-looks.ts): shown only behind the carousel's Seasonal toggle.
   | 'countdown'
@@ -293,7 +293,7 @@ export const TAB_LOOKS: readonly TabLook[] = [
     pattern: 'crosshatch',
     patternOpacity: 0.4,
   },
-  // The fifth page: Marker on a flip chart, a green board and a dark wall, between Sketch and Flexible looks.
+  // The fifth page: Marker on a flip chart, a green board and a wall, between Sketch and Flexible looks.
   {
     id: 'flipchart',
     label: 'Flipchart',
@@ -334,9 +334,9 @@ export const TAB_LOOKS: readonly TabLook[] = [
     patternOpacity: 0.25,
   },
   {
-    id: 'neon',
-    label: 'Neon',
-    description: 'Plum, Marker, dark dots',
+    id: 'mural',
+    label: 'Mural',
+    description: 'Plum, Marker, soft dots',
     theme: 'plum',
     finish: 'marker',
     font: undefined,

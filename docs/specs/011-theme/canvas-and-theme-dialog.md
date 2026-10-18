@@ -67,7 +67,7 @@ The table is in the order the carousel shows them after the Mashup card, six to 
 | Sketchbook      | Rose     | Sketch       | (none)        | Blank        | (kept)           |
 | Greenboard      | Pine     | Marker       | (none)        | Blank        | (kept)           |
 | Picnic          | Pastel   | Flexible     | Poppins       | Checkerboard | 25%              |
-| Neon            | Plum     | Marker       | (none)        | Grid         | 50%              |
+| Mural           | Plum     | Marker       | (none)        | Grid         | 50%              |
 | Field Notes     | Olive    | Sketch       | (none)        | Lines        | 60%              |
 
 - **Multi-colour looks.** Eight looks use a theme whose nodes take different colours: the branch palettes of Rainbow,
@@ -94,7 +94,7 @@ The table is in the order the carousel shows them after the Mashup card, six to 
   pattern no other look uses (Sunset, Abyss and Espresso; stripes, checks, aurora, bricks and crosshatch), so page
   four is new ground rather than a reshuffle.
 - **Marker has looks of its own** ([Finish](../008-canvas/finish.md)): Whiteboard (a whiteboard is drawn in marker),
-  Workshop, and on page five Flipchart, Greenboard and Neon, a flip chart, a green board and a dark wall, each in
+  Workshop, and on page five Flipchart, Greenboard and Mural, a flip chart, a green board and a wall to draw on, each in
   marker on a theme no other look used (Rose, Pine, Plum and Olive arrive with page five). Page five alternates them
   with Sketchbook, Picnic and Field Notes, so no two neighbours share a finish, and its two multi-colour looks
   (Flipchart and Picnic) keep two to every page.

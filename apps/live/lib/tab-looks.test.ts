@@ -53,7 +53,7 @@ describe('TAB_LOOKS', () => {
       'Sketchbook',
       'Greenboard',
       'Picnic',
-      'Neon',
+      'Mural',
       'Field Notes',
     ]);
     expect(TAB_LOOKS.length + 1).toBe(LOOKS_PER_PAGE * 5);
@@ -105,7 +105,7 @@ describe('TAB_LOOKS', () => {
       'workshop',
       'flipchart',
       'greenboard',
-      'neon',
+      'mural',
     ]);
   });
 
