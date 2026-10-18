@@ -1,10 +1,11 @@
 // Mermaid ER diagram -> DiagramGraph (docs/specs/020-import-export/mermaid.md). Import-only: entities are
 // Entity elements (the name is the title, each attribute a field row with its
-// type and any PK / FK / UK marker as the row's type text), relationships are edges whose cardinality is an ER end
+// type and any PK / FK / UK marker as the row's key), relationships are edges whose cardinality is an ER end
 // at each table (one, zero or one, one or many, zero or many), and non-identifying (dotted) relationships render
 // dashed. Export always emits flowchart text.
 
 import type { EntityField } from './data-shapes';
+import { entityKeyOf } from './entity-fields';
 import type { ErShape } from './er-heads';
 import { hubFirst } from './er-hub-first';
 import type { GraphEdge, GraphNode } from './graph-authoring';
@@ -90,8 +91,9 @@ export function parseErDiagram(rawLines: string[]): ParseMermaidResult {
       }
       const attr = ATTR_RE.exec(line);
       if (attr) {
-        const keys = attr[3]?.replace(/\s+/g, '');
-        block.attrs.push({ name: attr[2]!, type: keys ? `${attr[1]} ${keys}` : attr[1]! });
+        // The PK / FK / UK markers are the field's key (docs/specs/009-elements/entity.md "Keys").
+        const key = attr[3] ? entityKeyOf(attr[3].split(/\s*,\s*/)) : undefined;
+        block.attrs.push({ name: attr[2]!, type: attr[1]!, ...(key ? { key } : {}) });
       }
       continue;
     }

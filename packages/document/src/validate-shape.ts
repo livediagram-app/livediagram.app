@@ -33,6 +33,7 @@ import {
 import {
   CHECKLIST_MAX_ITEMS,
   PAGE_HEADING_MAX,
+  ENTITY_KEYS,
   ENTITY_MAX_FIELDS,
   ENTITY_MAX_TEXT,
   CHECKLIST_MAX_TEXT,
@@ -134,7 +135,10 @@ const finite = (field: string): FieldCheck => ({ field, valid: isNum, rule: 'a f
 
 // Record (docs/specs/009-elements/entity.md): rows of { name, type? }.
 const isEntityField = (f: unknown) =>
-  isRecord(f) && isStrUpTo(ENTITY_MAX_TEXT)(f.name) && isOptionalStrUpTo(f.type, ENTITY_MAX_TEXT);
+  isRecord(f) &&
+  isStrUpTo(ENTITY_MAX_TEXT)(f.name) &&
+  isOptionalStrUpTo(f.type, ENTITY_MAX_TEXT) &&
+  (f.key === undefined || (ENTITY_KEYS as readonly unknown[]).includes(f.key));
 
 // Per-participant responses (docs/specs/012-collaboration/participant-responses.md). The
 // one-per-participant rule is `setResponse`'s on write, not a load check: a duplicate from an older
@@ -391,7 +395,10 @@ const SHAPE_FIELD_CHECKS: readonly FieldCheck[] = [
   {
     field: 'entityFields',
     valid: rowsOf(ENTITY_MAX_FIELDS, isEntityField),
-    rule: arrayRule(ENTITY_MAX_FIELDS, `{ name, type? } rows of ${ENTITY_MAX_TEXT} characters`),
+    rule: arrayRule(
+      ENTITY_MAX_FIELDS,
+      `{ name, type?, key? } rows of ${ENTITY_MAX_TEXT} characters, key one of ${ENTITY_KEYS.join(' ')}`,
+    ),
   },
   {
     field: 'stats',

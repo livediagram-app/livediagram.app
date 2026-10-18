@@ -77,8 +77,9 @@ const CONTENT_KINDS =
   `shape "code-block": "code" (up to ${CODE_MAX_LENGTH} chars), "codeLanguage" (` +
   `${CODE_LANGUAGES.join(', ')}), "codeTheme" (${CODE_THEMES.map((t) => t.id).join(', ')}; ` +
   'default midnight, dark), "codeWrap"; the block draws itself and shows no label. ' +
-  'shape "entity": "label" is the title, "entityFields" is [{ "name", "type"? }] rows (up to ' +
-  `${ENTITY_MAX_FIELDS}; keys go in the type, e.g. "uuid PK"); the box grows to fit its rows. ` +
+  'shape "entity": "label" is the title, "entityFields" is [{ "name", "type"?, "key"? }] rows (up to ' +
+  `${ENTITY_MAX_FIELDS}; "key" is "pk", "fk", "pk-fk" or "uk"); the box grows to fit its rows. A pinned ` +
+  'arrow end on an entity may add "field": a row index, with anchor "w" or "e", to join that field. ' +
   'shape "lane": a swimlane whose "label" is the title in its left strip; elements fully inside ' +
   'its box belong to it, lanes are placed one under another, and they paint behind everything. ' +
   'shape "bar-chart" / "pie-chart": "pieSlices" is [{ "label", "value" }]; categories show in ' +

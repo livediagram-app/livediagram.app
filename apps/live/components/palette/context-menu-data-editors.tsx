@@ -2,9 +2,6 @@ import { Button } from '@livediagram/ui';
 import {
   CHECKLIST_MAX_ITEMS,
   CHECKLIST_MAX_TEXT,
-  ENTITY_MAX_FIELDS,
-  ENTITY_MAX_TEXT,
-  type EntityField,
   PIE_PALETTE,
   type ChecklistItem,
   type LegendItem,
@@ -251,71 +248,6 @@ export function LinkedChartData({ onUnlink }: { onUnlink: () => void }) {
 // Checklist rows editor (docs/specs/009-elements/checklist.md): one row per item — a done toggle, the row
 // text, and remove — plus add. Same draft-while-typing / commit-on-blur
 // contract as PieDataEditor (one undo step per blur / structural change).
-// A record's fields (docs/specs/009-elements/entity.md): one row per `name: Type`. Mirrors the
-// checklist editor below — same shape of problem (a bounded list of short
-// strings edited in a narrow menu), so same shape of control.
-export function EntityFieldsEditor({
-  fields,
-  onChange,
-}: {
-  fields: EntityField[];
-  onChange: (fields: EntityField[]) => void;
-}) {
-  const [rows, setRows] = useFollowingDraft<EntityField[]>(fields);
-  return (
-    <div className="px-2 py-1.5">
-      <div className="flex flex-col gap-1">
-        {rows.map((f, i) => (
-          <div key={i} className="flex items-center gap-1">
-            <input
-              className={`${MENU_CELL_INPUT} flex-1`}
-              value={f.name}
-              placeholder="name"
-              aria-label={`Field ${i + 1} name`}
-              maxLength={ENTITY_MAX_TEXT}
-              onChange={(e) =>
-                setRows((r) => r.map((s, j) => (j === i ? { ...s, name: e.target.value } : s)))
-              }
-              onBlur={() => onChange(rows)}
-            />
-            <input
-              className={`${MENU_CELL_INPUT} w-[5.5rem]`}
-              value={f.type ?? ''}
-              placeholder="type"
-              aria-label={`Field ${i + 1} type`}
-              maxLength={ENTITY_MAX_TEXT}
-              onChange={(e) =>
-                setRows((r) =>
-                  // Empty stores as undefined, so a row without a type
-                  // round-trips identically to one that never had one.
-                  r.map((s, j) => (j === i ? { ...s, type: e.target.value || undefined } : s)),
-                )
-              }
-              onBlur={() => onChange(rows)}
-            />
-            <button
-              type="button"
-              aria-label="Remove field"
-              onClick={() => onChange(rows.filter((_, j) => j !== i))}
-              className="flex h-5 w-5 shrink-0 items-center justify-center rounded text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800"
-            >
-              ×
-            </button>
-          </div>
-        ))}
-      </div>
-      <button
-        type="button"
-        disabled={rows.length >= ENTITY_MAX_FIELDS}
-        onClick={() => onChange([...rows, { name: '' }])}
-        className={MENU_ADD_ROW_BUTTON}
-      >
-        Add Field
-      </button>
-    </div>
-  );
-}
-
 export function ChecklistRowsEditor({
   items,
   onChange,

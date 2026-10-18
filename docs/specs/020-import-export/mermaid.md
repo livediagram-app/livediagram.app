@@ -122,9 +122,9 @@ LR` line sets the layout direction (TB default).
 - **Entities**: [Entity](../009-elements/entity.md) elements (`shape:
 'entity'`), the canvas's own record box: the entity name is the title and
   each attribute (`CUSTOMER { string name PK "comment" }`) is a field row,
-  `name` with its type as the row's type text. Key markers (PK / FK / UK)
-  stay in the type text (`string PK`), the convention the ER template uses;
-  comments are dropped. The box is sized to its rows (a title band plus a row
+  `name` with its type as the row's type text. Key markers become the field's
+  key (`PK` primary, `FK` foreign, both `PK FK`, `UK` unique; [The entity](../009-elements/entity.md)
+  "Keys"), drawn in the key gutter as the ER template's are; comments are dropped. The box is sized to its rows (a title band plus a row
   each). This replaced square boxes whose label held the name and every
   attribute on its own line, which read as a paragraph and did not survive a
   label cap (the MCP's, [MCP server](../015-api/mcp-server.md) §4.7, flattened

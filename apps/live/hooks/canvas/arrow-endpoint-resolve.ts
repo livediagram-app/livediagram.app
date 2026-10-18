@@ -9,6 +9,7 @@ import {
   snapToAlignment,
   snapToAnchor,
   snapToArrowPoint,
+  snapToEntityField,
   type AlignmentGuide,
   type ArrowElement,
   type Element,
@@ -97,6 +98,29 @@ export function resolveArrowEndpointDrag({
   // another shape is the strongest constraint and the most desirable
   // outcome when both are plausible.
   const reach = reachableFrom(elements, arrowId, end, pages);
+  const arrow = elements.find((e): e is ArrowElement => e.id === arrowId && e.type === 'arrow');
+  const otherEnd = arrow ? arrow[end === 'from' ? 'to' : 'from'] : null;
+  // Over an entity's field row, the end joins that field (docs/specs/009-elements/entity.md "Field to
+  // field"), on the side facing its other end. Within the row, a field beats the anchors along the
+  // entity's sides; Cmd / Ctrl leaves the end free, as it does every snap.
+  const fieldSnap =
+    noSnap || !otherEnd
+      ? null
+      : snapToEntityField(
+          cursor,
+          reach.elements,
+          endpointPosition(otherEnd, elements),
+          otherEnd.kind === 'pinned' ? otherEnd.elementId : null,
+        );
+  if (fieldSnap) {
+    const { elementId, anchor, field, point } = fieldSnap;
+    return {
+      endpoint: { kind: 'pinned', elementId, anchor, field },
+      guides: [],
+      snapTargets: [{ x: point.x, y: point.y, active: true }],
+      arrowConnected: false,
+    };
+  }
   const anchorSnap = snapToAnchor(cursor, reach.elements, SNAP_THRESHOLD);
   // No element anchor nearby → look for a nearby arrow line to connect to
   // (docs/specs/008-canvas/arrow-to-arrow.md). REVEAL distance shows the line's snap dots as you approach;
@@ -110,8 +134,6 @@ export function resolveArrowEndpointDrag({
   // Over a shape's body, away from its anchors and any arrow's line: the end pins to the anchor facing its other
   // end (docs/specs/008-canvas/canvas-and-palette.md "Dropped on a shape"), shown live so the release holds no
   // surprise. Cmd / Ctrl leaves it free, over the shape, as it skips the other snaps.
-  const arrow = elements.find((e): e is ArrowElement => e.id === arrowId && e.type === 'arrow');
-  const otherEnd = arrow ? arrow[end === 'from' ? 'to' : 'from'] : null;
   const bodySnap =
     anchorSnap || arrowSnap || noSnap || !otherEnd
       ? null

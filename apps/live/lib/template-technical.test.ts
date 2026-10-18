@@ -61,19 +61,27 @@ describe('database schema (er-diagram)', () => {
     expect(centre(table('menu_items')).x).toBeCloseTo(centre(table('restaurants')).x, 5);
   });
 
-  it('writes the key role into the type column and sizes each box to its rows', () => {
+  it('stores each key as the field key and sizes each box to its rows', () => {
     for (const t of tables) {
       expect(t.entityFields!.every((f) => f.type)).toBe(true);
-      expect(t.entityFields!.some((f) => /PK/.test(f.type ?? ''))).toBe(true);
+      expect(t.entityFields!.some((f) => f.key === 'pk' || f.key === 'pk-fk')).toBe(true);
+      expect(t.entityFields!.some((f) => /\b(PK|FK|UK)\b/.test(f.type ?? ''))).toBe(false);
       expect(t.height).toBe(entityHeight(t.entityFields!.length, t.textSize));
     }
-    expect(table('customers').entityFields).toContainEqual({ name: 'email', type: 'text UK' });
-    expect(table('order_items').entityFields!.filter((f) => f.type === 'uuid PK FK')).toHaveLength(
-      2,
-    );
+    expect(table('customers').entityFields).toContainEqual({
+      name: 'email',
+      type: 'text',
+      key: 'uk',
+    });
+    expect(table('order_items').entityFields!.filter((f) => f.key === 'pk-fk')).toHaveLength(2);
+    expect(table('orders').entityFields).toContainEqual({
+      name: 'courier_id',
+      type: 'uuid, null',
+      key: 'fk',
+    });
   });
 
-  it('runs every relationship one side to many side, straight, labelled with multiplicities', () => {
+  it('runs every relationship one side to many side, straight, with an ER end at each table', () => {
     const rels = arrowsOf(els);
     expect(rels).toHaveLength(6);
     const opposite: Record<string, string> = { n: 's', s: 'n', e: 'w', w: 'e' };
@@ -83,11 +91,13 @@ describe('database schema (er-diagram)', () => {
       if (r.from.kind === 'pinned' && r.to.kind === 'pinned') {
         expect(opposite[r.from.anchor]).toBe(r.to.anchor);
       }
-      expect(r.arrowheadShape).toBe('line');
-      expect(r.label).toMatch(/^[a-z ]+ · [0-9.*]+ : [0-9.*]+$/);
+      expect(r.arrowEnds).toBe('both');
+      expect(['one', 'zero-or-one']).toContain(r.arrowheadStartShape);
+      expect(['zero-or-many', 'one-or-many']).toContain(r.arrowheadShape);
+      expect(r.label).toMatch(/^[a-z ]+$/);
     }
     // The courier is the one optional parent.
-    expect(rels.filter((r) => r.label?.includes('0..1 :'))).toHaveLength(1);
+    expect(rels.filter((r) => r.arrowheadStartShape === 'zero-or-one')).toHaveLength(1);
     // Many ends: every FK-holding table is at the head of a line.
     const heads = new Set(rels.map((r) => (r.to.kind === 'pinned' ? r.to.elementId : '')));
     for (const name of ['orders', 'order_items', 'menu_items']) {

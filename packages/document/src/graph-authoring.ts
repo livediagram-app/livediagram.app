@@ -238,12 +238,15 @@ function lookBoxSize(
 function entityNode(n: GraphNode, raw: EntityField[]): Element {
   // Within the validator's budget (UTF-16 units), never ending on half an emoji.
   const clip = (t: string) => t.slice(0, ENTITY_MAX_TEXT).replace(/[\uD800-\uDBFF]$/, '');
-  const fields = raw
-    .slice(0, ENTITY_MAX_FIELDS)
-    .map((f) => ({ name: clip(f.name), ...(f.type ? { type: clip(f.type) } : {}) }));
+  const fields = raw.slice(0, ENTITY_MAX_FIELDS).map((f) => ({
+    name: clip(f.name),
+    ...(f.type ? { type: clip(f.type) } : {}),
+    ...(f.key ? { key: f.key } : {}),
+  }));
+  // A keyed field's name sits past the key gutter: about three glyphs' room.
   const widest = Math.max(
     glyphUnits(n.label ?? ''),
-    ...fields.map((f) => glyphUnits(f.name) + glyphUnits(f.type ?? '') + 2),
+    ...fields.map((f) => glyphUnits(f.name) + glyphUnits(f.type ?? '') + (f.key ? 5 : 2)),
   );
   return {
     id: n.id,

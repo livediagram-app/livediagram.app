@@ -1,6 +1,7 @@
 import type { PointerEvent as ReactPointerEvent } from 'react';
 import {
   canAppendWebRow,
+  isEntity,
   isFlowchartStep,
   isRailShape,
   type Element,
@@ -44,6 +45,8 @@ export function QuickConnectPluses({
   onAddTableRow,
   onAddTableColumn,
   onAppendWebRow,
+  onAddEntityField,
+  onAddRelatedEntity,
 }: {
   selectedElement: Element | undefined;
   bounds: Rect;
@@ -59,6 +62,9 @@ export function QuickConnectPluses({
   onAddTableRow: () => void;
   onAddTableColumn: () => void;
   onAppendWebRow?: (elementId: string) => void;
+  // Entities (docs/specs/009-elements/entity.md "Growing a model"): Add Field and Add Related Entity.
+  onAddEntityField?: () => void;
+  onAddRelatedEntity?: (side: QuickConnectDirection) => void;
 }) {
   const growMind = useMindGrow();
   // A timeline rail's "+" gains "Add Point" (docs/specs/009-elements/timeline-rail.md).
@@ -66,6 +72,7 @@ export function QuickConnectPluses({
   const selectedIsTable = selectedElement?.type === 'table';
   const selectedIsMind = selectedElement?.type === 'shape' && selectedElement.shape === 'mind-node';
   const selectedIsStep = !!selectedElement && isFlowchartStep(selectedElement);
+  const selectedIsEntity = isEntity(selectedElement) && !selectedElement.locked;
   // Web components (docs/specs/009-elements/web-components-and-no-groups.md): the ring's "Add stat / step / link", while
   // there is room for one more.
   const webRow =
@@ -114,6 +121,16 @@ export function QuickConnectPluses({
               : undefined
           }
           growing={selectedIsStep ? 'flowchart' : 'mind'}
+          // An entity's ring (docs/specs/009-elements/entity.md): Add Related Entity on every side, Add
+          // Field on the bottom one.
+          entity={
+            selectedIsEntity && onAddRelatedEntity
+              ? {
+                  onAddRelated: () => onAddRelatedEntity(placement),
+                  onAddField: placement === 'below' ? onAddEntityField : undefined,
+                }
+              : undefined
+          }
         />
       ))}
     </>

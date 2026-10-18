@@ -656,6 +656,9 @@ export type CanvasProps = {
   onSetRailLabel?: (elementId: string, index: number, text: string) => void;
   // Toggle one checklist row's done state (docs/specs/009-elements/checklist.md). Omitted in read-only.
   onToggleChecklistItem?: (elementId: string, index: number) => void;
+  // Entities (docs/specs/009-elements/entity.md): fields saved in place, relationships drawn from a field,
+  // the ring's Add Field / Add Related Entity and the arrow toolbar's Cardinality. Omitted in read-only.
+  entityActions?: import('@/hooks/canvas/useEntityActions').EntityActions;
   // The Page masthead (docs/specs/009-elements/page-element.md): its heading and subtitle are their own
   // fields, so they commit through here rather than the label editor.
   // Mind map (docs/specs/009-elements/mind-node.md): grows the next node from the label editor.

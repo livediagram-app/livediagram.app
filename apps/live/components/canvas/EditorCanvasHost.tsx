@@ -337,6 +337,7 @@ export function EditorCanvasHost() {
     setHeroCaptionLine,
     growMindNode,
     flowchartActions,
+    entityActions,
     mindOutline,
     tidyMindMap,
     abandonMindNode,
@@ -1238,6 +1239,7 @@ export function EditorCanvasHost() {
               onSetHeroCaptionLine={isReadOnly ? undefined : setHeroCaptionLine}
               onGrowMindNode={growMindNode}
               flowchartActions={isReadOnly ? undefined : flowchartActions}
+              entityActions={isReadOnly ? undefined : entityActions}
               canEditMindOutline={mindOutline.canEdit}
               onEditMindOutline={mindOutline.open}
               onTidyMindMap={tidyMindMap}

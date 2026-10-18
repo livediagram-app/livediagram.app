@@ -8,8 +8,10 @@ import {
   elementSupportsText,
   isBoxed,
   isCompoundPath,
+  cardinalityLabel,
   isFlowchartStep,
   isMindNode,
+  joinsEntities,
   takesAttachments,
   threadAt,
   type Element,
@@ -186,6 +188,20 @@ export function CanvasSelectionToolbars({
                   ),
                 }
               : {})}
+            // A relationship (docs/specs/009-elements/entity.md "Cardinality ends"): an Editor's arrow
+            // joining two entities offers the cardinality presets.
+            cardinality={
+              !readOnly &&
+              !selectedLocked &&
+              props.entityActions &&
+              selected?.type === 'arrow' &&
+              joinsEntities(selected, elements)
+                ? {
+                    current: cardinalityLabel(selected),
+                    onPick: props.entityActions.setCardinalitySelected,
+                  }
+                : undefined
+            }
             onDuplicate={readOnly ? undefined : selected ? onDuplicateSelected : undefined}
             // Intra-layer z-order (docs/specs/006-document/layers.md): stack within the element's own
             // band. The element menu's Bring to Front moves LAYERS; these

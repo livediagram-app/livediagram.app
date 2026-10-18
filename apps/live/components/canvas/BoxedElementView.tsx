@@ -32,7 +32,8 @@ import { renderLabel } from '@/components/canvas/element-labels';
 import { ElementFaceRouter } from '@/components/canvas/ElementFaceRouter';
 import { LaneGutter } from '@/components/canvas/LaneGutter';
 import { uprightTitleFrame } from '@/components/canvas/upright-title';
-import { EntityView } from '@/components/canvas/EntityView';
+import { EntityView } from '@/components/canvas/entity/EntityView';
+import { openEntityFieldAt } from '@/components/canvas/entity/entity-double-click';
 import { elementAriaLabel } from '@/lib/element-names';
 import { captionBandAlignY, captionBandClass } from '@/components/primitives/icon-band';
 import { LockBadge, SelectionChromeLayer } from '@/components/canvas/element-parts';
@@ -117,6 +118,8 @@ function BoxedElementViewImpl({
   onSnapSeam,
   onSetRailLabel,
   onToggleChecklistItem,
+  onSetEntityFields,
+  onStartFieldArrow,
   onSetPageHeading,
   onSetWebRows,
   onSetPointerTip,
@@ -459,7 +462,25 @@ function BoxedElementViewImpl({
         longPress.onPointerDown(e);
         handleShapeDown(e);
       }}
-      onDoubleClick={handleDoubleClick}
+      onDoubleClick={(e) => {
+        // An Editor's double-click on an entity's fields edits that field in place
+        // (docs/specs/009-elements/entity.md "Editing on the canvas"); on its title, the title.
+        if (
+          element.type === 'shape' &&
+          element.shape === 'entity' &&
+          !readOnly &&
+          !isLocked &&
+          !remotelyLocked &&
+          !element.rotation &&
+          onSetEntityFields &&
+          wrapperRef.current &&
+          openEntityFieldAt(element, wrapperRef.current.getBoundingClientRect(), e.clientY)
+        ) {
+          e.stopPropagation();
+          return;
+        }
+        handleDoubleClick(e);
+      }}
       onContextMenu={handleContextMenu}
       onPointerUp={handlePointerUp}
       onClick={
@@ -608,7 +629,24 @@ function BoxedElementViewImpl({
         ) : null}
         {/* A Record's rows (docs/specs/009-elements/entity.md), under its title label. */}
         {element.type === 'shape' && element.shape === 'entity' ? (
-          <EntityView element={element} textColor={textColor} fontFamily={fontFamily} />
+          <EntityView
+            element={element}
+            textColor={textColor}
+            fontFamily={fontFamily}
+            stroke={own.stroke ?? defaultStrokeColor(element, surface)}
+            actions={
+              // An Editor's selected, unlocked, upright entity edits in place (docs/specs/009-elements/entity.md).
+              isSelected &&
+              !readOnly &&
+              !isLocked &&
+              !remotelyLocked &&
+              !element.rotation &&
+              onSetEntityFields &&
+              onStartFieldArrow
+                ? { setFields: onSetEntityFields, startFieldArrow: onStartFieldArrow }
+                : undefined
+            }
+          />
         ) : null}
         {/* A chair, a desk or a sofa (docs/specs/009-elements/chair.md "Facing"): the furniture itself,
           drawn for its facing, plus whoever presence says is sitting in it. */}

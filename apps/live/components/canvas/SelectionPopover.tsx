@@ -16,6 +16,10 @@ import {
   FlowchartStepButtons,
   type FlowchartStepToolbar,
 } from '@/components/flowchart/FlowchartStepButtons';
+import {
+  CardinalityButton,
+  type CardinalityToolbar,
+} from '@/components/canvas/entity/CardinalityButton';
 import { Divider, PopoverButton } from '@/components/canvas/SelectionPopoverButton';
 import type { Rect } from '@livediagram/document';
 
@@ -49,6 +53,8 @@ type SelectionPopoverProps = {
   // A flowchart step's group (docs/specs/009-elements/flowchart.md): Add Step, Add Branch, and an
   // Editor's Step Type and Lane menus. Passed only for an unlocked step someone may grow.
   flowchartStep?: FlowchartStepToolbar;
+  // A relationship between two entities (docs/specs/009-elements/entity.md "Cardinality ends").
+  cardinality?: CardinalityToolbar;
   // Duplicate the selected element, a one-click toolbar action (it used to
   // live only in the right-click context menu). Omitted in read-only /
   // view-role mode.
@@ -102,6 +108,7 @@ export function SelectionPopover({
   onEditPoints,
   onAddMindChild,
   flowchartStep,
+  cardinality,
   onAddMindSibling,
   onDuplicate,
   onBringToFront,
@@ -242,6 +249,8 @@ export function SelectionPopover({
           ) : null}
 
           {flowchartStep ? <FlowchartStepButtons {...flowchartStep} menuAnchor="toolbar" /> : null}
+
+          {cardinality ? <CardinalityButton {...cardinality} menuAnchor="toolbar" /> : null}
 
           {onDuplicate ? (
             <>
