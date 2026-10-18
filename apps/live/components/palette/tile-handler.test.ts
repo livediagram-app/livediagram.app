@@ -45,3 +45,25 @@ describe('a palette tile pressed', () => {
     expect(a.cancelDraw).not.toHaveBeenCalled();
   });
 });
+
+describe('a shape tile pressed', () => {
+  it('hands on its own name, so the banner reads as the tile does', () => {
+    const a = actions();
+    const funnel = {
+      id: 'funnel',
+      label: 'Add Funnel',
+      caption: 'Funnel',
+      action: { type: 'shape', kind: 'pyramid', variant: 'funnel' },
+    } as never;
+    tileHandler(funnel, a, null)();
+    expect(a.addShape).toHaveBeenCalledWith(
+      'pyramid',
+      expect.objectContaining({ variant: 'funnel', name: 'Funnel' }),
+    );
+    tileHandler({ ...(square as object), label: 'Add Square' } as never, a, null)();
+    expect(a.addShape).toHaveBeenLastCalledWith(
+      'square',
+      expect.objectContaining({ name: 'Square' }),
+    );
+  });
+});

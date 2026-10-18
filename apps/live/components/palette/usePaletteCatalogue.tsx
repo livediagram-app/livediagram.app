@@ -29,6 +29,7 @@ import { usePlanTabList } from '@/hooks/plan/plan-tab-list-store';
 import { dashboardTabTiles } from './palette-dashboard-tiles';
 import { getMaximisedPlanId, restorePlanElement } from '@/hooks/plan/maximised-plan';
 import type { WhiteboardPenId } from '@/lib/whiteboard-prefs';
+import type { AddShapeOptions } from '@/lib/draw-mode';
 import { useEditorModeState } from '@/components/chrome/editor-mode/editor-mode-context';
 
 // Everything a palette SURFACE needs that isn't how it is drawn: the tile
@@ -127,17 +128,8 @@ export function usePaletteCatalogue({
     fn();
     onTileUsed?.();
   };
-  const addShape = (
-    kind: import('@livediagram/document').ShapeKind,
-    opts?: {
-      session?: import('@livediagram/document').SessionTool;
-      reaction?: import('@livediagram/document').Reaction;
-      mode?: import('@livediagram/document').SelectionMode;
-      estimateScale?: import('@livediagram/document').EstimateScale;
-      plan?: string;
-      variant?: string;
-    },
-  ) => armed(() => onAddShape(kind, opts))();
+  const addShape = (kind: import('@livediagram/document').ShapeKind, opts?: AddShapeOptions) =>
+    armed(() => onAddShape(kind, opts))();
   // Icons, stickers and tech icons arm the draw gesture too (they ride the
   // shape intent carrying the glyph id).
   const addIcon = (iconId: string) => armed(() => onAddIcon(iconId))();
