@@ -78,13 +78,13 @@ describe('create_document intent', () => {
   });
 
   it.each([
-    ['retrospective', { mode: 'facilitate', tabKind: 'diagram', templateFamily: 'retrospective' }],
-    ['four-ls', { mode: 'facilitate', tabKind: 'diagram', templateFamily: 'retrospective' }],
+    ['retrospective', { mode: 'workshop', tabKind: 'diagram', templateFamily: 'retrospective' }],
+    ['four-ls', { mode: 'workshop', tabKind: 'diagram', templateFamily: 'retrospective' }],
     ['kanban', { mode: 'plan', tabKind: 'diagram', templateFamily: 'kanban' }],
     ['event-storming', { mode: 'diagram', tabKind: 'event-storming' }],
-    ['incident-postmortem', { mode: 'facilitate', tabKind: 'diagram' }],
+    ['incident-postmortem', { mode: 'workshop', tabKind: 'diagram' }],
     ['floor-plan', { mode: 'pages', tabKind: 'diagram' }],
-    ['lean-coffee', { mode: 'facilitate', tabKind: 'diagram' }],
+    ['lean-coffee', { mode: 'workshop', tabKind: 'diagram' }],
     ['whiteboard', { mode: 'draw', tabKind: 'diagram' }],
     ['flowchart', { mode: 'diagram', tabKind: 'diagram' }],
   ])('sends the intent of a %s template tab', async (template, intent) => {

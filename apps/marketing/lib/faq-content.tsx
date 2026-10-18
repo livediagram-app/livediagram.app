@@ -51,7 +51,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
     items: [
       {
         q: 'What is livediagram?',
-        a: 'A free, real-time canvas for diagrams, whiteboards, illustrations and plans. Every document is a stack of tabs, and each tab can be worked on in five modes: Diagram for shapes and arrows, Draw for freehand whiteboarding, Facilitate for running a session with your team, Pages for slides, articles and posters, and Plan for boards of cards. Your team can join any of them live.',
+        a: 'A free, real-time canvas for diagrams, whiteboards, illustrations and plans. Every document is a stack of tabs, and each tab can be worked on in five modes: Diagram for shapes and arrows, Draw for freehand whiteboarding, Workshop for running a session with your team, Pages for slides, articles and posters, and Plan for boards of cards. Your team can join any of them live.',
       },
       {
         q: 'Do I need an account to use livediagram?',
@@ -168,7 +168,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'What are the five modes?',
-        a: 'Diagram is for structured shapes, connectors and layouts. Draw is a freehand whiteboard with pressure-sensitive markers. Facilitate runs a session with your team, with timers, dot votes, polls and reveals to hand. Pages lays out designed pages like posters and slides. Plan turns a tab into boards of cards with columns, WIP limits and quick add, beside spreadsheets with formulas. A mode belongs to the tab, so everyone on it works in the same one, and each tab of a document can have its own.',
+        a: 'Diagram is for structured shapes, connectors and layouts. Draw is a freehand whiteboard with pressure-sensitive markers. Workshop runs a session with your team, with timers, dot votes, polls and reveals to hand. Pages lays out designed pages like posters and slides. Plan turns a tab into boards of cards with columns, WIP limits and quick add, beside spreadsheets with formulas. A mode belongs to the tab, so everyone on it works in the same one, and each tab of a document can have its own.',
       },
       {
         q: 'Can I organise a big document?',
@@ -394,16 +394,16 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         q: 'Is it good for running workshops and retros?',
         a: (
           <>
-            Very. Switch a tab to Facilitate, the mode for running a session, or start from a
+            Very. Switch a tab to Workshop, the mode for running a session, or start from a
             retrospective, Lean Coffee or town hall Q&amp;A template, which opens there. Whoever
             holds the facilitator role runs the room’s timer, votes, polls and reveals. Estimate
             cards run planning poker, a temperature check shows how the room feels, a quiz asks what
             it knows, and an idea box collects anonymous ideas. See{' '}
-            <a href="/help/canvas/facilitate-mode/">Facilitate mode</a>.
+            <a href="/help/canvas/workshop-mode/">Workshop mode</a>.
           </>
         ),
         aText:
-          'Very. Switch a tab to Facilitate, the mode for running a session, or start from a retrospective, Lean Coffee or town hall Q&A template, which opens there. Whoever holds the facilitator role runs the room’s timer, votes, polls and reveals. Estimate cards run planning poker, a temperature check shows how the room feels, a quiz asks what it knows, and an idea box collects anonymous ideas. See Facilitate mode.',
+          'Very. Switch a tab to Workshop, the mode for running a session, or start from a retrospective, Lean Coffee or town hall Q&A template, which opens there. Whoever holds the facilitator role runs the room’s timer, votes, polls and reveals. Estimate cards run planning poker, a temperature check shows how the room feels, a quiz asks what it knows, and an idea box collects anonymous ideas. See Workshop mode.',
       },
     ],
   },

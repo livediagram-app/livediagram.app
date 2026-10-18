@@ -3,8 +3,8 @@ import { describe, expect, it } from 'vitest';
 import { HERO_SCENES } from './hero-scenes';
 
 // Each hero scene's window shows the editor mode its "build yours" link opens, and a scene that
-// searches for a template shows the mode that template opens in (a town hall opens in Facilitate,
-// docs/specs/012-collaboration/facilitate-mode.md), so the mock never wears a mode the editor
+// searches for a template shows the mode that template opens in (a town hall opens in Workshop,
+// docs/specs/012-collaboration/workshop-mode.md), so the mock never wears a mode the editor
 // would not show.
 describe('hero scenes', () => {
   it.each(HERO_SCENES.map((s) => [s.key, s] as const))(

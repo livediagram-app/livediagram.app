@@ -136,8 +136,8 @@ describe('Pages: a running Vote or Poll only', () => {
 });
 
 describe('sessionStripTools', () => {
-  it('offers all three in Facilitate, Timer and Vote in Plan, none in Diagram or Draw', () => {
-    expect(sessionStripTools('facilitate')).toEqual({ timer: true, vote: true, poll: true });
+  it('offers all three in Workshop, Timer and Vote in Plan, none in Diagram or Draw', () => {
+    expect(sessionStripTools('workshop')).toEqual({ timer: true, vote: true, poll: true });
     expect(sessionStripTools('plan')).toEqual({ timer: true, vote: true, poll: false });
     expect(sessionStripTools(undefined)).toBeNull();
     expect(sessionStripTools('diagram')).toBeNull();
@@ -160,8 +160,8 @@ describe('sessionStripTools', () => {
 
 describe('stripCanStart', () => {
   it('offers the idle tools to an editor, never in a running-only strip or to a view role', () => {
-    expect(stripCanStart(sessionStripTools('facilitate')!, false)).toBe(true);
-    expect(stripCanStart(sessionStripTools('facilitate')!, true)).toBe(false);
+    expect(stripCanStart(sessionStripTools('workshop')!, false)).toBe(true);
+    expect(stripCanStart(sessionStripTools('workshop')!, true)).toBe(false);
     expect(stripCanStart(sessionStripTools('pages')!, false)).toBe(false);
   });
 });
@@ -170,7 +170,7 @@ describe('stripSegmentGone', () => {
   const idle = { timer: false, vote: false, poll: false };
   const all = { timer: true, vote: true, poll: true };
   const pages = sessionStripTools('pages');
-  const facilitate = sessionStripTools('facilitate');
+  const workshop = sessionStripTools('workshop');
 
   it('keeps nothing open when no popover is', () => {
     expect(stripSegmentGone({ segment: null, tools: null, readOnly: false, running: idle })).toBe(
@@ -189,7 +189,7 @@ describe('stripSegmentGone', () => {
 
   it("keeps an editor's idle popover open where the strip offers starting one", () => {
     for (const segment of ['session-timer', 'session-vote', 'session-poll'] as const)
-      expect(stripSegmentGone({ segment, tools: facilitate, readOnly: false, running: idle })).toBe(
+      expect(stripSegmentGone({ segment, tools: workshop, readOnly: false, running: idle })).toBe(
         false,
       );
   });
@@ -203,7 +203,7 @@ describe('stripSegmentGone', () => {
   });
 
   it("closes a view role's popover when its tool ends", () => {
-    const at = { tools: facilitate, readOnly: true };
+    const at = { tools: workshop, readOnly: true };
     expect(stripSegmentGone({ ...at, segment: 'session-timer', running: all })).toBe(false);
     expect(stripSegmentGone({ ...at, segment: 'session-timer', running: idle })).toBe(true);
   });

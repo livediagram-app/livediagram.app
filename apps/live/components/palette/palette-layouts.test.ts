@@ -16,9 +16,9 @@ import {
 import { tileById, tilesForCategory } from './palette-tile-defs';
 
 // The palette per mode (docs/specs/007-editor/editor-modes.md "The palette per mode").
-const ids = (mode: 'diagram' | 'pages' | 'plan' | 'facilitate', esBoard = false) =>
+const ids = (mode: 'diagram' | 'pages' | 'plan' | 'workshop', esBoard = false) =>
   paletteCategoriesFor(mode, { esBoard }).map((c) => c.id);
-const tileIds = (mode: 'diagram' | 'pages' | 'plan' | 'facilitate', category: string) =>
+const tileIds = (mode: 'diagram' | 'pages' | 'plan' | 'workshop', category: string) =>
   paletteCategoriesFor(mode)
     .find((c) => c.id === category)!
     .tiles!.map((t) => t.id);
@@ -61,16 +61,16 @@ describe('palette layouts', () => {
     expect(write.tiles!.slice(-3)[0]!.id).toBe('components:callout');
   });
 
-  it('offers every Data tile in Facilitate and Pages, Pages adding the Table', () => {
+  it('offers every Data tile in Workshop and Pages, Pages adding the Table', () => {
     const data = tilesForCategory('data').map((t) => t.id);
-    expect(tileIds('facilitate', 'data')).toEqual(data);
+    expect(tileIds('workshop', 'data')).toEqual(data);
     expect(tileIds('pages', 'data')).toEqual([...data, 'tools:table']);
     // The Timeline is a concept graphic (docs/specs/009-elements/concept-graphics.md "Timeline"), in Concepts.
     expect(tileIds('pages', 'concepts')).toContain('tools:timeline');
     expect(tileIds('diagram', 'concepts')).toContain('tools:timeline');
   });
 
-  // Comments and assigned actions belong to every mode (docs/specs/012-collaboration/facilitate-mode.md).
+  // Comments and assigned actions belong to every mode (docs/specs/012-collaboration/workshop-mode.md).
   it("keeps the Comment panel and the Action card at the end of Diagram's Write", () => {
     const write = paletteCategoriesFor('diagram').find((c) => c.id === 'write')!;
     expect(write.tiles!.slice(-2).map((t) => t.id)).toEqual([
@@ -79,9 +79,9 @@ describe('palette layouts', () => {
     ]);
   });
 
-  // Facilitate mode (docs/specs/012-collaboration/facilitate-mode.md "The palette").
-  it('gives Facilitate Popular, the drawing basics, Layout, the decorations, the charts and the six Collaborate categories', () => {
-    expect(ids('facilitate')).toEqual([
+  // Workshop mode (docs/specs/012-collaboration/workshop-mode.md "The palette").
+  it('gives Workshop Popular, the drawing basics, Layout, the decorations, the charts and the six Collaborate categories', () => {
+    expect(ids('workshop')).toEqual([
       'popular',
       'shapes',
       'my-shapes',
@@ -99,11 +99,11 @@ describe('palette layouts', () => {
       'collab-mode',
       'collab-navigate',
     ]);
-    expect(paletteLandingCategory('facilitate', false)).toBe('popular');
+    expect(paletteLandingCategory('workshop', false)).toBe('popular');
   });
 
-  it("puts the session kit on Facilitate's Popular as four openers", () => {
-    const popular = paletteCategoriesFor('facilitate').find((c) => c.id === 'popular')!;
+  it("puts the session kit on Workshop's Popular as four openers", () => {
+    const popular = paletteCategoriesFor('workshop').find((c) => c.id === 'popular')!;
     expect(popular.tiles!.map((t) => t.id)).toEqual([
       'shapes:square',
       'tools:sticky',
@@ -118,16 +118,16 @@ describe('palette layouts', () => {
     ]);
     // A divider of its own between the tiles and the openers, here only.
     expect(popular.tiles!.filter((t) => t.dividerAfter).map((t) => t.id)).toContain('tools:image');
-    // Each opens a category Facilitate offers.
-    const offered = new Set(paletteCategoriesFor('facilitate').map((c) => c.id));
+    // Each opens a category Workshop offers.
+    const offered = new Set(paletteCategoriesFor('workshop').map((c) => c.id));
     for (const t of popular.tiles!)
       if (t.action.type === 'open') expect(offered.has(t.action.category), t.id).toBe(true);
   });
 
-  // A layout that drops a group's last tile keeps the group's end: Diagram and Facilitate leave out the Tab Window,
+  // A layout that drops a group's last tile keeps the group's end: Diagram and Workshop leave out the Tab Window,
   // which ends Media's first group, and Image ends it there instead.
   it("keeps Media's divider after Image where the Tab Window is left out", () => {
-    for (const mode of ['diagram', 'facilitate'] as const) {
+    for (const mode of ['diagram', 'workshop'] as const) {
       const media = paletteCategoriesFor(mode).find((c) => c.id === 'media')!;
       const ids = media.tiles!.map((t) => t.id);
       expect(ids, mode).not.toContain('media:tab-window');
@@ -137,8 +137,8 @@ describe('palette layouts', () => {
     }
   });
 
-  it('holds every Collaborate tile in Facilitate, across its six categories', () => {
-    const held = paletteCategoriesFor('facilitate')
+  it('holds every Collaborate tile in Workshop, across its six categories', () => {
+    const held = paletteCategoriesFor('workshop')
       .filter((c) => c.id.startsWith('collab-'))
       .flatMap((c) => c.tiles!.map((t) => t.id));
     expect(held.sort()).toEqual(
@@ -148,12 +148,12 @@ describe('palette layouts', () => {
     );
   });
 
-  it("leaves Page, Annotation, Shape Pen and Polygon out of Facilitate's Write and Draw, and gives it Diagram's Layout", () => {
+  it("leaves Page, Annotation, Shape Pen and Polygon out of Workshop's Write and Draw, and gives it Diagram's Layout", () => {
     const tilesOf = (id: string) =>
-      paletteCategoriesFor('facilitate')
+      paletteCategoriesFor('workshop')
         .find((c) => c.id === id)!
         .tiles!.map((t) => t.id);
-    const write = paletteCategoriesFor('facilitate').find((c) => c.id === 'write')!;
+    const write = paletteCategoriesFor('workshop').find((c) => c.id === 'write')!;
     expect(write.label).toBe('Write');
     expect(tilesOf('write')).toEqual([
       'tools:text',
@@ -162,7 +162,7 @@ describe('palette layouts', () => {
       'tools:table',
       'tools:checklist',
     ]);
-    // Diagram's Layout, with the Timeline after the containers: Facilitate has no Concepts to find it in.
+    // Diagram's Layout, with the Timeline after the containers: Workshop has no Concepts to find it in.
     const layout = tileIds('diagram', 'layout');
     expect(layout).not.toContain('tools:timeline');
     expect(tilesOf('layout')).toEqual([
@@ -178,8 +178,8 @@ describe('palette layouts', () => {
     ]);
   });
 
-  it('gives a Facilitate Participant Sticky and Text, and an image', () => {
-    expect(participantTiles('facilitate', false).map((t) => t.id)).toEqual([
+  it('gives a Workshop Participant Sticky and Text, and an image', () => {
+    expect(participantTiles('workshop', false).map((t) => t.id)).toEqual([
       'tools:sticky',
       'tools:text',
       'tools:image',
@@ -221,7 +221,7 @@ describe('palette layouts', () => {
 
   // Every Popular tile is in another category of its mode too: the category bar has no Popular.
   it('offers every Popular tile in another category of its mode', () => {
-    for (const mode of ['diagram', 'facilitate', 'pages'] as const) {
+    for (const mode of ['diagram', 'workshop', 'pages'] as const) {
       const cats = paletteCategoriesFor(mode);
       const elsewhere = new Set(
         cats.filter((c) => c.id !== 'popular').flatMap((c) => (c.tiles ?? []).map((t) => t.id)),

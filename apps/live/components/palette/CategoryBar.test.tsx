@@ -176,7 +176,7 @@ describe('hover intent', () => {
   });
 
   it('stays open while its search holds a query', () => {
-    show('facilitate');
+    show('workshop');
     fireEvent.pointerEnter(button('Session'), mouse);
     wait(HOVER_OPEN_MS);
     const field = within(flyout()!).getByRole('textbox') as HTMLInputElement;
@@ -298,7 +298,7 @@ describe('a tile’s side panel', () => {
 
 describe('Session’s browse', () => {
   it('lists its groups down a rail with their counts as badges, and opens on the first', () => {
-    show('facilitate');
+    show('workshop');
     fireEvent.click(button('Session'), { detail: 1 });
     const rail = within(flyout()!).getByRole('navigation');
     const groups = within(rail).getAllByRole('button');
@@ -314,7 +314,7 @@ describe('Session’s browse', () => {
   });
 
   it('switches group from the rail, finds across every group, and remembers the group it was left on', () => {
-    show('facilitate');
+    show('workshop');
     fireEvent.click(button('Session'), { detail: 1 });
     const rail = () => within(flyout()!).getByRole('navigation');
     fireEvent.click(within(rail()).getByRole('button', { name: /^React/ }));

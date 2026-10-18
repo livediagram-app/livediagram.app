@@ -32,7 +32,7 @@ import {
 } from '@livediagram/ui';
 import {
   AskGroupIcon,
-  FacilitateGroupIcon,
+  WorkshopGroupIcon,
   ModeGroupIcon,
   MoveGroupIcon,
   ReactionGroupIcon,
@@ -313,9 +313,9 @@ export const PALETTE_CATEGORIES: {
   // The Collaborate elements (docs/specs/010-palette/palette-top-level-categories.md): everything whose
   // content arrives at RUNTIME rather than being drawn by the author, the ones that do something when
   // pressed and the ones that collect what the room thinks. Their own Collaborate band. Six categories, one per group, in
-  // room-first order: Facilitate offers them in place of one Collaborate category with a group
+  // room-first order: Workshop offers them in place of one Collaborate category with a group
   // browser inside it, since every group is something a facilitator reaches for mid-session and a
-  // parent category was a click in front of each (docs/specs/012-collaboration/facilitate-mode.md
+  // parent category was a click in front of each (docs/specs/012-collaboration/workshop-mode.md
   // "The palette"). Their tiles: COLLABORATE_CATEGORY_GROUPS.
   {
     id: 'collab-ask',
@@ -331,7 +331,7 @@ export const PALETTE_CATEGORIES: {
     group: 6,
     description:
       'Run the session: a timer or a stopwatch, a reveal zone, a done check and a picker.',
-    icon: <FacilitateGroupIcon />,
+    icon: <WorkshopGroupIcon />,
   },
   {
     id: 'collab-record',

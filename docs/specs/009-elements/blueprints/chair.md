@@ -177,7 +177,7 @@ export function FurnitureView(props: { element: ShapeElement; stroke: string; si
   `#94a3b8`, label `#0f172a`; dark paper stroke `#64748b`, label `#ffffff`. The export follows
   this, and so does the canvas: `FurnitureView` takes `defaultStrokeColor(element, surface)`.
 - **Label:** under the chair (`textAlignY: 'bottom'`), on the canvas and in the export.
-- **Palette:** tile `tools:chair` ("Add Chair") in the **Navigate** category (Facilitate's Collaborate band).
+- **Palette:** tile `tools:chair` ("Add Chair") in the **Navigate** category (Workshop's Collaborate band).
 - **Occupied:** a 3 px ring (the drawing's `ring`, opacity 0.85) in the first sitter's colour, painted
   inside the drawing's frame (so a mirrored side mirrors it) before `parts[ringUnder]`: on the seat,
   under whatever stands nearer the camera (a backrest's back, the desk and its monitor, a sofa's

@@ -12,7 +12,7 @@ import { ModeMark, type Mode } from './mode-mark';
 const MODES: { mode: Mode; tile: string; mark: string }[] = [
   { mode: 'Diagram', tile: 'fill-sky-100', mark: 'stroke-sky-700' },
   { mode: 'Draw', tile: 'fill-orange-100', mark: 'stroke-orange-700' },
-  { mode: 'Facilitate', tile: 'fill-violet-100', mark: 'stroke-violet-700' },
+  { mode: 'Workshop', tile: 'fill-violet-100', mark: 'stroke-violet-700' },
   { mode: 'Pages', tile: 'fill-pink-100', mark: 'stroke-pink-700' },
   { mode: 'Plan', tile: 'fill-emerald-100', mark: 'stroke-emerald-700' },
 ];

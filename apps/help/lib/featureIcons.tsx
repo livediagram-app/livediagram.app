@@ -409,7 +409,7 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
     </Glyph>
   ),
   // Three people round a speech bubble: a team in a session, someone asking the room.
-  'facilitate-mode': (
+  'workshop-mode': (
     <Glyph>
       <path d="M8 3h8a1.5 1.5 0 0 1 1.5 1.5v3A1.5 1.5 0 0 1 16 9h-3l-2 2v-2H8A1.5 1.5 0 0 1 6.5 7.5v-3A1.5 1.5 0 0 1 8 3z" />
       <circle cx="5" cy="15" r="2" />
@@ -454,8 +454,8 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
     </Glyph>
   ),
   // A board with one card ringed by the tour's spotlight: Plan shown one part at a time.
-  // A flipchart on its easel with a dashed spotlight ring on its pad: a guided look at Facilitate.
-  'facilitate-tour': (
+  // A flipchart on its easel with a dashed spotlight ring on its pad: a guided look at Workshop.
+  'workshop-tour': (
     <Glyph>
       <rect x="4" y="3" width="16" height="12" rx="1.5" />
       <path d="M8 15l-2.5 6M16 15l2.5 6M12 15v6" />

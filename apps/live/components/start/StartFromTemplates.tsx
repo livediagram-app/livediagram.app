@@ -1,7 +1,7 @@
 'use client';
 
 // An empty tab's template start (docs/specs/007-editor/start-diagramming.md): Start Diagramming on a Diagram tab, Start
-// Facilitating on a Facilitate tab, Start Making Pages on a Pages tab, each a start panel (StartPanel) as Start
+// Facilitating on a Workshop tab, Start Making Pages on a Pages tab, each a start panel (StartPanel) as Start
 // Planning is Plan's. Recommended (the mode's blank first) and its groups beside a grid of the mode's templates, each its
 // preview over its name and line; a search across them and every other mode's templates (otherModeMatches); the × starts
 // from nothing. Choosing a template lands it on the tab at once, another mode's switching the tab to that mode.
@@ -48,7 +48,7 @@ import { useStartPalette } from '@/components/start/useStartPalette';
 
 const glyph = (icon: Parameters<typeof lucideGlyph>[0]) => lucideGlyph(icon, 16);
 
-// Each rail group's glyph: Diagram's catalogue categories and Facilitate's session groups.
+// Each rail group's glyph: Diagram's catalogue categories and Workshop's session groups.
 const RAIL_ICONS: Readonly<Record<string, ReturnType<typeof lucideGlyph>>> = {
   recommended: glyph(lucideStar),
   planning: glyph(lucideSquareKanban),
@@ -66,6 +66,8 @@ const RAIL_ICONS: Readonly<Record<string, ReturnType<typeof lucideGlyph>>> = {
   games: glyph(lucideDices),
   retrospectives: glyph(lucideRefreshCw),
   workshops: glyph(lucideUsers),
+  ideation: glyph(lucideLightbulb),
+  exercises: glyph(lucideUsers),
   decisions: glyph(lucideVote),
   slides: glyph(lucideLayers),
   infographics: glyph(lucideChartPie),
@@ -93,8 +95,8 @@ const COPY: Record<
     noMatch: 'drawing templates',
     help: 'drawMode',
   },
-  facilitate: {
-    title: 'Start Facilitating',
+  workshop: {
+    title: 'Start a Workshop',
     line: 'Pick a session format to run, or close this to start from a blank session.',
     noMatch: 'session templates',
     help: 'templates',
@@ -137,7 +139,7 @@ export function StartFromTemplates({
   );
   // The × starts from nothing: the panel stays closed on this tab in this mode, for this person (empty-card-dismissed.ts),
   // until the palette tray's Show Templates brings it back (StartAgainTray). Remembered per mode: closing Start
-  // Diagramming leaves Start Facilitating to show when the tab switches to it.
+  // Diagramming leaves Start a Workshop to show when the tab switches to it.
   const closedKey = startClosedKey(tabId, mode);
   const closed = useEmptyCardDismissed(closedKey);
   // On screen: the tours hold their offer until it goes (start-panel-open.ts).

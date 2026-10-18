@@ -82,12 +82,12 @@ export function PaletteDataTab({ pendingDraw, actions, tiles }: TabProps) {
   return <PaletteToolRows tiles={tiles} actions={actions} pendingDraw={pendingDraw} />;
 }
 
-// The Collaborate elements (docs/specs/012-collaboration/facilitate-mode.md "The palette"): six
+// The Collaborate elements (docs/specs/012-collaboration/workshop-mode.md "The palette"): six
 // categories, one per group (Ask, Tools, Record, React, Selection Mode, Navigate). Rows with a blurb,
 // like Build and Data: eight mode buttons or five reaction pads look alike at palette size, and
 // "Hand everyone the laser" against "Hand everyone the spotlight" is the choice being made.
 //
-// They were once one category with a group browser inside it. In Facilitate every group is
+// They were once one category with a group browser inside it. In Workshop every group is
 // something a facilitator reaches for mid-session, so the parent was a click in front of each.
 export function PaletteCollaborateTab({ pendingDraw, actions, tiles }: TabProps) {
   return <PaletteToolRows tiles={tiles} actions={actions} pendingDraw={pendingDraw} />;

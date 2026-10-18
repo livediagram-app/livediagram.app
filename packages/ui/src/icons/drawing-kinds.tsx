@@ -49,7 +49,7 @@ export function PlanIcon({ size = 16, ...rest }: IconProps) {
   );
 }
 
-// Facilitate mode's mark (docs/specs/012-collaboration/facilitate-mode.md): a flipchart on an
+// Workshop mode's mark (docs/specs/012-collaboration/workshop-mode.md): a flipchart on an
 // easel, its pad holding two lines of writing, on the 24-unit grid.
 export function FlipchartIcon({ size = 16, ...rest }: IconProps) {
   return (
@@ -83,5 +83,5 @@ export const EDITOR_MODE_ICONS: Readonly<Record<EditorMode, ComponentType<IconPr
   draw: MarkerIcon,
   pages: PagesIcon,
   plan: PlanIcon,
-  facilitate: FlipchartIcon,
+  workshop: FlipchartIcon,
 };

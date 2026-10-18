@@ -46,7 +46,7 @@ const ART: Record<EditorMode, ReactNode> = {
     </>
   ),
   // Two stickies with votes under them, and a timer.
-  facilitate: (
+  workshop: (
     <>
       <rect x="10" y="10" width="22" height="22" rx="2" fill="currentColor" fillOpacity=".18" />
       <rect x="36" y="14" width="22" height="22" rx="2" fill="currentColor" fillOpacity=".18" />

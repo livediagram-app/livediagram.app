@@ -1,5 +1,5 @@
 // Editor modes (docs/specs/007-editor/editor-modes.md): how a general tab is worked on, Diagram,
-// Draw, Facilitate, Pages or Plan. A mode tunes tools and rules; it never decides what the tab is (that is its kind). The
+// Draw, Workshop, Pages or Plan. A mode tunes tools and rules; it never decides what the tab is (that is its kind). The
 // mode is the tab's, the same for everyone on it (`Tab.opensIn`, Diagram when absent).
 import type { Layer } from './layers';
 import { isEventStormingTab } from './event-storming';
@@ -19,8 +19,8 @@ export const EDITOR_MODE_CATALOGUE = [
     description: 'Sketch freehand with pens, tidied into shapes as you go.',
   },
   {
-    id: 'facilitate',
-    label: 'Facilitate',
+    id: 'workshop',
+    label: 'Workshop',
     description: 'Run a live session: timers, votes, polls and reveals.',
   },
   {
@@ -77,12 +77,13 @@ export function isEditorMode(v: unknown): v is EditorMode {
   return EDITOR_MODES.includes(v as EditorMode);
 }
 
-// Pages mode was called Illustrate mode, and Infographic mode before that, and stored as `illustrate` or
-// `infographic` wherever a mode is kept (a tab's opensIn, a remembered mode, a placement-default key,
-// a `/new?mode=` link).
+// Pages mode was called Illustrate mode, and Infographic mode before that, and Workshop mode was
+// Facilitate mode; each was stored under its old id wherever a mode is kept (a tab's opensIn, a
+// remembered mode, a placement-default key, a `/new?mode=` link, an `opens-in:` filter).
 const LEGACY_EDITOR_MODES: Readonly<Record<string, EditorMode>> = {
   illustrate: 'pages',
   infographic: 'pages',
+  facilitate: 'workshop',
 };
 
 /** A stored mode as today's id: a current id as it is, a legacy one renamed, anything else

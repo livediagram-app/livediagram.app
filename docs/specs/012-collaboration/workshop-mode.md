@@ -1,6 +1,6 @@
-# Facilitate mode
+# Workshop mode
 
-**Facilitate** is the fifth [editor mode](../007-editor/editor-modes.md), beside Diagram, Draw,
+**Workshop** is the fifth [editor mode](../007-editor/editor-modes.md), beside Diagram, Draw,
 Pages and Plan: how a general tab is worked on while a team runs a session on it, a
 retrospective, a town hall, a lean coffee, a workshop. It brings the tools that run a room into
 focus (timers, votes, polls, reveals, the Collaborate elements, stickers) and takes them out of
@@ -17,19 +17,24 @@ boards.
 
 ## Domain language
 
-| Term                | Means                                                                                         | Not                                           |
-| ------------------- | --------------------------------------------------------------------------------------------- | --------------------------------------------- |
-| **Facilitate mode** | The editor mode for running a session with a team (`EditorMode` `'facilitate'`)               | Session mode, Collaborate mode                |
-| **session**         | The activity a team runs on a tab (a retro, a town hall); never a stored thing                | a tab kind, a document type                   |
-| **facilitator**     | The person holding the baton ([Facilitator](facilitator.md)); unrelated to who is in the mode | anyone in Facilitate mode                     |
-| **session tools**   | Timer, Vote and Poll ([Session tools](session-tools.md))                                      | the Collaborate elements as a whole           |
-| **Collaborate**     | The session elements as a whole (`toolGroup: 'behaviour'`), offered as six categories         | the mode, or comments and presence in general |
+| Term              | Means                                                                                         | Not                                                            |
+| ----------------- | --------------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
+| **Workshop mode** | The editor mode for running a session with a team (`EditorMode` `'workshop'`)                 | Facilitate mode (its old name), Session mode, Collaborate mode |
+| **session**       | The activity a team runs on a tab (a retro, a town hall); never a stored thing                | a tab kind, a document type                                    |
+| **facilitator**   | The person holding the baton ([Facilitator](facilitator.md)); unrelated to who is in the mode | anyone in Workshop mode                                        |
+| **session tools** | Timer, Vote and Poll ([Session tools](session-tools.md))                                      | the Collaborate elements as a whole                            |
+| **Collaborate**   | The session elements as a whole (`toolGroup: 'behaviour'`), offered as six categories         | the mode, or comments and presence in general                  |
 
-- The interface says **Facilitate**; specs and code say **Facilitate mode** or `'facilitate'`.
+- The interface says **Workshop**; specs and code say **Workshop mode** or `'workshop'`.
+- It was called **Facilitate** until October 2026. "Facilitate" was jargon for what a team calls running a
+  workshop, and it blurred the mode with the **facilitator**, the person holding the baton, who is unrelated
+  to who is in the mode. "Workshop" names the activity everyone on the tab shares, as Plan and Draw do. The
+  facilitator keeps its name: a workshop has a facilitator. Every stored trace of the old name reads as
+  Workshop ([Editor modes](../007-editor/editor-modes.md) "Naming in the interface").
 - "Session" and "Collaborate" are not the mode's name: both already name other things (the
   Session strip, Session buttons and the share session; the Collaborate elements and menu
   rows).
-- Facilitate mode is a mode, never a kind: a retro is a general tab in Facilitate mode, and
+- Workshop mode is a mode, never a kind: a retro is a general tab in Workshop mode, and
   everything on it is there in every other mode.
 
 ## What it brings into focus
@@ -50,7 +55,7 @@ boards.
 - **The Session strip** leaves Diagram entirely (below).
 - **Diagram keeps two Collaborate tiles in Write:** the **Comment panel** and the **Action card**
   (`collab:comment-pin`, `collab:action-card`), because comments and assigned actions belong to
-  every mode (below). In Facilitate they sit in the Record category.
+  every mode (below). In Workshop they sit in the Record category.
 - **Diagram keeps Icons**, Technology, Media and everything else it has.
 - **Content stays.** A session element already on a tab (a session button, a reveal zone, an
   agenda, a sticker) renders and works in every mode exactly as before: pressing a session button
@@ -73,12 +78,12 @@ mode as today:
 - presence, cursors, follow-me and Bring Focus;
 - Presentation mode and the Slide Deck;
 - assigned actions (the Action card tile, every element's Assign Action) and the Collaborate
-  Panel; a Decision record already on a tab works everywhere, though its tile is Facilitate's;
+  Panel; a Decision record already on a tab works everywhere, though its tile is Workshop's;
 - the facilitator baton in the Collaborators dialog.
 
 ## The palette
 
-Facilitate's layout, in order (no Concepts: concept graphics lay out an idea for a diagram, which a session does not
+Workshop's layout, in order (no Concepts: concept graphics lay out an idea for a diagram, which a session does not
 stop to draw):
 
 | Band        | Categories                                            |
@@ -97,7 +102,7 @@ stop to draw):
   Pointer note, then behind a divider Table and Checklist (no Page, no Annotation); Draw is Pencil, Highlighter, Arrow
   and Line (no Shape Pen, no Polygon).
 - **Layout is Diagram's** ([The Build palette category](../010-palette/build-category.md)): Lane, Frame, Stack,
-  Boundary, the Timeline (Facilitate has no Concepts, where it otherwise lives), then Diagram key, Card, Badge and
+  Boundary, the Timeline (Workshop has no Concepts, where it otherwise lives), then Diagram key, Card, Badge and
   Step number. A board is laid out in frames and lanes, and its
   notes labelled, as a diagram is. No Diagrams: mind maps and flowcharts build a diagram, which a session does not
   stop for. Search still finds those left out and places them, as it
@@ -117,34 +122,34 @@ stop to draw):
   and Navigate gathered into **Session**, browsed in two panes (the groups down the side, a search across all of
   them). **Ask** keeps its own button: putting a question to the room is the session's main act.
 
-  In Facilitate every one of them is a tile you reach for mid-session, so a parent category was a
+  In Workshop every one of them is a tile you reach for mid-session, so a parent category was a
   click in front of each, with a group browser one level down. Six categories put every group one
   pick away in the category picker and let the toolbar strip show each group's tiles directly.
 
 - Technology, Components, Devices, Data and Event Storming are not offered: they build diagrams
   and pages, not sessions.
-- A **Participant** gets the participant palette Facilitate's landing category gives
+- A **Participant** gets the participant palette Workshop's landing category gives
   ([Participant share role](#share-roles)): sticky notes and text, and an image.
 
 ## The Session strip per mode
 
 `sessionStripTools(mode, esBoard)`:
 
-| Mode       | Strip tools              |
-| ---------- | ------------------------ |
-| Facilitate | Timer, Vote, Poll        |
-| Plan       | Timer, Vote              |
-| Diagram    | none                     |
-| Draw       | none (as today)          |
-| Pages      | Vote, Poll while running |
+| Mode     | Strip tools              |
+| -------- | ------------------------ |
+| Workshop | Timer, Vote, Poll        |
+| Plan     | Timer, Vote              |
+| Diagram  | none                     |
+| Draw     | none (as today)          |
+| Pages    | Vote, Poll while running |
 
 - **An event-storming board keeps all three.** It is a workshop board, always Diagram, with no
-  switch, so it could never reach Facilitate's strip; the tab kind brings the strip itself.
+  switch, so it could never reach Workshop's strip; the tab kind brings the strip itself.
 
 - **Diagram has no strip, running or not.** A timer, vote or poll started on a Diagram tab (by a
-  session button on it, or before the tab was switched out of Facilitate) runs as before and shows
+  session button on it, or before the tab was switched out of Workshop) runs as before and shows
   on its own canvas element, but its strip button and popover do not: watching turnout, ending a
-  poll or keeping its results is done from Facilitate (or Plan for a timer or vote). This is the
+  poll or keeping its results is done from Workshop (or Plan for a timer or vote). This is the
   same rule Draw already follows, and the price of a Diagram mode with no session chrome.
 - **Pages shows a running Vote or Poll only.** Nothing is started from its strip (the session
   buttons on a page do that), but once a vote or poll runs, its button and popover appear for
@@ -153,7 +158,7 @@ stop to draw):
 
 ## Templates
 
-Session templates open in Facilitate, as the Draw templates open in Draw
+Session templates open in Workshop, as the Draw templates open in Draw
 ([Templates by mode](../007-editor/templates-by-mode.md)):
 
 - the Retrospectives family's `retrospective`, `start-stop-continue`, `mad-sad-glad`, `four-ls`
@@ -163,8 +168,8 @@ Session templates open in Facilitate, as the Draw templates open in Draw
   only a mode with a Session strip can watch, end and keep that vote;
 - the boards a team fills in together: `incident-postmortem`, `user-persona`, `empathy-map`, `journey`,
   `objectives-planner`, `roadmap`, `raci-matrix`, `user-story-map`, `swot`, `business-model-canvas`,
-  `stakeholder-map` and `opportunity-solution-tree` (grouped in Start Facilitating under Retrospectives, Workshops, Planning
-  and Strategy, [Templates by mode](../007-editor/templates-by-mode.md#facilitate-templates));
+  `stakeholder-map` and `opportunity-solution-tree` (grouped in Start a Workshop under Retrospectives, Workshops, Planning
+  and Strategy, [Templates by mode](../007-editor/templates-by-mode.md#workshop-templates));
 - the quizzes and games, `pub-quiz`, `icebreaker-questions`, `two-truths-and-a-lie`, `would-you-rather` and
   `people-bingo` ([Quiz and game templates](quiz-and-game-templates.md));
 - the spaces to walk round in Avatar mode, `virtual-office`, `coworking-space`, `team-pod` and `all-hands-hall`
@@ -173,8 +178,8 @@ Session templates open in Facilitate, as the Draw templates open in Draw
 Brainstorm mind maps stay in Diagram and the drawn warm-ups (`doodle-warmup`, `pre-mortem`,
 `idea-garden`) stay in Draw.
 
-**Blank Session** (kind `blank-session`) is Facilitate's blank: a general tab that opens in
-Facilitate with nothing on it, the document named "Untitled Session". It joins the blanks
+**Blank Session** (kind `blank-session`) is Workshop's blank: a general tab that opens in
+Workshop with nothing on it, the document named "Untitled Session". It joins the blanks
 leading Popular in the marketing gallery and the starts, which become five. It was the fifth row of the
 sites' Start Blank menu (funnel slot `HeaderSession`, retired with the menu, [Landing funnel](../019-marketing/landing-funnel.md)).
 
@@ -182,9 +187,9 @@ sites' Start Blank menu (funnel slot `HeaderSession`, retired with the menu, [La
 
 Following [Gate a feature by share role](../../instructions/gate-a-feature-by-share-role.md):
 
-| Role            | In Facilitate mode                                                                                                                                            |
+| Role            | In Workshop mode                                                                                                                                              |
 | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Editor**      | Switches the tab into and out of Facilitate; the full palette and the Session strip's set-up; every session tool's rules as specified for it                  |
+| **Editor**      | Switches the tab into and out of Workshop; the full palette and the Session strip's set-up; every session tool's rules as specified for it                    |
 | **Participant** | Follows the tab's mode, sees no switch; the participant palette and tools; takes part in every running tool (votes, answers, responds) as its own spec allows |
 | **Viewer**      | Follows the tab's mode, sees no switch and no palette; sees running tools' buttons read-only, as today                                                        |
 
@@ -193,35 +198,35 @@ as for a viewer, as every mode does.
 
 ## Agents, MCP and the CLI
 
-- `'facilitate'` is a valid stored `opensIn` everywhere a mode is read (the api's creation intent,
+- `'workshop'` is a valid stored `opensIn` everywhere a mode is read (the api's creation intent,
   default folders, tab stats, the OpenAPI `EditorMode` enum).
-- MCP and the CLI reach Facilitate through templates: a session template, or `blank-session`,
-  makes a tab that opens in Facilitate. No tool takes a mode directly, as today.
-- `document-views` need no change: Facilitate draws no pages.
+- MCP and the CLI reach Workshop through templates: a session template, or `blank-session`,
+  makes a tab that opens in Workshop. No tool takes a mode directly, as today.
+- `document-views` need no change: Workshop draws no pages.
 
 ## Workspace
 
-- **Default folders:** a `mode:facilitate` key, labelled **Sessions** (noun "sessions")
+- **Default folders:** a `mode:workshop` key, labelled **Sessions** (noun "sessions")
   ([Default folders](../013-workspace/default-folders.md)).
-- **Explorer filters:** Opens in offers **Facilitate** ([Explorer filters](../013-workspace/explorer-filters.md)).
-- **The template picker's mode filter** offers Facilitate, with its count.
+- **Explorer filters:** Opens in offers **Workshop** ([Explorer filters](../013-workspace/explorer-filters.md)).
+- **The template picker's mode filter** offers Workshop, with its count.
 
 ## Telemetry
 
-- `Editor` · `Changed` · `ModeFacilitate`, fired as the other modes' switches fire.
-- `UI` · `Toggled` · `TemplateModeFacilitate`, from the template picker's mode filter.
+- `Editor` · `Changed` · `ModeWorkshop`, fired as the other modes' switches fire.
+- `UI` · `Toggled` · `TemplateModeWorkshop`, from the template picker's mode filter.
 - Both extend the existing types; no new category or action.
 
 ## Help
 
-- **Facilitate mode** gets its own help article (`/help/canvas/facilitate-mode/`),
+- **Workshop mode** gets its own help article (`/help/canvas/workshop-mode/`),
   registered per [Register a help article](../../instructions/register-a-help-article.md), and
   **Editor Modes** covers five modes.
-- The Session tools article says the set-up lives in Facilitate (and Plan).
-- An optional [Facilitate tour](facilitate-tour.md) shows the mode the first time someone is in it.
+- The Session tools article says the set-up lives in Workshop (and Plan).
+- An optional [Workshop tour](workshop-tour.md) shows the mode the first time someone is in it.
 
 ## Existing tabs
 
 - Nothing is migrated. A tab in Diagram keeps opening in Diagram, with every session element on it
-  working; its editors switch to Facilitate when they want the kit.
+  working; its editors switch to Workshop when they want the kit.
 - A retro made from a template before this change opens in Diagram, as stored.

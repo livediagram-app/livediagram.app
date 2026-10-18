@@ -40,7 +40,7 @@ pen widths, dock spacing) are named constants, tuned in place.
   **Blank Whiteboard** template (kind id `whiteboard`, a blank builder and a preview tile, `packages/templates`).
 - **Start Drawing:** an empty Draw tab offers its templates in **Start Drawing** ([Template
   starts](../007-editor/start-diagramming.md)): Blank Whiteboard first under Recommended, then **Visual Notes**,
-  **Workshops** and **Prototypes**, with the pen staying in hand around it. The × starts from the blank whiteboard,
+  **Exercises** and **Prototypes**, with the pen staying in hand around it. The × starts from the blank whiteboard,
   and a top-centre pill brings it back while the tab is empty.
 - **New tab:** a new tab opens on its mode's start; another mode's start finds **Blank Whiteboard** and every
   Draw template by search ([Template starts](../007-editor/start-diagramming.md#found-in-other-modes)).

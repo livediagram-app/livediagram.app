@@ -363,7 +363,7 @@ describe('buildTemplate translation invariance', () => {
         k !== 'blank-logo' &&
         // An empty Plan tab: it opens on Start Planning (docs/specs/026-plan/plan-templates.md).
         k !== 'blank-plan' &&
-        // An empty session tab (docs/specs/012-collaboration/facilitate-mode.md "Templates").
+        // An empty session tab (docs/specs/012-collaboration/workshop-mode.md "Templates").
         k !== 'blank-session' &&
         // A form template's empty Plan tab: the editor starts the form on it (docs/specs/030-forms/forms.md).
         !k.endsWith('-form') &&

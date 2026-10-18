@@ -264,10 +264,10 @@ type UserPreferences = {
   // The Plan tour tracks (Boards, Sheets) whose offer has been answered (taken, skipped or declined), so each offers
   // itself once ever. Cleared with `planTourSeen` when the Settings switch is turned on.
   planTourTracks?: PlanTourTrack[];
-  // The Facilitate tour's seen-guard (docs/specs/012-collaboration/facilitate-tour.md), as `planTourSeen`.
-  // Surfaced in Settings as Tours › "Facilitate Tour" (inverted). Missing / undefined === not seen.
-  facilitateTourSeen?: boolean;
-  // The Draw tour's seen-guard (docs/specs/023-draw-mode/draw-tour.md), as `facilitateTourSeen`.
+  // The Workshop tour's seen-guard (docs/specs/012-collaboration/workshop-tour.md), as `planTourSeen`.
+  // Surfaced in Settings as Tours › "Workshop Tour" (inverted). Missing / undefined === not seen.
+  workshopTourSeen?: boolean;
+  // The Draw tour's seen-guard (docs/specs/023-draw-mode/draw-tour.md), as `workshopTourSeen`.
   // Surfaced in Settings as Tours › "Draw Tour" (inverted). Missing / undefined === not seen.
   drawTourSeen?: boolean;
   // The Forms tour's seen-guard (docs/specs/030-forms/forms.md "The Forms tour"), as `drawTourSeen`; Show Me Around
@@ -765,7 +765,7 @@ and the dialog stays as the one complete, browsable index of them.
   and read as broken.
 
   **Tours** is a category of its own: one switch per guided tour, **Diagram
-  Tour**, **Plan Tour**, **Facilitate Tour**, **Draw Tour**, **Avatar Tour** and
+  Tour**, **Plan Tour**, **Workshop Tour**, **Draw Tour**, **Avatar Tour** and
   **Pages Tour**, each with a line saying where it offers itself and a **Learn more**
   to its article, under one **Offer Again** section note: each tour offers
   itself once; switch one back on and close Settings to take it again, straight
@@ -786,8 +786,8 @@ and the dialog stays as the one complete, browsable index of them.
   tour of several tracks (`apps/live/lib/tour-tracks.ts`): on while a track is still owed, off answering every
   track (`planTourTracks`), on forgetting them; it needs no handoff flag (the Plan tour offers itself in
   Plan once a board or Sheet is open), so closing the dialog only reruns it, when it was turned on from off
-  ([Plan tour](../026-plan/plan-tour.md)). **Facilitate Tour** works the same way against
-  `facilitateTourSeen` ([Facilitate tour](../012-collaboration/facilitate-tour.md)), **Draw Tour** against
+  ([Plan tour](../026-plan/plan-tour.md)). **Workshop Tour** works the same way against
+  `workshopTourSeen` ([Workshop tour](../012-collaboration/workshop-tour.md)), **Draw Tour** against
   `drawTourSeen` ([Draw tour](../023-draw-mode/draw-tour.md)), **Forms Tour** against `formTourSeen` ([Forms](../030-forms/forms.md) "The Forms tour"), **Avatar Tour** against `avatarTourSeen`
   ([Avatar tour](../008-canvas/avatar-tour.md)), and **Pages Tour** is built as Plan Tour is
   ([Pages tour](pages-tour.md)), one track per page kind: `pagesTourKinds` lists the kinds answered.

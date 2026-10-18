@@ -77,7 +77,7 @@ afterEach(() => {
   vi.useRealTimers();
   setActiveTour('welcome', false);
   setActiveTour('plan', false);
-  setActiveTour('facilitate', false);
+  setActiveTour('workshop', false);
   setActiveTour('draw', false);
   setActiveTour('avatar', false);
   setStartPanelOpen(false);

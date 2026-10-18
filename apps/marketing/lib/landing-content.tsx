@@ -38,7 +38,7 @@ import {
   EventStormingArt,
   ExpiryArt,
   ExportArt,
-  FacilitateModeArt,
+  WorkshopModeArt,
   FacilitatorArt,
   FindCardArt,
   FlowingArrowsArt,
@@ -165,7 +165,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
     cta: 'Explore collaboration',
     title: 'Work on it together, live',
     description:
-      'Share a link and your team is on the canvas with you: live cursors, comments on any element, actions handed to teammates, and Facilitate, a mode for running a workshop, with timers, votes and a spotlight on the thing you mean.',
+      'Share a link and your team is on the canvas with you: live cursors, comments on any element, actions handed to teammates, and Workshop, a mode for running a workshop, with timers, votes and a spotlight on the thing you mean.',
     metaDescription:
       'Share a link and your team is on the canvas with you: live cursors, comments, assigned actions and workshop tools, from timers and votes to polls.',
     highlights: [
@@ -242,23 +242,23 @@ export const LANDING_SECTIONS: LandingSection[] = [
       {
         art: <SessionToolsArt />,
         href: '/help/collaboration/session-tools/',
-        group: 'Present & facilitate',
+        group: 'Present & workshop',
         title: 'Run the session: timer + voting',
         description:
-          'Facilitate live from the canvas. In Facilitate, Timer, Vote and Poll sit in the Session strip at the foot of the canvas: start a countdown or stopwatch the whole room sees, its time on the button, or drop a timer onto the canvas as a session button so a template carries its own running order. Then open dot-voting to surface the group’s priorities. Everyone votes with a budget of dots; results tally in real time, and revealing them starts a guided walkthrough: each top pick lights up and centres on screen while you step through with Next and Previous. Perfect for retros, workshops, and timeboxed planning.',
+          'Run the room from the canvas. In Workshop, Timer, Vote and Poll sit in the Session strip at the foot of the canvas: start a countdown or stopwatch the whole room sees, its time on the button, or drop a timer onto the canvas as a session button so a template carries its own running order. Then open dot-voting to surface the group’s priorities. Everyone votes with a budget of dots; results tally in real time, and revealing them starts a guided walkthrough: each top pick lights up and centres on screen while you step through with Next and Previous. Perfect for retros, workshops, and timeboxed planning.',
       },
       {
-        art: <FacilitateModeArt />,
-        href: '/help/canvas/facilitate-mode/',
-        group: 'Present & facilitate',
+        art: <WorkshopModeArt />,
+        href: '/help/canvas/workshop-mode/',
+        group: 'Present & workshop',
         title: 'A mode for running the room',
         description:
-          'Switch a tab to Facilitate and it brings the session to hand: stickies, timers, votes, polls, reveals, quizzes and the Q&A board on its palette, and the Session strip at the foot of the canvas. Retrospectives, Lean Coffee and town halls open there, and Diagram stays about diagrams.',
+          'Switch a tab to Workshop and it brings the session to hand: stickies, timers, votes, polls, reveals, quizzes and the Q&A board on its palette, and the Session strip at the foot of the canvas. Retrospectives, Lean Coffee and town halls open there, and Diagram stays about diagrams.',
       },
       {
         art: <FacilitatorArt />,
         href: '/help/collaboration/facilitator/',
-        group: 'Present & facilitate',
+        group: 'Present & workshop',
         title: 'One person runs the room',
         description:
           'Hand someone the facilitator baton and the tools that run the session answer to them alone: the timer, the votes, the polls, the reveals. No two people starting timers over each other. Nobody holds it by default, anybody can be given it, and the owner can always take it back.',
@@ -266,7 +266,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
       {
         art: <SessionToolsArt />,
         href: '/help/palette/behaviour/',
-        group: 'Present & facilitate',
+        group: 'Present & workshop',
         title: 'Ask the room if they are done',
         description:
           'Drop a Done check and everyone marks themselves finished. The card shows who has and who it is still waiting on, built from whoever is actually in the room, and flashes when the last person marks. Reset it for the next round from its own menu.',
@@ -274,7 +274,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
       {
         art: <BringFocusArt />,
         href: '/help/palette/behaviour/bring-focus/',
-        group: 'Present & facilitate',
+        group: 'Present & workshop',
         title: 'Ask the room to look here',
         description:
           'Drop a Bring Focus element, press it, and everyone else is offered a jump to it: your tab, the thing you mean, centred on their screen. It asks rather than drags, so nobody loses the place they were working in.',
@@ -282,7 +282,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
       {
         art: <FacilitatorArt />,
         href: '/help/palette/collaborate/agendas/',
-        group: 'Present & facilitate',
+        group: 'Present & workshop',
         title: 'Keep the record of the meeting',
         description:
           'An agenda holds the run of the session, and pressing a segment starts the timer for it. A roll call freezes who was in the room, a picker chooses someone at random so nobody has to volunteer, and a decision record keeps what was decided, why and when, beside the thing it decided.',
@@ -290,7 +290,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
       {
         art: <SpotlightArt />,
         href: '/help/selection-modes/spotlight/',
-        group: 'Present & facilitate',
+        group: 'Present & workshop',
         title: 'Spotlight the room on one thing',
         description:
           'Switch on Spotlight and the canvas dims under a soft shroud, with only a circle of light around your cursor. Walk the room through a busy canvas one piece at a time. Left-click grows the light, right-click shrinks it, and it is a local view aid, so it never gets in a viewer’s way.',
@@ -298,7 +298,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
       {
         art: <LaserArt />,
         href: '/help/selection-modes/laser/',
-        group: 'Present & facilitate',
+        group: 'Present & workshop',
         title: 'Laser pointer for presenting',
         description:
           'Switch to the laser tool and your cursor leaves a glowing trail everyone can see. Point at the thing you mean while you talk it through. Trails fade on their own.',
@@ -306,7 +306,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
       {
         art: <FollowAlongArt />,
         href: '/help/canvas/follow-along/',
-        group: 'Present & facilitate',
+        group: 'Present & workshop',
         title: 'Follow someone\u2019s view',
         description:
           'Press Follow beside a teammate and your canvas goes where theirs goes: their tab, their pan, their exact zoom. A pill says who you are following, and the moment you move the canvas yourself, you have your own view back. Anyone can follow anyone, even on a view-only link.',
@@ -314,7 +314,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
       {
         art: <AvatarModeArt />,
         href: '/help/selection-modes/avatar-mode/',
-        group: 'Present & facilitate',
+        group: 'Present & workshop',
         title: 'Walk a character across your canvas',
         description:
           'Avatar mode drops a little pixel character onto the canvas. Click to walk it to whatever you are talking about, steer with the arrow keys, and press Space to hop and wave a flag. Dress it how you like (gender, clothing, hair and size, remembered in your browser), and the box it stands on gets a ring. The canvas is read-only while you walk, and on a shared document everyone sees everyone else walking about in their own colour.',
@@ -322,7 +322,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
       {
         art: <AvatarModeArt />,
         href: '/help/palette/behaviour/',
-        group: 'Present & facilitate',
+        group: 'Present & workshop',
         title: 'Celebrate on the canvas',
         description:
           'Reaction pads throw confetti, sparkles, hearts, applause or fireworks over the canvas for everyone in the room. Press one, or walk an Avatar-mode character onto it. Nothing is saved: a reaction is a moment, not a mark on the canvas. For a mark that stays, drop one of around 190 emoji stickers or 32 word badges like APPROVED and BLOCKED.',

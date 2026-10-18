@@ -103,12 +103,12 @@ unless Repeat is on. CSS only (a clip from the top); reduced motion and every ex
 
 ## Palette
 
-| Mode       | Where                                        |
-| ---------- | -------------------------------------------- |
-| Diagram    | **Build**: Sequence Diagram, after Flowchart |
-| Pages      | none                                         |
-| Plan       | none                                         |
-| Facilitate | none (Search still finds and places it)      |
+| Mode     | Where                                        |
+| -------- | -------------------------------------------- |
+| Diagram  | **Build**: Sequence Diagram, after Flowchart |
+| Pages    | none                                         |
+| Plan     | none                                         |
+| Workshop | none (Search still finds and places it)      |
 
 A new one shows Browser, API and Database with five messages: a call, a self-call, a call to the database, its reply
 and the reply to the browser.

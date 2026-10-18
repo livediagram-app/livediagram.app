@@ -30,7 +30,7 @@ import {
 // A retro a team actually wants to run, laid out in the order it is run.
 // A left rail opens the session: a fist-of-five temperature check ("How did
 // the sprint feel?") and the two session tools the ritual needs, a 5-minute
-// writing timer and a 3-dot vote, so anyone can facilitate it, with the
+// writing timer and a 3-dot vote, so anyone can workshop it, with the
 // sprint's numbers at its foot to ground the conversation. Three tinted
 // columns collect the notes (Went well / To improve / Ideas), eight to a
 // column on stickies two abreast in the column's hue, written a size up so

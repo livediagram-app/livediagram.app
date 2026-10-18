@@ -6,8 +6,8 @@ Status: shipped
 
 A flattening of the palette's category structure.
 
-In Diagram, Facilitate and Pages the strip now shows these categories as a **category bar**, each opening a
-flyout of its tiles, with no Popular, one-word names, Write and Draw apart, and Facilitate's session tools gathered
+In Diagram, Workshop and Pages the strip now shows these categories as a **category bar**, each opening a
+flyout of its tiles, with no Popular, one-word names, Write and Draw apart, and Workshop's session tools gathered
 into Session ([Toolbar layout](../007-editor/toolbar-layout.md#the-category-bar)). The bands below are the bar's
 dividers there; the banded picker remains Plan's.
 
@@ -42,14 +42,14 @@ tools plus Frame). The **User / actor** tile was deleted outright — see below.
 **The category dropdown gets bands**, the way the canvas-tool dropdown got them
 ([Tile grids for the palette dropdowns](../004-interface-design/dropdown-tile-grid.md)):
 
-| Band            | Categories                                                                                                                                                                                  |
-| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| _(no heading)_  | Popular, full width                                                                                                                                                                         |
-| **Common**      | Logo (Pages, with a [logo page](../007-editor/logo-pages.md#the-logo-palette)), Shapes, My shapes (only with a [shape library](../013-workspace/shape-libraries.md) to place), Write, Draw  |
-| **Structure**   | Diagrams (Diagram), Layout (Diagram, Facilitate), Components, Concepts ([Concept graphics](../009-elements/concept-graphics.md)), Devices, Event Storming (on an event-storming board only) |
-| **Decorate**    | Icons, Stickers, Technology, Media                                                                                                                                                          |
-| **Dynamic**     | Data (Pages, Facilitate)                                                                                                                                                                    |
-| **Collaborate** | Ask, Tools, Record, React, Selection Mode, Navigate ([Facilitate](../012-collaboration/facilitate-mode.md#the-palette) only)                                                                |
+| Band            | Categories                                                                                                                                                                                 |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| _(no heading)_  | Popular, full width                                                                                                                                                                        |
+| **Common**      | Logo (Pages, with a [logo page](../007-editor/logo-pages.md#the-logo-palette)), Shapes, My shapes (only with a [shape library](../013-workspace/shape-libraries.md) to place), Write, Draw |
+| **Structure**   | Diagrams (Diagram), Layout (Diagram, Workshop), Components, Concepts ([Concept graphics](../009-elements/concept-graphics.md)), Devices, Event Storming (on an event-storming board only)  |
+| **Decorate**    | Icons, Stickers, Technology, Media                                                                                                                                                         |
+| **Dynamic**     | Data (Pages, Workshop)                                                                                                                                                                     |
+| **Collaborate** | Ask, Tools, Record, React, Selection Mode, Navigate ([Workshop](../012-collaboration/workshop-mode.md#the-palette) only)                                                                   |
 
 ## Why flatten
 
@@ -159,8 +159,8 @@ which two groups they are. A rename that broke seven live links to say
 
 ## Collaborate: one category, fully grouped
 
-**Collaborate is Facilitate's, as six categories.** Since [Facilitate mode](../012-collaboration/facilitate-mode.md#the-palette),
-only Facilitate's layout offers the Collaborate elements, and it offers each group below as its
+**Collaborate is Workshop's, as six categories.** Since [Workshop mode](../012-collaboration/workshop-mode.md#the-palette),
+only Workshop's layout offers the Collaborate elements, and it offers each group below as its
 own category in a **Collaborate** band of its own (`collab-ask`, `collab-tools`, `collab-record`, `collab-react`,
 `collab-mode`, `collab-navigate`), so the parent category and its group browser are gone. Diagram
 keeps only the Comment panel and the Action card, in its Write category. Search still finds every

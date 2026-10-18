@@ -24,8 +24,8 @@ describe('editorModeShortcut', () => {
 
   it.each([
     ['diagram', 'draw', 'Draw mode'],
-    ['draw', 'facilitate', 'Facilitate mode'],
-    ['facilitate', 'pages', 'Pages mode'],
+    ['draw', 'workshop', 'Workshop mode'],
+    ['workshop', 'pages', 'Pages mode'],
     ['pages', 'plan', 'Plan mode'],
     ['plan', 'diagram', 'Diagram mode'],
   ] as const)('on an empty tab, from %s switches to %s and announces "%s"', (from, to, message) => {

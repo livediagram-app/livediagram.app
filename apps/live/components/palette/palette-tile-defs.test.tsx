@@ -145,7 +145,7 @@ const TILES_PER_CATEGORY: Record<string, number> = {
   components: 12,
   concepts: 8,
   data: 7,
-  // The Collaborate elements, one category per group (docs/specs/012-collaboration/facilitate-mode.md
+  // The Collaborate elements, one category per group (docs/specs/012-collaboration/workshop-mode.md
   // "The palette"): 34 tiles between them.
   'collab-ask': 7,
   'collab-tools': 5,

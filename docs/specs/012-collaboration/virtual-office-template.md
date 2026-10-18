@@ -1,6 +1,6 @@
 # Virtual Office and space templates
 
-A Facilitate template that starts a team with a whole office to walk round in
+A Workshop template that starts a team with a whole office to walk round in
 [Avatar mode](../008-canvas/avatar-mode.md), built from the [office pieces](../009-elements/office.md) and the
 [furniture](../009-elements/chair.md), so nobody has to draw a floor plan before they can meet in it.
 
@@ -23,7 +23,7 @@ so one press puts a visitor's character at the door, and a line saying how to wa
 
 - The rooms are first in the tab, so they lie under the furniture; the rugs come next.
 - Every room keeps its name as its label, so renaming one is renaming the room.
-- The tab opens in **Facilitate** on grid paper.
+- The tab opens in **Workshop** on grid paper.
 
 ## Spaces
 
@@ -43,7 +43,7 @@ Three siblings, built the same way (`template-office-parts.ts`: rooms first, rug
 
 ## Where they are
 
-In the **Meetings** category of the template picker, and Start Facilitating's own **Spaces** group (Virtual Office,
+In the **Meetings** category of the template picker, and Start a Workshop's own **Spaces** group (Virtual Office,
 Coworking Space, Team Pod, All-Hands Hall), after Meetings. Extra templates (not defaults).
 
 ## Share roles

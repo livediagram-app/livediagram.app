@@ -49,12 +49,12 @@ the motions that do not move it, like a boundary's.
 
 ## Palette
 
-| Mode       | Where                                   |
-| ---------- | --------------------------------------- |
-| Diagram    | **Build**: Stack, after Frame           |
-| Pages      | **Build**: Stack                        |
-| Plan       | none                                    |
-| Facilitate | none (Search still finds and places it) |
+| Mode     | Where                                   |
+| -------- | --------------------------------------- |
+| Diagram  | **Build**: Stack, after Frame           |
+| Pages    | **Build**: Stack                        |
+| Plan     | none                                    |
+| Workshop | none (Search still finds and places it) |
 
 A new stack is a row, 360 × 160, empty, drawn as a faint dashed outline so it reads as a target.
 

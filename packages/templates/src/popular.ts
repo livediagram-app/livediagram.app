@@ -58,7 +58,7 @@ export const POPULAR_BY_MODE: Readonly<Record<PopularChoice, readonly TemplateKi
     'bug-triage',
     'invoice',
   ],
-  facilitate: [
+  workshop: [
     'blank-session',
     'sailboat',
     'retrospective',

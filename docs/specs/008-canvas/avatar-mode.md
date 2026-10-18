@@ -12,7 +12,7 @@ Narrating the canvas on a call today means waving a cursor around, or reaching f
 
 - New `CanvasTool` id `'avatar'`. **It is reached only through a [Selection Mode button](../009-elements/mode-button.md) set to Avatar**, placed on the board: the author who put the button there chose to offer the walk on that board, so the board, not the editor's chrome, is the door. The canvas-tool picker (the Selection Mode menu at the start of the palette strip) does not offer Avatar, there is no keyboard shortcut for it, and the search panel has no `tool:avatar` command. A board that wants walking gets a button; the [Avatar Pad](../009-elements/avatar-pad.md) decides where people then start.
 - **The picker still shows where you are.** While you are in Avatar mode the picker's current value reads **Avatar** (the one time the entry appears in its list), so the mode you are in is never mislabelled as Select; picking any other mode there leaves it. The other ways out stay as they were: a view-tool key (`V`, `H`, `K`, `I`), reaching for the palette, or pressing an Avatar button again.
-- A button hands Avatar out in **every** editor mode, and leaving Facilitate while walking does not end the walk.
+- A button hands Avatar out in **every** editor mode, and leaving Workshop while walking does not end the walk.
 - Available on **every viewport** (unlike Spotlight): tap-to-walk works fine on touch, it just loses the arrow keys.
 - Available to **view-role** visitors — it is a pure view aid and mutates nothing.
 - **Entering the mode clears the current selection** (an element left selected would keep its handles and reappear on exit, the same reason Spotlight clears it).

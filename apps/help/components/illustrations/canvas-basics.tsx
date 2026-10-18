@@ -419,7 +419,7 @@ export function MultiSelectionBar() {
 
 /** A start's search finding a template in another mode (docs/specs/007-editor/start-diagramming.md "Found in other
  *  modes"): Start Planning searched for "sailboat", its own one-line no-match, then In Other Modes with the
- *  Facilitate block and its Sailboat retrospective card, which says it opens in Facilitate. */
+ *  Workshop block and its Sailboat retrospective card, which says it opens in Workshop. */
 export function StartSearchOtherModes() {
   const card = { x: 36, y: 192, w: 168, h: 90 };
   return (
@@ -475,13 +475,13 @@ export function StartSearchOtherModes() {
         <Label x={36} y={150} size={9} tone="muted">
           Choosing one switches this tab to its mode.
         </Label>
-        {/* The Facilitate block: its mark on a soft tile, its name and how many it found. */}
+        {/* The Workshop block: its mark on a soft tile, its name and how many it found. */}
         <rect x={36} y={162} width={18} height={18} rx={4.5} className="fill-brand-50" />
         <g transform="translate(45 171)">
-          <ModeMark mode="Facilitate" className="stroke-brand-600" scale={0.5} />
+          <ModeMark mode="Workshop" className="stroke-brand-600" scale={0.5} />
         </g>
         <Label x={61} y={174} size={10.5} weight={700} tone="strong">
-          Facilitate
+          Workshop
         </Label>
         <rect x={112} y={165} width={14} height={12} rx={6} className="fill-slate-100" />
         <Label x={119} y={174} anchor="middle" size={8} weight={600} tone="muted">
@@ -536,10 +536,10 @@ export function StartSearchOtherModes() {
           className="fill-brand-50"
         />
         <g transform={`translate(${card.x + 18} ${card.y + 76.5})`}>
-          <ModeMark mode="Facilitate" className="stroke-brand-600" scale={0.36} />
+          <ModeMark mode="Workshop" className="stroke-brand-600" scale={0.36} />
         </g>
         <Label x={card.x + 25} y={card.y + 79.5} size={8} weight={600} tone="accent">
-          Opens in Facilitate
+          Opens in Workshop
         </Label>
       </Dialog>
     </Scene>

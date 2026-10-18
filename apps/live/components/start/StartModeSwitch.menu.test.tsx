@@ -75,7 +75,7 @@ describe('StartModeSwitch chip', () => {
     expect(rows.map((row) => row.textContent)).toEqual([
       expect.stringMatching(/^Diagram/),
       expect.stringMatching(/^Draw/),
-      expect.stringMatching(/^Facilitate/),
+      expect.stringMatching(/^Workshop/),
       expect.stringMatching(/^Pages/),
       expect.stringMatching(/^Plan/),
     ]);
@@ -121,7 +121,7 @@ describe('StartModeSwitch chip', () => {
     renderSwitch('diagram');
     fireEvent.click(chip());
     const menu = screen.getByRole('menu');
-    const [diagram, draw, pages, plan, facilitate] = screen.getAllByRole('menuitemradio');
+    const [diagram, draw, pages, plan, workshop] = screen.getAllByRole('menuitemradio');
     fireEvent.keyDown(menu, { key: 'ArrowDown' });
     expect(document.activeElement).toBe(draw);
     fireEvent.keyDown(menu, { key: 'ArrowDown' });
@@ -129,15 +129,15 @@ describe('StartModeSwitch chip', () => {
     fireEvent.keyDown(menu, { key: 'ArrowDown' });
     expect(document.activeElement).toBe(plan);
     fireEvent.keyDown(menu, { key: 'ArrowDown' });
-    expect(document.activeElement).toBe(facilitate);
+    expect(document.activeElement).toBe(workshop);
     fireEvent.keyDown(menu, { key: 'ArrowDown' });
     expect(document.activeElement).toBe(diagram);
     fireEvent.keyDown(menu, { key: 'ArrowUp' });
-    expect(document.activeElement).toBe(facilitate);
+    expect(document.activeElement).toBe(workshop);
     fireEvent.keyDown(menu, { key: 'Home' });
     expect(document.activeElement).toBe(diagram);
     fireEvent.keyDown(menu, { key: 'End' });
-    expect(document.activeElement).toBe(facilitate);
+    expect(document.activeElement).toBe(workshop);
   });
 
   it.each([

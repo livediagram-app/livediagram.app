@@ -283,18 +283,18 @@ export async function openStartBlank(page: Page): Promise<void> {
   await dismissQuickTour(page);
 }
 
-// A blank tab in Facilitate mode straight away: /new?template=blank-session creates it with no wizard
-// (docs/specs/012-collaboration/facilitate-mode.md "Templates"). Where the session kit lives: the
+// A blank tab in Workshop mode straight away: /new?template=blank-session creates it with no wizard
+// (docs/specs/012-collaboration/workshop-mode.md "Templates"). Where the session kit lives: the
 // Collaborate and Stickers categories and the Session strip.
 export async function openBlankSession(page: Page): Promise<void> {
-  // The Facilitate tour offers itself 800 ms into Facilitate (FacilitateTourHost OFFER_DELAY_MS) and its
+  // The Workshop tour offers itself 800 ms into Workshop (WorkshopTourHost OFFER_DELAY_MS) and its
   // overlay would take these specs' presses; it has its own unit tests.
   await page.addInitScript(() => {
     const key = 'livediagram:user-preferences:v1';
     try {
       const prefs = JSON.parse(localStorage.getItem(key) ?? '{}') as Record<string, unknown>;
-      if (prefs.facilitateTourSeen !== true)
-        localStorage.setItem(key, JSON.stringify({ ...prefs, facilitateTourSeen: true }));
+      if (prefs.workshopTourSeen !== true)
+        localStorage.setItem(key, JSON.stringify({ ...prefs, workshopTourSeen: true }));
     } catch {
       // No storage: nothing to mark.
     }

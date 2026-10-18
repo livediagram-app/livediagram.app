@@ -16,7 +16,7 @@
 - [x] Constants and configuration
 - [x] Defaults ledger
 
-## facilitate-mode
+## workshop-mode
 
 - [x] Domain and naming
 - [x] Behaviour and state
@@ -33,7 +33,7 @@
 - [x] Assets and external resources
 - [x] Defaults ledger
 
-## facilitate-tour
+## workshop-tour
 
 - [x] Domain and naming
 - [x] Behaviour and state

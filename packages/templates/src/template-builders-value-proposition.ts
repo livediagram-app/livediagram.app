@@ -7,7 +7,7 @@
 // left), Pains (bottom left) and Customer Jobs (the right third). Each section has its glyph, name and prompt, and
 // sticky notes in its own hue; the profile's are ranked most important first. Dashed fit lines run from each
 // reliever or creator to the pain or gain it answers. A left rail runs it as a session: the three steps, a timer, a
-// dot vote and a fit rating (so it opens in Facilitate, templates-by-mode.md).
+// dot vote and a fit rating (so it opens in Workshop, templates-by-mode.md).
 //
 // Layers: "Canvas" holds the square, circle, chords, section headings and rail labels; "Notes" the stickies, fit
 // lines, ranks, the title and the session tools.

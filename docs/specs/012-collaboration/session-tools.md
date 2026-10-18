@@ -300,8 +300,8 @@ running, and their popovers read-only (the Timer's dial without its controls); w
 running they get no strip. While somebody else [facilitates](facilitator.md), an editor's set-up
 panes are disabled under a note naming them.
 
-**Which tools a mode offers** (`sessionStripTools`): **Facilitate** has all three
-([Facilitate mode](facilitate-mode.md#the-session-strip-per-mode)) and on an event-storming board, a
+**Which tools a mode offers** (`sessionStripTools`): **Workshop** has all three
+([Workshop mode](workshop-mode.md#the-session-strip-per-mode)) and on an event-storming board, a
 workshop that is always Diagram; **Plan** has Timer and
 Vote (cards take the dots, [Voting on Plan cards](#voting-on-plan-cards)) only on a tab with a board made for voting,
 one taking a card type with a **Votes** field (a Retro's Notes and Ideas, or a type someone gave Votes), and never on

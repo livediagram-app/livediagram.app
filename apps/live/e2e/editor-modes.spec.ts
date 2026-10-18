@@ -48,21 +48,21 @@ const sketches = (page: Page) => page.locator(CANVAS).getByRole('img', { name: /
 async function openInMode(page: Page, name: 'diagram' | 'draw' | 'plan') {
   await page.setViewportSize({ width: 1600, height: 900 });
   await page.emulateMedia({ colorScheme: 'dark' });
-  // The Plan and Facilitate tours offer themselves 800 ms into their modes (OFFER_DELAY_MS), and their overlay
+  // The Plan and Workshop tours offer themselves 800 ms into their modes (OFFER_DELAY_MS), and their overlay
   // takes the presses these specs make there on a slow runner; it has its own unit tests.
   await page.addInitScript(() => {
     const key = 'livediagram:user-preferences:v1';
     try {
       const prefs = JSON.parse(localStorage.getItem(key) ?? '{}') as Record<string, unknown>;
       // The Plan tour offers each track once (lib/tour-tracks.ts): both answered.
-      if (!Array.isArray(prefs.planTourTracks) || prefs.facilitateTourSeen !== true)
+      if (!Array.isArray(prefs.planTourTracks) || prefs.workshopTourSeen !== true)
         localStorage.setItem(
           key,
           JSON.stringify({
             ...prefs,
             planTourSeen: true,
             planTourTracks: ['boards', 'sheets'],
-            facilitateTourSeen: true,
+            workshopTourSeen: true,
           }),
         );
     } catch {

@@ -52,7 +52,7 @@ export function MoveGroupIcon() {
 }
 
 /** Behaviour → Tools: a raised hand over a card. */
-export function FacilitateGroupIcon() {
+export function WorkshopGroupIcon() {
   return (
     <Glyph size={18} units={24}>
       <rect x="3" y="4" width="18" height="12.5" rx="2" />

@@ -170,12 +170,12 @@ tile places a Pyramid with the Funnel variant (the variant is the decision, so i
 **Sankey** ([Sankey diagram](sankey.md)) joins them last, in Diagram and Pages: a flow drawn as wide as what it
 carries explains an idea the way a funnel or a cycle does.
 
-| Mode       | Concepts |
-| ---------- | -------- |
-| Diagram    | yes      |
-| Pages      | yes      |
-| Plan       | no       |
-| Facilitate | no       |
+| Mode     | Concepts |
+| -------- | -------- |
+| Diagram  | yes      |
+| Pages    | yes      |
+| Plan     | no       |
+| Workshop | no       |
 
 ## Templates
 

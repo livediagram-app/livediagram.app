@@ -38,8 +38,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone switched a tab to Pages mode, to lay out a page of icons, stickers, components and media.',
   'Editor|Changed|ModePlan':
     'Someone switched a tab to Plan mode, to work on boards of items: drag cards through columns, add and open items.',
-  'Editor|Changed|ModeFacilitate':
-    'Someone switched a tab to Facilitate mode, to run a session with their team: timers, votes, polls and reveals.',
+  'Editor|Changed|ModeWorkshop':
+    'Someone switched a tab to Workshop mode, to run a session with their team: timers, votes, polls and reveals.',
   'Draw|Created|Template':
     'Someone started a new document as a whiteboard, a plain board drawn on with pens, from the New Document wizard.',
   'Draw|Created|NewTab':
@@ -1205,7 +1205,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Changed|SpotlightShape': "Someone changed the Spotlight's shape, in the Spotlight panel.",
   'UI|Changed|SpotlightSize': "Someone changed the Spotlight's size, in the Spotlight panel.",
   'UI|Changed|ToolbarCategory':
-    "Someone opened a category in the palette strip across the top of the canvas: a category on the category bar (Diagram, Facilitate, Pages), or a switch in Plan's category picker.",
+    "Someone opened a category in the palette strip across the top of the canvas: a category on the category bar (Diagram, Workshop, Pages), or a switch in Plan's category picker.",
   'UI|Changed|ContentsPlacementButton':
     "Someone minimised Pages mode's Contents sidebar to its button, from the sidebar or in Settings > Editor.",
   'UI|Changed|ContentsSideLeft':
@@ -1235,8 +1235,8 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Closed|PagesTourOffer': 'Someone turned the Pages tour down with No on its own card.',
   'UI|Closed|AvatarTourOffer': 'Someone turned the Avatar tour down with No on its own card.',
   'UI|Closed|DrawTourOffer': 'Someone turned the Draw tour down with No on its own card.',
-  'UI|Closed|FacilitateTourOffer':
-    'Someone turned the Facilitate tour down with No thanks on its own card (until October 2026, also by finishing the welcome tour without pressing Show me Facilitate).',
+  'UI|Closed|WorkshopTourOffer':
+    'Someone turned the Workshop tour down with No thanks on its own card (until October 2026, also by finishing the welcome tour without pressing Show me Workshop).',
   'UI|Closed|FormTourOffer': 'Someone turned the Forms tour down with No on its own card.',
   'UI|Closed|PlanTourOffer': "Someone dismissed the Plan tour's offer card without starting it.",
   'UI|Closed|Welcome': 'Someone dismissed the first-run welcome modal.',
@@ -1387,9 +1387,9 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone reached the end of the Forms tour, or a step's target never appeared and the tour finished early.",
   'UI|Ended|FormTourSkipped':
     'Someone closed the Forms tour before its end, or left the form for a tab other than where its responses go.',
-  'UI|Ended|FacilitateTourCompleted':
-    "Someone reached the end of the Facilitate tour, or a step's target never appeared and the tour finished early.",
-  'UI|Ended|FacilitateTourSkipped': 'Someone closed the Facilitate tour before its end.',
+  'UI|Ended|WorkshopTourCompleted':
+    "Someone reached the end of the Workshop tour, or a step's target never appeared and the tour finished early.",
+  'UI|Ended|WorkshopTourSkipped': 'Someone closed the Workshop tour before its end.',
   'UI|Ended|PlanTourCompleted':
     "Someone reached the end of the Plan tour, or a step's target never appeared and the tour finished early.",
   'UI|Ended|PlanTourSkipped':
@@ -1411,7 +1411,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Opened|TidyUp':
     "Someone opened Diagram mode's Tidy Up button in the bottom bar, the panel of layout styles and Auto-align. What they then picked counts as a tab being auto-arranged.",
   'UI|Opened|BehaviourGroup':
-    "Someone opened one of Session's groups (Tools, Record, React, Selection Mode or Navigate) on Facilitate mode's palette strip. Earlier, a category inside the palette's Collaborate tab (formerly Behaviours), before Facilitate offered those categories one by one and then gathered them into Session.",
+    "Someone opened one of Session's groups (Tools, Record, React, Selection Mode or Navigate) on Workshop mode's palette strip. Earlier, a category inside the palette's Collaborate tab (formerly Behaviours), before Workshop offered those categories one by one and then gathered them into Session.",
   'UI|Opened|CanvasStyle':
     "Someone opened the tab's look-and-feel dialog on its Canvas tab, to change the background.",
   'UI|Opened|CollabGroup':
@@ -1534,8 +1534,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     'The Draw tour was offered: as its own card the first time someone worked in Draw mode, or replayed from Settings\' Tours › "Draw Tour".',
   'UI|Opened|FormTourOffer':
     'The Forms tour was offered: as its own card the first time an Editor opened a Form tab, or replayed from Show Me Around in the form cog or Settings\' Tours › "Forms Tour".',
-  'UI|Opened|FacilitateTourOffer':
-    'The Facilitate tour was offered: as its own card the first time someone worked in Facilitate mode, or replayed from Settings\' Tours › "Facilitate Tour". Until October 2026 it was also offered on the welcome tour\'s closing card ("Show me Facilitate").',
+  'UI|Opened|WorkshopTourOffer':
+    'The Workshop tour was offered: as its own card the first time someone worked in Workshop mode, or replayed from Settings\' Tours › "Workshop Tour". Until October 2026 it was also offered on the welcome tour\'s closing card ("Show me Workshop").',
   'UI|Opened|PlanTourOffer':
     'The Plan tour\'s offer card was shown, the first time someone worked in Plan mode with a board or sheet open, or replayed from Settings\' Tours › "Plan Tour".',
   'UI|Opened|activity':
@@ -1566,12 +1566,12 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone removed a tile from their Favourites in the shape palette. No longer recorded: Favourites is gone.',
   'UI|Removed|Slide': 'Someone deleted a slide from the Slide Deck.',
   'UI|Searched|BehaviourSearch':
-    "Someone searched within Session on Facilitate mode's palette strip, across its groups of session tools. Earlier, a search within the palette's Collaborate tab (formerly Behaviours).",
+    "Someone searched within Session on Workshop mode's palette strip, across its groups of session tools. Earlier, a search within the palette's Collaborate tab (formerly Behaviours).",
   'UI|Searched|IconSearch': "Someone searched within the palette's Icons tab.",
   'UI|Searched|PaletteSearch':
     'Someone searched within their Favourites in the palette. No longer recorded: Favourites is gone.',
-  'UI|Selected|FacilitateTourFromWelcome':
-    "Someone pressed Show me Facilitate on the welcome tour's closing card, going straight into the Facilitate tour. Retired in October 2026, when the welcome tour became the Diagram tour and stopped running in Facilitate.",
+  'UI|Selected|WorkshopTourFromWelcome':
+    "Someone pressed Show me Workshop on the welcome tour's closing card, going straight into the Workshop tour. Retired in October 2026, when the welcome tour became the Diagram tour and stopped running in Workshop.",
   'UI|Selected|PlanTourBoards':
     "Someone picked Boards on the Plan tour's first card, on a tab with both a board and a sheet (until October 2026, on every offer, touring an example board).",
   'UI|Selected|PlanTourSheets':
@@ -1662,8 +1662,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone pressed Yes on the Draw tour's first card, beginning its walkthrough of the dock.",
   'UI|Started|FormTour':
     "Someone pressed Yes on the Forms tour's first card, beginning its walkthrough of the form builder.",
-  'UI|Started|FacilitateTour':
-    "Someone pressed Show me around on the Facilitate tour's first card, beginning its walkthrough of the session kit.",
+  'UI|Started|WorkshopTour':
+    "Someone pressed Show me around on the Workshop tour's first card, beginning its walkthrough of the session kit.",
   'UI|Started|PlanTour':
     'Someone started the Plan tour from its first card, beginning its walkthrough of their own board or sheet (an example one until October 2026).',
   'UI|Toggled|ActivityRevertPreviewOff':
@@ -1797,8 +1797,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone narrowed the New Document templates to the ones that open in Pages mode.',
   'UI|Toggled|TemplateModePlan':
     'Someone narrowed the New Document templates to the ones that open in Plan mode.',
-  'UI|Toggled|TemplateModeFacilitate':
-    'Someone narrowed the New Document templates to the ones that open in Facilitate mode.',
+  'UI|Toggled|TemplateModeWorkshop':
+    'Someone narrowed the New Document templates to the ones that open in Workshop mode.',
   'UI|Toggled|TemplateShelfCollapsed':
     'Someone put the New Document template shelf back to a carousel, with the other categories as a grid.',
   'UI|Toggled|TemplateShelfExpanded':
@@ -1915,10 +1915,10 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone switched on Tours › "Forms Tour" in Settings, marking the Forms tour as not yet seen.',
   'UI|Toggled|FormTourSeenOn':
     'Someone switched off Tours › "Forms Tour" in Settings, marking the Forms tour as seen.',
-  'UI|Toggled|FacilitateTourSeenOff':
-    'Someone switched on Tours › "Facilitate Tour" in Settings, marking the Facilitate tour as not yet seen.',
-  'UI|Toggled|FacilitateTourSeenOn':
-    'Someone switched off Tours › "Facilitate Tour" in Settings, marking the Facilitate tour as seen.',
+  'UI|Toggled|WorkshopTourSeenOff':
+    'Someone switched on Tours › "Workshop Tour" in Settings, marking the Workshop tour as not yet seen.',
+  'UI|Toggled|WorkshopTourSeenOn':
+    'Someone switched off Tours › "Workshop Tour" in Settings, marking the Workshop tour as seen.',
   'UI|Toggled|PlanTourSeenOff':
     'Someone switched on Tours › "Plan Tour" in Settings, marking the Plan tour as not yet seen.',
   'UI|Toggled|PlanTourSeenOn':
@@ -2276,8 +2276,8 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|View|DrawTourStepSettings':
     'The Draw tour reached its "Board Settings" step, on the dock\'s Settings cog.',
   'UI|View|DrawTourStepOutro': 'The Draw tour reached its closing "You\'re ready to draw" card.',
-  'UI|View|FacilitateTourStepCollaborate':
-    'The Facilitate tour reached its "Collaborate" step, ringing the Collaborate band of the palette\'s category picker.',
+  'UI|View|WorkshopTourStepCollaborate':
+    'The Workshop tour reached its "Collaborate" step, ringing the Collaborate band of the palette\'s category picker.',
   'UI|View|FormTourStepAdd':
     'The Forms tour reached its "Add Questions" step, ringing the add bar.',
   'UI|View|FormTourStepDestination':
@@ -2291,12 +2291,12 @@ export const EXACT: Readonly<Record<string, string>> = {
     'The Forms tour reached its "Share Form" step, ringing Share Form in the header.',
   'UI|View|FormTourStepStatus':
     'The Forms tour reached its "Responses and Preview" step, ringing the form status bar.',
-  'UI|View|FacilitateTourStepSessionStrip':
-    'The Facilitate tour reached its "Run the room" step, on the Session strip.',
-  'UI|View|FacilitateTourStepShare':
-    'The Facilitate tour reached its "Bring people in" step, on Share.',
-  'UI|View|FacilitateTourStepOutro':
-    'The Facilitate tour reached its closing "You\'re ready to facilitate" card.',
+  'UI|View|WorkshopTourStepSessionStrip':
+    'The Workshop tour reached its "Run the room" step, on the Session strip.',
+  'UI|View|WorkshopTourStepShare':
+    'The Workshop tour reached its "Bring people in" step, on Share.',
+  'UI|View|WorkshopTourStepOutro':
+    'The Workshop tour reached its closing "You\'re ready to run a workshop" card.',
   'UI|View|PlanTourStepBoard':
     'The Plan tour reached its "Your Board" step, highlighting the person\'s board (placing an example board until October 2026).',
   'UI|View|PlanTourStepAddCards':

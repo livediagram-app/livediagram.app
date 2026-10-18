@@ -39,9 +39,9 @@ describe('ModeMenu preview', () => {
     expect(preview().textContent).toContain(editorModeDescription('diagram'));
     for (const tool of MODE_TOOLS.diagram) expect(preview().textContent).toContain(tool);
 
-    fireEvent.pointerEnter(row('Facilitate'));
-    expect(preview().dataset.modePreview).toBe('facilitate');
-    expect(preview().textContent).toContain(editorModeDescription('facilitate'));
+    fireEvent.pointerEnter(row('Workshop'));
+    expect(preview().dataset.modePreview).toBe('workshop');
+    expect(preview().textContent).toContain(editorModeDescription('workshop'));
   });
 
   it('follows keyboard focus too', () => {
@@ -53,7 +53,7 @@ describe('ModeMenu preview', () => {
   it('is hidden from assistive technology and holds no button', () => {
     open('diagram');
     expect(preview().getAttribute('aria-hidden')).toBe('true');
-    fireEvent.pointerEnter(row('Facilitate'));
+    fireEvent.pointerEnter(row('Workshop'));
     expect(preview().querySelector('button')).toBeNull();
     expect(preview().textContent).not.toContain('Switch to');
     // The menu's items are its rows alone.

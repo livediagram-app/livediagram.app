@@ -67,7 +67,7 @@ export function EditorStartPanels() {
     mode: ctx.editorMode.mode,
     elementCount: activeTab.elements.length,
   });
-  // An editor's empty Diagram, Facilitate or Pages tab: its template start (docs/specs/007-editor/start-diagramming.md).
+  // An editor's empty Diagram, Workshop or Pages tab: its template start (docs/specs/007-editor/start-diagramming.md).
   // A template picked from a start screen on a document /new just made goes to its default folder
   // (docs/specs/013-workspace/default-folders.md "A template picked after creation").
   const moveOnTemplatePick = useTemplatePickMove({
@@ -201,7 +201,7 @@ export function EditorStartPanels() {
         ) : null}
         {/* Empty-canvas hint (docs/specs/007-editor/new-document-route.md): a calm card in the
       middle of an empty canvas, so a blank document reads as intentionally blank. */}
-        {/* An editor's empty Diagram, Facilitate or Pages tab offers its template start, in
+        {/* An editor's empty Diagram, Workshop or Pages tab offers its template start, in
       the card's place (docs/specs/007-editor/start-diagramming.md). */}
         {templateStart ? (
           <>

@@ -1,7 +1,7 @@
 // What an empty tab's template start offers (docs/specs/007-editor/start-diagramming.md): Start Diagramming on a
-// Diagram tab, Start Facilitating on a Facilitate tab, Start Making Pages on a Pages tab. Every listed template
+// Diagram tab, Start a Workshop on a Workshop tab, Start Making Pages on a Pages tab. Every listed template
 // of the mode, a rail over them (Recommended, then groups) and the search across them. Diagram's groups are the
-// catalogue's categories; Facilitate's and Pages mode's templates nearly all share one, so they group their own way
+// catalogue's categories; Workshop's and Pages mode's templates nearly all share one, so they group their own way
 // (OWN_GROUPS). Drawn from the template
 // catalogue, so a new template joins its mode's panel with no change here. Pure: the panel draws what these return.
 import {
@@ -17,7 +17,7 @@ import {
   type TemplateKind,
 } from '@livediagram/templates';
 
-export type TemplateStartMode = 'diagram' | 'draw' | 'facilitate' | 'pages';
+export type TemplateStartMode = 'diagram' | 'draw' | 'workshop' | 'pages';
 
 type TemplateStartGroup = {
   id: string;
@@ -39,7 +39,7 @@ type TemplateStart = {
 const RECOMMENDED_LINE: Record<TemplateStartMode, string> = {
   diagram: 'The quickest ways to start, picked for most diagrams.',
   draw: 'The quickest ways to start sketching, picked for most people.',
-  facilitate: 'The quickest ways to run a session, picked for most teams.',
+  workshop: 'The quickest ways to run a session, picked for most teams.',
   pages: 'The quickest ways to make something to share, picked for most people.',
 };
 
@@ -61,10 +61,10 @@ const RECOMMENDED_SWAPS: Partial<
 type OwnGroup = { id: string; name: string; line: string; kinds: readonly TemplateKind[] };
 
 // The modes whose templates nearly all share one catalogue category (Workshops, Presentations) group them their own
-// way: Facilitate by the session each runs, Pages by what each makes, each Pages group but Posters and Design led by
+// way: Workshop by the session each runs, Pages by what each makes, each Pages group but Posters and Design led by
 // its blank of a page kind. A template of the mode in none of its groups is placed in the last.
 const OWN_GROUPS: Readonly<Record<Exclude<TemplateStartMode, 'diagram'>, readonly OwnGroup[]>> = {
-  facilitate: [
+  workshop: [
     {
       id: 'retrospectives',
       name: 'Retrospectives',
@@ -103,8 +103,8 @@ const OWN_GROUPS: Readonly<Record<Exclude<TemplateStartMode, 'diagram'>, readonl
       ],
     },
     {
-      id: 'workshops',
-      name: 'Workshops',
+      id: 'ideation',
+      name: 'Ideation',
       line: 'Hands-on formats for ideas and design work.',
       kinds: [
         'brainstorm',
@@ -148,8 +148,8 @@ const OWN_GROUPS: Readonly<Record<Exclude<TemplateStartMode, 'diagram'>, readonl
       kinds: ['sketchnote', 'rich-picture', 'journey-doodle', 'comic-strip'],
     },
     {
-      id: 'workshops',
-      name: 'Workshops',
+      id: 'exercises',
+      name: 'Exercises',
       line: 'Warm-ups and drawn exercises to run with a team.',
       kinds: ['doodle-warmup', 'pre-mortem', 'idea-garden'],
     },
@@ -265,6 +265,6 @@ function build(mode: TemplateStartMode): TemplateStart {
 export const TEMPLATE_STARTS: Readonly<Record<TemplateStartMode, TemplateStart>> = {
   diagram: build('diagram'),
   draw: build('draw'),
-  facilitate: build('facilitate'),
+  workshop: build('workshop'),
   pages: build('pages'),
 };

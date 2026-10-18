@@ -146,7 +146,7 @@ The Draw tour's funnel, with its own tokens; the track shows in the step tokens:
 ## Power user mode
 
 [Power user mode](power-user-mode.md) marks the Pages tour seen (`pagesTourSeen`, every kind while the mode
-is on) alongside the Diagram, Plan, Facilitate and Draw tours.
+is on) alongside the Diagram, Plan, Workshop and Draw tours.
 
 ## Code
 

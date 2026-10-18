@@ -6,13 +6,13 @@ Status: shipped
 
 The editor's one panel layout, on every device (see "One layout" for the retired Floating
 layout). The Palette is a single horizontal strip pinned to the top centre of the canvas, the way
-Excalidraw's tool bar works. In Diagram, Facilitate and Pages the strip is the **category bar**
+Excalidraw's tool bar works. In Diagram, Workshop and Pages the strip is the **category bar**
 (below): the mode's categories, each opening a flyout of its tiles. Plan keeps the category picker
 and one category's tiles:
 
 ```
  ☰ ⬡|✎   ┌──────────────────────────────────────────────────────────────────────┐
- │        │ [↖ ▾] │ Shapes Write Draw │ Diagrams Concepts Layout │ Icons … │ [🔍] │   Diagram, Facilitate, Pages
+ │        │ [↖ ▾] │ Shapes Write Draw │ Diagrams Concepts Layout │ Icons … │ [🔍] │   Diagram, Workshop, Pages
  ▼        └──────────────────────────────────────────────────────────────────────┘
  ☰ ⬡|✎   ┌──────────────────────────────────────────────────────┐
           │ [↖ ▾] │ [Cards ▾] │ □ ◇ ○ → ─ ✎ A ▤ … │ [⋯ ▾] │ [🔍] │                  Plan
@@ -26,7 +26,7 @@ and one category's tiles:
 - **Left: the selection mode.** The canvas-tool picker (Select / Hand /
   Eraser / Format / Laser / Spotlight / Isometric / Zen (Avatar only while in it), [Tile grids for the palette dropdowns](../004-interface-design/dropdown-tile-grid.md))
   as a compact icon trigger, opening the banded tile grid.
-- **Then, in Diagram, Facilitate and Pages, the category bar** ("The category bar").
+- **Then, in Diagram, Workshop and Pages, the category bar** ("The category bar").
 - **Then, in Plan, the category picker.** The same banded category grid ([Palette top-level categories and bands](../010-palette/palette-top-level-categories.md)),
   as a compact trigger showing the current category's glyph and name. It
   sits directly before the tiles it chooses, so it reads as their label.
@@ -40,7 +40,7 @@ and one category's tiles:
 
 ## The category bar
 
-Diagram, Facilitate and Pages show their **categories** on the strip rather than one category's tiles, the way
+Diagram, Workshop and Pages show their **categories** on the strip rather than one category's tiles, the way
 the Icons category always showed its groups: the strip is a short row of named places, and each holds its tiles in
 a flyout. Finding a tile is one look along the bar, not a trip through a picker, and the strip never changes width
 under the pointer as a category is switched.
@@ -54,7 +54,7 @@ under the pointer as a category is switched.
   **Library**.
 - **No Popular.** With every category one press away, a pick from across them adds nothing. The layouts keep their
   Popular entry; the bar leaves it out (`barCategoriesFor`).
-- **Write and Draw are two categories**, each its own button, where both are offered (Diagram, Facilitate). They were
+- **Write and Draw are two categories**, each its own button, where both are offered (Diagram, Workshop). They were
   once one button named Draw, but more than half of what it held was words and comments (Page, Text, Note,
   Annotation, Pointer note, Callout, Comment, Action), so the name no longer said what was inside. Write holds the
   words and the notes about the canvas; Draw holds only what is made by a stroke or a drag: the pens, Polygon, Arrow
@@ -62,19 +62,19 @@ under the pointer as a category is switched.
 - **Diagram splits Build into Diagrams and Layout**: **Diagrams** holds the structures that grow as you type (Mind
   node, Org chart, Flowchart, Sequence, Table, Entity), **Layout** what arranges and labels them (Lane, Frame,
   Stack, Boundary, Timeline, then Diagram key, Card, Badge, Step number), after Concepts: what you build comes first, the ideas laid out beside it, then what it is arranged in. Fifteen tiles under one name mixed what
-  you build with what you build it in. Facilitate offers the same **Layout**: a board is laid out in frames and
+  you build with what you build it in. Workshop offers the same **Layout**: a board is laid out in frames and
   lanes as a diagram is. Pages has **no Build**: its three page tiles moved beside their neighbours, the Stack
   into Components and the Timeline and Table into Data.
-- **Session** (Facilitate): the Collaborate categories Tools, Record, React, Selection Mode and Navigate gathered
+- **Session** (Workshop): the Collaborate categories Tools, Record, React, Selection Mode and Navigate gathered
   into one category, browsed as Icons is (the two-pane browse, below), searchable across all of them. **Ask** keeps
   its own button beside it: putting a question to the room is the session's main act, not one of its tools.
 - **The bars:**
 
-  | Mode       | Bar                                                                                   |
-  | ---------- | ------------------------------------------------------------------------------------- |
-  | Diagram    | Shapes, Write, Draw · Diagrams, Concepts, Layout · Icons, Tech, Media                 |
-  | Facilitate | Shapes, Write, Draw · Layout · Icons, Stickers, Media · Data · Ask, Session           |
-  | Pages      | (Logo,) Shapes, Write · Concepts, Components, Devices · Icons, Stickers, Media · Data |
+  | Mode     | Bar                                                                                   |
+  | -------- | ------------------------------------------------------------------------------------- |
+  | Diagram  | Shapes, Write, Draw · Diagrams, Concepts, Layout · Icons, Tech, Media                 |
+  | Workshop | Shapes, Write, Draw · Layout · Icons, Stickers, Media · Data · Ask, Session           |
+  | Pages    | (Logo,) Shapes, Write · Concepts, Components, Devices · Icons, Stickers, Media · Data |
 
   Library joins after Shapes while the person has a [shape library](../013-workspace/shape-libraries.md) to place
   from, as My shapes does in the picker.

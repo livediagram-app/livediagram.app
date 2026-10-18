@@ -290,7 +290,7 @@ strip's other buttons (one open at a time, a second press or a press outside clo
 
 ### Where it shows
 
-- **Diagram mode only.** Draw, Facilitate, Pages and Plan arrange their content another way
+- **Diagram mode only.** Draw, Workshop, Pages and Plan arrange their content another way
   (strokes, a session board, pages, boards), so the button is not there; the command palette still
   reaches the tidiers.
 - **On a phone too.** Diagram mode's phone cluster is one row with room for it: Undo and Redo, the

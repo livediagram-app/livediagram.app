@@ -14,7 +14,7 @@ or the first room, and everybody starts there.
 
 ## The element
 
-A **shape kind**, `avatar-pad`, in the palette's **Collaborate** category under **Navigate** (Facilitate's
+A **shape kind**, `avatar-pad`, in the palette's **Collaborate** category under **Navigate** (Workshop's
 palette), beside the portal, the chairs and the fence: like them it is somewhere a character goes. The tile reads
 **Avatar Pad**. Search adds one in any mode, as it adds any element.
 

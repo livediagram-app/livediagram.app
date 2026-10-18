@@ -3,7 +3,7 @@ import type { TemplateKind } from '@livediagram/templates';
 import { pv } from './motion';
 import { PopDot } from './story-parts';
 
-// Group 17: Facilitate mode's blank (docs/specs/007-editor/templates-by-mode.md "Five blanks").
+// Group 17: Workshop mode's blank (docs/specs/007-editor/templates-by-mode.md "Five blanks").
 // Static SVG preview tiles, one branch per TemplateKind; TemplatePreview chains the groups with ??.
 
 const FRAME = 'rgb(148 163 184)';

@@ -23,7 +23,7 @@ const PITCH: Record<EditorMode, string> = {
   draw: 'A freehand whiteboard: pens, highlighters and shapes that tidy themselves.',
   pages: 'Infographics, slides, articles and logos, laid out to print, post or present.',
   plan: 'Boards, sheets and dashboards for the work in motion.',
-  facilitate: 'Run a collaborative session with your team, from workshops to retros.',
+  workshop: 'Run a collaborative session with your team, from workshops to retros.',
 };
 
 // A mode's own templates, its Popular shelf without the blanks (its own, and Blank Spreadsheet): the fan's previews.

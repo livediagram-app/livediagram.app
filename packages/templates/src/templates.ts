@@ -228,7 +228,7 @@ export type TemplateKind =
   | 'quarterly-review'
   | 'team-welcome'
   | 'workshop-kickoff'
-  // Facilitate mode's blank (docs/specs/012-collaboration/facilitate-mode.md "Templates").
+  // Workshop mode's blank (docs/specs/012-collaboration/workshop-mode.md "Templates").
   | 'blank-session'
   // Plan templates (docs/specs/026-plan/plan-templates.md): a way of working across several tabs,
   // each opening in Plan mode, with no cards. The Kanban board ('kanban', above) is one of them;

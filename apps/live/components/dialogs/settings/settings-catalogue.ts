@@ -479,7 +479,7 @@ function tourTracksSwitch(
 type TourSeenKey =
   | 'tourSeen'
   | 'planTourSeen'
-  | 'facilitateTourSeen'
+  | 'workshopTourSeen'
   | 'drawTourSeen'
   | 'formTourSeen'
   | 'avatarTourSeen'
@@ -1164,12 +1164,12 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         description: 'The first time you work on a board, and on a sheet, in Plan.',
         helpArticle: 'planTour',
       }),
-      tourSwitch('facilitateTourSeen', {
-        label: 'Facilitate Tour',
-        event: { category: 'UI', on: 'FacilitateTourSeenOff', off: 'FacilitateTourSeenOn' },
-        keywords: 'tour walkthrough onboarding tutorial facilitate session retro workshop replay',
-        description: 'The first time you work in Facilitate.',
-        helpArticle: 'facilitateTour',
+      tourSwitch('workshopTourSeen', {
+        label: 'Workshop Tour',
+        event: { category: 'UI', on: 'WorkshopTourSeenOff', off: 'WorkshopTourSeenOn' },
+        keywords: 'tour walkthrough onboarding tutorial workshop facilitate session retro replay',
+        description: 'The first time you work in Workshop.',
+        helpArticle: 'workshopTour',
       }),
       tourSwitch('drawTourSeen', {
         label: 'Draw Tour',

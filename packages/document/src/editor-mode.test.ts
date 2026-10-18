@@ -18,8 +18,8 @@ import type { Tab } from './index';
 
 // Editor modes (docs/specs/007-editor/editor-modes.md): how a general tab is worked on.
 describe('editor modes', () => {
-  it('are Diagram, Draw, Facilitate, Pages and Plan, Diagram by default', () => {
-    expect(EDITOR_MODES).toEqual(['diagram', 'draw', 'facilitate', 'pages', 'plan']);
+  it('are Diagram, Draw, Workshop, Pages and Plan, Diagram by default', () => {
+    expect(EDITOR_MODES).toEqual(['diagram', 'draw', 'workshop', 'pages', 'plan']);
     expect(DEFAULT_EDITOR_MODE).toBe('diagram');
   });
 
@@ -27,7 +27,7 @@ describe('editor modes', () => {
     expect(isEditorMode('diagram')).toBe(true);
     expect(isEditorMode('draw')).toBe(true);
     expect(isEditorMode('pages')).toBe(true);
-    expect(isEditorMode('facilitate')).toBe(true);
+    expect(isEditorMode('workshop')).toBe(true);
     expect(isEditorMode('whiteboard')).toBe(false);
     expect(isEditorMode(undefined)).toBe(false);
     expect(isEditorMode(1)).toBe(false);
@@ -54,6 +54,13 @@ describe('opensInOf', () => {
     expect(opensInOf({ opensIn: 'infographic' })).toBe('pages');
     expect(parseEditorMode('illustrate')).toBe('pages');
     expect(parseEditorMode('Illustrate')).toBeUndefined();
+  });
+
+  // docs/specs/007-editor/editor-modes.md "Naming in the interface": Workshop was Facilitate.
+  it('reads the old name of Workshop mode as Workshop', () => {
+    expect(opensInOf({ opensIn: 'facilitate' })).toBe('workshop');
+    expect(parseEditorMode('facilitate')).toBe('workshop');
+    expect(parseEditorMode('workshop')).toBe('workshop');
   });
 
   it('reads an unknown opening mode as Diagram', () => {
@@ -93,7 +100,7 @@ describe('the editor mode catalogue', () => {
     expect(EDITOR_MODES.map(editorModeLabel)).toEqual([
       'Diagram',
       'Draw',
-      'Facilitate',
+      'Workshop',
       'Pages',
       'Plan',
     ]);
@@ -127,8 +134,8 @@ describe('setTabOpensIn', () => {
 describe('nextEditorMode', () => {
   it('moves forward through the catalogue, wrapping at the end', () => {
     expect(nextEditorMode('diagram')).toBe('draw');
-    expect(nextEditorMode('draw')).toBe('facilitate');
-    expect(nextEditorMode('facilitate')).toBe('pages');
+    expect(nextEditorMode('draw')).toBe('workshop');
+    expect(nextEditorMode('workshop')).toBe('pages');
     expect(nextEditorMode('pages')).toBe('plan');
     expect(nextEditorMode('plan')).toBe('diagram');
   });
@@ -136,8 +143,8 @@ describe('nextEditorMode', () => {
   it('moves backward with a negative step, wrapping at the start', () => {
     expect(nextEditorMode('diagram', -1)).toBe('plan');
     expect(nextEditorMode('plan', -1)).toBe('pages');
-    expect(nextEditorMode('pages', -1)).toBe('facilitate');
-    expect(nextEditorMode('facilitate', -1)).toBe('draw');
+    expect(nextEditorMode('pages', -1)).toBe('workshop');
+    expect(nextEditorMode('workshop', -1)).toBe('draw');
     expect(nextEditorMode('draw', -1)).toBe('diagram');
   });
 

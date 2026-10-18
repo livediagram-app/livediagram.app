@@ -11,7 +11,7 @@ import { flyoutTagline } from './category-flyout-groups';
 import type { PaletteTileDef } from './palette-tile-defs';
 import type { BarCategory } from './CategoryBar';
 
-// Session, on the category bar (docs/specs/007-editor/toolbar-layout.md "The category bar"): five of Facilitate's
+// Session, on the category bar (docs/specs/007-editor/toolbar-layout.md "The category bar"): five of Workshop's
 // Collaborate categories (Tools, Record, React, Selection Mode, Navigate) as one bar category, browsed the way Icons
 // is: a grid of the groups, one opened with a breadcrumb back, and a search across all of them. Five buttons for one
 // job crowded the bar; the groups stay what they were, one level down. Ask keeps its own place on the bar: putting a

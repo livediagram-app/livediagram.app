@@ -3,7 +3,7 @@ import { TEMPLATES, popularKindsFor, templateEditorMode } from '@livediagram/tem
 import { TEMPLATE_STARTS, type TemplateStartMode } from './start-template-items';
 
 // docs/specs/007-editor/start-diagramming.md
-const MODES: readonly TemplateStartMode[] = ['diagram', 'draw', 'facilitate', 'pages'];
+const MODES: readonly TemplateStartMode[] = ['diagram', 'draw', 'workshop', 'pages'];
 
 describe.each(MODES)('the %s template start', (mode) => {
   const start = TEMPLATE_STARTS[mode];
@@ -46,7 +46,7 @@ describe.each(MODES)('the %s template start', (mode) => {
     const probe = {
       diagram: ['flow', 'flowchart'],
       draw: ['sketch', 'sketchnote'],
-      facilitate: ['retro', 'retrospective'],
+      workshop: ['retro', 'retrospective'],
       pages: ['slide', 'slide-deck'],
     }[mode];
     const kinds = start.search(probe[0]!).flatMap((g) => g.kinds);
@@ -55,23 +55,23 @@ describe.each(MODES)('the %s template start', (mode) => {
   });
 });
 
-describe('Start Facilitating', () => {
-  it('groups by the session run: Retrospectives, Meetings, Quizzes & Games, Workshops, Planning, Strategy, Decisions', () => {
-    expect(TEMPLATE_STARTS.facilitate.groups.map((g) => g.id)).toEqual([
+describe('Start a Workshop', () => {
+  it('groups by the session run: Retrospectives, Meetings, Quizzes & Games, Ideation, Planning, Strategy, Decisions', () => {
+    expect(TEMPLATE_STARTS.workshop.groups.map((g) => g.id)).toEqual([
       'recommended',
       'retrospectives',
       'meetings',
       'spaces',
       'games',
-      'workshops',
+      'ideation',
       'planning',
       'strategy',
       'decisions',
     ]);
     // The boards a team fills in together, moved from Diagram.
-    const group = (id: string) => TEMPLATE_STARTS.facilitate.groups.find((g) => g.id === id)!.kinds;
+    const group = (id: string) => TEMPLATE_STARTS.workshop.groups.find((g) => g.id === id)!.kinds;
     expect(group('retrospectives')).toContain('incident-postmortem');
-    expect(group('workshops')).toContain('user-persona');
+    expect(group('ideation')).toContain('user-persona');
     expect(group('games')).toEqual([
       'pub-quiz',
       'icebreaker-questions',

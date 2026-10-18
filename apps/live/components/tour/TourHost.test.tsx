@@ -118,7 +118,7 @@ describe('TourHost offer', () => {
   });
 
   // docs/specs/007-editor/editor-tour.md "Where it appears": Diagram mode only.
-  it.each(['draw', 'pages', 'plan', 'facilitate'])(
+  it.each(['draw', 'pages', 'plan', 'workshop'])(
     'makes no offer on a tab in %s, and keeps it owed for a Diagram tab',
     (mode) => {
       markTourPending();
@@ -138,8 +138,8 @@ describe('TourHost offer', () => {
     },
   );
 
-  it('is never owed in Facilitate without a handoff', () => {
-    editor({ editorMode: { mode: 'facilitate' } });
+  it('is never owed in Workshop without a handoff', () => {
+    editor({ editorMode: { mode: 'workshop' } });
     render(<TourHost />);
     act(() => {
       vi.advanceTimersByTime(2000);

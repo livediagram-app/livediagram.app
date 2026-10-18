@@ -210,10 +210,10 @@ export type UserPreferences = {
   // The Plan tour tracks (Boards, Sheets) whose offer has been answered (taken, skipped or declined), so each offers
   // itself once ever. Cleared with `planTourSeen` when the Settings switch is turned on.
   planTourTracks?: PlanTourTrack[];
-  // The Facilitate tour's seen-guard (docs/specs/012-collaboration/facilitate-tour.md), as `planTourSeen`.
-  // Surfaced in Settings as Tours › "Facilitate Tour" (inverted). Missing / undefined === not seen.
-  facilitateTourSeen?: boolean;
-  // The Draw tour's seen-guard (docs/specs/023-draw-mode/draw-tour.md), as `facilitateTourSeen`.
+  // The Workshop tour's seen-guard (docs/specs/012-collaboration/workshop-tour.md), as `planTourSeen`.
+  // Surfaced in Settings as Tours › "Workshop Tour" (inverted). Missing / undefined === not seen.
+  workshopTourSeen?: boolean;
+  // The Draw tour's seen-guard (docs/specs/023-draw-mode/draw-tour.md), as `workshopTourSeen`.
   // Surfaced in Settings as Tours › "Draw Tour" (inverted). Missing / undefined === not seen.
   drawTourSeen?: boolean;
   // The Forms tour's seen-guard (docs/specs/030-forms/forms.md "The Forms tour"), as `drawTourSeen`; Show Me in the

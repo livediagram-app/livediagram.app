@@ -35,7 +35,7 @@ describe('the Session strip in Plan', () => {
       poll: false,
     });
     expect(sessionStripTools('plan', false, false)).toBeNull();
-    expect(sessionStripTools('facilitate', false, false)).toEqual({
+    expect(sessionStripTools('workshop', false, false)).toEqual({
       timer: true,
       vote: true,
       poll: true,

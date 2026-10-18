@@ -248,7 +248,7 @@ export const EDITOR_MODE_SWITCHES = chart(
   'Changed',
   'Editor Mode Switches',
   'A tab switched to another editor mode by the person working on it.',
-  { types: ['ModeDiagram', 'ModeDraw', 'ModePages', 'ModePlan', 'ModeFacilitate'] },
+  { types: ['ModeDiagram', 'ModeDraw', 'ModePages', 'ModePlan', 'ModeWorkshop'] },
 );
 
 // The mode a tab opens in, set from the tab menu's Opens in (docs/specs/007-editor/editor-modes.md).
@@ -1032,12 +1032,12 @@ export const PLAN_TOUR_OFFERED = opened(
   (t) => t === 'PlanTourOffer',
 );
 
-// The Facilitate tour's offer (docs/specs/012-collaboration/facilitate-tour.md); charted in its funnel on
+// The Workshop tour's offer (docs/specs/012-collaboration/workshop-tour.md); charted in its funnel on
 // the Visitors tab.
-export const FACILITATE_TOUR_OFFERED = opened(
-  'Facilitate Tour Offered',
-  'The Facilitate tour offered, the first time someone works in Facilitate mode.',
-  (t) => t === 'FacilitateTourOffer',
+export const WORKSHOP_TOUR_OFFERED = opened(
+  'Workshop Tour Offered',
+  'The Workshop tour offered, the first time someone works in Workshop mode.',
+  (t) => t === 'WorkshopTourOffer',
 );
 
 // The Draw tour's offer (docs/specs/023-draw-mode/draw-tour.md); charted in its funnel on the Visitors tab.

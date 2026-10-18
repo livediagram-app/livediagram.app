@@ -152,7 +152,7 @@ setRevealedSelected: (revealed: boolean) => void;        // usePortalSetters
   takes it off for everyone.", tiles **Reveal for All** / **Hide for All**. While somebody else
   holds the baton ([Facilitator](../../012-collaboration/facilitator.md)) the section is absent and the setter refuses.
 - **Palette:** tile `tools:reveal` ("Add Reveal Zone") in the **Tools** accordion
-  (`tileGroup: 'facilitate'`); blurb "Double-click to look underneath"; its hover card reads
+  (`tileGroup: 'tools'`); blurb "Double-click to look underneath"; its hover card reads
   "Double-click it to uncover it just for you, or reveal it for everyone from the menu."
 - **Telemetry:** placing emits `Element·Added·Reveal`; both menu tiles emit
   `Element·Changed·Reveal`; a local lift emits nothing.

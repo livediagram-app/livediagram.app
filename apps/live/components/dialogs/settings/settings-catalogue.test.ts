@@ -149,15 +149,15 @@ describe('settings catalogue', () => {
     expect(row.event.off).toBe('PlanTourSeenOn');
   });
 
-  it('inverts the Facilitate tour row the same way, after the Plan tour row', () => {
-    // docs/specs/012-collaboration/facilitate-tour.md "Where it appears".
-    const row = SWITCHES.find((r) => r.key === 'facilitateTourSeen')!;
-    expect(row.read({ facilitateTourSeen: true })).toBe(false);
+  it('inverts the Workshop tour row the same way, after the Plan tour row', () => {
+    // docs/specs/012-collaboration/workshop-tour.md "Where it appears".
+    const row = SWITCHES.find((r) => r.key === 'workshopTourSeen')!;
+    expect(row.read({ workshopTourSeen: true })).toBe(false);
     expect(row.read({})).toBe(true);
-    expect(row.write({}, true).facilitateTourSeen).toBe(false);
-    expect(row.write({}, false).facilitateTourSeen).toBe(true);
-    expect(row.event.on).toBe('FacilitateTourSeenOff');
-    expect(row.event.off).toBe('FacilitateTourSeenOn');
+    expect(row.write({}, true).workshopTourSeen).toBe(false);
+    expect(row.write({}, false).workshopTourSeen).toBe(true);
+    expect(row.event.on).toBe('WorkshopTourSeenOff');
+    expect(row.event.off).toBe('WorkshopTourSeenOn');
   });
 
   // docs/specs/007-editor/user-preferences.md "Tours": a category of its own, one switch per tour in
@@ -167,7 +167,7 @@ describe('settings catalogue', () => {
     expect(tours.rows.map((r) => [r.key, r.kind, r.label, r.helpArticle])).toEqual([
       ['tourSeen', 'toggle', 'Diagram Tour', 'diagramTour'],
       ['planTourSeen', 'toggle', 'Plan Tour', 'planTour'],
-      ['facilitateTourSeen', 'toggle', 'Facilitate Tour', 'facilitateTour'],
+      ['workshopTourSeen', 'toggle', 'Workshop Tour', 'workshopTour'],
       ['drawTourSeen', 'toggle', 'Draw Tour', 'drawTour'],
       ['formTourSeen', 'toggle', 'Forms Tour', 'planForms'],
       ['avatarTourSeen', 'toggle', 'Avatar Tour', 'avatarTour'],
@@ -209,7 +209,7 @@ describe('settings catalogue', () => {
       [
         ['TourSeenOff', 'TourSeenOn'],
         ['PlanTourSeenOff', 'PlanTourSeenOn'],
-        ['FacilitateTourSeenOff', 'FacilitateTourSeenOn'],
+        ['WorkshopTourSeenOff', 'WorkshopTourSeenOn'],
         ['DrawTourSeenOff', 'DrawTourSeenOn'],
         ['FormTourSeenOff', 'FormTourSeenOn'],
         ['AvatarTourSeenOff', 'AvatarTourSeenOn'],
