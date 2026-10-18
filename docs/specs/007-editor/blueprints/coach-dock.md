@@ -201,4 +201,4 @@ offer length from `tourLength(count)`: "1 stop, under a minute", "N stops, about
 
 ## Defaults ledger
 
-See [DEFAULTS.md](DEFAULTS.md) rows D88 to D91.
+See [DEFAULTS.md](DEFAULTS.md) rows D89 to D92.

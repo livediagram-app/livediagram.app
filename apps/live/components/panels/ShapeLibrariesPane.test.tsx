@@ -96,7 +96,7 @@ describe('ShapeLibrariesPane', () => {
     fireEvent.click(del);
     await waitFor(() => expect(value.deleteLibrary).toHaveBeenCalledWith('b'));
     expect(confirm.mock.calls[0]![0]).toMatchObject({
-      title: 'Delete this shape library?',
+      title: 'Delete This Shape Library?',
       message: 'Its shapes leave My shapes; documents that use them keep them.',
     });
   });

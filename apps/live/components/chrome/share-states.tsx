@@ -29,7 +29,7 @@ export const SHARE_STATE_META: Record<
   },
   shared: {
     label: 'Shared',
-    description: 'Anyone with a link can view.',
+    description: 'Anyone with a link can open it.',
     badge:
       'bg-emerald-50 px-2 text-[10px] font-semibold text-emerald-700 ring-1 ring-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-500/30',
     dot: 'text-emerald-500',

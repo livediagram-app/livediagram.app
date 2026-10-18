@@ -6,7 +6,9 @@ import { TEMPLATE_CATEGORIES } from './template-categories';
 describe('templateCatalogue', () => {
   it('lists the categories and every visible template with its category', () => {
     const { categories, templates } = templateCatalogue();
-    expect(categories.slice(0, -1)).toEqual([...TEMPLATE_CATEGORIES]);
+    // Every category but one holding only editor-only templates (Forms), in order.
+    expect(categories.slice(0, -1)).toEqual(TEMPLATE_CATEGORIES.filter((c) => c.id !== 'forms'));
+    expect(categories.every((c) => templates.some((t) => t.category === c.id))).toBe(true);
     expect(categories.at(-1)!.id).toBe('blanks');
     expect(templates.find((t) => t.kind === 'blank')!.category).toBe('blanks');
     expect(templates.find((t) => t.kind === 'invoice')!.category).toBe('finance');

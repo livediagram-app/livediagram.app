@@ -113,7 +113,7 @@ export function useTimelineEntityMenus(): {
   const revokeToken = useCallback(
     async (id: string) => {
       const ok = await confirm({
-        title: 'Revoke token?',
+        title: 'Revoke Token?',
         message: TOKEN_REVOKE_MESSAGE,
         confirmLabel: 'Revoke',
       });

@@ -376,6 +376,16 @@ export const PAGE_CONTENTS_JUMPS = chart(
   { types: ['PageContentsJump', 'PageContentsReorder'], rising: 'neutral' },
 );
 
+// The view rests on a page (docs/specs/007-editor/pages-mode.md "Getting around the pages"): a
+// short pan or a flick from a page seen whole turning to its neighbour.
+export const PAGE_SWIPES = chart(
+  'UI',
+  'Used',
+  'Page Swipes',
+  'A short pan or flick in Pages mode that turned the view to the next or previous page.',
+  { types: ['PageSwipe'], rising: 'neutral' },
+);
+
 // Tab windows (docs/specs/009-elements/tab-window.md): a window's tab chosen, and the tab opened from it.
 export const TAB_WINDOW_USE = chart(
   'UI',
@@ -491,6 +501,7 @@ export const WHITEBOARDS: MetricStack = {
     PAGE_SETUP,
     PAGE_BUILDING,
     PAGE_CONTENTS_JUMPS,
+    PAGE_SWIPES,
     TAB_WINDOW_USE,
     LOGO_TOOLS,
     LOGO_MIRROR_TWINS,

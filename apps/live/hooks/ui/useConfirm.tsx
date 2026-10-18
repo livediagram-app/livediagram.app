@@ -16,7 +16,7 @@ import { ConfirmDialog, type ConfirmDialogProps } from '@/components/dialogs/Con
 // though they want to gate an action behind a yes/no:
 //
 //   const confirm = useConfirm();
-//   if (!await confirm({ title: 'Delete tab?', message: '...' })) return;
+//   if (!await confirm({ title: 'Delete Tab?', message: '...' })) return;
 //   // ...do the destructive thing
 //
 // Provider renders the dialog once at the app root and routes

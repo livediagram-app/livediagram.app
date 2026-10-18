@@ -42,6 +42,7 @@ import { glideViewport, type ViewPose } from '@/lib/viewport-glide';
 import type { View } from '@/lib/viewport-store';
 import { lastPageKey } from '@/lib/last-page';
 import { useLastPage } from './useLastPage';
+import { usePageSnap } from './usePageSnap';
 
 export type { PageEdits };
 
@@ -122,6 +123,8 @@ export function usePagesMode(deps: {
   viewport?: { get: () => View; subscribe: (listener: () => void) => () => void };
   // A new document by its flow id, so its writing can take the caret.
   onArticleCreated?: (flow: string) => void;
+  // The view is not this person's to snap onto a page: following someone, or presenting.
+  snapSuspended?: () => boolean;
 }): PagesModeView | null {
   const { activeTab, mode, canEdit, tabLoaded, commitTabs } = deps;
   const on = hasPageLook(mode);
@@ -135,32 +138,45 @@ export function usePagesMode(deps: {
   // way gives way to the next, or to a finger's pan.
   const glide = useRef<(() => void) | null>(null);
   useEffect(() => () => glide.current?.(), []);
-  const frame = (page?: LaidOutPage, read = false, glides = false) => {
+  // What shows of the canvas: below the Toolbar strip, beside the Contents panel wherever it sits
+  // (docs/specs/007-editor/pages-mode.md "Contents"), so a page centres in what shows beside it.
+  const measure = () => {
     const canvas = deps.canvasMainRef.current;
-    if (!canvas) return;
+    if (!canvas) return null;
     const inset = topStripInset(canvas);
-    // Beside the Contents panel, wherever it sits (docs/specs/007-editor/pages-mode.md
-    // "Contents"): the page centres in what shows beside it.
     const sides = sideChromeInsets(canvas);
-    const size = {
-      width: canvas.offsetWidth - sides.left - sides.right,
-      height: canvas.offsetHeight,
-    };
+    return { width: canvas.offsetWidth, height: canvas.offsetHeight, inset, sides };
+  };
+  const frameFor = (
+    m: NonNullable<ReturnType<typeof measure>>,
+    page?: LaidOutPage,
+    read = false,
+  ) => {
+    const { inset, sides } = m;
+    const size = { width: m.width - sides.left - sides.right, height: m.height };
     const doc = page?.flow ? articlesOf(activeTab)[page.flow] : undefined;
-    const { zoom, offset } = besideSideInsets(
+    return besideSideInsets(
       read && page && doc
         ? computeReadingFrame(size, page.rect, inset, articleMarginPx(doc.style))
         : computeFitBelow(size, pageFitBox(page), inset),
       sides,
     );
+  };
+  const glideTo = (to: ViewPose) => {
+    glide.current?.();
+    glide.current = glideViewport(deps.getViewport(), to, {
+      zoom: deps.setViewportZoom,
+      offset: deps.setViewportOffset,
+    });
+  };
+  const frame = (page?: LaidOutPage, read = false, glides = false) => {
+    const m = measure();
+    if (!m) return;
+    const { zoom, offset } = frameFor(m, page, read);
     glide.current?.();
     glide.current = null;
     if (glides) {
-      glide.current = glideViewport(
-        deps.getViewport(),
-        { zoom, offset },
-        { zoom: deps.setViewportZoom, offset: deps.setViewportOffset },
-      );
+      glideTo({ zoom, offset });
     } else {
       deps.setViewportZoom(zoom);
       deps.setViewportOffset(offset);
@@ -168,8 +184,8 @@ export function usePagesMode(deps: {
     debugLog('[page] framed', {
       tabId,
       page: page?.id ?? 'first',
-      inset,
-      sides,
+      inset: m.inset,
+      sides: m.sides,
       zoom,
       glides,
     });
@@ -183,6 +199,36 @@ export function usePagesMode(deps: {
     [storedPages, legacyOrientation],
   );
   const pages = useMemo(() => layOutPages(current), [current]);
+  // The view rests on a page once a pan or a zoom lets go (docs/specs/007-editor/pages-mode.md
+  // "Getting around the pages").
+  usePageSnap({
+    on,
+    pages,
+    viewport: deps.viewport,
+    measure: () => {
+      const m = measure();
+      if (!m) return null;
+      return {
+        screen: { width: m.width, height: m.height },
+        band: {
+          left: m.sides.left,
+          right: m.width - m.sides.right,
+          top: m.inset,
+          bottom: m.height,
+        },
+      };
+    },
+    fitOf: (page) => {
+      const m = measure();
+      return m ? frameFor(m, page) : deps.getViewport();
+    },
+    glideTo,
+    cancelGlide: () => {
+      glide.current?.();
+      glide.current = null;
+    },
+    suspended: deps.snapSuspended ?? (() => false),
+  });
   // The page you were last on, remembered as the view rests (docs/specs/007-editor/
   // pages-mode.md "Back to the page you were on").
   const last = useLastPage({

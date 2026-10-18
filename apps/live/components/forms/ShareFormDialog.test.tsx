@@ -150,7 +150,7 @@ describe('Share Form on a document in This Browser (forms.md "Publishing and the
         onSyncToCloud={sync}
       />,
     );
-    expect(screen.getByText('This Document Is Offline')).toBeTruthy();
+    expect(screen.getByText('This Document Is in This Browser')).toBeTruthy();
     expect(screen.getByText(/this form can’t be published yet/)).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'Publish Form' })).toBeNull();
     expect(sync).not.toHaveBeenCalled();

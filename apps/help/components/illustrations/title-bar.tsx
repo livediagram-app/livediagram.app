@@ -334,7 +334,7 @@ export function VisibilityLegendFigure() {
         Shared
       </Label>
       <Label x={152} y={top + 60} size={9.5} tone="body">
-        Anyone with a link can view.
+        Anyone with a link can open it.
       </Label>
 
       {/* The audiences on one scale, filled to the current stop. */}

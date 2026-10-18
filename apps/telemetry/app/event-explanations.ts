@@ -1454,6 +1454,8 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Opened|PageContents':
     "Someone opened Pages mode's Contents: every page of the tab in a list.",
   'UI|Used|PageContentsJump': "Someone went to a page from Pages mode's Contents list.",
+  'UI|Used|PageSwipe':
+    'Someone turned to the next or previous page in Pages mode with a short pan or a flick, the view gliding onto it.',
   'UI|Used|PageContentsReorder':
     "Someone dragged a page to a new place in Pages mode's Contents list.",
   'UI|Added|AllPageSlides':
