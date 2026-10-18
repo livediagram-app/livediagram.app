@@ -19,7 +19,11 @@ import { FocusElementButton } from '@/components/plan/FocusElementButton';
 import { IN_BOX_TITLE_CLASS, InMenuBox } from '@/components/plan/menu-name-slot';
 import { track } from '@/lib/telemetry';
 import type { SheetActions } from './useSheetActions';
-import { BAND_CONTROLS_CLASS, bandControlsProps } from '@/components/plan/band-controls';
+import {
+  BAND_CONTROLS_CLASS,
+  BAND_HEADER_END,
+  bandControlsProps,
+} from '@/components/plan/band-controls';
 
 export const HEADER_PX = 40;
 
@@ -91,7 +95,7 @@ export function SheetHeader({
   return (
     <div
       // In a header band (maximised, MaximisedPlanLayer's --plan-band-*), as tall as the top row, after the menu.
-      className="flex h-[var(--plan-band-h,40px)] shrink-0 items-center gap-1.5 border-b pl-[var(--plan-band-left,0.75rem)] pr-3"
+      className={`flex h-[var(--plan-band-h,40px)] shrink-0 items-center gap-1.5 border-b pl-[var(--plan-band-left,0.75rem)] pr-3 ${BAND_HEADER_END}`}
       style={{ borderColor: c.palette.cardBorder }}
       onDoubleClick={(e) => {
         // As a board's: a double-click on the title or the header's empty space renames, never on its buttons.
@@ -173,7 +177,7 @@ export function SheetHeader({
       {c.interactive && !toolbar ? (
         // In a header band, a card like the menu box (band-controls.ts).
         <span
-          {...bandControlsProps(c.palette)}
+          {...bandControlsProps()}
           className={`flex items-center gap-1 ${BAND_CONTROLS_CLASS}`}
           onPointerDown={stop}
           onDoubleClick={stop}

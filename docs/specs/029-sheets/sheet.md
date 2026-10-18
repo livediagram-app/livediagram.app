@@ -238,7 +238,7 @@ rule under it, gridlines off), **Plain** (no fills, colours or borders; bold and
 ### Toolbar
 
 One row, shown for someone who may edit, in Plan mode: on its left a **category switcher** (the palette's own
-category dropdown, in its toolbar style, a tile grid; in a header band it fills the card's height, flush to its
+category dropdown, in its toolbar style, a tile grid; in a header band it fills the band's height, flush to its
 inset, as the menu box's mode tile does), and to its right the chosen category's buttons only:
 
 | Category  | Buttons                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
@@ -278,8 +278,9 @@ inset, as the menu box's mode tile does), and to its right the chosen category's
 - Each button reads the selection's active cell (Bold pressed when it is bold) and acts on the whole selection.
 - Undo and Redo are the canvas's own (its controls and the keys), not repeated in the toolbar.
 
-- In a header band (maximised or filling its tab) the Sheet's controls (Focus, Maximise or Restore and the cog) end the toolbar's own card, after Search behind a hairline, rather than a card of their own: the top
-  row's right is one card. Their width is measured and kept out of the room the buttons share, so in a narrow
+- In a header band (maximised or filling its tab) the Sheet's controls (Focus, Maximise or Restore and the cog) end the toolbar, after Search behind a hairline: the top row's right is one run of buttons, straight on the Sheet's
+  header with no card around it, as the menu box sits at its left ([Plan board](../026-plan/plan-board.md) "The header
+  holds the top row"). Their width is measured and kept out of the room the buttons share, so in a narrow
   window buttons fold into More rather than the controls being clipped.
 
 ### Formula bar

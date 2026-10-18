@@ -26,7 +26,7 @@ import { useInHeaderBand, useMenuNameSlot } from './menu-name-slot';
 import { createPortal } from 'react-dom';
 import { typeStatusRefusal } from '@/hooks/plan/status-refusal';
 import type { PlanPalette } from './plan-palette';
-import { BAND_CONTROLS_CLASS, bandControlsProps } from './band-controls';
+import { BAND_CONTROLS_CLASS, BAND_HEADER_END, bandControlsProps } from './band-controls';
 
 // The shared six-dot grip (the article zone bar's), a board's move handle.
 const GripIcon = lucideGlyph(lucideGripVertical, 16);
@@ -152,8 +152,9 @@ export function PlanBoardHeader({
       data-board-header
       // Maximised with a header band (MaximisedPlanLayer's --plan-band-*), it is as tall as the top row and starts
       // after the menu; elsewhere 52 px and 16 px in.
-      className="relative flex h-[var(--plan-band-h,52px)] shrink-0 items-center gap-3 pl-[var(--plan-band-left,1rem)] pr-4"
-      style={{ color: palette.text }}
+      className={`relative flex h-[var(--plan-band-h,52px)] shrink-0 items-center gap-3 pl-[var(--plan-band-left,1rem)] pr-4 ${BAND_HEADER_END} [[data-header-band]_&]:border-b`}
+      // In a header band, a hairline under it as a Sheet's and a view's headers have.
+      style={{ color: palette.text, borderColor: palette.border }}
       onDoubleClick={(e) => {
         if (!canRename || renaming) return;
         // The title, or the header's own empty space; never a widget or a button.
@@ -221,7 +222,7 @@ export function PlanBoardHeader({
       </div>
       {/* In a header band, a card like the menu box (band-controls.ts). */}
       <div
-        {...bandControlsProps(palette)}
+        {...bandControlsProps()}
         className={`ml-auto flex shrink-0 items-center gap-3 ${BAND_CONTROLS_CLASS}`}
       >
         {inBox && showWidgets && (widgets.length > 0 || canEdit) ? (
