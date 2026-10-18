@@ -104,6 +104,40 @@ describe('handleCustomThemes auth', () => {
     expect(db.createCustomTheme).not.toHaveBeenCalled();
   });
 
+  it('400 for fields of the wrong type or a colour that could load something, never a 500', async () => {
+    for (const body of [
+      { id: {}, name: 'x', definition: DEF },
+      { id: 'custom:1', name: 7, definition: DEF },
+      { id: 'custom:1', name: 'x', definition: 'grid' },
+      {
+        id: 'custom:1',
+        name: 'x',
+        definition: { ...DEF, elementFill: 'url(//tracker.example/x)' },
+      },
+    ]) {
+      const res = await handleCustomThemes(makeCtx('POST', '/api/custom-themes', { body }));
+      expect(res.status).toBe(400);
+    }
+    db.getCustomTheme.mockResolvedValue({ id: 'custom:1', ownerId: 'owner-1' });
+    const res = await handleCustomThemes(
+      makeCtx('PUT', '/api/custom-themes/custom:1', { body: { name: {} } }),
+    );
+    expect(res.status).toBe(400);
+    expect(db.createCustomTheme).not.toHaveBeenCalled();
+    expect(db.updateCustomTheme).not.toHaveBeenCalled();
+  });
+
+  it('409 when the id is already a theme', async () => {
+    db.getCustomTheme.mockResolvedValue({ id: 'custom:1', ownerId: 'someone-else' });
+    const res = await handleCustomThemes(
+      makeCtx('POST', '/api/custom-themes', {
+        body: { id: 'custom:1', name: 'Brandy', definition: DEF },
+      }),
+    );
+    expect(res.status).toBe(409);
+    expect(db.createCustomTheme).not.toHaveBeenCalled();
+  });
+
   it('404 when updating a theme that does not exist', async () => {
     db.getCustomTheme.mockResolvedValue(null);
     const res = await handleCustomThemes(

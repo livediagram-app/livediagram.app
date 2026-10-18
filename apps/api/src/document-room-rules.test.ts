@@ -73,6 +73,11 @@ describe('helloPresence', () => {
     expect(helloPresence(null, SESSION)).toMatchObject({ name: '', color: '' });
   });
 
+  it('drops a colour that could load something from outside', () => {
+    const p = helloPresence({ name: 'Ada', color: 'url(//tracker.example/x)' }, SESSION);
+    expect(p.color).toBe('');
+  });
+
   it('smuggles no extra keys out of the claimed object', () => {
     // Built explicitly rather than spread, so the attachment cannot be used
     // as arbitrary storage.

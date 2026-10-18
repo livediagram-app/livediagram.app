@@ -10,8 +10,17 @@ import {
   listCustomThemesByOwner,
   updateCustomTheme,
 } from '../db';
+import { isSafeColourValue } from '@livediagram/document';
 import type { CustomThemeDefinition } from '../types';
-import { badRequest, forbidden, json, noContent, notFound, payloadTooLarge } from '../responses';
+import {
+  badRequest,
+  conflict,
+  forbidden,
+  json,
+  noContent,
+  notFound,
+  payloadTooLarge,
+} from '../responses';
 import { requireOwner, type RouteContext, readBody } from './context';
 import { MAX_NAME_LEN, MAX_THEME_DEF_BYTES, byteLength } from '../limits';
 import { recordThemeDeleted, recordThemeSaved } from '../timeline';
@@ -42,6 +51,34 @@ function themeInvalid(id: string, definition: CustomThemeDefinition | undefined)
   return null;
 }
 
+// A body's fields of the wrong type are the caller's mistake, refused before they reach a write. Null when they
+// are acceptable: each field absent or of its type (a definition is an object).
+function themeFieldsInvalid(body: {
+  id?: unknown;
+  name?: unknown;
+  definition?: unknown;
+}): Response | null {
+  const { id: themeId, name, definition: d } = body;
+  if (themeId !== undefined && (typeof themeId !== 'string' || themeId.length > MAX_THEME_ID_LEN))
+    return badRequest('invalid id');
+  if (name !== undefined && typeof name !== 'string') return badRequest('invalid name');
+  if (d !== undefined && (typeof d !== 'object' || d === null || Array.isArray(d)))
+    return badRequest('invalid definition');
+  // A theme's colours paint every element it styles, for everyone who opens a document in it: none may be a
+  // value that loads something from outside (@livediagram/document unsafe-colours.ts).
+  if (d !== undefined && !everyStringSafe(d, 0)) return badRequest('invalid colour');
+  return null;
+}
+
+function everyStringSafe(value: unknown, depth: number): boolean {
+  if (typeof value === 'string') return isSafeColourValue(value);
+  if (typeof value !== 'object' || value === null || depth > 4) return true;
+  return Object.values(value).every((v) => everyStringSafe(v, depth + 1));
+}
+
+// A theme id is client-minted (a UUID); anything far past one is not an id.
+const MAX_THEME_ID_LEN = 64;
+
 export async function handleCustomThemes(ctx: RouteContext): Promise<Response> {
   const { request, env, segments } = ctx;
   if (segments[1] !== 'custom-themes') return notFound();
@@ -57,6 +94,8 @@ export async function handleCustomThemes(ctx: RouteContext): Promise<Response> {
     if (request.method === 'POST') {
       const read = await readBody(ctx);
       if (read instanceof Response) return read;
+      const shapeProblem = themeFieldsInvalid(read);
+      if (shapeProblem) return shapeProblem;
       const body = read as {
         id?: string;
         name?: string;
@@ -65,6 +104,8 @@ export async function handleCustomThemes(ctx: RouteContext): Promise<Response> {
       if (!body.id || !body.name || !body.definition) {
         return badRequest('missing id/name/definition');
       }
+      // A client-chosen id already taken (a retried create) is the caller's conflict, not a 500.
+      if (await getCustomTheme(env, body.id)) return conflict('theme_exists');
       const tooBig = themeTooLarge(body.name, body.definition);
       if (tooBig) return tooBig;
       const invalid = themeInvalid(body.id, body.definition);
@@ -89,6 +130,8 @@ export async function handleCustomThemes(ctx: RouteContext): Promise<Response> {
     if (request.method === 'PUT') {
       const read = await readBody(ctx);
       if (read instanceof Response) return read;
+      const shapeProblem = themeFieldsInvalid({ name: read.name, definition: read.definition });
+      if (shapeProblem) return shapeProblem;
       const body = read as {
         name?: string;
         definition?: CustomThemeDefinition;

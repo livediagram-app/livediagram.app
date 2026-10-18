@@ -2,6 +2,7 @@
 // "Data and persistence"). Every write raises the document's `items_rev` in the same batch, so the
 // room op carries one store revision per write; an update is guarded by the item's own `rev`.
 
+import { isSafeColourValue } from '@livediagram/document';
 import type { Item, ItemPerson } from '@livediagram/items';
 import type { Env } from '../types';
 
@@ -26,7 +27,11 @@ const UNKNOWN_PERSON: ItemPerson = { id: '', name: 'Someone', color: '#94a3b8' }
 function parsePerson(text: string): ItemPerson {
   try {
     const p = JSON.parse(text) as Partial<ItemPerson>;
-    return typeof p.id === 'string' && typeof p.name === 'string' && typeof p.color === 'string'
+    // A colour stored before participant colours were checked is read as none (unsafe-colours.ts).
+    return typeof p.id === 'string' &&
+      typeof p.name === 'string' &&
+      typeof p.color === 'string' &&
+      isSafeColourValue(p.color)
       ? { id: p.id, name: p.name, color: p.color }
       : UNKNOWN_PERSON;
   } catch {

@@ -126,6 +126,9 @@ describe('toggleFormatInRange', () => {
 describe('hasRichFormatting', () => {
   it('is false for absent / empty / single override-free run', () => {
     expect(hasRichFormatting(undefined)).toBe(false);
+    // A stored value that is not a list of runs reads as plain text rather than throwing in a reader.
+    expect(hasRichFormatting('zzz' as never)).toBe(false);
+    expect(hasRichFormatting([null, { text: 'a', bold: true }] as never)).toBe(false);
     expect(hasRichFormatting([])).toBe(false);
     expect(hasRichFormatting([{ text: 'plain' }])).toBe(false);
   });
