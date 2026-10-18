@@ -137,7 +137,7 @@ const CHOICES: Readonly<
   >
 > = {
   add: { members: ['kind', 'element'], inLines: 'add <kind> key=value…' },
-  move: { members: ['place', 'by'], inLines: 'a placement such as below=n3, or by=dx,dy' },
+  move: { members: ['place', 'by'], inLines: 'a placement such as below:n3 or right-of:n3, or by=dx,dy' },
   rewire: { members: ['from', 'to'], atLeastOne: true, inLines: 'from=<x>, to=<y> or both' },
   order: { members: ['to', 'above', 'below'], inLines: 'front, back, above=<x> or below=<x>' },
   wrap: { members: ['absorb', 'makeRoom'], atMostOne: true, inLines: 'absorb or make-room' },
