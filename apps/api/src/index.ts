@@ -31,7 +31,12 @@ import {
   isClerkIdShape,
   TIMELINE_RETENTION_MS,
 } from '@livediagram/api-schema';
-import { isApiTokenFormat, isWorkbenchSessionFormat } from '@livediagram/api-schema';
+import {
+  API_TOKEN_PREFIX,
+  isApiTokenFormat,
+  isWorkbenchSessionFormat,
+  WORKBENCH_SESSION_PREFIX,
+} from '@livediagram/api-schema';
 import { verifyOwnerId } from './auth/owner-signature';
 import { guestSignatureEnforced, OWNER_SCOPED_SEGMENTS } from './auth/guest-rest';
 import { handleTokens } from './routes/tokens';
@@ -165,8 +170,10 @@ async function routeApiRequest(
   let tokenAuth: { ownerId: string; tokenId: string; readOnly: boolean } | null = null;
   if (!clerkUserId) {
     const bearer = bearerTokenOf(request.headers.get('Authorization'));
-    if (bearer && isApiTokenFormat(bearer)) {
-      tokenAuth = await resolveApiToken(env, bearer);
+    // A bearer that carries the token prefix claims to be a token even when it is cut short or mistyped (a
+    // copy-paste slip): it is refused as one below, never read as a guest or handed to the Clerk path.
+    if (bearer?.startsWith(API_TOKEN_PREFIX)) {
+      tokenAuth = isApiTokenFormat(bearer) ? await resolveApiToken(env, bearer) : null;
       // A token-shaped bearer claims to be a token: unknown, revoked or expired, it is refused here, never
       // read as a guest or as nobody (docs/specs/015-api/public-api-and-tokens.md §3.3).
       if (!tokenAuth) {
@@ -186,8 +193,11 @@ async function routeApiRequest(
   let workbench: WorkbenchContext | null = null;
   if (!clerkUserId && !tokenAuth) {
     const bearer = bearerTokenOf(request.headers.get('Authorization'));
-    if (bearer && isWorkbenchSessionFormat(bearer)) {
-      const resolved = await resolveWorkbenchSession(env, bearer, Date.now());
+    if (bearer?.startsWith(WORKBENCH_SESSION_PREFIX)) {
+      // Cut short or mistyped, a session-shaped bearer is refused as a session too (as a token is, above).
+      const resolved = isWorkbenchSessionFormat(bearer)
+        ? await resolveWorkbenchSession(env, bearer, Date.now())
+        : ({ ok: false, reason: 'malformed', sessionPrefix: '' } as const);
       if (!resolved.ok) {
         console.warn('[workbench] bearer-refused', {
           reason: resolved.reason,

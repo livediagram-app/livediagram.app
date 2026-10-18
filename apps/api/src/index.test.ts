@@ -272,6 +272,17 @@ describe('worker refusal of an unknown API token', () => {
     expect(res.status).toBe(401);
   });
 
+  it('refuses a token cut short or mistyped as a token, not as a request with no credential', async () => {
+    for (const bearer of ['lvd_', 'lvd_notreal', `lvd_${'x'.repeat(12)}`]) {
+      const res = await worker.fetch(
+        get('/api/documents', { Authorization: `Bearer ${bearer}`, 'X-Owner-Id': 'guest-1' }),
+        noEnforcement(),
+      );
+      expect(res.status, bearer).toBe(401);
+      expect(await res.json(), bearer).toEqual({ error: 'invalid_token' });
+    }
+  });
+
   it('leaves a bearer that is not token-shaped to the Clerk path', async () => {
     const res = await worker.fetch(
       get('/api/documents', { Authorization: 'Bearer eyJ.jwt.sig' }),
@@ -356,6 +367,17 @@ describe('workbench sessions at the front door', () => {
     handleWorkbenchMock.mockClear();
     resolveWorkbenchSessionMock.mockResolvedValue({ ok: true, workbench: SESSION });
     vi.spyOn(console, 'warn').mockImplementation(() => {});
+  });
+
+  it('401s a session cut short or mistyped, without looking it up', async () => {
+    resolveWorkbenchSessionMock.mockClear();
+    const res = await call('GET', '/api/documents/doc1', {
+      Authorization: 'Bearer lvw_short',
+      'X-Owner-Id': 'guest-1',
+    });
+    expect(res.status).toBe(401);
+    expect(await res.json()).toEqual({ error: 'invalid_session' });
+    expect(resolveWorkbenchSessionMock).not.toHaveBeenCalled();
   });
 
   it('401s a session that does not resolve, never reading it as a guest', async () => {
