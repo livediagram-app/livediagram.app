@@ -47,8 +47,10 @@ export const listItemsShape = {
     ),
 };
 
+// Each change is strict: a key it does not take is refused, never dropped. A dropped `column` (the board's own word for
+// a status) left a card waiting off every board with nothing said (docs/specs/026-plan/plan-agents.md).
 const itemChange = z.discriminatedUnion('op', [
-  z.object({
+  z.strictObject({
     op: z.literal('add'),
     title: z.string().min(1),
     type: typeArg.default('task'),
@@ -59,14 +61,14 @@ const itemChange = z.discriminatedUnion('op', [
       ),
     fields: fieldsArg.optional(),
   }),
-  z.object({
+  z.strictObject({
     op: z.literal('set'),
     item: itemRef,
     fields: fieldsArg.optional(),
     clear: z.array(z.string()).optional().describe('Fields to clear, by name (never title).'),
     type: typeArg.optional().describe('Change its card type.'),
   }),
-  z.object({
+  z.strictObject({
     op: z.literal('move'),
     item: itemRef,
     status: statusArg.describe('The column it moves to, by name; it moves there on every board.'),
@@ -74,7 +76,7 @@ const itemChange = z.discriminatedUnion('op', [
       .optional()
       .describe('The item it lands before; the end of the column when absent.'),
   }),
-  z.object({ op: z.literal('delete'), item: itemRef }),
+  z.strictObject({ op: z.literal('delete'), item: itemRef }),
 ]);
 
 export const changeItemsShape = {

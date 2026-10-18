@@ -64,7 +64,8 @@ Every write takes what a person would say, and stores the ids:
 - **Unknown names are refused, never stored**: a status no board names is `status_unknown`, a type the catalogue
   lacks is `type_unknown`, a custom field the type lacks is `field_unknown`, a Choice value not offered is
   `choice_unknown`. Each refusal lists what is there ("Columns: Backlog, In Progress, Review, Done"). A card that
-  should wait off every board is made with no status.
+  should wait off every board is made with no status. A key a change does not take is refused as well, never dropped
+  (`column` for `status` would otherwise leave the card off every board with nothing said).
 - A refused change stops the batch; the answer says what was applied before it, and why the rest was not.
 - The api's own refusals (`status_excluded`, `fields_invalid`, ...) carry their meaning and a hint, the same on the
   CLI and the MCP.
