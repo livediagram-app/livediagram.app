@@ -57,7 +57,7 @@ export function TrashPane({ trash }: { trash: TrashController }) {
                 </h2>
                 {group.scope.kind === 'local' ? (
                   <p className="text-xs text-slate-500 dark:text-slate-400">
-                    Offline documents, kept only in this browser.
+                    Documents in This Browser, kept only here.
                   </p>
                 ) : null}
               </div>

@@ -189,7 +189,7 @@ room`; open sessions still stop at their next save (I5).
   documents wait here for 30 days before they are removed for good. Restore one to put it back where it was."
 - Trash view: intro, in an `InfoNote` (the small info-glyph note the Explorer's views use), "Deleted documents wait here for 30 days, then they are removed for good. Restoring one
   puts it back where it was." Groups "Your documents", each team by name (A to Z), "This Browser only" with
-  "Offline documents, kept only in this browser." Row: name, "Deleted {d MMM} · {n} days left" ("1 day left",
+  "Documents in This Browser, kept only here." Row: name, "Deleted {d MMM} · {n} days left" ("1 day left",
   "Removed at the next clean-up" at 0). Actions "Restore" (no confirmation), "Delete permanently" and
   "Empty Trash" (confirm popovers: "Delete "{name}" for good? This cannot be undone." / "Delete {n}
   documents in {your Trash | {team}'s Trash, for the whole team | this browser's Trash} for good? ...").

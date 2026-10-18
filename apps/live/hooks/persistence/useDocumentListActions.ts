@@ -307,7 +307,7 @@ export function useDocumentListActions(deps: DocumentListActionsDeps) {
     if (!ownerId || !setSharedDocuments) return;
     const target = sharedDocuments.find((d) => d.id === documentId);
     const ok = await confirm({
-      title: `Remove "${target?.name || 'this document'}" from your Shared list?`,
+      title: `Remove "${target?.name || 'this document'}" from Shared With Me?`,
       message:
         "It'll vanish from your Shared with you list. You can still open it again from the share link the owner gave you, and that re-adds it here.",
       confirmLabel: 'Remove',

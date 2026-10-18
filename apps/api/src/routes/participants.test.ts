@@ -179,6 +179,22 @@ describe('participant pictures', () => {
     expect(db.setParticipantPicture).toHaveBeenCalledWith(expect.anything(), 'user_ann', null);
   });
 
+  it('PUT picture answers clearing a participant not saved yet as done, and setting one as not found', async () => {
+    const info = vi.spyOn(console, 'info').mockImplementation(() => {});
+    db.setParticipantPicture.mockResolvedValue(false);
+    const put = (pictureUrl: string | null) =>
+      handleParticipants(
+        makeCtx('PUT', '/api/participants/user_ann/picture', {
+          clerkUserId: 'user_ann',
+          body: { pictureUrl },
+        }),
+      );
+    expect((await put(null)).status).toBe(200);
+    expect((await put(PICTURE)).status).toBe(404);
+    expect(info).toHaveBeenCalledWith('[profile-picture] clear_absent');
+    info.mockRestore();
+  });
+
   it('PUT picture refuses a guest, an API token and another account', async () => {
     const info = vi.spyOn(console, 'info').mockImplementation(() => {});
     const guest = await handleParticipants(

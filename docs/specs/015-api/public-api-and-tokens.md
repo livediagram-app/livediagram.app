@@ -232,11 +232,11 @@ entry are gone, with no redirect (few people had used it).
 The category holds one row, the **token manager** (`kind: 'tokens'`), laid
 out top to bottom:
 
-- **Overview.** A key tile, the title, one line on what tokens are for, and the
-  **capacity meter**: "3 of 10" over ten pips, one per slot, filled for each
-  live token (brand; amber from 8; rose at the cap). A **New** button (accessible name "New token")
-  opens the composer; at the cap it is disabled and the meter says to revoke
-  one first.
+- **Overview.** The row's own header (the key tile, the title and the line on what tokens are for, with Learn more)
+  over the **capacity meter**: "3 of 10" over ten pips, one per slot, filled for each
+  live token (brand; amber from 8; rose at the cap), with a **New** button beside it (accessible name "New token")
+  that opens the composer; at the cap it is disabled and the meter says to revoke one first. The title and line are
+  said once: the overview repeated them under the header.
 - **Composer.** Opens in place under the overview from New. A name
   field (optional, up to 60 characters, focused when opened) with **suggestion chips** that fill it
   ("Claude", "Cursor", "CI Bot", "Local Script"), a live line saying when the

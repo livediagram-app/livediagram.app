@@ -35,14 +35,17 @@ export function SettingsTokensRow({ row }: { row: SettingsTokensRowSpec }) {
     <SettingsRowShell
       row={row}
       leading={
-        authLoaded && !enabled ? (
-          <span
-            aria-hidden
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-400 dark:bg-slate-700 dark:text-slate-400"
-          >
-            {TokensGlyph}
-          </span>
-        ) : null
+        // The key tile heads the row: muted until signed in.
+        <span
+          aria-hidden
+          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
+            authLoaded && !enabled
+              ? 'bg-slate-100 text-slate-400 dark:bg-slate-700 dark:text-slate-400'
+              : 'bg-gradient-to-br from-slate-600 to-slate-800 text-white shadow-sm shadow-slate-900/20 dark:from-slate-500 dark:to-slate-700'
+          }`}
+        >
+          {TokensGlyph}
+        </span>
       }
       descriptionContent={
         authLoaded && !enabled ? (

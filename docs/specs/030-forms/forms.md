@@ -390,7 +390,7 @@ Tour** stack beside the Draw tour's.
     link? People with it will see this form isn’t available. Publishing again makes a new link.").
   - A document kept on this device only (an offline document) cannot publish until it is synced, so Share Form offers
     the same move the document's Share dialog does ([Offline mode](../006-document/offline-mode.md#sharing-a-document-in-this-browser)):
-    the shared sync prompt (`SyncDocumentPrompt`, the one `ShareOfflineGate` draws) says **This Document Is Offline**,
+    the shared sync prompt (`SyncDocumentPrompt`, the one `ShareOfflineGate` draws) says **This Document Is in This Browser**,
     "It is saved only in this browser, so this form can't be published yet. Sync it to livediagram to publish it: the
     form link and its responses need it on our servers. You can take it offline again any time.", with **Sync
     Document**. It syncs the document in place; the toast confirms and the same dialog carries straight on to the

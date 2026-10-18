@@ -240,7 +240,7 @@ export function TeamPane({
                         <PencilIcon />
                       </span>
                     }
-                    label="Edit team"
+                    label="Edit Team"
                     onClick={() => {
                       setEditOpen(true);
                       setMenuOpen(false);
@@ -254,7 +254,7 @@ export function TeamPane({
                         <SignInIcon />
                       </span>
                     }
-                    label="Leave team"
+                    label="Leave Team"
                     onClick={() => {
                       setMenuOpen(false);
                       if (selfRow) void removeMember(selfRow, true);
@@ -268,7 +268,7 @@ export function TeamPane({
                         <TrashIcon />
                       </span>
                     }
-                    label="Delete team"
+                    label="Delete Team"
                     onClick={() => {
                       setMenuOpen(false);
                       void deleteTeam();

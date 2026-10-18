@@ -103,6 +103,14 @@ async function putPicture(ctx: RouteContext, id: string): Promise<Response> {
     console.info('[profile-picture] rejected', 'invalid_url');
     return badRequest('invalid_picture_url');
   }
-  if (!(await setParticipantPicture(ctx.env, id, pictureUrl))) return notFound();
+  if (!(await setParticipantPicture(ctx.env, id, pictureUrl))) {
+    // Clearing the picture of a participant not saved yet (a fresh account with none) changes nothing: it has none
+    // either way, so a 200 rather than a 404 every browser logs as an error on that account's first load.
+    if (pictureUrl === null) {
+      console.info('[profile-picture] clear_absent');
+      return json({ pictureUrl });
+    }
+    return notFound();
+  }
   return json({ pictureUrl });
 }
