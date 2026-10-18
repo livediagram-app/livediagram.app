@@ -407,7 +407,6 @@ export function EditorView() {
             })}
             onCopyTabTo={linkActiveTabTo}
             onToggleLockTab={toggleActiveTabLock}
-            modeChoiceFor={ctx.modeChoiceFor}
             onReorder={reorderTabs}
             // A tab-scoped visitor edits their tab's content at most, never the
             // tabs around it (docs/specs/013-workspace/tab-scoped-share-links.md).
@@ -494,7 +493,11 @@ export function EditorView() {
                       tab of the document live beside it when one has been dragged to the right. */}
                               <SplitViewFrame header={header} footer={footer}>
                                 {(headerInColumn, footerInColumn, splitShowing) => (
-                                  <div className="flex h-dvh flex-col">
+                                  <div
+                                    // The open tab's editor mode, for the e2e helpers (e2e/fixtures.ts).
+                                    data-editor-mode={ctx.editorMode.mode}
+                                    className="flex h-dvh flex-col"
+                                  >
                                     {/* Arrow click-to-connect hint (docs/specs/008-canvas/canvas-and-palette.md): shown while the gesture
           is armed so the user knows the next shape click connects, and
           gives a click target to cancel (clicking empty canvas also

@@ -179,7 +179,7 @@ and the user can keep pressing it to regenerate.
 Below the looks, four rows, one per setting, each showing its current value: **Colours** (the theme's name),
 **Finish**, **Text** (the tab font and the default size) and **Canvas** (the pattern). Two columns, one on a phone.
 Pressing a row opens that setting's panel **in place**, sliding in from the right (back slides from the left; a fade
-with reduced motion), under the shared back bar (the one Import and Export use: **Tab Style** then the panel's name).
+with reduced motion), under the shared [back bar](../004-interface-design/back-bar.md) (the one Import and Export use: **Tab Style** then the panel's name), which stays pinned to the top as the panel scrolls.
 Panels carry no descriptions. The editor's commands that open a panel directly ("Change Theme", "Canvas Options")
 open the dialog on that panel.
 

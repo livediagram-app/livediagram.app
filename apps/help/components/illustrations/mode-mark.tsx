@@ -1,5 +1,5 @@
-// Each editor mode's mark, shared by the scenes that draw the mode switch, its menu and the tab menu's
-// mode rows, so every figure shows the app's own icons.
+// Each editor mode's mark, shared by the scenes that draw the mode switch and its menu, so every figure
+// shows the app's own icons.
 
 export type Mode = 'Diagram' | 'Draw' | 'Illustrate' | 'Plan' | 'Facilitate';
 

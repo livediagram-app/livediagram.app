@@ -23,10 +23,10 @@ it brings its own behaviour.
 ## The kinds
 
 - A Board, Sheet or Dashboard tab is always in **Plan** mode, whatever a stored or stale `opensIn` says (as an Event
-  Storming tab is always Diagram). Its mode switch still shows, reading Plan, with no line under the modes. Picking another mode asks
+  Storming tab is always Diagram). Its start's mode switch still shows, reading Plan, with no line under the modes. Picking another mode asks
   **Open a New <Mode> Tab?** ("A Dashboard is always in Plan. Its mode can’t change, but you can carry on in a new
   <Mode> tab.", or "A Board tab ...", "A Sheet tab ...") and **New <Mode> Tab** opens a new tab in that mode
-  after the others; Shift+D does nothing there. Its tab menu lists no modes.
+  after the others; Shift+D does nothing there. No tab menu lists modes.
 - The kind is chosen on **Start Planning** ([Plan mode](plan-mode.md#starting-a-board)), four tiles two by two:
   **Dashboard** a Dashboard tab, **Board** (then a preset) a Board tab, **Spreadsheet** (then a start) a Sheet tab,
   and a search reaches every template, another mode's included. The choice sets the tab's kind and adds its element in one change, one undo step.

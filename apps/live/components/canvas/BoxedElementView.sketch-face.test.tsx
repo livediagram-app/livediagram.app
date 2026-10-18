@@ -65,6 +65,40 @@ describe('a sketched face', () => {
   });
 });
 
+// docs/specs/008-canvas/finish.md "In WebKit": WebKit re-runs a live filter on every repaint, so there a face is not
+// split and icons and stickers draw into still pictures. `GestureEvent` is how the view knows it is in WebKit.
+describe('in WebKit', () => {
+  afterEach(() => {
+    delete (window as { GestureEvent?: unknown }).GestureEvent;
+  });
+  const inWebKit = () => {
+    (window as { GestureEvent?: unknown }).GestureEvent = class {};
+  };
+  const liveWobble = (container: HTMLElement) =>
+    container.querySelector('[style*="lvd-sketch-tile"]');
+
+  it('draws a sketched face as it is, with no live wobble', () => {
+    inWebKit();
+    const { container } = draw(shape('progress-bar', 'sketch'));
+    expect(container.querySelector('[data-sketch-ink], [data-sketch-words]')).toBeNull();
+    expect(container.textContent).toContain('%');
+  });
+
+  it("draws a sketched icon's art into a still picture, not through a live filter", () => {
+    inWebKit();
+    const { container } = draw(shape('icon', 'sketch'));
+    expect(container.querySelector('[data-sketch-art-picture]')).not.toBeNull();
+    expect(liveWobble(container)).toBeNull();
+  });
+
+  it('keeps the live wobble on icons and the split on faces elsewhere', () => {
+    expect(liveWobble(draw(shape('icon', 'sketch')).container)).not.toBeNull();
+    cleanup();
+    const { container } = draw(shape('progress-bar', 'sketch'));
+    expect(container.querySelector('[data-sketch-ink]')).not.toBeNull();
+  });
+});
+
 describe("an element's words", () => {
   it("are all in the element's face, so a face that writes its own wears it", () => {
     const { container } = draw(shape('idea-box'), "'Caveat', cursive");

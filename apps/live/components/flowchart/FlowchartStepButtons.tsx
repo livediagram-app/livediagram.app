@@ -12,7 +12,11 @@ import {
   FLOWCHART_PARALLEL_OPTION,
 } from '@/components/canvas/quick-connect-options';
 import { Divider, PopoverButton } from '@/components/canvas/SelectionPopoverButton';
-import { noFocusSteal, ToolbarDropdown } from '@/components/rich-text/ToolbarDropdown';
+import {
+  noFocusSteal,
+  ToolbarDropdown,
+  type ToolbarDropdownMenuAnchor,
+} from '@/components/rich-text/ToolbarDropdown';
 import { STEP_TYPE_GLYPH } from '@/components/flowchart/step-type-glyphs';
 
 export type FlowchartStepToolbar = {
@@ -39,7 +43,8 @@ export function FlowchartStepButtons({
   lanes,
   laneId,
   onMoveToLane,
-}: FlowchartStepToolbar) {
+  menuAnchor,
+}: FlowchartStepToolbar & { menuAnchor?: ToolbarDropdownMenuAnchor }) {
   return (
     <>
       <PopoverButton
@@ -61,6 +66,7 @@ export function FlowchartStepButtons({
           label="Step Type"
           description="What this step is: a Process, a Decision, an Input / Output and more."
           menuClassName="min-w-[11rem]"
+          menuAnchor={menuAnchor}
           trigger={STEP_TYPE_GLYPH[stepType]}
         >
           {FLOWCHART_STEP_TYPES.map((t) => (
@@ -84,6 +90,7 @@ export function FlowchartStepButtons({
           label="Lane"
           description="Move this step into another lane."
           menuClassName="min-w-[9rem]"
+          menuAnchor={menuAnchor}
           trigger={
             <span className="max-w-[7rem] truncate px-1 text-xs font-medium">
               {lanes.find((l) => l.id === laneId)?.title ?? lanes[0]!.title}

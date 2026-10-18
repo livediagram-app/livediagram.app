@@ -123,13 +123,13 @@ elements)` to the create (cloud and Offline Mode), so a template's document has 
 | Template tabs on create        | `document-create-seeded.test.ts`, `create-document-placement.test.ts`, `template-tab.test.ts` |
 | A start's pick adds the tabs   | `template-tab-set.test.ts`                                                                    |
 | Document-wide statuses, sweep  | `usePlanStatusNames.test.ts`, `usePlanTabSweep.test.ts`                                       |
-| Shift+D wraps over four        | `e2e/editor-modes.spec.ts`                                                                    |
-| A board survives a mode switch | `e2e/editor-modes.spec.ts`                                                                    |
+| Shift+D only on an empty tab   | `hooks/editor/editor-mode-shortcut.test.ts`, `e2e/editor-modes.spec.ts`                       |
+| A Plan tab keeps its mode      | `e2e/editor-modes.spec.ts` "a Plan tab with a board keeps its mode"                           |
 
 ## Tabs and tools
 
-- No mode lock ([Switching modes keeps the tab](../plan-mode.md#switching-modes-keeps-the-tab)): the mode switch
-  and Shift+D (`editorModeShortcut`) call `setMode` straight, whatever the tab holds. Outside Plan,
+- No mode lock ([Switching modes keeps the tab](../plan-mode.md#switching-modes-keeps-the-tab)): a start's mode switch
+  and Shift+D (`editorModeShortcut`, an empty tab only) call `setMode` straight. Outside Plan,
   `usePlanSlice` sets `planInput: false`, so `PlanBoardView`, `PlanCardView` and the views draw read-only and the
   board is selected and moved as an element; items keep loading by content (`hasPlanContent`), not by mode.
 - `useModeDefaultTool` (`hooks/editor/useModeDefaultTool.ts`): `modeDefaultTool(mode, mobile)` is `pan` for Plan

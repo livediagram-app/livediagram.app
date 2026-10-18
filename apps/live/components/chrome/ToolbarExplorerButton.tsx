@@ -4,7 +4,6 @@ import { track } from '@/lib/telemetry';
 import { HoverCard, Glyph } from '@livediagram/ui';
 import { useUiScale } from '@/components/providers/ui-scale';
 import { toSurfacePx, uiScaleStyle } from '@/lib/ui-scale';
-import { EditorModeSwitch } from './editor-mode/EditorModeSwitch';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { MenuNameSlot, TabNameInBox } from '@/components/plan/menu-name-slot';
 import { BAND_BLEND, BAND_TINT } from './toolbar-surface';
@@ -22,10 +21,6 @@ import { PHONE_TOOLBAR_ITEMS } from './phone-toolbar-items';
 //
 // `inline` drops the corner positioning so the strip's row can hold it in its
 // own card at the far left, beside the strip, which is where a phone puts it.
-//
-// The editor mode switch (docs/specs/007-editor/editor-modes.md "The mode switch") rides beside the
-// button in the corner card, so it goes wherever the menu goes; it renders nothing where no switch
-// is offered. Not on a phone: the row is the strip's, and the tab menu's Opens in switches there.
 export function ToolbarExplorerButton({
   open,
   onToggle,
@@ -65,8 +60,7 @@ export function ToolbarExplorerButton({
     <div
       data-dock-button=""
       // Chrome, not canvas: the canvas's capture-phase gestures skip a press inside a floating
-      // panel. Without it, a press here (the menu button, the mode switch's menu) with a Draw pen
-      // in hand started a stroke instead, and the switch back to Diagram never landed.
+      // panel. Without it, a press here with a Draw pen in hand started a stroke instead.
       data-floating-panel=""
       data-tour-id="dock-explorer"
       data-toolbar-menu=""
@@ -94,7 +88,6 @@ export function ToolbarExplorerButton({
           {button}
         </HoverCard>
       )}
-      {phone ? null : <EditorModeSwitch />}
       {/* A maximised or tab-filling element's name, while its header holds the top row (menu-name-slot). */}
       {phone || inline ? null : <MenuNameSlot />}
       {/* Else the open tab's name, in every mode (not on a phone). */}

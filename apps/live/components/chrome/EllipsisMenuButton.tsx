@@ -5,7 +5,6 @@ import { PortalMenu } from './TabPortalMenu';
 import { EllipsisGlyph } from '@/components/primitives/EllipsisTriggerButton';
 import { MenuErrorBoundary } from '@/components/primitives/MenuErrorBoundary';
 import type { CanvasMenuActions } from './TabBar';
-import type { TabModeChoice } from './TabModeMenuRows';
 
 // The tab-bar ⋯ button: toggles the unified tab / canvas PortalMenu anchored
 // to itself. Extracted from TabBar.tsx. Pure prop-based component.
@@ -31,7 +30,6 @@ export function EllipsisMenuButton({
   onCopyTo,
   onToggleLock,
   onDelete,
-  modeChoice,
   planTab,
   dataRows,
   selfId,
@@ -63,7 +61,6 @@ export function EllipsisMenuButton({
   onCopyTo: (targetDocumentId: string) => void;
   onToggleLock: () => void;
   onDelete: () => void;
-  modeChoice?: TabModeChoice;
   planTab?: boolean;
   dataRows?: TabDataRows;
 }) {
@@ -97,7 +94,6 @@ export function EllipsisMenuButton({
             onCopyTo={onCopyTo}
             onToggleLock={onToggleLock}
             locked={locked}
-            modeChoice={modeChoice}
             planTab={planTab}
             {...(dataRows ? { dataRows } : {})}
             selfId={selfId}

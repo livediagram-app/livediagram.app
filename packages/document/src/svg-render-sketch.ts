@@ -135,7 +135,9 @@ export function svgSketchArtDefs(elements: readonly Element[], tabFinish: unknow
   return `<defs>${art ? svgSketchArtFilter() : ''}${faces ? svgSketchFaceFilter() : ''}</defs>`;
 }
 
-function svgSketchArtFilter(): string {
+/** The icons' and stickers' two-pass wobble as an SVG <filter> (the canvas's SketchFilterDefs draws the same): in the
+ *  export, and in the still pictures WebKit's canvas draws that art into (SketchArtPicture). */
+export function svgSketchArtFilter(): string {
   return (
     `<filter id="${SKETCH_ART_FILTER_ID}" x="-15%" y="-15%" width="130%" height="130%">` +
     `<feTurbulence type="fractalNoise" baseFrequency="0.12" numOctaves="2" seed="7" result="n1"/>` +

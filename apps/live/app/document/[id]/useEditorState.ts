@@ -99,7 +99,6 @@ import { useIllustratePages } from '@/hooks/editor/useIllustratePages';
 import { useLogoEditor } from '@/hooks/editor/useLogoEditor';
 import { editorModeShortcut } from '@/hooks/editor/editor-mode-shortcut';
 import { announce } from '@/lib/announcer';
-import { useTabModeMenu } from '@/hooks/editor/useTabModeMenu';
 import { peerModeSwitchMessage } from '@/lib/peer-mode-switch';
 import { useAddCustomColour } from '@/hooks/editor/useAddCustomColour';
 import { useTagColourSetter } from '@/hooks/editor/useTagColourSetter';
@@ -2022,15 +2021,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   const anyWelcomeOpen = identityOnlyScreenOpen;
   // --- Element-scoped history helpers (active-tab aware) -------------------
 
-  // The tab menu's Mode (docs/specs/007-editor/editor-modes.md): the tab's mode, switched as the
-  // mode switch switches it (the active tab through the same questions on leaving Illustrate).
-  const tabModeMenu = useTabModeMenu({
-    canEdit: !isReadOnly,
-    commitTabs,
-    activeId,
-    switchActive: editorMode.setMode,
-    newTabIn: isStructureReadOnly ? undefined : (mode) => newTabInRef.current?.(mode),
-  });
   // Illustrate mode's pages: their edits, and the view centred on them.
   // Set once the documents' hook exists (below): a new document's title takes the caret.
   const articleFocusRef = useRef<((flow: string) => void) | null>(null);
@@ -3932,8 +3922,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     beginDraw,
     // A page slide presenting outside Illustrate draws its article's writing from these.
     presentArticles: articles,
-    // The tab menu's Opens in choice for a tab, absent where it is not offered.
-    modeChoiceFor: tabModeMenu.choiceFor,
     whiteboardDock,
     // Whether anything edited is still unsaved: the new version prompt reloads only once it is not
     // (docs/specs/016-platform/new-version-prompt.md).

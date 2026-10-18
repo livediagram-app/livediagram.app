@@ -16,7 +16,6 @@ import {
 import { MenuActionRow, MenuGroupSeparator } from '@/components/primitives/PortalMenu';
 import { MenuToolbar, MenuToolButton } from '@/components/primitives/MenuTiles';
 import { PasteMenuIcon } from '@/components/palette/context-menu-icons';
-import { TabModeMenuRows, type TabModeChoice } from './TabModeMenuRows';
 import {
   AddTabToDocumentDialog,
   AddTabToFolderDialog,
@@ -47,7 +46,6 @@ export function PortalMenu({
   onCopyTo,
   onToggleLock,
   locked,
-  modeChoice,
   planTab = false,
   dataRows,
   selfId,
@@ -78,8 +76,6 @@ export function PortalMenu({
   onCopyTo: (targetDocumentId: string) => void;
   onToggleLock: () => void;
   locked: boolean;
-  // The tab's Mode choice (docs/specs/007-editor/editor-modes.md), absent where it is not offered.
-  modeChoice?: TabModeChoice;
   // A Plan tab: Add to Document is off, its cards belong to this document's items.
   planTab?: boolean;
   // A Board or Sheet tab's own Import, in place of the document's, and its Download CSV after Export (tab-data-rows.ts).
@@ -381,7 +377,7 @@ export function PortalMenu({
           ) : null}
           {/* The rest as full-width rows, no categories: the menu is short enough to show it
             all (docs/specs/007-editor/live-app.md "Tab menu"). Separators part the related groups:
-            where the tab lives, what is on it, and how it is worked on. */}
+            where the tab lives and what is on it. */}
           <MenuActionRow
             plain
             icon={<FolderMenuIcon />}
@@ -411,12 +407,6 @@ export function PortalMenu({
             onClick={onClearContent}
             disabled={!canClearContent}
           />
-          {modeChoice ? (
-            <>
-              <MenuGroupSeparator />
-              <TabModeMenuRows choice={modeChoice} />
-            </>
-          ) : null}
         </>
       ) : null}
     </>

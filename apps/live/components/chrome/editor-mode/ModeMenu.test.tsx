@@ -2,7 +2,7 @@
 
 // The mode menu (docs/specs/007-editor/editor-modes.md "The mode switch"): a list of the modes and a
 // preview of one, following the pointer, else focus, else the current mode. The preview has no button:
-// choosing is the row's alone. The same menu opens from the top chrome's chip and a start panel's named chip.
+// choosing is the row's alone. It opens from a start panel's named chip.
 
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -105,7 +105,7 @@ describe('ModeMenu across Plan’s line', () => {
   });
 
   it('switches straight into Plan on an empty tab (crossPlan), with no new-tab mark', () => {
-    const { onChange, newTabIn } = open('diagram', { crossPlan: true, labelled: true });
+    const { onChange, newTabIn } = open('diagram', { crossPlan: true });
     expect(row('Plan').querySelector('[data-new-tab-mark]')).toBeNull();
     fireEvent.click(row('Plan'));
     expect(onChange).toHaveBeenCalledWith('plan');
@@ -114,7 +114,7 @@ describe('ModeMenu across Plan’s line', () => {
   });
 
   it('switches out of Plan on an empty Plan tab too', () => {
-    const { onChange } = open('plan', { crossPlan: true, labelled: true });
+    const { onChange } = open('plan', { crossPlan: true });
     fireEvent.click(row('Diagram'));
     expect(onChange).toHaveBeenCalledWith('diagram');
   });
@@ -137,9 +137,11 @@ describe('ModeMenu across Plan’s line', () => {
 });
 
 describe('ModeMenu on a start panel', () => {
-  it('opens the same menu from the named chip', () => {
-    open('draw', { labelled: true });
-    expect(screen.getByRole('button', { name: 'Tab mode: Draw' }).textContent).toContain('Draw');
+  it('opens from the named chip, which the Leave Illustrate confirmation hangs from', () => {
+    open('draw');
+    const chip = screen.getByRole('button', { name: 'Tab mode: Draw' });
+    expect(chip.textContent).toContain('Draw');
+    expect(chip.hasAttribute('data-mode-switch')).toBe(true);
     expect(preview().dataset.modePreview).toBe('draw');
     expect(screen.getAllByRole('menuitemradio')).toHaveLength(5);
   });

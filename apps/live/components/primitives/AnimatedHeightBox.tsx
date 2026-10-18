@@ -7,6 +7,9 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 //
 // With `maxPx` set it caps the height there and scrolls past it; omit
 // `maxPx` to let it grow to the full content height (no inner scroll).
+// Uncapped it clips with `overflow-clip`, not `overflow-hidden`: hidden makes
+// a scroll box of its own, which would pin a sticky BackBar inside it rather
+// than to the scroller around it.
 //
 // Shared by the template browser and the Tab Style dialog's home and panels, so drill-ins feel the same.
 const ENTER_CLASS = {
@@ -52,7 +55,7 @@ export function AnimatedHeightBox({
   const exceedsCap = maxPx !== undefined && height !== null && height > maxPx;
   return (
     <div
-      className={`${exceedsCap ? 'overflow-y-auto' : 'overflow-hidden'}${
+      className={`${exceedsCap ? 'overflow-y-auto' : 'overflow-clip'}${
         animate ? ' transition-[height] duration-short ease-out' : ''
       }${className ? ` ${className}` : ''}`}
       style={{

@@ -156,186 +156,195 @@ export function SelectionPopover({
         aria-label={title}
         // Its 32px buttons sit 4px apart, so on a touch screen each tap area reaches to 44px tall only
         // (touch-target-y, touch-targets.md), never sideways into its neighbour's.
-        className="pointer-events-auto relative flex animate-fade-in items-center gap-1 rounded-lg border border-slate-200 bg-white p-1 shadow-lg shadow-slate-900/10 dark:border-slate-800 dark:bg-slate-900 dark:shadow-slate-950/40 [&_.h-8]:relative [&_.h-8]:touch-target-y"
+        className="pointer-events-auto relative max-w-[95vw] animate-fade-in rounded-lg border border-slate-200 bg-white p-1 shadow-lg shadow-slate-900/10 dark:border-slate-800 dark:bg-slate-900 dark:shadow-slate-950/40 [&_.h-8]:relative [&_.h-8]:touch-target-y"
       >
         {title && !minimalChrome ? <FloatingTitle title={title} placeAbove={placeAbove} /> : null}
-        {showMore && onOpenContextMenu ? (
-          <>
-            <HoverCard title="More" description="Open the element menu.">
-              <button
-                ref={ellipsisRef}
-                // A stable id: this toolbar unmounts while the element menu it opens is up, and
-                // the menu's Escape finds it again by id (docs/specs/004-interface-design/menus.md).
-                id="selection-more-actions"
-                type="button"
-                data-context-menu-trigger
-                onClick={() => {
-                  const rect = ellipsisRef.current?.getBoundingClientRect();
-                  if (!rect) return;
-                  onOpenContextMenu(rect.left, rect.bottom);
-                }}
-                aria-label="More actions"
-                aria-haspopup="dialog"
-                className="flex h-8 w-8 items-center justify-center rounded-md text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
+        {/* The toolbar is at most 95vw wide; its buttons ride a strip that scrolls sideways when they outgrow it (a
+          flowchart step's full set on a phone). The strip reaches 6px past the buttons top and bottom, so their 44px
+          tap pads are not clipped, and it is not positioned, so a dropdown's menu anchors to the card and escapes its
+          clip. */}
+        <div
+          data-testid="selection-popover-strip"
+          className="-my-1.5 flex touch-pan-x items-center gap-1 overflow-x-auto overscroll-x-contain py-1.5 [scrollbar-width:none]"
+        >
+          {showMore && onOpenContextMenu ? (
+            <>
+              <HoverCard title="More" description="Open the element menu.">
+                <button
+                  ref={ellipsisRef}
+                  // A stable id: this toolbar unmounts while the element menu it opens is up, and
+                  // the menu's Escape finds it again by id (docs/specs/004-interface-design/menus.md).
+                  id="selection-more-actions"
+                  type="button"
+                  data-context-menu-trigger
+                  onClick={() => {
+                    const rect = ellipsisRef.current?.getBoundingClientRect();
+                    if (!rect) return;
+                    onOpenContextMenu(rect.left, rect.bottom);
+                  }}
+                  aria-label="More actions"
+                  aria-haspopup="dialog"
+                  className="flex h-8 w-8 items-center justify-center rounded-md text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
+                >
+                  <EllipsisIcon />
+                </button>
+              </HoverCard>
+              <Divider />
+            </>
+          ) : null}
+
+          {onEditText ? (
+            <>
+              <PopoverButton
+                label={hasText ? 'Edit Text' : 'Add Text'}
+                description={
+                  hasText ? "Edit this element's text." : 'Give this element a text label.'
+                }
+                onClick={onEditText}
               >
-                <EllipsisIcon />
-              </button>
-            </HoverCard>
-            <Divider />
-          </>
-        ) : null}
+                <TextIcon />
+              </PopoverButton>
+              <Divider />
+            </>
+          ) : null}
 
-        {onEditText ? (
-          <>
-            <PopoverButton
-              label={hasText ? 'Edit Text' : 'Add Text'}
-              description={
-                hasText ? "Edit this element's text." : 'Give this element a text label.'
-              }
-              onClick={onEditText}
-            >
-              <TextIcon />
-            </PopoverButton>
-            <Divider />
-          </>
-        ) : null}
+          {onEditPoints ? (
+            <>
+              <PopoverButton
+                label="Edit Points"
+                description="Adjust the path's points, corners and curves."
+                onClick={onEditPoints}
+              >
+                <EditPointsIcon />
+              </PopoverButton>
+              <Divider />
+            </>
+          ) : null}
 
-        {onEditPoints ? (
-          <>
-            <PopoverButton
-              label="Edit Points"
-              description="Adjust the path's points, corners and curves."
-              onClick={onEditPoints}
-            >
-              <EditPointsIcon />
-            </PopoverButton>
-            <Divider />
-          </>
-        ) : null}
+          {onAddMindChild && onAddMindSibling ? (
+            <>
+              <PopoverButton
+                label={MIND_CHILD_OPTION.label}
+                description={MIND_CHILD_OPTION.description}
+                onClick={onAddMindChild}
+              >
+                {MIND_CHILD_OPTION.icon}
+              </PopoverButton>
+              <PopoverButton
+                label={MIND_SIBLING_OPTION.label}
+                description={MIND_SIBLING_OPTION.description}
+                onClick={onAddMindSibling}
+              >
+                {MIND_SIBLING_OPTION.icon}
+              </PopoverButton>
+              <Divider />
+            </>
+          ) : null}
 
-        {onAddMindChild && onAddMindSibling ? (
-          <>
-            <PopoverButton
-              label={MIND_CHILD_OPTION.label}
-              description={MIND_CHILD_OPTION.description}
-              onClick={onAddMindChild}
-            >
-              {MIND_CHILD_OPTION.icon}
-            </PopoverButton>
-            <PopoverButton
-              label={MIND_SIBLING_OPTION.label}
-              description={MIND_SIBLING_OPTION.description}
-              onClick={onAddMindSibling}
-            >
-              {MIND_SIBLING_OPTION.icon}
-            </PopoverButton>
-            <Divider />
-          </>
-        ) : null}
+          {flowchartStep ? <FlowchartStepButtons {...flowchartStep} menuAnchor="toolbar" /> : null}
 
-        {flowchartStep ? <FlowchartStepButtons {...flowchartStep} /> : null}
+          {onDuplicate ? (
+            <>
+              <PopoverButton
+                label="Duplicate"
+                description="Create a copy of this element."
+                onClick={onDuplicate}
+              >
+                <DuplicateIcon />
+              </PopoverButton>
+              <Divider />
+            </>
+          ) : null}
 
-        {onDuplicate ? (
-          <>
-            <PopoverButton
-              label="Duplicate"
-              description="Create a copy of this element."
-              onClick={onDuplicate}
-            >
-              <DuplicateIcon />
-            </PopoverButton>
-            <Divider />
-          </>
-        ) : null}
+          {onBringToFront && onSendToBack ? (
+            <>
+              <PopoverButton
+                label="Bring to Front"
+                description="Stack this in front of everything else on its layer."
+                onClick={onBringToFront}
+              >
+                <BringToFrontIcon />
+              </PopoverButton>
+              <PopoverButton
+                label="Send to Back"
+                description="Stack this behind everything else on its layer."
+                onClick={onSendToBack}
+              >
+                <SendToBackIcon />
+              </PopoverButton>
+              <Divider />
+            </>
+          ) : null}
 
-        {onBringToFront && onSendToBack ? (
-          <>
-            <PopoverButton
-              label="Bring to Front"
-              description="Stack this in front of everything else on its layer."
-              onClick={onBringToFront}
-            >
-              <BringToFrontIcon />
-            </PopoverButton>
-            <PopoverButton
-              label="Send to Back"
-              description="Stack this behind everything else on its layer."
-              onClick={onSendToBack}
-            >
-              <SendToBackIcon />
-            </PopoverButton>
-            <Divider />
-          </>
-        ) : null}
-
-        {/* Comment stays on the toolbar (it's the only edit-adjacent
+          {/* Comment stays on the toolbar (it's the only edit-adjacent
           action a view-role visitor gets, so it has to be reachable
           without right-clicking on a comment badge). For an editor
           session it duplicates the context menu entry, which is
           fine: comments are high-traffic and a one-click affordance
           beats a two-click context menu open + click. */}
-        {onOpenComments ? (
-          <PopoverButton
-            label={commentsReadOnly ? 'Show Comments' : 'Add Comment'}
-            description={
-              commentsReadOnly
-                ? 'Read the comments on this element.'
-                : 'Open the comment thread for this element.'
-            }
-            onClick={onOpenComments}
-          >
-            <CommentIcon />
-          </PopoverButton>
-        ) : null}
-
-        {onToggleLock ? (
-          <HoverCard
-            title={locked ? 'Unlock' : 'Lock'}
-            description={
-              locked
-                ? 'Allow this element to be moved, resized, and deleted again.'
-                : 'Protect from moves, resizes, and deletion. You can still unlock it.'
-            }
-          >
-            <button
-              type="button"
-              onClick={onToggleLock}
-              aria-label={locked ? 'Unlock' : 'Lock'}
-              aria-pressed={locked}
-              className={
-                locked
-                  ? 'flex h-8 w-8 items-center justify-center rounded-md bg-brand-100 text-brand-700 dark:bg-brand-500/20 dark:text-brand-100'
-                  : 'flex h-8 w-8 items-center justify-center rounded-md text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white'
-              }
-            >
-              <LockIcon closed={locked} />
-            </button>
-          </HoverCard>
-        ) : null}
-        {showDelete ? (
-          <>
-            <HoverCard
-              title="Delete"
+          {onOpenComments ? (
+            <PopoverButton
+              label={commentsReadOnly ? 'Show Comments' : 'Add Comment'}
               description={
-                locked ? 'Locked. Unlock it to delete.' : 'Delete this element (arrows too).'
+                commentsReadOnly
+                  ? 'Read the comments on this element.'
+                  : 'Open the comment thread for this element.'
+              }
+              onClick={onOpenComments}
+            >
+              <CommentIcon />
+            </PopoverButton>
+          ) : null}
+
+          {onToggleLock ? (
+            <HoverCard
+              title={locked ? 'Unlock' : 'Lock'}
+              description={
+                locked
+                  ? 'Allow this element to be moved, resized, and deleted again.'
+                  : 'Protect from moves, resizes, and deletion. You can still unlock it.'
               }
             >
               <button
                 type="button"
-                onClick={onDelete}
-                disabled={locked}
-                aria-label="Delete"
+                onClick={onToggleLock}
+                aria-label={locked ? 'Unlock' : 'Lock'}
+                aria-pressed={locked}
                 className={
                   locked
-                    ? 'flex h-8 w-8 items-center justify-center rounded-md text-slate-300 dark:text-slate-400'
+                    ? 'flex h-8 w-8 items-center justify-center rounded-md bg-brand-100 text-brand-700 dark:bg-brand-500/20 dark:text-brand-100'
                     : 'flex h-8 w-8 items-center justify-center rounded-md text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white'
                 }
               >
-                <TrashIcon />
+                <LockIcon closed={locked} />
               </button>
             </HoverCard>
-          </>
-        ) : null}
+          ) : null}
+          {showDelete ? (
+            <>
+              <HoverCard
+                title="Delete"
+                description={
+                  locked ? 'Locked. Unlock it to delete.' : 'Delete this element (arrows too).'
+                }
+              >
+                <button
+                  type="button"
+                  onClick={onDelete}
+                  disabled={locked}
+                  aria-label="Delete"
+                  className={
+                    locked
+                      ? 'flex h-8 w-8 items-center justify-center rounded-md text-slate-300 dark:text-slate-400'
+                      : 'flex h-8 w-8 items-center justify-center rounded-md text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white'
+                  }
+                >
+                  <TrashIcon />
+                </button>
+              </HoverCard>
+            </>
+          ) : null}
+        </div>
       </div>
       {aside}
     </div>
