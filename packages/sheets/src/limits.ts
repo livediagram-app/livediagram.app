@@ -38,6 +38,10 @@ export const RANGE_CELLS_MAX = 1_000_000;
 export const ARRAY_CELLS_MAX = 100_000;
 export const TEXT_RESULT_MAX = 10_000;
 export const REGEX_WORK_MAX = 10_000_000;
+// The backtracking a pattern's repeats may cost on a text, as regex-cost.ts estimates it. Measured against it:
+// `(a+)+$` on 24 characters (1.7e7) took 317 ms, `((a+)+)+$` on 16 (4.3e7) 401 ms, `.*a.*a.*a.*a.*a.*b` on 40 (5.7e6)
+// 110 ms, so this budget keeps the worst a cell can ask for to a few hundred milliseconds. Safe range: 1e6 to 3e7.
+export const REGEX_BACKTRACK_MAX = 10_000_000;
 
 // A new sheet's sizes, and the smallest a person can drag to.
 export const COLUMN_WIDTH_NEW = 120;

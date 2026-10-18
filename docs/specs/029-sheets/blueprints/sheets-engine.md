@@ -298,9 +298,11 @@ example }` feeds autocomplete, the hint card and the help article; a test checks
   arguments to SUM. Expected at least 1", which the editor shows on hover.
 - Scalar functions applied to an array argument broadcast (lift) element-wise, producing an array, unless the
   parameter is in `arrayArgs` (aggregates take ranges as they are).
-- `REGEX*`: compiled with `new RegExp(pattern, 'u')`; each call checks a time budget (`REGEX_BUDGET_MS`) using a
-  counter of characters scanned (`text.length * pattern.length` > `REGEX_WORK_MAX` → `#VALUE!`), since a
-  regex cannot be interrupted.
+- `REGEX*`: compiled with `new RegExp(pattern, 'u')`. A regex cannot be interrupted, so two estimates are checked
+  first, either over its budget → `#VALUE!`: the plain pass (`text.length * pattern.length` > `REGEX_WORK_MAX`), and
+  the backtracking (`regex-cost.ts`: `regexWork(regexShape(pattern), text.length)` > `REGEX_BACKTRACK_MAX`), which
+  counts h^n ways for repeats nested h deep (`(a+)+`, a repeated choice `(a|ab)*`), n^k / k! for k ≥ 3 side-by-side
+  open-ended repeats, and one pass otherwise. `SEARCH` runs its wildcard pattern through the same check.
 - `INDIRECT` / `OFFSET` build refs at evaluation time against the tab's sheets; their dependents are volatile.
 - `TODAY`/`NOW` read `frame.now()` (injected; tests pin it).
 - Card functions read `frame.cards: CardSource | null` (null → the cell shows `Loading…`, a `pending` marker, not
@@ -543,6 +545,7 @@ Every path is under `packages/sheets/src/`.
 | `ARRAY_CELLS_MAX`       | 100000                             | Default (D3)                                              |
 | `TEXT_RESULT_MAX`       | 10000                              | Matches `INPUT_MAX`                                       |
 | `REGEX_WORK_MAX`        | 10000000                           | Default (D4); about 50 ms of scanning                     |
+| `REGEX_BACKTRACK_MAX`   | 10000000                           | Measured: a few hundred ms at worst (limits.ts)           |
 | `COLUMN_WIDTH_NEW`      | 120                                | Spec; px                                                  |
 | `ROW_HEIGHT_NEW`        | 28                                 | Spec; px                                                  |
 | `COLUMN_WIDTH_MIN`      | 24                                 | Spec                                                      |
