@@ -112,6 +112,20 @@ const bothPinnedArrow: ArrowElement = {
 };
 
 describe('inheritedSizeFor', () => {
+  it('squares a circle, a diamond and a star up from a flat selection, never squashing them', () => {
+    const step = { ...createShape('square', 0, 0), width: 160, height: 56 } as BoxedElement;
+    for (const kind of ['circle', 'diamond', 'star'] as const) {
+      expect(inheritedSizeFor(createShape(kind, 0, 0), step), kind).toEqual({
+        width: 160,
+        height: 160,
+      });
+    }
+    expect(inheritedSizeFor(createShape('hexagon', 0, 0), step)).toEqual({
+      width: 160,
+      height: 56,
+    });
+  });
+
   it('keeps a step number, boundary, concept graphic, sequence, key and tab window their own size', () => {
     const card = { ...createShape('card', 0, 0), width: 300, height: 150 } as BoxedElement;
     for (const kind of [
