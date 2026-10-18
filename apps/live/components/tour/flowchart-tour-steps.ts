@@ -24,27 +24,27 @@ export function flowchartTourSteps(ctx: FlowchartTourContext): TourStepOf<Elemen
     onGraphic(
       'step',
       'A Step in a Flowchart',
-      'Each step belongs to its chart, and every change lays the chart out again, so nobody ever drags a box into line.',
+      'The chart lays itself out as you go, so you never line boxes up by hand.',
       elementSelector(id),
     ),
     onGraphic(
       'next',
       'The Next Step',
       ctx.touch
-        ? 'Add Step adds the next step after this one, joined by an arrow, ready to type into.'
-        : 'Tab, or Add Step here, adds the next step after this one, joined by an arrow. Just start typing to name it.',
+        ? 'Add Step adds the next step, already connected.'
+        : 'Press Tab, or Add Step, for the next step. Then just type.',
       toolbarButton('Add Step'),
     ),
     onGraphic(
       'branch',
       'Add a Branch',
-      `${ctx.touch ? 'Add Branch' : 'Enter, or Add Branch,'} adds a step beside this one, from the step it came from: a decision's other way out.`,
+      `${ctx.touch ? 'Add Branch adds' : 'Press Enter, or Add Branch, for'} another path, like a decision’s No.`,
       toolbarButton('Add Branch'),
     ),
     onGraphic(
       'type',
       'Change Its Type',
-      'Process, Decision, Input / Output, Document, Database and more: the type is the shape. The step keeps its words and the chart lays itself out again.',
+      'Change the step’s type: Process, Decision, Database and more.',
       toolbarButton('Step Type'),
     ),
     ...(ctx.hasLanes
@@ -52,7 +52,7 @@ export function flowchartTourSteps(ctx: FlowchartTourContext): TourStepOf<Elemen
           onGraphic(
             'lane',
             'Its Lane',
-            'Pick another lane to move the step there, or drag it across. The lanes grow to fit.',
+            'Pick a lane to move the step there, or drag it.',
             toolbarButton('Lane'),
           ),
         ]
@@ -62,15 +62,15 @@ export function flowchartTourSteps(ctx: FlowchartTourContext): TourStepOf<Elemen
           inTheMenu(
             'menu',
             'The Flowchart Menu',
-            `Under Flowchart: ${ctx.hasLanes ? 'Add Lane for another swimlane' : 'Add Lane for swimlanes'}, Tidy Flowchart, and the Direction it flows in, down or right.`,
+            `In its menu, Flowchart: ${ctx.hasLanes ? 'Add Lane for another swimlane' : 'Add Lane for swimlanes'}, Tidy Flowchart and Direction.`,
           ),
         ]
       : []),
     conceptOutro(
       'That Is a Flowchart',
       ctx.touch
-        ? 'Every change is one undo step.'
-        : 'Tab, type, Enter, type: a whole process as fast as it is spoken.',
+        ? 'Undo takes back any change.'
+        : 'Tab, type, Enter, type: a whole process as fast as you can say it.',
     ),
   ];
 }

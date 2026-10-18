@@ -18,14 +18,14 @@ const box = (api: PhotoReviewTourApi) =>
 const BOX: PhotoReviewTourStep = {
   id: 'box',
   title: 'Each Box Is a Note',
-  body: 'Every sticky found on your wall has a box. Its colour is the kind of note it was read as, and the words under it are what was read.',
+  body: 'Each sticky found has a box, with the words that were read.',
   selector: box,
 };
 
 const TICK: PhotoReviewTourStep = {
   id: 'tick',
   title: 'Tick What to Keep',
-  body: 'Only ticked notes are added. Untick one that is not a sticky, or one already on the board.',
+  body: 'Untick any you do not want added.',
   selector: (api) => {
     const b = box(api);
     return b && `${b} [role="checkbox"]`;
@@ -38,14 +38,14 @@ const TICK: PhotoReviewTourStep = {
 const WORDS: PhotoReviewTourStep = {
   id: 'words',
   title: 'Fix the Words',
-  body: 'Press the words to type them again where the handwriting was misread.',
+  body: 'Press the words to fix any misread handwriting.',
   selector: (api) => (api.boxId === null ? null : `[data-testid="note-words-${api.boxId}"]`),
 };
 
 const CORRECT: PhotoReviewTourStep = {
   id: 'correct',
   title: 'Correct a Box',
-  body: 'Press a box to select it. Drag it to move it, pull a corner to resize it, pick its kind here, or delete it.',
+  body: 'Press a box to move, resize, recolour or delete it.',
   selector: () => '[role="toolbar"][aria-label="Correct this box"]',
   prepare: (api) => api.select(api.boxId),
   cleanup: (api) => api.select(null),
@@ -54,14 +54,14 @@ const CORRECT: PhotoReviewTourStep = {
 const DRAW: PhotoReviewTourStep = {
   id: 'draw',
   title: 'Draw One It Missed',
-  body: 'Drag across bare photo to draw a box round a sticky that was not found. Its kind comes from the paper’s colour, and its words are read like the rest.',
+  body: 'Missed one? Drag a box round it.',
   target: 'photo-count',
 };
 
 const ADD: PhotoReviewTourStep = {
   id: 'add',
   title: 'Add Them to the Board',
-  body: 'Puts the ticked notes on the board as a draft, to keep or discard there. Cancel leaves the board as it was.',
+  body: 'Adds the ticked notes to the board. You can still keep or discard them there.',
   target: 'photo-add',
 };
 

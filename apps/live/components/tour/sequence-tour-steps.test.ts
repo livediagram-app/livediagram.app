@@ -67,7 +67,7 @@ describe('sequenceTourSteps', () => {
   it('names Enter and Backspace on a keyboard only', () => {
     const body = (touch: boolean) =>
       sequenceTourSteps(ctxOf({ touch })).find((s) => s.id === 'messages')!.body;
-    expect(body(false)).toContain('Enter in the words');
+    expect(body(false)).toContain('Enter adds the next one');
     expect(body(true)).not.toContain('Enter');
     expect(sequenceTourSteps(ctxOf({ touch: true })).find((s) => s.id === 'write')!.body).toMatch(
       /^Double-tap/,

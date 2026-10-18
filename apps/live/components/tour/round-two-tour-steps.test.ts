@@ -89,7 +89,8 @@ describe('boundaryTourSteps', () => {
     expect(step(steps, 'title').body).toContain('icon');
     const c4 = boundaryTourSteps({ ...env, style: 'c4', hasMeta: false });
     expect(ids(c4)).not.toContain('meta');
-    expect(step(c4, 'title').body).toContain('C4');
+    // C4 draws no icon before the title, so its step does not offer one.
+    expect(step(c4, 'title').body).not.toContain('icon');
   });
 });
 

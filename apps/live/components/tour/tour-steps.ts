@@ -54,19 +54,19 @@ export const TOUR_STEPS: TourStep[] = [
     id: 'welcome',
     card: 'welcome',
     title: 'Getting started with Diagrams?',
-    body: 'Want a quick tour of the editor so you can build mind blowing diagrams in minutes?',
+    body: 'A quick look at the editor? It takes about a minute.',
   },
   {
     id: 'palette',
     title: 'The Palette',
-    body: 'Every shape, arrow and icon for your diagram lives here: click or drag what you want onto the canvas.',
+    body: 'Shapes, arrows and icons live here. Click one, or drag it onto the canvas.',
     target: 'palette',
     prepare: ensurePaletteOpen,
   },
   {
     id: 'selection-modes',
     title: 'Selection Modes',
-    body: 'This dropdown changes what your pointer does: Select to move and edit, Hand to pan, Eraser to remove, and more.',
+    body: 'Choose what your pointer does: select, pan, erase and more.',
     target: 'canvas-tool-menu',
     alsoHighlight: 'canvas-tool',
     boardSkip: true,
@@ -79,7 +79,7 @@ export const TOUR_STEPS: TourStep[] = [
   {
     id: 'categories',
     title: 'Palette Categories',
-    body: 'The palette’s categories sit along the top: rest on one to see its elements, then click one to add it, or drag it onto the canvas.',
+    body: 'Rest on a category to see what is in it. Click to add, or drag onto the canvas.',
     target: 'palette-category-menu',
     alsoHighlight: 'palette-category',
     boardSkip: true,
@@ -93,7 +93,7 @@ export const TOUR_STEPS: TourStep[] = [
   {
     id: 'context-menu',
     title: 'The Element Menu',
-    body: 'Right-click any element (long-press on touch) to style it: colours, borders, text, and layers, plus links, notes, comments, and actions.',
+    body: 'Right-click anything (long-press on touch) to style it, or add a note, link or comment.',
     target: 'context-menu',
     prepare: (api) => api.openElementContextMenu(),
     cleanup: (api) => api.closeContextMenu(),
@@ -101,7 +101,7 @@ export const TOUR_STEPS: TourStep[] = [
   {
     id: 'tabs',
     title: 'Tabs',
-    body: 'One document can hold many diagrams, one per tab: this is your current tab, and + adds another. Each tab also has a menu of tools to organise, tidy and customise it.',
+    body: 'Each tab is its own diagram. + adds another, and the tab’s menu has tools to tidy it.',
     // The active pill and the add button highlight as one region.
     target: 'active-tab',
     alsoHighlight: 'add-tab',

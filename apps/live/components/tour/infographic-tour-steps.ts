@@ -20,7 +20,7 @@ export const INFOGRAPHIC_WELCOME: PageTourStep = {
   id: 'welcome',
   card: 'welcome',
   title: 'Getting started with infographics?',
-  body: 'Want a quick look at laying out a page? We will open its layouts, backgrounds and size, and show you how to add pages and present them.',
+  body: 'A quick look at layouts, backgrounds, page size and presenting?',
 };
 
 export function infographicTourSteps(): PageTourStep[] {
@@ -34,7 +34,7 @@ export function infographicTourSteps(): PageTourStep[] {
     {
       id: 'layouts',
       title: 'Start From a Layout',
-      body: 'Posters, explainers, data, steps and more, each laid out in your theme. Hover one to see it on the page, then press it to place it.',
+      body: 'Hover a layout to preview it on your page. Press it to use it.',
       selector: (api) => pageOrPopover(api.pageId, 'Layout'),
       requires: (api) => pageButton(api.pageId, 'Layout'),
       prepare: (api) => openTitlePopover(api.pageId, 'Layout'),
@@ -43,7 +43,7 @@ export function infographicTourSteps(): PageTourStep[] {
     {
       id: 'background',
       title: 'Change the Background',
-      body: 'Colours, gradients and pictures, with a pattern on top if you like. Hover one to preview it, press to keep it.',
+      body: 'Colours, gradients or pictures. Hover to preview, press to keep.',
       selector: (api) => pageOrPopover(api.pageId, 'Background'),
       requires: (api) => pageButton(api.pageId, 'Background'),
       prepare: (api) => openTitlePopover(api.pageId, 'Background'),
@@ -52,7 +52,7 @@ export function infographicTourSteps(): PageTourStep[] {
     {
       id: 'page-size',
       title: 'Page Size',
-      body: 'The cog opens the page’s settings: A4, Letter, A3, square and social sizes, portrait or landscape. Duplicate, move or delete the page from the row below.',
+      body: 'The cog sets the page size and orientation, and duplicates or deletes the page.',
       selector: () => '[data-page-panel]',
       requires: (api) => pageCog(api.pageId),
       prepare: (api) => api.openPanel(api.pageId, 'page'),
@@ -61,13 +61,13 @@ export function infographicTourSteps(): PageTourStep[] {
     {
       id: 'add-page',
       title: 'Add a Page',
-      body: 'The + adds another page after the last: an infographic, an article, a slide or a logo.',
+      body: '+ adds another page.',
       selector: addPageAnchor,
     },
     {
       id: 'present',
       title: 'Present It',
-      body: 'Any page can be a slide. Pick it here and press Add as slide, then Present shows your pages full screen, one at a time.',
+      body: 'Add any page as a slide, then Present shows them full screen.',
       selector: () => SLIDE_DECK,
       requires: () => SLIDES_BUTTON,
       prepare: openSlideDeck,
@@ -77,7 +77,7 @@ export function infographicTourSteps(): PageTourStep[] {
       id: 'outro',
       card: 'outro',
       title: "You're ready to make pages",
-      body: 'Pick a layout and make it yours. The help centre has more on pages, layouts and slides.',
+      body: 'Pick a layout and make it yours.',
     },
   ];
 }

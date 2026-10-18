@@ -56,7 +56,7 @@ export function sequenceTourSteps(ctx: SequenceTourContext): Step[] {
     onCanvas(
       'diagram',
       'Who Calls Whom',
-      'Each participant has a lifeline; each message is a row, top to bottom. A call that gets a reply shows a bar while it is busy.',
+      'Each participant has a line down; each message is a row, top to bottom.',
       elementSelector(id),
     ),
     ...(ctx.hasMore
@@ -65,7 +65,7 @@ export function sequenceTourSteps(ctx: SequenceTourContext): Step[] {
             ...inTheMenu(
               'menu',
               'The Sequence Menu',
-              'Under Sequence: Edit Sequence, and Numbered. Under Animation, Play reveals it top to bottom, a message at a time.',
+              'In its menu, Sequence edits it or numbers the messages.',
             ),
             prepare: (api: ElementTourApi) => api.closeSequence(),
           },
@@ -74,13 +74,13 @@ export function sequenceTourSteps(ctx: SequenceTourContext): Step[] {
     onCanvas(
       'write',
       'Write It as a List',
-      `${ctx.touch ? 'Double-tap' : 'Double-click'} the diagram to write it: a row a message, and it lays itself out. Next opens it for you.`,
+      `${ctx.touch ? 'Double-tap' : 'Double-click'} it to write the messages. Next opens it for you.`,
       elementSelector(id),
     ),
     inDialog(
       'participants',
       'The Participants',
-      `Left to right, as drawn. ${click} one to rename it, make it an actor, move it, or remove it with its messages.`,
+      `${click} a participant to rename, move or remove it.`,
       'sequence-participants',
       'messages',
     ),
@@ -88,8 +88,8 @@ export function sequenceTourSteps(ctx: SequenceTourContext): Step[] {
       'messages',
       'A Row a Message',
       ctx.touch
-        ? 'From, To and the words, top to bottom. The arrows move a message up or down.'
-        : 'From, To and the words, top to bottom. Enter in the words adds the next message, from whoever was called; Backspace in an empty one removes it.',
+        ? 'Each message: from, to and the words. The arrows reorder them.'
+        : 'Each message: from, to and the words. Enter adds the next one.',
       'sequence-messages',
       'messages',
     ),
@@ -98,24 +98,18 @@ export function sequenceTourSteps(ctx: SequenceTourContext): Step[] {
           inDialog(
             'kind',
             'Call, Async or Reply',
-            `${click} the arrow to change it: a call is solid, async has an open head, a reply is dashed. A call answered by a reply opens a bar.`,
+            `${click} the arrow to switch between call, async and reply.`,
             'sequence-kind',
             'messages',
           ),
         ]
       : []),
-    inDialog(
-      'add',
-      'Add a Message',
-      'Adds one after the last, from whoever was last called, up to sixty.',
-      'sequence-add-message',
-      'messages',
-    ),
+    inDialog('add', 'Add a Message', 'Adds the next message.', 'sequence-add-message', 'messages'),
     {
       ...inDialog(
         'text',
         'Or Type It',
-        'One line each: Browser -> API: Get page. Use ~> for async and --> for a reply. Mermaid-style arrows read too.',
+        'Or write it as text: Browser -> API: Get page.',
         'sequence-text',
         'text',
       ),
@@ -125,7 +119,7 @@ export function sequenceTourSteps(ctx: SequenceTourContext): Step[] {
     inDialog(
       'preview',
       'Live Preview',
-      'Redraws from what you write, before it is stored.',
+      'A live preview as you write.',
       'sequence-preview',
       'messages',
     ),
@@ -138,7 +132,7 @@ export function sequenceTourSteps(ctx: SequenceTourContext): Step[] {
     ),
     conceptOutro(
       'That Is a Sequence Diagram',
-      'Every change is one undo step. Done closes the dialog with the tour.',
+      'Undo takes back any change. Done closes the dialog.',
     ),
   ];
 }

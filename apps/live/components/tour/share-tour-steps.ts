@@ -21,42 +21,42 @@ const step = (id: string, title: string, body: string, target: string): ShareTou
 const ROLE = step(
   'role',
   'Choose What They Can Do',
-  'An Editor draws with you, a Participant adds stickies and votes, and a Viewer only looks. Press the card to pick one now: the tour waits.',
+  'Editors change anything, Participants add stickies and vote, Viewers only look. Pick one now.',
   'share-role',
 );
 
 const SCOPE = step(
   'scope',
   'Choose Which Tabs It Opens',
-  'A pass can open every tab or just one. Whoever holds it never sees the rest.',
+  'Share every tab, or just one.',
   'share-scope',
 );
 
 const VALID = step(
   'valid',
   'Set How Long It Lasts',
-  'Forever, or a week, a month or six months, after which the link stops working. You can extend it later.',
+  'The link stops working after this. You can extend it later.',
   'share-valid',
 );
 
 const CREATE = step(
   'create',
   'Create the Pass',
-  'It is copied the moment it is made, ready to paste into a message. Make one now if you like.',
+  'The link is copied as soon as it is made, ready to paste.',
   'share-create',
 );
 
 const PASSES = step(
   'passes',
   'Your Passes',
-  'Every pass that still works, newest first. Copy its link again, embed it, change the tabs it opens, or revoke it to shut it at once.',
+  'Your links. Copy, embed, change or revoke any of them.',
   'share-passes',
 );
 
 const PASSWORD = step(
   'password',
   'Add a Password',
-  'Everyone opening any pass must type it first, embeds included. Only a scrambled copy is kept, so note it down.',
+  'Anyone opening a link must enter it first. Note it down: we cannot show it again.',
   'share-password',
 );
 
@@ -64,7 +64,7 @@ const OUTRO: ShareTourStep = {
   id: 'outro',
   card: 'outro',
   title: 'That Is Sharing',
-  body: 'Open Share from the header any time to issue, change or revoke a pass.',
+  body: 'Open Share any time to make, change or revoke a link.',
 };
 
 // The steps for this document: Opens only where there is more than one tab to choose from.

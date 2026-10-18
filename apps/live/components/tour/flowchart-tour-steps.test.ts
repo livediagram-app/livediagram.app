@@ -43,8 +43,8 @@ describe('flowchartTourSteps', () => {
 
   it('names Tab and Enter on a keyboard, and only the buttons on a touch screen', () => {
     const keys = flowchartTourSteps(ctxOf());
-    expect(keys.find((s) => s.id === 'next')!.body).toMatch(/^Tab, or Add Step/);
-    expect(keys.find((s) => s.id === 'branch')!.body).toMatch(/^Enter, or Add Branch/);
+    expect(keys.find((s) => s.id === 'next')!.body).toMatch(/^Press Tab, or Add Step/);
+    expect(keys.find((s) => s.id === 'branch')!.body).toMatch(/^Press Enter, or Add Branch/);
     const touch = flowchartTourSteps(ctxOf({ touch: true }));
     expect(touch.find((s) => s.id === 'next')!.body).not.toContain('Tab');
     expect(touch.find((s) => s.id === 'branch')!.body).toMatch(/^Add Branch adds/);

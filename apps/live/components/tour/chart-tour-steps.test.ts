@@ -57,8 +57,8 @@ describe('chartTourSteps', () => {
 
   it('names its own type and marks', () => {
     const first = (ctx: ChartTourContext) => chartTourSteps(ctx)[0]!.body;
-    expect(first(ctxOf({ type: 'doughnut' }))).toMatch(/Every slice .* a Doughnut chart/);
-    expect(first(ctxOf({ type: 'bar' }))).toMatch(/Every bar .* a Bar chart/);
+    expect(first(ctxOf({ type: 'doughnut' }))).toMatch(/Each slice .* a Doughnut chart/);
+    expect(first(ctxOf({ type: 'bar' }))).toMatch(/Each bar .* a Bar chart/);
     expect(
       chartTourSteps(ctxOf({ type: 'scatter' })).find((s) => s.id === 'series')!.body,
     ).toContain('a new set of points');

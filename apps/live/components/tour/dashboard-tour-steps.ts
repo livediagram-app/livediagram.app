@@ -27,14 +27,14 @@ export const hideSlot = () => {
 const ROWS: DashboardTourStep = {
   id: 'rows',
   title: 'Rows of Slots',
-  body: 'A dashboard is rows of slots, side by side. Drag the line between two slots to share the row out differently, or a row’s bottom edge to make it taller.',
+  body: 'Drag between slots to resize them, or a row’s bottom edge to make it taller.',
   // A card on its own, no ring: one round a row runs the page's width.
 };
 
 const FILL: DashboardTourStep = {
   id: 'fill',
   title: 'Fill a Slot',
-  body: 'Add to Slot picks what it shows: one of this document’s tabs, a new board or Sheet, a metric, a chart from a Sheet, a note or links. Or drag a tile from the palette onto it.',
+  body: 'Add to Slot picks what it shows: a tab, a board, a metric, a chart or a note.',
   // The slot's Add to Slot, not the slot: a ring round a slot lights a large part of the page.
   selector: () => `${FIRST_EMPTY_SLOT} [aria-haspopup="dialog"]`,
 };
@@ -42,7 +42,7 @@ const FILL: DashboardTourStep = {
 const SLOT: DashboardTourStep = {
   id: 'slot',
   title: 'Change or Move a Slot',
-  body: 'Its cog changes what it shows, duplicates, clears or removes it, or adds a slot beside it. Drag the grip on its top edge to swap it with another slot.',
+  body: 'Its cog changes, clears or removes it. Drag its top grip to swap slots.',
   // The slot's own cog, shown as on hover through the step, else its Move grip (a board or Sheet in a slot carries
   // its own cog); never the whole slot.
   selector: () => {
@@ -56,7 +56,7 @@ const SLOT: DashboardTourStep = {
 const SETTINGS: DashboardTourStep = {
   id: 'settings',
   title: 'Dashboard Settings',
-  body: 'Rename the dashboard, add a row, tint its background, or start over from another layout.',
+  body: 'Rename it, add a row, or start from another layout.',
   selector: () => '[data-dashboard-settings]',
 };
 
@@ -64,7 +64,7 @@ const OUTRO: DashboardTourStep = {
   id: 'outro',
   card: 'outro',
   title: 'That Is a Dashboard',
-  body: 'Show Me waits in Dashboard Settings whenever you want it again.',
+  body: 'Run this again from Dashboard Settings › Show Me.',
 };
 
 // The steps for this dashboard: Fill only with an empty slot to fill, the slot step only with a filled one.

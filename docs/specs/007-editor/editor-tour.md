@@ -36,6 +36,12 @@ proved the better introduction.
   focus moves to the card when it appears (the card itself, not a button, so a stray Enter accepts nothing) and Tab
   reaches its buttons; when the card goes, focus returns to wherever it was. A step card leaves focus alone: it points
   at a real control the person is about to use.
+- **How a step reads.** Every tour's words, the editor's, each mode's and each element's, are written to get someone
+  going fast: what to do first, in one idea and about twenty words at most; the control named exactly as it is
+  labelled; a menu path written as it is pressed ("Tools › Boundary", or "In its menu, Mind Map"); no inside terms
+  ("accent", "steps toward the fill", "one undo step": say "Undo takes back any change"); no list of every option
+  where the person can see them. An offer says what the tour covers in a line. A detail that changes what the
+  person can do stays (a keyboard key, a right-click a phone lacks, how many there are).
 - **Escape is each card's way out.** On the offer it declines (as **No**), on a step it skips the tour (as
   **Skip tour**), on the last card it finishes (as its finish button). Every tour's cards are the same card
   (`TourPopover`), so this holds for all of them. It leaves the key alone while it is editing a field, where an
@@ -93,8 +99,8 @@ the two dropdown steps; three when it is both), and a closing "you're ready" car
 short sentences per step about diagramming ("concise" is the spec constraint; the exact strings live in
 `apps/live/components/tour/tour-steps.ts`):
 
-0. **Getting started with Diagrams?** (the offer): centred card, eyebrow **Diagram tour**, "Want a quick tour of the
-   editor so you can build mind blowing diagrams in minutes?", then **No** / **Yes**. Yes and No are every tour's
+0. **Getting started with Diagrams?** (the offer): centred card, eyebrow **Diagram tour**, "A quick look at the editor?
+   It takes about a minute.", then **No** / **Yes**. Yes and No are every tour's
    offer buttons (`WELCOME_TOUR_COPY` in `TourPopover.tsx`).
 1. **The Palette**: the strip across the top where every shape, arrow and icon comes from.
 2. **Selection Modes**: opens the canvas-tool dropdown (Select / Hand / Eraser / ...) and explains mode

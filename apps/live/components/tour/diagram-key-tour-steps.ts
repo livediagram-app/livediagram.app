@@ -18,31 +18,31 @@ export function diagramKeyTourSteps(ctx: DiagramKeyTourContext): TourStepOf<Elem
     onGraphic(
       'key',
       'It Builds Itself',
-      'A row for every line style your arrows use and every tag colour mapped on this tab. Make a line dashed and the key gains a row; stop using it and the row goes.',
+      'It lists every line style and tag colour on this tab, and updates itself.',
       elementSelector(id),
     ),
     ctx.firstRowId
       ? onGraphic(
           'meaning',
           'Say What It Means',
-          `${pressWord(ctx)} a row's words to write its meaning: Async call, Data flow. Enter keeps it, Escape puts it back.`,
+          `${pressWord(ctx)} a row to say what it means, like Async call.`,
           elementSelector(id, `[data-key-meaning="${escapeId(ctx.firstRowId)}"]`),
         )
       : onGraphic(
           'empty',
           'Nothing to Key Yet',
-          'Draw two arrows in different line styles, or map a tag colour, and their rows appear here.',
+          'Use a new line style or tag colour and a row appears.',
           elementSelector(id),
         ),
     onGraphic(
       'title',
       'Its Title',
-      `Key by default; ${doublePressWord(ctx).toLowerCase()} it to rename it. It grows downward on its own; widen it for longer meanings.`,
+      `${doublePressWord(ctx)} the title to rename it.`,
       elementSelector(id),
     ),
     conceptOutro(
       'That Is a Diagram Key',
-      'A meaning is kept when its row goes, so a style switched off and on again keeps its words.',
+      'Meanings are remembered, even if a row disappears and comes back.',
     ),
   ];
 }

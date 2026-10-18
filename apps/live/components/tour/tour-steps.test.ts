@@ -85,7 +85,7 @@ describe('the Diagram tour copy', () => {
     const welcome = TOUR_STEPS[0]!;
     const outro = TOUR_STEPS[TOUR_STEPS.length - 1]!;
     expect(welcome.title).toBe('Getting started with Diagrams?');
-    expect(welcome.body).toMatch(/diagrams in minutes/);
+    expect(welcome.body).toMatch(/quick look at the editor/);
     expect(outro.title).toBe("You're ready to diagram");
   });
 
