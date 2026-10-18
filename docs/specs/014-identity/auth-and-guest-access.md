@@ -89,7 +89,8 @@ the marketing site's "No Catch" night section:
 - **Both themes.** Dark mode wears the Midnight palette (the root carries `data-palette="midnight"` while the frame is
   mounted, as on the Explorer; [Colour scheme](../004-interface-design/color-scheme.md#explorer-midnight)), so the
   page is the night section itself. Light mode is the same layout on a pale dotted ground (`slate-100`) with a white
-  card and the darker accent inks (`emerald-700`, `brand-700`, `amber-700`), all at WCAG 2.2 AA.
+  card and the darker accent inks (`emerald-700`, `brand-700`, `amber-700`), all at WCAG 2.2 AA. Small text that
+  sits on the bare ground (the eyebrow, the guest link) is `brand-800`, so it holds 4.5:1 even over a grid dot.
 - **Phone first.** Below `lg` the card comes first and the pitch follows it, stacked, compact and full width with a
   16px gutter; at `lg` and up the pitch takes the left column and the card the right. The card is first in the DOM at
   every width, so the form is what a screen reader and the Tab key reach first.

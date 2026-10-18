@@ -39,7 +39,7 @@ export function AuthStage({
           {guestHref ? (
             <a
               href={guestHref}
-              className="py-2 text-sm font-semibold text-brand-700 transition hover:text-brand-800 dark:text-brand-300 dark:hover:text-brand-200"
+              className="py-2 text-sm font-semibold text-brand-800 transition hover:text-brand-900 dark:text-brand-300 dark:hover:text-brand-200"
             >
               <span className="hidden sm:inline">Not now, keep going as a guest</span>
               <span className="sm:hidden">Not now</span>
@@ -100,7 +100,7 @@ export function AuthPitch({
 }) {
   return (
     <section className="flex flex-col gap-4 lg:gap-6">
-      <p className="text-xs font-semibold tracking-[0.18em] text-brand-700 uppercase sm:text-sm dark:text-brand-300">
+      <p className="text-xs font-semibold tracking-[0.18em] text-brand-800 uppercase sm:text-sm dark:text-brand-300">
         {eyebrow}
       </p>
       <h2 className="text-2xl leading-tight font-semibold tracking-tight text-indigo-950 sm:text-4xl lg:text-6xl lg:leading-[1.02] lg:tracking-[-0.03em] dark:text-slate-100">
