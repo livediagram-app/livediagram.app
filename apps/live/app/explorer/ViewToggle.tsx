@@ -8,6 +8,8 @@ import { HoverCard, Glyph } from '@livediagram/ui';
 // (docs/specs/006-document/document-snapshots.md, docs/specs/013-workspace/explorer-details-view.md).
 // Lets you switch how the browse views render the same folders +
 // documents: dense rows, cards with a large SVG snapshot, or a sortable table.
+// A phone always shows cards (useExplorerViewMode), so the toggle is not
+// drawn there: the `phone:` variant matches the same query, before hydration.
 const TOGGLE_TELEMETRY = {
   list: 'ExplorerViewList',
   card: 'ExplorerViewCard',
@@ -33,7 +35,7 @@ export function ViewToggle({
     <div
       role="group"
       aria-label="View mode"
-      className="flex items-center gap-0.5 rounded-md border border-slate-200 bg-slate-50 p-0.5 dark:border-slate-700 dark:bg-slate-800"
+      className="flex items-center gap-0.5 rounded-md phone:hidden border border-slate-200 bg-slate-50 p-0.5 dark:border-slate-700 dark:bg-slate-800"
     >
       <ToggleButton
         active={mode === 'list'}

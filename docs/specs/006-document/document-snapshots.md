@@ -242,6 +242,11 @@ card share one badge module (`document-badges.tsx`) and one actions-menu
 module (`document-row-shared.tsx`) so they can't drift. A real switch (not a click on the already-active side)
 emits `UI / Toggled / ExplorerViewList | ExplorerViewCard | ExplorerViewDetails` ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)). The Details view, a sortable table with a snapshot preview on a resting hover, is [Explorer Details view](../013-workspace/explorer-details-view.md).
 
+**On a phone** (the `phone:` breakpoint: narrower than `sm`, or a touch screen under 500px tall)
+List and Details are not offered: they are for larger screens. The browse views and the team
+library always show cards, and the toggle is hidden so it takes no room in the header. The saved
+choice is left alone, so the same device shows it again once the window is wide enough.
+
 **The actions menu** (the ⋯ on a row or card, and on a Timeline document
 card, [Timeline](../013-workspace/timeline.md) §2.8) has one shape wherever it opens: a **header row**
 naming the document with its visibility badge, because a menu opens away
