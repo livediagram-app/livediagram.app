@@ -146,9 +146,14 @@ export function deriveShapeColours(
   };
 }
 
-// For new text elements: just a label colour that contrasts with the bg.
+// For new text elements: whichever of slate-800 and slate-100 contrasts more with the bg. A brightness cut-off picked
+// slate-100 on mid-tones it could not carry (an orange paper, #f97316, at 2.6:1 where slate-800 reads 5.4:1); off the
+// mid-tones the two rules agree. An unparseable colour reads as light, as isLightColor has it.
 export function deriveTextColorForBg(backgroundColor: string): string {
-  return isLightColor(backgroundColor) ? '#1e293b' : '#f1f5f9'; // slate-800 / slate-100
+  if (!hexToRgb(backgroundColor)) return '#1e293b';
+  return contrastRatio('#1e293b', backgroundColor) >= contrastRatio('#f1f5f9', backgroundColor)
+    ? '#1e293b'
+    : '#f1f5f9';
 }
 
 // Which paper an element is being drawn on. NOT the same thing as the

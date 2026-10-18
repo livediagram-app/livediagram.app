@@ -95,6 +95,14 @@ describe('deriveTextColorForBg', () => {
   it('uses light slate text on a dark background', () => {
     expect(deriveTextColorForBg('#000000')).toBe('#f1f5f9');
   });
+
+  // A brightness cut-off gave a mid-tone light text it could not carry (orange at 2.6:1): it now takes whichever ink
+  // reads better.
+  it('gives a mid-tone the ink that reads on it, and an unreadable colour dark text', () => {
+    for (const paper of ['#f97316', '#f87171', '#8f8f97', '#0ea5e9'])
+      expect(contrastRatio(deriveTextColorForBg(paper), paper)).toBeGreaterThanOrEqual(4.5);
+    expect(deriveTextColorForBg('not a colour')).toBe('#1e293b');
+  });
 });
 
 describe('deriveShapeColours', () => {
