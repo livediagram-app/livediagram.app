@@ -35,7 +35,7 @@ import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
 import { useOfflineConversion } from '@/hooks/persistence/useOfflineConversion';
 import { useDocumentTags } from '@/components/tags/DocumentTagsProvider';
 import type { PaneDocument } from './views';
-import { documentSpace, isLocalOnly } from '@/lib/document-space';
+import { documentSpace, isInThisBrowser } from '@/lib/document-space';
 import { startDocumentDrag } from '@/components/panels/explorer-drag-mime';
 import type { DocumentEntryProps } from './explorer-view-props';
 import { VisibilityBadge } from './document-badges';
@@ -61,7 +61,7 @@ export function documentDragProps(
   return {
     draggable: true,
     onDragStart: (e) =>
-      startDocumentDrag(e.dataTransfer, { id: liveDoc.id, localOnly: isLocalOnly(liveDoc) }),
+      startDocumentDrag(e.dataTransfer, { id: liveDoc.id, localOnly: isInThisBrowser(liveDoc) }),
   };
 }
 

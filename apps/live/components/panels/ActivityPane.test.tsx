@@ -133,6 +133,27 @@ describe('ActivityPane', () => {
     expect(track).toHaveBeenCalledWith('Activity', 'Selected', 'Thread');
   });
 
+  // docs/specs/013-workspace/inbox.md §1, §2.6: a row from a document saved only in this browser says so, as a
+  // label inside the row's link; a cloud row carries no pill.
+  it('marks a row in This Browser with the This Browser pill, and no other row', () => {
+    render(
+      <ActivityPane
+        feed={feed({
+          assignedToMe: [
+            { kind: 'action', ...action('local', true), documentName: 'Retro', local: true },
+            { kind: 'action', ...action('cloud', true) },
+          ],
+        })}
+      />,
+    );
+    const local = linkTo('Action local');
+    expect(local.textContent).toContain('This Browser');
+    expect(local.querySelector('a')).toBeNull();
+    expect(local.getAttribute('href')).toBe('/document/d1#t=t1&el=e-local&open=action');
+    expect(linkTo('Action cloud').textContent).not.toContain('This Browser');
+    expect(screen.getAllByText('This Browser')).toHaveLength(1);
+  });
+
   it("lists a card's comment thread as a card row that opens the card", () => {
     const cardThread: ThreadRow = {
       kind: 'card',

@@ -344,9 +344,9 @@ answered. It does not ask where the document goes or what it is called:
   Blank Diagram.
 - **No Location step.** The document goes where new documents go by default, so the person is never asked:
   - **Stored** where [Save Locations → The default depends on who is creating](../006-document/save-locations.md#the-default-depends-on-who-is-creating)
-    says: Local Browser for a guest (with sign-in enabled), livediagram for everyone else. Decided at commit by
+    says: This Browser for a guest (with sign-in enabled), livediagram for everyone else. Decided at commit by
     `resolveSaveLocation`, the same as the bypass links: a guest never waits, a browser that looks signed in waits
-    for identity, so a signed-in person is never handed a Local only document.
+    for identity, so a signed-in person is never handed a document in This Browser.
   - **Filed** (livediagram) in the `/new?folder=` / `?team=` context when there is one, an explicit placement;
     otherwise the create carries no placement and the server files it in the person's
     [default folder](../013-workspace/default-folders.md) for its intent, else the root of My Documents.
@@ -461,7 +461,7 @@ default document name) without walking the wizard:
 - **Where these links store the document**: the default for who is creating
   ([Save Locations → The default depends on who is creating](../006-document/save-locations.md#the-default-depends-on-who-is-creating),
   `resolveSaveLocation` in `app/new/useNewDocumentLocation.ts`). A guest gets a
-  Local only document, created without waiting for identity at all
+  document in This Browser, created without waiting for identity at all
   ([Offline Mode → Instant open](../006-document/offline-mode.md#instant-open));
   a signed-in person's create still waits for auth to settle. A placement param
   (`folder` / `team`) names a server place, so it makes the create a cloud one
@@ -653,7 +653,7 @@ theme for a new tab.
 - "New Document" from Explorer → goes to `/new`.
 - `/new` from the home page, Escape → back on the home page, no document created.
 - `/new` typed in, Escape → the home page.
-- `/new`, choose a mode → the document is created at once, Local only for a guest, filed in the
+- `/new`, choose a mode → the document is created at once, This Browser for a guest, filed in the
   signed-in person's default folder for it.
 - `/new?blank=1` → no wizard; blank document created and editor loads on
   `/document/<id>`.

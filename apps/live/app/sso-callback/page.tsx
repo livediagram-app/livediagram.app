@@ -51,7 +51,7 @@ function SSOCallbackContent() {
 function SSOCallbackPageInner() {
   if (!clerkEnabled) return <AuthDisabledNotice />;
   return (
-    <AuthCard subtitle="Completing sign in…" error="">
+    <AuthCard title="Signing you in" subtitle="Completing sign in…" error="" pitch={false}>
       <DiagramBuildAnimation />
       <Suspense fallback={null}>
         <SSOCallbackContent />

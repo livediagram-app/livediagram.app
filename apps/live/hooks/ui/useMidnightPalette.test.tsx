@@ -2,7 +2,7 @@
 
 import { renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
-import { EXPLORER_PALETTE, useMidnightPalette } from './useMidnightPalette';
+import { MIDNIGHT_PALETTE, useMidnightPalette } from './useMidnightPalette';
 
 // docs/specs/004-interface-design/color-scheme.md "Explorer: Midnight": the root carries the palette while the
 // Explorer is mounted, and loses it when the Explorer goes, so the editor keeps Steel.
@@ -14,7 +14,7 @@ afterEach(() => {
 describe('useMidnightPalette', () => {
   it('marks the root while mounted and clears it on unmount', () => {
     const { unmount } = renderHook(() => useMidnightPalette());
-    expect(document.documentElement.dataset.palette).toBe(EXPLORER_PALETTE);
+    expect(document.documentElement.dataset.palette).toBe(MIDNIGHT_PALETTE);
     unmount();
     expect(document.documentElement.dataset.palette).toBeUndefined();
   });

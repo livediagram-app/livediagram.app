@@ -1,6 +1,6 @@
 // What the search panel searches across, and how both of its hosts (the Explorer and the editor) shape their lists
 // for it. Kept apart from SearchPanel.tsx, which both hosts load lazily: importing this costs no first-load JS.
-import { isLocalOnly } from '@/lib/document-space';
+import { isInThisBrowser } from '@/lib/document-space';
 
 export type SearchPanelDocument = { id: string; name: string; localOnly?: boolean };
 export type SearchPanelFolder = { id: string; name: string };
@@ -30,7 +30,11 @@ export function searchPanelSources(lists: {
   teamDocuments: SearchPanelTeamDocument[];
 } {
   return {
-    documents: lists.documents.map((d) => ({ id: d.id, name: d.name, localOnly: isLocalOnly(d) })),
+    documents: lists.documents.map((d) => ({
+      id: d.id,
+      name: d.name,
+      localOnly: isInThisBrowser(d),
+    })),
     folders: lists.folders.map((f) => ({ id: f.id, name: f.name })),
     shared: lists.shared.map((s) => ({ id: s.id, name: s.name, shareCode: s.shareCode })),
     teams: lists.teams.map((t) => ({ id: t.id, name: t.name })),

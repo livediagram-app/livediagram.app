@@ -167,13 +167,14 @@ The wordmark's "live" half is the one vivid note: **sky-400 `#38bdf8`** in dark 
 ### Explorer: Midnight
 
 In dark mode the Explorer pages (`/explorer/*`) wear **Midnight**, the marketing site's night section, instead of
-Steel: a deep navy ground and the vivid sky accent, so the Explorer reads as the front of the product. The editor,
-its Explorer panel and every other page keep Steel.
+Steel: a deep navy ground and the vivid sky accent, so the Explorer reads as the front of the product. The account and
+connect pages wear it too ([Night Band](../014-identity/auth-and-guest-access.md#the-look-night-band)). The editor, its
+Explorer panel and every other page keep Steel.
 
-- **How.** While the Explorer is mounted, the document root carries `data-palette="midnight"`; under `.dark` that
+- **How.** While the Explorer (or an account or connect page) is mounted, the document root carries `data-palette="midnight"`; under `.dark` that
   attribute retargets the same tokens Steel does (selector `.dark[data-palette='midnight']`, which outranks `.dark`).
   Menus, dialogs and tooltips opened from the Explorer portal to the body and so follow it too. The attribute is set
-  before the first paint and removed when the Explorer unmounts.
+  before the first paint and removed when the page unmounts (`useMidnightPalette`, `apps/live/hooks/ui/`).
 - **Surfaces**
 
   | Token       | Midnight  | Usage                                              |

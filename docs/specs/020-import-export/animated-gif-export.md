@@ -86,7 +86,7 @@ The GIF card opens an options-and-download panel, like PNG's, with the shared ba
 
 ## Errors
 
-- **The browser will not draw the page** (it refuses to read back a drawn frame): "This browser couldn't draw the
+- **The browser will not draw the page** (it refuses to read back a drawn frame): "This Browser couldn't draw the
   page into a GIF. Try Chrome, Edge or Firefox, or export a PNG." The GIF card stays; nothing downloads.
 - **The page is not on the canvas** (it was deleted while the dialog was open): "That page is no longer in the
   tab." The page picker drops it.

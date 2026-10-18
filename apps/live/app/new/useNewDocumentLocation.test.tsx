@@ -1,8 +1,8 @@
 // @vitest-environment jsdom
 
 // docs/specs/006-document/save-locations.md "The default depends on who is creating": /new stores a guest's
-// document on Local Browser, a signed-in person's on livediagram, and never makes a signed-in person's
-// create Local only because Clerk had not answered yet.
+// document on This Browser, a signed-in person's on livediagram, and never makes a signed-in person's
+// create This Browser because Clerk had not answered yet.
 
 import { renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -54,7 +54,7 @@ describe('useNewDocumentLocation', () => {
       expect(settle).toHaveBeenCalledOnce();
     });
 
-    it('makes a guest Local only when the hint was stale', async () => {
+    it('makes a guest This Browser when the hint was stale', async () => {
       setUat('1760000000');
       const hook = render({ authLoaded: false, clerkUserId: null });
       const settle = async () => hook.rerender({ authLoaded: true, clerkUserId: null });

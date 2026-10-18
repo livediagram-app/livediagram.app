@@ -1,31 +1,21 @@
 'use client';
 
 // The frame of the OAuth pages (the consent page and the device page, docs/specs/015-api/blueprints/cli.md
-// "The device grant"): the brand over a card on the animated lines backdrop, and the help link to the
+// "The device grant") and the workbench pairing page: the Night Band frame (docs/specs/014-identity/
+// auth-and-guest-access.md "The look: Night Band") with the connect pitch beside the card, and the help link to the
 // connect-an-AI-tool article.
-import { Brand, Glyph, SOLID_BRAND_DARK_CONTROL } from '@livediagram/ui';
-import { AnimatedLinesBackdrop } from '@/components/canvas/AnimatedLinesBackdrop';
+import { Glyph, SOLID_BRAND_DARK_CONTROL } from '@livediagram/ui';
+import { AuthStage } from '@/components/chrome/AuthStage';
+import { ConnectPitch } from '@/components/chrome/auth-pitches';
 import { ToggleSwitch } from '@/components/palette/palette-controls';
 
 // The primary action of every page in the shell (Allow, Approve, Continue). White on brand-700 in light
 // (about 5.9:1; brand-600 was 4.1:1, under WCAG 2.2 AA), darker still on hover; the shared solid brand
 // control in dark.
-export const OAUTH_PRIMARY = `rounded-lg bg-brand-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 disabled:opacity-50 ${SOLID_BRAND_DARK_CONTROL}`;
+export const OAUTH_PRIMARY = `min-h-11 rounded-lg bg-brand-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 disabled:opacity-50 ${SOLID_BRAND_DARK_CONTROL}`;
 
 export function OauthShell({ children }: { children: React.ReactNode }) {
-  return (
-    <main className="relative flex min-h-dvh items-center justify-center overflow-hidden bg-slate-50 px-4 dark:bg-slate-950">
-      {/* Same animated lines backdrop as the new-document page; decorative,
-          reduced-motion aware, hidden below sm. */}
-      <AnimatedLinesBackdrop />
-      <div className="relative z-10 w-full max-w-md rounded-2xl border border-slate-200 bg-white/95 p-6 shadow-xl backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900/95">
-        <div className="mb-5">
-          <Brand href="/" size="md" />
-        </div>
-        {children}
-      </div>
-    </main>
-  );
+  return <AuthStage aside={<ConnectPitch />}>{children}</AuthStage>;
 }
 
 // Help link to the connect-an-AI-tool article. Opens in a new tab so it never

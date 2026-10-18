@@ -39,7 +39,7 @@ export function sectionFromKey(key: string | null | undefined): PanelSection | n
   return simple.includes(key) ? ({ kind: key } as PanelSection) : null;
 }
 
-// The rail's entries: the sidebar's three groups, without Invites, New Team or the sign-in nudge. This browser only
+// The rail's entries: the sidebar's three groups, without Invites, New Team or the sign-in nudge. This Browser only
 // while it holds a document.
 export function panelSectionGroups({
   teams,

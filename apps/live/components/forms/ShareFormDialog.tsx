@@ -3,7 +3,7 @@
 // Share Form (docs/specs/030-forms/forms.md "Publishing and the form link"), separate from the document's Share
 // dialog: a form link grants nothing on the document. Unpublished, it explains and offers Publish Form (held back,
 // with the reason, while responses have nowhere to go or the form is not ready: each problem listed with Show). Published, it shows the link to copy or open, Accepting
-// Responses, and Delete Link, which asks first. On a Local only document it offers Sync Document first (the document
+// Responses, and Delete Link, which asks first. On a document in This Browser it offers Sync Document first (the document
 // Share dialog's prompt), then carries straight on to publishing as the document stops being offline.
 import { useId, useState } from 'react';
 import { Button, DialogCloseButton, DialogHeader } from '@livediagram/ui';
@@ -40,7 +40,7 @@ export function ShareFormDialog({
   onShow?: (problem: PublishProblem) => void;
   // Responses go to a sheet (a row each) rather than a board.
   toSheet?: boolean;
-  // A Local only document: syncs it in place (useSyncInPlace), once the reader is known (`syncReady`).
+  // A document in This Browser: syncs it in place (useSyncInPlace), once the reader is known (`syncReady`).
   onSyncToCloud?: () => Promise<void>;
   syncReady?: boolean;
 }) {
@@ -51,7 +51,7 @@ export function ShareFormDialog({
   const url = live?.code ? formUrlFor(window.location.origin, live.code) : null;
   const suspended = !live && link.link?.suspendedAt;
   const canPublish = link.link?.canPublish !== false;
-  // A Local only document syncs first; the publish view follows once it is on livediagram.
+  // A document in This Browser syncs first; the publish view follows once it is on livediagram.
   const syncFirst = link.status === 'offline' && !!onSyncToCloud;
   return (
     <Dialog open={open} onClose={onClose} titleId={titleId} size="md" phoneSheet>

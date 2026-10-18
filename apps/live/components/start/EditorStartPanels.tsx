@@ -155,7 +155,7 @@ export function EditorStartPanels() {
           ownerId={ctx.selfParticipant.id}
           share={ctx.sessionShareCode}
           online={!isOffline}
-          // Share Form on a Local only document syncs it first (docs/specs/030-forms/forms.md), never as the
+          // Share Form on a document in This Browser syncs it first (docs/specs/030-forms/forms.md), never as the
           // 'self' placeholder an early open runs under.
           onSyncToCloud={ctx.syncToCloud}
           syncReady={ctx.selfParticipant.id !== 'self'}

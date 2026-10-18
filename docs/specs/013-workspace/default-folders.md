@@ -288,7 +288,7 @@ it has no Location step and shows no folder browser.
   any default.
 - **Where to change it.** Settings > Documents > Default Folders ([Settings](#settings)), the folder menus' **Use as
   default for** and My Documents' own menu. The wizard itself sets nothing.
-- None of this applies to **Local Browser**: an offline document has no folder ([Non-goals](#non-goals)).
+- None of this applies to **This Browser**: an offline document has no folder ([Non-goals](#non-goals)).
 
 ### A template picked after creation
 
@@ -299,7 +299,7 @@ The wizard makes the chosen mode's blank, and the template is picked afterwards 
 - **The wizard leaves a note** (`lib/placement-defaults/template-pick-handoff.ts`, this browser tab only): the
   document it made, its first tab, and whether the person chose the folder themselves (a `/new?folder=` / `?team=`
   context). It is written for a
-  cloud document made from a mode's blank, never for Local Browser or a template link (`/new?template=`), which is
+  cloud document made from a mode's blank, never for This Browser or a template link (`/new?template=`), which is
   filed by its template at creation.
 - **The first template picked from a start screen** (Start Diagramming, Drawing, Facilitating, Making Pages, or
   Start Planning's templates) on that first tab takes the note. When the person did not choose the folder, the

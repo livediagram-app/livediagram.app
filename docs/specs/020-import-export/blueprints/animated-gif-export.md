@@ -202,7 +202,7 @@ transition and Auto-advance are read, never written.
 
 | Case                                  | Handling                                                                                                     |
 | ------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| Browser refuses the read-back         | `tainted` -> "This browser couldn't draw the page into a GIF. Try Chrome, Edge or Firefox, or export a PNG." |
+| Browser refuses the read-back         | `tainted` -> "This Browser couldn't draw the page into a GIF. Try Chrome, Edge or Firefox, or export a PNG." |
 | Page deleted mid-dialog               | `page-missing` -> "That page is no longer in the tab."                                                       |
 | Image decode fails, worker fails, OOM | `failed` -> "Couldn't make the GIF. Try a smaller size or a shorter hold."                                   |
 | Holds add up past 3 minutes           | Download disabled, the Too long line                                                                         |
