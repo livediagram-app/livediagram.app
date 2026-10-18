@@ -37,17 +37,23 @@ export function heroSearch(query: string, limit = HERO_SEARCH_LIMIT): HeroMatch[
 
 // The fan along the hero's foot (components/HeroFan.tsx). It deals from every listed template but the
 // blanks, in a fresh random order on each visit, so a visitor keeps seeing something new. The static
-// HTML (no script) shows this opening hand, left to right; the middle three show on a phone.
+// HTML (no script) shows this opening hand, left to right: all seven on a very wide screen
+// (HERO_FAN_FULL_MIN_PX), the middle five on a laptop, the middle three on a phone.
 export const HERO_FAN_OPENING: readonly TemplateKind[] = [
+  'retrospective',
   'kanban',
   'flowchart',
   'mindmap',
   'slide-deck',
   'budget-planner',
+  'sketchnote',
 ];
 
-// How many cards the fan holds at once.
-export const HERO_FAN_SLOTS = 5;
+// How many cards the fan holds at once, and the window width from which all of them show: seven
+// full-size cards (14 rem each, 1.25 rem apart, 1 rem padding either side) take 1720 px, and the
+// outer two lean out about 35 px each, so below 1800 px the outer pair hides.
+export const HERO_FAN_SLOTS = 7;
+export const HERO_FAN_FULL_MIN_PX = 1800;
 
 // Every template the fan can deal: the gallery's own catalogue, so it never shows one that is not
 // listed.
