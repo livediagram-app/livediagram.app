@@ -103,11 +103,9 @@ export function ClusterPopoverSegment({
       ) : null}
     </button>
   );
-  // No hover card while open: it would sit over the panel it names.
-  return popoverOpen ? (
-    button
-  ) : (
-    <HoverCard title={hoverTitle} description={hoverDescription}>
+  // No hover card while open: it would sit over the panel it names. Disabled, not unwrapped, so the button keeps its focus as the panel opens.
+  return (
+    <HoverCard title={hoverTitle} description={hoverDescription} disabled={popoverOpen}>
       {button}
     </HoverCard>
   );

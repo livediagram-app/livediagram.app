@@ -265,11 +265,13 @@ function TimerClockSegment({
       <span className="select-none text-sm font-semibold tabular-nums">{clock}</span>
     </button>
   );
-  // No hover card while open: it would sit over the panel it names.
-  return open ? (
-    button
-  ) : (
-    <HoverCard title={kind} description="Open the timer: add time, pause, reset or end it.">
+  // No hover card while open: it would sit over the panel it names. Disabled, not unwrapped, so the button keeps its focus as the panel opens.
+  return (
+    <HoverCard
+      title={kind}
+      description="Open the timer: add time, pause, reset or end it."
+      disabled={open}
+    >
       {button}
     </HoverCard>
   );

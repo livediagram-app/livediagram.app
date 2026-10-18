@@ -56,17 +56,14 @@ export function CollaborateClusterButton({
       }}
       className={CLUSTER_STRIP}
     >
-      {/* No hover card while open: it would sit over the panel it names. */}
-      {popoverOpen ? (
-        button
-      ) : (
-        <HoverCard
-          title="Collaborate"
-          description="Comments and actions on this tab: what is open, and what is done."
-        >
-          {button}
-        </HoverCard>
-      )}
+      {/* No hover card while open: it would sit over the panel it names. Disabled, not unwrapped, so the button keeps its focus as the panel opens. */}
+      <HoverCard
+        title="Collaborate"
+        description="Comments and actions on this tab: what is open, and what is done."
+        disabled={popoverOpen}
+      >
+        {button}
+      </HoverCard>
     </div>
   );
 }

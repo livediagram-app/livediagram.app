@@ -30,6 +30,16 @@ describe('ToolbarExplorerButton', () => {
     );
   });
 
+  it('keeps its focus as the Explorer opens, so a keyboard opener is not dropped to the page', () => {
+    // It used to lose its hover card on open, which re-parented the button and remounted it.
+    const { rerender } = render(<ToolbarExplorerButton open={false} onToggle={vi.fn()} />);
+    const button = screen.getByRole('button', { name: 'Explorer' });
+    button.focus();
+    rerender(<ToolbarExplorerButton open onToggle={vi.fn()} />);
+    expect(screen.getByRole('button', { name: 'Explorer' })).toBe(button);
+    expect(document.activeElement).toBe(button);
+  });
+
   it("sits inside the dock's outside-click exemption", () => {
     // Otherwise pressing it while the Explorer is open would close the panel
     // on pointer-down and reopen it on click.

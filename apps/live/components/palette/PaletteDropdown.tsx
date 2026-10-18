@@ -296,9 +296,10 @@ export function PaletteDropdown({
   return (
     <div className="relative min-w-0" ref={triggerRef} {...hoverProps}>
       {/* The hover card steps aside while the menu is open: it would otherwise
-          sit on top of the options it describes. */}
-      {hoverCardTitle && !open ? (
-        <HoverCard title={hoverCardTitle} description={hoverCardDescription ?? ''}>
+          sit on top of the options it describes. Disabled, not unwrapped, so the
+          trigger keeps its focus as the menu opens. */}
+      {hoverCardTitle ? (
+        <HoverCard title={hoverCardTitle} description={hoverCardDescription ?? ''} disabled={open}>
           {trigger}
         </HoverCard>
       ) : (

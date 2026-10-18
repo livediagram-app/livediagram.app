@@ -24,6 +24,25 @@ describe('HoverCard', () => {
     expect(card.className).toContain('pointer-events-auto');
   });
 
+  it('shows nothing while disabled, keeping the same control so it keeps its focus', () => {
+    const { rerender } = render(
+      <HoverCard title="Explorer">
+        <button type="button" aria-label="Explorer" />
+      </HoverCard>,
+    );
+    const button = screen.getByRole('button');
+    button.focus();
+    rerender(
+      <HoverCard title="Explorer" disabled>
+        <button type="button" aria-label="Explorer" />
+      </HoverCard>,
+    );
+    fireEvent.pointerEnter(screen.getByRole('button'), { pointerType: 'mouse' });
+    expect(screen.queryByRole('tooltip')).toBeNull();
+    expect(screen.getByRole('button')).toBe(button);
+    expect(document.activeElement).toBe(button);
+  });
+
   it('keeps its layout wrapper and the classes callers pass through', () => {
     const { container } = render(
       <HoverCard title="Bar" block className="h-full" style={{ width: '40%' }}>
