@@ -89,18 +89,19 @@ export function computeFitBelow(
 // in the band between them rather than in the whole canvas. Compute the frame on `{ width: w - left -
 // right, height }`; with the centred transform a canvas x lands at `w/2 + z(x + offset.x - w/2)`, so
 // the band's middle (`(left - right)/2` right of the canvas's) adds `(left + right)/2` for the
-// narrower width's centre and `(left - right) / 2z`.
+// narrower width's centre and `(left - right) / 2z`. `top` and `bottom` do the same down the canvas (the Map in a
+// corner, lib/fit-clear-of-panel.ts), for a frame computed on `height - top - bottom`.
 export function besideSideInsets(
   frame: { zoom: number; offset: Offset },
-  insets: { left: number; right: number },
+  insets: { left: number; right: number; top?: number; bottom?: number },
 ): { zoom: number; offset: Offset } {
-  const { left, right } = insets;
-  if (left <= 0 && right <= 0) return frame;
+  const { left, right, top = 0, bottom = 0 } = insets;
+  if (left <= 0 && right <= 0 && top <= 0 && bottom <= 0) return frame;
   return {
     zoom: frame.zoom,
     offset: {
       x: frame.offset.x + (left + right) / 2 + (left - right) / (2 * frame.zoom),
-      y: frame.offset.y,
+      y: frame.offset.y + (top + bottom) / 2 + (top - bottom) / (2 * frame.zoom),
     },
   };
 }
