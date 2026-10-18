@@ -83,21 +83,28 @@ export function TourBanner({
         role="dialog"
         aria-label={title}
         onPointerDown={(e) => e.stopPropagation()}
-        style={tourColourVars(palette)}
-        className="pointer-events-auto flex w-full max-w-3xl animate-fly-up-in flex-col gap-3 overflow-hidden rounded-2xl border border-[var(--tour-border)] bg-[var(--tour-card)] p-4 text-[var(--tour-text)] shadow-2xl shadow-slate-900/20 sm:flex-row sm:items-center sm:gap-4 sm:py-3 sm:pl-3 sm:pr-4 dark:shadow-black/40 [&_button]:relative [&_button]:touch-target-y"
+        // The sign-in banner's look in the tab's own accent: a gradient from it to a deeper shade, in the ink that
+        // reads on it (tour-colours inkOn).
+        style={{
+          ...tourColourVars(palette),
+          backgroundImage:
+            'linear-gradient(135deg, var(--tour-accent), color-mix(in srgb, var(--tour-accent) 78%, #0f172a))',
+        }}
+        className="pointer-events-auto flex w-full max-w-3xl animate-fly-up-in flex-col gap-3 overflow-hidden rounded-2xl border border-white/10 p-4 text-[var(--tour-on-accent)] shadow-2xl shadow-slate-900/30 sm:flex-row sm:items-center sm:gap-4 sm:py-3 sm:pl-3 sm:pr-4 dark:shadow-black/40 [&_button]:relative [&_button]:touch-target-y"
       >
         {/* The tour's own picture, small: what it is about at a glance, as the sign-in banner's glyph tile is. */}
-        <div aria-hidden className="hidden w-36 shrink-0 sm:block [&_svg]:h-auto [&_svg]:w-full">
+        <div
+          aria-hidden
+          className="hidden w-36 shrink-0 overflow-hidden rounded-xl bg-white/90 sm:block [&_svg]:h-auto [&_svg]:w-full"
+        >
           {welcome ? (welcomeArt ?? <TourWelcomeArt />) : <TourHelpArt />}
         </div>
         <div className="min-w-0 flex-1">
-          <span className="text-[10px] font-semibold uppercase tracking-wider text-[var(--tour-accent)]">
+          <span className="text-[10px] font-semibold uppercase tracking-wider opacity-80">
             {welcome ? copy.welcomeEyebrow : copy.outroEyebrow}
           </span>
           <p className="text-sm font-semibold sm:text-base">{title}</p>
-          <p className="mt-0.5 text-xs leading-relaxed text-[var(--tour-muted)] sm:text-sm">
-            {body}
-          </p>
+          <p className="mt-0.5 text-xs leading-relaxed opacity-85 sm:text-sm">{body}</p>
         </div>
         {welcome ? (
           <div className="flex shrink-0 items-center justify-end gap-2">
@@ -106,7 +113,7 @@ export function TourBanner({
             <button
               type="button"
               onClick={onSkip}
-              className="cursor-pointer rounded-lg px-3 py-2 text-sm font-medium text-[var(--tour-muted)] transition hover:bg-[var(--tour-hover)] hover:text-[var(--tour-text)]"
+              className="cursor-pointer rounded-lg border border-current/40 px-3 py-2 text-sm font-medium transition hover:bg-white/15"
             >
               {copy.decline}
             </button>
@@ -126,7 +133,7 @@ export function TourBanner({
               href={copy.helpHref}
               target="_blank"
               rel="noreferrer"
-              className="text-sm font-medium text-[var(--tour-accent)] underline-offset-2 transition hover:underline"
+              className="text-sm font-medium underline underline-offset-2 opacity-90 transition hover:opacity-100"
             >
               {copy.helpLabel}
             </a>
@@ -138,13 +145,13 @@ export function TourBanner({
   );
 }
 
-// The banner's primary button in the tab's accent, its label in the ink that reads on it (tour-colours inkOn).
+// The banner's primary button, as the sign-in banner's: a white button with its label in the accent.
 function BannerButton({ onClick, children }: { onClick: () => void; children: ReactNode }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className="inline-flex cursor-pointer items-center justify-center rounded-lg bg-[var(--tour-accent)] px-4 py-2 text-sm font-semibold text-[var(--tour-on-accent)] shadow-sm transition hover:brightness-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--tour-accent)]"
+      className="inline-flex cursor-pointer items-center justify-center rounded-lg bg-white px-4 py-2 text-sm font-semibold text-[var(--tour-accent)] shadow-sm transition hover:bg-white/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
     >
       {children}
     </button>
