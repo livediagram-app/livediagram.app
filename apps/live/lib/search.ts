@@ -14,6 +14,16 @@
 import { matches, paletteRank } from '@livediagram/icons';
 import type { ShapeKind, Tab } from '@livediagram/document';
 
+// Every word typed is found somewhere in the fields, case ignored: "export png" finds Export… (named Export, its
+// keywords saying png), as a start's template search does (docs/specs/008-canvas/canvas-and-palette.md "Search
+// panel"). One word reads as `matches` on any field.
+function matchesEveryWord(q: string, ...fields: string[]): boolean {
+  const words = q.toLowerCase().split(/\s+/).filter(Boolean);
+  if (words.length <= 1) return fields.some((f) => matches(q.trim(), f));
+  const hay = fields.join(' ').toLowerCase();
+  return words.every((w) => hay.includes(w));
+}
+
 const DOCUMENT_LIMIT = 8;
 const SHARED_LIMIT = 8;
 const FOLDER_LIMIT = 8;
@@ -404,7 +414,7 @@ export function buildSearchResults(input: SearchInput): SearchGroup[] {
   // + keywords.
   if (q && input.commandItems && input.commandItems.length > 0) {
     const commandMatches = input.commandItems
-      .filter((c) => matches(q, c.name) || matches(q, c.keywords))
+      .filter((c) => matchesEveryWord(q, c.name, c.keywords))
       .slice(0, COMMAND_LIMIT);
     if (commandMatches.length > 0) {
       groups.push({
@@ -422,7 +432,11 @@ export function buildSearchResults(input: SearchInput): SearchGroup[] {
   // it "table" listed Entity (whose keywords say table) and Tablet above Table.
   if (q && input.paletteItems && input.paletteItems.length > 0) {
     const paletteMatches = input.paletteItems
-      .map((p, i) => ({ p, i, rank: paletteRank(q, p) }))
+      // Keyword-only when the words are found across name and keywords but not as one phrase in either.
+      .map((p, i) => {
+        const rank = paletteRank(q, p);
+        return { p, i, rank: rank === 4 && matchesEveryWord(q, p.name, p.keywords) ? 3 : rank };
+      })
       .filter((m) => m.rank < 4)
       .sort((a, b) => a.rank - b.rank || a.i - b.i)
       .slice(0, PALETTE_LIMIT)
@@ -441,7 +455,7 @@ export function buildSearchResults(input: SearchInput): SearchGroup[] {
   // list the whole catalogue), matched on title + keywords.
   if (q && input.settingItems && input.settingItems.length > 0) {
     const settingMatches = input.settingItems
-      .filter((s) => matches(q, s.title) || matches(q, s.keywords))
+      .filter((s) => matchesEveryWord(q, s.title, s.keywords))
       .slice(0, SETTINGS_LIMIT);
     if (settingMatches.length > 0) {
       groups.push({
@@ -461,7 +475,7 @@ export function buildSearchResults(input: SearchInput): SearchGroup[] {
 
   if (q && input.helpItems && input.helpItems.length > 0) {
     const helpMatches = input.helpItems
-      .filter((h) => matches(q, h.title) || matches(q, h.keywords))
+      .filter((h) => matchesEveryWord(q, h.title, h.keywords))
       .slice(0, HELP_LIMIT);
     if (helpMatches.length > 0) {
       groups.push({

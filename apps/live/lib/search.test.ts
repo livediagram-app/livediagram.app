@@ -405,6 +405,17 @@ describe('buildSearchResults — commands (action palette)', () => {
   const withCommands = (query: string) =>
     buildSearchResults({ query, documents: [], folders: [], commandItems });
 
+  // docs/specs/008-canvas/canvas-and-palette.md "Search panel": every word typed, across name and keywords.
+  it('finds a command when its words are split between its name and its keywords', () => {
+    const ids = (q: string) =>
+      withCommands(q)
+        .find((g) => g.key === 'commands')
+        ?.items.map((i) => (i.kind === 'command' ? i.id : null)) ?? [];
+    expect(ids('create sheet')).toEqual(['create-tab']);
+    expect(ids('lock freeze')).toEqual(['lock']);
+    expect(ids('lock delete')).toEqual([]);
+  });
+
   it('surfaces matching commands as an "Actions" group, matched on name', () => {
     const out = withCommands('lock');
     const commands = out.find((g) => g.key === 'commands')!;
@@ -460,6 +471,17 @@ describe('buildSearchResults — help articles (docs/specs/018-help/help-app.md 
       leaf: 'sharing',
     },
   ];
+
+  it('finds an article from words in its title and its keywords together', () => {
+    const out = buildSearchResults({
+      query: 'sharing invite',
+      documents: [],
+      folders: [],
+      helpItems,
+    });
+    const help = out.find((g) => g.key === 'help')!;
+    expect(help.items.map((i) => (i.kind === 'help' ? i.id : null))).toEqual(['help:sharing']);
+  });
 
   it('surfaces help articles as a "Help" group, matched on title', () => {
     const out = buildSearchResults({ query: 'keyboard', documents: [], folders: [], helpItems });
