@@ -213,7 +213,9 @@ a page slide of a deleted page stays empty rather than finding a new page under 
 
 Every page kind (infographic, article, slide and logo) is painted the same way, except that a logo
 page takes no pattern and no picture ([Logo pages](logo-pages.md) "A logo page"). The page panel's
-**Background** section sorts its fills into three **categories**, a segmented control at its top:
+**Background** section sorts its fills into three **categories**, a row of tiles at its top read like the
+Pattern tiles: each a small sheet picturing what it makes (the page's own fill on its category's tile, else
+the theme's colour, a theme gradient, a sky over a meadow with a picture glyph), its name under it:
 **Solid**, **Gradient** and **Image** (the tab theme's own colours lead the first two, so no
 separate Theme category; a logo page shows Solid and Gradient only). It opens on the category of
 the page's current fill (any gradient's on Gradient, a picture's on Image, else Solid); moving
@@ -378,7 +380,7 @@ drawing only, never stored:
 ### Animated backgrounds
 
 A slide page's Background has a fourth category, **Animated**, after Solid, Gradient and Image (the
-four share the category control's width, each a quarter). Its **Motion** carousel holds twenty-four
+four tiles share the row, each a quarter, Animated's sheet a theme gradient under a sparkle). Its **Motion** carousel holds twenty-four
 motions, six to a page across four pages (two rows of three) with the carousel's arrows and page dots, opening on
 the page holding the slide's motion; each tile plays in the tab theme's colours, 16:9 like the
 slide: **Aurora** (soft lights wandering, in the theme's colour and two companion hues turned

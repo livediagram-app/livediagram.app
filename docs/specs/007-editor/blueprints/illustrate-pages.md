@@ -543,8 +543,11 @@ PageUnlocked`, tracked before the change); rename, orientation, size, background
 ### Panel, previews, reorder
 
 - Background section (`apps/live/components/canvas/page-background-section.tsx`): a `Background
-kind` radiogroup (the segmented control: `theme` while `themePresets` is non-empty, `solid`,
-  `gradient`), opening on `backgroundCategoryOf(fill, themePresets)` and holding a chosen category
+kind` radiogroup (`BackgroundKinds`, `page-background-kinds.tsx`: one `tileClass` tile per offered
+  category, `data-background-kind`, a 36 x 24 px sheet painted by `kindPreview(kind, fill, current, accent,
+themeGradient)`: the page's `fillCss` on its own category's tile, else Solid the accent at 20% alpha,
+  Gradient the theme's `theme-bright` preset, Image `IMAGE_STAND_IN` under `lucideImage`, Animated the
+  theme gradient under `lucideSparkles`; the name under it), opening on `backgroundCategoryOf(fill, themePresets)` and holding a chosen category
   in local state (no edit). Theme: the theme swatches. Solid: the one colour picker inline
   (`ColourPicker`, `docs/specs/004-interface-design/blueprints/colour-picker.md`): Paper
   (`noColour('paper', 'Paper')`, no fill), then `PAGE_COLOUR_GROUPS` (soft light hexes "Light",
