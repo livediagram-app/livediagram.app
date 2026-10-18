@@ -50,6 +50,7 @@ function setup(tab: Tab) {
   const commitTabs = vi.fn();
   const tickTabs = vi.fn();
   const placeAt = vi.fn();
+  const reveal = vi.fn();
   const { result } = renderHook(() =>
     useArticles({
       activeTab: tab,
@@ -64,14 +65,24 @@ function setup(tab: Tab) {
       redo: vi.fn(),
       clearSelection: vi.fn(),
       openNote: vi.fn(),
+      reveal,
     }),
   );
-  return { view: result.current!, commitTabs, tickTabs, placeAt };
+  return { view: result.current!, commitTabs, tickTabs, placeAt, reveal };
 }
 
 beforeEach(() => {
   track.mockClear();
   for (const fn of Object.values(handle)) if (typeof fn === 'function') fn.mockReset();
+});
+
+// docs/specs/007-editor/article-pages.md "Writing": the caret the editor reports is panned into sight.
+describe('the caret as it is written on', () => {
+  it('is brought into sight, the least move that shows it', () => {
+    const { view, reveal } = setup(tabWith(false));
+    view.revealCaret({ x: 10, y: 20, w: 1, h: 18 });
+    expect(reveal).toHaveBeenCalledWith(10, 20, 1, 18);
+  });
 });
 
 describe('a locked page holds its article', () => {
