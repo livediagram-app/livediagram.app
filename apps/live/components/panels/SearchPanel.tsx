@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { ThisBrowserPill } from '@/components/primitives/ThisBrowserPill';
 import { NoMatches, SearchIcon, useEscape, useFocusTrap } from '@livediagram/ui';
 import type { Tab } from '@livediagram/document';
@@ -134,6 +134,10 @@ export function SearchPanel({
   // Declared before the field's focus below, so it records the opener rather than the field.
   const panelRef = useRef<HTMLDivElement>(null);
   useFocusTrap(panelRef);
+  // The field is a combobox over the results' listbox: the highlight the arrow keys move is its active option, so a
+  // screen reader follows it (it saw nothing as the highlight moved).
+  const listId = useId();
+  const optionId = (idx: number) => `${listId}-${idx}`;
 
   useEffect(() => {
     inputRef.current?.focus();
@@ -289,6 +293,12 @@ export function SearchPanel({
               }
             }}
             onKeyDown={handleInputKey}
+            role="combobox"
+            aria-label="Search"
+            aria-autocomplete="list"
+            aria-expanded={flatItems.length > 0}
+            aria-controls={listId}
+            aria-activedescendant={flatItems.length > 0 ? optionId(activeIndex) : undefined}
             placeholder={
               tabs
                 ? 'Search documents, folders, teams, tabs, elements, help...'
@@ -305,7 +315,18 @@ export function SearchPanel({
             <kbd className="text-[10px] font-medium">Esc</kbd>
           </button>
         </div>
-        <div className="max-h-[60vh] overflow-y-auto py-1">
+        {/* How many it found, said once the reader pauses on a query. */}
+        <p aria-live="polite" className="sr-only">
+          {query.trim()
+            ? `${flatItems.length} ${flatItems.length === 1 ? 'result' : 'results'}`
+            : ''}
+        </p>
+        <div
+          id={listId}
+          role="listbox"
+          aria-label="Results"
+          className="max-h-[60vh] overflow-y-auto py-1"
+        >
           {groups.length === 0 ? (
             query.trim() ? (
               // The shared empty state (docs/specs/004-interface-design/empty-states.md), naming what is searched.
@@ -329,8 +350,16 @@ export function SearchPanel({
             groups.map((group) => {
               const baseIndex = flatItems.findIndex((f) => f === group.items[0]);
               return (
-                <div key={group.key} className={cascade ? 'lvd-cascade' : undefined}>
-                  <p className="px-3 pb-1 pt-2 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                <div
+                  key={group.key}
+                  role="group"
+                  aria-label={group.label}
+                  className={cascade ? 'lvd-cascade' : undefined}
+                >
+                  <p
+                    aria-hidden
+                    className="px-3 pb-1 pt-2 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400"
+                  >
                     {group.label}
                   </p>
                   {group.items.map((item, i) => {
@@ -339,7 +368,11 @@ export function SearchPanel({
                     return (
                       <button
                         key={item.kind === 'element' ? `${item.tabId}:${item.elementId}` : item.id}
+                        id={optionId(idx)}
                         type="button"
+                        role="option"
+                        aria-selected={active}
+                        tabIndex={-1}
                         onClick={() => handleSelect(item)}
                         onMouseEnter={() => setActiveIndex(idx)}
                         className={
