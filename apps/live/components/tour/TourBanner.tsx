@@ -7,6 +7,8 @@
 // The sign-in banner steps aside while it is up (TOUR_CARD_ATTR), so the two never show together.
 import { useEffect, useEffectEvent, useRef, type ReactNode } from 'react';
 import type { PlanPalette } from '@livediagram/document';
+import { lucideCircleHelp } from '@livediagram/icons/lucide';
+import { lucideGlyph } from '@livediagram/ui';
 import { announceToastFloorChange, BOTTOM_CHROME_SELECTOR } from '@/components/toast/toast-floor';
 import { useChromeFloor } from '@/components/toast/useToastFloor';
 import { tourColourVars } from './tour-colours';
@@ -18,6 +20,8 @@ import { TourWelcomeArt } from './TourWelcomeArt';
 export const TOUR_CARD_ATTR = 'data-tour-card-open';
 // The banner's widest (max-w-3xl, as the sign-in banner's): the column it clears the bottom chrome in.
 const BANNER_MAX_WIDTH_PX = 768;
+// The last card's help link wears the help icon beside its label.
+const HelpIcon = lucideGlyph(lucideCircleHelp, 16);
 
 export function TourBanner({
   card,
@@ -137,8 +141,9 @@ export function TourBanner({
               href={copy.helpHref}
               target="_blank"
               rel="noreferrer"
-              className="text-sm font-medium text-white/90 underline underline-offset-2 transition hover:text-white"
+              className="inline-flex items-center gap-1.5 text-sm font-medium text-white/90 underline underline-offset-2 transition hover:text-white"
             >
+              <HelpIcon aria-hidden />
               {copy.helpLabel}
             </a>
             <BannerButton onClick={onNext}>{copy.finish}</BannerButton>

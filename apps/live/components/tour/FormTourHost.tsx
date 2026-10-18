@@ -26,7 +26,6 @@ const OFFER_DELAY_MS = 800;
 const FORM_TOUR_COPY = {
   welcomeEyebrow: 'Forms tour',
   helpHref: '/help/canvas/plan-mode/forms/',
-  finish: 'Start Building',
 };
 
 // The welcome card's picture: a form in the art's light colours.

@@ -121,7 +121,7 @@ Five steps.
    Cells, Numbers, Data, Charts, Functions), acting on the selected cells.
 5. **Sheet Settings**: highlights the Sheet's cog. The title, CSV import and download, gridlines, sizes, freeze
    and named ranges live there.
-6. **You're ready to plan** (outro): a help-centre link to the Sheets article (new tab) and **Start Planning**,
+6. **You're ready to plan** (outro): a help-centre link to the Sheets article (new tab) and **Start**,
    which completes the tour.
 
 ### Both tracks

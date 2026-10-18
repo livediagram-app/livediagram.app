@@ -86,9 +86,7 @@ describe('TourStage', () => {
       />,
     );
     expect(screen.getByRole('button', { name: 'Start planning' })).toBeTruthy();
-    expect(screen.getByRole('link', { name: 'Visit Help Centre' }).getAttribute('href')).toBe(
-      '/help/x/',
-    );
+    expect(screen.getByRole('link', { name: 'Help' }).getAttribute('href')).toBe('/help/x/');
   });
 
   it('offers each way in on a welcome card with choices, in place of the accept', () => {

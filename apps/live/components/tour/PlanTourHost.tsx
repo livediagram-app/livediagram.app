@@ -38,7 +38,6 @@ export const OFFER_DELAY_MS = 800;
 const BOARDS_TOUR_COPY = {
   welcomeEyebrow: 'Boards tour',
   helpHref: '/help/canvas/plan-mode/',
-  finish: 'Start Planning',
 };
 const SHEETS_TOUR_COPY = {
   ...BOARDS_TOUR_COPY,

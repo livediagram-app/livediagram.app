@@ -56,8 +56,8 @@ element by its `data-tour-id`. The exact strings live in `apps/live/components/t
    Viewer**, who may not speak, up front so the count stays honest.
 5. **Give Someone a Push**: closes the panel and rings your own character (`avatar-self`). Click someone else's
    character to walk over and give them a playful push; arrow keys walk, Space hops.
-6. **You're Ready to Roam** (outro): a help-centre link to the Avatar mode article (new tab) and **Start
-   walking**, which completes the tour.
+6. **You're Ready to Roam** (outro): a help-centre link to the Avatar mode article (new tab) and **Start**,
+   which completes the tour.
 
 - A step whose target never appears is skipped, as in the Draw tour.
 - Step 2 opens the panel the way a person would (pressing the Avatar button); step 5 closes it so the character is

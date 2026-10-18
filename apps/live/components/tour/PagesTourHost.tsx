@@ -41,13 +41,6 @@ const EYEBROW: Record<PageKind, string> = {
   logo: 'Logo tour',
 };
 
-const FINISH: Record<PageKind, string> = {
-  slide: 'Start presenting',
-  infographic: 'Start illustrating',
-  article: 'Start writing',
-  logo: 'Start designing',
-};
-
 // Orchestrates the Pages tour (docs/specs/007-editor/pages-tour.md). Mounted once in EditorView beside
 // TourHost; renders nothing until a person is in Pages mode, with an editor they can use, on a tab with a page
 // on screen of a kind whose track they have not seen, no other tour on screen and the settle delay passed, or the
@@ -216,7 +209,6 @@ export function PagesTourHost() {
       copy={{
         welcomeEyebrow: EYEBROW[subject.kind],
         helpHref: helpArticleHref(PAGE_TOUR_HELP[subject.kind].article),
-        finish: FINISH[subject.kind],
       }}
       welcomeArt={<PagesTourArt kind={subject.kind} />}
     />
