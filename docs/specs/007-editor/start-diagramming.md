@@ -101,7 +101,7 @@ closes it too.
 While a closed start's tab is still empty, the **palette tray** (the strip that hangs from the palette, as the mode
 banners do, [Toolbar layout](toolbar-layout.md)) reads "Tab 1 is empty" with **Show Templates**, which opens the
 start again (`StartAgainTray`). It goes with the emptiness: the first element ends it. Without a strip on screen
-(Draw's dock) it is the same message as a pill standing just clear of the dock: under it when the dock is at the top, over it when at the bottom. The closed list is shared state: the panel and the
+(Draw's dock) it is the same message as a pill standing just clear of the dock: under it when the dock is at the top, over it when at the bottom. Either way it steps aside while a mode's message is up (an armed tool's Cancel, a modifier hint), as that takes the same place and says what the next click does. The closed list is shared state: the panel and the
 tray read the same key and follow each other as it changes.
 
 ## Changing mode

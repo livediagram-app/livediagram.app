@@ -127,3 +127,41 @@ describe('the palette tray', () => {
     expect(screen.getByTestId('box').textContent).toBe('12-58');
   });
 });
+
+// The tray stacks with the editor's chrome, under the header's popovers (who can see this).
+describe('trayHost', () => {
+  function stripIn(host: HTMLElement) {
+    const root = document.createElement('div');
+    root.setAttribute('data-toolbar-palette', '');
+    const card = document.createElement('div');
+    card.setAttribute('data-tour-id', 'palette');
+    root.append(card);
+    host.append(root);
+  }
+
+  it('is the editor’s box, not the body, so a header popover stands over the tray', async () => {
+    const { trayHost } = await import('./PaletteTray');
+    const editor = document.createElement('div');
+    editor.setAttribute('data-editor-viewport', 'window');
+    document.body.append(editor);
+    stripIn(editor);
+    expect(trayHost()).toEqual({ node: editor, dx: 0, dy: 0 });
+  });
+
+  it('falls back to the body without an editor box', async () => {
+    const { trayHost } = await import('./PaletteTray');
+    stripIn(document.body);
+    expect(trayHost().node).toBe(document.body);
+  });
+
+  it('measures from a split pane’s corner, as its transform holds the tray', async () => {
+    const { trayHost } = await import('./PaletteTray');
+    const pane = document.createElement('div');
+    pane.setAttribute('data-editor-viewport', 'pane');
+    pane.style.transform = 'translateZ(0)';
+    vi.spyOn(pane, 'getBoundingClientRect').mockReturnValue(new DOMRect(640, 48, 640, 700));
+    document.body.append(pane);
+    stripIn(pane);
+    expect(trayHost()).toEqual({ node: pane, dx: 640, dy: 48 });
+  });
+});
