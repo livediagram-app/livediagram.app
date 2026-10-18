@@ -32,7 +32,7 @@ describe('quickBarItems', () => {
     const has = square({
       link: { kind: 'url', url: 'https://example.com' },
       note: 'Remember',
-    } as Partial<BoxedElement>);
+    });
     const items = quickBarItems(has, handlers());
     expect(items.map((i) => [i.label, i.on])).toEqual([
       ['Assign Action', false],
