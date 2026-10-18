@@ -3,7 +3,6 @@ import {
   canAppendWebRow,
   isEntity,
   isFlowchartStep,
-  isRailShape,
   type Element,
   type Rect,
 } from '@livediagram/document';
@@ -41,7 +40,6 @@ export function QuickConnectPluses({
   onSpawnConnect,
   onStartArrow,
   onStartPencil,
-  onAddRailPoint,
   onAddTableRow,
   onAddTableColumn,
   onAppendWebRow,
@@ -58,7 +56,6 @@ export function QuickConnectPluses({
   onSpawnConnect: (direction: QuickConnectDirection, kind: QuickConnectKind) => void;
   onStartArrow: (direction: QuickConnectDirection, e: ReactPointerEvent) => void;
   onStartPencil: () => void;
-  onAddRailPoint: () => void;
   onAddTableRow: () => void;
   onAddTableColumn: () => void;
   onAppendWebRow?: (elementId: string) => void;
@@ -67,8 +64,6 @@ export function QuickConnectPluses({
   onAddRelatedEntity?: (side: QuickConnectDirection) => void;
 }) {
   const growMind = useMindGrow();
-  // A timeline rail's "+" gains "Add Point" (docs/specs/009-elements/timeline-rail.md).
-  const selectedIsRail = selectedElement?.type === 'shape' && isRailShape(selectedElement.shape);
   const selectedIsTable = selectedElement?.type === 'table';
   const selectedIsMind = selectedElement?.type === 'shape' && selectedElement.shape === 'mind-node';
   const selectedIsStep = !!selectedElement && isFlowchartStep(selectedElement);
@@ -105,7 +100,6 @@ export function QuickConnectPluses({
           onSpawn={(kind) => onSpawnConnect(placement, kind)}
           onArrowPointerDown={(e) => onStartArrow(placement, e)}
           onPencil={onStartPencil}
-          onAddRailPoint={selectedIsRail ? onAddRailPoint : undefined}
           webRow={webRow}
           // Table ring (docs/specs/008-canvas/canvas-and-palette.md): Arrow + this side's structural add.
           variant={selectedIsTable ? 'table' : 'default'}

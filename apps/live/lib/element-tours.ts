@@ -19,6 +19,7 @@ export const ELEMENT_TOUR_KINDS = [
   'hub',
   'onion',
   'chevrons',
+  'timeline',
   'mind-node',
   'flowchart',
   'org-chart',
@@ -45,6 +46,7 @@ export const ELEMENT_TOUR_NAMES: Record<ElementTourKind, string> = {
   hub: 'hub and spoke',
   onion: 'onion',
   chevrons: 'chevron process',
+  timeline: 'timeline',
   'mind-node': 'mind map node',
   flowchart: 'flowchart step',
   'org-chart': 'person in an org chart',
@@ -70,6 +72,7 @@ export function elementTourKindOf(el: Element | null | undefined): ElementTourKi
   if (el.shape === 'hub') return 'hub';
   if (el.shape === 'onion') return 'onion';
   if (el.shape === 'chevrons') return 'chevrons';
+  if (el.shape === 'timeline-rail') return 'timeline';
   if (el.shape === 'mind-node' && el.mindLook !== 'person') return 'mind-node';
   if (el.shape === 'mind-node' && el.mindLook === 'person') return 'org-chart';
   if (el.shape === 'sequence') return 'sequence';
@@ -109,6 +112,7 @@ export function canTourElement(
     case 'stack':
     case 'chart':
     case 'chevrons':
+    case 'timeline':
     case 'onion':
     case 'hub':
     case 'cycle':

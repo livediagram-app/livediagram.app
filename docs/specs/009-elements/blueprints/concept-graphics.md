@@ -7,6 +7,9 @@ Derived from [Concept graphics](../concept-graphics.md). Defaults in [DEFAULTS.m
 | `packages/document/src/concept.ts`                                                                   | Kinds, rows, bounds, ramp, the three layouts, variant + anim writes          |
 | `packages/document/src/web-components.ts`                                                            | `conceptRows` in `WebRows`; `withWebRows`, `appendWebRow`, `canAppendWebRow` |
 | `packages/document/src/svg-render-concept.ts`                                                        | `svgConcept`: the headless body (rest frame)                                 |
+| `packages/document/src/concept-timeline.ts`, `svg-render-timeline.ts`                                | The Timeline's `timelineLayout` and its export (`svgTimeline`)               |
+| `apps/live/components/canvas/ConceptTimelineBody.tsx`, `concept-row-layer.tsx`                       | The Timeline's face body; `ConceptRowLayer`, one animated row layer          |
+| `packages/document/src/element-normalise.ts`                                                         | `railToTimeline`: a saved timeline rail's points into milestones             |
 | `packages/document/src/shape-variants.ts`                                                            | `pyramid` + `funnel` / `inverted` variants                                   |
 | `apps/live/components/canvas/ConceptFace.tsx`                                                        | Canvas face: rows, in-place lines, the Cycle's centre label                  |
 | `apps/live/app/canvas-motion.css`                                                                    | `lvd-concept-*` keyframes                                                    |
@@ -19,13 +22,13 @@ Derived from [Concept graphics](../concept-graphics.md). Defaults in [DEFAULTS.m
 
 ## Domain and naming
 
-| Term              | Identifier                                                                                                 | Meaning                |
-| ----------------- | ---------------------------------------------------------------------------------------------------------- | ---------------------- |
-| Concept graphic   | `ConceptShape = 'layer-stack' \| 'pyramid' \| 'cycle' \| 'hub' \| 'onion' \| 'chevrons'`, `isConceptShape` | The six kinds          |
-| Row               | `ConceptRow = { label: string; note?: string }`                                                            | A layer, tier or step  |
-| Variant           | `PyramidVariant = 'pyramid' \| 'inverted' \| 'funnel'`                                                     | Absent = pyramid       |
-| Concept animation | `ConceptAnim = 'build' \| 'pulse' \| 'flow'`                                                               | `flow` only on a Cycle |
-| Spokes            | `hubSpokes?: boolean`                                                                                      | Absent = on; Hub only  |
+| Term              | Identifier                                                                                                                    | Meaning                |
+| ----------------- | ----------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
+| Concept graphic   | `ConceptShape = 'layer-stack' \| 'pyramid' \| 'cycle' \| 'hub' \| 'onion' \| 'chevrons' \| 'timeline-rail'`, `isConceptShape` | The seven kinds        |
+| Row               | `ConceptRow = { label: string; note?: string }`                                                                               | A layer, tier or step  |
+| Variant           | `PyramidVariant = 'pyramid' \| 'inverted' \| 'funnel'`                                                                        | Absent = pyramid       |
+| Concept animation | `ConceptAnim = 'build' \| 'pulse' \| 'flow'`                                                                                  | `flow` only on a Cycle |
+| Spokes            | `hubSpokes?: boolean`                                                                                                         | Absent = on; Hub only  |
 
 Banned: "SmartArt", "tier" for a Cycle step in copy ("Step"), "layer" for the Layers feature.
 
@@ -33,14 +36,15 @@ Banned: "SmartArt", "tier" for a Cycle step in copy ("Step"), "layer" for the La
 
 ### Bounds (`CONCEPT_ROWS`)
 
-| Kind        | min | max | Notes drawn          | Add row says  |
-| ----------- | --- | --- | -------------------- | ------------- |
-| layer-stack | 2   | 8   | side notes           | "Layer n"     |
-| pyramid     | 2   | 6   | values (funnel only) | "Tier n"      |
-| cycle       | 3   | 8   | none                 | "Step n"      |
-| hub         | 3   | 8   | none                 | "Satellite n" |
-| onion       | 2   | 6   | none                 | "Ring n"      |
-| chevrons    | 2   | 8   | notes under stages   | "Stage n"     |
+| Kind          | min | max | Notes drawn          | Add row says                                        |
+| ------------- | --- | --- | -------------------- | --------------------------------------------------- |
+| layer-stack   | 2   | 8   | side notes           | "Layer n"                                           |
+| pyramid       | 2   | 6   | values (funnel only) | "Tier n"                                            |
+| cycle         | 3   | 8   | none                 | "Step n"                                            |
+| hub           | 3   | 8   | none                 | "Satellite n"                                       |
+| onion         | 2   | 6   | none                 | "Ring n"                                            |
+| chevrons      | 2   | 8   | notes under stages   | "Stage n"                                           |
+| timeline-rail | 2   | 8   | whens by the dots    | "Milestone n" (when placeholder "When", `noteNoun`) |
 
 `CONCEPT_LABEL_MAX` 60, `CONCEPT_NOTE_MAX` 40. `withWebRows(el, { conceptRows })` trims and collapses each string,
 slices the array to the kind's max and ignores a write below its min (as the web components' rows). An empty note
@@ -84,6 +88,15 @@ for every row.
   the notch `(x0 + p, ch / 2)`; label rect from `x0 + (i > 0 ? p : 0) + 4` to `x0 + sw - p - 4`, the full height; note
   rect from `x0 + (i > 0 ? p : 0)` to `x0 + sw - p` (centred under the label), `y = ch + 8` to `h`; label px `round(clamp(ch * 0.24, 10, 18))`, note px
   `round(clamp(labelPx * 0.8, 10, 14))`.
+- `timelineLayout(w, h, n)`: as the spec's "Timeline" (D13 to D16).
+  - Spine at `h / 2`, from 0 to `w - head * 0.2`; arrowhead `head = clamp(h * 0.06, 6, 12)` long at `(w, h / 2)`.
+  - Slots: `slot = max(1, w - 1.5 * head) / n`; dot `i` at `(slot * (i + 0.5), h / 2)`, radius
+    `clamp(min(h * 0.055, slot * 0.14), 5, 12)`; even `i` above the spine, odd below.
+  - Stem: `room = h / 2 - dotR - 4`, length `max(6, min(room * 0.3, 28))`, from the dot's edge outward.
+  - Words: `width = min(min(w, slot * 1.9), max(slot * 0.95, 2 * min(x, w - x)))`, centred on the dot and clamped
+    inside the element; the when `notePx * 1.5` tall, 4 px past the stem's end; the name `labelPx * 1.6` tall (or what
+    is left of its half) right against the when.
+  - Type: `labelPx = round(clamp(h * 0.075, 11, 17))`, `notePx = round(clamp(labelPx * 0.8, 10, 14))`.
 
 ### Writes
 
@@ -102,7 +115,7 @@ Each row element carries `--i` (its index in reading order) and the face `--n` a
 - `flow` (Cycle arcs): `stroke-dasharray: 6 6`, `stroke-dashoffset` to -24 over 1.2 s × speed, linear, `infinite`.
 - Build's reading order: stack top to bottom, pyramid base up (`--i` reversed), funnel and inverted top down, cycle
   clockwise from step 1 (each arc after its step), hub: the hub first (`--i` 0) then satellite `i` at `i + 1` with its
-  spoke, onion core outward, chevrons left to right.
+  spoke, onion core outward, chevrons and timeline milestones left to right.
 - `prefers-reduced-motion: reduce` → `animation: none`. Exports draw the rest frame (no classes).
 
 ### Invariants
@@ -142,11 +155,12 @@ animation fields are cosmetic and lenient, like every element animation: an unkn
 
 ## Data and persistence
 
-| Field            | Class     | Notes                                                                     |
-| ---------------- | --------- | ------------------------------------------------------------------------- |
-| `conceptRows`    | persisted | Order is meaning                                                          |
-| `pyramidVariant` | persisted | Absent = pyramid                                                          |
-| `conceptAnim*`   | persisted | Cosmetic; Repeat stored only when it differs from the animation's default |
+| Field                     | Class     | Notes                                                                                  |
+| ------------------------- | --------- | -------------------------------------------------------------------------------------- |
+| `conceptRows`             | persisted | Order is meaning                                                                       |
+| `railCount`, `railLabels` | read once | A saved timeline rail's; `railToTimeline` turns them into `conceptRows` and drops them |
+| `pyramidVariant`          | persisted | Absent = pyramid                                                                       |
+| `conceptAnim*`            | persisted | Cosmetic; Repeat stored only when it differs from the animation's default              |
 
 ## Errors and edge cases
 
@@ -156,6 +170,7 @@ animation fields are cosmetic and lenient, like every element animation: an unkn
 | E2  | Label too long for its tier           | Ellipsed (canvas `truncate`, export character clip)                            |
 | E3  | Rows past the max (an old client)     | Validation refuses past 8; a pyramid with 7 or 8 draws all (layout is generic) |
 | E4  | Non-hex colours                       | Every row in the accent; text `labelOn` of the accent                          |
+| E5  | A saved timeline rail                 | `railToTimeline`: points to milestones, 2 to 8, unnamed ones "Milestone n"     |
 
 ## Security and trust
 
@@ -172,7 +187,8 @@ element is still.
   "packages/document", "D1"; pyramid 320 × 260 Vision / Strategy / Objectives / Daily work; funnel 340 × 260 Visited
   12,400 / Signed up 3,100 / Activated 820 / Retained 210; cycle 300 × 300 Plan / Do / Check / Act, centre "Weekly loop". Round 2 (D188): hub 340 × 320 Payments / Stock / Email / Search / Analytics / Support,
   centre "Orders"; onion 320 × 320 Domain / Application / Adapters / Infrastructure; chevrons 600 × 150 Commit /
-  Build / Test / Release with notes "push to main", "2 min", "8,400 tests", "manual gate".
+  Build / Test / Release with notes "push to main", "2 min", "8,400 tests", "manual gate"; timeline 720 × 240
+  Kick-off / First prototype / Beta with customers / Launch with whens "Jan", "Mar", "Jun", "Sep".
 - Chevron stage bars (`ChevronStageControls`, only while `editable`: selected, unlocked, an Editor): one transparent
   zone per stage (its outline's bounding box) under the stages arms the hover; the hovered stage's `ConceptRowBar` is
   drawn over the stages, centred on the stage's label box, `BAR_INSET_PX` (6) screen px inside its top, scaled by
@@ -186,8 +202,9 @@ element is still.
   variant tiles (Pyramid, Inverted, Funnel). **Animation** is the Animation row's Concept section
   (`ElementAnimationTiles.tsx` `ConceptAnimTiles`: None, Build, Pulse, Flow on a Cycle; Speed; Repeat); a concept
   graphic takes no Shape set (`animation-membership.ts` `hasOwnBodySet`).
-- Ring: Add Layer / Add Tier / Add Step.
-- Palette **Concepts** category (Structure band, rows with blurbs): Layer Stack, Pyramid, Funnel, Cycle.
+- Ring: Add Layer / Add Tier / Add Step / Add Satellite / Add Ring / Add Stage / Add Milestone.
+- Palette **Concepts** category (Structure band, rows with blurbs): Layer Stack, Pyramid, Funnel, Cycle, Hub, Onion,
+  Chevrons, Timeline (the Timeline's tile keeps its old id, `tools:timeline`, so a pinned layout keeps it).
 
 ## Accessibility
 
@@ -204,16 +221,17 @@ In-place edits commit on blur (INP); animations are compositor-only except Flow'
 
 ## Testing
 
-| Rule                                             | Test file                                                        |
-| ------------------------------------------------ | ---------------------------------------------------------------- |
-| Bounds (I1), ramp, layouts per kind (I2)         | `packages/document/src/concept.test.ts`                          |
-| Writes, anims offered (I3), validation           | same                                                             |
-| Export draws rows, notes, arcs                   | same                                                             |
-| Face, in-place commit                            | `apps/live/components/canvas/ConceptFace.test.tsx`               |
-| Menu section                                     | `apps/live/components/palette/ConceptMenuSection.test.tsx`       |
-| Chevron stage bars (hover, phone, roles, writes) | `apps/live/components/canvas/ConceptRowBar.test.tsx`             |
-| No Rows section for chevrons                     | `apps/live/components/palette/context-menu-web-editors.test.tsx` |
-| Motion budget (loops infinite, reduced motion)   | existing CSS motion-budget test                                  |
+| Rule                                             | Test file                                                                            |
+| ------------------------------------------------ | ------------------------------------------------------------------------------------ |
+| Bounds (I1), ramp, layouts per kind (I2)         | `packages/document/src/concept.test.ts`                                              |
+| Writes, anims offered (I3), validation           | same                                                                                 |
+| Export draws rows, notes, arcs                   | same                                                                                 |
+| Face, in-place commit                            | `apps/live/components/canvas/ConceptFace.test.tsx`                                   |
+| Menu section                                     | `apps/live/components/palette/ConceptMenuSection.test.tsx`                           |
+| Chevron stage bars (hover, phone, roles, writes) | `apps/live/components/canvas/ConceptRowBar.test.tsx`                                 |
+| Timeline layout, export, rail migration          | `packages/document/src/concept-timeline.test.ts`, `concept-timeline-element.test.ts` |
+| No Rows section for chevrons                     | `apps/live/components/palette/context-menu-web-editors.test.tsx`                     |
+| Motion budget (loops infinite, reduced motion)   | existing CSS motion-budget test                                                      |
 
 ## Constants and configuration
 

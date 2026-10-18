@@ -94,7 +94,7 @@ export const SHAPE_KEYWORDS: Partial<Record<ShapeKind, string>> = {
   smartwatch: 'watch wearable wrist',
   'progress-bar': 'bar meter percent loading completion',
   'progress-ring': 'donut ring percent gauge dial',
-  'timeline-rail': 'timeline roadmap milestones track',
+  'timeline-rail': 'timeline roadmap milestones track history plan dates schedule',
   rating: 'stars score review out of five',
   legend: 'key colour code swatch label caption guide colour key',
   'pie-chart': 'donut doughnut ring share split proportion chart',

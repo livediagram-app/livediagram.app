@@ -205,49 +205,10 @@ function PieLegendRow({ cx, y }: { cx: number; y: number }) {
   );
 }
 
-/** A horizontal timeline rail as RailView draws it: the line, evenly spaced dots
- *  above it, each joined to it by a short tick, with its label above the dot. Slate,
- *  the element's default colours. */
-function TimelineRail({ x, y, w, points }: { x: number; y: number; w: number; points: string[] }) {
-  const n = points.length;
-  const step = w / (n - 1);
-  return (
-    <g>
-      <line
-        x1={x}
-        y1={y + 14}
-        x2={x + w}
-        y2={y + 14}
-        className="stroke-slate-400"
-        strokeWidth={3}
-        strokeLinecap="round"
-      />
-      {points.map((p, i) => {
-        const px = x + i * step;
-        return (
-          <g key={i}>
-            <line x1={px} y1={y} x2={px} y2={y + 14} className="stroke-slate-400" strokeWidth={2} />
-            <circle
-              cx={px}
-              cy={y}
-              r={7}
-              className="fill-slate-500 stroke-white"
-              strokeWidth={2.5}
-            />
-            <Label x={px} y={y - 20} anchor="middle" size={10} weight={600} tone="body">
-              {p}
-            </Label>
-          </g>
-        );
-      })}
-    </g>
-  );
-}
-
 // --- Scenes ------------------------------------------------------------------
 
 /** Overview montage: every data element on one canvas (progress bar + ring,
- *  star rating, pie chart, and a timeline rail). */
+ *  star rating and a pie chart). */
 export function DataElementsOverview() {
   return (
     <Scene w={420} h={240}>
@@ -260,12 +221,9 @@ export function DataElementsOverview() {
       <Panel x={312} y={18} w={88} h={70} title="RATING">
         <StarRow x={326} cy={62} r={6.5} filled={4} gap={15} />
       </Panel>
-      <Panel x={20} y={104} w={172} h={120} title="PIE">
+      <Panel x={20} y={104} w={380} h={120} title="PIE">
         <Pie cx={70} cy={172} r={38} />
         <PieLegend x={124} y={140} />
-      </Panel>
-      <Panel x={208} y={104} w={192} h={120} title="TIMELINE">
-        <TimelineRail x={234} y={182} w={144} points={['Plan', 'Build', 'Beta', 'GA']} />
       </Panel>
     </Scene>
   );
@@ -406,10 +364,3 @@ export function BarAndLineCharts() {
 }
 
 /** A horizontal timeline rail with four evenly spaced, labelled milestones. */
-export function TimelineRailScene() {
-  return (
-    <Scene w={420} h={150}>
-      <TimelineRail x={48} y={68} w={324} points={['Kickoff', 'Design', 'Build', 'Launch']} />
-    </Scene>
-  );
-}

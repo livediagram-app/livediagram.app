@@ -1,0 +1,54 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { TimelineScene } from '@/components/illustrations/palette-timeline';
+
+export const metadata = helpMetadata({
+  title: 'Timeline',
+  description:
+    'Lay out a roadmap, a project plan or a history as milestones along a line, each with when it happens and what it is.',
+  path: '/help/palette/concept-graphics/timeline-rail/',
+});
+
+<ArticleLayout
+  title="Timeline"
+  description="Milestones along a line, each with when and what, for roadmaps, plans and histories."
+  categoryTitle="Palette"
+  categorySlug="palette"
+  parentArticle={{ title: 'Concept Graphics', slug: 'concept-graphics' }}
+  subArticles={getSubArticles('concept-graphics').filter((a) => a.slug !== 'timeline-rail')}
+>
+
+A **Timeline** is a row of milestones along one line, read left to right toward its arrow. Each milestone is a dot on the line with **when** it happens and **what** it is, and they take turns above and below the line so even long names have room. It is the shape for a roadmap, a release plan, a project's phases or a company's history, and it lays itself out: add a milestone and the rest space out evenly.
+
+<Figure caption="A timeline with four milestones, each with its when and its name, taking turns above and below the line.">
+  <TimelineScene />
+</Figure>
+
+## Adding one
+
+<Step n={1}>Open the **Concepts** category on the palette strip.</Step>
+<Step n={2}>
+  Pick **Timeline**, then tap the canvas to drop it, or drag to draw it at a size. It lands with
+  four milestones to write over.
+</Step>
+
+## Writing the milestones
+
+- **Select the timeline, then click a name** to type over it. **Enter** keeps it and **Escape** puts it back.
+- **Click a when** (the small coloured line nearest the dot) to change it: a date, a quarter, a sprint. Clear it and the milestone shows its name alone.
+- **Add a milestone** from any of the timeline's **+** buttons: **Add Milestone** puts a new one at the end, up to eight.
+- **Reorder or remove them** in its menu: right-click the timeline, open **Tools**, then **Rows**. Each row has its name and its when, arrows to move it, and a cross to remove it (two always stay).
+
+## Its look and its motion
+
+The dots shade along the timeline from the theme's colour, the line and the whens are in that colour, and the names are in the tab's ink, so a new [theme](/help/canvas/themes/) restyles it at once. Under **Animation**, then **Concept**, **Build** brings the milestones in from left to right and **Pulse** lights each in turn.
+
+The first time you select one, a short **Timeline tour** is offered beside it. You can switch it back on in **Settings**, under **Tours**.
+
+<Tip>
+  A timeline from before it had whens opens with its old labels as the milestones' names, ready for
+  you to add when each happens.
+</Tip>
+
+</ArticleLayout>

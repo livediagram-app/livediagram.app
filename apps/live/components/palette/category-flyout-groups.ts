@@ -108,7 +108,6 @@ const GROUP_NAMES: Readonly<Record<string, string>> = {
   'tools:diagram-key': 'Parts',
   'collab:comment-pin': 'Comments',
   'tools:table': 'Tables',
-  'tools:timeline': 'Timelines and Tables',
   'tools:stack': 'Layout',
   'tools:code-block': 'Code and Lists',
   'components:card': 'Page Blocks',

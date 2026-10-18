@@ -97,7 +97,8 @@ stop to draw):
   Pointer note, then behind a divider Table and Checklist (no Page, no Annotation); Draw is Pencil, Highlighter, Arrow
   and Line (no Shape Pen, no Polygon).
 - **Layout is Diagram's** ([The Build palette category](../010-palette/build-category.md)): Lane, Frame, Stack,
-  Boundary, Timeline, then Diagram key, Card, Badge and Step number. A board is laid out in frames and lanes, and its
+  Boundary, the Timeline (Facilitate has no Concepts, where it otherwise lives), then Diagram key, Card, Badge and
+  Step number. A board is laid out in frames and lanes, and its
   notes labelled, as a diagram is. No Diagrams: mind maps and flowcharts build a diagram, which a session does not
   stop for. Search still finds those left out and places them, as it
   does any other mode's tile.

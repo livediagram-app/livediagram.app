@@ -99,12 +99,19 @@ const LAYOUT_TILES = [
   'tools:frame',
   'tools:stack',
   'tools:boundary',
-  'tools:timeline',
   DIVIDE,
   'tools:diagram-key',
   'components:card',
   'components:badge',
   'components:step',
+];
+
+// Facilitate's Layout: the same, with the Timeline after the containers, as Facilitate has no Concepts (where the
+// Timeline lives, docs/specs/009-elements/concept-graphics.md "Timeline") and a session plans along one as often.
+const FACILITATE_LAYOUT_TILES = [
+  ...LAYOUT_TILES.slice(0, LAYOUT_TILES.indexOf(DIVIDE)),
+  'tools:timeline',
+  ...LAYOUT_TILES.slice(LAYOUT_TILES.indexOf(DIVIDE)),
 ];
 
 // The concept graphics, then the Sankey (Diagram's and Pages mode's Concepts).
@@ -203,8 +210,8 @@ const PAGES: PaletteLayout = {
     // The page is the canvas here, so no Page element; and no Annotation, a diagram's marker.
     { id: 'write', tiles: tilesExcept('write', 'tools:page', 'tools:annotation') },
     // No Build (docs/specs/010-palette/build-category.md "In Pages: no Build"): mind maps, flowcharts, lanes and
-    // frames organise a diagram, not a visual page, and the three Build tiles a page uses join the categories they
-    // sit beside: the Stack in Components, the Timeline and the Table in Data.
+    // frames organise a diagram, not a visual page, and the Build tiles a page uses join the categories they sit
+    // beside: the Stack in Components and the Table in Data. The Timeline is in Concepts, as everywhere.
     { id: 'concepts', tiles: CONCEPTS_WITH_SANKEY },
     // The web blocks, without the data-model Entity, then the Stack that lines them up.
     {
@@ -215,16 +222,10 @@ const PAGES: PaletteLayout = {
     { id: 'icons' },
     { id: 'stickers' },
     { id: 'media' },
-    // The charts and meters, then the Timeline and the Table: a page reports in rows and along a track as often as
-    // in a chart.
+    // The charts and meters, then the Table: a page reports in rows as often as in a chart.
     {
       id: 'data',
-      tiles: [
-        ...tilesForCategory('data').map((t) => t.id),
-        DIVIDE,
-        'tools:timeline',
-        'tools:table',
-      ],
+      tiles: [...tilesForCategory('data').map((t) => t.id), DIVIDE, 'tools:table'],
     },
   ],
 };
@@ -271,8 +272,8 @@ const FACILITATE: PaletteLayout = {
     },
     { id: 'draw', tiles: tilesExcept('draw', 'tools:shape-pen', 'tools:polygon') },
     // Diagram's Layout (docs/specs/010-palette/build-category.md): a board is laid out in frames and lanes and its
-    // notes labelled with badges and step numbers, as a diagram is.
-    { id: 'layout', tiles: LAYOUT_TILES },
+    // notes labelled with badges and step numbers, as a diagram is, with the Timeline (Facilitate has no Concepts).
+    { id: 'layout', tiles: FACILITATE_LAYOUT_TILES },
     // No Concepts: concept graphics lay out an idea for a diagram (docs/specs/009-elements/concept-graphics.md),
     // which a session does not stop to draw.
     { id: 'icons' },

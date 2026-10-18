@@ -1926,6 +1926,28 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     ),
   },
   {
+    // The Timeline (docs/specs/009-elements/concept-graphics.md "Timeline"). Its id is the one it had in Build, so a
+    // palette layout that pinned it keeps it.
+    id: 'tools:timeline',
+    blurb: 'Milestones along a line, when and what',
+    caption: 'Timeline',
+    section: 'concepts',
+    label: 'Add Timeline',
+    description:
+      'Timeline. Milestones along a line, each with when and what, taking turns above and below: a roadmap, a project plan, a history.',
+    action: { type: 'shape', kind: 'timeline-rail' },
+    icon: (
+      <Glyph size={TILE_GLYPH_PX} units={24}>
+        <path d="M2 12h18" />
+        <path d="m20 9.5 2.5 2.5-2.5 2.5" />
+        <circle cx="5.5" cy="12" r="1.8" fill="currentColor" stroke="none" />
+        <circle cx="11" cy="12" r="1.8" fill="currentColor" stroke="none" />
+        <circle cx="16.5" cy="12" r="1.8" fill="currentColor" stroke="none" />
+        <path d="M5.5 9.5V6M11 14.5V18M16.5 9.5V6" />
+      </Glyph>
+    ),
+  },
+  {
     id: 'tools:annotation',
     blurb: 'A marker that holds a note',
     section: 'tools',
@@ -1989,24 +2011,6 @@ export const PALETTE_TILES: PaletteTileDef[] = [
       <Glyph size={18} units={24}>
         <path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1.5 1.5" />
         <path d="M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1.5-1.5" />
-      </Glyph>
-    ),
-  },
-  {
-    id: 'tools:timeline',
-    blurb: 'A track for sequencing events',
-    section: 'build',
-    label: 'Add Timeline Rail',
-    caption: 'Timeline',
-    description: 'A line with points above it. Add more points from its right-end button.',
-    filled: true,
-    action: { type: 'shape', kind: 'timeline-rail' },
-    icon: (
-      <Glyph size={TILE_GLYPH_PX} units={18}>
-        <path d="M2 12h14" />
-        <circle cx="4.5" cy="6" r="1.8" fill="currentColor" stroke="none" />
-        <circle cx="9" cy="6" r="1.8" fill="currentColor" stroke="none" />
-        <circle cx="13.5" cy="6" r="1.8" fill="currentColor" stroke="none" />
       </Glyph>
     ),
   },

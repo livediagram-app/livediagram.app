@@ -131,7 +131,7 @@ const TILES_PER_CATEGORY: Record<string, number> = {
   // Popular has no tiles of its own: each mode's layout fills it (palette-layouts).
   popular: 0,
   shapes: 13,
-  build: 12,
+  build: 11,
   write: 5,
   draw: 6,
   // The Pen alone: the layout adds the Pencil and each person's markers (palette-layouts, PaletteLogoTab).
@@ -143,7 +143,7 @@ const TILES_PER_CATEGORY: Record<string, number> = {
   'my-shapes': 0,
   media: 9,
   components: 12,
-  concepts: 7,
+  concepts: 8,
   data: 7,
   // The Collaborate elements, one category per group (docs/specs/012-collaboration/facilitate-mode.md
   // "The palette"): 34 tiles between them.

@@ -27,7 +27,7 @@ side. They were not small:
   and the exporters each kept a font table and they disagreed at every preset
   (the default `md` was 22px on the canvas and 14px in an export).
 - **Twenty-two kinds exported as an empty labelled box.** Charts, progress bars
-  and rings, ratings, timeline rails, record rows, a page's masthead, and every
+  and rings, ratings, timelines, record rows, a page's masthead, and every
   Behaviour / Collaborate card had no branch in the SVG emitter, so each fell
   through to the generic box. A pie chart exported as a rectangle with the word
   "pie-chart" in the middle of it.

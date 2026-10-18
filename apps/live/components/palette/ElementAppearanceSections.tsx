@@ -28,7 +28,6 @@ import {
   isMindNode,
   isLineShape,
   isProgressShape,
-  isRailShape,
   isRatingShape,
   supportsMarkers,
   supportsTextAlign,
@@ -124,7 +123,6 @@ export function ElementAppearanceSections({
   const hasInlineIcon =
     target.type === 'shape' && target.shape !== 'icon' && target.iconId !== undefined;
   const isProgress = target.type === 'shape' && isProgressShape(target.shape);
-  const isRail = target.type === 'shape' && isRailShape(target.shape);
   const isRating = target.type === 'shape' && isRatingShape(target.shape);
   const isChart = target.type === 'shape' && isChartShape(target.shape);
   const isLine = target.type === 'shape' && isLineShape(target.shape);
@@ -238,7 +236,6 @@ export function ElementAppearanceSections({
         props={props}
         target={target}
         isProgress={isProgress}
-        isRail={isRail}
         isRating={isRating}
         isChart={isChart}
         isLine={isLine}

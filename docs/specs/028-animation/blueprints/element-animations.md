@@ -141,7 +141,7 @@ trio onto a target without words.
 `wrapperShapeAnimation(el)` is the Shape value the wrapper draws: a Shape member's own value; on a sticky or table
 the shared Pulse / Glow / Highlight (a note and a table are rectangles); a kept value (a motion among them) on any set;
 on a concept graphic or sequence a motion only; and a text
-element's legacy value unless it has a `textAnimation`. Annotations, stickers, chairs and timeline rails draw Pulse,
+element's legacy value unless it has a `textAnimation`. Annotations, stickers and chairs draw Pulse,
 Glow, Trace and Gradient on their silhouette (the `lvd-anim-text-*` / sticker classes: on the art for a sticker or
 chair, on the element for a pin or rail); shapes ShapeSvgOverlay really draws (`drawsShapeSvgOverlay`: SVG-rendered
 and not claimed by a face of its own) in the overlay; every other element on `AnimationLayer`, rendered after its

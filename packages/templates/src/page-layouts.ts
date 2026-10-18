@@ -258,35 +258,13 @@ function timeline(k: Kit): Element[] {
       ),
     ];
   }
-  const railH = u * 18;
-  const n = MILESTONES.length;
-  // The rail's own point spacing (RailView): inset by min(44, 12% of its width) each side. The rail
-  // is drawn in from the box's sides just enough that the end notes, centred under the end points,
-  // stay inside it: inset + pad = half a note = 0.46 of a step.
-  const railPad = (w: number) => Math.min(44, w * 0.12);
-  let inset = 0;
-  for (let i = 0; i < 3; i += 1) {
-    const pad = railPad(W - 2 * inset);
-    const half = (0.46 * (W - 2 * inset - 2 * pad)) / (n - 1);
-    inset = Math.max(0, half - pad);
-  }
-  const railW = W - 2 * inset;
-  const pad = railPad(railW);
-  const step = (railW - 2 * pad) / (n - 1);
-  const noteW = step * 0.92;
+  // One Timeline (docs/specs/009-elements/concept-graphics.md "Timeline"): each milestone's name, and its year as its
+  // when, taking turns above and below the spine, in the room between the heading and the stats.
+  const statsTop = k.box.height - u * 20;
   return [
     ...head.els,
-    k.shape('timeline-rail', inset, head.top, railW, railH, {
-      railCount: n,
-      railLabels: MILESTONES.map(([year]) => year),
-    }),
-    ...MILESTONES.flatMap(([, name, note], i) => {
-      const x = Math.max(0, inset + pad + i * step - noteW / 2);
-      const y = head.top + railH + u * 3;
-      return [
-        k.text(x, y, noteW, u * 7, name, { textBold: true, textAlignX: 'center' }),
-        k.text(x, y + u * 8, noteW, u * 16, note, { textAlignX: 'center' }),
-      ];
+    k.shape('timeline-rail', 0, head.top, W, Math.max(u * 30, statsTop - u * 4 - head.top), {
+      conceptRows: MILESTONES.map(([year, name]) => ({ label: name, note: year })),
     }),
     k.shape('stat-row', 0, k.box.height - u * 20, W, u * 20, {
       borderRadius: 'md',

@@ -40,7 +40,6 @@ import { SKETCH_TILE_FILTER_ID } from '@/components/palette/palette-tile-finish'
 import { SketchArtPicture } from '@/components/canvas/SketchArtPicture';
 import { liveFiltersRedrawOnRepaint } from '@/lib/live-filter-cost';
 import { ProgressView } from '@/components/canvas/ProgressView';
-import { RailView } from '@/components/canvas/RailView';
 import { RatingView } from '@/components/canvas/RatingView';
 import { PieChartView } from '@/components/canvas/PieChartView';
 import { CodeBlockView } from '@/components/canvas/CodeBlockView';
@@ -103,7 +102,6 @@ type ShapeContentRouterProps = Pick<
   | 'element'
   | 'isSelected'
   | 'readOnly'
-  | 'onSetRailLabel'
   | 'onToggleChecklistItem'
   | 'chartPalette'
   | 'fontFamily'
@@ -155,9 +153,7 @@ export function ShapeContentRouter({
   textColor,
   remoteBorderColor,
   isLocked,
-  isSelected,
   readOnly,
-  onSetRailLabel,
   onToggleChecklistItem,
   chartPalette,
   fontFamily,
@@ -248,17 +244,6 @@ export function ShapeContentRouter({
       accent={accent}
       track={progressTrackColour(element, surface)}
       textColor={textColor}
-    />
-  ) : element.type === 'shape' && isRailShape(element.shape) ? (
-    // Timeline rail (docs/specs/009-elements/timeline-rail.md): a line + evenly-spaced points, with an
-    // add-point affordance at the right end when selected + editable.
-    <RailView
-      element={element}
-      accent={accent}
-      textColor={textColor}
-      fontFamily={fontFamily}
-      editable={isSelected && !readOnly && !isLocked}
-      onSetLabel={onSetRailLabel}
     />
   ) : element.type === 'shape' && isRatingShape(element.shape) ? (
     // Rating (docs/specs/009-elements/rating.md): a row of stars showing element.rating.

@@ -654,7 +654,8 @@ swipe, with no X.
   4. **Process**: four steps. Tall: numbered discs down the page joined by arrows, a name and note
      beside each. Wide: a process strip, a note under each step and a "Why it works" callout.
   5. **Timeline**: five dated milestones. Tall: year discs down the page joined by arrows. Wide: a
-     timeline rail with a name and note under each point, and a stat row.
+     [Timeline](../009-elements/concept-graphics.md) of the five, each its name with its year as its when, and a stat
+     row.
   6. **Comparison**: two columns (Before / After), each a heading over three points with icons,
      and a "The verdict" callout.
   7. **Chart Story**: a captioned bar chart, a progress ring, three takeaways with icons and a

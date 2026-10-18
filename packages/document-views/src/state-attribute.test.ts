@@ -58,8 +58,11 @@ describe('stateAttributeOf (R14, VW22)', () => {
     expect(state('rating', { rating: undefined })).toBe('rating=3/5');
     expect(state('progress-bar', { progress: 40 })).toBe('progress=40');
     expect(state('progress-ring', { progress: undefined })).toBe('progress=50');
-    expect(state('timeline-rail', { railCount: 5 })).toBe('points=5');
-    expect(state('timeline-rail', { railCount: undefined })).toBe('points=3');
+    // A Timeline counts its milestones (docs/specs/009-elements/concept-graphics.md "Timeline").
+    expect(state('timeline-rail', {})).toBe('milestones=4');
+    expect(state('timeline-rail', { conceptRows: [{ label: 'A' }, { label: 'B' }] })).toBe(
+      'milestones=2',
+    );
   });
 
   it('titles a page, cut like a note', () => {

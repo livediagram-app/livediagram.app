@@ -213,7 +213,7 @@ export const PALETTE_CATEGORIES: {
     label: 'Build',
     group: 1,
     description:
-      'The structural elements: mind nodes, org charts, flowcharts, sequence diagrams, lanes, frames, stacks, boundaries, a diagram key, timelines, tables, and Sankey diagrams.',
+      'The structural elements: mind nodes, org charts, flowcharts, sequence diagrams, lanes, frames, stacks, boundaries, a diagram key, tables, and Sankey diagrams.',
     icon: <BuildTabIcon />,
   },
   {
@@ -233,7 +233,7 @@ export const PALETTE_CATEGORIES: {
     label: 'Concepts',
     group: 1,
     description:
-      'Concept graphics that lay out their own rows: a layer stack, a pyramid, a funnel, a cycle, a hub and spoke, onion rings and chevrons. Add, reorder and retitle rows in place.',
+      'Concept graphics that lay out their own rows: a layer stack, a pyramid, a funnel, a cycle, a hub and spoke, onion rings, chevrons and a timeline. Add, reorder and retitle rows in place.',
     icon: <ConceptsTabIcon />,
   },
   {
@@ -241,7 +241,7 @@ export const PALETTE_CATEGORIES: {
     label: 'Layout',
     group: 1,
     description:
-      'What a diagram is arranged and labelled with: lanes, frames, stacks, boundaries, timelines, a diagram key, cards, badges and step numbers.',
+      'What a diagram is arranged and labelled with: lanes, frames, stacks, boundaries, a diagram key, cards, badges and step numbers.',
     icon: <BuildTabIcon />,
   },
   {

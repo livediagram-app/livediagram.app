@@ -185,9 +185,7 @@ export type ShapeKind =
   // 0–100 percentage. They carry `progress` / `progressAnim` (below).
   | 'progress-bar'
   | 'progress-ring'
-  // Timeline rail (docs/specs/009-elements/timeline-rail.md): a horizontal line with evenly-spaced points above
-  // it. Carries `railCount` (below); a canvas affordance adds points at the
-  // right end. The first of a family of composite "rail" components.
+  // The Timeline (docs/specs/009-elements/concept-graphics.md "Timeline"): milestones along a spine, a concept graphic.
   | 'timeline-rail'
   // Rating (docs/specs/009-elements/rating.md): a row of five stars showing a 1–5 score. Carries
   // `rating` / `ratingAnim` (below).
