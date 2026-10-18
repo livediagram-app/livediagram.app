@@ -49,6 +49,9 @@ draws them.
   own and did nothing, so the template could not be redone from the keyboard. While the search is empty those chords
   are the editor's (`data-editor-history` on the box, `passesHistoryChords` in `lib/typing-target.ts`); once something
   is typed in it they undo the typing, as in any text box.
+  A **paste** of canvas content reaches the editor the same way: elements copied from another tab (or an image, or an
+  Excalidraw scene) pasted on a new tab land on the canvas, closing the start, rather than their JSON landing in the
+  search. Pasted text still searches.
 
 ### Recommended and groups
 

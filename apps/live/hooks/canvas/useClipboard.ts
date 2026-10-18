@@ -67,8 +67,18 @@ import { track } from '@/lib/telemetry';
 import { trackDuplicated } from '@/lib/element-telemetry';
 import type { useToast } from '@/hooks/ui/useToast';
 import { useLatest } from '@/hooks/ui/useLatest';
-import { isTypingTarget } from '@/lib/typing-target';
+import { isTypingTarget, passesHistoryChords } from '@/lib/typing-target';
 import { CANVAS_ROOT_SELECTOR } from '@/lib/canvas-selectors';
+
+// Whether a paste carries something for the canvas rather than words: a file, an Excalidraw scene, or elements
+// copied here (their JSON or the in-app copy's id).
+function pasteHoldsCanvasContent(data: DataTransfer | null, canPasteScene: boolean): boolean {
+  if (!data) return false;
+  if (data.files.length > 0) return true;
+  if (canPasteScene && excalidrawTextFromPaste(data)) return true;
+  const text = data.getData('text/plain');
+  return parseElementsPayload(text) !== null || inAppCopyIdOf(text) !== null;
+}
 
 type ImageDescriptor = {
   id: string;
@@ -434,7 +444,13 @@ export function useClipboard(deps: ClipboardDeps) {
         target instanceof HTMLElement &&
         !!target.closest('[data-article-flow]') &&
         articlePasteIsCanvas(e.clipboardData ?? null);
-      if (!intoArticle && isTypingTarget(target)) {
+      // An empty start search hands the editor a paste of canvas content (docs/specs/007-editor/start-diagramming.md
+      // "Undo and redo reach the editor through an empty search"): elements copied from another tab land on this
+      // new one rather than their JSON in the search. Text still searches.
+      const intoEmptySearch =
+        passesHistoryChords(target) &&
+        pasteHoldsCanvasContent(e.clipboardData ?? null, pasteRef.current.canPasteScene);
+      if (!intoArticle && !intoEmptySearch && isTypingTarget(target)) {
         return;
       }
       if (isReadOnly) return;
