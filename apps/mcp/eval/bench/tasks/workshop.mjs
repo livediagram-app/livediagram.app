@@ -1,4 +1,4 @@
-// The facilitate tasks of the benchmark (docs/instructions/evaluate-mcp-output.md). Each prompt is what a user would type;
+// The workshop tasks of the benchmark (docs/instructions/evaluate-mcp-output.md). Each prompt is what a user would type;
 // `checks` judge what the run made from the prompt's own requirements (see checks.mjs).
 import {
   arrows,

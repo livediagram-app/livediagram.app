@@ -9,7 +9,7 @@ design decision. Draw mode's own tools are blueprinted in
 
 | Term                        | Identifier                                                                                                                                                                                                           |
 | --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Editor mode                 | `EditorMode` (`'diagram' \| 'draw' \| 'pages' \| 'plan' \| 'facilitate'`), `packages/document/src/editor-mode.ts`                                                                                                    |
+| Editor mode                 | `EditorMode` (`'diagram' \| 'draw' \| 'pages' \| 'plan' \| 'workshop'`), `packages/document/src/editor-mode.ts`                                                                                                      |
 | The mode catalogue          | `EDITOR_MODE_CATALOGUE` (`{ id, label, description }[]`), in interface order                                                                                                                                         |
 | Every mode, in order        | `EDITOR_MODES`; the default `DEFAULT_EDITOR_MODE` (`'diagram'`)                                                                                                                                                      |
 | A mode's words              | `editorModeLabel(mode)`, `editorModeDescription(mode)`                                                                                                                                                               |
@@ -31,7 +31,7 @@ design decision. Draw mode's own tools are blueprinted in
 | The mode switch             | `StartModeSwitch` (`apps/live/components/start/`), a start panel's rail: chip `ModeMenuChip`, menu `ModeMenu` + `ModePreviewArt`, `apps/live/components/chrome/editor-mode/`                                         |
 | The editor's resolved mode  | `EditorModeProvider` / `useEditorModeState()`, `editor-mode-context.tsx`                                                                                                                                             |
 | The tab pill's mode icon    | `TabModeIcon`, `apps/live/components/chrome/editor-mode/`                                                                                                                                                            |
-| Each mode's mark            | `EDITOR_MODE_ICONS` (`packages/ui/src/icons/drawing-kinds.tsx`), one per mode, Facilitate's `FlipchartIcon`, read straight by the chip, the menu rows and the pill                                                   |
+| Each mode's mark            | `EDITOR_MODE_ICONS` (`packages/ui/src/icons/drawing-kinds.tsx`), one per mode, Workshop's `FlipchartIcon`, read straight by the chip, the menu rows and the pill                                                     |
 | A template's opening mode   | `templateOpensIn(overrides)`, `apps/live/app/document/[id]/useTemplateFlow.ts`                                                                                                                                       |
 | The tool a mode starts with | `modeDefaultTool(mode, mobile)`, `useModeDefaultTool`, `PLAN_LEFT_OUT_TOOLS`, `apps/live/hooks/editor/useModeDefaultTool.ts`                                                                                         |
 | A new tab's seed            | `newTabSeed(source)`, `newTabOpening(creatorMode, mode?)`, `apps/live/lib/new-tab-seed.ts`                                                                                                                           |
@@ -40,26 +40,26 @@ design decision. Draw mode's own tools are blueprinted in
 | Legacy whiteboard migration | `migrateWhiteboardKind(tab)`, `packages/document/src/legacy-whiteboard-tab.ts`                                                                                                                                       |
 | Legacy text migration       | `migrateLegacyTextSizing(elements)`, `packages/document/src/legacy-text-sizing.ts`                                                                                                                                   |
 
-"Editor mode" in code and specs; the interface says Diagram, Draw, Facilitate, Pages and Plan. "Whiteboard" names the
+"Editor mode" in code and specs; the interface says Diagram, Draw, Workshop, Pages and Plan. "Whiteboard" names the
 activity, the template and Draw mode's dock (`useWhiteboard`, `WhiteboardDock`), never a tab kind.
 
 ## Constants and configuration
 
-| Constant                   | Value                                  | Where / provenance                               |
-| -------------------------- | -------------------------------------- | ------------------------------------------------ |
-| `EDITOR_MODE_CATALOGUE`    | Diagram, Draw, Facilitate, Pages, Plan | `editor-mode.ts`; spec "The mode switch"         |
-| `LEGACY_EDITOR_MODES`      | `{ infographic: 'pages' }`             | `editor-mode.ts`; spec "Naming in the interface" |
-| Legacy default-folder key  | `'mode:infographic'` → `'mode:pages'`  | `LEGACY_PLACEMENT_DEFAULT_KEYS`; spec            |
-| `DEFAULT_EDITOR_MODE`      | `'diagram'`                            | Spec: `opensIn` absent = Diagram                 |
-| Retired mode store key     | `livediagram:v2:editor-mode:<tabId>`   | Per-person era; never read or written now        |
-| `PEN_INK`                  | `#1c1917` light, `#e2e8f0` dark        | `pen-colours.ts`; spec "Ink is one colour"       |
-| `WHITEBOARD_UNSET_PATTERN` | `'blank'`                              | Written on a migrated board with no pattern      |
-| `WHITEBOARD_INKED_SHAPES`  | square, circle, triangle, diamond      | The shapes a migrated board inks                 |
-| Shift+D                    | `EDITOR_MODE_KEYSHORTCUT`              | `editor-mode-copy.ts`; spec "The mode switch"    |
-| `MODE_TINT`                | sky, orange, violet, pink, emerald     | `mode-menu-copy.ts`; spec "The mode switch"      |
-| `MODE_TOOLS`               | 4-5 tool names per mode                | `mode-menu-copy.ts`; the preview's chips         |
-| Mode menu preview width    | 288 px (`w-72`), list 192 px (`w-48`)  | `ModeMenu`; shown from 640 px (`sm`)             |
-| `LEGACY_WHITEBOARD_KIND`   | `'whiteboard'`                         | The stored kind read as a Draw-opening tab       |
+| Constant                   | Value                                 | Where / provenance                               |
+| -------------------------- | ------------------------------------- | ------------------------------------------------ |
+| `EDITOR_MODE_CATALOGUE`    | Diagram, Draw, Workshop, Pages, Plan  | `editor-mode.ts`; spec "The mode switch"         |
+| `LEGACY_EDITOR_MODES`      | `{ infographic: 'pages' }`            | `editor-mode.ts`; spec "Naming in the interface" |
+| Legacy default-folder key  | `'mode:infographic'` → `'mode:pages'` | `LEGACY_PLACEMENT_DEFAULT_KEYS`; spec            |
+| `DEFAULT_EDITOR_MODE`      | `'diagram'`                           | Spec: `opensIn` absent = Diagram                 |
+| Retired mode store key     | `livediagram:v2:editor-mode:<tabId>`  | Per-person era; never read or written now        |
+| `PEN_INK`                  | `#1c1917` light, `#e2e8f0` dark       | `pen-colours.ts`; spec "Ink is one colour"       |
+| `WHITEBOARD_UNSET_PATTERN` | `'blank'`                             | Written on a migrated board with no pattern      |
+| `WHITEBOARD_INKED_SHAPES`  | square, circle, triangle, diamond     | The shapes a migrated board inks                 |
+| Shift+D                    | `EDITOR_MODE_KEYSHORTCUT`             | `editor-mode-copy.ts`; spec "The mode switch"    |
+| `MODE_TINT`                | sky, orange, violet, pink, emerald    | `mode-menu-copy.ts`; spec "The mode switch"      |
+| `MODE_TOOLS`               | 4-5 tool names per mode               | `mode-menu-copy.ts`; the preview's chips         |
+| Mode menu preview width    | 288 px (`w-72`), list 192 px (`w-48`) | `ModeMenu`; shown from 640 px (`sm`)             |
+| `LEGACY_WHITEBOARD_KIND`   | `'whiteboard'`                        | The stored kind read as a Draw-opening tab       |
 
 A further mode is one catalogue entry plus its icon in `EDITOR_MODE_ICONS`
 (`Record<EditorMode, …>`, so the typecheck names the missing icon).
@@ -132,7 +132,7 @@ crossPlan?, newTabIn? }`; `crossPlan = canSwitch && tab.elements.length === 0`; 
   that is Diagram (absent reads as Diagram). So the tab bar's **+** and **Create New Tab** (`addTab()`) open the
   tab in the active tab's mode, and `addTab(mode)` from `newTabIn` in the mode asked for. The mode's own start
   shows (Start Diagramming, Start Drawing,
-  Start Facilitating, Start Making Pages, Start Planning). `addTab` returns before anything when
+  Start a Workshop, Start Making Pages, Start Planning). `addTab` returns before anything when
   `!canEditStructure` (a Participant, a Viewer, a tab-scoped link). A template chosen for it then decides (`useTemplateFlow`): `templateOpensIn(overrides)`
   is `overrides.opensIn` when set (the template's own mode, `templateEditorMode`), else
   `undefined` for an event-storming template (`overrides.kind` set), else `'diagram'` (Blank
@@ -193,7 +193,7 @@ resize (`resizedElement`) and landed text (`hugLandedText`).
 ## Interfaces and contracts
 
 ```ts
-export type EditorMode = 'diagram' | 'draw' | 'pages' | 'plan' | 'facilitate';
+export type EditorMode = 'diagram' | 'draw' | 'pages' | 'plan' | 'workshop';
 export function parseEditorMode(v: unknown): EditorMode | undefined;
 export type EditorModeState = {
   mode: EditorMode;
@@ -363,21 +363,21 @@ Migration on read, in every entry point (`migrateStoredTab` / `migrateIncomingTa
 
 ## Observability
 
-| Event / log                                                                         | Where                   |
-| ----------------------------------------------------------------------------------- | ----------------------- |
-| `Editor · Changed · ModeDiagram / ModeDraw / ModePages / ModePlan / ModeFacilitate` | `useEditorMode.setMode` |
-| `Editor · Changed · LeavePagesConfirmed`                                            | `useLeavePages`         |
-| `Tab · Changed · PageFitToContent` and its toast                                    | `useEditorMode.setMode` |
-| `Draw · …` (formerly `Whiteboard`)                                                  | Draw mode's emitters    |
-| `[editor-mode] switched { tabId, from, to, paged }` (debugLog)                      | `setMode`               |
-| `[editor-mode] whiteboard tab migrated to Draw`                                     | `migrateWhiteboardKind` |
-| `<Name> switched this tab to <Mode>.` (toast)                                       | `receivePeerModeSwitch` |
+| Event / log                                                                       | Where                   |
+| --------------------------------------------------------------------------------- | ----------------------- |
+| `Editor · Changed · ModeDiagram / ModeDraw / ModePages / ModePlan / ModeWorkshop` | `useEditorMode.setMode` |
+| `Editor · Changed · LeavePagesConfirmed`                                          | `useLeavePages`         |
+| `Tab · Changed · PageFitToContent` and its toast                                  | `useEditorMode.setMode` |
+| `Draw · …` (formerly `Whiteboard`)                                                | Draw mode's emitters    |
+| `[editor-mode] switched { tabId, from, to, paged }` (debugLog)                    | `setMode`               |
+| `[editor-mode] whiteboard tab migrated to Draw`                                   | `migrateWhiteboardKind` |
+| `<Name> switched this tab to <Mode>.` (toast)                                     | `receivePeerModeSwitch` |
 
 ## Testing
 
 | Spec rule                                                                  | Test                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 | -------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Modes, catalogue, opening mode, ES no switch                               | `packages/document/src/editor-mode.test.ts` ("are Diagram, Draw, Facilitate, Pages and Plan, Diagram by default", "draws the page in Pages mode only")                                                                                                                                                                                                                                                                                                     |
+| Modes, catalogue, opening mode, ES no switch                               | `packages/document/src/editor-mode.test.ts` ("are Diagram, Draw, Workshop, Pages and Plan, Diagram by default", "draws the page in Pages mode only")                                                                                                                                                                                                                                                                                                       |
 | Stored whiteboard → general tab in Draw, inked                             | `legacy-whiteboard-tab.test.ts`, `stored-tab.test.ts`, api `tab-row.test.ts`                                                                                                                                                                                                                                                                                                                                                                               |
 | `autoWidth` → `sizing`                                                     | `legacy-text-sizing.test.ts`, `validate.test.ts`                                                                                                                                                                                                                                                                                                                                                                                                           |
 | The tab's mode for everyone; view role; lock; ES                           | `apps/live/lib/editor-mode-store.test.ts`, `hooks/editor/useEditorMode.test.tsx`                                                                                                                                                                                                                                                                                                                                                                           |
@@ -399,8 +399,8 @@ Migration on read, in every entry point (`migrateStoredTab` / `migrateIncomingTa
 | Telemetry rename and history                                               | `apps/api/src/db/legacy-migration-0061.test.ts`, telemetry app suites                                                                                                                                                                                                                                                                                                                                                                                      |
 | Shift+D                                                                    | `hooks/editor/editor-mode-shortcut.test.ts`, e2e "Shift+D moves an empty tab to the next mode"                                                                                                                                                                                                                                                                                                                                                             |
 
-Facilitate mode's own rules are blueprinted in
-[Facilitate mode](../../012-collaboration/blueprints/facilitate-mode.md).
+Workshop mode's own rules are blueprinted in
+[Workshop mode](../../012-collaboration/blueprints/workshop-mode.md).
 
 Not covered by a unit test: `parseEditorMode`'s legacy name, `parsePlacementDefaultKey`, the
 peer toast's wiring in `useRoomConnection`, and a label edit kept across a peer's switch (browser-checked with two windows). `addTab(mode)` across Plan's line

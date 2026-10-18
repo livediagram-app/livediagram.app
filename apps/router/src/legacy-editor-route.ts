@@ -16,9 +16,9 @@ export function legacyEditorRedirect(url: URL): Response | null {
 // Renamed help articles: the ones about the container moved when it became a document,
 // Whiteboards became Draw mode, the Highlighter went from a selection mode to a Draw tile, and
 // the Activity Panel category went when the panel was removed (Undo and Redo moved to Canvas;
-// its other articles land on Undo), Infographics became Illustrate mode and then Pages mode, and the
-// Welcome Tour became the Diagram Tour. The old addresses are links people have already shared
-// (docs/specs/018-help/help-app.md, "Renamed articles").
+// its other articles land on Undo), Infographics became Illustrate mode and then Pages mode,
+// Facilitate mode became Workshop mode, and the Welcome Tour became the Diagram Tour. The old
+// addresses are links people have already shared (docs/specs/018-help/help-app.md, "Renamed articles").
 const LEGACY_HELP_ARTICLES: Readonly<Record<string, string>> = {
   'tabs/add-to-diagram': 'tabs/add-to-document',
   'troubleshooting/diagram-not-loading': 'troubleshooting/document-not-loading',
@@ -38,6 +38,8 @@ const LEGACY_HELP_ARTICLES: Readonly<Record<string, string>> = {
   'canvas/illustrate/logo-pages': 'canvas/pages-mode/logo-pages',
   'canvas/illustrate/slide-pages': 'canvas/pages-mode/slide-pages',
   'canvas/illustrate/tab-windows': 'canvas/pages-mode/tab-windows',
+  'canvas/facilitate-mode': 'canvas/workshop-mode',
+  'canvas/facilitate-mode/facilitate-tour': 'canvas/workshop-mode/workshop-tour',
   'selection-modes/highlighter': 'palette/tools/highlighter',
   'activity-panel': 'canvas/undo',
   'activity-panel/what-it-is': 'canvas/undo',

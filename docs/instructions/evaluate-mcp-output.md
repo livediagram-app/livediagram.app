@@ -9,7 +9,7 @@ finding earns a fix only when it recurs; the same benchmark then shows whether t
 The kit lives in `apps/mcp/eval/`:
 
 - `bench/tasks/*.mjs`: the task bank, one file per area (`D` diagrams, `P` plan, `S` sheets, `I` pages, `F`
-  facilitate, `W` draw, `Q` forms). Each task is a prompt as a user would type it, its checks, an optional `after`
+  workshop, `W` draw, `Q` forms). Each task is a prompt as a user would type it, its checks, an optional `after`
   (an edit, run as a second turn of the same session), an optional `setup` (what the prompt takes for granted,
   made in the run's empty library) and an optional `gallery` (pictures from `bench/fixtures/` the user has uploaded,
   seeded into the run's image gallery before the round starts, under the names the prompt's user would have). Ids are stable: rounds compare on the ids they share.

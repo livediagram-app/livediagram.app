@@ -72,7 +72,7 @@ export const VALUE_LABELS = {
   'opens-in': {
     diagram: 'Diagram',
     draw: 'Draw',
-    facilitate: 'Facilitate',
+    workshop: 'Workshop',
     pages: 'Pages',
     plan: 'Plan',
   },

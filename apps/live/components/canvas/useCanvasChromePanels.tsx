@@ -463,7 +463,7 @@ export function useCanvasChromePanels({
     () => visibleLayerElements(elements, props.tabLayers),
     [elements, props.tabLayers],
   );
-  // The Map is Diagram, Draw and Facilitate's: Pages has Contents for its pages, and a Plan
+  // The Map is Diagram, Draw and Workshop's: Pages has Contents for its pages, and a Plan
   // board is a list, not a space to find your way round.
   const mapMode = !props.pagesMode && props.editorMode !== 'plan';
   const minimapEl =

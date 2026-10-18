@@ -263,11 +263,11 @@ export type PaletteTileDef = {
   // showing it as a top-level row (docs/specs/009-elements/embed-providers.md). 'embed' = the Media tab's embed
   // providers; 'web' = the Components tab's website composites; 'session' and
   // 'reaction' = the Behaviour tab's session tools and reactions; 'mode' its
-  // selection-mode buttons; 'move' / 'facilitate' the rest of Behaviour; and
+  // selection-mode buttons; 'move' / 'tools' the rest of Behaviour; and
   // 'ask' / 'record' the two halves of Collaborate.
   // 'event-storming' = the Write tab's sticky-notation group (docs/specs/021-event-storming/event-storming.md).
   tileGroup?:
-    'embed' | 'web' | 'session' | 'reaction' | 'mode' | 'move' | 'facilitate' | 'ask' | 'record';
+    'embed' | 'web' | 'session' | 'reaction' | 'mode' | 'move' | 'tools' | 'ask' | 'record';
   label: string;
   // Overrides the caption derived from `label` where that runs too long
   // for the tile (see IconButton).
@@ -929,7 +929,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     // at the moment of choosing — you know whether you want a countdown or a
     // vote before you reach for the palette.
     id: 'tools:session-timer',
-    tileGroup: 'facilitate',
+    tileGroup: 'tools',
     blurb: 'A countdown everyone can see',
     caption: 'Timer',
     section: 'tools',
@@ -943,7 +943,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   },
   {
     id: 'tools:session-stopwatch',
-    tileGroup: 'facilitate',
+    tileGroup: 'tools',
     blurb: 'Counts up from zero',
     caption: 'Stopwatch',
     section: 'tools',
@@ -986,7 +986,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   {
     // Reveal zone (docs/specs/009-elements/reveal-zone.md): a cover you click to see what is underneath.
     id: 'tools:reveal',
-    tileGroup: 'facilitate',
+    tileGroup: 'tools',
     blurb: 'Double-click to look underneath',
     section: 'tools',
     toolGroup: 'behaviour',
@@ -1001,7 +1001,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   {
     // Done check (docs/specs/012-collaboration/done-check.md): who has finished, live.
     id: 'tools:done-check',
-    tileGroup: 'facilitate',
+    tileGroup: 'tools',
     blurb: 'Everyone marks themselves finished',
     caption: 'Done',
     section: 'tools',
@@ -1097,7 +1097,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   {
     // Picker (docs/specs/012-collaboration/picker.md): rolls a person or a written option.
     id: 'tools:picker',
-    tileGroup: 'facilitate',
+    tileGroup: 'tools',
     blurb: 'Pick someone at random',
     section: 'tools',
     toolGroup: 'behaviour',
@@ -2431,14 +2431,14 @@ export function tileDisplayName(def: PaletteTileDef): string {
   return tileCaption(def.label, def.caption);
 }
 
-// The Collaborate elements' six categories (docs/specs/012-collaboration/facilitate-mode.md "The palette"):
-// each holds the `behaviour` tool group's tiles of one `tileGroup`, in catalogue order. Facilitate
+// The Collaborate elements' six categories (docs/specs/012-collaboration/workshop-mode.md "The palette"):
+// each holds the `behaviour` tool group's tiles of one `tileGroup`, in catalogue order. Workshop
 // offers them in place of one Collaborate category with a group browser inside it.
 export const COLLABORATE_CATEGORY_GROUPS: Readonly<
   Record<string, NonNullable<PaletteTileDef['tileGroup']>>
 > = {
   'collab-ask': 'ask',
-  'collab-tools': 'facilitate',
+  'collab-tools': 'tools',
   'collab-record': 'record',
   'collab-react': 'reaction',
   'collab-mode': 'mode',

@@ -27,7 +27,7 @@ export * from './feature-art/embeds-timeline';
 // fact that presenting is yours alone.
 export * from './feature-art/present';
 export * from './feature-art/room';
-export * from './feature-art/facilitate';
+export * from './feature-art/workshop';
 // Infographic pages (docs/specs/007-editor/pages-mode.md): pages, layouts, backgrounds, export.
 export * from './feature-art/infographics';
 export * from './feature-art/infographics-export';

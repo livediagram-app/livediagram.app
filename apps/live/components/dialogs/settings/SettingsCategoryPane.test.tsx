@@ -139,9 +139,9 @@ describe('SettingsCategoryPane tours', () => {
     );
     const plan = screen.getByRole('switch', { name: 'Plan Tour' });
     expect(plan.getAttribute('aria-checked')).toBe('false');
-    expect(
-      screen.getByRole('switch', { name: 'Facilitate Tour' }).getAttribute('aria-checked'),
-    ).toBe('true');
+    expect(screen.getByRole('switch', { name: 'Workshop Tour' }).getAttribute('aria-checked')).toBe(
+      'true',
+    );
     // The shared explanation sits once, under the section heading.
     expect(screen.getByRole('heading', { name: 'Offer Again' })).toBeTruthy();
     expect(screen.getAllByText(/Each tour offers itself once/)).toHaveLength(1);

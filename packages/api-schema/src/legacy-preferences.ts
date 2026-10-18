@@ -8,6 +8,8 @@ const RENAMED: Readonly<Record<string, string>> = {
   // migration 0097): a lost seen-guard would offer the tour again.
   illustrateTourSeen: 'pagesTourSeen',
   illustrateTourKinds: 'pagesTourKinds',
+  // Facilitate mode became Workshop mode (migration 0098), for the same reason.
+  facilitateTourSeen: 'workshopTourSeen',
 };
 
 // Preference keys whose feature is gone (docs/specs/007-editor/user-preferences.md "Retired keys"):

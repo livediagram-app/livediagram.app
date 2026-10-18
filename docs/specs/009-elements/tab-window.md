@@ -89,13 +89,13 @@ knows it, else "Tab Window".
 
 ## Palette
 
-| Mode       | Where                                                 |
-| ---------- | ----------------------------------------------------- |
-| Pages      | **Media**: Tab Window, after Image, before the embeds |
-| Diagram    | none (Search still finds and places it)               |
-| Draw       | none                                                  |
-| Facilitate | none                                                  |
-| Plan       | none                                                  |
+| Mode     | Where                                                 |
+| -------- | ----------------------------------------------------- |
+| Pages    | **Media**: Tab Window, after Image, before the embeds |
+| Diagram  | none (Search still finds and places it)               |
+| Draw     | none                                                  |
+| Workshop | none                                                  |
+| Plan     | none                                                  |
 
 A window placed or pasted on any tab still draws there.
 

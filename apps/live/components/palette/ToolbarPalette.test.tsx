@@ -348,15 +348,15 @@ describe('ToolbarPalette', () => {
     ]);
   });
 
-  // Facilitate mode (docs/specs/012-collaboration/facilitate-mode.md "The palette").
-  it('offers Stickers, Data, Ask and Session in Facilitate, not in Diagram, and Icons in both', () => {
+  // Workshop mode (docs/specs/012-collaboration/workshop-mode.md "The palette").
+  it('offers Stickers, Data, Ask and Session in Workshop, not in Diagram, and Icons in both', () => {
     show();
     for (const name of ['Ask', 'Session', 'Stickers', 'Data'])
       expect(barNames()).not.toContain(name);
     expect(barNames()).toContain('Icons');
     expect(barNames()).toContain('Tech');
     cleanup();
-    show({ mode: 'facilitate' });
+    show({ mode: 'workshop' });
     expect(barNames()).toEqual([
       'Shapes',
       'Write',
@@ -392,20 +392,20 @@ describe('ToolbarPalette', () => {
   });
 
   it("focuses a catalogue's search field when its flyout opens (docs/specs/007-editor/toolbar-layout.md)", () => {
-    show({ mode: 'facilitate' });
+    show({ mode: 'workshop' });
     const popover = openFlyout('Icons');
     expect(document.activeElement).toBe(within(popover).getByPlaceholderText('Search icons'));
   });
 
   it('leaves focus alone on a phone, where it would raise the keyboard', () => {
     mobile.value = true;
-    show({ mode: 'facilitate' });
+    show({ mode: 'workshop' });
     const popover = openFlyout('Icons');
     expect(document.activeElement).not.toBe(within(popover).getByPlaceholderText('Search icons'));
   });
 
   it('switches the flyout to the category pressed next', () => {
-    show({ mode: 'facilitate' });
+    show({ mode: 'workshop' });
     openFlyout('Icons');
     fireEvent.click(screen.getByRole('button', { name: 'Shapes' }));
     expect(within(flyout()!).getByRole('button', { name: 'Add Square' })).toBeTruthy();
@@ -413,7 +413,7 @@ describe('ToolbarPalette', () => {
   });
 
   it('closes the flyout on Escape', () => {
-    show({ mode: 'facilitate' });
+    show({ mode: 'workshop' });
     openFlyout('Icons');
     act(() => {
       document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
@@ -634,7 +634,7 @@ describe('ToolbarPalette', () => {
     });
 
     it("is one strip menu at a time with a category's flyout, and closes on Escape", () => {
-      show({ mode: 'facilitate' });
+      show({ mode: 'workshop' });
       openFlyout('Icons');
       const searchButton = screen.getByRole('button', { name: 'Search elements' });
       fireEvent.pointerDown(searchButton);

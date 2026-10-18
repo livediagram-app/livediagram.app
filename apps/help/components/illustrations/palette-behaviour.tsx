@@ -82,7 +82,7 @@ function AskGlyph() {
   );
 }
 /** A raised hand over a card, the Tools group glyph. */
-function FacilitateGlyph() {
+function WorkshopGlyph() {
   return (
     <Lucide>
       <rect x="3" y="4" width="18" height="12.5" rx="2" />
@@ -171,12 +171,12 @@ function StopwatchGlyph() {
 
 // --- Scenes ----------------------------------------------------------------
 
-/** The Collaborate elements on Facilitate's palette strip: **Ask** on its own, then **Session**, open, with its five
+/** The Collaborate elements on Workshop's palette strip: **Ask** on its own, then **Session**, open, with its five
  *  groups down the side, room-first, and the open group's elements beside them. `lit` picks out what an article is
  *  about (Ask, and any of Session's groups; the first lit group is the one shown open). */
 export function CollaborateCategories({ lit = [] }: { lit?: readonly string[] }) {
   const groups: { label: string; icon: ReactNode }[] = [
-    { label: 'Tools', icon: <FacilitateGlyph /> },
+    { label: 'Tools', icon: <WorkshopGlyph /> },
     { label: 'Record', icon: <RecordGlyph /> },
     { label: 'React', icon: <SmileGlyph /> },
     { label: 'Selection Mode', icon: <SelectGlyph /> },
@@ -213,7 +213,7 @@ export function CollaborateCategories({ lit = [] }: { lit?: readonly string[] })
       </Label>
       <rect x={266} y={14} width={92} height={24} rx={6} className="fill-brand-100" />
       <Chip x={280} y={26} r={8}>
-        <FacilitateGlyph />
+        <WorkshopGlyph />
       </Chip>
       <Label x={292} y={30} size={10} weight={700} className="fill-brand-700">
         Session

@@ -16,7 +16,7 @@ const base = {
 describe('templateStartMode', () => {
   it('offers each mode with templates its own start on an empty tab', () => {
     expect(templateStartMode(base)).toBe('diagram');
-    expect(templateStartMode({ ...base, mode: 'facilitate' })).toBe('facilitate');
+    expect(templateStartMode({ ...base, mode: 'workshop' })).toBe('workshop');
     expect(templateStartMode({ ...base, mode: 'pages', pages: [{}] })).toBe('pages');
   });
 

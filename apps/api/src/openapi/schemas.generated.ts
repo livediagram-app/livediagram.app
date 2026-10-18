@@ -6154,7 +6154,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "enum": [
       "diagram",
       "draw",
-      "facilitate",
+      "workshop",
       "pages",
       "plan"
     ],

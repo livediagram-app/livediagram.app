@@ -1,29 +1,29 @@
 # Editor modes
 
 A general tab is drawn on in one of five **editor modes**: **Diagram**,
-**Draw**, **Facilitate**, **Pages** and **Plan**. A mode decides which tools and rules are in focus; it never decides
+**Draw**, **Workshop**, **Pages** and **Plan**. A mode decides which tools and rules are in focus; it never decides
 what the tab is. Like a drawing tool that switches between a pixel mode and a
 vector mode over the same picture, switching mode keeps every element exactly
 where it is and changes only how the next mark is made.
 
 ## Domain language
 
-| Term                | Means                                                                                                                                                                                                      |
-| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **tab kind**        | What a tab **is** ([Document](../006-document/document.md)). Reserved for specific uses.                                                                                                                   |
-| **editor mode**     | How a general tab is **worked on** right now: `diagram`, `draw`, `pages`, `plan` or `facilitate` (`EditorMode`).                                                                                           |
-| **Diagram mode**    | Structured drawing: the palette, shapes, arrows, icons, templates, snapping and guides.                                                                                                                    |
-| **Draw mode**       | Freehand whiteboarding: the dock, preset pens, eraser, shape recognition ([Draw mode](../023-draw-mode/draw-mode.md)).                                                                                     |
-| **Pages mode**      | Pages on the canvas, of four kinds: infographic pages to lay out, article pages to write, slide pages to present and logo pages to design a logo on ([Pages](pages-mode.md), [Logo pages](logo-pages.md)). |
-| **Plan mode**       | Boards of items: Plan boards, cards, the item panel ([Plan mode](../026-plan/plan-mode.md)).                                                                                                               |
-| **Facilitate mode** | Running a session with a team: the Collaborate elements, stickers and the Session strip ([Facilitate mode](../012-collaboration/facilitate-mode.md)).                                                      |
-| **mode switch**     | The control leading an empty tab's start that changes the editor mode.                                                                                                                                     |
+| Term              | Means                                                                                                                                                                                                      |
+| ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **tab kind**      | What a tab **is** ([Document](../006-document/document.md)). Reserved for specific uses.                                                                                                                   |
+| **editor mode**   | How a general tab is **worked on** right now: `diagram`, `draw`, `pages`, `plan` or `workshop` (`EditorMode`).                                                                                             |
+| **Diagram mode**  | Structured drawing: the palette, shapes, arrows, icons, templates, snapping and guides.                                                                                                                    |
+| **Draw mode**     | Freehand whiteboarding: the dock, preset pens, eraser, shape recognition ([Draw mode](../023-draw-mode/draw-mode.md)).                                                                                     |
+| **Pages mode**    | Pages on the canvas, of four kinds: infographic pages to lay out, article pages to write, slide pages to present and logo pages to design a logo on ([Pages](pages-mode.md), [Logo pages](logo-pages.md)). |
+| **Plan mode**     | Boards of items: Plan boards, cards, the item panel ([Plan mode](../026-plan/plan-mode.md)).                                                                                                               |
+| **Workshop mode** | Running a session with a team: the Collaborate elements, stickers and the Session strip ([Workshop mode](../012-collaboration/workshop-mode.md)).                                                          |
+| **mode switch**   | The control leading an empty tab's start that changes the editor mode.                                                                                                                                     |
 
 - "Whiteboard" names the activity and Draw mode's look, never a tab kind and
   never a type of document.
 - "Mode" on its own is ambiguous here (Zen mode, Presentation mode, Power user
   mode); in specs and code say **editor mode**. The interface says **Diagram**,
-  **Draw**, **Facilitate**, **Pages** and **Plan**.
+  **Draw**, **Workshop**, **Pages** and **Plan**.
 
 ## Kinds versus modes
 
@@ -71,17 +71,17 @@ where it is and changes only how the next mark is made.
   - **Narrow (under 640px wide):** the preview is left out and the list stands alone, each row
     showing its description under its name, the menu spanning the panel's width.
   - **Each mode has a tint**, used only by the mode menu (the list's tiles and the preview's
-    picture): Diagram sky, Draw orange, Facilitate violet, Pages pink, Plan
+    picture): Diagram sky, Draw orange, Workshop violet, Pages pink, Plan
     emerald. The current row and the focus ring stay the brand colour.
 - **The mode descriptions** say what each mode is for, in the catalogue (`EDITOR_MODE_CATALOGUE`):
   - Diagram: "Flowcharts, architecture and org charts with snapping shapes."
   - Draw: "Sketch freehand with pens, tidied into shapes as you go."
-  - Facilitate: "Run a live session: timers, votes, polls and reveals."
+  - Workshop: "Run a live session: timers, votes, polls and reveals."
   - Pages: "Lay out slides, infographics, articles and logos on pages."
   - Plan: "Boards of cards moving through columns, with types and fields."
 - **One switch:** every start panel's rail carries the same chip and menu. The New Document wizard's mode cards are
   a choice of what to make, not a switch.
-- **One mode chosen:** Diagram, Draw, Facilitate, Pages or Plan.
+- **One mode chosen:** Diagram, Draw, Workshop, Pages or Plan.
   Exactly one is active.
 - **Switching is instant and lossless:** no dialog, no reload, and no element changes (the tab's
   mode is the one field it writes, with what the mode brings: "Where the mode lives"); the
@@ -247,12 +247,12 @@ element in the same colour.
 - **Plan mode** is Diagram mode with the palette narrowed to boards and
   cards, and Plan boards taking input as a planning tool
   ([Plan mode](../026-plan/plan-mode.md)).
-- **Facilitate mode** is Diagram mode with its own palette for running a session (the Collaborate
+- **Workshop mode** is Diagram mode with its own palette for running a session (the Collaborate
   and Stickers categories, which Diagram does not offer) and the Session strip's three tools
-  ([Facilitate mode](../012-collaboration/facilitate-mode.md)).
+  ([Workshop mode](../012-collaboration/workshop-mode.md)).
 - **Each mode's mark**: Diagram a flowchart (two steps joined), Draw a marker,
   Pages a page with a little chart above two lines of writing (its first two
-  page kinds, infographic and article), Plan a board of three columns with a raised card, Facilitate a flipchart on an easel; the same glyph on the switch and the tab pill.
+  page kinds, infographic and article), Plan a board of three columns with a raised card, Workshop a flipchart on an easel; the same glyph on the switch and the tab pill.
 - **No further cue:** the dock (in place of the palette) and the switch's
   own label say which mode is on; no tint, accent or notice is added.
 - **Leaving a mode puts its tool down**, as leaving a whiteboard did: a pen,
@@ -295,15 +295,15 @@ holds.
   and Components' collapsed groups); it
   renders whatever tiles the layout hands it. A category with no body of its
   own, such as Popular, is a tile grid.
-- **Every surface reads the layout:** the Toolbar strip, its category bar and flyouts (Diagram, Facilitate,
+- **Every surface reads the layout:** the Toolbar strip, its category bar and flyouts (Diagram, Workshop,
   Pages: [The category bar](toolbar-layout.md#the-category-bar), which shows the layout without Popular, with
-  one-word names, Write and Draw apart, and Facilitate's session tools as Session) and its More popover (Plan).
+  one-word names, Write and Draw apart, and Workshop's session tools as Session) and its More popover (Plan).
 - Draw mode shows its own tools in place of the palette, so it borrows
   Diagram's layout.
 
-Today the layouts differ as below. Diagram offers no **Stickers** and no **Collaborate**: both are Facilitate's ([Facilitate mode](../012-collaboration/facilitate-mode.md#the-palette)), though Search still finds and places them in Diagram. Within the shared categories,
+Today the layouts differ as below. Diagram offers no **Stickers** and no **Collaborate**: both are Workshop's ([Workshop mode](../012-collaboration/workshop-mode.md#the-palette)), though Search still finds and places them in Diagram. Within the shared categories,
 **Sankey** sits in **Concepts**, after the concept graphics, in Diagram and Pages: a flow drawn as wide as
-what it carries explains an idea the way a funnel or a cycle does. Facilitate offers no **Concepts**: concept
+what it carries explains an idea the way a funnel or a cycle does. Workshop offers no **Concepts**: concept
 graphics lay out an idea for a diagram, which a session does not stop to draw.
 Pages's **Write** leaves out **Page** (the page is the canvas there) and
 **Annotation**, it offers **no Build** (mind maps, flowcharts, lanes and frames organise a diagram, not a visual
@@ -317,34 +317,34 @@ Number** from Components: [The card](../009-elements/card.md), [The badge](../00
 [The step number](../009-elements/step-number.md), [The boundary](../009-elements/boundary.md)), so what is built
 sits apart from what it is laid out in ([Toolbar layout](toolbar-layout.md#the-category-bar)); and its **Write**
 adds the **Callout** from Components (a headed note belongs to a diagram as much as a page) ahead of the Comment
-panel and Action card, which close it as their own Comments group. Facilitate's **Write** holds Text, Sticky note and Pointer note, then Table and Checklist (no Page or Annotation), its
-**Draw** leaves out **Shape Pen** and **Polygon**: a session needs none of them, and it shares Diagram's **Layout**. Facilitate offers the Collaborate elements as
+panel and Action card, which close it as their own Comments group. Workshop's **Write** holds Text, Sticky note and Pointer note, then Table and Checklist (no Page or Annotation), its
+**Draw** leaves out **Shape Pen** and **Polygon**: a session needs none of them, and it shares Diagram's **Layout**. Workshop offers the Collaborate elements as
 six categories, **Ask**, **Tools**, **Record**, **React**, **Selection Mode** and **Navigate**
 ("Collaborate's six" below), and shares Pages mode's **Data**: every chart and meter, since a session reads results
 and sets targets as often as a page reports them.
 
-| Category          | Diagram | Pages     | Plan | Facilitate |
-| ----------------- | ------- | --------- | ---- | ---------- |
-| Popular           | yes     | yes       | no   | yes        |
-| Plan's seven      | no      | no        | yes  | no         |
-| Logo              | no      | logo page | no   | no         |
-| Shapes            | yes     | yes       | no   | yes        |
-| My shapes         | yes     | yes       | no   | yes        |
-| Write             | yes     | yes       | no   | yes        |
-| Draw              | yes     | no        | no   | yes        |
-| Build             | no      | no        | no   | no         |
-| Diagrams          | yes     | no        | no   | no         |
-| Layout            | yes     | no        | no   | yes        |
-| Components        | no      | yes       | no   | no         |
-| Concepts          | yes     | yes       | no   | no         |
-| Devices           | no      | yes       | no   | no         |
-| Event Storming    | board   | no        | no   | no         |
-| Icons             | yes     | yes       | no   | yes        |
-| Stickers          | no      | yes       | no   | yes        |
-| Tech              | yes     | no        | no   | no         |
-| Media             | yes     | yes       | no   | yes        |
-| Data              | no      | yes       | no   | yes        |
-| Collaborate's six | no      | no        | no   | yes        |
+| Category          | Diagram | Pages     | Plan | Workshop |
+| ----------------- | ------- | --------- | ---- | -------- |
+| Popular           | yes     | yes       | no   | yes      |
+| Plan's seven      | no      | no        | yes  | no       |
+| Logo              | no      | logo page | no   | no       |
+| Shapes            | yes     | yes       | no   | yes      |
+| My shapes         | yes     | yes       | no   | yes      |
+| Write             | yes     | yes       | no   | yes      |
+| Draw              | yes     | no        | no   | yes      |
+| Build             | no      | no        | no   | no       |
+| Diagrams          | yes     | no        | no   | no       |
+| Layout            | yes     | no        | no   | yes      |
+| Components        | no      | yes       | no   | no       |
+| Concepts          | yes     | yes       | no   | no       |
+| Devices           | no      | yes       | no   | no       |
+| Event Storming    | board   | no        | no   | no       |
+| Icons             | yes     | yes       | no   | yes      |
+| Stickers          | no      | yes       | no   | yes      |
+| Tech              | yes     | no        | no   | no       |
+| Media             | yes     | yes       | no   | yes      |
+| Data              | no      | yes       | no   | yes      |
+| Collaborate's six | no      | no        | no   | yes      |
 
 Pages offers **Logo** only while the tab has a logo page, and turns to it when one is added
 or pressed into ([Logo pages](logo-pages.md#the-logo-palette)).
@@ -369,9 +369,9 @@ Plan shows no palette: its boards, sheets and dashboards carry their own tools
   - **Pages**: Text, Square, Circle, Image, Speech bubble, Pie, Bar,
     Donut, Stat row, Process, Timeline, Callout, each also reachable from
     another category the mode offers.
-  - **Facilitate**: Square, Sticky note, Text, Frame, Arrow, then, behind a divider, the session kit as four openers: **Ask**, **Tools**,
+  - **Workshop**: Square, Sticky note, Text, Frame, Arrow, then, behind a divider, the session kit as four openers: **Ask**, **Tools**,
     **Record**, **React** (each its Collaborate category)
-    ([Facilitate mode](../012-collaboration/facilitate-mode.md#the-palette)).
+    ([Workshop mode](../012-collaboration/workshop-mode.md#the-palette)).
 - Elements already on the canvas are untouched: narrowing the palette only
   changes what is offered to add.
 
@@ -494,7 +494,7 @@ dashboard ([Telemetry](../017-telemetry/telemetry.md) "Retired features").
 ## Telemetry ([Telemetry](../017-telemetry/telemetry.md))
 
 - `Editor` · `Changed` · `ModeDiagram` / `ModeDraw` / `ModePages` / `ModePlan` /
-  `ModeFacilitate`, fired by
+  `ModeWorkshop`, fired by
   the switch and Shift+D before the mode applies (never by a collaborator's
   switch arriving, an undo or a redo).
 - `Tab` · `Changed` · `OpensInDiagram` / `OpensInDraw` / `OpensInPages` / `OpensInPlan` were
@@ -540,6 +540,16 @@ dashboard ([Telemetry](../017-telemetry/telemetry.md) "Retired features").
   Illustration** template, help figures).
   The help articles moved to `/help/canvas/pages-mode/`, the `/help/canvas/illustrate/` and
   `/help/canvas/infographics/` addresses redirecting.
+- **Workshop** is the mode for running a session ([Workshop mode](../012-collaboration/workshop-mode.md)), its name
+  everywhere: the switch, Settings, the New Document wizard, help, the marketing site and the agents' tools. Its
+  template start is **Start a Workshop** and its tour **The Workshop Tour**. It was called **Facilitate**. Every
+  stored trace of the old name reads as Workshop: `opensIn: 'facilitate'`, a recorded creation intent, a create's
+  intent, a `/new?mode=` link and a recently opened document's mode (`parseEditorMode`), an `opens-in:facilitate`
+  Explorer filter, and a default-folder key `mode:facilitate` (`parsePlacementDefaultKey`; clearing the default
+  clears both names). Tab bodies are not rewritten. The tour's preference `facilitateTourSeen` is renamed
+  `workshopTourSeen` (migration 0098 in D1, `upgradeLegacyPreferences` for any older copy), and telemetry history
+  moves to the new event names and help slugs. The help articles moved to `/help/canvas/workshop-mode/`, the
+  `/help/canvas/facilitate-mode/` addresses redirecting. The **facilitator** keeps its name.
 
 ## Non-goals
 

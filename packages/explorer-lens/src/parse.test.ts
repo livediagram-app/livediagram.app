@@ -38,6 +38,13 @@ describe('parseLens', () => {
     });
   });
 
+  // docs/specs/007-editor/editor-modes.md "Naming in the interface": a link from before a rename.
+  it("reads a mode's old name as today's mode", () => {
+    const { lens, issues } = parseLens('opens-in:facilitate,illustrate', aggregate);
+    expect(issues).toEqual([]);
+    expect(lens.filters['opens-in']).toEqual(['workshop', 'pages']);
+  });
+
   it('keeps free words as text, in order, as typed', () => {
     const { lens, terms } = parseLens(' Q3  plan template:kanban Café ', aggregate);
     expect(lens.text).toEqual(['Q3', 'plan', 'Café']);

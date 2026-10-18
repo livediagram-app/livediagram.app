@@ -65,7 +65,7 @@ describe('elementTileSections', () => {
 
   it("keeps Plan's own tiles out of other modes, greyed out with the reason", () => {
     const planOwn = (t: { section: string }) => t.section.startsWith('plan-');
-    for (const mode of ['diagram', 'pages', 'facilitate'] as const) {
+    for (const mode of ['diagram', 'pages', 'workshop'] as const) {
       const { here, elsewhere, unavailable } = elementTileSections({ mode, hasImage: true });
       expect([...here, ...elsewhere].filter(planOwn), mode).toEqual([]);
       expect(ids(unavailable), mode).toEqual(
@@ -260,17 +260,17 @@ describe('a worst-case query', () => {
   });
 });
 
-// Facilitate mode (docs/specs/012-collaboration/facilitate-mode.md "What Diagram gives up"): the
+// Workshop mode (docs/specs/012-collaboration/workshop-mode.md "What Diagram gives up"): the
 // Collaborate tiles leave Diagram's palette but Search still finds them, with the other modes'.
 describe('the session kit from Diagram', () => {
-  it("lists Collaborate tiles in Diagram's other-modes section and Facilitate's own", () => {
+  it("lists Collaborate tiles in Diagram's other-modes section and Workshop's own", () => {
     const diagram = elementTileSections({ mode: 'diagram', hasImage: true });
     expect(ids(diagram.here)).not.toContain('tools:session-timer');
     expect(ids(diagram.elsewhere)).toContain('tools:session-timer');
     expect(ids(diagram.elsewhere)).toContain('collab:quiz');
-    const facilitate = elementTileSections({ mode: 'facilitate', hasImage: true });
-    expect(ids(facilitate.here)).toContain('tools:session-timer');
-    expect(ids(facilitate.here)).toContain('collab:quiz');
+    const workshop = elementTileSections({ mode: 'workshop', hasImage: true });
+    expect(ids(workshop.here)).toContain('tools:session-timer');
+    expect(ids(workshop.here)).toContain('collab:quiz');
   });
 
   it("keeps the Comment panel and the Action card in Diagram's own section", () => {

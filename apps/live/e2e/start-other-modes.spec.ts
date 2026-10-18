@@ -20,7 +20,7 @@ test.beforeEach(async ({ page }) => {
           ...prefs,
           planTourSeen: true,
           planTourTracks: ['boards', 'sheets'],
-          facilitateTourSeen: true,
+          workshopTourSeen: true,
         }),
       );
     } catch {
@@ -29,25 +29,25 @@ test.beforeEach(async ({ page }) => {
   });
 });
 
-test('Start Diagramming finds a Facilitate template and switches the tab to it', async ({
+test('Start Diagramming finds a Workshop template and switches the tab to it', async ({
   page,
   pageErrors,
 }) => {
-  // No tour dismissal: the tours wait while a start is open, and this one leaves for Facilitate.
+  // No tour dismissal: the tours wait while a start is open, and this one leaves for Workshop.
   await createInMode(page, 'diagram');
   const start = page.getByRole('region', { name: 'Start Diagramming' });
   await start.getByRole('textbox', { name: 'Find a template' }).fill('sailboat');
   await expect(start.getByRole('status')).toHaveText(
     'No diagram templates match “sailboat”. Found in other modes.',
   );
-  const facilitate = start
+  const workshop = start
     .getByRole('region', { name: 'In Other Modes' })
-    .getByRole('region', { name: 'Facilitate' });
-  const card = facilitate.getByRole('button', { name: /^Sailboat Retrospective in Facilitate:/ });
-  await expect(card).toContainText('Opens in Facilitate');
+    .getByRole('region', { name: 'Workshop' });
+  const card = workshop.getByRole('button', { name: /^Sailboat Retrospective in Workshop:/ });
+  await expect(card).toContainText('Opens in Workshop');
   await card.click();
   await expect(start).toBeHidden();
-  await expect(mode(page)).toHaveAttribute('data-editor-mode', 'facilitate');
+  await expect(mode(page)).toHaveAttribute('data-editor-mode', 'workshop');
   await expect(page.locator('[data-canvas-a11y-root]').getByRole('img').first()).toBeVisible();
   expectNoPageErrors(pageErrors);
 });

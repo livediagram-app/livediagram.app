@@ -3,7 +3,7 @@
 // the static marketing site loading Clerk or calling the api. One contract, written by apps/live and read
 // by apps/marketing on the same origin.
 
-import { EDITOR_MODES, type EditorMode } from '@livediagram/document';
+import { parseEditorMode, type EditorMode } from '@livediagram/document';
 import type { DocumentSummary } from './index';
 
 // The localStorage key the note lives under. Versioned: a change to the shape takes a new key.
@@ -89,7 +89,8 @@ export function parseRecentDiagrams(raw: string | null): RecentDiagram[] {
         id: d.id,
         name: d.name,
         savedAt: d.savedAt,
-        mode: EDITOR_MODES.includes(d.mode as EditorMode) ? d.mode : null,
+        // A note written before a mode's rename keeps its old id (`facilitate`): read as today's.
+        mode: parseEditorMode(d.mode) ?? null,
         // A note written before teams joined it has none: your own.
         teamName: typeof d.teamName === 'string' && d.teamName.length > 0 ? d.teamName : null,
       }));

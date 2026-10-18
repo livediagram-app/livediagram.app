@@ -43,12 +43,12 @@ A key takes the **Shape** set. It is reference, not story, so it offers no entra
 
 ## Palette
 
-| Mode       | Where                                   |
-| ---------- | --------------------------------------- |
-| Diagram    | **Build**: Diagram Key, after Boundary  |
-| Pages      | none                                    |
-| Plan       | none                                    |
-| Facilitate | none (Search still finds and places it) |
+| Mode     | Where                                   |
+| -------- | --------------------------------------- |
+| Diagram  | **Build**: Diagram Key, after Boundary  |
+| Pages    | none                                    |
+| Plan     | none                                    |
+| Workshop | none (Search still finds and places it) |
 
 ## Share roles
 

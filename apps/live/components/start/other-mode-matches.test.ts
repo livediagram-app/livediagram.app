@@ -10,9 +10,9 @@ import { otherModeMatches } from './other-mode-matches';
 
 // docs/specs/007-editor/start-diagramming.md "Found in other modes".
 describe('otherModeMatches', () => {
-  it('finds the Sailboat retrospective in Facilitate from Start Planning', () => {
+  it('finds the Sailboat retrospective in Workshop from Start Planning', () => {
     const found = otherModeMatches('plan', 'sailboat');
-    expect(found.map((m) => m.mode)).toEqual(['facilitate']);
+    expect(found.map((m) => m.mode)).toEqual(['workshop']);
     expect(found[0]!.kinds).toContain('sailboat');
   });
 

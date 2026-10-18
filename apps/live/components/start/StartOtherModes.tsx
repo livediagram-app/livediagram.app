@@ -2,7 +2,7 @@
 
 // Found in other modes (docs/specs/007-editor/start-diagramming.md "Found in other modes"): under a start's own search
 // results, the templates of every other mode that matched, one block a mode (its icon, name and count), each card
-// saying where it leads ("Opens in Facilitate"). At most OTHER_MODE_CARDS_MAX a mode, then Show All. Choosing one lands
+// saying where it leads ("Opens in Workshop"). At most OTHER_MODE_CARDS_MAX a mode, then Show All. Choosing one lands
 // it on the tab, which switches to the template's mode. The host keys it on the search, so a new search starts folded.
 import { useState, type CSSProperties } from 'react';
 import { CountBadge, EDITOR_MODE_ICONS } from '@livediagram/ui';

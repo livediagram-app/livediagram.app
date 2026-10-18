@@ -244,7 +244,7 @@ describe('TEMPLATES catalogue', () => {
         kind === 'blank-logo' ||
         // An empty Plan tab, which opens on Start Planning.
         kind === 'blank-plan' ||
-        // An empty session tab, in Facilitate.
+        // An empty session tab, in Workshop.
         kind === 'blank-session' ||
         // A form template's Plan tab, which the editor starts the form on.
         kind.endsWith('-form');
@@ -327,12 +327,12 @@ describe('templateCanvasOverrides', () => {
       backgroundOpacity: 0.4,
     });
     // Layered templates (docs/specs/006-document/layers.md) additionally carry their Tab.layers.
-    // A sticky-note board the room fills in opens in Facilitate (docs/specs/007-editor/templates-by-mode.md).
+    // A sticky-note board the room fills in opens in Workshop (docs/specs/007-editor/templates-by-mode.md).
     expect(templateCanvasOverrides('swot')).toEqual({
       backgroundPattern: 'graph',
       backgroundOpacity: 0.4,
       layers: templateLayers('swot'),
-      opensIn: 'facilitate',
+      opensIn: 'workshop',
     });
     expect(templateCanvasOverrides('gantt')).toEqual({
       backgroundPattern: 'graph',
@@ -400,7 +400,7 @@ describe('templateCanvasOverrides', () => {
       // The quieter of the lines rule (0.6) and the stage softening (0.8).
       backgroundOpacity: 0.6,
       layers: templateLayers('journey'),
-      opensIn: 'facilitate',
+      opensIn: 'workshop',
     });
   });
 
@@ -1106,11 +1106,11 @@ describe('templateEditorMode', () => {
   });
 
   // A session tool shipped on a Diagram tab could be started but never watched or ended: Diagram has
-  // no Session strip (docs/specs/012-collaboration/facilitate-mode.md).
-  it('opens every template carrying a session tool in Facilitate', () => {
+  // no Session strip (docs/specs/012-collaboration/workshop-mode.md).
+  it('opens every template carrying a session tool in Workshop', () => {
     for (const t of TEMPLATES) {
       if (buildTemplate(t.kind, 0, 0).some((e) => 'session' in e && e.session))
-        expect(templateEditorMode(t.kind), t.kind).toBe('facilitate');
+        expect(templateEditorMode(t.kind), t.kind).toBe('workshop');
     }
   });
 });

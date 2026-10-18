@@ -691,7 +691,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
             ) : null}
             {/* The Session strip (docs/specs/012-collaboration/session-tools.md "The Session strip"): left of
                 Layers, or of the mode's own strip. Kept in Zen: a running session is the one piece of
-                chrome a facilitator still needs there. Facilitate has all three, Plan its Timer and
+                chrome a facilitator still needs there. Workshop has all three, Plan its Timer and
                 Vote, Pages a running Vote or Poll only; Diagram and Draw keep their bottom bar to
                 their own tools. */}
             {props.sessionTools && stripTools ? (

@@ -1,13 +1,13 @@
 // The benchmark's task bank, every area in one list. Ids are stable across rounds: a round is only comparable with
 // another on the ids they share.
 import diagram from './diagram.mjs';
-import facilitate from './facilitate.mjs';
+import workshop from './workshop.mjs';
 import forms from './forms.mjs';
 import pages from './pages.mjs';
 import plan from './plan.mjs';
 import sheets from './sheets.mjs';
 
-const AREAS = { diagram, plan, sheets, pages, facilitate, forms };
+const AREAS = { diagram, plan, sheets, pages, workshop, forms };
 
 export const TASKS = Object.entries(AREAS).flatMap(([area, tasks]) =>
   tasks.map((t) => ({ ...t, area })),

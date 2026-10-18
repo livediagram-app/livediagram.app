@@ -13,9 +13,9 @@ const empty = {
 };
 
 describe('the empty-canvas card', () => {
-  it('shows on an empty Diagram or Facilitate tab, and in no other mode', () => {
+  it('shows on an empty Diagram or Workshop tab, and in no other mode', () => {
     const shown = EDITOR_MODES.filter((mode) => showsEmptyCanvasCard({ ...empty, mode }));
-    expect(shown).toEqual(['diagram', 'facilitate']);
+    expect(shown).toEqual(['diagram', 'workshop']);
   });
 
   it('hides once there is content, in zen or embed, or with a draw tool armed', () => {

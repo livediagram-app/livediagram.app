@@ -1,7 +1,7 @@
 # Templates by mode
 
 Every template opens in one [editor mode](editor-modes.md): **Diagram**, **Draw**,
-**Facilitate**, **Pages** or **Plan**. The New Document wizard asks for the mode itself
+**Workshop**, **Pages** or **Plan**. The New Document wizard asks for the mode itself
 ([New document route](new-document-route.md) "Choosing a mode"), and each mode's templates wait on an empty tab in
 its own start ([Template starts](start-diagramming.md)), so someone who came to sketch or to make a poster sees only
 what starts there. A search on a start also finds the other modes' templates, each saying which mode it opens in
@@ -21,7 +21,7 @@ what starts there. A search on a start also finds the other modes' templates, ea
   among them. Plan templates open on a worked example of cards: each but Blank Plan sets up a way of working across
   several tabs, or a ready-made spreadsheet (the twelve
   [spreadsheet templates](../026-plan/plan-templates.md#spreadsheet-templates)), every tab opening in Plan.
-- Facilitate templates: Blank Session and the [Facilitate templates](#facilitate-templates)
+- Workshop templates: Blank Session and the [Workshop templates](#workshop-templates)
   below.
 - Every other template is a Diagram template.
 
@@ -38,13 +38,13 @@ what starts there. A search on a start also finds the other modes' templates, ea
 Popular opens with one blank per mode, in mode order. Each blank also leads its mode's Recommended in that mode's
 start ([Template starts](start-diagramming.md)), and is what the New Document wizard creates for the mode chosen:
 
-| Template           | Kind id              | Opens in   | What it makes                                                                  |
-| ------------------ | -------------------- | ---------- | ------------------------------------------------------------------------------ |
-| Blank Diagram      | `blank`              | Diagram    | An empty canvas (was "Blank Canvas").                                          |
-| Blank Whiteboard   | `whiteboard`         | Draw       | An empty board to draw on (was "Whiteboard").                                  |
-| Blank Session      | `blank-session`      | Facilitate | An empty tab in Facilitate, named "Untitled Session".                          |
-| Blank Illustration | `blank-illustration` | Pages      | One empty page that asks what it is for (Infographic, Article, Slide or Logo). |
-| Blank Plan         | `blank-plan`         | Plan       | An empty Plan tab that opens on Start Planning.                                |
+| Template           | Kind id              | Opens in | What it makes                                                                  |
+| ------------------ | -------------------- | -------- | ------------------------------------------------------------------------------ |
+| Blank Diagram      | `blank`              | Diagram  | An empty canvas (was "Blank Canvas").                                          |
+| Blank Whiteboard   | `whiteboard`         | Draw     | An empty board to draw on (was "Whiteboard").                                  |
+| Blank Session      | `blank-session`      | Workshop | An empty tab in Workshop, named "Untitled Session".                            |
+| Blank Illustration | `blank-illustration` | Pages    | One empty page that asks what it is for (Infographic, Article, Slide or Logo). |
+| Blank Plan         | `blank-plan`         | Plan     | An empty Plan tab that opens on Start Planning.                                |
 
 **Blank Spreadsheet** (`blank-spreadsheet`, Plan) is a sixth blank beside them (`EXTRA_BLANK_TEMPLATES`): one tab
 holding an empty Sheet that fills it, made from the `blank-spreadsheet` start, an empty grid with no template, no
@@ -169,9 +169,9 @@ show."), after Logos; their catalogue category stays Design.
 - The page carries the backdrop: none of the five ships a canvas pattern any more (the Floor plan's graph paper
   became its page's grid, the Storyboard's crosshatch is gone).
 
-## Facilitate templates
+## Workshop templates
 
-Session formats open in Facilitate ([Facilitate mode](../012-collaboration/facilitate-mode.md#templates)),
+Session formats open in Workshop ([Workshop mode](../012-collaboration/workshop-mode.md#templates)),
 so the Collaborate kit and the Session strip are there when the session starts. Their content is
 unchanged; only the mode they open in moved from Diagram.
 
@@ -184,14 +184,14 @@ unchanged; only the mode they open in moved from Diagram.
 - The boards that ship a dot vote: **Affinity Map** (`affinity-map`), **Prioritization Matrix**
   (`prioritization-matrix`) and **Risk Matrix** (`risk-matrix`). Diagram has no Session strip, so a
   vote on a Diagram tab could be started but not watched, ended or kept; every template carrying a
-  session tool opens in Facilitate.
+  session tool opens in Workshop.
 - The boards a team fills in together in a session, rather than a diagram one person draws: **Incident
   postmortem** (`incident-postmortem`, a look back, under Retrospectives), **User Persona** (`user-persona`),
   **Empathy Map** (`empathy-map`) and **User Journey** (`journey`), under Workshops, the **Planning** group's **Objectives Planner** (`objectives-planner`), **Roadmap** (`roadmap`),
   **RACI Matrix** (`raci-matrix`) and **User Story Map** (`user-story-map`), and the **Strategy** group's **SWOT** (`swot`), **Business
   Model Canvas** (`business-model-canvas`), **Value Proposition Canvas** (`value-proposition-canvas`), **Stakeholder
   map** (`stakeholder-map`) and **Opportunity Solution Tree** (`opportunity-solution-tree`). Their catalogue
-  categories are unchanged. **A board built from sticky notes for a group to add theirs to is a Facilitate
+  categories are unchanged. **A board built from sticky notes for a group to add theirs to is a Workshop
   template**: a note per voice is the room's work. SWOT, Empathy Map and User Journey moved from Diagram for it; a
   Diagram template may still carry a sticky or two as an annotation (Family Tree, Flywheel, Sequence Diagram) and
   stays a diagram. Event Storming is its own kind of tab and keeps its own mode.
@@ -206,7 +206,7 @@ unchanged; only the mode they open in moved from Diagram.
 ## Testing
 
 - Every template's mode equals the mode its overrides open it in (`templates.test.ts`).
-- Every template carrying a session tool (timer, vote, poll) opens in Facilitate (`templates.test.ts`).
+- Every template carrying a session tool (timer, vote, poll) opens in Workshop (`templates.test.ts`).
 - Every Popular list starts with its mode's blank and holds only that mode's templates (`popular.test.ts`).
 - Every category holds a template in at least one mode (`template-categories.test.ts`).
 - A card found from another mode's start shows "Opens in <Mode>" (`StartPanel.test.tsx`).

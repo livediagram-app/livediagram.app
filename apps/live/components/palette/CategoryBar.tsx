@@ -21,7 +21,7 @@ import type { EditorMode } from '@livediagram/document';
 import { StripOpenedBody, Divider } from './strip-rail-items';
 import type { PaletteTileActions } from './PaletteTileGrid';
 
-// The category bar (docs/specs/007-editor/toolbar-layout.md "The category bar"): Diagram's and Facilitate's strip
+// The category bar (docs/specs/007-editor/toolbar-layout.md "The category bar"): Diagram's and Workshop's strip
 // shows the mode's categories rather than one category's tiles, each a button with its glyph and name. With a mouse, resting
 // on one opens its flyout (CategoryFlyout) centred under it, pointing at another moves the flyout there, and leaving
 // both the bar and the flyout closes it. A tap or a click opens it too. The arrow keys walk the bar, and Down or
@@ -213,7 +213,7 @@ export function CategoryBarButtons({
             }}
             type="button"
             data-category-bar-button=""
-            // The Diagram tour's Palette Categories step opens the first category; the Facilitate tour rings Ask and
+            // The Diagram tour's Palette Categories step opens the first category; the Workshop tour rings Ask and
             // Session by their own anchors.
             data-tour-id={i === 0 ? 'palette-category' : `bar-${c.id}`}
             aria-label={c.label}

@@ -79,7 +79,7 @@ afterEach(() => {
   vi.useRealTimers();
   setActiveTour('welcome', false);
   setActiveTour('plan', false);
-  setActiveTour('facilitate', false);
+  setActiveTour('workshop', false);
   setActiveTour('draw', false);
   setStartPanelOpen(false);
   clearTourPending();
@@ -140,7 +140,7 @@ describe('DrawTourHost offer', () => {
     ['locked', { activeTab: { id: 'tab1', locked: true } }],
     ['not hydrated', { hydrated: false }],
     ['embedded', { embedMode: true }],
-    ['in Facilitate', { editorMode: { mode: 'facilitate' } }],
+    ['in Workshop', { editorMode: { mode: 'workshop' } }],
     ['before the synced preferences are in', { prefsSettled: false }],
   ])('makes no offer when %s', (_why, over) => {
     editor(over);
@@ -178,8 +178,8 @@ describe('DrawTourHost offer', () => {
     expect(offered()).toBe(true);
   });
 
-  it('never runs beside the Facilitate tour', () => {
-    setActiveTour('facilitate', true);
+  it('never runs beside the Workshop tour', () => {
+    setActiveTour('workshop', true);
     editor();
     render(<DrawTourHost />);
     act(() => {

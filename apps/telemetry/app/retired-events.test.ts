@@ -39,7 +39,7 @@ describe('isRetiredEvent', () => {
       'TemplateModeAll',
       'TemplateModeDiagram',
       'TemplateModeDraw',
-      'TemplateModeFacilitate',
+      'TemplateModeWorkshop',
       'TemplateModePages',
       'TemplateModePlan',
     ])

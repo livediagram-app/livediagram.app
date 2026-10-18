@@ -41,11 +41,11 @@ describe('a start search, in other modes', () => {
   it("shows another mode's matches after the mode's own, and lands one in its mode", () => {
     const { onTemplate, onOtherModeTemplate, search } = diagram();
     fireEvent.change(search, { target: { value: 'retro' } });
-    const facilitate = within(otherModes()).getByRole('region', { name: 'Facilitate' });
-    const sailboat = within(facilitate).getByRole('button', { name: /^Sailboat.* in Facilitate:/ });
-    expect(within(sailboat).getByText('Opens in Facilitate')).toBeTruthy();
+    const workshop = within(otherModes()).getByRole('region', { name: 'Workshop' });
+    const sailboat = within(workshop).getByRole('button', { name: /^Sailboat.* in Workshop:/ });
+    expect(within(sailboat).getByText('Opens in Workshop')).toBeTruthy();
     fireEvent.click(sailboat);
-    expect(onOtherModeTemplate).toHaveBeenCalledWith('facilitate', 'sailboat');
+    expect(onOtherModeTemplate).toHaveBeenCalledWith('workshop', 'sailboat');
     expect(onTemplate).not.toHaveBeenCalled();
   });
 
@@ -103,10 +103,8 @@ describe('a start search, in other modes', () => {
     fireEvent.change(screen.getByRole('textbox', { name: 'Find a board, sheet, form or layout' }), {
       target: { value: 'sailboat' },
     });
-    fireEvent.click(
-      within(otherModes()).getByRole('button', { name: /^Sailboat.* in Facilitate:/ }),
-    );
-    expect(onOtherModeTemplate).toHaveBeenCalledWith('facilitate', 'sailboat');
+    fireEvent.click(within(otherModes()).getByRole('button', { name: /^Sailboat.* in Workshop:/ }));
+    expect(onOtherModeTemplate).toHaveBeenCalledWith('workshop', 'sailboat');
   });
 });
 

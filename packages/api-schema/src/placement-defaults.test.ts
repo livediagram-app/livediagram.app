@@ -22,7 +22,7 @@ describe('PLACEMENT_DEFAULT_KEYS', () => {
     expect(PLACEMENT_DEFAULT_KEYS).toEqual([
       'mode:diagram',
       'mode:draw',
-      'mode:facilitate',
+      'mode:workshop',
       'mode:pages',
       'mode:plan',
       'kind:event-storming',
@@ -138,6 +138,13 @@ describe('readCreationIntent', () => {
       });
   });
 
+  it("reads a mode by Workshop mode's old name as Workshop", () => {
+    expect(readCreationIntent({ mode: 'facilitate' })).toEqual({
+      ok: true,
+      intent: { mode: 'workshop', tabKind: 'diagram' },
+    });
+  });
+
   it('reads every field', () => {
     expect(
       readCreationIntent({ mode: 'diagram', tabKind: 'event-storming', templateFamily: 'kanban' }),
@@ -173,6 +180,12 @@ describe('parsePlacementDefaultKey', () => {
     expect(parsePlacementDefaultKey('mode:infographic')).toBe('mode:pages');
     expect(parsePlacementDefaultKey('mode:pages')).toBe('mode:pages');
     expect(parsePlacementDefaultKey('mode:pixel')).toBeNull();
+  });
+
+  it("reads a key stored under Workshop mode's old name as today's", () => {
+    expect(parsePlacementDefaultKey('mode:facilitate')).toBe('mode:workshop');
+    expect(parsePlacementDefaultKey('mode:workshop')).toBe('mode:workshop');
+    expect(legacyPlacementDefaultKeys('mode:workshop')).toEqual(['mode:facilitate']);
   });
 
   it('clears every old name with the key', () => {
@@ -219,7 +232,7 @@ describe('placementDefaultTelemetryType', () => {
     expect(PLACEMENT_DEFAULT_KEYS.map(placementDefaultTelemetryType)).toEqual([
       'DefaultModeDiagram',
       'DefaultModeDraw',
-      'DefaultModeFacilitate',
+      'DefaultModeWorkshop',
       'DefaultModePages',
       'DefaultModePlan',
       'DefaultKindEventStorming',

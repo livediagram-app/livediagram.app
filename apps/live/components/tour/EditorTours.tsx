@@ -12,10 +12,10 @@ const PlanTourHost = dynamic(
   () => import('@/components/tour/PlanTourHost').then((m) => m.PlanTourHost),
   { ssr: false },
 );
-// The Facilitate tour (docs/specs/012-collaboration/facilitate-tour.md) loads the first time the person
-// enters Facilitate, and stays mounted after, as the Plan tour does.
-const FacilitateTourHost = dynamic(
-  () => import('@/components/tour/FacilitateTourHost').then((m) => m.FacilitateTourHost),
+// The Workshop tour (docs/specs/012-collaboration/workshop-tour.md) loads the first time the person
+// enters Workshop, and stays mounted after, as the Plan tour does.
+const WorkshopTourHost = dynamic(
+  () => import('@/components/tour/WorkshopTourHost').then((m) => m.WorkshopTourHost),
   { ssr: false },
 );
 // The Forms tour (docs/specs/030-forms/forms.md "The Forms tour"): the first time an Editor opens a Form tab.
@@ -51,7 +51,7 @@ const PagesTourHost = dynamic(
 export function EditorTours() {
   const { editorMode, activeTab, canvasTool } = useEditorContext();
   const mountPlanTour = useEverTrue(editorMode.mode === 'plan');
-  const mountFacilitateTour = useEverTrue(editorMode.mode === 'facilitate');
+  const mountWorkshopTour = useEverTrue(editorMode.mode === 'workshop');
   const mountDrawTour = useEverTrue(editorMode.mode === 'draw');
   const mountFormTour = useEverTrue(activeTab.kind === 'form');
   const mountAvatarTour = useEverTrue(canvasTool === 'avatar');
@@ -61,8 +61,8 @@ export function EditorTours() {
       <TourHost />
       {/* The Plan tour (docs/specs/026-plan/plan-tour.md): the first time a person works in Plan. */}
       {mountPlanTour ? <PlanTourHost /> : null}
-      {/* The Facilitate tour (docs/specs/012-collaboration/facilitate-tour.md): the first time a person works in Facilitate. */}
-      {mountFacilitateTour ? <FacilitateTourHost /> : null}
+      {/* The Workshop tour (docs/specs/012-collaboration/workshop-tour.md): the first time a person works in Workshop. */}
+      {mountWorkshopTour ? <WorkshopTourHost /> : null}
       {mountDrawTour ? <DrawTourHost /> : null}
       {/* The Forms tour (docs/specs/030-forms/forms.md "The Forms tour"): the first time an Editor opens a Form tab. */}
       {mountFormTour ? <FormTourHost /> : null}

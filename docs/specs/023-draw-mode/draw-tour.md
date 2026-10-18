@@ -1,9 +1,9 @@
 # Draw tour
 
 A short, optional guided tour of [Draw mode](draw-mode.md), offered the first time a person works in Draw. It is
-the [Facilitate tour](../012-collaboration/facilitate-tour.md)'s sibling: the same welcome card, anchored step cards,
+the [Workshop tour](../012-collaboration/workshop-tour.md)'s sibling: the same welcome card, anchored step cards,
 glide, dimming ring, Skip, Back and outro card, driven by the same engine. Where this spec is silent, the
-Facilitate tour's rules hold.
+Workshop tour's rules hold.
 
 ## Domain language
 
@@ -27,7 +27,7 @@ Facilitate tour's rules hold.
   ([User preferences](../007-editor/user-preferences.md)): taken, skipped mid-way or declined, it never offers
   itself again, on any device.
 - **Replayable from Settings**: the **Draw Tour** switch in Settings' **Tours** category, beside
-  **Facilitate** and built the same way (on means "not seen yet"). Turning it on from off and closing Settings runs
+  **Workshop** and built the same way (on means "not seen yet"). Turning it on from off and closing Settings runs
   the tour straight away when the person is in Draw, or offers it the next time they enter Draw.
 
 ## Tour content
@@ -71,7 +71,7 @@ offered it, since the dock's drawing tools are not theirs to use.
 
 ## Telemetry ([Telemetry](../017-telemetry/telemetry.md))
 
-The Facilitate tour's funnel, with its own tokens:
+The Workshop tour's funnel, with its own tokens:
 
 - **Offer**: `UI` · `Opened` · `DrawTourOffer` when its welcome card shows; `UI` · `Closed` · `DrawTourOffer` on No.
 - **Start**: `UI` · `Started` · `DrawTour`.
@@ -83,4 +83,4 @@ The Facilitate tour's funnel, with its own tokens:
 ## Power user mode
 
 [Power user mode](../007-editor/power-user-mode.md) marks the Draw tour seen alongside the Diagram, Plan and
-Facilitate tours.
+Workshop tours.

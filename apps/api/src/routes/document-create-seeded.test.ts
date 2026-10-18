@@ -56,14 +56,14 @@ describe('seeded tabs compiled on create', () => {
     expect((await getDocument(db.env, 'd1'))?.source).toBe('cli');
   });
 
-  it('builds a template tab and derives the intent from it when none is given, a retro opening in Facilitate', async () => {
+  it('builds a template tab and derives the intent from it when none is given, a retro opening in Workshop', async () => {
     expect(
       (await create([{ id: 't1', name: 'Retro', template: 'start-stop-continue' }])).status,
     ).toBe(201);
     expect((await getTab(db.env, 'd1', 't1'))?.elements.length).toBeGreaterThan(0);
     const summary = (await listDocumentsByOwner(db.env, 'user_alice')).find((d) => d.id === 'd1');
     expect(summary).toMatchObject({
-      opensIn: 'facilitate',
+      opensIn: 'workshop',
       tabKind: 'diagram',
       templateFamily: 'retrospective',
     });

@@ -19,7 +19,7 @@ import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { markTourPending, requestTourRelaunch } from '@/lib/tour-pending';
 import { planTourOwed, requestPlanTourRelaunch } from '@/lib/plan-tour';
-import { requestFacilitateTourRelaunch } from '@/lib/facilitate-tour';
+import { requestWorkshopTourRelaunch } from '@/lib/workshop-tour';
 import { requestFormTourRelaunch } from '@/lib/form-tour';
 import { requestDrawTourRelaunch } from '@/lib/draw-tour';
 import { requestAvatarTourRelaunch } from '@/lib/avatar-tour';
@@ -192,9 +192,9 @@ export function SettingsDialog({
   // Seen = no track still owed (lib/tour-tracks.ts), as the row's switch reads it.
   const planTourSeen = !planTourOwed(settings);
   const planTourSeenAtOpen = useRef(planTourSeen);
-  // Tours › "Facilitate Tour" (docs/specs/012-collaboration/facilitate-tour.md): as Plan Tour.
-  const facilitateTourSeen = settings.facilitateTourSeen === true;
-  const facilitateTourSeenAtOpen = useRef(facilitateTourSeen);
+  // Tours › "Workshop Tour" (docs/specs/012-collaboration/workshop-tour.md): as Plan Tour.
+  const workshopTourSeen = settings.workshopTourSeen === true;
+  const workshopTourSeenAtOpen = useRef(workshopTourSeen);
   // Tours › "Draw Tour" (docs/specs/023-draw-mode/draw-tour.md): as Plan Tour.
   const drawTourSeen = settings.drawTourSeen === true;
   const drawTourSeenAtOpen = useRef(drawTourSeen);
@@ -213,7 +213,7 @@ export function SettingsDialog({
       if (tourSeenAtOpen.current) requestTourRelaunch();
     }
     if (!planTourSeen && planTourSeenAtOpen.current) requestPlanTourRelaunch();
-    if (!facilitateTourSeen && facilitateTourSeenAtOpen.current) requestFacilitateTourRelaunch();
+    if (!workshopTourSeen && workshopTourSeenAtOpen.current) requestWorkshopTourRelaunch();
     if (!drawTourSeen && drawTourSeenAtOpen.current) requestDrawTourRelaunch();
     if (!formTourSeen && formTourSeenAtOpen.current) requestFormTourRelaunch();
     if (!avatarTourSeen && avatarTourSeenAtOpen.current) requestAvatarTourRelaunch();

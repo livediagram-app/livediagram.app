@@ -1,8 +1,8 @@
-# Template starts: Start Diagramming, Start Drawing, Start Facilitating, Start Making Pages
+# Template starts: Start Diagramming, Start Drawing, Start a Workshop, Start Making Pages
 
 An empty tab starts from a choice, not a blank page and a modal. A Plan tab has offered **Start Planning** since
-Plan shipped ([Plan mode](../026-plan/plan-mode.md) "Starting a board"); Diagram, Draw, Facilitate and Pages tabs
-now offer their own: **Start Diagramming**, **Start Drawing**, **Start Facilitating** and **Start Making Pages**. Each is the same wide
+Plan shipped ([Plan mode](../026-plan/plan-mode.md) "Starting a board"); Diagram, Draw, Workshop and Pages tabs
+now offer their own: **Start Diagramming**, **Start Drawing**, **Start a Workshop** and **Start Making Pages**. Each is the same wide
 panel in the middle of the canvas, its rail of groups beside a grid of the mode's templates, so the templates sit
 where the work begins instead of in a step before it. The New Document wizard asks only for a mode
 ([New document route](new-document-route.md) "Choosing a mode"), and the document opens on that mode's start.
@@ -60,8 +60,8 @@ Blank Slide Deck. The shelf itself (the gallery's) is unchanged. The groups (`co
 - **Diagram:** the catalogue's categories that hold a Diagram template ([Canvas and
   palette](../008-canvas/canvas-and-palette.md) "Template categories"), in the catalogue's order, by their short names
   (Flowcharts, Org Charts, Timelines and so on).
-- **Draw**, whose templates are drawn, by what each is for: **Visual Notes**, **Workshops**, **Prototypes**.
-- **Facilitate**, whose templates nearly all share one category, by the session each runs: **Retrospectives**, **Meetings**, **Spaces** (offices and halls to walk round together in Avatar mode), **Quizzes & Games**, **Workshops**, **Planning** (goals, roadmaps and who does what), **Strategy** (the business, the people and the opportunities) and **Decisions** (the boards with a dot vote).
+- **Draw**, whose templates are drawn, by what each is for: **Visual Notes**, **Exercises**, **Prototypes**.
+- **Workshop**, whose templates nearly all share one category, by the session each runs: **Retrospectives**, **Meetings**, **Spaces** (offices and halls to walk round together in Avatar mode), **Quizzes & Games**, **Ideation**, **Planning** (goals, roadmaps and who does what), **Strategy** (the business, the people and the opportunities) and **Decisions** (the boards with a dot vote).
 - **Pages**, likewise, by what each makes: **Slides**, **Infographics**, **Articles**, **Posters and Social**, **Logos**, **Design** (wireframes, storyboards and floor plans, [Templates by mode](templates-by-mode.md#design-templates)).
   Slides, Infographics, Articles and Logos each lead with their blank of that page kind (Blank Slide Deck, Blank
   Infographic, Blank Article, Blank Logo: [Templates by mode](templates-by-mode.md#blanks-of-a-page-kind)), one empty
@@ -78,7 +78,7 @@ same empty tab). Choosing the blank closes the panel, as the × does, since it l
 - To someone who can edit (an **Editor**), after hydration, outside zen and an embed, with
   no draw tool armed. Draw keeps a pen in hand on an empty tab, so there an armed pen does not hide it.
 - While the tab is empty: no elements, and on a Pages tab its one page still has no kind.
-- In Diagram, Draw, Facilitate or Pages. Plan has Start Planning.
+- In Diagram, Draw, Workshop or Pages. Plan has Start Planning.
 
 A **Participant** or **Viewer** never sees a start: they keep the empty-canvas card ([New document
 route](new-document-route.md) "The empty-canvas hint"), which tells a Viewer the owner can build it out and points a
@@ -95,7 +95,7 @@ Planning.
 
 The × starts from a blank canvas: the start stays closed on that tab in that mode, for this person in this browser
 (`empty-card-dismissed.ts`, under the key `<tab id>:<mode>`, `startClosedKey`). Closing Start Diagramming leaves
-Start Facilitating to show when the tab switches to Facilitate. On a phone, dragging the sheet's grab handle down
+Start a Workshop to show when the tab switches to Workshop. On a phone, dragging the sheet's grab handle down
 closes it too.
 
 While a closed start's tab is still empty, the **palette tray** (the strip that hangs from the palette, as the mode
@@ -128,7 +128,7 @@ content swaps at once.
 ## Found in other modes
 
 A search looks beyond the tab's mode. Someone on a Plan tab who types "sailboat" wants the Sailboat retrospective,
-not an empty result: the start finds it in Facilitate, shows it, and choosing it takes the tab there.
+not an empty result: the start finds it in Workshop, shows it, and choosing it takes the tab there.
 
 - **What is searched.** Every listed template of every other mode (`otherModeMatches` in
   `components/start/other-mode-matches.ts`): a template's mode is `templateEditorMode`, the mode its tab opens in, so a
@@ -138,10 +138,10 @@ not an empty result: the start finds it in Facilitate, shows it, and choosing it
   finds Blank Whiteboard).
 - **Where it shows.** Under the mode's own results, after a hairline, a section headed **In Other Modes**, with the
   line "Choosing one switches this tab to its mode." Then one block per mode that matched, in the modes' order
-  (Diagram, Draw, Facilitate, Pages, Plan): a header with the mode's icon on a soft tile of the accent, the mode's
+  (Diagram, Draw, Workshop, Pages, Plan): a header with the mode's icon on a soft tile of the accent, the mode's
   name and its count, then its cards in the same grid as every other result.
-- **Each card says where it leads.** Under its line, a quiet chip with the mode's icon and "Opens in Facilitate", so a
-  card seen alone still says it is not of this mode; assistive technology hears the template's name, "in Facilitate",
+- **Each card says where it leads.** Under its line, a quiet chip with the mode's icon and "Opens in Workshop", so a
+  card seen alone still says it is not of this mode; assistive technology hears the template's name, "in Workshop",
   then its description.
 - **At most six a mode** (`OTHER_MODE_CARDS_MAX`), so a word that matches dozens of one mode's templates does not bury
   the rest; **Show All N** (N the mode's count) opens that mode's every match in place. The list clears with the search.
@@ -178,7 +178,7 @@ picked after creation"). The move loads only at the pick (`useTemplatePickMove`,
 
 ## The tours wait
 
-A tour's welcome never lands over a start: while one is on screen the Diagram, Facilitate, Draw and Pages
+A tour's welcome never lands over a start: while one is on screen the Diagram, Workshop, Draw and Pages
 tours hold their offer, and make it once a template is picked or the start closed (`start-panel-open.ts`,
 `useStartPanelOpen`). Start Planning shows only on a tab with no board or Sheet, where the Plan tour has nothing to
 show, so it needs no hold.

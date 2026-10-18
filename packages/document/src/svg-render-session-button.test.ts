@@ -3,7 +3,7 @@ import { createShape } from './factories';
 import { svgBoxed } from './svg-render';
 import type { BoxedElement } from './index';
 
-// docs/specs/012-collaboration/facilitate-mode.md: a Session button in an image draws as the canvas does.
+// docs/specs/012-collaboration/workshop-mode.md: a Session button in an image draws as the canvas does.
 const button = (session?: unknown) =>
   ({
     ...createShape('session-button', 0, 0),

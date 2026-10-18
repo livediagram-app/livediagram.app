@@ -29,7 +29,7 @@ Derived from [Plan tour](../plan-tour.md). The engine, popover and DOM helpers a
 | `apps/live/components/tour/PlanTourHost.tsx`      | Offer, subject, relaunch, end; builds `PlanTourApi`                                                                                                                    |
 | `apps/live/components/tour/art/plan-tour-art.tsx` | The welcome cards' illustrations: `BoardsTourArt`, `SheetsTourArt`, `PlanChoiceTourArt` (in `apps/live/components/tour/art/TourArtFrame.tsx`)                          |
 | `apps/live/lib/tour-tracks.ts`                    | `tourTrackSeen`, `withTracksAnswered`: a tour of several tracks, each offered once                                                                                     |
-| `apps/live/lib/tour-active.ts`                    | Which tour is on screen (`'welcome' \| 'plan' \| 'facilitate' \| null`), a module store                                                                                |
+| `apps/live/lib/tour-active.ts`                    | Which tour is on screen (`'welcome' \| 'plan' \| 'workshop' \| null`), a module store                                                                                  |
 | `apps/live/lib/plan-tour.ts`                      | Relaunch event, tracks, `planTrackSeen` / `planTourOwed` / `markPlanTracksSeen`, the old tour's `PlanTourContent` record                                               |
 | `apps/live/hooks/plan/usePlanTourLeftovers.ts`    | The sweep of an old tour's leftover record; nothing new is placed (see Leftovers)                                                                                      |
 
@@ -179,7 +179,7 @@ another document is kept. Nothing writes a record any more.
 | The subject is deleted mid-tour                   | The tour ends as skipped                            |
 | The person switches tab or leaves Plan mid-tour   | The tour ends as skipped; the card panel is closed  |
 | A Sheet's toolbar or cog not shown to this person | Its step finds no target and is skipped             |
-| Diagram or Facilitate tour on screen              | The Plan tour waits for `activeTour()` to clear     |
+| Diagram or Workshop tour on screen                | The Plan tour waits for `activeTour()` to clear     |
 | Locked tab                                        | No offer                                            |
 | A leftover record from the old tour               | Swept on the next visit to that document, as before |
 

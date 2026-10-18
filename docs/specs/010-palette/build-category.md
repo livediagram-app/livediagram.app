@@ -16,14 +16,14 @@ lay a diagram _out_ with, as opposed to the ones you draw _on_ it:
 The **Sankey** ([Sankey diagram](../009-elements/sankey.md)) joined later and sits last. It is the one Build
 element that lays itself out from data rather than holding work you place in it; it is here because a
 Sankey is a structure you choose for a whole picture (how much moves where), the same moment as choosing
-lanes or a timeline. It is in Diagram and Pages (as an infographic), and left out of Facilitate,
+lanes or a timeline. It is in Diagram and Pages (as an infographic), and left out of Workshop,
 where a session does not stop to chart a flow. It has since **moved to Concepts**
 ([Editor modes](../007-editor/editor-modes.md#the-palette-per-mode)): on the category bar a flow drawn as wide as
 what it carries reads as an idea laid out, beside the funnel and the cycle, more than as a structure you build in.
 
 The **Timeline** has **moved to Concepts** too: it is a concept graphic now
 ([Concept graphics](../009-elements/concept-graphics.md) "Timeline"), milestones laid out as one idea beside the
-chevrons and the cycle, in Diagram and Pages. Facilitate, which has no Concepts, keeps it in its Layout.
+chevrons and the cycle, in Diagram and Pages. Workshop, which has no Concepts, keeps it in its Layout.
 
 The **Flowchart** ([The flowchart](../009-elements/flowchart.md)) joined later, beside the Mind Node: it
 drops a Start that grows into a chart from the keyboard and lays itself out. Like the Mind Node it is
@@ -35,7 +35,7 @@ Diagram mode offers Build as two categories ([Editor modes](../007-editor/editor
 Grown to fifteen tiles there, one Build put the structures you type into beside the containers and labels you set
 them in. **Diagrams** holds the first (Mind node, Org chart, Flowchart, Sequence, Table, Entity), **Layout** the
 second (Lane, Frame, Stack, Boundary, then Diagram key, Card, Badge, Step number). Tile ids are
-unchanged. Facilitate offers the same **Layout** (no Diagrams), with the Timeline after the Boundary.
+unchanged. Workshop offers the same **Layout** (no Diagrams), with the Timeline after the Boundary.
 
 ## In Pages: no Build
 

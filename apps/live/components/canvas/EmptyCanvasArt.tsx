@@ -2,7 +2,7 @@
 
 // The empty-canvas card's picture (docs/specs/007-editor/new-document-route.md "The empty-canvas hint"): a small scene
 // of what the tab's mode makes, in the brand's tints, as Start Planning's cards draw theirs. Diagram: two shapes joined
-// by an arrow to a decision; Facilitate: a board of stickies with a vote. Decorative. (The card never shows in Draw,
+// by an arrow to a decision; Workshop: a board of stickies with a vote. Decorative. (The card never shows in Draw,
 // whose dock is its own hint, nor in Pages or Plan, which have starts of their own.)
 import type { EditorMode } from '@livediagram/document';
 
@@ -14,7 +14,7 @@ export function EmptyCanvasArt({ mode }: { mode: EditorMode }) {
   return (
     <svg aria-hidden viewBox="0 0 120 72" className="h-[72px] w-[120px]" fill="none">
       <rect x="1" y="1" width="118" height="70" rx="12" fill={SOFT} />
-      {mode === 'facilitate' ? <FacilitateScene /> : <DiagramScene />}
+      {mode === 'workshop' ? <WorkshopScene /> : <DiagramScene />}
     </svg>
   );
 }
@@ -54,7 +54,7 @@ function DiagramScene() {
   );
 }
 
-function FacilitateScene() {
+function WorkshopScene() {
   const sticky = (x: number, y: number, fill: string, rot: number) => (
     <g transform={`rotate(${rot} ${x + 11} ${y + 11})`}>
       <rect x={x} y={y} width="22" height="22" rx="2.5" fill={fill} />

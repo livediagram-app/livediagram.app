@@ -72,7 +72,7 @@ export function AboutArt() {
       <Chip x={118} y={12} label="Free for everyone" tone="emerald" h={20} size={10} />
       <Chip x={236} y={12} label="Open source" tone="violet" h={20} size={10} />
       <Label x={200} y={204} anchor="middle" size={9} weight={600} tone="muted">
-        Diagram · Draw · Plan · Facilitate · Pages
+        Diagram · Draw · Plan · Workshop · Pages
       </Label>
     </Stage>
   );

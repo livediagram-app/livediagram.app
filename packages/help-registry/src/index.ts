@@ -1178,7 +1178,7 @@ export const articles: Article[] = [
     description:
       'The Collaborate categories (Ask and Record) that collect what the room thinks: comment panels, action panels, estimates, quizzes, temperature checks, idea boxes, Q&A boards, agendas, decisions and roll calls.',
     keywords:
-      'collaborate collaboration comment panel action panel task assign card pin pinned remark note thread reply discuss feedback annotate sticky question estimate estimation planning poker story points fibonacci tshirt t-shirt temperature check fist of five pulse mood vote idea box anonymous brainstorm brainwriting retro retrospective q&a qa slido upvote questions agenda run of show timebox segments decision record adr architecture decision roll call attendance register present room team workshop facilitate facilitation powers of two',
+      'collaborate collaboration comment panel action panel task assign card pin pinned remark note thread reply discuss feedback annotate sticky question estimate estimation planning poker story points fibonacci tshirt t-shirt temperature check fist of five pulse mood vote idea box anonymous brainstorm brainwriting retro retrospective q&a qa slido upvote questions agenda run of show timebox segments decision record adr architecture decision roll call attendance register present room team workshop facilitation powers of two',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Workshop Kits',
@@ -1361,9 +1361,9 @@ export const articles: Article[] = [
     slug: 'behaviour',
     title: 'Collaborate',
     description:
-      'Every element that comes alive with the room, as six palette categories in Facilitate mode: comment and action panels, estimates, quizzes, temperature checks, idea boxes, Q&A boards, Done checks, pickers, session buttons (timer, stopwatch, vote, poll), agendas, decisions, roll calls, reactions, mode buttons, portals and Bring Focus.',
+      'Every element that comes alive with the room, as six palette categories in Workshop mode: comment and action panels, estimates, quizzes, temperature checks, idea boxes, Q&A boards, Done checks, pickers, session buttons (timer, stopwatch, vote, poll), agendas, decisions, roll calls, reactions, mode buttons, portals and Bring Focus.',
     keywords:
-      'behaviour behavior behaviours behaviors interactive button portal session timer stopwatch countdown count up elapsed vote poll reveal hide cover picker random spinner control mode switch chair seat desk sofa couch fence barrier link card bookmark preview url bring focus look here attention gather reaction pad confetti celebrate sparkles hearts applause fireworks emoji burst done check finished ready waiting who progress everyone mark complete collaborate collaboration estimate quiz trivia question temperature idea box agenda decision roll call ask the room keep a record run the room facilitate facilitation runtime live tools record react navigate selection mode',
+      'behaviour behavior behaviours behaviors interactive button portal session timer stopwatch countdown count up elapsed vote poll reveal hide cover picker random spinner control mode switch chair seat desk sofa couch fence barrier link card bookmark preview url bring focus look here attention gather reaction pad confetti celebrate sparkles hearts applause fireworks emoji burst done check finished ready waiting who progress everyone mark complete collaborate collaboration estimate quiz trivia question temperature idea box agenda decision roll call ask the room keep a record run the room workshop facilitation runtime live tools record react navigate selection mode',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Workshop Kits',
@@ -1507,9 +1507,9 @@ export const articles: Article[] = [
     slug: 'editor-modes',
     title: 'Editor Modes',
     description:
-      'Diagram, Draw, Facilitate, Pages and Plan: what each mode is for, choosing one on an empty tab, and Opens in.',
+      'Diagram, Draw, Workshop, Pages and Plan: what each mode is for, choosing one on an empty tab, and Opens in.',
     keywords:
-      'editor mode editor modes mode switch switch mode change mode choose mode new tab tab window modes diagram draw pages plan facilitate session shift+d shift d cycle next mode opens in open in default mode per tab per person tab pill mode icon whiteboard sketch pages infographic boards kanban phone mobile view only read only kind template leave pages switch to diagram confirm convert pages workflow way of working',
+      'editor mode editor modes mode switch switch mode change mode choose mode new tab tab window modes diagram draw pages plan workshop session shift+d shift d cycle next mode opens in open in default mode per tab per person tab pill mode icon whiteboard sketch pages infographic boards kanban phone mobile view only read only kind template leave pages switch to diagram confirm convert pages workflow way of working',
     category: 'Canvas',
     categorySlug: 'canvas',
     group: 'Modes and Boards',
@@ -1537,12 +1537,12 @@ export const articles: Article[] = [
     group: 'Modes and Boards',
   },
   {
-    slug: 'facilitate-mode',
-    title: 'Facilitate Mode',
+    slug: 'workshop-mode',
+    title: 'Workshop Mode',
     description:
       'Run a session on any tab: retros, town halls and workshops, with timers, votes, polls and reveals.',
     keywords:
-      'pub quiz trivia icebreaker questions two truths and a lie would you rather people bingo games facilitate mode facilitation facilitator session sessions run a session workshop meeting team meeting retro retrospective town hall all hands lean coffee crazy eights brainstorm board workshop board kickoff ground rules icebreaker q&a questions agenda timer countdown stopwatch vote dot vote voting poll survey pulse check reveal hide estimate planning poker quiz temperature check fist of five idea box anonymous picker random spin reactions confetti stickers emoji sticker badge collaborate category session strip blank session editor mode switch shift+d where did the timer go where are stickers missing tools moved',
+      'pub quiz trivia icebreaker questions two truths and a lie would you rather people bingo games workshop mode facilitate facilitate mode facilitation facilitator session sessions run a session workshop meeting team meeting retro retrospective town hall all hands lean coffee crazy eights brainstorm board workshop board kickoff ground rules icebreaker q&a questions agenda timer countdown stopwatch vote dot vote voting poll survey pulse check reveal hide estimate planning poker quiz temperature check fist of five idea box anonymous picker random spin reactions confetti stickers emoji sticker badge collaborate category session strip blank session editor mode switch shift+d where did the timer go where are stickers missing tools moved',
     category: 'Canvas',
     categorySlug: 'canvas',
     group: 'Modes and Boards',
@@ -1602,15 +1602,15 @@ export const articles: Article[] = [
     parentSlug: 'draw-mode',
   },
   {
-    slug: 'facilitate-tour',
-    title: 'The Facilitate Tour',
+    slug: 'workshop-tour',
+    title: 'The Workshop Tour',
     description:
-      'A short, optional walkthrough of Facilitate mode, offered once after the welcome tour and replayable from Settings.',
+      'A short, optional walkthrough of Workshop mode, offered once after the welcome tour and replayable from Settings.',
     keywords:
-      'facilitate tour tour walkthrough onboarding intro introduction show me around getting started guide tutorial first time learn facilitate mode session retro workshop timer vote poll session strip collaborate share participant replay rerun settings accessibility',
+      'workshop tour facilitate tour tour walkthrough onboarding intro introduction show me around getting started guide tutorial first time learn workshop mode session retro workshop timer vote poll session strip collaborate share participant replay rerun settings accessibility',
     category: 'Canvas',
-    categorySlug: 'canvas/facilitate-mode',
-    parentSlug: 'facilitate-mode',
+    categorySlug: 'canvas/workshop-mode',
+    parentSlug: 'workshop-mode',
   },
   {
     slug: 'plan-tour',
@@ -1866,7 +1866,7 @@ export const articles: Article[] = [
     title: 'Facilitator',
     description: 'Give one person the timer, votes and polls for a live session.',
     keywords:
-      'facilitator facilitate host run the room session lead moderator driver baton timer vote poll control handover take over step down chair meeting workshop',
+      'facilitator workshop host run the room session lead moderator driver baton timer vote poll control handover take over step down chair meeting workshop',
     category: 'Collaboration',
     categorySlug: 'collaboration',
   },
@@ -2551,7 +2551,7 @@ export const articles: Article[] = [
     title: 'Bring Focus',
     description: 'Ask everyone else in the room to come and look at one spot.',
     keywords:
-      'bring focus look here attention everyone jump navigate gather point show spotlight presenter facilitate big board find lost viewport zoom same view',
+      'bring focus look here attention everyone jump navigate gather point show spotlight presenter workshop big board find lost viewport zoom same view',
     category: 'Palette',
     categorySlug: 'palette/behaviour',
     parentSlug: 'behaviour',

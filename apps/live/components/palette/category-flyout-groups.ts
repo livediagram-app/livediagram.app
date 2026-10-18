@@ -6,11 +6,11 @@ import type { PaletteTileDef } from './palette-tile-defs';
 
 import type { EditorMode } from '@livediagram/document';
 
-/** The modes whose strip is a category bar: Diagram, Facilitate and Pages. Plan keeps the category picker and
+/** The modes whose strip is a category bar: Diagram, Workshop and Pages. Plan keeps the category picker and
  *  its tiles (its boards and cards are a different palette). */
 export const CATEGORY_BAR_MODES: ReadonlySet<EditorMode> = new Set([
   'diagram',
-  'facilitate',
+  'workshop',
   'pages',
 ]);
 
@@ -82,7 +82,7 @@ const TAGLINES: Readonly<Record<string, string>> = {
 
 // Where a mode fills a category differently enough that its default line would mislead.
 const MODE_TAGLINES: Readonly<Partial<Record<EditorMode, Readonly<Record<string, string>>>>> = {
-  facilitate: { write: 'Words, notes, tables and checklists.' },
+  workshop: { write: 'Words, notes, tables and checklists.' },
 };
 
 export function flyoutTagline(categoryId: string, fallback: string, mode?: EditorMode): string {
@@ -92,7 +92,7 @@ export function flyoutTagline(categoryId: string, fallback: string, mode?: Edito
 // A group's name, by the tile that starts it: a category splits into groups where a tile ends one (`dividerAfter`,
 // the strip's fixed dividers), and the same tile starts the same kind of group whichever mode's layout it is in.
 // A category shows its groups only when every one is named; otherwise it is one block, so a layout whose dividers
-// fall elsewhere (Facilitate's Write) never shows half its groups headed and half bare.
+// fall elsewhere (Workshop's Write) never shows half its groups headed and half bare.
 const GROUP_NAMES: Readonly<Record<string, string>> = {
   'shapes:square': 'Basics',
   'shapes:cylinder': 'Flowchart',

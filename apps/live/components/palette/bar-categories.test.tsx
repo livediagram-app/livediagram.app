@@ -33,7 +33,7 @@ describe('the category bar’s categories', () => {
 
   // docs/specs/007-editor/toolbar-layout.md "What is on it": Draw holds only what a stroke or a drag makes.
   it('keeps the words and comments out of Draw', () => {
-    for (const mode of ['diagram', 'facilitate'] as const) {
+    for (const mode of ['diagram', 'workshop'] as const) {
       const draw = bar(mode).find((c) => c.id === 'draw')!;
       expect(draw.label).toBe('Draw');
       for (const id of draw.tiles!.map((t) => t.id))
@@ -64,8 +64,8 @@ describe('the category bar’s categories', () => {
     expect(groups('layout')).toEqual(['Containers', 'Parts']);
   });
 
-  it('gathers Facilitate’s session tools into Session, Ask keeping its own button', () => {
-    const cats = bar('facilitate');
+  it('gathers Workshop’s session tools into Session, Ask keeping its own button', () => {
+    const cats = bar('workshop');
     expect(cats.map((c) => c.id)).toEqual([
       'shapes',
       'my-shapes',
@@ -93,7 +93,7 @@ describe('the category bar’s categories', () => {
   });
 
   it('names every category in one word', () => {
-    for (const mode of ['diagram', 'facilitate', 'pages'] as const)
+    for (const mode of ['diagram', 'workshop', 'pages'] as const)
       for (const c of bar(mode)) expect(c.label, `${mode} ${c.id}`).not.toMatch(/\s|&/);
   });
 });

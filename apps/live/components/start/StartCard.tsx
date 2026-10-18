@@ -20,7 +20,7 @@ export type StartPanelCard = {
   ariaKind?: string;
   // Under the line (a board's card-type chips), on a desktop only.
   footer?: ReactNode;
-  // Under the line at every width: where the card leads ("Opens in Facilitate", StartOtherModes).
+  // Under the line at every width: where the card leads ("Opens in Workshop", StartOtherModes).
   note?: ReactNode;
 };
 

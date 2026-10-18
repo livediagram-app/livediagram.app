@@ -15,7 +15,7 @@ import type { PaletteTileDef } from './palette-tile-defs';
 
 // The category flyout's arrangement (docs/specs/007-editor/toolbar-layout.md "The category bar").
 
-const tiles = (mode: 'diagram' | 'facilitate' | 'pages', id: string): PaletteTileDef[] =>
+const tiles = (mode: 'diagram' | 'workshop' | 'pages', id: string): PaletteTileDef[] =>
   paletteCategoriesFor(mode).find((c) => c.id === id)?.tiles ?? [];
 
 const tile = (id: string, dividerAfter = false): PaletteTileDef => ({
@@ -29,8 +29,8 @@ const tile = (id: string, dividerAfter = false): PaletteTileDef => ({
 });
 
 describe('the category bar', () => {
-  it('is Diagram’s, Facilitate’s and Pages’s strip, not Plan’s or Draw’s', () => {
-    expect([...CATEGORY_BAR_MODES].sort()).toEqual(['diagram', 'facilitate', 'pages']);
+  it('is Diagram’s, Workshop’s and Pages’s strip, not Plan’s or Draw’s', () => {
+    expect([...CATEGORY_BAR_MODES].sort()).toEqual(['diagram', 'pages', 'workshop']);
   });
 
   it('names every category in one word', () => {
@@ -57,7 +57,7 @@ describe('a flyout’s layout', () => {
   });
 
   it('words a line its own way where a mode fills the category differently', () => {
-    expect(flyoutTagline('write', 'fallback', 'facilitate')).toBe(
+    expect(flyoutTagline('write', 'fallback', 'workshop')).toBe(
       'Words, notes, tables and checklists.',
     );
     expect(flyoutTagline('write', 'fallback', 'diagram')).toBe(
@@ -93,17 +93,17 @@ describe('a flyout’s groups', () => {
       'Page Blocks',
       'Layout',
     ]);
-    expect(flyoutGroups('data', tiles('facilitate', 'data')).map((g) => g.title)).toEqual([
+    expect(flyoutGroups('data', tiles('workshop', 'data')).map((g) => g.title)).toEqual([
       'Charts',
       'Meters',
     ]);
   });
 
   it('shows one block, unheaded, when not every group has a name', () => {
-    const groups = flyoutGroups('write', tiles('facilitate', 'write'));
+    const groups = flyoutGroups('write', tiles('workshop', 'write'));
     expect(groups).toHaveLength(1);
     expect(groups[0]!.title).toBeNull();
-    expect(groups[0]!.tiles).toHaveLength(tiles('facilitate', 'write').length);
+    expect(groups[0]!.tiles).toHaveLength(tiles('workshop', 'write').length);
     expect(flyoutGroups('x', [tile('a', true), tile('b')])).toEqual([
       {
         id: 'a',

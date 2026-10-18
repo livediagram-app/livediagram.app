@@ -6,7 +6,7 @@ import {
   AVATAR_TOUR,
   DRAW_TOUR,
   ELEMENT_TOURS,
-  FACILITATE_TOUR,
+  WORKSHOP_TOUR,
   FORM_TOUR,
   PAGES_TOUR,
   NEW_VERSION_PROMPT,
@@ -30,7 +30,7 @@ export const TOURS_GROUPS: MetricGroup[] = [
     metrics: [
       WELCOME_TOUR,
       PLAN_TOUR,
-      FACILITATE_TOUR,
+      WORKSHOP_TOUR,
       DRAW_TOUR,
       FORM_TOUR,
       AVATAR_TOUR,

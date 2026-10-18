@@ -64,7 +64,7 @@ describe('tabTakesPlanOnly', () => {
   });
 
   it('refuses every other mode, and a tab with no mode (Diagram)', () => {
-    for (const opensIn of ['diagram', 'draw', 'facilitate', 'pages'])
+    for (const opensIn of ['diagram', 'draw', 'workshop', 'pages'])
       expect(tabTakesPlanOnly({ opensIn })).toBe(false);
     expect(tabTakesPlanOnly({})).toBe(false);
   });

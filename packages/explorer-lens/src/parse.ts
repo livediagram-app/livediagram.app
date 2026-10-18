@@ -16,6 +16,7 @@ import {
   isLensDimension,
   type LensDimension,
 } from './dimensions';
+import { parseEditorMode } from '@livediagram/document';
 import type {
   Lens,
   LensContext,
@@ -112,7 +113,9 @@ function readSpaceValue(raw: string, context: LensContext): ValueReading {
 function readValue(dimension: LensDimension, raw: string, context: LensContext): ValueReading {
   if (raw === '') return problem('missing_value', dimension, null);
   if (dimension === 'space') return readSpaceValue(raw, context);
-  const value = raw.toLowerCase();
+  // A link shared before a mode's rename says `opens-in:facilitate`: read it as today's mode.
+  const lower = raw.toLowerCase();
+  const value = dimension === 'opens-in' ? (parseEditorMode(lower) ?? lower) : lower;
   if (inOrder<string>(FIXED_VALUES[dimension], [value]).length === 0) {
     return problem('unknown_value', dimension, raw);
   }

@@ -72,7 +72,7 @@ function fullAccount(): UserPreferences {
     telemetryEnabled: false,
     tourSeen: true,
     planTourSeen: true,
-    facilitateTourSeen: true,
+    workshopTourSeen: true,
     uiScale: 1.1,
     panelOpacity: 0.85,
     elementIndicatorStyle: 'footer',

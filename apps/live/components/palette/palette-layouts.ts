@@ -71,7 +71,7 @@ const EMBED_TILES = [
 
 // Write's own tiles and the Callout (a headed note, as much a diagram's as a page's), then the Comment
 // panel and the Action card as their own group: comments and assigned actions belong to every mode, so Diagram
-// keeps them though their Collaborate category is Facilitate's.
+// keeps them though their Collaborate category is Workshop's.
 const WRITE_WITH_COMMENTS = [
   ...tilesForCategory('write').map((t) => t.id),
   'components:callout',
@@ -92,7 +92,7 @@ const DIAGRAM_DIAGRAMS = [
   'tools:entity',
 ];
 
-// Layout (Diagram and Facilitate): the containers a diagram or a board is arranged in, then the parts that label
+// Layout (Diagram and Workshop): the containers a diagram or a board is arranged in, then the parts that label
 // it, the Card, Badge and Step number borrowed from Components.
 const LAYOUT_TILES = [
   'tools:lane',
@@ -106,9 +106,9 @@ const LAYOUT_TILES = [
   'components:step',
 ];
 
-// Facilitate's Layout: the same, with the Timeline after the containers, as Facilitate has no Concepts (where the
+// Workshop's Layout: the same, with the Timeline after the containers, as Workshop has no Concepts (where the
 // Timeline lives, docs/specs/009-elements/concept-graphics.md "Timeline") and a session plans along one as often.
-const FACILITATE_LAYOUT_TILES = [
+const WORKSHOP_LAYOUT_TILES = [
   ...LAYOUT_TILES.slice(0, LAYOUT_TILES.indexOf(DIVIDE)),
   'tools:timeline',
   ...LAYOUT_TILES.slice(LAYOUT_TILES.indexOf(DIVIDE)),
@@ -121,8 +121,8 @@ const CONCEPTS_WITH_SANKEY = [...tilesForCategory('concepts').map((t) => t.id), 
 const MEDIA_WITHOUT_EMBEDS = tilesExcept('media', ...EMBED_TILES, 'media:tab-window');
 
 // Diagram mode: Popular, then every category but the mock-up kit (Components, Devices), the charts
-// (Data) and the session kit (Stickers, Collaborate: Facilitate's, docs/specs/012-collaboration/
-// facilitate-mode.md), each with its own tiles but Media's embeds.
+// (Data) and the session kit (Stickers, Collaborate: Workshop's, docs/specs/012-collaboration/
+// workshop-mode.md), each with its own tiles but Media's embeds.
 const DIAGRAM: PaletteLayout = {
   landing: 'popular',
   categories: [
@@ -230,11 +230,11 @@ const PAGES: PaletteLayout = {
   ],
 };
 
-// Facilitate mode (docs/specs/012-collaboration/facilitate-mode.md "The palette"): running a session
+// Workshop mode (docs/specs/012-collaboration/workshop-mode.md "The palette"): running a session
 // with a team. Popular, the drawing basics a session uses (no Page or Annotation, no Shape Pen or
 // Polygon), Diagram's Layout, the Collaborate elements as six categories, one per group, ahead of the
 // decorations a room reaches for and the charts; no tech icons, mock-up kit or workshop notation.
-const FACILITATE: PaletteLayout = {
+const WORKSHOP: PaletteLayout = {
   landing: 'popular',
   categories: [
     {
@@ -272,8 +272,8 @@ const FACILITATE: PaletteLayout = {
     },
     { id: 'draw', tiles: tilesExcept('draw', 'tools:shape-pen', 'tools:polygon') },
     // Diagram's Layout (docs/specs/010-palette/build-category.md): a board is laid out in frames and lanes and its
-    // notes labelled with badges and step numbers, as a diagram is, with the Timeline (Facilitate has no Concepts).
-    { id: 'layout', tiles: FACILITATE_LAYOUT_TILES },
+    // notes labelled with badges and step numbers, as a diagram is, with the Timeline (Workshop has no Concepts).
+    { id: 'layout', tiles: WORKSHOP_LAYOUT_TILES },
     // The session kit next, before the decorations: running the room is what the mode is for, so Ask and Session
     // (the other five, gathered on the bar) come right after the board's structure.
     { id: 'collab-ask' },
@@ -324,7 +324,7 @@ export const PALETTE_LAYOUTS = {
   diagram: DIAGRAM,
   pages: PAGES,
   plan: PLAN,
-  facilitate: FACILITATE,
+  workshop: WORKSHOP,
 } as const;
 
 /** The layout a mode's palette shows. Draw mode shows its own tools, so it borrows Diagram's. */

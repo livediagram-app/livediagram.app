@@ -9,7 +9,7 @@ import {
   EXPLORER_REASONS_OPENED,
   TOUR_OFFERED,
   PLAN_TOUR_OFFERED,
-  FACILITATE_TOUR_OFFERED,
+  WORKSHOP_TOUR_OFFERED,
   DRAW_TOUR_OFFERED,
   FORM_TOUR_OFFERED,
   AVATAR_TOUR_OFFERED,
@@ -274,74 +274,74 @@ export const PLAN_TOUR: MetricStack = {
   headline: PLAN_TOURS_STARTED,
 };
 
-// The Facilitate tour (docs/specs/012-collaboration/facilitate-tour.md): its own funnel, beside the Plan
+// The Workshop tour (docs/specs/012-collaboration/workshop-tour.md): its own funnel, beside the Plan
 // tour's.
-export const FACILITATE_TOUR_DECLINED = chart(
+export const WORKSHOP_TOUR_DECLINED = chart(
   'UI',
   'Closed',
-  'Facilitate Tours Declined',
-  'The Facilitate tour turned down on its welcome card, before it started.',
-  { types: ['FacilitateTourOffer'], rising: 'neutral' },
+  'Workshop Tours Declined',
+  'The Workshop tour turned down on its welcome card, before it started.',
+  { types: ['WorkshopTourOffer'], rising: 'neutral' },
 );
 
-export const FACILITATE_TOURS_STARTED = chart(
+export const WORKSHOP_TOURS_STARTED = chart(
   'UI',
   'Started',
-  'Facilitate Tours Started',
-  'The Facilitate tour started.',
-  { types: ['FacilitateTour'] },
+  'Workshop Tours Started',
+  'The Workshop tour started.',
+  { types: ['WorkshopTour'] },
 );
 
-export const FACILITATE_TOURS_FROM_WELCOME = chart(
+export const WORKSHOP_TOURS_FROM_WELCOME = chart(
   'UI',
   'Selected',
-  'Facilitate Tours from the Welcome Tour',
-  "Show me Facilitate pressed on the welcome tour's closing card (retired October 2026, when the welcome tour became the Diagram tour).",
-  { types: ['FacilitateTourFromWelcome'] },
+  'Workshop Tours from the Welcome Tour',
+  "Show me Workshop pressed on the welcome tour's closing card (retired October 2026, when the welcome tour became the Diagram tour).",
+  { types: ['WorkshopTourFromWelcome'] },
 );
 
-export const FACILITATE_TOUR_STEPS_VIEWED = chart(
+export const WORKSHOP_TOUR_STEPS_VIEWED = chart(
   'UI',
   'View',
-  'Facilitate Tour Steps Viewed',
-  'A step of the Facilitate tour shown.',
-  { typeIn: (t) => (t ?? '').startsWith('FacilitateTourStep') },
+  'Workshop Tour Steps Viewed',
+  'A step of the Workshop tour shown.',
+  { typeIn: (t) => (t ?? '').startsWith('WorkshopTourStep') },
 );
 
-export const FACILITATE_TOURS_COMPLETED = chart(
+export const WORKSHOP_TOURS_COMPLETED = chart(
   'UI',
   'Ended',
-  'Facilitate Tours Completed',
-  'The Facilitate tour run to its last step.',
-  { types: ['FacilitateTourCompleted'] },
+  'Workshop Tours Completed',
+  'The Workshop tour run to its last step.',
+  { types: ['WorkshopTourCompleted'] },
 );
 
-export const FACILITATE_TOURS_SKIPPED = chart(
+export const WORKSHOP_TOURS_SKIPPED = chart(
   'UI',
   'Ended',
-  'Facilitate Tours Skipped',
-  'The Facilitate tour closed before its end.',
-  { types: ['FacilitateTourSkipped'], rising: 'neutral' },
+  'Workshop Tours Skipped',
+  'The Workshop tour closed before its end.',
+  { types: ['WorkshopTourSkipped'], rising: 'neutral' },
 );
 
-export const FACILITATE_TOUR: MetricStack = {
+export const WORKSHOP_TOUR: MetricStack = {
   stack: true,
-  title: 'Facilitate Tour',
+  title: 'Workshop Tour',
   blurb:
-    "The first time in Facilitate mode: the Facilitate tour offered (on its own card; on the welcome tour's closing card until October 2026), stepped through, finished or skipped.",
+    "The first time in Workshop mode: the Workshop tour offered (on its own card; on the welcome tour's closing card until October 2026), stepped through, finished or skipped.",
   members: [
-    FACILITATE_TOUR_OFFERED,
-    FACILITATE_TOUR_DECLINED,
-    FACILITATE_TOURS_STARTED,
-    FACILITATE_TOURS_FROM_WELCOME,
-    FACILITATE_TOUR_STEPS_VIEWED,
-    FACILITATE_TOURS_COMPLETED,
-    FACILITATE_TOURS_SKIPPED,
+    WORKSHOP_TOUR_OFFERED,
+    WORKSHOP_TOUR_DECLINED,
+    WORKSHOP_TOURS_STARTED,
+    WORKSHOP_TOURS_FROM_WELCOME,
+    WORKSHOP_TOUR_STEPS_VIEWED,
+    WORKSHOP_TOURS_COMPLETED,
+    WORKSHOP_TOURS_SKIPPED,
   ],
-  headline: FACILITATE_TOURS_STARTED,
+  headline: WORKSHOP_TOURS_STARTED,
 };
 
-// The Draw tour (docs/specs/023-draw-mode/draw-tour.md): its own funnel, beside the Facilitate tour's.
+// The Draw tour (docs/specs/023-draw-mode/draw-tour.md): its own funnel, beside the Workshop tour's.
 export const DRAW_TOUR_DECLINED = chart(
   'UI',
   'Closed',
@@ -703,7 +703,7 @@ export const ONBOARDING_TOURS: MetricStack = {
   members: [
     TOURS_STARTED,
     PLAN_TOURS_STARTED,
-    FACILITATE_TOURS_STARTED,
+    WORKSHOP_TOURS_STARTED,
     DRAW_TOURS_STARTED,
     FORM_TOURS_STARTED,
     AVATAR_TOURS_STARTED,

@@ -1,22 +1,22 @@
 // @vitest-environment jsdom
 
-// The Facilitate tour's offer (docs/specs/012-collaboration/facilitate-tour.md "Where it appears"): on
-// entering Facilitate, once, on its own (the Diagram tour never runs in Facilitate), never with another tour,
+// The Workshop tour's offer (docs/specs/012-collaboration/workshop-tour.md "Where it appears"): on
+// entering Workshop, once, on its own (the Diagram tour never runs in Workshop), never with another tour,
 // and rerun from Settings.
 
 import { act, cleanup, render } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { requestFacilitateTourRelaunch } from '@/lib/facilitate-tour';
+import { requestWorkshopTourRelaunch } from '@/lib/workshop-tour';
 import { setActiveTour } from '@/lib/tour-active';
 import { clearTourPending, markTourPending } from '@/lib/tour-pending';
 import type { TourEngine } from './useTourEngine';
-import type { FacilitateTourApi } from './facilitate-tour-steps';
-import { FacilitateTourHost } from './FacilitateTourHost';
+import type { WorkshopTourApi } from './workshop-tour-steps';
+import { WorkshopTourHost } from './WorkshopTourHost';
 
 const track = vi.hoisted(() => vi.fn());
 vi.mock('@/lib/telemetry', () => ({ track }));
 const stage = vi.hoisted(() => ({
-  engine: null as TourEngine<FacilitateTourApi> | null,
+  engine: null as TourEngine<WorkshopTourApi> | null,
   helpHref: '' as string | undefined,
 }));
 vi.mock('./TourStage', () => ({
@@ -24,7 +24,7 @@ vi.mock('./TourStage', () => ({
     engine,
     copy,
   }: {
-    engine: TourEngine<FacilitateTourApi>;
+    engine: TourEngine<WorkshopTourApi>;
     copy: { helpHref?: string };
   }) => {
     stage.engine = engine;
@@ -54,7 +54,7 @@ const editor = (over: Record<string, unknown> = {}) => {
     anyWelcomeOpen: false,
     isReadOnly: false,
     embedMode: false,
-    editorMode: { mode: 'facilitate' },
+    editorMode: { mode: 'workshop' },
     activeTab: { id: 'tab1', locked: false },
     userPreferences: { tourSeen: true },
     setUserPreferences,
@@ -65,7 +65,7 @@ const editor = (over: Record<string, unknown> = {}) => {
   };
 };
 const offered = () =>
-  track.mock.calls.some((c) => c[1] === 'Opened' && c[2] === 'FacilitateTourOffer');
+  track.mock.calls.some((c) => c[1] === 'Opened' && c[2] === 'WorkshopTourOffer');
 
 beforeEach(() => {
   vi.useFakeTimers();
@@ -80,14 +80,14 @@ afterEach(() => {
   vi.useRealTimers();
   setActiveTour('welcome', false);
   setActiveTour('plan', false);
-  setActiveTour('facilitate', false);
+  setActiveTour('workshop', false);
   clearTourPending();
 });
 
-describe('FacilitateTourHost offer', () => {
-  it('offers itself after the settle delay when the person is in Facilitate', () => {
+describe('WorkshopTourHost offer', () => {
+  it('offers itself after the settle delay when the person is in Workshop', () => {
     editor();
-    render(<FacilitateTourHost />);
+    render(<WorkshopTourHost />);
     act(() => {
       vi.advanceTimersByTime(799);
     });
@@ -97,18 +97,18 @@ describe('FacilitateTourHost offer', () => {
     });
     expect(offered()).toBe(true);
     expect(stage.engine?.active).toBe(true);
-    expect(stage.helpHref).toBe('/help/canvas/facilitate-mode/');
+    expect(stage.helpHref).toBe('/help/canvas/workshop-mode/');
   });
 
-  it('waits for the person to enter Facilitate', () => {
+  it('waits for the person to enter Workshop', () => {
     editor({ editorMode: { mode: 'diagram' } });
-    const { rerender } = render(<FacilitateTourHost />);
+    const { rerender } = render(<WorkshopTourHost />);
     act(() => {
       vi.advanceTimersByTime(2000);
     });
     expect(offered()).toBe(false);
     editor();
-    rerender(<FacilitateTourHost />);
+    rerender(<WorkshopTourHost />);
     act(() => {
       vi.advanceTimersByTime(800);
     });
@@ -116,7 +116,7 @@ describe('FacilitateTourHost offer', () => {
   });
 
   it.each([
-    ['seen', { userPreferences: { tourSeen: true, facilitateTourSeen: true } }],
+    ['seen', { userPreferences: { tourSeen: true, workshopTourSeen: true } }],
     ['read-only', { isReadOnly: true }],
     ['locked', { activeTab: { id: 'tab1', locked: true } }],
     ['not hydrated', { hydrated: false }],
@@ -125,18 +125,18 @@ describe('FacilitateTourHost offer', () => {
     ['before the synced preferences are in', { prefsSettled: false }],
   ])('makes no offer when %s', (_why, over) => {
     editor(over);
-    render(<FacilitateTourHost />);
+    render(<WorkshopTourHost />);
     act(() => {
       vi.advanceTimersByTime(2000);
     });
     expect(offered()).toBe(false);
   });
 
-  // docs/specs/012-collaboration/facilitate-tour.md "Where it appears": on its own, whatever other tours.
+  // docs/specs/012-collaboration/workshop-tour.md "Where it appears": on its own, whatever other tours.
   it('offers itself to someone who has not done the Diagram tour, even with its handoff owed', () => {
     markTourPending();
     editor({ userPreferences: {} });
-    render(<FacilitateTourHost />);
+    render(<WorkshopTourHost />);
     act(() => {
       vi.advanceTimersByTime(800);
     });
@@ -147,7 +147,7 @@ describe('FacilitateTourHost offer', () => {
   it('waits while the Diagram tour is on screen, then follows it', () => {
     setActiveTour('welcome', true);
     editor();
-    render(<FacilitateTourHost />);
+    render(<WorkshopTourHost />);
     act(() => {
       vi.advanceTimersByTime(2000);
     });
@@ -162,33 +162,33 @@ describe('FacilitateTourHost offer', () => {
   it('never runs beside the Plan tour', () => {
     setActiveTour('plan', true);
     editor();
-    render(<FacilitateTourHost />);
+    render(<WorkshopTourHost />);
     act(() => {
       vi.advanceTimersByTime(2000);
     });
     expect(offered()).toBe(false);
   });
 
-  it('reruns from Settings in Facilitate', () => {
-    editor({ userPreferences: { tourSeen: true, facilitateTourSeen: true } });
-    const { rerender } = render(<FacilitateTourHost />);
+  it('reruns from Settings in Workshop', () => {
+    editor({ userPreferences: { tourSeen: true, workshopTourSeen: true } });
+    const { rerender } = render(<WorkshopTourHost />);
     act(() => {
       vi.advanceTimersByTime(2000);
     });
     expect(offered()).toBe(false);
     editor();
-    rerender(<FacilitateTourHost />);
-    act(() => requestFacilitateTourRelaunch());
+    rerender(<WorkshopTourHost />);
+    act(() => requestWorkshopTourRelaunch());
     act(() => {
       vi.advanceTimersByTime(800);
     });
     expect(offered()).toBe(true);
   });
 
-  it('ignores a rerun outside Facilitate', () => {
+  it('ignores a rerun outside Workshop', () => {
     editor({ editorMode: { mode: 'diagram' } });
-    render(<FacilitateTourHost />);
-    act(() => requestFacilitateTourRelaunch());
+    render(<WorkshopTourHost />);
+    act(() => requestWorkshopTourRelaunch());
     act(() => {
       vi.advanceTimersByTime(2000);
     });
@@ -196,10 +196,10 @@ describe('FacilitateTourHost offer', () => {
   });
 });
 
-describe('FacilitateTourHost end', () => {
+describe('WorkshopTourHost end', () => {
   const start = () => {
     editor();
-    const r = render(<FacilitateTourHost />);
+    const r = render(<WorkshopTourHost />);
     act(() => {
       vi.advanceTimersByTime(800);
     });
@@ -210,25 +210,25 @@ describe('FacilitateTourHost end', () => {
     start();
     act(() => stage.engine!.skip());
     expect(writeUserPreferences).toHaveBeenCalledWith(
-      { tourSeen: true, facilitateTourSeen: true },
+      { tourSeen: true, workshopTourSeen: true },
       'me',
     );
-    expect(track).toHaveBeenCalledWith('UI', 'Closed', 'FacilitateTourOffer');
+    expect(track).toHaveBeenCalledWith('UI', 'Closed', 'WorkshopTourOffer');
   });
 
   it('starting runs the steps and completing sends the completion', async () => {
     start();
     act(() => stage.engine!.next());
-    expect(track).toHaveBeenCalledWith('UI', 'Started', 'FacilitateTour');
+    expect(track).toHaveBeenCalledWith('UI', 'Started', 'WorkshopTour');
     // Every anchored step finds no target in this harness and is skipped, so Next runs to the end.
     await act(async () => {
       await vi.advanceTimersByTimeAsync(30000);
     });
     expect(stage.engine?.step?.id).toBe('outro');
     act(() => stage.engine!.next());
-    expect(track).toHaveBeenCalledWith('UI', 'Ended', 'FacilitateTourCompleted');
+    expect(track).toHaveBeenCalledWith('UI', 'Ended', 'WorkshopTourCompleted');
     expect(writeUserPreferences).toHaveBeenCalledWith(
-      { tourSeen: true, facilitateTourSeen: true },
+      { tourSeen: true, workshopTourSeen: true },
       'me',
     );
   });
@@ -244,12 +244,12 @@ describe('FacilitateTourHost end', () => {
     expect(stage.engine!.countableSteps).toBe(3);
   });
 
-  it('ends as skipped when the person leaves Facilitate or the tab', () => {
+  it('ends as skipped when the person leaves Workshop or the tab', () => {
     const r = start();
     act(() => stage.engine!.next());
     editor({ editorMode: { mode: 'diagram' } });
-    r.rerender(<FacilitateTourHost />);
-    expect(track).toHaveBeenCalledWith('UI', 'Ended', 'FacilitateTourSkipped');
+    r.rerender(<WorkshopTourHost />);
+    expect(track).toHaveBeenCalledWith('UI', 'Ended', 'WorkshopTourSkipped');
     expect(stage.engine?.active).toBe(false);
   });
 });

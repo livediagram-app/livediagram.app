@@ -1,12 +1,12 @@
 # Quiz and game templates
 
 Five session templates for the lighter end of running a room: a pub quiz, icebreakers and three party games.
-They open in Facilitate ([Facilitate mode](facilitate-mode.md#templates)) and live in their own catalogue
+They open in Workshop ([Workshop mode](workshop-mode.md#templates)) and live in their own catalogue
 category, **Quizzes & Games** ([Template categories](../008-canvas/canvas-and-palette.md#template-categories)).
 
 ## Why
 
-Facilitate already had every piece a quiz night or a warm-up needs: the Quiz card ([Quiz](quiz.md)), the Picker
+Workshop already had every piece a quiz night or a warm-up needs: the Quiz card ([Quiz](quiz.md)), the Picker
 ([Picker](picker.md)), the reveal zone ([Reveal zone](../009-elements/reveal-zone.md)), polls and timers on session
 buttons ([Session button](session-button.md)) and reaction pads ([Reaction pad](../009-elements/reaction-pad.md)).
 Nothing put them together, so the first person to run a team quiz had to assemble one from an empty tab. Every
@@ -19,14 +19,14 @@ Workshops beside the retros is hard to find. They get a category of their own.
   category's 40 to 50 band). Search words: `quiz trivia icebreaker icebreakers warm up energiser fun team building`.
 - Primary home of the five templates below. **Doodle Warm-Up** (`doodle-warmup`, primary Brainstorm) is
   cross-listed here: it is a drawn icebreaker game.
-- In Start Facilitating ([Templates by mode](../007-editor/templates-by-mode.md#facilitate-templates)) the five
+- In Start a Workshop ([Templates by mode](../007-editor/templates-by-mode.md#workshop-templates)) the five
   form their own group, **Quizzes & Games**, "Quizzes, icebreakers and games to warm up the room.", after
   Meetings.
-- **Pub Quiz** joins Facilitate's Popular, after Crazy 8s.
+- **Pub Quiz** joins Workshop's Popular, after Crazy 8s.
 
 ## The templates
 
-Every template opens on the dot grid (`grid`), in Facilitate, with the session boards' heading (a title with a
+Every template opens on the dot grid (`grid`), in Workshop, with the session boards' heading (a title with a
 sticker, a one-line how-to) and section labels (`template-session-parts.ts`). Every tool sits beside the words
 that say when to press it, as the other session boards do. The worked content is real and checkable: every quiz
 answer marked correct is correct.
@@ -120,7 +120,7 @@ new behaviour: each role does what the elements they are built from already allo
 
 All in `packages/templates/src/template-quiz-games.test.ts` unless named:
 
-- Every template builds, opens in Facilitate and sits in `games`.
+- Every template builds, opens in Workshop and sits in `games`.
 - Every Pub Quiz card is set up (`quizPhase` is `ready`): four answers, a correct index in range, 30 seconds; the
   right answers are spread over A to D (no letter right more than three times in nine, no round all one letter).
 - Every poll button can start (`sessionButtonPlan` is not null), its answers within the wire's `POLL_OPTION_MAX`, and

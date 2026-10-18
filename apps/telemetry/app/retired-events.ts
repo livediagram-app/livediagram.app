@@ -60,7 +60,7 @@ const LOCATION_STEP_AND_QUICK_START_UI = new Set([
   'Toggled|TemplateModeAll',
   'Toggled|TemplateModeDiagram',
   'Toggled|TemplateModeDraw',
-  'Toggled|TemplateModeFacilitate',
+  'Toggled|TemplateModeWorkshop',
   'Toggled|TemplateModePages',
   'Toggled|TemplateModePlan',
 ]);

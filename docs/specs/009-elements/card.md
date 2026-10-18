@@ -91,12 +91,12 @@ their own.
 
 ## Palette
 
-| Mode       | Where                                                       |
-| ---------- | ----------------------------------------------------------- |
-| Diagram    | **Build**: Card; **Write**: Callout (the preset)            |
-| Pages      | **Components**: Card and Callout; **Popular** keeps Callout |
-| Plan       | none                                                        |
-| Facilitate | none (Search still finds and places it)                     |
+| Mode     | Where                                                       |
+| -------- | ----------------------------------------------------------- |
+| Diagram  | **Build**: Card; **Write**: Callout (the preset)            |
+| Pages    | **Components**: Card and Callout; **Popular** keeps Callout |
+| Plan     | none                                                        |
+| Workshop | none (Search still finds and places it)                     |
 
 The Card tile drops a card with a tile, a title, a meta line, a body and two tags, so the first one shows what the
 slots are; switching a slot off is quicker than discovering one exists.
@@ -105,7 +105,7 @@ slots are; switching a slot off is quicker than discovering one exists.
 
 A card has many possible shapes, so the palette offers a few to start close to what you want. On the Toolbar strip the
 Card tile is drawn as an opener (its glyph with a caret, as the Icons groups are) and pressing it opens a popover below
-it of the presets, two to a row (the same panel as Facilitate's openers): each places or drags exactly as a tile does,
+it of the presets, two to a row (the same panel as Workshop's openers): each places or drags exactly as a tile does,
 and using one closes the popover.
 
 | Preset  | Variant   | Slots                                                                      | Size      |

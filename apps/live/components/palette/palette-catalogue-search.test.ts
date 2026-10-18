@@ -23,7 +23,7 @@ describe('searchCatalogueTiles', () => {
     const { here, elsewhere } = searchCatalogueTiles({ query: 'database', mode: 'diagram' });
     expect(from(here, 'icon:').length).toBeGreaterThan(0);
     expect(from(here, 'tech:').length).toBeGreaterThan(0);
-    // Stickers are Facilitate's (docs/specs/012-collaboration/facilitate-mode.md), so only they sit elsewhere.
+    // Stickers are Workshop's (docs/specs/012-collaboration/workshop-mode.md), so only they sit elsewhere.
     expect(elsewhere.filter((t) => !t.id.startsWith('sticker:'))).toEqual([]);
   });
 
@@ -32,8 +32,8 @@ describe('searchCatalogueTiles', () => {
     const diagram = searchCatalogueTiles({ query: sticker.label, mode: 'diagram' });
     expect(from(diagram.here, 'sticker:')).toEqual([]);
     expect(ids(diagram.elsewhere)).toContain(`sticker:${sticker.id}`);
-    const facilitate = searchCatalogueTiles({ query: sticker.label, mode: 'facilitate' });
-    expect(ids(facilitate.here)).toContain(`sticker:${sticker.id}`);
+    const workshop = searchCatalogueTiles({ query: sticker.label, mode: 'workshop' });
+    expect(ids(workshop.here)).toContain(`sticker:${sticker.id}`);
   });
 
   it("puts a catalogue the mode does not offer in the other modes' section", () => {

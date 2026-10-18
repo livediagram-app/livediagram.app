@@ -26,7 +26,7 @@ describe('tidyUpOffered', () => {
     expect(tidyUpOffered({ ...base, actions: undefined })).toBe(false);
   });
 
-  it.each(['draw', 'facilitate', 'pages', 'plan'] as const)('is not in %s mode', (editorMode) => {
+  it.each(['draw', 'workshop', 'pages', 'plan'] as const)('is not in %s mode', (editorMode) => {
     expect(tidyUpOffered({ ...base, editorMode })).toBe(false);
   });
 

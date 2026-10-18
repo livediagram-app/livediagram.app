@@ -9,7 +9,7 @@ afterEach(() => {
   localStorage.clear();
 });
 
-const mount = (mode: 'diagram' | 'facilitate', onTemplate = vi.fn()) =>
+const mount = (mode: 'diagram' | 'workshop', onTemplate = vi.fn()) =>
   render(
     <StartFromTemplates
       key={mode}
@@ -25,8 +25,8 @@ describe('StartFromTemplates', () => {
     mount('diagram');
     expect(screen.getByRole('heading', { name: 'Start Diagramming' })).toBeTruthy();
     cleanup();
-    mount('facilitate');
-    expect(screen.getByRole('heading', { name: 'Start Facilitating' })).toBeTruthy();
+    mount('workshop');
+    expect(screen.getByRole('heading', { name: 'Start a Workshop' })).toBeTruthy();
   });
 
   it('lands a chosen template, and a blank closes the panel', () => {
@@ -47,8 +47,8 @@ describe('StartFromTemplates', () => {
     mount('diagram');
     expect(screen.queryByRole('heading', { name: 'Start Diagramming' })).toBeNull();
     cleanup();
-    mount('facilitate');
-    expect(screen.getByRole('heading', { name: 'Start Facilitating' })).toBeTruthy();
+    mount('workshop');
+    expect(screen.getByRole('heading', { name: 'Start a Workshop' })).toBeTruthy();
   });
 });
 

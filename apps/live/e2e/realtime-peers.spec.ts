@@ -31,10 +31,10 @@ async function openAs(
         if (sig) localStorage.setItem('livediagram:v2:self-sig', sig);
         localStorage.setItem('livediagram:v2:name-confirmed', '1');
       }
-      // The Facilitate tour offers itself over the board (fixtures openBlankSession); its overlay would take the presses.
+      // The Workshop tour offers itself over the board (fixtures openBlankSession); its overlay would take the presses.
       localStorage.setItem(
         'livediagram:user-preferences:v1',
-        JSON.stringify({ facilitateTourSeen: true }),
+        JSON.stringify({ workshopTourSeen: true }),
       );
     },
     { o: owner, sig: owner ? guestSigFor(owner) : null },
@@ -64,7 +64,7 @@ test('two peers see each other, edit live, and every edit is kept', async ({
         {
           id: tabId,
           name: 'Board',
-          opensIn: 'facilitate',
+          opensIn: 'workshop',
           elements: [
             { id: 'a', type: 'shape', shape: 'square', x: 100, y: 100, width: 200, height: 100 },
             // Avatar mode's one way in (docs/specs/008-canvas/avatar-mode.md "Where it lives").

@@ -194,16 +194,16 @@ const PLAN_TOUR_STEP_SOURCE: string[] = [
         .join('')}`,
   );
 
-// The Facilitate tour's steps, as facilitateTourStepTelemetryType makes them (apps/live
-// facilitate-tour-steps.ts, docs/specs/012-collaboration/facilitate-tour.md). The welcome card sends no step view.
-const FACILITATE_TOUR_STEP_SOURCE: string[] = [
-  ...read('live/components/tour/facilitate-tour-steps.ts').matchAll(/^ {4}id: '([a-z-]+)',/gm),
+// The Workshop tour's steps, as workshopTourStepTelemetryType makes them (apps/live
+// workshop-tour-steps.ts, docs/specs/012-collaboration/workshop-tour.md). The welcome card sends no step view.
+const WORKSHOP_TOUR_STEP_SOURCE: string[] = [
+  ...read('live/components/tour/workshop-tour-steps.ts').matchAll(/^ {4}id: '([a-z-]+)',/gm),
 ]
   .map((m) => m[1]!)
   .filter((id) => id !== 'welcome')
   .map(
     (id) =>
-      `FacilitateTourStep${id
+      `WorkshopTourStep${id
         .split('-')
         .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
         .join('')}`,
@@ -671,8 +671,8 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     open: API_ERROR_WHY,
   },
   'apps/live/components/tour/PlanTourHost.tsx UI·View': { values: PLAN_TOUR_STEP_SOURCE },
-  'apps/live/components/tour/FacilitateTourHost.tsx UI·View': {
-    values: FACILITATE_TOUR_STEP_SOURCE,
+  'apps/live/components/tour/WorkshopTourHost.tsx UI·View': {
+    values: WORKSHOP_TOUR_STEP_SOURCE,
   },
   'apps/live/components/tour/DrawTourHost.tsx UI·View': { values: DRAW_TOUR_STEP_SOURCE },
   'apps/live/components/tour/FormTourHost.tsx UI·View': { values: FORM_TOUR_STEP_SOURCE },

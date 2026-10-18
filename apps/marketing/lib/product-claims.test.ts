@@ -81,7 +81,7 @@ describe('product claims in marketing copy', () => {
   }
 });
 
-// A sentence that walks through the modes lists them in the editor's own order (Facilitate after
+// A sentence that walks through the modes lists them in the editor's own order (Workshop after
 // Draw since #548), the order the mode switch shows.
 describe('mode lists in marketing copy', () => {
   const labels = EDITOR_MODES.map(editorModeLabel);

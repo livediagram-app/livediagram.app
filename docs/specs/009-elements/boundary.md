@@ -54,12 +54,12 @@ title takes the **Text** set.
 
 ## Palette
 
-| Mode       | Where                                     |
-| ---------- | ----------------------------------------- |
-| Diagram    | **Build**: Boundary, after Frame and Lane |
-| Pages      | none (it organises a diagram, not a page) |
-| Plan       | none                                      |
-| Facilitate | none (Search still finds and places it)   |
+| Mode     | Where                                     |
+| -------- | ----------------------------------------- |
+| Diagram  | **Build**: Boundary, after Frame and Lane |
+| Pages    | none (it organises a diagram, not a page) |
+| Plan     | none                                      |
+| Workshop | none (Search still finds and places it)   |
 
 ## The menu
 

@@ -91,7 +91,7 @@ A Board tab and its board, and a Sheet tab and its sheet, share **one name**:
 A Plan board and a Sheet are placed only on a tab in Plan (`opensInOf(tab) === 'plan'`: a Board, Sheet or Dashboard
 tab, or a general tab in Plan). A tab keeps its mode once it has content
 ([Editor modes](../007-editor/editor-modes.md#the-mode-switch)), and a board's cards and a Sheet's cells take input only
-in Plan, so one on a Diagram, Draw, Facilitate or Pages tab could never be worked there. Every way in keeps to it
+in Plan, so one on a Diagram, Draw, Workshop or Pages tab could never be worked there. Every way in keeps to it
 (`tabTakesPlanOnly`, `planOnlyAddedOutsidePlan` and `withoutPlanOnly` in `packages/document/src/plan-only.ts`):
 
 - **The palette, Search and a dropped CSV** are Plan mode's already: Search lists boards and Sheets in another mode

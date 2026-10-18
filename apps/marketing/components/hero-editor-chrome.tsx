@@ -50,10 +50,10 @@ function Lucide({
   );
 }
 
-// The extra group a mode adds to the cluster, as CanvasChrome lays it out: Facilitate's session
+// The extra group a mode adds to the cluster, as CanvasChrome lays it out: Workshop's session
 // tools (timer, votes, poll) and a Plan board's own (delete, add, find, cards).
 const MODE_GROUP: Partial<Record<HeroMode, Parameters<typeof Prims>[0]['prims'][]>> = {
-  facilitate: [lucideTimer, lucideCircleCheck, lucideChartColumn],
+  workshop: [lucideTimer, lucideCircleCheck, lucideChartColumn],
   plan: [lucideTrash2, lucidePlus, lucideSearch],
 };
 
@@ -184,12 +184,12 @@ function StripTile({ tile, index }: { tile: Tile; index: number }) {
 // From which window width each bar shows its names (literal classes, so Tailwind sees them).
 const NAMED_FROM: Partial<Record<HeroMode, string>> = {
   diagram: 'hidden @[640px]:inline',
-  facilitate: 'hidden @[780px]:inline',
+  workshop: 'hidden @[780px]:inline',
   pages: 'hidden @[900px]:inline',
 };
 
 // The Palette in the Toolbar layout (docs/specs/007-editor/toolbar-layout.md): one strip at the top
-// centre of the canvas. In Diagram, Facilitate and Pages it is the category bar: the selection
+// centre of the canvas. In Diagram, Workshop and Pages it is the category bar: the selection
 // mode, then the mode's categories (each its glyph and one-word name, a hairline between bands; the
 // glyphs alone where the window is narrow), then Search. Draw shows its dock instead, its drawing
 // tools split from its shapes and its settings in a card of its own. A Plan tab brings its own bar
