@@ -548,7 +548,7 @@ export function useExplorerState() {
     teams,
     teamFolders,
     teamDocuments,
-    // My Documents' own menu: "Use as default for" only.
+    // My Documents' own menu: "Use as Default for" only.
     rootDefaults: defaultFolders.forRoot,
     invites,
     tokens,

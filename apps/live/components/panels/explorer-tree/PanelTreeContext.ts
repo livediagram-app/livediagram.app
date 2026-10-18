@@ -41,7 +41,7 @@ export type PanelTree = {
   onCreateChild: (parentId: string) => void;
   onTeamFolders?: TeamFolderHandlers;
   onCreateTeamChild: (teamId: string, parentId: string | null) => void;
-  // "Use as default for" (docs/specs/013-workspace/default-folders.md), set by PanelExplorerTree.
+  // "Use as Default for" (docs/specs/013-workspace/default-folders.md), set by PanelExplorerTree.
   defaultFolders?: DefaultFolderMenus;
 };
 

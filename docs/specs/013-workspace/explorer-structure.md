@@ -81,9 +81,9 @@ reached from Home's What Happened (**See Timeline**). The retired `/explorer/act
   `/explorer/dynamic` open the My Documents root, `/explorer/generated` opens Search results filtered by
   `made-by:ai`.
 - A folder row opens its folder, expands to its subfolders, and carries the folder menu (Rename, New subfolder,
-  Change folder, Use as default for, Delete). A team folder row opens the team page at that folder and carries no menu.
+  Change folder, Use as Default for, Delete). A team folder row opens the team page at that folder and carries no menu.
 - **My Documents** carries a menu of its own (its `⋯` button, a right-click, Shift+F10) holding only **Use as
-  default for** ([Default folders](default-folders.md#use-as-default-for)).
+  Default for** ([Default folders](default-folders.md#use-as-default-for)).
 - **The `⋯` shows on hover.** A folder row's and My Documents' `⋯` stays hidden until the row is hovered or has
   keyboard focus, and stays while its menu is open. On a touch screen (a coarse pointer), where nothing hovers, it
   always shows. The editor's Explorer rows behave the same.
@@ -321,7 +321,7 @@ compact size, skeleton rows while loading, and one line with **Try Again** when 
 - **Filing.** One of the reader's own document rows drags onto a personal folder row (resting on it opens it), or onto
   the My Documents rail entry to file it at the root ([Folders: drag-and-drop](folders.md#the-editors-explorer-editor--new)).
   A personal folder row carries the folder menu plus Show in Explorer; a team folder row carries the team folder verbs
-  the session may use; My Documents carries its Use as default for menu.
+  the session may use; My Documents carries its Use as Default for menu.
 - **An empty place** says so in the Explorer's empty state: "Nothing shared with you yet", "Nothing in this browser",
   "No documents yet", "This folder is empty", "Nothing waiting on you", "No activity yet", "Nothing in the Trash right
   now".

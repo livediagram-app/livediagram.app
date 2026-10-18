@@ -434,7 +434,7 @@ onCreateFolder?, onPick(folderId: string | null), onClose }`.
 
 ### Presentation and UX (surfaces)
 
-- Menu row: **Use as default for** with the folder-check icon, after Change Folder, before the Delete
+- Menu row: **Use as Default for** with the folder-check icon, after Change Folder, before the Delete
   separator. Its flyout: a `MenuHeader` "New documents that open as", then the five `MenuCheckRow`s.
 - Marker: `inline-flex shrink-0 items-center gap-0.5` icons at 12px in `text-slate-500
 dark:text-slate-400`, then `+N` at 10px semibold; after the count badge; in a tree row inside the
@@ -521,7 +521,7 @@ dark:text-slate-400`, then `+N` at 10px semibold; after the count badge; in a tr
 | Event Storming boards | Lucide `sticky-note`          | ISC     | `packages/icons/src/lucide.generated.ts`                           |
 | Retrospectives        | Lucide `history`              | ISC     | same                                                               |
 | Kanban boards         | Lucide `square-kanban`        | ISC     | same, vendored by `pnpm --filter @livediagram/icons vendor:lucide` |
-| Use as default for    | Lucide `folder-check`         | ISC     | same                                                               |
+| Use as Default for    | Lucide `folder-check`         | ISC     | same                                                               |
 
 ## The wizard's Location step (retired)
 

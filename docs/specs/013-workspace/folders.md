@@ -324,7 +324,7 @@ link.
   data, not markup: team folders take no drag-and-drop, and Show in
   Explorer opens the team page.
 - **Right-clicking anywhere on a folder or document row** opens that row's ellipsis menu (suppressing the browser's default context menu), anchored to the row's ellipsis button: the same menu the `⋯` click opens. Applies in both the editor's Explorer and the full-page `/explorer`, including the page's sidebar folder tree (a no-op while a row is being renamed). Every row and card shares one `useRowMenu` hook and one `EllipsisTriggerButton`, so the trigger always reports `aria-expanded` and, on the panel's hover-revealed rows, stays visible while its menu is open.
-- Folder-row ellipsis menu: Rename, New subfolder, Change Folder, Use as default for (the [default folder](default-folders.md#use-as-default-for) submenu), Delete.
+- Folder-row ellipsis menu: Rename, New subfolder, Change Folder, Use as Default for (the [default folder](default-folders.md#use-as-default-for) submenu), Delete.
 - Deleting a document moves it to the [Trash](trash.md) for 30 days. A document restored after its folder was deleted lands in that folder's parent (the folder delete moved it there, [Deleting a folder](#deleting-a-folder)).
   Rename is inline (same pattern as the document-row rename). Delete
   pops a confirmation dialog ("Delete <name>?" naming where the
@@ -383,7 +383,7 @@ it stays in view as the dashboard scrolls; Settings opens the same synced
   its root folders beneath it, each team with its
   folders, New Team), and More (This Browser, Tags, Library, Trash). Each folder
   row carries an ellipsis menu with Rename, New subfolder, Change Folder,
-  Use as default for ([Default folders](default-folders.md#use-as-default-for)), Delete. The Image gallery (under Library) degrades to an empty state
+  Use as Default for ([Default folders](default-folders.md#use-as-default-for)), Delete. The Image gallery (under Library) degrades to an empty state
   when the api worker reports 503, e.g. a self-host without R2.
 - **Right pane:**
   - Breadcrumb showing the path from "My Documents" through every

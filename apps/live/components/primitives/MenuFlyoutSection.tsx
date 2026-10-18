@@ -106,7 +106,7 @@ type MenuFlyoutSectionProps = {
   // wider, and scrollable when it is taller than the screen.
   panel?: boolean;
   // The trigger reads as a plain verb row (MenuActionRow `plain`: sentence case, 13px, its icon in
-  // the 20px slot) with a chevron, for a verb menu such as the folder menu's "Use as default for"
+  // the 20px slot) with a chevron, for a verb menu such as the folder menu's "Use as Default for"
   // (docs/specs/013-workspace/default-folders.md). Never promoted inline, as a panel is not.
   plain?: boolean;
 };
