@@ -5,6 +5,7 @@ import { CardColumns } from './CardColumns';
 import {
   AI_ASSISTANCE,
   ASSIGNED_ACTIONS,
+  DATA_MODELS,
   EDITOR_CHROME,
   EDITOR_SEARCH,
   EXPORT_AND_IMPORT,
@@ -52,6 +53,7 @@ export const GROUPS: MetricGroup[] = [
       UNDO_AND_REDO,
       EXPORT_AND_IMPORT,
       TABLES,
+      DATA_MODELS,
       LAYERS_FEATURE,
       SIDE_BY_SIDE,
       EDITOR_SEARCH,

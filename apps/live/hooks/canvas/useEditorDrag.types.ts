@@ -139,6 +139,8 @@ export type EditorDragApi = {
       // Enter a real drag, but remember what a no-movement TAP should do
       // (touch quick-connect, docs/specs/008-canvas/canvas-and-palette.md).
       tapPlaceOutPx?: number;
+      // Start from one of an entity's fields (docs/specs/009-elements/entity.md "Field to field").
+      field?: number;
     },
   ) => void;
   beginArrowTranslate: (arrowId: string, e: ReactPointerEvent) => void;

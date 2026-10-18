@@ -496,7 +496,7 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
       textAlignY: 'top',
       label: 'Entity',
       entityFields: [
-        { name: 'id', type: 'string' },
+        { name: 'id', type: 'string', key: 'pk' },
         { name: 'name', type: 'string' },
       ],
     };

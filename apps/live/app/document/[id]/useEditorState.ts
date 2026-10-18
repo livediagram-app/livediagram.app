@@ -222,6 +222,7 @@ import { useMindGrowth } from './useMindGrowth';
 import { useFlowchartGrowth } from './useFlowchartGrowth';
 import { routeGrowth } from './growth-routing';
 import { useFlowchartSetters } from '@/hooks/canvas/useFlowchartSetters';
+import { useEntityActions } from '@/hooks/canvas/useEntityActions';
 import { useMindOutline } from './useMindOutline';
 import { useLayersState } from './useLayersState';
 import { useInlineIconMutators } from './useInlineIconMutators';
@@ -3674,6 +3675,19 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     },
   });
 
+  // The entity's verbs (docs/specs/009-elements/entity.md): fields saved from the canvas, relationships drawn
+  // from a field, the ring's Add Field and Add Related Entity, and the Cardinality presets.
+  const entityActions = useEntityActions({
+    activeTab,
+    readSelection,
+    commit,
+    styleNewElement: styleMemory.styleNewElement,
+    setSelectedId,
+    setEditingId,
+    beginAnchorDrag,
+    editsBlocked,
+  });
+
   // Copy / paste (in-app element clipboard + OS-clipboard image
   // paste). `copySelection` feeds the keyboard hook below; paste is
   // driven by a native `paste` listener the hook owns. See
@@ -4363,6 +4377,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     growMindNode,
     abandonMindNode,
     flowchartActions,
+    entityActions,
     mindOutline,
     setChecklistItemsSelected,
     setEntityFieldsSelected,

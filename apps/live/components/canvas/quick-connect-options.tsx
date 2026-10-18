@@ -32,7 +32,9 @@ export type Option = {
     | 'mind-child'
     | 'mind-sibling'
     | 'flowchart-next'
-    | 'flowchart-parallel';
+    | 'flowchart-parallel'
+    | 'entity-related'
+    | 'entity-field';
   label: string;
   description: string;
   icon: ReactNode;
@@ -108,6 +110,21 @@ export const FLOWCHART_PARALLEL_OPTION: Option = {
   icon: <FlowchartParallelIcon />,
 };
 
+// Entity growth (docs/specs/009-elements/entity.md "Growing a model"), offered on an entity's ring.
+export const ADD_RELATED_ENTITY_OPTION: Option = {
+  kind: 'entity-related',
+  label: 'Add Related Entity',
+  description:
+    'Add an entity on this side, joined one to many, with a foreign key back to this one.',
+  icon: <RelatedEntityIcon />,
+};
+export const ADD_ENTITY_FIELD_OPTION: Option = {
+  kind: 'entity-field',
+  label: 'Add Field',
+  description: 'Add a field at the end of the entity and type its name. Enter adds the next.',
+  icon: <AddRowIcon />,
+};
+
 // Listed order matches the spec; they fan across the arc in this order.
 export const OPTIONS: Option[] = [
   {
@@ -166,6 +183,19 @@ function AddPointIcon() {
       <path d="M2 11h12" />
       <circle cx="5.5" cy="7" r="1.6" fill="currentColor" stroke="none" />
       <path d="M11 4v4M9 6h4" />
+    </Glyph>
+  );
+}
+
+// This entity (solid title bar) joined by a crow's foot to a new one (outlined, with a plus).
+function RelatedEntityIcon() {
+  return (
+    <Glyph size={OPTION_ICON_SIZE} units={16}>
+      <rect x="0.75" y="3" width="5" height="7" rx="1" />
+      <path d="M0.75 5.4h5" />
+      <path d="M5.75 6.5h4M8.2 6.5l1.55-1.6M8.2 6.5l1.55 1.6" />
+      <rect x="9.75" y="3" width="5.5" height="7" rx="1" strokeDasharray="1.6 1.2" />
+      <path d="M12.5 11.5v3.5M10.75 13.25h3.5" />
     </Glyph>
   );
 }

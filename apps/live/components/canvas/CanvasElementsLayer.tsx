@@ -121,6 +121,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onAddTableColumn,
     onSetRailLabel,
     onToggleChecklistItem,
+    entityActions,
     onSetPageHeading,
     onSetWebRows,
     onSetPointerTip,
@@ -241,6 +242,10 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
           }).value,
     onSetRailLabel,
     onToggleChecklistItem: readOnly ? undefined : onToggleChecklistItem,
+    onSetEntityFields: readOnly ? undefined : entityActions?.setFields,
+    onStartFieldArrow: readOnly ? undefined : entityActions?.startFieldArrow,
+    onAddEntityField: readOnly ? undefined : entityActions?.addFieldSelected,
+    onAddRelatedEntity: readOnly ? undefined : entityActions?.addRelatedSelected,
     onSetPageHeading,
     onSetWebRows: readOnly ? undefined : onSetWebRows,
     onSetPointerTip: readOnly ? undefined : onSetPointerTip,
@@ -407,6 +412,8 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
       onSnapSeam: h.onSnapSeam,
       onSetRailLabel: h.onSetRailLabel,
       onToggleChecklistItem: h.onToggleChecklistItem,
+      onSetEntityFields: h.onSetEntityFields,
+      onStartFieldArrow: h.onStartFieldArrow,
       onSetPageHeading: h.onSetPageHeading,
       onSetWebRows: h.onSetWebRows,
       onSetPointerTip: h.onSetPointerTip,
@@ -692,6 +699,8 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
                 onAddTableRow,
                 onAddTableColumn,
                 onAppendWebRow,
+                onAddEntityField: h.onAddEntityField,
+                onAddRelatedEntity: h.onAddRelatedEntity,
               }}
               onBeginDrag={onBeginDrag}
               pages={props.pagesMode?.pages}

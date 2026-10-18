@@ -5,6 +5,7 @@ import {
   withAttached,
   anchorOutward,
   anchorPosition,
+  fieldEndPosition,
   isBoxed,
   nearestOfferedAnchor,
   withMindSubtrees,
@@ -163,6 +164,8 @@ export function useBoxedDragHandlers({
       clickToPlace?: boolean;
       placeOutPx?: number;
       tapPlaceOutPx?: number;
+      // Start from one of an entity's fields (docs/specs/009-elements/entity.md "Field to field").
+      field?: number;
     },
   ) => {
     const d = depsRef.current;
@@ -173,8 +176,13 @@ export function useBoxedDragHandlers({
     // A side without anchors (a triangle's top) starts from the nearest one
     // the shape offers (docs/specs/008-canvas/arrow-anchors.md).
     const anchor = nearestOfferedAnchor(element, sideAnchor);
-    const start = anchorPosition(element, anchor);
-    const fromEnd: ArrowElement['from'] = { kind: 'pinned', elementId, anchor };
+    const fromEnd: ArrowElement['from'] =
+      opts?.field !== undefined
+        ? { kind: 'pinned', elementId, anchor, field: opts.field }
+        : { kind: 'pinned', elementId, anchor };
+    const start =
+      (opts?.field !== undefined && fieldEndPosition(element, anchor, opts.field)) ||
+      anchorPosition(element, anchor);
     // A connector drawn FROM a shape takes the TAB THEME's stroke, not the
     // shape's own. It used to copy the shape's stroke so the pair matched,
     // but a red box then sprouted red arrows, a green box green ones, and

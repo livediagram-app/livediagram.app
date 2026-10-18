@@ -115,6 +115,14 @@ function reanchorEnd(
     console.debug(`${tag} side=none ${ep.anchor}->${ep.anchor} kept=no-side`);
     return ep;
   }
+  // A field-pinned end (docs/specs/009-elements/entity.md "Field to field") stays on its field: it only
+  // swaps between the left and right edges, and a top or bottom facing side leaves it where it is.
+  if (ep.field !== undefined && !anchorLiesOn(ep.anchor, side)) {
+    if (side !== 'e' && side !== 'w') return ep;
+    moveHeld(held, el.id, ep.anchor, side);
+    console.debug(`${tag} side=${side} ${ep.anchor}->${side} field=${ep.field}`);
+    return { ...ep, anchor: side };
+  }
   if (anchorLiesOn(ep.anchor, side)) {
     console.debug(`${tag} side=${side} ${ep.anchor}->${ep.anchor} kept=facing`);
     return ep;

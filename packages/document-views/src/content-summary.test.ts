@@ -22,6 +22,20 @@ describe('contentSummaryOf (R14)', () => {
     expect(contentSummaryOf(shape('entity', { entityFields: undefined }))).toBe('{}');
   });
 
+  it("writes a field's key after its type, and ignores one it does not know", () => {
+    expect(
+      contentSummaryOf(
+        shape('entity', {
+          entityFields: [
+            { name: 'id', type: 'uuid', key: 'pk' },
+            { name: 'org', key: 'pk-fk' },
+            { name: 'x', key: 'primary' },
+          ],
+        }),
+      ),
+    ).toBe('{id uuid PK; org PK FK; x}');
+  });
+
   it('sizes a table and prints its header row, ragged rows padded (E26)', () => {
     const table = {
       ...createTable(0, 0),

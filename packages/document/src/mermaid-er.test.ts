@@ -96,9 +96,9 @@ describe('parseMermaid: ER diagrams', () => {
     const customer = r.graph.nodes.find((n) => n.id === 'CUSTOMER')!;
     expect(customer.label).toBe('CUSTOMER');
     expect(customer.fields).toEqual([
-      { name: 'name', type: 'string PK' },
+      { name: 'name', type: 'string', key: 'pk' },
       { name: 'age', type: 'int' },
-      { name: 'org_id', type: 'string FK,UK' },
+      { name: 'org_id', type: 'string', key: 'fk' },
     ]);
   });
 
@@ -113,7 +113,7 @@ describe('parseMermaid: ER diagrams', () => {
       textAlignY: 'top',
       height: entityHeight(2, 'sm'),
       entityFields: [
-        { name: 'id', type: 'int PK' },
+        { name: 'id', type: 'int', key: 'pk' },
         { name: 'name', type: 'text' },
       ],
     });

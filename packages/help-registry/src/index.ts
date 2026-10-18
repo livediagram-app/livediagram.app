@@ -1328,9 +1328,10 @@ export const articles: Article[] = [
   {
     slug: 'entities',
     title: 'Entities',
-    description: 'A title over name / type rows, for class diagrams and data models.',
+    description:
+      'A title over fields with keys, joined field to field, for data models and class diagrams.',
     keywords:
-      'entity class uml er erd record table schema model field attribute method database column inheritance aggregation composition fields popular',
+      'entity class uml er erd record table schema model field attribute method database column inheritance aggregation composition fields popular primary foreign key pk fk unique relationship cardinality crows foot one many related',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Diagram Kits',

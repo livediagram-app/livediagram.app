@@ -9,11 +9,11 @@ import type { ReactElement } from 'react';
 import type { ChecklistItem, EntityField, LegendItem, PieSlice } from '@livediagram/document';
 import {
   ChecklistRowsEditor,
-  EntityFieldsEditor,
   LegendDataEditor,
   LinkedChartData,
   PieDataEditor,
 } from './context-menu-data-editors';
+import { EntityFieldsEditor } from './EntityFieldsEditor';
 
 afterEach(() => cleanup());
 
