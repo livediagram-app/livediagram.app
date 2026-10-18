@@ -80,7 +80,7 @@ describe('palette layouts', () => {
   });
 
   // Facilitate mode (docs/specs/012-collaboration/facilitate-mode.md "The palette").
-  it('gives Facilitate Popular, the drawing basics, Layout, the decorations, the charts and the six Collaborate categories', () => {
+  it('gives Facilitate Popular, the drawing basics, Layout, the six Collaborate categories, the decorations and the charts', () => {
     expect(ids('facilitate')).toEqual([
       'popular',
       'shapes',
@@ -88,16 +88,16 @@ describe('palette layouts', () => {
       'write',
       'draw',
       'layout',
-      'icons',
-      'stickers',
-      'media',
-      'data',
       'collab-ask',
       'collab-tools',
       'collab-record',
       'collab-react',
       'collab-mode',
       'collab-navigate',
+      'icons',
+      'stickers',
+      'media',
+      'data',
     ]);
     expect(paletteLandingCategory('facilitate', false)).toBe('popular');
   });

@@ -86,9 +86,9 @@ stop to draw):
 | _(none)_    | Popular                                               |
 | Common      | Shapes, My shapes (with a shape library), Write, Draw |
 | Structure   | Layout                                                |
+| Collaborate | Ask, Tools, Record, React, Selection Mode, Navigate   |
 | Decorate    | Icons, Stickers, Media                                |
 | Dynamic     | Data                                                  |
-| Collaborate | Ask, Tools, Record, React, Selection Mode, Navigate   |
 
 - **Popular** (the landing category), fixed: Square, Sticky note, Text, Frame, Arrow, Image, then behind a divider **Ask**,
   **Tools**, **Record** and **React** as openers ([Editor modes](../007-editor/editor-modes.md) "Popular"): each draws its category's glyph
@@ -113,7 +113,7 @@ stop to draw):
   - **Selection Mode**: one button per selection mode.
   - **Navigate**: Portal, Bring focus, Chair, Desk, Sofa, Fence, Link card.
 - **On the strip, the category bar** ([Toolbar layout](../007-editor/toolbar-layout.md#the-category-bar)) shows the
-  layout as **Shapes, Write, Draw · Layout · Icons, Stickers, Media · Data · Ask, Session**: no Popular; and Tools, Record, React, Selection Mode
+  layout as **Shapes, Write, Draw · Layout · Ask, Session · Icons, Stickers, Media · Data**: no Popular; and Tools, Record, React, Selection Mode
   and Navigate gathered into **Session**, browsed in two panes (the groups down the side, a search across all of
   them). **Ask** keeps its own button: putting a question to the room is the session's main act.
 
