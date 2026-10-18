@@ -18,8 +18,10 @@ showing it is up to date.
 - **What it shows** (`windowTabId`): one tab of the document, never the tab the window is on and never a Plan tab (a
   Board, Sheet or Dashboard tab, or any tab in Plan mode). Absent until chosen.
 - **The drawing**: the tab's content drawn as the editor shows it (the export renderer, in this person's appearance,
-  the tab's own theme, its photos and the document's cards), **zoomed to fit** inside the window with the tab's
-  paper behind it, centred, never cropped. It follows every change to the tab (an edit, a collaborator's) at a
+  the tab's own theme, its photos and the document's cards), **zoomed to fit** inside the window on the tab's own
+  canvas, centred, never cropped: its paper and its pattern (dots, grid, lines, at the tab's pattern size and
+  opacity), as the editor paints them for that tab in its mode, at the drawing's zoom and lined up with it, filling
+  the window edge to edge, so the window reads as that tab and not as a picture on a blank card. It follows every change to the tab (an edit, a collaborator's) at a
   deferred priority, so a burst of edits never competes with the canvas.
 - **Moving**: the drawing moves as the tab does on the canvas. Each shown element's animation plays in the window
   with its own Speed and Repeat, by the same motion the canvas draws: the Shape set's motions (Blink, Heartbeat,
