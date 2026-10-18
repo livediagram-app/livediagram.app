@@ -21,6 +21,7 @@ import { ARROW_THICKNESS_PX } from './arrow-style';
 import { coerceShapeKind } from './validate';
 import { ENTITY_MAX_FIELDS, ENTITY_MAX_TEXT, type EntityField } from './data-shapes';
 import { entityHeight } from './entity-geometry';
+import { ENTITY_KEY_LABELS } from './entity-fields';
 // `Element` is defined on the barrel (index.ts); a type-only import back into
 // it is erased at runtime, so the cycle is harmless — the package's sanctioned
 // pattern (auto-layout.ts does the same).
@@ -243,10 +244,17 @@ function entityNode(n: GraphNode, raw: EntityField[]): Element {
     ...(f.type ? { type: clip(f.type) } : {}),
     ...(f.key ? { key: f.key } : {}),
   }));
-  // A keyed field's name sits past the key gutter: about three glyphs' room.
+  // A key takes the room its words took when they were written into the type (`uuid PK`): the gutter's
+  // glyphs are about as wide, and the layout keeps the widths it was tuned on.
   const widest = Math.max(
     glyphUnits(n.label ?? ''),
-    ...fields.map((f) => glyphUnits(f.name) + glyphUnits(f.type ?? '') + (f.key ? 5 : 2)),
+    ...fields.map(
+      (f) =>
+        glyphUnits(f.name) +
+        glyphUnits(f.type ?? '') +
+        (f.key ? glyphUnits(` ${ENTITY_KEY_LABELS[f.key]}`) : 0) +
+        2,
+    ),
   );
   return {
     id: n.id,
