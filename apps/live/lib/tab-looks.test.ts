@@ -24,7 +24,7 @@ const tab = (over: Partial<Tab> = {}): Tab => ({
 });
 
 describe('TAB_LOOKS', () => {
-  it('fills four pages of six after the Mashup card, in order, each built only from settings that exist', () => {
+  it('fills five pages of six after the Mashup card, in order, each built only from settings that exist', () => {
     expect(TAB_LOOKS.map((l) => l.label)).toEqual([
       'Everyday',
       'Textbook',
@@ -49,8 +49,14 @@ describe('TAB_LOOKS', () => {
       'Northern Lights',
       'Coffeehouse',
       'Schematic',
+      'Flipchart',
+      'Sketchbook',
+      'Greenboard',
+      'Picnic',
+      'Neon',
+      'Field Notes',
     ]);
-    expect(TAB_LOOKS.length + 1).toBe(LOOKS_PER_PAGE * 4);
+    expect(TAB_LOOKS.length + 1).toBe(LOOKS_PER_PAGE * 5);
     for (const look of TAB_LOOKS) {
       expect(resolveTheme(look.theme), look.id).toBeTruthy();
       expect(
@@ -77,9 +83,9 @@ describe('TAB_LOOKS', () => {
     shown.slice(i * LOOKS_PER_PAGE, (i + 1) * LOOKS_PER_PAGE).filter((l) => l !== null),
   );
 
-  it('opens on Everyday and has eight multi-colour looks, two on every page', () => {
+  it('opens on Everyday and has ten multi-colour looks, two on every page', () => {
     expect(TAB_LOOKS[0]!.id).toBe('everyday');
-    expect(TAB_LOOKS.filter((l) => multicolour(l.theme))).toHaveLength(8);
+    expect(TAB_LOOKS.filter((l) => multicolour(l.theme))).toHaveLength(10);
     for (const page of pages) expect(page.filter((l) => multicolour(l.theme))).toHaveLength(2);
   });
 
@@ -90,6 +96,17 @@ describe('TAB_LOOKS', () => {
         expect(a.theme, `${a.id} | ${b.id}`).not.toBe(b.theme);
         expect(a.finish, `${a.id} | ${b.id}`).not.toBe(b.finish);
       }
+  });
+
+  // Marker (docs/specs/008-canvas/finish.md) has looks of its own across the carousel, not a single one.
+  it('offers every finish, Marker on five looks', () => {
+    expect(TAB_LOOKS.filter((l) => l.finish === 'marker').map((l) => l.id)).toEqual([
+      'whiteboard',
+      'workshop',
+      'flipchart',
+      'greenboard',
+      'neon',
+    ]);
   });
 
   it('gives every look a distinct mix, so at most one reads as selected', () => {

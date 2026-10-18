@@ -137,7 +137,7 @@ describe('CanvasThemeDialog home', () => {
     }
   });
 
-  it('pages the Mashup card and the looks in a carousel of four pages, opening on the current look’s page', () => {
+  it('pages the Mashup card and the looks in a carousel of five pages, opening on the current look’s page', () => {
     const { unmount } = home({ themeId: 'brand', finish: undefined, font: null });
     const next = screen.getByRole('button', { name: 'Next looks' });
     const prev = screen.getByRole('button', { name: 'Previous looks' });
@@ -145,9 +145,10 @@ describe('CanvasThemeDialog home', () => {
     fireEvent.click(next);
     fireEvent.click(next);
     fireEvent.click(next);
+    fireEvent.click(next);
     expect(next.hasAttribute('disabled')).toBe(true);
     expect(
-      screen.getByRole('button', { name: 'Looks page 4 of 4' }).getAttribute('aria-current'),
+      screen.getByRole('button', { name: 'Looks page 5 of 5' }).getAttribute('aria-current'),
     ).toBe('true');
     unmount();
     // A tab on a page-three look opens there (the Mashup card leads page one).
@@ -158,7 +159,7 @@ describe('CanvasThemeDialog home', () => {
       backgroundPattern: 'isometric',
     });
     expect(
-      screen.getByRole('button', { name: 'Looks page 3 of 4' }).getAttribute('aria-current'),
+      screen.getByRole('button', { name: 'Looks page 3 of 5' }).getAttribute('aria-current'),
     ).toBe('true');
   });
 

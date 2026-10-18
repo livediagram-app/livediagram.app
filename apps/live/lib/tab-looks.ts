@@ -34,6 +34,12 @@ export type TabLookId =
   | 'northern-lights'
   | 'coffeehouse'
   | 'schematic'
+  | 'flipchart'
+  | 'sketchbook'
+  | 'greenboard'
+  | 'picnic'
+  | 'neon'
+  | 'field-notes'
   // Seasonal looks (lib/seasonal-looks.ts): shown only behind the carousel's Seasonal toggle.
   | 'countdown'
   | 'egg-hunt'
@@ -88,9 +94,10 @@ export const TAB_LOOKS: readonly TabLook[] = [
   {
     id: 'whiteboard',
     label: 'Whiteboard',
-    description: 'Sketch, handwriting, plain white',
+    description: 'Mono, Marker, plain white',
     theme: 'mono',
-    finish: 'sketch',
+    // A whiteboard is drawn in marker; its letters in Permanent Marker itself.
+    finish: 'marker',
     font: undefined,
     pattern: 'blank',
   },
@@ -285,6 +292,66 @@ export const TAB_LOOKS: readonly TabLook[] = [
     font: 'roboto-mono',
     pattern: 'crosshatch',
     patternOpacity: 0.4,
+  },
+  // The fifth page: Marker on a flip chart, a green board and a dark wall, between Sketch and Flexible looks.
+  {
+    id: 'flipchart',
+    label: 'Flipchart',
+    description: 'Rainbow, Marker, ruled pad',
+    theme: 'rainbow',
+    finish: 'marker',
+    // Marker letters in Permanent Marker itself.
+    font: undefined,
+    pattern: 'lines',
+    patternOpacity: 0.5,
+  },
+  {
+    id: 'sketchbook',
+    label: 'Sketchbook',
+    description: 'Rose, Sketch, plain paper',
+    theme: 'rose',
+    finish: 'sketch',
+    font: undefined,
+    pattern: 'blank',
+  },
+  {
+    id: 'greenboard',
+    label: 'Greenboard',
+    description: 'Pine, Marker, a green board',
+    theme: 'pine',
+    finish: 'marker',
+    font: undefined,
+    pattern: 'blank',
+  },
+  {
+    id: 'picnic',
+    label: 'Picnic',
+    description: 'Pastel, Flexible, Poppins, gingham',
+    theme: 'pastel',
+    finish: 'flexible',
+    font: 'poppins',
+    pattern: 'checkerboard',
+    patternOpacity: 0.25,
+  },
+  {
+    id: 'neon',
+    label: 'Neon',
+    description: 'Plum, Marker, dark dots',
+    theme: 'plum',
+    finish: 'marker',
+    font: undefined,
+    pattern: 'grid',
+    patternOpacity: 0.5,
+  },
+  {
+    id: 'field-notes',
+    label: 'Field Notes',
+    description: 'Olive, Sketch, lined paper',
+    theme: 'olive',
+    finish: 'sketch',
+    font: undefined,
+    pattern: 'lines',
+    patternOpacity: 0.6,
   },
 ];
 
